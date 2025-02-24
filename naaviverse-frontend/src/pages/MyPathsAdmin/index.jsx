@@ -208,7 +208,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const reactivatePath = () => {
     setActionLoading(true);
     axios
-      .put(`/api/paths/update/${selectedPathId}`, {
+      .put(`/api/paths/updatepath/${selectedPathId}`, {
         status:"active"
         })
       .then((response) => {
@@ -282,26 +282,33 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
       });
   };
 
-  const viewPath = (path) => {
-    console.log(path, "lkwehflwehflwf")
+  const viewPath = () => {
+    if (!selectedPathId) {
+        console.log("Selected Path ID is missing");
+        return;
+    }
+
     setViewPathLoading(true);
+
     axios
-      .get(`/api/paths/get?nameOfPath=${path}`)
+      .get(`/api/paths/viewpath/${selectedPathId}`)  // Send path_id as part of the URL path
       .then((response) => {
-        let result = response?.data?.data[0];
-        // console.log(result, "viewPathData result");
+        let result = response?.data?.data;
         setViewPathData(result);
         setViewPathLoading(false);
       })
       .catch((error) => {
         console.log(error, "error in fetching viewPathData");
+        setViewPathLoading(false);
       });
-  };
+};
+
+
 
 
   const handleApprovePath = () => {
     setActionLoading(true);
-    axios.put(`/api/paths/update/${selectedPathId}`, { status: "active" })
+    axios.put(`/api/paths/updatepath/${selectedPathId}`, { status: "active" })
       .then(({ data }) => {
         if (data.status) {
           // Check the current menu and fetch Active Paths
@@ -325,7 +332,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   
   const handleRejectPath = () => {
     setActionLoading(true);
-    axios.put(`/api/paths/update/${selectedPathId}`, 
+    axios.put(`/api/paths/updatepath/${selectedPathId}`, 
     {status:"inactive"})
     .then(({data}) => {
       if(data.status){

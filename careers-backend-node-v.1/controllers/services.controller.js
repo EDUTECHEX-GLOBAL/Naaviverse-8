@@ -11,7 +11,7 @@ const addService = async (req, res) => {
         icon: req.body.icon,
         description: req.body.description,
         chargingtype: req.body.chargingtype,
-        chargingCurrency: { coin: req.body['charging currency'].coin }, 
+        chargingCurrency: { coin: req.body.first_purchase?.coin }, 
         billing_cycle: {}
     };
 

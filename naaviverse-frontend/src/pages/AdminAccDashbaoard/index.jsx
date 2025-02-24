@@ -1478,9 +1478,9 @@ const [adminServices, setAdminServices] = useState([])
                                 {partnerData
                                   ?.filter(
                                     (item) =>
-                                      item.businessName
-                                        .toLowerCase()
-                                        .startsWith(search.toLowerCase()) ||
+                                      // item.businessName
+                                      //   .toLowerCase()
+                                      //   .startsWith(search.toLowerCase()) ||
                                       item.email
                                         .toLowerCase()
                                         .startsWith(search.toLowerCase()) 

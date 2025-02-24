@@ -13,7 +13,7 @@ const database_url = process.env.DATABASE_URI;
 var authRouter = require('./routes/authRouter');
 var indexRouter = require('./routes/index');
 var servicesRouter = require('./routes/servicesRouter');
-var stepsRouter = require('./routes/stepsRouter');
+var stepspathRouter = require('./routes/stepsRouter');
 var usersRouter = require('./routes/usersRouter');
 var universitiesRouter = require('./routes/universitiesRouter');
 var pathsRouter = require('./routes/pathRouter')
@@ -42,7 +42,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // set the body parser to handle urlencoded data
 app.use(bodyParser.json());
 app.use('/api/services', servicesRouter);
-app.use('/api/steps', stepsRouter);
+app.use('/api/steps', stepspathRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/universities', universitiesRouter)

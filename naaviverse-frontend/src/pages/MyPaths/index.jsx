@@ -74,32 +74,32 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
       });
   };
 
-  const [remainingStepData, setRemainingStepData] = useState([]);
-  const getAllStepsForPath = () => {
-    setLoading(true);
-    let email = userDetails?.email;
+  // const [remainingStepData, setRemainingStepData] = useState([]);
+  // const getAllStepsForPath = () => {
+  //   setLoading(true);
+  //   let email = userDetails?.email;
 
-    axios
-      .get(
-        `/api/paths/getremainingsteps?path_id=${selectedPathId}&&email=${email}`
-      )
-      .then((response) => {
-        let result = response?.data?.stepIds;
-        console.log("selectedPath:", selectedPath);  // Check if selectedPath is being set correctly
-        console.log("selectedPath._Id:", selectedPathId);  // Ensure _Id exists
+  //   axios
+  //     .get(
+  //       `/api/paths/getremainingsteps?path_id=${selectedPathId}&&email=${email}`
+  //     )
+  //     .then((response) => {
+  //       let result = response?.data?.stepIds;
+  //       console.log("selectedPath:", selectedPath);  // Check if selectedPath is being set correctly
+  //       console.log("selectedPath._Id:", selectedPathId);  // Ensure _Id exists
 
-        console.log(result, "partnerStepsData result");
-        setRemainingStepData(result);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log(error, "error in partnerStepsData");
-      });
-  };
+  //       console.log(result, "partnerStepsData result");
+  //       setRemainingStepData(result);
+  //       setLoading(false);
+  //     })
+  //     .catch((error) => {
+  //       console.log(error, "error in partnerStepsData");
+  //     });
+  // };
 
-  useEffect(() => {
-    getAllStepsForPath();
-  }, [selectedPath]);
+  // useEffect(() => {
+  //   getAllStepsForPath();
+  // }, [selectedPath]);
 
   const [allServices, setAllServices] = useState([]);
 

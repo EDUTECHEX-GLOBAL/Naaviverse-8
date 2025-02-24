@@ -4,6 +4,7 @@ import Skeleton from "react-loading-skeleton";
 import "./mypaths.scss";
 import axios from "axios";
 import { Draggable } from "react-drag-reorder";
+import EditStepForm from "./steps.jsx";
 
 // images
 import dummy from "./dummy.svg";
@@ -13,6 +14,7 @@ import CurrentStep from "../../CurrentStep";
 import { useStore } from "../../../components/store/store.ts";
 import { useNavigate } from "react-router-dom";
 import MenuNav from "../../../components/MenuNav/index.jsx";
+
 
 const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu, showDrop, setShowDrop }) => {
     const navigate = useNavigate()
@@ -37,6 +39,7 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
     const [viewPathEnabled, setViewPathEnabled] = useState(false);
     const [viewPathLoading, setViewPathLoading] = useState(false);
     const [viewPathData, setViewPathData] = useState([]);
+    const [allServicesToRemove, setAllServicesToRemove] = useState([]);
 
     const [showSelectedPath, setShowSelectedPath] = useState(null)
     const [addServiceStep, setAddServiceStep] = useState(null)
@@ -106,21 +109,21 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
 
     const [allServices, setAllServices] = useState([])
 
-    const getAllServices = () => {
-        let email = userDetails?.email;
+    // const getAllServices = () => {
+    //     let email = userDetails?.email;
 
-        // axios.get(`https://comms.globalxchange.io/gxb/product/banker/get?category=education%20consultants`).then(({data}) => {
-        //   if(data.status){
-        //     setAllServices(data.data)
-        //   }
-        // })
-        axios.get(`https://careers.marketsverse.com/attachservice/getnotaddedservices?step_id=${selectedStepId}&productcreatoremail=${email}`).then(({ data }) => {
-            if (data.status) {
-                console.log(data, "lhqflqhflqhflqf")
-                setAllServices(data.data)
-            }
-        })
-    }
+    //     // axios.get(`https://comms.globalxchange.io/gxb/product/banker/get?category=education%20consultants`).then(({data}) => {
+    //     //   if(data.status){
+    //     //     setAllServices(data.data)
+    //     //   }
+    //     // })
+    //     axios.get(`https://careers.marketsversFe.com/attachservice/getnotaddedservices?step_id=${selectedStepId}&productcreatoremail=${email}`).then(({ data }) => {
+    //         if (data.status) {
+    //             console.log(data, "lhqflqhflqhflqf")
+    //             setAllServices(data.data)
+    //         }
+    //     })
+    // }
 
     useEffect(() => {
         let email = userDetails?.email;
@@ -131,11 +134,11 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
         })
     }, [])
 
-    useEffect(() => {
-        if (selectedStepId) {
-            getAllServices()
-        }
-    }, [selectedStepId])
+    // useEffect(() => {
+    //     if (selectedStepId) {
+    //         getAllServices()
+    //     }
+    // }, [selectedStepId])
 
     const getNewPath = () => {
         setLoading(true);
@@ -356,7 +359,6 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
                 } else {
                     getAllPaths()
                 }
-                getAllServices()
                 setPathActionEnabled(false);
                 setStepActionEnabled(false)
                 setActionLoading(false);
@@ -376,33 +378,68 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
     const [productDataArray, setProductDataArray] = useState([]);
     const [productKeys, setProductKeys] = useState(null);
 
-    const [allServicesToAdd, setAllServicesToAdd] = useState([])
-    useEffect(() => {
-        if (selectedStepId) {
-            axios.get(
-                // `https://careers.marketsverse.com/services/get?productcreatoremail=${userDetails?.user?.email}`
-                `https://careers.marketsverse.com/attachservice/getnotaddedservices?step_id=${selectedStepId}&productcreatoremail=${userDetails?.user?.email}`
-            ).then(({ data }) => {
-                if (data.status) {
+    const [allServicesToAdd, setAllServicesToAdd] = useState([]);
 
-                    setAllServicesToAdd(data?.data[0])
+
+
+useEffect(() => {
+    if (selectedStepId) {
+        let userDetails = JSON.parse(localStorage.getItem("partner")); // Get logged-in user details
+
+        axios.get(`/api/services/get?productcreatoremail=${userDetails.email}`)
+            .then(({ data }) => {
+                if (data.status) {
+                    setAllServicesToAdd(data.data);  // Store fetched services
+                } else {
+                    console.log("No services found:", data.message);
                 }
             })
+            .catch((error) => {
+                console.error("Error fetching services:", error);
+            });
+    }
+}, [selectedStepId]);
+
+
+
+
+const fetchServicesForRemoval = async () => {
+    try {
+        if (!selectedStepId) {
+            console.error("No step ID provided.");
+            return;
         }
-
-    }, [selectedStepId])
-
-
-    const [allServicesToRemove, setAllServicesToRemove] = useState([])
-    useEffect(() => {
-        if (selectedStepId) {
-            axios.get(`https://careers.marketsverse.com/attachservice/get?step_id=${selectedStepId}`).then(({ data }) => {
-                if (data.status) {
-                    setAllServicesToRemove(data?.data[0])
-                }
-            })
+        
+        const trimmedStepId = selectedStepId.trim();
+        console.log("Fetching services for step:", trimmedStepId);
+        
+        const url = `/api/steps/getall/${trimmedStepId}`
+        console.log("URL:", url);
+        
+        const response = await axios.get(url);
+        
+        console.log("Full Response from server:", response);
+        
+        if (response.status === 200 && response.data.status) {
+            // Directly set the services array as returned by the backend
+            setAllServicesToRemove(response.data.data);
+        } else {
+            console.log("No services found or error:", response.data.message);
         }
-    }, [selectedStepId])
+    } catch (error) {
+        if (error.response) {
+            console.error('Error Response:', error.response.data);
+            console.error('Status:', error.response.status);
+            console.error('Headers:', error.response.headers);
+        } else if (error.request) {
+            console.error('No response received');
+        } else {
+            console.error('Error:', error.message);
+        }
+        console.error('Config:', error.config);
+    }
+};
+
 
     // useEffect(() => {
     //   if (userDetails) {
@@ -580,7 +617,7 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
                 ...selectedServices
             ]
         }, "lkweflkjwhefkjwef")
-        axios.post(`https://careers.marketsverse.com/attachservice/add`, {
+        axios.post(`/api/steps/attachservice`, {
             step_id: selectedStepId,
             service_ids: [
                 ...selectedServices
@@ -595,17 +632,40 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
         })
     }
 
-    const removeServiceFromStep = (id) => {
-        axios.put(`https://careers.marketsverse.com/attachservice/remove/${allServicesToRemove?._id}`, {
-            service_id: id
-        }).then(({ data }) => {
-            if (data.status) {
-                setStepActionEnabled(false)
-                setActionLoading(false)
-                setLoading(false)
+    const removeServiceFromStep = async (serviceId) => {
+        try {
+            if (!selectedStepId || !serviceId) {
+                console.error("Step ID or Service ID is missing.");
+                return;
             }
-        })
-    }
+    
+            setActionLoading(true);
+            setLoading(true);
+    
+            // Construct the correct URL with both parameters
+            const url = `/api/steps/remove/${selectedStepId}/${serviceId}`;
+            
+            console.log("Removing service from step:", url);
+    
+            const response = await axios.delete(url);
+    
+            if (response.status === 200 && response.data.status) {
+                console.log("Service removed successfully:", response.data);
+                setStepActionEnabled(false);
+    
+                // Refresh the services list after removal
+                fetchServicesForRemoval();
+            } else {
+                console.error(" Failed to remove service:", response.data.message);
+            }
+        } catch (error) {
+            console.error(" Error removing service from step:", error);
+        } finally {
+            setActionLoading(false);
+            setLoading(false);
+        }
+    };
+    
 
     useEffect(() => {
         if (!stepActionEnabled) {
@@ -819,10 +879,8 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
                                                     </div>
                                                     <div className="each-mypathsCountry">{e?.cost}</div>
                                                     <div className="each-mypathsMicrosteps">
-                                                        {e?.other_data
-                                                            ? Object.keys(e.other_data).length
-                                                            : 0}
-                                                    </div>
+                              {e?.services ? e.services.length : 0}
+                          </div>
                                                 </div>
                                                 <div className="each-mypaths-desc">
                                                     <div className="each-mypaths-desc-txt">
@@ -832,6 +890,10 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
                                                         {e?.description}
                                                     </div>
                                                 </div>
+
+
+                                                
+                
                                             </div>
                                         );
                                     })}
@@ -1559,13 +1621,14 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
                                         Which service do you want to add?
                                     </div>
                                     <div className="acc-scroll-div">
-                                        {allServicesToAdd && allServicesToAdd?.serviceDetails?.map(item => (
+                                        {allServicesToAdd && allServicesToAdd.map(item => (
                                             <div
+                                                key={item._id}
                                                 className="acc-step-box4"
                                                 style={{ flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}
-                                                onClick={(e) => handleAddService(item?.product_id)}
+                                                onClick={(e) => handleAddService(item?._id)}
                                             >
-                                                <div>{item?.product_name}</div>
+                                                <div>{item?.name}</div>
                                                 <div style={{ fontSize: '12px', fontWeight: 400, paddingTop: '5px' }}>{item?.product_id}</div>
                                             </div>
                                         ))}
@@ -1667,7 +1730,10 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
                                         <div
                                             className="acc-step-box4"
                                             style={{ flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}
-                                            onClick={(e) => setStepActionStep(6)}
+                                            onClick={(e) => {
+                                                fetchServicesForRemoval();
+                                                setStepActionStep(6);
+                                              }}
                                         >
                                             <div>Remove a Service</div>
                                         </div>
@@ -1693,7 +1759,7 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
                                         Which service do you want to add?
                                     </div>
                                     <div className="acc-scroll-div">
-                                        {allServicesToAdd && allServicesToAdd?.serviceDetails?.map(item => (
+                                        {allServicesToAdd && allServicesToAdd.map(item => (
                                             <div
                                                 className={selectedServices.includes(item?._id) ? 'acc-step-box4-selected' : "acc-step-box4"}
                                                 style={{ flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}
@@ -1734,7 +1800,7 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
                                         Which service do you want to remove?
                                     </div>
                                     <div className="acc-scroll-div">
-                                        {allServicesToRemove && allServicesToRemove?.serviceDetails?.map(item => (
+                                        {allServicesToRemove && allServicesToRemove.map(item => (
                                             <div
                                                 className={selectedServices.includes(item?._id) ? 'acc-step-box4-selected' : "acc-step-box4"}
                                                 style={{ flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}
@@ -1762,40 +1828,21 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
                             )}
 
 {stepActionStep === 7 && (
-                                <div className="acc-mt-div">
-                                    <div className="acc-sub-text">
-                                        How do you want to edit the steps in this path?
-                                    </div>
-                                    <div className="acc-scroll-div">
-                                        <div
-                                            className="acc-step-box4"
-                                            onClick={() => setStepActionStep(8)} // Navigate to "Add New Step"
-                                        >
-                                            Add New Step
-                                        </div>
-                                        <div
-                                            className="acc-step-box4"
-                                            onClick={() => setStepActionStep(9)} // Navigate to "Remove Existing Step"
-                                        >
-                                            Remove Existing Step
-                                        </div>
-                                        <div
-                                            className="acc-step-box4"
-                                            onClick={() => setStepActionStep(10)} // Navigate to "Reorder Existing Steps"
-                                        >
-                                            Reorder Existing Steps
-                                        </div>
-                                    </div>
-                                    <div
-                                        className="goBack3"
-                                        onClick={() => {
-                                            setStepActionStep(1); // Go back to the main options
-                                        }}
-                                    >
-                                        Go Back
-                                    </div>
-                                </div>
-                            )}
+    <div>
+        <EditStepForm
+            selectedStep={selectedStepId}
+            onSave={(updatedStep) => {
+                console.log("Updated Step Data:", updatedStep);
+                setTimeout(() => {
+                    setStepActionStep(null); // Close form after success message
+                }, 2000);
+            }}
+            onCancel={() => setStepActionStep(null)} // Close form on cancel
+        />
+        
+    </div>
+)}
+
 
                             {stepActionStep === 8 && (
                                 <div className="acc-mt-div">

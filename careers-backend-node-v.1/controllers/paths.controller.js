@@ -26,7 +26,14 @@ const addPath = async (req, res) => {
             path_type: req.body.path_type,
             path_cat: req.body.path_cat,
             university: req.body.destination_institution,
-            the_ids: req.body.the_ids,
+            the_ids: req.body.the_ids.map(id => ({
+                step_id: id.step_id, // Step ID
+                stepName: id.stepName, // Step Name
+                stepDescription: id.stepDescription, // Step Description
+                backup_pathId: id.backup_pathId, // Backup Path ID
+                backupPathName: id.backupPathName, // Backup Path Name
+                backupPathDescription: id.backupPathDescription // Backup Path Description
+            })),
             financialSituation: req.body.financialSituation,
             destination_degree: req.body.destination_degree,
             length: req.body.length,
@@ -59,7 +66,6 @@ const addPath = async (req, res) => {
     } catch (error) {
         // Check if the error is a Mongoose validation error
         if (error.name === 'ValidationError') {
-            // Handle Mongoose validation errors
             const validationErrors = {};
             for (const key in error.errors) {
                 if (error.errors.hasOwnProperty(key)) {
@@ -73,7 +79,6 @@ const addPath = async (req, res) => {
             });
         }
 
-        // Handle other errors
         console.error(error);
         return res.status(500).json({
             status: false,
@@ -150,7 +155,40 @@ const updatePath = async (req, res) => {
             message: 'Internal server error',
         });
     }
-};
+}; 
+
+const updatePathStatus = async (req, res) => {
+    const pathId = req.params.id; // Path ID from URL
+    const { status } = req.body;  // Status from the request body (active/inactive)
+  
+    // Validate the status
+    if (!status || !['active', 'inactive'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status. Please use "active" or "inactive".' });
+    }
+  
+    try {
+      // Find the path by ID
+      const path = await pathModel.findById(pathId);
+  
+      if (!path) {
+        return res.status(404).json({ error: 'Path not found.' });
+      }
+  
+      // Update the status of the path
+      path.status = status === 'active' ? 'active' : 'inactive';  // Map 'inactive' to 'deleted'
+      
+      await path.save(); // Save the updated path
+  
+      // Send a success response
+      res.status(200).json({ 
+        status: true,
+        message: `Path has been marked as ${status === 'active' ? 'approved' : 'rejected'}.`
+      });
+    } catch (error) {
+      console.error("Error updating path status:", error);
+      res.status(500).json({ error: 'Internal server error.' });
+    }
+  };
 
 const getPath = async (req, res) => {
     let filter = {}
@@ -443,14 +481,74 @@ const updateFields = async (req, res) => {
     })
 }
 
+
+const getActivePaths = async (req, res) => {
+    try {
+      const activePaths = await pathModel.find({ status: "active" });
+  
+      if (!activePaths || activePaths.length === 0) {
+        return res.status(404).json({ success: false, message: "No active paths found" });
+      }
+  
+      res.status(200).json({ success: true, data: activePaths });
+    } catch (error) {
+      console.error("Error fetching active paths:", error);
+      res.status(500).json({ success: false, message: "Server error" });
+    }
+  };
+
+  const getPathById = async (req, res) => {
+    try {
+        // Extract path_id from the URL parameters
+        const pathId = req.params.path_id;
+
+        // Validate the pathId to ensure it is a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(pathId)) {
+            return res.status(400).json({
+                status: false,
+                message: 'Invalid path ID provided',
+            });
+        }
+
+        // Find the path in the database by the path_id
+        const path = await pathModel.findById(pathId).lean();
+
+        // If path is not found
+        if (!path) {
+            return res.status(404).json({
+                status: false,
+                message: 'Path not found',
+            });
+        }
+
+        // Return the path data
+        return res.status(200).json({
+            status: true,
+            message: 'Path data found',
+            data: path,
+        });
+    } catch (err) {
+        console.log('Error:', err);
+        res.status(500).json({
+            status: false,
+            message: 'An error occurred while fetching the path data',
+        });
+    }
+};
+
+
+  
 module.exports = {
     addPath,
     getPath,
-    updatePath,
     deletePath,
     restorePath,
     getPathSpecific,
     getPathNormal,
     updateFields,
     updatePath,
+    getActivePaths,
+    updatePathStatus,
+    getPathById,
+
 }

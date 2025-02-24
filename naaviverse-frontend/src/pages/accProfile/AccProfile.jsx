@@ -373,8 +373,9 @@ const AccProfile = () => {
   };
 
   useEffect(() => {
-    axios.get(`https://careers.marketsverse.com/paths/get`).then((res) => {
+    axios.get(`/api/paths/active`).then((res) => {
       let result = res?.data?.data;
+      console.log("All paths fetched:", result);
       // console.log(result, "all paths fetched");
       setBackupPathList(result);
     });
@@ -407,18 +408,24 @@ const AccProfile = () => {
     let email = userDetails?.email;
 
     axios
-        .get(`/api/steps/active?email=${email}`)
-        .then((response) => {
-            let result = response?.data?.data;
-            console.log(result, "Active Steps Fetched");
-            setPartnerStepsData(result);
-            setLoading(false);
-        })
-        .catch((error) => {
-            console.error(error, "Error fetching active steps");
-            setLoading(false);
-        });
-};
+      .get(`/api/steps/active?email=${email}`)
+      .then((response) => {
+        let result = response?.data?.data;
+        console.log("Active Steps Fetched:", result);
+        setPartnerStepsData(result || []);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching active steps:", error);
+        setLoading(false);
+      });
+  };
+
+  // Debug: Track state updates
+  useEffect(() => {
+    console.log("Updated partnerStepsData:", partnerStepsData);
+  }, [partnerStepsData]);
+
 
   //upload end here
 
@@ -631,10 +638,19 @@ const AccProfile = () => {
     fileInputRef.current.click();
   };
 
-  const handleFileInputChange = (e) => {
-    setImage(e.target.files[0]);
-    uploadImageFunc(e.target.files[0]);
+  const handleFileInputChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+  
+    setImage(file); // Set preview immediately
+    const uploadedUrl = await uploadImageFunc(e, setImage, setLoading);
+  
+    if (uploadedUrl) {
+      setImage(uploadedUrl); // Set the final uploaded image URL
+    }
   };
+  
+  
   const handleFileInputChange1 = (e) => {
     setImage(e.target.files[0]);
     uploadBulkPath(e.target.files[0]);
@@ -659,10 +675,10 @@ const AccProfile = () => {
     setIsSubmit(true);
     let userDetails = JSON.parse(localStorage.getItem("partner"));
     let objmonthly = {
-      email: userDetails.email,
+      productcreatoremail: userDetails.email,
       token: userDetails.idToken,
       product_code: serviceCodeInput,
-      product_name: serviceNameInput,
+      name: serviceNameInput,
       product_icon: coverImageS3url,
       revenue_account: userDetails.email,
       client_app: "naavi",
@@ -712,11 +728,11 @@ const AccProfile = () => {
     };
 
     let objone = {
-      email: userDetails.email,
+      productcreatoremail: userDetails.email,
       token: userDetails.idToken,
       product_code: serviceCodeInput,
-      product_name: serviceNameInput,
-      product_icon: coverImageS3url,
+      name: serviceNameInput,
+      product_icon: image,
       revenue_account: userDetails.email,
       client_app: "naavi",
       product_category_code: "CoE",
@@ -1154,6 +1170,14 @@ const AccProfile = () => {
         stream: stream,
         financialSituation: finance,
         personality: personality,
+        the_ids: pathSteps.the_ids.map(step => ({
+          step_id : step.step_id, // Step ID
+          stepName : step.stepName, // Step Name
+          stepDescription : step.stepDescription, // Step Description
+          backup_pathId : step.backup_pathId, // Backup Path ID
+          backupPathName : step.backupPathName, // Backup Path Name
+          backupPathDescription : step.backupPathDescription // Backup Path Description
+      })),
 
         
       })
@@ -2064,8 +2088,8 @@ const AccProfile = () => {
                           src={
                             isUploadLoading
                               ? upgif
-                              : coverImageS3url !== ""
-                              ? coverImageS3url
+                              : image
+                              ? image
                               : uploadv
                           }
                           alt=""
@@ -2935,7 +2959,7 @@ const AccProfile = () => {
                             pathSteps?.description &&
                             pathSteps?.length &&
                             pathSteps?.path_type &&
-                            // pathSteps?.the_ids?.length > 0 &&
+                            pathSteps?.the_ids?.length > 0 &&
                             pathSteps?.destination_institution &&
                             pathSteps?.program &&
                             pathSteps?.city &&
@@ -2954,7 +2978,7 @@ const AccProfile = () => {
                             pathSteps?.description &&
                             pathSteps?.length &&
                             pathSteps?.path_type &&
-                            // pathSteps?.the_ids?.length > 0 &&
+                            pathSteps?.the_ids?.length > 0 &&
                             pathSteps?.destination_institution &&
                             pathSteps?.program &&
                             pathSteps?.city &&
@@ -2974,7 +2998,7 @@ const AccProfile = () => {
                           pathSteps?.description &&
                           pathSteps?.length &&
                           pathSteps?.path_type &&
-                          // pathSteps?.the_ids?.length > 0 &&
+                          pathSteps?.the_ids?.length > 0 &&
                           pathSteps?.destination_institution &&
                           pathSteps?.program &&
                           pathSteps?.city &&

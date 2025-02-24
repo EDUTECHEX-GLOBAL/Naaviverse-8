@@ -11,5 +11,9 @@ router.put("/update/:id",[verifyToken], stepsController.updateStep);
 router.delete("/delete/:id", stepsController.deleteStep);
 router.put("/restore/:id",[verifyToken], stepsController.restoreStep);
 router.get("/active", stepsController.getActiveSteps);
-
+router.get("/:id", stepsController.getStepById );
+router.patch("/editstep", stepsController.editStep);
+router.post("/attachservice", stepsController.addServicesToStep);
+router.get("/getall/:step_id",stepsController.getServicesForStep );
+router.delete("/remove/:stepId/:serviceId",stepsController.removeServiceFromStep);
 module.exports = router;

@@ -1,6 +1,10 @@
 const stepModel = require('../models/steps.model');
+const serviceModel = require('../models/services.model');
+
 const pathModel = require('../models/path.model');
 const axios = require('axios');
+const mongoose = require('mongoose');
+
 
 const addStep = async (req, res) => {
     // console.log(req.body.country)
@@ -18,6 +22,12 @@ const addStep = async (req, res) => {
         description: req.body.description, // Added description field
         length: req.body.length, // Added length field
         cost: req.body.cost,
+        gradeData: req.body.gradeData || [],
+        curriculumData: req.body.curriculumData || [],
+        financialData: req.body.financialData || [],
+        streamData: req.body.streamData || [],
+        gradePointAverageData: req.body.gradePointAverageData || [],
+        personalityData: req.body.personalityData || [],
         micro_description: req.body.micro_description,
         micro_name: req.body.micro_name,
         micro_length: req.body.micro_length,
@@ -317,6 +327,234 @@ const getActiveSteps = async (req, res) => {
         });
     }
 };
+const getStepById = async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      // Validate MongoDB ObjectId
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ status: false, message: "Invalid Step ID" });
+      }
+  
+      const step = await stepModel.findById(id);
+  
+      if (!step) {
+        return res.status(404).json({ status: false, message: "Step not found" });
+      }
+  
+      res.json({ status: true, data: step });
+    } catch (error) {
+      console.error("Error fetching step:", error);
+      res.status(500).json({ status: false, message: "Server error" });
+    }
+  };
+
+  const editStep = async (req, res) => {
+    try {
+        let { stepId } = req.body; // Get stepId from the request body
+        console.log("Received stepId:", stepId, "Type:", typeof stepId);
+
+        // Ensure stepId is a valid string and remove any spaces
+        if (!stepId || typeof stepId !== "string") {
+            return res.status(400).json({
+                status: false,
+                message: "Step ID is missing or invalid",
+            });
+        }
+        stepId = stepId.trim(); // Trim spaces
+
+        // Validate ObjectId format
+        if (!mongoose.Types.ObjectId.isValid(stepId)) {
+            return res.status(400).json({
+                status: false,
+                message: "Invalid step ID format",
+            });
+        }
+
+        const objectId = new mongoose.Types.ObjectId(stepId);
+
+        // Check if the step exists
+        let existingStep = await stepModel.findById(objectId);
+        if (!existingStep) {
+            return res.status(404).json({
+                status: false,
+                message: "Step not found",
+            });
+        }
+
+        // Extract valid update fields
+        let updateData = {};
+        Object.keys(req.body).forEach((key) => {
+            if (req.body[key] !== undefined && req.body[key] !== null && key !== "stepId") {
+                updateData[key] = req.body[key];
+            }
+        });
+
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({
+                status: false,
+                message: "No valid fields provided for update",
+            });
+        }
+
+        // Update step in the database
+        let updatedStep = await stepModel.findByIdAndUpdate(
+            objectId,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+
+        return res.status(200).json({
+            status: true,
+            message: "Step updated successfully",
+            data: updatedStep,
+        });
+
+    } catch (error) {
+        console.error("Error updating step:", error);
+        return res.status(500).json({
+            status: false,
+            message: "Internal server error",
+        });
+    }
+};  
+
+
+const addServicesToStep = async (req, res) => {
+    const { step_id, service_ids } = req.body;
+
+    // Basic input validation
+    if (!step_id || !Array.isArray(service_ids)) {
+        return res.status(400).json({
+            status: false,
+            message: 'Invalid input. Both step_id and service_ids are required.',
+        });
+    }
+
+    try {
+        // Find the step by its ID
+        const step = await stepModel.findById(step_id).populate('services');
+        if (!step) {
+            return res.status(404).json({
+                status: false,
+                message: 'Step not found.',
+            });
+        }
+
+        // Merge new services with existing ones, ensuring no duplicates
+        const currentServices = step.services || [];
+        const updatedServices = Array.from(new Set([...currentServices, ...service_ids]));
+
+        // Update the step document
+        step.services = updatedServices;
+        await step.save();
+        await step.populate('services');
+
+        return res.json({
+            status: true,
+            message: 'Services successfully attached to the step.',
+            data: step,
+        });
+    } catch (error) {
+        console.error('Error attaching services to step:', error);
+        return res.status(500).json({
+            status: false,
+            message: 'Internal server error.',
+            error: error.message,
+        });
+    }
+};
+
+
+
+const getServicesForStep = async (req, res) => {
+    const { step_id } = req.params;
+
+    console.log('Received step_id:', step_id);
+
+    // Basic input validation
+    if (!step_id) {
+        console.error('No step_id provided.');
+        return res.status(400).json({
+            status: false,
+            message: 'Invalid input. step_id is required.',
+        });
+    }
+
+    try {
+        // Validate if step_id is a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(step_id)) {
+            console.error('Invalid Step ID:', step_id);
+            return res.status(400).json({
+                status: false,
+                message: 'Invalid Step ID',
+            });
+        }
+
+        // Find the step by its ID and populate services
+        const step = await stepModel.findById(step_id).populate('services');
+        console.log('Found step:', step);
+
+        if (!step) {
+            console.error('Step not found for ID:', step_id);
+            return res.status(404).json({
+                status: false,
+                message: 'Step not found.',
+            });
+        }
+
+        return res.json({
+            status: true,
+            message: 'Services fetched successfully.',
+            data: step.services,
+        });
+    } catch (error) {
+        console.error('Error fetching services:', error);
+        return res.status(500).json({
+            status: false,
+            message: 'Internal server error.',
+            error: error.message,
+        });
+    }
+};
+
+const removeServiceFromStep = async (req, res) => {
+    try {
+        const { stepId, serviceId } = req.params;
+
+        if (!stepId || !serviceId) {
+            return res.status(400).json({ status: false, message: "Missing stepId or serviceId" });
+        }
+
+        // Find the step
+        const step = await stepModel.findById(stepId);
+        if (!step) {
+            return res.status(404).json({ status: false, message: "Step not found" });
+        }
+
+        // Check if the service exists in the step
+        const serviceExists = step.services.includes(serviceId);
+        if (!serviceExists) {
+            return res.status(404).json({ status: false, message: "Service not found in step" });
+        }
+
+        // Remove the service from the step's service array
+        step.services = step.services.filter(service => service.toString() !== serviceId);
+
+        // Save the updated step
+        await step.save();
+
+        return res.status(200).json({
+            status: true,
+            message: "Service removed successfully",
+            data: step
+        });
+
+    } catch (error) {
+        console.error("Error removing service:", error);
+        return res.status(500).json({ status: false, message: "Server error" });
+    }
+};
 
 
 module.exports = {
@@ -326,4 +564,9 @@ module.exports = {
     deleteStep,
     restoreStep,
     getActiveSteps,
+    getStepById,
+    editStep,
+    addServicesToStep,
+    getServicesForStep ,
+    removeServiceFromStep,
 }

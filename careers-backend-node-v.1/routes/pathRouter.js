@@ -11,6 +11,9 @@ router.post("/get", pathController.getPathNormal);
 router.delete("/delete/:id", pathController.deletePath);
 router.put("/restore/:id",  [verifyToken], pathController.restorePath);
 router.put("/updateFields",  pathController.updateFields);
-router.patch("/edit", pathController.updatePath)
+router.patch("/edit", pathController.updatePath);
+router.get("/active",pathController.getActivePaths);
+router.put("/updatepath/:id",pathController.updatePathStatus);
+router.get("/viewpath/:path_id", pathController.getPathById);
 
 module.exports = router;

@@ -199,7 +199,7 @@ export const GetAllCurrencies = () => {
 export const CreatePopularService = (object) => {
   try {
     const response = axios.post(
-      `https://comms.globalxchange.io/gxb/product/create`,
+      `/api/services/add`,
       object
     );
     return response;

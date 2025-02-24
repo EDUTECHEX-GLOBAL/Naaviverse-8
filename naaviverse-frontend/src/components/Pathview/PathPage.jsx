@@ -20,6 +20,7 @@ const PathPage = () => {
   const [loading, setLoading] = useState(false);
   const [stepData, setStepData] = useState(null);
   const [showDrop, setShowDrop] = useState(false);
+  const [stepDetails, setStepDetails] = useState([]); 
 
   useEffect(() => {
     setLoading(true);
@@ -28,11 +29,25 @@ const PathPage = () => {
 
     if (pathId) {
       axios
-        .get(`/api/userpaths/steps?pathId=${pathId}`)
-        .then(({ data }) => {
-          if (data.success) {
+        .get(`/api/paths/viewpath/${pathId}`)
+        .then(async ({ data }) => {
+          if (data.status) {
             console.log("API Response:", data?.data);
-            setStepData(data?.data); // Set entire object
+            setStepData(data?.data);
+
+            // Extract step_ids
+            const stepIds = data?.data?.the_ids?.map(item => item.step_id) || [];
+            if (stepIds.length > 0) {
+              const stepPromises = stepIds.map(stepId =>
+                axios.get(`/api/steps/${stepId}`).then(res => res.data)
+              );
+
+              // Fetch all step details
+              const stepResults = await Promise.all(stepPromises);
+              setStepDetails(stepResults);
+              console.log("Step Details State:", stepDetails);
+
+            }
           } else {
             console.error("Invalid API response:", data);
           }
@@ -43,6 +58,7 @@ const PathPage = () => {
         .finally(() => setLoading(false));
     }
   }, []);
+
 
   const handleLogout = () => {
     localStorage.clear();
@@ -78,7 +94,7 @@ const PathPage = () => {
                   {loading ? (
                     <Skeleton width={150} height={30} />
                   ) : (
-                    <div className="bold-text">{stepData?.school || "N/A"}</div>
+                    <div className="bold-text">{stepData?.university || "N/A"}</div>
                   )}
 
                   <div
@@ -103,20 +119,20 @@ const PathPage = () => {
                           </div>
                         </div>
                       ))
-                  ) : stepData?.steps?.length > 0 ? (
-                    stepData.steps.map((step, index) => (
+                  ) : stepDetails.length > 0 ? (
+                    stepDetails.map((step, index) => (
                       <div key={index} className="each-j-step">
                         <div
                           className="each-j-step-text"
                           style={{ fontWeight: "600", fontFamily: "Montserrat, sans-serif" }} // Semi-bold font
                         >
-                          {step.name}
+                          {step.data?.name}
                         </div>
                         <div
                           className="each-j-step-text"
                           style={{ fontSize: "0.9em", color: "#7d8085", lineHeight: "1.5", fontFamily: "Montserrat, sans-serif" }} // Adjusted styling
                         >
-                          {step.description}
+                          {step.data?.description}
                         </div>
                       </div>
                     ))

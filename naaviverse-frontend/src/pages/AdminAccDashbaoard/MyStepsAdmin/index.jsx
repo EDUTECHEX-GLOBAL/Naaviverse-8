@@ -267,7 +267,7 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
 
   const handleApprovePath = () => {
     setActionLoading(true);
-    axios.put(`/api/paths/update/${selectedPathId}`, 
+    axios.put(`/api/paths/updatepath/${selectedPathId}`, 
     {status:"active"})
     .then(({data}) => {
       if(data.status){
@@ -280,7 +280,7 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   }
   const handleRejectPath = () => {
     setActionLoading(true);
-    axios.put(`/api/paths/update/${selectedPathId}`, 
+    axios.put(`/api/paths/updatepath/${selectedPathId}`, 
     {status:"inactive"})
     .then(({data}) => {
       if(data.status){

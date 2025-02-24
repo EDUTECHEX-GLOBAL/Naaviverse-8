@@ -10,7 +10,14 @@ const pathSchema = new mongoose.Schema(
     feature_coordinates: { type: String },
     program: { type: String },
     university: [{ type: String }],
-    the_ids: [{ step_id: mongoose.Types.ObjectId, backup_pathId: mongoose.Types.ObjectId }],
+    the_ids: [{
+      step_id: { type: mongoose.Types.ObjectId, required: true }, // Step ID
+      stepName: { type: String }, // Step name
+      stepDescription: { type: String }, // Step description
+      backup_pathId: { type: mongoose.Types.ObjectId, required: true }, // Backup path ID
+      backupPathName: { type: String }, // Backup path name
+      backupPathDescription: { type: String } // Backup path description
+    }],
     path_type: { type: String, enum: ['education', 'careers', 'immigration'], default: 'education' },
     path_cat: { type: String, enum: ['K12', 'Degree'], default: 'K12' },
     personality: { type: String, enum: ['realistic', 'investigative', 'artistic', 'social', 'enterprising', 'conventional'] },
