@@ -678,8 +678,8 @@ const AccProfile = () => {
       productcreatoremail: userDetails.email,
       token: userDetails.idToken,
       product_code: serviceCodeInput,
-      name: serviceNameInput,
-      product_icon: coverImageS3url,
+      product_name: serviceNameInput,
+      product_icon: image,
       revenue_account: userDetails.email,
       client_app: "naavi",
       product_category_code: "CoE",
@@ -731,7 +731,7 @@ const AccProfile = () => {
       productcreatoremail: userDetails.email,
       token: userDetails.idToken,
       product_code: serviceCodeInput,
-      name: serviceNameInput,
+      product_name: serviceNameInput,
       product_icon: image,
       revenue_account: userDetails.email,
       client_app: "naavi",
@@ -809,7 +809,6 @@ const AccProfile = () => {
           setsecondChargeAttempt("");
           setthirdChargeAttempt("");
           setIsSubmit(false);
-          setCoverImageS3url("");
           setImage(null);
         }
       })
@@ -1918,45 +1917,7 @@ const AccProfile = () => {
                     >
                      Bulk Step
                     </div>
-                    {/* <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setselectNew("Task");
-                        setpstep(2);
-                      }}
-                      style={{
-                        background: selectNew === "Task" ? "#182542" : "",
-                        color: selectNew === "Task" ? "#FFF" : "",
-                      }}
-                    >
-                      Task
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setselectNew("Article");
-                        setpstep(2);
-                      }}
-                      style={{
-                        background: selectNew === "Article" ? "#182542" : "",
-                        color: selectNew === "Article" ? "#FFF" : "",
-                      }}
-                    >
-                      Article
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setselectNew("Video");
-                        setpstep(2);
-                      }}
-                      style={{
-                        background: selectNew === "Video" ? "#182542" : "",
-                        color: selectNew === "Video" ? "#FFF" : "",
-                      }}
-                    >
-                      Video
-                    </div> */}
+                    
                   </div>
                 </div>
               ) : pstep === 2 ? (

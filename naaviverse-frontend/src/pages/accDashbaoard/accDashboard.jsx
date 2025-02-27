@@ -50,7 +50,7 @@ import { useCoinContextData } from "../../context/CoinContext";
 import MyPaths from "../MyPaths";
 import NewStep1 from "../../globalComponents/GlobalDrawer/NewStep1";
 import VaultTransactions from "../VaultTransactions/index.jsx";
-import { Country, State, City }  from 'country-state-city';
+import { Country, State, City } from 'country-state-city';
 import TransactionPage from "../dashboard/TransactionPage/index.jsx";
 import PurchasePage from "./PurchasePage/index.jsx";
 import MenuNav from "../../components/MenuNav/index.jsx";
@@ -122,7 +122,7 @@ const AccDashboard = () => {
   const [multiplier, setMultiplier] = useState([]);
   const [isfetching, setIsfetching] = useState(false);
 
-  
+
   //with compPlan
   const [withCompPlanData, setWithCompPlanData] = useState([]);
   const [gettingData, setGettingData] = useState(false);
@@ -166,11 +166,11 @@ const AccDashboard = () => {
     {
       value: 'monthly',
       view: 'Monthly'
-    }, 
+    },
     {
       value: 'annual',
       view: 'Annual'
-    }, 
+    },
     {
       value: 'lifetime',
       view: 'One time'
@@ -179,8 +179,8 @@ const AccDashboard = () => {
 
   const [servicePrice, setServicePrice] = useState(null)
   const [selectedServiceCurrency, setSelectedServiceCurrency] = useState(null)
-  
-  
+
+
 
   let navigate = useNavigate();
 
@@ -229,7 +229,7 @@ const AccDashboard = () => {
     forexPathId,
     setForexPathId,
     forexQuote,
-    setForexQuote,countryApiValue
+    setForexQuote, countryApiValue
   } = useCoinContextData();
 
   const [profileId, setProfileId] = useState("");
@@ -344,40 +344,7 @@ const AccDashboard = () => {
     }
   }, []);
 
-  const uploadCoverImage = async (file) => {
-    setIsUploadLoading(true);
 
-    const fileName = `${new Date().getTime()}${file.name.substr(
-      file.name.lastIndexOf(".")
-    )}`;
-
-    const formData = new FormData();
-    const newfile = renameFile(file, fileName);
-    formData.append("files", newfile);
-    const path_inside_brain = "root/";
-
-    const jwts = await signJwt(fileName, emailDev, secret);
-    console.log(jwts, "lkjkswedcf");
-    let { data } = await axios.post(
-      `https://insurance.apimachine.com/insurance/general/upload`,
-      formData,
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-      }
-    );
-
-    if (data?.length > 0) {
-      console.log(data[0], "dfile name upload");
-      setCoverImageS3url(data[0]?.urlName);
-      setIsUploadLoading(false);
-      return data[0]?.urlName;
-    } else {
-      // setIsUploadLoading(false);
-      console.log("error in uploading image");
-    }
-  };
 
   const uploadBulkPath = async (file) => {
     setIsUploadLoading(true);
@@ -485,18 +452,18 @@ const AccDashboard = () => {
     }
   };
 
-  const signJwt = async (fileName, emailDev, secret) => {
-    try {
-      const jwts = await new jose.SignJWT({ name: fileName, email: emailDev })
-        .setProtectedHeader({ alg: "HS512" })
-        .setIssuer("gxjwtenchs512")
-        .setExpirationTime("10m")
-        .sign(new TextEncoder().encode(secret));
-      return jwts;
-    } catch (error) {
-      console.log(error, "kjbedkjwebdw");
-    }
-  };
+  // const signJwt = async (fileName, emailDev, secret) => {
+  //   try {
+  //     const jwts = await new jose.SignJWT({ name: fileName, email: emailDev })
+  //       .setProtectedHeader({ alg: "HS512" })
+  //       .setIssuer("gxjwtenchs512")
+  //       .setExpirationTime("10m")
+  //       .sign(new TextEncoder().encode(secret));
+  //     return jwts;
+  //   } catch (error) {
+  //     console.log(error, "kjbedkjwebdw");
+  //   }
+  // };
 
   function renameFile(originalFile, newName) {
     return new File([originalFile], newName, {
@@ -546,16 +513,16 @@ const AccDashboard = () => {
     //     setIsPurchaseLoading(false);
     //   });
 
-  
-      const userDetails = JSON.parse(localStorage.getItem("partner"));
-      axios.get(
-        `https://careers.marketsverse.com/userpurchase/get?creatoremail=${userDetails?.email}`
-      ).then(({data})=> {
-          if(data?.status){
-              console.log(data, "ljefhkjwefkwef")
-              setPurchaseData(data?.data)
-          }
-      })
+
+    const userDetails = JSON.parse(localStorage.getItem("partner"));
+    axios.get(
+      `https://careers.marketsverse.com/userpurchase/get?creatoremail=${userDetails?.email}`
+    ).then(({ data }) => {
+      if (data?.status) {
+        console.log(data, "ljefhkjwefkwef")
+        setPurchaseData(data?.data)
+      }
+    })
   };
 
   const handleCategories = () => {
@@ -671,10 +638,18 @@ const AccDashboard = () => {
     fileInputRef.current.click();
   };
 
-  const handleFileInputChange = (e) => {
-    setImage(e.target.files[0]);
-    uploadCoverImage(e.target.files[0]);
+  const handleFileInputChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setImage(file); // Set preview immediately
+    const uploadedUrl = await uploadImageFunc(e, setImage, setLoading);
+
+    if (uploadedUrl) {
+      setImage(uploadedUrl); // Set the final uploaded image URL
+    }
   };
+
   const handleFileInputChange1 = (e) => {
     setImage(e.target.files[0]);
     uploadBulkPath(e.target.files[0]);
@@ -705,11 +680,11 @@ const AccDashboard = () => {
     setIsSubmit(true);
     let userDetails = JSON.parse(localStorage.getItem("partner"));
     let objmonthly = {
-      email: userDetails.email,
+      productcreatoremail: userDetails.email,
       token: userDetails.idToken,
       product_code: serviceCodeInput,
       product_name: serviceNameInput,
-      product_icon: coverImageS3url,
+      product_icon: image,
       revenue_account: userDetails.email,
       client_app: "naavi",
       product_category_code: "CoE",
@@ -730,8 +705,8 @@ const AccDashboard = () => {
                 ? parseFloat(firstMonthPrice)
                 : 0
               : monthlyPrice !== ""
-              ? parseFloat(monthlyPrice)
-              : 0,
+                ? parseFloat(monthlyPrice)
+                : 0,
           coin: selectedCurrency.coinSymbol,
         },
       },
@@ -739,30 +714,30 @@ const AccDashboard = () => {
         billingType === "One Time"
           ? 0
           : gracePeriod !== ""
-          ? parseFloat(gracePeriod)
-          : 0,
+            ? parseFloat(gracePeriod)
+            : 0,
       first_retry:
         billingType === "One Time"
           ? 0
           : secondChargeAttempt !== ""
-          ? parseFloat(secondChargeAttempt)
-          : 0,
+            ? parseFloat(secondChargeAttempt)
+            : 0,
       second_retry:
         billingType === "One Time"
           ? 0
           : thirdChargeAttempt !== ""
-          ? parseFloat(thirdChargeAttempt)
-          : 0,
+            ? parseFloat(thirdChargeAttempt)
+            : 0,
       staking_allowed: false,
       staking_details: {},
     };
 
     let objone = {
-      email: userDetails.email,
+      productcreatoremail: userDetails.email,
       token: userDetails.idToken,
       product_code: serviceCodeInput,
       product_name: serviceNameInput,
-      product_icon: coverImageS3url,
+      product_icon: image,
       revenue_account: userDetails.email,
       client_app: "naavi",
       product_category_code: "CoE",
@@ -783,8 +758,8 @@ const AccDashboard = () => {
                 ? parseFloat(firstMonthPrice)
                 : 0
               : monthlyPrice !== ""
-              ? parseFloat(monthlyPrice)
-              : 0,
+                ? parseFloat(monthlyPrice)
+                : 0,
           coin: selectedCurrency.coinSymbol,
         },
       },
@@ -792,20 +767,20 @@ const AccDashboard = () => {
         billingType === "One Time"
           ? 0
           : gracePeriod !== ""
-          ? parseFloat(gracePeriod)
-          : 0,
+            ? parseFloat(gracePeriod)
+            : 0,
       first_retry:
         billingType === "One Time"
           ? 0
           : secondChargeAttempt !== ""
-          ? parseFloat(secondChargeAttempt)
-          : 0,
+            ? parseFloat(secondChargeAttempt)
+            : 0,
       second_retry:
         billingType === "One Time"
           ? 0
           : thirdChargeAttempt !== ""
-          ? parseFloat(thirdChargeAttempt)
-          : 0,
+            ? parseFloat(thirdChargeAttempt)
+            : 0,
       staking_allowed: false,
       staking_details: {},
     };
@@ -848,82 +823,82 @@ const AccDashboard = () => {
       });
   };
 
-  const addService = () => {
-    let userDetails = JSON.parse(localStorage.getItem("partner"));
+  //   const addService = () => {
+  //     let userDetails = JSON.parse(localStorage.getItem("partner"));
 
-    console.log({
-      "productcreatoremail": userDetails.email,
-      "name": serviceNameInput,
-      "description": serviceDescription,
-      "chargingtype": billingType,
-      "charging currency": {
-          "coin": selectedServiceCurrency
-      },
-      "billing_cycle": {
-        [billingType]: {
-              "price": servicePrice,
-              "coin": selectedServiceCurrency
-          }
-      }
-  }, "kjedkjwehfkwehflkwhef")
+  //     console.log({
+  //       "productcreatoremail": userDetails.email,
+  //       "name": serviceNameInput,
+  //       "description": serviceDescription,
+  //       "chargingtype": billingType,
+  //       "charging currency": {
+  //           "coin": selectedServiceCurrency
+  //       },
+  //       "billing_cycle": {
+  //         [billingType]: {
+  //               "price": servicePrice,
+  //               "coin": selectedServiceCurrency
+  //           }
+  //       }
+  //   }, "kjedkjwehfkwehflkwhef")
 
-    axios.post(`/api/services/add`, {
-      "productcreatoremail": userDetails.email,
-      "name": serviceNameInput,
-      "description": serviceDescription,
-      "chargingtype": billingType,
-      "charging currency": {
-          "coin": selectedServiceCurrency
-      },
-      "billing_cycle": {
-        [billingType]: {
-              "price": servicePrice,
-              "coin": selectedServiceCurrency
-          }
-      }
-  }
-).then(({data}) => {
-  if(data.status){
-    resetpop()
-    setispopular(false)
-    // getAllServices()
-  }
-})
-  }
+  //     axios.post(`/api/services/add`, {
+  //       "productcreatoremail": userDetails.email,
+  //       "name": serviceNameInput,
+  //       "description": serviceDescription,
+  //       "chargingtype": billingType,
+  //       "charging currency": {
+  //           "coin": selectedServiceCurrency
+  //       },
+  //       "billing_cycle": {
+  //         [billingType]: {
+  //               "price": servicePrice,
+  //               "coin": selectedServiceCurrency
+  //           }
+  //       }
+  //   }
+  // ).then(({data}) => {
+  //   if(data.status){
+  //     resetpop()
+  //     setispopular(false)
+  //     // getAllServices()
+  //   }
+  // })
+  //   }
 
   const getAllServices = () => {
     const userDetails = JSON.parse(localStorage.getItem("partner"));
 
     if (userDetails && userDetails.email) {
-        const timestamp = new Date().getTime(); // Cache-busting query parameter
-        axios.get(`/api/services/get?productcreatoremail=${userDetails.email}&_=${timestamp}`)
-            .then(({ data }) => {
-                console.log("Fetched Services:", data);
-                if (data.status) {
-                    setservicesAcc(data.data || []); // Update state with fetched services
-                } else {
-                    console.error("Service data not found.");
-                }
-            })
-            .catch(error => {
-                console.error("Error fetching services:", error);
-            })
-            .finally(() => setIsLoading(false));
+      const timestamp = new Date().getTime(); // Cache-busting query parameter
+      axios.get(`/api/services/get?productcreatoremail=${userDetails.email}&_=${timestamp}`)
+        .then(({ data }) => {
+          console.log("Fetched Services:", data);
+          if (data.status) {
+            setservicesAcc(data.data || []); // Update state with fetched services
+          } else {
+            console.error("Service data not found.");
+          }
+        })
+        .catch(error => {
+          console.error("Error fetching services:", error);
+        })
+        .finally(() => setIsLoading(false));
     } else {
-        console.error("User details or email is missing in localStorage.");
-        setIsLoading(false);
+      console.error("User details or email is missing in localStorage.");
+      setIsLoading(false);
     }
-};
+  };
 
   const fetchAllServicesAgain = () => {
     const userDetails = JSON.parse(localStorage.getItem("partner"));
-      // console.log(userDetails, "kkk");
-      // handleServicesForLogged(userDetails.user.email);
-      getAllServices(userDetails.email)
+    // console.log(userDetails, "kkk");
+    // handleServicesForLogged(userDetails.user.email);
+    getAllServices(userDetails.email)
   }
 
   useEffect(() => {
-    if(!ispopular){
+    if (!ispopular) {
       const userDetails = JSON.parse(localStorage.getItem("partner"));
       // console.log(userDetails, "kkk");
       // handleServicesForLogged(userDetails.user.email);
@@ -938,6 +913,9 @@ const AccDashboard = () => {
     //   "uyuyuy"
     // );
     if (accsideNav == "CRM" && crmMenu == "Followers") {
+
+
+
       handleFollowerPerAccountants();
     } else if (accsideNav == "CRM" && crmMenu == "Purchases") {
       handleAllCustomerLicenses();
@@ -979,8 +957,8 @@ const AccDashboard = () => {
     //     setIsloading(false);
     //   }
     // });
-    axios.delete(`/api/services/delete/${selectedService?._id}`).then(({data}) => {
-      if(data.status){
+    axios.delete(`/api/services/delete/${selectedService?._id}`).then(({ data }) => {
+      if (data.status) {
         setServiceActionEnabled(false)
         setIsloading(false);
         resetpop();
@@ -990,31 +968,33 @@ const AccDashboard = () => {
   };
 
   const changeServiceIcon = () => {
+    if (!updatedIcon || !selectedService?._id) {
+        console.error("Missing required fields: updatedIcon or _id");
+        return;
+    }
+
     setIsloading(true);
-    let obj = {
-      email: userDetails?.partner?.email,
-      token: userDetails?.idToken,
-      field_name: "product_icon",
-      field_value: updatedIcon,
-      product_id: selectedService?.product_id,
-    };
+
     axios
-      .post(`https://comms.globalxchange.io/gxb/product/edit`, obj)
-      .then((response) => {
-        let result = response?.data;
-        console.log(result, "changeServiceIcon result");
-        if (result?.status) {
-          setIsloading(false);
-          setServiceActionStep(6);
-          myTimeout();
-        } else {
-          setIsloading(false);
-        }
-      })
-      .catch((error) => {
-        console.log(error, "error in changeServiceIcon");
-      });
-  };
+        .put(`/api/services/icon/${selectedService._id}`, { icon: updatedIcon }) // Use _id instead of product_id
+        .then((response) => {
+            let result = response?.data;
+            console.log(result, "changeServiceIcon result");
+
+            if (result?.status) {
+                setServiceActionStep(6);
+                myTimeout();
+            } else {
+                console.error("Failed to update icon:", result?.message);
+            }
+        })
+        .catch((error) => {
+            console.error("Error updating service icon:", error);
+        })
+        .finally(() => {
+            setIsloading(false);
+        });
+};
 
   const getAppsforUser = () => {
     setIsfetching(true);
@@ -1032,7 +1012,7 @@ const AccDashboard = () => {
   };
 
   useEffect(() => {
-    if(pathSteps){
+    if (pathSteps) {
       console.log(pathSteps, "kjwegfljwefljwef")
     }
   }, [pathSteps])
@@ -1144,7 +1124,7 @@ const AccDashboard = () => {
     ));
   };
 
-  
+
 
   const getWithCompPlan = () => {
     setGettingData(true);
@@ -1189,7 +1169,7 @@ const AccDashboard = () => {
     setCreatingPath(true);
     axios
       .post(`/api/paths/add`, {
-        
+
         ...pathSteps,
         performance: gradeAvg,
         curriculum: curriculum,
@@ -1265,8 +1245,8 @@ const AccDashboard = () => {
       .get(
         `https://careers.marketsverse.com/users/purchases?creatoremail=${email}`
       )
-      .then(({data}) => {
-     
+      .then(({ data }) => {
+
         // console.log(result, "brands crm clients data");
         setClientLoading(false);
         setCrmClientData(data?.data);
@@ -1395,11 +1375,11 @@ const AccDashboard = () => {
   };
 
   const conditionalBilling = (item) => {
-    if(item === "lifetime"){
+    if (item === "lifetime") {
       return "One Time"
-    }else if (item === "monthly"){
+    } else if (item === "monthly") {
       return "Monthly"
-    }else if (item === "annual"){
+    } else if (item === "annual") {
       return "Annual"
     }
   }
@@ -1408,11 +1388,11 @@ const AccDashboard = () => {
     // Create a temporary anchor element
     const link = document.createElement('a');
     let filePath;
-    if(type === 'Path'){
+    if (type === 'Path') {
       filePath = "/PathTemplate.xlsx";
-    }else if(type === 'Step'){
+    } else if (type === 'Step') {
       filePath = "/StepTemplate.xlsx";
-    }else{
+    } else {
       filePath = "/ServiceTemplate.xlsx";
     }
     link.href = filePath;
@@ -1427,7 +1407,7 @@ const AccDashboard = () => {
     resetpop()
   };
 
-  
+
 
 
   return (
@@ -1441,19 +1421,19 @@ const AccDashboard = () => {
             <div style={{ height: "100%" }}>
               {accsideNav === "CRM" ? (
                 <>
-                   <MenuNav 
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder={ crmMenu === "Followers"
+                  <MenuNav
+                    showDrop={showDrop}
+                    setShowDrop={setShowDrop}
+                    searchTerm={search}
+                    setSearchterm={setSearch}
+                    searchPlaceholder={crmMenu === "Followers"
                       ? "Search Followers.."
                       : crmMenu === "Purchases"
-                      ? "Search Purchases.."
-                      : crmMenu === "Users"
-                      ? "Search Users.."
-                      : "Search Clients..."}
-                   />
+                        ? "Search Purchases.."
+                        : crmMenu === "Users"
+                          ? "Search Users.."
+                          : "Search Clients..."}
+                  />
                   <div className="crm-main" onClick={() => setShowDrop(false)}>
                     <div
                       className="crm-all-menu"
@@ -1533,7 +1513,7 @@ const AccDashboard = () => {
                               ? "rgba(241, 241, 241, 0.5)"
                               : "",
                           fontWeight: crmMenu === "Clients" ? "700" : "",
-                          marginLeft:"0px"
+                          marginLeft: "0px"
                         }}
                         onClick={() => {
                           setcrmMenu("Clients");
@@ -1547,7 +1527,7 @@ const AccDashboard = () => {
                         className="crm-each-menu"
                         style={{
                           display: crmMenu !== "Clients" ? "" : "none",
-                          marginLeft:"0px"
+                          marginLeft: "0px"
                         }}
                         onClick={() => {
                           setcrmMenu("Clients");
@@ -1806,7 +1786,7 @@ const AccDashboard = () => {
                         //     )}
                         //   </div>
                         // </>
-                        <PurchasePage purchaseData={purchaseData} search={search}/>
+                        <PurchasePage purchaseData={purchaseData} search={search} />
                       ) : crmMenu === "Clients" ? (
                         <>
                           <div
@@ -1863,59 +1843,59 @@ const AccDashboard = () => {
                           <div className="clients-alldata">
                             {isClientLoading
                               ? Array(10)
-                                  .fill("")
-                                  .map((e, i) => {
-                                    return (
-                                      <div className="each-clientData" key={i}>
-                                        <div className="each-client-name">
-                                          <Skeleton width={25*5} height={30} />
-                                        </div>
-                                        <div className="each-client-email">
-                                          <Skeleton width={30*5} height={30} />
-                                        </div>
-                                        <div className="each-client-email">
-                                          <Skeleton width={20*5} height={30} />
-                                        </div>
-                                        <div className="each-client-email">
-                                          <Skeleton width={15*5} height={30} />
-                                        </div>
-                                        <div className="each-client-email">
-                                          <Skeleton width={10*5} height={30} />
-                                        </div>
+                                .fill("")
+                                .map((e, i) => {
+                                  return (
+                                    <div className="each-clientData" key={i}>
+                                      <div className="each-client-name">
+                                        <Skeleton width={25 * 5} height={30} />
                                       </div>
-                                    );
-                                  })
+                                      <div className="each-client-email">
+                                        <Skeleton width={30 * 5} height={30} />
+                                      </div>
+                                      <div className="each-client-email">
+                                        <Skeleton width={20 * 5} height={30} />
+                                      </div>
+                                      <div className="each-client-email">
+                                        <Skeleton width={15 * 5} height={30} />
+                                      </div>
+                                      <div className="each-client-email">
+                                        <Skeleton width={10 * 5} height={30} />
+                                      </div>
+                                    </div>
+                                  );
+                                })
                               : crmClientData
-                                  ?.filter(
-                                    (item) =>
-                                      item.name
-                                        .toLowerCase()
-                                        .startsWith(search.toLowerCase()) ||
-                                      item.email
-                                        .toLowerCase()
-                                        .startsWith(search.toLowerCase())
-                                  )
-                                  ?.map((e, i) => {
-                                    return (
-                                      <div className="each-clientData" key={i}>
-                                        <div className="each-client-name" style={{width:"25%"}}>
-                                          {e?.name}
-                                        </div>
-                                        <div className="each-client-email" style={{width:"30%"}}>
-                                          {e?.email}
-                                        </div>
-                                        <div className="each-client-email" style={{width:"20%"}}>
-                                          {e?.phoneNumber}
-                                        </div>
-                                        <div className="each-client-email" style={{width:"15%"}}>
-                                          {e?.country}
-                                        </div>
-                                        <div className="each-client-email" style={{width:"10%"}}>
-                                          {e?.purchaseDetails?.length}
-                                        </div>
+                                ?.filter(
+                                  (item) =>
+                                    item.name
+                                      .toLowerCase()
+                                      .startsWith(search.toLowerCase()) ||
+                                    item.email
+                                      .toLowerCase()
+                                      .startsWith(search.toLowerCase())
+                                )
+                                ?.map((e, i) => {
+                                  return (
+                                    <div className="each-clientData" key={i}>
+                                      <div className="each-client-name" style={{ width: "25%" }}>
+                                        {e?.name}
                                       </div>
-                                    );
-                                  })}
+                                      <div className="each-client-email" style={{ width: "30%" }}>
+                                        {e?.email}
+                                      </div>
+                                      <div className="each-client-email" style={{ width: "20%" }}>
+                                        {e?.phoneNumber}
+                                      </div>
+                                      <div className="each-client-email" style={{ width: "15%" }}>
+                                        {e?.country}
+                                      </div>
+                                      <div className="each-client-email" style={{ width: "10%" }}>
+                                        {e?.purchaseDetails?.length}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
                           </div>
                         </>
                       ) : crmMenu === "Users" ? (
@@ -1972,7 +1952,7 @@ const AccDashboard = () => {
                               style={{
                                 textAlign: "left",
                                 margin: "0",
-                                
+
                                 width: "25%",
                                 paddingLeft: "1rem",
                               }}
@@ -1983,108 +1963,108 @@ const AccDashboard = () => {
                           <div className="users-alldata">
                             {isUserLoading
                               ? Array(10)
-                                  .fill("")
-                                  .map((e, i) => {
-                                    return (
-                                      <div className="each-userData" key={i}>
-                                        <div
-                                          className="each-user-email"
-                                          style={{ width: "15%" }}
-                                        >
-                                          <Skeleton width={100} height={25} />
-                                        </div>
-                                        <div className="each-user-email">
-                                          <Skeleton width={100} height={25} />
-                                        </div>
-                                        <div
-                                          className="each-user-email"
-                                          style={{ width: "15%" }}
-                                        >
-                                          <Skeleton width={100} height={25} />
-                                        </div>
-                                        <div
-                                          className="each-user-email"
-                                          style={{
-                                            width: "25%",
-                                          }}
-                                        >
-                                          <Skeleton width={100} height={25} />
-                                        </div>
-                                        <div
-                                          className="each-user-email"
-                                          style={{
-                                            width: "25%",
-                                          }}
-                                        >
-                                          <Skeleton width={200} height={25} />
-                                        </div>
+                                .fill("")
+                                .map((e, i) => {
+                                  return (
+                                    <div className="each-userData" key={i}>
+                                      <div
+                                        className="each-user-email"
+                                        style={{ width: "15%" }}
+                                      >
+                                        <Skeleton width={100} height={25} />
                                       </div>
-                                    );
-                                  })
+                                      <div className="each-user-email">
+                                        <Skeleton width={100} height={25} />
+                                      </div>
+                                      <div
+                                        className="each-user-email"
+                                        style={{ width: "15%" }}
+                                      >
+                                        <Skeleton width={100} height={25} />
+                                      </div>
+                                      <div
+                                        className="each-user-email"
+                                        style={{
+                                          width: "25%",
+                                        }}
+                                      >
+                                        <Skeleton width={100} height={25} />
+                                      </div>
+                                      <div
+                                        className="each-user-email"
+                                        style={{
+                                          width: "25%",
+                                        }}
+                                      >
+                                        <Skeleton width={200} height={25} />
+                                      </div>
+                                    </div>
+                                  );
+                                })
                               : crmUserData
-                                  ?.filter(
-                                    (item) =>
-                                      item.name
-                                        .toLowerCase()
-                                        .startsWith(search.toLowerCase()) ||
-                                      item.email
-                                        .toLowerCase()
-                                        .startsWith(search.toLowerCase())
-                                  )
-                                  .map((e, i) => {
-                                    return (
-                                      <div className="each-userData" key={i}>
-                                        <div
-                                          className="each-user-email"
-                                          style={{ width: "15%" }}
-                                        >
-                                          {e?.name}
-                                        </div>
-                                        <div
-                                          className="each-user-email"
-                                          style={{
-                                            textTransform: "none",
-                                            paddingLeft: "1rem",
-                                          }}
-                                        >
-                                          {e?.email}
-                                        </div>
-                                        <div
-                                          className="each-user-email"
-                                          style={{
-                                            width: "15%",
-                                            paddingLeft: "1rem",
-                                          }}
-                                        >
-                                          {e?.naavi_timestamp
-                                            ? customDateFormat(
-                                                new Date(e.naavi_timestamp)
-                                              )
-                                            : ""}
-                                        </div>
-                                        <div
-                                          className="each-user-email"
-                                          style={{
-                                            width: "25%",
-                                            textTransform: "none",
-                                            paddingLeft: "1rem",
-                                          }}
-                                        >
-                                          {e?.ref_affiliate}
-                                        </div>
-                                        <div
-                                          className="each-user-email"
-                                          style={{
-                                            width: "25%",
-                                            textTransform: "none",
-                                            paddingLeft: "1rem",
-                                          }}
-                                        >
-                                          {e?.naavi_profile_id}
-                                        </div>
+                                ?.filter(
+                                  (item) =>
+                                    item.name
+                                      .toLowerCase()
+                                      .startsWith(search.toLowerCase()) ||
+                                    item.email
+                                      .toLowerCase()
+                                      .startsWith(search.toLowerCase())
+                                )
+                                .map((e, i) => {
+                                  return (
+                                    <div className="each-userData" key={i}>
+                                      <div
+                                        className="each-user-email"
+                                        style={{ width: "15%" }}
+                                      >
+                                        {e?.name}
                                       </div>
-                                    );
-                                  })}
+                                      <div
+                                        className="each-user-email"
+                                        style={{
+                                          textTransform: "none",
+                                          paddingLeft: "1rem",
+                                        }}
+                                      >
+                                        {e?.email}
+                                      </div>
+                                      <div
+                                        className="each-user-email"
+                                        style={{
+                                          width: "15%",
+                                          paddingLeft: "1rem",
+                                        }}
+                                      >
+                                        {e?.naavi_timestamp
+                                          ? customDateFormat(
+                                            new Date(e.naavi_timestamp)
+                                          )
+                                          : ""}
+                                      </div>
+                                      <div
+                                        className="each-user-email"
+                                        style={{
+                                          width: "25%",
+                                          textTransform: "none",
+                                          paddingLeft: "1rem",
+                                        }}
+                                      >
+                                        {e?.ref_affiliate}
+                                      </div>
+                                      <div
+                                        className="each-user-email"
+                                        style={{
+                                          width: "25%",
+                                          textTransform: "none",
+                                          paddingLeft: "1rem",
+                                        }}
+                                      >
+                                        {e?.naavi_profile_id}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
                           </div>
                         </>
                       ) : (
@@ -2095,13 +2075,13 @@ const AccDashboard = () => {
                 </>
               ) : accsideNav === "My Services" ? (
                 <>
-                  <MenuNav 
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder="Search Services..."
-                   />
+                  <MenuNav
+                    showDrop={showDrop}
+                    setShowDrop={setShowDrop}
+                    searchTerm={search}
+                    setSearchterm={setSearch}
+                    searchPlaceholder="Search Services..."
+                  />
                   <div
                     className="services-main"
                     onClick={() => setShowDrop(false)}
@@ -2161,247 +2141,252 @@ const AccDashboard = () => {
                       <>
                         {servicesMenu === "Services" ? (
                           <>
-                          <div
-                            className="crm-follow-tab"
-                            style={{ padding: "10px 35px" }}
-                          >
-                            <div className="crm-follow-col2">Name</div>
-                            <div className="crm-follow-col2">
-                              Billing Frequency
-                            </div>
-                            <div className="crm-follow-col2">
-                            Billing Amount
-                            </div>
-                            <div className="crm-follow-col2">
-                            Currency
-                            </div>
-                          </div>
-                          <>
-                            {servicesAcc.length > 0 ? (
-                              <div className="follow-data-main">
-                                {servicesAcc
-                                  // .filter((element) => {
-                                  //   return element?.name
-                                  //     .toLowerCase()
-                                  //     .startsWith(search.toLowerCase());
-                                  // })
-                                  .map((each, i) => (
-                                    <div
-                                      className="follower-box"
-                                      style={{
-                                        background:
-                                          selectedFollower === each
-                                            ? "rgba(241, 241, 241, 0.5)"
-                                            : "",
-                                        padding: "22px 35px",
-                                        width: "100%",
-                                      }}
-                                      onClick={() => {
-                                        setServiceActionEnabled(true)
-                                        setSelectedService(each);
-                                        setServiceActionStep(1);
-                                        setSelectedFollower(each)
-                                      }}
-                                    >
-                                      <div className="rowtext">{each?.name}</div>
-                                      <div className="rowtext">{conditionalBilling(each?.chargingtype)}</div>
-                                      <div className="rowtext">{each?.billing_cycle?.lifetime?.price || each?.billing_cycle?.monthly?.price || each?.billing_cycle?.annual?.price}</div>
-                                      <div className="rowtext">{each?.billing_cycle?.lifetime?.coin || each?.billing_cycle?.monthly?.coin || each?.billing_cycle?.annual?.coin}</div>
-                                    </div>
-                                  ))}
+                            <div
+                              className="crm-follow-tab"
+                              style={{ padding: "10px 35px" }}
+                            >
+                              <div className="crm-follow-col2">Name</div>
+                              <div className="crm-follow-col2">
+                                Billing Frequency
                               </div>
-                            ) : isLoading ? (
-                              <div className="follow-data-main">
-                                {[1, 2, 3, 4, 5, 6].map((each, i) => (
-                                  <div className="follower-box">
-                                    <div className="follower-details">
-                                      <div>
-                                        <Skeleton className="user-icon" />
+                              <div className="crm-follow-col2">
+                                Billing Amount
+                              </div>
+                              <div className="crm-follow-col2">
+                                Currency
+                              </div>
+                            </div>
+                            <>
+                              {servicesAcc.length > 0 ? (
+                                <div className="follow-data-main">
+                                  {servicesAcc
+                                    // .filter((element) => {
+                                    //   return element?.name
+                                    //     .toLowerCase()
+                                    //     .startsWith(search.toLowerCase());
+                                    // })
+                                    .map((each, i) => (
+                                      <div
+                                        className="follower-box"
+                                        style={{
+                                          background:
+                                            selectedFollower === each
+                                              ? "rgba(241, 241, 241, 0.5)"
+                                              : "",
+                                          padding: "22px 35px",
+                                          width: "100%",
+                                        }}
+                                        onClick={() => {
+                                          setServiceActionEnabled(true)
+                                          setSelectedService(each);
+                                          setServiceActionStep(1);
+                                          setSelectedFollower(each)
+                                        }}
+                                      >
+                                        <div className="rowtext">{each?.name}</div>
+                                        <div className="rowtext">
+                                          {each?.billing_cycle?.monthly ? "Monthly" :
+                                            each?.billing_cycle?.annual ? "Annual" :
+                                              each?.billing_cycle?.lifetime ? "Lifetime" : "N/A"}
+                                        </div>
+
+                                        <div className="rowtext">{each?.billing_cycle?.lifetime?.price || each?.billing_cycle?.monthly?.price || each?.billing_cycle?.annual?.price}</div>
+                                        <div className="rowtext">{each?.billing_cycle?.lifetime?.coin || each?.billing_cycle?.monthly?.coin || each?.billing_cycle?.annual?.coin}</div>
+                                      </div>
+                                    ))}
+                                </div>
+                              ) : isLoading ? (
+                                <div className="follow-data-main">
+                                  {[1, 2, 3, 4, 5, 6].map((each, i) => (
+                                    <div className="follower-box">
+                                      <div className="follower-details">
+                                        <div>
+                                          <Skeleton className="user-icon" />
+                                        </div>
+                                        <Skeleton
+                                          className="follower-mail"
+                                          style={{ width: "200px" }}
+                                        />
                                       </div>
                                       <Skeleton
-                                        className="follower-mail"
-                                        style={{ width: "200px" }}
+                                        className="follow-time"
+                                        style={{ width: "150px" }}
                                       />
                                     </div>
-                                    <Skeleton
-                                      className="follow-time"
-                                      style={{ width: "150px" }}
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              ""
-                            )}
+                                  ))}
+                                </div>
+                              ) : (
+                                ""
+                              )}
+                            </>
                           </>
-                        </>
-                        //   <div className="service-body">
-                        //     <div className="service-body-left">
-                        //       <>
-                        //         {isServicesAcc ? (
-                        //           <>
-                        //             {[1, 2, 3, 4, 5].map((each, i) => (
-                        //               <div className="each-service-map" key={i}>
-                        //                 <div className="dot-box">
-                        //                   <img
-                        //                     className="dot-icon"
-                        //                     src={threedot}
-                        //                     alt=""
-                        //                   />
-                        //                 </div>
-                        //                 <div>
-                        //                   <Skeleton
-                        //                     className="each-service-img"
-                        //                     style={{ marginBottom: "10px" }}
-                        //                   />
-                        //                 </div>
-                        //                 <Skeleton
-                        //                   className="serv-price"
-                        //                   style={{
-                        //                     width: "100px",
-                        //                     marginBottom: "10px",
-                        //                   }}
-                        //                 />
-                        //                 <Skeleton
-                        //                   className="serv-subtext"
-                        //                   style={{
-                        //                     width: "200px",
-                        //                     height: "50px",
-                        //                   }}
-                        //                 />
-                        //                 <div>
-                        //                   <Skeleton
-                        //                     className="serv-price"
-                        //                     style={{ width: "100px" }}
-                        //                   />
-                        //                 </div>
+                          //   <div className="service-body">
+                          //     <div className="service-body-left">
+                          //       <>
+                          //         {isServicesAcc ? (
+                          //           <>
+                          //             {[1, 2, 3, 4, 5].map((each, i) => (
+                          //               <div className="each-service-map" key={i}>
+                          //                 <div className="dot-box">
+                          //                   <img
+                          //                     className="dot-icon"
+                          //                     src={threedot}
+                          //                     alt=""
+                          //                   />
+                          //                 </div>
+                          //                 <div>
+                          //                   <Skeleton
+                          //                     className="each-service-img"
+                          //                     style={{ marginBottom: "10px" }}
+                          //                   />
+                          //                 </div>
+                          //                 <Skeleton
+                          //                   className="serv-price"
+                          //                   style={{
+                          //                     width: "100px",
+                          //                     marginBottom: "10px",
+                          //                   }}
+                          //                 />
+                          //                 <Skeleton
+                          //                   className="serv-subtext"
+                          //                   style={{
+                          //                     width: "200px",
+                          //                     height: "50px",
+                          //                   }}
+                          //                 />
+                          //                 <div>
+                          //                   <Skeleton
+                          //                     className="serv-price"
+                          //                     style={{ width: "100px" }}
+                          //                   />
+                          //                 </div>
 
-                        //                 {/* {`${(allCurrencies.filter((item) => item?.coinSymbol === each?.billingType[`${Object.keys(each?.billingType)[0]}`].coin))[0]}`} */}
-                        //               </div>
-                        //             ))}
-                        //           </>
-                        //         ) : servicesAcc?.length > 0 ? (
-                        //           <>
-                        //             {servicesAcc
-                        //               .filter((item) =>
-                        //                 item.product_name
-                        //                   .toLowerCase()
-                        //                   .startsWith(search.toLowerCase())
-                        //               )
-                        //               .map((each, i) => (
-                        //                 <div
-                        //                   className="each-service-map"
-                        //                   key={i}
-                        //                 >
-                        //                   <div
-                        //                     className="dot-box"
-                        //                     onClick={() => {
-                        //                       setServiceActionEnabled(true);
-                        //                       setSelectedService(each);
-                        //                     }}
-                        //                   >
-                        //                     <img
-                        //                       className="dot-icon"
-                        //                       src={threedot}
-                        //                       alt=""
-                        //                     />
-                        //                   </div>
-                        //                   <div>
-                        //                     <img
-                        //                       className="each-service-img"
-                        //                       src={each.product_icon}
-                        //                       alt=""
-                        //                     />
-                        //                   </div>
-                        //                   <div className="serv-title">
-                        //                     {each.product_name}
-                        //                   </div>
-                        //                   <div className="serv-subtext">
-                        //                     {each.sub_text}
-                        //                   </div>
-                        //                   <div>
-                        //                     {each.billing_cycle !== undefined &&
-                        //                     each.billing_cycle !== null &&
-                        //                     Object.keys(
-                        //                       each.billing_cycle
-                        //                     )[0] === "monthly" ? (
-                        //                       <div className="serv-price">
-                        //                         {
-                        //                           allCurrencies?.filter(
-                        //                             (item) =>
-                        //                               item?.coinSymbol ===
-                        //                               each?.billing_cycle
-                        //                                 ?.monthly?.coin
-                        //                           )[0]?.symbol
-                        //                         }{" "}
-                        //                         {
-                        //                           each.billing_cycle.monthly
-                        //                             .price
-                        //                         }{" "}
-                        //                         /{" "}
-                        //                         <span
-                        //                           style={{ fontWeight: "300" }}
-                        //                         >
-                        //                           Monthly
-                        //                         </span>
-                        //                       </div>
-                        //                     ) : each.billing_cycle !==
-                        //                         undefined &&
-                        //                       each.billing_cycle !== null &&
-                        //                       Object.keys(
-                        //                         each.billing_cycle
-                        //                       )[0] === "lifetime" ? (
-                        //                       <div className="serv-price">
-                        //                         {
-                        //                           allCurrencies?.filter(
-                        //                             (item) =>
-                        //                               item?.coinSymbol ===
-                        //                               each?.billing_cycle
-                        //                                 ?.lifetime?.coin
-                        //                           )[0]?.symbol
-                        //                         }{" "}
-                        //                         {
-                        //                           each?.billing_cycle?.lifetime
-                        //                             ?.price
-                        //                         }{" "}
-                        //                         /{" "}
-                        //                         <span
-                        //                           style={{ fontWeight: "300" }}
-                        //                         >
-                        //                           Lifetime
-                        //                         </span>
-                        //                       </div>
-                        //                     ) : (
-                        //                       ""
-                        //                     )}
-                        //                   </div>
+                          //                 {/* {`${(allCurrencies.filter((item) => item?.coinSymbol === each?.billingType[`${Object.keys(each?.billingType)[0]}`].coin))[0]}`} */}
+                          //               </div>
+                          //             ))}
+                          //           </>
+                          //         ) : servicesAcc?.length > 0 ? (
+                          //           <>
+                          //             {servicesAcc
+                          //               .filter((item) =>
+                          //                 item.product_name
+                          //                   .toLowerCase()
+                          //                   .startsWith(search.toLowerCase())
+                          //               )
+                          //               .map((each, i) => (
+                          //                 <div
+                          //                   className="each-service-map"
+                          //                   key={i}
+                          //                 >
+                          //                   <div
+                          //                     className="dot-box"
+                          //                     onClick={() => {
+                          //                       setServiceActionEnabled(true);
+                          //                       setSelectedService(each);
+                          //                     }}
+                          //                   >
+                          //                     <img
+                          //                       className="dot-icon"
+                          //                       src={threedot}
+                          //                       alt=""
+                          //                     />
+                          //                   </div>
+                          //                   <div>
+                          //                     <img
+                          //                       className="each-service-img"
+                          //                       src={each.product_icon}
+                          //                       alt=""
+                          //                     />
+                          //                   </div>
+                          //                   <div className="serv-title">
+                          //                     {each.product_name}
+                          //                   </div>
+                          //                   <div className="serv-subtext">
+                          //                     {each.sub_text}
+                          //                   </div>
+                          //                   <div>
+                          //                     {each.billing_cycle !== undefined &&
+                          //                     each.billing_cycle !== null &&
+                          //                     Object.keys(
+                          //                       each.billing_cycle
+                          //                     )[0] === "monthly" ? (
+                          //                       <div className="serv-price">
+                          //                         {
+                          //                           allCurrencies?.filter(
+                          //                             (item) =>
+                          //                               item?.coinSymbol ===
+                          //                               each?.billing_cycle
+                          //                                 ?.monthly?.coin
+                          //                           )[0]?.symbol
+                          //                         }{" "}
+                          //                         {
+                          //                           each.billing_cycle.monthly
+                          //                             .price
+                          //                         }{" "}
+                          //                         /{" "}
+                          //                         <span
+                          //                           style={{ fontWeight: "300" }}
+                          //                         >
+                          //                           Monthly
+                          //                         </span>
+                          //                       </div>
+                          //                     ) : each.billing_cycle !==
+                          //                         undefined &&
+                          //                       each.billing_cycle !== null &&
+                          //                       Object.keys(
+                          //                         each.billing_cycle
+                          //                       )[0] === "lifetime" ? (
+                          //                       <div className="serv-price">
+                          //                         {
+                          //                           allCurrencies?.filter(
+                          //                             (item) =>
+                          //                               item?.coinSymbol ===
+                          //                               each?.billing_cycle
+                          //                                 ?.lifetime?.coin
+                          //                           )[0]?.symbol
+                          //                         }{" "}
+                          //                         {
+                          //                           each?.billing_cycle?.lifetime
+                          //                             ?.price
+                          //                         }{" "}
+                          //                         /{" "}
+                          //                         <span
+                          //                           style={{ fontWeight: "300" }}
+                          //                         >
+                          //                           Lifetime
+                          //                         </span>
+                          //                       </div>
+                          //                     ) : (
+                          //                       ""
+                          //                     )}
+                          //                   </div>
 
-                        //                   {/* {`${(allCurrencies.filter((item) => item?.coinSymbol === each?.billingType[`${Object.keys(each?.billingType)[0]}`].coin))[0]}`} */}
-                        //                 </div>
-                        //               ))}
-                        //           </>
-                        //         ) : (
-                        //           <center style={{height:"40vh", width:"100%", paddingTop:"20vh"}}>
-                        //               You Don't Have Not Added Any Services Yet
-                        //           </center>
-                        //         )}
-                        //       </>
-                        //     </div>
-                        //     {/* <div className="service-body-right">
-                        //   <div className="service-box1">
-                        //   <div className="service-right-title">Country</div>
-                        //   <div className="service-right-btn">See All</div>
-                        //   </div>
-                        //   <div className="service-box1">
-                        //   <div className="service-right-title">Country</div>
-                        //   <div className="service-right-btn">See All</div>
-                        //   </div>
-                        //   <div className="service-box1">
-                        //   <div className="service-right-title">Country</div>
-                        //   <div className="service-right-btn">See All</div>
-                        //   </div>
-                        // </div> */}
-                        //   </div>
+                          //                   {/* {`${(allCurrencies.filter((item) => item?.coinSymbol === each?.billingType[`${Object.keys(each?.billingType)[0]}`].coin))[0]}`} */}
+                          //                 </div>
+                          //               ))}
+                          //           </>
+                          //         ) : (
+                          //           <center style={{height:"40vh", width:"100%", paddingTop:"20vh"}}>
+                          //               You Don't Have Not Added Any Services Yet
+                          //           </center>
+                          //         )}
+                          //       </>
+                          //     </div>
+                          //     {/* <div className="service-body-right">
+                          //   <div className="service-box1">
+                          //   <div className="service-right-title">Country</div>
+                          //   <div className="service-right-btn">See All</div>
+                          //   </div>
+                          //   <div className="service-box1">
+                          //   <div className="service-right-title">Country</div>
+                          //   <div className="service-right-btn">See All</div>
+                          //   </div>
+                          //   <div className="service-box1">
+                          //   <div className="service-right-title">Country</div>
+                          //   <div className="service-right-btn">See All</div>
+                          //   </div>
+                          // </div> */}
+                          //   </div>
                         ) : (
                           <div className="service-body">
                             <div className="service-body-left">
@@ -2463,10 +2448,10 @@ const AccDashboard = () => {
                                       >
                                         <div
                                           className="dot-box"
-                                          // onClick={() => {
-                                          //   setServiceActionEnabled(true);
-                                          //   setSelectedService(each?.product);
-                                          // }}
+                                        // onClick={() => {
+                                        //   setServiceActionEnabled(true);
+                                        //   setSelectedService(each?.product);
+                                        // }}
                                         >
                                           <img
                                             className="dot-icon"
@@ -2490,11 +2475,11 @@ const AccDashboard = () => {
                                         <div>
                                           {each?.product?.billing_cycle !==
                                             undefined &&
-                                          each?.product?.billing_cycle !==
+                                            each?.product?.billing_cycle !==
                                             null &&
-                                          Object.keys(
-                                            each?.product?.billing_cycle
-                                          )[0] === "monthly" ? (
+                                            Object.keys(
+                                              each?.product?.billing_cycle
+                                            )[0] === "monthly" ? (
                                             <div className="serv-price">
                                               {
                                                 allCurrencies?.filter(
@@ -2516,9 +2501,9 @@ const AccDashboard = () => {
                                               </span>
                                             </div>
                                           ) : each?.product?.billing_cycle !==
-                                              undefined &&
+                                            undefined &&
                                             each?.product?.billing_cycle !==
-                                              null &&
+                                            null &&
                                             Object.keys(
                                               each?.product?.billing_cycle
                                             )[0] === "lifetime" ? (
@@ -2563,13 +2548,13 @@ const AccDashboard = () => {
                 </>
               ) : accsideNav === "Calendar" ? (
                 <>
-                  <MenuNav 
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder="Search Services..."
-                   />
+                  <MenuNav
+                    showDrop={showDrop}
+                    setShowDrop={setShowDrop}
+                    searchTerm={search}
+                    setSearchterm={setSearch}
+                    searchPlaceholder="Search Services..."
+                  />
                   <div
                     className="services-main"
                     onClick={() => setShowDrop(false)}
@@ -2580,13 +2565,13 @@ const AccDashboard = () => {
               ) : accsideNav === "Wallet" ? (
                 transactionSelected ? (
                   <>
-                   <MenuNav 
+                    <MenuNav
                       showDrop={showDrop}
                       setShowDrop={setShowDrop}
                       // searchTerm={search}
                       // setSearchterm={setSearch}
                       searchPlaceholder="Search..."
-                   />
+                    />
                     <div
                       className="services-main"
                       style={{ height: "calc(100% - 70px)" }}
@@ -2658,13 +2643,13 @@ const AccDashboard = () => {
                   </>
                 ) : (
                   <>
-                    <MenuNav 
+                    <MenuNav
                       showDrop={showDrop}
                       setShowDrop={setShowDrop}
                       searchTerm={search}
                       setSearchterm={setSearch}
                       searchPlaceholder="Search Wallet..."
-                   />
+                    />
                     <div
                       className="services-main"
                       style={{ height: "calc(100% - 70px)" }}
@@ -2724,13 +2709,13 @@ const AccDashboard = () => {
                 )
               ) : accsideNav === "Tasks" ? (
                 <>
-                 <MenuNav 
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder="Search..."
-                   />
+                  <MenuNav
+                    showDrop={showDrop}
+                    setShowDrop={setShowDrop}
+                    searchTerm={search}
+                    setSearchterm={setSearch}
+                    searchPlaceholder="Search..."
+                  />
                   <div
                     className="services-main"
                     style={{ height: "calc(100% - 70px)" }}
@@ -2741,36 +2726,36 @@ const AccDashboard = () => {
                 </>
               ) : accsideNav === "Paths" ? (
                 <>
-                  <MenuNav 
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder={mypathsMenu === "Paths"
+                  <MenuNav
+                    showDrop={showDrop}
+                    setShowDrop={setShowDrop}
+                    searchTerm={search}
+                    setSearchterm={setSearch}
+                    searchPlaceholder={mypathsMenu === "Paths"
                       ? "Search For Paths..."
                       : "Search For Steps..."}
-                   />
+                  />
                   <div
                     className="services-main"
                     style={{ height: "calc(100% - 70px)" }}
                     onClick={() => setShowDrop(false)}
                   >
-                    <MyPaths search={search} fetchAllServicesAgain={fetchAllServicesAgain}/>
+                    <MyPaths search={search} fetchAllServicesAgain={fetchAllServicesAgain} />
                   </div>
                 </>
-              ): accsideNav === "Steps" ? (
+              ) : accsideNav === "Steps" ? (
 
-                <MyStepsAcc search={search} setSearch={setSearch} showDrop={showDrop} setShowDrop={setShowDrop} loading={loading} setLoading={setLoading}/>
+                <MyStepsAcc search={search} setSearch={setSearch} showDrop={showDrop} setShowDrop={setShowDrop} loading={loading} setLoading={setLoading} />
 
               ) : (
                 <>
-                  <MenuNav 
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      // searchTerm={search}
-                      // setSearchterm={setSearch}
-                      searchPlaceholder="Search..."
-                   />
+                  <MenuNav
+                    showDrop={showDrop}
+                    setShowDrop={setShowDrop}
+                    // searchTerm={search}
+                    // setSearchterm={setSearch}
+                    searchPlaceholder="Search..."
+                  />
                   <div
                     className="services-main"
                     style={{ height: "calc(100% - 70px)" }}
@@ -2809,8 +2794,8 @@ const AccDashboard = () => {
                 {pstep === 8
                   ? "New Path"
                   : pstep > 1 && pstep < 8
-                  ? "New Service"
-                  : "Popular Actions"}
+                    ? "New Service"
+                    : "Popular Actions"}
               </div>
               <div
                 className="acc-popular-img-box"
@@ -2877,7 +2862,7 @@ const AccDashboard = () => {
                         color: selectNew === "Bulk Service" ? "#FFF" : "",
                       }}
                     >
-                     Bulk Service
+                      Bulk Service
                     </div>
                     <div
                       className="acc-step-box"
@@ -2890,7 +2875,7 @@ const AccDashboard = () => {
                         color: selectNew === "Bulk Path" ? "#FFF" : "",
                       }}
                     >
-                     Bulk Path
+                      Bulk Path
                     </div>
                     <div
                       className="acc-step-box"
@@ -2903,7 +2888,7 @@ const AccDashboard = () => {
                         color: selectNew === "Bulk Step" ? "#FFF" : "",
                       }}
                     >
-                     Bulk Step
+                      Bulk Step
                     </div>
                     {/* <div
                       className="acc-step-box"
@@ -2947,94 +2932,9 @@ const AccDashboard = () => {
                   </div>
                 </div>
               ) : pstep === 2 ? (
-                <div className="acc-addpath" style={{height:"65vh"}}>
-                  <div className="acc-step-text">Add New {`->`} Service</div>
-                  <div className="each-acc-addpath-field">
-                    <div>What is the name of this service? *</div>
-                    <div className="each-acc-addpath-field-input">
-                      <input
-                        type="text"
-                        placeholder="Name.."
-                        value={serviceNameInput}
-                        onChange={(e) => setServiceNameInput(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="each-acc-addpath-field">
-                    <div>Describe the service *</div>
-                    <div className="each-acc-addpath-field-input">
-                      <textarea
-                        type="text"
-                        placeholder="Describe.."
-                        value={serviceDescription}
-                        onChange={(e) => setServiceDescription(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                    Select currency *
-                    </div>
-                    <div className="optionCardFullWrapper">
-                      {['INR', 'USD'].map((item) => (
-                        <div
-                          className={
-                            item === selectedServiceCurrency
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => setSelectedServiceCurrency(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                    Select billing frequency *
-                    </div>
-                    <div className="optionCardFullWrapper">
-                      {billingFrequency?.map((item) => (
-                        <div
-                          className={
-                            item?.value === billingType
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => setbillingType(item?.value)}
-                        >
-                          {item?.view}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What is the cost? *
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <input
-                        type="number"
-                        placeholder="0"
-                        style={{ width: "70%" }}
-                        value={servicePrice}
-                        onChange={(e) => setServicePrice(e.target.value)}
-                      />
-                      <div className="years-div">{selectedServiceCurrency ? selectedServiceCurrency : "-"}</div>
-                    </div>
-                  </div>
-                  <br/>
-                  <div
-                    className="goBack"
-                    style={{background: "#59A2DD", borderRadius:"35px" , right:"70px"}}
-                    onClick={() => {
-                      addService();
-                    }}
-                  >
-                    Submit
-                  </div>
-                  {/* <div>
+                <div>
+                  <div className="acc-step-text">Select Billing Type</div>
+                  <div>
                     <div
                       className="acc-step-box"
                       onClick={() => {
@@ -3067,7 +2967,7 @@ const AccDashboard = () => {
                     >
                       One Time
                     </div>
-                   <div
+                    <div
                       className="acc-step-box"
                       // onClick={() => {
                       //   setbillingType("Staking");
@@ -3092,7 +2992,7 @@ const AccDashboard = () => {
                     }}
                   >
                     Go Back
-                  </div> */}
+                  </div>
                 </div>
               ) : pstep === 3 ? (
                 <div>
@@ -3160,9 +3060,9 @@ const AccDashboard = () => {
                           src={
                             isUploadLoading
                               ? upgif
-                              : coverImageS3url !== ""
-                              ? coverImageS3url
-                              : uploadv
+                              : image
+                                ? image
+                                : uploadv
                           }
                           alt=""
                           onClick={handleImageClick}
@@ -3755,8 +3655,8 @@ const AccDashboard = () => {
                                   (o) => o.step_id === e._id
                                 ).backup_pathId !== ""
                                   ? pathSteps.the_ids.find(
-                                      (o) => o.step_id === e._id
-                                    ).backup_pathId
+                                    (o) => o.step_id === e._id
+                                  ).backup_pathId
                                   : "Select Backup Path"}
 
                                 {/* {e?.the_ids?.backup_pathId !== ""
@@ -3967,22 +3867,22 @@ const AccDashboard = () => {
                       What country is the university in?
                     </div>
                     <div className="each-acc-addpath-field-input">
-                    <select name="country" id="country" style={{border:"none", padding:'1.5rem', width:'100%', fontSize:"16px"}}  onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              country: e.target.value,
-                            };
-                          });
-                        }}>
-                          <option value="">Country..</option>
-                          {countryApiValue?.map((item) => (
-                        <option key={item.cca2} value={item?.name?.common}>
-                          {item?.name?.common}
-                        </option>
-                          ))}
-                      
-                    </select>
+                      <select name="country" id="country" style={{ border: "none", padding: '1.5rem', width: '100%', fontSize: "16px" }} onChange={(e) => {
+                        setPathSteps((prev) => {
+                          return {
+                            ...prev,
+                            country: e.target.value,
+                          };
+                        });
+                      }}>
+                        <option value="">Country..</option>
+                        {countryApiValue?.map((item) => (
+                          <option key={item.cca2} value={item?.name?.common}>
+                            {item?.name?.common}
+                          </option>
+                        ))}
+
+                      </select>
                       {/* <input
                         type="text"
                         placeholder="Country.."
@@ -4040,8 +3940,8 @@ const AccDashboard = () => {
                             stream.length > 0 &&
                             finance.length > 0 &&
                             personality !== ""
-                          ? "1"
-                          : "0.5",
+                            ? "1"
+                            : "0.5",
                         cursor: creatingPath
                           ? "not-allowed"
                           : pathSteps?.nameOfPath &&
@@ -4059,8 +3959,8 @@ const AccDashboard = () => {
                             stream.length > 0 &&
                             finance.length > 0 &&
                             personality !== ""
-                          ? "pointer"
-                          : "not-allowed",
+                            ? "pointer"
+                            : "not-allowed",
                       }}
                       onClick={() => {
                         if (
@@ -4118,7 +4018,7 @@ const AccDashboard = () => {
                   <div>
                     <div
                       className="acc-step-box"
-                     
+
                       style={{
                         background:
                           billingType === "Download"
@@ -4130,7 +4030,7 @@ const AccDashboard = () => {
                       onClick={e => handleDownload('Path')}
                     >
                       Download
-                      
+
                     </div>
                     <div
                       className="acc-step-box"
@@ -4150,7 +4050,7 @@ const AccDashboard = () => {
                       />
 
                     </div>
-                    
+
                   </div>
                   <div
                     className="goBack"
@@ -4177,10 +4077,10 @@ const AccDashboard = () => {
                         color:
                           billingType === "Download" ? "#FFF" : "",
                       }}
-                     
+
                     >
                       Download
-                      
+
                     </div>
                     <div
                       className="acc-step-box"
@@ -4200,7 +4100,7 @@ const AccDashboard = () => {
                       />
 
                     </div>
-                    
+
                   </div>
                   <div
                     className="goBack"
@@ -4215,7 +4115,7 @@ const AccDashboard = () => {
               ) : pstep === 12 ? (
                 <div>
                   <div className="acc-step-text">Uploaded Successfully</div>
-                
+
                   <div
                     className="goBack"
                     onClick={() => {
@@ -4226,13 +4126,13 @@ const AccDashboard = () => {
                     Go Back
                   </div>
                 </div>
-              ): pstep === 13 ? (
+              ) : pstep === 13 ? (
                 <div>
                   <div className="acc-step-text">Bulk Service Action</div>
                   <div>
                     <div
                       className="acc-step-box"
-                     
+
                       style={{
                         background:
                           billingType === "Download"
@@ -4244,7 +4144,7 @@ const AccDashboard = () => {
                       onClick={e => handleDownload('Service')}
                     >
                       Download
-                      
+
                     </div>
                     <div
                       className="acc-step-box"
@@ -4264,7 +4164,7 @@ const AccDashboard = () => {
                       />
 
                     </div>
-                    
+
                   </div>
                   <div
                     className="goBack"
@@ -4276,7 +4176,7 @@ const AccDashboard = () => {
                     Go Back
                   </div>
                 </div>
-              ):(
+              ) : (
                 ""
               )}
             </>
@@ -4322,17 +4222,17 @@ const AccDashboard = () => {
                   </div>
                   <div
                     className="acc-step-box2"
-                    // onClick={() => {
-                    //   setCoinAction(["Withdraw"]);
-                    // }}
+                  // onClick={() => {
+                  //   setCoinAction(["Withdraw"]);
+                  // }}
                   >
                     Withdraw
                   </div>
                   <div
                     className="acc-step-box2"
-                    // onClick={() => {
-                    //   setCoinAction(["Transfer"]);
-                    // }}
+                  // onClick={() => {
+                  //   setCoinAction(["Transfer"]);
+                  // }}
                   >
                     Transfer
                   </div>
@@ -4687,7 +4587,7 @@ const AccDashboard = () => {
                 >
                   <div style={{ height: "120px", width: "120px" }}>
                     <img
-                      src={selectedService?.product_icon}
+                      src={selectedService?.icon}
                       alt=""
                       style={{ height: "100%", width: "100%" }}
                     />
@@ -4767,8 +4667,8 @@ const AccDashboard = () => {
 
           {serviceActionStep === 6 && (
             <div className="successMsg">
-              You have successfully updated the icon for{" "}
-              {selectedService?.product_name}
+              You have successfully updated the icon 
+            
             </div>
           )}
 
@@ -4866,31 +4766,31 @@ const AccDashboard = () => {
                 </div>
                 {isfetching
                   ? Array(10)
-                      .fill(" ")
-                      .map((item, index) => {
-                        return (
-                          <div className="each-action1" key={index}>
-                            <Skeleton width={150} height={30} />
-                          </div>
-                        );
-                      })
-                  : userCreatedApps &&
-                    userCreatedApps?.map((e, i) => {
+                    .fill(" ")
+                    .map((item, index) => {
                       return (
-                        <div
-                          className="each-action1"
-                          onClick={() => {
-                            setAddCompPlanStep("step3");
-                            setCompPlanApp(e?.app_code);
-                          }}
-                        >
-                          <div>
-                            <img src={e?.app_icon} alt="" />
-                          </div>
-                          <div>{e?.app_name}</div>
+                        <div className="each-action1" key={index}>
+                          <Skeleton width={150} height={30} />
                         </div>
                       );
-                    })}
+                    })
+                  : userCreatedApps &&
+                  userCreatedApps?.map((e, i) => {
+                    return (
+                      <div
+                        className="each-action1"
+                        onClick={() => {
+                          setAddCompPlanStep("step3");
+                          setCompPlanApp(e?.app_code);
+                        }}
+                      >
+                        <div>
+                          <img src={e?.app_icon} alt="" />
+                        </div>
+                        <div>{e?.app_name}</div>
+                      </div>
+                    );
+                  })}
               </div>
 
               <div className="stepBtnss">

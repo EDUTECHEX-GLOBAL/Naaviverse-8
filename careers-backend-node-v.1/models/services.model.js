@@ -6,52 +6,48 @@ const servicesSchema = new mongoose.Schema({
     description: { type: String },
     chargingtype: { type: String },
     chargingCurrency: { coin: { type: String } },
+    
     billing_cycle: {
         monthly: {
-            price: { type: String }, // or Number if you prefer
+            price: { type: Number },
             coin: { type: String }
         },
         annual: {
-            price: { type: String }, // or Number if you prefer
+            price: { type: Number },
             coin: { type: String }
         },
         lifetime: {
-            price: { type: String }, // or Number if you prefer
+            price: { type: Number },
             coin: { type: String }
         }
     },
+
     serviceProvider: { type: String },
     access: { type: String },
     goal: { type: String },
     icon: { type: String },
-    cost: { type: String },
-    price: { type: String }, // Consider if this should be dynamic based on billing type
+    cost: { type: Number },
+    price: { type: Number },
     discountType: { type: String },
-    discountAmount: { type: String },
-    duration: { type: String },
-    features: { type: String },
+    discountAmount: { type: Number },
+    duration: { type: Number },
+
+    features: { type: [String] },
+    iterations: { type: [String] },
+
     status: { type: String, enum: ['active', 'inactive', 'delete'], default: 'active' },
     outcome: { type: String },
-    type: { type: String, enum: ['Macro', 'Micro', 'Nano'] },
-    financialSituation: [
-        {
-            finance: { type: String, enum: ['0-25L', '25-75L', '75L-3CR', '3CR+', "other"] },
-            description: { type: String }
-        }
-    ],
-    grade: [
-        {
-            grade: { type: String, enum: ['9', '10', '11', '12'] },
-            description: { type: String }
-        }
-    ],
-    stream: [
-        {
-            stream: { type: String, enum: ['MPC', 'BIPC', 'CEC', 'MEC', 'HEC'] },
-            description: { type: String }
-        }
-    ],
-    iterations: { type: String }
+    
+
+   
+
+
+    grace_period: { type: Number, default: 0 },
+    first_retry: { type: Number, default: 0 },
+    second_retry: { type: Number, default: 0 },
+    staking_allowed: { type: Boolean, default: false },
+    staking_details: { type: mongoose.Schema.Types.Mixed, default: {} } // Allows any structure
+
 }, {
     timestamps: true,
 });

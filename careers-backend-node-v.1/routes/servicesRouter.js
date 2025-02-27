@@ -11,5 +11,6 @@ router.put("/update/:id",servicesController.updateService);
 router.delete("/delete/:id",  servicesController.deleteService);
 router.put("/restore/:id",[verifyToken], servicesController.restoreService);
 router.get("/getservices",servicesController.getAllServices);
+router.put("/icon/:serviceId", servicesController.updateServiceIcon);
 
 module.exports = router;

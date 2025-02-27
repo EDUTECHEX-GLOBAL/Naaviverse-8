@@ -16,7 +16,7 @@ const mongoose = require('mongoose');
 
 const UserPathSelectionSchema = new mongoose.Schema({
   userEmail: { type: String, required: true },
-  pathId: { type: mongoose.Schema.Types.ObjectId, ref: "Path", required: true, unique: true },
+  pathId: { type: mongoose.Schema.Types.ObjectId, ref: "Path", required: true},
   steps: [
     {
       stepId: { type: mongoose.Schema.Types.ObjectId, required: true },

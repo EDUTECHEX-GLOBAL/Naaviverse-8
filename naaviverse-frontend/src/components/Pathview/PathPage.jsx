@@ -29,25 +29,11 @@ const PathPage = () => {
 
     if (pathId) {
       axios
-        .get(`/api/paths/viewpath/${pathId}`)
-        .then(async ({ data }) => {
-          if (data.status) {
+        .get(`/api/userpaths/steps?pathId=${pathId}`)
+        .then(({ data }) => {
+          if (data.success) {
             console.log("API Response:", data?.data);
-            setStepData(data?.data);
-
-            // Extract step_ids
-            const stepIds = data?.data?.the_ids?.map(item => item.step_id) || [];
-            if (stepIds.length > 0) {
-              const stepPromises = stepIds.map(stepId =>
-                axios.get(`/api/steps/${stepId}`).then(res => res.data)
-              );
-
-              // Fetch all step details
-              const stepResults = await Promise.all(stepPromises);
-              setStepDetails(stepResults);
-              console.log("Step Details State:", stepDetails);
-
-            }
+            setStepData(data?.data); // Set entire object
           } else {
             console.error("Invalid API response:", data);
           }
@@ -58,7 +44,6 @@ const PathPage = () => {
         .finally(() => setLoading(false));
     }
   }, []);
-
 
   const handleLogout = () => {
     localStorage.clear();
@@ -94,7 +79,7 @@ const PathPage = () => {
                   {loading ? (
                     <Skeleton width={150} height={30} />
                   ) : (
-                    <div className="bold-text">{stepData?.university || "N/A"}</div>
+                    <div className="bold-text">{stepData?.school || "N/A"}</div>
                   )}
 
                   <div
@@ -119,20 +104,20 @@ const PathPage = () => {
                           </div>
                         </div>
                       ))
-                  ) : stepDetails.length > 0 ? (
-                    stepDetails.map((step, index) => (
+                  ) : stepData?.steps?.length > 0 ? (
+                    stepData.steps.map((step, index) => (
                       <div key={index} className="each-j-step">
                         <div
                           className="each-j-step-text"
                           style={{ fontWeight: "600", fontFamily: "Montserrat, sans-serif" }} // Semi-bold font
                         >
-                          {step.data?.name}
+                          {step.name}
                         </div>
                         <div
                           className="each-j-step-text"
                           style={{ fontSize: "0.9em", color: "#7d8085", lineHeight: "1.5", fontFamily: "Montserrat, sans-serif" }} // Adjusted styling
                         >
-                          {step.data?.description}
+                          {step.description}
                         </div>
                       </div>
                     ))

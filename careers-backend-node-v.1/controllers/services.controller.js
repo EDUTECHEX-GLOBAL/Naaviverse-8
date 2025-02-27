@@ -1,65 +1,69 @@
 const serviceModel = require('../models/services.model');
 const axios = require('axios');
+const mongoose = require('mongoose');
 
 const addService = async (req, res) => {
     console.log('Request to add service:', req.body);
 
-    // Initialize the createService object
+    // Initialize the createService object with correct mappings
     let createService = {
         productcreatoremail: req.body.productcreatoremail,
-        name: req.body.name,
-        icon: req.body.icon,
-        description: req.body.description,
-        chargingtype: req.body.chargingtype,
-        chargingCurrency: { coin: req.body.first_purchase?.coin }, 
-        billing_cycle: {}
+        name: req.body.product_name, // Correct field mapping
+        icon: req.body.product_icon,
+        description: req.body.full_description,
+        chargingtype: req.body.billingType || "default", // Ensure billingType is included
+        revenue_account: req.body.revenue_account,
+        client_app: req.body.client_app,
+        product_category_code: req.body.product_category_code,
+        sub_category_code: req.body.sub_category_code,
+        custom_product_label: req.body.custom_product_label,
+        points_creation: req.body.points_creation,
+        sub_text: req.body.sub_text,
+        first_purchase: req.body.first_purchase,
+        grace_period: req.body.grace_period || 0,
+        first_retry: req.body.first_retry || 0,
+        second_retry: req.body.second_retry || 0,
+        staking_allowed: req.body.staking_allowed,
+        staking_details: req.body.staking_details,
+        billing_cycle: {}, // Initialize billing cycle
     };
 
-    // Check and add monthly billing information if it exists
+    // Add billing cycle details if available
     if (req.body.billing_cycle?.monthly) {
         createService.billing_cycle.monthly = {
-            price: req.body.billing_cycle.monthly.price, // Monthly price
-            coin: req.body.billing_cycle.monthly.coin // Monthly currency
+            price: req.body.billing_cycle.monthly.price || 0,
+            coin: req.body.billing_cycle.monthly.coin,
         };
     }
 
-    // Check and add annual billing information if it exists
-    if (req.body.billing_cycle?.annual) {
-        createService.billing_cycle.annual = {
-            price: req.body.billing_cycle.annual.price, // Annual price
-            coin: req.body.billing_cycle.annual.coin // Annual currency
-        };
-    }
-
-    // Check and add one-time billing information if it exists
     if (req.body.billing_cycle?.lifetime) {
         createService.billing_cycle.lifetime = {
-            price: req.body.billing_cycle.lifetime.price, // One-time price
-            coin: req.body.billing_cycle.lifetime.coin // One-time currency
+            price: req.body.billing_cycle.lifetime.price || 0,
+            coin: req.body.billing_cycle.lifetime.coin,
         };
     }
 
-    // Add other service attributes
-    createService.serviceProvider = req.body.serviceProvider;
-    createService.access = req.body.access;
-    createService.goal = req.body.goal;
-    createService.grade = req.body.gradeData;
-    createService.financialSituation = req.body.financialData;
-    createService.stream = req.body.stream;
-    createService.cost = req.body.cost;
-    createService.price = req.body.price; // Consider if this should be dynamic based on billing type
-    createService.discountType = req.body.discountType;
-    createService.discountAmount = req.body.discountAmount;
-    createService.duration = req.body.duration;
-    createService.features = req.body.features;
-    createService.status = req.body.status;
-    createService.outcome = req.body.outcome;
-    createService.type = req.body.type;
-    createService.iterations = req.body.iterations;
+    // Additional service attributes
+    createService.serviceProvider = req.body.serviceProvider || "";
+    createService.access = req.body.access || "";
+    createService.goal = req.body.goal || "";
+    createService.grade = req.body.gradeData || [];
+    createService.financialSituation = req.body.financialData || "";
+    createService.stream = req.body.stream || "";
+    createService.cost = req.body.cost || 0;
+    createService.price = req.body.price || 0;
+    createService.discountType = req.body.discountType || "";
+    createService.discountAmount = req.body.discountAmount || 0;
+    createService.duration = req.body.duration || 0;
+    createService.features = req.body.features || [];
+    createService.status = req.body.status || "active";
+    createService.outcome = req.body.outcome || "";
+    createService.type = req.body.type || "";
+    createService.iterations = req.body.iterations || [];
 
     try {
         let step = await serviceModel.create(createService);
-        
+
         if (!step) {
             return res.json({
                 status: false,
@@ -69,19 +73,19 @@ const addService = async (req, res) => {
 
         return res.json({
             status: true,
-            message: 'Service created',
-            data: step
+            message: 'Service created successfully',
+            data: step,
         });
-        
+
     } catch (error) {
         console.error("Error creating service:", error);
         return res.status(500).json({
             status: false,
-            message: 'Internal server error while creating service'
+            message: 'Internal server error while creating service',
+            error: error.message,
         });
     }
 };
-
 
 
 const getServices = async (req, res) => {
@@ -232,6 +236,31 @@ const getAllServices = async (req, res) => {
             error: error.message,
         });
     }
+};  
+
+const updateServiceIcon = async (req, res) => {
+    try {
+        const { serviceId } = req.params;
+        const { icon } = req.body; // Expecting icon URL in the request body
+
+        if (!icon) {
+            return res.status(400).json({ status: false, message: "Icon URL is required" });
+        }
+
+        const objectId = new mongoose.Types.ObjectId(serviceId);
+
+        // Find the service using _id and update its icon
+        const updatedService = await serviceModel.findByIdAndUpdate(
+            objectId, // Find by _id
+            { icon, updatedAt: new Date() }, // Update icon and timestamp
+            { new: true } // Return updated document
+        );
+        res.json({ status: true, message: "Icon updated successfully", data: updatedService });
+
+    } catch (error) {
+        console.error("Error updating service icon:", error);
+        res.status(500).json({ status: false, message: "Internal server error" });
+    }
 };
 
 module.exports = {
@@ -241,4 +270,5 @@ module.exports = {
     deleteService,
     restoreService,
     getAllServices,
+    updateServiceIcon,
 }
