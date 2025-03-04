@@ -326,34 +326,24 @@ const UserProfile = () => {
   };
 
   const handleFileInputChange = async (event) => {
-    const selectedFile = event.target.files[0];
-    if (!selectedFile) return;
-
-    setUploading(true); // Show uploading indicator
-
-    // Generate a preview URL
-    const reader = new FileReader();
-    reader.onloadend = () => setPreviewUrl(reader.result); // Set preview URL
-    reader.readAsDataURL(selectedFile); // Read file as Data URL
-
-    const params = {
-      Bucket: 'naaviprofileuploads',
-      Key: selectedFile.name,
-      Body: selectedFile,
-      ContentType: selectedFile.type,
-    };
+    const formData = new FormData();
+    formData.append("file", file);
 
     try {
-      // Upload the file to S3
-      const result = await s3.upload(params).promise();
-      console.log('File uploaded successfully:', result);
+      const response = await axios.post("/api/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-      // Set the profile picture URL
-      setProfilePicture(result.Location); // Use the URL returned from S3
+      if (response.status === 200) {
+        console.log("Uploaded file URL:", response.data.url);
+        setProfilePicture(response.data.url); // Update state with the uploaded image URL
+      } else {
+        console.error("Upload failed:", response.data.error);
+      }
     } catch (error) {
       console.error("Error uploading file:", error);
-    } finally {
-      setUploading(false); // Hide uploading indicator
     }
   };
 
