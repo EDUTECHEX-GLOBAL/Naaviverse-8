@@ -3,7 +3,7 @@ name: Deploy Frontend to Server
 on:
   push:
     branches:
-      - sdk-s3  # Branch triggering the workflow
+      - sdk-S3  # Branch triggering the workflow
 
 jobs:
   deploy:
@@ -23,5 +23,5 @@ jobs:
           ssh -o StrictHostKeyChecking=no ubuntu@www.naaviverse.com << 'EOF'
             set -e  # Exit immediately if any command fails
             cd /home/ubuntu/Naaviverse-8
-            ./deploy.sh sdk-s3  # Execute the deployment script
+            ./deploy.sh sdk-S3  # Execute the deployment script
           EOF
