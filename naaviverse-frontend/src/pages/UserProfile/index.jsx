@@ -326,16 +326,18 @@ const UserProfile = () => {
   };
 
   const handleFileInputChange = async (event) => {
+    const file = event.target.files[0]; // Get the selected file
+  
     const formData = new FormData();
-    formData.append("file", file);
-
+    formData.append("file", file); // Append the file to the form data
+  
     try {
       const response = await axios.post("/api/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-
+  
       if (response.status === 200) {
         console.log("Uploaded file URL:", response.data.url);
         setProfilePicture(response.data.url); // Update state with the uploaded image URL
@@ -346,7 +348,7 @@ const UserProfile = () => {
       console.error("Error uploading file:", error);
     }
   };
-
+  
 
   const handleFinalSubmit = () => {
     setIsSubmit(true);
