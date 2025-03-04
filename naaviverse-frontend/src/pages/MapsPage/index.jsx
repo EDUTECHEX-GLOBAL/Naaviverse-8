@@ -223,21 +223,23 @@ const MapsPage = () => {
   );
 
   useEffect(() => {
-    setLoading1(true);
-    axios
-      .get(`/api/userpaths/programs`)
-      .then((response) => {
-        let result = response?.data?.data;
-        // console.log(result, "path view result");
-        setPreLoginPathViewData(result);
-        setLoading1(false);
-      })
-      .catch((error) => {
-        console.log(error, "error in getting pre-login path view result");
-        setPreLoginPathViewData([]);
-        setLoading1(false);
-      });
-  }, []);
+  setLoading1(true);
+  axios
+    .get(`/api/userpaths/programs`)
+    .then((response) => {
+      let result = response?.data?.data;
+      if (result?.length > 0) {
+        const selectedPathId = result[result.length - 1]?._id; // Just storing any available pathId
+        localStorage.setItem("selectedPathId", selectedPathId); // Store in localStorage
+      }
+      setPreLoginPathViewData(result);
+    })
+    .catch((error) => {
+      console.log(error, "error in getting pre-login path view result");
+      setPreLoginPathViewData([]);
+    })
+    .finally(() => setLoading1(false));
+}, []);
 
   useEffect(() => {
     if (pathname.includes("/maps")) {
@@ -377,7 +379,7 @@ const MapsPage = () => {
     }
 
     axios
-      .post(`https://careers.marketsverse.com/pre_login/store`, obj)
+      .post(`/api/pre_login/store`, obj)
       .then((response) => {
         let result = response?.data;
         // console.log(result, "storePreLoginData result");
@@ -761,19 +763,15 @@ const MapsPage = () => {
                     <Skeleton width={150} height={30} />
                   ) : (
                     <div className="pathviewPage1-bold-text">
-                      {switchStepsDetails?.length > 0
-                        ? switchStepsDetails?.destination_institution
-                        : ""}
-                    </div>
+    {switchStepsDetails?.school}
+  </div>
                   )}
                   {isloading ? (
                     <Skeleton width={500} height={20} />
                   ) : (
                     <div className="pathviewPage1-journey-des">
-                      {switchStepsDetails?.length > 0
-                        ? switchStepsDetails?.description
-                        : ""}
-                    </div>
+    {switchStepsDetails?.description}
+  </div>
                   )}
                   <div
                     className="pathviewPage1-goBack-div"
@@ -814,7 +812,7 @@ const MapsPage = () => {
                             </div>
                           );
                         })
-                    : switchStepsDetails?.length > 0
+                    : switchStepsDetails?.StepDetails?.length > 0
                     ? switchStepsDetails?.StepDetails?.map((e, i) => {
                         return (
                           <div

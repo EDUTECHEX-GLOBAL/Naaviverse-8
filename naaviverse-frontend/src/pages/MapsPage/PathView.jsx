@@ -57,23 +57,37 @@ const Pathview = ({
     setVisibleButtonIndex(newVisibility[index] ? index : null);
   };
 
-  const getStepsForSelectedPath = (selectedPath) => {
+  const getStepsForSelectedPath = () => {
     setIsloading(true);
+  
+    const pathId = localStorage.getItem("selectedPathId");
+  
+    if (!pathId) {
+      console.error("No path ID found in localStorage");
+      setIsloading(false);
+      return;
+    }
+  
     axios
-      .get(
-        `https://careers.marketsverse.com/paths/get?nameOfPath=${selectedPath}`
-      )
-      .then((response) => {
-        let result = response?.data?.data[0];
-        // console.log(result, "selectedPathData result");
-        setSwitchStepsDetails(result);
-        setIsloading(false);
+      .get(`/api/userpaths/steps?pathId=${pathId}`)
+      .then(({ data }) => {
+        if (data.success) {
+          console.log("API Response:", data?.data);
+          setSwitchStepsDetails({
+            school: data?.data?.school,
+            description: data?.data?.description,
+            StepDetails: Array.isArray(data?.data?.steps) ? data.data.steps : [], // Ensure StepDetails exists
+          });
+        } else {
+          console.error("Invalid API response:", data);
+        }
       })
       .catch((error) => {
-        console.log(error, "error in getStepsForSelectedPath");
-      });
+        console.error("Error fetching steps data:", error);
+      })
+      .finally(() => setIsloading(false));
   };
-
+  
   return (
     <div className="pathviewPage1">
       <div className="pathviewContent1">

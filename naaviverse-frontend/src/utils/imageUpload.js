@@ -27,45 +27,61 @@ const signJwt = async (fileName, emailDev, secret) => {
 };
 
 
-
-AWS.config.update({
-  accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
-  region: process.env.REACT_APP_AWS_REGION,
-});
-
-// Create an S3 instance
-const s3 = new AWS.S3();
-
 export const uploadImageFunc = async (e, setImage, setLoading) => {
   setLoading(true);
 
   const file = e.target.files[0];
   if (!file) {
+    console.error("No file selected");
     setLoading(false);
     return;
   }
 
-  const timestamp = new Date().getTime();
-  const fileName = `${timestamp}-${file.name}`;
-  const folderPath = `partner-profile-pics/`; // You can change this to your desired folder
+  // Validate file type (Only allow images)
+  const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
+  if (!allowedTypes.includes(file.type)) {
+    console.error("Invalid file type. Please upload an image (JPEG, PNG, JPG, WebP).");
+    setLoading(false);
+    return;
+  }
 
-  const params = {
-    Bucket: 'naaviprofileuploads', // Replace with your S3 bucket name
-    Key: `${folderPath}${fileName}`,
-    Body: file,
-    ContentType: file.type,
-  };
+  // Validate file size (Max: 5MB)
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  if (file.size > maxSize) {
+    console.error("File size exceeds 5MB. Please upload a smaller image.");
+    setLoading(false);
+    return;
+  }
 
   try {
-    const result = await s3.upload(params).promise();
-    console.log('File uploaded successfully:', result);
+    // Step 1: Request a Signed URL from Backend
+    const response = await axios.post("/api/upload-profile-pic", {
+      fileName: file.name,
+      fileType: file.type,
+    });
 
-    setImage(result.Location); // Store the S3 file URL
+    if (!response.data.uploadUrl) {
+      console.error("Error fetching signed URL");
+      setLoading(false);
+      return;
+    }
+
+    const { uploadUrl, fileUrl } = response.data;
+
+    // Step 2: Upload the File to S3 using the Signed URL
+    await axios.put(uploadUrl, file, {
+      headers: { "Content-Type": file.type },
+    });
+
+    console.log("File uploaded successfully:", fileUrl);
+
+    // Step 3: Store the uploaded image URL
+    setImage(fileUrl);
     setLoading(false);
-    return result.Location;
+    return fileUrl;
   } catch (error) {
-    console.error('Error uploading file:', error);
+    console.error(" Error during upload:", error);
     setLoading(false);
+    return null;
   }
 };

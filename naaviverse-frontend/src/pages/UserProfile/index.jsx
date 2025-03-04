@@ -173,35 +173,31 @@ const UserProfile = () => {
 
   const userDetails = JSON.parse(localStorage.getItem("user"));
 
-  // upload part starts here
-  AWS.config.update({
-    accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
-    region: process.env.REACT_APP_AWS_REGION
-  });
-
-  // Create an S3 instance
-  const s3 = new AWS.S3();
-
-  const uploadCoverImage = async (file) => {
-    const params = {
-      Bucket: 'naaviprofileuploads',
-      Key: file.name,
-      Body: file,
-      ContentType: file.type,
+  const ProfileUploader = () => {
+    const [profilePicture, setProfilePicture] = useState(null);
+  
+    const uploadCoverImage = async (file) => {
+      const formData = new FormData();
+      formData.append("file", file);
+  
+      try {
+        const response = await axios.post("/api/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+  
+        if (response.status === 200) {
+          console.log("Uploaded file URL:", response.data.url);
+          setProfilePicture(response.data.url); // Update state with the uploaded image URL
+        } else {
+          console.error("Upload failed:", response.data.error);
+        }
+      } catch (error) {
+        console.error("Error uploading file:", error);
+      }
     };
-
-    try {
-      const result = await s3.upload(params).promise();
-      console.log('File uploaded successfully:', result);
-
-      // Update profilePicture state with the URL of the uploaded image
-      setProfilePicture(result.Location); // Use result.Location to get the URL
-    } catch (error) {
-      console.error('Error uploading file:', error);
-    }
-  };
-
+  
   // upload end here
 
   // profile level 2
@@ -951,7 +947,7 @@ const UserProfile = () => {
                               borderRadius: "50%",
                               border: "0.5px solid #e5e5e5",
                             }}
-                            src={previewUrl}
+                            src={profilePicture}
                             alt=""
                           />
                         </div>
@@ -3606,5 +3602,5 @@ const UserProfile = () => {
     </div>
   );
 };
-
+};
 export default UserProfile;
