@@ -67,7 +67,7 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
     console.log('File uploaded successfully');
 
     // Generate the file URL
-    const fileUrl = `https://naaviprofileuploads.s3.amazonaws.com/${folderPath}${fileName}`;
+    const fileUrl = `https://naaviprofileuploads.s3.ap-south-1.amazonaws.com/${folderPath}${fileName}`;
     setImage(fileUrl); // Store the S3 file URL
 
     setLoading(false);
