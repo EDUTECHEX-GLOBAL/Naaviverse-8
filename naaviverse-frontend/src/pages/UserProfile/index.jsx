@@ -174,33 +174,33 @@ const UserProfile = () => {
   const userDetails = JSON.parse(localStorage.getItem("user"));
 
   // upload part starts here
-  AWS.config.update({
-    accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
-    region: process.env.REACT_APP_AWS_REGION
-  });
+  // AWS.config.update({
+  //   accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
+  //   secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
+  //   region: process.env.REACT_APP_AWS_REGION
+  // });
 
-  // Create an S3 instance
-  const s3 = new AWS.S3();
+  // // Create an S3 instance
+  // const s3 = new AWS.S3();
 
-  const uploadCoverImage = async (file) => {
-    const params = {
-      Bucket: 'naaviprofileuploads',
-      Key: file.name,
-      Body: file,
-      ContentType: file.type,
-    };
+  // const uploadCoverImage = async (file) => {
+  //   const params = {
+  //     Bucket: 'naaviprofileuploads',
+  //     Key: file.name,
+  //     Body: file,
+  //     ContentType: file.type,
+  //   };
 
-    try {
-      const result = await s3.upload(params).promise();
-      console.log('File uploaded successfully:', result);
+  //   try {
+  //     const result = await s3.upload(params).promise();
+  //     console.log('File uploaded successfully:', result);
 
-      // Update profilePicture state with the URL of the uploaded image
-      setProfilePicture(result.Location); // Use result.Location to get the URL
-    } catch (error) {
-      console.error('Error uploading file:', error);
-    }
-  };
+  //     // Update profilePicture state with the URL of the uploaded image
+  //     setProfilePicture(result.Location); // Use result.Location to get the URL
+  //   } catch (error) {
+  //     console.error('Error uploading file:', error);
+  //   }
+  // };
 
   // upload end here
 
@@ -330,36 +330,59 @@ const UserProfile = () => {
   };
 
   const handleFileInputChange = async (event) => {
-    const selectedFile = event.target.files[0];
-    if (!selectedFile) return;
+  const selectedFile = event.target.files[0];
+  if (!selectedFile) return;
 
-    setUploading(true); // Show uploading indicator
+  setUploading(true); // Show uploading indicator
 
-    // Generate a preview URL
-    const reader = new FileReader();
-    reader.onloadend = () => setPreviewUrl(reader.result); // Set preview URL
-    reader.readAsDataURL(selectedFile); // Read file as Data URL
+  // Generate a preview URL
+  const reader = new FileReader();
+  reader.onloadend = () => setPreviewUrl(reader.result); // Set preview URL
+  reader.readAsDataURL(selectedFile); // Read file as Data URL
 
-    const params = {
-      Bucket: 'naaviprofileuploads',
-      Key: selectedFile.name,
-      Body: selectedFile,
-      ContentType: selectedFile.type,
-    };
+  try {
+    // Fetch presigned URL from backend
+    const response = await fetch('/api/get-presigned-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fileName: selectedFile.name,
+        fileType: selectedFile.type,
+      }),
+    });
 
-    try {
-      // Upload the file to S3
-      const result = await s3.upload(params).promise();
-      console.log('File uploaded successfully:', result);
+    const data = await response.json();
+    const presignedUrl = data.presignedUrl;
 
-      // Set the profile picture URL
-      setProfilePicture(result.Location); // Use the URL returned from S3
-    } catch (error) {
-      console.error("Error uploading file:", error);
-    } finally {
-      setUploading(false); // Hide uploading indicator
-    }
-  };
+    // Upload the file to S3 using the presigned URL
+    await fetch(presignedUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': selectedFile.type,
+      },
+      body: selectedFile,
+    });
+
+    console.log('File uploaded successfully');
+
+    // Save the file URL to the backend
+    const fileUrl = `https://naaviprofileuploads.s3.amazonaws.com/${selectedFile.name}`;
+    await fetch('/api/save-file-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fileUrl,
+      }),
+    });
+
+    // Set the profile picture URL
+    setProfilePicture(fileUrl);
+  } catch (error) {
+    console.error('Error uploading file:', error);
+  } finally {
+    setUploading(false); // Hide uploading indicator
+  }
+};
 
 
   const handleFinalSubmit = () => {
