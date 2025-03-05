@@ -79,6 +79,22 @@ app.post('/api/get-presigned-url', async (req, res) => {
   }
 });
 
+app.post('/api/get-partner-presigned-url', async (req, res) => {
+  const params = {
+    Bucket: 'naaviprofileuploads',
+    Key: `partner-profile-pics/${req.body.fileName}`,
+    ContentType: req.body.fileType,
+    ACL: "public-read",
+  };
+
+  try {
+    const presignedUrl = await s3.getSignedUrlPromise('putObject', params);
+    res.json({ presignedUrl });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to generate presigned URL' });
+  }
+});
 
 
 //Increase body size limit to 50mb to prevent error: request entity too large(413)
