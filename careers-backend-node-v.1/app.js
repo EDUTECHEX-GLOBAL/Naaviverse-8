@@ -67,6 +67,7 @@ app.post('/api/get-presigned-url', async (req, res) => {
     Bucket: 'naaviprofileuploads',
     Key: req.body.fileName,
     ContentType: req.body.fileType,
+    ACL: "public-read",
   };
 
   try {
