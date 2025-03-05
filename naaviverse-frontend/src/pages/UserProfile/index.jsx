@@ -330,60 +330,51 @@ const UserProfile = () => {
   };
 
   const handleFileInputChange = async (event) => {
-  const selectedFile = event.target.files[0];
-  if (!selectedFile) return;
-
-  setUploading(true); // Show uploading indicator
-
-  // Generate a preview URL
-  const reader = new FileReader();
-  reader.onloadend = () => setPreviewUrl(reader.result); // Set preview URL
-  reader.readAsDataURL(selectedFile); // Read file as Data URL
-
-  try {
-    // Fetch presigned URL from backend
-    const response = await fetch('/api/get-presigned-url', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fileName: selectedFile.name,
-        fileType: selectedFile.type,
-      }),
-    });
-
-    const data = await response.json();
-    const presignedUrl = data.presignedUrl;
-
-    // Upload the file to S3 using the presigned URL
-    await fetch(presignedUrl, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': selectedFile.type,
-      },
-      body: selectedFile,
-    });
-
-    console.log('File uploaded successfully');
-
-    // Save the file URL to the backend
-    const fileUrl = `https://naaviprofileuploads.s3.amazonaws.com/${selectedFile.name}`;
-    await fetch('/api/save-file-url', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fileUrl,
-      }),
-    });
-
-    // Set the profile picture URL
-    setProfilePicture(fileUrl);
-  } catch (error) {
-    console.error('Error uploading file:', error);
-  } finally {
-    setUploading(false); // Hide uploading indicator
-  }
-};
-
+    const selectedFile = event.target.files[0];
+    if (!selectedFile) return;
+  
+    setUploading(true); // Show uploading indicator
+  
+    // Generate a preview URL
+    const reader = new FileReader();
+    reader.onloadend = () => setPreviewUrl(reader.result); // Set preview URL
+    reader.readAsDataURL(selectedFile); // Read file as Data URL
+  
+    try {
+      // Fetch presigned URL from backend
+      const response = await fetch('/api/get-presigned-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: selectedFile.name,
+          fileType: selectedFile.type,
+        }),
+      });
+  
+      const data = await response.json();
+      const presignedUrl = data.presignedUrl;
+  
+      // Upload the file to S3 using the presigned URL
+      await fetch(presignedUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': selectedFile.type,
+        },
+        body: selectedFile,
+      });
+  
+      console.log('File uploaded successfully');
+  
+      // Generate the file URL
+      const fileUrl = `https://naaviprofileuploads.s3.amazonaws.com/${selectedFile.name}`;
+      setProfilePicture(fileUrl); // Update the profile picture state
+    } catch (error) {
+      console.error('Error uploading file:', error);
+    } finally {
+      setUploading(false); // Hide uploading indicator
+    }
+  };
+  
 
   const handleFinalSubmit = () => {
     setIsSubmit(true);

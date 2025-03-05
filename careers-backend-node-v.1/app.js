@@ -78,18 +78,7 @@ app.post('/api/get-presigned-url', async (req, res) => {
   }
 });
 
-app.post('/api/save-file-url', async (req, res) => {
-  try {
-    // Save file URL to database using mongoose or another ORM
-    const fileUrl = req.body.fileUrl;
-    // Assuming you have a model for saving URLs
-    const savedUrl = await YourModel.create({ url: fileUrl });
-    res.json(savedUrl);
-  } catch (error) {
-    console.error('Error saving file URL:', error);
-    res.status(500).json({ error: 'Failed to save file URL' });
-  }
-});
+
 
 //Increase body size limit to 50mb to prevent error: request entity too large(413)
 app.use(express.urlencoded({
