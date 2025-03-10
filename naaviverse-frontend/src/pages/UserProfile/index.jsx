@@ -366,7 +366,7 @@ const UserProfile = () => {
       console.log('File uploaded successfully');
   
       // Generate the file URL
-      const fileUrl = `https://naaviprofileuploads.s3.amazonaws.com/${selectedFile.name}`;
+      const fileUrl = `https://thenaaviversebucket.s3.amazonaws.com/${selectedFile.name}`;
       setProfilePicture(fileUrl); // Update the profile picture state
     } catch (error) {
       console.error('Error uploading file:', error);
@@ -1981,7 +1981,7 @@ const UserProfile = () => {
                         style={{ height: "100%", width: "100%", marginRight: "0" }}
                       >
                         <img
-                          src={profilePicture}  // Display uploaded profile picture
+                          src={`${profilePicture}?${new Date().getTime()}`}  // Display uploaded profile picture
                           alt="UploadedProfilePic"
                           className="profileImg"
                           htmlFor="profileUpdateImg"

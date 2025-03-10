@@ -28,14 +28,6 @@ const signJwt = async (fileName, emailDev, secret) => {
 
 
 
-AWS.config.update({
-  accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
-  region: process.env.REACT_APP_AWS_REGION,
-});
-
-// Create an S3 instance
-const s3 = new AWS.S3();
 
 export const uploadImageFunc = async (e, setImage, setLoading) => {
   setLoading(true);
@@ -47,23 +39,51 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
   }
 
   const timestamp = new Date().getTime();
-  const fileName = `${timestamp}-${file.name}`;
-  const folderPath = `partner-profile-pics/`; // You can change this to your desired folder
-
-  const params = {
-    Bucket: 'naaviprofileuploads', // Replace with your S3 bucket name
-    Key: `${folderPath}${fileName}`,
-    Body: file,
-    ContentType: file.type,
-  };
+  const fileName = `${timestamp}-${file.name}`; // No folder path
 
   try {
-    const result = await s3.upload(params).promise();
-    console.log('File uploaded successfully:', result);
+    // Fetch presigned URL from backend
+    const response = await fetch('/api/get-presigned-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fileName, // No folder path
+        fileType: file.type,
+      }),
+    });
 
-    setImage(result.Location); // Store the S3 file URL
+    if (!response.ok) {
+      throw new Error(`Failed to get presigned URL: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const presignedUrl = data.presignedUrl;
+
+    if (!presignedUrl) {
+      throw new Error("Presigned URL not received from server");
+    }
+
+    // Upload the file to S3 using the presigned URL
+    const uploadResponse = await fetch(presignedUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': file.type,
+      },
+      body: file,
+    });
+
+    if (!uploadResponse.ok) {
+      throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
+    }
+
+    console.log('File uploaded successfully');
+
+    // Generate the file URL (saved at the root of the bucket)
+    const fileUrl = `https://naaviprofileuploads.s3.amazonaws.com/${fileName}`;
+    setImage(fileUrl); // Store the S3 file URL
+
     setLoading(false);
-    return result.Location;
+    return fileUrl;
   } catch (error) {
     console.error('Error uploading file:', error);
     setLoading(false);
