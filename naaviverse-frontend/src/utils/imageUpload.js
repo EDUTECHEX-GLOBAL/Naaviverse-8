@@ -79,7 +79,7 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
     console.log('✅ File uploaded successfully');
 
     // Step 3: Generate the file URL (saved at the root of the bucket)
-    const fileUrl = `https://naaviprofileuploads.s3.amazonaws.com/${fileName}`;
+    const fileUrl = `https://thenaaviversebucket.s3.amazonaws.com/${fileName}`;
     
     // Step 4: Update the image state with the uploaded file URL
     setImage(fileUrl);
