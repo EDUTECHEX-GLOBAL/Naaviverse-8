@@ -39,31 +39,31 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
   }
 
   const timestamp = new Date().getTime();
-  const fileName = `${timestamp}-${file.name}`; // No folder path
+  const fileName = `${timestamp}-${file.name}`; // Ensure unique file names
 
   try {
-    // Fetch presigned URL from backend
+    // Step 1: Fetch presigned URL from backend
     const response = await fetch('/api/get-presigned-url', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        fileName, // No folder path
+        fileName, // Use the generated unique file name
         fileType: file.type,
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to get presigned URL: ${response.statusText}`);
+      throw new Error(`❌ Failed to get presigned URL: ${response.statusText}`);
     }
 
     const data = await response.json();
     const presignedUrl = data.presignedUrl;
 
     if (!presignedUrl) {
-      throw new Error("Presigned URL not received from server");
+      throw new Error('❌ Presigned URL not received from server');
     }
 
-    // Upload the file to S3 using the presigned URL
+    // Step 2: Upload the file to S3 using the presigned URL
     const uploadResponse = await fetch(presignedUrl, {
       method: 'PUT',
       headers: {
@@ -73,19 +73,22 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
     });
 
     if (!uploadResponse.ok) {
-      throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
+      throw new Error(`❌ Failed to upload file: ${uploadResponse.statusText}`);
     }
 
-    console.log('File uploaded successfully');
+    console.log('✅ File uploaded successfully');
 
-    // Generate the file URL (saved at the root of the bucket)
+    // Step 3: Generate the file URL (saved at the root of the bucket)
     const fileUrl = `https://naaviprofileuploads.s3.amazonaws.com/${fileName}`;
-    setImage(fileUrl); // Store the S3 file URL
+    
+    // Step 4: Update the image state with the uploaded file URL
+    setImage(fileUrl);
 
-    setLoading(false);
     return fileUrl;
   } catch (error) {
-    console.error('Error uploading file:', error);
+    console.error('❌ Error uploading file:', error);
+  } finally {
     setLoading(false);
   }
 };
+

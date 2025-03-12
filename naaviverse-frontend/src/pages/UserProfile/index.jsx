@@ -351,11 +351,19 @@ const UserProfile = () => {
         }),
       });
   
+      if (!response.ok) {
+        throw new Error(`Failed to get presigned URL: ${response.statusText}`);
+      }
+  
       const data = await response.json();
       const presignedUrl = data.presignedUrl;
   
+      if (!presignedUrl) {
+        throw new Error('Presigned URL not received from server');
+      }
+  
       // Upload the file to S3 using the presigned URL
-      await fetch(presignedUrl, {
+      const uploadResponse = await fetch(presignedUrl, {
         method: 'PUT',
         headers: {
           'Content-Type': selectedFile.type,
@@ -363,13 +371,18 @@ const UserProfile = () => {
         body: selectedFile,
       });
   
-      console.log('File uploaded successfully');
+      if (!uploadResponse.ok) {
+        throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
+      }
+  
+      console.log('✅ File uploaded successfully');
   
       // Generate the file URL
       const fileUrl = `https://thenaaviversebucket.s3.amazonaws.com/${selectedFile.name}`;
       setProfilePicture(fileUrl); // Update the profile picture state
+  
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error('❌ Error uploading file:', error);
     } finally {
       setUploading(false); // Hide uploading indicator
     }
