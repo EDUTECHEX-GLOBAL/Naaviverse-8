@@ -14,7 +14,16 @@ const signUp = async (req, res) => {
     if (!email || !username || !password) {
       return res.status(400).json({
         successful: false,
-        message: "All fields (email, username, password, role) are required",
+        message: "All fields (email, username, password) are required",
+      });
+    }
+
+    // Check if the email already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        successful: false,
+        message: "User is already registered with this email",
       });
     }
 
@@ -22,18 +31,17 @@ const signUp = async (req, res) => {
     console.log(`Generated OTP: ${OTP}`);
     const currentTime = new Date();
 
-
-    // Create a new user (no check for existing username)
+    // Create a new user
     const temporalUser = new User({
       username,
       email,
-      password, // Save hashed password
-      OTP: OTP,
+      password, // Ensure you hash the password before saving
+      OTP,
       isBlocked: false,
       OTPAttempts: 0,
       OTPCreatedTime: currentTime,
       status: false,
-      profileCompleted: false 
+      profileCompleted: false,
     });
 
     await temporalUser.save();
@@ -61,12 +69,11 @@ const signUp = async (req, res) => {
     return res.status(201).json({
       successful: true,
       message: "User created successfully",
-      token: token,
-      user: user,
+      token,
+      user,
     });
   } catch (error) {
     console.error("SignUp Error:", error);
-
     return res.status(500).json({
       successful: false,
       message: "Something went wrong",
@@ -74,22 +81,24 @@ const signUp = async (req, res) => {
   }
 };
 
+const checkDuplicatedEmail = async (req, res) => {
+  try {
 
-// const checkDuplicatedEmail = async (req, res, next) => {
-//   try {
-//     const user = await User.findOne({ email: req.body.email });
-//     console.log("Email check hit:", req.body);
-//     if (user)
-//       if(user.userType == req.body.role)
-//         return res.status(400).json({ message: "The email already exists" });
+    const user = await User.findOne({ email: req.body.email });
 
-//     next();
-//   } catch (error) {
-//     res
-//       .status(500)
-//       .json({ success: false, message: "Something went wrong , signup fail" });
-//   }
-// };
+    if (user && user.userType == req.body.role) {
+      console.log("User found:", user.email);
+      return res.status(400).json({ message: "The email already exists" });
+    }
+
+    console.log("No user found, proceeding...");
+    return res.status(200).json({ message: "Email is available" }); // ✅ Send response here
+  } catch (error) {
+    console.error("Error checking email:", error);
+    res.status(500).json({ success: false, message: "Something went wrong, signup failed" });
+  }
+};
+
 
 // const checkDuplicatedUsername = async (req, res, next) => {
 //   try {
@@ -446,6 +455,7 @@ module.exports = {
   signUp,
   forgotPassword,
   login,
+  checkDuplicatedEmail,
   sendConfirmationEmail,
   sendResetPasswordEmail,
   resetPassword,

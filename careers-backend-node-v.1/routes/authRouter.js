@@ -11,6 +11,7 @@ const {
   updatePassword,
   getAllUsers,
   getUserProfilePic,
+  checkDuplicatedEmail,
 
 } = require("../controllers/authControllers");
 
@@ -26,4 +27,5 @@ router.post("/confirmation", sendConfirmationEmail);
 router.post("/login", login);
 router.get("/get", getAllUsers);
 router.get("/get-profile-pic", getUserProfilePic);
+router.post("/duplicatedemail", checkDuplicatedEmail)
 module.exports = router;

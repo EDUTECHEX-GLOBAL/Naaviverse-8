@@ -21,6 +21,8 @@ const NewHomePage = () => {
     const [usernameAvailable, setUsernameAvailable] = useState(false)
     const [emailAvailable, setEmailAvailable] = useState(false)
     const [showPassReq, setShowPassReq] = useState(false)
+    const [errorMessage, setErrorMessage] = useState("");
+
     const [validations, setValidations] = useState({
       capitalLetter: false,
       specialCharacter: false,
@@ -127,53 +129,71 @@ const NewHomePage = () => {
 
       const handleCreateAccount = () => {
         if (
-          validations.capitalLetter &&
-          validations.specialCharacter &&
-          validations.tenCharacters &&
-          validations.oneNumber &&
-          userPassword === confirmPassword
+            validations.capitalLetter &&
+            validations.specialCharacter &&
+            validations.tenCharacters &&
+            validations.oneNumber &&
+            userPassword === confirmPassword
         ) {
-          setLoading(true); // Start loading indicator
-      
-          // Determine the API endpoint based on the role
-          const apiUrl = signupRole === "Users" ? `/api/auth/signup` : `/api/partner/signup`;
-      
-          axios
-            .post(
-              apiUrl, // Use dynamic API endpoint
-              {
-                username: userName,
-                email: userEmail,
-                password: userPassword,
-              },
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                },
-              }
-            )
-            .then(({ data }) => {
-              setLoading(false); // Stop loading
-              if (data.successful) {
+            setLoading(true); // Start loading indicator
+    
+            // Step 1: Check if the email already exists before proceeding
+            axios.post(`/api/auth/duplicatedemail`, { email: userEmail })
+                .then(({ data }) => {
+                    if (data.count === 1) {
+                        // Email exists, show error and stop registration
+                        setLoading(false);
+                        setErrorMessage("This email is already registered. Please log in or use a different email.");
+                    } else {
+                        // Email is available, proceed with registration
+                        registerUser();
+                    }
+                })
+                .catch((error) => {
+                    setLoading(false);
+                    console.error("Error checking email:", error);
+                    alert("email is already existed.");
+                });
+        } else {
+            alert("Please ensure all password requirements are met and passwords match.");
+        }
+    };
+    
+    // Function to register user if email is available
+    const registerUser = () => {
+        const apiUrl = signupRole === "Users" ? `/api/auth/signup` : `/api/partner/signup`;
+    
+        axios.post(apiUrl, {
+            username: userName,
+            email: userEmail,
+            password: userPassword
+        }, {
+            headers: { "Content-Type": "application/json" }
+        })
+        .then(({ data }) => {
+            setLoading(false);
+            if (data.successful) {
                 setShowOtp(true); // Show OTP input for verification
-              } else {
+            } else {
                 alert("Signup failed: Unexpected response from the server");
-              }
-            })
-            .catch((error) => {
-              setLoading(false); // Stop loading on error
-              if (error.response) {
+            }
+        })
+        .catch((error) => {
+            setLoading(false);
+            if (error.response) {
                 console.error("Error response:", error.response.data);
-                alert(`Signup failed: ${error.response.data.message}`);
-              } else {
+                if (error.response.status === 400 && error.response.data.message.includes("User is already registered")) {
+                    setErrorMessage("This email is already registered. Please log in or use a different email.");
+                } else {
+                    alert(`Signup failed: ${error.response.data.message}`);
+                }
+            } else {
                 console.error("Error message:", error.message);
                 alert("Signup failed: Something went wrong");
-              }
-            });
-        } else {
-          alert("Please ensure all password requirements are met and passwords match.");
-        }
-      }; // <-- Ensure proper closing of the function
+            }
+        });
+    };
+    
       
       const confirmEmail = () => {
         // Dynamic API for OTP verification
