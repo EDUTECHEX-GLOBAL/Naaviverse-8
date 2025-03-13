@@ -3,7 +3,7 @@ name: Deploy Frontend to Server
 on:
   push:
     branches:
-      - lavanya18  # Updated to your branch name
+      - 13/03/25 # Updated to your branch name
 
 jobs:
   deploy:
@@ -22,5 +22,5 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@stagging.naaviverse.com << 'EOF'
             cd /home/ubuntu/Naaviverse-8
-            ./deploy.sh lavanya18  # Pass the branch name directly
+            ./deploy.sh 13/03/25  # Pass the branch name directly
           EOF
