@@ -118,6 +118,7 @@ const AccProfile = () => {
   const [category, setcategory] = useState("");
   const [subcategory, setsubcategory] = useState("");
   const [shouldReload, setShouldReload] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
 
 
   // create brand profile
@@ -481,13 +482,7 @@ const AccProfile = () => {
 
   const handlePersonality = (item) => {
     setPersonality(item);
-    // if (personality.includes(item)) {
-    //   // If the personality is already selected, remove it
-    //   setPersonality(personality.filter((o) => o !== item));
-    // } else {
-    //   // If the personality is not selected, add it
-    //   setPersonality([...personality, item]);
-    // }
+    
   };
 
   const handleFollowerPerAccountants = () => {
@@ -821,10 +816,7 @@ const AccProfile = () => {
     setaccsideNav("");
     resetpop();
     handleAccountantData();
-    // const userDetails = JSON.parse(localStorage.getItem("user"));
-    // if (userDetails === null || userDetails === undefined) {
-    //   navigate("/login");
-    // }
+    
   }, []);
 
   const myTimeout1 = () => {
@@ -1083,19 +1075,7 @@ const AccProfile = () => {
       setEditCountry(false);
       setNewCountry("");
     }
-    // else if (editPartneringInstitutions) {
-    //   setEditPartneringInstitutions(false);
-    //   setNewPartneringInstitutions("");
-    // } else if (editCategory) {
-    //   setEditCategory(false);
-    //   setNewCategory("");
-    // } else if (editSubCategory) {
-    //   setEditSubCategory(false);
-    //   setNewSubCategory("");
-    // } else if (editSpecialities) {
-    //   setEditSpecialities(false);
-    //   setNewSpecialities("");
-    // }
+    
     else if (editCoverPic) {
       setEditCoverPic(false);
       setNewCoverPic("");
@@ -1195,27 +1175,15 @@ const AccProfile = () => {
       });
   };
 
-  // const removeStep = (stepId) => {
-  //   const updatedSelectedSteps = selectedSteps.filter(
-  //     (step) => step._id !== stepId
-  //   );
-  //   setSelectedSteps(updatedSelectedSteps);
-
-  //   const updatedStepIds = pathSteps?.step_ids?.filter((id) => id !== stepId);
-  //   setPathSteps({
-  //     ...pathSteps,
-  //     step_ids: updatedStepIds,
-  //   });
-  // };
+  
 
   const removeStep = (stepId) => {
-    // Remove the step from selectedSteps
+    
     const updatedSelectedSteps = selectedSteps.filter(
       (step) => step._id !== stepId
     );
     setSelectedSteps(updatedSelectedSteps);
 
-    // Remove the step_id from pathSteps
     const updatedTheIds = pathSteps?.the_ids?.filter(
       (obj) => obj.step_id !== stepId
     );
@@ -1239,8 +1207,7 @@ const AccProfile = () => {
             <MenuNav 
               showDrop={showDrop}
               setShowDrop={setShowDrop}
-              // searchTerm={search}
-              // setSearchterm={setSearch}
+              
               searchPlaceholder="Search..."
             />
               <>
@@ -1300,15 +1267,7 @@ const AccProfile = () => {
                             height: "100px",
                           }}
                         >
-                          {/* <div
-                            className="editIconDiv"
-                            style={{ top: "-7px", right: "3px" }}
-                            onClick={() => {
-                              setEditProfilePic(true);
-                            }}
-                          >
-                            <img src={edit} alt="" />
-                          </div> */}
+                          
                           <img
                             style={{
                               width: "100px",
@@ -1344,14 +1303,7 @@ const AccProfile = () => {
                               className="pfl-box-inp-full"
                               style={{ borderRadius: "25px", minHeight: "10rem" }}
                             >
-                              {/* <div
-                                className="editIconDiv"
-                                onClick={() => {
-                                  setEditDescription(true);
-                                }}
-                              >
-                                <img src={edit} alt="" />
-                              </div> */}
+                              
                               {profileData?.description}
                             </div>
                         </div>
@@ -1359,182 +1311,13 @@ const AccProfile = () => {
                           <div className="pfl-boxl">
                             <div className="pfl-box-label">Webiste</div>
                             <div className="pfl-box-inp">
-                              {/* <div
-                                className="editIconDiv"
-                                onClick={() => {
-                                  setEditCountry(true);
-                                }}
-                              >
-                                <img src={edit} alt="" />
-                              </div> */}
+                              
                               {profileData?.website}
                             </div>
                           </div>
-                          {/* <div className="pfl-boxr">
-                            <div className="pfl-box-label">Address</div>
-                            <div className="pfl-box-inp">
-                              <div
-                                className="editIconDiv"
-                                onClick={() => {
-                                  setEditAddress(true);
-                                }}
-                              >
-                                <img src={edit} alt="" />
-                              </div>
-                              <span
-                                style={{
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                }}
-                              >
-                                {profileData?.street}, {profileData?.city}, {profileData?.state}, {profileData?.pincode}
-                              </span>
-                            </div>
-                          </div> */}
+                          
                         </div>
-                        {/* <div className="pfl-box">
-                          <div className="pfl-boxl">
-                            <div className="pfl-box-label">Display Name</div>
-                            <div className="pfl-box-inp">
-                              <div
-                                className="editIconDiv"
-                                onClick={() => {
-                                  setEditDisplayName(true);
-                                }}
-                              >
-                                <img src={edit} alt="" />
-                              </div>
-                              {profileData?.firstName}
-                            </div>
-                          </div>
-                          <div className="pfl-boxr">
-                            <div className="pfl-box-label">Phone Number</div>
-                            <div className="pfl-box-inp">
-                              <div
-                                className="editIconDiv"
-                                onClick={() => {
-                                  setEditPhoneNo(true);
-                                }}
-                              >
-                                <img src={edit} alt="" />
-                              </div>
-                              {profileData?.phone}
-                            </div>
-                          </div>
-                        </div>
-                       
-                        <div className="pfl-box-full">
-                          <div className="pfl-box-label">Cover&nbsp;Photo</div>
-                          <div
-                            style={{
-                              borderRadius: "25px",
-                              border: "0.5px solid #e5e5e5",
-                              position: "relative",
-                            }}
-                          >
-                            <div
-                              className="editIconDiv"
-                              onClick={() => {
-                                setEditCoverPic(true);
-                              }}
-                            >
-                              <img src={edit} alt="" />
-                            </div>
-                            <img
-                              style={{ width: "100%", borderRadius: "25px" }}
-                              src={profileData?.coverPicURL}
-                              alt=""
-                            />
-                          </div>
-                        </div>
-                        <div className="pfl-box">
-                          <div className="pfl-boxl">
-                            <div className="pfl-box-label">Colour Code</div>
-                            <div
-                              style={{
-                                justifyContent: "space-between",
-                              }}
-                              className="pfl-box-inp"
-                            >
-                              <div
-                                className="editIconDiv"
-                                onClick={() => {
-                                  setEditColorCode(true);
-                                }}
-                              >
-                                <img src={edit} alt="" />
-                              </div>
-                              <div>{profileData?.colorCode}</div>
-                              <div
-                                style={{
-                                  background: `#${profileData?.colorCode}`,
-                                  height: "100%",
-                                  borderRadius: "35px",
-                                  width: "20%",
-                                }}
-                              ></div>
-                            </div>
-                          </div>
-                          <div className="pfl-boxr">
-                            <div className="pfl-box-label">
-                              Partnering Institutions
-                            </div>
-                            <div className="pfl-box-inp">
-                              <div className="editIconDiv">
-                                <img src={edit} alt="" />
-                              </div>
-                              {profileData?.partneringInstitutions !==
-                                undefined &&
-                              profileData?.partneringInstitutions.length > 0
-                                ? profileData?.partneringInstitutions[0]._id
-                                : ""}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="pfl-box">
-                          <div className="pfl-boxl">
-                            <div className="pfl-box-label">Category</div>
-                            <div className="pfl-box-inp">
-                             <div className="editIconDiv">
-                                <img src={edit} alt="" />
-                              </div>
-                              {profileData?.category}
-                            </div>
-                          </div>
-                          <div className="pfl-boxr">
-                            <div className="pfl-box-label">Sub Category</div>
-                            <div className="pfl-box-inp">
-                               <div className="editIconDiv">
-                                <img src={edit} alt="" />
-                              </div> 
-                              {profileData?.subCategory}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="pfl-box">
-                          <div
-                            className="pfl-boxl"
-                            style={{ position: "relative" }}
-                          >
-                             <div className="editIconDiv">
-                              <img src={edit} alt="" />
-                            </div> 
-                            <div className="pfl-box-label">Specialties</div>
-                            <>
-                              {profileSpecalities?.length > 0 ? (
-                                <>
-                                  {profileSpecalities?.map((each, i) => (
-                                    <div key={i} className="pfl-box-inp">
-                                      {each}
-                                    </div>
-                                  ))}
-                                </>
-                              ) : (
-                                ""
-                              )}
-                            </>
-                          </div>
-                        </div> */}
+                        
                       </div>
 
                       <div
@@ -1698,35 +1481,11 @@ const AccProfile = () => {
                         </div>
                         
                       </div>
-                      {/* <div
-                        style={{
-                          display: !hidden ? "none" : "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          height: "4rem",
-                          width: "100%",
-                          cursor: "not-allowed",
-                          borderBottom: "0.5px solid #E5E5E5",
-                          padding: "0 35px",
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: "17px",
-                            fontWeight: "500",
-                            color: "#1F304F",
-                          }}
-                        >
-                          Work History
-                        </div>
-                        <div style={{ opacity: "0.25" }}>
-                          <img src={downArrow} alt="" />
-                        </div>
-                      </div> */}
+                     
                     </div>
                     <div
                       className="pf-right"
-                      style={{ minWidth: "30%", height: "100%" }}
+                      style={{ minWidth: "0%", height: "100%" }}
                     >
                       <div className="pfr-1">
                         <div>
@@ -1761,28 +1520,7 @@ const AccProfile = () => {
                           </div>
                         </div>
                       </div>
-                      {/* <div className="pfr-1">
-                        <div>
-                          <div className="pfr-head">
-                            Create An Vendor Profile
-                          </div>
-                          <div className="pfr-desc">
-                            Click here to change your password. You will need to
-                            verify your email again to reset your password.
-                          </div>
-                        </div>
-                        <div className="pfr-btn">Change Password</div>
-                      </div>
-                      <div className="pfr-2">
-                        <div>
-                          <div className="pfr-head">Enable 2FA</div>
-                          <div className="pfr-desc">
-                            For an additional layer of security you can enable 2
-                            factor authentication via Google Authenticator.
-                          </div>
-                        </div>
-                        <div className="pfr-btn">Enable</div>
-                      </div> */}
+                      
                       {changing && (
                         <div
                           className="loading-component"
@@ -1821,6 +1559,7 @@ const AccProfile = () => {
           </div>
         </div>
       </div>
+
 
       <>
         {ispopular ? (
@@ -2566,15 +2305,7 @@ const AccProfile = () => {
                                   ...prevSelectedSteps,
                                   e,
                                 ]);
-                                // setPathSteps((prev) => {
-                                //   return {
-                                //     ...prev,
-                                //     step_ids:
-                                //       prev?.step_ids?.length > 0
-                                //         ? [...prev?.step_ids, e?._id]
-                                //         : [e?._id],
-                                //   };
-                                // });
+                                
                                 setPathSteps((prev) => {
                                   return {
                                     ...prev,
@@ -2874,19 +2605,7 @@ const AccProfile = () => {
                           ))}
                       
                     </select>
-                      {/* <input
-                        type="text"
-                        placeholder="Country.."
-                        value={pathSteps?.country}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              country: e.target.value,
-                            };
-                          });
-                        }}
-                      /> */}
+                      
                     </div>
                   </div>
 
@@ -3499,13 +3218,7 @@ const AccProfile = () => {
                           ))}
                       
                     </select>
-              {/* <input
-                type="text"
-                placeholder="New Country.."
-                onChange={(e) => {
-                  setNewCountry(e.target.value);
-                }}
-              /> */}
+              
             </div>
           </div>
 
@@ -4410,24 +4123,7 @@ export const InputDivsCheckFunctionality1 = ({
           {userNameAvailable ? "Available" : "Check"}
         </div>
       </div>
-      {/* {funcValue?.length > 0 && !userNameAvailable && (
-        <div
-          style={{
-            fontSize: "0.8rem",
-            zIndex: "2",
-            width: "95%",
-            display: "flex",
-            justifyContent: "center",
-            background: "rgba(241, 244, 246)",
-            padding: "5px",
-            borderBottomLeftRadius: "35px",
-            borderBottomRightRadius: "35px",
-            margin: "-16px auto",
-          }}
-        >
-          This username is not available. Please try again.
-        </div>
-      )} */}
+      
     </div>
   );
 };

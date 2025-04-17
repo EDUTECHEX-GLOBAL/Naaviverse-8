@@ -311,7 +311,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
               display: currentStepData ? "flex" : "none",
             }}
           >
-            Back To Path
+            Back 
           </div>
         </div>
         <div className="bold-text">
@@ -320,18 +320,18 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
               ? currentStepData?.name
               : currentStepPageData?.name}
           </div>
-          <div>
+          <div class="cs-text2" >
             Apx Takes 3 Days
           </div>
         </div>
-        <div style={{fontSize:'16px', fontWeight:300, lineHeight:'30px'}}>
+        <div style={{fontSize:'12px', fontWeight:400, lineHeight:'20px'}}>
           {currentStepData?.description}
         </div>
       </div>
       <div className="cs-content" style={{height:'60vh'}}>
-        <div className="overall-cs-content">
+        <div className="overall-cs-content" style={{ display: 'flex', flexDirection: 'column !important', gap: '30px' }}>
           <div className="macro-view-box">
-            <div className="macro-text">Macro View:</div>
+            <div className="macro-text" >Macro View:</div>
             <div className="macro-content">
               <div className="step-text">
                 {currentStepData?.name
@@ -537,7 +537,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
           <p>Failed</p>
         </div>
       </div> */}
-      <center>
+      {/* <center>
         <div className="cs-footer1">
           <div onClick={() => {
             setPopup(true);
@@ -549,7 +549,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
             setPopupDetails("yes");
           }}>Yes</div>
         </div>
-      </center>
+      </center> */}
       {acceptOffer && (
         <div
           className="accept-offer-overlay"

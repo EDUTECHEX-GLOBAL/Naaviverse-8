@@ -79,60 +79,46 @@ const Pathview = () => {
 
   return (
     <div className="pathviewPage">
-      <div className="pathviewNav">
-        <div className="name-div">School</div>
-        <div className="name-div">Program</div>
-        <div className="description-div">Description</div>
-      </div>
       <div className="pathviewContent">
         {loading ? (
           Array(10)
             .fill("")
-            .map((e, i) => {
-              return (
-                <div className="each-pv-data" key={i}>
-                  <div className="each-pv-name">
-                    <Skeleton width={100} height={30} />
-                  </div>
-                  <div className="each-pv-name">
-                    <Skeleton width={100} height={30} />
-                  </div>
-                  <div className="each-pv-desc">
-                    <Skeleton width={100} height={30} />
-                  </div>
-                </div>
-              );
-            })
-        ) : filteredPathViewData?.length > 0 ? (
-          filteredPathViewData?.map((e, i) => {
-            return (
-              <div
-                className="each-pv-data"
-                key={i}
-                onClick={() => handlePathSelection(e)} // Use the function to handle path selection
-              >
-                <div className="each-pv-name">{e?.school}</div>
-                <div className="each-pv-name">{e?.program}</div>
-                <div className="each-pv-desc">{e?.description}</div>
+            .map((_, i) => (
+              <div className="each-pv-card" key={i}>
+                <div className="pv-label"><Skeleton width={100} height={16} /></div>
+                <div className="pv-value"><Skeleton width={160} height={20} /></div>
+  
+                <div className="pv-label"><Skeleton width={100} height={16} /></div>
+                <div className="pv-value"><Skeleton width={160} height={20} /></div>
+  
+                <div className="pv-label"><Skeleton width={100} height={16} /></div>
+                <div className="pv-value"><Skeleton width={200} height={40} /></div>
               </div>
-            );
-          })
+            ))
+        ) : filteredPathViewData?.length > 0 ? (
+          filteredPathViewData.map((e, i) => (
+            <div
+              className="each-pv-card"
+              key={i}
+              onClick={() => handlePathSelection(e)}
+            >
+              <div className="pv-label"> School:</div>
+              <div className="pv-value">{e?.school}</div>
+  
+              <div className="pv-label"> Program:</div>
+              <div className="pv-value">{e?.program}</div>
+  
+              <div className="pv-label"> Description:</div>
+              <div className="pv-value">{e?.description}</div>
+            </div>
+          ))
         ) : (
-          <div
-            style={{
-              width: "100%",
-              height: "20vh",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            No Path Found
-          </div>
+          <div className="no-path-message">No Path Found</div>
         )}
       </div>
     </div>
   );
+  
 };
 
 export default Pathview;

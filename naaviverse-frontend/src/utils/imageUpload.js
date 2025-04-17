@@ -11,6 +11,7 @@ function renameFile(originalFile, newName) {
     type: originalFile.type,
     lastModified: originalFile.lastModified,
   });
+  
 }
 
 const signJwt = async (fileName, emailDev, secret) => {
@@ -53,14 +54,14 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
     });
 
     if (!response.ok) {
-      throw new Error(`❌ Failed to get presigned URL: ${response.statusText}`);
+      throw new Error(` Failed to get presigned URL: ${response.statusText}`);
     }
 
     const data = await response.json();
     const presignedUrl = data.presignedUrl;
 
     if (!presignedUrl) {
-      throw new Error('❌ Presigned URL not received from server');
+      throw new Error('Presigned URL not received from server');
     }
 
     // Step 2: Upload the file to S3 using the presigned URL
@@ -73,10 +74,10 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
     });
 
     if (!uploadResponse.ok) {
-      throw new Error(`❌ Failed to upload file: ${uploadResponse.statusText}`);
+      throw new Error(` Failed to upload file: ${uploadResponse.statusText}`);
     }
 
-    console.log('✅ File uploaded successfully');
+    console.log(' File uploaded successfully');
 
     // Step 3: Generate the file URL (saved at the root of the bucket)
     const fileUrl = `https://thenaaviversebucket.s3.amazonaws.com/${fileName}`;
@@ -86,7 +87,7 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
 
     return fileUrl;
   } catch (error) {
-    console.error('❌ Error uploading file:', error);
+    console.error('Error uploading file:', error);
   } finally {
     setLoading(false);
   }

@@ -77,3 +77,17 @@
     font-size: 18px;
     color: #1f304f;
 }
+
+@media (max-width: 768px) {
+    .editStepForm_form-group {
+        margin-bottom: 15px; /* Slightly reduce spacing on smaller screens */
+        width: 95%; /* Ensures a good fit on mobile */
+    }
+}
+
+@media (max-width: 480px) {
+    .editStepForm_form-group {
+        margin-bottom: 10px; /* Reduce margin for compact screens */
+        width: 100%; /* Uses full screen width */
+    }
+}

@@ -1,67 +1,446 @@
 .pathviewPage {
+  margin-left: -35px !important;
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow-y: auto !important;
+  overflow-x: auto;
+  height: calc(100vh - 80px);
+  margin-right: 10px !important;
+  margin-top:20px !important;
+  
+}
+
+.pathviewContent {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 40px;
+  
+  
+}
+
+.each-pv-card {
+  background-color: rgb(244, 244, 244);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap:8px;
+  overflow-y: auto !important;
+  padding: 3px;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  }
+
+  .pv-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #2c3e50;
+    margin-top: 4px;
+    padding: 3px !important;
+  }
+
+  .pv-value {
+    font-size: 14px;
+    color: #34495e;
+    margin-left: 8px;
+    margin-bottom: 6px;
+    line-height: 1.4;
+    padding: 3px !important;
+  }
+}
+
+.no-path-message {
   width: 100%;
-  height: 100%;
+  height: 20vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  color: #888;
+}
 
-  .pathviewNav {
-    width: 100%;
-    height: 3rem;
-    border-bottom: 0.5px solid #e5e5e5;
-    display: flex;
-    align-items: center;
+@media (max-width: 1024px) {
+  .pathviewContent {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 24px;
+  }
+}
 
-    .name-div {
-      width: 30%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      padding-left: 35px;
-      font-weight: 400;
-      font-size: 0.8rem;
-    }
-
-    .description-div {
-      width: 70%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      padding-left: 35px;
-      font-weight: 400;
-      font-size: 0.8rem;
-    }
+/* Small Tablets */
+@media (max-width: 768px) {
+  .pathviewPage {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 10px;
   }
 
   .pathviewContent {
-    width: 100%;
-    height: calc(100% - 3rem);
-    overflow-y: scroll;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 
-    .each-pv-data {
-      width: 100%;
-      border-bottom: 0.5px solid #e5e5e5;
-      display: flex;
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: all ease 0.2s;
-
-      .each-pv-name {
-        width: 30%;
-        padding: 2rem 0 2rem 35px;
-        line-height: 1.6;
-      }
-
-      .each-pv-desc {
-        width: 70%;
-        padding: 2rem 0 2rem 0;
-        font-weight: 300;
-        padding-left: 35px;
-        line-height: 1.6;
-        // text-transform: none;
-        padding-right: 1rem;
-      }
-
-      &:hover {
-        background: rgba(237, 237, 237, 0.368627451);
-      }
-    }
+  .each-pv-card {
+    padding: 10px;
   }
 }
+
+/* Phones (large) */
+@media (max-width: 600px) {
+  .pv-label,
+  .pv-value {
+    font-size: 13px;
+  }
+}
+
+/* Phones (small) */
+@media (min-width:300px) and (max-width: 390px) {
+  .pathviewPage {
+    margin-left: -35px !important;
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow-y: auto !important;
+    overflow-x: auto;
+    height: calc(100vh - 80px);
+    margin-right: 10px !important;
+    margin-top:20px !important;
+    
+  }
+  
+  .pathviewContent {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 40px;
+    padding-bottom: 20px !important;
+    padding-left: -2px !important;
+    
+    
+  }
+  
+  .each-pv-card {
+    background-color: rgb(244, 244, 244);
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap:8px;
+    overflow-y: auto !important;
+    padding: 3px;
+    width:78%;
+  
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+  
+    .pv-label {
+      font-weight: 600;
+      font-size: 14px;
+      color: #2c3e50;
+      margin-top: 4px;
+      padding: 3px !important;
+    }
+  
+    .pv-value {
+      font-size: 14px;
+      color: #34495e;
+      margin-left: 8px;
+      margin-bottom: 6px;
+      line-height: 1.4;
+      padding: 3px !important;
+    }
+  }
+  
+  .no-path-message {
+    width: 100%;
+    height: 20vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    color: #888;
+  }
+}
+  
+@media (min-width:391px) and (max-width: 480px) {
+  .pathviewPage {
+    margin-left: -35px !important;
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow-y: auto !important;
+    overflow-x: auto;
+    height: calc(100vh - 80px);
+    margin-right: 10px !important;
+    margin-top:20px !important;
+    
+  }
+  
+  .pathviewContent {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 40px;
+    padding-bottom: 20px !important;
+    
+    
+  }
+  
+  .each-pv-card {
+    background-color: rgb(244, 244, 244);
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap:8px;
+    overflow-y: auto !important;
+    padding: 3px;
+    width:85%;
+  
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+  
+    .pv-label {
+      font-weight: 600;
+      font-size: 14px;
+      color: #2c3e50;
+      margin-top: 4px;
+      padding: 3px !important;
+    }
+  
+    .pv-value {
+      font-size: 14px;
+      color: #34495e;
+      margin-left: 8px;
+      margin-bottom: 6px;
+      line-height: 1.4;
+      padding: 3px !important;
+    }
+  }
+  
+  .no-path-message {
+    width: 100%;
+    height: 20vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    color: #888;
+  }
+}
+
+@media (min-width:481px) and (max-width: 780px) {
+  .pathviewPage {
+    margin-left: -35px !important;
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow-y: auto !important;
+    overflow-x: auto;
+    height: calc(100vh - 80px);
+    margin-right: 10px !important;
+    margin-top:20px !important;
+    
+  }
+  
+  .pathviewContent {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 40px;
+    margin-bottom: 300px !important;
+    
+    
+  }
+  
+  .each-pv-card {
+    background-color: rgb(244, 244, 244);
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap:8px;
+    overflow-y: auto !important;
+    padding: 3px;
+    width:100%;
+  
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+  
+    .pv-label {
+      font-weight: 600;
+      font-size: 14px;
+      color: #2c3e50;
+      margin-top: 4px;
+      padding: 3px !important;
+    }
+  
+    .pv-value {
+      font-size: 14px;
+      color: #34495e;
+      margin-left: 8px;
+      margin-bottom: 6px;
+      line-height: 1.4;
+      padding: 3px !important;
+    }
+  }
+  
+  .no-path-message {
+    width: 100%;
+    height: 20vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    color: #888;
+  }
+}
+  
+@media (min-width:781px) and (max-width: 1024px) {
+  .pathviewPage {
+    margin-left: -35px !important;
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow-y: auto !important;
+    overflow-x: auto;
+    height: calc(100vh - 80px);
+    margin-right: 10px !important;
+    margin-top:20px !important;
+    
+  }
+  
+  .pathviewContent {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 40px;
+    margin-bottom: 500px !important;
+    
+    
+  }
+  
+  .each-pv-card {
+    background-color: rgb(244, 244, 244);
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap:8px;
+    overflow-y: auto !important;
+    padding: 3px;
+    width:95%;
+  
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+  
+    .pv-label {
+      font-weight: 600;
+      font-size: 14px;
+      color: #2c3e50;
+      margin-top: 4px;
+      padding: 3px !important;
+    }
+  
+    .pv-value {
+      font-size: 14px;
+      color: #34495e;
+      margin-left: 8px;
+      margin-bottom: 6px;
+      line-height: 1.4;
+      padding: 3px !important;
+    }
+  }
+  
+  .no-path-message {
+    width: 100%;
+    height: 20vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    color: #888;
+  }
+}
+  
+@media (min-width:1025px )  and (max-width:1380px){
+  .pathviewPage {
+    margin-left: -35px !important;
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow-y: auto !important;
+    overflow-x: auto;
+    height: calc(100vh - 80px);
+    margin-right: 10px !important;
+    margin-top:20px !important;
+    
+  }
+  
+  .pathviewContent {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 40px;
+    padding-bottom: 20px !important;
+    flex-direction: column;
+    
+    
+  }
+  
+  .each-pv-card {
+    background-color: rgb(244, 244, 244);
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap:8px;
+    overflow-y: auto !important;
+    padding: 3px;
+    width:80%;
+  
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+  
+    .pv-label {
+      font-weight: 600;
+      font-size: 14px;
+      color: #2c3e50;
+      margin-top: 4px;
+      padding: 3px !important;
+    }
+  
+    .pv-value {
+      font-size: 14px;
+      color: #34495e;
+      margin-left: 8px;
+      margin-bottom: 6px;
+      line-height: 1.4;
+      padding: 3px !important;
+    }
+  }
+  
+  .no-path-message {
+    width: 100%;
+    height: 20vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    color: #888;
+  }
+}
+  

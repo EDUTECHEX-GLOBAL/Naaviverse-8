@@ -277,25 +277,17 @@ const AccDashboard = () => {
 
   const handlePersonality = (item) => {
     setPersonality(item);
-    // if (personality.includes(item)) {
-    //   // If the personality is already selected, remove it
-    //   setPersonality(personality.filter((o) => o !== item));
-    // } else {
-    //   // If the personality is not selected, add it
-    //   setPersonality([...personality, item]);
-    // }
   };
 
   useEffect(() => {
     axios.get(`https://careers.marketsverse.com/paths/get`).then((res) => {
       let result = res?.data?.data;
-      // console.log(result, "all paths fetched");
       setBackupPathList(result);
     });
   }, []);
 
   const addBackupPath = (backupPathId, selectedStepId) => {
-    // console.log(pathSteps, "kjedkjweld");
+   
 
     pathSteps.the_ids.map((item) => {
       if (item.step_id === selectedStepId) {
@@ -303,8 +295,6 @@ const AccDashboard = () => {
       }
     });
     setShowBackupPathList(false);
-    // console.log(selectedSteps, "lkashclkweoiuk");
-    // const found = pathSteps.find((element) => element._id === backupPathId);
   };
 
   useEffect(() => {
@@ -321,7 +311,6 @@ const AccDashboard = () => {
   useEffect(() => {
     handleFollowerPerAccountants();
     handleGetCurrencies();
-    // setaccsideNav("CRM")
     resetpop();
     const userDetails = JSON.parse(localStorage.getItem("adminuser"));
     if (userDetails === null || userDetails === undefined) {
@@ -359,7 +348,6 @@ const AccDashboard = () => {
       setIsUploadLoading(false);
       return data[0]?.urlName;
     } else {
-      // setIsUploadLoading(false);
       console.log("error in uploading image");
     }
   };
@@ -599,7 +587,6 @@ const AccDashboard = () => {
     setIsServicesAcc(true);
     GetLogServices(value)
       .then((res) => {
-        // console.log(res, "kk");
         let result = res?.data;
         if (result?.status) {
           setservicesAcc(result?.products);
@@ -924,7 +911,6 @@ const AccDashboard = () => {
         percentage: e,
       };
     });
-    // console.log(fixedPayouts, 'fixedPayouts');
 
     let numValues = multiplier.map((e, i) => {
       return {
@@ -932,8 +918,6 @@ const AccDashboard = () => {
         numerator: e,
       };
     });
-    // console.log(numValues, 'numValues');
-
     let obj = {
       email: userDetails?.email,
       token: userDetails?.idToken,
@@ -1071,19 +1055,6 @@ const AccDashboard = () => {
         console.log(error, "error in pathSubmission");
       });
   };
-
-  // const removeStep = (stepId) => {
-  //   const updatedSelectedSteps = selectedSteps.filter(
-  //     (step) => step._id !== stepId
-  //   );
-  //   setSelectedSteps(updatedSelectedSteps);
-
-  //   const updatedStepIds = pathSteps?.step_ids?.filter((id) => id !== stepId);
-  //   setPathSteps({
-  //     ...pathSteps,
-  //     step_ids: updatedStepIds,
-  //   });
-  // };
 
   const removeStep = (stepId) => {
     // Remove the step from selectedSteps
@@ -1465,199 +1436,148 @@ const [adminServices, setAdminServices] = useState([])
                         </>
                       ) : crmMenu === "Partners" ? (
                         <>
-                          <div className="crm-purchase-tab">
-                            <div style={{width:'20vw'}}>Business Name</div>
-                            <div style={{width:'25vw'}}>Email</div>
-                            <div style={{width:'15vw'}}>Country</div>
-                            <div style={{width:'20vw'}}>Type</div>
-                            <div style={{width:'20vw'}}>POC</div>
-                          </div>
-                          <div className="purchase-alldata">
-                            {!isPurchaseLoading && partnerData.length > 0 ? (
-                              <>
-                                {partnerData
-                                  ?.filter(
-                                    (item) =>
-                                      // item.businessName
-                                      //   .toLowerCase()
-                                      //   .startsWith(search.toLowerCase()) ||
-                                      item.email
-                                        .toLowerCase()
-                                        .startsWith(search.toLowerCase()) 
-                                  )
-                                  .map((each, i) => (
-                                    <div className="each-purchase">
-                                      <div style={{width:'20vw'}}>
-                                        <div className="each-purchase-head" style={{display:'flex', alignItems:'center'}}>
-                                          <img src={each?.logo} alt="" style={{width: '40px', height:'40px', borderRadius:'50%'}}/>
-                                         <span style={{paddingLeft:"10px"}}>{each.businessName}</span> 
-                                        </div>
-                                      </div>
-                                     <div  style={{width:'25vw'}}>{each?.email}</div>
-                                     <div  style={{width:'15vw'}}>{each?.country}</div>
-                                     <div  style={{width:'20vw'}}>{each?.type}</div>
-                                     <div  style={{width:'20vw'}}>{each?.firstName}&nbsp;{each?.lastName}</div>
-                                    </div>
-                                  ))}
-                              </>
-                            ) : isPurchaseLoading ? (
-                              <>
-                                {[1, 2, 3, 4, 5, 6].map((each) => (
-                                  <div className="each-purchase">
-                                    <div className="each-purchase-clients">
-                                      <Skeleton
-                                        className="each-purchase-head"
-                                        style={{ width: "150px" }}
-                                      />
-                                      <Skeleton
-                                        className="each-purchase-text"
-                                        style={{ width: "150px" }}
-                                      />
-                                    </div>
-                                    <div
-                                      className="each-purchase-services"
-                                      style={{ display: "flex" }}
-                                    >
-                                      <div className="each-product-iconbox">
-                                        <Skeleton className="each-product-icon" />
-                                      </div>
-                                      <div className="each-purchase-data">
-                                        <Skeleton
-                                          className="each-purchase-head"
-                                          style={{ width: "150px" }}
-                                        />
-                                        <Skeleton
-                                          className="each-purchase-text"
-                                          style={{ width: "150px" }}
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="each-purchase-receipt">
-                                      <Skeleton
-                                        className="each-purchase-head"
-                                        style={{ width: "150px" }}
-                                      />
-                                      <Skeleton
-                                        className="each-purchase-text"
-                                        style={{ width: "150px" }}
-                                      />
-                                    </div>
-                                    <div className="each-purchase-status">
-                                      <Skeleton
-                                        className="each-purchase-statustext"
-                                        style={{ width: "150px" }}
-                                      />
-                                    </div>
-                                  </div>
-                                ))}
-                              </>
-                            ) : (
-                              ""
-                            )}
-                          </div>
-                        </>
+  {/* Desktop Table Header (hidden on mobile) */}
+  <div className="crm-purchase-tab mobile-hidden">
+    <div style={{width:'20vw'}}>Business Name</div>
+    <div style={{width:'25vw'}}>Email</div>
+    <div style={{width:'15vw'}}>Country</div>
+    <div style={{width:'20vw'}}>Type</div>
+    <div style={{width:'20vw'}}>POC</div>
+  </div>
+  
+  {/* Mobile-friendly list */}
+  <div className="purchase-alldata">
+    {!isPurchaseLoading && partnerData.length > 0 ? (
+      partnerData
+        .filter(item => item.email.toLowerCase().startsWith(search.toLowerCase()))
+        .map((each, i) => (
+          <div className="each-purchase" key={i}>
+            {/* Business Name with Logo - Now properly included */}
+            <div className="mobile-business-header">
+              <img 
+                src={each?.logo} 
+                alt={each.businessName}
+                className="mobile-business-logo"
+                onError={(e) => {
+                  e.target.onerror = null; 
+                  e.target.src = '/default-logo.png';
+                }}
+              />
+              <div className="mobile-business-info">
+                <div data-label="Business:">{each.businessName}</div>
+                <div data-label="Type:">{each.type}</div>
+              </div>
+            </div>
+            
+            {/* Email */}
+            <div data-label="Email:">
+              <a href={`mailto:${each.email}`}>{each.email}</a>
+            </div>
+            
+            {/* Country */}
+            <div data-label="Country:">{each.country}</div>
+            
+            {/* Point of Contact */}
+            <div data-label="Contact:">
+              {each.firstName} {each.lastName}
+              {each.phone && (
+                <div className="mobile-phone">
+                  <a href={`tel:${each.phone}`}>{each.phone}</a>
+                </div>
+              )}
+            </div>
+          </div>
+        ))
+    ) : isPurchaseLoading ? (
+      [1, 2, 3].map((each) => (
+        <div className="each-purchase" key={each}>
+          <div className="mobile-business-header">
+            <Skeleton circle width={50} height={50} />
+            <div className="mobile-business-info">
+              <Skeleton width={120} height={20} />
+              <Skeleton width={80} height={16} />
+            </div>
+          </div>
+          <div><Skeleton width="100%" height={16} /></div>
+          <div><Skeleton width="100%" height={16} /></div>
+          <div><Skeleton width="100%" height={16} /></div>
+        </div>
+      ))
+    ) : (
+      <div className="no-results-message">
+        No partners found matching your search
+      </div>
+    )}
+  </div>
+</>
                       ) : crmMenu === "Clients" ? (
                         <>
-                          <div
-                            className="crm-tab"
-                            style={{ padding: "10px 35px" }}
-                          >
-                            <div
-                              className="crm-each-col"
-                              style={{ margin: "0", width: "25%" }}
-                            >
-                              Name
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                margin: "0",
-                                width: "30%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Email
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                margin: "0",
-                                width: "25%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Country
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                margin: "0",
-                                width: "25%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Phone Number
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                margin: "0",
-                                width: "25%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Profile Level
-                            </div>
-                          </div>
-                          <div className="clients-alldata">
-                            {isClientLoading
-                              ? Array(10)
-                                  .fill("")
-                                  .map((e, i) => {
-                                    return (
-                                      <div className="each-clientData" key={i}>
-                                        <div className="each-client-name">
-                                          <Skeleton width={150} height={30} />
-                                        </div>
-                                        <div className="each-client-email">
-                                          <Skeleton width={250} height={30} />
-                                        </div>
-                                      </div>
-                                    );
-                                  })
-                              : crmClientData
-                                  // ?.filter(
-                                  //   (item) =>
-                                  //     item?.name
-                                  //       .toLowerCase()
-                                  //       .startsWith(search?.toLowerCase()) ||
-                                  //     item?.email
-                                  //       .toLowerCase()
-                                  //       .startsWith(search?.toLowerCase())
-                                  // )
-                                  ?.map((e, i) => {
-                                    return (
-                                      <div className="each-clientData" key={i}>
-                                        <div className="each-client-name">
-                                          {e?.name}
-                                        </div>
-                                        <div className="each-client-new">
-                                          {e?.email}
-                                        </div>
-                                        <div className="each-client-email">
-                                          {e?.country}
-                                        </div>
-                                        <div className="each-client-email">
-                                          {e?.phoneNumber}
-                                        </div>
-                                        <div className="each-client-email">
-                                          {e?.user_level}
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                          </div>
-                        </>
+  {/* Keep desktop header (hidden on mobile) */}
+  <div className="crm-tab mobile-hidden" style={{ padding: "10px 35px" }}>
+    <div style={{ width: "25%" }}>Name</div>
+    <div style={{ width: "30%", paddingLeft: "1rem" }}>Email</div>
+    <div style={{ width: "25%", paddingLeft: "1rem" }}>Country</div>
+    <div style={{ width: "25%", paddingLeft: "1rem" }}>Phone</div>
+    <div style={{ width: "25%", paddingLeft: "1rem" }}>Level</div>
+  </div>
+
+  {/* Card-style data presentation */}
+  <div className="clients-alldata">
+    {isClientLoading ? (
+      Array(10).fill("").map((e, i) => (
+        <div className="client-card" key={i}>
+          <div><Skeleton width={150} height={20} /></div>
+          <div><Skeleton width={200} height={20} /></div>
+        </div>
+      ))
+    ) : (
+      crmClientData?.map((e, i) => (
+        <div className="client-card" key={i}>
+          {/* Main Fields */}
+          <div className="client-field">
+            <span className="field-label">Name:</span>
+            <span className="field-value">{e?.name || "-"}</span>
+          </div>
+          
+          <div className="client-field">
+            <span className="field-label">Email:</span>
+            <span className="field-value">{e?.email || "-"}</span>
+          </div>
+          
+          <div className="client-field">
+            <span className="field-label">Country:</span>
+            <span className="field-value">{e?.country || "-"}</span>
+          </div>
+          
+          <div className="client-field">
+            <span className="field-label">Phone:</span>
+            <span className="field-value">{e?.phoneNumber || "-"}</span>
+          </div>
+          
+          <div className="client-field">
+            <span className="field-label">Level:</span>
+            <span className="field-value">{e?.user_level || "-"}</span>
+          </div>
+
+          {/* Additional Fields (CRM, Paths, etc.) */}
+          {e?.crm && (
+            <div className="client-field">
+              <span className="field-label">CRM:</span>
+              <span className="field-value">{e.crm}</span>
+            </div>
+          )}
+          
+          {e?.paths && (
+            <div className="client-field">
+              <span className="field-label">Paths:</span>
+              <span className="field-value">{e.paths}</span>
+            </div>
+          )}
+        </div>
+      ))
+    )}
+  </div>
+</>
                       ) : crmMenu === "Users" ? (
                         <>
                           <div
@@ -2538,166 +2458,70 @@ const [adminServices, setAdminServices] = useState([])
                   </div>
                   <div className="crm-all-box">
                     
-                      <>
-                        <div
-                          className="crm-tab"
-                          style={{ padding: "10px 35px" }}
-                        >
-                          <div
-                            className="crm-each-col"
-                            style={{
-                              textAlign: "left",
-                              margin: "0",
-                              width: "25%",
-                            }}
-                          >
-                            Name
-                          </div>
-                          <div
-                            className="crm-each-col"
-                            style={{
-                              textAlign: "left",
-                              margin: "0",
-                              width: "20%",
-                              paddingLeft: "1rem",
-                            }}
-                          >
-                            Billing Frequency
-                          </div>
-                          <div
-                            className="crm-each-col"
-                            style={{
-                              textAlign: "left",
-                              margin: "0",
-                              width: "20%",
-                              paddingLeft: "1rem",
-                            }}
-                          >
-                            Billing Amount
-                          </div>
-                          <div
-                            className="crm-each-col"
-                            style={{
-                              textAlign: "left",
-                              margin: "0",
-                              width: "15%",
-                              paddingLeft: "1rem",
-                            }}
-                          >
-                           Currency
-                          </div>
-                          <div
-                            className="crm-each-col"
-                            style={{
-                              textAlign: "left",
-                              margin: "0",
-                              width: "25%",
-                              paddingLeft: "1rem",
-                            }}
-                          >
-                            Partner
-                          </div>
-                        </div>
-                        <div className="users-alldata">
-                          {isUserLoading
-                            ? Array(10)
-                                .fill("")
-                                .map((e, i) => {
-                                  return (
-                                    <div className="each-userData" key={i}>
-                                      <div
-                                        className="each-user-email"
-                                        style={{ width: "15%" }}
-                                      >
-                                        <Skeleton width={100} height={25} />
-                                      </div>
-                                      <div className="each-user-email">
-                                        <Skeleton width={100} height={25} />
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{ width: "15%" }}
-                                      >
-                                        <Skeleton width={100} height={25} />
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          width: "25%",
-                                        }}
-                                      >
-                                        <Skeleton width={100} height={25} />
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          width: "25%",
-                                        }}
-                                      >
-                                        <Skeleton width={200} height={25} />
-                                      </div>
-                                    </div>
-                                  );
-                                })
-                            : adminServices
-                                ?.filter(
-                                  (item) =>
-                                    item?.name
-                                      ?.toLowerCase()
-                                      ?.startsWith(search?.toLowerCase())
-                                )
-                                .map((e, i) => {
-                                  return (
-                                    <div className="each-userData" key={i}>
-                                      <div
-                                        className="each-user-email"
-                                        style={{ width: "25%" }}
-                                      >
-                                        {e?.name}
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          textTransform: "none",
-                                          paddingLeft: "1rem",
-                                        }}
-                                      >
-                                        {e?.chargingtype}
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          width: "20%",
-                                          paddingLeft: "1rem",
-                                        }}
-                                      >
-                                        {e?.billing_cycle?.lifetime?.price || e?.billing_cycle?.monthly?.price || e?.billing_cycle?.annual?.price}
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          width: "15%",
-                                          textTransform: "none",
-                                          paddingLeft: "1rem",
-                                        }}
-                                      >
-                                        {e?.billing_cycle?.lifetime?.coin || e?.billing_cycle?.monthly?.coin || e?.billing_cycle?.annual?.coin}
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          width: "25%",
-                                          textTransform: "none",
-                                          paddingLeft: "1rem",
-                                        }}
-                                      >
-                                        {e?.productcreatoremail}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                        </div>
-                      </>
+                  <>
+  <div className="users-alldata" style={{ display: "flex", flexDirection:"column", gap: "20px", padding: "20px" }}>
+    {isUserLoading
+      ? Array(10)
+          .fill("")
+          .map((_, i) => (
+            <div
+              key={i}
+              className="user-card"
+              style={{
+                width: "300px",
+                padding: "20px",
+                border: "1px solid #eee",
+                borderRadius: "10px",
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                backgroundColor: "#fff",
+                flexDirection:"column",
+              }}
+            >
+              <div style={{ marginBottom: "10px" }}>
+                <Skeleton width={200} height={25} />
+              </div>
+              <div style={{ marginBottom: "10px" }}>
+                <Skeleton width={150} height={25} />
+              </div>
+              <div style={{ marginBottom: "10px" }}>
+                <Skeleton width={100} height={25} />
+              </div>
+              <div style={{ marginBottom: "10px" }}>
+                <Skeleton width={80} height={25} />
+              </div>
+              <div style={{ marginBottom: "10px" }}>
+                <Skeleton width={180} height={25} />
+              </div>
+            </div>
+          ))
+      : adminServices
+          ?.filter((item) =>
+            item?.name?.toLowerCase()?.startsWith(search?.toLowerCase())
+          )
+          .map((e, i) => (
+            <div
+              key={i}
+              className="user-card"
+              style={{
+                width: "300px",
+                padding: "20px",
+                border: "1px solid #eee",
+                borderRadius: "10px",
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                backgroundColor: "#fff",
+                flexDirection: "column",
+              }}
+            >
+              <div><strong>Name:</strong> {e?.name}</div>
+              <div><strong>Billing Frequency:</strong> {e?.chargingtype}</div>
+              <div><strong>Billing Amount:</strong> {e?.billing_cycle?.lifetime?.price || e?.billing_cycle?.monthly?.price || e?.billing_cycle?.annual?.price}</div>
+              <div><strong>Currency:</strong> {e?.billing_cycle?.lifetime?.coin || e?.billing_cycle?.monthly?.coin || e?.billing_cycle?.annual?.coin}</div>
+              <div><strong>Partner:</strong> {e?.productcreatoremail}</div>
+            </div>
+          ))}
+  </div>
+</>
+
                    
                   </div>
                 </div>
@@ -3517,15 +3341,7 @@ const [adminServices, setAdminServices] = useState([])
                                   ...prevSelectedSteps,
                                   e,
                                 ]);
-                                // setPathSteps((prev) => {
-                                //   return {
-                                //     ...prev,
-                                //     step_ids:
-                                //       prev?.step_ids?.length > 0
-                                //         ? [...prev?.step_ids, e?._id]
-                                //         : [e?._id],
-                                //   };
-                                // });
+                                
                                 setPathSteps((prev) => {
                                   return {
                                     ...prev,
@@ -3600,10 +3416,6 @@ const [adminServices, setAdminServices] = useState([])
                                       (o) => o.step_id === e._id
                                     ).backup_pathId
                                   : "Select Backup Path"}
-
-                                {/* {e?.the_ids?.backup_pathId !== ""
-                                  ? e?.the_ids?.backup_pathId
-                                  : "Select Backup Path"} */}
                               </div>
                               <div className="arrow-box">
                                 <img
@@ -3823,19 +3635,6 @@ const [adminServices, setAdminServices] = useState([])
                           ))}
                       
                     </select>
-                      {/* <input
-                        type="text"
-                        placeholder="Country.."
-                        value={pathSteps?.country}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              country: e.target.value,
-                            };
-                          });
-                        }}
-                      /> */}
                     </div>
                   </div>
 

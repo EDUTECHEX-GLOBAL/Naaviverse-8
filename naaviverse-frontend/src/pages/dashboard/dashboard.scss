@@ -3,9 +3,10 @@
 
 .dashboard-body {
   height: calc(100vh);
-  width: 100vw;
+  width: 100%;
   display: flex;
   text-transform: capitalize !important;
+  overflow-x: hidden;
 }
 
 .dashboard-screens {
@@ -763,7 +764,7 @@
   top: 78px;
   right: 40px;
   z-index: 22;
-  width: 350px;
+  width: min(350px, calc(100vw - 60px));
 }
 
 .m-each {
@@ -882,4 +883,13 @@
   color: #ffffff;
   cursor: pointer;
   @include btn-animate(#ffffff);
+}
+@media screen and (min-width: 300px) and (max-width: 480px) {
+  .m-drop {
+    width: 90%;
+    right: 5%;
+    top: 70px;
+    padding: 15px 20px;
+    border-radius: 20px;
+  }
 }

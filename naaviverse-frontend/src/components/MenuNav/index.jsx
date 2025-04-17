@@ -44,6 +44,7 @@ const MenuNav = ({showDrop, setShowDrop, searchTerm, setSearchterm, searchPlaceh
                 placeholder={searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchterm(e.target.value)}
+                style={{ paddingLeft: "40px" }} 
                 />
             </div>
             <div

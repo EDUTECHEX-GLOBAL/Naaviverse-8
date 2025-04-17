@@ -6,7 +6,17 @@
 :root {
   --font-color: #100F0D;
 }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
+html, body {
+  overflow-x: hidden;
+}
 body {
   font-family: Montserrat !important;
   height: 100vh;
@@ -22,12 +32,8 @@ body {
     * {
       font-family: Montserrat;
       outline: none;
-      box-sizing: border-box;
     }
   }
-}
-iframe {
-  // display: none;
 }
 ::-webkit-scrollbar {
   width: 0;

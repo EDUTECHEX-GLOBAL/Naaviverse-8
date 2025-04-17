@@ -50,3 +50,33 @@
     cursor: pointer;
     @include btn-animate(#FFF);
   }
+
+
+@media (min-width: 300px) and (max-width:480px){
+  .dashboard-logo{
+    width: 150vw !important;
+    height: 70px; /* or 60px for visibility */
+    object-fit: contain;
+    max-width: 100%;
+  }
+  
+}
+
+@media (min-width: 481px) and (max-width:780px){
+  .dashboard-logo{
+    width: 150vw !important;
+    height: 70px; /* or 60px for visibility */
+    object-fit: contain;
+    max-width: 100%;
+  }
+  
+}
+@media (min-width: 781px) {
+  .dashboard-logo{
+    width: 150vw !important;
+    height: 70px; /* or 60px for visibility */
+    object-fit: contain;
+    max-width: 100%;
+  }
+  
+}

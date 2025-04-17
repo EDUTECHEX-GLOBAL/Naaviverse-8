@@ -293,3 +293,56 @@
     }
   }
 }
+.mypaths-content {
+  display: flex;
+  flex-wrap: wrap; /* Allow cards to wrap on smaller screens */
+  gap: 1rem; /* Add spacing between cards */
+  padding: 10px;
+}
+
+.mypaths-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  background-color: #fff;
+  width: calc(33.33% - 1rem); /* Display three cards per row */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-header h3 {
+  margin: 0;
+}
+
+.card-header small {
+  color: #666;
+}
+
+.card-body p {
+  margin: 5px 0;
+}
+
+.card-description h4 {
+  margin-bottom: 5px;
+}
+
+.card-description p {
+  margin: 0;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  .mypaths-card {
+    width: calc(50% - 1rem); /* Display two cards per row on smaller screens */
+    font-size: smaller; /* Adjust font size */
+    padding: 10px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .mypaths-card {
+    width: calc(100% - 1rem); /* Display one card per row on very small screens */
+    font-size: smaller; /* Adjust font size */
+    padding: 8px;
+    margin-bottom:10px
+}
+}

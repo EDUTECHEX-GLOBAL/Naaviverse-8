@@ -375,14 +375,14 @@ const UserProfile = () => {
         throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
       }
   
-      console.log('✅ File uploaded successfully');
+      console.log('File uploaded successfully');
   
       // Generate the file URL
       const fileUrl = `https://thenaaviversebucket.s3.amazonaws.com/${selectedFile.name}`;
       setProfilePicture(fileUrl); // Update the profile picture state
   
     } catch (error) {
-      console.error('❌ Error uploading file:', error);
+      console.error('Error uploading file:', error);
     } finally {
       setUploading(false); // Hide uploading indicator
     }
@@ -899,11 +899,11 @@ const UserProfile = () => {
               <>
                 {isProfileData ? (
                   <div
-                    className="pf-main"
+                    className="pf-main1"
                     onClick={() => setShowDrop(false)}
                     style={{ padding: "0", height: "calc(100% - 70px)" }}
                   >
-                    <div className="pf-left">
+                    <div className="pf-left1">
                       <div
                         style={{
                           display: "flex",
@@ -1305,7 +1305,7 @@ const UserProfile = () => {
                     </div>
 
                     <div
-                      className="pf-right"
+                      className="pf-right1"
                       style={{ minWidth: "30%", height: "100%" }}
                     >
                       <div className="pfr-1" style={{ padding: "0" }}>
@@ -1387,26 +1387,7 @@ const UserProfile = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="pfr-1">
-                        <div>
-                          <div className="pfr-head">Change Password</div>
-                          <div className="pfr-desc">
-                            Click here to change your password. You will need to
-                            verify your email again to reset your password.
-                          </div>
-                        </div>
-                        <div className="pfr-btn">Change Password</div>
-                      </div>
-                      <div className="pfr-2">
-                        <div>
-                          <div className="pfr-head">Enable 2FA</div>
-                          <div className="pfr-desc">
-                            For an additional layer of security you can enable 2
-                            factor authentication via Google Authenticator.
-                          </div>
-                        </div>
-                        <div className="pfr-btn">Enable</div>
-                      </div>
+                      
                       {changing && (
                         <div
                           className="loading-component"
@@ -1931,7 +1912,7 @@ const UserProfile = () => {
       <>
         {createBrandProfile && (
           <div
-            className={createLevelThree ? "popularS1" : "popularS"}
+            className={createLevelThree ? "popularS1" : "popularS1"}
             style={{
               padding:
                 createBrandProfileStep === 2
@@ -2209,7 +2190,7 @@ const UserProfile = () => {
 
       <>
         {createlevelTwo && (
-          <div className="popularS">
+          <div className="popularS1">
             {levelTwoStep === 7 && (
               <div className="successMsg">
                 You Have Successfully Created Your Naavi Profile Level 2.

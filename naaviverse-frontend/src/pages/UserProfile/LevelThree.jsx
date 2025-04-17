@@ -130,7 +130,7 @@ const LevelThree = ({
               {allQuestions.map((item, index) => (
                 <div key={index} className={styles.singleQuestionWrapper}>
                   <div>{item.question}</div>
-                  <div style={{ display: "flex", gap: "20px" }}>
+                  <div style={{ display: "flex", gap: "10px", paddingTop:"20px" }}>
                     {answrOptions.map((option, answerIndex) => (
                       <div
                         key={answerIndex}

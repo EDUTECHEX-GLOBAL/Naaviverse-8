@@ -293,3 +293,83 @@
     }
   }
 }
+
+.mypathsScroll-div {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 10px;
+}
+
+/* Main card styling */
+.each-mypaths-card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 16px;
+  transition: 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Hover effect */
+.each-mypaths-card:hover {
+  transform: scale(1.01);
+}
+
+/* Top section */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+/* Name/title */
+.card-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* ID or subinfo */
+.card-subinfo {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+/* Card body info */
+.card-body > div {
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.card-description {
+  color: #555;
+  margin-top: 8px;
+  word-break: break-word;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 768px) {
+  .card-header {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .each-mypaths-card {
+    padding: 12px;
+  }
+
+  .card-title {
+    font-size: 1rem;
+  }
+
+  .card-body > div {
+    font-size: 0.85rem;
+  }
+
+  .card-subinfo {
+    font-size: 0.75rem;
+  }
+}

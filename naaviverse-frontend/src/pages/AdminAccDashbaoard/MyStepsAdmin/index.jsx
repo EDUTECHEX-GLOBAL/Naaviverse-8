@@ -384,23 +384,6 @@ const [allServicesToAdd, setAllServicesToAdd] = useState([])
   }, [stepActionStep])
 
   
-
-  // const fetchData = async () => {
-  //   setProductDataArray([]);
-  //   console.log(productKeys, "ewlkhflkwheflwerf")
-  //   if (productKeys) {
-  //     const apiKeys = Object.values(productKeys);
-  //     const fetchDataPromises = apiKeys.map((item) => fetchProductData(item));
-
-  //     try {
-  //       const results = await Promise.all(fetchDataPromises);
-  //       const updatedProductDataArray = results.filter(Boolean);
-  //       setProductDataArray([...updatedProductDataArray]);
-  //     } catch (error) {
-  //       console.error("Error fetching product data:", error);
-  //     }
-  //   }
-  // };
   const fetchData = async () => {
     setProductDataArray([]);
     console.log(productKeys, "ewlkhflkwheflwerf");
@@ -725,91 +708,50 @@ useEffect(() => {
           </>
         ) : (
           <>
-            <div className="mypathsNav">
-              <div className="mypathsName">Name</div>
-              <div className="mypathsCountry">Length</div>
-              <div className="mypathsCountry">Cost Structure</div>
-              <div className="mypathsMicrosteps">Services</div>
+  <div className="mypathsScroll-div">
+    {loading
+      ? Array(10)
+          .fill("")
+          .map((e, i) => (
+            <div className="each-mypaths-card" key={i}>
+              <div className="card-header">
+                <div className="card-title"><Skeleton width={100} height={30} /></div>
+                <div className="card-subinfo">
+                  <Skeleton width={80} height={20} />
+                </div>
+              </div>
+              <div className="card-body">
+                <div><strong>Length:</strong> <Skeleton width={50} height={20} /></div>
+                <div><strong>Cost:</strong> <Skeleton width={70} height={20} /></div>
+                <div><strong>Services:</strong> <Skeleton width={40} height={20} /></div>
+                <div className="card-description"><Skeleton width={"100%"} height={30} /></div>
+              </div>
             </div>
-            <div className="mypathsScroll-div">
-              {loading
-                ? Array(10)
-                    .fill("")
-                    ?.map((e, i) => {
-                      return (
-                        <div className="each-mypaths-data1" key={i}>
-                          <div className="each-mypaths-detail">
-                            <div className="each-mypathsName">
-                              <Skeleton width={100} height={30} />
-                            </div>
-                            <div className="each-mypathsCountry">
-                              <Skeleton width={100} height={30} />
-                            </div>
-                            <div className="each-mypathsCountry">
-                              <Skeleton width={100} height={30} />
-                            </div>
-                            <div className="each-mypathsMicrosteps">
-                              <Skeleton width={100} height={30} />
-                            </div>
-                          </div>
-                          <div className="each-mypaths-desc">
-                            <div className="each-mypaths-desc-txt">
-                              <Skeleton width={100} height={30} />
-                            </div>
-                            <div className="each-mypaths-desc-txt1">
-                              <Skeleton width={"100%"} height={30} />
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })
-                : filteredPartnerStepsData?.map((e, i) => {
-                    return (
-                      <div
-                        className="each-mypaths-data1"
-                        key={i}
-                        onClick={() => {
-                          setSelectedStepId(e?._id);
-                          setStepActionEnabled(true);
-                        }}
-                      >
-                        <div className="each-mypaths-detail">
-                          <div className="each-mypathsName">
-                            <div>
-                              <div>{e?.name}</div>
-                              <div
-                                style={{
-                                  fontSize: "0.8rem",
-                                  fontWeight: "300",
-                                }}
-                              >
-                                {e?._id}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="each-mypathsCountry">
-                            {e?.length ? e?.length : 0} Days
-                          </div>
-                          <div className="each-mypathsCountry">{e?.cost}</div>
-                          <div className="each-mypathsMicrosteps">
-                            {e?.other_data
-                              ? Object.keys(e.other_data).length
-                              : 0}
-                          </div>
-                        </div>
-                        <div className="each-mypaths-desc">
-                          <div className="each-mypaths-desc-txt">
-                            Description
-                          </div>
-                          <div className="each-mypaths-desc-txt1">
-                            {e?.description}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+          ))
+      : filteredPartnerStepsData?.map((e, i) => (
+          <div
+            className="each-mypaths-card"
+            key={i}
+            onClick={() => {
+              setSelectedStepId(e?._id);
+              setStepActionEnabled(true);
+            }}
+          >
+            <div className="card-header">
+              <div className="card-title">{e?.name}</div>
+              <div className="card-subinfo">ID: {e?._id}</div>
             </div>
-          </>
+            <div className="card-body">
+              <div><strong>Length:</strong> {e?.length || 0} Days</div>
+              <div><strong>Cost:</strong> {e?.cost}</div>
+              <div><strong>Services:</strong> {e?.other_data ? Object.keys(e.other_data).length : 0}</div>
+              <div className="card-description"><strong>Description:</strong> {e?.description}</div>
+            </div>
+          </div>
+        ))}
+  </div>
+</>
+
         )}
 
         {pathActionEnabled && (

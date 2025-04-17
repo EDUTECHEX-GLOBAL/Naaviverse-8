@@ -198,7 +198,7 @@ const About = ({
       app_code: selectedMcbDashboardApp?.app_code,
     };
     axios
-      .post(`https://comms.globalxchange.io/gxb/apps/update`, {
+      .post(`https://comms.globalxchange.io/`, {
         ...tempData,
         ...bodyData,
       })

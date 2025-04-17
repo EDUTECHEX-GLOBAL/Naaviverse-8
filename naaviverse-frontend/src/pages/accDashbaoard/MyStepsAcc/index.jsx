@@ -812,93 +812,51 @@ const fetchServicesForRemoval = async () => {
                         </div>
                     ) : (
                         <>
-                            <div className="mypathsNav">
-                                <div className="mypathsName">Name</div>
-                                <div className="mypathsCountry">Length</div>
-                                <div className="mypathsCountry">Cost Structure</div>
-                                <div className="mypathsMicrosteps">Services</div>
-                            </div>
-                            <div className="mypathsScroll-div">
-                                {loading
-                                    ? Array(10)
-                                        .fill("")
-                                        ?.map((e, i) => {
-                                            return (
-                                                <div className="each-mypaths-data1" key={i}>
-                                                    <div className="each-mypaths-detail">
-                                                        <div className="each-mypathsName">
-                                                            <Skeleton width={100} height={30} />
-                                                        </div>
-                                                        <div className="each-mypathsCountry">
-                                                            <Skeleton width={100} height={30} />
-                                                        </div>
-                                                        <div className="each-mypathsCountry">
-                                                            <Skeleton width={100} height={30} />
-                                                        </div>
-                                                        <div className="each-mypathsMicrosteps">
-                                                            <Skeleton width={100} height={30} />
-                                                        </div>
-                                                    </div>
-                                                    <div className="each-mypaths-desc">
-                                                        <div className="each-mypaths-desc-txt">
-                                                            <Skeleton width={100} height={30} />
-                                                        </div>
-                                                        <div className="each-mypaths-desc-txt1">
-                                                            <Skeleton width={"100%"} height={30} />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })
-                                    : filteredPartnerStepsData?.map((e, i) => {
-                                        return (
-                                            <div
-                                                className="each-mypaths-data1"
-                                                key={i}
-                                                onClick={() => {
-                                                    setSelectedStepId(e?._id);
-                                                    setStepActionEnabled(true);
-                                                }}
-                                            >
-                                                <div className="each-mypaths-detail">
-                                                    <div className="each-mypathsName">
-                                                        <div>
-                                                            <div>{e?.name}</div>
-                                                            <div
-                                                                style={{
-                                                                    fontSize: "0.8rem",
-                                                                    fontWeight: "300",
-                                                                }}
-                                                            >
-                                                                {e?._id}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="each-mypathsCountry">
-                                                        {e?.length ? e?.length : 0} Days
-                                                    </div>
-                                                    <div className="each-mypathsCountry">{e?.cost}</div>
-                                                    <div className="each-mypathsMicrosteps">
-                              {e?.services ? e.services.length : 0}
-                          </div>
-                                                </div>
-                                                <div className="each-mypaths-desc">
-                                                    <div className="each-mypaths-desc-txt">
-                                                        Description
-                                                    </div>
-                                                    <div className="each-mypaths-desc-txt1">
-                                                        {e?.description}
-                                                    </div>
-                                                </div>
+  <div className="mypaths-content">
+    {loading
+      ? Array(10)
+          .fill("")
+          .map((_, i) => (
+            <div className="mypaths-card skeleton-card" key={i}>
+              <Skeleton width={100} height={30} />
+              <Skeleton width={"100%"} height={30} />
+              <Skeleton width={100} height={30} />
+            </div>
+          ))
+      : filteredPartnerStepsData?.map((e, i) => (
+          <div
+            className="mypaths-card"
+            key={i}
+            onClick={() => {
+              setSelectedStepId(e?._id);
+              setStepActionEnabled(true);
+            }}
+          >
+            {/* Card Header */}
+            <div className="card-header">
+              <h3>{e?.name}</h3>
+              <small style={{ fontSize: "0.8rem", fontWeight: "300" }}>
+                ID: {e?._id}
+              </small>
+            </div>
 
+            {/* Card Body */}
+            <div className="card-body">
+              <p><strong>Length:</strong> {e?.length ? e?.length : 0} Days</p>
+              <p><strong>Cost:</strong> {e?.cost}</p>
+              <p><strong>Services:</strong> {e?.services ? e.services.length : 0}</p>
+            </div>
 
-                                                
-                
-                                            </div>
-                                        );
-                                    })}
-                            </div>
-                        </>
+            {/* Card Description */}
+            <div className="card-description">
+              <h4>Description</h4>
+              <p>{e?.description}</p>
+            </div>
+          </div>
+        ))}
+  </div>
+</>
+
                     )}
 
                     {pathActionEnabled && (
@@ -1881,7 +1839,7 @@ const fetchServicesForRemoval = async () => {
                                             setStepActionStep(7); // Go back to Edit Step options
                                         }}
                                     >
-                                        Go Back
+                                         Back
                                     </div>
                                 </div>
                             )}

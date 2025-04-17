@@ -229,7 +229,7 @@ const About = ({
     if (selectedMcbDashboardApp) {
       axios
         .get(
-          `https://comms.globalxchange.io/gxb/apps/get?app_code=${selectedMcbDashboardApp?.app_code}`
+          `https://comms.globalxchange.io/gxb/apps`
         )
         .then(({ data }) => {
           setDefaultBondTier(data?.apps[0]?.default_customBond_list_id);

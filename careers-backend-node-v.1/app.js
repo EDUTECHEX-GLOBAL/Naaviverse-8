@@ -57,24 +57,28 @@ app.use('/api/fetch', userpathRouter)
 app.use('/api/pre_login', preLoginRouter)
 app.use('/api/userAnswers', userPersonalityRouter)
 app.use('/api/partner', partnerRouter)
+
 app.use('/api/admin', adminRouter)
 app.use('/api/personality', personalityRouter)
 app.use('/api/userpaths', programRouter)
 
 
 app.post('/api/get-presigned-url', async (req, res) => {
+  const { fileName, fileType } = req.body;
+
   const params = {
     Bucket: 'thenaaviversebucket',
-    Key: req.body.fileName,
-    ContentType: req.body.fileType,
-    ACL: "public-read",
+    Key: fileName,
+    ContentType: fileType,
+    Expires: 900,  
   };
 
   try {
     const presignedUrl = await s3.getSignedUrlPromise('putObject', params);
+    console.log("Generated Presigned URL:", presignedUrl);  // ✅ Log URL for debugging
     res.json({ presignedUrl });
   } catch (err) {
-    console.error(err);
+    console.error("Error generating presigned URL:", err);
     res.status(500).json({ error: 'Failed to generate presigned URL' });
   }
 });

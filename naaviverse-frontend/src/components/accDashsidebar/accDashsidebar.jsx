@@ -1,277 +1,84 @@
-import React, { useState } from "react";
-import realtorwhite from "../../static/images/dashboard/realtorwhite.svg";
-import "./accDashsidebar.scss";
-import { useStore } from "../store/store.ts";
-import { useNavigate } from "react-router-dom";
-// import logo from "./logo.svg";
-import logo from "./naavilogo.png";
+import React, { useState, useRef, useEffect } from "react";
+import { FiMenu, FiX, FiPlus } from "react-icons/fi";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useStore } from "../store/store.ts";// Import useStore
+import "./accDashsidebar.scss"; // Import styles
 
-const sidebarMenu1 = [
-  {
-    id: 0,
-    display: "CRM",
-    title: "CRM",
-    click: true,
-  },
-  {
-    id: 1,
-    display: "My Paths",
-    title: "Paths",
-    click: true,
-  },
-  {
-    id: 2,
-    display: "My Steps",
-    title: "Steps",
-    click: true,
-  },
-  {
-    id: 3,
-    display: "My Services",
-    title: "My Services",
-    click: true,
-  },
+const menuItems = [
+  { id: 1, label: "CRM", path: "/dashboard/accountants?menu=CRM" },
+  { id: 2, label: "My Paths", path: "/dashboard/accountants?menu=MyPaths" },
+  { id: 3, label: "My Steps", path: "/dashboard/accountants?menu=MySteps" },
+  { id: 4, label: "Services", path: "/dashboard/accountants?menu=Services" },
 ];
 
-const sidebarMenu2 = [
-  {
-    id: 0,
-    display: "CRM",
-    title: "CRM",
-    click: true,
-  },
-  {
-    id: 1,
-    display: "Paths",
-    title: "Paths",
-    click: true,
-  },
-
-];
-
-const sidebarMenu3 = [
-  // {
-  //   id: 0,
-  //   title: "Wallet",
-  //   click: true,
-  // },
-  // {
-  //   id: 1,
-  //   title: "Naavi GPT",
-  //   click: true,
-  // },
-];
-
-const sidebarMenu4 = [
-  // {
-  //   id: 0,
-  //   title: "Wallet",
-  //   click: true,
-  // },
-  // {
-  //   id: 1,
-  //   title: "Naavi GPT",
-  //   click: true,
-  // },
-];
-
-
-
-const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar , admin}) => {
-  const [selectedMenu, setSelectedMenu] = useState(admin ? sidebarMenu2: sidebarMenu1)
-  const { accsideNav, setaccsideNav, setispopular } = useStore();
+const MenuDropdown = ({ onSelectMenu = () => {} }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const menuRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedMenu, setSelectedMenu] = useState("CRM"); // Default to CRM
+
+  const { setispopular } = useStore(); // ✅ Use Zustand store
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const menu = queryParams.get("menu") || "CRM";
+    setSelectedMenu(menu);
+    onSelectMenu(menu);
+    
+  }, [location, onSelectMenu]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleMenuClick = (item) => {
+    setSelectedMenu(item.label);
+    navigate(item.path);
+    setIsOpen(false);
+    if (typeof onSelectMenu === "function") {
+      onSelectMenu(item.label);
+    }
+  };
+
+  const handleAddNew = () => {
+    console.log(" Add New Clicked! Setting ispopular = true");
+    setispopular(true); // ✅ Update Zustand state
+    setIsOpen(false);
+  };
+
   return (
-    <div
-      className="dashboard-sidebar"
-      style={{ overflow: "hidden", padding: "0" }}
-    >
-      <div
-        className="dashboard-left"
-        style={{
-          padding: "0 2vw",
-          height: "70px",
-          borderBottom: "0.5px solid #e5e5e5",
-          display: "flex",
-        }}
-        onClick={() => {
-          if (handleChangeAccDashsidebar) {
-            handleChangeAccDashsidebar();
-            setaccsideNav("CRM");
-          }
-        }}
-      >
-        <img
-          className="dashboard-logo"
-          src={logo}
-          alt=""
-          style={{ width: "50%" }}
-        />
+    <div className="menu-container" ref={menuRef}>
+      <div className="menu-icon" onClick={() => setIsOpen(!isOpen)}>
+        {isOpen ? <FiX size={28} /> : <FiMenu size={28} />}
       </div>
-      <div
-        style={{
-          overflowY: "scroll",
-          height: "75vh",
-          marginTop: "30px",
-          padding: "0 2vw",
-        }}
-      >
-        {/* <div
-          style={{
-            fontWeight: "600",
-            fontSize: "18px",
-            marginBottom: "1.5rem",
-            color: "#100F0D",
-          }}
-        >
-          Grow
-        </div> */}
-        <div>
-          {selectedMenu?.map((each, i) => {
-            return (
-              <div
-                className="each-sidenav"
-                style={{
-                  background: accsideNav === each.title ? "#FFFFFF" : "",
-                  color: accsideNav === each.title ? "#100F0D" : "",
-                  paddingLeft: accsideNav === each.title ? '20px' : '',
-                  // boxShadow:
-                  //   accsideNav === each.title
-                  //     ? "0px 2px 2px rgba(0, 0, 0, 0.25)"
-                  //     : "",
-                  // fontWeight: accsideNav === each.title ? "700" : "500",
-                  borderRadius: accsideNav === each.title ? "35px" : "",
-                  opacity: each.click ? "1" : "0.25",
-                  cursor: each.click ? "pointer" : "not-allowed",
-                }}
-                key={i}
-                onClick={() => {
-                  if (handleChangeAccDashsidebar) {
-                    handleChangeAccDashsidebar();
-                    setaccsideNav(each.title);
-                  } else if (each.click && isNotOnMainPage) {
-                    navigate("/dashboard/accountants");
-                  } else if (each.click) {
-                    setaccsideNav(each.title);
-                  }
-                }}
-              >
-                {each.display}
-              </div>
-            );
-          })}
+
+      {isOpen && (
+        <div className="menu-dropdown">
+          {menuItems.map((item) => (
+            <div
+              key={item.id}
+              className={`menu-item ${selectedMenu === item.label ? "active" : ""}`}
+              onClick={() => handleMenuClick(item)}
+            >
+              {item.label}
+            </div>
+          ))}
+          <div className="menu-item add-new" onClick={handleAddNew}>
+            <FiPlus size={20} /> Add New
+          </div>
         </div>
-        {/* <div className="sidebar-line"></div>
-        <div
-          style={{
-            fontWeight: "600",
-            fontSize: "18px",
-            marginBottom: "1.5rem",
-            color: "#100F0D",
-          }}
-        >
-          Manage
-        </div>
-        <div>
-          {sidebarMenu2.map((ele, j) => {
-            return (
-              <div
-                className="each-sidenav"
-                style={{
-                  background: accsideNav === ele.title ? "#FFFFFF" : "",
-                  color: accsideNav === ele.title ? "#100F0D" : "",
-                  paddingLeft: accsideNav === ele.title ? "20px" : "",
-                  // boxShadow:
-                  //   accsideNav === ele.title
-                  //     ? "0px 2px 2px rgba(0, 0, 0, 0.25)"
-                  //     : "",
-                  borderRadius: accsideNav === ele.title ? "35px" : "",
-                  opacity: ele.click ? "1" : "0.25",
-                  cursor: ele.click ? "pointer" : "not-allowed",
-                  // fontWeight: accsideNav === ele.title ? "700" : "500",
-                }}
-                key={j}
-                onClick={() => {
-                  if (ele.click && isNotOnMainPage) {
-                    navigate("/dashboard/accountants");
-                  } else if (ele.click) {
-                    setaccsideNav(ele.title);
-                  }
-                }}
-              >
-                {ele.title}
-              </div>
-            );
-          })}
-        </div> */}
-        {/* <div className="sidebar-line"></div> */}
-        {/* <div
-          style={{
-            fontWeight: "600",
-            fontSize: "18px",
-            marginBottom: "1.5rem",
-            color: "#100F0D",
-          }}
-        >
-          Tools
-        </div> */}
-        <div>
-          {sidebarMenu3.map((ele, j) => {
-            return (
-              <div
-                className="each-sidenav"
-                style={{
-                  background: accsideNav === ele.title ? "#FFFFFF" : "",
-                  color: accsideNav === ele.title ? "#100F0D" : "",
-                  paddingLeft: accsideNav === ele.title ? "20px" : "",
-                  // boxShadow:
-                  //   accsideNav === ele.title
-                  //     ? "0px 2px 2px rgba(0, 0, 0, 0.25)"
-                  //     : "",
-                  borderRadius: accsideNav === ele.title ? "35px" : "",
-                  opacity: ele.click ? "1" : "0.25",
-                  cursor: ele.click ? "pointer" : "not-allowed",
-                  // fontWeight: accsideNav === ele.title ? "700" : "500",
-                }}
-                key={j}
-                onClick={() => {
-                  if (handleChangeAccDashsidebar) {
-                    handleChangeAccDashsidebar();
-                    setaccsideNav(ele.title);
-                  } else if (ele.click && isNotOnMainPage) {
-                    navigate("/dashboard/accountants");
-                  } else if (ele.click) {
-                    setaccsideNav(ele.title);
-                  }
-                }}
-              >
-                {ele.title}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      {!admin &&
-      <div
-        className="side-btn"
-        style={{
-          background: "#59A2DD",
-          borderRadius: "35px",
-          padding: "15px 0px",
-          color: "#FFF",
-          width: "15vw",
-          textAlign: "center",
-          position: "fixed",
-          bottom: "20px",
-          cursor: "pointer",
-          left: "2.5vw",
-        }}
-        onClick={() => setispopular(true)}
-      >
-        Add New
-      </div>}
+      )}
     </div>
   );
 };
 
-export default AccDashsidebar;
+export default MenuDropdown;

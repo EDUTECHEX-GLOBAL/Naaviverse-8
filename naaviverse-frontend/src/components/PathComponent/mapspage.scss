@@ -61,51 +61,51 @@
       }
 
       .mid-area1 {
-        width: 100%;
-        padding: 2rem 1rem;
-        border-bottom: 1px solid #e5e5e5;
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
+        width: 100% !important;
+        padding: 2rem 1rem !important;
+        border-bottom: 1px solid #e5e5e5 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2rem !important;
 
         .current-coord-container {
-          width: 100%;
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-          margin-bottom: 1rem;
+          width: 100%!important;
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 1rem !important;
+          margin-bottom: 1rem !important;
 
           .current-text {
-            font-size: 0.9rem;
-            font-weight: 500;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
           }
 
           .each-coo-field {
-            width: 100%;
-            border-radius: 45px;
-            border: 1px solid #e5e5e5;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-weight: 300;
-            font-size: 0.8rem;
+            width: 100% !important;
+            border-radius: 45px !important;
+            border: 1px solid #e5e5e5 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            font-weight: 300 !important;
+            font-size: 0.8rem !important;
 
             .field-name {
-              width: 45%;
-              height: 3rem;
+              width: 45% !important;
+              height: 3rem !important;
               // padding: 1rem 1rem 1rem 2rem;
-              border-right: 1px solid #e5e5e5;
-              font-size: 0.9em;
-              display: flex;
-              align-items: center;
-              padding-left: 20px;
+              border-right: 1px solid #e5e5e5 !important;
+              font-size: 0.9em !important;
+              display: flex !important;
+              align-items: center !important;
+              padding-left: 20px !important;
             }
 
             .field-value {
-              width: 45%;
-              padding: 1rem 1rem;
-              text-align: right;
-              border-left: 1px solid #e5e5e5;
+              width: 45% !important;
+              padding: 1rem 1rem !important;
+              text-align: right !important;
+              border-left: 1px solid #e5e5e5 !important;
             }
           }
         }
@@ -305,21 +305,145 @@
 }
 
 .toggleContainer {
-  width: 15% !important;
-  border: 1px solid #d9d9d9;
-  border-radius: 35px;
-  margin-left: 10px;
-  margin-right: 10px;
+  width: 30% ;
+  border: 1px solid #d9d9d9 !important;
+  border-radius: 35px !important;
+  margin-left: 14px !important;
+  margin-right: 5px !important;
   // position: absolute;
   // justify-content: center;
 }
 .toggle {
-  margin: 2px;
-  width: 14px;
-  height: 14px;
-  background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%);
-  border-radius: 50%;
-  transition: all 0.5s ease;
+  margin: 2px !important;
+  width: 14px !important;
+  height: 14px !important;
+  background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+  border-radius: 50% !important;
+  transition: all 0.5s ease !important;
   // transform: translateX(0px);
+  cursor: pointer !important;
+}
+
+.toggleContainer2 {
+  width: 50% ;
+  border: 1px solid #d9d9d9 !important;
+  border-radius: 35px !important;
+  margin-left: 10px !important;
+  margin-right: 10px !important;
+  // position: absolute;
+  // justify-content: center;
+}
+.toggle2 {
+  margin: 2px !important;
+  width: 14px !important;
+  height: 14px !important;
+  background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+  border-radius: 50% !important;
+  transition: all 0.5s ease !important;
+  // transform: translateX(0px);
+  cursor: pointer !important;
+}
+
+.toggleContainer3 {
+  width: 70% ;
+  border: 1px solid #d9d9d9 !important;
+  border-radius: 35px !important;
+  margin-left: 10px !important;
+  margin-right: 10px !important;
+  // position: absolute;
+  // justify-content: center;
+}
+.toggle3 {
+  margin: 2px !important;
+  width: 14px !important;
+  height: 14px !important;
+  background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+  border-radius: 50% !important;
+  transition: all 0.5s ease !important;
+  // transform: translateX(0px);
+  cursor: pointer !important;
+}
+
+.toggleContainer4 {
+  width: 80% ;
+  border: 1px solid #d9d9d9 !important;
+  border-radius: 35px !important;
+  margin-left: 4px !important;
+  margin-right: 10px !important;
+  
+  // position: absolute;
+  // justify-content: center;
+}
+.toggle4 {
+  margin: 2px !important;
+  width: 14px !important;
+  height: 14px !important;
+  background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+  border-radius: 50% !important;
+  transition: all 0.5s ease !important;
+  // transform: translateX(0px);
+  cursor: pointer !important;
+}
+
+.gs-Btn-maps1 {
+  background: linear-gradient(89deg, #47b4d5 0%, #29449d 100%);
+  color: white;
+  font-weight: 500;
+  border-radius: 30px;
+  padding: 0.5rem 1.5rem;
+  font-size: 0.8rem;
   cursor: pointer;
+  border: none;
+  transition: all ease 0.2s;
+  position: relative; /* Added */
+  z-index: 1000; /* Added and moved z-index here */
+}
+
+
+.gs-Btn-maps1:hover {
+  transform: scale(1.05);
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.side-window {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 80vw;
+  max-width: 400px;
+  height: 100vh;
+  background: white;
+  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  padding: 1.5rem;
+  overflow-y: auto;
+  animation: slideIn 0.3s ease forwards;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }

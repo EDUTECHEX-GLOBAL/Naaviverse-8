@@ -34,23 +34,37 @@
       display: flex;
       justify-content: space-between;
     }
+
+    .cs-text2 {
+      padding-right: 2px;
+      padding-left: 138px !important;
+      padding-top:2px;
+      padding-bottom: 2px;
+    }
   }
 
   .cs-content {
     width: 100%;
     height: calc(100% - 8rem - 70px);
     padding: 1rem 35px 1rem;
+    flex-direction: column !important;
+    overflow-y: scroll;
+    margin-top:200px !important;
+      
 
     .overall-cs-content {
       width: 100%;
       height: 100%;
       position: relative;
+      flex-direction: column !important;
+      
 
       .macro-view-box {
-        position: absolute;
+        position: relative;
         inset: 0;
         z-index: 1;
         right: 73%;
+        
 
         .macro-text {
           height: 2rem;
@@ -74,6 +88,7 @@
             font-weight: 500;
             height: 5rem;
             line-height: 1.5;
+            padding-bottom: 2px;
           }
 
           .macro-text-div {
@@ -88,11 +103,11 @@
       }
 
       .micro-view-box {
-        position: absolute;
+        position: relative;
         inset: 0;
         z-index: 2;
-        left: 25%;
-        right: 43%;
+        
+        right: 73%;
 
         .micro-text {
           height: 2rem;
@@ -194,10 +209,10 @@
       }
 
       .nano-view-box {
-        position: absolute;
+        position: relative;
         inset: 0;
         z-index: 3;
-        left: 55%;
+        right: 73%;
 
         .nano-text {
           height: 2rem;
@@ -823,3 +838,218 @@
 .card.fade {
   opacity: 0.5;
 }
+
+@media (min-width:300px) and (max-width: 480px) {
+  .currentstep .cs-top-area {
+    height: auto;
+    padding: 1rem 10px;
+    gap: 0.5rem;
+  }
+  .currentstep .cs-top-area .bold-text {
+    font-size: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+
+  }
+  .currentstep .cs-top-area .cs-text2 {
+    padding-right: 2px;
+    padding-left: 170px !important;
+    padding-top:2px;
+    padding-bottom: 2px;
+  }
+  .currentstep .cs-content {
+    padding: 0.5rem 5px 0.5rem;
+    margin-top: 80px !important;
+    height: auto;
+  }
+
+  .currentstep .macro-view-box,
+  .currentstep .micro-view-box,
+  .currentstep .nano-view-box {
+    right: 0;
+    width: 100%;
+  }
+  .currentstep .macro-content{
+    padding: 1rem 0.5rem;
+    border-radius: 15px;
+    .step-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            height: 5rem;
+            line-height: 1.5;
+            padding-bottom: 2px;
+          }
+      }
+  .currentstep .micro-content{
+    padding: 1rem 0.5rem;
+    border-radius: 15px;
+      }
+  .currentstep .nano-content {
+    padding: 1rem ;
+    border-radius: 15px;
+    height: 200% !important; 
+    padding-top: 0.5rem;
+    padding-bottom: 50px !important;
+    margin-bottom: 60px !important;
+      }
+}
+
+@media (min-width:481px) and (max-width: 700px) {
+  .currentstep .cs-top-area {
+    height: auto;
+    padding: 1rem 10px;
+    gap: 0.5rem;
+  }
+  .currentstep .cs-top-area .bold-text {
+    font-size: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .currentstep .cs-top-area .cs-text2 {
+    padding-right: 2px;
+    padding-left: 270px !important;
+    padding-top:2px;
+    padding-bottom: 2px;
+  }
+  .currentstep .cs-content {
+    padding: 0.5rem 5px 0.5rem;
+    margin-top: 80px !important;
+    height: auto;
+  }
+  .currentstep .cs-content .overall-cs-content {
+    flex-direction: column !important;
+  }
+  /* Optional: Make view boxes full width on mobile */
+  .currentstep .macro-view-box,
+  .currentstep .micro-view-box,
+  .currentstep .nano-view-box {
+    right: 0;
+    width: 100%;
+  }
+  .currentstep .macro-content{
+    padding: 1rem 0.5rem;
+    border-radius: 15px;
+    .macro-text-div {
+      font-weight: 400 !important;
+      line-height: 1.8;
+      font-size: 2rem;
+      text-transform: none;
+      height: calc(100% - 2rem) !important;
+      overflow-y: scroll;
+      padding-top: -6px !important;
+      
+    }  
+    
+  }
+  .currentstep .micro-content{
+    padding: 1rem 0.5rem;
+    border-radius: 15px;
+  }
+  .currentstep .nano-content {
+    padding: 1rem 0.5rem;
+    border-radius: 15px;
+    height: 150% !important; 
+    padding-top: 0.5rem;
+    padding-bottom: 30px !important;
+    margin-bottom: 40px !important;
+  }
+}
+
+@media (min-width: 700px) and (max-width: 1024px) {
+  .currentstep .cs-top-area {
+    height: auto;
+    padding: 1rem ;
+    padding-top: 10px;
+    padding-bottom: 2px;
+    gap: 0.5rem;
+  }
+  .currentstep .cs-top-area .bold-text {
+    font-size: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .currentstep .cs-top-area .cs-text2 {
+    padding-right: 2px;
+    padding-left: 440px !important;
+    padding-top:2px;
+    padding-bottom: 2px;
+  }
+  .currentstep .cs-content {
+    padding: 0.5rem;
+    margin-top: 40px !important;
+    height: auto;
+  }
+  .currentstep .cs-content .overall-cs-content {
+    flex-direction: column !important;
+  }
+  /* Optional: Make view boxes full width on mobile */
+  .currentstep .macro-view-box,
+  .currentstep .micro-view-box,
+  .currentstep .nano-view-box {
+    right: 0;
+    width: 100%;
+  }
+  .currentstep .macro-content {
+    padding: 1rem ;
+    border-radius: 15px;
+    padding-top: 2px;
+    
+    .macro-text-div {
+      font-weight: 400 !important;
+      line-height: 1.8;
+      font-size: 2rem;
+      text-transform: none;
+      height: calc(100% - 1rem) !important;
+      overflow-y: scroll;
+      padding-top: 0px !important;
+      
+    }  
+  }
+  .currentstep .micro-content {
+    padding: 1rem 0.5rem;
+    border-radius: 15px;
+  }
+  .currentstep .nano-content {
+    padding: 1rem 0.5rem;
+    border-radius: 15px;
+  }
+}
+
+
+@media(min-width:1025px) and (max-width: 1300px) {
+  .currentstep .cs-top-area {
+    height: auto;
+    padding: 1rem 10px;
+    gap: 0.5rem;
+  }
+  .currentstep .cs-top-area .bold-text {
+    font-size: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .currentstep .cs-content {
+    padding: 0.5rem 5px 0.5rem;
+    margin-top: 80px !important;
+    height: auto;
+  }
+  .currentstep .cs-content .overall-cs-content {
+    flex-direction: column !important;
+  }
+  /* Optional: Make view boxes full width on mobile */
+  .currentstep .macro-view-box,
+  .currentstep .micro-view-box,
+  .currentstep .nano-view-box {
+    right: 0;
+    width: 100%;
+  }
+  .currentstep .macro-content,
+  .currentstep .micro-content,
+  .currentstep .nano-content {
+    padding: 1rem 0.5rem;
+    border-radius: 15px;
+  }
+}
+
+
+
+

@@ -833,57 +833,37 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
             mypathsMenu === "Inactive Paths" ||
             (mypathsMenu === "Pending Paths" && !viewPathEnabled) ? (
             <>
-              <div className="mypathsNav">
-                <div className="mypaths-name-div">Name</div>
-                <div className="mypaths-description-div">Description</div>
-                <div className="mypaths-name-div"># of steps</div>
-              </div>
-              <div className="mypathsScroll-div">
-                {loading
-                  ? Array(10)
-                      .fill("")
-                      .map((e, i) => {
-                        return (
-                          <div className="each-mypaths-data" key={i}>
-                            <div className="each-mypaths-name">
-                              <Skeleton width={100} height={30} />
-                            </div>
-                            <div className="each-mypaths-desc">
-                              <Skeleton width={"100%"} height={30} />
-                            </div>
-                            <div className="each-mypaths-name">
-                              <Skeleton width={100} height={30} />
-                            </div>
-                          </div>
-                        );
-                      })
-                  : filteredPartnerPathData?.map((e, i) => {
-                      return (
-                        <div
-                          className="each-mypaths-data"
-                          key={i}
-                          onClick={() => {
-                            setPathActionEnabled(true);
-                            setSelectedPathId(e?._id);
-                            setSelectedPath(e);
-                            console.log(e, "selected path details");
-                            viewPath(e?.nameOfPath);
-                          }}
-                        >
-                          <div className="each-mypaths-name">
-                            {e?.nameOfPath}
-                          </div>
-                          <div className="each-mypaths-desc">
-                            {e?.description}
-                          </div>
-                          <div className="each-mypaths-name">
-                            {e?.the_ids?.length}
-                          </div>
-                        </div>
-                      );
-                    })}
-              </div>
-            </>
+              <div className="mypaths-content">
+  {loading
+    ? Array(10)
+        .fill("")
+        .map((_, i) => (
+          <div className="mypaths-card skeleton-card" key={i}>
+            <Skeleton width={100} height={30} />
+            <Skeleton width={"100%"} height={30} />
+            <Skeleton width={100} height={30} />
+          </div>
+        ))
+    : filteredPartnerPathData?.map((e, i) => (
+        <div
+          className="mypaths-card"
+          key={i}
+          onClick={() => {
+            setPathActionEnabled(true);
+            setSelectedPathId(e?._id);
+            setSelectedPath(e);
+            viewPath(e?.nameOfPath);
+          }}
+        >
+          <div className="card-header">{e?.nameOfPath}</div>
+          <div className="card-body">
+            <p>{e?.description}</p>
+            <span>Steps: {e?.the_ids?.length}</span>
+          </div>
+        </div>
+      ))}
+</div>
+     </>
           ) : (
             ""
           )

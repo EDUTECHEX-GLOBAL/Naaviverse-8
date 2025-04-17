@@ -118,7 +118,7 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
   if (showMessagePage) {
     return (
       <div className="message-page">
-        <p className="text-center text-sm text-green-600">{message}</p>
+        <p className="text-center text-sm text-green-600 p-2">{message}</p>
       </div>
     );
   }
