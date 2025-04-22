@@ -48,17 +48,7 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/journey" component={JourneyPage} />
       {/* <Route path="/dashboard" element={<DashboardLoginPage />} /> */}
-      <Route
-        exact
-        path="/register"
-        element={
-          window.innerWidth > 600 ? (
-            <NewHomePage />
-          ) : (
-            <DashboardLoginPage />
-          )
-        }
-      />
+      <Route exact path="/register" element={<NewHomePage />} />
       <Route
         exact
         path="/register/affiliate"

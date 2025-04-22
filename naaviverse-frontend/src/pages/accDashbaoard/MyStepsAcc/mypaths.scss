@@ -332,7 +332,7 @@
 /* Responsive Design */
 @media screen and (max-width: 768px) {
   .mypaths-card {
-    width: calc(50% - 1rem); /* Display two cards per row on smaller screens */
+    width: calc(70% - 1rem); /* Display two cards per row on smaller screens */
     font-size: smaller; /* Adjust font size */
     padding: 10px;
   }
@@ -344,5 +344,15 @@
     font-size: smaller; /* Adjust font size */
     padding: 8px;
     margin-bottom:10px
+}
+}
+
+@media screen and (max-width: 1024px) {
+  .mypaths-card {
+    width: calc(50% - 1rem); /* Display one card per row on very small screens */
+    font-size: smaller; /* Adjust font size */
+    padding: 8px;
+    margin-bottom:10px;
+    height: calc(60% - 1rem);
 }
 }

@@ -2134,7 +2134,7 @@ input[type="file"] {
   height: auto; /* Adjusts to content height */
   width: 60% !important; /* Adjust the width as needed */
   max-width: 600px !important; /* Sets a maximum width */
-  max-height: 500px !important; /* Limits the maximum height */
+  // max-height: 500px !important; /* Limits the maximum height */
   padding: 2rem; /* Adds space inside the form */
   background: white; /* Sets a white background */
   border: 0.5px solid #2c7cb2; /* Light border around the form */
@@ -3312,7 +3312,7 @@ input[type="file"] {
 
 @media (max-width: 768px) {
   .dash-nav {
-    width: 100vw; /* Full width on smaller screens */
+    width: 100vw !important; /* Full width on smaller screens */
     height: 60px; /* Slightly reduced height */
     padding: 0 1rem; /* Reduce padding for smaller screens */
   }
@@ -3322,6 +3322,7 @@ input[type="file"] {
   .dash-nav {
     height: 55px; /* Further reduced height */
     padding: 0 0.5rem; /* Minimal padding for small screens */
+    width:130% !important;
   }
 }  
 
@@ -3644,7 +3645,7 @@ input[type="file"] {
   .acc-popular1 {
     font-size: 16px;
     width: 250px !important;
-    left: 30px;
+    left: 5px;
     padding:0% !important;
   }
   .acc-popular1 .acc-addpath {
@@ -3991,7 +3992,7 @@ input[type="file"] {
     max-height: 3.3rem;
     min-height: 3.3rem;
     margin-top: 20px;
-    margin-bottom: 20px;
+    margin-bottom: 20px !important;
     margin-left:80px !important;
     gap: 1rem;
 
@@ -4020,8 +4021,9 @@ input[type="file"] {
     text-align: center;
     color: #1f304f;
     padding: 10px 0;
-    margin-top: 1rem;
+    margin-top: 2rem;
     margin-bottom: 1rem;
     width: 50%;
+    gap:20px !important;
   }
 }

@@ -224,11 +224,10 @@ const NewHomePage = () => {
     return ( 
         <>
             <div className='regContainer'>
-               <div className='regleftside'></div>
-               <div className='regrightside'>
-                <div>
-                    <img src={logo} alt="" className='logoimg'/>
-                    <h2>Register</h2>
+  <img src={logo} alt="logo" className='logoimg' />
+  <div className='regrightside'>
+    <div>
+      <h2>Register</h2>
                     <div className='input1'>
                         <input type="email" placeholder='Email' disabled={showOtp}
                             value={userEmail}

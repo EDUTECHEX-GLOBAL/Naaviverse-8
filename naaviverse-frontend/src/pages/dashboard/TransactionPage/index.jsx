@@ -15,7 +15,6 @@ const TransactionPage = ({
 
     const [isTxnLoading, setIsTxnLoading] = useState(false)
     const [txnData, setTxnData] = useState([])
-
     const [crmMenu, setcrmMenu] = useState('All')
 
     const dateFormat = (dateString) => {
@@ -64,8 +63,6 @@ const TransactionPage = ({
             className="crm-all-menu"
             style={{ padding: "12px 35px" }}
           >
-          
-
             <div
               className="crm-each-menu"
               style={{
@@ -98,101 +95,186 @@ const TransactionPage = ({
             >
               All
             </div>
-
-           
           </div>
-          <div className="crm-all-box">
-           
-              <>
-                <div className="crm-purchase-tab">
-                  <div className="crm-purchase-col2">Date</div>
-                  <div className="crm-purchase-col2">Partner</div>
-                  <div className="crm-purchase-col2">Service</div>
-                  <div className="crm-purchase-col3">Amount</div>
-                  <div className="crm-purchase-col3">Billing Frequency</div>
-                  <div className="crm-purchase-col4">Status</div>
-                </div>
-                <div className="purchase-alldata">
-                  {!isTxnLoading && txnData.length > 0 ? (
-                    <>
-                      {txnData
-                        ?.filter(
-                          (item) =>
-                            item?.serviceDetails[0]?.name
-                              .toLowerCase()
-                              .startsWith(search?.toLowerCase()) ||
-                            item.purchaseStatus
-                              .toLowerCase()
-                              .startsWith(search?.toLowerCase())
-                        )
-                        ?.map((each, i) => (
-                          <div className="each-purchase">
-                            <div className="crm-purchase-col2">{dateFormat(each?.createdAt)}</div>
-                            <div className="crm-purchase-col2">{each?.serviceDetails[0]?.productcreatoremail}</div>
-                            <div className="crm-purchase-col2">{each?.serviceDetails[0]?.name}</div>
-                            <div className="crm-purchase-col3">{each?.serviceDetails[0]?.billing_cycle?.lifetime?.price || each?.serviceDetails[0]?.billing_cycle?.monthly?.price || each?.serviceDetails[0]?.billing_cycle?.annual?.price} {each?.serviceDetails[0]?.billing_cycle?.lifetime?.coin || each?.serviceDetails[0]?.billing_cycle?.monthly?.coin || each?.serviceDetails[0]?.billing_cycle?.annual?.coin}</div>
-                            <div className="crm-purchase-col3">{each?.serviceDetails[0]?.chargingtype}</div>
-                            <div className="crm-purchase-col4">{each?.serviceDetails[0]?.purchaseStatus? each?.serviceDetails[0]?.purchaseStatus: "N/A"}</div>
+
+          {/* CARD LAYOUT SECTION */}
+          <div style={{
+            padding: "15px 35px",
+          }}>
+            
+            
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+              gap: "20px",
+            }}>
+              {!isTxnLoading && txnData.length > 0 ? (
+                <>
+                  {txnData
+                    ?.filter(
+                      (item) =>
+                        item?.serviceDetails[0]?.name
+                          .toLowerCase()
+                          .startsWith(search?.toLowerCase()) ||
+                        item.purchaseStatus
+                          .toLowerCase()
+                          .startsWith(search?.toLowerCase())
+                    )
+                    ?.map((each, i) => (
+                      <div key={i} style={{
+                        width: "100%",
+                        borderRadius: "12px",
+                        backgroundColor: "white",
+                        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                        overflow: "hidden",
+                        border: "1px solid #eee",
+                      }}>
+                        {/* Card Header */}
+                        <div style={{
+                          padding: "15px",
+                          borderBottom: "1px solid #f0f0f0",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          backgroundColor: "#f9f9f9"
+                        }}>
+                          <div style={{
+                            fontWeight: "500",
+                            fontSize: "14px"
+                          }}>
+                            {dateFormat(each?.createdAt)}
                           </div>
-                        ))}
-                    </>
-                  ) : isTxnLoading ? (
-                    <>
-                      {[1, 2, 3, 4, 5, 6].map((each) => (
-                        <div className="each-purchase">
-                          <div className="each-purchase-clients">
-                            <Skeleton
-                              className="each-purchase-head"
-                              style={{ width: "150px" }}
-                            />
-                            <Skeleton
-                              className="each-purchase-text"
-                              style={{ width: "150px" }}
-                            />
-                          </div>
-                          <div
-                            className="each-purchase-services"
-                            style={{ display: "flex" }}
-                          >
-                            <div className="each-product-iconbox">
-                              <Skeleton className="each-product-icon" />
-                            </div>
-                            <div className="each-purchase-data">
-                              <Skeleton
-                                className="each-purchase-head"
-                                style={{ width: "150px" }}
-                              />
-                              <Skeleton
-                                className="each-purchase-text"
-                                style={{ width: "150px" }}
-                              />
-                            </div>
-                          </div>
-                          <div className="each-purchase-receipt">
-                            <Skeleton
-                              className="each-purchase-head"
-                              style={{ width: "150px" }}
-                            />
-                            <Skeleton
-                              className="each-purchase-text"
-                              style={{ width: "150px" }}
-                            />
-                          </div>
-                          <div className="each-purchase-status">
-                            <Skeleton
-                              className="each-purchase-statustext"
-                              style={{ width: "150px" }}
-                            />
+                          <div style={{
+                            padding: "4px 10px",
+                            borderRadius: "20px",
+                            fontSize: "12px",
+                            fontWeight: "500",
+                            backgroundColor: each?.serviceDetails[0]?.purchaseStatus === "completed" ? "#e6f7e6" : "#fff3e0",
+                            color: each?.serviceDetails[0]?.purchaseStatus === "completed" ? "#2e7d32" : "#e65100"
+                          }}>
+                            {each?.serviceDetails[0]?.purchaseStatus || "N/A"}
                           </div>
                         </div>
-                      ))}
-                    </>
-                  ) : (
-                    ""
-                  )}
+                        
+                        {/* Card Body */}
+                        <div style={{
+                          padding: "15px",
+                        }}>
+                          {/* Service row */}
+                          <div style={{
+                            marginBottom: "12px",
+                          }}>
+                            <div style={{
+                              fontSize: "13px",
+                              color: "#666",
+                              marginBottom: "4px"
+                            }}>
+                              Service
+                            </div>
+                            <div style={{
+                              fontSize: "16px",
+                              fontWeight: "500"
+                            }}>
+                              {each?.serviceDetails[0]?.name}
+                            </div>
+                          </div>
+                          
+                          {/* Partner row */}
+                          <div style={{
+                            marginBottom: "12px",
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}>
+                            <div>
+                              <div style={{
+                                fontSize: "13px",
+                                color: "#666",
+                                marginBottom: "4px"
+                              }}>
+                                Partner
+                              </div>
+                              <div style={{
+                                fontSize: "14px",
+                              }}>
+                                {each?.serviceDetails[0]?.productcreatoremail}
+                              </div>
+                            </div>
+                            <div>
+                              <div style={{
+                                fontSize: "13px",
+                                color: "#666",
+                                marginBottom: "4px"
+                              }}>
+                                Billing
+                              </div>
+                              <div style={{
+                                fontSize: "14px",
+                              }}>
+                                {each?.serviceDetails[0]?.chargingtype}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Card Footer */}
+                        <div style={{
+                          padding: "15px",
+                          borderTop: "1px solid #f0f0f0",
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          alignItems: "center",
+                          backgroundColor: "#fafafa"
+                        }}>
+                          <div style={{
+                            fontSize: "18px",
+                            fontWeight: "600",
+                            color: "#1976d2"
+                          }}>
+                            {each?.serviceDetails[0]?.billing_cycle?.lifetime?.price || 
+                            each?.serviceDetails[0]?.billing_cycle?.monthly?.price || 
+                            each?.serviceDetails[0]?.billing_cycle?.annual?.price} 
+                            {" "}
+                            {each?.serviceDetails[0]?.billing_cycle?.lifetime?.coin || 
+                            each?.serviceDetails[0]?.billing_cycle?.monthly?.coin || 
+                            each?.serviceDetails[0]?.billing_cycle?.annual?.coin}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </>
+              ) : isTxnLoading ? (
+                <>
+                  {[1, 2, 3, 4, 5, 6].map((each, i) => (
+                    <div key={i} style={{
+                      width: "100%",
+                      borderRadius: "12px",
+                      backgroundColor: "white",
+                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                      overflow: "hidden",
+                      padding: "15px",
+                    }}>
+                      <Skeleton height={24} width="60%" style={{ marginBottom: "15px" }} />
+                      <Skeleton height={18} style={{ marginBottom: "8px" }} />
+                      <Skeleton height={18} style={{ marginBottom: "8px" }} />
+                      <Skeleton height={18} style={{ marginBottom: "15px" }} />
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <Skeleton height={18} width="40%" />
+                        <Skeleton height={18} width="30%" />
+                      </div>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <div style={{
+                  padding: "30px 30px",
+                  textAlign: "center",
+                  gridColumn: "1 / -1",
+                  paddingright:"30px"
+                }}>
+                  No transactions found
                 </div>
-              </>
-          
+              )}
+            </div>
           </div>
         </div>
       </>

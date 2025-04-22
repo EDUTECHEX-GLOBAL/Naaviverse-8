@@ -1495,7 +1495,7 @@ const AccProfile = () => {
                             discovered on the Naavi directory.
                           </div>
                         </div>
-                        <div className="pfr-btn1">
+                        <div className="pfr-btn3">
                           <div
                             style={{
                               background:

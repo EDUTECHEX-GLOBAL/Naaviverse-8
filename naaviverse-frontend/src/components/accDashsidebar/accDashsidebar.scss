@@ -8,7 +8,7 @@
 
 .menu-icon {
   position: absolute;
-  top: 20px; /* Move it down */
+  top: 5px; /* Move it down */
   left: 10px;
   cursor: pointer;
   background: none; /* Remove background */
@@ -24,6 +24,7 @@
   width: 30px; /* Adjust size if needed */
   height: 30px;
   fill: #000; /* Change to the color of your choice */
+  padding-top:5px !important;
 }
 
 

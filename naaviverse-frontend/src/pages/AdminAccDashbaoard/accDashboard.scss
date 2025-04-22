@@ -1211,6 +1211,7 @@
       display: flex;
       align-items: center;
       color: #100f0d;
+      padding-left: 8px !important;
     }
   }
 
@@ -1218,6 +1219,8 @@
     width: 100%;
     height: calc(100% - 3rem);
     margin-top: 3rem;
+    margin-left:4px;
+    margin-right:4px;
 
     .acc-sub-text {
       width: 100%;
@@ -2652,10 +2655,12 @@ input[type="file"] {
   font-weight: 400;
 }
 
-@media (max-width: 480px) {
+@media (min-width:391px) and (max-width: 480px) {
   .pfr-desc {
     font-size: 12px;
     width: 110px;
+    margin-left:-12px;
+    margin-right:5px;
     line-height: 14px;
     padding-right: 5px !important;
     justify-content: auto !important;
@@ -2677,13 +2682,15 @@ input[type="file"] {
   
   }
 
-  .pfr-btn1 {
-    margin-top: 50px;
-    margin-right: 5px;
-    margin-left:-14px;
-    flex-direction: row; 
-    width: 440%;
+  .pfr-btn3 {
+    margin-top: 30px;
+    margin-left:-20px;
+    margin-right:5px;
+    width: 400%;
+    display: flex;
     justify-content: center;
+    padding-right: 2px;
+    padding-left:0px;
     border-radius: 35px;
     border: 0.5px solid #e5e5e5;
     font-weight: 700;
@@ -2694,8 +2701,9 @@ input[type="file"] {
   
     div {
       color: #1f304f;
-      width: 100%;
+      width: 50%;
       border-radius: 35px;
+      display: flex;
       cursor: pointer;
       height: 100%;
       align-items: center;
@@ -2709,12 +2717,16 @@ input[type="file"] {
       }
     }
   }
+    
 }
 
-@media (max-width: 360px) {
+@media (min-width:300px) and (max-width: 390px) {
   .pfr-desc {
     font-size: 10px;
     line-height: 12px;
+    margin-left:-14px;
+    margin-right:5px;
+    width:120px;
     
   }
 
@@ -2726,38 +2738,42 @@ input[type="file"] {
     width: 100%
   }
 
-  .pfr-btn1 {
-    margin-top: 50px;
-    margin-right: 0px;
-    margin-left:1px;
-    flex-direction: row; 
-    width: 440%;
-    justify-content: center;
+  .pfr-btn3 {
+  margin-top: 30px;
+  margin-left:-20px;
+  margin-right:5px;
+  width: 500%;
+  display: flex;
+  justify-content: center;
+  padding-right: 2px;
+  padding-left:0px;
+  border-radius: 35px;
+  border: 0.5px solid #e5e5e5;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 22px;
+  max-height: 3.3rem;
+  min-height: 3.3rem;
+
+  div {
+    color: #1f304f;
+    width: 50%;
     border-radius: 35px;
-    border: 0.5px solid #e5e5e5;
-    font-weight: 700;
-    font-size: 18px;
-    line-height: 22px;
-    max-height: 3.3rem;
-    min-height: 3.3rem;
-  
-    div {
-      color: #1f304f;
-      width: 500%;
-      border-radius: 35px;
-      cursor: pointer;
-      height: 100%;
-      align-items: center;
-      justify-content: center;
-      font-weight: 500;
-      transition: all ease 0.2s;
-  
-      &:hover {
-        // transform: scale(1.05);
-        font-weight: 600;
-      }
+    display: flex;
+    cursor: pointer;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    transition: all ease 0.2s;
+
+    &:hover {
+      // transform: scale(1.05);
+      font-weight: 600;
     }
   }
+}
+  
 }
 
 
@@ -2781,7 +2797,7 @@ input[type="file"] {
     font-size: 20px !important;
     line-height: 20px;
     color: #1f304f;
-    width:300%;
+    width:180% !important;
     text-align: center;
     padding:4px !important;
     
@@ -2789,13 +2805,15 @@ input[type="file"] {
   
   }
 
-  .pfr-btn1 {
-    margin-top: 50px;
-    margin-right: 5px;
-    margin-left:1px;
-    flex-direction: row; 
+  .pfr-btn3{
+    margin-top: 30px;
+    margin-left:-6px;
+    margin-right:0px;
     width: 200%;
+    display: flex;
     justify-content: center;
+    padding-right: 2px;
+    padding-left:0px;
     border-radius: 35px;
     border: 0.5px solid #e5e5e5;
     font-weight: 700;
@@ -2806,8 +2824,9 @@ input[type="file"] {
   
     div {
       color: #1f304f;
-      width: 100%;
+      width: 50%;
       border-radius: 35px;
+      display: flex;
       cursor: pointer;
       height: 100%;
       align-items: center;
@@ -2821,6 +2840,7 @@ input[type="file"] {
       }
     }
   }
+    
 }
 
 @media (min-width: 781px) and (max-width:1023px) {
@@ -2849,13 +2869,15 @@ input[type="file"] {
   
   }
 
-  .pfr-btn1 {
-    margin-top: 50px;
-    margin-right: 5px;
-    margin-left:1px;
-    flex-direction: row; 
+  .pfr-btn3 {
+    margin-top: 30px;
+    margin-left:-6px;
+    margin-right:0px;
     width: 200%;
+    display: flex;
     justify-content: center;
+    padding-right: 2px;
+    padding-left:0px;
     border-radius: 35px;
     border: 0.5px solid #e5e5e5;
     font-weight: 700;
@@ -2866,8 +2888,9 @@ input[type="file"] {
   
     div {
       color: #1f304f;
-      width: 100%;
+      width: 50%;
       border-radius: 35px;
+      display: flex;
       cursor: pointer;
       height: 100%;
       align-items: center;
@@ -2909,13 +2932,15 @@ input[type="file"] {
   
   }
 
-  .pfr-btn1 {
-    margin-top: 50px;
-    margin-right: 5px;
-    margin-left:1px;
-    flex-direction: row; 
+  .pfr-btn3 {
+    margin-top: 30px;
+    margin-left:-6px;
+    margin-right:0px;
     width: 200%;
+    display: flex;
     justify-content: center;
+    padding-right: 2px;
+    padding-left:0px;
     border-radius: 35px;
     border: 0.5px solid #e5e5e5;
     font-weight: 700;
@@ -2926,8 +2951,9 @@ input[type="file"] {
   
     div {
       color: #1f304f;
-      width: 100%;
+      width: 50%;
       border-radius: 35px;
+      display: flex;
       cursor: pointer;
       height: 100%;
       align-items: center;
@@ -3267,38 +3293,122 @@ input[type="file"] {
   }
 }
 
-@media (max-width: 768px) {
+@media (min-width:300px) and (max-width: 480px) {
   .acc-popular1 {
     width: 80vw !important;
     height: calc(100vh - 60px); /* slightly smaller if needed */
-    padding-right:10px !important;
-    border-left: none;
+    padding-right:-2px !important;
+    border-left: -8px !important;
+
     border-right: none;
     top: 80px; /* slightly adjusted for smaller header */
+
+    
   }
+  .acc-popular1 .acc-mt-div .goBack3 {
+    font-weight: 500;
+      height: 61px;
+      margin-top: 15px;
+      display: flex;
+      width: 350.4px;
+      justify-content: center;
+      align-items: center;
+      background: #f1f1f1;
+      border-radius: 35px;
+      color: #100f0d;
+      position: fixed;
+      bottom: 30px;
+      transition: all ease 0.2s;
+      cursor: pointer;
+
+      &:hover {
+        transform: scale(1.05);
+      }
+
+  }
+  .acc-popular1 .acc-mt-div .save-Btn {
+    background: linear-gradient(90deg, #47B4D5 0.02%, #29449D 119.26%);
+    color: white;
+    font-weight: 500;
+    height: 61px;
+    display: flex;
+    width: 350.4px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 35px;
+    position: fixed;
+    bottom: 6rem;
+    transition: all ease 0.2s;
+    cursor: pointer;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+
 }
 
-@media (max-width: 768px) {
-  .popularS {
-    width: 70vw !important;
-    top: 350px !important;
-    padding-right:-3px;
-    margin-left:60px;
-    border-top: 0.5px solid #e5e5e5;
-    margin-right:10px !important;
-    margin-bottom:10px;
+@media (min-width:481px) and (max-width: 780px){
+  .acc-popular1 {
+    padding: 20px 35px;
+    background: #ffffff;
+    border: 0.5px solid #ededed;
+    position: absolute;
+    top: 70px;
+    right: 0%;
+    z-index: 22;
+    width: 450px;
+    height: calc(100vh - 70px);
+    -webkit-animation: righttoleft 0.15s ease-in forwards;
+    animation: righttoleft 0.15s ease-in forwards;
   }
+
 }
 
-@media (min-width:300px) and (max-width: 480px) {
+@media (min-width:781px) and (max-width: 1024px){
+  .acc-popular1 {
+    padding: 20px 35px;
+    background: #ffffff;
+    border: 0.5px solid #ededed;
+    position: absolute;
+    top: 70px;
+    right: 0%;
+    z-index: 22;
+    width: 500px;
+    height: calc(100vh - 70px);
+    -webkit-animation: righttoleft 0.15s ease-in forwards;
+    animation: righttoleft 0.15s ease-in forwards;
+  }
+
+}
+
+
+
+@media (min-width:300px) and (max-width: 389px) {
   .popularS {
     width: 60vw !important;
     top: 350px !important;
     padding-right:-3px;
-    margin-left:60px;
+    margin-left:4px;
     border-top: 0.5px solid #e5e5e5;
     margin-right:10px !important;
     margin-bottom:10px;
+    margin-top:30px;
+    height: 400px;
+  }
+} 
+
+@media (min-width:390px) and (max-width: 480px) {
+  .popularS {
+    width: 60vw !important;
+    top: 350px !important;
+    padding-right:-3px;
+    margin-left:4px;
+    border-top: 0.5px solid #e5e5e5;
+    margin-right:10px !important;
+    margin-bottom:10px;
+    margin-top:100px;
+    height: 600px;
   }
 } 
 
@@ -3307,22 +3417,39 @@ input[type="file"] {
     width: 70vw !important;
     top: 350px !important;
     padding-right:-3px;
-    margin-left:60px;
+    margin-left:5px;
     border-top: 0.5px solid #e5e5e5;
     margin-right:10px !important;
     margin-bottom:10px;
+    margin-top:100px;
+    height: 70% !important;
   }
 }
 
-@media (min-width:781px) and (max-width: 1024px) {
+@media (min-width:781px) and (max-width: 950px) {
   .popularS {
     width: 70vw !important;
     top: 350px !important;
     padding-right:-3px;
-    margin-left:60px;
+    margin-left:5px;
     border-top: 0.5px solid #e5e5e5;
     margin-right:10px !important;
-    margin-bottom:10px;
+    margin-bottom:2px;
+    margin-top:160px;
+    height: 700px;
+  }
+}
+@media (min-width:951px) and (max-width: 1024px) {
+  .popularS {
+    width: 70vw !important;
+    top: 350px !important;
+    padding-right:-3px;
+    margin-left:5px;
+    border-top: 0.5px solid #e5e5e5;
+    margin-right:10px !important;
+    margin-bottom:2px;
+    margin-top:-40px;
+    height: 400px;
   }
 }
 
@@ -3335,6 +3462,8 @@ input[type="file"] {
     border-top: 0.5px solid #e5e5e5;
     margin-right:10px !important;
     margin-bottom:10px;
+    margin-top:120px;
+    height: 650px;
   }
 }
 
@@ -3350,7 +3479,6 @@ input[type="file"] {
     display: flex;
     align-items: center;
     color: #100f0d;
-    margin-left: -30px !important;
     margin: 35px;
     width: 75vw;
     justify-content: space-between;
@@ -3375,7 +3503,6 @@ input[type="file"] {
     display: flex;
     align-items: center;
     color: #100f0d;
-    margin-left: -35px !important;
     margin: 35px;
     width: 64vw;
     justify-content: space-between;
@@ -3399,7 +3526,6 @@ input[type="file"] {
     display: flex;
     align-items: center;
     color: #100f0d;
-    margin-left: -35px !important;
     margin: 35px;
     width: 64vw;
     justify-content: space-between;
@@ -3424,7 +3550,6 @@ input[type="file"] {
     display: flex;
     align-items: center;
     color: #100f0d;
-    margin-left: -35px !important;
     margin: 35px;
     width: 54vw;
     justify-content: space-between;

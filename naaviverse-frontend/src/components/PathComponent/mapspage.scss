@@ -183,6 +183,7 @@
           display: flex;
           flex-direction: column;
           gap: 1rem;
+          padding-left: 4px !important;
 
           .gs-Btn-maps1 {
             color: white;
@@ -190,7 +191,8 @@
             border-radius: 35px;
             text-align: center;
             background: linear-gradient(89deg, #47b4d5 0%, #29449d 100%);
-            padding: 0.9rem 1.5rem;
+            padding: 0.9rem ;
+            padding-left: 2px;
             font-size: 0.8rem;
             cursor: pointer;
             transition: all ease 0.2s;
@@ -391,6 +393,7 @@
   font-weight: 500;
   border-radius: 30px;
   padding: 0.5rem 1.5rem;
+  margin-left: 2rem;
   font-size: 0.8rem;
   cursor: pointer;
   border: none;
@@ -445,5 +448,953 @@
   }
   to {
     transform: translateX(0);
+  }
+}
+
+@media (min-width:300px ) and (max-width:390px){
+  .mapspage1 .maps-container1 .maps-content-area1{
+    width: 68% !important;
+    height: 100%;
+    .path-options-div {
+      width: 100%;
+      height: 3rem;
+      display: flex;
+      justify-content: center;
+
+      .path-options {
+        width: fit-content;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 2rem;
+        border: 0.5px solid #e5e5e5;
+        border-bottom-left-radius: 45px;
+        border-bottom-right-radius: 45px;
+        border-top: none;
+
+        .each-path-opt {
+          font-size: 0.8rem;
+          padding: 5px 1.5rem;
+          border-radius: 25px;
+        }
+
+        .toggleContainer1 {
+          width: 2.5rem;
+          border: 1px solid #d9d9d9;
+          border-radius: 35px;
+          margin-left: 10px;
+          margin-right: 10px;
+          cursor: pointer;
+
+          .toggle1 {
+            margin: 2px;
+            width: 14px;
+            height: 14px;
+            background: linear-gradient(
+              90deg,
+              #47b4d5 0.02%,
+              #29449d 119.26%
+            );
+            border-radius: 50%;
+            transition: all 0.5s ease;
+            cursor: pointer;
+          }
+        }
+      }
+    }
+  
+
+  }
+  .gs-Btn-maps2 {
+    background: linear-gradient(89deg, #47b4d5 0%, #29449d 100%);
+    color: white;
+    font-weight: 500;
+    border-radius: 30px;
+    padding: 0.5rem 1.5rem;
+    margin-top: 40px;
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: none;
+    transition: all ease 0.2s;
+    position: relative; /* Added */
+    z-index: 1000; /* Added and moved z-index here */
+  }
+  .gs-Btn-maps1 {
+    background: linear-gradient(89deg, #47b4d5 0%, #29449d 100%);
+    color: white;
+    font-weight: 600;
+    border-radius: 30px;
+    padding: 1rem 5rem;
+    margin-top: 40px;
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: none;
+    transition: all ease 0.2s;
+    position: relative; /* Added */
+    z-index: 1000; /* Added and moved z-index here */
+  }
+  .toggleContainer {
+    width: 30% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 14px !important;
+    margin-right: 5px !important;
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+  
+  .toggleContainer2 {
+    width: 50% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 10px !important;
+    margin-right: 10px !important;
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle2 {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+  
+  .toggleContainer3 {
+    width: 70% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 10px !important;
+    margin-right: 10px !important;
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle3 {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+  
+  .toggleContainer4 {
+    width: 80% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 4px !important;
+    margin-right: 10px !important;
+    
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle4 {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+
+  
+  
+}
+
+@media (min-width:391px ) and (max-width:480px){
+  .mapspage1 .maps-container1 .maps-content-area1{
+    width: 70% !important;
+    height: 100%;
+    .path-options-div {
+      width: 100%;
+      height: 3rem;
+      display: flex;
+      justify-content: center;
+
+      .path-options {
+        width: fit-content;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 2rem;
+        border: 0.5px solid #e5e5e5;
+        border-bottom-left-radius: 45px;
+        border-bottom-right-radius: 45px;
+        border-top: none;
+
+        .each-path-opt {
+          font-size: 0.8rem;
+          padding: 5px 1.5rem;
+          border-radius: 25px;
+        }
+
+        .toggleContainer1 {
+          width: 2.5rem;
+          border: 1px solid #d9d9d9;
+          border-radius: 35px;
+          margin-left: 10px;
+          margin-right: 10px;
+          cursor: pointer;
+
+          .toggle1 {
+            margin: 2px;
+            width: 14px;
+            height: 14px;
+            background: linear-gradient(
+              90deg,
+              #47b4d5 0.02%,
+              #29449d 119.26%
+            );
+            border-radius: 50%;
+            transition: all 0.5s ease;
+            cursor: pointer;
+          }
+        }
+      }
+    }
+  
+
+  }
+  .gs-Btn-maps2 {
+    background: linear-gradient(89deg, #47b4d5 0%, #29449d 100%);
+    color: white;
+    font-weight: 500;
+    border-radius: 30px;
+    padding: 0.5rem 1.5rem;
+    margin-top: 40px;
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: none;
+    transition: all ease 0.2s;
+    position: relative; /* Added */
+    z-index: 1000; /* Added and moved z-index here */
+  }
+  .gs-Btn-maps1 {
+    background: linear-gradient(89deg, #47b4d5 0%, #29449d 100%);
+    color: white;
+    font-weight: 600;
+    border-radius: 30px;
+    padding: 1rem 5rem;
+    margin-top: 40px;
+    margin-left: 1rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: none;
+    transition: all ease 0.2s;
+    position: relative; /* Added */
+    z-index: 1000; /* Added and moved z-index here */
+  }
+  .toggleContainer {
+    width: 30% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 14px !important;
+    margin-right: 5px !important;
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+  
+  .toggleContainer2 {
+    width: 45% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 8px !important;
+    margin-right: 8px !important;
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle2 {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+  
+  .toggleContainer3 {
+    width: 50% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 10px !important;
+    margin-right: 10px !important;
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle3 {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+  
+  .toggleContainer4 {
+    width: 60% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 4px !important;
+    margin-right: 10px !important;
+    
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle4 {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+
+
+  
+}
+
+@media (min-width:481px ) and (max-width:780px){
+  .mapspage1 .maps-container1 .maps-content-area1{
+    width: 150% !important;
+    height: 100%;
+    .path-options-div {
+      width: 100%;
+      height: 3rem;
+      display: flex;
+      justify-content: center;
+
+      .path-options {
+        width: fit-content;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 2rem;
+        border: 0.5px solid #e5e5e5;
+        border-bottom-left-radius: 45px;
+        border-bottom-right-radius: 45px;
+        border-top: none;
+
+        .each-path-opt {
+          font-size: 0.8rem;
+          padding: 5px 1.5rem;
+          border-radius: 25px;
+        }
+
+        .toggleContainer1 {
+          width: 2.5rem;
+          border: 1px solid #d9d9d9;
+          border-radius: 35px;
+          margin-left: 10px;
+          margin-right: 10px;
+          cursor: pointer;
+
+          .toggle1 {
+            margin: 2px;
+            width: 14px;
+            height: 14px;
+            background: linear-gradient(
+              90deg,
+              #47b4d5 0.02%,
+              #29449d 119.26%
+            );
+            border-radius: 50%;
+            transition: all 0.5s ease;
+            cursor: pointer;
+          }
+        }
+      }
+    }
+  
+
+  }
+  .gs-Btn-maps2 {
+    background: linear-gradient(89deg, #47b4d5 0%, #29449d 100%);
+    color: white;
+    font-weight: 600;
+    border-radius: 30px;
+    padding: 1rem 1.5rem;
+    margin-top: 40px;
+    margin-left: 2rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: none;
+    transition: all ease 0.2s;
+    position: relative; /* Added */
+    z-index: 1000; /* Added and moved z-index here */
+  }
+
+  .gs-Btn-maps1 {
+    background: linear-gradient(89deg, #47b4d5 0%, #29449d 100%);
+    color: white;
+    font-weight: 600;
+    border-radius: 30px;
+    padding: 1rem 7rem;
+    margin-top: 40px;
+    margin-left: 1rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: none;
+    transition: all ease 0.2s;
+    position: relative; /* Added */
+    z-index: 1000; /* Added and moved z-index here */
+  }
+  .toggleContainer {
+    width: 25% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 14px !important;
+    margin-right: 5px !important;
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+  
+  .toggleContainer2 {
+    width: 32% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 8px !important;
+    margin-right: 8px !important;
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle2 {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+  
+  .toggleContainer3 {
+    width: 35% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 10px !important;
+    margin-right: 10px !important;
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle3 {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+  
+  .toggleContainer4 {
+    width: 40% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 4px !important;
+    margin-right: 10px !important;
+    
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle4 {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+}
+
+@media (min-width:781px ) and (max-width:1024px){
+  .mapspage1 .maps-container1 .maps-content-area1{
+    width: 280% !important;
+    height: 100%;
+    .path-options-div {
+      width: 100%;
+      height: 3rem;
+      display: flex;
+      justify-content: center;
+
+      .path-options {
+        width: fit-content;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 2rem;
+        border: 0.5px solid #e5e5e5;
+        border-bottom-left-radius: 45px;
+        border-bottom-right-radius: 45px;
+        border-top: none;
+
+        .each-path-opt {
+          font-size: 0.8rem;
+          padding: 5px 1.5rem;
+          border-radius: 25px;
+        }
+
+        .toggleContainer1 {
+          width: 2.5rem;
+          border: 1px solid #d9d9d9;
+          border-radius: 35px;
+          margin-left: 10px;
+          margin-right: 10px;
+          cursor: pointer;
+
+          .toggle1 {
+            margin: 2px;
+            width: 14px;
+            height: 14px;
+            background: linear-gradient(
+              90deg,
+              #47b4d5 0.02%,
+              #29449d 119.26%
+            );
+            border-radius: 50%;
+            transition: all 0.5s ease;
+            cursor: pointer;
+          }
+        }
+      }
+    }
+  
+
+  }
+  .gs-Btn-maps2 {
+    background: linear-gradient(89deg, #47b4d5 0%, #29449d 100%);
+    color: white;
+    font-weight: 500;
+    border-radius: 30px;
+    padding: 0.5rem 1.5rem;
+    margin-top: 60px;
+    margin-left: 0.8rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: none;
+    transition: all ease 0.2s;
+    position: relative; /* Added */
+    z-index: 1000; /* Added and moved z-index here */
+  }
+  .gs-Btn-maps1 {
+    background: linear-gradient(89deg, #47b4d5 0%, #29449d 100%);
+    color: white;
+    font-weight: 600;
+    border-radius: 30px;
+    padding: 1rem 7rem;
+    margin-top: 40px;
+    margin-left: 1rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: none;
+    transition: all ease 0.2s;
+    position: relative; /* Added */
+    z-index: 1000; /* Added and moved z-index here */
+  }
+  .toggleContainer {
+    width: 25% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 14px !important;
+    margin-right: 5px !important;
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+  
+  .toggleContainer2 {
+    width: 32% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 8px !important;
+    margin-right: 8px !important;
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle2 {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+  
+  .toggleContainer3 {
+    width: 35% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 10px !important;
+    margin-right: 10px !important;
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle3 {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+  
+  .toggleContainer4 {
+    width: 40% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 4px !important;
+    margin-right: 10px !important;
+    
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle4 {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+  
+}
+@media (min-width:1025px ) {
+  .mapspage1 .maps-container1 .maps-content-area1{
+    width: 150% !important;
+    height: 100%;
+    .path-options-div {
+      width: 100%;
+      height: 3rem;
+      display: flex;
+      justify-content: center;
+
+      .path-options {
+        width: fit-content;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 2rem;
+        border: 0.5px solid #e5e5e5;
+        border-bottom-left-radius: 45px;
+        border-bottom-right-radius: 45px;
+        border-top: none;
+
+        .each-path-opt {
+          font-size: 0.8rem;
+          padding: 5px 1.5rem;
+          border-radius: 25px;
+        }
+
+        .toggleContainer1 {
+          width: 2.5rem;
+          border: 1px solid #d9d9d9;
+          border-radius: 35px;
+          margin-left: 10px;
+          margin-right: 10px;
+          cursor: pointer;
+
+          .toggle1 {
+            margin: 2px;
+            width: 14px;
+            height: 14px;
+            background: linear-gradient(
+              90deg,
+              #47b4d5 0.02%,
+              #29449d 119.26%
+            );
+            border-radius: 50%;
+            transition: all 0.5s ease;
+            cursor: pointer;
+          }
+        }
+      }
+    }
+  
+
+  }
+  .gs-Btn-maps2 {
+    background: linear-gradient(89deg, #47b4d5 0%, #29449d 100%);
+    color: white;
+    font-weight: 500;
+    border-radius: 30px;
+    padding: 1rem 1.5rem;
+    margin-top: 40px;
+    margin-left: 3rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: none;
+    transition: all ease 0.2s;
+    position: relative; /* Added */
+    z-index: 1000; /* Added and moved z-index here */
+  }
+  .gs-Btn-maps1 {
+    background: linear-gradient(89deg, #47b4d5 0%, #29449d 100%);
+    color: white;
+    font-weight: 600;
+    border-radius: 30px;
+    padding: 1rem 7rem;
+    margin-top: 40px;
+    margin-left: 1rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: none;
+    transition: all ease 0.2s;
+    position: relative; /* Added */
+    z-index: 1000; /* Added and moved z-index here */
+  }
+
+  .toggleContainer {
+    width: 25% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 14px !important;
+    margin-right: 5px !important;
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+  
+  .toggleContainer2 {
+    width: 32% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 8px !important;
+    margin-right: 8px !important;
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle2 {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+  
+  .toggleContainer3 {
+    width: 35% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 10px !important;
+    margin-right: 10px !important;
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle3 {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+  
+  .toggleContainer4 {
+    width: 40% ;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 35px !important;
+    margin-left: 4px !important;
+    margin-right: 10px !important;
+    
+    // position: absolute;
+    // justify-content: center;
+  }
+  .toggle4 {
+    margin: 2px !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%) !important;
+    border-radius: 50% !important;
+    transition: all 0.5s ease !important;
+    // transform: translateX(0px);
+    cursor: pointer !important;
+  }
+  
+}
+@media (min-width:300px) and (max-width:390px){
+  .mapspage1 .maps-container1 .maps-sidebar1 .mid-area1 .maps-btns-div1 .reset-btn1{
+    color: #100f0d;
+    border-radius: 35px;
+    text-align: center;
+    font-size: 0.8rem;
+    padding-left: 0.9rem;
+    margin-left:-1rem;
+    font-weight: 500;
+    border: 1px solid #e5e5e5;
+    cursor: pointer;
+    transition: all ease 0.2s;
+
+    &:hover {
+      transform: scale(1.05);
+            }
+          
+
+  }
+}
+
+@media (min-width:391px) and (max-width:480px){
+  .mapspage1 .maps-container1 .maps-sidebar1 .mid-area1 .maps-btns-div1 .reset-btn1{
+    color: #100f0d;
+    border-radius: 35px;
+    text-align: center;
+    font-size: 0.8rem;
+    padding-left: 0.9rem;
+    margin-left:-1rem;
+    font-weight: 500;
+    border: 1px solid #e5e5e5;
+    cursor: pointer;
+    transition: all ease 0.2s;
+
+    &:hover {
+      transform: scale(1.05);
+            }
+          
+
+  }
+}
+
+@media (min-width:481px) and (max-width:780px){
+  .mapspage1 .maps-container1 .maps-sidebar1 .mid-area1 .maps-btns-div1 .reset-btn1{
+    color: #100f0d;
+    border-radius: 35px;
+    text-align: center;
+    font-size: 0.8rem;
+    padding-left: 0.9rem;
+    margin-left:0.5rem;
+    font-weight: 500;
+    border: 1px solid #e5e5e5;
+    cursor: pointer;
+    transition: all ease 0.2s;
+
+    &:hover {
+      transform: scale(1.05);
+            }
+          
+
+  }
+}
+
+@media (min-width:781px) and (max-width:1024px){
+  .mapspage1 .maps-container1 .maps-sidebar1 .mid-area1 .maps-btns-div1 .reset-btn1{
+    color: #100f0d;
+    border-radius: 35px;
+    text-align: center;
+    font-size: 0.8rem;
+    padding-left: 0.9rem;
+    margin-left:0rem;
+    font-weight: 500;
+    border: 1px solid #e5e5e5;
+    cursor: pointer;
+    transition: all ease 0.2s;
+
+    &:hover {
+      transform: scale(1.05);
+            }
+          
+
+  }
+}
+
+@media (min-width:1025px) {
+  .mapspage1 .maps-container1 .maps-sidebar1 .mid-area1 .maps-btns-div1 .reset-btn1{
+    color: #100f0d;
+    border-radius: 35px;
+    text-align: center;
+    font-size: 0.8rem;
+    padding-left: 0.9rem;
+    margin-left:-1rem;
+    font-weight: 500;
+    border: 1px solid #e5e5e5;
+    cursor: pointer;
+    transition: all ease 0.2s;
+
+    &:hover {
+      transform: scale(1.05);
+            }
+          
+
   }
 }

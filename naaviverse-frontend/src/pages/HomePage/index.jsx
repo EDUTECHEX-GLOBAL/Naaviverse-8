@@ -23,14 +23,14 @@ const HomePage = () => {
   const { width } = useWindowDimensions();
   const { mobMenuOpen } = useStore();
 
-  const hiwData = [
-    { id: 1, name: "Discover", icon: discoverIcon },
-    { id: 2, name: "Refine", icon: refineIcon },
-    { id: 3, name: "Get Mentored", icon: mentorIcon },
-    { id: 4, name: "Analyze", icon: analyzeIcon },
-    { id: 5, name: "Adjust", icon: adjustIcon },
-    { id: 6, name: "Accomplish", icon: accomplishIcon },
-  ];
+  // const hiwData = [
+  //   { id: 1, name: "Discover", icon: discoverIcon },
+  //   { id: 2, name: "Refine", icon: refineIcon },
+  //   { id: 3, name: "Get Mentored", icon: mentorIcon },
+  //   { id: 4, name: "Analyze", icon: analyzeIcon },
+  //   { id: 5, name: "Adjust", icon: adjustIcon },
+  //   { id: 6, name: "Accomplish", icon: accomplishIcon },
+  // ];
 
   return (
     <div className="homepage">
@@ -39,14 +39,10 @@ const HomePage = () => {
         <div className={`cover-Img ${width <= 768 ? 'cover-Img-mobile' : ''}`}>
           <img src={width <= 768 ? heroImg : homepageImg} alt="Cover" />
           <div className={`background-tint ${width <= 768 ? 'background-tint-mobile' : ''}`}></div>
-          <div className={`mid-text ${width <= 768 ? 'mid-text-mobile' : ''}`}>Find Your Next Adventure</div>
+          <div className={`mid-text ${width <= 768 ? 'mid-text-mobile' : ''}`}>Find Your Paths</div>
           <div className={`background-tint1 ${width <= 768 ? 'background-tint1-mobile' : ''}`}></div>
           <div className={`input-box-container ${width <= 768 ? 'input-box-container-mobile' : ''}`}>
-            <input
-              type="text"
-              placeholder={width <= 768 ? "What Do You Want?" : "Which school do you want to go to?"}
-              onChange={(e) => setSchoolSearch(e.target.value)}
-            />
+            
             <div
               className={`createPath-btn ${width <= 768 ? 'createPath-btn-mobile' : ''}`}
               onClick={() => navigate("/login")}
@@ -56,7 +52,7 @@ const HomePage = () => {
           </div>
         </div>
         <div className="hiw-container">
-          <div className="hiw-text">How It Works</div>
+          {/* <div className="hiw-text">How It Works</div>
           <div className="hiw-options">
             {hiwData.map((e) => (
               <div className="each-hiw-option" key={e.id}>
@@ -67,7 +63,7 @@ const HomePage = () => {
               </div>
             ))}
             <div className="centre-line"></div>
-          </div>
+          </div> */}
         </div>
       </div>
       {mobMenuOpen && <MobMenu />}

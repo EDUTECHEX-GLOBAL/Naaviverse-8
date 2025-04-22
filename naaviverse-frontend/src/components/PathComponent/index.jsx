@@ -911,9 +911,9 @@ const PathComponent = () => {
               </div>
             ) : (
               <>
-                <div className="maps-btns-div1" style={{ marginTop: "1rem" }}>
+                <div className="maps-btns-div2" >
                   <button
-                    className="gs-Btn-maps1"
+                    className="gs-Btn-maps2"
                     onClick={() => setIsFilterOpen(true)}
                     type="button"
                   >
