@@ -1217,279 +1217,148 @@ const AccProfile = () => {
                     onClick={() => setShowDrop(false)}
                     style={{ padding: "0", height: "calc(100% - 70px)" }}
                   >
-                    <div className="pf-left">
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          height: "4rem",
-                          width: "100%",
-                          cursor: "pointer",
-                          borderBottom: "0.5px solid #E5E5E5",
-                          padding: "0 35px",
-                        }}
-                        onClick={() => {
-                          setHidden(!hidden);
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: "17px",
-                            fontWeight: "500",
-                            color: "#1F304F",
-                          }}
-                        >
-                          Business Profile
-                        </div>
-                        <div
-                          style={{ transform: hidden ? "rotate(180deg)" : "" }}
-                        >
-                          <img src={upArrow} alt="" />
-                        </div>
-                      </div>
+                   <div className="pf-left">
+  {/* Business Profile Section */}
+  <div className="business-profile-section">
+    <div
+      className="section-header"
+      onClick={() => setHidden(!hidden)}
+    >
+      <div className="section-title">Business Profile</div>
+      <div style={{ transform: hidden ? "rotate(180deg)" : "" }}>
+        <img src={upArrow} alt="" />
+      </div>
+    </div>
 
-                      <div
-                        style={{
-                          display: hidden ? "none" : "flex",
-                          flexDirection: "column",
-                          padding: "0 35px",
-                          width: "100%",
-                          height: "calc(100% - 4rem)",
-                          overflowY: "scroll",
-                        }}
-                      >
-                        <div
-                          style={{
-                            marginTop: "30px",
-                            position: "relative",
-                            width: "100px",
-                            height: "100px",
-                          }}
-                        >
-                          
-                          <img
-                            style={{
-                              width: "100px",
-                              height: "100px",
-                              borderRadius: "50%",
-                              border: "0.5px solid #e5e5e5",
-                            }}
-                            src={profileData?.logo}
-                            alt=""
-                          />
-                        </div>
-                        <div className="pfl-box">
-                          <div className="pfl-boxl">
-                            <div className="pfl-box-label">Business name</div>
-                            <div
-                              className="pfl-box-inp"
-                              style={{ textTransform: "lowercase" }}
-                            >
-                              {profileData?.businessName}
-                            </div>
-                          </div>
-                          <div className="pfl-boxr">
-                            <div className="pfl-box-label">Business Type</div>
-                            <div className="pfl-box-inp">
-                              {profileData?.type}
-                            </div>
-                          </div>
-                          
-                        </div>
-                        <div className="pfl-box-full">
-                            <div className="pfl-box-label">Description</div>
-                            <div
-                              className="pfl-box-inp-full"
-                              style={{ borderRadius: "25px", minHeight: "10rem" }}
-                            >
-                              
-                              {profileData?.description}
-                            </div>
-                        </div>
-                        <div className="pfl-box">
-                          <div className="pfl-boxl">
-                            <div className="pfl-box-label">Webiste</div>
-                            <div className="pfl-box-inp">
-                              
-                              {profileData?.website}
-                            </div>
-                          </div>
-                          
-                        </div>
-                        
-                      </div>
+    <div className="section-content" style={{ display: hidden ? "none" : "flex" }}>
+      <div className="business-logo">
+        <img
+          src={profileData?.logo}
+          alt=""
+          className="logo-img"
+        />
+      </div>
 
-                      <div
-                        style={{
-                          display: !hidden ? "none" : "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          height: "4rem",
-                          width: "100%",
-                          cursor: "pointer",
-                          borderBottom: "0.5px solid #E5E5E5",
-                          padding: "0 35px",
-                        }}
-                        onClick={() => {
-                          setHidden1(!hidden1);
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: "17px",
-                            fontWeight: "500",
-                            color: "#1F304F",
-                          }}
-                        >
-                          Business address
-                        </div>
-                        <div>
-                          <img src={downArrow} alt="" />
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          display: hidden1 ? "none" : "flex",
-                          flexDirection: "column",
-                          padding: "0 35px",
-                          width: "100%",
-                          height: "calc(100% - 4rem)",
-                          overflowY: "scroll",
-                        }}
-                      >
-                 
-                        <div className="pfl-box">
-                          <div className="pfl-boxl">
-                            <div className="pfl-box-label">Street</div>
-                            <div
-                              className="pfl-box-inp"
-                              style={{ textTransform: "lowercase" }}
-                            >
-                              {profileData?.street}
-                            </div>
-                          </div>
-                          <div className="pfl-boxr">
-                            <div className="pfl-box-label">City</div>
-                            <div className="pfl-box-inp">
-                              {profileData?.city}
-                            </div>
-                          </div>
-                          
-                        </div>
-                        <div className="pfl-box">
-                          <div className="pfl-boxl">
-                            <div className="pfl-box-label">State</div>
-                            <div
-                              className="pfl-box-inp"
-                              style={{ textTransform: "lowercase" }}
-                            >
-                              {profileData?.state}
-                            </div>
-                          </div>
-                          <div className="pfl-boxr">
-                            <div className="pfl-box-label">Pincode</div>
-                            <div className="pfl-box-inp">
-                              {profileData?.pincode}
-                            </div>
-                          </div>
-                          
-                        </div>
-                        <div className="pfl-box">
-                          <div className="pfl-boxl">
-                            <div className="pfl-box-label">Country</div>
-                            <div
-                              className="pfl-box-inp"
-                              style={{ textTransform: "lowercase" }}
-                            >
-                              {profileData?.country}
-                            </div>
-                          </div>
-                         
-                          
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          display: !hidden ? "none" : "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          height: "4rem",
-                          width: "100%",
-                          cursor: "pointer",
-                          borderBottom: "0.5px solid #E5E5E5",
-                          padding: "0 35px",
-                        }}
-                        onClick={() => {
-                          setHidden2(!hidden2);
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: "17px",
-                            fontWeight: "500",
-                            color: "#1F304F",
-                          }}
-                        >
-                         Owner information
-                        </div>
-                        <div>
-                          <img src={downArrow} alt="" />
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          display: hidden2 ? "none" : "flex",
-                          flexDirection: "column",
-                          padding: "0 35px",
-                          width: "100%",
-                          height: "calc(100% - 4rem)",
-                          overflowY: "scroll",
-                        }}
-                      >
-                 
-                        <div className="pfl-box">
-                          <div className="pfl-boxl">
-                            <div className="pfl-box-label">First name</div>
-                            <div
-                              className="pfl-box-inp"
-                              style={{ textTransform: "lowercase" }}
-                            >
-                              {profileData?.firstName}
-                            </div>
-                          </div>
-                          <div className="pfl-boxr">
-                            <div className="pfl-box-label">Last name</div>
-                            <div className="pfl-box-inp">
-                              {profileData?.lastName}
-                            </div>
-                          </div>
-                          
-                        </div>
-                        <div className="pfl-box">
-                          <div className="pfl-boxl">
-                            <div className="pfl-box-label">Position</div>
-                            <div
-                              className="pfl-box-inp"
-                              style={{ textTransform: "lowercase" }}
-                            >
-                              {profileData?.yourPosition}
-                            </div>
-                          </div>
-                         
-                          
-                        </div>
-                        
-                      </div>
-                     
-                    </div>
-                    <div
+      <div className="pfl-box">
+        <div className="pfl-boxl">
+          <div className="pfl-box-label">Business name</div>
+          <div className="pfl-box-inp" style={{ textTransform: "lowercase" }}>
+            {profileData?.businessName}
+          </div>
+        </div>
+        <div className="pfl-boxr">
+          <div className="pfl-box-label">Business Type</div>
+          <div className="pfl-box-inp">{profileData?.type}</div>
+        </div>
+      </div>
+
+      <div className="pfl-box-full">
+        <div className="pfl-box-label">Description</div>
+        <div className="pfl-box-inp-full" style={{ borderRadius: "25px", minHeight: "10rem" }}>
+          {profileData?.description}
+        </div>
+      </div>
+
+      <div className="pfl-box">
+        <div className="pfl-boxl">
+          <div className="pfl-box-label">Website</div>
+          <div className="pfl-box-inp">{profileData?.website}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Business Address Section */}
+  <div className="business-address-section">
+    <div
+      className="section-header"
+      onClick={() => setHidden1(!hidden1)}
+    >
+      <div className="section-title">Business address</div>
+      <div><img src={downArrow} alt="" /></div>
+    </div>
+
+    <div className="section-content" style={{ display: hidden1 ? "none" : "flex" }}>
+      <div className="pfl-box">
+        <div className="pfl-boxl">
+          <div className="pfl-box-label">Street</div>
+          <div className="pfl-box-inp" style={{ textTransform: "lowercase" }}>
+            {profileData?.street}
+          </div>
+        </div>
+        <div className="pfl-boxr">
+          <div className="pfl-box-label">City</div>
+          <div className="pfl-box-inp">{profileData?.city}</div>
+        </div>
+      </div>
+
+      <div className="pfl-box">
+        <div className="pfl-boxl">
+          <div className="pfl-box-label">State</div>
+          <div className="pfl-box-inp" style={{ textTransform: "lowercase" }}>
+            {profileData?.state}
+          </div>
+        </div>
+        <div className="pfl-boxr">
+          <div className="pfl-box-label">Pincode</div>
+          <div className="pfl-box-inp">{profileData?.pincode}</div>
+        </div>
+      </div>
+
+      <div className="pfl-box">
+        <div className="pfl-boxl">
+          <div className="pfl-box-label">Country</div>
+          <div className="pfl-box-inp" style={{ textTransform: "lowercase" }}>
+            {profileData?.country}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Owner Information Section */}
+  <div className="owner-information-section">
+    <div
+      className="section-header"
+      onClick={() => setHidden2(!hidden2)}
+    >
+      <div className="section-title">Owner information</div>
+      <div><img src={downArrow} alt="" /></div>
+    </div>
+
+    <div className="section-content" style={{ display: hidden2 ? "none" : "flex" }}>
+      <div className="pfl-box">
+        <div className="pfl-boxl">
+          <div className="pfl-box-label">First name</div>
+          <div className="pfl-box-inp" style={{ textTransform: "lowercase" }}>
+            {profileData?.firstName}
+          </div>
+        </div>
+        <div className="pfl-boxr">
+          <div className="pfl-box-label">Last name</div>
+          <div className="pfl-box-inp">{profileData?.lastName}</div>
+        </div>
+      </div>
+
+      <div className="pfl-box">
+        <div className="pfl-boxl">
+          <div className="pfl-box-label">Position</div>
+          <div className="pfl-box-inp" style={{ textTransform: "lowercase" }}>
+            {profileData?.yourPosition}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+                    {/* <div
                       className="pf-right"
                       style={{ minWidth: "0%", height: "100%" }}
                     >
                       <div className="pfr-1">
                         <div>
-                          <div className="pfr-head">Make Profile Public</div>
+                          <div className="pfr-head1">Make Profile Public</div>
                           <div className="pfr-desc">
                             Making your profile public will allow you to be
                             discovered on the Naavi directory.
@@ -1536,7 +1405,7 @@ const AccProfile = () => {
                           <LoadingAnimation1 icon={lg1} width={200} />
                         </div>
                       )}
-                    </div>
+                    </div> */}
                   </div>
                 ) : (
                   <>

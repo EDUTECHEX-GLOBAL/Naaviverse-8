@@ -1,0 +1,204 @@
+
+@media (min-width:300px) and (max-width:760px){
+  .fancy-feature-eighteen {
+    background: linear-gradient(180deg, #ffffff 0%, #f8f4ff 100%);
+    position: relative;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+  }
+  
+  .fancy-feature-eighteen .sc-title {
+    font-size: 14px;
+    color: #A882DD;
+    background-color: #F3EDFF;
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 15px;
+  }
+  
+  .fancy-feature-eighteen .main-title {
+    font-size: 42px;
+    font-weight: 700;
+    color: #111029;
+    line-height: 1.3;
+  }
+  
+  .fancy-feature-eighteen .main-title span {
+    color: #0071BC; /* Deep Blue for 'Audience' */
+  }
+  
+  .fancy-feature-eighteen p {
+    font-size: 16px;
+    color: #4F4F4F;
+    line-height: 1.7;
+    margin-bottom: 25px;
+  }
+  
+  .fancy-feature-eighteen .list-item {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .fancy-feature-eighteen .list-item li {
+    font-size: 16px;
+    color: #1E1E1E;
+    margin-bottom: 12px;
+    position: relative;
+    padding-left: 26px;
+    font-weight: 600;
+  }
+  
+  .fancy-feature-eighteen .list-item li::before {
+    content: "✔";
+    position: absolute;
+    left: 0;
+    color: #0071BC;
+    font-weight: bold;
+    font-size: 14px;
+    top: 0;
+  }
+  
+
+}
+
+@media (min-width:761px) and (max-width:1023px){
+  .fancy-feature-eighteen {
+    background: linear-gradient(180deg, #ffffff 0%, #f8f4ff 100%);
+    position: relative;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+  }
+  
+  .fancy-feature-eighteen .sc-title {
+    font-size: 18px;
+    color: #A882DD;
+    background-color: #F3EDFF;
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 15px;
+  }
+  
+  .fancy-feature-eighteen .main-title {
+    font-size: 42px;
+    font-weight: 700;
+    color: #111029;
+    line-height: 1.3;
+  }
+  
+  .fancy-feature-eighteen .main-title span {
+    color: #0071BC; /* Deep Blue for 'Audience' */
+  }
+  
+  .fancy-feature-eighteen p {
+    font-size: 20px;
+    color: #4F4F4F;
+    line-height: 1.7;
+    margin-bottom: 25px;
+  }
+  
+  .fancy-feature-eighteen .list-item {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .fancy-feature-eighteen .list-item li {
+    font-size: 20px;
+    color: #1E1E1E;
+    margin-bottom: 12px;
+    position: relative;
+    padding-left: 26px;
+    font-weight: 600;
+  }
+  
+  .fancy-feature-eighteen .list-item li::before {
+    content: "✔";
+    position: absolute;
+    left: 0;
+    color: #0071BC;
+    font-weight: bold;
+    font-size: 14px;
+    top: 0;
+  }
+  
+
+}
+
+@media (min-width:1024px) {
+  .fancy-feature-eighteen {
+    background: linear-gradient(180deg, #ffffff 0%, #f8f4ff 100%);
+    position: relative;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+  }
+  
+  .fancy-feature-eighteen .sc-title {
+    font-size: 24px;
+    color: #A882DD;
+    background-color: #F3EDFF;
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 15px;
+  }
+  
+  .fancy-feature-eighteen .main-title {
+    font-size: 50px;
+    font-weight: 700;
+    color: #111029;
+    line-height: 1.3;
+  }
+  
+  .fancy-feature-eighteen .main-title span {
+    color: #0071BC; /* Deep Blue for 'Audience' */
+  }
+  
+  .fancy-feature-eighteen p {
+    font-size: 24px;
+    color: #4F4F4F;
+    line-height: 1.7;
+    margin-bottom: 25px;
+  }
+  
+  .fancy-feature-eighteen .list-item {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .fancy-feature-eighteen .list-item li {
+    font-size: 24px;
+    color: #1E1E1E;
+    margin-bottom: 12px;
+    position: relative;
+    padding-left: 26px;
+    font-weight: 600;
+  }
+  
+  .fancy-feature-eighteen .list-item li::before {
+    content: "✔";
+    position: absolute;
+    left: 0;
+    color: #0071BC;
+    font-weight: bold;
+    font-size: 14px;
+    top: 0;
+  }
+  
+
+}

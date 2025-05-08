@@ -1,0 +1,35 @@
+
+  /* Styling for the text on larger screens */
+  @media (min-width: 761px) and (max-width:1023px){
+    .copyright {
+      font-size: 22px; /* Reduce font size on small screens */
+      text-align:center !important;
+      padding-top: 160px;
+      padding-bottom: 20px;
+    }
+  }
+  
+  /* Padding for the bottom */
+  .pb-15 {
+    padding-bottom: 15px;
+  }
+  
+  /* Ensure the text is responsive */
+  @media (min-width: 300px) and (max-width:760px){
+    .copyright {
+      font-size: 16px; /* Reduce font size on small screens */
+      text-align:center !important;
+      padding-top: 160px;
+      padding-bottom: 20px;
+    }
+  }
+  
+  @media (min-width: 1024px){
+    .copyright {
+      font-size: 24px; /* Reduce font size on small screens */
+      text-align:center !important;
+      padding-top: 160px;
+      padding-bottom: 20px;
+    }
+  }
+  

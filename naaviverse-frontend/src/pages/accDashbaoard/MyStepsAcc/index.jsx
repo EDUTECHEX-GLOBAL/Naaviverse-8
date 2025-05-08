@@ -721,7 +721,7 @@ const fetchServicesForRemoval = async () => {
                     </div>
                 </div>
 
-                <div className="mypaths-content">
+                <div className="mypaths-content1">
                     {showSelectedPath ? <div>
                         <CurrentStep productDataArray={productDataArray} selectedPathId={selectedPathId} showSelectedPath={showSelectedPath} selectedPath={selectedPath} />
                     </div> : viewPathEnabled ? (
@@ -812,7 +812,7 @@ const fetchServicesForRemoval = async () => {
                         </div>
                     ) : (
                         <>
-  <div className="mypaths-content">
+  <div className="mypaths-content1">
     {loading
       ? Array(10)
           .fill("")

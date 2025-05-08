@@ -11,10 +11,10 @@
     border-bottom: 0.5px solid rgb(229, 229, 229);
 
     .each-mypath-menu {
-      padding: 10px 30px;
+      padding: 4px 26px;
       border-radius: 35px;
       font-weight: 400;
-      font-size: 15px;
+      font-size: 18px;
       color: #1f304f;
       cursor: pointer;
       transition: all ease 0.2s;
@@ -27,8 +27,8 @@
   }
 
   .mypaths-content {
-    width: 100%;
-    height: calc(100% - 4rem);
+    width: 120%;
+    
 
     .mypathsNav {
       width: 100%;
@@ -324,7 +324,6 @@
 /* Top section */
 .card-header {
   display: flex;
-  justify-content: space-between;
   flex-wrap: wrap;
 }
 
@@ -352,8 +351,8 @@
   word-break: break-word;
 }
 
-/* Responsive styles */
-@media screen and (max-width: 768px) {
+
+@media (min-width:300px) and (max-width: 479px) {
   .card-header {
     flex-direction: column;
     gap: 5px;
@@ -376,7 +375,31 @@
   }
 }
 
-@media screen and (min-width: 1024px) {
+/* Responsive styles */
+@media (min-width:480px) and (max-width: 768px) {
+  .card-header {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .each-mypaths-card {
+    padding: 12px;
+  }
+
+  .card-title {
+    font-size: 1rem;
+  }
+
+  .card-body > div {
+    font-size: 0.85rem;
+  }
+
+  .card-subinfo {
+    font-size: 0.75rem;
+  }
+}
+
+@media (min-width:769px) and (max-width: 1024px) {
   .card-header {
     flex-direction: column;
     gap: 5px;
@@ -397,5 +420,161 @@
 
   .card-subinfo {
     font-size: 0.75rem;
+  }
+}
+
+
+@media (min-width:300px) and (max-width:400px){
+  .mypaths {
+    width: 100%;
+    height: 100%;
+  
+    .mypaths-menu {
+      width: 125% !important;
+      height: 4rem;
+      padding: 12px 30px;
+      display: flex;
+      gap: 2.5vw;
+      border-bottom: 0.5px solid rgb(229, 229, 229);
+  
+      .each-mypath-menu {
+        padding: 4px 26px;
+        border-radius: 35px;
+        font-weight: 400;
+        font-size: 18px;
+        color: #1f304f;
+        cursor: pointer;
+        transition: all ease 0.2s;
+        gap:3px !important;
+  
+        &:hover {
+          transform: scale(1.1);
+        }
+      }
+    }
+}
+}
+
+@media (min-width:401px) and (max-width:480px){
+  .mypaths {
+    width: 100%;
+    height: 100%;
+  
+    .mypaths-menu {
+      width: 125% !important;
+      height: 5rem;
+      padding: 12px 30px;
+      display: flex;
+      gap: 2.5vw;
+      border-bottom: 0.5px solid rgb(229, 229, 229);
+  
+      .each-mypath-menu {
+        padding: 4px 26px;
+        border-radius: 35px;
+        font-weight: 400;
+        font-size: 22px;
+        color: #1f304f;
+        cursor: pointer;
+        transition: all ease 0.2s;
+        gap:3px !important;
+  
+        &:hover {
+          transform: scale(1.1);
+        }
+      }
+    }
+  }
+}
+
+@media (min-width:481px) and (max-width:780px){
+  .mypaths {
+    width: 100%;
+    height: 100%;
+  
+    .mypaths-menu {
+      width: 125% !important;
+      height: 5rem;
+      padding: 12px 26px;
+      display: flex;
+      gap: 2.5vw;
+      border-bottom: 0.5px solid rgb(229, 229, 229);
+  
+      .each-mypath-menu {
+        padding: 4px 26px;
+        border-radius: 35px;
+        font-weight: 500;
+        font-size: 26px;
+        color: #1f304f;
+        cursor: pointer;
+        transition: all ease 0.2s;
+        gap:6px !important;
+  
+        &:hover {
+          transform: scale(1.1);
+        }
+      }
+    }
+  }
+} 
+
+@media (min-width:781px) and (max-width:1023px){
+  .mypaths {
+    width: 100%;
+    height: 100%;
+  
+    .mypaths-menu {
+      width: 125% !important;
+      height: 5rem;
+      padding: 12px 26px;
+      display: flex;
+      gap: 2.5vw;
+      border-bottom: 0.5px solid rgb(229, 229, 229);
+  
+      .each-mypath-menu {
+        padding: 4px 26px;
+        border-radius: 35px;
+        font-weight: 500;
+        font-size: 28px;
+        color: #1f304f;
+        cursor: pointer;
+        transition: all ease 0.2s;
+        gap:6px !important;
+  
+        &:hover {
+          transform: scale(1.1);
+        }
+      }
+    }
+  }
+}
+
+@media (min-width:1024px) and (max-width:1300px){
+  .mypaths {
+    width: 100%;
+    height: 100%;
+  
+    .mypaths-menu {
+      width: 125% !important;
+      height: 5rem;
+      padding: 12px 26px;
+      display: flex;
+      gap: 2.5vw;
+      border-bottom: 0.5px solid rgb(229, 229, 229);
+  
+      .each-mypath-menu {
+        padding: 4px 26px;
+        border-radius: 35px;
+        font-weight: 530;
+        font-size: 30px;
+        color: #1f304f;
+        cursor: pointer;
+        transition: all ease 0.2s;
+        gap:6px !important;
+  
+        &:hover {
+          transform: scale(1.1);
+        }
+      }
+    }
   }
 }

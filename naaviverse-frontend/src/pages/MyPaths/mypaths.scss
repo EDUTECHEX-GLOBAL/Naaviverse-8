@@ -20,7 +20,7 @@
       padding: 0px;
       border-radius: 35px;
       font-weight: 400;
-      font-size: 0.9rem;
+      font-size: 2rem;
       color: #1f304f;
       cursor: pointer;
       transition: all ease 0.2s;
@@ -33,7 +33,7 @@
 
   .mypaths-content {
     width: 100%;
-    height: calc(100% - 4rem);
+   
     padding-right: 5px;
     padding-left: 5px;
 
@@ -452,112 +452,240 @@
 }
 
 /* Mobile-Specific Styles */
-@media (max-width: 430px) {
+@media (min-width:300px) and (max-width: 400px) {
   /* Menu */
-  .mypaths-menu {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding: 10px;
-  }
-
-  .each-mypath-menu {
-    padding: 4px 10px; /* Smaller padding for menu items */
-    font-size: 14px; /* Smaller font size */
-  }
-
-  /* Data Table (Paths, Inactive, Pending) */
-  .mypathsNav {
-    display: flex; /* Keep the header row */
-    align-items: center;
-    font-size: 0.7rem; /* Smaller font size for header */
-  }
-
   .mypaths-content {
-    overflow-x: hidden; /* Enable horizontal scrolling for the content */
-  }
-
-  .each-mypaths-data {
-    display: flex; /* Keep data in a row */
-    min-width: 600px; /* Prevent collapsing */
+    display: flex;
+    flex-wrap: wrap; /* Allow cards to wrap on smaller screens */
+    gap: 1rem; /* Add spacing between cards */
     padding: 10px;
+    overflow-y: scroll;
   }
+  
 
-  .each-mypaths-name {
-    width: 30%; /* Adjust width as needed */
-    padding: 0.5rem;
+  .mypaths-card1 {
+    width: 160% !important; /* Display one card per row on very small screens */
+    font-size: smaller; /* Adjust font size */
+    padding-left: 8px;
+    padding-top:8px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding-bottom:8px;
+    margin-left:10px;
+    margin-right: -2px !important;
+    margin-bottom:10px;
+    height: calc(65% - 1rem);
   }
-
-  .each-mypaths-desc {
-    width: 50%; /* Adjust width as needed */
-    padding: 0.5rem;
+  
+  .card-header {
+    font-size: 1.5rem;
   }
-
-  /* View Path */
-  .viewpath-container {
-    padding: 1rem;
+  
+  .card-body {
+    margin-top: 10px;
+    font-size: 1.5rem;
   }
-
-  .viewpath-steps-area {
-    flex-direction: column;
+  
+  .card-body p {
+    margin: 0;
   }
-
-  .viewpath-each-j-step {
-    width: 100%;
-    margin-top: 1rem;
+  
+  .card-body span {
+    display: block;
+    margin-top: 5px;
   }
+  
 }  
 
-.mypaths-content {
-  display: flex;
-  flex-wrap: wrap; /* Allow cards to wrap on smaller screens */
-  gap: 1rem; /* Add spacing between cards */
-  padding: 10px;
-}
-
-.mypaths-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 15px;
-  background-color: #fff;
-  width: calc(33.33% - 1rem); /* Display three cards per row */
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.card-header {
-  font-weight: bold;
-  font-size: 1rem;
-}
-
-.card-body {
-  margin-top: 10px;
-}
-
-.card-body p {
-  margin: 0;
-}
-
-.card-body span {
-  display: block;
-  margin-top: 5px;
-}
-
-/* Responsive Design */
-@media screen and (max-width: 768px) {
-  .mypaths-card {
-    width: calc(50% - 1rem); /* Display two cards per row on smaller screens */
-    font-size: smaller; /* Adjust font size */
+@media (min-width:401px) and (max-width:480px){
+  .mypaths-content {
+    display: flex;
+    flex-wrap: wrap; /* Allow cards to wrap on smaller screens */
+    gap: 1rem; /* Add spacing between cards */
     padding: 10px;
   }
-}
+  
 
-@media screen and (max-width: 480px) {
-  .mypaths-card {
-    width: calc(100% - 1rem); /* Display one card per row on very small screens */
+  .mypaths-card1 {
+    width: 160% !important; /* Display one card per row on very small screens */
     font-size: smaller; /* Adjust font size */
-    padding: 8px;
+    padding-left: 8px;
+    padding-top:8px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding-bottom:8px;
+    margin-left:10px;
+    margin-right: -2px !important;
+    margin-bottom:10px;
+    height: calc(55% - 1rem);
   }
+  
+  .card-header {
+    font-size: 1.5rem;
+  }
+  
+  .card-body {
+    margin-top: 10px;
+    font-size: 1.5rem;
+  }
+  
+  .card-body p {
+    margin: 0;
+  }
+  
+  .card-body span {
+    display: block;
+    margin-top: 5px;
+  }
+  
+  
 }
 
+@media (min-width:481px) and (max-width: 780px) {
+  .mypaths-content {
+    display: flex;
+    flex-wrap: wrap; /* Allow cards to wrap on smaller screens */
+    gap: 1rem; /* Add spacing between cards */
+    padding: 10px;
+  }
+  
+  .mypaths-card1 {
+    width: 160% !important; /* Display one card per row on very small screens */
+    font-size: smaller; /* Adjust font size */
+    padding-left: 8px;
+    padding-top:8px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding-bottom:8px;
+    margin-left:10px;
+    margin-right: -2px !important;
+    margin-bottom:10px;
+    height: calc(55% - 1rem);
+  }
+  
+  .card-header {
+    font-size: 1.8rem;
+  }
+  
+  .card-body {
+    margin-top: 10px;
+    font-size: 1.8rem;
+  }
+  
+  .card-body p {
+    margin: 0;
+  }
+  
+  .card-body span {
+    display: block;
+    margin-top: 5px;
+  }
+  
+  
+}
+
+@media (min-width:781px) and (max-width: 1023px) {
+  .mypaths-content {
+    display: flex;
+    flex-wrap: wrap; /* Allow cards to wrap on smaller screens */
+    gap: 1rem; /* Add spacing between cards */
+    padding: 10px;
+    overflow-y: scroll;
+  }
+  
+  .mypaths-card1 {
+    width: 100% !important; /* Display one card per row on very small screens */
+    font-size: smaller; /* Adjust font size */
+    padding-left: 8px;
+    padding-top:8px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding-bottom:8px;
+    margin-left:10px;
+    margin-right: -2px !important;
+    margin-bottom:10px;
+    height: calc(55% - 1rem);
+  }
+  
+  .card-header {
+    font-size: 2rem;
+    display: block; /* or just let it be default */
+    justify-content: unset; 
+  }
+  
+  .card-body {
+    margin-top: 10px;
+    font-size: 2rem;
+  }
+  
+  .card-body p {
+    margin: 0;
+  }
+  
+  .card-body span {
+    display: block;
+    margin-top: 5px;
+  }
+  
+  
+}
+
+@media (min-width:1024px) and (max-width: 1300px) {
+  .mypaths-content {
+    display: flex;
+    flex-wrap: wrap; /* Allow cards to wrap on smaller screens */
+    gap: 1rem; /* Add spacing between cards */
+    padding: 10px;
+    overflow-y: scroll;
+  }
+  
+  .mypaths-card1 {
+    width: 100% !important; /* Display one card per row on very small screens */
+    font-size: smaller; /* Adjust font size */
+    padding-left: 8px;
+    padding-top:8px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding-bottom:8px;
+    margin-left:10px;
+    margin-right: -2px !important;
+    margin-bottom:10px;
+    height: calc(65% - 1rem);
+    overflow-y: scroll !important;
+  }
+  
+  .card-header {
+    font-size: 2rem;
+    display: block; /* or just let it be default */
+    justify-content: unset; 
+  }
+  
+  .card-body {
+    margin-top: 10px;
+    font-size: 2rem;
+  }
+  
+  .card-body p {
+    margin: 0;
+  }
+  
+  .card-body span {
+    display: block;
+    margin-top: 5px;
+  }
+  
+  
+}
 
 /* Tablets (481px - 768px) */
 @media (max-width: 768px) {

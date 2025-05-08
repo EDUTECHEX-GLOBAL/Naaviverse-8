@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 const MenuNav = ({showDrop, setShowDrop, searchTerm, setSearchterm, searchPlaceholder}) => {
     const navigate = useNavigate();
+    const userType = localStorage.getItem("userType");
     const handleLogout = () => {
         localStorage.clear();
         navigate("/login");
@@ -30,10 +31,12 @@ const MenuNav = ({showDrop, setShowDrop, searchTerm, setSearchterm, searchPlaceh
         }
       }
     
+    const navClassName = `dash-nav dash-nav-${userType || "default"}`;
+
 
     return ( 
         <>
-          <div className="dash-nav">
+          <div className={navClassName}>
             <div
                 className="search-input-box"
                 onClick={() => setShowDrop(false)}

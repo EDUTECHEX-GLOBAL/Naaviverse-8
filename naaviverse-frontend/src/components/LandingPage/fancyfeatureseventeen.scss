@@ -1,0 +1,235 @@
+/* General layout and spacing */
+.block-style-twelve {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px 24px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    height: 100%;
+  }
+  
+  .block-style-twelve:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+  }
+  
+  /* Icon styling */
+  .block-style-twelve .icon img {
+    width: 40px;
+    height: 40px;
+    
+  }
+  
+  /* Title styling */
+  .custom-feature-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0b0c2a;
+    margin-bottom: 12px;
+  }
+  
+  /* Description text */
+  .block-style-twelve p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #5e6282;
+    margin: 0;
+  }
+  
+  /* Active card effect */
+  .block-style-twelve.active {
+    border: 1.5px solid #ece9ff;
+    background-color: #f9f8fe;
+  }
+  
+  /* Optional: dot or indicator near the title */
+  .block-style-twelve.active .custom-feature-title::after {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: #5f63f2;
+    border-radius: 50%;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  
+@media (min-width:300px) and (max-width:760px){
+  /* General layout and spacing */
+.block-style-twelve {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.block-style-twelve:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+/* Icon styling */
+.block-style-twelve .icon img {
+  width: 40px;
+  height: 40px;
+  
+}
+
+/* Title styling */
+.custom-feature-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0b0c2a;
+  margin-bottom: 12px;
+}
+
+/* Description text */
+.block-style-twelve p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #5e6282;
+  margin: 0;
+}
+
+/* Active card effect */
+.block-style-twelve.active {
+  border: 1.5px solid #ece9ff;
+  background-color: #f9f8fe;
+}
+
+/* Optional: dot or indicator near the title */
+.block-style-twelve.active .custom-feature-title::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background-color: #5f63f2;
+  border-radius: 50%;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+}
+
+@media (min-width:761px) and (max-width:1023px){
+  /* General layout and spacing */
+.block-style-twelve {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px 24px;
+  margin: 0 10px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.block-style-twelve:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+/* Icon styling */
+.block-style-twelve .icon img {
+  width: 40px;
+  height: 40px;
+  
+}
+
+/* Title styling */
+.custom-feature-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0b0c2a;
+  margin-bottom: 12px;
+}
+
+/* Description text */
+.block-style-twelve p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #5e6282;
+  margin: 0;
+}
+
+/* Active card effect */
+.block-style-twelve.active {
+  border: 1.5px solid #ece9ff;
+  background-color: #f9f8fe;
+}
+
+/* Optional: dot or indicator near the title */
+.block-style-twelve.active .custom-feature-title::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background-color: #5f63f2;
+  border-radius: 50%;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+}
+
+@media (min-width:1024px) {
+  /* General layout and spacing */
+.block-style-twelve {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px 24px;
+  margin: 0 10px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.block-style-twelve:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+/* Icon styling */
+.block-style-twelve .icon img {
+  width: 40px;
+  height: 40px;
+  
+}
+
+/* Title styling */
+.custom-feature-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0b0c2a;
+  margin-bottom: 12px;
+}
+
+/* Description text */
+.block-style-twelve p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #5e6282;
+  margin: 0;
+}
+
+/* Active card effect */
+.block-style-twelve.active {
+  border: 1.5px solid #ece9ff;
+  background-color: #f9f8fe;
+}
+
+/* Optional: dot or indicator near the title */
+.block-style-twelve.active .custom-feature-title::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background-color: #5f63f2;
+  border-radius: 50%;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+}
+

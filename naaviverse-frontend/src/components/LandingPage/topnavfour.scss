@@ -1,0 +1,213 @@
+/* ======== Base Navbar Styles ======== */
+.theme-main-menu {
+    width: 100%;
+    padding: 20px 30px;
+    background-color: #ffffff;
+    transition: all 0.3s ease;
+    z-index: 999;
+    position: relative;
+  }
+  
+  .theme-main-menu.fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Logo */
+  .theme-main-menu .logo img {
+    max-height: 50px;
+  }
+  
+  /* Flexbox container */
+  .inner-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  /* Nav Links */
+  .navbar-nav {
+    display: flex;
+    gap: 30px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .navbar-nav a {
+    text-decoration: none;
+    color: #0b1531;
+    font-weight: 500;
+    font-size: 16px;
+    transition: color 0.3s ease;
+  }
+  
+  .navbar-nav a:hover {
+    color: #2575fc;
+  }
+  
+  /* Send Message Button */
+  .send-msg-btn {
+    background-color: #2575fc;
+    color: white;
+    padding: 10px 22px;
+    border-radius: 30px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .send-msg-btn:hover {
+    background-color: #1b63d1;
+  }
+  
+  /* ======== Responsive Mobile Styles ======== */
+  @media (min-width:761px) and (max-width: 1023px) {
+
+    .theme-main-menu {
+      width: 100%;
+      padding: 20px 30px;
+      background-color: #ffffff;
+      transition: all 0.3s ease;
+      z-index: 999;
+      position: relative;
+    }
+    
+    .theme-main-menu.fixed {
+      position: fixed;
+      top: 0;
+      left: 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Logo */
+    .theme-main-menu .logo img {
+      max-height: 50px;
+    }
+    
+    .inner-content {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    
+      
+  
+    .navbar-nav {
+      flex-direction: column;
+      width: 100%;
+      margin-top: 15px;
+      gap: 15px;
+    }
+  
+    .send-msg-btn {
+      width: 100%;
+      margin-top: 15px;
+    }
+  
+    .mobile-content {
+      width: 100%;
+      text-align: center;
+    }
+  }
+
+  @media (min-width:300px) and (max-width: 760px) {
+
+    .theme-main-menu {
+      width: 100%;
+      padding: 10px 25px;
+      background-color: #ffffff;
+      transition: all 0.3s ease;
+      z-index: 999;
+      position: relative;
+    }
+    
+    .theme-main-menu.fixed {
+      position: fixed;
+      top: 0;
+      left: 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Logo */
+    .theme-main-menu .logo img {
+      max-height: 50px;
+    }
+    
+    .inner-content {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    
+      
+  
+    .navbar-nav {
+      flex-direction: column;
+      width: 100%;
+      margin-top: 15px;
+      gap: 15px;
+    }
+  
+    .send-msg-btn {
+      width: 100%;
+      margin-top: 15px;
+    }
+  
+    .mobile-content {
+      width: 100%;
+      text-align: center;
+    }
+  }
+  
+  @media (min-width:1024px)  {
+
+    .theme-main-menu {
+      width: 100%;
+      padding: 20px 30px;
+      background-color: #ffffff;
+      transition: all 0.3s ease;
+      z-index: 999;
+      position: relative;
+    }
+    
+    .theme-main-menu.fixed {
+      position: fixed;
+      top: 0;
+      left: 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Logo */
+    .theme-main-menu .logo img {
+      max-height: 50px;
+    }
+    
+    .inner-content {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    
+      
+  
+    .navbar-nav {
+      flex-direction: column;
+      width: 100%;
+      margin-top: 15px;
+      gap: 15px;
+    }
+  
+    .send-msg-btn {
+      width: 100%;
+      margin-top: 15px;
+    }
+  
+    .mobile-content {
+      width: 100%;
+      text-align: center;
+    }
+  }

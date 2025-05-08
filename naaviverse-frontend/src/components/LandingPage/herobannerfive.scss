@@ -1,0 +1,379 @@
+.hero-banner-five {
+  position: relative;
+  background: linear-gradient(to bottom right, #f3f9ff, #e7f4ff);
+  padding: 100px 0;
+  
+  height: 100vh;     /* or try max-height if it's nested */
+  z-index: 1;
+}
+
+  
+  // .hero-heading {
+  //   font-size: 48px;
+  //   font-weight: 700;
+  //   color: #0b1531;
+  //   line-height: 1.3;
+  //   margin-bottom: 10px;
+  //   margin-top: -60px !important;
+  //   margin-left: 10px;
+  // }
+  
+  .hero-heading span {
+    color: #2575fc;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+  
+  .hero-banner-five p {
+    color: #555e75;
+    font-size: 18px;
+    line-height: 1.6;
+    max-width: 500px;
+  }
+  
+  .button-group .btn-one {
+    background-color: #2575fc;
+    color: #fff;
+    padding: 12px 28px;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: 0 10px 25px rgba(37, 117, 252, 0.2);
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+  
+  .button-group .btn-one:hover {
+    background-color: #1b63d1;
+    transform: translateY(-2px);
+  }
+  
+  .illustration-holder {
+    flex: 1;
+    max-width: 550px;
+    position: relative; /* important for absolutely positioned shapes */
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+  
+  .illustration-holder .main-illustration {
+    width: 100%;
+    max-width: 550px;
+    z-index: 1;
+  }
+  
+  /* Shapes */
+  .illustration-holder .shapes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    pointer-events: none; /* shapes won't interfere with user clicks */
+  }
+  
+  .shape-one {
+    top: 37%;
+    right: 22.7%;
+    width: 2.25%;
+    animation: jumpTwo 7s infinite linear;
+  }
+  
+  .shape-two {
+    position: absolute;
+    top: 0;
+    right: 160px;
+    width: 40px;
+  }
+  
+  .shape-three {
+    position: absolute;
+    bottom: 60px;
+    right: 90px;
+    width: 50px;
+  }
+  .oval-one {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: rgba(133, 75, 255, 0.5);
+    bottom: -12%;
+    left: 9%;
+    animation: jumpThree 3s infinite linear;
+  }
+  
+  .custom-text {
+    font-size: 1.125rem;         // Equivalent to text-lg
+    line-height: 1.6;
+    color: #555e75;              // Matches the paragraph color already in use
+    margin-bottom: 50px;         // mb-50
+    padding-top: 40px;           // pt-40
+    padding-right: 0;
+    padding-left: 10px;
+  
+    
+  }
+
+
+  .btn-one {
+    background-color: #2575fc;
+    color: #fff;
+    margin-top: 3px ;
+    margin-left: 10px !important;
+    margin-bottom: 8px ;
+    font-size: 16px;
+    border: none;
+    border-radius: 50px !important;
+    font-weight: 600;
+    box-shadow: 0 10px 25px rgba(37, 117, 252, 0.2);
+    transition: background 0.3s ease, transform 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .btn-one:hover {
+    background-color: #1b63d1;
+    transform: translateY(-2px);
+  }
+  
+  .btn-one:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.3);
+  }
+  
+  .ripple-btn {
+    position: relative;
+    overflow: hidden;
+    
+  }
+  
+  .ripple-btn::after {
+    content: '';
+    position: absolute;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    padding-left: 10px;
+    transform: scale(0);
+    opacity: 0;
+    pointer-events: none;
+    animation: ripple 0.6s linear;
+  }
+  
+  @keyframes ripple {
+    to {
+      transform: scale(4);
+      opacity: 0;
+    }
+  }
+  
+  @media (min-width:300px) and (max-width: 760px) {
+    .hero-banner-five {
+      position: relative;
+      background: linear-gradient(to bottom right, #f3f9ff, #e7f4ff);
+      padding: 100px 0;
+      height: 100vh;     /* or try max-height if it's nested */
+      z-index: 1;
+    }
+  
+    .hero-banner-five .hero-heading {
+      font-size: 48px;
+      font-weight: 700;
+      color: #0b1531;
+      line-height: 1.3;
+      margin: -60px 0 10px 10px !important;
+    }
+    
+    .hero-banner-five p {
+      color: #555e75;
+      font-size: 18px;
+      line-height: 1.6;
+      max-width: 500px;
+    }
+  
+    .custom-text {
+      font-size: 1rem;
+      padding-top: 20px;
+      padding-left: 0;
+      text-align: center;
+    }
+  
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .button-group .btn-one,
+    .btn-one {
+      width: 80%;
+      max-width: 280px;
+      font-size: 15px;
+      padding: 10px 40px;
+      margin: 10px 40px;
+    }
+  
+    .illustration-holder {
+      justify-content: center;
+      padding-top: 30px;
+    }
+  
+    .illustration-holder .main-illustration {
+      max-width: 90%;
+    }
+  
+    .illustration-holder .shapes {
+      display: none; /* hide decorative shapes for better clarity */
+    }
+  }
+
+  @media (min-width:1024px)  {
+    .hero-banner-five {
+      position: relative;
+      background: linear-gradient(to bottom right, #f3f9ff, #e7f4ff);
+      padding: 100px 0;
+      height: 100vh;     /* or try max-height if it's nested */
+      z-index: 1;
+    }
+  
+    .hero-heading {
+      font-size: 58px;
+      font-weight: 700;
+      color: #0b1531;
+      line-height: 1.3;
+      margin-bottom: 10px;
+      margin-top: -60px !important;
+      margin-left: 25px;
+      margin-right:25px;
+    }
+
+    .hero-heading span {
+      color: #2575fc;
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+  
+    .hero-banner-five p {
+      color: #555e75;
+      font-size: 18px;
+      text-align: center;
+      line-height: 1.6;
+      max-width: 500px;
+    }
+  
+    .custom-text {
+      font-size: 2rem;
+      padding-top: 20px;
+      padding-left: 30px;
+      justify-content: center;
+    }
+  
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-right: 120px !important;
+    }
+  
+    .button-group .btn-one,
+    .btn-one {
+      width: 160%;
+      max-width: 300px;
+      font-size: 20px;
+      padding: 20px 20px;
+      margin: 15px 10pc;
+    }
+  
+    .illustration-holder {
+      justify-content: center;
+      padding-top: 30px;
+    }
+  
+    .illustration-holder .main-illustration {
+      max-width: 90%;
+      align-items: center;
+      margin-right:-390px ;
+    }
+  
+    .illustration-holder .shapes {
+      display: none; /* hide decorative shapes for better clarity */
+    }
+  }
+  
+  @media (min-width:761px) and (max-width: 1023px) {
+    .hero-banner-five {
+      position: relative;
+      background: linear-gradient(to bottom right, #f3f9ff, #e7f4ff);
+      padding: 100px 0;
+      height: 100vh;     /* or try max-height if it's nested */
+      z-index: 1;
+    }
+  
+    .hero-heading {
+      font-size: 58px;
+      font-weight: 700;
+      color: #0b1531;
+      line-height: 1.3;
+      margin-bottom: 10px;
+      margin-top: -60px !important;
+      margin-left: 25px;
+      margin-right:25px;
+    }
+
+    .hero-heading span {
+      color: #2575fc;
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+  
+    .hero-banner-five p {
+      color: #555e75;
+      font-size: 18px;
+      text-align: center;
+      line-height: 1.6;
+      max-width: 500px;
+    }
+  
+    .custom-text {
+      font-size: 2rem;
+      padding-top: 20px;
+      padding-left: 30px;
+      justify-content: center;
+    }
+  
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-right: 120px !important;
+    }
+  
+    .button-group .btn-one,
+    .btn-one {
+      width: 150%;
+      max-width: 300px;
+      font-size: 20px;
+      padding: 20px 20px;
+      margin: 15px auto;
+    }
+  
+    .illustration-holder {
+      justify-content: center;
+      padding-top: 30px;
+    }
+  
+    .illustration-holder .main-illustration {
+      max-width: 90%;
+      align-items: center;
+      margin-right:-135px ;
+    }
+  
+    .illustration-holder .shapes {
+      display: none; /* hide decorative shapes for better clarity */
+    }
+  }
+  

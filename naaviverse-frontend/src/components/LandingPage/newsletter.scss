@@ -1,0 +1,43 @@
+form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  input[type="email"] {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+  
+  input[type="email"]:focus {
+    border-color: #0d6efd; /* Nice blue focus */
+    outline: none;
+    box-shadow: 0 0 5px rgba(13, 110, 253, 0.3);
+  }
+  
+  button {
+    background-color: #0d6efd; /* Primary blue */
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #0b5ed7; /* Darker blue on hover */
+  }
+  
+  .message-text {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #28a745; /* Green for success messages */
+  }
+  

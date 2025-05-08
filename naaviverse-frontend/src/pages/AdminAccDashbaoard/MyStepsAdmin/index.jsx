@@ -742,10 +742,10 @@ useEffect(() => {
               <div className="card-subinfo">ID: {e?._id}</div>
             </div>
             <div className="card-body">
-              <div><strong>Length:</strong> {e?.length || 0} Days</div>
+              <div><strong>Length:</strong> {e?.length} Days</div>
               <div><strong>Cost:</strong> {e?.cost}</div>
               <div><strong>Services:</strong> {e?.other_data ? Object.keys(e.other_data).length : 0}</div>
-              <div className="card-description"><strong>Description:</strong> {e?.description}</div>
+              <div><strong>Description:</strong> {e?.description}</div>
             </div>
           </div>
         ))}

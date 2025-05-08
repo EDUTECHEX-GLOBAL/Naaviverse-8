@@ -1311,12 +1311,12 @@ const UserProfile = () => {
                       <div className="pfr-1" style={{ padding: "0" }}>
                         <div
                           style={{
-                            height: "50%",
-                            borderBottom: "0.5px solid #ebebeb",
+                            height: "40%",
                             padding: "0 30px",
                             display: "flex",
                             flexDirection: "column",
-                            justifyContent: "space-evenly",
+                            
+                            
                           }}
                         >
                           <div className="pfr-head">Complete Level 2</div>

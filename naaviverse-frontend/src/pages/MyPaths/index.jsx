@@ -846,7 +846,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
         ))
     : filteredPartnerPathData?.map((e, i) => (
         <div
-          className="mypaths-card"
+          className="mypaths-card1"
           key={i}
           onClick={() => {
             setPathActionEnabled(true);
@@ -855,10 +855,10 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
             viewPath(e?.nameOfPath);
           }}
         >
-          <div className="card-header">{e?.nameOfPath}</div>
+          <div className="card-header"><strong>Name:</strong>  <span className="normal-text">{e?.nameOfPath}</span></div>
           <div className="card-body">
-            <p>{e?.description}</p>
-            <span>Steps: {e?.the_ids?.length}</span>
+            <p><strong>Description: </strong> <span className="normal-text">{e?.description}</span></p>
+            <span><strong>Steps:</strong> {e?.the_ids?.length} </span>
           </div>
         </div>
       ))}
