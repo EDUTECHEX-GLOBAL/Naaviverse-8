@@ -39,7 +39,7 @@ const Pathview = () => {
   useEffect(() => {
     setLoading(true);
     axios
-      .get(`/api/userpaths/programs`, {
+      .get(`/api/paths/get?status=active`, {
         params: {
           email: JSON.parse(localStorage.getItem("user"))?.user?.email,
           ...(gradeToggle && { grade: userProfile.grade }),
@@ -111,7 +111,7 @@ const Pathview = () => {
                 key={i}
                 onClick={() => handlePathSelection(e)} // Use the function to handle path selection
               >
-                <div className="each-pv-name">{e?.school}</div>
+                <div className="each-pv-name">{e?.university}</div>
                 <div className="each-pv-name">{e?.program}</div>
                 <div className="each-pv-desc">{e?.description}</div>
               </div>

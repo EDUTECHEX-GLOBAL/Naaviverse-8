@@ -225,7 +225,7 @@ const MapsPage = () => {
   useEffect(() => {
     setLoading1(true);
     axios
-      .get(`/api/userpaths/programs`)
+      .get(`/api/paths/get?status=active`)
       .then((response) => {
         let result = response?.data?.data;
         // console.log(result, "path view result");

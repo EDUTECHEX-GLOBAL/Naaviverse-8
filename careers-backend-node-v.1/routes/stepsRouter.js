@@ -16,4 +16,7 @@ router.patch("/editstep", stepsController.editStep);
 router.post("/attachservice", stepsController.addServicesToStep);
 router.get("/getall/:step_id",stepsController.getServicesForStep );
 router.delete("/remove/:stepId/:serviceId",stepsController.removeServiceFromStep);
+router.post("/add-macro-step",stepsController.addMacroStep);
+router.post("/add-micro-step",stepsController.addMicroStep);
+router.post("/add-nano-step",stepsController.addNanoStep);
 module.exports = router;

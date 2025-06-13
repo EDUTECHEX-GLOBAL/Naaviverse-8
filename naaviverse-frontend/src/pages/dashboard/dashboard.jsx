@@ -211,10 +211,11 @@ const Dashboard = () => {
   const [currentFollow, setcurrentFollow] = useState({});
   const [isServiceByLoading, setIsServiceByLoading] = useState(false);
   const [choice, setChoice] = useState("");
+  const [partnerPathData, setPartnerPathData] = useState([]);
   const [searchVault, setSearchVault] = useState("");
+  const [loading, setLoading] = useState(false);
   const [selectedDropDown, setSelectedDropDown] = useState("Type Of Node");
   const [selectedNode, setSelectedNode] = useState("");
-
   const [productKeys, setProductKeys] = useState(null);
   const [profileId, setProfileId] = useState("");
 
@@ -226,40 +227,23 @@ const Dashboard = () => {
     if (userDetails) {
       axios
         .get(
-          `/api/userpaths/programs?email=${userDetails?.email}`
+          `/api/paths/get?status=active`
         )
-        .then(({ data }) => {
-          if (data.status) {
-            // console.log(data.data[0].StepDetails[0].other_data, "ProductKeys");
-            setProductKeys(data.data[0].StepDetails[0].product_ids);
-          }
-        });
+        .then((response) => {
+        let result = response?.data?.data;
+        // console.log(result, "partnerPathData result");
+        setPartnerPathData(result);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.log(error, "error in partnerPathData");
+      });
     }
   }, []);
 
   const [productDataArray, setProductDataArray] = useState([]);
 
-  // const fetchData = async () => {
-  //   setProductDataArray([]);
-  //   if (productKeys) {
-  //     const apiKeys = Object.values(productKeys);
-  //     // console.log(apiKeys, "apiKeys");
-
-  //     // Use Promise.all to wait for all asynchronous calls to complete
-  //     const fetchDataPromises = apiKeys.map((item) => fetchProductData(item));
-
-  //     try {
-  //       const results = await Promise.all(fetchDataPromises);
-
-  //       // results is an array containing the product data for each key
-  //       const updatedProductDataArray = results.filter(Boolean);
-  //       setProductDataArray([...updatedProductDataArray]);
-  //     } catch (error) {
-  //       console.error("Error fetching product data:", error);
-  //     }
-  //   }
-  // };
-
+  
   const fetchData = async () => {
     setProductDataArray([]);
     console.log(productKeys, "ewlkhflkwheflwerf");
@@ -278,15 +262,9 @@ const Dashboard = () => {
     }
   };
 
-  // useEffect(() => {
-  //   // Fetch initial product data when component mounts
-  //   if (productKeys) {
-  //     fetchData();
-  //   }
-  // }, []);
+ 
 
   useEffect(() => {
-    // Fetch updated product data when productKeys change
     fetchData();
   }, [productKeys]);
 

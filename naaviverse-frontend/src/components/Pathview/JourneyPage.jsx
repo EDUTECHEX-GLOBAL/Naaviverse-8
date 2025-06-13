@@ -23,7 +23,7 @@ const JourneyPage = () => {
       // console.log(selectedPathData, "selected path name");
       axios
         .get(
-          `/api/userpaths/programs?nameOfPath=${selectedPathData}`
+          `/api/paths/get?status=active?nameOfPath=${selectedPathData}`
         )
         .then((response) => {
           let result = response?.data?.data[0];
@@ -93,7 +93,7 @@ const JourneyPage = () => {
         ) : (
           <div className="bold-text">
             {selectedPathItem?.length > 0
-              ? selectedPathItem?.school
+              ? selectedPathItem?.university
               : ""}
           </div>
         )}

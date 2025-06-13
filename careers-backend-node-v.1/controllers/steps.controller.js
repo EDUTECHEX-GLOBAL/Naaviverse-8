@@ -556,6 +556,111 @@ const removeServiceFromStep = async (req, res) => {
     }
 };
 
+const addMacroStep = async (req, res) => {
+  try {
+    const { stepId, name, description } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(stepId)) {
+      return res.status(400).json({ status: false, message: "Invalid Step ID" });
+    }
+
+    const step = await stepModel.findById(stepId);
+    if (!step) {
+      return res.status(404).json({ status: false, message: "Step not found" });
+    }
+
+    // ✅ Check if macro step already exists
+    if (step.macro_name && step.macro_description) {
+      return res.status(200).json({
+        status: true,
+        alreadyExists: true,
+        message: "macro step already added",
+        data: step
+      });
+    }
+
+    // ✅ Add macro step only if it doesn't exist
+    step.macro_name = name;
+    step.macro_description = description;
+
+    await step.save();
+
+    return res.status(200).json({
+      status: true,
+      alreadyExists: false,
+      message: "Macro step added successfully",
+      data: step
+    });
+
+  } catch (error) {
+    console.error("Error adding macro step:", error);
+    return res.status(500).json({ status: false, message: "Internal server error" });
+  }
+};
+
+const addMicroStep = async (req, res) => {
+    try {
+        const { stepId, name, description } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(stepId)) {
+            return res.status(400).json({ status: false, message: "Invalid Step ID" });
+        }
+
+        const step = await stepModel.findById(stepId);
+        if (!step) {
+            return res.status(404).json({ status: false, message: "Step not found" });
+        }
+
+        step.micro_name = name;
+        step.micro_description = description;
+        
+        await step.save();
+
+        return res.status(200).json({
+            status: true,
+            message: "Micro step added successfully",
+            data: step
+        });
+
+    } catch (error) {
+        console.error("Error adding micro step:", error);
+        return res.status(500).json({ status: false, message: "Internal server error" });
+    }
+};
+
+const addNanoStep = async (req, res) => {
+    try {
+        const { stepId, name, description } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(stepId)) {
+            return res.status(400).json({ status: false, message: "Invalid Step ID" });
+        }
+
+        const step = await stepModel.findById(stepId);
+        if (!step) {
+            return res.status(404).json({ status: false, message: "Step not found" });
+        }
+
+        step.nano_name = name;
+        step.nano_description = description;
+        
+
+        await step.save();
+
+        return res.status(200).json({
+            status: true,
+            message: "Nano step added successfully",
+            data: step
+        });
+
+    } catch (error) {
+        console.error("Error adding nano step:", error);
+        return res.status(500).json({ status: false, message: "Internal server error" });
+    }
+};
+
+
+
 
 module.exports = {
     addStep,
@@ -569,4 +674,7 @@ module.exports = {
     addServicesToStep,
     getServicesForStep ,
     removeServiceFromStep,
+    addMacroStep,
+    addMicroStep,
+    addNanoStep
 }

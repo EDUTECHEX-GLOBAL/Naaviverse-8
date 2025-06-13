@@ -4,7 +4,7 @@ import Skeleton from "react-loading-skeleton";
 import "./mypaths.scss";
 import axios from "axios";
 import { Draggable } from "react-drag-reorder";
-import EditStepForm from "./steps.jsx";
+import AddSubStepForm from "./steps.jsx";
 
 // images
 import dummy from "./dummy.svg";
@@ -40,6 +40,12 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
     const [viewPathLoading, setViewPathLoading] = useState(false);
     const [viewPathData, setViewPathData] = useState([]);
     const [allServicesToRemove, setAllServicesToRemove] = useState([]);
+     const [stepData, setStepData] = useState(null);
+const [showForm, setShowForm] = useState(false);
+const [showSubStepForm, setShowSubStepForm] = useState(false);
+
+const [stepMessage, setStepMessage] = useState("");
+
 
     const [showSelectedPath, setShowSelectedPath] = useState(null)
     const [addServiceStep, setAddServiceStep] = useState(null)
@@ -48,6 +54,7 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
     const [backupPathData, setBackupPathData] = useState([])
     const [stepId, setStepId] = useState("");
     const [backupPathId, setBackupPathId] = useState("")
+   
 
 
     const getAllPaths = () => {
@@ -190,6 +197,9 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
             getAllSteps('inactive');
         }
     }, [mypathsMenu]);
+
+
+    
 
     const filteredPartnerStepsData = partnerStepsData?.filter((entry) =>
         entry?.name?.toLowerCase()?.includes(search?.toLowerCase())
@@ -439,6 +449,41 @@ const fetchServicesForRemoval = async () => {
         console.error('Config:', error.config);
     }
 };
+
+useEffect(() => {
+  
+  const fetchStepData = async () => {
+    
+    if (!selectedStepId || !stepActionStep) return;
+
+    try {
+      const res = await axios.get(`/api/steps/${selectedStepId}`);
+      const step = res.data.data;
+
+      // Check if the corresponding sub-step already exists
+      const alreadyExists =
+        (stepActionStep === "macro" && step.macro_name) ||
+        (stepActionStep === "micro" && step.micro_name) ||
+        (stepActionStep === "nano" && step.nano_name);
+
+      if (alreadyExists) {
+        setStepMessage(`${stepActionStep} step already exists.`);
+        setShowForm(false);
+      } else {
+        setStepMessage("");
+        setShowForm(true);
+      }
+
+      setStepData(step);
+    } catch (err) {
+      console.error(err);
+      setStepMessage("Error fetching step details.");
+    }
+  };
+
+  fetchStepData();
+}, [stepActionStep, selectedStepId]);
+
 
 
     // useEffect(() => {
@@ -1673,15 +1718,36 @@ const fetchServicesForRemoval = async () => {
                                     <div className="acc-step-box" onClick={() => {
                                         setStepActionStep(4);
                                     }}>Edit Services</div>
-                                    <div className="acc-step-box"
+                                    {/* <div className="acc-step-box"
                                      onClick={() => {
                                      setStepActionStep(7);
                                      }}
                                     
-                                    >Edit Step</div>
+                                    >Edit Step</div> */}
                                     <div className="acc-step-box" onClick={() => { deleteStep(); }}>
                                         Delete step
                                     </div>
+
+                                    <div className="acc-step-box"
+                                     onClick={() => {
+                                     setStepActionStep("macro");
+                                     }}
+                                    
+                                    >Add Macro Step</div>
+
+                                    <div className="acc-step-box"
+                                     onClick={() => {
+                                     setStepActionStep("micro");
+                                     }}
+                                    
+                                    >Add Micro Step</div>
+
+                                    <div className="acc-step-box"
+                                     onClick={() => {
+                                     setStepActionStep("nano");
+                                     }}
+                                    
+                                    >Add Nano Step</div>
 
                                 </div>
                             )}
@@ -1827,21 +1893,28 @@ const fetchServicesForRemoval = async () => {
 
                             )}
 
-{stepActionStep === 7 && (
-    <div>
-        <EditStepForm
-            selectedStep={selectedStepId}
-            onSave={(updatedStep) => {
-                console.log("Updated Step Data:", updatedStep);
-                setTimeout(() => {
-                    setStepActionStep(null); // Close form after success message
-                }, 2000);
-            }}
-            onCancel={() => setStepActionStep(null)} // Close form on cancel
-        />
-        
-    </div>
+{stepMessage && (
+  <p style={{ fontWeight: "bold", alignItems:'center', paddingTop:'160px', paddingLeft:'60px' }}>{stepMessage}</p>
 )}
+
+{showForm && (
+  <AddSubStepForm
+    type={stepActionStep}
+    selectedStep={selectedStepId}
+    onSave={() => {
+      setTimeout(() => {
+        setShowForm(false);
+        setStepActionStep(null);
+      }, 1500);
+    }}
+    onCancel={() => {
+      setShowForm(false);
+      setStepActionStep(null);
+    }}
+  />
+)}
+
+
 
 
                             {stepActionStep === 8 && (
