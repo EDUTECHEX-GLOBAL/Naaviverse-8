@@ -1694,7 +1694,7 @@ const fetchServicesForRemoval = async () => {
                                             deleteStep();
                                         }}
                                     >
-                                        Confirm and delete
+                                        Confirm and delete 
                                     </div>
                                     <div
                                         className="goBack2"
@@ -1793,6 +1793,7 @@ const fetchServicesForRemoval = async () => {
 
                             {stepActionStep === 6 && (
                                 // <div className="success-box1">Step Successfully Deleted</div>
+                                // gfdg
 
 
                                 <div className="acc-mt-div">
