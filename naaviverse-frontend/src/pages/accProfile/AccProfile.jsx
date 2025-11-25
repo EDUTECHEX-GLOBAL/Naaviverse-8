@@ -64,6 +64,8 @@ import { State } from "country-state-city";
 import MenuNav from "../../components/MenuNav/index.jsx";
 
 const AccProfile = () => {
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [show2FAModal, setShow2FAModal] = useState(false);
   const { accsideNav, setaccsideNav, ispopular, setispopular } = useStore();
   const [search, setSearch] = useState("");
   const [crmMenu, setcrmMenu] = useState("Followers");
@@ -185,7 +187,7 @@ const AccProfile = () => {
     mypathsMenu,
     setMypathsMenu,
     selectedSteps,
-    setSelectedSteps,countryApiValue
+    setSelectedSteps, countryApiValue
   } = useCoinContextData();
 
   let navigate = useNavigate();
@@ -226,8 +228,8 @@ const AccProfile = () => {
   const [backupPathList, setBackupPathList] = useState([]);
   const [showBackupPathList, setShowBackupPathList] = useState(false);
   const [successMessage, setSuccessMessage] = useState(false);
-  
-  
+
+
 
   // //upload part starts here
   const secret = "uyrw7826^&(896GYUFWE&*#GBjkbuaf"; // secret not to be disclosed anywhere.
@@ -251,8 +253,8 @@ const AccProfile = () => {
   const [position, setPosition] = useState('')
 
   const allSelected = businessName && businessDesc && website &&
-  businessType && businessLogo && street && city && pinCode && 
-  businessState && businessCountry && firstName && lastName && position
+    businessType && businessLogo && street && city && pinCode &&
+    businessState && businessCountry && firstName && lastName && position
 
 
   // const uploadCoverImage = async (file) => {
@@ -641,16 +643,16 @@ const AccProfile = () => {
   const handleFileInputChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-  
+
     setImage(file); // Set preview immediately
     const uploadedUrl = await uploadImageFunc(e, setImage, setLoading);
-  
+
     if (uploadedUrl) {
       setImage(uploadedUrl); // Set the final uploaded image URL
     }
   };
-  
-  
+
+
   const handleFileInputChange1 = (e) => {
     setImage(e.target.files[0]);
     uploadBulkPath(e.target.files[0]);
@@ -700,8 +702,8 @@ const AccProfile = () => {
                 ? parseFloat(firstMonthPrice)
                 : 0
               : monthlyPrice !== ""
-              ? parseFloat(monthlyPrice)
-              : 0,
+                ? parseFloat(monthlyPrice)
+                : 0,
           coin: selectedCurrency.coinSymbol,
         },
       },
@@ -709,20 +711,20 @@ const AccProfile = () => {
         billingType === "One Time"
           ? 0
           : gracePeriod !== ""
-          ? parseFloat(gracePeriod)
-          : 0,
+            ? parseFloat(gracePeriod)
+            : 0,
       first_retry:
         billingType === "One Time"
           ? 0
           : secondChargeAttempt !== ""
-          ? parseFloat(secondChargeAttempt)
-          : 0,
+            ? parseFloat(secondChargeAttempt)
+            : 0,
       second_retry:
         billingType === "One Time"
           ? 0
           : thirdChargeAttempt !== ""
-          ? parseFloat(thirdChargeAttempt)
-          : 0,
+            ? parseFloat(thirdChargeAttempt)
+            : 0,
       staking_allowed: false,
       staking_details: {},
     };
@@ -753,8 +755,8 @@ const AccProfile = () => {
                 ? parseFloat(firstMonthPrice)
                 : 0
               : monthlyPrice !== ""
-              ? parseFloat(monthlyPrice)
-              : 0,
+                ? parseFloat(monthlyPrice)
+                : 0,
           coin: selectedCurrency.coinSymbol,
         },
       },
@@ -762,20 +764,20 @@ const AccProfile = () => {
         billingType === "One Time"
           ? 0
           : gracePeriod !== ""
-          ? parseFloat(gracePeriod)
-          : 0,
+            ? parseFloat(gracePeriod)
+            : 0,
       first_retry:
         billingType === "One Time"
           ? 0
           : secondChargeAttempt !== ""
-          ? parseFloat(secondChargeAttempt)
-          : 0,
+            ? parseFloat(secondChargeAttempt)
+            : 0,
       second_retry:
         billingType === "One Time"
           ? 0
           : thirdChargeAttempt !== ""
-          ? parseFloat(thirdChargeAttempt)
-          : 0,
+            ? parseFloat(thirdChargeAttempt)
+            : 0,
       staking_allowed: false,
       staking_details: {},
     };
@@ -860,11 +862,11 @@ const AccProfile = () => {
           setprofileSpecalities(res.data.specialities || []);
           setCreateBrandProfile(false); // Hide "Create Profile" for existing users
         } else {
-      
+
           console.log("No profile found, enabling profile creation.");
           setIsProfileData(false);
           setProfileData({});
-           // 🔥 Ensure new users see the "Create Profile" form
+          // 🔥 Ensure new users see the "Create Profile" form
         }
       })
       .catch((err) => {
@@ -874,12 +876,12 @@ const AccProfile = () => {
         // Assume new user in case of API error
       });
   };
-  
-  
+
+
   const createPartnerProfile = () => {
     let email = userDetails?.email;
     if (!email) return;
-  
+
     console.log({
       email,
       firstName,
@@ -896,7 +898,7 @@ const AccProfile = () => {
       type: businessType,
       yourPosition: position,
     }, "Creating Partner Profile");
-  
+
     axios.put(`/api/partner/add`, {
       email,
       firstName,
@@ -913,14 +915,14 @@ const AccProfile = () => {
       type: businessType,
       yourPosition: position
     })
-    .then(({ data }) => {
-      if (data.success) {
-        handleAccountantData();
-        window.location.reload(); // ✅ Reloads the page
-        
-      }
-    })
-    .catch(err => console.error("Profile creation error:", err));
+      .then(({ data }) => {
+        if (data.success) {
+          handleAccountantData();
+          window.location.reload(); // ✅ Reloads the page
+
+        }
+      })
+      .catch(err => console.error("Profile creation error:", err));
   };
 
   const createBankerProfile = () => {
@@ -1170,15 +1172,15 @@ const AccProfile = () => {
         financialSituation: finance,
         personality: personality,
         the_ids: pathSteps.the_ids.map(step => ({
-          step_id : step.step_id, // Step ID
-          stepName : step.stepName, // Step Name
-          stepDescription : step.stepDescription, // Step Description
-          backup_pathId : step.backup_pathId, // Backup Path ID
-          backupPathName : step.backupPathName, // Backup Path Name
-          backupPathDescription : step.backupPathDescription // Backup Path Description
-      })),
+          step_id: step.step_id, // Step ID
+          stepName: step.stepName, // Step Name
+          stepDescription: step.stepDescription, // Step Description
+          backup_pathId: step.backup_pathId, // Backup Path ID
+          backupPathName: step.backupPathName, // Backup Path Name
+          backupPathDescription: step.backupPathDescription // Backup Path Description
+        })),
 
-        
+
       })
       .then((response) => {
         let result = response?.data;
@@ -1236,13 +1238,13 @@ const AccProfile = () => {
           </div>
           <div className="dashboard-screens" onClick={() => resetpop()}>
             <div style={{ height: "100%" }}>
-            <MenuNav 
-              showDrop={showDrop}
-              setShowDrop={setShowDrop}
-              // searchTerm={search}
-              // setSearchterm={setSearch}
-              searchPlaceholder="Search..."
-            />
+              <MenuNav
+                showDrop={showDrop}
+                setShowDrop={setShowDrop}
+                // searchTerm={search}
+                // setSearchterm={setSearch}
+                searchPlaceholder="Search..."
+              />
               <>
                 {isProfileData ? (
                   <div
@@ -1336,15 +1338,15 @@ const AccProfile = () => {
                               {profileData?.type}
                             </div>
                           </div>
-                          
+
                         </div>
                         <div className="pfl-box-full">
-                            <div className="pfl-box-label">Description</div>
-                            <div
-                              className="pfl-box-inp-full"
-                              style={{ borderRadius: "25px", minHeight: "10rem" }}
-                            >
-                              {/* <div
+                          <div className="pfl-box-label">Description</div>
+                          <div
+                            className="pfl-box-inp-full"
+                            style={{ borderRadius: "25px", minHeight: "10rem" }}
+                          >
+                            {/* <div
                                 className="editIconDiv"
                                 onClick={() => {
                                   setEditDescription(true);
@@ -1352,8 +1354,8 @@ const AccProfile = () => {
                               >
                                 <img src={edit} alt="" />
                               </div> */}
-                              {profileData?.description}
-                            </div>
+                            {profileData?.description}
+                          </div>
                         </div>
                         <div className="pfl-box">
                           <div className="pfl-boxl">
@@ -1575,7 +1577,7 @@ const AccProfile = () => {
                           overflowY: "scroll",
                         }}
                       >
-                 
+
                         <div className="pfl-box">
                           <div className="pfl-boxl">
                             <div className="pfl-box-label">Street</div>
@@ -1592,7 +1594,7 @@ const AccProfile = () => {
                               {profileData?.city}
                             </div>
                           </div>
-                          
+
                         </div>
                         <div className="pfl-box">
                           <div className="pfl-boxl">
@@ -1610,7 +1612,7 @@ const AccProfile = () => {
                               {profileData?.pincode}
                             </div>
                           </div>
-                          
+
                         </div>
                         <div className="pfl-box">
                           <div className="pfl-boxl">
@@ -1622,8 +1624,8 @@ const AccProfile = () => {
                               {profileData?.country}
                             </div>
                           </div>
-                         
-                          
+
+
                         </div>
                       </div>
                       <div
@@ -1648,7 +1650,7 @@ const AccProfile = () => {
                             color: "#1F304F",
                           }}
                         >
-                         Owner information
+                          Owner information
                         </div>
                         <div>
                           <img src={downArrow} alt="" />
@@ -1664,7 +1666,7 @@ const AccProfile = () => {
                           overflowY: "scroll",
                         }}
                       >
-                 
+
                         <div className="pfl-box">
                           <div className="pfl-boxl">
                             <div className="pfl-box-label">First name</div>
@@ -1681,7 +1683,7 @@ const AccProfile = () => {
                               {profileData?.lastName}
                             </div>
                           </div>
-                          
+
                         </div>
                         <div className="pfl-box">
                           <div className="pfl-boxl">
@@ -1693,10 +1695,10 @@ const AccProfile = () => {
                               {profileData?.yourPosition}
                             </div>
                           </div>
-                         
-                          
+
+
                         </div>
-                        
+
                       </div>
                       {/* <div
                         style={{
@@ -1761,28 +1763,41 @@ const AccProfile = () => {
                           </div>
                         </div>
                       </div>
-                      {/* <div className="pfr-1">
-                        <div>
-                          <div className="pfr-head">
-                            Create An Vendor Profile
-                          </div>
-                          <div className="pfr-desc">
-                            Click here to change your password. You will need to
-                            verify your email again to reset your password.
-                          </div>
-                        </div>
-                        <div className="pfr-btn">Change Password</div>
+                      {/* Change Password Button */}
+                      <div
+                        className="pfr-btnChange"
+                        style={{ cursor: "pointer", marginBottom: "1rem" }}
+                        onClick={() => setShowPasswordModal(true)}
+                      >
+                        Change Password
                       </div>
-                      <div className="pfr-2">
-                        <div>
-                          <div className="pfr-head">Enable 2FA</div>
-                          <div className="pfr-desc">
-                            For an additional layer of security you can enable 2
-                            factor authentication via Google Authenticator.
+                      {showPasswordModal && (
+                        <div className="modal">
+                          <div className="modal-content">
+                            <h3>Change Password</h3>
+                            <p>Enter your email and follow the instructions to reset your password.</p>
+                            <button onClick={() => setShowPasswordModal(false)}>Close</button>
                           </div>
                         </div>
-                        <div className="pfr-btn">Enable</div>
-                      </div> */}
+                      )}
+
+                      {/* Enable 2FA Button */}
+                      <div
+                        className="pfr-btnEnable"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => setShow2FAModal(true)}
+                      >
+                        Enable 2FA
+                      </div>
+                      {show2FAModal && (
+                        <div className="modal">
+                          <div className="modal-content">
+                            <h3>Enable 2FA</h3>
+                            <p>Follow the steps to enable two-factor authentication.</p>
+                            <button onClick={() => setShow2FAModal(false)}>Close</button>
+                          </div>
+                        </div>
+                      )}
                       {changing && (
                         <div
                           className="loading-component"
@@ -1834,8 +1849,8 @@ const AccProfile = () => {
                 {pstep === 8
                   ? "New Path"
                   : pstep > 1 && pstep < 8
-                  ? "New Service"
-                  : "Popular Actions"}
+                    ? "New Service"
+                    : "Popular Actions"}
               </div>
               <div
                 className="acc-popular-img-box"
@@ -1902,7 +1917,7 @@ const AccProfile = () => {
                         color: selectNew === "Step" ? "#FFF" : "",
                       }}
                     >
-                     Bulk Path
+                      Bulk Path
                     </div>
                     <div
                       className="acc-step-box"
@@ -1915,9 +1930,9 @@ const AccProfile = () => {
                         color: selectNew === "Step" ? "#FFF" : "",
                       }}
                     >
-                     Bulk Step
+                      Bulk Step
                     </div>
-                    
+
                   </div>
                 </div>
               ) : pstep === 2 ? (
@@ -2050,8 +2065,8 @@ const AccProfile = () => {
                             isUploadLoading
                               ? upgif
                               : image
-                              ? image
-                              : uploadv
+                                ? image
+                                : uploadv
                           }
                           alt=""
                           onClick={handleImageClick}
@@ -2526,7 +2541,7 @@ const AccProfile = () => {
                         onClick={() => {
                           console.log("Click event triggered");
                           getActiveSteps();
-        setStepsToggle((prev) => !prev); 
+                          setStepsToggle((prev) => !prev);
                         }}
                       >
                         <div
@@ -2646,8 +2661,8 @@ const AccProfile = () => {
                                   (o) => o.step_id === e._id
                                 ).backup_pathId !== ""
                                   ? pathSteps.the_ids.find(
-                                      (o) => o.step_id === e._id
-                                    ).backup_pathId
+                                    (o) => o.step_id === e._id
+                                  ).backup_pathId
                                   : "Select Backup Path"}
 
                                 {/* {e?.the_ids?.backup_pathId !== ""
@@ -2858,22 +2873,22 @@ const AccProfile = () => {
                       What country is the university in?
                     </div>
                     <div className="each-acc-addpath-field-input">
-                    <select name="country" id="country" style={{border:"none", padding:'1.5rem', width:'100%', fontSize:"16px"}}  onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              country: e.target.value,
-                            };
-                          });
-                        }}>
-                          <option value="">Country..</option>
-                          {countryApiValue?.map((item) => (
-                        <option key={item.cca2} value={item?.name?.common}>
-                          {item?.name?.common}
-                        </option>
-                          ))}
-                      
-                    </select>
+                      <select name="country" id="country" style={{ border: "none", padding: '1.5rem', width: '100%', fontSize: "16px" }} onChange={(e) => {
+                        setPathSteps((prev) => {
+                          return {
+                            ...prev,
+                            country: e.target.value,
+                          };
+                        });
+                      }}>
+                        <option value="">Country..</option>
+                        {countryApiValue?.map((item) => (
+                          <option key={item.cca2} value={item?.name?.common}>
+                            {item?.name?.common}
+                          </option>
+                        ))}
+
+                      </select>
                       {/* <input
                         type="text"
                         placeholder="Country.."
@@ -2931,8 +2946,8 @@ const AccProfile = () => {
                             stream.length > 0 &&
                             finance.length > 0 &&
                             personality !== ""
-                          ? "1"
-                          : "0.5",
+                            ? "1"
+                            : "0.5",
                         cursor: creatingPath
                           ? "not-allowed"
                           : pathSteps?.nameOfPath &&
@@ -2950,8 +2965,8 @@ const AccProfile = () => {
                             stream.length > 0 &&
                             finance.length > 0 &&
                             personality !== ""
-                          ? "pointer"
-                          : "not-allowed",
+                            ? "pointer"
+                            : "not-allowed",
                       }}
                       onClick={() => {
                         if (
@@ -3003,125 +3018,125 @@ const AccProfile = () => {
                 </div>
               ) : pstep === 9 ? (
                 <NewStep1 setpstep={setpstep} />
-                ) : pstep === 10 ? (
+              ) : pstep === 10 ? (
+                <div>
+                  <div className="acc-step-text">Bulk Path Action</div>
                   <div>
-                    <div className="acc-step-text">Bulk Path Action</div>
-                    <div>
-                      <div
-                        className="acc-step-box"
-                       
-                        style={{
-                          background:
-                            billingType === "Download"
-                              ? "#182542"
-                              : "",
-                          color:
-                            billingType === "Download" ? "#FFF" : "",
-                        }}
-                      >
-                        Download
-                        
-                      </div>
-                      <div
-                        className="acc-step-box"
-                        onClick={handleImageClick}
-                        style={{
-                          background: billingType === "Upload" ? "#182542" : "",
-                          color: billingType === "Upload" ? "#FFF" : "",
-                        }}
-                      >
-                        Upload
-                        <input
-                          type="file"
-                          // accept=".xlsx, .xls, .gsheet, .numbers, application/vnd.google-apps.spreadsheet, application/vnd.apple.numbers"
-                          onChange={handleFileInputChange1}
-                          style={{ display: "none" }}
-                          ref={fileInputRef}
-                        />
-  
-                      </div>
-                      
-                    </div>
                     <div
-                      className="goBack"
-                      onClick={() => {
-                        setpstep(1);
-                        // setbillingType("");
+                      className="acc-step-box"
+
+                      style={{
+                        background:
+                          billingType === "Download"
+                            ? "#182542"
+                            : "",
+                        color:
+                          billingType === "Download" ? "#FFF" : "",
                       }}
                     >
-                      Go Back
-                    </div>
-                  </div>
-                ) : pstep === 11 ? (
-                  <div>
-                    <div className="acc-step-text">Bulk Step Action</div>
-                    <div>
-                      <div
-                        className="acc-step-box"
-                        onClick={() => {
-                          // setbillingType("Monthly Subscription");
-                          // handleCategories();
-                          // setpstep(3);
-                        }}
-                        style={{
-                          background:
-                            billingType === "Download"
-                              ? "#182542"
-                              : "",
-                          color:
-                            billingType === "Download" ? "#FFF" : "",
-                        }}
-                      >
-                        Download
-                        
-                      </div>
-                      <div
-                        className="acc-step-box"
-                        onClick={handleImageClick}
-                        style={{
-                          background: billingType === "Upload" ? "#182542" : "",
-                          color: billingType === "Upload" ? "#FFF" : "",
-                        }}
-                      >
-                        Upload
-                        <input
-                          type="file"
-                          // accept=".xlsx, .xls, .gsheet, .numbers, application/vnd.google-apps.spreadsheet, application/vnd.apple.numbers"
-                          onChange={handleFileInputChange2}
-                          style={{ display: "none" }}
-                          ref={fileInputRef}
-                        />
-  
-                      </div>
-                      
+                      Download
+
                     </div>
                     <div
-                      className="goBack"
-                      onClick={() => {
-                        setpstep(1);
-                        // setbillingType("");
+                      className="acc-step-box"
+                      onClick={handleImageClick}
+                      style={{
+                        background: billingType === "Upload" ? "#182542" : "",
+                        color: billingType === "Upload" ? "#FFF" : "",
                       }}
                     >
-                      Go Back
+                      Upload
+                      <input
+                        type="file"
+                        // accept=".xlsx, .xls, .gsheet, .numbers, application/vnd.google-apps.spreadsheet, application/vnd.apple.numbers"
+                        onChange={handleFileInputChange1}
+                        style={{ display: "none" }}
+                        ref={fileInputRef}
+                      />
+
                     </div>
+
                   </div>
-                ) : pstep === 12 ? (
+                  <div
+                    className="goBack"
+                    onClick={() => {
+                      setpstep(1);
+                      // setbillingType("");
+                    }}
+                  >
+                    Go Back
+                  </div>
+                </div>
+              ) : pstep === 11 ? (
+                <div>
+                  <div className="acc-step-text">Bulk Step Action</div>
                   <div>
-                    <div className="acc-step-text">Uploaded Successfully</div>
-                  
                     <div
-                      className="goBack"
+                      className="acc-step-box"
                       onClick={() => {
-                        setpstep(1);
-                        setbillingType("");
+                        // setbillingType("Monthly Subscription");
+                        // handleCategories();
+                        // setpstep(3);
+                      }}
+                      style={{
+                        background:
+                          billingType === "Download"
+                            ? "#182542"
+                            : "",
+                        color:
+                          billingType === "Download" ? "#FFF" : "",
                       }}
                     >
-                      Go Back
+                      Download
+
                     </div>
+                    <div
+                      className="acc-step-box"
+                      onClick={handleImageClick}
+                      style={{
+                        background: billingType === "Upload" ? "#182542" : "",
+                        color: billingType === "Upload" ? "#FFF" : "",
+                      }}
+                    >
+                      Upload
+                      <input
+                        type="file"
+                        // accept=".xlsx, .xls, .gsheet, .numbers, application/vnd.google-apps.spreadsheet, application/vnd.apple.numbers"
+                        onChange={handleFileInputChange2}
+                        style={{ display: "none" }}
+                        ref={fileInputRef}
+                      />
+
+                    </div>
+
                   </div>
-                ):(
-                  ""
-                )}
+                  <div
+                    className="goBack"
+                    onClick={() => {
+                      setpstep(1);
+                      // setbillingType("");
+                    }}
+                  >
+                    Go Back
+                  </div>
+                </div>
+              ) : pstep === 12 ? (
+                <div>
+                  <div className="acc-step-text">Uploaded Successfully</div>
+
+                  <div
+                    className="goBack"
+                    onClick={() => {
+                      setpstep(1);
+                      setbillingType("");
+                    }}
+                  >
+                    Go Back
+                  </div>
+                </div>
+              ) : (
+                ""
+              )}
             </>
           </div>
         ) : (
@@ -3129,10 +3144,10 @@ const AccProfile = () => {
         )}
       </>
 
-    
+
 
       <>
-        {createBrandProfile &&   (
+        {createBrandProfile && (
           <div
             className="popularS"
             style={{
@@ -3175,7 +3190,7 @@ const AccProfile = () => {
                     setFunc={setBusinessDesc}
                     funcValue={businessDesc}
                   />
-                 <InputDivsCreatePartner
+                  <InputDivsCreatePartner
                     placeholderText="Website...."
                     setFunc={setWebsite}
                     funcValue={website}
@@ -3192,7 +3207,7 @@ const AccProfile = () => {
                     />
                     <div className={styles.logoText}>Upload Logo *</div>
                   </div>
-                  <div className={styles.labelClass} style={{paddingTop:"30px"}}>Business address *</div>
+                  <div className={styles.labelClass} style={{ paddingTop: "30px" }}>Business address *</div>
                   <InputDivsCreatePartner
                     placeholderText="street...."
                     setFunc={setStreet}
@@ -3203,32 +3218,32 @@ const AccProfile = () => {
                     setFunc={setCity}
                     funcValue={city}
                   />
-                 <InputDivsCreatePartner
+                  <InputDivsCreatePartner
                     placeholderText="pincode...."
                     setFunc={setPinCode}
                     funcValue={pinCode}
                   />
-                <InputDivsCreatePartner
+                  <InputDivsCreatePartner
                     placeholderText="state...."
                     setFunc={setBusinessState}
                     funcValue={businessState}
                   />
-                  
-                   <div className={styles.inputDivs} style={{ border: '1px solid #2c7cb2', borderRadius:'4px', fontSize:"13px", fontWeight:"500", paddingLeft:'0px', marginTop:'0px' }}>
-                  <select name="country" id="country" style={{border:"none", padding:'1rem', width:'90%', fontSize:"16px"}}  onChange={(e) => {
-                          setBusinessCountry(e.target.value);
-                        }}>
-                          <option value="">Click to Select</option>
-                          {countryApiValue?.map((item) => (
+
+                  <div className={styles.inputDivs} style={{ border: '1px solid #2c7cb2', borderRadius: '4px', fontSize: "13px", fontWeight: "500", paddingLeft: '0px', marginTop: '0px' }}>
+                    <select name="country" id="country" style={{ border: "none", padding: '1rem', width: '90%', fontSize: "16px" }} onChange={(e) => {
+                      setBusinessCountry(e.target.value);
+                    }}>
+                      <option value="">Click to Select</option>
+                      {countryApiValue?.map((item) => (
                         <option key={item.cca2} value={item?.name?.common}>
                           {item?.name?.common}
                         </option>
-                          ))}
-                      
+                      ))}
+
                     </select>
-                   </div>
-                  
-                  <div className={styles.labelClass} style={{paddingTop:"30px"}}>Your information *</div>
+                  </div>
+
+                  <div className={styles.labelClass} style={{ paddingTop: "30px" }}>Your information *</div>
                   <InputDivsCreatePartner
                     placeholderText="First name...."
                     setFunc={setFirstName}
@@ -3239,13 +3254,13 @@ const AccProfile = () => {
                     setFunc={setLastName}
                     funcValue={lastName}
                   />
-                 <InputDivsCreatePartner
+                  <InputDivsCreatePartner
                     placeholderText="Your position......."
                     setFunc={setPosition}
                     funcValue={position}
                   />
-                  <div className={styles.submitBtn} style={{opacity: allSelected ? 1 : 0.4}} onClick={e => allSelected && createPartnerProfile()}>Become a partner</div>
-                  
+                  <div className={styles.submitBtn} style={{ opacity: allSelected ? 1 : 0.4 }} onClick={e => allSelected && createPartnerProfile()}>Become a partner</div>
+
                 </div>
               </>
             )}
@@ -3329,21 +3344,21 @@ const AccProfile = () => {
                       funcValue={brandColorCode}
                       colorCode={brandColorCode}
                     />
-                    
-                    <div style={{paddingTop:'30px'}}>Select Country *</div>
-                  <div className={styles.inputDivs} style={{ border: '1px solid #e7e7e7', borderRadius:'30px', fontSize:"13px", fontWeight:"500", paddingLeft:'10px' }}>
-                  <select name="country" id="country" style={{border:"none", padding:'1rem', width:'90%', fontSize:"16px"}}  onChange={(e) => {
-                          setHeadquarter(e.target.value);
-                        }}>
-                          <option value="">Click to Select</option>
-                          {countryApiValue?.map((item) => (
-                        <option key={item.cca2} value={item?.name?.common}>
-                          {item?.name?.common}
-                        </option>
-                          ))}
-                      
-                    </select>
-                   </div>
+
+                    <div style={{ paddingTop: '30px' }}>Select Country *</div>
+                    <div className={styles.inputDivs} style={{ border: '1px solid #e7e7e7', borderRadius: '30px', fontSize: "13px", fontWeight: "500", paddingLeft: '10px' }}>
+                      <select name="country" id="country" style={{ border: "none", padding: '1rem', width: '90%', fontSize: "16px" }} onChange={(e) => {
+                        setHeadquarter(e.target.value);
+                      }}>
+                        <option value="">Click to Select</option>
+                        {countryApiValue?.map((item) => (
+                          <option key={item.cca2} value={item?.name?.common}>
+                            {item?.name?.common}
+                          </option>
+                        ))}
+
+                      </select>
+                    </div>
                     <InputDivsWithMT
                       heading="What is your office address? *"
                       placeholderText="Enter address..."
@@ -3388,26 +3403,26 @@ const AccProfile = () => {
                         style={{
                           opacity:
                             coverPhoto1 &&
-                            whiteProPic &&
-                            brandAddress &&
-                            headquarter &&
-                            brandColorCode &&
-                            brandDescription &&
-                            brandUserName.length > 0 &&
-                            brandDisplayName &&
-                            userNameAvailable1
+                              whiteProPic &&
+                              brandAddress &&
+                              headquarter &&
+                              brandColorCode &&
+                              brandDescription &&
+                              brandUserName.length > 0 &&
+                              brandDisplayName &&
+                              userNameAvailable1
                               ? "1"
                               : "0.25",
                           cursor:
                             coverPhoto1 &&
-                            whiteProPic &&
-                            brandAddress &&
-                            headquarter &&
-                            brandColorCode &&
-                            brandDescription &&
-                            brandUserName.length > 0 &&
-                            brandDisplayName &&
-                            userNameAvailable1
+                              whiteProPic &&
+                              brandAddress &&
+                              headquarter &&
+                              brandColorCode &&
+                              brandDescription &&
+                              brandUserName.length > 0 &&
+                              brandDisplayName &&
+                              userNameAvailable1
                               ? "pointer"
                               : "not-allowed",
                           background: "#59A2DD",
@@ -3489,16 +3504,16 @@ const AccProfile = () => {
               <div className="linee"></div>
             </div>
             <div className="each-action1">
-            <select name="country" id="country" style={{border:"none", padding:'1.5rem', width:'90%', fontSize:"16px"}}  onChange={(e) => {
-                          setNewCountry(e.target.value);
-                        }}>
-                          {countryApiValue?.map((item) => (
-                        <option key={item.cca2} value={item?.name?.common}>
-                          {item?.name?.common}
-                        </option>
-                          ))}
-                      
-                    </select>
+              <select name="country" id="country" style={{ border: "none", padding: '1.5rem', width: '90%', fontSize: "16px" }} onChange={(e) => {
+                setNewCountry(e.target.value);
+              }}>
+                {countryApiValue?.map((item) => (
+                  <option key={item.cca2} value={item?.name?.common}>
+                    {item?.name?.common}
+                  </option>
+                ))}
+
+              </select>
               {/* <input
                 type="text"
                 placeholder="New Country.."

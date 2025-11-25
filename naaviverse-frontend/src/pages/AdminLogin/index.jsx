@@ -13,11 +13,10 @@ const AdminLogin = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [forgotPassword, setForgotPassword] = useState(false);
     const [forgotPasswordStep, setForgotPasswordStep] = useState(1);
-    const [code, setCode] = useState('');
-    const [newPassword1, setNewPassword1] = useState('');
     const [newPassword2, setNewPassword2] = useState('');
     const [passwordResetMsg, setPasswordResetMsg] = useState('');
     const navigate = useNavigate();
+    const [code, setCode] = useState('');
 
     const handleLogin = async () => {
         setIsLoading(true);
@@ -36,56 +35,56 @@ const AdminLogin = () => {
     };
 
     const initiateForgotPassword = () => {
-      setIsLoading(true);
-      let obj = {
-        email: email,
-        app_code: "naavi",
-      };
-      axios
-        .post(
-          `https://gxauth.apimachine.com/gx/user/password/forgot/request`,
-          obj
-        )
-        .then((response) => {
-          let result = response?.data;
-          // console.log(result, "initiateForgotPassword result");
-          if (result?.status) {
-            setIsLoading(false);
-            setForgotPasswordStep(2);
-          }
-        })
-        .catch((error) => {
-          console.log(error, "error in initiateForgotPassword");
-        });
+        setIsLoading(true);
+        let obj = {
+            email: email,
+            app_code: "naavi",
+        };
+        axios
+            .post(
+                `https://gxauth.apimachine.com/gx/user/password/forgot/request`,
+                obj
+            )
+            .then((response) => {
+                let result = response?.data;
+                // console.log(result, "initiateForgotPassword result");
+                if (result?.status) {
+                    setIsLoading(false);
+                    setForgotPasswordStep(2);
+                }
+            })
+            .catch((error) => {
+                console.log(error, "error in initiateForgotPassword");
+            });
     };
-  
+
     const submitForgotPassword = () => {
-      let obj = {
-        email: email,
-        code: code,
-        newPassword: newPassword2,
-      };
-      axios
-        .post(
-          `https://gxauth.apimachine.com/gx/user/password/forgot/confirm`,
-          obj
-        )
-        .then((response) => {
-          let result = response?.data;
-          // console.log(result, "submitForgotPassword result");
-          if (result?.status) {
-            setPasswordResetMsg("Password reset successfully");
-            setForgotPassword(false);
-            setForgotPasswordStep(1);
-            setEmail("");
-          }
-        })
-        .catch((error) => {
-          console.log(error, " error in submitForgotPassword");
-        });
+        let obj = {
+            email: email,
+            code: code,
+            newPassword: newPassword2,
+        };
+        axios
+            .post(
+                `https://gxauth.apimachine.com/gx/user/password/forgot/confirm`,
+                obj
+            )
+            .then((response) => {
+                let result = response?.data;
+                // console.log(result, "submitForgotPassword result");
+                if (result?.status) {
+                    setPasswordResetMsg("Password reset successfully");
+                    setForgotPassword(false);
+                    setForgotPasswordStep(1);
+                    setEmail("");
+                }
+            })
+            .catch((error) => {
+                console.log(error, " error in submitForgotPassword");
+            });
     };
-  
-  
+
+
 
     return (
         <div className="login-main">
@@ -108,7 +107,11 @@ const AdminLogin = () => {
                                 onInput={(e) => { setIsError(false); setEmail(e.target.value); }}
                             />
                         </div>
-                        <div className="login-btn" onClick={() => { if (email?.length > 0) { /* initiateForgotPassword(); */ } }} style={{ opacity: email?.length > 0 ? "1" : "0.5", }}>
+                        <div
+                            className="login-btn"
+                            onClick={() => { if (email?.length > 0) { initiateForgotPassword(); } }}
+                            style={{ opacity: email?.length > 0 ? "1" : "0.5" }}
+                        >
                             Next Step
                         </div>
                         <div className="google-btn" onClick={() => { setForgotPassword(false); setEmail(""); }}>
@@ -116,8 +119,36 @@ const AdminLogin = () => {
                         </div>
                     </div>
                 ) : (
-                    // Additional forgot password steps can be implemented here
-                    <div>Other Forgot Password Steps</div>
+                    <div className="login-box">
+                        <div className="input-box">
+                            <input
+                                className="input-inp"
+                                type="text"
+                                placeholder="Enter code"
+                                value={code}
+                                onInput={e => setCode(e.target.value)}
+                            />
+                        </div>
+                        <div className="input-box">
+                            <input
+                                className="input-inp"
+                                type="password"
+                                placeholder="New Password"
+                                value={newPassword2}
+                                onInput={e => setNewPassword2(e.target.value)}
+                            />
+                        </div>
+                        <div
+                            className="login-btn"
+                            onClick={() => { if (code && newPassword2) submitForgotPassword(); }}
+                            style={{ opacity: (code && newPassword2) ? "1" : "0.5" }}
+                        >
+                            Submit
+                        </div>
+                        <div className="google-btn" onClick={() => { setForgotPassword(false); setForgotPasswordStep(1); setCode(""); setNewPassword2(""); }}>
+                            <div>Cancel</div>
+                        </div>
+                    </div>
                 )
             ) : (
                 <div className="login-box">

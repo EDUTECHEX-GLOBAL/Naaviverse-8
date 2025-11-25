@@ -980,9 +980,9 @@ const NewStep1 = ({ setpstep }) => {
                       {item.financialSituation === "0-25L"
                         ? "0-25 Lakhs"
                         : item.financialSituation === "25L-75L"
-                        ? "25 Lahks - 75 Lahks"
+                        ? "25 Lakhs - 75 Lakhs"
                         : item.financialSituation === "75L-3CR"
-                        ? "75 Lahks - 3 CR"
+                        ? "75 Lakhs - 3 CR"
                         : item.financialSituation === "3CR+"
                         ? "3 CR+"
                         : "Other"}

@@ -14,15 +14,16 @@ import { login } from "../../app/loginSlice";
 
 async function loginFunc(paramData: any) {
   const { data } = await axios.post(
-    "https://gxauth.apimachine.com/gx/user/login",
+    "http://localhost:4545/api/auth/login", // <-- local backend
     paramData
   );
   return data;
 }
 
+// Similarly update other functions:
 async function verifyEmail(paramData: any) {
   const { data } = await axios.post(
-    "https://gxauth.apimachine.com/gx/user/confirm",
+    "http://localhost:4545/api/auth/verifyotp", // example endpoint
     paramData
   );
   return data;
@@ -30,7 +31,7 @@ async function verifyEmail(paramData: any) {
 
 async function resetPswdPin(paramData: any) {
   const { data } = await axios.post(
-    "https://gxauth.apimachine.com/gx/user/password/forgot/confirm",
+    "http://localhost:4545/api/auth/resetPassword", // example endpoint
     paramData
   );
   return data;
@@ -38,11 +39,12 @@ async function resetPswdPin(paramData: any) {
 
 async function forgotPswd(paramData: any) {
   const { data } = await axios.post(
-    "https://gxauth.apimachine.com/gx/user/password/forgot/request",
+    "http://localhost:4545/api/auth/forgotPassword", // example endpoint
     paramData
   );
   return data;
 }
+
 
 async function registerOnApp(email: string) {
   const { data } = await axios.post(

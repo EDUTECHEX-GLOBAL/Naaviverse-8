@@ -8,27 +8,51 @@ const Listview = () => {
   const { searchTerm } = useCoinContextData();
   const [loading, setLoading] = useState(false);
   const [leadSourceData, setLeadSourceData] = useState([]);
-  const [showHiddenLinks, setShowHiddenLinks] = useState();
-  const [select, setSelect] = useState("");
+  const [expandedUniversity, setExpandedUniversity] = useState(null);
 
   useEffect(() => {
     setLoading(true);
     axios
       .get("https://careers.marketsverse.com/universities/get")
       .then((response) => {
-        let result = response?.data?.data;
-        // console.log(result, "leadSourceData result");
+        const result = Array.isArray(response?.data?.data)
+          ? response.data.data
+          : [];
         setLeadSourceData(result);
-        setLoading(false);
       })
       .catch((error) => {
-        console.log(error, "error in getting leadSourceData");
-      });
+        console.error("❌ Error fetching university data:", error);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  const filteredLeadSourceData = leadSourceData?.filter((entry) =>
-    entry?.name?.toLowerCase()?.includes(searchTerm?.toLowerCase())
-  );
+  const filteredLeadSourceData = Array.isArray(leadSourceData)
+    ? leadSourceData.filter((entry) =>
+        entry?.name?.toLowerCase()?.includes(searchTerm?.toLowerCase())
+      )
+    : [];
+
+  const handleOpenWebsite = (domains) => {
+    if (!Array.isArray(domains) || domains.length === 0) {
+      alert("No website link available for this university.");
+      return;
+    }
+
+    const first = domains[0];
+    if (!first) {
+      alert("No website link available for this university.");
+      return;
+    }
+
+    const url = first.startsWith("http") ? first : `https://${first}`;
+    window.open(url, "_blank");
+  };
+
+  const handleOpenSpecificLink = (link) => {
+    if (!link) return;
+    const safe = link.startsWith("http") ? link : `https://${link}`;
+    window.open(safe, "_blank");
+  };
 
   return (
     <div className="listview-container">
@@ -36,92 +60,85 @@ const Listview = () => {
         <div style={{ width: "40%" }}>Name</div>
         <div>Country</div>
       </div>
+
       <div className="listview-content">
-        {loading
-          ? Array(10)
-              .fill("")
-              .map((e, i) => {
-                return (
-                  <div className="each-list-content" key={i}>
-                    <div style={{ width: "40%" }}>
-                      <Skeleton width={100} height={30} />
-                    </div>
-                    <div>
-                      <Skeleton width={100} height={30} />
-                    </div>
-                    <div
-                      style={{
-                        width: "40%",
-                        display: "flex",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Skeleton width={100} height={30} />
-                    </div>
-                  </div>
-                );
-              })
-          : filteredLeadSourceData?.map((e, i) => {
-              return (
-                <div className="each-list-content" key={i}>
-                  <div style={{ width: "40%" }}>{e?.name}</div>
-                  <div>{e?.country}</div>
-                  <div className="web-btn-div">
-                    {e?.domains?.length > 1 ? (
-                      <>
-                        <div
-                          className="web-btn"
-                          onClick={() => {
-                            if (showHiddenLinks) {
-                              setShowHiddenLinks(false);
-                              setSelect("");
-                            } else {
-                              setShowHiddenLinks(true);
-                              setSelect(e?.name);
-                            }
-                          }}
-                        >
-                          Website
-                        </div>
-                        <div
-                          className="hidden-links-div"
-                          style={{
-                            display:
-                              select === e?.name && e?.domains?.length > 1
-                                ? "flex"
-                                : "none",
-                          }}
-                        >
-                          {Array.isArray(e?.domains) &&
-                            e?.domains?.map((each, index) => {
-                              return (
-                                <div
-                                  className="each-hidden-link"
-                                  key={index}
-                                  onClick={() => {
-                                    window.open(each, "_blank");
-                                  }}
-                                >
-                                  <p>{each}</p>
-                                </div>
-                              );
-                            })}
-                        </div>
-                      </>
-                    ) : (
+        {loading ? (
+          Array(10)
+            .fill(null)
+            .map((_, i) => (
+              <div className="each-list-content" key={i}>
+                <div style={{ width: "40%" }}>
+                  <Skeleton width={100} height={30} />
+                </div>
+                <div>
+                  <Skeleton width={100} height={30} />
+                </div>
+                <div style={{ width: "40%", textAlign: "center" }}>
+                  <Skeleton width={100} height={30} />
+                </div>
+              </div>
+            ))
+        ) : filteredLeadSourceData.length > 0 ? (
+          filteredLeadSourceData.map((uni, i) => {
+            const domains = Array.isArray(uni?.domains)
+              ? uni.domains
+              : typeof uni?.domains === "string"
+              ? [uni.domains]
+              : [];
+
+            const hasDomains = domains.length > 0;
+            const multiple = domains.length > 1;
+
+            return (
+              <div className="each-list-content" key={i}>
+                <div style={{ width: "40%" }}>{uni?.name || "N/A"}</div>
+                <div>{uni?.country || "N/A"}</div>
+
+                <div className="web-btn-div">
+                  {multiple ? (
+                    <>
                       <div
                         className="web-btn"
-                        onClick={() => {
-                          window.open(e?.domains?.[0], "_blank");
-                        }}
+                        onClick={() =>
+                          setExpandedUniversity(
+                            expandedUniversity === i ? null : i
+                          )
+                        }
                       >
-                        Website
+                        Websites
                       </div>
-                    )}
-                  </div>
+
+                      {expandedUniversity === i && (
+                        <div className="hidden-links-div">
+                          {domains.map((each, index) => (
+                            <div
+                              className="each-hidden-link"
+                              key={index}
+                              onClick={() => handleOpenSpecificLink(each)}
+                            >
+                              <p>{each}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div
+                      className="web-btn"
+                      onClick={() => handleOpenWebsite(domains)}
+                    >
+                      Website
+                    </div>
+                  )}
                 </div>
-              );
-            })}
+              </div>
+            );
+          })
+        ) : (
+          <p style={{ textAlign: "center", padding: "20px" }}>
+            No universities found.
+          </p>
+        )}
       </div>
     </div>
   );

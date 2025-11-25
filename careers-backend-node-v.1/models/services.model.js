@@ -6,7 +6,19 @@ const servicesSchema = new mongoose.Schema({
     description: { type: String },
     chargingtype: { type: String },
     chargingCurrency: { coin: { type: String } },
-    
+
+    // ✅ Link service to a specific step
+    step_id: { type: mongoose.Schema.Types.ObjectId, ref: "career_steps" },
+
+    // ✅ Optional nested services for multiple attachments later
+    ServiceDetails: [
+        {
+            stepId: { type: mongoose.Schema.Types.ObjectId, ref: "career_steps" },
+            name: String,
+            description: String
+        }
+    ],
+
     billing_cycle: {
         monthly: {
             price: { type: Number },
@@ -37,19 +49,13 @@ const servicesSchema = new mongoose.Schema({
 
     status: { type: String, enum: ['active', 'inactive', 'delete'], default: 'active' },
     outcome: { type: String },
-    
-
-   
-
 
     grace_period: { type: Number, default: 0 },
     first_retry: { type: Number, default: 0 },
     second_retry: { type: Number, default: 0 },
     staking_allowed: { type: Boolean, default: false },
-    staking_details: { type: mongoose.Schema.Types.Mixed, default: {} } // Allows any structure
+    staking_details: { type: mongoose.Schema.Types.Mixed, default: {} }
 
-}, {
-    timestamps: true,
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('naavi_services', servicesSchema);

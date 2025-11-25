@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const StepSchema = new mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId, // Unique ID for each step
   name: String,
-  description: String
+  description: String,
 });
 
 const ProgramSchema = new mongoose.Schema({
@@ -16,7 +16,8 @@ const ProgramSchema = new mongoose.Schema({
   performance: { type: String, required: true },
   financialSituation: { type: String, required: true },
   personality: { type: String, required: true },
-  steps: [StepSchema] // Store steps as subdocuments with IDs
+  country: { type: String, required: true }, // ✅ NEW FIELD
+  steps: [StepSchema], // Store steps as subdocuments with IDs
 });
 
 const Program = mongoose.model('Program', ProgramSchema);

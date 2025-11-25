@@ -1,136 +1,142 @@
+// PathPage.jsx (Premium Version)
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Skeleton from "react-loading-skeleton";
-
-import { useCoinContextData } from "../../context/CoinContext";
-import Navbar from "../Navbar/index.jsx";
-import Dashsidebar from "../dashsidebar/dashsidebar.jsx";
-import MenuNav from "../MenuNav/index.jsx";
-import AccDashsidebar from "../accDashsidebar/accDashsidebar.jsx";
-import AdminAccDashsidebar from "../AdminAccDashsidebar/index.jsx";
-
 import "./journey.scss";
+import { motion } from "framer-motion";
 
 const PathPage = () => {
   const navigate = useNavigate();
-  const loc = useLocation();
-  const {} = useCoinContextData();
-
-  const [loading, setLoading] = useState(false);
-  const [stepData, setStepData] = useState(null);
-  const [showDrop, setShowDrop] = useState(false);
-  const [stepDetails, setStepDetails] = useState([]); 
+  const [loading, setLoading] = useState(true);
+  const [schoolName, setSchoolName] = useState("N/A");
+  const [steps, setSteps] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    setLoading(true);
-    const pathId = loc?.pathname?.split("/").pop(); // Extract path ID
-    console.log("Extracted Path ID:", pathId);
+    const fetchSteps = async () => {
+      setLoading(true);
+      setError(null);
 
-    if (pathId) {
-      axios
-        .get(`/api/userpaths/steps?pathId=${pathId}`)
-        .then(({ data }) => {
-          if (data.success) {
-            console.log("API Response:", data?.data);
-            setStepData(data?.data); // Set entire object
+      const pathId = localStorage.getItem("selectedPathId");
+      if (!pathId) {
+        setError("No selected path id found.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        let resp = null;
+        try {
+          resp = await axios.get(`/api/universities/${pathId}/steps`);
+          if (resp?.data?.steps && Array.isArray(resp.data.steps)) {
+            setSteps(resp.data.steps);
+          } else if (Array.isArray(resp?.data)) {
+            setSteps(resp.data);
           } else {
-            console.error("Invalid API response:", data);
+            resp = null;
           }
-        })
-        .catch(error => {
-          console.error("Error fetching data:", error);
-        })
-        .finally(() => setLoading(false));
-    }
+        } catch (err) {
+          resp = null;
+        }
+
+        if (!resp) {
+          const r2 = await axios.get(`/api/universities/${pathId}`);
+          const uni = r2?.data?.data || r2?.data;
+          setSchoolName(uni?.name || uni?.school || "N/A");
+
+          const program = uni?.generatedProgram || uni?.program || {};
+          const fetchedSteps = Array.isArray(program?.steps)
+            ? program.steps
+            : [];
+
+          setSteps(fetchedSteps);
+        } else {
+          axios.get(`/api/universities/${pathId}`).then((rName) => {
+            const uni = rName?.data?.data || rName?.data;
+            if (uni?.name) setSchoolName(uni.name);
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching steps:", err);
+        setError("Failed to fetch steps.");
+        setSteps([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSteps();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
-  };
-
   return (
-    <>
-      <div className="dashboard-main">
-        <div className="dashboard-body">
-          <div>
-            {localStorage.getItem("userType") === "partner" ? (
-              <AccDashsidebar />
-            ) : localStorage.getItem("userType") === "user" ? (
-              <Dashsidebar />
-            ) : (
-              <AdminAccDashsidebar />
-            )}
-          </div>
+    <div className="dashboard-main">
+      <div className="dashboard-body">
+        <div className="dashboard-screens" style={{ width: "100%" }}>
+          <div style={{ padding: "3rem 3.5rem" }}>
+            {/* Top Section */}
+            <div className="journey-top-area-premium">
+              <div className="premium-title-small">Your Selected Path</div>
 
-          <div className="dashboard-screens">
-            <MenuNav
-              showDrop={showDrop}
-              setShowDrop={setShowDrop}
-              searchPlaceholder="Search..."
-            />
+              {loading ? (
+                <Skeleton width={300} height={32} />
+              ) : (
+                <div className="premium-title">{schoolName}</div>
+              )}
 
-            <div style={{ height: "100%" }}>
-              <div className="journeypage">
-                {/* Path Title */}
-                <div className="journey-top-area">
-                  <div>Your Selected Path:</div>
-                  {loading ? (
-                    <Skeleton width={150} height={30} />
-                  ) : (
-                    <div className="bold-text">{stepData?.school || "N/A"}</div>
-                  )}
-
-                  <div
-                    className="goBack-div"
-                    onClick={() => {
-                      navigate(-1);
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-
-                {/* Journey Steps */}
-                <div className="journey-steps-area">
-                  {loading ? (
-                    Array(3)
-                      .fill("")
-                      .map((_, i) => (
-                        <div className="each-j-step" key={i}>
-                          <div className="each-j-step-text">
-                            <Skeleton width={200} height={20} />
-                          </div>
-                        </div>
-                      ))
-                  ) : stepData?.steps?.length > 0 ? (
-                    stepData.steps.map((step, index) => (
-                      <div key={index} className="each-j-step">
-                        <div
-                          className="each-j-step-text"
-                          style={{ fontWeight: "600", fontFamily: "Montserrat, sans-serif" }} // Semi-bold font
-                        >
-                          {step.name}
-                        </div>
-                        <div
-                          className="each-j-step-text"
-                          style={{ fontSize: "0.9em", color: "#7d8085", lineHeight: "1.5", fontFamily: "Montserrat, sans-serif" }} // Adjusted styling
-                        >
-                          {step.description}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p>No steps available</p>
-                  )}
-                </div>
+              <div
+                className="premium-back"
+                onClick={() => navigate(-1)}
+              >
+                ← Go Back
               </div>
+            </div>
+
+            {/* Steps Section */}
+            <div className="steps-grid-premium">
+              {loading ? (
+                Array(3)
+                  .fill("")
+                  .map((_, i) => (
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.1 * i }}
+                      className="step-card-premium"
+                      key={i}
+                    >
+                      <Skeleton width={"60%"} height={22} />
+                      <Skeleton width={"95%"} height={14} style={{ marginTop: 8 }} />
+                      <Skeleton width={"92%"} height={14} style={{ marginTop: 6 }} />
+                    </motion.div>
+                  ))
+              ) : error ? (
+                <p className="premium-error">{error}</p>
+              ) : steps.length === 0 ? (
+                <p className="premium-error">No steps found.</p>
+              ) : (
+                steps.map((step, index) => (
+                  <motion.div
+                    key={index}
+                    className="step-card-premium"
+                    initial={{ opacity: 0, y: 25 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                  >
+                    <div className="step-number">
+                      <div className="bubble">{index + 1}</div>
+                    </div>
+
+                    <div className="step-title-premium">{step.name}</div>
+                    <div className="step-desc-premium">{step.description}</div>
+                  </motion.div>
+                ))
+              )}
             </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

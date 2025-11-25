@@ -413,7 +413,7 @@
     .account-img-box {
       display: flex;
       height: 108px;
-      justify-content: start;
+      justify-content: flex-start;
       margin-left: 50px;
       margin-top: -50px;
       z-index: 2;
@@ -433,13 +433,13 @@
       color: #1f304f;
       display: flex;
       padding: 0 50px;
-      justify-content: start;
+      justify-content: flex-start;
     }
 
     .account-work {
       color: #1f304f;
       display: flex;
-      justify-content: start;
+      justify-content: flex-start;
       font-size: 16px;
       font-weight: 300;
       line-height: 25px;
@@ -810,7 +810,7 @@
           .mob-account-img-box {
             display: flex;
             height: 108px;
-            justify-content: center;
+            justify-content: flex-start;
             margin-top: -50px;
             z-index: 2;
 
@@ -949,7 +949,7 @@
   .mob-account-img-box {
     display: flex;
     height: 108px;
-    justify-content: start;
+    justify-content: flex-start;
     margin-left: 20px;
     margin-top: -50px;
     z-index: 2;
@@ -969,13 +969,13 @@
     color: #1f304f;
     display: flex;
     padding: 0 20px;
-    justify-content: start;
+    justify-content: flex-start;
   }
 
   .mob-account-work {
     color: #1f304f;
     display: flex;
-    justify-content: start;
+    justify-content: flex-start;
     font-size: 16px;
     font-weight: 300;
     line-height: 25px;

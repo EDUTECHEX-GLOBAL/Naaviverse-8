@@ -39,7 +39,6 @@ const PathComponent = () => {
     { id: 1, inputValue1: "", inputValue2: "", removable: false },
   ]);
   const [pathOption, setPathOption] = useState("Path View");
-  // const [searchTerm, setSearchterm] = useState("");
   const [pathMap, setPathMap] = useState(/** @type google.maps.Map */ (null));
   const [pathCurrentLocation, setPathCurrentLocation] = useState(null);
   const [pathSearchTerm, setPathSearchTerm] = useState("");
@@ -55,6 +54,7 @@ const PathComponent = () => {
   const [pathShowDirections, setPathShowDirections] = useState(true);
   const [userProfile, setUserProfile] = useState(null);
   const [selectedPathId, setSelectedPathId] = useState(null);
+
   const {
     searchTerm,
     setSearchterm,
@@ -67,6 +67,7 @@ const PathComponent = () => {
     showPathDetails,
     setShowPathDetails,
   } = useCoinContextData();
+
   const {
     gradeToggle,
     setGradeToggle,
@@ -85,10 +86,81 @@ const PathComponent = () => {
     refetchPaths,
     setRefetchPaths,
   } = useContext(GlobalContex);
+
   const [loading, setLoading] = useState(false);
   const [levelThreeData, setLevelThreeData] = useState([]);
 
-  let userDetails = JSON.parse(localStorage.getItem("user"));
+  let userDetails = JSON.parse(localStorage.getItem("user") || "{}");
+
+
+//   const autoGenerateUniversity = async (uni) => {
+//   try {
+//     if (
+//       uni.generatedProgram &&
+//       uni.generatedProgram.program &&
+//       uni.generatedProgram.description &&
+//       uni.generatedProgram.steps?.length > 0
+//     ) {
+//       return uni; // already generated
+//     }
+
+//     const { data } = await axios.post("/api/perplexity/generate", {
+//       id: uni._id,
+//       name: uni.name,
+//     });
+
+//     console.log("Generated using AI:", data.generatedProgram);
+
+//     return {
+//       ...uni,
+//       generatedProgram: data.generatedProgram,
+//     };
+//   } catch (err) {
+//     console.error("AI generation failed", err);
+//     return uni; // fallback
+//   }
+// };
+
+
+  // --------------------------------------------------------------
+  // ✅ MOVED HERE: pathSelection FIX (to solve "not defined" error)
+  // --------------------------------------------------------------
+const pathSelection = () => {
+  if (!selectedPathItem || !selectedPathItem._id) {
+    alert("Please select a path first!");
+    return;
+  }
+
+  setLoading(true);
+
+  const body = {
+    email: userDetails?.email,
+    programId: selectedPathItem._id,
+  };
+
+  console.log("Sending:", body);
+
+  axios
+    .post("http://localhost:4545/api/fetch/selectpath", body)
+    .then((response) => {
+      let result = response.data;
+
+      if (result?.pathId) {
+        localStorage.setItem("selectedPathId", result.pathId);
+        setSelectedPathId(result.pathId);
+      }
+
+      setLoading(false);
+      reload();
+    })
+    .catch((error) => {
+      console.error("Error in path selection:", error.response?.data || error);
+      setLoading(false);
+    });
+};
+
+
+  // --------------------------------------------------------------
 
   const handleAddContainer = () => {
     const lastContainer = containers[containers.length - 1];
@@ -106,7 +178,6 @@ const PathComponent = () => {
     const updatedContainers = containers.filter(
       (container) => container.id !== containerId
     );
-    // Renumber the containers after removing one
     const renumberedContainers = updatedContainers.map((container, index) => {
       return { ...container, id: index + 1 };
     });
@@ -130,6 +201,7 @@ const PathComponent = () => {
     }
   };
 
+  // -------- rest of your component EXACTLY as before --------
   useEffect(() => {
     if (navigator.geolocation) {
       setPathSelectedPlace("");
@@ -152,24 +224,6 @@ const PathComponent = () => {
   }, [pathResetLoaction]);
 
   const handleResetContainer = () => {
-    // const directionsRenderer = new window.google.maps.DirectionsRenderer();
-    // directionsRenderer.setMap(map);
-    // directionsRenderer.setDirections({ routes: [] }); // Clear directions
-    // setContainers([
-    //   { id: 1, inputValue1: "", inputValue2: "", removable: false },
-    // ]);
-    // if (pathOption === "List View") {
-    //   setSearchterm("");
-    // }
-    // setPathResetLocation(!pathResetLoaction);
-    // setPathSelectedPlace(null);
-    // setPathPlacesId(null);
-    // setPathPlaceInfo("");
-    // setPathSelectedDate(null);
-    // setPathShowDatePicker(false);
-    // setPathDirections(null);
-    // setPathSelectedLocation(null);
-    // setPathShowDirections(null);
     window.location.reload();
   };
 
@@ -192,17 +246,13 @@ const PathComponent = () => {
     }
   };
 
-  
-
   const fetchPlaceDetails = async (placeId) => {
-    // console.log(placeId, 'placeid')
     if (placeId !== null) {
       try {
         const response = await fetch(
           `https://careers.marketsverse.com/api/places?place_id=${placeId}`
         );
         const data = await response.json();
-        // console.log(data?.result, "place info");
         setPathPlaceInfo(data?.result);
         return data.result;
       } catch (error) {
@@ -243,49 +293,15 @@ const PathComponent = () => {
     navigate("/dashboard/users");
   }
 
-  const pathSelection = () => {
-    setLoading(true);
-    let body = {
-        email: userDetails?.email,
-        pathId: selectedPathItem?._id, // Selected from UI
-    };
-
-    axios
-        .post(`/api/fetch/selectpath`, body)
-        .then((response) => {
-            let result = response?.data;
-            console.log("Path Selection Result:", result);
-
-            if (result?.pathId) {
-                localStorage.setItem("selectedPathId", result.pathId); // Store pathId
-                setSelectedPathId(result.pathId); // Update state
-            }
-
-            setLoading(false);
-
-            // Call reload function to update the UI
-            reload();
-        })
-        .catch((error) => {
-            console.error("Error in path selection:", error.response?.data || error);
-            setLoading(false);
-        });
-};
-
-
   const fetchUserProfile = async () => {
     try {
-      const email = userDetails?.email; // Ensure email is defined
+      const email = userDetails?.email;
       const response = await fetch(`/api/users/get/${email}`);
       const result = await response.json();
 
-      console.log("Fetched User Data:", result);
-
       if (result.status) {
         localStorage.setItem("userProfile", JSON.stringify(result.data));
-        setUserProfile(result.data); // Adjust based on actual structure
-      } else {
-        console.log("No user found");
+        setUserProfile(result.data);
       }
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -294,7 +310,90 @@ const PathComponent = () => {
 
   useEffect(() => {
     fetchUserProfile();
-  }, []);  // Run only once when the component mounts
+  }, []);
+
+  // 🔍 Fetch recommended programs/paths
+  useEffect(() => {
+    if (!userProfile) return;
+
+const fetchPrograms = async () => {
+  try {
+    setLoading(true);
+
+    const params = {};
+
+    if (!gradeToggle && userProfile.grade) params.grade = userProfile.grade;
+    if (!curriculumToggle && userProfile.curriculum)
+      params.curriculum = userProfile.curriculum;
+    if (!streamToggle && userProfile.stream)
+      params.stream = userProfile.stream;
+    if (!performanceToggle && userProfile.performance)
+      params.performance = userProfile.performance;
+    if (!financialToggle && userProfile.financialSituation)
+      params.financialSituation = userProfile.financialSituation;
+    if (!personalityToggle && userProfile.personality)
+      params.personality = userProfile.personality;
+
+    const { data } = await axios.get("/api/universities", { params });
+
+
+setLevelThreeData(data.data);
+
+
+
+
+
+
+  } catch (error) {
+    console.error("Error fetching programs:", error);
+    setLevelThreeData([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+    fetchPrograms();
+  }, [
+    refetchPaths,
+    userProfile,
+    gradeToggle,
+    curriculumToggle,
+    streamToggle,
+    performanceToggle,
+    financialToggle,
+    personalityToggle,
+  ]);
+
+  // -----------------------------------------------
+// 🔍 AUTO-TRIGGER AI ONLY WHEN USER SEARCHES
+// -----------------------------------------------
+useEffect(() => {
+  if (!searchTerm || searchTerm.trim().length < 3) return;
+
+  const fetchUniversity = async () => {
+    try {
+      setLoading(true);
+      console.log("🔍 Searching for university:", searchTerm);
+
+     const res = await axios.get(
+  `http://localhost:4545/api/universities/find-or-create?name=${searchTerm}`
+);
+
+
+      if (res.data?.status) {
+        console.log("🎯 University Found/Created:", res.data.data);
+        setLevelThreeData([res.data.data]); // show ONLY the searched university
+      }
+    } catch (error) {
+      console.error("❌ University search failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchUniversity();
+}, [searchTerm]);
 
 
   return (
@@ -338,7 +437,7 @@ const PathComponent = () => {
                 </div>
               </div>
             </div>
-  
+
             {pathItemSelected && pathItemStep === 1 ? (
               <div className="mid-area1" style={{ borderBottom: "none" }}>
                 <div
@@ -429,11 +528,13 @@ const PathComponent = () => {
               <div className="mid-area1">
                 <div className="current-coord-container">
                   <div className="current-text">Current Coordinates</div>
-  
+
                   {userProfile ? (
                     <>
                       <div className="each-coo-field">
-                        <div className="field-name">Grade: {userProfile.grade}</div>
+                        <div className="field-name">
+                          Grade: {userProfile.grade}
+                        </div>
                         <div
                           className="toggleContainer"
                           onClick={(e) => setGradeToggle(!gradeToggle)}
@@ -449,13 +550,13 @@ const PathComponent = () => {
                             &nbsp;
                           </div>
                         </div>
-                        <div className="field-value">
-                          {userProfile?.grade}
-                        </div>
+                        <div className="field-value">{userProfile?.grade}</div>
                       </div>
-  
+
                       <div className="each-coo-field">
-                        <div className="field-name">Curriculum: {userProfile.curriculum}</div>
+                        <div className="field-name">
+                          Curriculum: {userProfile.curriculum}
+                        </div>
                         <div
                           className="toggleContainer"
                           onClick={(e) => setCurriculumToggle(!curriculumToggle)}
@@ -475,7 +576,7 @@ const PathComponent = () => {
                           {userProfile?.curriculum}
                         </div>
                       </div>
-  
+
                       <div className="each-coo-field">
                         <div className="field-name">Stream</div>
                         <div
@@ -493,17 +594,16 @@ const PathComponent = () => {
                             &nbsp;
                           </div>
                         </div>
-                        <div className="field-value">
-                         {console.log("stream:", userProfile?.stream)}
-                          {userProfile?.stream}
-                        </div>
+                        <div className="field-value">{userProfile?.stream}</div>
                       </div>
-  
+
                       <div className="each-coo-field">
                         <div className="field-name">Performance</div>
                         <div
                           className="toggleContainer"
-                          onClick={(e) => setPerformanceToggle(!performanceToggle)}
+                          onClick={(e) =>
+                            setPerformanceToggle(!performanceToggle)
+                          }
                         >
                           <div
                             className="toggle"
@@ -520,7 +620,7 @@ const PathComponent = () => {
                           {userProfile?.performance}
                         </div>
                       </div>
-  
+
                       <div className="each-coo-field">
                         <div className="field-name">Financial</div>
                         <div
@@ -542,12 +642,16 @@ const PathComponent = () => {
                           {userProfile?.financialSituation}
                         </div>
                       </div>
-  
+
                       <div className="each-coo-field">
-                        <div className="field-name">Personality: {userProfile?.personality}</div>
+                        <div className="field-name">
+                          Personality: {userProfile?.personality}
+                        </div>
                         <div
                           className="toggleContainer"
-                          onClick={(e) => setPersonalityToggle(!personalityToggle)}
+                          onClick={(e) =>
+                            setPersonalityToggle(!personalityToggle)
+                          }
                         >
                           <div
                             className="toggle"
@@ -561,15 +665,20 @@ const PathComponent = () => {
                           </div>
                         </div>
                         <div className="field-value">
-                          {console.log("Personality Data:", userProfile?.personality)}
-                          {userProfile?.personality?? "--"}
+                          {userProfile?.personality ?? "--"}
                         </div>
                       </div>
-  
+
                       <div className="each-coo-field">
                         <div className="field-name">School</div>
-                        <div className="toggleContainer" style={{ border: "0px" }}></div>
-                        <div className="field-value" style={{ borderLeft: "0px" }}>
+                        <div
+                          className="toggleContainer"
+                          style={{ border: "0px" }}
+                        ></div>
+                        <div
+                          className="field-value"
+                          style={{ borderLeft: "0px" }}
+                        >
                           {userProfile?.school}
                         </div>
                       </div>
@@ -578,7 +687,7 @@ const PathComponent = () => {
                     <p>Loading user profile...</p>
                   )}
                 </div>
-  
+
                 <div className="maps-btns-div1">
                   <div
                     className="gs-Btn-maps1"
@@ -590,13 +699,14 @@ const PathComponent = () => {
               </div>
             )}
           </div>
-  
+
           <div className="maps-content-area1">
-            <Pathview />
+            <Pathview paths={levelThreeData} loading={loading} />
           </div>
         </div>
       )}
     </div>
   );
-}
-export default PathComponent;  
+};
+
+export default PathComponent;

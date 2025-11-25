@@ -1839,7 +1839,7 @@ input[type="file"] {
 
 .dot-box {
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
   transition: all ease 0.2s;
   position: absolute;
   right: 20px;

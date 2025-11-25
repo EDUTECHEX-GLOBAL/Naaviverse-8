@@ -1,17 +1,16 @@
 const serviceModel = require('../models/services.model');
-const axios = require('axios');
 const mongoose = require('mongoose');
 
+// ================== ADD SERVICE ==================
 const addService = async (req, res) => {
     console.log('Request to add service:', req.body);
 
-    // Initialize the createService object with correct mappings
     let createService = {
         productcreatoremail: req.body.productcreatoremail,
-        name: req.body.product_name, // Correct field mapping
+        name: req.body.product_name,
         icon: req.body.product_icon,
         description: req.body.full_description,
-        chargingtype: req.body.billingType || "default", // Ensure billingType is included
+        chargingtype: req.body.billingType || "default",
         revenue_account: req.body.revenue_account,
         client_app: req.body.client_app,
         product_category_code: req.body.product_category_code,
@@ -25,10 +24,31 @@ const addService = async (req, res) => {
         second_retry: req.body.second_retry || 0,
         staking_allowed: req.body.staking_allowed,
         staking_details: req.body.staking_details,
-        billing_cycle: {}, // Initialize billing cycle
+        billing_cycle: {},
+        serviceProvider: req.body.serviceProvider || "",
+        access: req.body.access || "",
+        goal: req.body.goal || "",
+        grade: req.body.gradeData || [],
+        financialSituation: req.body.financialData || "",
+        stream: req.body.stream || "",
+        cost: req.body.cost || 0,
+        price: req.body.price || 0,
+        discountType: req.body.discountType || "",
+        discountAmount: req.body.discountAmount || 0,
+        duration: req.body.duration || 0,
+        features: req.body.features || [],
+        status: req.body.status || "active",
+        outcome: req.body.outcome || "",
+        type: req.body.type || "",
+        iterations: req.body.iterations || [],
     };
 
-    // Add billing cycle details if available
+    // ✅ Save step_id (IMPORTANT!)
+    if (req.body.step_id) {
+        createService.step_id = req.body.step_id;
+    }
+
+    // Payment plans
     if (req.body.billing_cycle?.monthly) {
         createService.billing_cycle.monthly = {
             price: req.body.billing_cycle.monthly.price || 0,
@@ -36,232 +56,122 @@ const addService = async (req, res) => {
         };
     }
 
-    if (req.body.billing_cycle?.lifetime) {
-        createService.billing_cycle.lifetime = {
-            price: req.body.billing_cycle.lifetime.price || 0,
-            coin: req.body.billing_cycle.lifetime.coin,
+    if (req.body.billing_cycle?.annual) {
+        createService.billing_cycle.annual = {
+            price: req.body.billing_cycle.annual.price || 0,
+            coin: req.body.billing_cycle.annual.coin,
         };
     }
 
-    // Additional service attributes
-    createService.serviceProvider = req.body.serviceProvider || "";
-    createService.access = req.body.access || "";
-    createService.goal = req.body.goal || "";
-    createService.grade = req.body.gradeData || [];
-    createService.financialSituation = req.body.financialData || "";
-    createService.stream = req.body.stream || "";
-    createService.cost = req.body.cost || 0;
-    createService.price = req.body.price || 0;
-    createService.discountType = req.body.discountType || "";
-    createService.discountAmount = req.body.discountAmount || 0;
-    createService.duration = req.body.duration || 0;
-    createService.features = req.body.features || [];
-    createService.status = req.body.status || "active";
-    createService.outcome = req.body.outcome || "";
-    createService.type = req.body.type || "";
-    createService.iterations = req.body.iterations || [];
-
     try {
-        let step = await serviceModel.create(createService);
-
-        if (!step) {
-            return res.json({
-                status: false,
-                message: 'Error in creating service',
-            });
-        }
-
+        let service = await serviceModel.create(createService);
         return res.json({
             status: true,
-            message: 'Service created successfully',
-            data: step,
+            message: "Service created successfully",
+            data: service,
         });
-
     } catch (error) {
         console.error("Error creating service:", error);
         return res.status(500).json({
             status: false,
-            message: 'Internal server error while creating service',
+            message: "Internal error while creating service",
             error: error.message,
         });
     }
 };
 
-
+// ================== GET SERVICES BY CREATOR ==================
 const getServices = async (req, res) => {
-    // Check if product creator email is provided
     if (!req.query.productcreatoremail) {
-        return res.json({
-            status: false,
-            message: 'Product creator email is required.',
-        });
+        return res.json({ status: false, message: "Product creator email required" });
     }
-
     try {
-        // Fetch services from the database based on the product creator email
         let services = await serviceModel.find({ productcreatoremail: req.query.productcreatoremail });
+        if (!services.length) {
+    return res.status(200).json({
+        status: true,
+        data: []
+    });
+}
 
-        // Check if any services were found
-        if (services.length === 0) {
-            return res.json({
-                status: false,
-                message: 'No data found for the provided product creator email.',
-            });
-        }
 
-        // Return the found services
         return res.json({
             status: true,
             total: services.length,
-            message: 'Service data found',
+            message: "Service data found",
             data: services,
         });
-        
     } catch (error) {
-        console.error("Error fetching services:", error); // Log any errors
         return res.status(500).json({
             status: false,
-            message: 'Error fetching services',
+            message: "Error fetching services",
             error: error.message,
         });
     }
 };
 
+// ================== UPDATE SERVICE ==================
 const updateService = async (req, res) => {
-    let updateData = {}
-    if (req.body.name) updateData.name = req.body.name;
-    if (req.body.grade) updateData.grade = req.body.grade;
-    if(req.body.description) updateData.description = req.body.description;
-    if(req.body.financialSituation) updateData.financialSituation = req.body.financialSituation;
-    if(req.body.stream) updateData.stream = req.body.stream;
-    if(req.body.serviceProvider) updateData.serviceProvider = req.body.serviceProvider;
-    if(req.body.access) updateData.access = req.body.access;
-    if(req.body.goal) updateData.goal = req.body.goal;
-    if(req.body.icon) updateData.icon = req.body.icon;
-    if (req.body.cost) updateData.cost = req.body.cost;
-    if (req.body.price) updateData.price = req.body.price;
-    if (req.body.discountType) updateData.discountType = req.body.discountType;
-    if (req.body.discountAmount) updateData.discountAmount = req.body.discountAmount;
-    if (req.body.duration) updateData.duration = req.body.duration;
-    if (req.body.features) updateData.features = req.body.features;
-    if (req.body.status) updateData.status = req.body.status;
-    if (req.body.outcome) updateData.outcome = req.body.outcome;
-    if (req.body.type) updateData.type = req.body.type;
-    if (req.body.program) updateData.program = req.body.program;
+    let updateData = req.body;
+    let updated = await serviceModel.findOneAndUpdate(
+        { _id: req.params.id },
+        updateData,
+        { new: true }
+    );
 
-    let updateServiceData = await serviceModel.findOneAndUpdate({ _id: req.params.id}, updateData, { new: true });
-    // console.log(updateStepData)
-    if (!updateServiceData) {
-        return res.json({
-            status: false,
-            message: 'Data not found',
-        })
-    }
-    return res.json({
-        status: true,
-        message: 'Service updated',
-        data: updateServiceData
-    })
+    if (!updated) return res.json({ status: false, message: "Not found" });
 
-}
+    return res.json({ status: true, message: "Service updated", data: updated });
+};
 
+// ================== DELETE SERVICE ==================
 const deleteService = async (req, res) => {
-    let deleteServiceData = await serviceModel.findOneAndDelete({ _id: req.params.id }, { status: "delete" }, { new: true });
-    if (!deleteServiceData) {
-        return res.json({
-            status: false,
-            message: 'Data not found',
-        })
-    }
-    return res.json({
-        status: true,
-        message: 'Service deleted',
-        data: deleteServiceData
-    })
-}
+    let deleted = await serviceModel.findOneAndDelete({ _id: req.params.id });
+    if (!deleted) return res.json({ status: false, message: "Not found" });
 
+    return res.json({ status: true, message: "Service deleted", data: deleted });
+};
+
+// ================== RESTORE SERVICE ==================
 const restoreService = async (req, res) => {
-    let restoreServiceData = await serviceModel.findOneAndUpdate({ _id: req.params.id, status: "delete" }, { status: "active" }, { new: true });
-    if (!restoreServiceData) {
-        return res.json({
-            status: false,
-            message: 'Data not found',
-        })
-    }
-    return res.json({
-        status: true,
-        message: 'Service restored',
-        data: restoreServiceData
-    })
-}
+    let restored = await serviceModel.findOneAndUpdate(
+        { _id: req.params.id, status: "delete" },
+        { status: "active" },
+        { new: true }
+    );
 
+    if (!restored) return res.json({ status: false, message: "Not found" });
 
-const getAllServices = async (req, res) => {
-    const { status } = req.query;
+    return res.json({ status: true, message: "Service restored", data: restored });
+};
 
-    // Validate the status parameter
-    if (!status || (status !== "active" && status !== "inactive")) {
-        return res.status(400).json({
-            status: false,
-            message: 'Status parameter is required and must be either "active" or "inactive".'
-        });
-    }
-
+// ================== GET SERVICES BY STEP (CRITICAL) ==================
+const getServicesByStep = async (req, res) => {
     try {
-        // Fetch services from the database based on their status
-        const services = await serviceModel.find({ status }); // Assuming 'status' is a field in your service model
+        const { step_id } = req.query;
 
-        // Check if any services were found
-        if (services.length === 0) {
-            return res.json({
+        if (!step_id) {
+            return res.status(400).json({ status: false, message: "step_id is required" });
+        }
+
+        const services = await serviceModel.find({ step_id });
+
+        // ✅ Always return 200 & empty list if no services
+        if (!services.length) {
+            return res.status(200).json({
                 status: true,
-                message: 'No services found for the specified status.',
                 data: []
             });
         }
 
-        // Return the found services
-        return res.json({
-            status: true,
-            total: services.length,
-            message: 'Service data found',
-            data: services,
-        });
-        
-    } catch (error) {
-        console.error("Error fetching services:", error); // Log any errors
-        return res.status(500).json({
-            status: false,
-            message: 'Error fetching services',
-            error: error.message,
-        });
-    }
-};  
-
-const updateServiceIcon = async (req, res) => {
-    try {
-        const { serviceId } = req.params;
-        const { icon } = req.body; // Expecting icon URL in the request body
-
-        if (!icon) {
-            return res.status(400).json({ status: false, message: "Icon URL is required" });
-        }
-
-        const objectId = new mongoose.Types.ObjectId(serviceId);
-
-        // Find the service using _id and update its icon
-        const updatedService = await serviceModel.findByIdAndUpdate(
-            objectId, // Find by _id
-            { icon, updatedAt: new Date() }, // Update icon and timestamp
-            { new: true } // Return updated document
-        );
-        res.json({ status: true, message: "Icon updated successfully", data: updatedService });
+        return res.json({ status: true, data: services });
 
     } catch (error) {
-        console.error("Error updating service icon:", error);
-        res.status(500).json({ status: false, message: "Internal server error" });
+        console.error("Error fetching services by step:", error);
+        return res.status(500).json({ status: false, message: "Server error" });
     }
 };
+
 
 module.exports = {
     addService,
@@ -269,6 +179,7 @@ module.exports = {
     updateService,
     deleteService,
     restoreService,
-    getAllServices,
-    updateServiceIcon,
-}
+    getAllServices: getServices,  // reuse
+    updateServiceIcon: updateService,
+    getServicesByStep
+};

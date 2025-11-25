@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 const User = require("../models/users.model");
 require("dotenv").config({ path: ".env" });
 const jwt = require("jsonwebtoken");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
+
 
 const { generateOTP, sendOTP, sendNotificationMail  } = require("../middlewares/verifySignUp");
 
@@ -13,7 +14,7 @@ const signUp = async (req, res) => {
     // Validate input fields
     if (!email || !username || !password) {
       return res.status(400).json({
-        successful: false,
+        success: false,
         message: "All fields (email, username, password) are required",
       });
     }
@@ -22,36 +23,42 @@ const signUp = async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
-        successful: false,
+        success: false,
         message: "User is already registered with this email",
       });
     }
 
+    // Generate OTP for verification
     const OTP = generateOTP();
-    console.log(`Generated OTP: ${OTP}`);
     const currentTime = new Date();
 
-    // Create a new user
+    // Create new user — use plain password!
     const temporalUser = new User({
       username,
       email,
-      password, // Ensure you hash the password before saving
+      password, // pre-save hook in your model will hash automatically
       OTP,
       isBlocked: false,
       OTPAttempts: 0,
       OTPCreatedTime: currentTime,
-      status: false,
-      profileCompleted: false,
+      status: "inactive",
+      profileComplete: false,
     });
 
+    // Save user to DB (let model hash the password)
     await temporalUser.save();
 
     // Send OTP email
-    sendNotificationMail(
-      email,
-      "Naavi Registration Confirmation OTP",
-      `Dear User,<br>Your OTP: ${OTP}<br>`
-    );
+    try {
+      await sendNotificationMail(
+        email,
+        "Naavi Signup OTP",
+        `Dear User,<br>Your OTP: ${OTP}<br>`
+      );
+    } catch (err) {
+      console.error("Failed to send OTP email:", err);
+      return res.status(500).json({ success: false, message: "Failed to send OTP email" });
+    }
 
     // Generate JWT token
     const oneDayInSeconds = 86400;
@@ -59,45 +66,47 @@ const signUp = async (req, res) => {
       expiresIn: oneDayInSeconds,
     });
 
-    // Prepare the response user object
     const user = {
       id: temporalUser._id,
       username: temporalUser.username,
       email: temporalUser.email,
     };
 
-    return res.status(201).json({
-      successful: true,
+    // Return response
+    return res.status(200).json({
+      success: true,
       message: "User created successfully",
+      otpSent: true,
       token,
       user,
     });
   } catch (error) {
     console.error("SignUp Error:", error);
     return res.status(500).json({
-      successful: false,
+      success: false,
       message: "Something went wrong",
     });
   }
 };
 
-const checkDuplicatedEmail = async (req, res) => {
-  try {
 
+const checkEmailDuplicate = async (req, res) => {
+  try {
     const user = await User.findOne({ email: req.body.email });
 
-    if (user && user.userType == req.body.role) {
+    if (user) {
       console.log("User found:", user.email);
       return res.status(400).json({ message: "The email already exists" });
     }
 
     console.log("No user found, proceeding...");
-    return res.status(200).json({ message: "Email is available" }); // ✅ Send response here
+    return res.status(200).json({ message: "Email is available" });
   } catch (error) {
     console.error("Error checking email:", error);
     res.status(500).json({ success: false, message: "Something went wrong, signup failed" });
   }
 };
+
 
 
 // const checkDuplicatedUsername = async (req, res, next) => {
@@ -107,7 +116,7 @@ const checkDuplicatedEmail = async (req, res) => {
 //       return res.status(400).json({ message: "The username already exists" });
     
 //       return res.status(200).json({
-//         successful: true,
+//         success: true,
 //         message: "The username valid",
 //       });
 //   } catch (error) {
@@ -118,58 +127,123 @@ const checkDuplicatedEmail = async (req, res) => {
 // };
 
 const forgotPassword = async (req, res) => {
-  var userFound
+  try {
+    const { email } = req.body;
 
-  if(typeof(req.body.email) !== "undefined")
-      userFound = await User.findOne({ email: req.body.email });
-  
-  if (!userFound) return res.status(400).json({ message: "User Not Found" });
+    // Validate email field
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
 
-  const OTP = generateOTP();
-  console.log(OTP);
-  const currentTime = new Date();
-  userFound.OTP=OTP;
-  userFound.OTPCreatedTime=currentTime;
+    // Check email existence
+    const userFound = await User.findOne({ email });
+    if (!userFound) {
+      return res.status(400).json({ success: false, message: "User not found" });
+    }
 
-  
-  await userFound.save();
-  sendNotificationMail(req.body.email,"Naavi forgot password OTP", "Dear User,<br>Your OTP:"+OTP+" <br>" );
-    //sendOTP(req.body.email, OTP);
-    console.log(userFound._id);
+    // Generate OTP and record timestamp
+    const OTP = generateOTP();
+    const currentTime = new Date();
+    userFound.OTP = OTP;
+    userFound.OTPCreatedTime = currentTime;
+    await userFound.save();
+
+    // Send OTP email
+    await sendNotificationMail(
+      email,
+      "Naavi Password Reset OTP",
+      `Dear ${userFound.username},<br>Your OTP for password reset is: <b>${OTP}</b><br>This OTP expires in 10 minutes.`
+    );
+
+    // Generate JWT (valid for 24 hours)
     const oneDayInSeconds = 86400;
-
     const token = jwt.sign({ id: userFound._id }, process.env.JWT_SECRET_KEY, {
       expiresIn: oneDayInSeconds,
     });
 
-  return res.status(200).json({
-    success: true,
-    token: token,
-    message: "OTP sent to your emailId",
-  });
-}
-const sendConfirmationEmail = async (req, res) => {
-  try {
-    const userFound = await TemporalUser.findOne({ email: req.body.email });
-
-    const token = userFound.emailToken;
-
-    const url = `${
-      process.env.HOST || "localhost:7000"
-    }/api/auth/verification/${token}`;
-
-    await sendConfirmationEmailFunction(url, userFound.email);
+    console.log("Password reset token generated for user:", userFound.email);
 
     return res.status(200).json({
       success: true,
-      message: "Account confirmation email has been send successfully",
+      token,
+      message: "OTP sent successfully to your email address",
     });
-  } catch (error) {
-    console.log(error);
-
-    return res.status(500).json({ message: "something went wrong" });
+  } catch (err) {
+    console.error("Forgot password error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while sending the OTP",
+    });
   }
 };
+const sendConfirmationEmail = async (req, res) => {
+  try {
+    // Find the user by email
+    const userFound = await User.findOne({ email: req.body.email });
+    if (!userFound) return res.status(404).json({ message: "User not found" });
+
+    // Create URL for email confirmation
+    const token = userFound._id; // or use a dedicated field like userFound.emailToken
+    const url = `${process.env.HOST || "http://localhost:4545"}/api/auth/verification/${token}`;
+
+    // Send the email
+    await sendNotificationMail(
+      userFound.email,
+      "Naavi Account Confirmation",
+      `Dear ${userFound.username || "User"},<br>Please confirm your account:<br><a href="${url}">${url}</a>`
+    );
+
+    // Send success response
+    return res.status(200).json({
+      success: true,
+      message: "Account confirmation email has been sent successfully",
+    });
+  } catch (error) {
+    console.error("sendConfirmationEmail error:", error);
+    return res.status(500).json({ message: "Something went wrong", error: error.message });
+  }
+};
+
+// controllers/authControllers.js
+
+const submitForgotPassword = async (req, res) => {
+  try {
+    const { email, code, newPassword } = req.body;
+
+    if (!email || !code || !newPassword) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    // Check OTP validity (10 minutes)
+    const OTP_VALIDITY = 10 * 60 * 1000;
+    if (new Date() - user.OTPCreatedTime > OTP_VALIDITY) {
+      return res.status(400).json({ success: false, message: "OTP expired" });
+    }
+
+    // Check OTP match
+    if (user.OTP !== code) {
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
+    }
+
+    // Update password (pre-save hook will hash)
+    user.password = newPassword;
+    user.OTP = null;
+    user.OTPCreatedTime = null;
+    user.OTPverified = true;
+    await user.save();
+
+    return res.status(200).json({ success: true, message: "Password reset successfully" });
+  } catch (err) {
+    console.error("submitForgotPassword error:", err);
+    return res.status(500).json({ success: false, message: "Something went wrong" });
+  }
+};
+
+
+
 
 
 const login = async (req, res) => {
@@ -179,7 +253,7 @@ const login = async (req, res) => {
     // Validate input fields
     if (!email || !password) {
       return res.status(400).json({
-        successful: false,
+        success: false,
         message: "Both email and password are required",
       });
     }
@@ -189,8 +263,16 @@ const login = async (req, res) => {
 
     if (!user) {
       return res.status(401).json({
-        successful: false,
+        success: false,
         message: "Invalid credentials",
+      });
+    }
+
+    // Check if OTP verification is required
+    if (!user.OTPverified) {
+      return res.status(401).json({
+        success: false,
+        message: "Please verify your email via OTP before logging in",
       });
     }
 
@@ -199,7 +281,7 @@ const login = async (req, res) => {
 
     if (!isMatch) {
       return res.status(401).json({
-        successful: false,
+        success: false,
         message: "Invalid password",
       });
     }
@@ -209,7 +291,7 @@ const login = async (req, res) => {
 
     // Send the response with user data and token
     return res.status(200).json({
-      successful: true,
+      success: true,
       message: "Login successful",
       token,
       user: {
@@ -221,18 +303,19 @@ const login = async (req, res) => {
   } catch (error) {
     console.error("Login Error:", error);
     return res.status(500).json({
-      successful: false,
+      success: false,
       message: "Something went wrong",
     });
   }
 };
+
 
 const logout = async (req, res) => {
   try {
     res.clearCookie("delivery-app-session-token");
     return res
       .status(200)
-      .json({ successfully: true, message: "User has logout successfully" });
+      .json({ success: true, message: "User has logout successfully" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: error });
@@ -245,7 +328,7 @@ const sendResetPasswordEmail = async (req, res) => {
 
     if (!userFound)
       return res.status(422).json({
-        successful: false,
+        success: false,
         message: "Doesn't exits account link with that email",
       });
 
@@ -273,7 +356,7 @@ const sendResetPasswordEmail = async (req, res) => {
     console.log(err);
 
     return res.status(500).json({
-      successful: false,
+      success: false,
       message: "Something went wrong, fail to to send reset password email",
     });
   }
@@ -281,146 +364,131 @@ const sendResetPasswordEmail = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
+    const token = decodeURIComponent(req.params.token.trim());
     const { newPassword, confirmPassword } = req.body;
 
-    if (newPassword !== confirmPassword) {
-      return res
-        .status(400)
-        .json({ successful: false, message: "Passwords don't match" });
-    }
+    if (!newPassword || !confirmPassword)
+      return res.status(400).json({ message: "Password fields are required" });
 
-    if (newPassword.length < 5) {
-      return res
-        .status(400)
-        .json({ successful: false, message: "Password minimum length is 5" });
-    }
+    if (newPassword !== confirmPassword)
+      return res.status(400).json({ message: "Passwords don't match" });
 
-    const token = req.params.token;
-
-    if (!token)
-      return res
-        .status(403)
-        .json({ success: false, message: "No token provided" });
-
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_RESET_FORGOTTEN_PASSWORD_KEY
-    );
-
-    if (!decoded) return res.status(401).json({ message: "Invalid token" });
-
-    if (Date.now() > decoded.expiration) {
-      return res.status(422).json({
-        successful: false,
-        message: "Time to reset password exceeded",
-      });
-    }
-
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
     const userFound = await User.findById(decoded.id);
-
     if (!userFound) return res.status(404).json({ message: "User not found" });
 
-    const hashedPassword = await User.encryptPassword(newPassword);
+    // ✅ LET THE MODEL'S HOOK HANDLE HASHING
+userFound.password = newPassword;
+await userFound.save();
 
-    userFound.password = hashedPassword;
 
-    await userFound.save();
-
-    return res
-      .status(200)
-      .json({ success: true, message: "Password updated successfully" });
-  } catch (err) {
-    console.log(err);
-
-    return res.status(500).json({
-      successful: false,
-      message: "Something went wrong, fail to update password",
+    return res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
     });
+  } catch (err) {
+    console.error("Reset password error:", err);
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
 
+
+
 const verifyOTP = async (req, res) => {
   try {
-    const { email, otp } = req.body; // Extract email and OTP from body
-
-    // Check if email and OTP are provided
+    const { email, otp } = req.body;
     if (!email || !otp) {
       return res.status(400).json({ success: false, message: "Email and OTP are required" });
     }
 
-    // Find user by email
     const userFound = await User.findOne({ email });
     if (!userFound) return res.status(404).json({ message: "User not found" });
 
-    // Check if OTP matches
-    if (otp !== userFound.OTP) {
-      return res.status(400).json({ successful: false, message: "OTP doesn't match" });
+    // Check OTP expiry
+    const OTP_VALIDITY_DURATION = 10 * 60 * 1000; // 10 min
+    if (new Date() - userFound.OTPCreatedTime > OTP_VALIDITY_DURATION) {
+      return res.status(400).json({ success: false, message: "OTP expired." });
     }
 
-    // Mark OTP as verified
+    if (otp !== userFound.OTP) {
+      return res.status(400).json({ success: false, message: "OTP doesn't match" });
+    }
+
+    // Clear and mark OTP verified
     userFound.OTPverified = true;
+    userFound.OTP = null;
+    userFound.OTPCreatedTime = null;
     await userFound.save();
 
     return res.status(200).json({ success: true, message: "OTP Verified successfully" });
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ successful: false, message: "Something went wrong during OTP verification" });
+    return res.status(500).json({ success: false, message: "Something went wrong during OTP verification" });
   }
 };
+
+
 
 const updatePassword = async (req, res) => {
   try {
-    const { password, token } = req.body;
+    const { email, code, newPassword } = req.body;
 
-    if (!token)
-      return res
-        .status(403)
-        .json({ success: false, message: "No token provided" });
+    if (!email || !code || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Email, OTP code, and new password are required",
+      });
+    }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET_KEY
-    );
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
 
-    if (!decoded) return res.status(401).json({ message: "Invalid token" });
+    if (user.OTP !== code) {
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
+    }
 
-    const id = decoded.id;
+    const diff = Date.now() - user.OTPCreatedTime;
+    if (diff > 5 * 60 * 1000) {
+      return res.status(400).json({ success: false, message: "OTP expired" });
+    }
 
-    const userFound = await User.findById(id);
+    // ✅ Let the model handle hashing
+    user.password = newPassword;
+    user.OTP = null;
+    user.OTPCreatedTime = null;
+    await user.save();
 
-    if (!userFound) return res.status(404).json({ message: "User not found" });
+    return res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
+    });
 
-    
-    userFound.password = password;
-
-    await userFound.save();
-
-    return res
-      .status(200)
-      .json({ success: true, message: "Password Updated successfully" });
-  } catch (err) {
-    console.log(err);
-
+  } catch (error) {
+    console.error("Error updating password:", error);
     return res.status(500).json({
-      successful: false,
-      message: "Something went wrong, fail to update password",
+      success: false,
+      message: "Internal server error",
     });
   }
 };
-const getAllUsers = async (req, res) => {
-  try {
-    const users = await User.find(); // Fetch all users from the database
 
-    // Return the users
+
+
+const getAllUsers = async (req, res) => {
+  console.log("GET /users hit");
+  try {
+    const users = await User.find();
     return res.status(200).json({
-      successful: true,
-      data: users, // Send the array of users in the 'data' field
+      success: true,
+      data: users,
       message: "Users fetched successfully",
     });
   } catch (error) {
     console.error("Error fetching all users:", error);
     return res.status(500).json({
-      successful: false,
+      success: false,
       message: "Failed to fetch users",
     });
   }
@@ -448,6 +516,26 @@ const getUserProfilePic = async (req, res) => {
   }
 };
 
+const checkUsername = async (req, res) => {
+  try {
+    // Get username from query string
+    const { username } = req.query;
+    if (!username) {
+      return res.status(400).json({ available: false, message: "No username provided" });
+    }
+    // Find if any user has this username
+    const user = await User.findOne({ username });
+    if (user) {
+      res.json({ available: false });
+    } else {
+      res.json({ available: true });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
 
 
 
@@ -455,7 +543,7 @@ module.exports = {
   signUp,
   forgotPassword,
   login,
-  checkDuplicatedEmail,
+  checkEmailDuplicate,
   sendConfirmationEmail,
   sendResetPasswordEmail,
   resetPassword,
@@ -464,4 +552,7 @@ module.exports = {
   updatePassword,
   getAllUsers,
   getUserProfilePic,
+  submitForgotPassword,
+  checkUsername // <<---- ADD THIS LINE!
 };
+

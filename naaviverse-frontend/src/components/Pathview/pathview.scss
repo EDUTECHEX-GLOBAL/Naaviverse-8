@@ -1,67 +1,205 @@
+/* ---- PREMIUM PATH UI ---- */
+
+.journey-top-area-premium {
+  margin-bottom: 2rem;
+}
+
+.premium-title-small {
+  font-size: 1rem;
+  color: #6b6b6b;
+  margin-bottom: 6px;
+}
+
+.premium-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 6px;
+}
+
+.premium-back {
+  margin-top: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #0066ff;
+  text-decoration: underline;
+}
+.premium-back:hover {
+  opacity: 0.6;
+}
+
+/* ---- GRID ---- */
+.steps-grid-premium {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  margin-top: 1.7rem;
+}
+
+@media (max-width: 1100px) {
+  .steps-grid-premium {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .steps-grid-premium {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+/* ---- CARD ---- */
+.step-card-premium {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 2rem;
+  border: 1px solid #e4e4e4;
+  box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.08);
+  transition: 0.25s ease;
+  position: relative;
+  min-height: 190px;
+}
+
+.step-card-premium:hover {
+  transform: translateY(-6px);
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* BUBBLE NUMBER */
+.step-number .bubble {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #0066ff;
+  color: #fff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+/* TEXT */
+.step-title-premium {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #222;
+}
+
+.step-desc-premium {
+  font-size: 0.95rem;
+  color: #6b6b6b;
+  line-height: 1.55;
+}
+
+.premium-error {
+  font-size: 1rem;
+  color: crimson;
+  font-weight: 600;
+}
+
+
 .pathviewPage {
-  width: 100%;
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  width: 100%;
+}
 
-  .pathviewNav {
-    width: 100%;
-    height: 3rem;
-    border-bottom: 0.5px solid #e5e5e5;
+/* Header */
+.pathviewNav {
+  width: 100%;
+  height: 3rem;
+  border-bottom: 0.5px solid #e5e5e5;
+  display: flex;
+  align-items: center;
+
+  .name-div {
+    width: 30%;
+    padding-left: 35px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .description-div {
+    width: 70%;
+    padding-left: 35px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+}
+
+/* Scrollable list */
+.pathviewContent {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 20px;
+
+  .each-pv-data {
     display: flex;
-    align-items: center;
+    border-bottom: 0.5px solid #e5e5e5;
+    cursor: pointer;
+    transition: 0.2s ease;
 
-    .name-div {
+    .each-pv-name {
       width: 30%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      padding-left: 35px;
-      font-weight: 400;
-      font-size: 0.8rem;
+      padding: 1.5rem 0 1.5rem 35px;
+      line-height: 1.6;
+      font-size: 0.85rem;
+      text-transform: capitalize;
     }
 
-    .description-div {
+    .each-pv-desc {
       width: 70%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      padding-left: 35px;
-      font-weight: 400;
-      font-size: 0.8rem;
+      padding: 1.5rem 35px;
+      line-height: 1.6;
+      font-size: 0.85rem;
+      font-weight: 300;
+    }
+
+    &:hover {
+      background: rgba(237, 237, 237, 0.4);
+    }
+  }
+}
+
+/* Pagination bar (fixed at bottom) */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 0;
+  border-top: 1px solid #e5e5e5;
+  background: #fff;
+
+  button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    background: #0d6efd;
+    color: white;
+    border: none;
+    cursor: pointer;
+
+    &:disabled {
+      background: #d6d6d6;
+      cursor: not-allowed;
     }
   }
 
-  .pathviewContent {
-    width: 100%;
-    height: calc(100% - 3rem);
-    overflow-y: scroll;
-
-    .each-pv-data {
-      width: 100%;
-      border-bottom: 0.5px solid #e5e5e5;
-      display: flex;
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: all ease 0.2s;
-
-      .each-pv-name {
-        width: 30%;
-        padding: 2rem 0 2rem 35px;
-        line-height: 1.6;
-      }
-
-      .each-pv-desc {
-        width: 70%;
-        padding: 2rem 0 2rem 0;
-        font-weight: 300;
-        padding-left: 35px;
-        line-height: 1.6;
-        // text-transform: none;
-        padding-right: 1rem;
-      }
-
-      &:hover {
-        background: rgba(237, 237, 237, 0.368627451);
-      }
-    }
+  span {
+    font-weight: 500;
+    font-size: 0.9rem;
   }
+}
+
+.no-data {
+  text-align: center;
+  height: 20vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1rem;
 }

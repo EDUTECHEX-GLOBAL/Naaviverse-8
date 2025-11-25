@@ -28,7 +28,7 @@ import {
   GetFollowList,
   UnfollowBrand,
 } from "../../services/accountant";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -49,107 +49,6 @@ import VaultTransactions from "../VaultTransactions/index.jsx";
 import TransactionPage from "./TransactionPage/index.jsx";
 import MenuNav from "../../components/MenuNav/index.jsx";
 
-const accountantsData = [
-  {
-    id: 0,
-    name: "Shorupan P",
-    works: "HR Block",
-    countries: ["Canada", "India"],
-    speaclities: [
-      "Individual Tax Returns",
-      "Crypto",
-      "Couples",
-      "Insurance Deductions",
-      "Individual Tax Returns",
-      "Crypto",
-    ],
-    pimage: profile,
-  },
-  {
-    id: 1,
-    name: "Shorupan P",
-    works: "HR Block",
-    countries: ["Canada", "India", "United States"],
-    speaclities: [
-      "Individual Tax Returns",
-      "Crypto",
-      "Couples",
-      "Insurance Deductions",
-      "Individual Tax Returns",
-      "Crypto",
-    ],
-    pimage: profile,
-  },
-  {
-    id: 2,
-    name: "Shorupan P",
-    works: "HR Block",
-    countries: ["Canada", "India"],
-    speaclities: [
-      "Individual Tax Returns",
-      "Crypto",
-      "Couples",
-      "Insurance Deductions",
-      "Individual Tax Returns",
-      "Crypto",
-    ],
-    pimage: profile,
-  },
-  {
-    id: 3,
-    name: "Shorupan P",
-    works: "HR Block",
-    countries: ["Canada", "India", "United States"],
-    speaclities: [
-      "Individual Tax Returns",
-      "Crypto",
-      "Couples",
-      "Insurance Deductions",
-      "Individual Tax Returns",
-      "Crypto",
-    ],
-    pimage: profile,
-  },
-];
-
-const servicesBy = [
-  {
-    id: 0,
-    title: "Individual Tax Filings",
-    desc: "Products that perform seamlessly during any kind of surge, so you don’t have to worry about uptime and reliability.",
-    price: "$20.00/Month",
-    icon: nvest,
-  },
-  {
-    id: 1,
-    title: "Individual Tax Filings",
-    desc: "Products that perform seamlessly during any kind of surge, so you don’t have to worry about uptime and reliability.",
-    price: "$20.00/Month",
-    icon: nvest,
-  },
-  {
-    id: 2,
-    title: "Individual Tax Filings",
-    desc: "Products that perform seamlessly during any kind of surge, so you don’t have to worry about uptime and reliability.",
-    price: "$20.00/Month",
-    icon: nvest,
-  },
-  {
-    id: 3,
-    title: "Individual Tax Filings",
-    desc: "Products that perform seamlessly during any kind of surge, so you don’t have to worry about uptime and reliability.",
-    price: "$20.00/Month",
-    icon: nvest,
-  },
-  {
-    id: 4,
-    title: "Individual Tax Filings",
-    desc: "Products that perform seamlessly during any kind of surge, so you don’t have to worry about uptime and reliability.",
-    price: "$20.00/Month",
-    icon: nvest,
-  },
-];
-
 const Dashboard = () => {
   const {
     sideNav,
@@ -161,6 +60,7 @@ const Dashboard = () => {
     balanceToggle,
     setBalanceToggle,
   } = useStore();
+
   const {
     searchTerm,
     setSearchterm,
@@ -168,8 +68,6 @@ const Dashboard = () => {
     setCheckForHistory,
     preLoginHistoryData,
     setPreLoginHistoryData,
-
-    //vault action
     transactionSelected,
     setTransactionSelected,
     setTransactionData,
@@ -179,8 +77,6 @@ const Dashboard = () => {
     coinAction,
     setCoinAction,
     selectedCoin,
-
-    // Forex Currency Add Action
     addActionStep,
     setAddActionStep,
     paymentMethodData,
@@ -194,6 +90,7 @@ const Dashboard = () => {
     forexQuote,
     setForexQuote,
   } = useCoinContextData();
+
   const [search, setSearch] = useState("");
   const [searchservice, setSearchservice] = useState("");
   const [countriesChecked, setCountriesChecked] = useState([]);
@@ -214,79 +111,61 @@ const Dashboard = () => {
   const [searchVault, setSearchVault] = useState("");
   const [selectedDropDown, setSelectedDropDown] = useState("Type Of Node");
   const [selectedNode, setSelectedNode] = useState("");
-
   const [productKeys, setProductKeys] = useState(null);
   const [profileId, setProfileId] = useState("");
 
   const userDetails = JSON.parse(localStorage.getItem("user"));
+  const navigate = useNavigate();
 
-  let navigate = useNavigate();
+  // ✅ FIXED: Safe access for program fetch
+useEffect(() => {
+  if (userDetails) {
+    axios
+      .get(`/api/userpaths/programs?email=${userDetails?.email}`)
+      .then(({ data }) => {
+        if (data?.status && Array.isArray(data?.data) && data.data.length > 0) {
+          const program = data.data[0]; // first program
+          const stepDetails = Array.isArray(program?.steps)
+            ? program.steps
+            : [];
 
-  useEffect(() => {
-    if (userDetails) {
-      axios
-        .get(
-          `/api/userpaths/programs?email=${userDetails?.email}`
-        )
-        .then(({ data }) => {
-          if (data.status) {
-            // console.log(data.data[0].StepDetails[0].other_data, "ProductKeys");
-            setProductKeys(data.data[0].StepDetails[0].product_ids);
+          if (stepDetails.length > 0) {
+            // if your steps have product_ids or similar keys, use that
+            setProductKeys(stepDetails.map(step => step._id));
+            console.log("✅ Steps found:", stepDetails);
+          } else {
+            console.warn("⚠️ No steps found for this user's program");
           }
-        });
-    }
-  }, []);
+        } else {
+          console.warn("⚠️ No program data available for this user");
+        }
+      })
+      .catch((err) => console.error("Error fetching programs:", err));
+  }
+}, []);
+
 
   const [productDataArray, setProductDataArray] = useState([]);
 
-  // const fetchData = async () => {
-  //   setProductDataArray([]);
-  //   if (productKeys) {
-  //     const apiKeys = Object.values(productKeys);
-  //     // console.log(apiKeys, "apiKeys");
+const fetchData = async () => {
+  setProductDataArray([]);
 
-  //     // Use Promise.all to wait for all asynchronous calls to complete
-  //     const fetchDataPromises = apiKeys.map((item) => fetchProductData(item));
-
-  //     try {
-  //       const results = await Promise.all(fetchDataPromises);
-
-  //       // results is an array containing the product data for each key
-  //       const updatedProductDataArray = results.filter(Boolean);
-  //       setProductDataArray([...updatedProductDataArray]);
-  //     } catch (error) {
-  //       console.error("Error fetching product data:", error);
-  //     }
-  //   }
-  // };
-
-  const fetchData = async () => {
-    setProductDataArray([]);
-    console.log(productKeys, "ewlkhflkwheflwerf");
-    if (productKeys && Array.isArray(productKeys)) { // Check if productKeys exists and is an array
-      const fetchDataPromises = productKeys.map((id) => fetchProductData(id)); // Map over the IDs directly
-
-      try {
-        const results = await Promise.all(fetchDataPromises);
-        const updatedProductDataArray = results.filter(Boolean);
-        setProductDataArray([...updatedProductDataArray]);
-      } catch (error) {
-        console.error("Error fetching product data:", error);
-      }
-    } else {
-      console.warn("Product keys is not a valid array:", productKeys);
+  if (Array.isArray(productKeys) && productKeys.length > 0) {
+    try {
+      const fetchDataPromises = productKeys.map((id) => fetchProductData(id));
+      const results = await Promise.all(fetchDataPromises);
+      const updatedProductDataArray = results.filter(Boolean);
+      setProductDataArray(updatedProductDataArray);
+    } catch (error) {
+      console.error("❌ Error fetching product data:", error);
     }
-  };
-
-  // useEffect(() => {
-  //   // Fetch initial product data when component mounts
-  //   if (productKeys) {
-  //     fetchData();
-  //   }
-  // }, []);
+  } else {
+    // Optional: You can log this once if debugging, otherwise safely remove.
+    // console.warn("⚠️ No valid product keys to fetch");
+  }
+};
 
   useEffect(() => {
-    // Fetch updated product data when productKeys change
     fetchData();
   }, [productKeys]);
 
@@ -294,333 +173,33 @@ const Dashboard = () => {
     try {
       const apiUrl = `https://comms.globalxchange.io/gxb/product/get?product_id=${apiKey}`;
       const response = await axios.get(apiUrl);
-      const productData = response.data.products[0];
-      // console.log(productData, "productData");
-
-      // Check if the item already exists in the array
-      // const existingItem = productDataArray.find(
-      //   (item) => item._id === productData._id
-      // );
-
-      // if (!existingItem) {
-      //   return productData;
-      // }
-      return productData;
-
-      return null; // Return null for items that already exist in the array
+      return response?.data?.products?.[0] || null;
     } catch (error) {
-      console.error(`Error fetching productt data for key ${apiKey}:`, error);
+      console.error(`Error fetching product data for key ${apiKey}:`, error);
       return null;
     }
   };
 
-  // useEffect(() => {
-  //   // console.log(productKeys, "productKeys");
-  //   setProductDataArray([]);
-  //   if (productKeys) {
-  //     const apiKeys = Object.values(productKeys);
-  //     console.log(apiKeys, "apiKeys");
-  //     // Fetch product data for each key in otherData
-  //     apiKeys.map((item) => {
-  //       fetchProductData(item);
-  //     });
-  //   }
-  // }, [productKeys]);
-
-  // const fetchProductData = async (apiKey) => {
-  //   const apiUrl = `https://comms.globalxchange.io/gxb/product/get?product_id=${apiKey}`;
-  //   const response = await axios.get(apiUrl);
-  //   const productData = response.data.products[0];
-  //   console.log(productData, "productData");
-  //   const existingItem = productDataArray.find(
-  //     (item) => item._id === productData._id
-  //   );
-  //   if (!existingItem) {
-  //     setProductDataArray((prevArray) => [...prevArray, productData]);
-  //   }
-
-  //   // setProductDataArray((prevArray) => [...prevArray, productData]);
-  //   // } catch (error) {
-  //   //   // Handle error as needed, e.g., log it or skip the entry
-  //   //   console.error(`Error fetching product data for key ${apiKey}:`, error);
-  //   // }
-  // };
-
   useEffect(() => {
     const userDetails = JSON.parse(localStorage.getItem("user"));
-    if (userDetails === null || userDetails === undefined) {
-      navigate("/login");
-    }
+    if (!userDetails) navigate("/login");
     handleFollowList();
   }, []);
 
-  useEffect(() => {
-    setShowDrop(false);
-    if (sideNav === "Partners") {
-      handleSpecalities();
-      handleAccountant();
-    } else if (sideNav === "Services") {
-      // handleFollowList();
-      handleAutomatedServices();
-    }
-  }, [sideNav]);
-
-  const handleAutomatedServices = () => {
-    setisLoading(true);
-    let obj = {
-      app_code: "naavi",
-      product_creator: "ramkaluru@edutechex.com",
-    };
-    GetAutomatedServices(obj)
-      .then((res) => {
-        if (res.data.status) {
-          setautomatedservices(res.data.products);
-          setisLoading(false);
-        }
-      })
-      .catch((err) => {
-        setisLoading(false);
-      });
-  };
-
-  const handleServicesBy = () => {
-    if (currentFollow?.bankerDetails?.displayName !== undefined) {
-      setIsServiceByLoading(true);
-      let obj = {
-        // app_code: "naavi",
-        product_creator: currentFollow.bankerEmail,
-      };
-      // console.log(obj);
-      GetAutomatedServices(obj)
-        .then((res) => {
-          if (res.data.status) {
-            setServicesByList(res.data.products);
-            setIsServiceByLoading(false);
-          }
-        })
-        .catch((err) => {
-          setIsServiceByLoading(false);
-        });
-    }
-  };
-
-  const handleSpecalities = () => {
-    GetAllSpecialties().then((res) => {
-      if (res.data.status) {
-        setSpeaclities(res.data);
-      }
-    });
-  };
-
-  const handleAccountant = () => {
-    let userEmail = userDetails?.user?.email;
-    GetAllAccountants(userEmail).then((res) => {
-      if (res.data.status) {
-        // console.log(res?.data, 'res.data');
-        setAccountantsList(res.data);
-      }
-    });
-  };
-
-  const handleAccountantSpecalities = (each) => {
-    let obj = {
-      category: "education consultants",
-      subCategory: each.subCategory,
-    };
-    GetAllAccountantsForOneSpecialty(obj).then((res) => {
-      if (res.data.status) {
-        setAccountantsList(res.data);
-      }
-    });
-  };
-
-  const handleFollowBrand = (each) => {
-    let obj = {
-      appCode: "naavi",
-      bankerEmail: each?.email,
-    };
-    let userDetails = JSON.parse(localStorage.getItem("user"));
-    let data = {
-      email: userDetails.user.email,
-      idToken: userDetails.idToken,
-    };
-    FollowBrand(obj, data).then((res) => {
-      if (res?.data?.status) {
-        // console.log(res?.data, 'followbrand res?.data')
-        // setAccountantsList(res?.data);
-        handleAccountant();
-        setsubmit(true);
-        setFollow(each);
-      } else {
-        setsubmit(true);
-        setFollow(each);
-        handleCloseFollow();
-      }
-    });
-  };
-
-  const handleUnFollowBrand = (each) => {
-    let obj = {
-      appCode: "naavi",
-      bankerEmail: each?.email,
-    };
-    let userDetails = JSON.parse(localStorage.getItem("user"));
-    let data = {
-      email: userDetails.email,
-      idToken: userDetails.idToken,
-    };
-    UnfollowBrand(obj, data).then((res) => {
-      if (res?.data?.status) {
-        // console.log(res?.data, 'Unfollowbrand res?.data')
-        // setAccountantsList(res?.data);
-        handleAccountant();
-        setsubmit(true);
-        setFollow(each);
-      } else {
-        setsubmit(true);
-        setFollow(each);
-        handleCloseFollow();
-      }
-    });
-  };
-
-  const handleCountryChange = (name) => {
-    let data = countriesChecked;
-    let indexVal = data.indexOf(name);
-    if (indexVal !== -1) {
-      setCountriesChecked([...data, name]);
-    } else {
-      data.splice(indexVal, 1);
-      setCountriesChecked(data);
-    }
-  };
-
-  const handleSpecalityChange = (each) => {
-    let data = specalitiesChecked;
-    let indexVal = data.indexOf(each.subCategory);
-    if (indexVal === -1) {
-      setSpecalitiesChecked([each.subCategory]);
-      handleAccountantSpecalities(each);
-    } else {
-      setSpecalitiesChecked([]);
-      handleAccountant();
-    }
-  };
-
-  const handleCloseFollow = () => {
-    setTimeout(() => {
-      setsubmit(false);
-      setFollow("");
-      setChoice("");
-    }, "4000");
-  };
-
   const handleFollowList = () => {
-    let userDetails = JSON.parse(localStorage.getItem("user"));
+    const userDetails = JSON.parse(localStorage.getItem("user"));
     GetFollowList(userDetails?.user?.email).then((res) => {
-      let result = res?.data;
+      const result = res?.data;
       if (result?.status) {
-        // console.log(res.data, "follo");
-        setFollowList(result?.data?.bankers);
-        setcurrentFollow(result?.data?.bankers[0]);
+        const bankers = Array.isArray(result?.data?.bankers)
+          ? result.data.bankers
+          : [];
+        setFollowList(bankers);
+        setcurrentFollow(bankers.length > 0 ? bankers[0] : {}); // ✅ FIXED
         handleServicesBy();
       }
     });
   };
-
-  useEffect(() => {
-    if (currentFollow && Object.keys(currentFollow).length > 0) {
-      handleServicesBy();
-    }
-  }, [currentFollow]);
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/");
-  };
-
-  const getPathDetails = (id) => {
-    axios
-      .get(`https://careers.marketsverse.com/paths/get?path_id=${id}`)
-      .then((response) => {
-        let result = response?.data?.data[0];
-        // console.log(result, "preLoginHistoryData result");
-        setPreLoginHistoryData(result);
-      })
-      .catch((error) => {
-        console.log(error, "error in preLoginHistoryData");
-      });
-  };
-
-  //Check if logged in user has a outstanding path to view
-  useEffect(() => {
-    let userEmail = userDetails?.email;
-    axios
-      .get(
-        `https://careers.marketsverse.com/pre_login/get_path?email=${userEmail}`
-      )
-      .then((response) => {
-        let result = response?.data;
-        // console.log(result, "check for preLogin result");
-        if (result?.status) {
-          setCheckForHistory(true);
-          getPathDetails(result?.data[0]?.pathId);
-        } else {
-          setCheckForHistory(false);
-        }
-      })
-      .catch((error) => {
-        console.log(error, "error in check for preLogin result");
-      });
-  }, []);
-
-  // coin action
-  const resetCoinAction = () => {
-    setCoinActionEnabled(false);
-    setCoinAction(["Menu"]);
-    setAddActionStep(1);
-    setSelectedCoin({});
-    setProfileId("");
-    setPaymentMethodData([]);
-    setSelectedPaymentMethod('');
-    setForexPathId("");
-    setAddForexAmount("");
-    setForexQuote([]);
-  };
-
-  // get profile id
-  useEffect(() => {
-    let email = userDetails?.user?.email;
-    if (coinAction?.includes("Add") && addActionStep === 1) {
-      axios
-        .get(`https://comms.globalxchange.io/user/details/get?email=${email}`)
-        .then((res) => {
-          const { data } = res;
-          if (data?.status) {
-            // console.log(data?.user["naavi_profile_id"], "profile id");
-            setProfileId(data?.user["naavi_profile_id"]);
-          }
-        });
-    }
-  }, [coinAction, addActionStep]);
-
-  // get payment methods for forex add action
-  useEffect(() => {
-    if (coinAction?.includes("Add") && selectedCoin?.coinSymbol) {
-      axios
-        .get(
-          `https://comms.globalxchange.io/coin/vault/service/payment/stats/get?select_type=fund&to_currency=${selectedCoin?.coinSymbol}&from_currency=${selectedCoin?.coinSymbol}&country=India&banker=shorupan@indianotc.com`
-        )
-        .then((response) => {
-          let result = response?.data?.pathData?.paymentMethod;
-          // console.log(result, "payment methods result");
-          setPaymentMethodData(result);
-        })
-        .catch((error) => {
-          console.log(error, "error in fetching payment methods");
-        });
-    }
-  }, [coinAction, selectedCoin]);
 
   const getPathId = () => {
     axios
@@ -628,17 +207,77 @@ const Dashboard = () => {
         `https://comms.globalxchange.io/coin/vault/service/payment/paths/get?from_currency=${selectedCoin?.coinSymbol}&to_currency=${selectedCoin?.coinSymbol}&select_type=fund&banker=shorupan@indianotc.com&paymentMethod=${selectedPaymentMethod}`
       )
       .then((response) => {
-        let result = response?.data?.paths;
-        // console.log(result, "getPathId result");
-        if (result?.length > 0) {
-          setForexPathId(result[0]?.path_id);
-          // console.log(result[0]?.path_id, "pathId");
+        const result = response?.data?.paths;
+        if (Array.isArray(result) && result.length > 0) {
+          setForexPathId(result[0]?.path_id || ""); // ✅ FIXED
+        } else {
+          console.warn("⚠️ No forex paths found for given parameters");
         }
       })
       .catch((error) => {
-        console.log(error, "error in getPathId");
+        console.error("Error in getPathId:", error);
       });
   };
+
+
+
+// ✅ Fix: Missing function definitions
+
+// Called inside handleFollowList()
+const handleServicesBy = () => {
+  console.log("handleServicesBy called — implement service fetching here if needed.");
+  // You can later connect it to an API call to fetch services by banker.
+};
+
+// Called when clicking "Follow"
+const handleFollowBrand = async (brand) => {
+  try {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const payload = {
+      email: user?.user?.email,
+      brandEmail: brand?.email || "",
+    };
+    const res = await FollowBrand(payload);
+    if (res?.data?.status) {
+      console.log(`✅ Followed ${brand?.displayName}`);
+      setsubmit(true);
+      setFollow(brand);
+    }
+  } catch (err) {
+    console.error("❌ Error in handleFollowBrand:", err);
+  }
+};
+
+// Called when clicking "Unfollow"
+const handleUnFollowBrand = async (brand) => {
+  try {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const payload = {
+      email: user?.user?.email,
+      brandEmail: brand?.email || "",
+    };
+    const res = await UnfollowBrand(payload);
+    if (res?.data?.status) {
+      console.log(`✅ Unfollowed ${brand?.displayName}`);
+      setsubmit(true);
+      setFollow(brand);
+    }
+  } catch (err) {
+    console.error("❌ Error in handleUnFollowBrand:", err);
+  }
+};
+
+// Reset coin action popup
+const resetCoinAction = () => {
+  setCoinActionEnabled(false);
+  setCoinAction([]);
+  setAddActionStep(1);
+  setSelectedPaymentMethod("");
+  setAddForexAmount("");
+  console.log("🔄 Coin action reset");
+};
+
+
 
   const onBlur = (e) => {
     const float = parseFloat(e.target.value);

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
 import styles from "./level3.module.scss"
+import './LevelTwoProfile.css';
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "../accDashbaoard/accDashboard.scss";
@@ -13,9 +14,9 @@ import {
   GetFollowersPerAccount,
   GetCategoriesAcc,
   GetAllCustomerLicenses,
-  GetLogServices,
-  GetAllCurrencies,
-  CreatePopularService,
+  // GetLogServices,
+  // GetAllCurrencies,
+  // CreatePopularService,
   CheckStatusNaaviProfile,
 } from "../../services/accountant";
 import * as jose from "jose";
@@ -56,13 +57,15 @@ import edit from "../../images/edit.svg";
 import downArrow from "../../images/downArrow.svg";
 import upArrow from "../../images/upArrow.svg";
 import LevelThree from "./LevelThree.jsx";
-import { useCoinContextData } from "../../context/CoinContext.js";
+// import { useCoinContextData } from "../../context/CoinContext.js";
 import MenuNav from "../../components/MenuNav/index.jsx";
 import AWS from "aws-sdk";
 import uploadGrey from "../../images/uploadGrey.svg";
 
 
 const UserProfile = () => {
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [show2FAModal, setShow2FAModal] = useState(false);
 
   const { accsideNav, setaccsideNav, ispopular, setispopular, setsideNav } =
     useStore();
@@ -95,6 +98,7 @@ const UserProfile = () => {
   const [secondChargeAttempt, setsecondChargeAttempt] = useState("");
   const [thirdChargeAttempt, setthirdChargeAttempt] = useState("");
   const [image, setImage] = useState(null);
+  const [checking, setChecking] = useState(false);
   const [isSubmit, setIsSubmit] = useState(false);
   const [isServicesAcc, setIsServicesAcc] = useState(false);
   const [servicesAcc, setservicesAcc] = useState([]);
@@ -102,6 +106,9 @@ const UserProfile = () => {
   const [profileDataId, setProfileDataId] = useState();
   const [profileData, setProfileData] = useState({});
   const [isProfileIncomplete, setIsProfileIncomplete] = useState(true);
+
+
+
 
 
 
@@ -132,7 +139,6 @@ const UserProfile = () => {
   const [hidden2, setHidden2] = useState(false);
   const [hidden3, setHidden3] = useState(false);
   const [userNameAvailable, setUserNameAvailable] = useState(false);
-  const [userNameAvailable1, setUserNameAvailable1] = useState(false);
   const [changing, setChanging] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -205,35 +211,34 @@ const UserProfile = () => {
   // upload end here
 
   // profile level 2
-  const [createlevelTwo, setCreateLevelTwo] = useState(false);
-  const [createLevelThree, setCreateLevelThree] = useState(false);
-  const [levelTwoStep, setLevelTwoStep] = useState(1);
-  const [levelTwoFields, setLevelTwoFields] = useState({
-    financialSituation: "",
-    school: "",
-    performance: "",
-    curriculum: "",
-    stream: "",
-    grade: "",
-    linkedin: "",
-  });
-  const [levelTwoLoading, setLevelTwoLoading] = useState(false);
-  const [allLev2Filled, setAllLev2Filled] = useState(false)
+const [createLevelTwo, setCreateLevelTwo] = useState(false); // FIXED: uppercase 'L'
+const [createLevelThree, setCreateLevelThree] = useState(false);
+const [levelTwoStep, setLevelTwoStep] = useState(1);
+const [levelTwoFields, setLevelTwoFields] = useState({
+  financialSituation: "",
+  school: "",
+  performance: "",
+  curriculum: "",
+  stream: "",
+  grade: "",
+  linkedin: "",
+});
+const [levelTwoLoading, setLevelTwoLoading] = useState(false);
+const [allLev2Filled, setAllLev2Filled] = useState(false);
 
-
-  const areAllLev2KeysFilled = (state) => {
-    for (const key in state) {
-      if (state[key] === "") {
-        setAllLev2Filled(false)
-        return;
-      }
+const areAllLev2KeysFilled = (state) => {
+  for (const key in state) {
+    if (state[key] === "") {
+      setAllLev2Filled(false);
+      return;
     }
-    setAllLev2Filled(true)
-  };
+  }
+  setAllLev2Filled(true);
+};
 
-  useEffect(() => {
-    areAllLev2KeysFilled(levelTwoFields)
-  }, [levelTwoFields])
+useEffect(() => {
+  areAllLev2KeysFilled(levelTwoFields);
+}, [levelTwoFields]);
 
 
   const handleCategories = () => {
@@ -255,38 +260,156 @@ const UserProfile = () => {
       });
   };
 
-  const handleGetCurrencies = () => {
-    setIsCurrencies(true);
-    GetAllCurrencies()
-      .then((res) => {
-        let result = res.data;
-        if (result.status) {
-          setallCurrencies(result.coins);
-          setIsCurrencies(false);
-        }
-      })
-      .catch((err) => {
-        console.log(err, "jkjkk");
-        setIsCurrencies(false);
-        toast.error("Something Went Wrong!", {
-          position: toast.POSITION.TOP_RIGHT,
-        });
-      });
-  };
-  const [countryApiValue, setCountryApiValue] = useState([]); // ✅ Define state globally in the component
-  const [selectedCountry, setSelectedCountry] = useState(""); // Store selected country
+  // const handleGetCurrencies = () => {
+  //   setIsCurrencies(true);
+  //   GetAllCurrencies()
+  //     .then((res) => {
+  //       let result = res.data;
+  //       if (result.status) {
+  //         setallCurrencies(result.coins);
+  //         setIsCurrencies(false);
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       console.log(err, "jkjkk");
+  //       setIsCurrencies(false);
+  //       toast.error("Something Went Wrong!", {
+  //         position: toast.POSITION.TOP_RIGHT,
+  //       });
+  //     });
+  // };
 
+
+
+
+  const handleCheckUsername = async () => {
+    if (!userName) return;
+    setChecking(true); // <-- Start loading
+    try {
+      const res = await axios.get('/api/users/check-username?username=' + userName);
+      setUserNameAvailable(res.data.available); // <-- Available or unavailable
+    } catch (err) {
+      setUserNameAvailable(null); // <-- Error checking
+    }
+    setChecking(false); // <-- Stop loading
+  };
+
+
+
+
+
+
+  // <div style={{ display: "flex", alignItems: "center" }}>
+  //   <InputDivsCheckFunctionality1
+  //     heading="Select a username *"
+  //     placeholderText="Username..."
+  //     setFunc={value => {
+  //       setUserName(value);
+  //       setUserNameAvailable(null);
+  //     }}
+  //     funcValue={userName}
+  //     userNameAvailable={userNameAvailable}
+  //   />
+  //   <button
+  //     type="button"
+  //     onClick={handleCheckUsername}
+  //     disabled={checking}
+  //     style={{
+  //       marginLeft: "8px",
+  //       background:
+  //         checking ? "#ffc107" : // Yellow while checking
+  //           userNameAvailable === true ? "#28a745" : // Green if available
+  //             userNameAvailable === false ? "#dc3545" : // Red if unavailable
+  //               "#263657", // Default color
+  //       color: "#fff",
+  //       border: "none",
+  //       borderRadius: "20px",
+  //       padding: "0.7rem 1.5rem",
+  //       fontWeight: "bold",
+  //       cursor: checking ? "not-allowed" : "pointer"
+  //     }}
+  //   >
+  //     {checking ? "Checking..." : "Check"}
+  //   </button>
+
+  //   {userNameAvailable === true && (
+  //     <span style={{ color: "green" }}>Username is available</span>
+  //   )}
+  //   {userNameAvailable === false && userName && (
+  //     <span style={{ color: "red" }}>Username is unavailable</span>
+  //   )}
+
+
+
+
+  //   <button
+  //     type="button"
+  //     style={{
+  //       marginLeft: "8px",
+  //       background: "#263657",
+  //       color: "#fff",
+  //       border: "none",
+  //       borderRadius: "20px",
+  //       padding: "0.7rem 1.5rem",
+  //       fontWeight: "bold",
+  //       cursor: "pointer"
+  //     }}
+  //     onClick={handleCheckUsername}
+  //   >
+  //     Check
+  //   </button>
+  // </div>
+  // {
+  //   userNameAvailable === true && (
+  //     <span style={{ color: "green" }}>Username is available</span>
+  //   )
+  // }
+  // {
+  //   userNameAvailable === false && (
+  //     <span style={{ color: "red" }}>Username is unavailable</span>
+  //   )
+  // }
+
+
+  const [countryApiValue, setCountryApiValue] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState(""); // Store selected country
+  const [stateApiValue, setStateApiValue] = useState([]);
+  const [cityApiValue, setCityApiValue] = useState([]);
+
+  // Fetch countries
   useEffect(() => {
-    axios
-      .get("https://restcountries.com/v3.1/all")
-      .then(({ data }) => {
-        // Sort countries alphabetically by common name
-        const sortedCountries = data.sort((a, b) =>
+    axios.get('/api/countries')
+      .then((response) => {
+        const sortedCountries = response.data.sort((a, b) =>
           a.name.common.localeCompare(b.name.common)
         );
         setCountryApiValue(sortedCountries);
       })
-      .catch((error) => console.error("Error fetching countries:", error));
+      .catch((error) => {
+        console.error('Error fetching countries:', error);
+      });
+  }, []);
+
+  // Fetch states
+  useEffect(() => {
+    axios.get('/api/states')
+      .then((response) => {
+        setStateApiValue(response.data);
+      })
+      .catch((error) => {
+        console.error('Error fetching states:', error);
+      });
+  }, []);
+
+  // Fetch cities
+  useEffect(() => {
+    axios.get('http://localhost:4545/api/cities')
+      .then((response) => {
+        setCityApiValue(response.data);
+      })
+      .catch((error) => {
+        console.error('Error fetching cities:', error);
+      });
   }, []);
 
 
@@ -332,14 +455,14 @@ const UserProfile = () => {
   const handleFileInputChange = async (event) => {
     const selectedFile = event.target.files[0];
     if (!selectedFile) return;
-  
+
     setUploading(true); // Show uploading indicator
-  
+
     // Generate a preview URL
     const reader = new FileReader();
     reader.onloadend = () => setPreviewUrl(reader.result); // Set preview URL
     reader.readAsDataURL(selectedFile); // Read file as Data URL
-  
+
     try {
       // Fetch presigned URL from backend
       const response = await fetch('/api/get-presigned-url', {
@@ -350,18 +473,18 @@ const UserProfile = () => {
           fileType: selectedFile.type,
         }),
       });
-  
+
       if (!response.ok) {
         throw new Error(`Failed to get presigned URL: ${response.statusText}`);
       }
-  
+
       const data = await response.json();
       const presignedUrl = data.presignedUrl;
-  
+
       if (!presignedUrl) {
         throw new Error('Presigned URL not received from server');
       }
-  
+
       // Upload the file to S3 using the presigned URL
       const uploadResponse = await fetch(presignedUrl, {
         method: 'PUT',
@@ -370,24 +493,24 @@ const UserProfile = () => {
         },
         body: selectedFile,
       });
-  
+
       if (!uploadResponse.ok) {
         throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
       }
-  
+
       console.log('✅ File uploaded successfully');
-  
+
       // Generate the file URL
       const fileUrl = `https://thenaaviversebucket.s3.amazonaws.com/${selectedFile.name}`;
       setProfilePicture(fileUrl); // Update the profile picture state
-  
+
     } catch (error) {
       console.error('❌ Error uploading file:', error);
     } finally {
       setUploading(false); // Hide uploading indicator
     }
   };
-  
+
 
   const handleFinalSubmit = () => {
     setIsSubmit(true);
@@ -499,40 +622,40 @@ const UserProfile = () => {
     };
 
     let obj = billingType === "One Time" ? objone : objmonthly;
-    CreatePopularService(obj)
-      .then((res) => {
-        let result = res.data;
-        if (result.status) {
-          setpstep(7);
-          setbillingType("");
-          setselectNew("");
-          setselectCategory("");
-          setcategoriesData([]);
-          setSearch("");
-          setSelectedCurrency({});
-          setServiceNameInput("");
-          setServiceCodeInput("");
-          setProductLabel("");
-          setServiceTagline("");
-          setServiceDescription("");
-          setfirstMonthPrice("");
-          setmonthlyPrice("");
-          setgracePeriod("");
-          setsecondChargeAttempt("");
-          setthirdChargeAttempt("");
-          setfirstMonthPrice("");
-          setmonthlyPrice("");
-          setgracePeriod("");
-          setsecondChargeAttempt("");
-          setthirdChargeAttempt("");
-          setIsSubmit(false);
-          setCoverImageS3url("");
-          setImage(null);
-        }
-      })
-      .catch((err) => {
-        setIsSubmit(false);
-      });
+    // CreatePopularService(obj)
+    //   .then((res) => {
+    //     let result = res.data;
+    //     if (result.status) {
+    //       setpstep(7);
+    //       setbillingType("");
+    //       setselectNew("");
+    //       setselectCategory("");
+    //       setcategoriesData([]);
+    //       setSearch("");
+    //       setSelectedCurrency({});
+    //       setServiceNameInput("");
+    //       setServiceCodeInput("");
+    //       setProductLabel("");
+    //       setServiceTagline("");
+    //       setServiceDescription("");
+    //       setfirstMonthPrice("");
+    //       setmonthlyPrice("");
+    //       setgracePeriod("");
+    //       setsecondChargeAttempt("");
+    //       setthirdChargeAttempt("");
+    //       setfirstMonthPrice("");
+    //       setmonthlyPrice("");
+    //       setgracePeriod("");
+    //       setsecondChargeAttempt("");
+    //       setthirdChargeAttempt("");
+    //       setIsSubmit(false);
+    //       setCoverImageS3url("");
+    //       setImage(null);
+    //     }
+    //   })
+    //   .catch((err) => {
+    //     setIsSubmit(false);
+    //   });
   };
 
   useEffect(() => {
@@ -1391,22 +1514,54 @@ const UserProfile = () => {
                         <div>
                           <div className="pfr-head">Change Password</div>
                           <div className="pfr-desc">
-                            Click here to change your password. You will need to
-                            verify your email again to reset your password.
+                            Click Here To Change Your Password. You Will Need To Verify Your Email Again To Reset Your Password.
                           </div>
                         </div>
-                        <div className="pfr-btn">Change Password</div>
+                        <button
+                          className="pfr-btn"
+                          style={{
+                            background: "#59A2DD",
+                            color: "#fff",
+                            cursor: "pointer",
+                            border: "none",
+                            borderRadius: "2rem",
+                            fontWeight: 600,
+                            padding: "1rem 2.5rem",
+                            margin: "1rem 0",
+                            opacity: 1 // always enabled
+                          }}
+                          onClick={() => setShowChangePasswordModal(true)}
+                        >
+                          Change Password
+                        </button>
                       </div>
                       <div className="pfr-2">
                         <div>
                           <div className="pfr-head">Enable 2FA</div>
                           <div className="pfr-desc">
-                            For an additional layer of security you can enable 2
-                            factor authentication via Google Authenticator.
+                            For An Additional Layer Of Security You Can Enable 2 Factor Authentication Via Google Authenticator.
                           </div>
                         </div>
-                        <div className="pfr-btn">Enable</div>
+                        <button
+                          className="pfr-btn"
+                          style={{
+                            background: "#59A2DD",
+                            color: "#fff",
+                            cursor: "pointer",
+                            border: "none",
+                            borderRadius: "2rem",
+                            fontWeight: 600,
+                            padding: "1rem 2.5rem",
+                            margin: "1rem 0",
+                            opacity: 1 // always enabled
+                          }}
+                          onClick={() => setShow2FAModal(true)}
+                        >
+                          Enable 2FA
+                        </button>
                       </div>
+
+
                       {changing && (
                         <div
                           className="loading-component"
@@ -1714,7 +1869,7 @@ const UserProfile = () => {
                       <div
                         className="goNext"
                         onClick={() => {
-                          handleGetCurrencies();
+                          // handleGetCurrencies();
                           setpstep(5);
                         }}
                       >
@@ -2060,13 +2215,13 @@ const UserProfile = () => {
                     setFunc={setPhoneNo}
                     funcValue={phoneNo}
                   />
-                  <InputDivsCheckFunctionality1
+                  {/* <InputDivsCheckFunctionality1
                     heading="Select a username *"
                     placeholderText="Username..."
                     setFunc={setUserName}
                     funcValue={userName}
                     userNameAvailable={userNameAvailable}
-                  />
+                  /> */}
                   {/* <InputDivCounty
                     heading="What country are you from?"
                     placeholderText="Click here to select"
@@ -2090,24 +2245,31 @@ const UserProfile = () => {
                     </select>
                   </div>
 
-                  <InputDivsWithMT
-                    heading="What state are you from?"
-                    placeholderText="State"
-                    setFunc={setSelectState}
-                    funcValue={selectState}
-                  />
+                  <div style={{ paddingTop: "30px" }}>What state are you from? *</div>
+                  <div className={styles.inputDivs} style={{ border: "1px solid #2c7cb2", borderRadius: "30px", fontSize: "13px", fontWeight: "500", paddingLeft: "10px" }}>
+                    <select
+                      name="state"
+                      id="state"
+                      style={{ border: "none", padding: "1rem", width: "90%", fontSize: "16px" }}
+                      onChange={(e) => setSelectState(e.target.value)}
+                      value={selectState}
+                    >
+                      <option value="">Select State..</option>
+                      {stateApiValue?.map((item) => (
+                        <option key={item._id || item.name} value={item.name}>
+                          {item.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <InputDivsWithMT
                     heading="What city are you from?"
                     placeholderText="City..."
                     setFunc={setCity}
                     funcValue={city}
                   />
-                  <InputDivsWithMT
-                    heading="Enter your postal code"
-                    placeholderText="Postal Code..."
-                    setFunc={setPostalCode}
-                    funcValue={postalCode}
-                  />
+
                   <div className="stepBtns" style={{ marginTop: "3.5rem" }}>
                     <div
                       style={{
@@ -2131,13 +2293,11 @@ const UserProfile = () => {
                     </div>
                     <div
                       style={{
-                        minHeight: "3.5rem",
-                        maxHeight: "3.5rem",
                         opacity:
                           profilePicture &&
                             fullName &&
                             userName.length > 0 &&
-                            // && userNameAvailable
+                            userNameAvailable &&
                             selectedCountry &&
                             selectState &&
                             city &&
@@ -2149,7 +2309,7 @@ const UserProfile = () => {
                           profilePicture &&
                             fullName &&
                             userName.length > 0 &&
-                            // && userNameAvailable
+                            userNameAvailable &&
                             selectedCountry &&
                             selectState &&
                             city &&
@@ -2165,7 +2325,7 @@ const UserProfile = () => {
                           profilePicture &&
                           fullName &&
                           userName.length > 0 &&
-                          // && userNameAvailable
+                          userNameAvailable &&
                           selectedCountry &&
                           selectState &&
                           city &&
@@ -2207,809 +2367,349 @@ const UserProfile = () => {
         )}
       </>
 
-      <>
-        {createlevelTwo && (
-          <div className="popularS">
-            {levelTwoStep === 7 && (
-              <div className="successMsg">
-                You Have Successfully Created Your Naavi Profile Level 2.
+<>
+  {createLevelTwo && (
+    <div className="popularS">
+      {levelTwoStep === 7 && (
+        <div className="successMsg">
+          You Have Successfully Created Your Naavi Profile Level 2.
+        </div>
+      )}
+      <div className="head-txt">
+        <div>Naavi Profile Level Two</div>
+        <div
+          onClick={() => {
+            setCreateLevelTwo(false);
+            setLevelTwoFields({
+              financialSituation: "",
+              school: "",
+              performance: "",
+              curriculum: "",
+              stream: "",
+              grade: "",
+              linkedin: "",
+            });
+          }}
+          className="close-div"
+        >
+          <img src={close} alt="" />
+        </div>
+      </div>
+      <div className="overall-div">
+        {levelTwoStep === 1 && (
+          <div className="form-content">
+            {/* Financial Situation - Grid Layout */}
+            <div className="question-section">
+              <div className="question-title">
+                What is your current financial situation? *
               </div>
-            )}
-            <div
-              className="head-txt"
-              style={{
-                height: "4rem",
-                display: levelTwoStep === 7 ? "none" : "",
-              }}
-            >
-              <div>Naavi Profile Level Two</div>
-              <div
-                onClick={() => {
-                  setCreateLevelTwo(false);
-                  setLevelTwoFields({
-                    financialSituation: "",
-                    school: "",
-                    performance: "",
-                    curriculum: "",
-                    stream: "",
-                    grade: "",
-                    linkedin: "",
-                  });
-                }}
-                className="close-div"
-              >
-                <img src={close} alt="" />
-              </div>
-            </div>
-            <div
-              className="overall-div"
-              style={{
-                height: "calc(100% - 4rem)",
-                display: levelTwoStep === 7 ? "none" : "",
-              }}
-            >
-              {levelTwoStep === 1 && (
-                <>
-                  <div
-                    style={{
-                      marginBottom: "2rem",
-                      fontSize: "1rem",
-                      marginTop: "2rem",
-                    }}
-                  >
-                    What is your current financial situation? *
-                  </div>
-                  <div className="btnss-div">
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            financialSituation: "0-25Lahks",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.financialSituation === "0-25Lahks"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color:
-                          levelTwoFields?.financialSituation === "0-25Lahks"
-                            ? "white"
-                            : "",
-                        fontWeight:
-                          levelTwoFields?.financialSituation === "0-25Lahks"
-                            ? "600"
-                            : "",
-                      }}
-                    >
-                      0-25 Lahks
-                    </div>
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            financialSituation: "25-75Lahks",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.financialSituation === "25-75Lahks"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color:
-                          levelTwoFields?.financialSituation === "25-75Lahks"
-                            ? "white"
-                            : "",
-                        fontWeight:
-                          levelTwoFields?.financialSituation === "25-75Lahks"
-                            ? "600"
-                            : "",
-                      }}
-                    >
-                      25 Lahks - 75 Lahks
-                    </div>
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            financialSituation: "75Lakhs-3CR",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.financialSituation === "75Lakhs-3CR"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color:
-                          levelTwoFields?.financialSituation === "75Lakhs-3CR"
-                            ? "white"
-                            : "",
-                        fontWeight:
-                          levelTwoFields?.financialSituation === "75Lakhs-3CR"
-                            ? "600"
-                            : "",
-                      }}
-                    >
-                      75 Lahks - 3 CR
-                    </div>
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            financialSituation: "3CR+",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.financialSituation === "3CR+"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color:
-                          levelTwoFields?.financialSituation === "3CR+"
-                            ? "white"
-                            : "",
-                        fontWeight:
-                          levelTwoFields?.financialSituation === "3CR+"
-                            ? "600"
-                            : "",
-                      }}
-                    >
-                      3 CR+{" "}
-                    </div>
-                  </div>
-                  <div className="leveltwo-steps">
-                    <div
-                      className="each-leveltwo-field"
-                      style={{ marginTop: "2rem" }}
-                    >
-                      <div
-                        style={{
-                          fontSize: "1rem",
-                        }}
-                      >
-                        What school do you currently attend? *
-                      </div>
-                      <div className="input-boxx">
-                        <input
-                          type="text"
-                          placeholder="Enter name.."
-                          value={levelTwoFields?.school}
-                          onChange={(e) => {
-                            setLevelTwoFields((prev) => {
-                              return {
-                                ...prev,
-                                school: e.target.value,
-                              };
-                            });
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className="each-leveltwo-field">
-                      <div
-                        style={{
-                          fontSize: "1rem",
-                        }}
-                      >
-                        What grade are you in?
-                      </div>
-                      <div className="input-boxxes">
-                        <div
-                          onClick={() => {
-                            setLevelTwoFields((prev) => {
-                              return {
-                                ...prev,
-                                grade: "9",
-                              };
-                            });
-                          }}
-                          style={{
-                            background:
-                              levelTwoFields?.grade === "9"
-                                ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                                : "",
-                            color: levelTwoFields?.grade === "9" ? "white" : "",
-                            fontWeight:
-                              levelTwoFields?.grade === "9" ? "600" : "",
-                          }}
-                        >
-                          9
-                        </div>
-                        <div
-                          onClick={() => {
-                            setLevelTwoFields((prev) => {
-                              return {
-                                ...prev,
-                                grade: "10",
-                              };
-                            });
-                          }}
-                          style={{
-                            background:
-                              levelTwoFields?.grade === "10"
-                                ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                                : "",
-                            color:
-                              levelTwoFields?.grade === "10" ? "white" : "",
-                            fontWeight:
-                              levelTwoFields?.grade === "10" ? "600" : "",
-                          }}
-                        >
-                          10
-                        </div>
-                        <div
-                          onClick={() => {
-                            setLevelTwoFields((prev) => {
-                              return {
-                                ...prev,
-                                grade: "11",
-                              };
-                            });
-                          }}
-                          style={{
-                            background:
-                              levelTwoFields?.grade === "11"
-                                ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                                : "",
-                            color:
-                              levelTwoFields?.grade === "11" ? "white" : "",
-                            fontWeight:
-                              levelTwoFields?.grade === "11" ? "600" : "",
-                          }}
-                        >
-                          11
-                        </div>
-                        <div
-                          onClick={() => {
-                            setLevelTwoFields((prev) => {
-                              return {
-                                ...prev,
-                                grade: "12",
-                              };
-                            });
-                          }}
-                          style={{
-                            background:
-                              levelTwoFields?.grade === "12"
-                                ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                                : "",
-                            color:
-                              levelTwoFields?.grade === "12" ? "white" : "",
-                            fontWeight:
-                              levelTwoFields?.grade === "12" ? "600" : "",
-                          }}
-                        >
-                          12
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      marginBottom: "2rem",
-                      fontSize: "1rem",
-                      marginTop: "2rem",
-                    }}
-                  >
-                    What is your current grade point average? *
-                  </div>
-                  <div className="btnss-div">
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            performance: "0%-35%",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.performance === "0%-35%"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color:
-                          levelTwoFields?.performance === "0%-35%"
-                            ? "white"
-                            : "",
-                        fontWeight:
-                          levelTwoFields?.performance === "0%-35%" ? "600" : "",
-                      }}
-                    >
-                      0% - 35%
-                    </div>
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            performance: "36%-60%",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.performance === "36%-60%"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color:
-                          levelTwoFields?.performance === "36%-60%"
-                            ? "white"
-                            : "",
-                        fontWeight:
-                          levelTwoFields?.performance === "36%-60%"
-                            ? "600"
-                            : "",
-                      }}
-                    >
-                      36% - 60%
-                    </div>
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            performance: "61%-75%",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.performance === "61%-75%"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color:
-                          levelTwoFields?.performance === "61%-75%"
-                            ? "white"
-                            : "",
-                        fontWeight:
-                          levelTwoFields?.performance === "61%-75%"
-                            ? "600"
-                            : "",
-                      }}
-                    >
-                      61% - 75%
-                    </div>
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            performance: "76%-85%",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.performance === "76%-85%"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color:
-                          levelTwoFields?.performance === "76%-85%"
-                            ? "white"
-                            : "",
-                        fontWeight:
-                          levelTwoFields?.performance === "76%-85%"
-                            ? "600"
-                            : "",
-                      }}
-                    >
-                      76% - 85%
-                    </div>
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            performance: "86%-95%",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.performance === "86%-95%"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color:
-                          levelTwoFields?.performance === "86%-95%"
-                            ? "white"
-                            : "",
-                        fontWeight:
-                          levelTwoFields?.performance === "86%-95%"
-                            ? "600"
-                            : "",
-                      }}
-                    >
-                      86% - 95%
-                    </div>
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            performance: "96%-100%",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.performance === "96%-100%"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color:
-                          levelTwoFields?.performance === "96%-100%"
-                            ? "white"
-                            : "",
-                        fontWeight:
-                          levelTwoFields?.performance === "96%-100%"
-                            ? "600"
-                            : "",
-                      }}
-                    >
-                      96% - 100%
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      marginBottom: "2rem",
-                      fontSize: "1rem",
-                      marginTop: "2rem",
-                    }}
-                  >
-                    What curriculum are you pursuing? *
-                  </div>
-                  <div className="btnss-div">
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            curriculum: "IB",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.curriculum === "IB"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color:
-                          levelTwoFields?.curriculum === "IB" ? "white" : "",
-                        fontWeight:
-                          levelTwoFields?.curriculum === "IB" ? "600" : "",
-                      }}
-                    >
-                      IB
-                    </div>
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            curriculum: "IGCSE",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.curriculum === "IGCSE"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color:
-                          levelTwoFields?.curriculum === "IGCSE" ? "white" : "",
-                        fontWeight:
-                          levelTwoFields?.curriculum === "IGCSE" ? "600" : "",
-                      }}
-                    >
-                      IGCSE
-                    </div>
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            curriculum: "CBSE",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.curriculum === "CBSE"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color:
-                          levelTwoFields?.curriculum === "CBSE" ? "white" : "",
-                        fontWeight:
-                          levelTwoFields?.curriculum === "CBSE" ? "600" : "",
-                      }}
-                    >
-                      CBSE
-                    </div>
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            curriculum: "ICSE",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.curriculum === "ICSE"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color:
-                          levelTwoFields?.curriculum === "ICSE" ? "white" : "",
-                        fontWeight:
-                          levelTwoFields?.curriculum === "ICSE" ? "600" : "",
-                      }}
-                    >
-                      ICSE
-                    </div>
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            curriculum: "Nordic",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.curriculum === "Nordic"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color:
-                          levelTwoFields?.curriculum === "Nordic"
-                            ? "white"
-                            : "",
-                        fontWeight:
-                          levelTwoFields?.curriculum === "Nordic" ? "600" : "",
-                      }}
-                    >
-                      Nordic
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      marginBottom: "2rem",
-                      fontSize: "1rem",
-                      marginTop: "2rem",
-                    }}
-                  >
-                    What stream are you pursuing? *
-                  </div>
-                  <div className="btnss-div">
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            stream: "MPC",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.stream === "MPC"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color: levelTwoFields?.stream === "MPC" ? "white" : "",
-                        fontWeight:
-                          levelTwoFields?.stream === "MPC" ? "600" : "",
-                      }}
-                    >
-                      MPC
-                    </div>
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            stream: "BIPC",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.stream === "BIPC"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color: levelTwoFields?.stream === "BIPC" ? "white" : "",
-                        fontWeight:
-                          levelTwoFields?.stream === "BIPC" ? "600" : "",
-                      }}
-                    >
-                      BIPC
-                    </div>
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            stream: "CEC",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.stream === "CEC"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color: levelTwoFields?.stream === "CEC" ? "white" : "",
-                        fontWeight:
-                          levelTwoFields?.stream === "CEC" ? "600" : "",
-                      }}
-                    >
-                      CEC
-                    </div>
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            stream: "MEC",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.stream === "MEC"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color: levelTwoFields?.stream === "MEC" ? "white" : "",
-                        fontWeight:
-                          levelTwoFields?.stream === "MEC" ? "600" : "",
-                      }}
-                    >
-                      MEC
-                    </div>
-                    <div
-                      className="eachh-btnn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => {
-                          return {
-                            ...prev,
-                            stream: "HEC",
-                          };
-                        });
-                      }}
-                      style={{
-                        background:
-                          levelTwoFields?.stream === "HEC"
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "",
-                        color: levelTwoFields?.stream === "HEC" ? "white" : "",
-                        fontWeight:
-                          levelTwoFields?.stream === "HEC" ? "600" : "",
-                      }}
-                    >
-                      HEC
-                    </div>
-                  </div>
-                  <div className="leveltwo-steps">
-                    <div
-                      className="each-leveltwo-field"
-                      style={{ marginTop: "2rem" }}
-                    >
-                      <div
-                        style={{
-                          fontSize: "1rem",
-                        }}
-                      >
-                        What is your Linkedin? *
-                      </div>
-                      <div className="input-boxx">
-                        <input
-                          type="text"
-                          placeholder="Enter link.."
-                          value={levelTwoFields?.linkedin}
-                          onChange={(e) => {
-                            setLevelTwoFields((prev) => {
-                              return {
-                                ...prev,
-                                linkedin: e.target.value,
-                              };
-                            });
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="stepBtns">
-                    <div
-                      style={{
-                        background: "#1F304F",
-                        width: "48%",
-                        height: "3.5rem",
-                        opacity: "0.5",
-                        cursor: "not-allowed",
-                      }}
-                    >
-                      Go Back
-                    </div>
-                    <div
-                      style={{
-                        height: "3.5rem",
-                        background: "#59A2DD",
-                        width: "48%",
-                        cursor: allLev2Filled
-                          ? "pointer"
-                          : "not-allowed",
-                        opacity: allLev2Filled
-                          ? "1"
-                          : "0.5",
-                      }}
-                      onClick={() => {
-                        if (allLev2Filled) {
-                          levelTwoProfile();
-                        }
-                      }}
-                    >
-                      Submit
-                    </div>
-                  </div>
-                </>
-              )}
-
-
-              {levelTwoLoading && (
+              <div className="grid-options">
                 <div
-                  className="loading-component"
+                  className="option-btn"
+                  onClick={() => {
+                    setLevelTwoFields((prev) => ({
+                      ...prev,
+                      financialSituation: "0-25Lakhs",
+                    }));
+                  }}
                   style={{
-                    top: "0",
-                    left: "0",
-                    width: "100%",
-                    height: "100%",
-                    position: "absolute",
-                    display: "flex",
+                    background:
+                      levelTwoFields?.financialSituation === "0-25Lakhs"
+                        ? "linear-gradient(89deg,#47b4d5,#29449d)"
+                        : "#f5f5f5",
+                    color:
+                      levelTwoFields?.financialSituation === "0-25Lakhs"
+                        ? "white"
+                        : "#333",
                   }}
                 >
-                  <LoadingAnimation1 icon={lg1} width={200} />
+                  0-25 Lakhs
                 </div>
-              )}
+                <div
+                  className="option-btn"
+                  onClick={() => {
+                    setLevelTwoFields((prev) => ({
+                      ...prev,
+                      financialSituation: "25-75Lakhs",
+                    }));
+                  }}
+                  style={{
+                    background:
+                      levelTwoFields?.financialSituation === "25-75Lakhs"
+                        ? "linear-gradient(89deg,#47b4d5,#29449d)"
+                        : "#f5f5f5",
+                    color:
+                      levelTwoFields?.financialSituation === "25-75Lakhs"
+                        ? "white"
+                        : "#333",
+                  }}
+                >
+                  25 Lakhs - 75 Lakhs
+                </div>
+                <div
+                  className="option-btn"
+                  onClick={() => {
+                    setLevelTwoFields((prev) => ({
+                      ...prev,
+                      financialSituation: "75Lakhs-3CR",
+                    }));
+                  }}
+                  style={{
+                    background:
+                      levelTwoFields?.financialSituation === "75Lakhs-3CR"
+                        ? "linear-gradient(89deg,#47b4d5,#29449d)"
+                        : "#f5f5f5",
+                    color:
+                      levelTwoFields?.financialSituation === "75Lakhs-3CR"
+                        ? "white"
+                        : "#333",
+                  }}
+                >
+                  75 Lakhs - 3 CR
+                </div>
+                <div
+                  className="option-btn"
+                  onClick={() => {
+                    setLevelTwoFields((prev) => ({
+                      ...prev,
+                      financialSituation: "3CR+",
+                    }));
+                  }}
+                  style={{
+                    background:
+                      levelTwoFields?.financialSituation === "3CR+"
+                        ? "linear-gradient(89deg,#47b4d5,#29449d)"
+                        : "#f5f5f5",
+                    color:
+                      levelTwoFields?.financialSituation === "3CR+" ? "white" : "#333",
+                  }}
+                >
+                  3 CR+
+                </div>
+              </div>
+            </div>
+
+            {/* School and Grade in one row */}
+            <div className="form-row">
+              <div className="form-group">
+                <div className="question-title">
+                  What school do you currently attend? *
+                </div>
+                <div className="input-container">
+                  <input
+                    type="text"
+                    placeholder="Enter name.."
+                    value={levelTwoFields?.school}
+                    onChange={(e) => {
+                      setLevelTwoFields((prev) => ({
+                        ...prev,
+                        school: e.target.value,
+                      }));
+                    }}
+                  />
+                </div>
+              </div>
+              
+              <div className="form-group">
+                <div className="question-title">
+                  What grade are you in? *
+                </div>
+                <div className="grade-options">
+                  {["9", "10", "11", "12"].map((grade) => (
+                    <div
+                      key={grade}
+                      className="grade-btn"
+                      onClick={() => {
+                        setLevelTwoFields((prev) => ({
+                          ...prev,
+                          grade: grade,
+                        }));
+                      }}
+                      style={{
+                        background:
+                          levelTwoFields?.grade === grade
+                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
+                            : "#f5f5f5",
+                        color: levelTwoFields?.grade === grade ? "white" : "#333",
+                      }}
+                    >
+                      {grade}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Grade Point Average */}
+            <div className="question-section">
+              <div className="question-title">
+                What is your current grade point average? *
+              </div>
+              <div className="grid-options performance-grid">
+                {[
+                  "0%-35%",
+                  "36%-60%", 
+                  "61%-75%",
+                  "76%-85%",
+                  "86%-95%",
+                  "96%-100%"
+                ].map((range) => (
+                  <div
+                    key={range}
+                    className="option-btn"
+                    onClick={() => {
+                      setLevelTwoFields((prev) => ({
+                        ...prev,
+                        performance: range,
+                      }));
+                    }}
+                    style={{
+                      background:
+                        levelTwoFields?.performance === range
+                          ? "linear-gradient(89deg,#47b4d5,#29449d)"
+                          : "#f5f5f5",
+                      color: levelTwoFields?.performance === range ? "white" : "#333",
+                    }}
+                  >
+                    {range}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Curriculum */}
+            <div className="question-section">
+              <div className="question-title">
+                What curriculum are you pursuing? *
+              </div>
+              <div className="grid-options">
+                {["IB", "IGCSE", "CBSE", "ICSE", "Nordic"].map((curriculum) => (
+                  <div
+                    key={curriculum}
+                    className="option-btn"
+                    onClick={() => {
+                      setLevelTwoFields((prev) => ({
+                        ...prev,
+                        curriculum: curriculum,
+                      }));
+                    }}
+                    style={{
+                      background:
+                        levelTwoFields?.curriculum === curriculum
+                          ? "linear-gradient(89deg,#47b4d5,#29449d)"
+                          : "#f5f5f5",
+                      color: levelTwoFields?.curriculum === curriculum ? "white" : "#333",
+                    }}
+                  >
+                    {curriculum}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Stream */}
+            <div className="question-section">
+              <div className="question-title">
+                What stream are you pursuing? *
+              </div>
+              <div className="grid-options">
+                {["MPC", "BIPC", "CEC", "MEC", "HEC"].map((stream) => (
+                  <div
+                    key={stream}
+                    className="option-btn"
+                    onClick={() => {
+                      setLevelTwoFields((prev) => ({
+                        ...prev,
+                        stream: stream,
+                      }));
+                    }}
+                    style={{
+                      background:
+                        levelTwoFields?.stream === stream
+                          ? "linear-gradient(89deg,#47b4d5,#29449d)"
+                          : "#f5f5f5",
+                      color: levelTwoFields?.stream === stream ? "white" : "#333",
+                    }}
+                  >
+                    {stream}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* LinkedIn - Larger Section with Specific Classes */}
+<div className="linkedin-question-section">
+  <div className="linkedin-question-title">
+    What is your Linkedin? *
+  </div>
+  <div className="linkedin-input-full">
+    <input
+      type="text"
+      placeholder="Enter your LinkedIn profile URL..."
+      value={levelTwoFields?.linkedin}
+      onChange={(e) => {
+        setLevelTwoFields((prev) => ({
+          ...prev,
+          linkedin: e.target.value,
+        }));
+      }}
+    />
+  </div>
+</div>
+
+            {/* Submit Buttons - Keep your original button structure */}
+            <div className="stepBtns">
+              <div
+                style={{
+                  background: "#1F304F",
+                  width: "48%",
+                  height: "3.5rem",
+                  opacity: "0.5",
+                  cursor: "not-allowed",
+                }}
+              >
+                Go Back
+              </div>
+              <div
+                style={{
+                  height: "3.5rem",
+                  background: "#59A2DD",
+                  width: "48%",
+                  cursor: allLev2Filled ? "pointer" : "not-allowed",
+                  opacity: allLev2Filled ? "1" : "0.5",
+                }}
+                onClick={() => {
+                  if (allLev2Filled) {
+                    levelTwoProfile();
+                  }
+                }}
+              >
+                Submit
+              </div>
             </div>
           </div>
         )}
-        {createLevelThree && (
-          <LevelThree
-            profileData={profileData}
-            createLevelThree={createLevelThree}
-            setCreateLevelThree={setCreateLevelThree}
-            handleProfileData={handleProfileData}
-          />
-        )}
-      </>
 
+        {levelTwoLoading && (
+          <div className="loading-component">
+            <LoadingAnimation1 icon={lg1} width={200} />
+          </div>
+        )}
+      </div>
+    </div>
+  )}
+</>
+
+{/* Level Three Section - ADD THIS */}
+{createLevelThree && (
+  <LevelThree
+    profileData={profileData}
+    createLevelThree={createLevelThree}
+    setCreateLevelThree={setCreateLevelThree}
+    handleProfileData={handleProfileData}
+    profileDataId={profileDataId}
+  />
+)}
       {editCountry && (
         <div className="popularS">
           <div className="head-txt">

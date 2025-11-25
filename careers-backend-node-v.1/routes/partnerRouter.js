@@ -13,6 +13,7 @@ const {
   updatePartnerProfile,
   getPartnerByEmail,
   getPartnerProfilePic,
+  verifyOtp,
 
 } = require("../controllers/partners.controller");
 
@@ -20,7 +21,7 @@ const {
 
 router.post("/signup", signUp);
 router.get("/logout", logout);
-router.post("/verifyotp", verifyOTP);
+router.post("/verifyotp", verifyOtp);
 router.post("/forgotPassword", forgotPassword);
 router.post("/updatepassword", updatePassword);
 router.post("/resetPassword/:token", resetPassword);

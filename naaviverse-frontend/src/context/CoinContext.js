@@ -203,18 +203,18 @@ export const CoinContextProvider = ({ children }) => {
     }
   }, [coinType]);
 
-  useEffect(() => {
-    axios
-      .get("https://restcountries.com/v3.1/all")
-      .then(({ data }) => {
-        // Sort countries alphabetically by common name
-        const sortedCountries = data.sort((a, b) =>
-          a.name.common.localeCompare(b.name.common)
-        );
-        setCountryApiValue(sortedCountries);
-      })
-      .catch((error) => console.error("Error fetching countries:", error));
-  }, []);
+  // useEffect(() => {
+  //   axios
+  //     .get("https://restcountries.com/v3.1/all")
+  //     .then(({ data }) => {
+  //       // Sort countries alphabetically by common name
+  //       const sortedCountries = data.sort((a, b) =>
+  //         a.name.common.localeCompare(b.name.common)
+  //       );
+  //       setCountryApiValue(sortedCountries);
+  //     })
+  //     .catch((error) => console.error("Error fetching countries:", error));
+  // }, []);
 
   return (
     <CoinContext.Provider
