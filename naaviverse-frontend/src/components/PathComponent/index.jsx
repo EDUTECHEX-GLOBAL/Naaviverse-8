@@ -126,37 +126,32 @@ const PathComponent = () => {
   // ✅ MOVED HERE: pathSelection FIX (to solve "not defined" error)
   // --------------------------------------------------------------
 const pathSelection = () => {
-  if (!selectedPathItem || !selectedPathItem._id) {
-    alert("Please select a path first!");
-    return;
+  const email = userDetails?.email;
+
+  // 🎯 USE THE CORRECT ID
+  const universityId =
+    selectedPathItem?.universityId ||
+    localStorage.getItem("selectedUniversityId");
+
+  // Debug Logs
+  console.log("🔍 selectedPathItem:", selectedPathItem);
+  console.log("🔍 Correct University ID:", universityId);
+
+  if (!email || !universityId) {
+    console.log("❌ Missing values:", { email, universityId });
+    return alert("Missing universityId/email!");
   }
 
-  setLoading(true);
-
-  const body = {
-    email: userDetails?.email,
-    programId: selectedPathItem._id,
-  };
-
-  console.log("Sending:", body);
-
-  axios
-    .post("http://localhost:4545/api/fetch/selectpath", body)
-    .then((response) => {
-      let result = response.data;
-
-      if (result?.pathId) {
-        localStorage.setItem("selectedPathId", result.pathId);
-        setSelectedPathId(result.pathId);
-      }
-
-      setLoading(false);
-      reload();
-    })
-    .catch((error) => {
-      console.error("Error in path selection:", error.response?.data || error);
-      setLoading(false);
-    });
+  axios.post("http://localhost:4545/api/fetch/selectpath", {
+    email,
+    universityId,
+  })
+  .then(res => {
+    // SAVE CORRECT ID
+    localStorage.setItem("selectedUniversityId", universityId);
+    reload();
+  })
+  .catch(err => console.error(err));
 };
 
 
@@ -285,13 +280,18 @@ const pathSelection = () => {
     setTimeout(reload, 3000);
   };
 
-  function reload() {
-    setsideNav("My Journey");
-    setSelectedPathItem([]);
-    setPathItemSelected(true);
-    setPathItemStep(3);
-    navigate("/dashboard/users");
-  }
+function reload() {
+  setsideNav("My Journey");
+
+  // FULL RESET
+  setSelectedPathItem(null);
+  setPathItemSelected(false);
+  setPathItemStep(3); // <-- show Congratulations
+  navigate("/dashboard/users");
+}
+
+
+
 
   const fetchUserProfile = async () => {
     try {
@@ -520,7 +520,7 @@ useEffect(() => {
               <div className="congrats-area">
                 <div className="congrats-textt">Congratulations</div>
                 <div className="congrats-textt1">
-                  You have successfully chosen {selectedPathItem?.nameOfPath}.
+                 You have successfully chosen {selectedPathItem?.name}.
                   You will be redirected to your journey page now.
                 </div>
               </div>
@@ -701,7 +701,20 @@ useEffect(() => {
           </div>
 
           <div className="maps-content-area1">
-            <Pathview paths={levelThreeData} loading={loading} />
+         <Pathview 
+  paths={levelThreeData}
+  loading={loading}
+onSelectPath={(uni) => {
+  setSelectedPathItem(uni);
+  setPathItemSelected(true);
+  setPathItemStep(1);
+}}
+
+
+/>
+
+
+
           </div>
         </div>
       )}

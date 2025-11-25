@@ -87,7 +87,7 @@ router.get('/programs', async (req, res) => {
  */
 router.get('/steps', async (req, res) => {
   try {
-    const { programId } = req.query;
+    const { universityId } = req.query;
 
     if (!programId) {
       return res.status(400).json({

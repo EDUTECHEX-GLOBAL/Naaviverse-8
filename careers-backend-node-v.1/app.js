@@ -118,7 +118,7 @@ app.use("/api", require("./routes/checkFormatted"));
 
 
 // ✅ You forgot this line
-app.use('/api/userpaths', programRouter);
+app.use('/api/userpaths', userpathRouter);
 app.use('/api/countries', countryRoutes);
 app.use('/api/states', stateRoutes);
 app.use('/api/cities', cityRoutes);

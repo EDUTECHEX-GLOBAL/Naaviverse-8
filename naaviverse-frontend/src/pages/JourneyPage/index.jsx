@@ -8,26 +8,31 @@ const JourneyPage = () => {
   const [journeyPageData, setJourneyPageData] = useState(null);
 
   useEffect(() => {
-    const programId = localStorage.getItem("selectedPathId");
-    if (!programId) return;
+    const universityId = localStorage.getItem("selectedUniversityId");
 
-    fetchJourneyData(programId);
+    console.log("Loaded University ID:", universityId);
+
+    if (!universityId) return;
+
+    fetchJourneyData(universityId);
   }, []);
 
-const fetchJourneyData = async (programId) => {
-  setLoading(true);
-  try {
-    const response = await axios.get(`/api/userpaths/steps?programId=${programId}`);
-    if (response.data.success) {
-      setJourneyPageData(response.data.data);
-    }
-  } catch (error) {
-    console.error("Error fetching steps:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+  const fetchJourneyData = async (universityId) => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `/api/userpaths/steps?universityId=${universityId}`
+      );
 
+      if (response.data.success) {
+        setJourneyPageData(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching steps:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="journeypage">
@@ -47,7 +52,6 @@ const fetchJourneyData = async (programId) => {
         )}
       </div>
 
-      {/* -------- Steps Grid -------- */}
       <div className="steps-grid">
         {loading ? (
           <Skeleton count={3} height={200} />

@@ -4,7 +4,7 @@ const User = require("../models/User"); // make sure User is imported
 
 router.post("/selectpath", async (req, res) => {
   try {
-    const { email, programId } = req.body;
+    const { email, universityId } = req.body;
 
     console.log("BODY RECEIVED:", req.body);
 

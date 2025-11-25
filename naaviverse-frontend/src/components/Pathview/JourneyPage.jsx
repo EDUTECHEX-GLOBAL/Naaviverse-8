@@ -2,29 +2,32 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Skeleton from "react-loading-skeleton";
 import "./journey.scss";
+import { useNavigate } from "react-router-dom";
 
 const JourneyPage = () => {
   const [loading, setLoading] = useState(false);
-  const [journeyData, setJourneyData] = useState(null);
+  const [journeyPageData, setJourneyPageData] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const uniId = localStorage.getItem("selectedUniversityId");
+    const universityId = localStorage.getItem("selectedUniversityId");
 
-    if (!uniId) {
-      console.warn("No university selected");
-      return;
-    }
+    console.log("Loaded University ID:", universityId);
 
-    fetchJourney(uniId);
+    if (!universityId) return;
+
+    fetchJourneyData(universityId);
   }, []);
 
-  const fetchJourney = async (uniId) => {
+  const fetchJourneyData = async (universityId) => {
     setLoading(true);
     try {
-      const res = await axios.get(`/api/universities/${uniId}/steps`);
-      setJourneyData(res.data);
-    } catch (err) {
-      console.error("Error fetching steps:", err);
+      const response = await axios.get(`/api/userpaths/steps?universityId=${universityId}`);
+      if (response.data.success) {
+        setJourneyPageData(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching steps:", error);
     } finally {
       setLoading(false);
     }
@@ -32,24 +35,37 @@ const JourneyPage = () => {
 
   return (
     <div className="journeypage">
-      <div className="journey-top-area">
-        <div>{journeyData ? "Your Selected Path:" : "No Path Selected"}</div>
 
+      {/* ====== TITLE AREA ====== */}
+      <div className="journey-top-area">
+        <div className="title">Your Selected Path:</div>
+
+        {/* School Name */}
         {loading ? (
-          <Skeleton width={150} height={30} />
+          <Skeleton width={300} height={40} />
         ) : (
-          <div className="bold-text">{journeyData?.name}</div>
+          <div className="path-title">{journeyPageData?.school}</div>
         )}
+
+        {/* 🧭 Go Back */}
+        <div
+          className="go-back"
+          onClick={() => navigate("/dashboard/users")}
+          style={{ cursor: "pointer", textAlign: "right", fontWeight: 600, marginTop: "10px" }}
+        >
+          Go Back
+        </div>
       </div>
 
-      <div className="journey-steps-area">
+      {/* ====== STEPS GRID ====== */}
+      <div className="steps-grid">
         {loading ? (
-          <Skeleton count={4} height={40} />
+          <Skeleton count={3} height={200} />
         ) : (
-          journeyData?.generatedProgram?.steps?.map((step, i) => (
-            <div key={i} className="each-j-step">
-              <div className="each-j-step-text">{step.name}</div>
-              <div className="each-j-step-text1">{step.description}</div>
+          journeyPageData?.steps?.map((step, index) => (
+            <div className="step-card" key={index}>
+              <div className="step-title">{step.name}</div>
+              <div className="step-desc">{step.description}</div>
             </div>
           ))
         )}
