@@ -5,24 +5,27 @@ import "./journey.scss";
 import { useNavigate } from "react-router-dom";
 
 const JourneyPage = () => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [journeyPageData, setJourneyPageData] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const universityId = localStorage.getItem("selectedUniversityId");
 
-    console.log("Loaded University ID:", universityId);
-
-    if (!universityId) return;
+    if (!universityId) {
+      setLoading(false);
+      return;
+    }
 
     fetchJourneyData(universityId);
   }, []);
 
   const fetchJourneyData = async (universityId) => {
-    setLoading(true);
     try {
-      const response = await axios.get(`/api/userpaths/steps?universityId=${universityId}`);
+      const response = await axios.get(
+        `/api/userpaths/steps?universityId=${universityId}`
+      );
+
       if (response.data.success) {
         setJourneyPageData(response.data.data);
       }
@@ -33,43 +36,61 @@ const JourneyPage = () => {
     }
   };
 
+  const handleStepClick = (step) => {
+    if (!step) return;
+
+    localStorage.setItem("selectedStepId", step._id);
+    localStorage.setItem("selectedStepData", JSON.stringify(step));
+
+    navigate("/dashboard/current-step");
+  };
+
   return (
-    <div className="journeypage">
+    <div className="journey-wrapper">
 
-      {/* ====== TITLE AREA ====== */}
-      <div className="journey-top-area">
-        <div className="title">Your Selected Path:</div>
+      {/* TOP BLOCK */}
+      <div className="journey-header">
+        <div className="jh-title">Your Selected Path</div>
 
-        {/* School Name */}
         {loading ? (
-          <Skeleton width={300} height={40} />
+          <Skeleton width={260} height={35} />
         ) : (
-          <div className="path-title">{journeyPageData?.school}</div>
+          <div className="jh-pathname">{journeyPageData?.school || "N/A"}</div>
         )}
 
-        {/* 🧭 Go Back */}
-        <div
-          className="go-back"
-          onClick={() => navigate("/dashboard/users")}
-          style={{ cursor: "pointer", textAlign: "right", fontWeight: 600, marginTop: "10px" }}
-        >
-          Go Back
+        {!loading && journeyPageData?.description && (
+          <p className="jh-description">{journeyPageData.description}</p>
+        )}
+
+        <div className="jh-back" onClick={() => navigate("/dashboard/users")}>
+          ← Back to Explore
         </div>
       </div>
 
-      {/* ====== STEPS GRID ====== */}
-      <div className="steps-grid">
+      {/* STEPS GRID */}
+      <div className="journey-steps-section">
         {loading ? (
           <Skeleton count={3} height={200} />
+        ) : journeyPageData?.steps?.length > 0 ? (
+          <div className="steps-container">
+            {journeyPageData.steps.map((step, i) => (
+              <div
+                className="step-card-clean"
+                key={step._id || i}
+                onClick={() => handleStepClick(step)}
+              >
+                <div className="sc-title">{step.name}</div>
+                <div className="sc-desc">{step.description}</div>
+              </div>
+            ))}
+          </div>
         ) : (
-          journeyPageData?.steps?.map((step, index) => (
-            <div className="step-card" key={index}>
-              <div className="step-title">{step.name}</div>
-              <div className="step-desc">{step.description}</div>
-            </div>
-          ))
+          <div className="no-steps-text">
+            No steps available for this university.
+          </div>
         )}
       </div>
+
     </div>
   );
 };

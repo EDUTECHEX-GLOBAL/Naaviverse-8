@@ -10,44 +10,49 @@ const Pathview = ({ paths, loading }) => {
     setPathItemSelected,
     setPathItemStep,
     setSelectedPathItem,
-    searchTerm,           // ✅ GET SEARCH TERM HERE
+    searchTerm,
   } = useCoinContextData();
 
-  // Format data only when paths change
-const formattedData = useMemo(() => {
-  return (paths || []).map((u) => ({
-      _id: u.generatedProgram?._id,    // THIS IS PROGRAM ID ✅
-      universityId: u._id,             // keep university separately
+  // ------------------------------------------------------------
+  // ✅ FORMAT DATA CORRECTLY — USE UNIVERSITY _id AS MAIN ID
+  // ------------------------------------------------------------
+  const formattedData = useMemo(() => {
+    return (paths || []).map((u) => ({
+      _id: u._id, // <-- REAL path ID (university ID)
       school: u.name,
-      program: u.generatedProgram?.program,
-      description: u.generatedProgram?.description,
-      steps: u.generatedProgram?.steps,
-  }));
-});
+      program: u.generatedProgram?.program || "N/A",
+      description: u.generatedProgram?.description || "N/A",
+      steps: u.generatedProgram?.steps || [],
+    }));
+  }, [paths]);
 
+  // ------------------------------------------------------------
+  // ✅ SEARCH FILTER
+  // ------------------------------------------------------------
+const filteredData = useMemo(() => {
+  if (!searchTerm?.trim()) return formattedData;
 
+  const term = String(searchTerm || "").toLowerCase();
 
+  return formattedData.filter((item) => {
+    const school = String(item.school || "").toLowerCase();
+    const program = String(item.program || "").toLowerCase();
+    const description = String(item.description || "").toLowerCase();
 
-
-
-  // ✅ APPLY SEARCH FILTER HERE
-  const filteredData = useMemo(() => {
-    if (!searchTerm || searchTerm.trim() === "") return formattedData;
-
-    const term = searchTerm.toLowerCase();
-
-    return formattedData.filter((item) =>
-      item.school.toLowerCase().includes(term) ||
-      item.program.toLowerCase().includes(term) ||
-      item.description.toLowerCase().includes(term)
+    return (
+      school.includes(term) ||
+      program.includes(term) ||
+      description.includes(term)
     );
-  }, [formattedData, searchTerm]);
+  });
+}, [formattedData, searchTerm]);
 
-  // Pagination
+
+  // Pagination logic
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    setCurrentPage(1); // reset page on search
+    setCurrentPage(1);
   }, [paths, searchTerm]);
 
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
@@ -57,24 +62,25 @@ const formattedData = useMemo(() => {
     currentPage * ITEMS_PER_PAGE
   );
 
-const handlePathSelection = (selectedPath) => {
-  if (!selectedPath) return;
+  // ------------------------------------------------------------
+  // ✅ FIXED PATH SELECTION — PROGRAM ID IS NOT USED ANYMORE
+  // ------------------------------------------------------------
+  const handlePathSelection = (selectedPath) => {
+    if (!selectedPath) return;
 
-  setPathItemSelected(true);
-  setPathItemStep(1);
-  setSelectedPathItem(selectedPath);
+    console.log("Selected Path Object:", selectedPath);
 
-  // REAL ID is inside generatedProgram._id
-  localStorage.setItem("selectedProgramId", selectedPath.generatedProgram?._id);
-  localStorage.setItem("selectedUniversityId", selectedPath._id);
+    setPathItemSelected(true);
+    setPathItemStep(1);
+    setSelectedPathItem(selectedPath);
 
-  console.log("Saved:", {
-    program: selectedPath.generatedProgram?._id,
-    university: selectedPath._id,
-  });
-};
+    // Save only ONE id — the real path ID (university id)
+    localStorage.setItem("selectedPathId", selectedPath._id);
 
-
+    console.log("Saved:", {
+      pathId: selectedPath._id,
+    });
+  };
 
   return (
     <div className="pathviewPage">

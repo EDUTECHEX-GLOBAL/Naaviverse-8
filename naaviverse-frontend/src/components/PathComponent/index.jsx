@@ -128,12 +128,11 @@ const PathComponent = () => {
 const pathSelection = () => {
   const email = userDetails?.email;
 
-  // 🎯 USE THE CORRECT ID
+  // 🎯 FIX: USE _id (REAL UNIVERSITY ID)
   const universityId =
-    selectedPathItem?.universityId ||
+    selectedPathItem?._id ||
     localStorage.getItem("selectedUniversityId");
 
-  // Debug Logs
   console.log("🔍 selectedPathItem:", selectedPathItem);
   console.log("🔍 Correct University ID:", universityId);
 
@@ -153,6 +152,7 @@ const pathSelection = () => {
   })
   .catch(err => console.error(err));
 };
+
 
 
   // --------------------------------------------------------------

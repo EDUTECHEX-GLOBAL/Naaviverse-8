@@ -118,31 +118,31 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   // ✅ FIXED: Safe access for program fetch
-useEffect(() => {
-  if (userDetails) {
-    axios
-      .get(`/api/userpaths/programs?email=${userDetails?.email}`)
-      .then(({ data }) => {
-        if (data?.status && Array.isArray(data?.data) && data.data.length > 0) {
-          const program = data.data[0]; // first program
-          const stepDetails = Array.isArray(program?.steps)
-            ? program.steps
-            : [];
+// useEffect(() => {
+//   if (userDetails) {
+//     axios
+//       .get(`/api/userpaths/programs?email=${userDetails?.email}`)
+//       .then(({ data }) => {
+//         if (data?.status && Array.isArray(data?.data) && data.data.length > 0) {
+//           const program = data.data[0]; // first program
+//           const stepDetails = Array.isArray(program?.steps)
+//             ? program.steps
+//             : [];
 
-          if (stepDetails.length > 0) {
-            // if your steps have product_ids or similar keys, use that
-            setProductKeys(stepDetails.map(step => step._id));
-            console.log("✅ Steps found:", stepDetails);
-          } else {
-            console.warn("⚠️ No steps found for this user's program");
-          }
-        } else {
-          console.warn("⚠️ No program data available for this user");
-        }
-      })
-      .catch((err) => console.error("Error fetching programs:", err));
-  }
-}, []);
+//           if (stepDetails.length > 0) {
+//             // if your steps have product_ids or similar keys, use that
+//             setProductKeys(stepDetails.map(step => step._id));
+//             console.log("✅ Steps found:", stepDetails);
+//           } else {
+//             console.warn("⚠️ No steps found for this user's program");
+//           }
+//         } else {
+//           console.warn("⚠️ No program data available for this user");
+//         }
+//       })
+//       .catch((err) => console.error("Error fetching programs:", err));
+//   }
+// }, []);
 
 
   const [productDataArray, setProductDataArray] = useState([]);

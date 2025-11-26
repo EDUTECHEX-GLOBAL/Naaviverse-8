@@ -91,6 +91,40 @@ router.get("/steps", async (req, res) => {
     });
   }
 });
+// GET SELECTED UNIVERSITY FOR USER
+router.get("/selected", async (req, res) => {
+  try {
+    const { email } = req.query;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      universityId: user.selectedUniversity || null,
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
 
 
 module.exports = router;
