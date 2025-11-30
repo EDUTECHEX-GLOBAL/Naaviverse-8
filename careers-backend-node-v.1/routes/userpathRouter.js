@@ -43,6 +43,7 @@ router.post("/selectpath", async (req, res) => {
 const University = require("../models/universities.model");
 
 // GET STEPS FOR SELECTED UNIVERSITY
+// GET STEPS FOR SELECTED UNIVERSITY
 router.get("/steps", async (req, res) => {
   try {
     const { universityId } = req.query;
@@ -54,7 +55,6 @@ router.get("/steps", async (req, res) => {
       });
     }
 
-    // Find the university document
     const uni = await University.findById(universityId);
 
     if (!uni) {
@@ -64,7 +64,6 @@ router.get("/steps", async (req, res) => {
       });
     }
 
-    // Extract generatedProgram fields
     const gp = uni.generatedProgram;
 
     if (!gp) {
@@ -74,15 +73,24 @@ router.get("/steps", async (req, res) => {
       });
     }
 
+    // 🔥 IMPORTANT — GIVE EACH STEP A UNIQUE ID
+    const stepsWithIds = gp.steps.map((step, index) => ({
+      _id: `${uni._id}_step_${index}`,   // generate unique ID
+      index,
+      name: step.name,
+      description: step.description
+    }));
+
     return res.status(200).json({
       success: true,
       data: {
         school: uni.name,
         program: gp.program,
         description: gp.description,
-        steps: gp.steps || []
+        steps: stepsWithIds
       }
     });
+
   } catch (error) {
     console.error("Error fetching university steps:", error);
     return res.status(500).json({
@@ -91,6 +99,7 @@ router.get("/steps", async (req, res) => {
     });
   }
 });
+
 // GET SELECTED UNIVERSITY FOR USER
 router.get("/selected", async (req, res) => {
   try {
@@ -125,6 +134,90 @@ router.get("/selected", async (req, res) => {
   }
 });
 
+// COMPLETE STEP
+router.put("/completeStep", async (req, res) => {
+     console.log("📥 COMPLETE STEP RECEIVED BODY:", req.body);
+  try {
+    const { email, pathId, step_id } = req.body;
+
+    if (!email || !pathId || !step_id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "email, pathId, and step_id are required" 
+      });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "User not found" 
+      });
+    }
+
+    // Save completed step to user model
+    user.completedSteps = user.completedSteps || [];
+    if (!user.completedSteps.includes(step_id)) {
+      user.completedSteps.push(step_id);
+    }
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Step marked as completed",
+    });
+
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
+  }
+});
+// FAILED STEP
+router.put("/failedStep", async (req, res) => {
+    console.log("📥 FAILED STEP RECEIVED BODY:", req.body);
+  try {
+    const { email, pathId, step_id } = req.body;
+
+    if (!email || !pathId || !step_id) {
+      return res.status(400).json({
+        success: false,
+        message: "email, pathId, and step_id are required",
+      });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Save failed step
+    user.failedSteps = user.failedSteps || [];
+    if (!user.failedSteps.includes(step_id)) {
+      user.failedSteps.push(step_id);
+    }
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Step marked as failed",
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
 
 
 module.exports = router;

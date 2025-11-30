@@ -73,15 +73,11 @@ const countryRoutes = require('./routes/countryRoutes');
 const stateRoutes = require('./routes/stateRoutes');
 const cityRoutes = require('./routes/cityRoutes');
 
+const vaultRoutes = require("./routes/vault.routes");
+app.use("/api/vault", vaultRoutes);
 
-
-
-
-
-
-
-
-
+const stepViewsRoute = require("./routes/stepviews.route");
+app.use("/api/stepviews", stepViewsRoute);
 
 
 /* ------------------- NO-CACHE FOR USER APIs ------------------- */
@@ -105,16 +101,27 @@ app.use('/api/services', servicesRouter);
 app.use('/api/steps', stepspathRouter);
 app.use('/api/universities', universitiesRouter);
 app.use("/api/perplexity", require("./routes/perplexity.route"));
-
+app.use("/api/regenerate", require("./routes/regenerateAll.route"));
 
 app.use('/api/paths', pathsRouter);
-app.use('/api/fetch', userpathRouter);
+ app.use('/api/fetch', userpathRouter);
 app.use('/api/pre_login', preLoginRouter);
 app.use('/api/userAnswers', userPersonalityRouter);
 app.use('/api/partner', partnerRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/personality', personalityRouter);
 app.use("/api", require("./routes/checkFormatted"));
+app.use("/api/regenerate", require("./routes/regenerateBatch.route"));
+app.use("/api/utils", require("./routes/addStepIds.route"));
+app.use("/api/stepviews", require("./routes/stepviews.route"));
+
+// THIS IS ONLY FOR THE TEMPORARY ADMIN 
+app.use("/admin/universities", require("./routes/adminUniversitiesRouter"));
+app.use("/admin/programs", require("./routes/adminProgramsRouter"));
+app.use("/admin/steps", require("./routes/adminStepsRouter"));
+app.use("/admin/services", require("./routes/adminServicesRouter"));
+
+
 
 
 // ✅ You forgot this line
@@ -123,8 +130,10 @@ app.use('/api/countries', countryRoutes);
 app.use('/api/states', stateRoutes);
 app.use('/api/cities', cityRoutes);
 
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
 
 
 /* ------------------- AWS S3: Presigned URL ------------------- */

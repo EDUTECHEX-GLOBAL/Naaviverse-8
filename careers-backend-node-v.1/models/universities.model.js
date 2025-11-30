@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 const StepSchema = new Schema({
   name: String,
   description: String
-}, { _id: false });   // IMPORTANT: prevents extra _id
+}, { _id: true });  // ✅ allow step-level _id
 
 const UniversitySchema = new Schema({
   name: String,
@@ -22,7 +22,7 @@ const UniversitySchema = new Schema({
     performance: String,
     financialSituation: String,
     personality: String,
-    steps: [StepSchema],
+    steps: [StepSchema], // now each step has _id
     generatedAt: Date
   }
 });

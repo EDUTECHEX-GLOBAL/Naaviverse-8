@@ -23,12 +23,68 @@ import AccDashsidebar from "../../components/accDashsidebar/accDashsidebar.jsx";
 import AdminAccDashsidebar from "../../components/AdminAccDashsidebar/index.jsx";
 import MenuNav from "../../components/MenuNav/index.jsx";
 
-const StepPage = ({ productDataArray, selectedPathId, showSelectedPath, selectedPath }) => {
+/** ===================== FALLBACK SERVICES ====================== **/
+const getFallbackServices = () => {
+  return [
+    {
+      _id: "fallback-1",
+      name: "Academic Counseling Service",
+      description: "Get personalized guidance for your academic journey and subject selection",
+      ServiceDetails: [{
+        first_purchase: { price: 0, coin: "Free" },
+        billing_cycle: {
+          monthly: { price: 0, coin: "Free" },
+          annual: { price: 0, coin: "Free" }
+        },
+        product_name: "Academic Counseling"
+      }]
+    },
+    {
+      _id: "fallback-2",
+      name: "Portfolio Review",
+      description: "Expert feedback on your creative portfolio for architecture applications",
+      ServiceDetails: [{
+        first_purchase: { price: 50, coin: "USD" },
+        billing_cycle: {
+          monthly: { price: 0, coin: "One-time" },
+          annual: { price: 0, coin: "One-time" }
+        },
+        product_name: "Portfolio Review"
+      }]
+    },
+    {
+      _id: "fallback-3",
+      name: "Test Preparation Guidance",
+      description: "Strategies and resources for standardized test preparation",
+      ServiceDetails: [{
+        first_purchase: { price: 0, coin: "Free" },
+        billing_cycle: {
+          monthly: { price: 0, coin: "Free" },
+          annual: { price: 0, coin: "Free" }
+        },
+        product_name: "Test Prep Resources"
+      }]
+    }
+  ];
+};
 
-  const navigate = useNavigate()
-  const loc = useLocation()
+
+const StepPage = ({ productDataArray, selectedPathId, showSelectedPath, selectedPath }) => {
+const [userType, setUserType] = useState(null);
+
+useEffect(() => {
+  setUserType(localStorage.getItem("userType"));
+}, []);
+
+  // const [role, setRole] = useState(localStorage.getItem("userType"));
+  // const userType = role;
+
+  const navigate = useNavigate();
+  const loc = useLocation();
+
   console.log(productDataArray, "lkwehflkwheflwef")
-  const userDetails = JSON.parse(localStorage.getItem("user"));
+ const userDetails = JSON.parse(localStorage.getItem("adminuser"));
+
   const {
     currentStepData,
     setCurrentStepData,
@@ -65,39 +121,42 @@ useEffect(() => {
   console.log("🔍 Raw storedStepId:", storedStepId);
 
   try {
-    // if stored as JSON object { "$oid": "..." }
     const parsed = JSON.parse(storedStepId);
     if (parsed?.$oid) storedStepId = parsed.$oid;
-  } catch (err) {
-    // storedStepId is already a string, ignore JSON parse error
-  }
+  } catch (err) {}
 
   console.log("✅ Final stepId used:", storedStepId);
 
-  // Validate Mongo ObjectId
-  const isObjectId = /^[a-f\d]{24}$/i.test(storedStepId);
-  if (!isObjectId) {
-    console.warn("❌ Invalid Step ID:", storedStepId);
-    setStepServices([]);
+  if (!storedStepId) {
+    console.warn("❌ No step ID found");
+    setStepServices(getFallbackServices()); // ⭐ ADD FALLBACK HERE
     return;
   }
 
   axios
-    .get(`/api/services/by-step?step_id=${storedStepId}`)
+    .get(`http://localhost:4545/api/services/by-step?step_id=${storedStepId}`)
     .then(({ data }) => {
-      const list = Array.isArray(data)
+      let list = Array.isArray(data)
         ? data
         : Array.isArray(data?.data)
         ? data.data
         : [];
+
+      // ⭐ Use fallback if API returned 0 services
+      if (list.length === 0) {
+        console.log("⚠ No services found. Using fallback services.");
+        list = getFallbackServices();
+      }
+
       setStepServices(list);
-      console.log("✅ Services Found:", list);
+      console.log("✅ Final Services Loaded:", list);
     })
     .catch((e) => {
-      console.error("🔥 Error fetching services:", e);
-      setStepServices([]);
+      console.error("🔥 Error fetching services, using fallback:", e);
+      setStepServices(getFallbackServices()); // ⭐ USE FALLBACK ON ERROR
     });
 }, []);
+
 
 
   // Run the effect only once when the component mounts
@@ -174,6 +233,20 @@ useEffect(() => {
     setfilteredcoins(filterItem);
   }
 
+const reloadServices = async () => {
+  const stepId = localStorage.getItem("selectedStepId");
+  if (!stepId) return;
+
+  try {
+    const { data } = await axios.get(`http://localhost:4545/api/services/by-step?step_id=${stepId}`);
+
+    console.log("🔄 SERVICES RELOADED:", data.data);
+    setStepServices(data.data || []);
+  } catch (err) {
+    console.error("❌ Error reloading services:", err.message);
+    setStepServices([]);
+  }
+};
 
 
 
@@ -182,13 +255,18 @@ useEffect(() => {
     <>
       <div className="dashboard-main">
         <div className="dashboard-body">
-          <div
-          // onClick={() => setShowDrop(false)}
-          >
-            {localStorage.getItem('userType') === 'partner' ?
-              <AccDashsidebar /> : localStorage.getItem('userType') === 'user' ?
-                <Dashsidebar /> : <AdminAccDashsidebar />}
-          </div>
+ <div>
+  {userType === "partner" ? (
+    <AccDashsidebar />
+  ) : userType === "user" ? (
+    <Dashsidebar />
+  ) : userType === "accountant" || userType === "admin" ? (
+    <AdminAccDashsidebar admin={true} />
+  ) : (
+    <AdminAccDashsidebar admin={true} />
+  )}
+</div>
+
           <div className="dashboard-screens">
             <MenuNav
               showDrop={showDrop}
@@ -409,18 +487,20 @@ useEffect(() => {
                       <div className="nano-overall-div">
                         {stepServices?.length > 0 ? (
                           stepServices.slice(0, 3).map((item, index) => (
-                            <Carousel1
-                              key={index}
-                              item={item}
-                              showNewDiv={showNewDiv}
-                              handleRejectClick={handleRejectClick}
-                              position={index}
-                              selectedCard={selectedCard}
-                              setSelectedCard={setSelectedCard}
-                              setIndex={setIndex}
-                              setAcceptOffer={setAcceptOffer}
-                              userDetails={userDetails}
-                            />
+                           <Carousel1
+  key={index}
+  item={item}
+  showNewDiv={showNewDiv}
+  handleRejectClick={handleRejectClick}
+  position={index}
+  selectedCard={selectedCard}
+  setSelectedCard={setSelectedCard}
+  setIndex={setIndex}
+  setAcceptOffer={setAcceptOffer}
+  setBuy={setBuy}               // <-- added
+  userDetails={userDetails}
+/>
+
                           ))
                         ) : (
                           <div style={{ textAlign: "center", marginTop: "1rem", fontSize: "14px", color: "#666" }}>
@@ -434,19 +514,30 @@ useEffect(() => {
                 </div>
               </div>
 
-              {/* <center>
-          <div className="cs-footer1">
-            <div onClick={() => {
-              setPopup(true);
-              setPopupDetails("no");
-            }}>Failed</div>
-            <div>Did you complete this step?</div>
-            <div onClick={() => {
-              setPopup(true);
-              setPopupDetails("yes");
-            }}>Yes</div>
-          </div>
-        </center> */}
+<center>
+  <div className="cs-footer1">
+    <div
+      onClick={() => {
+        setPopup(true);
+        setPopupDetails("no");
+      }}
+    >
+      Failed
+    </div>
+
+    <div>Did you complete this step?</div>
+
+    <div
+      onClick={() => {
+        setPopup(true);
+        setPopupDetails("yes");
+      }}
+    >
+      Yes
+    </div>
+  </div>
+</center>
+
               {acceptOffer && (
                 <div
                   className="accept-offer-overlay"
@@ -465,54 +556,49 @@ useEffect(() => {
                   >
                     {buy === "step1" ? (
                       <>
-                        <div className="amount-details-cs">
-                          <div
-                            className="left-amnt-cs"
-                            style={{ borderRight: "1px solid #E7E7E7" }}
-                          >
-                            <p className="amnt-font-cs">
-                              {index?.first_purchase && index?.first_purchase?.price
-                                ? index?.first_purchase?.price?.toFixed(2)
-                                : "0.00"}
-                              &nbsp;
-                              {index?.first_purchase && index?.first_purchase?.coin
-                                ? index?.first_purchase?.coin
-                                : ""}
-                            </p>
-                            <p className="text-font-cs">
-                              {index?.first_purchase && index?.first_purchase?.coin
-                                ? "First Purchase"
-                                : "Monthly"}
-                            </p>
-                          </div>
-                          <div className="left-amnt1-cs">
-                            <p className="amnt-font-cs">
-                              {index?.monthly && index?.billing_cycle?.monthly?.price
-                                ? index?.billing_cycle?.monthly?.price?.toFixed(2)
-                                : "0.00"}
-                              &nbsp;
-                              {index?.monthly && index?.billing_cycle?.monthly?.coin
-                                ? index?.billing_cycle?.monthly?.coin
-                                : ""}
-                            </p>
-                            <p className="text-font-cs">
-                              {index?.monthly && index?.billing_cycle?.monthly?.coin
-                                ? "Monthly"
-                                : "Monthly"}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="buttonss-cs">
-                          <button
-                            className="buy-btn-cs"
-                            onClick={() => {
-                              setBuy("step2");
-                            }}
-                          >
-                            Buy Now
-                          </button>
+                       <div className="amount-details-cs">
+  {/* LIFETIME PRICE */}
+  <div className="left-amnt-cs" style={{ borderRight: "1px solid #E7E7E7" }}>
+    <p className="amnt-font-cs">
+      {(index?.billing_cycle?.lifetime?.price ?? 0).toFixed(2)}
+      &nbsp;
+      {index?.billing_cycle?.lifetime?.coin ?? "USD"}
+    </p>
+    <p className="text-font-cs">Lifetime</p>
+  </div>
 
-                        </div>
+  {/* MONTHLY PRICE */}
+  <div className="left-amnt1-cs">
+    <p className="amnt-font-cs">
+      {(index?.billing_cycle?.monthly?.price ?? 0).toFixed(2)}
+      &nbsp;
+      {index?.billing_cycle?.monthly?.coin ?? "USD"}
+    </p>
+    <p className="text-font-cs">Monthly</p>
+  </div>
+
+  {/* YEARLY PRICE */}
+  <div className="left-amnt1-cs">
+    <p className="amnt-font-cs">
+      {(index?.billing_cycle?.annual?.price ?? 0).toFixed(2)}
+      &nbsp;
+      {index?.billing_cycle?.annual?.coin ?? "USD"}
+    </p>
+    <p className="text-font-cs">Yearly</p>
+  </div>
+</div>
+
+<div className="buttonss-cs">
+  <button
+    className="buy-btn-cs"
+    onClick={() => {
+      setBuy("step2");
+    }}
+  >
+    Buy Now
+  </button>
+</div>
+
                       </>
                     ) : buy === "step2" ? (
                       <div className="buy-step1-cs">
@@ -630,6 +716,7 @@ const Carousel1 = ({
   selectedCard,
   setIndex,
   setAcceptOffer,
+  setBuy,            // <-- added here
   userDetails,
 }) => {
   const initiatePurchase = (service) => {
@@ -714,23 +801,41 @@ const Carousel1 = ({
   // Razorpay Ends
 
   // ---- Use the current service shape directly ----
-  const service = item || {};
-  const title = service.name || "Untitled Service";
-  const creator = service.productcreatoremail || "-";
-  const billingType = service.chargingtype || "-";
-  const billing = service.billing_cycle || {};
-  const cost =
-    billing?.lifetime?.price ??
-    billing?.monthly?.price ??
-    billing?.annual?.price ??
-    0;
-  const coin =
-    billing?.lifetime?.coin ??
-    billing?.monthly?.coin ??
-    billing?.annual?.coin ??
-    "";
+const service = item || {};
 
-  const description = service.description || "";
+// Fix first_purchase for drawer pricing
+service.first_purchase = {
+  price:
+    service.billing_cycle?.monthly?.price ||
+    service.billing_cycle?.annual?.price ||
+    service.billing_cycle?.lifetime?.price ||
+    0,
+  coin:
+    service.billing_cycle?.monthly?.coin ||
+    service.billing_cycle?.annual?.coin ||
+    service.billing_cycle?.lifetime?.coin ||
+    "",
+};
+
+const title = service.name || "Untitled Service";
+const creator = service.productcreatoremail || "-";
+const billingType = service.chargingtype || "-";
+
+// Correct price selection
+const cost =
+  service.billing_cycle?.monthly?.price ||
+  service.billing_cycle?.annual?.price ||
+  service.billing_cycle?.lifetime?.price ||
+  0;
+
+const coin =
+  service.billing_cycle?.monthly?.coin ||
+  service.billing_cycle?.annual?.coin ||
+  service.billing_cycle?.lifetime?.coin ||
+  "";
+
+const description = service.description || "";
+
 
   return (
     <div
@@ -776,16 +881,37 @@ const Carousel1 = ({
       </div>
 
       <div className="nano-btns">
-        <div
-          className="accept-btn"
-          onClick={(e) => {
-            e.stopPropagation();
-            initiatePurchase(service); // pass the service itself
-            displayRazorpay(Number(cost));
-          }}
-        >
-          Buy Now
-        </div>
+    <div
+  className="accept-btn"
+  onClick={(e) => {
+    e.stopPropagation();
+
+    // Inject first_purchase dynamically
+    const selectedService = {
+      ...service,
+      first_purchase: {
+        price:
+          service?.billing_cycle?.monthly?.price ||
+          service?.billing_cycle?.annual?.price ||
+          service?.billing_cycle?.lifetime?.price ||
+          0,
+        coin:
+          service?.billing_cycle?.monthly?.coin ||
+          service?.billing_cycle?.annual?.coin ||
+          service?.billing_cycle?.lifetime?.coin ||
+          "",
+      },
+    };
+
+    setIndex(selectedService);   // now this contains first_purchase
+    setAcceptOffer(true);        // open drawer
+    setBuy("step1");             // start Step 1 inside drawer
+  }}
+>
+  Buy Now
+</div>
+
+
       </div>
     </div>
   );

@@ -156,21 +156,24 @@ export const GlobalContexProvider = ({ children }) => {
     }
   }, [tabSelected]);
 
-  useEffect(() => {
-    setCoinLoading(true);
-    axios
-      .post("https://comms.globalxchange.io/coin/vault/service/coins/get", {
-        app_code: "ice",
-      })
-      .then((res) => {
-        const { data } = res;
-        if (data.status) {
-          const { coins_data } = data;
-          setCoinList(coins_data);
-        }
-      })
-      .finally(() => setCoinLoading(false));
-  }, []);
+useEffect(() => {
+  if (!bankerEmail) return;
+
+  setCoinLoading(true);
+
+  axios
+    .get(`http://localhost:4545/api/vault/coins/${encodeURIComponent(bankerEmail)}`)
+    .then((res) => {
+      const { data } = res;
+      if (data.status) {
+        setCoinList(data.data);
+      }
+    })
+    .catch((err) => console.log("Vault error:", err.message))
+    .finally(() => setCoinLoading(false));
+}, [bankerEmail]);
+
+
 
   const [userType, setUserType] = useState(
     localStorage.getItem("userType") || "App Owner"
@@ -431,14 +434,17 @@ export const GlobalContexProvider = ({ children }) => {
     }
   }, [localStorage.getItem("loginData")]);
 
-  useEffect(() => {
-    if (localStorage.getItem("bankerEmailNew")) {
-      setBankerEmail(localStorage.getItem("bankerEmailNew"));
-    } else {
-      setBankerEmail(loginData?.user?.email);
-    }
-    setSelectedApp(JSON.parse(localStorage.getItem("selectedApp")));
-  }, []);
+// --- SET BANKER EMAIL AFTER LOGIN DATA LOADS ---
+useEffect(() => {
+  let stored = localStorage.getItem("bankerEmailNew");
+
+  if (stored) {
+    setBankerEmail(stored);
+  } else if (loginData?.user?.email) {
+    setBankerEmail(loginData.user.email);
+  }
+}, [loginData]);
+
 
   useEffect(() => {
     axios

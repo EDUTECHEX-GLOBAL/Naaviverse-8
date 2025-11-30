@@ -17,6 +17,11 @@ import logo from "../../static/images/logo.svg";
 const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selectedPath }) => {
   const userDetails = JSON.parse(localStorage.getItem("user"));
 
+const [macroView, setMacroView] = useState("");
+const [microView, setMicroView] = useState({});
+const [nanoView, setNanoView] = useState([]);
+
+
   const {
     currentStepData,
     setCurrentStepData,
@@ -150,82 +155,62 @@ useEffect(() => {
 }, []);
 
   /** ===================== FETCH STEP DATA ====================== **/
-  useEffect(() => {
-    const stepId = localStorage.getItem("selectedStepId");
-    const stepData = localStorage.getItem("selectedStepData");
+/** ===================== FETCH STEP DETAILS (NAME + DESCRIPTION) ====================== **/
+useEffect(() => {
+  const stepId = localStorage.getItem("selectedStepId");
+  const universityId = localStorage.getItem("selectedUniversityId");
 
-    if (stepData) {
-      try { 
-        setCurrentStepData(JSON.parse(stepData)); 
-      } catch (error) {
-        console.error("Error parsing step data:", error);
+  if (!stepId || !universityId) return;
+
+  axios
+    .get(`/api/universities/${universityId}/steps`)
+    .then((res) => {
+      const steps = res.data?.steps || res.data?.data?.steps || [];
+
+      // find the selected step by step_id
+      const step = steps.find((s) => s.step_id === stepId);
+
+      if (step) {
+        console.log("🔥 STEP DETAILS FOUND:", step);
+        setCurrentStepPageData(step);
+      } else {
+        console.log("❌ Step not found in university");
       }
-    }
-
-const fetchServices = async (stepId) => {
-  if (!stepId) {
-    setStepServices([]);
-    return;
-  }
-
-  try {
-    console.log("Fetching services for step:", stepId);
-    
-    // Add timeout and better error handling
-    const response = await axios.get(`/api/services/by-step?step_id=${stepId}`, {
-      timeout: 10000, // 10 second timeout
+    })
+    .catch((err) => {
+      console.error("❌ Error fetching steps:", err.message);
     });
-    
-    console.log("Services API response:", response.data);
+}, []);
 
-    let servicesData = [];
 
-    // Handle different response structures
-    if (Array.isArray(response.data)) {
-      servicesData = response.data;
-    } else if (response.data?.data && Array.isArray(response.data.data)) {
-      servicesData = response.data.data;
-    } else if (response.data?.status && Array.isArray(response.data.data)) {
-      servicesData = response.data.data;
+
+
+  /** ===================== FETCH AI STEP VIEWS ====================== **/
+useEffect(() => {
+  const loadStepViews = async () => {
+    const stepId = localStorage.getItem("selectedStepId");
+    const universityId = localStorage.getItem("selectedUniversityId");
+
+    if (!stepId || !universityId) return;
+
+    try {
+      const res = await axios.get(
+        `/api/stepviews?stepId=${stepId}&universityId=${universityId}`
+      );
+
+      console.log("🔥 AI STEP VIEWS:", res.data.data);
+
+      setMacroView(res.data.data.macroView);
+      setMicroView(res.data.data.microView);
+      setNanoView(res.data.data.nanoView);
+
+    } catch (err) {
+      console.error("Error fetching AI step views:", err);
     }
+  };
 
-    console.log("Processed services data:", servicesData);
-
-    if (servicesData.length > 0) {
-      setStepServices(servicesData);
-      localStorage.setItem("selectedStepServices", JSON.stringify(servicesData));
-    } else {
-      // If no services from API, use fallback services
-      const fallbackServices = getFallbackServices();
-      setStepServices(fallbackServices);
-      localStorage.setItem("selectedStepServices", JSON.stringify(fallbackServices));
-      console.log("Using fallback services - no data from API");
-    }
-
-  } catch (error) {
-    console.error("Error fetching services:", error.message);
-    
-    // Try to use cached services first
-    const cachedServices = localStorage.getItem("selectedStepServices");
-    if (cachedServices) {
-      try {
-        const parsedServices = JSON.parse(cachedServices);
-        setStepServices(parsedServices);
-        console.log("Using cached services due to network error");
-      } catch (parseError) {
-        console.error("Error parsing cached services:", parseError);
-        setStepServices(getFallbackServices());
-      }
-    } else {
-      // Use fallback services as last resort
-      setStepServices(getFallbackServices());
-      console.log("Using fallback services due to network error");
-    }
-  }
-};
-
-    fetchServices(stepId);
-  }, []);
+  loadStepViews();
+}, []);
 
   /** ===================== FALLBACK SERVICES ====================== **/
   const getFallbackServices = () => {
@@ -271,6 +256,60 @@ const fetchServices = async (stepId) => {
       }
     ];
   };
+
+  /** ===================== RELOAD SERVICES FOR CURRENT STEP ====================== **/
+const reloadServices = async () => {
+  const stepId = localStorage.getItem("selectedStepId");
+
+  if (!stepId) {
+    console.warn("❌ No stepId found.");
+    return;
+  }
+
+  try {
+    const res = await axios.get(
+      `http://localhost:4545/api/services/by-step?step_id=${stepId}`
+    );
+
+    let list = res?.data?.data || [];
+
+    // ⭐ If no services found → use fallback
+    if (!list.length) {
+      console.log("⚠ No live services. Using fallback.");
+      list = getFallbackServices();
+    }
+
+    setStepServices(list);
+    console.log("SERVICES FINAL LIST:", list);
+  } catch (err) {
+    console.error("❌ Service reload failed:", err.message);
+    setStepServices(getFallbackServices());
+  }
+};
+
+/** ===================== PICK SERVICE AFTER stepServices UPDATES ====================== **/
+useEffect(() => {
+  // Only run after drawer is opened
+  if (!acceptOffer) return;
+
+  // Wait until services are loaded
+  if (!stepServices || stepServices.length === 0) return;
+
+  console.log("🔍 stepServices updated — picking service now...");
+
+  const svc = pickServiceForDrawer();
+
+  if (!svc) {
+    console.log("❌ No valid service found after update");
+    alert("No services available for this step.");
+    return;
+  }
+
+  console.log("🎯 Service selected:", svc);
+  setIndex(svc);
+  setBuy("step1");  // drawer now moves to step1 with correct data
+}, [stepServices]);
+
 
   /** ===================== DESCRIPTION RESOLVERS ====================== **/
   useEffect(() => {
@@ -318,63 +357,99 @@ const fetchServices = async (stepId) => {
     }
   }, [userData, currentStepPageData]);
 
-  /** ===================== helpers ====================== **/
-  const pickServiceForDrawer = () => {
-    const bySelected =
-      stepServices?.[selectedCard]?.ServiceDetails?.[0] || stepServices?.[selectedCard];
-    const byFirst =
-      stepServices?.[0]?.ServiceDetails?.[0] || stepServices?.[0];
-    return bySelected || byFirst || null;
-  };
+ /** ===================== helpers ====================== **/
+const pickServiceForDrawer = () => {
+  try {
+    if (!stepServices || stepServices.length === 0) {
+      console.log("❌ No stepServices loaded yet");
+      return null;
+    }
+
+    // 1) Try selected card
+    const selected = stepServices[selectedCard];
+    if (selected?.ServiceDetails?.length > 0) {
+      console.log("🎯 Using selected card:", selectedCard);
+      return selected.ServiceDetails[0];
+    }
+
+    // 2) Try first service
+    const first = stepServices[0];
+    if (first?.ServiceDetails?.length > 0) {
+      console.log("🎯 Using first service");
+      return first.ServiceDetails[0];
+    }
+
+    // 3) No valid service anywhere
+    console.log("❌ No valid ServiceDetails found in any service");
+    return null;
+
+  } catch (err) {
+    console.error("💥 Error in pickServiceForDrawer:", err);
+    return null;
+  }
+};
+
+
 
   /** ===================== COMPLETE STEP (YES FLOW) ====================== **/
-  const completeStep = async (stepid, pathid) => {
-    try {
-      const obj = {
-        email: userDetails?.user?.email,
-        pathId: pathid,
-        step_id: stepid,
-      };
+const completeStep = async (stepid) => {
+  const pathId = selectedPathId || localStorage.getItem("selectedPathId");
+  const email = userDetails?.email || userDetails?.user?.email;
 
-      const { status } = await axios.put(
-        "https://careers.marketsverse.com/userpaths/completeStep",
-        obj
-      );
+  console.log("📤 SENDING TO BACKEND:", {
+    email,
+    pathId,
+    step_id: stepid
+  });
 
-      if (status >= 200 && status < 300) {
-        setPopupContent("success");
-        setPopupDetails("yes");
+  try {
+    const res = await axios.put(
+      "http://localhost:4545/api/userpaths/completeStep",
+      {
+        email,
+        pathId,
+        step_id: stepid
       }
-    } catch (error) {
-      // allow flow even if API is flaky (for QA)
-      setPopupContent("success");
-      setPopupDetails("yes");
-    }
-  };
+    );
+
+    setPopupContent("success");
+    setPopupDetails("yes");
+  } catch (error) {
+    console.log("❌ COMPLETE STEP ERROR:", error.response?.data);
+    setPopupContent("success");
+    setPopupDetails("yes");
+  }
+};
 
   /** ===================== FAIL STEP (FAILED FLOW) ====================== **/
-  const failStep = async (stepid, pathid) => {
-    try {
-      const obj = {
-        email: userDetails?.user?.email, // fixed
-        pathId: pathid,
-        step_id: stepid,
-      };
+const failStep = async (stepid) => {
+  const pathId = selectedPathId || localStorage.getItem("selectedPathId");
+  const email = userDetails?.email || userDetails?.user?.email;
 
-      const { status } = await axios.put(
-        "https://careers.marketsverse.com/userpaths/failedStep",
-        obj
-      );
+  console.log("📤 SENDING FAILED STEP:", {
+    email,
+    pathId,
+    step_id: stepid
+  });
 
-      if (status >= 200 && status < 300) {
-        setPopupContent("success");
-        setPopupDetails("no");
+  try {
+    const res = await axios.put(
+      "http://localhost:4545/api/userpaths/failedStep",
+      {
+        email,
+        pathId,
+        step_id: stepid
       }
-    } catch (error) {
-      setPopupContent("success");
-      setPopupDetails("no");
-    }
-  };
+    );
+
+    setPopupContent("success");
+    setPopupDetails("no");
+  } catch (error) {
+    console.log("❌ FAILED STEP ERROR:", error.response?.data);
+    setPopupContent("success");
+    setPopupDetails("no");
+  }
+};
 
   /** ===================== FILTER COINS (SHOW ALL WHEN EMPTY) ====================== **/
   function filterItem(text) {
@@ -414,8 +489,9 @@ const fetchServices = async (stepId) => {
           <div>Apx Takes 3 Days</div>
         </div>
 
-        <div style={{ fontSize: 16, fontWeight: 300, lineHeight: "30px" }}>
-          {currentStepData?.description}
+        <div style={{ fontSize: 16, fontWeight: 300, }}>
+  {currentStepData?.description}
+
         </div>
       </div>
 
@@ -430,8 +506,9 @@ const fetchServices = async (stepId) => {
                 {currentStepData?.name || currentStepPageData?.name}
               </div>
               <div className="macro-text-div">
-                {currentStepData?.description || currentStepPageData?.description}
-              </div>
+  {macroView || "Loading macro view..."}
+</div>
+
             </div>
           </div>
 
@@ -444,78 +521,91 @@ const fetchServices = async (stepId) => {
                 <span>{currentStepData?.name || currentStepPageData?.name}</span> For You
               </div>
 
-              <div className="micro-text-div-container">
-                {/* Simple expanders (only titles show until Open) */}
-                {[
-                  "Based On You're Grade",
-                  "Based On You're Stream",
-                  "Based On You're Curriculum",
-                  "Based On You're Grade Point Avg",
-                  "Based On You're Financial Position",
-                  "Based On You're Personality",
-                ].map((title, i) => (
-                  <div className="micro-text-div" key={title}>
-                    <div className="bold-text-div">
-                      <div className="bold-text">{title}</div>
-                      <div
-                        className="unlock-Btn"
-                        onClick={() => {
-                          [
-                            setShowGradeDesc,
-                            setShowStreamDesc,
-                            setShowCurriculumDesc,
-                            setShowGradePointDesc,
-                            setShowFinancialDesc,
-                            setShowPersonalityDesc,
-                          ][i]((prev) => !prev);
-                        }}
-                      >
-                        {[
-                          showGradeDesc,
-                          showStreamDesc,
-                          showCurriculumDesc,
-                          showGradePointDesc,
-                          showFinancialDesc,
-                          showPersonalityDesc,
-                        ][i]
-                          ? "Close"
-                          : "Open"}
-                      </div>
-                    </div>
-                    <div
-                      className="sub-text"
-                      style={{
-                        display: [
-                          showGradeDesc,
-                          showStreamDesc,
-                          showCurriculumDesc,
-                          showGradePointDesc,
-                          showFinancialDesc,
-                          showPersonalityDesc,
-                        ][i]
-                          ? "flex"
-                          : "none",
-                      }}
-                    >
-                      {currentStepData?.description}
-                    </div>
-                  </div>
-                ))}
-              </div>
+<div className="micro-text-div-container">
+  {[
+    { title: "Based On Your Grade", key: "grade" },
+    { title: "Based On Your Stream", key: "stream" },
+    { title: "Based On Your Curriculum", key: "curriculum" },
+    { title: "Based On Your Grade Point Avg", key: "gpa" },
+    { title: "Based On Your Financial Position", key: "financialPosition" },
+    { title: "Based On Your Personality", key: "personality" },
+  ].map((item, i) => (
+    <div className="micro-text-div" key={item.key}>
+      <div className="bold-text-div">
+        <div className="bold-text">{item.title}</div>
+        <div
+          className="unlock-Btn"
+          onClick={() => {
+            [
+              setShowGradeDesc,
+              setShowStreamDesc,
+              setShowCurriculumDesc,
+              setShowGradePointDesc,
+              setShowFinancialDesc,
+              setShowPersonalityDesc,
+            ][i]((prev) => !prev);
+          }}
+        >
+          {[
+            showGradeDesc,
+            showStreamDesc,
+            showCurriculumDesc,
+            showGradePointDesc,
+            showFinancialDesc,
+            showPersonalityDesc,
+          ][i]
+            ? "Close"
+            : "Open"}
+        </div>
+      </div>
+
+      <div
+        className="sub-text"
+        style={{
+          display: [
+            showGradeDesc,
+            showStreamDesc,
+            showCurriculumDesc,
+            showGradePointDesc,
+            showFinancialDesc,
+            showPersonalityDesc,
+          ][i]
+            ? "flex"
+            : "none",
+        }}
+      >
+        {microView[item.key] || "Loading..."}
+      </div>
+    </div>
+  ))}
+</div>
+
             </div>
           </div>
 
           {/* Nano */}
-          <div className="nano-view-box">
-            <div className="nano-text">Nano View:</div>
-            <div className="nano-content">
-              <div className="step-text">
-                Get A Naavi Certified Vendor To Assist You In Choosing{" "}
-                <span>{currentStepData?.name || currentStepPageData?.name}</span>
-                <div className="step-description">
-                  {currentStepData?.description || currentStepPageData?.description}
-                </div>
-              </div>
+<div className="nano-view-box">
+  <div className="nano-text">Nano View:</div>
+
+  <div className="nano-content">
+
+    <div className="step-text">
+      Get A Naavi Certified Vendor To Assist You In Choosing{" "}
+      <span>{currentStepData?.name || currentStepPageData?.name}</span>
+    </div>
+
+    <div className="nano-scroll-area">
+      {nanoView.length > 0 ? (
+        nanoView.map((line, idx) => <p key={idx}>{line}</p>)
+      ) : (
+        <p>Loading nano insights...</p>
+      )}
+    </div>
+
+  </div>
+
+ 
+
 
               {/* <div className="nano-overall-div">
                 {stepServices?.length > 0 ? (
@@ -543,7 +633,7 @@ const fetchServices = async (stepId) => {
             </div>
           </div>
         </div>
-      </div>
+   
 
       {/* ==== FOOTER ==== */}
       <center>
@@ -723,9 +813,9 @@ const fetchServices = async (stepId) => {
                     className="yes-Btn"
                     onClick={() => {
                       if (currentStepData?._id) {
-                        completeStep(currentStepData?._id, currentStepdataPathId);
+                       completeStep(currentStepData?._id, selectedPathId);
                       } else {
-                        completeStep(currentStepPageData?._id, currentStepPagePathId);
+                       completeStep(currentStepPageData?._id, selectedPathId);;
                       }
                     }}
                   >
@@ -755,9 +845,9 @@ const fetchServices = async (stepId) => {
                     style={{ background: "#100F0D" }}
                     onClick={() => {
                       if (currentStepData?._id) {
-                        failStep(currentStepData?._id, currentStepdataPathId);
+                       failStep(currentStepData?._id, selectedPathId);
                       } else {
-                        failStep(currentStepPageData?._id, currentStepPagePathId);
+                       failStep(currentStepPageData?._id, selectedPathId);;
                       }
                     }}
                   >
@@ -777,54 +867,58 @@ const fetchServices = async (stepId) => {
               </>
             )}
 
-            {/* Shared success */}
-            {popupContent === "success" && (
-              <>
-                <div className="popup-text">
-                  {popupDetails === "yes" ? "Completed step updated!" : "Failed step updated!"}
-                </div>
-                <div className="popup-btns">
-                  <div
-                    className="yes-Btn"
-                    onClick={() => {
-                      if (popupDetails === "yes") {
-                        // === YES FLOW ===
-                        setPopup(false);
-                        setPopupContent("default");
-                        setPopupDetails("");
-
-                        const svc = pickServiceForDrawer();
-                        if (!svc) {
-                          alert("No services available for this step.");
-                          return;
-                        }
-
-                        // populate prices for Step-1 and currencies for Step-2
-                        setIndex(svc);
-                        setAcceptOffer(true);
-                        setBuy("step1");
-                        // seed all coins so list is full on Step-2
-                        setTimeout(() => filterItem(""), 0);
-                      } else {
-                        // === FAILED FLOW ===
-                        setPopup(false);
-                        setPopupContent("default");
-                        setPopupDetails("");
-                        setsideNav("My Journey");
-                      }
-                    }}
-                  >
-                    OK
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+    {/* Shared success */}
+{popupContent === "success" && (
+  <>
+    <div className="popup-text">
+      {popupDetails === "yes"
+        ? "Completed step updated!"
+        : "Failed step updated!"}
     </div>
-  );
-};
+
+    <div className="popup-btns">
+      <div
+        className="yes-Btn"
+onClick={async () => {
+  if (popupDetails === "yes") {
+    setPopup(false);
+    setPopupContent("default");
+    setPopupDetails("");
+
+    console.log("🔄 Reloading services before opening drawer...");
+    
+    await reloadServices();   // only reload here
+    
+    // 🔥 open drawer but DO NOT pick service yet
+    setAcceptOffer(true);
+    setBuy("stepLoading");
+    filterItem(""); 
+  } else {
+    setPopup(false);
+    setPopupContent("default");
+    setPopupDetails("");
+    setsideNav("My Journey");
+  }
+}}
+
+
+      >
+        OK
+      </div>
+    </div>
+  </>
+)}  {/* END popupContent === "success" */}
+
+
+           </div> {/* END modal-container */}
+        </div> /* END popup-overlay */
+      )}        {/* END popup && (...) */}
+
+    </div> /* END main wrapper */
+  );     // END return
+};       // END CurrentStep component
+  
+
 
 /* ============================================================
    ✅ SERVICE CARD (Nano) - FIXED VERSION

@@ -19,7 +19,7 @@ export function getVaultsCoin(
   };
 
   axios
-    .post('https://comms.globalxchange.io/coin/vault/service/coins/get', obj)
+    .post('http://localhost:4545/api/vault/coins/<email>', obj)
     .then((response) => {
       // console.log(response?.data?.coins_data, 'getVaultsCoin response');
       setfunc(response?.data?.coins_data);

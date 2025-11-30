@@ -3,7 +3,7 @@ import axios from 'axios';
 export const coinData = (object) => {
   try {
     const response = axios.post(
-      `https://comms.globalxchange.io/coin/vault/service/coins/get`,
+      `http://localhost:4545/api/vault/coins/<email>`,
       object
     );
     return response;

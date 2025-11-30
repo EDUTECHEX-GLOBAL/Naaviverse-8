@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./dashboard.scss";
+import Directory from "../Directory";
 import Appnavbar from "../../components/appnavbar/appnavbar";
 import Dashsidebar from "../../components/dashsidebar/dashsidebar";
 import searchic from "../../static/images/dashboard/searchic.svg";
@@ -1325,7 +1326,7 @@ const resetCoinAction = () => {
                     <CurrentStep productDataArray={productDataArray} />
                   </div>
                 </>
-              ): sideNav === "Transactions" ? (
+              ) : sideNav === "Transactions" ? (
                 <TransactionPage 
                   showDrop={showDrop}
                   setShowDrop={setShowDrop} 
@@ -1335,9 +1336,28 @@ const resetCoinAction = () => {
                   profile={profile}
                   downarrow={downarrow}
                 />
+              ) : sideNav === "Universities" ? (
+                <>
+                  <MenuNav 
+                    showDrop={showDrop}
+                    setShowDrop={setShowDrop}
+                    searchTerm={searchTerm}
+                    setSearchterm={setSearchterm}
+                    searchPlaceholder="Search Universities..."
+                  />
+                  <div
+                    className="services-main"
+                    style={{ height: "calc(100% - 70px)" }}
+                    onClick={() => setShowDrop(false)}
+                  >
+                    <Directory />
+                  </div>
+                </>
               ) : (
                 ""
               )}
+
+              
             </div>
           </div>
         </div>

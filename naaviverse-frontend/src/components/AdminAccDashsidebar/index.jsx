@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import realtorwhite from "../../static/images/dashboard/realtorwhite.svg";
 import "./accDashsidebar.scss";
 import { useStore } from "../store/store.ts";
@@ -26,6 +26,13 @@ const sidebarMenu1 = [
     title: "Paths",
     click: true,
   },
+
+  { 
+    id: 3, 
+    display: "Universities", 
+    title: "Universities", 
+    click: true 
+  },
 ];
 
 const sidebarMenu2 = [
@@ -48,11 +55,18 @@ const sidebarMenu2 = [
     click: true,
   },
   {
-    id: 2,
+    id: 3,
     display: "Services",
     title: "Services",
     click: true,
   },
+
+   { 
+      id: 4, 
+      display: "Universities",
+      title: "Universities", 
+      click: true 
+    },
 ];
 
 const sidebarMenu3 = [
@@ -84,7 +98,12 @@ const sidebarMenu4 = [
 
 
 const AdminAccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar , admin}) => {
-  const [selectedMenu, setSelectedMenu] = useState(admin ? sidebarMenu2: sidebarMenu1)
+ const [selectedMenu, setSelectedMenu] = useState([]);
+
+useEffect(() => {
+  setSelectedMenu(admin ? sidebarMenu2 : sidebarMenu1);
+}, [admin]);
+
   const { accsideNav, setaccsideNav, setispopular } = useStore();
   const navigate = useNavigate();
   return (

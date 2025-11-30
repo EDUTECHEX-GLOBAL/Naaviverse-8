@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const Universities = require("../models/universities.model");
+const mongoose = require("mongoose");
 
 /**
  * =====================================================
@@ -75,12 +76,12 @@ Return ONLY JSON:
     }
 
     // ---------------------------
-    // 3️⃣ CLEAN THE JSON — FIX INVALID OUTPUT
+    // 3️⃣ CLEAN THE JSON
     // ---------------------------
     raw = raw
       .replace(/```json/g, "")
       .replace(/```/g, "")
-      .replace(/[\u0000-\u001F]+/g, "") // remove control chars
+      .replace(/[\u0000-\u001F]+/g, "")
       .trim();
 
     let generatedJson;
@@ -88,7 +89,7 @@ Return ONLY JSON:
     try {
       generatedJson = JSON.parse(raw);
     } catch (err) {
-      console.log("❌ AI returned invalid JSON (after cleanup):", raw);
+      console.log("❌ AI returned invalid JSON:", raw);
 
       return res.status(500).json({
         status: false,
@@ -97,8 +98,19 @@ Return ONLY JSON:
       });
     }
 
+    // -------------------------------------------------------
+    // 4️⃣ ADD UNIQUE ID TO EACH STEP (IMPORTANT FIX)
+    // -------------------------------------------------------
+    if (Array.isArray(generatedJson.steps)) {
+      generatedJson.steps = generatedJson.steps.map((step) => ({
+        ...step,
+        id: new mongoose.Types.ObjectId().toString(),
+      }));
+    }
+    // -------------------------------------------------------
+
     // ---------------------------
-    // 4️⃣ UPDATE MONGODB
+    // 5️⃣ UPDATE MONGODB
     // ---------------------------
     const updated = await Universities.findByIdAndUpdate(
       id,

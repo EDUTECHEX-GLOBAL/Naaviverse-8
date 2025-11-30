@@ -8,31 +8,51 @@ const servicesSchema = new mongoose.Schema({
     chargingCurrency: { coin: { type: String } },
 
     // ✅ Link service to a specific step
-    step_id: { type: mongoose.Schema.Types.ObjectId, ref: "career_steps" },
+  step_id: { type: String, required: true },
 
     // ✅ Optional nested services for multiple attachments later
-    ServiceDetails: [
-        {
-            stepId: { type: mongoose.Schema.Types.ObjectId, ref: "career_steps" },
-            name: String,
-            description: String
-        }
-    ],
+ServiceDetails: [
+  {
+    product_name: String,
+    description: String,
+
+    first_purchase: {
+      price: Number,
+      coin: String
+    },
 
     billing_cycle: {
-        monthly: {
-            price: { type: Number },
-            coin: { type: String }
-        },
-        annual: {
-            price: { type: Number },
-            coin: { type: String }
-        },
-        lifetime: {
-            price: { type: Number },
-            coin: { type: String }
-        }
-    },
+      monthly: {
+        price: Number,
+        coin: String
+      },
+      annual: {
+        price: Number,
+        coin: String
+      },
+      lifetime: {
+        price: Number,
+        coin: String
+      }
+    }
+  }
+],
+
+
+    // billing_cycle: {
+    //     monthly: {
+    //         price: { type: Number },
+    //         coin: { type: String }
+    //     },
+    //     annual: {
+    //         price: { type: Number },
+    //         coin: { type: String }
+    //     },
+    //     lifetime: {
+    //         price: { type: Number },
+    //         coin: { type: String }
+    //     }
+    // },
 
     serviceProvider: { type: String },
     access: { type: String },

@@ -279,16 +279,17 @@ const pathSelection = () => {
   const myTimeout = () => {
     setTimeout(reload, 3000);
   };
-
 function reload() {
   setsideNav("My Journey");
 
-  // FULL RESET
-  setSelectedPathItem(null);
-  setPathItemSelected(false);
+  // Do NOT reset these here
+  // setSelectedPathItem(null);
+  // setPathItemSelected(false);
+
   setPathItemStep(3); // <-- show Congratulations
   navigate("/dashboard/users");
 }
+
 
 
 
@@ -700,22 +701,18 @@ useEffect(() => {
             )}
           </div>
 
-          <div className="maps-content-area1">
-         <Pathview 
-  paths={levelThreeData}
-  loading={loading}
-onSelectPath={(uni) => {
-  setSelectedPathItem(uni);
-  setPathItemSelected(true);
-  setPathItemStep(1);
-}}
+   <div className="maps-content-area1">
+  <Pathview
+    paths={levelThreeData}
+    loading={loading}
+    onConfirmPath={(uni) => {
+      setSelectedPathItem(uni);
+      setPathItemSelected(true);
+      setPathItemStep(1);
+    }}
+  />
+</div>
 
-
-/>
-
-
-
-          </div>
         </div>
       )}
     </div>

@@ -5,43 +5,56 @@ const mongoose = require('mongoose');
 const addService = async (req, res) => {
     console.log('Request to add service:', req.body);
 
-    let createService = {
-        productcreatoremail: req.body.productcreatoremail,
-        name: req.body.product_name,
-        icon: req.body.product_icon,
-        description: req.body.full_description,
-        chargingtype: req.body.billingType || "default",
-        revenue_account: req.body.revenue_account,
-        client_app: req.body.client_app,
-        product_category_code: req.body.product_category_code,
-        sub_category_code: req.body.sub_category_code,
-        custom_product_label: req.body.custom_product_label,
-        points_creation: req.body.points_creation,
-        sub_text: req.body.sub_text,
-        first_purchase: req.body.first_purchase,
-        grace_period: req.body.grace_period || 0,
-        first_retry: req.body.first_retry || 0,
-        second_retry: req.body.second_retry || 0,
-        staking_allowed: req.body.staking_allowed,
-        staking_details: req.body.staking_details,
-        billing_cycle: {},
-        serviceProvider: req.body.serviceProvider || "",
-        access: req.body.access || "",
-        goal: req.body.goal || "",
-        grade: req.body.gradeData || [],
-        financialSituation: req.body.financialData || "",
-        stream: req.body.stream || "",
-        cost: req.body.cost || 0,
-        price: req.body.price || 0,
-        discountType: req.body.discountType || "",
-        discountAmount: req.body.discountAmount || 0,
-        duration: req.body.duration || 0,
-        features: req.body.features || [],
-        status: req.body.status || "active",
-        outcome: req.body.outcome || "",
-        type: req.body.type || "",
-        iterations: req.body.iterations || [],
-    };
+  let createService = {
+    productcreatoremail: req.body.productcreatoremail,
+
+    // FIXED FIELDS
+    name: req.body.name,   
+    icon: req.body.product_icon,
+    description: req.body.description || req.body.full_description,
+
+    // 🚀 FIXED: NOW IT USES THE CORRECT FIELD
+    chargingtype: req.body.chargingtype,
+
+    revenue_account: req.body.revenue_account,
+    client_app: req.body.client_app,
+    product_category_code: req.body.product_category_code,
+    sub_category_code: req.body.sub_category_code,
+    custom_product_label: req.body.custom_product_label,
+    points_creation: req.body.points_creation,
+    sub_text: req.body.sub_text,
+
+    // ⭐ CRITICAL: FIRST PURCHASE NOW SAVES CORRECTLY
+    first_purchase: req.body.first_purchase,
+
+    grace_period: req.body.grace_period || 0,
+    first_retry: req.body.first_retry || 0,
+    second_retry: req.body.second_retry || 0,
+    staking_allowed: req.body.staking_allowed,
+    staking_details: req.body.staking_details,
+
+    billing_cycle: {},
+
+    serviceProvider: req.body.serviceProvider || "",
+    access: req.body.access || "",
+    goal: req.body.goal || "",
+    grade: req.body.gradeData || [],
+    financialSituation: req.body.financialData || "",
+    stream: req.body.stream || "",
+    cost: req.body.cost || 0,
+    price: req.body.price || 0,
+    discountType: req.body.discountType || "",
+    discountAmount: req.body.discountAmount || 0,
+    duration: req.body.duration || 0,
+    features: req.body.features || [],
+    status: req.body.status || "active",
+    outcome: req.body.outcome || "",
+    type: req.body.type || "",
+    iterations: req.body.iterations || [],
+    ServiceDetails: req.body.ServiceDetails || []
+
+};
+
 
     // ✅ Save step_id (IMPORTANT!)
     if (req.body.step_id) {
@@ -49,19 +62,27 @@ const addService = async (req, res) => {
     }
 
     // Payment plans
-    if (req.body.billing_cycle?.monthly) {
-        createService.billing_cycle.monthly = {
-            price: req.body.billing_cycle.monthly.price || 0,
-            coin: req.body.billing_cycle.monthly.coin,
-        };
-    }
+   if (req.body.billing_cycle?.monthly) {
+    createService.billing_cycle.monthly = {
+        price: req.body.billing_cycle.monthly.price || 0,
+        coin: req.body.billing_cycle.monthly.coin,
+    };
+}
 
-    if (req.body.billing_cycle?.annual) {
-        createService.billing_cycle.annual = {
-            price: req.body.billing_cycle.annual.price || 0,
-            coin: req.body.billing_cycle.annual.coin,
-        };
-    }
+if (req.body.billing_cycle?.annual) {
+    createService.billing_cycle.annual = {
+        price: req.body.billing_cycle.annual.price || 0,
+        coin: req.body.billing_cycle.annual.coin,
+    };
+}
+
+if (req.body.billing_cycle?.lifetime) {
+    createService.billing_cycle.lifetime = {
+        price: req.body.billing_cycle.lifetime.price || 0,
+        coin: req.body.billing_cycle.lifetime.coin,
+    };
+}
+
 
     try {
         let service = await serviceModel.create(createService);

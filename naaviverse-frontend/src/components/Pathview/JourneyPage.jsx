@@ -96,3 +96,4 @@ const JourneyPage = () => {
 };
 
 export default JourneyPage;
+ 

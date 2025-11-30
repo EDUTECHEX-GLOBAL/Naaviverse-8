@@ -36,7 +36,7 @@ export const login = async (credentials) => {
 
 export const getCoinsForApp = (app) => {
   return axios.post(
-    `https://comms.globalxchange.io/coin/vault/service/coins/get`,
+    `http://localhost:4545/api/vault/coins/<email>`,
     {
       app_code: app,
     }

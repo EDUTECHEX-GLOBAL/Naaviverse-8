@@ -32,41 +32,28 @@ export const useUserApps = (email) => {
   return query;
 };
 
+// ------------------------
+// NEW: Load user currencies from YOUR backend
+// ------------------------
 const getUserVaults = async ({ queryKey }) => {
-  const [_key, { email, type, appCode, getAllCoins, order, appCurrencyName }] =
-    queryKey;
-  const { data } = await axios.post(
-    "https://comms.globalxchange.io/coin/vault/service/coins/get",
-    {
-      app_code: appCode,
-      email: email,
-      type: type,
-      displayCurrency: appCurrencyName,
-      post_app_prices: true,
-      getAllCoins,
-      orderby_dsc: order,
-    }
+  const [_key, { email }] = queryKey;
+
+  const { data } = await axios.get(
+    `http://localhost:4545/api/vault/coins/${email}`
   );
-  return data.coins_data;
+
+  return data?.data || [];
 };
 
-export const useUserVaults = (
-  email,
-  type,
-  appCode,
-  getAllCoins = false,
-  order = false,
-  appCurrencyName
-) => {
-  const query = useQuery(
-    [
-      "userVaults",
-      { email, type, appCode, getAllCoins, order, appCurrencyName },
-    ],
-    getUserVaults
+export const useUserVaults = (email) => {
+  return useQuery(
+    ["userVaults", { email }],
+    getUserVaults,
+    { enabled: Boolean(email) }
   );
-  return query;
 };
+
+
 
 const getVaultTxns = async ({ queryKey }) => {
   const [
@@ -314,7 +301,7 @@ export const useUserMoneyMarketsTxns = (email, coin, appCode) => {
 // const getMarketCoinsList = async ({ queryKey }) => {
 //   const [_key, { appCode, type, appCurrencyName }] = queryKey;
 //   const { data } = await axios.post(
-//     'https://comms.globalxchange.io/coin/vault/service/coins/get',
+//     'http://localhost:4545/api/vault/coins/<email>',
 //     {
 //       app_code: appCode,
 //       type,
@@ -395,7 +382,7 @@ export const useUserMoneyMarketsTxns = (email, coin, appCode) => {
 //   const [_key, { appCode, email, investmentCoin, coin, appCurrencyName }] =
 //     queryKey;
 //   const { data } = await axios.post(
-//     'https://comms.globalxchange.io/coin/vault/service/coins/get',
+//     'http://localhost:4545/api/vault/coins/<email>',
 //     {
 //       app_code: appCode,
 //       email: email,

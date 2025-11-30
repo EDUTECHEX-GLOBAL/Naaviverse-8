@@ -119,16 +119,24 @@ Return STRICT JSON:
       const aiJson = await aiRes.json();
       const content = aiJson?.choices?.[0]?.message?.content;
 
-      let generated;
-      try {
-        generated = JSON.parse(content);
-      } catch (e) {
-        return res.status(500).json({
-          status: false,
-          error: "AI returned invalid JSON",
-          raw: content,
-        });
-      }
+let generated;
+try {
+  generated = JSON.parse(content);
+
+  // 🔥 AUTO-GENERATE STEP IDs HERE
+  generated.steps = generated.steps.map((step, index) => ({
+    ...step,
+    step_id: `${uni._id}_step_${index}`
+  }));
+
+} catch (e) {
+  return res.status(500).json({
+    status: false,
+    error: "AI returned invalid JSON",
+    raw: content,
+  });
+}
+
 
       uni.generatedProgram = { ...generated, generatedAt: new Date() };
       await uni.save();

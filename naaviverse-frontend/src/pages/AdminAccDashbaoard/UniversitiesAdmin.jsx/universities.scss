@@ -1,0 +1,86 @@
+.admin-uni-wrapper {
+  padding: 20px;
+}
+
+.uni-top-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+
+  input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
+  }
+
+  button {
+    padding: 8px 15px;
+    background: #2a4f9d;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+  }
+}
+
+.uni-table {
+  border: 1px solid #e3e3e3;
+  border-radius: 10px;
+}
+
+.uni-header,
+.uni-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr 1fr 1fr;
+  padding: 12px 15px;
+  border-bottom: 1px solid #ececec;
+}
+
+.uni-header {
+  background: #f5f7fa;
+  font-weight: bold;
+}
+
+.uni-row button {
+  padding: 6px 10px;
+  background: #42a5f5;
+  color: white;
+  border-radius: 5px;
+}
+
+.uni-pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+
+  button {
+    padding: 6px 12px;
+    border-radius: 5px;
+  }
+}
+
+.uni-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.uni-modal {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  width: 700px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.uni-step-card {
+  padding: 12px;
+  border: 1px solid #dedede;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}

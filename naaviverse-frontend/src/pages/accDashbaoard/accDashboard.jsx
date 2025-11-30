@@ -2,6 +2,7 @@ import React, { useState, useLayoutEffect, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./accDashboard.scss";
+import UniversitiesAdmin from "../AdminAccDashbaoard/UniversitiesAdmin.jsx";
 import searchic from "../../static/images/dashboard/searchic.svg";
 import downarrow from "../../static/images/dashboard/downarrow.svg";
 import uploadv from "../../static/images/dashboard/uploadv.svg";
@@ -2119,6 +2120,8 @@ const AccDashboard = () => {
                       >
                         Services
                       </div>
+                     
+
                       {/* <div
                         className="services-each-menu"
                         style={{
@@ -2743,11 +2746,41 @@ const AccDashboard = () => {
                     <MyPaths search={search} fetchAllServicesAgain={fetchAllServicesAgain} />
                   </div>
                 </>
-              ) : accsideNav === "Steps" ? (
+) : accsideNav === "Steps" ? (
 
-                <MyStepsAcc search={search} setSearch={setSearch} showDrop={showDrop} setShowDrop={setShowDrop} loading={loading} setLoading={setLoading} />
+    <MyStepsAcc
+      search={search}
+      setSearch={setSearch}
+      showDrop={showDrop}
+      setShowDrop={setShowDrop}
+      loading={loading}
+      setLoading={setLoading}
+    />
 
-              ) : (
+) : accsideNav === "Universities" ? (
+  <>
+    <MenuNav
+      showDrop={showDrop}
+      setShowDrop={setShowDrop}
+      searchTerm={search}
+      setSearchterm={setSearch}
+      searchPlaceholder="Search Universities..."
+    />
+
+    <div
+      className="services-main"
+      style={{ height: "calc(100% - 70px)" }}
+      onClick={() => setShowDrop(false)}
+    >
+      <UniversitiesAdmin />
+    </div>
+  </>
+) : (
+  <div className="services-main">
+    Coming Soon
+  </div>
+)
+}: (
                 <>
                   <MenuNav
                     showDrop={showDrop}
@@ -2776,7 +2809,7 @@ const AccDashboard = () => {
                     </div>
                   </div>
                 </>
-              )}
+              )
             </div>
           </div>
         </div>
