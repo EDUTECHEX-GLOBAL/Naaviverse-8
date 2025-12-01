@@ -47,8 +47,8 @@ const getProfilePic = async (email, loginType) => {
     try {
         const url =
             loginType === "Users"
-                ? `/api/auth/get-profile-pic` // DO NOT TOUCH USER API
-                : `http://localhost:4545/api/partner/get-profile-pic`; // UPDATED
+                ? `/api/auth/get-profile-pic`
+                : `http://localhost:4545/api/partner/get-profile-pic`;
 
         const response = await axios.get(url, { params: { email } });
 
@@ -59,10 +59,17 @@ const getProfilePic = async (email, loginType) => {
 
         return null;
     } catch (error) {
+        if (error.response && error.response.status === 404) {
+            console.warn("No profile picture found, using default.");
+            return null;   // VERY IMPORTANT
+        }
+
         console.error("Error fetching profile picture:", error);
         return null;
     }
 };
+
+
 
 
 

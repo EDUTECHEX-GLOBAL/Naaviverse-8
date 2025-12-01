@@ -77,6 +77,8 @@ const stateRoutes = require('./routes/stateRoutes');
 const cityRoutes = require('./routes/cityRoutes');
 
 
+const stepsRouter = require("./routes/steps.routes");
+app.use("/steps", stepsRouter);
 
 
 const stepViewsRoute = require("./routes/stepviews.route");
@@ -114,7 +116,7 @@ app.use('/api/userAnswers', userPersonalityRouter);
 app.use('/api/partner', partnerRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/personality', personalityRouter);
-app.use("/api/payment", require("./routes/razorpayRoutes"));
+app.use("/api/payment", require("./routes/paymentRoutes"));
 app.use("/api/subscription", require("./routes/subscriptionRoutes"));
 app.use("/api", require("./routes/checkFormatted"));
 app.use("/api/regenerate", require("./routes/regenerateBatch.route"));

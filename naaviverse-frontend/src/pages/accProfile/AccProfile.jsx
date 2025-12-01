@@ -305,7 +305,7 @@ const AccProfile = () => {
 
 
     let { data } = await axios.post(
-      `https://careers.marketsverse.com/paths/addmultiplepaths`,
+      `http://localhost:4545/paths/addmultiplepaths`,
       formData,
       {
         headers: {
@@ -931,7 +931,7 @@ const AccProfile = () => {
     let token = userDetails?.idToken;
     axios
       .post(
-        "https://teller2.apimachine.com/lxUser/register/banker",
+        "http://localhost:4545/lxUser/register/banker",
         {
           bankerTag: brandUserName,
           colorCode: brandColorCode,
@@ -963,24 +963,24 @@ const AccProfile = () => {
       });
   };
 
-  useEffect(() => {
-    accountantStatus();
-  }, []);
+  // useEffect(() => {
+  //   accountantStatus();
+  // }, []);
 
-  const accountantStatus = () => {
-    let userEmail = userDetails?.user?.email;
-    axios
-      .get(`https://teller2.apimachine.com/admin/allBankers?email=${userEmail}`)
-      .then((response) => {
-        let result = response?.data?.data?.[0]?.category;
-        // console.log(result, "accountantStatus result");
-        if (result === "marketmakers") {
-          setAccStatus("Private");
-        } else if (result === "education consultants") {
-          setAccStatus("Public");
-        }
-      });
-  };
+  // const accountantStatus = () => {
+  //   let userEmail =userDetails.email;
+  //   axios
+  //     .get(`http://localhost:4545/admin/allBankers?email=${userEmail}`)
+  //     .then((response) => {
+  //       let result = response?.data?.data?.[0]?.category;
+  //       // console.log(result, "accountantStatus result");
+  //       if (result === "marketmakers") {
+  //         setAccStatus("Private");
+  //       } else if (result === "education consultants") {
+  //         setAccStatus("Public");
+  //       }
+  //     });
+  // };
 
   const changeStatus = (value) => {
     setChanging(true);
@@ -990,7 +990,7 @@ const AccProfile = () => {
     if (email && token) {
       axios
         .post(
-          "https://teller2.apimachine.com/banker/assignCategory",
+          "http://localhost:4545/banker/assignCategory",
           {
             categoryName: value,
             email,
@@ -1001,7 +1001,7 @@ const AccProfile = () => {
           let result = response?.data;
           // console.log(result, "changeStatus result");
           if (result?.status) {
-            accountantStatus();
+            // accountantStatus();
             setChanging(false);
           } else {
             setChanging(false);
@@ -1013,53 +1013,53 @@ const AccProfile = () => {
     }
   };
 
-  const debounce = (fn, delay) => {
-    let timerId;
-    return (...args) => {
-      clearTimeout(timerId);
-      timerId = setTimeout(() => {
-        fn(...args);
-      }, delay);
-    };
-  };
+  // const debounce = (fn, delay) => {
+  //   let timerId;
+  //   return (...args) => {
+  //     clearTimeout(timerId);
+  //     timerId = setTimeout(() => {
+  //       fn(...args);
+  //     }, delay);
+  //   };
+  // };
 
-  const fetchData = debounce(async () => {
-    const response = await fetch(
-      `https://teller2.apimachine.com/lxUser/checkLXTag?lxTag=${userName}`
-    );
-    const data = await response.json();
-    // console.log(data, "username data");
-    if (data?.data && data?.status && userName.length < 1) {
-      setUserNameAvailable(false);
-    } else if (!data?.data && data?.status && userName.length > 0) {
-      setUserNameAvailable(true);
-    } else {
-      setUserNameAvailable(false);
-    }
-  }, 200);
+  // const fetchData = debounce(async () => {
+  //   const response = await fetch(
+  //     `http://localhost:4545/lxUser/checkLXTag?lxTag=${userName}`
+  //   );
+  //   const data = await response.json();
+  //   // console.log(data, "username data");
+  //   if (data?.data && data?.status && userName.length < 1) {
+  //     setUserNameAvailable(false);
+  //   } else if (!data?.data && data?.status && userName.length > 0) {
+  //     setUserNameAvailable(true);
+  //   } else {
+  //     setUserNameAvailable(false);
+  //   }
+  // }, 200);
 
-  useEffect(() => {
-    fetchData();
-  }, [userName]);
+  // useEffect(() => {
+  //   fetchData();
+  // }, [userName]);
 
-  const fetchData1 = debounce(async () => {
-    const response = await fetch(
-      `https://teller2.apimachine.com/lxUser/checkBankerTag?bankerTag=${brandUserName}`
-    );
-    const data = await response.json();
-    // console.log(data, "username data");
-    if (data?.data && data?.status && brandUserName.length < 1) {
-      setUserNameAvailable1(false);
-    } else if (!data?.data && data?.status && brandUserName.length > 0) {
-      setUserNameAvailable1(true);
-    } else {
-      setUserNameAvailable1(false);
-    }
-  }, 200);
+  // const fetchData1 = debounce(async () => {
+  //   const response = await fetch(
+  //     `http://localhost:4545/lxUser/checkBankerTag?bankerTag=${brandUserName}`
+  //   );
+  //   const data = await response.json();
+  //   // console.log(data, "username data");
+  //   if (data?.data && data?.status && brandUserName.length < 1) {
+  //     setUserNameAvailable1(false);
+  //   } else if (!data?.data && data?.status && brandUserName.length > 0) {
+  //     setUserNameAvailable1(true);
+  //   } else {
+  //     setUserNameAvailable1(false);
+  //   }
+  // }, 200);
 
-  useEffect(() => {
-    fetchData1();
-  }, [brandUserName]);
+  // useEffect(() => {
+  //   fetchData1();
+  // }, [brandUserName]);
 
   const myTimeout = () => {
     setTimeout(reload, 2000);
@@ -1120,7 +1120,7 @@ const AccProfile = () => {
 
     try {
       let result = await axios.put(
-        "https://teller2.apimachine.com/lxUser/update/banker",
+        "http://localhost:4545/lxUser/update/banker",
         body,
         {
           headers: { token, email },
@@ -1148,7 +1148,7 @@ const AccProfile = () => {
   useEffect(() => {
     let email = userDetails?.email;
     axios
-      .get(`https://careers.marketsverse.com/steps/get?email=${email}`)
+      .get(`http://localhost:4545/steps/get?email=${email}`)
       .then((response) => {
         let result = response?.data?.data;
         // console.log(result, "all steps fetched accprofile");
