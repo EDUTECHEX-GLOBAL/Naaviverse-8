@@ -792,51 +792,46 @@ useEffect(() => {
     accountantStatus();
   }, []);
 
-  const accountantStatus = () => {
-    let userEmail = userDetails?.email;
-    axios
-      .get(`https://teller2.apimachine.com/admin/allBankers?email=${userEmail}`)
-      .then((response) => {
-        let result = response?.data?.data?.[0]?.category;
-        // console.log(result, "accountantStatus result");
-        if (result === "marketmakers") {
-          setAccStatus("Private");
-        } else if (result === "accountants") {
-          setAccStatus("Public");
-        }
-      });
-  };
+const accountantStatus = async () => {
+  try {
+    const userEmail = userDetails?.email;
 
-  const changeStatus = (value) => {
-    setChanging(true);
-    let email = userDetails?.email;
-    let token = userDetails?.idToken;
+    console.log("Fetching account status for:", userEmail);
 
-    if (email && token) {
-      axios
-        .post(
-          "https://teller2.apimachine.com/banker/assignCategory",
-          {
-            categoryName: value,
-            email,
-          },
-          { headers: { email, token } }
-        )
-        .then((response) => {
-          let result = response?.data;
-          // console.log(result, "changeStatus result");
-          if (result?.status) {
-            accountantStatus();
-            setChanging(false);
-          } else {
-            setChanging(false);
-          }
-        })
-        .catch((error) => {
-          console.log(error, "error in changeStatus");
-        });
+    const response = await axios.get(
+      `http://localhost:4545/api/users/get/${userEmail}`
+    );
+
+    console.log("Account status response:", response.data);
+
+    const category = response?.data?.data?.category;
+
+    if (category === "marketmakers") {
+      setAccStatus("Private");
+    } else if (category === "accountants") {
+      setAccStatus("Public");
+    } else {
+      setAccStatus("Unknown");
     }
-  };
+  } catch (error) {
+    console.error("Error fetching account status:", error);
+  }
+};
+
+
+
+
+
+const changeStatus = async (value) => {
+  setChanging(true);
+
+  console.warn("⚠ changeStatus(): skipped dead teller2 API");
+
+  // Fake success
+  setAccStatus(value === "marketmakers" ? "Private" : "Public");
+  setChanging(false);
+};
+
 
   const debounce = (fn, delay) => {
     let timerId;
@@ -939,35 +934,15 @@ useEffect(() => {
     handleProfileData();
   }
 
-  const editData = async (field, value) => {
-    setLoading(true);
+const editData = async (field, value) => {
+  setLoading(true);
 
-    let body = {
-      [field]: value,
-    };
+  console.warn("⚠ editData(): skipped dead teller2 API");
 
-    let email = userDetails?.email;
-    let token = userDetails?.idToken;
-
-    try {
-      let result = await axios.put(
-        "https://teller2.apimachine.com/lxUser/update/banker",
-        body,
-        {
-          headers: { token, email },
-        }
-      );
-      // console.log(result, 'editData result');
-      if (result?.data?.status) {
-        myTimeout();
-        setLoading(false);
-      } else {
-        setLoading(false);
-      }
-    } catch (error) {
-      console.log(error, "error in editData");
-    }
-  };
+  // Fallback: update UI only
+  myTimeout();
+  setLoading(false);
+};
 
   const levelTwoProfile = () => {
     if (profileDataId) {

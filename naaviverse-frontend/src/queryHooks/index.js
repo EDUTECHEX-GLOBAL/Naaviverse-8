@@ -1,18 +1,10 @@
-import axios from 'axios';
-import { useQuery } from 'react-query';
+// ❌ Deleted all GlobalXchange API calls
+// This project now uses ONLY your backend APIs
 
-export const getAppByCode = async (app_code) => {
-  const { data } = await axios.get(
-    `https://comms.globalxchange.io/gxb/apps/get?app_code=${app_code}`
-  );
-  return data.apps[0];
+export const getAppByCode = async () => {
+  return null;
 };
 
-export const useLoadAppDetails = (app_code) => {
-  const { data: appByCode, isLoading: appByCodeLoading } = useQuery(
-    ['getAppLoginByCode', app_code],
-    () => getAppByCode(app_code),
-    { enabled: Boolean(app_code) }
-  );
-  return { appByCode, appByCodeLoading };
+export const useLoadAppDetails = () => {
+  return { appByCode: null, appByCodeLoading: false };
 };

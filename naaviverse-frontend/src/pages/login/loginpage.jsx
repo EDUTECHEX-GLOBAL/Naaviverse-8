@@ -43,26 +43,28 @@ const Loginpage = () => {
         localStorage.clear();
     }, []);
 
-    const getProfilePic = async (email, loginType) => {
-        try {
-            const url =
-                loginType === "Users"
-                    ? `/api/auth/get-profile-pic`
-                    : `/api/partner/get-profile-pic`;
+const getProfilePic = async (email, loginType) => {
+    try {
+        const url =
+            loginType === "Users"
+                ? `/api/auth/get-profile-pic` // DO NOT TOUCH USER API
+                : `http://localhost:4545/api/partner/get-profile-pic`; // UPDATED
 
-            const response = await axios.get(url, { params: { email } });
-            const data = response.data;
+        const response = await axios.get(url, { params: { email } });
 
-            if (data.status && data.profilePic) {
-                localStorage.setItem("userProfilePic", data.profilePic);
-                return data.profilePic;
-            }
-            return null;
-        } catch (error) {
-            console.error("Error fetching profile picture:", error);
-            return null;
+        if (response.data.status && response.data.profilePic) {
+            localStorage.setItem("userProfilePic", response.data.profilePic);
+            return response.data.profilePic;
         }
-    };
+
+        return null;
+    } catch (error) {
+        console.error("Error fetching profile picture:", error);
+        return null;
+    }
+};
+
+
 
     const handleLogin = () => {
         setIsLoading(true);

@@ -12,7 +12,9 @@ const {
   checkEmailDuplicate,
   getAllUsers,
   submitForgotPassword,
+  getUserProfilePic   // <-- Add this
 } = require("../controllers/authControllers");
+
 
 // Auth routes
 router.post("/signup", signUp);
@@ -25,6 +27,8 @@ router.post("/changePassword", updatePassword);
 router.post("/resetPassword/:token", resetPassword);
 router.post("/confirmation", sendConfirmationEmail);
 router.get("/allusers", getAllUsers);
+router.get("/get-profile-pic", getUserProfilePic);
+
 
 // Utility
 router.post("/checkEmailDuplicate", checkEmailDuplicate);

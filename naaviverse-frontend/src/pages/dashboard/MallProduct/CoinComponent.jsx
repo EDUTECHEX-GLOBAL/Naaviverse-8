@@ -1,33 +1,33 @@
-import React, { useEffect, useState } from 'react';
-import './malls.scss';
-import { coinData } from './apidata';
-import Skeleton from 'react-loading-skeleton';
+import React, { useEffect, useState } from "react";
+import "./malls.scss";
+import { getOfficialCurrencies } from "./apidata";  
+import Skeleton from "react-loading-skeleton";
 import { useStore } from "../../../components/store/store.ts";
 
 const CoinComponent = () => {
-  const userDetails = JSON.parse(localStorage.getItem("user"));
-  const {
-    setMallCoinData,
-    setBuy,
+  const { 
+    setMallCoinData, 
+    setBuy, 
     setMallSeclectedCoin,
     filteredcoins,
-    setfilteredcoins,
+    setfilteredcoins
   } = useStore();
+
   const [isloading, setisloading] = useState(true);
 
   useEffect(() => {
-    let userEmail = userDetails?.user?.email;
-    let obj = {
-      app_code: 'naavi',
-      email: userEmail,
-      post_app_prices: true,
-      with_balances: true,
-      orderby_dsc: true,
-    };
-    coinData(obj).then((response) => {
-      let result = response?.data?.coins_data;
-      setMallCoinData(result);
-      setfilteredcoins(result);
+    getOfficialCurrencies().then((response) => {
+      const result = response?.data?.currencies || [];
+
+      // Convert official currencies to the same format your UI expects
+      const formatted = result.map((item) => ({
+        coinSymbol: item.code,
+        coinValue: item.currency,
+        coinImage: "https://flagsapi.com/" + item.code.slice(0,2) + "/flat/64.png"
+      }));
+
+      setMallCoinData(formatted);
+      setfilteredcoins(formatted);
       setisloading(false);
     });
   }, []);
@@ -36,36 +36,32 @@ const CoinComponent = () => {
     <>
       {isloading
         ? Array(10)
-            .fill(' ')
-            .map((item, index) => {
-              return (
-                <div className="coin-comp" key={index}>
-                  <Skeleton width={40} height={40} borderRadius={50} />
-                  <div className="coinnamee">
-                    <Skeleton width={75} height={25} />
-                  </div>
-                  <div className="coinvaluee">
-                    <Skeleton width={75} height={25} />
-                  </div>
+            .fill(0)
+            .map((_, index) => (
+              <div className="coin-comp" key={index}>
+                <Skeleton width={40} height={40} borderRadius={50} />
+                <div className="coinnamee">
+                  <Skeleton width={75} height={25} />
                 </div>
-              );
-            })
-        : filteredcoins?.map((e, i) => {
-            return (
-              <div
-                className="coin-comp"
-                key={i}
-                onClick={() => {
-                  setBuy('step3');
-                  setMallSeclectedCoin(e);
-                }}
-              >
-                <img src={e?.coinImage} alt="coin" style={{ width: '10%' }} />
-                <div className="coinnamee">{e?.coinSymbol}</div>
-                <div className="coinvaluee">{e?.coinValue}</div>
+                <div className="coinvaluee">
+                  <Skeleton width={75} height={25} />
+                </div>
               </div>
-            );
-          })}
+            ))
+        : filteredcoins?.map((e, i) => (
+            <div
+              className="coin-comp"
+              key={i}
+              onClick={() => {
+                setBuy("step3");
+                setMallSeclectedCoin(e);
+              }}
+            >
+              <img src={e?.coinImage} alt="coin" style={{ width: "12%" }} />
+              <div className="coinnamee">{e?.coinSymbol}</div>
+              <div className="coinvaluee">{e?.coinValue}</div>
+            </div>
+          ))}
     </>
   );
 };

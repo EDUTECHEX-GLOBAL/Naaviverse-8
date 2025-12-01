@@ -22,7 +22,7 @@ const NewHomePage = () => {
   const [emailAvailable, setEmailAvailable] = useState(false)
   const [showPassReq, setShowPassReq] = useState(false)
   const [errorMessage, setErrorMessage] = useState("");
-  axios.defaults.withCredentials = true;
+
 
 
   const [validations, setValidations] = useState({
@@ -172,7 +172,7 @@ const NewHomePage = () => {
     axios.post(apiUrl, {
       username: userName,
       email: userEmail,
-      password: userPassword
+     password: userPassword
     }, {
       headers: { "Content-Type": "application/json" }
     })

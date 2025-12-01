@@ -1,118 +1,100 @@
 import axios from "axios";
-import React, { createContext, useContext, useEffect, useState } from "react";
-// import { BankContext } from "./Context";
+import React, { createContext, useEffect, useState } from "react";
 
 export const RegistrationContext = createContext();
-const RegistrationContextProvider = (props) => {
-  // const { email } = useContext(BankContext);
 
+const RegistrationContextProvider = (props) => {
   const [step, setStep] = useState("");
   const [appData, setAppData] = useState(null);
-  const [affiliateData, setAffiliateData] = useState(null);
-  const [initialPath, setInitialPath] = useState("");
   const [loading, setLoading] = useState(false);
-  const [pasteContent, setPasteContent] = useState("");
-
-  const [affEmail, setAffEmail] = useState("");
-  const [affData, setAffData] = useState(null);
 
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
 
-  const [createAccountLoading, setCreateAccountLoading] = useState(false);
-
   const [pin, setPin] = useState("");
   const [pinMisMatch, setPinMisMatch] = useState(false);
-
-  const [loadingRight, setLoadingRight] = useState(false);
-
-  //PreRegistered States
+  const [createAccountLoading, setCreateAccountLoading] = useState(false);
 
   const [authId, setAuthId] = useState(null);
-  const [tempEmail, setTempEmail] = useState("");
-  const [tempUsername, setTempUsername] = useState("");
-  const [challengeName, setChallengeName] = useState("");
-  const [session, setSession] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [affType, setAffType] = useState(true);
 
-  const handleCreateAccount = (lastRoute) => {
-    setCreateAccountLoading(true);
+  // ------------------------------------------------
+  //   STEP 1: Create Account (YOUR BACKEND)
+  // ------------------------------------------------
+  const handleCreateAccount = async () => {
+    try {
+      setCreateAccountLoading(true);
 
-    axios
-      .post(`https://gxauth.apimachine.com/gx/user/signup`, {
-        username: userName,
-        email: userEmail,
-        password: userPassword,
-        ref_affiliate: affData?.hardCoded?.[0]?.data?.username,
-        account_type: "Personal",
-        signedup_app: appData?.app_code,
-      })
-      .then(({ data }) => {
-        if (data.status) {
-          setStep("step7");
-          setCreateAccountLoading(false);
-        }
-      });
+      const { data } = await axios.post(
+        "http://localhost:4545/api/partner/signup",
+        {
+          username: userName,
+          email: userEmail,
+          password: userPassword,
+        },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-    // console.log("create account now");
-    // console.log("aff Upline: ", affData?.hardCoded?.[0]?.data?.username);
-    // console.log("userEmail: ", userName);
-    // console.log("userEmail: ", userEmail);
-    // console.log("userPassword: ", userPassword);
-    // console.log("signedupApp: ", appData?.app_code);
-    // setStep("step7");
+      if (data.success) {
+        setAuthId(data.partner.id);
+        setStep("step7");
+      }
+    } catch (err) {
+      console.error("Signup error:", err.response?.data || err.message);
+    } finally {
+      setCreateAccountLoading(false);
+    }
   };
 
-  const confirmEmail = () => {
-    setStep("step8");
-    axios
-      .post(`https://gxauth.apimachine.com/gx/user/confirm`, {
-        email: userEmail,
-        code: pin,
-      })
-      .then(({ data }) => {
-        if (data.status) {
-          setStep("step9");
-        } else {
-          setStep("step7");
-          setPinMisMatch(true);
+  // ------------------------------------------------
+  //   STEP 2: Verify Email OTP (YOUR BACKEND)
+  // ------------------------------------------------
+  const confirmEmail = async () => {
+    try {
+      const { data } = await axios.post(
+        "http://localhost:4545/api/partner/verifyotp",
+        {
+          email: userEmail,
+          otp: pin,
         }
-      });
+      );
+
+      if (data.success) {
+        setStep("step9");
+      } else {
+        setPinMisMatch(true);
+        setStep("step7");
+      }
+    } catch (err) {
+      console.error("OTP verification error:", err.response?.data || err.message);
+      setPinMisMatch(true);
+    }
   };
+
+  // ------------------------------------------------
+  //   OPTIONAL: Fetch appData from your backend
+  //   (Replace this with your own API if needed)
+  // ------------------------------------------------
   useEffect(() => {
     setLoading(true);
+
     axios
-      .get(`https://comms.globalxchange.io/gxb/apps/get?app_code=naavi`)
+      .get("http://localhost:4545/api/apps/naavi") // YOUR CUSTOM API
       .then(({ data }) => {
-        if (data.apps.length > 0) {
-          setAppData(data.apps[0]);
-          setLoading(false);
-        } else {
-          setAppData(data.apps[0]);
-          setLoading(false);
-        }
-      });
+        setAppData(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   const value = {
+    // states
     step,
     setStep,
-    initialPath,
-    setInitialPath,
-    appData,
-    setAppData,
     loading,
     setLoading,
-    pasteContent,
-    setPasteContent,
+    appData,
 
-    //input states
-    affEmail,
-    setAffEmail,
-    affData,
-    setAffData,
     userEmail,
     setUserEmail,
     userName,
@@ -122,33 +104,17 @@ const RegistrationContextProvider = (props) => {
 
     pin,
     setPin,
+    pinMisMatch,
+
     createAccountLoading,
-    setCreateAccountLoading,
-    loadingRight,
-    setLoadingRight,
-    //Functions
+
+    // functions
     handleCreateAccount,
     confirmEmail,
 
-    //Pre-Registered States
-
     authId,
-    setAuthId,
-    tempEmail,
-    setTempEmail,
-    tempUsername,
-    setTempUsername,
-    challengeName,
-    setChallengeName,
-    session,
-    setSession,
-    newPassword,
-    setNewPassword,
-
-    //by-myself
-    affType,
-    setAffType,
   };
+
   return (
     <RegistrationContext.Provider value={value}>
       {props.children}

@@ -68,16 +68,20 @@ app.use(cors({
   credentials: true,
 }));
 
+const currencyRoutes = require("./routes/currency.route");
+app.use("/api", currencyRoutes);
+
 
 const countryRoutes = require('./routes/countryRoutes');
 const stateRoutes = require('./routes/stateRoutes');
 const cityRoutes = require('./routes/cityRoutes');
 
-const vaultRoutes = require("./routes/vault.routes");
-app.use("/api/vault", vaultRoutes);
+
+
 
 const stepViewsRoute = require("./routes/stepviews.route");
 app.use("/api/stepviews", stepViewsRoute);
+
 
 
 /* ------------------- NO-CACHE FOR USER APIs ------------------- */
@@ -110,6 +114,8 @@ app.use('/api/userAnswers', userPersonalityRouter);
 app.use('/api/partner', partnerRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/personality', personalityRouter);
+app.use("/api/payment", require("./routes/razorpayRoutes"));
+app.use("/api/subscription", require("./routes/subscriptionRoutes"));
 app.use("/api", require("./routes/checkFormatted"));
 app.use("/api/regenerate", require("./routes/regenerateBatch.route"));
 app.use("/api/utils", require("./routes/addStepIds.route"));
@@ -199,6 +205,12 @@ app.get("/api/health", (req, res) => {
 });
 
 
+app.get("/api/apps/naavi", (req, res) => {
+  res.json({
+    app_code: "naavi",
+    name: "Naaviverse Registration App"
+  });
+});
 
 
 /* ------------------- ERROR HANDLING ------------------- */
