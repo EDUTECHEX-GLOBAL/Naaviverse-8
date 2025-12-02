@@ -495,21 +495,22 @@ const NewStep1 = ({ setpstep }) => {
                     <div className="name">
                       Description for grade: {item?.grade}
                     </div>
-                    <textarea
-                      type="text"
-                      className="text-textarea"
-                      placeholder="Enter instructions..."
-                      rows="5"
-                      cols="40"
-                      spellCheck="false"
-                      value={item?.description}
-                      onChange={(e) =>
-                        handleDescriptionChangeGrade(
-                          item?.grade,
-                          e.target.value
-                        )
-                      }
-                    ></textarea>
+<textarea
+  type="text"
+  className="text-textarea"
+  placeholder="Enter instructions..."
+  rows="5"
+  cols="40"
+  spellCheck={false}
+  onChange={(e) => {
+    setStepForm((prev) => ({
+      ...prev,
+      description: e.target.value,
+    }));
+  }}
+  value={stepForm?.description}
+></textarea>
+
                   </div>
                 ))}
                 <div className="space"></div>
@@ -1281,22 +1282,20 @@ const NewStep1 = ({ setpstep }) => {
                   What is the instructions for the macro view?
                 </div>
                 <textarea
-                  type="text"
-                  class="text-textarea"
-                  placeholder="Enter instructions..."
-                  rows="5"
-                  cols="40"
-                  spellcheck="false"
-                  onChange={(e) => {
-                    setStepForm((prev) => {
-                      return {
-                        ...prev,
-                        description: e.target.value,
-                      };
-                    });
-                  }}
-                  value={stepForm?.description}
-                ></textarea>
+  type="text"
+  className="text-textarea"
+  placeholder="Enter instructions..."
+  rows="5"
+  cols="40"
+  spellCheck={false}
+  onChange={(e) => {
+    setStepForm((prev) => ({
+      ...prev,
+      description: e.target.value,
+    }));
+  }}
+  value={stepForm?.description}
+></textarea>
 
                 <div className="name">What type of step is it?</div>
                 <div

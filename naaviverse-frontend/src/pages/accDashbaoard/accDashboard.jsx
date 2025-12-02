@@ -3035,29 +3035,32 @@ const AccDashboard = () => {
                   <>
                     {isCatoading ? (
                       <div className="acc-step-allbox">
-                        {[1, 2, 3].map((each, i) => (
-                          <div className="acc-step-box">
-                            <Skeleton style={{ width: "150px" }} />
-                          </div>
-                        ))}
+                       {[1, 2, 3].map((each, i) => (
+  <div className="acc-step-box" key={i}>
+    <Skeleton style={{ width: "150px" }} />
+  </div>
+))}
+
+                       
                       </div>
                     ) : (
                       <div className="acc-step-allbox">
                         {categoriesData.map((each, i) => (
-                          <div
-                            className="acc-step-box"
-                            onClick={() => {
-                              setselectCategory(each.name);
-                              setpstep(4);
-                            }}
-                            style={{
-                              background:
-                                selectCategory === each.name ? "#182542" : "",
-                              color: selectCategory === each.name ? "#FFF" : "",
-                            }}
-                          >
-                            {each.name}
-                          </div>
+<div
+  className="acc-step-box"
+  key={each._id}
+  onClick={() => {
+    setselectCategory(each.name);
+    setpstep(4);
+  }}
+  style={{
+    background: selectCategory === each.name ? "#182542" : "",
+    color: selectCategory === each.name ? "#FFF" : "",
+  }}
+>
+  {each.name}
+</div>
+
                         ))}
                       </div>
                     )}
@@ -3213,11 +3216,12 @@ const AccDashboard = () => {
                         className="acc-step-allbox"
                         style={{ height: "calc(100% - 76px - 7.5rem)" }}
                       >
-                        {[1, 2, 3].map((each, i) => (
-                          <div className="acc-step-box">
-                            <Skeleton style={{ width: "150px" }} />
-                          </div>
-                        ))}
+{[1, 2, 3].map((each, i) => (
+  <div className="acc-step-box" key={i}>
+    <Skeleton style={{ width: "150px" }} />
+  </div>
+))}
+
                       </div>
                     ) : (
                       <div
@@ -4808,22 +4812,24 @@ const AccDashboard = () => {
                       );
                     })
                   : userCreatedApps &&
-                  userCreatedApps?.map((e, i) => {
-                    return (
-                      <div
-                        className="each-action1"
-                        onClick={() => {
-                          setAddCompPlanStep("step3");
-                          setCompPlanApp(e?.app_code);
-                        }}
-                      >
-                        <div>
-                          <img src={e?.app_icon} alt="" />
-                        </div>
-                        <div>{e?.app_name}</div>
-                      </div>
-                    );
-                  })}
+  userCreatedApps?.map((e, i) => {
+    return (
+      <div
+        key={e?.app_code || i}
+        className="each-action1"
+        onClick={() => {
+          setAddCompPlanStep("step3");
+          setCompPlanApp(e?.app_code);
+        }}
+      >
+        <div>
+          <img src={e?.app_icon} alt="" />
+        </div>
+        <div>{e?.app_name}</div>
+      </div>
+    );
+  })}
+
               </div>
 
               <div className="stepBtnss">

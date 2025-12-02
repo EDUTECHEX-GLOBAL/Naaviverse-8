@@ -75,36 +75,48 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
     };
 
     const [remainingStepData, setRemainingStepData] = useState([])
-    const getAllStepsForPath = () => {
-        setLoading(true);
-        let email = userDetails?.email;
+const getAllStepsForPath = () => {
+    // 💥 FIX 1 — DO NOT CALL API IF NO PATH SELECTED
+    if (!selectedPathId) {
+        console.log("No selectedPathId — skipping getremainingsteps API");
+        return;
+    }
 
-        axios.get(`/api/paths/getremainingsteps?path_id=${selectedPathId}&&email=${email}`)
-            .then((response) => {
-                console.log('Response from getAllStepsForPath:', response);
-                let result = response?.data?.stepIds;
-                if (Array.isArray(result)) {
-                    console.log(result, "partnerStepsData result");
-                    setRemainingStepData(result);
-                } else {
-                    console.error('Unexpected data format:', response);
-                }
-            })
-            .catch((error) => {
-                console.error(error, "error in partnerStepsData");
-            })
-            .finally(() => {
-                setLoading(false);
-            });
-        console.log('Selected Path:', selectedPath);
-        console.log('Selected Path ID:', selectedPath?._id);
-        console.log('Email:', email);
-    };
+    setLoading(true);
+    let email = userDetails?.email;
+
+    // 💥 FIX 2 — REMOVE DOUBLE && → only use &
+    axios.get(`/api/paths/getremainingsteps?path_id=${selectedPathId}&email=${email}`)
+        .then((response) => {
+            console.log('Response from getAllStepsForPath:', response);
+            let result = response?.data?.stepIds;
+
+            if (Array.isArray(result)) {
+                console.log(result, "partnerStepsData result");
+                setRemainingStepData(result);
+            } else {
+                console.error('Unexpected data format:', response);
+            }
+        })
+        .catch((error) => {
+            console.error(error, "error in partnerStepsData");
+        })
+        .finally(() => {
+            setLoading(false);
+        });
+
+    console.log('Selected Path:', selectedPath);
+    console.log('Selected Path ID:', selectedPath?._id);
+    console.log('Email:', email);
+};
 
 
-    useEffect(() => {
-        getAllStepsForPath()
-    }, [selectedPath])
+useEffect(() => {
+    if (selectedPathId) {
+        getAllStepsForPath();
+    }
+}, [selectedPathId]);
+
 
 
     const [allServices, setAllServices] = useState([])
