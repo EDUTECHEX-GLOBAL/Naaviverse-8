@@ -232,7 +232,7 @@ const AccProfile = () => {
 
 
   // //upload part starts here
-  const secret = "uyrw7826^&(896GYUFWE&*#GBjkbuaf"; // secret not to be disclosed anywhere.
+  const secrAet = "uyrw7826^&(896GYUFWE&*#GBjkbuaf"; // secret not to be disclosed anywhere.
   const emailDev = "rahulrajsb@outlook.com"; // email of the developer.
   const userDetails = JSON.parse(localStorage.getItem("partner"));
   console.log("Partner data retrieved from localStorage:", userDetails);

@@ -14,69 +14,60 @@ const dummyList = () =>
 
 /**
  * --------------------------------------------------
- *  OLD FUNCTIONS (RESTORED AS SAFE PLACEHOLDERS)
+ *  OLD DEAD GX API FUNCTIONS (KEEP AS-IS)
  * --------------------------------------------------
  */
 
-// ---- DEAD APIs (Replaced with dummy functions) ----
-
 export const GetAllSpecialties = () => dummyList();
-
 export const GetAllAccountants = () => dummyList();
-
 export const GetAllAccountantsForOneSpecialty = () => dummyList();
-
 export const FollowBrand = () => dummyResponse();
-
 export const UnfollowBrand = () => dummyResponse();
-
 export const GetFollowList = () => dummyList();
-
 export const GetFollowersPerAccount = () => dummyList();
-
 export const GetAutomatedServices = () => dummyList();
-
-export const GetCategoriesAcc = () => dummyList();
-
 export const GetAllCustomerLicenses = () => dummyList();
-
 export const GetLogServices = () => dummyList();
-
-export const GetAllCurrencies = () => dummyList();
-
 export const GetAllAccountantsWithoutFollowers = () => dummyList();
-
 export const DeleteServiceFunction = () => dummyResponse();
-
 export const addCompPlanFunction = () => dummyResponse();
 
 /**
  * --------------------------------------------------
- *  REAL NAAVIVERSE APIs
+ *  REAL NAAVIVERSE APIs (DIRECT LOCALHOST URLs)
  * --------------------------------------------------
  */
 
+export const GetCategoriesAcc = () => {
+  return axios.get("http://localhost:4545/api/categories");
+};
+
+export const GetAllCurrencies = () => {
+  return axios.get("http://localhost:4545/api/currencies");
+};
+
 export const CreatePopularService = (object) => {
+  return axios.post("http://localhost:4545/api/services/add", object);
+};
+
+export const CheckStatusAccountant = async (email) => {
   try {
-    return axios.post(`/api/services/add`, object);
-  } catch (error) {
-    return error;
+    const res = await axios.get(
+      `http://localhost:4545/api/partner/get?email=${email}`
+    );
+    return res.data;
+  } catch (err) {
+    return { success: false, error: err.message };
   }
 };
 
-export const CheckStatusAccountant = async (mailId) => {
+export const CheckStatusNaaviProfile = async (email) => {
   try {
-    const response = await axios.get(`/api/partner/get?email=${mailId}`);
-    return response?.data;
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
-};
-
-export const CheckStatusNaaviProfile = async (mailId) => {
-  try {
-    return await axios.get(`/api/users/get?email=${mailId}`);
-  } catch (error) {
-    return error;
+    const res = await axios.get(
+      `http://localhost:4545/api/users/get?email=${email}`
+    );
+    return res.data;
+  } catch (err) {
+    return { success: false, error: err.message };
   }
 };

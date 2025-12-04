@@ -1,81 +1,79 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const servicesSchema = new mongoose.Schema({
+const ServiceSchema = new mongoose.Schema(
+  {
     productcreatoremail: { type: String, required: true },
     name: { type: String, required: true },
-    description: { type: String },
-    chargingtype: { type: String },
-    chargingCurrency: { coin: { type: String } },
-
-    // ✅ Link service to a specific step
-  step_id: { type: String, required: true },
-
-    // ✅ Optional nested services for multiple attachments later
-ServiceDetails: [
-  {
-    product_name: String,
-    description: String,
+    icon: { type: String, default: "" },
+    description: { type: String, default: "" },
+    chargingtype: { type: String, required: true },
+    revenue_account: { type: String, default: "" },
+    client_app: { type: String, default: "" },
+    product_category_code: { type: String, default: "" },
+    sub_category_code: { type: String, default: "" },
+    custom_product_label: { type: String, default: "" },
+    points_creation: { type: Boolean, default: false },
+    sub_text: { type: String, default: "" },
 
     first_purchase: {
-      price: Number,
-      coin: String
+      price: { type: Number, default: 0 },
+      coin: { type: String, default: "" }
     },
 
     billing_cycle: {
       monthly: {
-        price: Number,
-        coin: String
+        price: { type: Number, default: 0 },
+        coin: { type: String, default: "" }
       },
       annual: {
-        price: Number,
-        coin: String
+        price: { type: Number, default: 0 },
+        coin: { type: String, default: "" }
       },
       lifetime: {
-        price: Number,
-        coin: String
+        price: { type: Number, default: 0 },
+        coin: { type: String, default: "" }
       }
-    }
-  }
-],
-
-
-    // billing_cycle: {
-    //     monthly: {
-    //         price: { type: Number },
-    //         coin: { type: String }
-    //     },
-    //     annual: {
-    //         price: { type: Number },
-    //         coin: { type: String }
-    //     },
-    //     lifetime: {
-    //         price: { type: Number },
-    //         coin: { type: String }
-    //     }
-    // },
-
-    serviceProvider: { type: String },
-    access: { type: String },
-    goal: { type: String },
-    icon: { type: String },
-    cost: { type: Number },
-    price: { type: Number },
-    discountType: { type: String },
-    discountAmount: { type: Number },
-    duration: { type: Number },
-
-    features: { type: [String] },
-    iterations: { type: [String] },
-
-    status: { type: String, enum: ['active', 'inactive', 'delete'], default: 'active' },
-    outcome: { type: String },
+    },
 
     grace_period: { type: Number, default: 0 },
     first_retry: { type: Number, default: 0 },
     second_retry: { type: Number, default: 0 },
+
     staking_allowed: { type: Boolean, default: false },
-    staking_details: { type: mongoose.Schema.Types.Mixed, default: {} }
+    staking_details: { type: Object, default: {} },
 
-}, { timestamps: true });
+    step_id: { type: String, default: null },
 
-module.exports = mongoose.model('naavi_services', servicesSchema);
+    serviceProvider: { type: String, default: "" },
+    access: { type: String, default: "" },
+    goal: { type: String, default: "" },
+
+    grade: { type: Array, default: [] },
+    financialSituation: { type: String, default: "" },
+    stream: { type: String, default: "" },
+
+    cost: { type: Number, default: 0 },
+    price: { type: Number, default: 0 },
+
+    discountType: { type: String, default: "" },
+    discountAmount: { type: Number, default: 0 },
+
+    duration: { type: Number, default: 0 },
+
+    features: { type: Array, default: [] },
+
+    status: { type: String, default: "active" },
+
+    outcome: { type: String, default: "" },
+
+    type: { type: String, default: "" },
+
+    iterations: { type: Array, default: [] },
+
+    ServiceDetails: { type: Array, default: [] }
+  },
+  { timestamps: true }
+);
+
+// ✔ Register model with the expected name
+module.exports = mongoose.model("naavi_services", ServiceSchema);

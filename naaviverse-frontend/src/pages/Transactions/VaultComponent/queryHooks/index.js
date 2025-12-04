@@ -146,7 +146,7 @@ const getVaultTxns = async ({ queryKey }) => {
   }
   // console.log(body, 'body')
   const { data } = await axios.post(
-    "https://comms.globalxchange.io/coin/vault/service/txns/get",
+    "http://localhost:4545/api/vault/txns",
     body
   );
   return data.txns || [];

@@ -18,7 +18,7 @@ import axios from "axios";
 const VaultTransactions = () => {
   //   let navigate = useNavigate();
   //   const { coinType } = useStore();
-  const userDetails = JSON.parse(localStorage.getItem("user"));
+ const userDetails = JSON.parse(localStorage.getItem("partner"));
   const { selectedCoin, transactionData, setTransactionData } =
     useCoinContextData();
   const date = useRef();
@@ -28,22 +28,22 @@ const VaultTransactions = () => {
   useEffect(() => {
     setLoading(true);
     let obj = {
-      app_code: "naavi",
-      email: userDetails?.user?.email,
-      coin: selectedCoin?.coinSymbol,
-    };
-    axios
-      .post(`https://comms.globalxchange.io/coin/vault/service/txns/get`, obj)
-      .then((response) => {
-        let result = response?.data?.txns;
-        // console.log(result);
-        setTransactionData(result);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log(error, "error in fetching transactions");
-      });
-  }, []);
+    app_code: "naavi",
+    email: userDetails?.email,
+    coin: selectedCoin?.coinSymbol,
+  };
+
+  axios
+    .post("http://localhost:4545/api/vault/txns", obj)
+    .then((response) => {
+      setTransactionData(response.data.txns);
+      setLoading(false);
+    })
+    .catch((error) => {
+      console.log("error fetching transactions", error);
+      setLoading(false);
+    });
+}, []);
 
   function formatTimestamp(timestamp) {
     const months = [

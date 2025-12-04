@@ -46,7 +46,7 @@ export const getCoinsForApp = (app) => {
 
 export const liquidAssetList = (data) => {
   return axios.post(
-    `https://comms.globalxchange.io/coin/vault/service/txns/get`,
+    `http://localhost:4545/vault/txns`,
     { ...data }
   );
 };

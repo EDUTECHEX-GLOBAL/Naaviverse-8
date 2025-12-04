@@ -545,24 +545,39 @@ const AccDashboard = () => {
       });
   };
 
-  const handleGetCurrencies = () => {
-    setIsCurrencies(true);
-    GetAllCurrencies()
-      .then((res) => {
-        let result = res?.data;
-        if (result?.status) {
-          setallCurrencies(result?.coins);
-          setIsCurrencies(false);
-        }
-      })
-      .catch((err) => {
-        console.log(err, "jkjkk");
-        setIsCurrencies(false);
-        toast.error("Something Went Wrong!", {
-          position: toast.POSITION.TOP_RIGHT,
-        });
-      });
-  };
+const handleGetCurrencies = () => {
+  setIsCurrencies(true);
+
+  GetAllCurrencies()
+    .then((res) => {
+      const result = res?.data;
+      console.log("RESULT:", result);
+
+      if (result?.status && Array.isArray(result.currencies)) {
+        console.log("CURRENCIES:", result.currencies);
+
+        // Format for your UI
+        const formatted = result.currencies.map((c) => ({
+          coinName: c.code,
+          coinSymbol: c.code,
+          fullName: c.currency
+        }));
+
+        console.log("FORMATTED:", formatted);
+
+        setallCurrencies(formatted);
+      }
+
+      setIsCurrencies(false);
+    })
+    .catch((err) => {
+      console.log("ERROR:", err);
+      setIsCurrencies(false);
+    });
+};
+
+
+
 
   const resetpop = () => {
     setispopular(false);
@@ -677,152 +692,139 @@ const AccDashboard = () => {
     setservicesMenu("Services");
   };
 
-  const handleFinalSubmit = () => {
-    setIsSubmit(true);
-    let userDetails = JSON.parse(localStorage.getItem("partner"));
-    let objmonthly = {
-      productcreatoremail: userDetails.email,
-      token: userDetails.idToken,
-      product_code: serviceCodeInput,
-      product_name: serviceNameInput,
-      product_icon: image,
-      revenue_account: userDetails.email,
-      client_app: "naavi",
-      product_category_code: "CoE",
-      sub_category_code: "",
-      custom_product_label: productLabel,
-      points_creation: false,
-      sub_text: serviceTagline,
-      full_description: serviceDescription,
-      first_purchase: {
-        price: firstMonthPrice !== "" ? parseFloat(firstMonthPrice) : 0,
-        coin: selectedCurrency.coinSymbol,
-      },
-      billing_cycle: {
-        monthly: {
-          price:
-            billingType === "One Time"
-              ? firstMonthPrice !== ""
-                ? parseFloat(firstMonthPrice)
-                : 0
-              : monthlyPrice !== ""
-                ? parseFloat(monthlyPrice)
-                : 0,
-          coin: selectedCurrency.coinSymbol,
-        },
-      },
-      grace_period:
-        billingType === "One Time"
-          ? 0
-          : gracePeriod !== ""
-            ? parseFloat(gracePeriod)
-            : 0,
-      first_retry:
-        billingType === "One Time"
-          ? 0
-          : secondChargeAttempt !== ""
-            ? parseFloat(secondChargeAttempt)
-            : 0,
-      second_retry:
-        billingType === "One Time"
-          ? 0
-          : thirdChargeAttempt !== ""
-            ? parseFloat(thirdChargeAttempt)
-            : 0,
-      staking_allowed: false,
-      staking_details: {},
-    };
+ const handleFinalSubmit = () => {
+  setIsSubmit(true);
 
-    let objone = {
-      productcreatoremail: userDetails.email,
-      token: userDetails.idToken,
-      product_code: serviceCodeInput,
-      product_name: serviceNameInput,
-      product_icon: image,
-      revenue_account: userDetails.email,
-      client_app: "naavi",
-      product_category_code: "CoE",
-      sub_category_code: "",
-      custom_product_label: productLabel,
-      points_creation: false,
-      sub_text: serviceTagline,
-      full_description: serviceDescription,
-      first_purchase: {
-        price: firstMonthPrice !== "" ? parseFloat(firstMonthPrice) : 0,
-        coin: selectedCurrency.coinSymbol,
-      },
-      billing_cycle: {
-        lifetime: {
-          price:
-            billingType === "One Time"
-              ? firstMonthPrice !== ""
-                ? parseFloat(firstMonthPrice)
-                : 0
-              : monthlyPrice !== ""
-                ? parseFloat(monthlyPrice)
-                : 0,
-          coin: selectedCurrency.coinSymbol,
-        },
-      },
-      grace_period:
-        billingType === "One Time"
-          ? 0
-          : gracePeriod !== ""
-            ? parseFloat(gracePeriod)
-            : 0,
-      first_retry:
-        billingType === "One Time"
-          ? 0
-          : secondChargeAttempt !== ""
-            ? parseFloat(secondChargeAttempt)
-            : 0,
-      second_retry:
-        billingType === "One Time"
-          ? 0
-          : thirdChargeAttempt !== ""
-            ? parseFloat(thirdChargeAttempt)
-            : 0,
-      staking_allowed: false,
-      staking_details: {},
-    };
+  let userDetails = JSON.parse(localStorage.getItem("partner"));
 
-    let obj = billingType === "One Time" ? objone : objmonthly;
-    CreatePopularService(obj)
-      .then((res) => {
-        let result = res.data;
-        if (result.status) {
-          myTimeoutService();
-          setpstep(7);
-          setbillingType("");
-          setselectNew("");
-          setselectCategory("");
-          setcategoriesData([]);
-          setSearch("");
-          setSelectedCurrency({});
-          setServiceNameInput("");
-          setServiceCodeInput("");
-          setProductLabel("");
-          setServiceTagline("");
-          setServiceDescription("");
-          setfirstMonthPrice("");
-          setmonthlyPrice("");
-          setgracePeriod("");
-          setsecondChargeAttempt("");
-          setthirdChargeAttempt("");
-          setfirstMonthPrice("");
-          setmonthlyPrice("");
-          setgracePeriod("");
-          setsecondChargeAttempt("");
-          setthirdChargeAttempt("");
-          setIsSubmit(false);
-          setCoverImageS3url("");
-          setImage(null);
-        }
-      })
-      .catch((err) => {
-        setIsSubmit(false);
-      });
+  // COMMON FIELDS FOR BOTH ONE-TIME & MONTHLY
+  const base = {
+    productcreatoremail: userDetails.email,
+
+    // REQUIRED BACKEND FIELDS
+    name: serviceNameInput,                 // ✔ MUST BE `name`
+    chargingtype: billingType,              // ✔ MUST BE `chargingtype`
+    description: serviceDescription,        // ✔ MUST BE `description`
+
+    product_code: serviceCodeInput,
+    product_icon: coverImageS3url,          // ✔ Use uploaded S3 URL
+    revenue_account: userDetails.email,
+    client_app: "naavi",
+
+    product_category_code: "CoE",
+    sub_category_code: "",
+    custom_product_label: productLabel,
+    points_creation: false,
+    sub_text: serviceTagline,
+
+    // FIRST PURCHASE (BOTH MODELS)
+    first_purchase: {
+      price: firstMonthPrice ? parseFloat(firstMonthPrice) : 0,
+      coin: selectedCurrency.coinSymbol,
+    },
+
+    grace_period:
+      billingType === "One Time"
+        ? 0
+        : gracePeriod
+        ? parseFloat(gracePeriod)
+        : 0,
+
+    first_retry:
+      billingType === "One Time"
+        ? 0
+        : secondChargeAttempt
+        ? parseFloat(secondChargeAttempt)
+        : 0,
+
+    second_retry:
+      billingType === "One Time"
+        ? 0
+        : thirdChargeAttempt
+        ? parseFloat(thirdChargeAttempt)
+        : 0,
+
+    staking_allowed: false,
+    staking_details: {},
   };
+
+  // ------------------------------
+  // MONTHLY PLAN OBJECT
+  // ------------------------------
+  const objmonthly = {
+    ...base,
+    billing_cycle: {
+      monthly: {
+        price:
+          monthlyPrice !== ""
+            ? parseFloat(monthlyPrice)
+            : firstMonthPrice
+            ? parseFloat(firstMonthPrice)
+            : 0,
+        coin: selectedCurrency.coinSymbol,
+      },
+    },
+  };
+
+  // ------------------------------
+  // ONE-TIME PLAN OBJECT
+  // ------------------------------
+  const objone = {
+    ...base,
+    billing_cycle: {
+      lifetime: {
+        price:
+          firstMonthPrice !== ""
+            ? parseFloat(firstMonthPrice)
+            : monthlyPrice !== ""
+            ? parseFloat(monthlyPrice)
+            : 0,
+        coin: selectedCurrency.coinSymbol,
+      },
+    },
+  };
+
+  // FINAL PAYLOAD
+  const obj = billingType === "One Time" ? objone : objmonthly;
+
+  console.log("FINAL SERVICE PAYLOAD:", obj);
+
+  CreatePopularService(obj)
+    .then((res) => {
+      let result = res.data;
+
+      if (result.status) {
+        myTimeoutService();
+        setpstep(7);
+
+        // RESET ALL FIELDS
+        setbillingType("");
+        setselectNew("");
+        setselectCategory("");
+        setcategoriesData([]);
+        setSearch("");
+        setSelectedCurrency({});
+        setServiceNameInput("");
+        setServiceCodeInput("");
+        setProductLabel("");
+        setServiceTagline("");
+        setServiceDescription("");
+        setfirstMonthPrice("");
+        setmonthlyPrice("");
+        setgracePeriod("");
+        setsecondChargeAttempt("");
+        setthirdChargeAttempt("");
+        setCoverImageS3url("");
+        setImage(null);
+        setIsSubmit(false);
+      }
+    })
+    .catch((err) => {
+      console.error("SERVICE CREATE ERROR:", err);
+      setIsSubmit(false);
+    });
+};
+
 
   //   const addService = () => {
   //     let userDetails = JSON.parse(localStorage.getItem("partner"));
@@ -1012,11 +1014,10 @@ const AccDashboard = () => {
       });
   };
 
-  useEffect(() => {
-    if (pathSteps) {
-      console.log(pathSteps, "kjwegfljwefljwef")
-    }
-  }, [pathSteps])
+useEffect(() => {
+  console.log(pathSteps, "kjwegfljwefljwef");
+}, []);
+
 
   const myTimeout1 = () => {
     setTimeout(reload1, 3000);

@@ -122,12 +122,17 @@ app.use("/api", require("./routes/checkFormatted"));
 app.use("/api/regenerate", require("./routes/regenerateBatch.route"));
 app.use("/api/utils", require("./routes/addStepIds.route"));
 app.use("/api/stepviews", require("./routes/stepviews.route"));
+app.use("/api/vault", require("./routes/vaultRouter"));
+app.use("/api/categories", require("./routes/categoriesRouter"));
+
+
 
 // THIS IS ONLY FOR THE TEMPORARY ADMIN 
 app.use("/admin/universities", require("./routes/adminUniversitiesRouter"));
 app.use("/admin/programs", require("./routes/adminProgramsRouter"));
 app.use("/admin/steps", require("./routes/adminStepsRouter"));
 app.use("/admin/services", require("./routes/adminServicesRouter"));
+
 
 
 

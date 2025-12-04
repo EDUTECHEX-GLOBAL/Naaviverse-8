@@ -2,7 +2,6 @@ import React, { useState, useLayoutEffect, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./accDashboard.scss";
-import UniversitiesAdmin from "./UniversitiesAdmin.jsx";
 import searchic from "../../static/images/dashboard/searchic.svg";
 import downarrow from "../../static/images/dashboard/downarrow.svg";
 import uploadv from "../../static/images/dashboard/uploadv.svg";
@@ -1286,7 +1285,7 @@ const [adminServices, setAdminServices] = useState([])
       <div className="dashboard-main">
         <div className="dashboard-body">
           <div onClick={() => setShowDrop(false)}>
-          
+            <AdminAccDashsidebar admin={true}/>
           </div>
           <div className="dashboard-screens" onClick={() => resetpop()}>
             <div style={{ height: "100%" }}>
@@ -2446,31 +2445,7 @@ const [adminServices, setAdminServices] = useState([])
                     <MyStepsAdmin search={search} admin={true} fetchAllServicesAgain={fetchAllServicesAgain} stepDataPage={true}/>
                   </div>
                 </>
-
-              )
-            : accsideNav === "Universities" ? (
-  <>
-    <MenuNav 
-      showDrop={showDrop}
-      setShowDrop={setShowDrop}
-      searchTerm={search}
-      setSearchterm={setSearch}
-      searchPlaceholder="Search Universities..."
-    />
-    
-    <div
-      className="services-main"
-      style={{ height: "calc(100% - 70px)" }}
-      onClick={() => setShowDrop(false)}
-    >
-      <UniversitiesAdmin search={search} />
-    </div>
-  </>
-)
-
-
-              
-              : accsideNav === "Services" ?(
+              ): accsideNav === "Services" ?(
                 <>
                 <MenuNav 
                       showDrop={showDrop}

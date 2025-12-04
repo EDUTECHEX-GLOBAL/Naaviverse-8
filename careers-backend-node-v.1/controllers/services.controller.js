@@ -3,103 +3,76 @@ const mongoose = require('mongoose');
 
 // ================== ADD SERVICE ==================
 const addService = async (req, res) => {
-    console.log('Request to add service:', req.body);
+  try {
+    console.log("SERVICE CREATE PAYLOAD:", req.body);
 
-  let createService = {
-    productcreatoremail: req.body.productcreatoremail,
+    // Build object exactly from frontend fields
+    const createService = {
+      productcreatoremail: req.body.productcreatoremail,
+      name: req.body.name,
+      icon: req.body.product_icon,
+      description: req.body.description,
+      chargingtype: req.body.chargingtype,
 
-    // FIXED FIELDS
-    name: req.body.name,   
-    icon: req.body.product_icon,
-    description: req.body.description || req.body.full_description,
+      revenue_account: req.body.revenue_account,
+      client_app: req.body.client_app,
+      product_category_code: req.body.product_category_code,
+      sub_category_code: req.body.sub_category_code,
+      custom_product_label: req.body.custom_product_label,
+      points_creation: req.body.points_creation,
+      sub_text: req.body.sub_text,
 
-    // 🚀 FIXED: NOW IT USES THE CORRECT FIELD
-    chargingtype: req.body.chargingtype,
+      first_purchase: req.body.first_purchase,
 
-    revenue_account: req.body.revenue_account,
-    client_app: req.body.client_app,
-    product_category_code: req.body.product_category_code,
-    sub_category_code: req.body.sub_category_code,
-    custom_product_label: req.body.custom_product_label,
-    points_creation: req.body.points_creation,
-    sub_text: req.body.sub_text,
+      billing_cycle: req.body.billing_cycle,
 
-    // ⭐ CRITICAL: FIRST PURCHASE NOW SAVES CORRECTLY
-    first_purchase: req.body.first_purchase,
+      grace_period: req.body.grace_period || 0,
+      first_retry: req.body.first_retry || 0,
+      second_retry: req.body.second_retry || 0,
 
-    grace_period: req.body.grace_period || 0,
-    first_retry: req.body.first_retry || 0,
-    second_retry: req.body.second_retry || 0,
-    staking_allowed: req.body.staking_allowed,
-    staking_details: req.body.staking_details,
+      staking_allowed: req.body.staking_allowed,
+      staking_details: req.body.staking_details,
 
-    billing_cycle: {},
+      // OPTIONAL FIELDS
+      step_id: req.body.step_id || null,
+      serviceProvider: req.body.serviceProvider || "",
+      access: req.body.access || "",
+      goal: req.body.goal || "",
+      grade: req.body.gradeData || [],
+      financialSituation: req.body.financialData || "",
+      stream: req.body.stream || "",
+      cost: req.body.cost || 0,
+      price: req.body.price || 0,
+      discountType: req.body.discountType || "",
+      discountAmount: req.body.discountAmount || 0,
+      duration: req.body.duration || 0,
+      features: req.body.features || [],
+      status: req.body.status || "active",
+      outcome: req.body.outcome || "",
+      type: req.body.type || "",
+      iterations: req.body.iterations || [],
+      ServiceDetails: req.body.ServiceDetails || []
+    };
 
-    serviceProvider: req.body.serviceProvider || "",
-    access: req.body.access || "",
-    goal: req.body.goal || "",
-    grade: req.body.gradeData || [],
-    financialSituation: req.body.financialData || "",
-    stream: req.body.stream || "",
-    cost: req.body.cost || 0,
-    price: req.body.price || 0,
-    discountType: req.body.discountType || "",
-    discountAmount: req.body.discountAmount || 0,
-    duration: req.body.duration || 0,
-    features: req.body.features || [],
-    status: req.body.status || "active",
-    outcome: req.body.outcome || "",
-    type: req.body.type || "",
-    iterations: req.body.iterations || [],
-    ServiceDetails: req.body.ServiceDetails || []
+    // Save service
+    const service = await serviceModel.create(createService);
 
+    return res.json({
+      status: true,
+      message: "Service created successfully",
+      data: service,
+    });
+
+  } catch (error) {
+    console.error("Error creating service:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal error while creating service",
+      error: error.message,
+    });
+  }
 };
 
-
-    // ✅ Save step_id (IMPORTANT!)
-    if (req.body.step_id) {
-        createService.step_id = req.body.step_id;
-    }
-
-    // Payment plans
-   if (req.body.billing_cycle?.monthly) {
-    createService.billing_cycle.monthly = {
-        price: req.body.billing_cycle.monthly.price || 0,
-        coin: req.body.billing_cycle.monthly.coin,
-    };
-}
-
-if (req.body.billing_cycle?.annual) {
-    createService.billing_cycle.annual = {
-        price: req.body.billing_cycle.annual.price || 0,
-        coin: req.body.billing_cycle.annual.coin,
-    };
-}
-
-if (req.body.billing_cycle?.lifetime) {
-    createService.billing_cycle.lifetime = {
-        price: req.body.billing_cycle.lifetime.price || 0,
-        coin: req.body.billing_cycle.lifetime.coin,
-    };
-}
-
-
-    try {
-        let service = await serviceModel.create(createService);
-        return res.json({
-            status: true,
-            message: "Service created successfully",
-            data: service,
-        });
-    } catch (error) {
-        console.error("Error creating service:", error);
-        return res.status(500).json({
-            status: false,
-            message: "Internal error while creating service",
-            error: error.message,
-        });
-    }
-};
 
 // ================== GET SERVICES BY CREATOR ==================
 const getServices = async (req, res) => {

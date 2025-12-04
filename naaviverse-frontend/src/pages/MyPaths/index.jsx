@@ -123,22 +123,25 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
       });
   };
 
-  useEffect(() => {
-    let email = userDetails?.email;
-    axios
-      .get(`/api/paths/get?email=${email}`)
-      .then(({ data }) => {
-        if (data.status) {
-          setBackupPathData(data?.data);
-        }
-      });
-  }, []);
+/* ------------------------------
+   1️⃣ Load backup paths ONCE
+--------------------------------*/
+useEffect(() => {
+  const email = userDetails?.email;
+  if (!email) return;
 
-  useEffect(() => {
-    if (selectedStepId) {
-      getAllServices();
-    }
-  }, [selectedStepId]);
+  axios.get(`/api/paths/get?email=${email}`).then(({ data }) => {
+    if (data.status) setBackupPathData(data.data);
+  });
+}, []);
+
+/* ------------------------------
+   2️⃣ Load services when step changes
+----------------------------------*/
+useEffect(() => {
+  if (!selectedStepId) return;
+  getAllServices();
+}, [selectedStepId]);
 
   const getNewPath = () => {
     setLoading(true);
@@ -161,13 +164,26 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
     console.log(selectedPath?.StepDetails, "lwkefhlkwefcwefc");
   }, [selectedPath]);
 
-  useEffect(() => {
+//   3️⃣ Load paths when menu changes 
+//    (Fix: prevents duplicate calls)
+// ----------------------------------*/
+useEffect(() => {
+  let cancelled = false;
+
+  const loadPaths = async () => {
+    if (cancelled) return;
+
     if (mypathsMenu === "Pending Paths") {
-      getNewPath();
+      await getNewPath();
     } else {
-      getAllPaths();
+      await getAllPaths();
     }
-  }, [mypathsMenu]);
+  };
+
+  loadPaths();
+  return () => (cancelled = true);
+}, [mypathsMenu]);
+
 
   const getAllSteps = () => {
     setLoading(true);
@@ -386,9 +402,12 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
       });
   };
 
-  useEffect(() => {
-    setShowSelectedPath(null);
-  }, [mypathsMenu]);
+/* ------------------------------
+   6️⃣ Reset selected path when menu changes
+----------------------------------*/
+useEffect(() => {
+  setShowSelectedPath(null);
+}, [mypathsMenu]);
 
   const [productDataArray, setProductDataArray] = useState([]);
   const [productKeys, setProductKeys] = useState(null);
