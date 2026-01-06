@@ -9,8 +9,7 @@ const servicesController = require("../controllers/services.controller");
 router.post("/add", servicesController.addService);
 
 /* ==========================
-   GET ALL SERVICES
-   /api/services/getservices
+   GET SERVICES (BY CREATOR EMAIL)
 ========================== */
 router.get("/getservices", servicesController.getServices);
 
@@ -20,29 +19,35 @@ router.get("/getservices", servicesController.getServices);
 router.put("/update/:id", servicesController.updateService);
 
 /* ==========================
-   DELETE SERVICE
+   DELETE / RESTORE SERVICE
 ========================== */
 router.delete("/delete/:id", servicesController.deleteService);
-router.put("/restore/:id", [verifyToken], servicesController.restoreService);
-router.get("/getservices", servicesController.getAllServices);
+router.put("/restore/:id", servicesController.restoreService);
+
+/* ==========================
+   UPDATE SERVICE ICON
+========================== */
 router.put("/icon/:serviceId", servicesController.updateServiceIcon);
+
+/* ==========================
+   BULK UPLOAD SERVICES
+========================== */
 router.post("/bulk", servicesController.bulkUploadServices);
-
-
-router.get("/", servicesController.getServicesByStep);
-
-router.get("/by-step", (req, res, next) => {
-  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-  res.set("Pragma", "no-cache");
-  res.set("Expires", "0");
-  res.set("Surrogate-Control", "no-store");
-  next();
-}, servicesController.getServicesByStep);
 
 /* ==========================
    GET SERVICES BY STEP
    /api/services/by-step?step_id=xxxx
 ========================== */
-router.get("/by-step", servicesController.getServicesByStep);
+router.get(
+  "/by-step",
+  (req, res, next) => {
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
+    res.set("Surrogate-Control", "no-store");
+    next();
+  },
+  servicesController.getServicesByStep
+);
 
 module.exports = router;

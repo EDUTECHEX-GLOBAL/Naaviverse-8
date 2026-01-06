@@ -981,29 +981,34 @@ const uploadBulkService = async (file) => {
   // })
   //   }
 
-const getAllServices = () => {
+const getAllServices = async () => {
   const userDetails = getPartner();
 
-    if (userDetails && userDetails.email) {
-      const timestamp = new Date().getTime(); // Cache-busting query parameter
-      axios.get(`http://localhost:4545/api/services/get?productcreatoremail=${userDetails.email}&_=${timestamp}`)
-        .then(({ data }) => {
-          console.log("Fetched Services:", data);
-          if (data.status) {
-            setservicesAcc(data.data || []); // Update state with fetched services
-          } else {
-            console.error("Service data not found.");
-          }
-        })
-        .catch(error => {
-          console.error("Error fetching services:", error);
-        })
-        .finally(() => setIsLoading(false));
+  if (!userDetails?.email) {
+    console.warn("No partner email found");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const { data } = await axios.get(
+      `/api/services/get?productcreatoremail=${userDetails.email}`
+    );
+
+    if (data?.status) {
+      setservicesAcc(data.data || []);
     } else {
-      console.error("User details or email is missing in localStorage.");
-      setIsLoading(false);
+      setservicesAcc([]);
     }
-  };
+  } catch (err) {
+    console.error("Error fetching services:", err);
+    setservicesAcc([]);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
 const fetchAllServicesAgain = () => {
   const userDetails = JSON.parse(localStorage.getItem("partner"));
@@ -1017,17 +1022,17 @@ const fetchAllServicesAgain = () => {
 };
 
 
-  useEffect(() => {
-    if (!ispopular) {
-      const userDetails = JSON.parse(localStorage.getItem("partner"));
-      // console.log(userDetails, "kkk");
-      // handleServicesForLogged(userDetails.user.email);
-      getAllServices(userDetails.email)
+useEffect(() => {
+  if (!ispopular) {
+    const userDetails = JSON.parse(localStorage.getItem("partner"));
+    if (userDetails?.email) {
+      getAllServices(userDetails.email);
     }
-
+  } else {
     getAllServices();
   }
 }, [ispopular]);
+
 
 
 useEffect(() => {
@@ -1055,14 +1060,14 @@ useEffect(() => {
     setTimeout(reload, 3000);
   };
 
-  function reload() {
-    setServiceActionEnabled(false);
-    setServiceActionStep(1);
-    setSelectedService("");
-    setUpdatedIcon("");
-    // handleServicesForLogged(userDetails?.user?.email);
-    getAllServices(userDetails.email)
-  }
+function reload() {
+  setServiceActionEnabled(false);
+  setServiceActionStep(1);
+  setSelectedService("");
+  setUpdatedIcon("");
+  getAllServices();
+}
+
 
   const deleteService = () => {
     setIsloading(true);
@@ -2449,68 +2454,76 @@ let obj = {
                               </div>
                             </div>
                             <>
-                              {servicesAcc.length > 0 ? (
-                                <div className="follow-data-main">
-                                  {servicesAcc
-                                    // .filter((element) => {
-                                    //   return element?.name
-                                    //     .toLowerCase()
-                                    //     .startsWith(search.toLowerCase());
-                                    // })
-                                  .map((each, i) => (
-  <div
-    key={each._id || i}        // 👈 ADD THIS LINE
-    className="follower-box"
-    style={{
-      background: selectedFollower === each
-        ? "rgba(241, 241, 241, 0.5)"
-        : "",
-      padding: "22px 35px",
-      width: "100%",
-    }}
-    onClick={() => {
-      setServiceActionEnabled(true);
-      setSelectedService(each);
-      setServiceActionStep(1);
-      setSelectedFollower(each);
-    }}
-  >
+{servicesAcc.length > 0 ? (
+  <div className="follow-data-main">
+    {servicesAcc.map((each, i) => (
+      <div
+        key={each._id || i}
+        className="follower-box"
+        style={{
+          background:
+            selectedFollower === each
+              ? "rgba(241, 241, 241, 0.5)"
+              : "",
+          padding: "22px 35px",
+          width: "100%",
+        }}
+        onClick={() => {
+          setServiceActionEnabled(true);
+          setSelectedService(each);
+          setServiceActionStep(1);
+          setSelectedFollower(each);
+        }}
+      >
+        <div className="rowtext">{each?.name}</div>
+        <div className="rowtext">
+          {each?.billing_cycle?.monthly
+            ? "Monthly"
+            : each?.billing_cycle?.annual
+            ? "Annual"
+            : each?.billing_cycle?.lifetime
+            ? "Lifetime"
+            : "N/A"}
+        </div>
+        <div className="rowtext">
+          {each?.billing_cycle?.lifetime?.price ||
+            each?.billing_cycle?.monthly?.price ||
+            each?.billing_cycle?.annual?.price}
+        </div>
+        <div className="rowtext">
+          {each?.billing_cycle?.lifetime?.coin ||
+            each?.billing_cycle?.monthly?.coin ||
+            each?.billing_cycle?.annual?.coin}
+        </div>
+      </div>
+    ))}
+  </div>
+) : isLoading ? (
+  <div className="follow-data-main">
+    {[1, 2, 3, 4, 5, 6].map((_, i) => (
+      <div className="follower-box" key={i}>
+        <Skeleton height={20} />
+      </div>
+    ))}
+  </div>
+) : (
+  <div className="services-main">
+    <div
+      style={{
+        width: "100%",
+        height: "200px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontWeight: "600",
+        fontSize: "1.2rem",
+      }}
+    >
+      Coming Soon
+    </div>
+  </div>
+)}
 
-                                        <div className="rowtext">{each?.name}</div>
-                                        <div className="rowtext">
-                                          {each?.billing_cycle?.monthly ? "Monthly" :
-                                            each?.billing_cycle?.annual ? "Annual" :
-                                              each?.billing_cycle?.lifetime ? "Lifetime" : "N/A"}
-                                        </div>
-
-                                        <div className="rowtext">{each?.billing_cycle?.lifetime?.price || each?.billing_cycle?.monthly?.price || each?.billing_cycle?.annual?.price}</div>
-                                        <div className="rowtext">{each?.billing_cycle?.lifetime?.coin || each?.billing_cycle?.monthly?.coin || each?.billing_cycle?.annual?.coin}</div>
-                                      </div>
-                                    ))}
-                                </div>
-                              ) : isLoading ? (
-                                <div className="follow-data-main">
-                                  {[1, 2, 3, 4, 5, 6].map((each, i) => (
-                                    <div className="follower-box">
-                                      <div className="follower-details">
-                                        <div>
-                                          <Skeleton className="user-icon" />
-                                        </div>
-                                        <Skeleton
-                                          className="follower-mail"
-                                          style={{ width: "200px" }}
-                                        />
-                                      </div>
-                                      <Skeleton
-                                        className="follow-time"
-                                        style={{ width: "150px" }}
-                                      />
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                ""
-                              )}
                             </>
                           </>
                           //   <div className="service-body">

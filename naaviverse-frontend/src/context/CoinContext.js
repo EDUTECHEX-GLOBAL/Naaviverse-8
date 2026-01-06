@@ -41,7 +41,7 @@ export const CoinContextProvider = ({ children }) => {
   const [addApiValueCoin, setAddApiValueCoin] = useState();
   const [toCurrencyApiValue, setToCurrencyApiValue] = useState();
   const [countryApiValue, setCountryApiValue] = useState();
-  
+
   const [payMethodApiValue, setPayMethodApiValue] = useState();
   const [eachCardShowValue, setEachCardShowValue] = useState();
   const [fundingCurrency, setFundingCurrency] = useState(false);
@@ -121,7 +121,7 @@ export const CoinContextProvider = ({ children }) => {
 
   const [backToMenu, setBackToMenu] = useState(false);
   const [checkedOneForex, setCheckedOneForex] = useState(false);
-  const [allApiData, setAllApiData] = useState();
+  const [allApiData, setAllApiData] = useState([]);
   const [forexPathId, setForexPathId] = useState("");
   const [forexQuote, setForexQuote] = useState([]);
   const [otpForex, setOtpForex] = useState("");
@@ -191,7 +191,7 @@ export const CoinContextProvider = ({ children }) => {
   //mob single service product page
   const [selecteServiceProduct, setSelectedSingleProduct] = useState([]);
 
-  const [ stepServices, setStepServices] = useState([])
+  const [stepServices, setStepServices] = useState([])
 
   useEffect(() => {
     if (coinType == "bonds" || coinType == "moneyMarkets") {
@@ -510,7 +510,7 @@ export const CoinContextProvider = ({ children }) => {
         //mob single directory product page
         selectedDirectoryProduct,
         setSelectedDirectoryProduct,
-        
+
         //mob single service product page
         selecteServiceProduct,
         setSelectedSingleProduct,
