@@ -2,7 +2,6 @@ import React, { useState, useLayoutEffect, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./accDashboard.scss";
-import UniversitiesAdmin from "../AdminAccDashbaoard/UniversitiesAdmin.jsx";
 import searchic from "../../static/images/dashboard/searchic.svg";
 import downarrow from "../../static/images/dashboard/downarrow.svg";
 import uploadv from "../../static/images/dashboard/uploadv.svg";
@@ -58,6 +57,23 @@ import MenuNav from "../../components/MenuNav/index.jsx";
 import MyStepsAcc from "./MyStepsAcc/index.jsx";
 import { useSelector } from "react-redux";
 
+
+const getPartner = () => {
+  try {
+    const raw = localStorage.getItem("partner");
+
+    if (!raw || raw === "undefined" || raw === "null") {
+      return {};   // instead of null
+    }
+
+    return JSON.parse(raw);
+  } catch {
+    return {};   // prevent redirect
+  }
+};
+
+
+
 const AccDashboard = () => {
   const {
     accsideNav,
@@ -103,7 +119,10 @@ const AccDashboard = () => {
   const [gracePeriod, setgracePeriod] = useState("");
   const [secondChargeAttempt, setsecondChargeAttempt] = useState("");
   const [thirdChargeAttempt, setthirdChargeAttempt] = useState("");
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState(
+  localStorage.getItem("profileImage") || null
+);
+
   const [isSubmit, setIsSubmit] = useState(false);
   const [isServicesAcc, setIsServicesAcc] = useState(false);
   const [servicesAcc, setservicesAcc] = useState([]);
@@ -279,7 +298,12 @@ const [isPurchaseLoading, setPurchaseLoading] = useState(false);
 
   const secret = "uyrw7826^&(896GYUFWE&*#GBjkbuaf"; // secret not to be disclosed anywhere.
   const emailDev = "rahulrajsb@outlook.com"; // email of the developer.
-  const userDetails = JSON.parse(localStorage.getItem("partner"));
+// Read partner once, normalize email/token fields for safe use throughout component.
+const userDetails = getPartner();
+const partnerEmail = userDetails?.email || userDetails?.user?.email || null;
+const partnerToken = userDetails?.idToken || userDetails?.token || null;
+console.log("PARTNER VALUE:", userDetails);
+
 
   const handleGrade = (item) => {
     if (grade.includes(item)) {
@@ -353,12 +377,17 @@ const [isPurchaseLoading, setPurchaseLoading] = useState(false);
   const addBackupPath = (backupPathId, selectedStepId) => {
     // console.log(pathSteps, "kjedkjweld");
 
-    pathSteps.the_ids.map((item) => {
-      if (item.step_id === selectedStepId) {
-        item.backup_pathId = backupPathId;
-      }
-    });
-    setShowBackupPathList(false);
+setPathSteps(prev => {
+  const the_ids = Array.isArray(prev?.the_ids) ? prev.the_ids.map(item => {
+    if (item.step_id === selectedStepId) {
+      return { ...item, backup_pathId: backupPathId };
+    }
+    return item;
+  }) : [];
+  return { ...prev, the_ids };
+});
+setShowBackupPathList(false);
+
     // console.log(selectedSteps, "lkashclkweoiuk");
     // const found = pathSteps.find((element) => element._id === backupPathId);
   };
@@ -418,8 +447,13 @@ useEffect(() => {
 
   const handleFollowerPerAccountants = () => {
     setIsLoading(true);
-    let mailId = userDetails?.email;
-    GetFollowersPerAccount(mailId)
+    const partner = getPartner();
+if (!partner?.email) {
+  console.warn("No partner set — skipping follower fetch");
+  setIsLoading(false);
+  return;
+}
+GetFollowersPerAccount(partner.email)
       .then((res) => {
         let result = res?.data;
         if (result?.status) {
@@ -947,8 +981,8 @@ const uploadBulkService = async (file) => {
   // })
   //   }
 
-  const getAllServices = () => {
-    const userDetails = JSON.parse(localStorage.getItem("partner"));
+const getAllServices = () => {
+  const userDetails = getPartner();
 
     if (userDetails && userDetails.email) {
       const timestamp = new Date().getTime(); // Cache-busting query parameter
@@ -990,28 +1024,32 @@ const fetchAllServicesAgain = () => {
       // handleServicesForLogged(userDetails.user.email);
       getAllServices(userDetails.email)
     }
-  }, [ispopular])
 
-  useEffect(() => {
-    resetpop();
-    // console.log(
-    //   accsideNav == "My Services" && servicesMenu == "Services",
-    //   "uyuyuy"
-    // );
-    if (accsideNav == "CRM" && crmMenu == "Followers") {
+    getAllServices();
+  }
+}, [ispopular]);
 
 
+useEffect(() => {
+  resetpop();
 
-      handleFollowerPerAccountants();
-    } else if (accsideNav == "CRM" && crmMenu == "Purchases") {
-      handleAllCustomerLicenses();
-    } else if (accsideNav == "My Services" && servicesMenu == "Services") {
-      const userDetails = JSON.parse(localStorage.getItem("partner"));
-      // console.log(userDetails, "kkk");
-      // handleServicesForLogged(userDetails.user.email);
-      getAllServices(userDetails.email)
+  if (accsideNav === "CRM" && crmMenu === "Followers") {
+    handleFollowerPerAccountants();
+  } 
+  else if (accsideNav === "CRM" && crmMenu === "Purchases") {
+    handleAllCustomerLicenses();
+  } 
+  else if (accsideNav === "My Services" && servicesMenu === "Services") {
+    const userDetails = getPartner();
+
+    if (!userDetails || !userDetails.email) {
+      console.warn("No partner found — skipping service reload.");
+      return;
     }
-  }, [crmMenu, servicesMenu, accsideNav]);
+
+    getAllServices();
+  }
+}, [crmMenu, servicesMenu, accsideNav]);
 
   const myTimeout = () => {
     setTimeout(reload, 3000);
@@ -1582,18 +1620,28 @@ useEffect(() => {
     setAddForexAmount(float.toFixed(2));
   };
   const getQuote = () => {
-    let obj = {
-      token: userDetails?.idToken,
-      email: userDetails?.user?.email,
-      app_code: "naavi",
-      profile_id: profileId,
-      coin_purchased: selectedCoin?.coinSymbol,
-      purchased_from: selectedCoin?.coinSymbol,
-      from_amount: addForexAmount,
-      stats: true,
-      identifier: `Add ${addForexAmount} ${selectedCoin?.coinSymbol} Via ${selectedPaymentMethod}`,
-      path_id: forexPathId,
-    };
+   const partner = getPartner();
+const partnerEmailLocal = partner?.email || partner?.user?.email;
+const partnerTokenLocal = partner?.idToken || partner?.token;
+
+if (!partnerEmailLocal) {
+  toast.error("Please login to continue");
+  return;
+}
+
+let obj = {
+  token: partnerTokenLocal,
+  email: partnerEmailLocal,
+  app_code: "naavi",
+  profile_id: profileId,
+  coin_purchased: selectedCoin?.coinSymbol,
+  purchased_from: selectedCoin?.coinSymbol,
+  from_amount: addForexAmount,
+  stats: true,
+  identifier: `Add ${addForexAmount} ${selectedCoin?.coinSymbol} Via ${selectedPaymentMethod}`,
+  path_id: forexPathId,
+};
+
 
     axios
       .post(
@@ -2313,6 +2361,8 @@ useEffect(() => {
                     </div>
                   </div>
                 </>
+
+
               ) : accsideNav === "My Services" ? (
                 <>
                   <MenuNav
@@ -2997,28 +3047,13 @@ useEffect(() => {
       setLoading={setLoading}
     />
 
-) : accsideNav === "Universities" ? (
-  <>
-    <MenuNav
-      showDrop={showDrop}
-      setShowDrop={setShowDrop}
-      searchTerm={search}
-      setSearchterm={setSearch}
-      searchPlaceholder="Search Universities..."
-    />
 
-    <div
-      className="services-main"
-      style={{ height: "calc(100% - 70px)" }}
-      onClick={() => setShowDrop(false)}
-    >
-      <UniversitiesAdmin />
-    </div>
-  </>
-) : (
+)
+: (
   <div className="services-main">
     Coming Soon
   </div>
+
 )
 }: (
                 <>
@@ -3916,13 +3951,8 @@ useEffect(() => {
                                   fontWeight: "500",
                                 }}
                               >
-                                {pathSteps.the_ids.find(
-                                  (o) => o.step_id === e._id
-                                ).backup_pathId !== ""
-                                  ? pathSteps.the_ids.find(
-                                    (o) => o.step_id === e._id
-                                  ).backup_pathId
-                                  : "Select Backup Path"}
+                                {(pathSteps?.the_ids?.find(o => o.step_id === e?._id)?.backup_pathId) || "Select Backup Path"}
+
 
                                 {/* {e?.the_ids?.backup_pathId !== ""
                                   ? e?.the_ids?.backup_pathId

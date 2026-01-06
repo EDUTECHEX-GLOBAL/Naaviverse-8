@@ -371,7 +371,14 @@ const verifyOtp = async (req, res) => {
             return res.status(400).json({ success: false, message: "Partner not found" });
         }
 
-
+       // 🔍 ADD DEBUG LOGS HERE
+        console.log("=================================");
+        console.log("Stored OTP:", partner.OTP);
+        console.log("Stored OTP Created Time:", partner.OTPCreatedTime);
+        console.log("User entered OTP:", otp);
+        console.log("Now:", new Date());
+        console.log("Time difference (ms):", Date.now() - partner.OTPCreatedTime);
+        console.log("=================================");
         // Check if OTP is expired const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
         if (partner.isOTPExpired()) {
@@ -619,7 +626,7 @@ module.exports = {
     sendResetPasswordEmail,
     resetPassword,
     logout,
-    verifyOtp,
+    verifyOtp, 
     updatePassword,
     getAllPartners,
     updatePartnerProfile,

@@ -56,11 +56,16 @@ partnerSchema.pre("save", function (next) {
   next();
 });
 
-// Check if OTP is expired
+// Safe OTP expiry check (fixes "OTP expired" issue)
 partnerSchema.methods.isOTPExpired = function () {
   if (!this.OTPCreatedTime) return true;
-  const diff = Date.now() - this.OTPCreatedTime.getTime();
-  return diff > 5 * 60 * 1000; // 5 minutes
+
+  const created = new Date(this.OTPCreatedTime).getTime();
+  const now = Date.now();
+
+  const diffMinutes = (now - created) / (1000 * 60); // convert to minutes
+
+  return diffMinutes > 5; // OTP valid for 5 minutes
 };
 
 // Password match

@@ -1182,46 +1182,34 @@ viewPathById(selectedPathId)
                 </div>
               </div>
             )}
-            {pathActionStep === 10 && (
-              <div className="acc-mt-div">
-                <div className="acc-sub-text">
-                  Which service do you want to add?
-                </div>
-                <div className="acc-scroll-div">
-                  {allServicesToAdd &&
-                    allServicesToAdd?.serviceDetails?.map((item) => (
-                      <div
-                        className="acc-step-box4"
-                        style={{
-                          flexDirection: "column",
-                          alignItems: "flex-start",
-                          justifyContent: "center",
-                        }}
-                        onClick={(e) => handleAddService(item?.product_id)}
-                      >
-                        <div>{item?.product_name}</div>
-                        <div
-                          style={{
-                            fontSize: "12px",
-                            fontWeight: 400,
-                            paddingTop: "5px",
-                          }}
-                        >
-                          {item?.product_id}
-                        </div>
-                      </div>
-                    ))}
-                </div>
-                <div
-                  className="goBack3"
-                  onClick={() => {
-                    setPathActionStep(1);
-                  }}
-                >
-                  Go Back
-                </div>
-              </div>
-            )}
+        {pathActionStep === 10 &&
+  <div className="acc-mt-div">
+    <div className="acc-sub-text">
+      Which service do you want to add?
+    </div>
+
+    <div className="acc-scroll-div">
+      {allServices?.map(item => (
+        <div
+          className="acc-step-box4"
+          style={{flexDirection:'column', alignItems:'flex-start', justifyContent:'center'}}
+          onClick={() => handleAddService(item?.product_id)}
+        >
+          <div>{item?.product_name}</div>
+          <div style={{fontSize:'12px', fontWeight:400, paddingTop:'5px'}}>
+            {item?.product_id}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div className="goBack3" onClick={() => setPathActionStep(1)}>
+      Go Back
+    </div>
+  </div>
+}
+
+
           </div>
         )}
 

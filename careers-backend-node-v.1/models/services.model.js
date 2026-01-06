@@ -6,7 +6,6 @@ const ServiceSchema = new mongoose.Schema(
     name: { type: String, required: true },
     icon: { type: String, default: "" },
     description: { type: String, default: "" },
-
     chargingtype: { type: String, required: true },
     revenue_account: { type: String, default: "" },
     client_app: { type: String, default: "" },

@@ -1,25 +1,66 @@
 const router = require("express").Router();
-const Services = require("../models/services.model");
+const {
+  addService,
+  getServices,
+  updateService,
+  deleteService,
+  restoreService,
+  getServicesByStep,
+  
+} = require("../controllers/services.controller");
 
-// Get services by step
-router.get("/by-step", async (req, res) => {
+// ==========================
+// CREATE SERVICE
+// ==========================
+router.post("/add", addService);
+
+// ==========================
+// GET ALL SERVICES
+// Supports: ?status=active | inactive | delete
+// Supports: ?productcreatoremail=email
+// FRONTEND CALLS THIS: /api/services/getservices
+// ==========================
+router.get("/getservices", getServices);
+
+// ==========================
+// UPDATE A SERVICE
+// ==========================
+router.put("/update/:id", updateService);
+
+// ==========================
+// DELETE A SERVICE
+// ==========================
+router.delete("/delete/:id", deleteService);
+
+// ==========================
+// RESTORE A DELETED SERVICE
+// ==========================
+router.put("/restore/:id", restoreService);
+
+// ==========================
+// GET SERVICES BY STEP
+// FRONTEND CALLS: /api/services/by-step?step_id=xxxx
+// ==========================
+router.get("/by-step", getServicesByStep);
+router.get("/get/byEmail", async (req, res) => {
   try {
-    const { step_id } = req.query;
+    const { email } = req.query;
 
-    const services = await Services.find({ step_id });
-    return res.json({ status: true, data: services });
-  } catch (err) {
-    res.status(500).json({ status: false, message: "Server error" });
-  }
-});
+    if (!email) {
+      return res.status(400).json({ status: false, message: "Email required" });
+    }
 
-// Add service to step
-router.post("/add", async (req, res) => {
-  try {
-    const service = await Services.create(req.body);
-    res.json({ status: true, data: service });
+    const services = await require("../models/services.model").find({
+      productcreatoremail: email
+    });
+
+    return res.json({
+      status: true,
+      total: services.length,
+      data: services
+    });
   } catch (err) {
-    res.status(500).json({ status: false, message: "Failed to add service" });
+    return res.status(500).json({ status: false, message: "Server error", error: err.message });
   }
 });
 

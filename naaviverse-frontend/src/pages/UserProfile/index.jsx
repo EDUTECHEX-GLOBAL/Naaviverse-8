@@ -106,6 +106,7 @@ const UserProfile = () => {
   const [profileDataId, setProfileDataId] = useState();
   const [profileData, setProfileData] = useState({});
   const [isProfileIncomplete, setIsProfileIncomplete] = useState(true);
+const [accountStatusFetched, setAccountStatusFetched] = useState(false);
 
 
 
@@ -683,18 +684,18 @@ const handleLogout = () => {
     //   });
   };
 
-  useEffect(() => {
-    setsideNav("");
-    resetpop();
-    handleProfileData();
-  }, []);
+ useEffect(() => {
+  setsideNav("");
+  handleProfileData();
+}, []);
+
 
   const myTimeout1 = () => {
     setTimeout(reload1, 3000);
   };
 
   function reload1() {
-    setCreateBrandProfile(false);
+    //setCreateBrandProfile(false);
     setCreateBrandProfileStep(1);
     setProfilePicture("");
     setFullName("");
@@ -720,42 +721,54 @@ const handleLogout = () => {
   const handleProfileData = async () => {
     const mailId = userDetails?.email;
 
-    try {
-      const response = await axios.get(`/api/users/get/${mailId}`);
-      const result = response.data;
-      console.log('API Response:', result);
+try {
+  const response = await axios.get(`/api/users/get/${mailId}`);
+  const result = response.data;
 
+  console.log("API Response:", result);
 
-      if (result?.status) {
-        const profile = result?.data; // Extract profile data
-        const userLevel = profile?.user_level || 0; // Default user_level to 0 if not present
+  if (result?.status) {
+    const profile = result?.data;
+    const userLevel = profile?.user_level || 0;
 
-        if (result.profileComplete === false) {
-          console.log('Profile is incomplete. Redirecting to complete profile...');
-          setIsProfileData(false);
-          setProfileData({});
-        } else {
-          console.log('Profile is complete. Loading profile data...');
-          setIsProfileData(true);
-          setCreateBrandProfileStep(2); // Proceed to next step or page after loading profile
-          setProfileData(profile); // Set the complete profile data
-          setProfileDataId(profile?._id); // Set profile data ID
-          setPreviewUrl(profile?.profilePicture);
-
-          // Update the button styles dynamically
-          manageLevelAccess(userLevel);
-        }
-      } else {
-        console.log('User profile not found. Redirecting to create a new profile...');
-        setIsProfileData(false);
-        setProfileData({});
-      }
-    } catch (err) {
-      console.error('Error fetching profile data:', err);
+    // 🔥 SINGLE SOURCE OF TRUTH → user_level
+    if (!profile || userLevel === 0) {
+      // PROFILE NOT STARTED / INCOMPLETE
       setIsProfileData(false);
+      setIsProfileIncomplete(true);
+      setCreateBrandProfile(true);
+      setCreateBrandProfileStep(1);
       setProfileData({});
+      return;
     }
-  };
+
+    // PROFILE EXISTS / COMPLETED
+    setIsProfileIncomplete(false);
+    setCreateBrandProfile(false);
+    setIsProfileData(true);
+    setProfileData(profile);
+    setProfileDataId(profile?._id);
+    setPreviewUrl(profile?.profilePicture || "");
+
+    manageLevelAccess(userLevel);
+  } else {
+    // USER NOT FOUND
+    console.log("User profile not found. Redirecting to create profile.");
+    setIsProfileData(false);
+    setIsProfileIncomplete(true);
+    setCreateBrandProfile(true);
+    setCreateBrandProfileStep(1);
+    setProfileData({});
+  }
+} catch (err) {
+  console.error("Error fetching profile data:", err);
+  setIsProfileData(false);
+  setIsProfileIncomplete(true);
+  setCreateBrandProfile(true);
+  setCreateBrandProfileStep(1);
+  setProfileData({});
+}
+  }
 
   /**
    * Function to dynamically manage button access and behavior based on user level.
@@ -813,11 +826,16 @@ const handleLogout = () => {
     }
   };
 
-  useEffect(() => {
+ useEffect(() => {
+  if (userDetails?.email) {
     accountantStatus();
-  }, []);
+  }
+}, [userDetails?.email]);
+
 
 const accountantStatus = async () => {
+
+  
   try {
     const userEmail = userDetails?.email;
 
@@ -843,7 +861,12 @@ const accountantStatus = async () => {
   }
 };
 
-
+// ⭐ ADD THIS BELOW THE FUNCTION ⭐
+  useEffect(() => {
+    if (userDetails?.email) {
+      accountantStatus();
+    }
+  }, [userDetails?.email]);
 
 
 
@@ -1003,14 +1026,31 @@ const editData = async (field, value) => {
     navigate("/dashboard/users");
   };
 
+useEffect(() => {
+  console.log("PROFILE DEBUG =>", {
+    isProfileIncomplete,
+    createBrandProfile,
+    createBrandProfileStep,
+  });
+}, [isProfileIncomplete, createBrandProfile]);
+
+
   return (
-    <div style={{ overflow: "hidden" }}>
+    <div>
       <div className="dashboard-main">
         <div className="dashboard-body">
           <div>
             <Dashsidebar handleChange={handleChange} />
           </div>
-          <div className="dashboard-screens" onClick={() => resetpop()}>
+          <div
+  className="dashboard-screens"
+  onClick={(e) => {
+    if (e.target.classList.contains("dashboard-screens")) {
+      resetpop();
+    }
+  }}
+>
+
             <div style={{ height: "100%" }}>
               <MenuNav
                 showDrop={showDrop}
@@ -1583,13 +1623,15 @@ const editData = async (field, value) => {
                   <>
                     {isProfileIncomplete && (
                       <div
+  className="create-acc"
+  onClick={() => {
+    setIsProfileIncomplete(true);
+    setCreateBrandProfile(true);
+    setCreateBrandProfileStep(1);
+    setShowDrop(false);
+  }}
+>
 
-                        className="create-acc"
-                        onClick={() => {
-                          setCreateBrandProfile(true);
-                          setShowDrop(false);
-                        }}
-                      >
                         <div>Complete Your User Profile</div>
                         <div>
                           <img src={colorArrow} alt="" />
@@ -2085,15 +2127,16 @@ const editData = async (field, value) => {
 
       <>
         {createBrandProfile && (
-          <div
-            className={createLevelThree ? "popularS1" : "popularS"}
-            style={{
-              padding:
-                createBrandProfileStep === 2
-                  ? "1rem 0rem 2rem"
-                  : "1rem 3rem 2rem",
-            }}
-          >
+  <div
+    className={createLevelThree ? "popularS1" : "popularS"}
+    style={{
+      position: "fixed",
+      inset: 0,
+      zIndex: 999999,        // 🔥 KEY FIX
+      background: "white",
+      overflowY: "auto",
+    }}
+  >
             {createBrandProfileStep === 1 && (
               <>
                 <div className="head-txt" style={{ height: "4rem" }}>
@@ -2127,10 +2170,11 @@ const editData = async (field, value) => {
                   >
                     Upload Profile Picture *
                   </div>
-                  <uploadCoverImage
-                    setFunc={setProfilePicture}
-                    funcValue={profilePicture}
-                  />
+                  <ImageUploadDivCoverPic
+  setFunc={setProfilePicture}
+  funcValue={profilePicture}
+/>
+
                   <div
                     className="imageUploadDiv"
                     onClick={() => setSelectedDropDown("")}
@@ -2237,8 +2281,9 @@ const editData = async (field, value) => {
                       onChange={(e) => setSelectedCountry(e.target.value)}
                     >
                       <option value="">New Country..</option>
-                      {countryApiValue?.map((item) => (
-                        <option key={item.cca2} value={item?.name?.common}>
+                     {countryApiValue?.map((item) => (
+  <option key={item.cca2} value={item?.name?.common}>
+
                           {item?.name?.common}
                         </option>
                       ))}

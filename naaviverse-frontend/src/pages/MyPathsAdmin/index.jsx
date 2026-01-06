@@ -30,7 +30,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const [stepActionStep, setStepActionStep] = useState(1);
   const [editPaths, setEditPaths] = useState("default");
   const [metaDataStep, setMetaDataStep] = useState("default");
-  const [selectedPath, setSelectedPath] = useState([]);
+  const [selectedPath, setSelectedPath] = useState({});
   const [newValue, setNewValue] = useState("");
   const [viewPathEnabled, setViewPathEnabled] = useState(false);
   const [viewPathLoading, setViewPathLoading] = useState(false);
@@ -43,11 +43,8 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const [backupPathData, setBackupPathData] = useState([])
   const [stepId, setStepId] = useState("");
   const [backupPathId, setBackupPathId] = useState("")
-
-    /** ============================
-     * FETCH ALL PATHS FOR ADMIN
-     * ============================ */
-
+const [reorderedSteps, setReorderedSteps] = useState([]);
+const [isDragging, setIsDragging] = useState(false);
 
   const getAllPaths = () => { 
     setLoading(true);
@@ -99,14 +96,14 @@ const getAllServices = () => {
 };
 
 
-  useEffect(() => {
-    let email = userDetails?.email;
-    axios.get(`/api/paths/get?email=${email}`).then(({data}) => {
+ useEffect(() => {
+    axios.get(`/api/paths/get?status=active`).then(({data}) => {
       if(data.status){
         setBackupPathData(data?.data)
       }
     })
-  }, [])
+}, [])
+
 
 useEffect(() => {
   getAllServices();
@@ -146,14 +143,14 @@ useEffect(() => {
   const getAllSteps = () => {
     setLoading(true);
     let email = userDetails?.email;
-    axios
-      .get(`/api/steps/get?email=${email}`)
-      .then((response) => {
-        let result = response?.data?.data;
-        console.log(result, "partnerStepsData result");
-        setPartnerStepsData(result);
-        setLoading(false);
-      })
+   axios
+  .get(`/api/steps/get?status=active`)
+  .then((response) => {
+    let result = response?.data?.data;
+    console.log(result, "partnerStepsData result");  // debugging
+    setPartnerStepsData(result);
+  })
+
       .catch((error) => {
         console.log(error, "error in partnerStepsData");
       });
@@ -197,43 +194,56 @@ useEffect(() => {
     setSelectedStepId("");
   }
 
-  const deletePath = () => {
-    setActionLoading(true);
-    axios
-      .delete(`/api/paths/delete/${selectedPathId}`)
-      .then((response) => {
-        let result = response?.data;
-        // console.log(result, "deletePath result");
-        if (result?.status) {
-          setActionLoading(false);
-          setPathActionStep(3);
-          myPathsTimeout();
-        }
-      })
-      .catch((error) => {
-        console.log(error, "error in deletePath");
-      });
-  };
+const deletePath = () => {
+  setActionLoading(true);
 
-  const reactivatePath = () => {
-    setActionLoading(true);
-    axios
-      .put(`/api/paths/updatepath/${selectedPathId}`, {
-        status:"active"
-        })
-      .then((response) => {
-        let result = response?.data;
-        // console.log(result, "deletePath result");
-        if (result?.status) {
-          setActionLoading(false);
-          setPathActionStep(3);
-          myPathsTimeout();
+  axios
+    .patch(`/api/paths/edit`, {
+      pathId: selectedPathId,
+      status: "inactive"
+    })
+    .then((response) => {
+      if (response?.data?.status) {
+        setActionLoading(false);
+        setPathActionStep(3);
+
+        // refresh correct list
+        if (mypathsMenu === "Paths") {
+          getAllPaths();
+        } else {
+          getInactivePath();
         }
-      })
-      .catch((error) => {
-        console.log(error, "error in deletePath");
-      });
-  };
+      }
+    })
+    .catch((error) => {
+      console.log("deletePath error:", error);
+      setActionLoading(false);
+    });
+};
+
+
+ const reactivatePath = () => {
+    setActionLoading(true);
+
+    axios
+        .patch(`/api/paths/edit`, {
+            pathId: selectedPathId,
+            status: "active"
+        })
+        .then((response) => {
+            let result = response?.data;
+
+            if (result?.status) {
+                setActionLoading(false);
+                setPathActionStep(3);
+                myPathsTimeout();
+            }
+        })
+        .catch((error) => {
+            console.log("reactivatePath error:", error);
+            setActionLoading(false);
+        });
+};
 
   const deleteStep = () => {
     setActionLoading(true);
@@ -264,81 +274,74 @@ useEffect(() => {
     setViewPathData([]);
   };
 
-  const editMetaData = (field) => {
-    setActionLoading(true);
-    let obj = {
+ const editMetaData = (field) => {
+  setActionLoading(true);
+
+  axios.patch(`/api/paths/edit`, {
+      pathId: selectedPathId,
       [field]: newValue,
-    };
+  })
+  .then((response) => {
+      let result = response?.data;
+      if (result?.status) {
+        setMetaDataStep("success");
+        setActionLoading(false);
+        myPathsTimeout();
+      }
+  })
+  .catch((error) => {
+      console.log("editMetaData error", error);
+      setActionLoading(false);
+  });
+};
 
-    // console.log(obj, "obj");
-    // console.log(selectedPathId, "selectedPathId");
+const viewPath = () => {
+  if (!selectedPathId) {
+    console.log("Selected Path ID is missing");
+    return;
+  }
 
-    axios
-      .put(
-        `/api/paths/update/${selectedPathId}`,
-        obj
-      )
-      .then((response) => {
-        let result = response?.data;
-        // console.log(result, "editMetaData result");
-        if (result?.status) {
-          setMetaDataStep("success");
-          setActionLoading(false);
-          myPathsTimeout();
-        }
-      })
-      .catch((error) => {
-        console.log(error, "ediMetaData error");
-      });
-  };
+  setViewPathLoading(true);
 
-  const viewPath = () => {
-    if (!selectedPathId) {
-        console.log("Selected Path ID is missing");
-        return;
-    }
+  axios
+    .get(`/api/paths/viewpath/${selectedPathId}`)
+    .then((response) => {
+      let result = response?.data?.data;
+      setViewPathData(result);
 
-    setViewPathLoading(true);
+      // ⭐ THIS LINE IS THE FIX ⭐
+      setSelectedPath(result);
 
-    axios
-      .get(`/api/paths/viewpath/${selectedPathId}`)  // Send path_id as part of the URL path
-      .then((response) => {
-        let result = response?.data?.data;
-        setViewPathData(result);
-        setViewPathLoading(false);
-      })
-      .catch((error) => {
-        console.log(error, "error in fetching viewPathData");
-        setViewPathLoading(false);
-      });
+      setViewPathLoading(false);
+    })
+    .catch((error) => {
+      console.log(error, "error in fetching viewPathData");
+      setViewPathLoading(false);
+    });
+};
+
+
+const handleApprovePath = () => {
+  setActionLoading(true);
+
+  axios
+    .put(`/api/paths/updatepath/${selectedPathId}`, { status: "active" })
+    .then(({ data }) => {
+      if (data.status) {
+        getAllPaths();
+        setPathActionEnabled(false);
+        setActionLoading(false);
+        setPathActionStep(1);
+      }
+    })
+    .catch((error) => {
+      console.error(error, "Error approving path");
+      setActionLoading(false);
+    });
 };
 
 
 
-
-  const handleApprovePath = () => {
-    setActionLoading(true);
-    axios.put(`/api/paths/updatepath/${selectedPathId}`, { status: "active" })
-      .then(({ data }) => {
-        if (data.status) {
-          // Check the current menu and fetch Active Paths
-          if (mypathsMenu === "Pending Approval") {
-            setMypathsMenu("Active Paths"); // Update menu to "Active Paths"
-            getAllPaths(); // Fetch updated paths
-          } else {
-            getAllPaths();
-          }
-          setPathActionEnabled(false);
-          setActionLoading(false);
-          setPathActionStep(1);
-        }
-      })
-      .catch((error) => {
-        console.error(error, "Error approving path");
-        setActionLoading(false);
-      });
-  };
-  
   
   const handleRejectPath = () => {
     setActionLoading(true);
@@ -390,14 +393,20 @@ useEffect(() => {
   const [productDataArray, setProductDataArray] = useState([]);
   const [productKeys, setProductKeys] = useState(null);
 
-const [allServicesToAdd, setAllServicesToAdd] = useState([])
-  useEffect(() => {
-    axios.get(`/api/services/get?productcreatoremail=${userDetails?.email}`).then(({data}) => {
-      if(data.status){
-        setAllServicesToAdd(data?.data)
+const [allServicesToAdd, setAllServicesToAdd] = useState([]);
+
+useEffect(() => {
+  axios
+    .get(`/api/services/getservices?status=active`)
+    .then(({ data }) => {
+      if (data.status) {
+        setAllServicesToAdd(data.data);
       }
     })
-  }, [])
+    .catch((err) => {
+      console.error("Error fetching services:", err);
+    });
+}, []);
 
 
   const [allServicesToRemove, setAllServicesToRemove] = useState([])
@@ -410,6 +419,24 @@ const [allServicesToAdd, setAllServicesToAdd] = useState([])
       })
     }
   }, [selectedStepId])
+
+//addedddddddddddddd
+
+const openAddStep = async (pathId) => {
+  try {
+    setSelectedPathId(pathId);
+
+    const response = await axios.get(`/api/paths/viewpath/${pathId}`);
+    if (response.data?.data) {
+      setSelectedPath(response.data.data);   // ⭐ correct
+    }
+
+    setEditPaths("add_step");   // ⭐ open the Add Step UI
+  } catch (err) {
+    console.log("Error loading path data for Add Step:", err);
+  }
+};
+
 
   // useEffect(() => {
   //   if (userDetails) {
@@ -478,22 +505,30 @@ const fetchProductData = async (apiKey) => {
       console.warn("Product keys is not a valid array:", productKeys);
     }
   };
-  useEffect(() => {
-    // Fetch updated product data when productKeys change
-    fetchData();
-  }, [productKeys]);
+ useEffect(() => {
+  if (!productKeys || !Array.isArray(productKeys) || productKeys.length === 0) {
+    setProductDataArray([]); 
+    return;  // STOP — do NOT call fetchData
+  }
+
+  fetchData();
+}, [productKeys]);
 
   const handlePlace = (item, index) => {
     console.log(item, index, "lwkeflkwefwef")
     const updatedPathObject = addIdToObjectAtIndex(item?.the_ids, stepId, backupPathId, index);
     // console.log(updatedPathObject, "kjwebfkwjebfkwejf")
-    axios.put(`/api/paths/update/${selectedPath?._id}`, {the_ids: updatedPathObject})
-    .then(res => {
-      if(res.data.status){
+    axios.patch(`/api/paths/edit`, {
+    pathId: selectedPath?._id,
+    the_ids: updatedPathObject
+})
+.then(res => {
+    if(res.data.status){
         resetPathAction();
-        getAllPaths()
-      }
-    })
+        getAllPaths();
+    }
+})
+
   }
 
   function addIdToObjectAtIndex(idsArray, stepId, backupPathId, index) {
@@ -513,10 +548,12 @@ const fetchProductData = async (apiKey) => {
   }
 
   const handledeletePathPosition = (fullObject, idToDelete) => {
-    const updatedTheIds = [...fullObject.the_ids];
+   const updatedTheIds = [...fullObject.the_ids];
 
     // Find the index of the object with the specified _id in the copied array
-    const indexToDelete = updatedTheIds.findIndex(obj => obj._id === idToDelete);
+    const indexToDelete = updatedTheIds.findIndex(
+  obj => obj.step_id === idToDelete
+);
 
     // If the object with the specified _id is found, remove it from the copied array
     if (indexToDelete !== -1) {
@@ -525,34 +562,74 @@ const fetchProductData = async (apiKey) => {
 
     // Return the updated array with only step_id and backup_pathId keys
     const updatedBody =  updatedTheIds.map(({ step_id, backup_pathId }) => ({ step_id, backup_pathId }));
-   axios.put(`/api/paths/update/${selectedPath?._id}`, { the_ids: updatedBody })
-    .then(res => {
-      if(res.data.status){
+    axios.patch(`/api/paths/edit`, {
+    pathId: selectedPath?._id,
+    the_ids: updatedBody
+})
+.then(res => {
+    if(res.data.status){
         resetPathAction();
-        getAllPaths()
-      }
-    })
+        getAllPaths();
+    }
+})
+
   }
 
-  const getChangedPos = (currentPos, newPos) => {
-    console.log(currentPos, newPos, "kjwbefkwbfkwbfkwjf");
-    updatePositionOfObject(selectedPath, currentPos, newPos)
-  }
+const getChangedPos = (currentPos, newPos) => {
+  if (!Array.isArray(selectedPath?.StepDetails)) return;
+  if (currentPos === newPos) return;
 
-  function updatePositionOfObject(fullObject, currentIndex, newIndex) {
-    const updatedTheIds = [...fullObject.the_ids];
-    const [movedObject] = updatedTheIds.splice(currentIndex, 1);
-    updatedTheIds.splice(newIndex, 0, movedObject);
-    // console.log(fullObject.the_ids, updatedTheIds, "kjwekfjwefkjwegfkwfgwf")
-    const updatedTheIdsArray = updatedTheIds.map(({ step_id, backup_pathId }) => ({ step_id, backup_pathId }));
-   axios.put(`/api/paths/update/${selectedPath?._id}`, { the_ids: updatedTheIdsArray })
-    .then(res => {
-      if(res.data.status){
-        resetPathAction();
-        getAllPaths()
-      }
-    })
-}
+  const reordered = [...selectedPath.StepDetails];
+  const [moved] = reordered.splice(currentPos, 1);
+  reordered.splice(newPos, 0, moved);
+
+  // convert reordered StepDetails → the_ids payload
+  const updatedBody = reordered.map(step => ({
+    step_id: step._id,
+    backup_pathId: step.backup_pathId || null
+  }));
+
+  axios.patch(`/api/paths/edit`, {
+    pathId: selectedPath._id,
+    the_ids: updatedBody
+  }).then(res => {
+    if (res.data.status) {
+      // reload fresh data
+      axios.get(`/api/paths/viewpath/${selectedPath._id}`).then(({data}) => {
+        if (data?.data) {
+          setSelectedPath(data.data);
+        }
+      });
+    }
+  });
+};
+
+
+
+//function updatePositionOfObject(fullObject, currentIndex, newIndex) {
+  //const updatedTheIds = [...fullObject.the_ids];
+
+  //const [movedItem] = updatedTheIds.splice(currentIndex, 1);
+  //updatedTheIds.splice(newIndex, 0, movedItem);
+
+  //const updatedBody = updatedTheIds.map(({ step_id, backup_pathId }) => ({
+    //step_id,
+    //backup_pathId,
+  //}));
+
+  //axios.patch(`/api/paths/edit`, {
+    //pathId: fullObject._id,
+    //the_ids: updatedBody,
+  //}).then(res => {
+    //if (res.data.status) {
+      //resetPathAction();
+      //getAllPaths();
+    //}
+  //});
+//}
+
+
+
 const [selectedServices, setSelectedServices] = useState([])
 const handleSelectServicesForStep = (item) => {
     // Check if the item is already selected
@@ -634,10 +711,10 @@ useEffect(() => {
 }, [])
 
   return (
-    <div className="mypaths">
-      <div className="mypaths-menu">
+    <div className="admin-mypaths">
+      <div className="admin-mypaths-menu">
         <div
-          className="each-mypath-menu"
+          className="admin-each-mypath-menu"
           style={{
             fontWeight: mypathsMenu === "Paths" ? "700" : "",
             background:
@@ -655,7 +732,7 @@ useEffect(() => {
         </div>
         {admin && 
         <div
-          className="each-mypath-menu"
+          className="admin-each-mypath-menu"
           style={{
             fontWeight: mypathsMenu === "Pending Paths" ? "700" : "",
             background:
@@ -672,7 +749,7 @@ useEffect(() => {
           Pending Paths
         </div>}
         {/* <div
-          className="each-mypath-menu"
+          className="admin-each-mypath-menu"
           style={{
             fontWeight: mypathsMenu === "Steps" ? "700" : "",
             background:
@@ -689,7 +766,7 @@ useEffect(() => {
           Steps
         </div> */}
         <div
-          className="each-mypath-menu"
+          className="admin-each-mypath-menu"
           style={{
             fontWeight: mypathsMenu === "Inactive Paths" ? "700" : "",
             background:
@@ -706,18 +783,18 @@ useEffect(() => {
           Inactive Paths
         </div>
       </div>
-      <div className="mypaths-content">
+      <div className="admin-mypaths-content">
         {showSelectedPath ? <div>
           <CurrentStep productDataArray={productDataArray} selectedPathId={selectedPathId} showSelectedPath={showSelectedPath} selectedPath={selectedPath}/>
         </div>: viewPathEnabled ? (
-          <div className="viewpath-container">
-            <div className="viewpath-top-area">
+          <div className="admin-viewpath-container">
+            <div className="admin-viewpath-top-area">
               <div>Your Selected Path:</div>
               {viewPathLoading ? (
                 <Skeleton width={150} height={30} />
               ) : (
-                <div className="viewpath-bold-text">
-                  {viewPathData?.length > 0
+                <div className="admin-viewpath-bold-text">
+                { viewPathData && Object.keys(viewPathData).length > 0
                     ? viewPathData?.destination_institution
                     : ""}
                 </div>
@@ -725,12 +802,12 @@ useEffect(() => {
               {viewPathLoading ? (
                 <Skeleton width={500} height={20} />
               ) : (
-                <div className="viewpath-des">
-                  {viewPathData?.length > 0 ? viewPathData?.description : ""}
+                <div className="admin-viewpath-des">
+                  {viewPathData && Object.keys(viewPathData).length > 0 ? viewPathData?.description : ""}
                 </div>
               )}
               <div
-                className="viewpath-goBack-div"
+                className="admin-viewpath-goBack-div"
                 onClick={() => {
                   setViewPathEnabled(false);
                 }}
@@ -738,84 +815,64 @@ useEffect(() => {
                 Go Back
               </div>
             </div>
-            <div className="viewpath-steps-area">
+            <div className="admin-viewpath-steps-area">
               {viewPathLoading
-                ? Array(6)
-                    .fill("")
-                    .map((e, i) => {
-                      return (
-                        <div
-                          className="viewpath-each-j-step viewpath-relative-div"
-                          key={i}
-                        >
-                          <div className="viewpath-each-j-img">
-                            <Skeleton width={75} height={75} />
-                          </div>
-                          <div className="viewpath-each-j-step-text">
-                            <Skeleton width={200} height={30} />
-                          </div>
-                          <div className="viewpath-each-j-step-text1">
-                            <Skeleton width={250} height={25} />
-                          </div>
-                          <div className="viewpath-each-j-amount-div">
-                            <div className="viewpath-each-j-amount">
-                              <Skeleton width={100} height={30} />
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })
-                : viewPathData?.length > 0
-                ? viewPathData?.StepDetails?.map((e, i) => {
-                    return (
-                      <div onClick={() => {
-                        setShowSelectedPath(e)
-                        setProductKeys(e?.product_ids)
-                      }}
-                        className="viewpath-each-j-step viewpath-relative-div"
-                        key={i}
-                      >
-                        <div className="viewpath-each-j-img">
-                          <img src={e?.icon} alt="" />
-                        </div>
-                        <div className="viewpath-each-j-step-text">
-                          {e?.name}
-                        </div>
-                        <div className="viewpath-each-j-step-text1">
-                          {e?.description}
-                        </div>
-                        <div className="viewpath-each-j-amount-div">
-                          <div className="viewpath-each-j-amount">
-                            {e?.cost}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                : ""}
+  ? Array(6)
+      .fill("")
+      .map((e, i) => {
+        return (
+          <div className="admin-viewpath-each-j-step admin-viewpath-relative-div" key={i}>
+            ...
+          </div>
+        );
+      })
+  : viewPathData && Object.keys(viewPathData).length > 0
+  ? viewPathData?.StepDetails?.map((e, i) => {
+      return (
+        <div
+          onClick={() => {
+            setShowSelectedPath(e);
+            setProductKeys(e?.product_ids);
+          }}
+          className="admin-viewpath-each-j-step admin-viewpath-relative-div"
+          key={i}
+        >
+          <div className="admin-viewpath-each-j-img">
+            <img src={e?.icon} alt="" />
+          </div>
+          <div className="admin-viewpath-each-j-step-text">{e?.name}</div>
+          <div className="admin-viewpath-each-j-step-text1">{e?.description}</div>
+          <div className="admin-viewpath-each-j-amount-div">
+            <div className="admin-viewpath-each-j-amount">{e?.cost}</div>
+          </div>
+        </div>
+      );
+    })
+  : ""}
+
             </div>
           </div>
         ) : mypathsMenu === "Paths" || mypathsMenu === "Pending Paths" || mypathsMenu === "Inactive Paths" && !viewPathEnabled ? (
           <>
-            <div className="mypathsNav">
-              <div className="mypaths-name-div">Name</div>
-              <div className="mypaths-description-div">Description</div>
-              <div className="mypaths-name-div"># of steps</div>
+            <div className="admin-mypathsNav">
+              <div className="admin-mypaths-name-div">Name</div>
+              <div className="admin-mypaths-description-div">Description</div>
+              <div className="admin-mypaths-name-div"># of steps</div>
             </div>
-            <div className="mypathsScroll-div">
+            <div className="admin-mypathsScroll-div">
               {loading
                 ? Array(10)
                     .fill("")
                     .map((e, i) => {
                       return (
-                        <div className="each-mypaths-data" key={i}>
-                          <div className="each-mypaths-name">
+                        <div className="admin-each-mypaths-data" key={i}>
+                          <div className="admin-each-mypaths-name">
                             <Skeleton width={100} height={30} />
                           </div>
-                          <div className="each-mypaths-desc">
+                          <div className="admin-each-mypaths-desc">
                             <Skeleton width={"100%"} height={30} />
                           </div>
-                          <div className="each-mypaths-name">
+                          <div className="admin-each-mypaths-name">
                             <Skeleton width={100} height={30} />
                           </div>
                         </div>
@@ -824,21 +881,28 @@ useEffect(() => {
                 : filteredPartnerPathData?.map((e, i) => {
                     return (
                       <div
-                        className="each-mypaths-data"
+                        className="admin-each-mypaths-data"
                         key={i}
-                        onClick={() => {
-                          setPathActionEnabled(true);
-                          setSelectedPathId(e?._id);
-                          setSelectedPath(e);
-                          // console.log(e, "selected path details");
-                          viewPath(e?.nameOfPath);
-                        }}
+                       onClick={async () => {
+  setPathActionEnabled(true);
+  setSelectedPathId(e?._id);
+
+  // 🔥 1) Load FULL path details BEFORE opening edit steps
+  const res = await axios.get(`/api/paths/viewpath/${e?._id}`);
+  if (res.data?.data) {
+    setSelectedPath(res.data.data);
+  }
+
+  // Remove this — it causes race condition:
+  // viewPath(e?._id);
+}}
+
                       >
-                        <div className="each-mypaths-name">{e?.nameOfPath}</div>
-                        <div className="each-mypaths-desc">
+                        <div className="admin-each-mypaths-name">{e?.nameOfPath}</div>
+                        <div className="admin-each-mypaths-desc">
                           {e?.description}
                         </div>
-                        <div className="each-mypaths-name">{e?.the_ids?.length}</div>
+                        <div className="admin-each-mypaths-name">{e?.StepDetails?.length ?? e?.the_ids?.length ?? 0}</div>
                       </div>
                     );
                   })}
@@ -847,38 +911,38 @@ useEffect(() => {
         ) 
         : (
           // <>
-          //   <div className="mypathsNav">
-          //     <div className="mypathsName">Name</div>
-          //     <div className="mypathsCountry">Length</div>
-          //     <div className="mypathsCountry">Cost Structure</div>
-          //     <div className="mypathsMicrosteps">Services</div>
+          //   <div className="admin-mypathsNav">
+          //     <div className="admin-mypathsName">Name</div>
+          //     <div className="admin-mypathsCountry">Length</div>
+          //     <div className="admin-mypathsCountry">Cost Structure</div>
+          //     <div className="admin-mypathsMicrosteps">Services</div>
           //   </div>
-          //   <div className="mypathsScroll-div">
+          //   <div className="admin-mypathsScroll-div">
           //     {loading
           //       ? Array(10)
           //           .fill("")
           //           ?.map((e, i) => {
           //             return (
-          //               <div className="each-mypaths-data1" key={i}>
-          //                 <div className="each-mypaths-detail">
-          //                   <div className="each-mypathsName">
+          //               <div className="admin-each-mypaths-data1" key={i}>
+          //                 <div className="admin-each-mypaths-detail">
+          //                   <div className="admin-each-mypathsName">
           //                     <Skeleton width={100} height={30} />
           //                   </div>
-          //                   <div className="each-mypathsCountry">
+          //                   <div className="admin-each-mypathsCountry">
           //                     <Skeleton width={100} height={30} />
           //                   </div>
-          //                   <div className="each-mypathsCountry">
+          //                   <div className="admin-each-mypathsCountry">
           //                     <Skeleton width={100} height={30} />
           //                   </div>
-          //                   <div className="each-mypathsMicrosteps">
+          //                   <div className="admin-each-mypathsMicrosteps">
           //                     <Skeleton width={100} height={30} />
           //                   </div>
           //                 </div>
-          //                 <div className="each-mypaths-desc">
-          //                   <div className="each-mypaths-desc-txt">
+          //                 <div className="admin-each-mypaths-desc">
+          //                   <div className="admin-each-mypaths-desc-txt">
           //                     <Skeleton width={100} height={30} />
           //                   </div>
-          //                   <div className="each-mypaths-desc-txt1">
+          //                   <div className="admin-each-mypaths-desc-txt1">
           //                     <Skeleton width={"100%"} height={30} />
           //                   </div>
           //                 </div>
@@ -888,15 +952,15 @@ useEffect(() => {
           //       : filteredPartnerStepsData?.map((e, i) => {
           //           return (
           //             <div
-          //               className="each-mypaths-data1"
+          //               className="admin-each-mypaths-data1"
           //               key={i}
           //               onClick={() => {
           //                 setSelectedStepId(e?._id);
           //                 setStepActionEnabled(true);
           //               }}
           //             >
-          //               <div className="each-mypaths-detail">
-          //                 <div className="each-mypathsName">
+          //               <div className="admin-each-mypaths-detail">
+          //                 <div className="admin-each-mypathsName">
           //                   <div>
           //                     <div>{e?.name}</div>
           //                     <div
@@ -909,21 +973,21 @@ useEffect(() => {
           //                     </div>
           //                   </div>
           //                 </div>
-          //                 <div className="each-mypathsCountry">
+          //                 <div className="admin-each-mypathsCountry">
           //                   {e?.length ? e?.length : 0} Days
           //                 </div>
-          //                 <div className="each-mypathsCountry">{e?.cost}</div>
-          //                 <div className="each-mypathsMicrosteps">
+          //                 <div className="admin-each-mypathsCountry">{e?.cost}</div>
+          //                 <div className="admin-each-mypathsMicrosteps">
           //                   {e?.other_data
           //                     ? Object.keys(e.other_data).length
           //                     : 0}
           //                 </div>
           //               </div>
-          //               <div className="each-mypaths-desc">
-          //                 <div className="each-mypaths-desc-txt">
+          //               <div className="admin-each-mypaths-desc">
+          //                 <div className="admin-each-mypaths-desc-txt">
           //                   Description
           //                 </div>
-          //                 <div className="each-mypaths-desc-txt1">
+          //                 <div className="admin-each-mypaths-desc-txt1">
           //                   {e?.description}
           //                 </div>
           //               </div>
@@ -937,9 +1001,9 @@ useEffect(() => {
         }
 
         {pathActionEnabled && (
-          <div className="acc-popular1">
+          <div className="admin-acc-popular1">
             <div
-              className="acc-popular-top1"
+              className="admin-acc-popular-top1"
               style={{
                 display:
                   pathActionStep === 3
@@ -949,24 +1013,24 @@ useEffect(() => {
                     : "",
               }}
             >
-              <div className="acc-popular-head1">
+              <div className="admin-acc-popular-head1">
                 {pathActionStep > 3 ? "Edit Paths" : pathActionStep >7 ? "Add service": "My Path Actions"}
               </div>
               <div
-                className="acc-popular-img-box1"
+                className="admin-acc-popular-img-box1"
                 style={{ cursor: "pointer" }}
                 onClick={() => {
                   resetPathAction();
                 }}
               >
-                <img className="acc-popular-img1" src={closepop} alt="" />
+                <img className="admin-acc-popular-img1" src={closepop} alt="" />
               </div>
             </div>
             {pathActionStep === 1 && mypathsMenu !== "Pending Paths" && (
-              <div className="acc-mt-div">
-                <div className="acc-scroll-div">
+              <div className="admin-acc-mt-div">
+                <div className="admin-acc-scroll-div">
                   <div
-                    className="acc-step-box4"
+                    className="admin-acc-step-box4"
                     onClick={() => {
                       setPathActionStep(4);
                     }}
@@ -974,7 +1038,7 @@ useEffect(() => {
                     Edit path
                   </div>
                   <div
-                    className="acc-step-box4"
+                    className="admin-acc-step-box4"
                     onClick={() => {
                       setPathActionStep(2);
                     }}
@@ -983,7 +1047,7 @@ useEffect(() => {
                   </div>
                  
                   {/* <div
-                    className="acc-step-box4"
+                    className="admin-acc-step-box4"
                     onClick={() => {
                       setPathActionStep(6);
                     }}
@@ -991,32 +1055,35 @@ useEffect(() => {
                     Reject Path
                   </div> */}
                   {/* <div
-                    className="acc-step-box4"
+                    className="admin-acc-step-box4"
                     onClick={() => {
                       setPathActionStep(9);
                     }}
                   >
                     Add Services
                   </div> */}
-                  <div
-                    className="acc-step-box4"
-                    onClick={() => {
-                      setViewPathEnabled(true);
-                      setPathActionEnabled(false);
-                      navigate(`/dashboard/path/${selectedPathId}`)
-                    }}
-                  >
-                    View path
-                  </div>
+         <div
+  className="admin-acc-step-box4"
+  onClick={() => {
+    localStorage.setItem("selectedPathId", selectedPathId);
+    navigate(`/dashboard/path/${selectedPathId}`);
+  }}
+>
+  View path
+</div>
+
+
+
+
                 </div>
               </div>
             )}
 
             {pathActionStep === 1 && mypathsMenu === "Pending Paths" && (
-              <div className="acc-mt-div">
-                <div className="acc-scroll-div">
+              <div className="admin-acc-mt-div">
+                <div className="admin-acc-scroll-div">
                   <div
-                    className="acc-step-box4"
+                    className="admin-acc-step-box4"
                     onClick={() => {
                       setPathActionStep(5);
                     }}
@@ -1024,7 +1091,7 @@ useEffect(() => {
                     Approve Path
                   </div>
                   <div
-                    className="acc-step-box4"
+                    className="admin-acc-step-box4"
                     onClick={() => {
                       setPathActionStep(6);
                     }}
@@ -1032,7 +1099,7 @@ useEffect(() => {
                     Reject Path
                   </div>
                   <div
-                    className="acc-step-box4"
+                    className="admin-acc-step-box4"
                     onClick={() => {
                       setPathActionStep(9);
                     }}
@@ -1040,7 +1107,7 @@ useEffect(() => {
                     Add Services
                   </div>
                   <div
-                    className="acc-step-box4"
+                    className="admin-acc-step-box4"
                     onClick={() => {
                       setPathActionStep(4);
                     }}
@@ -1048,35 +1115,38 @@ useEffect(() => {
                     Edit path
                   </div>
                   {/* <div
-                    className="acc-step-box4"
+                    className="admin-acc-step-box4"
                     onClick={() => {
                       setPathActionStep(2);
                     }}
                   >
                     Delete path
                   </div> */}
-                  <div
-                    className="acc-step-box4"
-                    onClick={() => {
-                      setViewPathEnabled(true);
-                      setPathActionEnabled(false);
-                    }}
-                  >
-                    View path
-                  </div>
+                         <div
+  className="admin-acc-step-box4"
+  onClick={() => {
+    // Store ID safely
+    localStorage.setItem("selectedPathId", selectedPathId);
+
+    navigate(`/dashboard/path/${selectedPathId}`);
+  }}
+>
+  View path
+</div>
+
                 </div>
               </div>
             )}
 
           
             {pathActionStep === 2 && (
-              <div className="acc-mt-div">
-                <div className="acc-sub-text">
+              <div className="admin-acc-mt-div">
+                <div className="admin-acc-sub-text">
                 Are you sure you want to {mypathsMenu === "Inactive Paths" ? "reactivate":"delete"}  this path?
                   </div>
-                <div className="acc-scroll-div">
+                <div className="admin-acc-scroll-div">
                   <div
-                    className="acc-step-box4"
+                    className="admin-acc-step-box4"
                     onClick={() => {
                       if(mypathsMenu === "Inactive Paths"){
                         reactivatePath();
@@ -1088,7 +1158,7 @@ useEffect(() => {
                     Yes
                   </div>
                   <div
-                    className="acc-step-box4"
+                    className="admin-acc-step-box4"
                     onClick={() => {
                       setPathActionStep(1);
                     }}
@@ -1097,7 +1167,7 @@ useEffect(() => {
                   </div>
                 </div>
                 <div
-                  className="goBack3"
+                  className="admin-goBack3"
                   onClick={() => {
                     setPathActionStep(1);
                   }}
@@ -1109,26 +1179,26 @@ useEffect(() => {
         
 
             {actionLoading ? (
-              <div className="popularlogo">
-                <img className="popularlogoimg" src={lg1} alt="" />
+              <div className="admin-popularlogo">
+                <img className="admin-popularlogoimg" src={lg1} alt="" />
               </div>
             ) : (
               ""
             )}
 
             {pathActionStep === 3 && (
-              <div className="success-box2">Path Successfully {mypathsMenu === "Inactive Paths" ? "reactivated" :"deleted"} </div>
+              <div className="admin-success-box2">Path Successfully {mypathsMenu === "Inactive Paths" ? "reactivated" :"deleted"} </div>
             )}
 
             {pathActionStep === 4 &&
               (editPaths === "default" ? (
-                <div className="acc-mt-div">
-                  <div className="acc-sub-text">
+                <div className="admin-acc-mt-div">
+                  <div className="admin-acc-sub-text">
                     What type of data do you want to edit?
                   </div>
-                  <div className="acc-scroll-div">
+                  <div className="admin-acc-scroll-div">
                     {/* <div
-                      className="acc-step-box4"
+                      className="admin-acc-step-box4"
                       onClick={() => {
                         setEditPaths("Edit meta data");
                       }}
@@ -1136,7 +1206,7 @@ useEffect(() => {
                       Edit meta data
                     </div> */}
                     <div
-                      className="acc-step-box4"
+                      className="admin-acc-step-box4"
                       onClick={() => {
                         setEditPaths("Edit steps");
                       }}
@@ -1144,7 +1214,7 @@ useEffect(() => {
                       Edit steps
                     </div>
                     {/* <div
-                      className="acc-step-box4"
+                      className="admin-acc-step-box4"
                       onClick={() => {
                         setEditPaths("Edit who qualifies");
                       }}
@@ -1153,7 +1223,7 @@ useEffect(() => {
                     </div> */}
                   </div>
                   <div
-                    className="goBack3"
+                    className="admin-goBack3"
                     onClick={() => {
                       setPathActionStep(1);
                     }}
@@ -1163,13 +1233,13 @@ useEffect(() => {
                 </div>
               ) : editPaths === "Edit meta data" ? (
                 metaDataStep === "default" ? (
-                  <div className="acc-mt-div">
-                    <div className="acc-sub-text">
+                  <div className="admin-acc-mt-div">
+                    <div className="admin-acc-sub-text">
                       Which meta data do you want to edit?
                     </div>
-                    <div className="acc-scroll-div">
+                    <div className="admin-acc-scroll-div">
                       <div
-                        className="acc-step-box4"
+                        className="admin-acc-step-box4"
                         onClick={() => {
                           setMetaDataStep("nameOfPath");
                         }}
@@ -1177,7 +1247,7 @@ useEffect(() => {
                         Name
                       </div>
                       <div
-                        className="acc-step-box4"
+                        className="admin-acc-step-box4"
                         onClick={() => {
                           setMetaDataStep("length");
                         }}
@@ -1185,7 +1255,7 @@ useEffect(() => {
                         Length
                       </div>
                       <div
-                        className="acc-step-box4"
+                        className="admin-acc-step-box4"
                         onClick={() => {
                           setMetaDataStep("description");
                         }}
@@ -1193,7 +1263,7 @@ useEffect(() => {
                         Description
                       </div>
                       <div
-                        className="acc-step-box4"
+                        className="admin-acc-step-box4"
                         onClick={() => {
                           setMetaDataStep("path_type");
                         }}
@@ -1201,7 +1271,7 @@ useEffect(() => {
                         Path type
                       </div>
                       <div
-                        className="acc-step-box4"
+                        className="admin-acc-step-box4"
                         onClick={() => {
                           setMetaDataStep("destination_institution");
                         }}
@@ -1209,7 +1279,7 @@ useEffect(() => {
                         Destination institution
                       </div>
                       <div
-                        className="acc-step-box4"
+                        className="admin-acc-step-box4"
                         onClick={() => {
                           setMetaDataStep("program");
                         }}
@@ -1217,7 +1287,7 @@ useEffect(() => {
                         Program
                       </div>
                       <div
-                        className="acc-step-box4"
+                        className="admin-acc-step-box4"
                         onClick={() => {
                           setMetaDataStep("city");
                         }}
@@ -1225,7 +1295,7 @@ useEffect(() => {
                         City
                       </div>
                       <div
-                        className="acc-step-box4"
+                        className="admin-acc-step-box4"
                         onClick={() => {
                           setMetaDataStep("country");
                         }}
@@ -1234,7 +1304,7 @@ useEffect(() => {
                       </div>
                     </div>
                     <div
-                      className="goBack3"
+                      className="admin-goBack3"
                       onClick={() => {
                         setEditPaths("default");
                       }}
@@ -1243,7 +1313,7 @@ useEffect(() => {
                     </div>
                   </div>
                 ) : metaDataStep === "success" ? (
-                  <div className="success-box2">
+                  <div className="admin-success-box2">
                     You have successfully updated the{" "}
                     {metaDataStep === "nameOfPath"
                       ? "name"
@@ -1257,9 +1327,9 @@ useEffect(() => {
                   </div>
                 ) : (
                   <>
-                    <div className="acc-mt-div">
-                      <div className="acc-scroll-div">
-                        <div className="acc-sub-textt">
+                    <div className="admin-acc-mt-div">
+                      <div className="admin-acc-scroll-div">
+                        <div className="admin-acc-sub-textt">
                           Current{" "}
                           {metaDataStep === "nameOfPath"
                             ? "name"
@@ -1269,10 +1339,10 @@ useEffect(() => {
                             ? "destination institution"
                             : metaDataStep}
                         </div>
-                        <div className="acc-step-box5">
+                        <div className="admin-acc-step-box5">
                           {selectedPath?.[metaDataStep] || ""}
                         </div>
-                        <div className="acc-sub-textt">
+                        <div className="admin-acc-sub-textt">
                           New{" "}
                           {metaDataStep === "nameOfPath"
                             ? "name"
@@ -1282,7 +1352,7 @@ useEffect(() => {
                             ? "destination institution"
                             : metaDataStep}
                         </div>
-                        <div className="acc-step-box6">
+                        <div className="admin-acc-step-box6">
                           <input
                             type="text"
                             placeholder={`Enter ${
@@ -1307,7 +1377,7 @@ useEffect(() => {
                           cursor:
                             newValue?.length > 1 ? "pointer" : "not-allowed",
                         }}
-                        className="save-Btn"
+                        className="admin-save-Btn"
                         onClick={() => {
                           if (newValue?.length > 1) {
                             editMetaData(metaDataStep);
@@ -1317,7 +1387,7 @@ useEffect(() => {
                         Save Changes
                       </div>
                       <div
-                        className="goBack3"
+                        className="admin-goBack3"
                         onClick={() => {
                           setMetaDataStep("default");
                         }}
@@ -1326,51 +1396,113 @@ useEffect(() => {
                       </div>
                     </div>
                     {actionLoading ? (
-                      <div className="popularlogo">
-                        <img className="popularlogoimg" src={lg1} alt="" />
+                      <div className="admin-popularlogo">
+                        <img className="admin-popularlogoimg" src={lg1} alt="" />
                       </div>
                     ) : (
                       ""
                     )}
                   </>
                 )
-              ) : editPaths === "Edit steps" ? (
-                <div className="acc-mt-div">
-                  <div className="acc-sub-text">
-                    How do you want to edit the steps in this path?
-                  </div>
-                  <div className="acc-scroll-div">
-                    <div className="acc-step-box4" onClick={e => {
-                       setEditPaths("add_step");
-                    }}>Add new step</div>
-                    <div className="acc-step-box4" onClick={e => {
-                       setEditPaths("remove_step");
-                    }}>Remove existing step</div>
-                    {/* <div className="acc-step-box4">
-                      Edit backup path for existing step
-                    </div>
-                    */}
-                     <div className="acc-step-box" onClick={e => {
-                       setEditPaths("reorder_step");
-                    }}>Reorder existing steps</div>
-                  </div>
-                  <div
-                    className="goBack3"
-                    onClick={() => {
-                      setEditPaths("default");
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              ): editPaths === "add_step" ? (
-                <div className="acc-mt-div">
-                  <div className="acc-sub-text">
+
+
+            ) : editPaths === "Edit steps" ? (
+  <div className="admin-acc-mt-div">
+    <div className="admin-acc-sub-text">
+      How do you want to edit the steps in this path?
+    </div>
+    <div className="admin-acc-scroll-div">
+      <div
+        className="admin-acc-step-box4"
+        onClick={() => setEditPaths("add_step")}
+      >
+        Add new step
+      </div>
+
+      <div
+        className="admin-acc-step-box4"
+        onClick={() => setEditPaths("remove_step")}
+      >
+        Remove existing step
+      </div>
+
+      <div
+        className="admin-acc-step-box4"
+        onClick={() => setEditPaths("reorder_step")}
+      >
+        Reorder existing steps
+      </div>
+    </div>
+
+    <div
+      className="admin-goBack3"
+      onClick={() => setEditPaths("default")}
+    >
+      Go Back
+    </div>
+  </div>
+
+) : editPaths === "reorder_step" ? (
+  <div className="admin-acc-mt-div">
+    <div className="admin-acc-sub-text">
+      Reorder existing steps
+    </div>
+
+    <div className="admin-acc-scroll-div">
+      {Array.isArray(selectedPath?.StepDetails) &&
+      selectedPath.StepDetails.length > 0 ? (
+        <Draggable
+          onPosChange={(currentPos, newPos) => {
+            if (currentPos !== newPos) {
+              getChangedPos(currentPos, newPos);
+            }
+          }}
+        >
+          {selectedPath.StepDetails.map((item) => (
+            <div
+              key={item._id}
+              className="admin-subpathstyle"
+            >
+              <div style={{ fontWeight: 600, fontSize: "14px" }}>
+                {item.name}
+              </div>
+
+              <div style={{ fontSize: "12px", lineHeight: "20px" }}>
+                {item.description?.substring(0, 150)}…
+              </div>
+
+              <div style={{ fontSize: "12px", opacity: 0.7 }}>
+                Step ID: {item._id}
+              </div>
+            </div>
+          ))}
+        </Draggable>
+      ) : (
+        <div style={{ fontSize: "13px", opacity: 0.6 }}>
+          No steps available to reorder
+        </div>
+      )}
+    </div>
+
+    <div
+      className="admin-goBack3"
+      onClick={() => setEditPaths("default")}
+    >
+      Go Back
+    </div>
+  </div>
+
+) : editPaths === "add_step" ? (
+
+
+
+                <div className="admin-acc-mt-div">
+                  <div className="admin-acc-sub-text">
                   Which step do you want to add?
                   </div>
-                  <div className="acc-scroll-div" >
+                  <div className="admin-acc-scroll-div" >
                     {partnerStepsData?.map(item => (
-                    <div className="acc-step-box6" onClick={e => {
+                    <div className="admin-acc-step-box6" onClick={e => {
                       setEditPaths("add_sub_step");
                       setStepId(item?._id)
                     }}>
@@ -1381,7 +1513,7 @@ useEffect(() => {
                     
                   </div>
                   <div
-                    className="goBack3"
+                    className="admin-goBack3"
                     onClick={() => {
                       setEditPaths("default");
                     }}
@@ -1390,20 +1522,21 @@ useEffect(() => {
                   </div>
                 </div>
               ) : editPaths === "add_sub_step" ? (
-                <div className="acc-mt-div">
-                  <div className="acc-sub-text">
+                <div className="admin-acc-mt-div">
+                  <div className="admin-acc-sub-text">
                   Select backup path for this step
                   </div>
-                  <div className="acc-scroll-div" >
+                  <div className="admin-acc-scroll-div" >
                     {backupPathData?.map(item => (
-                    <div className="substepstyle" onClick={e => {
+                    <div className="admin-substepstyle" onClick={e => {
                       setEditPaths("show_all_paths");
                       setBackupPathId(item?._id)
                     }}>
-                      <div style={{fontWeight: 600, fontSize:"14px", display:'flex', justifyContent:'space-between'}}>
-                        <div>{item?.program}</div> 
-                        <div>{item?.destination_institution}</div>
-                      </div>
+       <div style={{fontWeight: 600, fontSize:"14px", display:'flex', justifyContent:'space-between'}}>
+  <div>{item?.nameOfPath}</div>
+  <div>{item?.program || item?.university}</div>
+</div>
+
                       <div style={{fontWeight: 300, fontSize:"12px", lineHeight:"25px",}}>{item?.description?.substring(0, 150) + "..."}</div><br/>
                       <div style={{paddingBottom:"10px", fontWeight: 300, fontSize:"12px", lineHeight:"25px"}}>Path id: {item?._id}</div>
                     </div>
@@ -1411,7 +1544,7 @@ useEffect(() => {
                     
                   </div>
                   <div
-                    className="goBack3"
+                    className="admin-goBack3"
                     onClick={() => {
                       setEditPaths("default");
                     }}
@@ -1420,14 +1553,14 @@ useEffect(() => {
                   </div>
                 </div>
               ): editPaths === "show_all_paths" ? (
-                <div className="acc-mt-div">
-                  <div className="acc-sub-text">
+                <div className="admin-acc-mt-div">
+                  <div className="admin-acc-sub-text">
                   Select the positioning of the new step
                   </div>
-                  <div className="acc-scroll-div" style={{}}>
-                    {selectedPath?.the_ids?.map((item, index) => (
+                  <div className="admin-acc-scroll-div" style={{}}>
+                    {selectedPath?.StepDetails?.map((item, index) => (
                       <>
-                        <div className="subpathstyle">
+                        <div className="admin-subpathstyle">
                           <div style={{fontWeight: 600, fontSize:"14px"}}>
                             <div>{selectedPath?.nameOfPath}</div>                        
                           </div>
@@ -1438,14 +1571,14 @@ useEffect(() => {
                           </div>
                         </div>
                         <center>
-                        <div className="placehere" onClick={e => handlePlace(selectedPath, index+1)}>Place Here</div>
+                        <div className="admin-placehere" onClick={e => handlePlace(selectedPath, index+1)}>Place Here</div>
                         </center>
                       </>
                     ))}
                     
                   </div>
                   <div
-                    className="goBack3"
+                    className="admin-goBack3"
                     onClick={() => {
                       setEditPaths("default");
                     }}
@@ -1453,90 +1586,105 @@ useEffect(() => {
                     Go Back
                   </div>
                 </div>
-              ) :editPaths === "remove_step" ? (
-                <div className="acc-mt-div">
-                  <div className="acc-sub-text">
-                  Select the positioning of the new step
-                  </div>
-                  <div className="acc-scroll-div" style={{}}>
-                    {selectedPath?.the_ids?.map((item, index) => (
-                      <>
-                        <div className="subpathstyle" style={{position:"relative"}}>
-                          <div className="deletePathStyle" onClick={e => handledeletePathPosition(selectedPath, item?._id)}>
-                            <img src={require("./delete.svg").default} alt="" />
-                          </div>
-                          <div style={{fontWeight: 600, fontSize:"14px"}}>
-                            <div>{selectedPath?.nameOfPath}</div>                        
-                          </div>
-                          <div style={{fontWeight: 300, fontSize:"12px", lineHeight:"25px",}}>{selectedPath?.description?.substring(0, 150) + "..."}</div><br/>
-                          <div style={{fontWeight: 600, fontSize:"14px", display:'flex', justifyContent:'space-between', paddingBottom:"10px"}}>Backup Path</div>
-                          <div style={{borderRadius:"15px", border:"1px solid #e7e7e7", padding:'10px'}}>
-                            {item?._id}
-                          </div>
-                        </div>
-                        
-                      </>
-                    ))}
-                    
-                  </div>
-                  <div
-                    className="goBack3"
-                    onClick={() => {
-                      setEditPaths("default");
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              ):editPaths === "reorder_step" ? (
-                <div className="acc-mt-div">
-                  <div className="acc-sub-text">
-                  Select the positioning of the new step
-                  </div>
-                  <div className="acc-scroll-div" style={{}}>
-                    <Draggable onPosChange={getChangedPos}>
-                      {selectedPath?.the_ids?.map((item, index) => (
-                        <>
-                          <div className="subpathstyle" style={{position:"relative"}}>
-                           
-                            <div style={{fontWeight: 600, fontSize:"14px"}}>
-                              <div>{selectedPath?.nameOfPath}</div>                        
-                            </div>
-                            <div style={{fontWeight: 300, fontSize:"12px", lineHeight:"25px",}}>{selectedPath?.description?.substring(0, 150) + "..."}</div><br/>
-                            <div style={{fontWeight: 600, fontSize:"14px", display:'flex', justifyContent:'space-between', paddingBottom:"10px"}}>Backup Path</div>
-                            <div style={{borderRadius:"15px", border:"1px solid #e7e7e7", padding:'10px'}}>
-                              {item?._id}
-                            </div>
-                          </div>
-                          
-                        </>
-                      ))}
-                    </Draggable>
-                  </div>
-                  <div
-                    className="goBack3"
-                    onClick={() => {
-                      setEditPaths("default");
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
+                
+            ) : editPaths === "remove_step" ? (
+  <div className="admin-acc-mt-div">
+    <div className="admin-acc-sub-text">
+      Select which step you want to remove
+    </div>
+
+    <div className="admin-acc-scroll-div">
+      {Array.isArray(selectedPath?.StepDetails) &&
+        selectedPath.StepDetails.map((item) => (
+          <div
+            key={item._id}
+            className="admin-subpathstyle"
+            style={{ position: "relative" }}
+          >
+            {/* Delete icon */}
+            <div
+              className="admin-deletePathStyle"
+              onClick={() =>
+                handledeletePathPosition(selectedPath, item._id)
+              }
+            >
+              <img src={require("./delete.svg").default} alt="delete" />
+            </div>
+
+            {/* STEP NAME */}
+            <div style={{ fontWeight: 600, fontSize: "14px" }}>
+              {item?.name}
+            </div>
+
+            {/* STEP DESCRIPTION */}
+            <div
+              style={{
+                fontWeight: 300,
+                fontSize: "12px",
+                lineHeight: "22px",
+                marginTop: "6px",
+              }}
+            >
+              {item?.description
+                ? item.description.substring(0, 150) + "..."
+                : "No description"}
+            </div>
+
+            {/* STEP ID */}
+            <div
+              style={{
+                marginTop: "10px",
+                fontSize: "12px",
+                opacity: 0.7,
+              }}
+            >
+              Step ID: {item?._id}
+            </div>
+
+            {/* BACKUP PATH */}
+            {item?.backup_pathId && (
+              <div
+                style={{
+                  marginTop: "8px",
+                  padding: "8px",
+                  border: "1px solid #e7e7e7",
+                  borderRadius: "10px",
+                  fontSize: "12px",
+                }}
+              >
+                Backup Path ID: {item.backup_pathId}
+              </div>
+            )}
+          </div>
+        ))}
+    </div>
+
+    <div
+      className="admin-goBack3"
+      onClick={() => setEditPaths("default")}
+    >
+      Go Back
+    </div>
+  </div>
+
+
+
+              
               )  : editPaths === "Edit who qualifies" ? (
-                <div className="acc-mt-div">
-                  <div className="acc-sub-text">
+                <div className="admin-acc-mt-div">
+                  <div className="admin-acc-sub-text">
                     Which of the current coordinates do you want to edit?
                   </div>
-                  <div className="acc-scroll-div">
-                    <div className="acc-step-box4">Grade</div>
-                    <div className="acc-step-box4">Grade point avg</div>
-                    <div className="acc-step-box4">Curriculum</div>
-                    <div className="acc-step-box4">Stream</div>
-                    <div className="acc-step-box4">Financial situation</div>
-                    <div className="acc-step-box4">Personality</div>
+                  <div className="admin-acc-scroll-div">
+                    <div className="admin-acc-step-box4">Grade</div>
+                    <div className="admin-acc-step-box4">Grade point avg</div>
+                    <div className="admin-acc-step-box4">Curriculum</div>
+                    <div className="admin-acc-step-box4">Stream</div>
+                    <div className="admin-acc-step-box4">Financial situation</div>
+                    <div className="admin-acc-step-box4">Personality</div>
                   </div>
                   <div
-                    className="goBack3"
+                    className="admin-goBack3"
                     onClick={() => {
                       setEditPaths("default");
                     }}
@@ -1548,19 +1696,19 @@ useEffect(() => {
                 ""
               ))}
               {pathActionStep === 5 &&     
-                <div className="acc-mt-div">
-                  <div className="acc-sub-text">
+                <div className="admin-acc-mt-div">
+                  <div className="admin-acc-sub-text">
                   Are you sure you want to approve this path?
                   </div>
-                  <div className="acc-scroll-div">
+                  <div className="admin-acc-scroll-div">
                     <div
-                      className="acc-step-box4"
+                      className="admin-acc-step-box4"
                       onClick={e => handleApprovePath()}
                     >
                      Yes
                     </div>
                     <div
-                      className="acc-step-box4"
+                      className="admin-acc-step-box4"
                       onClick={() => {
                         setPathActionStep(1);
                       }}
@@ -1570,7 +1718,7 @@ useEffect(() => {
                    
                   </div>
                   <div
-                    className="goBack3"
+                    className="admin-goBack3"
                     onClick={() => {
                       setPathActionStep(1);
                     }}
@@ -1580,13 +1728,13 @@ useEffect(() => {
                 </div>
               }
               {pathActionStep === 6 &&
-                <div className="acc-mt-div">
-                  <div className="acc-sub-text">
+                <div className="admin-acc-mt-div">
+                  <div className="admin-acc-sub-text">
                   Are you sure you want to reject this path?
                   </div>
-                  <div className="acc-scroll-div">
+                  <div className="admin-acc-scroll-div">
                     <div
-                      className="acc-step-box4"
+                      className="admin-acc-step-box4"
                       onClick={() => {
                         handleRejectPath()
                       }}
@@ -1594,7 +1742,7 @@ useEffect(() => {
                       Yes
                     </div>
                     <div
-                      className="acc-step-box4"
+                      className="admin-acc-step-box4"
                       onClick={() => {
                         setPathActionStep(1);
                       }}
@@ -1604,7 +1752,7 @@ useEffect(() => {
                     
                   </div>
                   <div
-                    className="goBack3"
+                    className="admin-goBack3"
                     onClick={() => {
                       setPathActionStep(1);
                     }}
@@ -1614,23 +1762,23 @@ useEffect(() => {
                 </div>
               }
               {pathActionStep === 7 && (
-                <div className="success-box2">Path is Approved.</div>
+                <div className="admin-success-box2">Path is Approved.</div>
               )}
               {pathActionStep === 8 && (
-                <div className="success-box2">Path is Rejected.</div>
+                <div className="admin-success-box2">Path is Rejected.</div>
               )}
 
               {/* Add Service Steps */}
 
               {pathActionStep === 9 &&
-                <div className="acc-mt-div">
-                  <div className="acc-sub-text">
+                <div className="admin-acc-mt-div">
+                  <div className="admin-acc-sub-text">
                   Which step do you want to add the service to?
                   </div>
-                  <div className="acc-scroll-div">
+                  <div className="admin-acc-scroll-div">
                     {selectedPath && selectedPath?.StepDetails?.map(item => (
                       <div
-                        className="acc-step-box4"
+                        className="admin-acc-step-box4"
                         style={{flexDirection:'column', alignItems:'flex-start', justifyContent:'center'}}
                         onClick={() => {
                           setAddServiceStep(item)
@@ -1646,7 +1794,7 @@ useEffect(() => {
                     
                   </div>
                   <div
-                    className="goBack3"
+                    className="admin-goBack3"
                     onClick={() => {
                       setPathActionStep(1);
                     }}
@@ -1655,48 +1803,45 @@ useEffect(() => {
                   </div>
                 </div>
               }
-              {pathActionStep === 10 &&
-                <div className="acc-mt-div">
-                  <div className="acc-sub-text">
-                  Which service do you want to add?
-                  </div>
-                  <div className="acc-scroll-div">
-                    {allServices && allServices?.map(item => (
-                      <div
-                        className="acc-step-box4"
-                        style={{flexDirection:'column', alignItems:'flex-start', justifyContent:'center'}}
-                        onClick={(e) => handleAddService(item?.product_id)}
-                      >
-                        <div>{item?.product_name}</div> 
-                        <div style={{fontSize:'12px', fontWeight: 400, paddingTop:'5px'}}>{item?.product_id}</div>
-                      </div>
-                    ))}
-                
-          
-                    
-                  </div>
-                  <div
-                    className="goBack3"
-                    onClick={() => {
-                      setPathActionStep(1);
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              }
+  {pathActionStep === 10 &&
+  <div className="admin-acc-mt-div">
+    <div className="admin-acc-sub-text">
+      Which service do you want to add?
+    </div>
+
+    <div className="admin-acc-scroll-div">
+      {allServices?.map(item => (
+        <div
+          className="admin-acc-step-box4"
+          style={{flexDirection:'column', alignItems:'flex-start', justifyContent:'center'}}
+          onClick={() => handleAddService(item?.product_id)}
+        >
+          <div>{item?.product_name}</div>
+          <div style={{fontSize:'12px', fontWeight:400, paddingTop:'5px'}}>
+            {item?.product_id}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div className="admin-goBack3" onClick={() => setPathActionStep(1)}>
+      Go Back
+    </div>
+  </div>
+}
+
           </div>
         )}
 
         {stepActionEnabled && (
-          <div className="acc-popular1">
+          <div className="admin-acc-popular1">
             <div
-              className="acc-popular-top"
+              className="admin-acc-popular-top"
               style={{ display: stepActionStep === 3 ? "none" : "" }}
             >
-              <div className="acc-popular-head">My Step Actions</div>
+              <div className="admin-acc-popular-head">My Step Actions</div>
               <div
-                className="acc-popular-img-box"
+                className="admin-acc-popular-img-box"
                 style={{ cursor: "pointer" }}
                 onClick={() => {
                   setStepActionEnabled(false);
@@ -1704,21 +1849,21 @@ useEffect(() => {
                   setSelectedStepId("");
                 }}
               >
-                <img className="acc-popular-img" src={closepop} alt="" />
+                <img className="admin-acc-popular-img" src={closepop} alt="" />
               </div>
             </div>
             {stepActionStep === 1 && (
               <div style={{ marginTop: "3rem" }}>
-                <div className="acc-step-box"  onClick={() => {
+                <div className="admin-acc-step-box"  onClick={() => {
                     setStepActionStep(4);
                   }}>Edit Services</div>
-                  <div className="acc-step-box"  
+                  <div className="admin-acc-step-box"  
                   // onClick={() => {
                   //   setStepActionStep(4);
                   // }}
                   >Edit Step</div>
                 <div
-                  className="acc-step-box" onClick={() => { deleteStep(); }}
+                  className="admin-acc-step-box" onClick={() => { deleteStep(); }}
                 >
                   Delete step
                 </div>
@@ -1728,7 +1873,7 @@ useEffect(() => {
             {stepActionStep === 2 && (
               <div style={{ marginTop: "3rem" }}>
                 <div
-                  className="acc-step-box"
+                  className="admin-acc-step-box"
                   onClick={() => {
                     deleteStep();
                   }}
@@ -1736,7 +1881,7 @@ useEffect(() => {
                   Confirm and delete
                 </div>
                 <div
-                  className="goBack2"
+                  className="admin-goBack2"
                   onClick={() => {
                     setStepActionStep(1);
                   }}
@@ -1747,26 +1892,26 @@ useEffect(() => {
             )}
 
             {stepActionStep === 3 && (
-              <div className="success-box1">Step Successfully Deleted</div>
+              <div className="admin-success-box1">Step Successfully Deleted</div>
             )}
              {stepActionStep === 4 && (
-              // <div className="success-box1">Step Successfully Deleted</div>
+              // <div className="admin-success-box1">Step Successfully Deleted</div>
            
 
-              <div className="acc-mt-div">
-                <div className="acc-sub-text">
+              <div className="admin-acc-mt-div">
+                <div className="admin-acc-sub-text">
                 What do you want to do?
                 </div>
-                <div className="acc-scroll-div">
+                <div className="admin-acc-scroll-div">
                     <div
-                      className="acc-step-box4"
+                      className="admin-acc-step-box4"
                       style={{flexDirection:'column', alignItems:'flex-start', justifyContent:'center'}}
                       onClick={(e) => setStepActionStep(5)}
                     >
                       <div>Add a Service</div> 
                     </div>
                     <div
-                      className="acc-step-box4"
+                      className="admin-acc-step-box4"
                       style={{flexDirection:'column', alignItems:'flex-start', justifyContent:'center'}}
                       onClick={(e) => setStepActionStep(6)}
                     >
@@ -1775,7 +1920,7 @@ useEffect(() => {
                   
                 </div>
                 <div
-                  className="goBack3"
+                  className="admin-goBack3"
                   onClick={() => {
                     setStepActionStep(1);
                   }}
@@ -1786,17 +1931,17 @@ useEffect(() => {
           
             )}
             {stepActionStep === 5 && (
-              // <div className="success-box1">Step Successfully Deleted</div>
+              // <div className="admin-success-box1">Step Successfully Deleted</div>
            
 
-              <div className="acc-mt-div">
-                <div className="acc-sub-text">
+              <div className="admin-acc-mt-div">
+                <div className="admin-acc-sub-text">
                 Which service do you want to add?
                 </div>
-                <div className="acc-scroll-div">
+                <div className="admin-acc-scroll-div">
                   {allServicesToAdd && allServicesToAdd?.map(item => (
                     <div
-                      className={selectedServices.includes(item?._id) ? 'acc-step-box4-selected': "acc-step-box4"}
+                      className={selectedServices.includes(item?._id) ? 'admin-acc-step-box4-selected': "admin-acc-step-box4"}
                       style={{flexDirection:'column', alignItems:'flex-start', justifyContent:'center'}}
                       onClick={(e) => handleSelectServicesForStep(item?._id)}
                     >
@@ -1808,14 +1953,14 @@ useEffect(() => {
         
                   
                 </div>
-                <div className="save-Btn" 
+                <div className="admin-save-Btn" 
                 style={{opacity: selectedServices.length>0 ? 1 : 0.3}}
                   onClick={() => selectedServices.length>0 && addServicesToStep()}
                   >
                  Add Selected Services
                 </div>
                 <div
-                  className="goBack3"
+                  className="admin-goBack3"
                   onClick={() => {
                     setStepActionStep(1);
                   }}
@@ -1827,17 +1972,17 @@ useEffect(() => {
             )}
 
             {stepActionStep === 6 && (
-              // <div className="success-box1">Step Successfully Deleted</div>
+              // <div className="admin-success-box1">Step Successfully Deleted</div>
            
 
-              <div className="acc-mt-div">
-                <div className="acc-sub-text">
+              <div className="admin-acc-mt-div">
+                <div className="admin-acc-sub-text">
                 Which service do you want to remove? 
                 </div>
-                <div className="acc-scroll-div">
+                <div className="admin-acc-scroll-div">
                   {allServicesToRemove && allServicesToRemove?.serviceDetails?.map(item => (
                     <div
-                      className={selectedServices.includes(item?._id) ? 'acc-step-box4-selected': "acc-step-box4"}
+                      className={selectedServices.includes(item?._id) ? 'admin-acc-step-box4-selected': "admin-acc-step-box4"}
                       style={{flexDirection:'column', alignItems:'flex-start', justifyContent:'center'}}
                       onClick={(e) => removeServiceFromStep(item?._id)}
                     >
@@ -1851,7 +1996,7 @@ useEffect(() => {
                 </div>
               
                 <div
-                  className="goBack3"
+                  className="admin-goBack3"
                   onClick={() => {
                     setStepActionStep(1);
                   }}
@@ -1863,8 +2008,8 @@ useEffect(() => {
             )}
 
             {actionLoading ? (
-              <div className="popularlogo">
-                <img className="popularlogoimg" src={lg1} alt="" />
+              <div className="admin-popularlogo">
+                <img className="admin-popularlogoimg" src={lg1} alt="" />
               </div>
             ) : (
               ""

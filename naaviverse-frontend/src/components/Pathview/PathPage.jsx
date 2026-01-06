@@ -1,4 +1,4 @@
-// PathPage.jsx (Corrected Path Version)
+// PathPage.jsx (Merged & Corrected)
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 
 const PathPage = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // <-- GET PATH ID FROM URL
+  const { id } = useParams(); // path id from URL
 
   const [loading, setLoading] = useState(true);
   const [pathName, setPathName] = useState("N/A");
@@ -21,6 +21,7 @@ const PathPage = () => {
       setError(null);
 
       const pathId = id || localStorage.getItem("selectedPathId");
+
       if (!pathId) {
         setError("No selected path id found.");
         setLoading(false);
@@ -33,17 +34,16 @@ const PathPage = () => {
 
         if (!data) {
           setError("No path data found.");
+          setSteps([]);
           return;
         }
 
-        // Set Path Title
-        setPathName(data.nameOfPath ?? "N/A");
-
-        // Backend returns StepDetails array (IMPORTANT)
+        setPathName(data.nameOfPath || "N/A");
         setSteps(data.StepDetails || []);
       } catch (err) {
         console.error("Error fetching path:", err);
         setError("Failed to fetch path.");
+        setSteps([]);
       } finally {
         setLoading(false);
       }
@@ -57,7 +57,6 @@ const PathPage = () => {
       <div className="dashboard-body">
         <div className="dashboard-screens" style={{ width: "100%" }}>
           <div style={{ padding: "3rem 3.5rem" }}>
-
             {/* Top Section */}
             <div className="journey-top-area-premium">
               <div className="premium-title-small">Your Selected Path</div>
@@ -80,15 +79,15 @@ const PathPage = () => {
                   .fill("")
                   .map((_, i) => (
                     <motion.div
+                      key={i}
+                      className="step-card-premium"
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: 0.1 * i }}
-                      className="step-card-premium"
-                      key={i}
                     >
-                      <Skeleton width={"60%"} height={22} />
-                      <Skeleton width={"95%"} height={14} style={{ marginTop: 8 }} />
-                      <Skeleton width={"92%"} height={14} style={{ marginTop: 6 }} />
+                      <Skeleton width="60%" height={22} />
+                      <Skeleton width="95%" height={14} style={{ marginTop: 8 }} />
+                      <Skeleton width="92%" height={14} style={{ marginTop: 6 }} />
                     </motion.div>
                   ))
               ) : error ? (
@@ -98,7 +97,7 @@ const PathPage = () => {
               ) : (
                 steps.map((step, index) => (
                   <motion.div
-                    key={index}
+                    key={step._id || index}
                     className="step-card-premium"
                     initial={{ opacity: 0, y: 25 }}
                     animate={{ opacity: 1, y: 0 }}

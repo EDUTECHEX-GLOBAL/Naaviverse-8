@@ -2,11 +2,26 @@ const express = require("express");
 const router = express.Router();
 
 const servicesController = require("../controllers/services.controller");
-const { verifyToken } = require("../middlewares/authJwt");
 
+/* ==========================
+   CREATE SERVICE
+========================== */
 router.post("/add", servicesController.addService);
-router.get("/get", servicesController.getServices);
+
+/* ==========================
+   GET ALL SERVICES
+   /api/services/getservices
+========================== */
+router.get("/getservices", servicesController.getServices);
+
+/* ==========================
+   UPDATE SERVICE
+========================== */
 router.put("/update/:id", servicesController.updateService);
+
+/* ==========================
+   DELETE SERVICE
+========================== */
 router.delete("/delete/:id", servicesController.deleteService);
 router.put("/restore/:id", [verifyToken], servicesController.restoreService);
 router.get("/getservices", servicesController.getAllServices);
@@ -24,6 +39,10 @@ router.get("/by-step", (req, res, next) => {
   next();
 }, servicesController.getServicesByStep);
 
-
+/* ==========================
+   GET SERVICES BY STEP
+   /api/services/by-step?step_id=xxxx
+========================== */
+router.get("/by-step", servicesController.getServicesByStep);
 
 module.exports = router;

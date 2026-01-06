@@ -61,12 +61,7 @@ const sidebarMenu2 = [
     click: true,
   },
 
-   { 
-      id: 4, 
-      display: "Universities",
-      title: "Universities", 
-      click: true 
-    },
+  
 ];
 
 const sidebarMenu3 = [
@@ -171,15 +166,20 @@ useEffect(() => {
                 }}
                 key={i}
                 onClick={() => {
-                  if (handleChangeAccDashsidebar) {
-                    handleChangeAccDashsidebar();
-                    setaccsideNav(each.title);
-                  } else if (each.click && isNotOnMainPage) {
-                    navigate("/dashboard/accountants");
-                  } else if (each.click) {
-                    setaccsideNav(each.title);
-                  }
-                }}
+  // highlight the selected sidebar item
+  setaccsideNav(each.title);
+
+
+
+
+  // Existing logic
+  if (handleChangeAccDashsidebar) {
+    handleChangeAccDashsidebar();
+  } else if (each.click && isNotOnMainPage) {
+    navigate("/dashboard/accountants");
+  }
+}}
+
               >
                 {each.display}
               </div>

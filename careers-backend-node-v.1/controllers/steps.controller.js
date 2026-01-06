@@ -111,7 +111,7 @@ const getSteps = async (req, res) => {
     if (req.query.step_id) filter._id = req.query.step_id;
     if (req.query.length) filter.length = req.query.length;
 
-    let steps = await stepModel.aggregate([
+    const steps = await stepModel.aggregate([
       { $match: filter },
       { $sort: { createdAt: -1 } },
 
@@ -119,7 +119,13 @@ const getSteps = async (req, res) => {
         $lookup: {
           from: "naavi_services",
           let: { m_ids: "$macroservices" },
-          pipeline: [{ $match: { $expr: { $in: ["$_id", "$$m_ids"] } } }],
+          pipeline: [
+            {
+              $match: {
+                $expr: { $in: ["$_id", "$$m_ids"] },
+              },
+            },
+          ],
           as: "MacroServicesDetails",
         },
       },
@@ -127,7 +133,13 @@ const getSteps = async (req, res) => {
         $lookup: {
           from: "naavi_services",
           let: { mi_ids: "$microservices" },
-          pipeline: [{ $match: { $expr: { $in: ["$_id", "$$mi_ids"] } } }],
+          pipeline: [
+            {
+              $match: {
+                $expr: { $in: ["$_id", "$$mi_ids"] },
+              },
+            },
+          ],
           as: "MicroServicesDetails",
         },
       },
@@ -135,7 +147,13 @@ const getSteps = async (req, res) => {
         $lookup: {
           from: "naavi_services",
           let: { n_ids: "$nanoservices" },
-          pipeline: [{ $match: { $expr: { $in: ["$_id", "$$n_ids"] } } }],
+          pipeline: [
+            {
+              $match: {
+                $expr: { $in: ["$_id", "$$n_ids"] },
+              },
+            },
+          ],
           as: "nanoServicesDetails",
         },
       },
@@ -143,7 +161,13 @@ const getSteps = async (req, res) => {
         $lookup: {
           from: "paths",
           let: { p_id: "$path_id" },
-          pipeline: [{ $match: { $expr: { $eq: ["$_id", "$$p_id"] } } }],
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$_id", "$$p_id"] },
+              },
+            },
+          ],
           as: "pathDetails",
         },
       },

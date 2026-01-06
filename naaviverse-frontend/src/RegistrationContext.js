@@ -75,17 +75,28 @@ const RegistrationContextProvider = (props) => {
     }
   };
 
-  useEffect(() => {
-    setLoading(true);
+  // ------------------------------------------------
+  //   OPTIONAL: Fetch appData from your backend
+  //   (Replace this with your own API if needed)
+  // ------------------------------------------------
+useEffect(() => {
+  // 🔒 Disabled for now – backend API not available
+  // TODO: Enable this when /api/apps/:appCode is implemented in backend
 
-    axios
-      .get("http://localhost:4545/api/apps/naavi")
-      .then(({ data }) => {
-        setAppData(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+  setAppData(null);
+  setLoading(false);
+
+  /*
+  axios
+    .get("http://localhost:4545/api/apps/naavi")
+    .then(({ data }) => {
+      setAppData(data);
+      setLoading(false);
+    })
+    .catch(() => setLoading(false));
+  */
+}, []);
+
 
   const value = {
     step,

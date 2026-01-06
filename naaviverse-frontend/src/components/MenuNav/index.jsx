@@ -17,41 +17,42 @@ const MenuNav = ({
 }) => {
   const navigate = useNavigate();
 
-  /** ================= LOGOUT ================= */
-const handleLogout = () => {
-  console.warn("🔒 Manual logout");
+  const handleLogout = () => {
+    const adminUser = localStorage.getItem("adminuser");
+    localStorage.clear();
 
-  [
-    "authToken",
-    "user",
-    "partner",
-    "userType",
-    "userProfilePic",
-  ].forEach((key) => localStorage.removeItem(key));
-
-  navigate("/login", { replace: true });
-};
-
-
-  /** ============== PROFILE NAV =============== */
-  const handleNavigateProfile = () => {
-    const userType = localStorage.getItem("userType");
-if (userType === "user") {
-  navigate("/dashboard/users/profile");
-} else if (userType === "partner") {
-  navigate("/dashboard/partners/profile"); // ✅ clearer
-} else {
-  navigate("/admin/dashboard/profile");
-}
-
+    if (adminUser) {
+      navigate("/admin/login");
+    } else {
+      navigate("/login");
+    }
   };
 
-  const profilePic =
-    localStorage.getItem("userProfilePic") || profile;
+  /** ===== PROFILE NAVIGATION (MERGED) ===== */
+  const handleNavigateProfile = () => {
+    setShowDrop(false);
+
+    const adminUser = localStorage.getItem("adminuser");
+    const userType = localStorage.getItem("userType");
+
+    if (adminUser) {
+      // Admin profile handled via event
+      window.dispatchEvent(new Event("openAdminProfile"));
+      return;
+    }
+
+    if (userType === "user") {
+      navigate("/dashboard/users/profile");
+    } else if (userType === "partner") {
+      navigate("/dashboard/partners/profile");
+    }
+  };
+
+  const profilePic = localStorage.getItem("userProfilePic") || profile;
 
   return (
     <>
-      {/* ======= TOP NAV ======= */}
+      {/* ===== TOP NAV ===== */}
       <div className="dash-nav">
         <div
           className="search-input-box"
@@ -78,11 +79,7 @@ if (userType === "user") {
           onClick={() => setShowDrop(!showDrop)}
         >
           <div className="user-box">
-            <img
-              className="user-icon"
-              src={profilePic}
-              alt="User"
-            />
+            <img className="user-icon" src={profilePic} alt="User" />
           </div>
 
           <div
@@ -97,7 +94,7 @@ if (userType === "user") {
         </div>
       </div>
 
-      {/* ======= DROPDOWN ======= */}
+      {/* ===== DROPDOWN ===== */}
       {showDrop && (
         <div
           className="m-drop"

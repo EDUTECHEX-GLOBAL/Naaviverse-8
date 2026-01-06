@@ -1,23 +1,19 @@
-// routes/steps.routes.js
 const router = require("express").Router();
+const stepController = require("../controllers/steps.controller");
 
-// Example controller logic – adjust to your DB
-router.get("/get", async (req, res) => {
-  try {
-    const { email } = req.query;
-    if (!email) {
-      return res.status(400).json({ status: false, message: "Email required" });
-    }
+// GET ALL STEPS
+router.get("/get", stepController.getSteps);
 
-    // TODO: replace with your model/query
-    // const steps = await StepsModel.find({ email });
+// SERVICES
+router.post("/services/add", stepController.addServicesToStep);
+router.delete("/services/:stepId/:serviceId", stepController.removeServiceFromStep);
+router.get("/services/:step_id", stepController.getServicesOfStep);
+router.get("/services/remove/:step_id", stepController.getAllServicesForRemove);
 
-    const steps = []; // temporary placeholder
-    return res.json({ status: true, data: steps });
-  } catch (err) {
-    console.error("Error in /steps/get:", err);
-    return res.status(500).json({ status: false, message: "Server error" });
-  }
-});
+// CRUD
+router.post("/add", stepController.addStep);
+router.put("/update/:id", stepController.updateStep);
+router.delete("/delete/:id", stepController.deleteStep);
+router.put("/restore/:id", stepController.restoreStep);
 
 module.exports = router;

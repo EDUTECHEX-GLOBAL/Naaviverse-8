@@ -3095,3 +3095,16 @@ input[type="file"] {
   margin-bottom: 1rem;
   text-transform: capitalize;
 }
+
+.acc-addpath {
+  overflow: visible !important;
+}
+
+.each-acc-addpath-field-input {
+  overflow: visible !important;
+}
+
+select {
+  position: relative;
+  z-index: 1000;
+}
