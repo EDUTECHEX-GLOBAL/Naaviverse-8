@@ -2,7 +2,6 @@ import React, { useState, useLayoutEffect, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./accDashboard.scss";
-import UniversitiesAdmin from "../AdminAccDashbaoard/UniversitiesAdmin.jsx";
 import searchic from "../../static/images/dashboard/searchic.svg";
 import downarrow from "../../static/images/dashboard/downarrow.svg";
 import uploadv from "../../static/images/dashboard/uploadv.svg";
@@ -57,6 +56,23 @@ import PurchasePage from "./PurchasePage/index.jsx";
 import MenuNav from "../../components/MenuNav/index.jsx";
 import MyStepsAcc from "./MyStepsAcc/index.jsx";
 
+
+const getPartner = () => {
+  try {
+    const raw = localStorage.getItem("partner");
+
+    if (!raw || raw === "undefined" || raw === "null") {
+      return {};   // instead of null
+    }
+
+    return JSON.parse(raw);
+  } catch {
+    return {};   // prevent redirect
+  }
+};
+
+
+
 const AccDashboard = () => {
   const {
     accsideNav,
@@ -102,7 +118,10 @@ const AccDashboard = () => {
   const [gracePeriod, setgracePeriod] = useState("");
   const [secondChargeAttempt, setsecondChargeAttempt] = useState("");
   const [thirdChargeAttempt, setthirdChargeAttempt] = useState("");
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState(
+  localStorage.getItem("profileImage") || null
+);
+
   const [isSubmit, setIsSubmit] = useState(false);
   const [isServicesAcc, setIsServicesAcc] = useState(false);
   const [servicesAcc, setservicesAcc] = useState([]);
@@ -111,6 +130,7 @@ const AccDashboard = () => {
   const [selectedService, setSelectedService] = useState([]);
   const [isloading, setIsloading] = useState(false);
   const [updatedIcon, setUpdatedIcon] = useState("");
+  
 
   //add compPlan
   const [addCompPlan, setAddCompPlan] = useState(false);
@@ -239,7 +259,12 @@ const AccDashboard = () => {
 
   const secret = "uyrw7826^&(896GYUFWE&*#GBjkbuaf"; // secret not to be disclosed anywhere.
   const emailDev = "rahulrajsb@outlook.com"; // email of the developer.
-  const userDetails = JSON.parse(localStorage.getItem("partner"));
+// Read partner once, normalize email/token fields for safe use throughout component.
+const userDetails = getPartner();
+const partnerEmail = userDetails?.email || userDetails?.user?.email || null;
+const partnerToken = userDetails?.idToken || userDetails?.token || null;
+console.log("PARTNER VALUE:", userDetails);
+
 
   const handleGrade = (item) => {
     if (grade.includes(item)) {
@@ -313,12 +338,17 @@ const AccDashboard = () => {
   const addBackupPath = (backupPathId, selectedStepId) => {
     // console.log(pathSteps, "kjedkjweld");
 
-    pathSteps.the_ids.map((item) => {
-      if (item.step_id === selectedStepId) {
-        item.backup_pathId = backupPathId;
-      }
-    });
-    setShowBackupPathList(false);
+setPathSteps(prev => {
+  const the_ids = Array.isArray(prev?.the_ids) ? prev.the_ids.map(item => {
+    if (item.step_id === selectedStepId) {
+      return { ...item, backup_pathId: backupPathId };
+    }
+    return item;
+  }) : [];
+  return { ...prev, the_ids };
+});
+setShowBackupPathList(false);
+
     // console.log(selectedSteps, "lkashclkweoiuk");
     // const found = pathSteps.find((element) => element._id === backupPathId);
   };
@@ -339,8 +369,9 @@ const AccDashboard = () => {
     handleGetCurrencies();
     // setaccsideNav("CRM")
     resetpop();
-    const userDetails = JSON.parse(localStorage.getItem("partner"));
-    if (userDetails === null || userDetails === undefined) {
+const userDetails = getPartner();
+
+   if (!userDetails) {
       navigate("/login");
     }
   }, []);
@@ -479,8 +510,13 @@ const AccDashboard = () => {
 
   const handleFollowerPerAccountants = () => {
     setIsLoading(true);
-    let mailId = userDetails?.email;
-    GetFollowersPerAccount(mailId)
+    const partner = getPartner();
+if (!partner?.email) {
+  console.warn("No partner set — skipping follower fetch");
+  setIsLoading(false);
+  return;
+}
+GetFollowersPerAccount(partner.email)
       .then((res) => {
         let result = res?.data;
         if (result?.status) {
@@ -499,7 +535,7 @@ const AccDashboard = () => {
   };
 
   const handleAllCustomerLicenses = () => {
-    // const userDetails = JSON.parse(localStorage.getItem("user"));
+    // const userDetails = (function(){ try { const r = localStorage.getItem("user"); return r ? JSON.parse(r) : null; } catch(e){console.warn(e); return null;} })()
     // setIsPurchaseLoading(true);
     // GetAllCustomerLicenses(userDetails.user.email)
     //   .then((res) => {
@@ -515,7 +551,8 @@ const AccDashboard = () => {
     //   });
 
 
-    const userDetails = JSON.parse(localStorage.getItem("partner"));
+const userDetails = getPartner();
+
     axios.get(
       `https://careers.marketsverse.com/userpurchase/get?creatoremail=${userDetails?.email}`
     ).then(({ data }) => {
@@ -545,24 +582,39 @@ const AccDashboard = () => {
       });
   };
 
-  const handleGetCurrencies = () => {
-    setIsCurrencies(true);
-    GetAllCurrencies()
-      .then((res) => {
-        let result = res?.data;
-        if (result?.status) {
-          setallCurrencies(result?.coins);
-          setIsCurrencies(false);
-        }
-      })
-      .catch((err) => {
-        console.log(err, "jkjkk");
-        setIsCurrencies(false);
-        toast.error("Something Went Wrong!", {
-          position: toast.POSITION.TOP_RIGHT,
-        });
-      });
-  };
+const handleGetCurrencies = () => {
+  setIsCurrencies(true);
+
+  GetAllCurrencies()
+    .then((res) => {
+      const result = res?.data;
+      console.log("RESULT:", result);
+
+      if (result?.status && Array.isArray(result.currencies)) {
+        console.log("CURRENCIES:", result.currencies);
+
+        // Format for your UI
+        const formatted = result.currencies.map((c) => ({
+          coinName: c.code,
+          coinSymbol: c.code,
+          fullName: c.currency
+        }));
+
+        console.log("FORMATTED:", formatted);
+
+        setallCurrencies(formatted);
+      }
+
+      setIsCurrencies(false);
+    })
+    .catch((err) => {
+      console.log("ERROR:", err);
+      setIsCurrencies(false);
+    });
+};
+
+
+
 
   const resetpop = () => {
     setispopular(false);
@@ -677,152 +729,139 @@ const AccDashboard = () => {
     setservicesMenu("Services");
   };
 
-  const handleFinalSubmit = () => {
-    setIsSubmit(true);
-    let userDetails = JSON.parse(localStorage.getItem("partner"));
-    let objmonthly = {
-      productcreatoremail: userDetails.email,
-      token: userDetails.idToken,
-      product_code: serviceCodeInput,
-      product_name: serviceNameInput,
-      product_icon: image,
-      revenue_account: userDetails.email,
-      client_app: "naavi",
-      product_category_code: "CoE",
-      sub_category_code: "",
-      custom_product_label: productLabel,
-      points_creation: false,
-      sub_text: serviceTagline,
-      full_description: serviceDescription,
-      first_purchase: {
-        price: firstMonthPrice !== "" ? parseFloat(firstMonthPrice) : 0,
-        coin: selectedCurrency.coinSymbol,
-      },
-      billing_cycle: {
-        monthly: {
-          price:
-            billingType === "One Time"
-              ? firstMonthPrice !== ""
-                ? parseFloat(firstMonthPrice)
-                : 0
-              : monthlyPrice !== ""
-                ? parseFloat(monthlyPrice)
-                : 0,
-          coin: selectedCurrency.coinSymbol,
-        },
-      },
-      grace_period:
-        billingType === "One Time"
-          ? 0
-          : gracePeriod !== ""
-            ? parseFloat(gracePeriod)
-            : 0,
-      first_retry:
-        billingType === "One Time"
-          ? 0
-          : secondChargeAttempt !== ""
-            ? parseFloat(secondChargeAttempt)
-            : 0,
-      second_retry:
-        billingType === "One Time"
-          ? 0
-          : thirdChargeAttempt !== ""
-            ? parseFloat(thirdChargeAttempt)
-            : 0,
-      staking_allowed: false,
-      staking_details: {},
-    };
+ const handleFinalSubmit = () => {
+  setIsSubmit(true);
 
-    let objone = {
-      productcreatoremail: userDetails.email,
-      token: userDetails.idToken,
-      product_code: serviceCodeInput,
-      product_name: serviceNameInput,
-      product_icon: image,
-      revenue_account: userDetails.email,
-      client_app: "naavi",
-      product_category_code: "CoE",
-      sub_category_code: "",
-      custom_product_label: productLabel,
-      points_creation: false,
-      sub_text: serviceTagline,
-      full_description: serviceDescription,
-      first_purchase: {
-        price: firstMonthPrice !== "" ? parseFloat(firstMonthPrice) : 0,
-        coin: selectedCurrency.coinSymbol,
-      },
-      billing_cycle: {
-        lifetime: {
-          price:
-            billingType === "One Time"
-              ? firstMonthPrice !== ""
-                ? parseFloat(firstMonthPrice)
-                : 0
-              : monthlyPrice !== ""
-                ? parseFloat(monthlyPrice)
-                : 0,
-          coin: selectedCurrency.coinSymbol,
-        },
-      },
-      grace_period:
-        billingType === "One Time"
-          ? 0
-          : gracePeriod !== ""
-            ? parseFloat(gracePeriod)
-            : 0,
-      first_retry:
-        billingType === "One Time"
-          ? 0
-          : secondChargeAttempt !== ""
-            ? parseFloat(secondChargeAttempt)
-            : 0,
-      second_retry:
-        billingType === "One Time"
-          ? 0
-          : thirdChargeAttempt !== ""
-            ? parseFloat(thirdChargeAttempt)
-            : 0,
-      staking_allowed: false,
-      staking_details: {},
-    };
+ let userDetails = JSON.parse(localStorage.getItem("partner"));
 
-    let obj = billingType === "One Time" ? objone : objmonthly;
-    CreatePopularService(obj)
-      .then((res) => {
-        let result = res.data;
-        if (result.status) {
-          myTimeoutService();
-          setpstep(7);
-          setbillingType("");
-          setselectNew("");
-          setselectCategory("");
-          setcategoriesData([]);
-          setSearch("");
-          setSelectedCurrency({});
-          setServiceNameInput("");
-          setServiceCodeInput("");
-          setProductLabel("");
-          setServiceTagline("");
-          setServiceDescription("");
-          setfirstMonthPrice("");
-          setmonthlyPrice("");
-          setgracePeriod("");
-          setsecondChargeAttempt("");
-          setthirdChargeAttempt("");
-          setfirstMonthPrice("");
-          setmonthlyPrice("");
-          setgracePeriod("");
-          setsecondChargeAttempt("");
-          setthirdChargeAttempt("");
-          setIsSubmit(false);
-          setCoverImageS3url("");
-          setImage(null);
-        }
-      })
-      .catch((err) => {
-        setIsSubmit(false);
-      });
+  // COMMON FIELDS FOR BOTH ONE-TIME & MONTHLY
+  const base = {
+    productcreatoremail: userDetails.email,
+
+    // REQUIRED BACKEND FIELDS
+    name: serviceNameInput,                 // ✔ MUST BE `name`
+    chargingtype: billingType,              // ✔ MUST BE `chargingtype`
+    description: serviceDescription,        // ✔ MUST BE `description`
+
+    product_code: serviceCodeInput,
+    product_icon: coverImageS3url,          // ✔ Use uploaded S3 URL
+    revenue_account: userDetails.email,
+    client_app: "naavi",
+
+    product_category_code: "CoE",
+    sub_category_code: "",
+    custom_product_label: productLabel,
+    points_creation: false,
+    sub_text: serviceTagline,
+
+    // FIRST PURCHASE (BOTH MODELS)
+    first_purchase: {
+      price: firstMonthPrice ? parseFloat(firstMonthPrice) : 0,
+      coin: selectedCurrency.coinSymbol,
+    },
+
+    grace_period:
+      billingType === "One Time"
+        ? 0
+        : gracePeriod
+        ? parseFloat(gracePeriod)
+        : 0,
+
+    first_retry:
+      billingType === "One Time"
+        ? 0
+        : secondChargeAttempt
+        ? parseFloat(secondChargeAttempt)
+        : 0,
+
+    second_retry:
+      billingType === "One Time"
+        ? 0
+        : thirdChargeAttempt
+        ? parseFloat(thirdChargeAttempt)
+        : 0,
+
+    staking_allowed: false,
+    staking_details: {},
   };
+
+  // ------------------------------
+  // MONTHLY PLAN OBJECT
+  // ------------------------------
+  const objmonthly = {
+    ...base,
+    billing_cycle: {
+      monthly: {
+        price:
+          monthlyPrice !== ""
+            ? parseFloat(monthlyPrice)
+            : firstMonthPrice
+            ? parseFloat(firstMonthPrice)
+            : 0,
+        coin: selectedCurrency.coinSymbol,
+      },
+    },
+  };
+
+  // ------------------------------
+  // ONE-TIME PLAN OBJECT
+  // ------------------------------
+  const objone = {
+    ...base,
+    billing_cycle: {
+      lifetime: {
+        price:
+          firstMonthPrice !== ""
+            ? parseFloat(firstMonthPrice)
+            : monthlyPrice !== ""
+            ? parseFloat(monthlyPrice)
+            : 0,
+        coin: selectedCurrency.coinSymbol,
+      },
+    },
+  };
+
+  // FINAL PAYLOAD
+  const obj = billingType === "One Time" ? objone : objmonthly;
+
+  console.log("FINAL SERVICE PAYLOAD:", obj);
+
+  CreatePopularService(obj)
+    .then((res) => {
+      let result = res.data;
+
+      if (result.status) {
+        myTimeoutService();
+        setpstep(7);
+
+        // RESET ALL FIELDS
+        setbillingType("");
+        setselectNew("");
+        setselectCategory("");
+        setcategoriesData([]);
+        setSearch("");
+        setSelectedCurrency({});
+        setServiceNameInput("");
+        setServiceCodeInput("");
+        setProductLabel("");
+        setServiceTagline("");
+        setServiceDescription("");
+        setfirstMonthPrice("");
+        setmonthlyPrice("");
+        setgracePeriod("");
+        setsecondChargeAttempt("");
+        setthirdChargeAttempt("");
+        setCoverImageS3url("");
+        setImage(null);
+        setIsSubmit(false);
+      }
+    })
+    .catch((err) => {
+      console.error("SERVICE CREATE ERROR:", err);
+      setIsSubmit(false);
+    });
+};
+
 
   //   const addService = () => {
   //     let userDetails = JSON.parse(localStorage.getItem("partner"));
@@ -867,66 +906,83 @@ const AccDashboard = () => {
   // })
   //   }
 
-  const getAllServices = () => {
-    const userDetails = JSON.parse(localStorage.getItem("partner"));
+const getAllServices = () => {
+  const userDetails = getPartner();
 
-    if (userDetails && userDetails.email) {
-      const timestamp = new Date().getTime(); // Cache-busting query parameter
-      axios.get(`/api/services/get?productcreatoremail=${userDetails.email}&_=${timestamp}`)
-        .then(({ data }) => {
-          console.log("Fetched Services:", data);
-          if (data.status) {
-            setservicesAcc(data.data || []); // Update state with fetched services
-          } else {
-            console.error("Service data not found.");
-          }
-        })
-        .catch(error => {
-          console.error("Error fetching services:", error);
-        })
-        .finally(() => setIsLoading(false));
-    } else {
-      console.error("User details or email is missing in localStorage.");
-      setIsLoading(false);
-    }
-  };
-
-  const fetchAllServicesAgain = () => {
-    const userDetails = JSON.parse(localStorage.getItem("partner"));
-    // console.log(userDetails, "kkk");
-    // handleServicesForLogged(userDetails.user.email);
-    getAllServices(userDetails.email)
+  // If no partner → stop safely
+  if (!userDetails || !userDetails.email) {
+    console.warn("No partner or email found — skipping service fetch.");
+    setIsLoading(false);
+    return;
   }
 
-  useEffect(() => {
-    if (!ispopular) {
-      const userDetails = JSON.parse(localStorage.getItem("partner"));
-      // console.log(userDetails, "kkk");
-      // handleServicesForLogged(userDetails.user.email);
-      getAllServices(userDetails.email)
+  const timestamp = new Date().getTime(); // Cache buster
+
+  axios
+    .get(
+      `/api/services/get?productcreatoremail=${userDetails.email}&_=${timestamp}`
+    )
+    .then(({ data }) => {
+      console.log("Fetched Services:", data);
+      if (data.status) {
+        setservicesAcc(data.data || []);
+      } else {
+        console.error("Service data not found.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching services:", error);
+    })
+    .finally(() => setIsLoading(false));
+};
+
+
+const fetchAllServicesAgain = () => {
+  const userDetails = getPartner();
+
+  if (!userDetails || !userDetails.email) {
+    console.warn("No partner found — cannot refresh services.");
+    return;
+  }
+
+  getAllServices(); // no params needed
+};
+
+
+useEffect(() => {
+  if (!ispopular) {
+    const userDetails = getPartner();
+
+    if (!userDetails || !userDetails.email) {
+      console.warn("No partner found — skipping initial services load.");
+      return;
     }
-  }, [ispopular])
 
-  useEffect(() => {
-    resetpop();
-    // console.log(
-    //   accsideNav == "My Services" && servicesMenu == "Services",
-    //   "uyuyuy"
-    // );
-    if (accsideNav == "CRM" && crmMenu == "Followers") {
+    getAllServices();
+  }
+}, [ispopular]);
 
 
+useEffect(() => {
+  resetpop();
 
-      handleFollowerPerAccountants();
-    } else if (accsideNav == "CRM" && crmMenu == "Purchases") {
-      handleAllCustomerLicenses();
-    } else if (accsideNav == "My Services" && servicesMenu == "Services") {
-      const userDetails = JSON.parse(localStorage.getItem("partner"));
-      // console.log(userDetails, "kkk");
-      // handleServicesForLogged(userDetails.user.email);
-      getAllServices(userDetails.email)
+  if (accsideNav === "CRM" && crmMenu === "Followers") {
+    handleFollowerPerAccountants();
+  } 
+  else if (accsideNav === "CRM" && crmMenu === "Purchases") {
+    handleAllCustomerLicenses();
+  } 
+  else if (accsideNav === "My Services" && servicesMenu === "Services") {
+    const userDetails = getPartner();
+
+    if (!userDetails || !userDetails.email) {
+      console.warn("No partner found — skipping service reload.");
+      return;
     }
-  }, [crmMenu, servicesMenu, accsideNav]);
+
+    getAllServices();
+  }
+}, [crmMenu, servicesMenu, accsideNav]);
 
   const myTimeout = () => {
     setTimeout(reload, 3000);
@@ -1012,11 +1068,10 @@ const AccDashboard = () => {
       });
   };
 
-  useEffect(() => {
-    if (pathSteps) {
-      console.log(pathSteps, "kjwegfljwefljwef")
-    }
-  }, [pathSteps])
+useEffect(() => {
+  console.log(pathSteps, "kjwegfljwefljwef");
+}, []);
+
 
   const myTimeout1 = () => {
     setTimeout(reload1, 3000);
@@ -1154,7 +1209,7 @@ const AccDashboard = () => {
   useEffect(() => {
     let email = userDetails?.email;
     axios
-      .get(`https://careers.marketsverse.com/steps/get?email=${email}`)
+          .get(`https://careers.marketsverse.com/steps/get?email=${encodeURIComponent(partnerEmail)}`)
       .then((response) => {
         let result = response?.data?.data;
         // console.log(result, "all steps fetched");
@@ -1344,18 +1399,28 @@ const AccDashboard = () => {
     setAddForexAmount(float.toFixed(2));
   };
   const getQuote = () => {
-    let obj = {
-      token: userDetails?.idToken,
-      email: userDetails?.user?.email,
-      app_code: "naavi",
-      profile_id: profileId,
-      coin_purchased: selectedCoin?.coinSymbol,
-      purchased_from: selectedCoin?.coinSymbol,
-      from_amount: addForexAmount,
-      stats: true,
-      identifier: `Add ${addForexAmount} ${selectedCoin?.coinSymbol} Via ${selectedPaymentMethod}`,
-      path_id: forexPathId,
-    };
+   const partner = getPartner();
+const partnerEmailLocal = partner?.email || partner?.user?.email;
+const partnerTokenLocal = partner?.idToken || partner?.token;
+
+if (!partnerEmailLocal) {
+  toast.error("Please login to continue");
+  return;
+}
+
+let obj = {
+  token: partnerTokenLocal,
+  email: partnerEmailLocal,
+  app_code: "naavi",
+  profile_id: profileId,
+  coin_purchased: selectedCoin?.coinSymbol,
+  purchased_from: selectedCoin?.coinSymbol,
+  from_amount: addForexAmount,
+  stats: true,
+  identifier: `Add ${addForexAmount} ${selectedCoin?.coinSymbol} Via ${selectedPaymentMethod}`,
+  path_id: forexPathId,
+};
+
 
     axios
       .post(
@@ -2074,6 +2139,8 @@ const AccDashboard = () => {
                     </div>
                   </div>
                 </>
+
+
               ) : accsideNav === "My Services" ? (
                 <>
                   <MenuNav
@@ -2757,28 +2824,13 @@ const AccDashboard = () => {
       setLoading={setLoading}
     />
 
-) : accsideNav === "Universities" ? (
-  <>
-    <MenuNav
-      showDrop={showDrop}
-      setShowDrop={setShowDrop}
-      searchTerm={search}
-      setSearchterm={setSearch}
-      searchPlaceholder="Search Universities..."
-    />
 
-    <div
-      className="services-main"
-      style={{ height: "calc(100% - 70px)" }}
-      onClick={() => setShowDrop(false)}
-    >
-      <UniversitiesAdmin />
-    </div>
-  </>
-) : (
+)
+: (
   <div className="services-main">
     Coming Soon
   </div>
+
 )
 }: (
                 <>
@@ -3688,13 +3740,8 @@ const AccDashboard = () => {
                                   fontWeight: "500",
                                 }}
                               >
-                                {pathSteps.the_ids.find(
-                                  (o) => o.step_id === e._id
-                                ).backup_pathId !== ""
-                                  ? pathSteps.the_ids.find(
-                                    (o) => o.step_id === e._id
-                                  ).backup_pathId
-                                  : "Select Backup Path"}
+                                {(pathSteps?.the_ids?.find(o => o.step_id === e?._id)?.backup_pathId) || "Select Backup Path"}
+
 
                                 {/* {e?.the_ids?.backup_pathId !== ""
                                   ? e?.the_ids?.backup_pathId

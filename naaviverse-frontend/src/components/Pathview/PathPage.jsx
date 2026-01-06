@@ -13,61 +13,42 @@ const PathPage = () => {
   const [steps, setSteps] = useState([]);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchSteps = async () => {
-      setLoading(true);
-      setError(null);
+ useEffect(() => {
+  const fetchSteps = async () => {
+    setLoading(true);
+    setError(null);
 
-      const pathId = localStorage.getItem("selectedPathId");
-      if (!pathId) {
-        setError("No selected path id found.");
-        setLoading(false);
-        return;
+    const pathId = localStorage.getItem("selectedPathId");
+    if (!pathId) {
+      setError("No selected path id found.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // ⭐ correct working API
+      const res = await axios.get(`/api/paths/viewpath/${pathId}`);
+
+      if (res?.data?.data) {
+        const path = res.data.data;
+
+        setSchoolName(path.destination_institution || "N/A");
+        setSteps(path.StepDetails || []);
+      } else {
+        setError("Path not found.");
       }
+    } catch (err) {
+      console.error("Error fetching steps:", err);
+      setError("Failed to fetch steps.");
+      setSteps([]);
+    }
 
-      try {
-        let resp = null;
-        try {
-          resp = await axios.get(`/api/universities/${pathId}/steps`);
-          if (resp?.data?.steps && Array.isArray(resp.data.steps)) {
-            setSteps(resp.data.steps);
-          } else if (Array.isArray(resp?.data)) {
-            setSteps(resp.data);
-          } else {
-            resp = null;
-          }
-        } catch (err) {
-          resp = null;
-        }
+    setLoading(false);
+  };
 
-        if (!resp) {
-          const r2 = await axios.get(`/api/universities/${pathId}`);
-          const uni = r2?.data?.data || r2?.data;
-          setSchoolName(uni?.name || uni?.school || "N/A");
+  fetchSteps();
+}, []);
 
-          const program = uni?.generatedProgram || uni?.program || {};
-          const fetchedSteps = Array.isArray(program?.steps)
-            ? program.steps
-            : [];
-
-          setSteps(fetchedSteps);
-        } else {
-          axios.get(`/api/universities/${pathId}`).then((rName) => {
-            const uni = rName?.data?.data || rName?.data;
-            if (uni?.name) setSchoolName(uni.name);
-          });
-        }
-      } catch (err) {
-        console.error("Error fetching steps:", err);
-        setError("Failed to fetch steps.");
-        setSteps([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSteps();
-  }, []);
 
   return (
     <div className="dashboard-main">

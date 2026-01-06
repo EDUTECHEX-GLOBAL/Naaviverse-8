@@ -502,14 +502,11 @@ const NewStep1 = ({ setpstep }) => {
   rows="5"
   cols="40"
   spellCheck={false}
-  onChange={(e) => {
-    setStepForm((prev) => ({
-      ...prev,
-      description: e.target.value,
-    }));
-  }}
-  value={stepForm?.description}
-></textarea>
+  value={item.description}
+  onChange={(e) =>
+    handleDescriptionChangeGrade(item.grade, e.target.value)
+  }
+/>
 
                   </div>
                 ))}

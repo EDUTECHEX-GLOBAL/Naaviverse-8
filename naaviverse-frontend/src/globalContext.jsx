@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext } from "react";
+import { useState, useEffect, createContext, useRef } from "react";
 import defaultImg from "./static/images/app_placeholder.png";
 import publicationsFull from "./static/images/PublicationsFull.svg";
 import { ReactComponent as Collapse_img } from "./static/images/collapse.svg";
@@ -135,20 +135,30 @@ export const GlobalContexProvider = ({ children }) => {
   });
   const [coinLoading, setCoinLoading] = useState(false);
   const [coinListObject, setCoinListObject] = useState();
-  useEffect(() => {
-    axios
+  
+  // Add refs to track initial loads
+  const initialLoadRef = useRef({
+    coins: false,
+    appList: false,
+    publications: false,
+    authorDetail: false
+  });
 
-      .get("https://comms.globalxchange.io/coin/vault/get/all/coins")
-      .then(({ data }) => {
-        if (data.status) {
-          let obj = {};
-          data.coins.forEach((coin) => {
-            obj[coin.coinSymbol] = coin;
-          });
-          setCoinListObject(obj);
-        }
-      });
-  }, []);
+  // Use a ref to prevent re-renders
+  const bankerEmailRef = useRef(bankerEmail);
+
+  useEffect(() => {
+    bankerEmailRef.current = bankerEmail;
+  }, [bankerEmail]);
+
+  useEffect(() => {
+  if (initialLoadRef.current.coins) return;
+
+  // 🔒 Disable third-party API (mock minimal data)
+  setCoinListObject({});
+  initialLoadRef.current.coins = true;
+}, []);
+
 
   useEffect(() => {
     if (tabSelected !== "Requests") {
@@ -156,24 +166,37 @@ export const GlobalContexProvider = ({ children }) => {
     }
   }, [tabSelected]);
 
-useEffect(() => {
-  if (!bankerEmail) return;
+  useEffect(() => {
+    if (!bankerEmail || bankerEmail === "") return;
+    
+    // Prevent multiple calls for same email
+    if (coinLoading) return;
 
-  setCoinLoading(true);
+    let isMounted = true;
+    setCoinLoading(true);
 
-  axios
-    .get(`http://localhost:4545/api/vault/coins/${encodeURIComponent(bankerEmail)}`)
-    .then((res) => {
-      const { data } = res;
-      if (data.status) {
-        setCoinList(data.data);
-      }
-    })
-    .catch((err) => console.log("Vault error:", err.message))
-    .finally(() => setCoinLoading(false));
-}, [bankerEmail]);
-
-
+    axios
+      .get(`http://localhost:4545/api/vault/coins/${encodeURIComponent(bankerEmail)}`)
+      .then((res) => {
+        if (!isMounted) return;
+        const { data } = res;
+        if (data.status) {
+          setCoinList(data.data);
+        }
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        console.log("Vault error:", err.message);
+      })
+      .finally(() => {
+        if (!isMounted) return;
+        setCoinLoading(false);
+      });
+      
+    return () => {
+      isMounted = false;
+    };
+  }, [bankerEmail]);
 
   const [userType, setUserType] = useState(
     localStorage.getItem("userType") || "App Owner"
@@ -185,18 +208,35 @@ useEffect(() => {
   const [appList, setAppList] = useState([]);
   const [appLoading, setAppLoading] = useState(false);
   useEffect(() => {
+    if (initialLoadRef.current.appList) return;
+    
+    let isMounted = true;
     setAppLoading(true);
+    
     axios
       .get("https://comms.globalxchange.io/gxb/apps/get")
       .then((res) => {
+        if (!isMounted) return;
         const { data } = res;
         if (data.status) {
           const { apps } = data;
           setAppList(apps);
+          initialLoadRef.current.appList = true;
         }
       })
-      .finally(() => setAppLoading(false));
+      .catch(() => {
+        if (!isMounted) return;
+      })
+      .finally(() => {
+        if (!isMounted) return;
+        setAppLoading(false);
+      });
+      
+    return () => {
+      isMounted = false;
+    };
   }, []);
+  
   const [appListFinal, setAppListFinal] = useState([]);
 
   const [authorDetail, setAuthorDetail] = useState(null);
@@ -209,7 +249,7 @@ useEffect(() => {
       appFullLogo: NaaviMainImg,
       appColor: "#4B9DDC",
       appTextColor: "#212529",
-      appData: "Don’t Have A/Publications/Account?",
+      appData: "Don't Have A/Publications/Account?",
       DispName: "For Admins",
     },
   ];
@@ -221,13 +261,10 @@ useEffect(() => {
     //   appFullLogo: publicationsFull,
     //   appColor: "#4B9DDC",
     //   appTextColor: "#212529",
-    //   appData: "Don’t Have A/Publications/Account?",
+    //   appData: "Don't Have A/Publications/Account?",
     //   DispName: "For Publishers"
     // }
   ];
-
-  // const { pathname } = useLocation();
-  // console.log(pathname + " pathname")
 
   const adminMenu = [
     {
@@ -235,11 +272,6 @@ useEffect(() => {
       menuIcon: pubAdminIcon,
       enabled: true,
     },
-    // {
-    //   menuName: "Vendors",
-    //   menuIcon: pubAdminIcon,
-    //   enabled: true,
-    // },
     {
       menuName: "CRM",
       menuIcon: pubAdminIcon,
@@ -281,10 +313,6 @@ useEffect(() => {
 
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
-  // useEffect(() => {
-  //   setSelectedApp(globalMenu[0]);
-  // }, []);
-
   const FormatNumber = (value, prec) => {
     return new Intl.NumberFormat("en-US", {
       maximumFractionDigits: prec,
@@ -323,10 +351,6 @@ useEffect(() => {
 
   const NumberToText = (number) => {
     console.log(number + " number");
-    // if (!Number.isInteger(number) || number < 0) {
-    //   throw new Error("Input must be a positive integer");
-    // }
-
     const suffixes = [
       "th",
       "st",
@@ -351,175 +375,168 @@ useEffect(() => {
     return <span>{number + suffix}</span>;
   };
 
-  // useEffect(() => {
-  //   setSelectedApp(globalMenu[0]);
-  // }, []);
-
   useEffect(() => {
-    if (bankerEmail) {
-      setLoading(true);
+    if (!bankerEmail || !selectedApp || bankerEmail === "") return;
 
-      if (selectedApp) {
+    let isMounted = true;
+    setLoading(true);
+
+    const fetchPublications = async () => {
+      try {
+        let response;
         if (selectedApp?.appName === "Authors") {
-          axios
-            .get(
-              `https://publications.apimachine.com/application/publisher/detail/${bankerEmail}`
-            )
-            .then(({ data }) => {
-              setAllPublications(data?.data);
-              setSelectedPublication(
-                data?.data[0]?.PublicationDetails[0]?.PublicationDetail[0]
-              );
-
-              setLoading(false);
-            });
+          response = await axios.get(
+            `https://publications.apimachine.com/application/publisher/detail/${bankerEmail}`
+          );
         } else {
-          axios
-            .get(
-              `https://publications.apimachine.com/publication/email/${bankerEmail}`
-            )
-            .then(({ data }) => {
-              setAllPublications(data.data);
-              setSelectedPublication(data.data[0]);
-              setLoading(false);
-            });
+          response = await axios.get(
+            `https://publications.apimachine.com/publication/email/${bankerEmail}`
+          );
         }
+        
+        if (!isMounted) return;
+        
+        if (selectedApp?.appName === "Authors") {
+          setAllPublications(response.data?.data || []);
+          if (response.data?.data?.[0]?.PublicationDetails?.[0]?.PublicationDetail?.[0]) {
+            setSelectedPublication(
+              response.data.data[0].PublicationDetails[0].PublicationDetail[0]
+            );
+          }
+        } else {
+          setAllPublications(response.data.data || []);
+          if (response.data.data?.[0]) {
+            setSelectedPublication(response.data.data[0]);
+          }
+        }
+      } catch (error) {
+        if (!isMounted) return;
+        console.error("Error fetching publications:", error);
+      } finally {
+        if (!isMounted) return;
+        setLoading(false);
       }
-    }
+    };
+
+    fetchPublications();
+
+    return () => {
+      isMounted = false;
+    };
   }, [bankerEmail, refetchData, selectedApp]);
 
-  // useEffect(() => {
-  //   axios
-  //     .get(
-  //       `https://publications.apimachine.com/application/publisher/detail/${bankerEmail}`
-  //     )
-  //     .then(({ data }) => {});
-  // }, []);
-
   useEffect(() => {
-    if (bankerEmail) {
-      axios
-        .get(
-          `https://publications.apimachine.com/application/publisher/detail/${bankerEmail}`
-          // `https://publications.apimachine.com/publisher?email=${bankerEmail}`
-        )
-        .then(({ data }) => {
-          if (data.status) {
-            setAuthorDetail(data.data[0]);
-            localStorage.setItem("AuthorData", JSON.stringify(data.data));
-          } else {
-            setAuthorDetail(null);
-            localStorage.setItem("AuthorData", null);
-          }
-        });
-    }
+    if (!bankerEmail || bankerEmail === "") return;
+
+    let isMounted = true;
+    
+    axios
+      .get(
+        `https://publications.apimachine.com/application/publisher/detail/${bankerEmail}`
+      )
+      .then(({ data }) => {
+        if (!isMounted) return;
+        if (data.status) {
+          setAuthorDetail(data.data[0]);
+          localStorage.setItem("AuthorData", JSON.stringify(data.data));
+        } else {
+          setAuthorDetail(null);
+          localStorage.setItem("AuthorData", null);
+        }
+      })
+      .catch(() => {
+        if (!isMounted) return;
+      });
+      
+    return () => {
+      isMounted = false;
+    };
   }, [bankerEmail]);
 
-  useEffect(() => {}, []);
-
   useEffect(() => {
-    if (localStorage.getItem("selectedApp") && selectedApp === null) {
-      setSelectedApp(JSON.parse(localStorage.getItem("selectedApp")));
-    } else if (localStorage.getItem("selectedApp")) {
-      localStorage.setItem("selectedApp", JSON.stringify(selectedApp));
-    } else {
-      localStorage.setItem("selectedApp", JSON.stringify(MainMenu[0]));
-      setSelectedApp(MainMenu[0]);
+    const stored = localStorage.getItem("selectedApp");
+    
+    // Only set if selectedApp is null and we have stored data
+    if (stored && selectedApp === null) {
+      try {
+        const parsed = JSON.parse(stored);
+        setSelectedApp(parsed);
+      } catch (error) {
+        console.error("Error parsing selectedApp from localStorage:", error);
+        const defaultApp = MainMenu[0];
+        setSelectedApp(defaultApp);
+        localStorage.setItem("selectedApp", JSON.stringify(defaultApp));
+      }
+    } else if (!stored && selectedApp === null) {
+      const defaultApp = MainMenu[0];
+      setSelectedApp(defaultApp);
+      localStorage.setItem("selectedApp", JSON.stringify(defaultApp));
     }
   }, [selectedApp]);
 
   useEffect(() => {
-    if (localStorage.getItem("loginData")) {
-      setLoginData(JSON.parse(localStorage.getItem("loginData")));
+    const stored = localStorage.getItem("loginData");
+    if (stored) {
+      setLoginData(JSON.parse(stored));
     }
-  }, [localStorage.getItem("loginData")]);
-
-// --- SET BANKER EMAIL AFTER LOGIN DATA LOADS ---
-useEffect(() => {
-  let stored = localStorage.getItem("bankerEmailNew");
-
-  if (stored) {
-    setBankerEmail(stored);
-  } else if (loginData?.user?.email) {
-    setBankerEmail(loginData.user.email);
-  }
-}, [loginData]);
-
-
-  useEffect(() => {
-    axios
-      .get(`https://comms.globalxchange.io/coin/vault/get/all/coins`)
-      .then((res) => {
-        if (res.data.status) {
-          setAllCoins(res.data.coins);
-          setSelectedCoin({
-            coinImage:
-              "https://apimachine-s3.s3.us-east-2.amazonaws.com/coinImages/dollar.png",
-            coinName: "US Dollar",
-            coinSymbol: "USD",
-            market_cap: 0,
-            symbol: "$",
-            type: "fiat",
-            usd_price: 1,
-            volume_24hr: 0,
-            _24hrchange: 0,
-            _id: "5f21042d0562332558c93180",
-          });
-        }
-      });
   }, []);
 
-  //MyCryptoBrand Admin Modal Functions
-
+  // CRITICAL FIX: This effect was causing infinite loops
   useEffect(() => {
-    setMcbAdminLoading(true);
-    if (bankerEmail) {
-      axios
-        .get(
-          `https://comms.globalxchange.io/gxb/app/gxlive/user/operator/get?email=${bankerEmail}&show_apps=true`
-        )
-        .then((res) => {
-          if (res.data.operators.length > 0) {
-            setAllBrands(res.data.operators);
-            setMcbAdminLoading(false);
-
-            if (localStorage.getItem("selectedBrand")) {
-              const found = res.data.operators.find(
-                (o) =>
-                  o._id ===
-                  JSON.parse(localStorage.getItem("selectedBrand"))._id
-              );
-
-              if (found !== null && found !== undefined) {
-                setSelectedBrand(
-                  JSON.parse(localStorage.getItem("selectedBrand"))
-                );
-              } else {
-                setSelectedBrand(res.data.operators[0]);
-                // localStorage.setItem(
-                //   "selectedBrand",
-                //   JSON.stringify(res.data.operators[0])
-                // );
-              }
-            } else {
-              setSelectedBrand(res.data.operators[0]);
-              // localStorage.setItem(
-              //   "selectedBrand",
-              //   JSON.stringify(res.data.operators[0])
-              // );
-            }
-          }
-        });
+    const storedBankerEmail = localStorage.getItem("bankerEmailNew");
+    const emailFromLogin = loginData?.user?.email;
+    
+    // Determine which email to use
+    let newEmail = storedBankerEmail || emailFromLogin;
+    
+    // Only update if we have a new email AND it's different from current
+    if (newEmail && newEmail !== "" && newEmail !== bankerEmail) {
+      console.log("Setting bankerEmail to:", newEmail);
+      setBankerEmail(newEmail);
     }
-  }, [bankerEmail]);
+  }, [loginData]); // Remove bankerEmail from dependencies
+
+ useEffect(() => {
+  if (initialLoadRef.current.coins) return;
+
+  // 🔒 Disable third-party API safely
+  setAllCoins([]);
+  setSelectedCoin({
+    coinImage:
+      "https://apimachine-s3.s3.us-east-2.amazonaws.com/coinImages/dollar.png",
+    coinName: "US Dollar",
+    coinSymbol: "USD",
+    symbol: "$",
+    type: "fiat",
+    usd_price: 1,
+  });
+
+  initialLoadRef.current.coins = true;
+}, []);
+
+
+useEffect(() => {
+  if (!bankerEmail || bankerEmail === "") return;
+
+  // 🔒 Disable third-party operator API
+  setAllBrands([]);
+  setSelectedBrand(null);
+  setMcbAdminLoading(false);
+}, [bankerEmail]);
+
 
   useEffect(() => {
+    if (!selectedBrand?.operator_id) return;
+
+    let isMounted = true;
     setMcbAdminLoading(true);
+    
     axios
       .get(
         `https://comms.globalxchange.io/gxb/apps/get?operator_id=${selectedBrand?.operator_id}`
       )
       .then((res1) => {
+        if (!isMounted) return;
         setAllAppsForBrand(res1.data.apps);
         setMcbAdminLoading(false);
         if (localStorage.getItem("selectedBrandApp")) {
@@ -533,19 +550,19 @@ useEffect(() => {
             );
           } else {
             setSelectedBrandApp(res1.data.apps[0]);
-            // localStorage.setItem(
-            //   "selectedBrandApp",
-            //   JSON.stringify(res1.data.operators[0])
-            // );
           }
         } else {
           setSelectedBrandApp(res1.data.apps[0]);
-          // localStorage.setItem(
-          //   "selectedBrandApp",
-          //   JSON.stringify(res1.data.operators[0])
-          // );
         }
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setMcbAdminLoading(false);
       });
+      
+    return () => {
+      isMounted = false;
+    };
   }, [selectedBrand]);
 
   useEffect(() => {
@@ -564,18 +581,18 @@ useEffect(() => {
   }, [selectedBrandApp, allBrands]);
 
   const handleResize = () => {
-    // console.log(window.innerWidth);
     if (window.innerWidth < 720) {
       setIsMobile(true);
-      console.log(window.innerWidth);
     } else {
       setIsMobile(false);
     }
   };
 
   useEffect(() => {
+    handleResize();
     window.addEventListener("resize", handleResize);
-  });
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     if (userType === "App Owner") {

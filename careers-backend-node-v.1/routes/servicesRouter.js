@@ -2,24 +2,47 @@ const express = require("express");
 const router = express.Router();
 
 const servicesController = require("../controllers/services.controller");
-const { verifyToken } = require("../middlewares/authJwt");
 
+/* ==========================
+   CREATE SERVICE
+========================== */
 router.post("/add", servicesController.addService);
-router.get("/get", servicesController.getServices);
+
+/* ==========================
+   GET ALL SERVICES
+   /api/services/getservices
+========================== */
+router.get("/getservices", servicesController.getServices);
+
+/* ==========================
+   UPDATE SERVICE
+========================== */
 router.put("/update/:id", servicesController.updateService);
+
+/* ==========================
+   DELETE SERVICE
+========================== */
 router.delete("/delete/:id", servicesController.deleteService);
-router.put("/restore/:id", [verifyToken], servicesController.restoreService);
-router.get("/getservices", servicesController.getAllServices);
-router.put("/icon/:serviceId", servicesController.updateServiceIcon);
 
-// ✅ this must reference a defined export
-router.get("/by-step", (req, res, next) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.set('Pragma', 'no-cache');
-  res.set('Expires', '0');
-  res.set('Surrogate-Control', 'no-store');
-  next();
-}, servicesController.getServicesByStep);
+/* ==========================
+   RESTORE SERVICE
+========================== */
+router.put("/restore/:id", servicesController.restoreService);
 
+/* ==========================
+   GET SERVICES BY STEP
+   /api/services/by-step?step_id=xxxx
+========================== */
+router.get("/by-step", servicesController.getServicesByStep);
 
+/* ==========================
+   ⭐ GET SERVICES BY EMAIL
+   FRONTEND CALLS:
+   /api/services/get/byEmail?email=xxx
+========================== */
+router.get("/get/byEmail", servicesController.getServicesByEmail);
+
+/* ==========================
+   EXPORT ROUTER
+========================== */
 module.exports = router;

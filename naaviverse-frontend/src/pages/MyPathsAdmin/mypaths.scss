@@ -1,8 +1,18 @@
-.mypaths {
+// mypaths.scss - Scoped for Admin Flow Only
+// All classes prefixed with "admin-" to avoid conflicts
+
+@import "../../static/scss/colors";
+@import "../../static/scss/mixin";
+
+.admin-mypaths {
   width: 100%;
   height: 100%;
+  background: #ffffff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  position: relative;
 
-  .mypaths-menu {
+  /* Admin Menu Tabs */
+  .admin-mypaths-menu {
     width: 100%;
     height: 4rem;
     padding: 12px 30px;
@@ -10,7 +20,7 @@
     gap: 2.5vw;
     border-bottom: 0.5px solid rgb(229, 229, 229);
 
-    .each-mypath-menu {
+    .admin-each-mypath-menu {
       padding: 10px 30px;
       border-radius: 35px;
       font-weight: 400;
@@ -20,41 +30,48 @@
       transition: all ease 0.2s;
 
       &:hover {
-        transform: scale(1.1);
+        transform: scale(1.05);
       }
     }
   }
 
-  .mypaths-content {
+  /* Main Content Area - Admin */
+  .admin-mypaths-content {
     width: 100%;
     height: calc(100% - 4rem);
-
-    .mypathsNav {
+    position: relative;
+    
+    /* Table Header - Admin */
+    .admin-mypathsNav {
       width: 100%;
       height: 2.5rem;
       border-bottom: 0.5px solid #e5e5e5;
       display: flex;
       align-items: center;
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 100;
 
-      .mypaths-name-div {
+      .admin-mypaths-name-div {
         width: 30%;
         display: flex;
-        align-items: flex-end;
+        align-items: end;
         padding-left: 35px;
         font-weight: 400;
         font-size: 0.9rem;
       }
 
-      .mypaths-description-div {
+      .admin-mypaths-description-div {
         width: 50%;
         display: flex;
-        align-items: flex-end;
+        align-items: end;
         padding-left: 35px;
         font-weight: 400;
         font-size: 0.9rem;
       }
 
-      .mypathsName {
+      .admin-mypathsName {
         width: 25%;
         display: flex;
         padding-left: 35px;
@@ -62,7 +79,7 @@
         font-size: 0.8rem;
       }
 
-      .mypathsCountry {
+      .admin-mypathsCountry {
         width: 25%;
         display: flex;
         font-weight: 500;
@@ -70,7 +87,7 @@
         padding-left: 1rem;
       }
 
-      .mypathsMicrosteps {
+      .admin-mypathsMicrosteps {
         width: 25%;
         display: flex;
         font-weight: 500;
@@ -79,57 +96,62 @@
       }
     }
 
-    .mypathsScroll-div {
-      width: 100%;
+    /* Scrollable Content - Admin */
+    .admin-mypathsScroll-div {
       height: calc(100% - 2.5rem);
-      overflow-y: scroll;
-
-      .each-mypaths-data {
+      overflow-y: auto;
+      
+      .admin-each-mypaths-data {
         width: 100%;
         border-bottom: 0.5px solid #e5e5e5;
         display: flex;
         font-size: 0.8rem;
         cursor: pointer;
         transition: all ease 0.2s;
+        background: #fff;
+        position: relative;
 
-        .each-mypaths-name {
+        &:hover {
+          background: rgba(237, 237, 237, 0.37);
+        }
+
+        .admin-each-mypaths-name {
           width: 30%;
           padding: 2rem 0 2rem 35px;
           line-height: 1.7;
           font-size: 0.9rem;
         }
 
-        .each-mypaths-desc {
+        .admin-each-mypaths-desc {
           width: 50%;
-          padding: 2rem 0 2rem 0;
+          padding: 2rem 0;
           font-weight: 300;
           padding-left: 35px;
           line-height: 1.8;
-          // text-transform: none;
           padding-right: 1rem;
-        }
-
-        &:hover {
-          background: rgba(237, 237, 237, 0.368627451);
         }
       }
 
-      .each-mypaths-data1 {
+      .admin-each-mypaths-data1 {
         width: 100%;
         border-bottom: 0.5px solid #e5e5e5;
         display: flex;
         flex-direction: column;
-        font-size: 0.8rem;
-        padding: 2rem 0 8rem 0;
+        padding: 2rem 0;
         cursor: pointer;
         transition: all ease 0.2s;
+        background: #fff;
 
-        .each-mypaths-detail {
+        &:hover {
+          background: rgba(237, 237, 237, 0.37);
+        }
+
+        .admin-each-mypaths-detail {
           width: 100%;
           display: flex;
           align-items: center;
 
-          .each-mypathsName {
+          .admin-each-mypathsName {
             width: 25%;
             display: flex;
             align-items: center;
@@ -139,7 +161,7 @@
             gap: 10px;
           }
 
-          .each-mypathsCountry {
+          .admin-each-mypathsCountry {
             width: 25%;
             display: flex;
             font-weight: 500;
@@ -147,7 +169,7 @@
             padding-left: 1rem;
           }
 
-          .each-mypathsMicrosteps {
+          .admin-each-mypathsMicrosteps {
             width: 25%;
             display: flex;
             font-weight: 500;
@@ -156,140 +178,961 @@
           }
         }
 
-        .each-mypaths-desc {
+        .admin-each-mypaths-desc {
           width: 100%;
           padding: 3rem 35px 0 35px;
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
 
-          .each-mypaths-desc-txt {
+          .admin-each-mypaths-desc-txt {
             font-size: 0.9rem;
             font-weight: 500;
           }
 
-          .each-mypaths-desc-txt1 {
+          .admin-each-mypaths-desc-txt1 {
             line-height: 1.8;
             font-size: 0.8rem;
             font-weight: 300;
-            text-transform: none;
-          }
-        }
-
-        &:hover {
-          background: rgba(237, 237, 237, 0.368627451);
-        }
-      }
-    }
-
-    .viewpath-container {
-      width: 100%;
-      height: 100%;
-      padding: 2rem 35px;
-      color: #1f304f;
-      overflow-y: scroll;
-
-      .viewpath-top-area {
-        width: 100%;
-        height: 8rem;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        position: relative;
-
-        .viewpath-bold-text {
-          font-size: 1.5rem;
-          font-weight: 500;
-        }
-
-        .viewpath-des {
-          font-size: 0.8rem;
-          font-weight: 300;
-          line-height: 1.7;
-        }
-
-        .viewpath-goBack-div {
-          position: absolute;
-          top: 0;
-          right: 0;
-          font-weight: 600;
-          text-decoration: underline;
-          cursor: pointer;
-          transition: all ease 0.2s;
-
-          &:hover {
-            transform: scale(1.05);
-          }
-        }
-      }
-
-      .viewpath-steps-area {
-        display: flex;
-        width: 100%;
-        gap: 0 4rem;
-        flex-wrap: wrap;
-
-        .viewpath-each-j-step {
-          width: calc((100% - 8rem) / 3);
-          border-radius: 10px;
-          border: 1px solid #e5e5e5;
-          display: flex;
-          flex-direction: column;
-          padding: 2rem 1rem;
-          gap: 2rem;
-          margin-top: 2rem;
-          z-index: 2;
-          cursor: pointer;
-          transition: all ease 0.2s;
-
-          &:hover {
-            border: 1px solid #1f304f;
-          }
-
-          .viewpath-each-j-step-text {
-            width: 100%;
-            font-size: 1.1rem;
-            font-weight: 500;
-          }
-
-          .viewpath-each-j-step-text1 {
-            width: 100%;
-            font-size: 0.8rem;
-            font-weight: 300;
-            line-height: 1.7;
-            margin-top: -1rem;
-          }
-
-          .viewpath-each-j-amount-div {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            justify-content: space-between;
-
-            .viewpath-each-j-amount {
-              font-size: 1.1rem;
-              font-weight: 500;
-            }
-          }
-        }
-
-        .viewpath-relative-div {
-          position: relative;
-
-          .viewpath-j-arr-div {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-self: center;
-            align-items: center;
-            left: calc(100% + 1rem);
-            z-index: 1;
-            cursor: default;
           }
         }
       }
     }
   }
+
+  /* =========================================== */
+  /* ADMIN POPUP PANEL - FIXED FOR OVERLAP
+  /* =========================================== */
+
+  .admin-acc-popular1 {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 420px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    box-shadow: -4px 0 16px rgba(0, 0, 0, 0.08);
+    z-index: 2000;
+    
+    /* Fixed header section - Admin */
+    .admin-acc-popular-top1 {
+      flex-shrink: 0;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e5e7eb;
+      background: white;
+      z-index: 10;
+    }
+    
+    .admin-acc-popular-top {
+      flex-shrink: 0;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e5e7eb;
+      background: white;
+      z-index: 10;
+    }
+  }
+
+  /* Main container for popup content - Admin */
+  .admin-acc-mt-div {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0; // CRITICAL for Firefox
+    overflow: hidden; // Prevent outer scroll
+    
+    .admin-acc-sub-text {
+      flex-shrink: 0;
+      padding: 16px 24px 8px 24px;
+      font-weight: 500;
+      color: #1f304f;
+      background: white;
+      margin: 0;
+    }
+
+    .admin-acc-sub-textt {
+      font-weight: 500;
+      color: #1f304f;
+      margin: 8px 0;
+      font-size: 13px;
+      padding: 0 24px;
+    }
+  }
+
+  /* SCROLLABLE CONTENT AREA - FIXED HEIGHT - Admin */
+  .admin-acc-scroll-div {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0; // CRITICAL for flex scrolling
+    padding: 0 24px 20px 24px;
+    
+    /* Custom scrollbar - Admin */
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 3px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    
+    &::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  }
+
+  /* =========================================== */
+  /* ADMIN STEP BOX STYLES - PREVENT OVERLAP
+  /* =========================================== */
+
+  .admin-acc-step-box4 {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #fff;
+    width: 100%;
+    
+    &:hover {
+      background: #f9fafb;
+      border-color: #2563eb;
+    }
+  }
+
+  .admin-acc-step-box4-selected {
+    border: 2px solid #2563eb;
+    background: #eff6ff;
+  }
+
+  .admin-acc-step-box {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #fff;
+    width: 100%;
+    
+    &:hover {
+      background: #f9fafb;
+      border-color: #2563eb;
+    }
+  }
+
+  /* Step boxes in Add New Step - PROPER SPACING - Admin */
+  .admin-acc-step-box6 {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #fff;
+    width: 100%;
+    
+    /* Prevent text overflow */
+    overflow: hidden;
+    word-wrap: break-word;
+    
+    &:hover {
+      background: #f9fafb;
+      border-color: #2563eb;
+    }
+    
+    div {
+      width: 100%;
+      
+      /* Title styling */
+      &:first-child {
+        font-weight: 600;
+        font-size: 14px;
+        color: #1f304f;
+        margin-bottom: 8px;
+        line-height: 1.4;
+      }
+      
+      /* Description styling */
+      &:last-child {
+        font-weight: 300;
+        font-size: 12px;
+        color: #666;
+        line-height: 1.6;
+        padding-top: 8px;
+        border-top: 1px solid #e7e7e7;
+      }
+    }
+  }
+
+  .admin-acc-step-box5 {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    background: #f9fafb;
+  }
+
+  /* Admin substep style (when selecting backup path) */
+  .admin-substepstyle {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #fff;
+    width: 100%;
+    
+    &:hover {
+      background: #f9fafb;
+      border-color: #2563eb;
+    }
+    
+    /* First line with two columns */
+    div:first-child {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 14px;
+      color: #1f304f;
+      margin-bottom: 8px;
+      
+      div {
+        width: auto;
+      }
+    }
+    
+    /* Description */
+    div:nth-child(2) {
+      font-weight: 300;
+      font-size: 12px;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    
+    /* Path ID */
+    div:last-child {
+      font-weight: 300;
+      font-size: 11px;
+      color: #888;
+      padding-top: 8px;
+      border-top: 1px solid #f0f0f0;
+    }
+  }
+
+  /* Admin subpath style (when positioning steps) */
+  .admin-subpathstyle {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+    background: #fff;
+    position: relative;
+    width: 100%;
+    
+    /* Title section */
+    > div:first-child {
+      font-weight: 600;
+      font-size: 14px;
+      color: #1f304f;
+      margin-bottom: 8px;
+    }
+    
+    /* Description */
+    > div:nth-child(2) {
+      font-weight: 300;
+      font-size: 12px;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    
+    /* Backup Path label */
+    > div:nth-child(3) {
+      font-weight: 600;
+      font-size: 13px;
+      color: #1f304f;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    /* Backup Path ID box */
+    > div:last-child {
+      border-radius: 15px;
+      border: 1px solid #e7e7e7;
+      padding: 12px;
+      font-size: 11px;
+      color: #888;
+      background: #f9f9f9;
+      word-break: break-all;
+    }
+  }
+
+  /* Admin Place Here button - PROPER SPACING */
+  .admin-placehere {
+    width: calc(100% - 48px); // Account for padding
+    margin: 8px auto 16px auto;
+    padding: 12px;
+    background: #2563eb;
+    color: white;
+    border-radius: 10px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: #1e4ed8;
+      transform: translateY(-2px);
+    }
+  }
+
+  /* Admin Delete button positioning */
+  .admin-deletePathStyle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #dc2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      transform: scale(1.1);
+    }
+    
+    img {
+      width: 12px;
+      height: 12px;
+      filter: invert(1);
+    }
+  }
+
+  /* =========================================== */
+  /* ADMIN BUTTONS AND FOOTER STYLES
+  /* =========================================== */
+
+  /* Save button in edit metadata - Admin */
+  .admin-save-Btn {
+    flex-shrink: 0;
+    margin: 16px 24px;
+    padding: 14px;
+    border-radius: 20px;
+    background: #2563eb;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+    
+    &:hover:not([style*="opacity: 0.5"]) {
+      background: #1e4ed8;
+    }
+  }
+
+  /* FIXED FOOTER - GO BACK BUTTON - Admin */
+  .admin-goBack3 {
+    flex-shrink: 0 !important;
+    margin: 12px 24px;
+    padding: 12px;
+    border-radius: 20px;
+    background: #f1f1f1;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    
+    /* Make it stick to bottom */
+    position: sticky;
+    bottom: 0;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    margin-top: auto;
+    
+    &:hover {
+      background: #e5e7eb;
+    }
+  }
+
+  .admin-goBack2 {
+    flex-shrink: 0 !important;
+    margin: 12px 24px;
+    padding: 12px;
+    border-radius: 20px;
+    background: #f1f1f1;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    
+    &:hover {
+      background: #e5e7eb;
+    }
+  }
+
+  /* Input boxes in edit metadata - Admin */
+  .admin-acc-step-box5, .admin-acc-step-box6 input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    margin-bottom: 16px;
+    
+    &:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+  }
+
+  /* Success/Message boxes - Admin */
+  .admin-success-box1, .admin-success-box2 {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    text-align: center;
+    font-weight: 500;
+    color: #16a34a;
+    background: rgba(34, 197, 94, 0.05);
+    border-radius: 10px;
+    margin: 20px;
+    line-height: 1.6;
+  }
+
+  /* Loading overlay - Admin */
+  .admin-popularlogo {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 20;
+    
+    .admin-popularlogoimg {
+      width: 50px;
+      height: 50px;
+      animation: admin-spin 1s linear infinite;
+    }
+  }
+
+  @keyframes admin-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* =========================================== */
+  /* ADMIN VIEW PATH STYLES
+  /* =========================================== */
+
+  .admin-viewpath-container {
+    width: 100%;
+    height: 100%;
+    padding: 2rem 35px;
+    color: #1f304f;
+    overflow-y: auto;
+
+    .admin-viewpath-top-area {
+      width: 100%;
+      height: auto;
+      min-height: 8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: relative;
+
+      .admin-viewpath-bold-text {
+        font-size: 1.5rem;
+        font-weight: 500;
+      }
+
+      .admin-viewpath-des {
+        font-size: 0.8rem;
+        font-weight: 300;
+        line-height: 1.7;
+      }
+
+      .admin-viewpath-goBack-div {
+        position: absolute;
+        top: 0;
+        right: 0;
+        font-weight: 600;
+        text-decoration: underline;
+        cursor: pointer;
+        transition: all ease 0.2s;
+
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+    }
+
+    .admin-viewpath-steps-area {
+      display: flex;
+      width: 100%;
+      gap: 0 4rem;
+      flex-wrap: wrap;
+
+      .admin-viewpath-each-j-step {
+        width: calc((100% - 8rem) / 3);
+        border-radius: 10px;
+        border: 1px solid #e5e5e5;
+        display: flex;
+        flex-direction: column;
+        padding: 2rem 1rem;
+        gap: 2rem;
+        margin-top: 2rem;
+        z-index: 2;
+        cursor: pointer;
+        transition: all ease 0.2s;
+
+        &:hover {
+          border: 1px solid #1f304f;
+        }
+
+        .admin-viewpath-each-j-step-text {
+          width: 100%;
+          font-size: 1.1rem;
+          font-weight: 500;
+        }
+
+        .admin-viewpath-each-j-step-text1 {
+          width: 100%;
+          font-size: 0.8rem;
+          font-weight: 300;
+          line-height: 1.7;
+          margin-top: -1rem;
+        }
+
+        .admin-viewpath-each-j-amount-div {
+          display: flex;
+          align-items: center;
+          width: 100%;
+          justify-content: space-between;
+
+          .admin-viewpath-each-j-amount {
+            font-size: 1.1rem;
+            font-weight: 500;
+          }
+        }
+      }
+
+      .admin-viewpath-relative-div {
+        position: relative;
+
+        .admin-viewpath-j-arr-div {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          justify-self: center;
+          align-items: center;
+          left: calc(100% + 1rem);
+          z-index: 1;
+          cursor: default;
+        }
+      }
+    }
+  }
+
+  /* =========================================== */
+  /* ADMIN EMERGENCY FIXES - FORCE PROPER LAYOUT
+  /* =========================================== */
+
+  /* EMERGENCY FIX - Force proper layout - Admin */
+  .admin-acc-mt-div > .admin-acc-scroll-div {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    
+    .admin-acc-step-box6, .admin-substepstyle, .admin-subpathstyle {
+      flex-shrink: 0 !important;
+      min-height: fit-content !important;
+      max-height: none !important;
+    }
+  }
+
+  /* Prevent text overflow in all step boxes - Admin */
+  .admin-acc-step-box6 div,
+  .admin-substepstyle div,
+  .admin-subpathstyle div {
+    overflow: visible !important;
+    white-space: normal !important;
+    text-overflow: clip !important;
+  }
+
+  /* Ensure no overlap with bottom buttons - Admin */
+  .admin-acc-mt-div:has(.admin-goBack3) .admin-acc-scroll-div {
+    padding-bottom: 80px !important;
+  }
+
+  /* When showing step boxes (Add New Step) - Admin */
+  .admin-acc-scroll-div:has(.admin-acc-step-box6) {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 12px;
+    
+    /* Add scrollbar only when needed */
+    max-height: calc(100vh - 200px);
+    
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+  }
+
+  /* Animation for loading - Admin */
+  .admin-path-item {
+    animation: admin-fadeIn 0.3s ease forwards;
+  }
+}
+
+/* =========================================== */
+/* ADMIN ANIMATIONS
+/* =========================================== */
+
+@keyframes admin-fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes admin-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes admin-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================== */
+/* ADMIN RESPONSIVE DESIGN
+/* =========================================== */
+
+@media (max-width: 768px) {
+  .admin-mypaths {
+    .admin-mypaths-menu {
+      padding: 12px 15px;
+      gap: 1vw;
+      
+      .admin-each-mypath-menu {
+        padding: 8px 20px;
+        font-size: 14px;
+      }
+    }
+
+    .admin-mypaths-content {
+      .admin-mypathsNav {
+        .admin-mypaths-name-div,
+        .admin-mypaths-description-div {
+          padding-left: 15px;
+          font-size: 0.8rem;
+        }
+      }
+
+      .admin-mypathsScroll-div {
+        .admin-each-mypaths-data {
+          .admin-each-mypaths-name,
+          .admin-each-mypaths-desc {
+            padding-left: 15px;
+          }
+        }
+      }
+    }
+
+    /* Adjust popup for mobile - Admin */
+    .admin-acc-popular1 {
+      width: 100%;
+    }
+  }
+}
+
+/* Scrollbar styling - Admin */
+.admin-mypathsScroll-div::-webkit-scrollbar,
+.admin-viewpath-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.admin-mypathsScroll-div::-webkit-scrollbar-track,
+.admin-viewpath-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.admin-mypathsScroll-div::-webkit-scrollbar-thumb,
+.admin-viewpath-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.admin-mypathsScroll-div::-webkit-scrollbar-thumb:hover,
+.admin-viewpath-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* =========================================== */
+/* ADMIN REORDER STEPS SPECIFIC STYLES
+/* =========================================== */
+
+/* Admin Step number indicator */
+.admin-step-number {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+/* Admin Drag handle */
+.admin-drag-handle {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 18px;
+  letter-spacing: 2px;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  user-select: none;
+  
+  &:hover {
+    color: #2563eb;
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+/* Admin Draggable step styling */
+.admin-draggable-step {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  
+  &:hover {
+    border-color: #e5e7eb;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+  
+  &:active {
+    cursor: grabbing;
+    border-color: #2563eb;
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.15);
+  }
+}
+
+/* Admin Dragging state */
+.admin-draggable-step.dragging {
+  opacity: 0.8;
+  border-color: #2563eb;
+  background: #f0f9ff;
+  transform: scale(1.02);
+}
+
+/* Admin Drop zone indicator */
+.admin-drop-zone {
+  border: 2px dashed #2563eb;
+  background: rgba(37, 99, 235, 0.05);
+  border-radius: 12px;
+  margin-bottom: 10px;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563eb;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* Admin Save button animation */
+.admin-save-Btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  &:not(:disabled):hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+  }
+  
+  &:not(:disabled):active {
+    transform: translateY(0);
+  }
+}
+
+/* Admin Loading animation for save */
+.admin-save-Btn.loading {
+  background: #94a3b8;
+  cursor: wait;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin: -10px 0 0 -10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: admin-spin 1s linear infinite;
+  }
+}
+
+/* Admin Step info tooltip */
+.admin-step-info {
+  font-size: 11px;
+  color: #64748b;
+  background: #f8fafc;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-right: 8px;
+  margin-bottom: 4px;
+  border: 1px solid #e2e8f0;
+  
+  &:last-child {
+    margin-right: 0;
+  }
+}
+
+/* Admin Mobile optimization for reorder */
+@media (max-width: 768px) {
+  .admin-draggable-step {
+    padding: 12px !important;
+  }
+  
+  .admin-step-number {
+    width: 25px;
+    height: 25px;
+    min-width: 25px;
+    font-size: 12px;
+  }
+  
+  .admin-drag-handle {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    font-size: 16px;
+  }
+  
+  .admin-step-info {
+    font-size: 10px;
+    padding: 3px 6px;
+    margin-right: 6px;
+    margin-bottom: 3px;
+  }
+}
+
+/* Admin Animation for when order changes */
+@keyframes admin-highlightChange {
+  0% { background-color: rgba(37, 99, 235, 0.1); }
+  100% { background-color: transparent; }
+}
+
+.admin-order-changed {
+  animation: admin-highlightChange 1s ease;
+}
+
+/* Admin View path image styles */
+.admin-viewpath-each-j-img {
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 10px;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+/* Admin Popup header styles */
+.admin-acc-popular-head1 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1f304f;
+}
+
+.admin-acc-popular-head {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1f304f;
+}
+
+.admin-acc-popular-img-box1 {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  cursor: pointer;
+}
+
+.admin-acc-popular-img-box {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  cursor: pointer;
+}
+
+.admin-acc-popular-img1, .admin-acc-popular-img {
+  width: 20px;
+  height: 20px;
 }

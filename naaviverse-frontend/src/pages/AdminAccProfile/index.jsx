@@ -235,6 +235,7 @@ const AdminAccProfile = () => {
     const newfile = renameFile(file, fileName);
     formData.append("files", newfile);
     const path_inside_brain = "root/";
+   
 
     const jwts = await signJwt(fileName, emailDev, secret);
     // console.log(jwts, "lkjkswedcf");
@@ -523,7 +524,7 @@ const AdminAccProfile = () => {
   function reloadService() {
     setispopular(false);
     setpstep(1);
-    navigate('/admin/dashboard/accountants');
+    navigate('/admin/dashboard');
     setaccsideNav("My Services");
     setservicesMenu("Services");
   };

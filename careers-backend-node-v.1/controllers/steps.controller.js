@@ -166,7 +166,17 @@ const getSteps = async (req, res) => {
                 as: "pathDetails"
             }
         },
-
+             {
+        $addFields: {
+            servicesCount: {
+                $cond: {
+                    if: { $isArray: "$services" },
+                    then: { $size: "$services" },
+                    else: 0
+                }
+            }
+        }
+    }
     ]);
 
 
@@ -419,56 +429,73 @@ const getStepById = async (req, res) => {
     }
 };  
 
-
 const addServicesToStep = async (req, res) => {
-    const { step_id, service_ids } = req.body;
-
-    // Basic input validation
-    if (!step_id || !Array.isArray(service_ids)) {
-        return res.status(400).json({
-            status: false,
-            message: 'Invalid input. Both step_id and service_ids are required.',
-        });
-    }
-
     try {
-        // Find the step by its ID
-        const step = await stepModel.findById(step_id).populate('services');
-        if (!step) {
-            return res.status(404).json({
+        const { step_id, service_ids } = req.body;
+
+        if (!step_id || !Array.isArray(service_ids)) {
+            return res.status(400).json({
                 status: false,
-                message: 'Step not found.',
+                message: "Invalid input"
             });
         }
 
-        // Merge new services with existing ones, ensuring no duplicates
-        const currentServices = step.services || [];
-        const updatedServices = Array.from(new Set([...currentServices, ...service_ids]));
+        // Fetch step
+        const step = await stepModel.findById(step_id).populate({
+            path: "services",
+            model: "naavi_services"
+        });
 
-        // Update the step document
-        step.services = updatedServices;
+        if (!step) {
+            return res.status(404).json({
+                status: false,
+                message: "Step not found"
+            });
+        }
+
+        // Convert current service objects to string IDs
+        const currentServiceIds = (step.services || []).map(s => s._id.toString());
+
+        // Convert incoming service_ids to ObjectIds
+        const incomingIds = service_ids.map(id => new mongoose.Types.ObjectId(id));
+
+        // Merge avoiding duplicates
+        const merged = Array.from(
+            new Set([...currentServiceIds, ...incomingIds.map(id => id.toString())])
+        ).map(id => new mongoose.Types.ObjectId(id));
+
+        // Save merged list
+        step.services = merged;
         await step.save();
-        await step.populate('services');
+
+        // Populate correctly
+        await step.populate({
+            path: "services",
+            model: "naavi_services"
+        });
 
         return res.json({
             status: true,
-            message: 'Services successfully attached to the step.',
-            data: step,
+            message: "Services added",
+            data: step
         });
+
     } catch (error) {
-        console.error('Error attaching services to step:', error);
+        console.error("Error attaching services to step:", error);
         return res.status(500).json({
             status: false,
-            message: 'Internal server error.',
-            error: error.message,
+            message: "Internal server error",
+            error: error.message
         });
     }
 };
 
 
 
+
 const getServicesForStep = async (req, res) => {
     const { step_id } = req.params;
+    
 
     console.log('Received step_id:', step_id);
 
@@ -492,9 +519,13 @@ const getServicesForStep = async (req, res) => {
         }
 
         // Find the step by its ID and populate services
-        const step = await stepModel.findById(step_id).populate('services');
+       const step = await stepModel.findById(step_id).populate({
+    path: "services",
+    model: "naavi_services"
+});
+        console.log("SERVICES RETURNED =>", step.services);
         console.log('Found step:', step);
-
+   
         if (!step) {
             console.error('Step not found for ID:', step_id);
             return res.status(404).json({
@@ -533,13 +564,18 @@ const removeServiceFromStep = async (req, res) => {
         }
 
         // Check if the service exists in the step
-        const serviceExists = step.services.includes(serviceId);
+        const serviceExists = step.services
+  .map(s => s.toString())
+  .includes(serviceId.toString());
+
         if (!serviceExists) {
             return res.status(404).json({ status: false, message: "Service not found in step" });
         }
 
         // Remove the service from the step's service array
-        step.services = step.services.filter(service => service.toString() !== serviceId);
+        step.services = step.services.filter(
+  service => service.toString() !== serviceId.toString()
+);
 
         // Save the updated step
         await step.save();
@@ -555,6 +591,133 @@ const removeServiceFromStep = async (req, res) => {
         return res.status(500).json({ status: false, message: "Server error" });
     }
 };
+// ================== GET SERVICES OF A STEP ==================
+// ================== GET SERVICES OF A STEP ==================
+const getServicesOfStep = async (req, res) => {
+  try {
+    const { step_id } = req.params;
+
+    if (!step_id) {
+      return res.status(400).json({
+        status: false,
+        message: "step_id is required"
+      });
+    }
+
+    // Validate ID
+    if (!mongoose.Types.ObjectId.isValid(step_id)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid step_id"
+      });
+    }
+
+    // Find the step and populate its services
+    const step = await stepModel.findById(step_id).populate("services");
+
+    if (!step) {
+      return res.status(404).json({
+        status: false,
+        message: "Step not found"
+      });
+    }
+
+    return res.json({
+      status: true,
+      total: step.services.length,
+      data: step.services
+    });
+
+  } catch (error) {
+    console.error("Error in getServicesOfStep:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Server error",
+      error: error.message
+    });
+  }
+};
+
+const repairStepServices = async (req, res) => {
+  try {
+    const steps = await stepModel.find();
+
+    let fixed = [];
+
+    for (const step of steps) {
+      const cleaned = step.services
+        .filter(id => mongoose.Types.ObjectId.isValid(id))   // keep only valid ObjectIds
+        .map(id => new mongoose.Types.ObjectId(id));
+
+      // Update only if different
+      if (JSON.stringify(cleaned) !== JSON.stringify(step.services)) {
+        step.services = cleaned;
+        await step.save();
+        fixed.push(step._id);
+      }
+    }
+
+    res.json({
+      status: true,
+      message: "Repaired all steps",
+      fixedSteps: fixed
+    });
+
+  } catch (error) {
+    res.status(500).json({ status: false, error: error.message });
+  }
+};
+
+// ✅ GET ALL SERVICES (48) + ATTACHED FLAG FOR REMOVE SERVICE
+const getAllServicesForRemove = async (req, res) => {
+  try {
+    const { step_id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(step_id)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid step_id"
+      });
+    }
+
+    // 1️⃣ Fetch step
+    const step = await stepModel.findById(step_id);
+
+    if (!step) {
+      return res.status(404).json({
+        status: false,
+        message: "Step not found"
+      });
+    }
+
+    // 2️⃣ Fetch ALL services (48)
+    const allServices = await serviceModel.find({ status: "active" });
+
+    // 3️⃣ Step attached services
+    const attachedServiceIds = (step.services || []).map(id =>
+      id.toString()
+    );
+
+    // 4️⃣ Merge attached flag
+    const finalServices = allServices.map(service => ({
+      ...service.toObject(),
+      attached: attachedServiceIds.includes(service._id.toString())
+    }));
+
+    return res.json({
+      status: true,
+      total: finalServices.length,
+      data: finalServices
+    });
+
+  } catch (error) {
+    console.error("getAllServicesForRemove error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Server error"
+    });
+  }
+};
 
 
 module.exports = {
@@ -569,4 +732,7 @@ module.exports = {
     addServicesToStep,
     getServicesForStep ,
     removeServiceFromStep,
+    getServicesOfStep,
+    repairStepServices,
+    getAllServicesForRemove ,
 }

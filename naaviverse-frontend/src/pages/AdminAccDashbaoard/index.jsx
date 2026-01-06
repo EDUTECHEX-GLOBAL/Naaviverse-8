@@ -2,7 +2,9 @@ import React, { useState, useLayoutEffect, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./accDashboard.scss";
-import UniversitiesAdmin from "./UniversitiesAdmin.jsx";
+
+import { Outlet, useLocation } from "react-router-dom";
+
 import searchic from "../../static/images/dashboard/searchic.svg";
 import downarrow from "../../static/images/dashboard/downarrow.svg";
 import uploadv from "../../static/images/dashboard/uploadv.svg";
@@ -69,17 +71,43 @@ const AccDashboard = () => {
     balanceToggle,
     setBalanceToggle,
   } = useStore();
-  let Country = require('country-state-city').Country;
-  console.log(Country.getAllCountries(), "kjefbkjbfkjwef")
-  const [search, setSearch] = useState("");
-  const [crmMenu, setcrmMenu] = useState("Clients");
-  const [servicesMenu, setservicesMenu] = useState("Services");
+
+  const Country = require("country-state-city").Country;
+
+/* ---------------- BASIC UI STATES ---------------- */
+const [search, setSearch] = useState("");
+const [crmMenu, setcrmMenu] = useState("Clients");
+
+/* 🔥 ADD THESE BACK */
+const [servicesMenu, setservicesMenu] = useState("Active Services");
+const [showAdminProfile, setShowAdminProfile] = useState(false);
+
+
+/* ---------------- CRM STATES ---------------- */
+const [crmUserData, setCrmUserData] = useState([]);
+const [isUserLoading, setIsUserLoading] = useState(false);
+const [partnerData, setPartnerData] = useState([]);
+const [followData, setfollowData] = useState([]);
+
+/* ---------------- PAGINATION ---------------- */
+const [currentPage, setCurrentPage] = useState(1);
+const itemsPerPage = 10;
+
+/* ---------------- PAGINATION CALCULATIONS ---------------- */
+/* ---------------- PAGINATION CALCULATIONS ---------------- */
+const totalPages = Math.ceil(crmUserData.length / itemsPerPage);
+const startIndex = (currentPage - 1) * itemsPerPage;
+const endIndex = startIndex + itemsPerPage;
+const currentUsers = crmUserData.slice(startIndex, endIndex);
+
+
+
+  /* ---------------- OTHER STATES (UNCHANGED) ---------------- */
   const [isLoading, setIsLoading] = useState(false);
   const [isPurchaseLoading, setIsPurchaseLoading] = useState(false);
   const [isCatoading, setIsCatLoading] = useState(false);
   const [isUploadLoading, setIsUploadLoading] = useState(false);
   const [followCount, setfollowCount] = useState(0);
-  const [followData, setfollowData] = useState([]);
   const [coverImageS3url, setCoverImageS3url] = useState("");
   const [selectedFollower, setSelectedFollower] = useState({});
   const [pstep, setpstep] = useState(1);
@@ -87,7 +115,6 @@ const AccDashboard = () => {
   const [billingType, setbillingType] = useState("");
   const [categoriesData, setcategoriesData] = useState([]);
   const [purchaseData, setPurchaseData] = useState([]);
-  const [partnerData, setPartnerData] = useState([])
   const [selectCategory, setselectCategory] = useState("");
   const [serviceNameInput, setServiceNameInput] = useState("");
   const [serviceCodeInput, setServiceCodeInput] = useState("");
@@ -106,13 +133,21 @@ const AccDashboard = () => {
   const [thirdChargeAttempt, setthirdChargeAttempt] = useState("");
   const [image, setImage] = useState(null);
   const [isSubmit, setIsSubmit] = useState(false);
-  const [isServicesAcc, setIsServicesAcc] = useState(false);
-  const [servicesAcc, setservicesAcc] = useState([]);
   const [serviceActionEnabled, setServiceActionEnabled] = useState(false);
   const [serviceActionStep, setServiceActionStep] = useState(1);
   const [selectedService, setSelectedService] = useState([]);
   const [isloading, setIsloading] = useState(false);
   const [updatedIcon, setUpdatedIcon] = useState("");
+  const [serviceStatus, setServiceStatus] = useState("active");
+
+  // routing
+const location = useLocation();
+const isProfilePage = location.pathname === "/admin/dashboard/profile";
+
+
+
+
+
 
   //add compPlan
   const [addCompPlan, setAddCompPlan] = useState(false);
@@ -125,6 +160,8 @@ const AccDashboard = () => {
   const [multiplier, setMultiplier] = useState([]);
   const [isfetching, setIsfetching] = useState(false);
 
+  
+
   //with compPlan
   const [withCompPlanData, setWithCompPlanData] = useState([]);
   const [gettingData, setGettingData] = useState(false);
@@ -136,8 +173,8 @@ const AccDashboard = () => {
   const [backupPathList, setBackupPathList] = useState([]);
   const [showBackupPathList, setShowBackupPathList] = useState(false);
 
-
-  const [serviceMenu, setServiceMenu] = useState('Active Services')
+const [universitiesData, setUniversitiesData] = useState([]);
+const [isUniLoading, setIsUniLoading] = useState(false);
 
   // new path
   const [grade, setGrade] = useState([]);
@@ -171,8 +208,7 @@ const AccDashboard = () => {
   let navigate = useNavigate();
 
   //users data
-  const [crmUserData, setCrmUserData] = useState([]);
-  const [isUserLoading, setIsUserLoading] = useState(false);
+
 
   //clients data
   const [crmClientData, setCrmClientData] = useState([]);
@@ -286,6 +322,20 @@ const AccDashboard = () => {
     //   setPersonality([...personality, item]);
     // }
   };
+useEffect(() => {
+  if (accsideNav === "Universities") loadUniversities();
+}, [accsideNav]);
+
+const loadUniversities = async () => {
+  setIsUniLoading(true);
+  try {
+    const res = await axios.get("/api/universities");
+    if (res.data.status) setUniversitiesData(res.data.data);
+  } catch (err) {
+    console.log("Error loading universities", err);
+  }
+  setIsUniLoading(false);
+};
 
   useEffect(() => {
     axios.get(`https://careers.marketsverse.com/paths/get`).then((res) => {
@@ -325,10 +375,22 @@ const AccDashboard = () => {
     // setaccsideNav("CRM")
     resetpop();
     const userDetails = JSON.parse(localStorage.getItem("adminuser"));
-    if (userDetails === null || userDetails === undefined) {
-      navigate("/login");
-    }
+   if (!userDetails?.email) {
+  navigate("/admin/login");
+}
   }, []);
+
+useEffect(() => {
+  resetpop();
+  if (accsideNav == "CRM" && crmMenu == "Followers") {
+    handleFollowerPerAccountants();
+  } else if (accsideNav == "CRM" && crmMenu == "Purchases") {
+    handleAllCustomerLicenses();
+  } else if (accsideNav == "My Services") {
+    getAdminServices();
+  }
+}, [crmMenu, servicesMenu, accsideNav]);
+
 
   const uploadCoverImage = async (file) => {
     setIsUploadLoading(true);
@@ -371,7 +433,7 @@ const AccDashboard = () => {
     const fileName = `${new Date().getTime()}${file?.name?.substr(
       file.name.lastIndexOf(".")
     )}`;
-
+        
     const formData = new FormData();
     const newfile = renameFile(file, fileName);
     formData.append("file", newfile);
@@ -590,34 +652,24 @@ const AccDashboard = () => {
     setPersonality("");
     setSearchCurrency("");
   };
+useEffect(() => {
+  const openProfile = () => setShowAdminProfile(true);
+  window.addEventListener("openAdminProfile", openProfile);
+
+  return () =>
+    window.removeEventListener("openAdminProfile", openProfile);
+}, []);
 
   const handleLogout = () => {
     localStorage.clear();
     navigate("/");
   };
 
-  const handleServicesForLogged = (value) => {
-    setIsServicesAcc(true);
-    GetLogServices(value)
-      .then((res) => {
-        // console.log(res, "kk");
-        let result = res?.data;
-        if (result?.status) {
-          setservicesAcc(result?.products);
-        }
-        setIsServicesAcc(false);
-      })
-      .catch((err) => {
-        console.log(err, "error in GetLogServices");
-        setIsServicesAcc(false);
-      });
-  };
+  //   const fileInputRef = useRef(null);
 
-  const fileInputRef = useRef(null);
-
-  const handleImageClick = () => {
-    fileInputRef.current.click();
-  };
+  //   const handleImageClick = () => {
+  //     fileInputRef.current.click();
+  //   };
 
   const handleFileInputChange = (e) => {
     setImage(e.target.files[0]);
@@ -791,35 +843,14 @@ const AccDashboard = () => {
   };
 
   const fetchAllServicesAgain = () => {
-    const userDetails = JSON.parse(localStorage.getItem("adminuser"));
-      // console.log(userDetails, "kkk");
-      handleServicesForLogged(userDetails.email);
+    getAdminServices();
   }
 
-  useEffect(() => {
-    if(!ispopular){
-      const userDetails = JSON.parse(localStorage.getItem("adminuser"));
-      // console.log(userDetails, "kkk");
-      handleServicesForLogged(userDetails.email);
-    }
-  }, [ispopular])
-
-  useEffect(() => {
-    resetpop();
-    // console.log(
-    //   accsideNav == "My Services" && servicesMenu == "Services",
-    //   "uyuyuy"
-    // );
-    if (accsideNav == "CRM" && crmMenu == "Followers") {
-      handleFollowerPerAccountants();
-    } else if (accsideNav == "CRM" && crmMenu == "Purchases") {
-      handleAllCustomerLicenses();
-    } else if (accsideNav == "My Services" && servicesMenu == "Services") {
-      const userDetails = JSON.parse(localStorage.getItem("adminuser"));
-      // console.log(userDetails, "kkk");
-      handleServicesForLogged(userDetails.email);
-    }
-  }, [crmMenu, servicesMenu, accsideNav]);
+ useEffect(() => {
+  if (!ispopular && accsideNav === "My Services") {
+    getAdminServices();
+  }
+}, [ispopular, accsideNav, servicesMenu]);
 
   const myTimeout = () => {
     setTimeout(reload, 3000);
@@ -830,7 +861,7 @@ const AccDashboard = () => {
     setServiceActionStep(1);
     setSelectedService("");
     setUpdatedIcon("");
-    handleServicesForLogged(userDetails?.email);
+    getAdminServices();
   }
 
   const deleteService = () => {
@@ -840,17 +871,36 @@ const AccDashboard = () => {
       token: userDetails?.idToken,
       product_id: selectedService?.product_id,
     };
-    DeleteServiceFunction(obj).then((response) => {
-      let result = response?.data;
-      if (result?.status) {
-        setIsloading(false);
+    axios.delete(`/admin/services/delete/${selectedService?._id}`)
+  .then(res => {
+    console.log("Deleted:", res.data);
+    myTimeout();
+  })
+  .catch(err => console.log("Delete error:", err));
+
+  };
+
+
+  const restoreService = () => {
+  setIsloading(true);
+
+  axios.put(`/admin/services/restore/${selectedService?._id}`)
+    .then(({ data }) => {
+      console.log("Service Restored:", data);
+
+      if (data.status) {
         setServiceActionStep(3);
         myTimeout();
-      } else {
-        setIsloading(false);
       }
+
+      setIsloading(false);
+    })
+    .catch(err => {
+      console.log("Restore Error:", err);
+      setIsloading(false);
     });
-  };
+};
+
 
   const changeServiceIcon = () => {
     setIsloading(true);
@@ -1103,38 +1153,53 @@ const AccDashboard = () => {
     });
   };
 
-  useEffect(() => {
+useEffect(() => {
+  if (accsideNav === "CRM" && crmMenu === "Clients") {
     setIsUserLoading(true);
-    axios
-      .get("https://comms.globalxchange.io/gxb/apps/users/get?app_code=naavi")
-      .then((response) => {
-        let result = response?.data?.users;
-        // console.log(result, "crm users data");
-        setIsUserLoading(false);
-        setCrmUserData(result);
-      })
-      .catch((error) => {
-        console.log(error, "error in fetching crm users data");
-      });
-  }, []);
 
-  useEffect(() => {
-    let email = userDetails?.email;
-    setClientLoading(true);
     axios
-      .get(
-        `/api/auth/get`
-      )
+      .get("http://localhost:4545/api/users")
       .then((response) => {
-        let result = response.data.data;
-        // console.log(result, "brands crm clients data");
-        setClientLoading(false);
-        setCrmClientData(result);
+        setCrmUserData(response?.data?.data || []);
+        setIsUserLoading(false);
       })
-      .catch((error) => {
-        console.log(error, "error in fetching crm clients data");
-      });
-  }, []);
+      .catch(() => setIsUserLoading(false));
+  }
+}, [accsideNav, crmMenu]);
+
+
+
+  
+
+
+
+const isFetched = useRef(false);
+
+const fetchedOnceRef = useRef(false);
+
+const hasFetchedRef = useRef(false);
+
+const [hasLoadedUsers, setHasLoadedUsers] = useState(false);
+
+const usersFetchRef = useRef(false);
+
+const fetchedRef = useRef(false);
+
+useEffect(() => {
+  if (fetchedRef.current) return;   // prevents all repeated calls
+  fetchedRef.current = true;
+
+  setClientLoading(true);
+
+  axios
+    .get("http://localhost:4545/api/users")
+    .then((response) => {
+      setCrmClientData(response.data.data);
+      setClientLoading(false);
+    })
+    .catch((error) => console.log(error));
+}, []);
+
 
   function customDateFormat(date) {
     if (date instanceof Date && !isNaN(date.valueOf())) {
@@ -1222,54 +1287,58 @@ const AccDashboard = () => {
     const float = parseFloat(e.target.value);
     setAddForexAmount(float.toFixed(2));
   };
-  const getQuote = () => {
-    let obj = {
-      token: userDetails?.idToken,
-      email: userDetails?.email,
-      app_code: "naavi",
-      profile_id: profileId,
-      coin_purchased: selectedCoin?.coinSymbol,
-      purchased_from: selectedCoin?.coinSymbol,
-      from_amount: addForexAmount,
-      stats: true,
-      identifier: `Add ${addForexAmount} ${selectedCoin?.coinSymbol} Via ${selectedPaymentMethod}`,
-      path_id: forexPathId,
-    };
-
-    axios
-      .post(
-        `https://comms.globalxchange.io/coin/vault/service/trade/execute`,
-        obj
-      )
-      .then((response) => {
-        let result = response?.data;
-        // console.log(result, "getQuote result");
-        if (result?.status) {
-          setForexQuote(result);
-          setAddActionStep(3);
-        }
-      })
-      .catch((error) => {
-        console.log(error, "error in getQuote");
-      });
-  };
-
-const [adminServices, setAdminServices] = useState([])
-  const getAdminServices = () => {
-    setIsUserLoading(true)
-    axios.get(`/api/services/getservices?status=${crmMenu === "Active Services" ? "active" : "inactive"}`).then(({data}) => {
-      if(data.status){
-        setAdminServices(data?.data)
-        setIsUserLoading(false)
-      }
-    })
+ const getQuote = () => {
+  // 🔒 Safety checks (prevents runtime errors)
+  if (!addForexAmount || !selectedCoin?.coinSymbol) {
+    console.warn("Missing amount or coin");
+    return;
   }
 
-  useEffect(() => {
-    if(crmMenu === "Active Services" || crmMenu === "Inactive Services"){
-      getAdminServices()
-    }
-  }, [crmMenu])
+  // ✅ Mock quote object (local replacement)
+  const mockQuote = {
+    status: true,
+    coin: selectedCoin.coinSymbol,
+    amount: addForexAmount,
+    paymentMethod: selectedPaymentMethod || "N/A",
+    path_id: forexPathId || null,
+    message: "Quote generated locally",
+    timestamp: Date.now(),
+  };
+
+  // ✅ Update state just like API success
+  setForexQuote(mockQuote);
+  setAddActionStep(3);
+};
+
+
+  const [adminServices, setAdminServices] = useState([]);
+
+const getAdminServices = () => {
+  setIsUserLoading(true);
+
+  axios
+    .get(`/api/services/getservices?status=${serviceStatus}`)
+    .then(({ data }) => {
+      if (data?.status) {
+        setAdminServices(data.data || []);
+      } else {
+        setAdminServices([]);
+      }
+      setIsUserLoading(false);
+    })
+    .catch((err) => {
+      console.log("Admin API Error:", err);
+      setIsUserLoading(false);
+    });
+};
+
+
+
+
+useEffect(() => {
+  getAdminServices();
+}, [serviceStatus]);
+
 
   const conditionalBilling = (item) => {
     if(item === "lifetime"){
@@ -1281,3653 +1350,436 @@ const [adminServices, setAdminServices] = useState([])
     }
   }
 
-  return (
-    <div style={{ overflow: "hidden" }}>
-      <div className="dashboard-main">
-        <div className="dashboard-body">
-          <div onClick={() => setShowDrop(false)}>
+ return (
+  <div style={{ overflow: "hidden" }}>
+    <div className="dashboard-main">
+      <div className="dashboard-body">
+
+        {/* SIDEBAR */}
+        <div onClick={() => setShowDrop(false)}>
+          <AdminAccDashsidebar admin={true} />
+        </div>
+
+        {/* MAIN CONTENT */}
+        <div className="dashboard-screens" onClick={() => resetpop()}>
           
+          <div style={{ height: "100%" }}>
+
+            {/* 🔥 PROFILE ROUTE HANDLER */}
+            {isProfilePage ? (
+              <Outlet />
+            ) : (
+              <>
+             {accsideNav === "CRM" ? (
+  <>
+    {/* TOP SEARCH */}
+    <MenuNav
+      showDrop={showDrop}
+      setShowDrop={setShowDrop}
+      searchTerm={search}
+      setSearchterm={setSearch}
+      searchPlaceholder="Search Clients..."
+    />
+
+    {/* CRM TABS */}
+    <div className="crm-tabs">
+      <button
+        className={crmMenu === "Clients" ? "active" : ""}
+        onClick={() => {
+          setcrmMenu("Clients");
+          setCurrentPage(1);
+        }}
+      >
+        Users ({crmUserData.length})
+      </button>
+
+      <button
+        className={crmMenu === "Partners" ? "active" : ""}
+        onClick={() => {
+          setcrmMenu("Partners");
+          setCurrentPage(1);
+        }}
+      >
+        Partners
+      </button>
+
+     
+    </div>
+
+{/* USERS TABLE */}
+{crmMenu === "Clients" && (
+  <>
+    {/* TABLE HEADER */}
+    <div className="crm-tab" style={{ padding: "10px 35px" }}>
+      <div className="crm-each-col" style={{ width: "20%" }}>Name</div>
+      <div className="crm-each-col" style={{ width: "30%" }}>Email</div>
+      <div className="crm-each-col" style={{ width: "15%" }}>Country</div>
+      <div className="crm-each-col" style={{ width: "20%" }}>Phone</div>
+      <div className="crm-each-col" style={{ width: "15%" }}>Profile Level</div>
+    </div>
+
+    {/* TABLE BODY */}
+    <div className="users-alldata">
+      {isClientLoading ? (
+        Array(8).fill("").map((_, i) => (
+          <div className="each-userData" key={i}>
+            <Skeleton width={200} height={20} />
           </div>
-          <div className="dashboard-screens" onClick={() => resetpop()}>
-            <div style={{ height: "100%" }}>
-              {accsideNav === "CRM" ? (
-                <>
-                  <MenuNav 
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder={
-                        crmMenu === "Followers"
-                            ? "Search Followers.."
-                            : crmMenu === "Purchases"
-                            ? "Search Purchases.."
-                            : crmMenu === "Users"
-                            ? "Search Users.."
-                            : "Search Clients..."
-                      }
-                      />
-                  <div className="crm-main" onClick={() => setShowDrop(false)}>
-                    <div
-                      className="crm-all-menu"
-                      style={{ padding: "12px 35px" }}
-                    >
-                    
+        ))
+      ) : crmClientData.length ? (
+        crmClientData.map((u, i) => (
+          <div className="each-userData" key={i}>
+            <div style={{ width: "20%" }}>{u?.name || "—"}</div>
+            <div style={{ width: "30%", textTransform: "none" }}>{u?.email}</div>
+            <div style={{ width: "15%" }}>{u?.country || "—"}</div>
+            <div style={{ width: "20%" }}>{u?.phoneNumber || "—"}</div>
+            <div style={{ width: "15%" }}>{u?.user_level || "—"}</div>
+          </div>
+        ))
+      ) : (
+        <div className="no-data">No Users Found</div>
+      )}
+    </div>
+  </>
+)}
 
-                      <div
-                        className="crm-each-menu"
-                        style={{
-                          display: crmMenu === "Clients" ? "" : "none",
-                          background:
-                            crmMenu === "Clients"
-                              ? "rgba(241, 241, 241, 0.5)"
-                              : "",
-                          fontWeight: crmMenu === "Clients" ? "700" : "",
-                          marginLeft:"0px"
-                        }}
-                        onClick={() => {
-                          setcrmMenu("Clients");
-                          setSearch("");
-                        }}
-                      >
-                        Users ({crmClientData?.length})
-                      </div>
 
-                      <div
-                        className="crm-each-menu"
-                        style={{
-                          display: crmMenu !== "Clients" ? "" : "none",
-                          marginLeft:"0px"
-                        }}
-                        onClick={() => {
-                          setcrmMenu("Clients");
-                          setSearch("");
-                        }}
-                      >
-                        Users
-                      </div>
+{/* PARTNERS TABLE */}
+{crmMenu === "Partners" && (
+  <>
+    {/* TABLE HEADER */}
+    <div className="crm-tab" style={{ padding: "10px 35px" }}>
+      <div className="crm-each-col" style={{ width: "25%" }}>Business</div>
+      <div className="crm-each-col" style={{ width: "30%" }}>Email</div>
+      <div className="crm-each-col" style={{ width: "15%" }}>Country</div>
+      <div className="crm-each-col" style={{ width: "15%" }}>Type</div>
+      <div className="crm-each-col" style={{ width: "15%" }}>POC</div>
+    </div>
 
-                      <div
-                        className="crm-each-menu"
-                        style={{
-                          display: crmMenu === "Partners" ? "" : "none",
-                          background:
-                            crmMenu === "Partners"
-                              ? "rgba(241, 241, 241, 0.5)"
-                              : "",
-                          fontWeight: crmMenu === "Partners" ? "700" : "",
-                        }}
-                        onClick={() => {
-                          setcrmMenu("Partners");
-                          setSearch("");
-                        }}
-                      >
-                        Partners (<span>{partnerData?.length}</span>)
-                      </div>
-                      <div
-                        className="crm-each-menu"
-                        style={{
-                          display: crmMenu !== "Partners" ? "" : "none",
-                        }}
-                        onClick={() => {
-                          setcrmMenu("Partners");
-                          setSearch("");
-                        }}
-                      >
-                        Partners
-                      </div>
-                    </div>
-                    <div className="crm-all-box">
-                      {crmMenu === "Followers" ? (
-                        <>
-                          <div
-                            className="crm-follow-tab"
-                            style={{ padding: "10px 35px" }}
-                          >
-                            <div className="crm-follow-col1">Name</div>
-                            <div className="crm-follow-col2">
-                              Following Since
-                            </div>
-                          </div>
-                          <>
-                            {followData.length > 0 && !isLoading ? (
-                              <div className="follow-data-main">
-                                {followData
-                                  .filter((element) => {
-                                    return element.userEmail
-                                      .toLowerCase()
-                                      .startsWith(search.toLowerCase());
-                                  })
-                                  .map((each, i) => (
-                                    <div
-                                      className="follower-box"
-                                      style={{
-                                        background:
-                                          selectedFollower === each
-                                            ? "rgba(241, 241, 241, 0.5)"
-                                            : "",
-                                        padding: "22px 35px",
-                                        width: "100%",
-                                      }}
-                                      onClick={() => setSelectedFollower(each)}
-                                    >
-                                      <div className="follower-details">
-                                        <div>
-                                          <img
-                                            className="user-icon"
-                                            src={each.profile_img}
-                                            alt=""
-                                          />
-                                        </div>
-                                        <div>
-                                          <div className="follower-mail">
-                                            {each.username}
-                                          </div>
-                                          <div
-                                            className="follower-name"
-                                            style={{
-                                              textTransform: "lowercase",
-                                            }}
-                                          >
-                                            {each.userEmail}
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="follow-time">
-                                        {formatDate(each.timeStamp)}
-                                      </div>
-                                    </div>
-                                  ))}
-                              </div>
-                            ) : isLoading ? (
-                              <div className="follow-data-main">
-                                {[1, 2, 3, 4, 5, 6].map((each, i) => (
-                                  <div className="follower-box">
-                                    <div className="follower-details">
-                                      <div>
-                                        <Skeleton className="user-icon" />
-                                      </div>
-                                      <Skeleton
-                                        className="follower-mail"
-                                        style={{ width: "200px" }}
-                                      />
-                                    </div>
-                                    <Skeleton
-                                      className="follow-time"
-                                      style={{ width: "150px" }}
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              ""
-                            )}
-                          </>
-                        </>
-                      ) : crmMenu === "Partners" ? (
-                        <>
-                          <div className="crm-purchase-tab">
-                            <div style={{width:'20vw'}}>Business Name</div>
-                            <div style={{width:'25vw'}}>Email</div>
-                            <div style={{width:'15vw'}}>Country</div>
-                            <div style={{width:'20vw'}}>Type</div>
-                            <div style={{width:'20vw'}}>POC</div>
-                          </div>
-                          <div className="purchase-alldata">
-                            {!isPurchaseLoading && partnerData.length > 0 ? (
-                              <>
-                                {partnerData
-                                  ?.filter(
-                                    (item) =>
-                                      // item.businessName
-                                      //   .toLowerCase()
-                                      //   .startsWith(search.toLowerCase()) ||
-                                      item.email
-                                        .toLowerCase()
-                                        .startsWith(search.toLowerCase()) 
-                                  )
-                                  .map((each, i) => (
-                                    <div className="each-purchase">
-                                      <div style={{width:'20vw'}}>
-                                        <div className="each-purchase-head" style={{display:'flex', alignItems:'center'}}>
-                                          <img src={each?.logo} alt="" style={{width: '40px', height:'40px', borderRadius:'50%'}}/>
-                                         <span style={{paddingLeft:"10px"}}>{each.businessName}</span> 
-                                        </div>
-                                      </div>
-                                     <div  style={{width:'25vw'}}>{each?.email}</div>
-                                     <div  style={{width:'15vw'}}>{each?.country}</div>
-                                     <div  style={{width:'20vw'}}>{each?.type}</div>
-                                     <div  style={{width:'20vw'}}>{each?.firstName}&nbsp;{each?.lastName}</div>
-                                    </div>
-                                  ))}
-                              </>
-                            ) : isPurchaseLoading ? (
-                              <>
-                                {[1, 2, 3, 4, 5, 6].map((each) => (
-                                  <div className="each-purchase">
-                                    <div className="each-purchase-clients">
-                                      <Skeleton
-                                        className="each-purchase-head"
-                                        style={{ width: "150px" }}
-                                      />
-                                      <Skeleton
-                                        className="each-purchase-text"
-                                        style={{ width: "150px" }}
-                                      />
-                                    </div>
-                                    <div
-                                      className="each-purchase-services"
-                                      style={{ display: "flex" }}
-                                    >
-                                      <div className="each-product-iconbox">
-                                        <Skeleton className="each-product-icon" />
-                                      </div>
-                                      <div className="each-purchase-data">
-                                        <Skeleton
-                                          className="each-purchase-head"
-                                          style={{ width: "150px" }}
-                                        />
-                                        <Skeleton
-                                          className="each-purchase-text"
-                                          style={{ width: "150px" }}
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="each-purchase-receipt">
-                                      <Skeleton
-                                        className="each-purchase-head"
-                                        style={{ width: "150px" }}
-                                      />
-                                      <Skeleton
-                                        className="each-purchase-text"
-                                        style={{ width: "150px" }}
-                                      />
-                                    </div>
-                                    <div className="each-purchase-status">
-                                      <Skeleton
-                                        className="each-purchase-statustext"
-                                        style={{ width: "150px" }}
-                                      />
-                                    </div>
-                                  </div>
-                                ))}
-                              </>
-                            ) : (
-                              ""
-                            )}
-                          </div>
-                        </>
-                      ) : crmMenu === "Clients" ? (
-                        <>
-                          <div
-                            className="crm-tab"
-                            style={{ padding: "10px 35px" }}
-                          >
-                            <div
-                              className="crm-each-col"
-                              style={{ margin: "0", width: "25%" }}
-                            >
-                              Name
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                margin: "0",
-                                width: "30%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Email
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                margin: "0",
-                                width: "25%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Country
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                margin: "0",
-                                width: "25%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Phone Number
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                margin: "0",
-                                width: "25%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Profile Level
-                            </div>
-                          </div>
-                          <div className="clients-alldata">
-                            {isClientLoading
-                              ? Array(10)
-                                  .fill("")
-                                  .map((e, i) => {
-                                    return (
-                                      <div className="each-clientData" key={i}>
-                                        <div className="each-client-name">
-                                          <Skeleton width={150} height={30} />
-                                        </div>
-                                        <div className="each-client-email">
-                                          <Skeleton width={250} height={30} />
-                                        </div>
-                                      </div>
-                                    );
-                                  })
-                              : crmClientData
-                                  // ?.filter(
-                                  //   (item) =>
-                                  //     item?.name
-                                  //       .toLowerCase()
-                                  //       .startsWith(search?.toLowerCase()) ||
-                                  //     item?.email
-                                  //       .toLowerCase()
-                                  //       .startsWith(search?.toLowerCase())
-                                  // )
-                                  ?.map((e, i) => {
-                                    return (
-                                      <div className="each-clientData" key={i}>
-                                        <div className="each-client-name">
-                                          {e?.name}
-                                        </div>
-                                        <div className="each-client-new">
-                                          {e?.email}
-                                        </div>
-                                        <div className="each-client-email">
-                                          {e?.country}
-                                        </div>
-                                        <div className="each-client-email">
-                                          {e?.phoneNumber}
-                                        </div>
-                                        <div className="each-client-email">
-                                          {e?.user_level}
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                          </div>
-                        </>
-                      ) : crmMenu === "Users" ? (
-                        <>
-                          <div
-                            className="crm-tab"
-                            style={{ padding: "10px 35px" }}
-                          >
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                textAlign: "left",
-                                margin: "0",
-                                width: "15%",
-                              }}
-                            >
-                              Name
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                textAlign: "left",
-                                margin: "0",
-                                width: "20%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Email
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                textAlign: "left",
-                                margin: "0",
-                                width: "15%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              User Since
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                textAlign: "left",
-                                margin: "0",
-                                width: "25%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Affiliate
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                textAlign: "left",
-                                margin: "0",
-                                width: "25%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Profile ID
-                            </div>
-                          </div>
-                          <div className="users-alldata">
-                            {isUserLoading
-                              ? Array(10)
-                                  .fill("")
-                                  .map((e, i) => {
-                                    return (
-                                      <div className="each-userData" key={i}>
-                                        <div
-                                          className="each-user-email"
-                                          style={{ width: "15%" }}
-                                        >
-                                          <Skeleton width={100} height={25} />
-                                        </div>
-                                        <div className="each-user-email">
-                                          <Skeleton width={100} height={25} />
-                                        </div>
-                                        <div
-                                          className="each-user-email"
-                                          style={{ width: "15%" }}
-                                        >
-                                          <Skeleton width={100} height={25} />
-                                        </div>
-                                        <div
-                                          className="each-user-email"
-                                          style={{
-                                            width: "25%",
-                                          }}
-                                        >
-                                          <Skeleton width={100} height={25} />
-                                        </div>
-                                        <div
-                                          className="each-user-email"
-                                          style={{
-                                            width: "25%",
-                                          }}
-                                        >
-                                          <Skeleton width={200} height={25} />
-                                        </div>
-                                      </div>
-                                    );
-                                  })
-                              : crmUserData
-                                  ?.filter(
-                                    (item) =>
-                                      item.name
-                                        .toLowerCase()
-                                        .startsWith(search.toLowerCase()) ||
-                                      item.email
-                                        .toLowerCase()
-                                        .startsWith(search.toLowerCase())
-                                  )
-                                  .map((e, i) => {
-                                    return (
-                                      <div className="each-userData" key={i}>
-                                        <div
-                                          className="each-user-email"
-                                          style={{ width: "15%" }}
-                                        >
-                                          {e?.name}
-                                        </div>
-                                        <div
-                                          className="each-user-email"
-                                          style={{
-                                            textTransform: "none",
-                                            paddingLeft: "1rem",
-                                          }}
-                                        >
-                                          {e?.email}
-                                        </div>
-                                        <div
-                                          className="each-user-email"
-                                          style={{
-                                            width: "15%",
-                                            paddingLeft: "1rem",
-                                          }}
-                                        >
-                                          {e?.naavi_timestamp
-                                            ? customDateFormat(
-                                                new Date(e.naavi_timestamp)
-                                              )
-                                            : ""}
-                                        </div>
-                                        <div
-                                          className="each-user-email"
-                                          style={{
-                                            width: "25%",
-                                            textTransform: "none",
-                                            paddingLeft: "1rem",
-                                          }}
-                                        >
-                                          {e?.ref_affiliate}
-                                        </div>
-                                        <div
-                                          className="each-user-email"
-                                          style={{
-                                            width: "25%",
-                                            textTransform: "none",
-                                            paddingLeft: "1rem",
-                                          }}
-                                        >
-                                          {e?.naavi_profile_id}
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                          </div>
-                        </>
-                      ) : (
-                        ""
-                      )}
-                    </div>
-                  </div>
-                </>
-              ) : accsideNav === "My Services" ? (
-                <>
-                  <MenuNav 
+    {/* TABLE BODY */}
+    <div className="users-alldata">
+      {isPurchaseLoading ? (
+        Array(8).fill("").map((_, i) => (
+          <div className="each-userData" key={i}>
+            <Skeleton width={200} height={20} />
+          </div>
+        ))
+      ) : partnerData.length ? (
+        partnerData.map((p, i) => (
+          <div className="each-userData" key={i}>
+            <div style={{ width: "25%", display: "flex", alignItems: "center" }}>
+              <img
+                src={p?.logo}
+                alt=""
+                style={{ width: 32, height: 32, borderRadius: "50%", marginRight: 10 }}
+              />
+              {p?.businessName}
+            </div>
+            <div style={{ width: "30%", textTransform: "none" }}>{p?.email}</div>
+            <div style={{ width: "15%" }}>{p?.country || "—"}</div>
+            <div style={{ width: "15%" }}>{p?.type || "—"}</div>
+            <div style={{ width: "15%" }}>
+              {p?.firstName} {p?.lastName}
+            </div>
+          </div>
+        ))
+      ) : (
+        <div className="no-data">No Partners Found</div>
+      )}
+    </div>
+  </>
+)}
+
+
+   {/* PAGINATION – USERS ONLY */}
+{crmMenu === "Clients" && totalPages > 1 && (
+  <div className="crm-pagination">
+    <button
+      className="page-btn"
+      disabled={currentPage === 1}
+      onClick={() => setCurrentPage((p) => p - 1)}
+    >
+      ‹ Prev
+    </button>
+
+    {Array.from({ length: totalPages }, (_, i) => i + 1)
+      .filter(
+        (page) =>
+          page === 1 ||
+          page === totalPages ||
+          Math.abs(page - currentPage) <= 1
+      )
+      .map((page, i, arr) => (
+        <React.Fragment key={page}>
+          {i > 0 && page - arr[i - 1] > 1 && <span className="dots">…</span>}
+          <button
+            className={`page-btn ${currentPage === page ? "active" : ""}`}
+            onClick={() => setCurrentPage(page)}
+          >
+            {page}
+          </button>
+        </React.Fragment>
+      ))}
+
+    <button
+      className="page-btn"
+      disabled={currentPage === totalPages}
+      onClick={() => setCurrentPage((p) => p + 1)}
+    >
+      Next ›
+    </button>
+  </div>
+)}
+
+  </>
+) : accsideNav === "My Services" ? (
+  /* your existing My Services block */
+
+                  <>
+                    <MenuNav
                       showDrop={showDrop}
                       setShowDrop={setShowDrop}
                       searchTerm={search}
                       setSearchterm={setSearch}
                       searchPlaceholder="Search Services..."
-                   />
-                  <div
-                    className="services-main"
-                    onClick={() => setShowDrop(false)}
-                  >
-                    <div
-                      className="services-all-menu"
-                      style={{ borderBottom: "0.5px solid #E5E5E5" }}
-                    >
-                      <div
-                        className="services-each-menu"
-                        style={{
-                          display: servicesMenu === "Services" ? "" : "none",
-                          background:
-                            servicesMenu === "Services"
-                              ? "rgba(241, 241, 241, 0.5)"
-                              : "",
-                          fontWeight: servicesMenu === "Services" ? "700" : "",
-                        }}
-                        onClick={() => {
-                          setservicesMenu("Services");
-                          setSearch("");
-                        }}
-                      >
-                        Services (<span>{servicesAcc.length}</span>)
-                      </div>
-                      <div
-                        className="services-each-menu"
-                        style={{
-                          display: servicesMenu !== "Services" ? "" : "none",
-                        }}
-                        onClick={() => {
-                          setservicesMenu("Services");
-                          setSearch("");
-                        }}
-                      >
-                        Services
-                      </div>
-                      <div
-                        className="services-each-menu"
-                        style={{
-                          background:
-                            servicesMenu === "With CompPlan"
-                              ? "rgba(241, 241, 241, 0.5)"
-                              : "",
-                          fontWeight:
-                            servicesMenu === "With CompPlan" ? "700" : "",
-                        }}
-                        onClick={() => {
-                          setservicesMenu("With CompPlan");
-                          setSearch("");
-                        }}
-                      >
-                        With CompPlan
-                      </div>
-                    </div>
-                    <div>
-                      <>
-                        {servicesMenu === "Services" ? (
-                          <div className="service-body">
-                            <div className="service-body-left">
-                              <>
-                                {isServicesAcc ? (
-                                  <>
-                                    {[1, 2, 3, 4, 5].map((each, i) => (
-                                      <div className="each-service-map" key={i}>
-                                        <div className="dot-box">
-                                          <img
-                                            className="dot-icon"
-                                            src={threedot}
-                                            alt=""
-                                          />
-                                        </div>
-                                        <div>
-                                          <Skeleton
-                                            className="each-service-img"
-                                            style={{ marginBottom: "10px" }}
-                                          />
-                                        </div>
-                                        <Skeleton
-                                          className="serv-price"
-                                          style={{
-                                            width: "100px",
-                                            marginBottom: "10px",
-                                          }}
-                                        />
-                                        <Skeleton
-                                          className="serv-subtext"
-                                          style={{
-                                            width: "200px",
-                                            height: "50px",
-                                          }}
-                                        />
-                                        <div>
-                                          <Skeleton
-                                            className="serv-price"
-                                            style={{ width: "100px" }}
-                                          />
-                                        </div>
+                    />
 
-                                        {/* {`${(allCurrencies.filter((item) => item?.coinSymbol === each?.billingType[`${Object.keys(each?.billingType)[0]}`].coin))[0]}`} */}
-                                      </div>
-                                    ))}
-                                  </>
-                                ) : servicesAcc?.length > 0 ? (
-                                  <>
-                                    {servicesAcc
-                                      .filter((item) =>
-                                        item.product_name
-                                          .toLowerCase()
-                                          .startsWith(search.toLowerCase())
-                                      )
-                                      .map((each, i) => (
-                                        <div
-                                          className="each-service-map"
-                                          key={i}
-                                        >
-                                          <div
-                                            className="dot-box"
-                                            onClick={() => {
-                                              setServiceActionEnabled(true);
-                                              setSelectedService(each);
-                                            }}
-                                          >
-                                            <img
-                                              className="dot-icon"
-                                              src={threedot}
-                                              alt=""
-                                            />
-                                          </div>
-                                          <div>
-                                            <img
-                                              className="each-service-img"
-                                              src={each.product_icon}
-                                              alt=""
-                                            />
-                                          </div>
-                                          <div className="serv-title">
-                                            {each.product_name}
-                                          </div>
-                                          <div className="serv-subtext">
-                                            {each.sub_text}
-                                          </div>
-                                          <div>
-                                            {each.billing_cycle !== undefined &&
-                                            each.billing_cycle !== null &&
-                                            Object.keys(
-                                              each.billing_cycle
-                                            )[0] === "monthly" ? (
-                                              <div className="serv-price">
-                                                {
-                                                  allCurrencies?.filter(
-                                                    (item) =>
-                                                      item?.coinSymbol ===
-                                                      each?.billing_cycle
-                                                        ?.monthly?.coin
-                                                  )[0]?.symbol
-                                                }{" "}
-                                                {
-                                                  each.billing_cycle.monthly
-                                                    .price
-                                                }{" "}
-                                                /{" "}
-                                                <span
-                                                  style={{ fontWeight: "300" }}
-                                                >
-                                                  Monthly
-                                                </span>
-                                              </div>
-                                            ) : each.billing_cycle !==
-                                                undefined &&
-                                              each.billing_cycle !== null &&
-                                              Object.keys(
-                                                each.billing_cycle
-                                              )[0] === "lifetime" ? (
-                                              <div className="serv-price">
-                                                {
-                                                  allCurrencies?.filter(
-                                                    (item) =>
-                                                      item?.coinSymbol ===
-                                                      each?.billing_cycle
-                                                        ?.lifetime?.coin
-                                                  )[0]?.symbol
-                                                }{" "}
-                                                {
-                                                  each?.billing_cycle?.lifetime
-                                                    ?.price
-                                                }{" "}
-                                                /{" "}
-                                                <span
-                                                  style={{ fontWeight: "300" }}
-                                                >
-                                                  Lifetime
-                                                </span>
-                                              </div>
-                                            ) : (
-                                              ""
-                                            )}
-                                          </div>
+                    {/* 🔥 SERVICES LIST - ADDED THIS SECTION */}
+                    <div className="services-container" style={{ padding: "20px" }}>
+                      {/* Status Filter Tabs */}
+                      <div className="status-tabs" style={{ marginBottom: "20px", display: "flex", gap: "10px" }}>
+                        <button 
+                          onClick={() => setServiceStatus("active")}
+                          style={{
+                            padding: "8px 16px",
+                            background: serviceStatus === "active" ? "#007bff" : "#e9ecef",
+                            color: serviceStatus === "active" ? "white" : "#495057",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer"
+                          }}
+                        >
+                          Active Services
+                        </button>
+                        <button 
+                          onClick={() => setServiceStatus("inactive")}
+                          style={{
+                            padding: "8px 16px",
+                            background: serviceStatus === "inactive" ? "#007bff" : "#e9ecef",
+                            color: serviceStatus === "inactive" ? "white" : "#495057",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer"
+                          }}
+                        >
+                          Inactive Services
+                        </button>
+                      </div>
 
-                                          {/* {`${(allCurrencies.filter((item) => item?.coinSymbol === each?.billingType[`${Object.keys(each?.billingType)[0]}`].coin))[0]}`} */}
-                                        </div>
-                                      ))}
-                                  </>
-                                ) : (
-                                  <center style={{height:"40vh", width:"100%", paddingTop:"20vh"}}>
-                                      You Don't Have Not Added Any Services Yet
-                                  </center>
-                                )}
-                              </>
-                            </div>
-                            {/* <div className="service-body-right">
-                          <div className="service-box1">
-                          <div className="service-right-title">Country</div>
-                          <div className="service-right-btn">See All</div>
-                          </div>
-                          <div className="service-box1">
-                          <div className="service-right-title">Country</div>
-                          <div className="service-right-btn">See All</div>
-                          </div>
-                          <div className="service-box1">
-                          <div className="service-right-title">Country</div>
-                          <div className="service-right-btn">See All</div>
-                          </div>
-                        </div> */}
-                          </div>
-                        ) : (
-                          <div className="service-body">
-                            <div className="service-body-left">
-                              {gettingData ? (
-                                <>
-                                  {[1, 2, 3, 4, 5].map((each, i) => (
-                                    <div className="each-service-map" key={i}>
-                                      <div className="dot-box">
-                                        <img
-                                          className="dot-icon"
-                                          src={threedot}
-                                          alt=""
-                                        />
-                                      </div>
-                                      <div>
-                                        <Skeleton
-                                          className="each-service-img"
-                                          style={{ marginBottom: "10px" }}
-                                        />
-                                      </div>
-                                      <Skeleton
-                                        className="serv-price"
-                                        style={{
-                                          width: "100px",
-                                          marginBottom: "10px",
-                                        }}
-                                      />
-                                      <Skeleton
-                                        className="serv-subtext"
-                                        style={{
-                                          width: "200px",
-                                          height: "50px",
-                                        }}
-                                      />
-                                      <div>
-                                        <Skeleton
-                                          className="serv-price"
-                                          style={{ width: "100px" }}
-                                        />
-                                      </div>
-
-                                      {/* {`${(allCurrencies.filter((item) => item?.coinSymbol === each?.billingType[`${Object.keys(each?.billingType)[0]}`].coin))[0]}`} */}
-                                    </div>
-                                  ))}
-                                </>
-                              ) : withCompPlanData.length > 0 ? (
-                                <>
-                                  {withCompPlanData
-                                    ?.filter((item) =>
-                                      item?.product?.product_name
-                                        ?.toLowerCase()
-                                        ?.startsWith(search?.toLowerCase())
-                                    )
-                                    ?.map((each, i) => (
-                                      <div
-                                        className="each-service-map"
-                                        key={i}
-                                        style={{ height: "250px" }}
-                                      >
-                                        <div
-                                          className="dot-box"
-                                          // onClick={() => {
-                                          //   setServiceActionEnabled(true);
-                                          //   setSelectedService(each?.product);
-                                          // }}
-                                        >
-                                          <img
-                                            className="dot-icon"
-                                            src={threedot}
-                                            alt=""
+                      {/* Services Table */}
+                      {isUserLoading ? (
+                        <Skeleton count={5} height={60} />
+                      ) : adminServices.length > 0 ? (
+                        <div className="services-table" style={{ width: "100%", overflowX: "auto" }}>
+                          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                            <thead>
+                              <tr style={{ backgroundColor: "#f8f9fa", borderBottom: "2px solid #dee2e6" }}>
+                                <th style={{ padding: "12px", textAlign: "left", fontWeight: "600" }}>Service Name</th>
+                                <th style={{ padding: "12px", textAlign: "left", fontWeight: "600" }}>Billing Type</th>
+                                <th style={{ padding: "12px", textAlign: "left", fontWeight: "600" }}>Price</th>
+                                <th style={{ padding: "12px", textAlign: "left", fontWeight: "600" }}>Currency</th>
+                                <th style={{ padding: "12px", textAlign: "left", fontWeight: "600" }}>Status</th>
+                                <th style={{ padding: "12px", textAlign: "left", fontWeight: "600" }}>Partner</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {adminServices.map((service) => {
+                                const billingType = service.billing_cycle ? 
+                                  (service.billing_cycle.lifetime ? "One Time" : 
+                                   service.billing_cycle.monthly ? "Monthly" : 
+                                   service.billing_cycle.annual ? "Annual" : "Custom") : "N/A";
+                                
+                                const price = service.billing_cycle ? 
+                                  (service.billing_cycle.lifetime?.price || 
+                                   service.billing_cycle.monthly?.price || 
+                                   service.billing_cycle.annual?.price || 0) : 0;
+                                
+                                const currency = service.billing_cycle ? 
+                                  (service.billing_cycle.lifetime?.coin || 
+                                   service.billing_cycle.monthly?.coin || 
+                                   service.billing_cycle.annual?.coin || "INR") : "INR";
+                                
+                                return (
+                                  <tr key={service._id} style={{ borderBottom: "1px solid #e9ecef", backgroundColor: "white" }}>
+                                    <td style={{ padding: "12px" }}>
+                                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                        {service.product_icon && (
+                                          <img 
+                                            src={service.product_icon} 
+                                            alt={service.product_name} 
+                                            style={{ width: "30px", height: "30px", borderRadius: "4px", objectFit: "cover" }}
                                           />
-                                        </div>
+                                        )}
                                         <div>
-                                          <img
-                                            className="each-service-img"
-                                            src={each?.product?.product_icon}
-                                            alt=""
-                                          />
-                                        </div>
-                                        <div className="serv-title">
-                                          {each?.product?.product_name}
-                                        </div>
-                                        <div className="serv-subtext">
-                                          {each?.product?.sub_text}
-                                        </div>
-                                        <div>
-                                          {each?.product?.billing_cycle !==
-                                            undefined &&
-                                          each?.product?.billing_cycle !==
-                                            null &&
-                                          Object.keys(
-                                            each?.product?.billing_cycle
-                                          )[0] === "monthly" ? (
-                                            <div className="serv-price">
-                                              {
-                                                allCurrencies?.filter(
-                                                  (item) =>
-                                                    item?.coinSymbol ===
-                                                    each?.product?.billing_cycle
-                                                      ?.monthly.coin
-                                                )[0].symbol
-                                              }{" "}
-                                              {
-                                                each?.product?.billing_cycle
-                                                  ?.monthly?.price
-                                              }{" "}
-                                              /{" "}
-                                              <span
-                                                style={{ fontWeight: "300" }}
-                                              >
-                                                Monthly
-                                              </span>
+                                          <div style={{ fontWeight: "500" }}>{service.product_name || service.name}</div>
+                                          {service.sub_text && (
+                                            <div style={{ fontSize: "12px", color: "#6c757d", marginTop: "2px" }}>
+                                              {service.sub_text}
                                             </div>
-                                          ) : each?.product?.billing_cycle !==
-                                              undefined &&
-                                            each?.product?.billing_cycle !==
-                                              null &&
-                                            Object.keys(
-                                              each?.product?.billing_cycle
-                                            )[0] === "lifetime" ? (
-                                            <div className="serv-price">
-                                              {
-                                                allCurrencies?.filter(
-                                                  (item) =>
-                                                    item?.coinSymbol ===
-                                                    each?.product?.billing_cycle
-                                                      ?.lifetime.coin
-                                                )[0].symbol
-                                              }{" "}
-                                              {
-                                                each?.product?.billing_cycle
-                                                  ?.lifetime.price
-                                              }{" "}
-                                              /{" "}
-                                              <span
-                                                style={{ fontWeight: "300" }}
-                                              >
-                                                Lifetime
-                                              </span>
-                                            </div>
-                                          ) : (
-                                            ""
                                           )}
                                         </div>
-
-                                        {/* {`${(allCurrencies.filter((item) => item?.coinSymbol === each?.billingType[`${Object.keys(each?.billingType)[0]}`].coin))[0]}`} */}
                                       </div>
-                                    ))}
-                                </>
-                              ) : (
-                                ""
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </>
+                                    </td>
+                                    <td style={{ padding: "12px" }}>{billingType}</td>
+                                    <td style={{ padding: "12px", fontWeight: "500" }}>
+                                      {price.toLocaleString('en-IN')}
+                                    </td>
+                                    <td style={{ padding: "12px" }}>{currency}</td>
+                                    <td style={{ padding: "12px" }}>
+                                      <span style={{
+                                        padding: "4px 8px",
+                                        borderRadius: "12px",
+                                        fontSize: "12px",
+                                        fontWeight: "500",
+                                        backgroundColor: serviceStatus === "active" ? "#d4edda" : "#f8d7da",
+                                        color: serviceStatus === "active" ? "#155724" : "#721c24"
+                                      }}>
+                                        {serviceStatus === "active" ? "Active" : "Inactive"}
+                                      </span>
+                                    </td>
+                                    <td style={{ padding: "12px" }}>{service.revenue_account || "N/A"}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div
+                          style={{
+                            height: "calc(100% - 70px)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "1.2rem",
+                            fontWeight: "500",
+                            color: "#6c757d"
+                          }}
+                        >
+                          No Services Found
+                        </div>
+                      )}
                     </div>
-                  </div>
-                </>
-              ) : accsideNav === "Calendar" ? (
-                <>
-                 <MenuNav 
+                  </>
+                ) : accsideNav === "Calendar" ? (
+                  <>
+                    <MenuNav
                       showDrop={showDrop}
                       setShowDrop={setShowDrop}
                       searchTerm={search}
                       setSearchterm={setSearch}
-                      searchPlaceholder="Search Services..."
-                   />
-                  <div
-                    className="services-main"
-                    onClick={() => setShowDrop(false)}
-                  >
-                    <EarningCalendar />
-                  </div>
-                </>
-              ) : accsideNav === "Wallet" ? (
-                transactionSelected ? (
-                  <>
-                   <MenuNav 
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      // searchTerm={search}
-                      // setSearchterm={setSearch}
                       searchPlaceholder="Search..."
-                   />
-                    <div
-                      className="services-main"
-                      style={{ height: "calc(100% - 70px)" }}
-                      onClick={() => setShowDrop(false)}
-                    >
-                      <div
-                        className="services-all-menu"
-                        style={{ borderBottom: "0.5px solid #E5E5E5" }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            width: "calc(100% - 110px)",
-                          }}
-                        >
-                          <div
-                            className="services-each-menu"
-                            style={{
-                              background:
-                                coinType === "fiat"
-                                  ? "rgba(241, 241, 241, 0.5)"
-                                  : "",
-                              fontWeight: coinType === "fiat" ? "700" : "",
-                            }}
-                            onClick={() => {
-                              setCoinType("fiat");
-                              setSearch("");
-                            }}
-                          >
-                            Forex
-                          </div>
-
-                          {/* <div
-                          className="services-each-menu"
-                          style={{
-                            background:
-                              coinType === "crypto"
-                                ? "rgba(241, 241, 241, 0.5)"
-                                : "",
-                            fontWeight: coinType === "crypto" ? "700" : "",
-                          }}
-                          onClick={() => {
-                            setCoinType("crypto");
-                            setSearch("");
-                          }}
-                        >
-                          Crypto
-                        </div> */}
-                        </div>
-
-                        <div
-                          style={{
-                            fontWeight: "600",
-                            textDecorationLine: "underline",
-                            cursor: "pointer",
-                            fontSize: "0.9rem",
-                          }}
-                          onClick={() => {
-                            setTransactionSelected(false);
-                            setTransactionData([]);
-                            setSelectedCoin({});
-                          }}
-                        >
-                          Back
-                        </div>
-                      </div>
-                      <VaultTransactions />
-                    </div>
+                    />
+                    <EarningCalendar />
                   </>
-                ) : (
+                ) : accsideNav === "Wallet" ? (
                   <>
-                    <MenuNav 
+                    <MenuNav
                       showDrop={showDrop}
                       setShowDrop={setShowDrop}
                       searchTerm={search}
                       setSearchterm={setSearch}
                       searchPlaceholder="Search Wallet..."
-                   />
-                    <div
-                      className="services-main"
-                      style={{ height: "calc(100% - 70px)" }}
-                      onClick={() => setShowDrop(false)}
-                    >
-                      <div
-                        className="services-all-menu"
-                        style={{ borderBottom: "0.5px solid #E5E5E5" }}
-                      >
-                        <div style={{ display: "flex", width: "83%" }}>
-                          {/* <div
-                          className="services-each-menu"
-                          style={{
-                            background:
-                              coinType === "crypto"
-                                ? "rgba(241, 241, 241, 0.5)"
-                                : "",
-                            fontWeight: coinType === "crypto" ? "700" : "",
-                          }}
-                          onClick={() => {
-                            setCoinType("crypto");
-                            setSearch("");
-                          }}
-                        >
-                          Crypto
-                        </div> */}
-
-                          <div
-                            className="services-each-menu"
-                            style={{
-                              background:
-                                coinType === "fiat"
-                                  ? "rgba(241, 241, 241, 0.5)"
-                                  : "",
-                              fontWeight: coinType === "fiat" ? "700" : "",
-                            }}
-                            onClick={() => {
-                              setCoinType("fiat");
-                              setSearch("");
-                            }}
-                          >
-                            Forex
-                          </div>
-                        </div>
-
-                        <div style={{ display: "flex" }}>
-                          <Toggle
-                            toggle={balanceToggle}
-                            setToggle={setBalanceToggle}
-                            coinType={coinType}
-                          />
-                        </div>
-                      </div>
-                      <Vaults searchedValue={search} />
-                    </div>
+                    />
+                    {/* EXISTING WALLET CONTENT */}
                   </>
-                )
-              ) : accsideNav === "Tasks" ? (
-                <>
-                  <MenuNav 
+                ) : accsideNav === "Tasks" ? (
+                  <>
+                    <MenuNav
                       showDrop={showDrop}
                       setShowDrop={setShowDrop}
                       searchTerm={search}
                       setSearchterm={setSearch}
                       searchPlaceholder="Search..."
-                   />
-                  <div
-                    className="services-main"
-                    style={{ height: "calc(100% - 70px)" }}
-                    onClick={() => setShowDrop(false)}
-                  >
+                    />
                     <Tasks />
-                  </div>
-                </>
-              ) : accsideNav === "Paths" ? (
-                <>
-                  <MenuNav 
+                  </>
+                ) : accsideNav === "Paths" ? (
+                  <>
+                    <MenuNav
                       showDrop={showDrop}
                       setShowDrop={setShowDrop}
                       searchTerm={search}
                       setSearchterm={setSearch}
-                      searchPlaceholder={
-                        mypathsMenu === "Paths"
-                            ? "Search For Paths..."
-                            : "Search For Steps..."
-                      }
-                   />
-                  <div
-                    className="services-main"
-                    style={{ height: "calc(100% - 70px)" }}
-                    onClick={() => setShowDrop(false)}
-                  >
-                    <MyPathsAdmin search={search} admin={true} fetchAllServicesAgain={fetchAllServicesAgain}/>
-                  </div>
-                </>
-              ) : accsideNav === "Steps" ? (
-                <>
-                 <MenuNav 
+                      searchPlaceholder="Search Paths..."
+                    />
+                    <MyPathsAdmin
+                      search={search}
+                      admin={true}
+                      fetchAllServicesAgain={fetchAllServicesAgain}
+                    />
+                  </>
+                ) : accsideNav === "Universities" ? (
+                  <>
+                    <MenuNav
                       showDrop={showDrop}
                       setShowDrop={setShowDrop}
                       searchTerm={search}
                       setSearchterm={setSearch}
-                      searchPlaceholder={
-                        mypathsMenu === "Paths"
-                          ? "Search For Paths..."
-                          : "Search For Steps..."
-                      }
-                   />
-                  <div
-                    className="services-main"
-                    style={{ height: "calc(100% - 70px)" }}
-                    onClick={() => setShowDrop(false)}
-                  >
-                    <MyStepsAdmin search={search} admin={true} fetchAllServicesAgain={fetchAllServicesAgain} stepDataPage={true}/>
-                  </div>
-                </>
-
-              )
-            : accsideNav === "Universities" ? (
-  <>
-    <MenuNav 
-      showDrop={showDrop}
-      setShowDrop={setShowDrop}
-      searchTerm={search}
-      setSearchterm={setSearch}
-      searchPlaceholder="Search Universities..."
-    />
-    
-    <div
-      className="services-main"
-      style={{ height: "calc(100% - 70px)" }}
-      onClick={() => setShowDrop(false)}
-    >
-      <UniversitiesAdmin search={search} />
-    </div>
-  </>
-)
-
-
-              
-              : accsideNav === "Services" ?(
-                <>
-                <MenuNav 
+                      searchPlaceholder="Search Universities..."
+                    />
+                    {/* EXISTING UNIVERSITY CONTENT */}
+                  </>
+                ) : accsideNav === "Steps" ? (
+                  <>
+                    <MenuNav
                       showDrop={showDrop}
                       setShowDrop={setShowDrop}
                       searchTerm={search}
                       setSearchterm={setSearch}
-                      searchPlaceholder={
-                        crmMenu === "Followers"
-                          ? "Search Followers.."
-                          : crmMenu === "Purchases"
-                          ? "Search Purchases.."
-                          : crmMenu === "Users"
-                          ? "Search Users.."
-                          : "Search Clients..."
-                      }
-                   />
-                <div className="crm-main" onClick={() => setShowDrop(false)}>
-                  <div
-                    className="crm-all-menu"
-                    style={{ padding: "12px 35px" }}
-                  >
-                    
-
-                    <div
-                      className="crm-each-menu"
-                      style={{
-                        display: crmMenu === "Active Services" ? "" : "none",
-                        background:
-                         crmMenu === "Active Services"
-                            ? "rgba(241, 241, 241, 0.5)"
-                            : "",
-                        fontWeight:crmMenu === "Active Services" ? "700" : "",
-                        marginLeft:"0px"
-                      }}
-                      onClick={() => {
-                        setcrmMenu("Active Services");
-                        setSearch("");
-                      }}
-                    >
-                      Active Services ({crmClientData?.length})
-                    </div>
-
-                    <div
-                      className="crm-each-menu"
-                      style={{
-                        display: crmMenu !== "Active Services" ? "" : "none",
-                        marginLeft:"0px"
-                      }}
-                      onClick={() => {
-                        setcrmMenu("Active Services");
-                        setSearch("");
-                      }}
-                    >
-                      Active Services
-                    </div>
-
-                    <div
-                      className="crm-each-menu"
-                      style={{
-                        display: crmMenu === "Inactive Services" ? "" : "none",
-                        background:
-                          crmMenu === "Inactive Services"
-                            ? "rgba(241, 241, 241, 0.5)"
-                            : "",
-                        fontWeight: crmMenu === "Inactive Services" ? "700" : "",
-                        marginLeft:"0px"
-                      }}
-                      onClick={() => {
-                        setcrmMenu("Inactive Services");
-                        setSearch("");
-                      }}
-                    >
-                      Inactive Services ({crmClientData?.length})
-                    </div>
-
-                    <div
-                      className="crm-each-menu"
-                      style={{
-                        display: crmMenu !== "Inactive Services" ? "" : "none",
-                        marginLeft:"0px"
-                      }}
-                      onClick={() => {
-                        setcrmMenu("Inactive Services");
-                        setSearch("");
-                      }}
-                    >
-                      Inactive Services
-                    </div>
-                    
-                  </div>
-                  <div className="crm-all-box">
-                    
-                      <>
-                        <div
-                          className="crm-tab"
-                          style={{ padding: "10px 35px" }}
-                        >
-                          <div
-                            className="crm-each-col"
-                            style={{
-                              textAlign: "left",
-                              margin: "0",
-                              width: "25%",
-                            }}
-                          >
-                            Name
-                          </div>
-                          <div
-                            className="crm-each-col"
-                            style={{
-                              textAlign: "left",
-                              margin: "0",
-                              width: "20%",
-                              paddingLeft: "1rem",
-                            }}
-                          >
-                            Billing Frequency
-                          </div>
-                          <div
-                            className="crm-each-col"
-                            style={{
-                              textAlign: "left",
-                              margin: "0",
-                              width: "20%",
-                              paddingLeft: "1rem",
-                            }}
-                          >
-                            Billing Amount
-                          </div>
-                          <div
-                            className="crm-each-col"
-                            style={{
-                              textAlign: "left",
-                              margin: "0",
-                              width: "15%",
-                              paddingLeft: "1rem",
-                            }}
-                          >
-                           Currency
-                          </div>
-                          <div
-                            className="crm-each-col"
-                            style={{
-                              textAlign: "left",
-                              margin: "0",
-                              width: "25%",
-                              paddingLeft: "1rem",
-                            }}
-                          >
-                            Partner
-                          </div>
-                        </div>
-                        <div className="users-alldata">
-                          {isUserLoading
-                            ? Array(10)
-                                .fill("")
-                                .map((e, i) => {
-                                  return (
-                                    <div className="each-userData" key={i}>
-                                      <div
-                                        className="each-user-email"
-                                        style={{ width: "15%" }}
-                                      >
-                                        <Skeleton width={100} height={25} />
-                                      </div>
-                                      <div className="each-user-email">
-                                        <Skeleton width={100} height={25} />
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{ width: "15%" }}
-                                      >
-                                        <Skeleton width={100} height={25} />
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          width: "25%",
-                                        }}
-                                      >
-                                        <Skeleton width={100} height={25} />
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          width: "25%",
-                                        }}
-                                      >
-                                        <Skeleton width={200} height={25} />
-                                      </div>
-                                    </div>
-                                  );
-                                })
-                            : adminServices
-                                ?.filter(
-                                  (item) =>
-                                    item?.name
-                                      ?.toLowerCase()
-                                      ?.startsWith(search?.toLowerCase())
-                                )
-                                .map((e, i) => {
-                                  return (
-                                    <div className="each-userData" key={i}>
-                                      <div
-                                        className="each-user-email"
-                                        style={{ width: "25%" }}
-                                      >
-                                        {e?.name}
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          textTransform: "none",
-                                          paddingLeft: "1rem",
-                                        }}
-                                      >
-                                        {e?.chargingtype}
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          width: "20%",
-                                          paddingLeft: "1rem",
-                                        }}
-                                      >
-                                        {e?.billing_cycle?.lifetime?.price || e?.billing_cycle?.monthly?.price || e?.billing_cycle?.annual?.price}
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          width: "15%",
-                                          textTransform: "none",
-                                          paddingLeft: "1rem",
-                                        }}
-                                      >
-                                        {e?.billing_cycle?.lifetime?.coin || e?.billing_cycle?.monthly?.coin || e?.billing_cycle?.annual?.coin}
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          width: "25%",
-                                          textTransform: "none",
-                                          paddingLeft: "1rem",
-                                        }}
-                                      >
-                                        {e?.productcreatoremail}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                        </div>
-                      </>
-                   
-                  </div>
-                </div>
-              </>
-              ): (
-                <>
-               <MenuNav 
-                  showDrop={showDrop}
-                  setShowDrop={setShowDrop}
-                  searchTerm={search}
-                  // setSearchterm={setSearch}
-                  searchPlaceholder="Search..."
-                />
-                  <div
-                    className="services-main"
-                    style={{ height: "calc(100% - 70px)" }}
-                    onClick={() => setShowDrop(false)}
-                  >
+                      searchPlaceholder="Search Steps..."
+                    />
+                    <MyStepsAdmin
+                      search={search}
+                      admin={true}
+                      fetchAllServicesAgain={fetchAllServicesAgain}
+                      stepDataPage={true}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <MenuNav
+                      showDrop={showDrop}
+                      setShowDrop={setShowDrop}
+                      searchTerm={search}
+                      searchPlaceholder="Search..."
+                    />
                     <div
                       style={{
-                        width: "100%",
-                        height: "100%",
+                        height: "calc(100% - 70px)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontWeight: "600",
                         fontSize: "1.5rem",
+                        fontWeight: "600",
                       }}
                     >
                       Coming Soon
                     </div>
-                  </div>
-                </>
-              )}
-            </div>
+                  </>
+                )}
+              </>
+            )}
+
           </div>
         </div>
       </div>
 
-      <>
-        {ispopular ? (
-          <div
-            className="acc-popular"
-            onClick={() => setShowDrop(false)}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <div className="acc-popular-top">
-              <div className="acc-popular-head">
-                {pstep === 8
-                  ? "New Path"
-                  : pstep > 1 && pstep < 8
-                  ? "New Service"
-                  : "Popular Actions"}
-              </div>
-              <div
-                className="acc-popular-img-box"
-                onClick={() => resetpop()}
-                style={{ cursor: "pointer" }}
-              >
-                <img className="acc-popular-img" src={closepop} alt="" />
-              </div>
-            </div>
-            <>
-              {pstep === 1 ? (
-                <div>
-                  <div className="acc-step-text">New</div>
-                  <div>
-                    <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setselectNew("Service");
-                        setpstep(2);
-                      }}
-                      style={{
-                        background: selectNew === "Service" ? "#182542" : "",
-                        color: selectNew === "Service" ? "#FFF" : "",
-                      }}
-                    >
-                      Service
-                    </div>
-
-                    <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setselectNew("Path");
-                        setpstep(8);
-                      }}
-                      style={{
-                        background: selectNew === "Path" ? "#182542" : "",
-                        color: selectNew === "Path" ? "#FFF" : "",
-                      }}
-                    >
-                      Path
-                    </div>
-
-                    <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setselectNew("Step");
-                        setpstep(9);
-                      }}
-                      style={{
-                        background: selectNew === "Step" ? "#182542" : "",
-                        color: selectNew === "Step" ? "#FFF" : "",
-                      }}
-                    >
-                      Step
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setselectNew("Bulk Path");
-                        setpstep(10);
-                      }}
-                      style={{
-                        background: selectNew === "Bulk Path" ? "#182542" : "",
-                        color: selectNew === "Bulk Path" ? "#FFF" : "",
-                      }}
-                    >
-                     Bulk Path
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setselectNew("Bulk Step");
-                        setpstep(11);
-                      }}
-                      style={{
-                        background: selectNew === "Bulk Step" ? "#182542" : "",
-                        color: selectNew === "Bulk Step" ? "#FFF" : "",
-                      }}
-                    >
-                     Bulk Step
-                    </div>
-                    {/* <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setselectNew("Task");
-                        setpstep(2);
-                      }}
-                      style={{
-                        background: selectNew === "Task" ? "#182542" : "",
-                        color: selectNew === "Task" ? "#FFF" : "",
-                      }}
-                    >
-                      Task
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setselectNew("Article");
-                        setpstep(2);
-                      }}
-                      style={{
-                        background: selectNew === "Article" ? "#182542" : "",
-                        color: selectNew === "Article" ? "#FFF" : "",
-                      }}
-                    >
-                      Article
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setselectNew("Video");
-                        setpstep(2);
-                      }}
-                      style={{
-                        background: selectNew === "Video" ? "#182542" : "",
-                        color: selectNew === "Video" ? "#FFF" : "",
-                      }}
-                    >
-                      Video
-                    </div> */}
-                  </div>
-                </div>
-              ) : pstep === 2 ? (
-                <div>
-                  <div className="acc-step-text">Select Billing Type</div>
-                  <div>
-                    <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setbillingType("Monthly Subscription");
-                        handleCategories();
-                        setpstep(3);
-                      }}
-                      style={{
-                        background:
-                          billingType === "Monthly Subscription"
-                            ? "#182542"
-                            : "",
-                        color:
-                          billingType === "Monthly Subscription" ? "#FFF" : "",
-                      }}
-                    >
-                      Monthly Subscription
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setbillingType("One Time");
-                        handleCategories();
-                        setpstep(3);
-                      }}
-                      style={{
-                        background: billingType === "One Time" ? "#182542" : "",
-                        color: billingType === "One Time" ? "#FFF" : "",
-                      }}
-                    >
-                      One Time
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      // onClick={() => {
-                      //   setbillingType("Staking");
-                      //   handleCategories();
-                      //   setpstep(3);
-                      // }}
-                      style={{
-                        opacity: "0.4",
-                        cursor: "not-allowed",
-                        background: billingType === "Staking" ? "#182542" : "",
-                        color: billingType === "Staking" ? "#FFF" : "",
-                      }}
-                    >
-                      Staking
-                    </div>
-                  </div>
-                  <div
-                    className="goBack"
-                    onClick={() => {
-                      setpstep(1);
-                      setbillingType("");
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              ) : pstep === 3 ? (
-                <div>
-                  <div className="acc-step-text">
-                    How would you categorize this product?
-                  </div>
-                  <>
-                    {isCatoading ? (
-                      <div className="acc-step-allbox">
-                        {[1, 2, 3].map((each, i) => (
-                          <div className="acc-step-box">
-                            <Skeleton style={{ width: "150px" }} />
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="acc-step-allbox">
-                        {categoriesData.map((each, i) => (
-                          <div
-                            className="acc-step-box"
-                            onClick={() => {
-                              setselectCategory(each.name);
-                              setpstep(4);
-                            }}
-                            style={{
-                              background:
-                                selectCategory === each.name ? "#182542" : "",
-                              color: selectCategory === each.name ? "#FFF" : "",
-                            }}
-                          >
-                            {each.name}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                  <div
-                    className="goBack"
-                    onClick={() => {
-                      setpstep(2);
-                      setselectCategory("");
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              ) : pstep === 4 ? (
-                <div>
-                  <div className="acc-step-text">Service Information</div>
-                  <div className="acc-step-allbox1">
-                    <div className="acc-upload">
-                      <div className="acc-upload-title">
-                        Upload Profile Image
-                      </div>
-                      <div className="acc-upload-imgbox">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFileInputChange}
-                          style={{ display: "none" }}
-                          ref={fileInputRef}
-                        />
-                        <img
-                          className="acc-upload-img"
-                          src={
-                            isUploadLoading
-                              ? upgif
-                              : coverImageS3url !== ""
-                              ? coverImageS3url
-                              : uploadv
-                          }
-                          alt=""
-                          onClick={handleImageClick}
-                        />
-                      </div>
-                    </div>
-                    <div className="acc-step-box">
-                      <input
-                        className="acc-step-input"
-                        type="text"
-                        placeholder="Service Name"
-                        value={serviceNameInput}
-                        onChange={(e) => setServiceNameInput(e.target.value)}
-                      />
-                    </div>
-                    <div className="acc-step-box">
-                      <input
-                        className="acc-step-input"
-                        type="text"
-                        placeholder="Service Code"
-                        value={serviceCodeInput}
-                        onChange={(e) => setServiceCodeInput(e.target.value)}
-                      />
-                    </div>
-                    <div className="acc-step-box">
-                      <input
-                        className="acc-step-input"
-                        type="text"
-                        placeholder="Product Label"
-                        value={productLabel}
-                        onChange={(e) => setProductLabel(e.target.value)}
-                      />
-                    </div>
-                    <div className="acc-step-box">
-                      <input
-                        className="acc-step-input"
-                        type="text"
-                        placeholder="Service Tagline"
-                        value={serviceTagline}
-                        onChange={(e) => setServiceTagline(e.target.value)}
-                      />
-                    </div>
-                    <div className="acc-step-box1">
-                      <textarea
-                        className="acc-step-input1"
-                        type="text"
-                        placeholder="Service Description"
-                        value={serviceDescription}
-                        onChange={(e) => setServiceDescription(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <div
-                        className="goNext"
-                        onClick={() => {
-                          handleGetCurrencies();
-                          setpstep(5);
-                        }}
-                      >
-                        Next Step
-                      </div>
-                      <div
-                        className="goBack1"
-                        onClick={() => {
-                          setpstep(3);
-                          setServiceNameInput("");
-                          setServiceCodeInput("");
-                          setProductLabel("");
-                          setServiceTagline("");
-                          setServiceDescription("");
-                          setCoverImageS3url("");
-                          setImage(null);
-                        }}
-                      >
-                        Go Back
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : pstep === 5 ? (
-                <div style={{ height: "calc(100% - 3rem)" }}>
-                  <div className="acc-step-text">
-                    What currency do you want to collect?
-                  </div>
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "3.5rem",
-                      border: "1px solid #e5e5e5",
-                      borderRadius: "10px",
-                      padding: "0 25px",
-                      marginBottom: "1rem",
-                      marginTop: "1rem",
-                    }}
-                  >
-                    <input
-                      type="text"
-                      placeholder="Search Currency..."
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        border: "none",
-                        fontSize: "1rem",
-                        fontWeight: "500",
-                      }}
-                      onChange={(e) => {
-                        setSearchCurrency(e.target.value);
-                      }}
-                      value={searchCurrency}
-                    />
-                  </div>
-                  <>
-                    {isCurrencies ? (
-                      <div
-                        className="acc-step-allbox"
-                        style={{ height: "calc(100% - 76px - 7.5rem)" }}
-                      >
-                        {[1, 2, 3].map((each, i) => (
-                          <div className="acc-step-box">
-                            <Skeleton style={{ width: "150px" }} />
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div
-                        className="acc-step-allbox"
-                        style={{ height: "calc(100% - 76px - 7.5rem)" }}
-                      >
-                        {allCurrencies
-                          ?.filter(
-                            (entry) =>
-                              entry?.coinName
-                                ?.toLowerCase()
-                                ?.includes(searchCurrency?.toLowerCase()) ||
-                              entry?.coinSymbol
-                                ?.toLowerCase()
-                                ?.includes(searchCurrency?.toLowerCase())
-                          )
-                          .map((each, i) => (
-                            <div
-                              className="acc-step-box"
-                              onClick={() => {
-                                setSelectedCurrency(each);
-                                setpstep(6);
-                                setSearchCurrency("");
-                              }}
-                              style={{
-                                background:
-                                  selectedCurrency === each ? "#182542" : "",
-                                color: selectedCurrency === each ? "#FFF" : "",
-                              }}
-                            >
-                              {each.coinName}
-                            </div>
-                          ))}
-                      </div>
-                    )}
-                  </>
-                  <div
-                    className="goBack"
-                    onClick={() => {
-                      setpstep(4);
-                      setSelectedCurrency({});
-                      setSearchCurrency("");
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              ) : pstep === 6 ? (
-                <div>
-                  <div className="acc-step-text">Pricing Information</div>
-                  <div className="acc-step-allbox1">
-                    <div className="acc-step-box">
-                      <input
-                        className="acc-step-input2"
-                        type="number"
-                        placeholder={
-                          billingType === "One Time"
-                            ? "Service Price"
-                            : "First Months Price"
-                        }
-                        value={firstMonthPrice}
-                        onChange={(e) => setfirstMonthPrice(e.target.value)}
-                        onWheel={(e) => e.target.blur()}
-                      />
-                      <div className="acc-step-feildHead">
-                        {selectedCurrency.coinSymbol}
-                      </div>
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      style={{
-                        display: billingType === "One Time" ? "none" : "",
-                      }}
-                    >
-                      <input
-                        className="acc-step-input2"
-                        type="number"
-                        placeholder="Monthly Price"
-                        value={monthlyPrice}
-                        onChange={(e) => setmonthlyPrice(e.target.value)}
-                        onWheel={(e) => e.target.blur()}
-                      />
-                      <div className="acc-step-feildHead">
-                        {selectedCurrency.coinSymbol}
-                      </div>
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      style={{
-                        display: billingType === "One Time" ? "none" : "",
-                      }}
-                    >
-                      <input
-                        className="acc-step-input2"
-                        type="number"
-                        placeholder="Grace Period"
-                        value={gracePeriod}
-                        onChange={(e) => setgracePeriod(e.target.value)}
-                        onWheel={(e) => e.target.blur()}
-                      />
-                      <div className="acc-step-feildHead">Days</div>
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      style={{
-                        display: billingType === "One Time" ? "none" : "",
-                      }}
-                    >
-                      <input
-                        className="acc-step-input2"
-                        type="number"
-                        placeholder="Second Charge Attempt"
-                        value={secondChargeAttempt}
-                        onChange={(e) => setsecondChargeAttempt(e.target.value)}
-                        onWheel={(e) => e.target.blur()}
-                      />
-                      <div className="acc-step-feildHead">Days</div>
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      style={{
-                        display: billingType === "One Time" ? "none" : "",
-                      }}
-                    >
-                      <input
-                        className="acc-step-input2"
-                        type="number"
-                        placeholder="Third Charge Attempt"
-                        value={thirdChargeAttempt}
-                        onChange={(e) => setthirdChargeAttempt(e.target.value)}
-                        onWheel={(e) => e.target.blur()}
-                      />
-                      <div className="acc-step-feildHead">Days</div>
-                    </div>
-                    <div>
-                      <div
-                        style={{
-                          position:
-                            billingType === "One Time" ? "fixed" : "initial",
-                          bottom: billingType === "One Time" ? "0px" : "",
-                        }}
-                      >
-                        <div
-                          className="goNext"
-                          onClick={() => {
-                            handleFinalSubmit();
-                          }}
-                        >
-                          Submit
-                        </div>
-                        <div
-                          className="goBack1"
-                          onClick={() => {
-                            setpstep(5);
-                            setfirstMonthPrice("");
-                            setmonthlyPrice("");
-                            setgracePeriod("");
-                            setsecondChargeAttempt("");
-                            setthirdChargeAttempt("");
-                          }}
-                        >
-                          Go Back
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    {isSubmit ? (
-                      <div className="popularlogo">
-                        <img className="popularlogoimg" src={lg1} alt="" />
-                      </div>
-                    ) : (
-                      ""
-                    )}
-                  </div>
-                </div>
-              ) : pstep === 7 ? (
-                <div className="success-box">
-                  You Have Successfully Created A New Service
-                </div>
-              ) : pstep === 8 ? (
-                <div className="acc-addpath">
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What is the name of the path?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <input
-                        type="text"
-                        placeholder="Name.."
-                        value={pathSteps?.nameOfPath}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              nameOfPath: e.target.value,
-                            };
-                          });
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      How long will the path apx take?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <input
-                        type="number"
-                        placeholder="0"
-                        style={{ width: "70%" }}
-                        value={pathSteps?.length}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              length: e.target.value,
-                            };
-                          });
-                        }}
-                      />
-                      <div className="years-div">Years</div>
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Describe the path
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <textarea
-                        placeholder="Enter description.."
-                        value={pathSteps?.description}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              description: e.target.value,
-                            };
-                          });
-                        }}
-                      ></textarea>
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What type of path is it?
-                    </div>
-                    <div className="each-acc-addpath-field-flex">
-                      <div
-                        onClick={() => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              path_type: "education",
-                            };
-                          });
-                        }}
-                        style={{
-                          background:
-                            pathSteps?.path_type === "education"
-                              ? "linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%)"
-                              : "",
-                          color:
-                            pathSteps?.path_type === "education" ? "white" : "",
-                        }}
-                      >
-                        Education
-                      </div>
-                      <div
-                        onClick={() => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              path_type: "career",
-                            };
-                          });
-                        }}
-                        style={{
-                          background:
-                            pathSteps?.path_type === "career"
-                              ? "linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%)"
-                              : "",
-                          color:
-                            pathSteps?.path_type === "career" ? "white" : "",
-                        }}
-                      >
-                        Career
-                      </div>
-                      <div
-                        onClick={() => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              path_type: "immigration",
-                            };
-                          });
-                        }}
-                        style={{
-                          background:
-                            pathSteps?.path_type === "immigration"
-                              ? "linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%)"
-                              : "",
-                          color:
-                            pathSteps?.path_type === "immigration"
-                              ? "white"
-                              : "",
-                        }}
-                      >
-                        Immigration
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What is the destination of the path?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <input
-                        type="text"
-                        placeholder="Name.."
-                        value={pathSteps?.destination_institution}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              destination_institution: e.target.value,
-                            };
-                          });
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">Add steps</div>
-                    <div
-                      className="each-acc-addpath-field-input"
-                      style={{ flexDirection: "column" }}
-                    >
-                      <div
-                        style={{
-                          width: "100%",
-                          display: "flex",
-                          cursor: "pointer",
-                        }}
-                        onClick={() => {
-                          setStepsToggle(!stepsToggle);
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: "85%",
-                            cursor: "pointer",
-                            padding: "1.5rem",
-                            borderRadius: "15px",
-                            opacity: "0.25",
-                            fontSize: "1rem",
-                            fontWeight: "500",
-                          }}
-                        >
-                          Click To Select
-                        </div>
-                        <div className="arrow-box">
-                          <img
-                            src={arrow}
-                            alt=""
-                            style={{
-                              transform: stepsToggle ? "rotate(180deg)" : "",
-                            }}
-                          />
-                        </div>
-                      </div>
-                      <div
-                        className="hidden-steps"
-                        style={{ display: stepsToggle ? "flex" : "none" }}
-                      >
-                        {allSteps?.map((e, i) => {
-                          return (
-                            <div
-                              className="each-hidden-step"
-                              key={i}
-                              onClick={() => {
-                                setSelectedSteps((prevSelectedSteps) => [
-                                  ...prevSelectedSteps,
-                                  e,
-                                ]);
-                                // setPathSteps((prev) => {
-                                //   return {
-                                //     ...prev,
-                                //     step_ids:
-                                //       prev?.step_ids?.length > 0
-                                //         ? [...prev?.step_ids, e?._id]
-                                //         : [e?._id],
-                                //   };
-                                // });
-                                setPathSteps((prev) => {
-                                  return {
-                                    ...prev,
-                                    the_ids: [
-                                      ...(prev?.the_ids || []), // Copy existing items if they exist
-                                      {
-                                        step_id: e?._id,
-                                      },
-                                    ],
-                                  };
-                                });
-                                setStepsToggle(false);
-                              }}
-                            >
-                              <div className="stepp-textt">{e?.name}</div>
-                              <div className="stepp-textt1">
-                                {e?.description}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="selected-steps">
-                    {selectedSteps?.map((e, i) => {
-                      return (
-                        <div className="each-selected-step" key={e?._id}>
-                          <div className="stepp-textt">{e?.name}</div>
-                          <div className="stepp-textt1">{e?.description}</div>
-                          <div
-                            className="trash-icon-div"
-                            onClick={() => removeStep(e._id)}
-                          >
-                            <img src={trash} alt="" />
-                          </div>
-                          <div
-                            className="each-acc-addpath-field-input"
-                            style={{
-                              flexDirection: "column",
-                              borderRadius: "15px",
-                              border: "1px solid #e7e7e7",
-                            }}
-                          >
-                            <div
-                              style={{
-                                width: "100%",
-                                display: "flex",
-                                alignItems: "center",
-                                cursor: "pointer",
-                              }}
-                              onClick={() => {
-                                setShowBackupPathList(i);
-                              }}
-                            >
-                              <div
-                                style={{
-                                  width: "85%",
-                                  cursor: "pointer",
-                                  padding: "1.5rem",
-                                  borderRadius: "15px",
-                                  opacity: "0.25",
-                                  fontSize: "1rem",
-                                  fontWeight: "500",
-                                }}
-                              >
-                                {pathSteps.the_ids.find(
-                                  (o) => o.step_id === e._id
-                                ).backup_pathId !== ""
-                                  ? pathSteps.the_ids.find(
-                                      (o) => o.step_id === e._id
-                                    ).backup_pathId
-                                  : "Select Backup Path"}
-
-                                {/* {e?.the_ids?.backup_pathId !== ""
-                                  ? e?.the_ids?.backup_pathId
-                                  : "Select Backup Path"} */}
-                              </div>
-                              <div className="arrow-box">
-                                <img
-                                  src={arrow}
-                                  alt=""
-                                  style={{
-                                    transform: stepsToggle
-                                      ? "rotate(180deg)"
-                                      : "",
-                                  }}
-                                />
-                              </div>
-                            </div>
-                            <div
-                              className="hidden-steps"
-                              style={{
-                                display:
-                                  showBackupPathList === i ? "block" : "none",
-                              }}
-                            >
-                              {backupPathList?.map((item, i) => {
-                                return (
-                                  <div
-                                    onClick={() =>
-                                      addBackupPath(item._id, e._id)
-                                    }
-                                    className="each-hidden-step"
-                                    key={i}
-                                    style={{
-                                      padding: "1rem",
-                                      borderBottom: "1px solid #e7e7e7",
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    <div className="stepp-textt">
-                                      {item?.program}
-                                    </div>
-                                    <div className="stepp-textt1">
-                                      {item?.destination_institution}
-                                    </div>
-                                    <br />
-                                    <div className="stepp-textt1">
-                                      {item?.description}
-                                    </div>
-                                    <br />
-                                    <div className="stepp-textt1">
-                                      Path id:{item?._id}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Select ideal grade for participant
-                    </div>
-                    <div className="optioncardWrapper">
-                      {gradeList.map((item) => (
-                        <div
-                          className={
-                            grade.includes(item)
-                              ? "optionCardSmallSelected"
-                              : "optionCardSmall"
-                          }
-                          onClick={(e) => handleGrade(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Select ideal grade point average for participant
-                    </div>
-                    <div className="optionCardFullWrapper">
-                      {gradePointAvg.map((item) => (
-                        <div
-                          className={
-                            gradeAvg.includes(item)
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => handleGradeAvg(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Select ideal curriculum for participant
-                    </div>
-                    <div className="optionCardFullWrapper">
-                      {curriculumList.map((item) => (
-                        <div
-                          className={
-                            curriculum.includes(item)
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => handleCurriculum(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Select ideal stream for participant
-                    </div>
-                    <div className="optionCardFullWrapper">
-                      {streamList.map((item) => (
-                        <div
-                          className={
-                            stream.includes(item)
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => handleStream(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Select ideal financial situation for participant
-                    </div>
-                    <div className="optionCardFullWrapper">
-                      {financeList.map((item) => (
-                        <div
-                          className={
-                            finance.includes(item)
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => handleFinance(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What program will they be studying?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <input
-                        type="text"
-                        placeholder="Name.."
-                        value={pathSteps?.program}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              program: e.target.value,
-                            };
-                          });
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What city is the university in?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <input
-                        type="text"
-                        placeholder="City.."
-                        value={pathSteps?.city}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              city: e.target.value,
-                            };
-                          });
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What country is the university in?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                    <select name="country" id="country" style={{border:"none", padding:'1.5rem', width:'100%', fontSize:"16px"}}  onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              country: e.target.value,
-                            };
-                          });
-                        }}>
-                          <option value="">Country..</option>
-                          {countryApiValue?.map(item => (
-                            <option value={item?.name}>{item?.name}</option>
-                          ))}
-                      
-                    </select>
-                      {/* <input
-                        type="text"
-                        placeholder="Country.."
-                        value={pathSteps?.country}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              country: e.target.value,
-                            };
-                          });
-                        }}
-                      /> */}
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What personality suits this path?
-                    </div>
-                    <div className="optionCardFullWrapper">
-                      {personalityList.map((item) => (
-                        <div
-                          className={
-                            item === personality
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => handlePersonality(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div
-                      className="submit-path-btn"
-                      style={{
-                        opacity: creatingPath
-                          ? "0.5"
-                          : pathSteps?.nameOfPath &&
-                            pathSteps?.description &&
-                            pathSteps?.length &&
-                            pathSteps?.path_type &&
-                            // pathSteps?.the_ids?.length > 0 &&
-                            pathSteps?.destination_institution &&
-                            pathSteps?.program &&
-                            pathSteps?.city &&
-                            pathSteps?.country &&
-                            grade.length > 0 &&
-                            gradeAvg.length > 0 &&
-                            curriculum.length > 0 &&
-                            stream.length > 0 &&
-                            finance.length > 0 &&
-                            personality !== ""
-                          ? "1"
-                          : "0.5",
-                        cursor: creatingPath
-                          ? "not-allowed"
-                          : pathSteps?.nameOfPath &&
-                            pathSteps?.description &&
-                            pathSteps?.length &&
-                            pathSteps?.path_type &&
-                            // pathSteps?.the_ids?.length > 0 &&
-                            pathSteps?.destination_institution &&
-                            pathSteps?.program &&
-                            pathSteps?.city &&
-                            pathSteps?.country &&
-                            grade.length > 0 &&
-                            gradeAvg.length > 0 &&
-                            curriculum.length > 0 &&
-                            stream.length > 0 &&
-                            finance.length > 0 &&
-                            personality !== ""
-                          ? "pointer"
-                          : "not-allowed",
-                      }}
-                      onClick={() => {
-                        if (
-                          pathSteps?.nameOfPath &&
-                          pathSteps?.description &&
-                          pathSteps?.length &&
-                          pathSteps?.path_type &&
-                          // pathSteps?.the_ids?.length > 0 &&
-                          pathSteps?.destination_institution &&
-                          pathSteps?.program &&
-                          pathSteps?.city &&
-                          pathSteps?.country &&
-                          grade.length > 0 &&
-                          gradeAvg.length > 0 &&
-                          curriculum.length > 0 &&
-                          stream.length > 0 &&
-                          finance.length > 0 &&
-                          personality !== ""
-                        ) {
-                          pathSubmission();
-                        }
-                      }}
-                    >
-                      {creatingPath ? "Loading.." : "Submit Path"}
-                    </div>
-                    <div
-                      className="go-back-btn"
-                      onClick={() => {
-                        setpstep(1);
-                        setPathSteps({
-                          nameOfPath: "",
-                          description: "",
-                          length: "",
-                          path_type: "",
-                          the_ids: [],
-                          destination_institution: "",
-                        });
-                        setGrade([]);
-                        setGradeAvg([]);
-                        setCurriculum([]);
-                        setStream([]);
-                        setFinance([]);
-                        setPersonality("");
-                      }}
-                    >
-                      Go Back
-                    </div>
-                  </div>
-                </div>
-              ) : pstep === 9 ? (
-                <NewStep1 setpstep={setpstep} />
-              ) : pstep === 10 ? (
-                <div>
-                  <div className="acc-step-text">Bulk Path Action</div>
-                  <div>
-                    <div
-                      className="acc-step-box"
-                     
-                      style={{
-                        background:
-                          billingType === "Download"
-                            ? "#182542"
-                            : "",
-                        color:
-                          billingType === "Download" ? "#FFF" : "",
-                      }}
-                    >
-                      Download
-                      
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      onClick={handleImageClick}
-                      style={{
-                        background: billingType === "Upload" ? "#182542" : "",
-                        color: billingType === "Upload" ? "#FFF" : "",
-                      }}
-                    >
-                      Upload
-                      <input
-                        type="file"
-                        // accept=".xlsx, .xls, .gsheet, .numbers, application/vnd.google-apps.spreadsheet, application/vnd.apple.numbers"
-                        onChange={handleFileInputChange1}
-                        style={{ display: "none" }}
-                        ref={fileInputRef}
-                      />
-
-                    </div>
-                    
-                  </div>
-                  <div
-                    className="goBack"
-                    onClick={() => {
-                      setpstep(1);
-                      // setbillingType("");
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              ) : pstep === 11 ? (
-                <div>
-                  <div className="acc-step-text">Bulk Step Action</div>
-                  <div>
-                    <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        // setbillingType("Monthly Subscription");
-                        // handleCategories();
-                        // setpstep(3);
-                      }}
-                      style={{
-                        background:
-                          billingType === "Download"
-                            ? "#182542"
-                            : "",
-                        color:
-                          billingType === "Download" ? "#FFF" : "",
-                      }}
-                    >
-                      Download
-                      
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      onClick={handleImageClick}
-                      style={{
-                        background: billingType === "Upload" ? "#182542" : "",
-                        color: billingType === "Upload" ? "#FFF" : "",
-                      }}
-                    >
-                      Upload
-                      <input
-                        type="file"
-                        // accept=".xlsx, .xls, .gsheet, .numbers, application/vnd.google-apps.spreadsheet, application/vnd.apple.numbers"
-                        onChange={handleFileInputChange2}
-                        style={{ display: "none" }}
-                        ref={fileInputRef}
-                      />
-
-                    </div>
-                    
-                  </div>
-                  <div
-                    className="goBack"
-                    onClick={() => {
-                      setpstep(1);
-                      // setbillingType("");
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              ) : pstep === 12 ? (
-                <div>
-                  <div className="acc-step-text">Uploaded Successfully</div>
-                
-                  <div
-                    className="goBack"
-                    onClick={() => {
-                      setpstep(1);
-                      setbillingType("");
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              ):(
-                ""
-              )}
-            </>
-          </div>
-        ) : (
-          ""
-        )}
-      </>
-
-  
-
-      <>
-        {coinActionEnabled && (
-          <div className="acc-popular" onMouseDown={(e) => e.stopPropagation()}>
-            <div
-              className="acc-popular-top"
-              style={{ height: "3rem", marginBottom: "0" }}
-            >
-              <div className="acc-popular-head">
-                {selectedCoin?.coinName} Actions
-              </div>
-              <div
-                className="acc-popular-img-box"
-                onClick={() => resetCoinAction()}
-                style={{ cursor: "pointer" }}
-              >
-                <img className="acc-popular-img" src={closepop} alt="" />
-              </div>
-            </div>
-            <>
-              {coinAction.includes("Menu") ? (
-                <div>
-                  <div className="acc-step-text1">
-                    What would you like to do?
-                  </div>
-                  <div
-                    className="acc-step-box2"
-                    onClick={() => {
-                      setCoinAction(["Add"]);
-                    }}
-                  >
-                    Add
-                  </div>
-                  <div
-                    className="acc-step-box2"
-                    // onClick={() => {
-                    //   setCoinAction(["Withdraw"]);
-                    // }}
-                  >
-                    Withdraw
-                  </div>
-                  <div
-                    className="acc-step-box2"
-                    // onClick={() => {
-                    //   setCoinAction(["Transfer"]);
-                    // }}
-                  >
-                    Transfer
-                  </div>
-                </div>
-              ) : coinAction.includes("Add") ? (
-                <div
-                  style={{
-                    height: "calc(100% - 3rem)",
-                  }}
-                >
-                  {addActionStep === 1 ? (
-                    <>
-                      <div className="acc-step-text1">
-                        How do you want to add money?
-                      </div>
-                      <div className="scroll-box">
-                        {paymentMethodData?.map((e, i) => {
-                          return (
-                            <div
-                              className="acc-step-box2"
-                              key={e?._id}
-                              onClick={() => {
-                                setSelectedPaymentMethod(e?.metadata?.name);
-                              }}
-                              style={{
-                                borderColor:
-                                  selectedPaymentMethod === e?.metadata?.name
-                                    ? "#182542"
-                                    : "#e7e7e7",
-                              }}
-                            >
-                              <div>
-                                <img src={e?.metadata?.icon} alt="" />
-                              </div>
-                              <div>{e?.metadata?.name}</div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                      <div className="back-next-btns">
-                        <div
-                          className="back-Btn"
-                          onClick={() => {
-                            setCoinAction(["Menu"]);
-                            setForexPathId("");
-                            setSelectedPaymentMethod("");
-                          }}
-                        >
-                          Go Back
-                        </div>
-                        <div
-                          className="next-Btn"
-                          onClick={() => {
-                            if (selectedPaymentMethod?.length > 0) {
-                              setAddActionStep(2);
-                              getPathId();
-                            }
-                          }}
-                          style={{
-                            opacity:
-                              selectedPaymentMethod?.length > 0 ? "1" : "0.5",
-                          }}
-                        >
-                          Next Step
-                        </div>
-                      </div>
-                    </>
-                  ) : addActionStep === 2 ? (
-                    <>
-                      <div className="acc-step-text1">
-                        How much do you want to add?
-                      </div>
-                      <div className="scroll-box">
-                        <div className="acc-step-box3">
-                          <div className="coin-details-div">
-                            <div>
-                              <img src={selectedCoin?.coinImage} alt="" />
-                            </div>
-                            <div>{selectedCoin?.coinSymbol}</div>
-                          </div>
-                          <div className="amount-details-div">
-                            <input
-                              type="number"
-                              placeholder="0.00"
-                              onChange={(e) => {
-                                setAddForexAmount(e.target.value);
-                              }}
-                              value={addForexAmount}
-                              onBlur={onBlur}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="back-next-btns">
-                        <div
-                          className="back-Btn"
-                          onClick={() => {
-                            setAddActionStep(1);
-                            setAddForexAmount("");
-                          }}
-                        >
-                          Go Back
-                        </div>
-                        <div
-                          className="next-Btn"
-                          style={{ opacity: addForexAmount ? "1" : "0.5" }}
-                          onClick={() => {
-                            if (addForexAmount) {
-                              getQuote();
-                            }
-                          }}
-                        >
-                          Next Step
-                        </div>
-                      </div>
-                    </>
-                  ) : addActionStep === 3 ? (
-                    <>
-                      <div className="acc-step-text1">
-                        You will be depositing
-                      </div>
-                      <div className="scroll-box">
-                        <div className="acc-step-box3">
-                          <div className="coin-details-div">
-                            <div>
-                              <img src={selectedCoin?.coinImage} alt="" />
-                            </div>
-                            <div>{selectedCoin?.coinSymbol}</div>
-                          </div>
-                          <div className="amount-details-div">
-                            {forexQuote?.finalFromAmount
-                              ? forexQuote?.finalFromAmount?.toFixed(2)
-                              : "0.00"}
-                          </div>
-                        </div>
-                        <div
-                          className="acc-step-text1"
-                          style={{ marginTop: "4rem" }}
-                        >
-                          You will be recieving
-                        </div>
-                        <div className="acc-step-box3">
-                          <div className="coin-details-div">
-                            <div>
-                              <img src={selectedCoin?.coinImage} alt="" />
-                            </div>
-                            <div>{selectedCoin?.coinSymbol}</div>
-                          </div>
-                          <div className="amount-details-div">
-                            {forexQuote?.finalToAmount
-                              ? forexQuote?.finalToAmount?.toFixed(2)
-                              : "0.00"}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="back-next-btns">
-                        <div
-                          className="back-Btn"
-                          onClick={() => {
-                            setAddActionStep(2);
-                          }}
-                        >
-                          Go Back
-                        </div>
-                        <div className="next-Btn">Next Step</div>
-                      </div>
-                    </>
-                  ) : (
-                    ""
-                  )}
-                </div>
-              ) : (
-                ""
-              )}
-            </>
-          </div>
-        )}
-      </>
-
-      {serviceActionEnabled && (
-        <div className="popularS">
-          {serviceActionStep === 1 && (
-            <>
-              <div className="head-txt" style={{ height: "4rem" }}>
-                <div>Service Actions</div>
-                <div
-                  onClick={() => {
-                    setServiceActionEnabled(false);
-                  }}
-                  className="close-div"
-                >
-                  <img src={close} alt="" />
-                </div>
-              </div>
-
-              <div
-                className="overall-div"
-                style={{ height: "calc(100% - 4rem)" }}
-              >
-                <div
-                  className="each-action1"
-                  onClick={() => {
-                    setServiceActionStep(2);
-                  }}
-                >
-                  Delete Service
-                </div>
-                <div
-                  className="each-action1"
-                  onClick={() => {
-                    setServiceActionStep(4);
-                  }}
-                >
-                  Edit Service
-                </div>
-                <div
-                  className="each-action1"
-                  onClick={() => {
-                    setServiceActionEnabled(false);
-                    setAddCompPlan(true);
-                  }}
-                >
-                  Add CompPlan
-                </div>
-              </div>
-            </>
-          )}
-
-          {serviceActionStep === 2 && (
-            <>
-              <div className="head-txt" style={{ height: "4rem" }}>
-                <div>Service Actions</div>
-                <div
-                  onClick={() => {
-                    setServiceActionEnabled(false);
-                    setServiceActionStep(1);
-                  }}
-                  className="close-div"
-                >
-                  <img src={close} alt="" />
-                </div>
-              </div>
-              <div
-                className="overall-div"
-                style={{ height: "calc(100% - 4rem)" }}
-              >
-                <div
-                  className="each-action1"
-                  onClick={() => {
-                    deleteService();
-                  }}
-                >
-                  Confirm And Delete
-                </div>
-                <div
-                  className="each-action1"
-                  onClick={() => {
-                    setServiceActionStep(1);
-                  }}
-                >
-                  Never Mind
-                </div>
-              </div>
-              {isloading && (
-                <div
-                  className="loading-component"
-                  style={{
-                    top: "0",
-                    left: "0",
-                    width: "100%",
-                    height: "100%",
-                    position: "absolute",
-                    display: "flex",
-                  }}
-                >
-                  <LoadingAnimation1 icon={lg1} width={200} />
-                </div>
-              )}
-            </>
-          )}
-
-          {serviceActionStep === 3 && (
-            <div className="successMsg">
-              You have successfully deleted {selectedService?.product_name}. You
-              will be redirected to the updated services list.
-            </div>
-          )}
-
-          {serviceActionStep === 4 && (
-            <>
-              <div className="head-txt" style={{ height: "4rem" }}>
-                <div>Edit Service</div>
-                <div
-                  onClick={() => {
-                    setServiceActionEnabled(false);
-                    setServiceActionStep(1);
-                  }}
-                  className="close-div"
-                >
-                  <img src={close} alt="" />
-                </div>
-              </div>
-              <div
-                className="overall-div"
-                style={{ height: "calc(100% - 8.5rem)" }}
-              >
-                <div className="subbTxt">What do you want to edit?</div>
-                <div
-                  className="each-action1"
-                  onClick={() => {
-                    setServiceActionStep(5);
-                  }}
-                >
-                  Service Icon
-                </div>
-              </div>
-              <div className="stepBtns" style={{ height: "4.5rem" }}>
-                <div
-                  style={{ background: "#1F304F" }}
-                  onClick={() => {
-                    setServiceActionStep(1);
-                  }}
-                >
-                  Go Back
-                </div>
-              </div>
-            </>
-          )}
-
-          {serviceActionStep === 5 && (
-            <>
-              <div className="head-txt">
-                <div>Edit Service Icon</div>
-                <div
-                  onClick={() => {
-                    setServiceActionEnabled(false);
-                    setServiceActionStep(1);
-                  }}
-                  className="close-div"
-                >
-                  <img src={close} alt="" />
-                </div>
-              </div>
-
-              <div
-                className="overall-div"
-                style={{ height: "calc(100% - 14rem)" }}
-              >
-                <div
-                  className="each-action1"
-                  style={{ border: "none", justifyContent: "center" }}
-                >
-                  <div style={{ height: "120px", width: "120px" }}>
-                    <img
-                      src={selectedService?.product_icon}
-                      alt=""
-                      style={{ height: "100%", width: "100%" }}
-                    />
-                  </div>
-                </div>
-                <div className="line-container">
-                  <div className="linee"></div>
-                  <div className="new-txt">New</div>
-                  <div className="linee"></div>
-                </div>
-                <div
-                  className="each-action1"
-                  style={{ border: "none", justifyContent: "center" }}
-                >
-                  <ImageUploadDivProfilePic
-                    setFunc={setUpdatedIcon}
-                    funcValue={updatedIcon}
-                  />
-                </div>
-              </div>
-
-              <div
-                className="stepBtns"
-                style={{
-                  height: "8rem",
-                  gap: "1rem",
-                  flexDirection: "column",
-                  padding: "0",
-                }}
-              >
-                <div
-                  style={{
-                    opacity: updatedIcon ? "1" : "0.25",
-                    cursor: updatedIcon ? "pointer" : "not-allowed",
-                    background: "#59A2DD",
-                    height: "3.5rem",
-                  }}
-                  onClick={() => {
-                    if (updatedIcon) {
-                      changeServiceIcon();
-                    }
-                  }}
-                >
-                  Complete Update
-                </div>
-                <div
-                  style={{
-                    background: "#1F304F",
-                    height: "3.5rem",
-                  }}
-                  onClick={() => {
-                    setServiceActionStep(4);
-                    setUpdatedIcon("");
-                  }}
-                >
-                  Go Back
-                </div>
-              </div>
-
-              {isloading && (
-                <div
-                  className="loading-component"
-                  style={{
-                    top: "0",
-                    left: "0",
-                    width: "100%",
-                    height: "100%",
-                    position: "absolute",
-                    display: "flex",
-                  }}
-                >
-                  <LoadingAnimation1 icon={lg1} width={200} />
-                </div>
-              )}
-            </>
-          )}
-
-          {serviceActionStep === 6 && (
-            <div className="successMsg">
-              You have successfully updated the icon for{" "}
-              {selectedService?.product_name}
-            </div>
-          )}
-
-          {serviceActionStep === 7 && (
-            <>
-              <div className="head-txt"></div>
-              <div></div>
-            </>
-          )}
-        </div>
-      )}
-
-      {addCompPlan && (
-        <div className="popularS">
-          {addCompPlanStep === "step1" && (
-            <>
-              <div className="head-txt">
-                <div>Add Comp Plan</div>
-                <div
-                  onClick={() => {
-                    setAddCompPlan(false);
-                  }}
-                  className="close-div"
-                >
-                  <img src={close} alt="" />
-                </div>
-              </div>
-
-              <div
-                className="overall-div"
-                style={{ height: "calc(100% - 9.5rem)" }}
-              >
-                <div
-                  className="each-action1"
-                  onClick={() => {
-                    setAddCompPlanStep("step2");
-                    getAppsforUser();
-                  }}
-                >
-                  <div>Unilevel Standard</div>
-                </div>
-
-                <div
-                  className="each-action1"
-                  style={{ opacity: "0.5", cursor: "not-allowed" }}
-                >
-                  <div>Binary Standard</div>
-                </div>
-              </div>
-
-              <div className="stepBtnss">
-                <div
-                  style={{ background: "#1F304F" }}
-                  onClick={() => {
-                    setServiceActionEnabled(true);
-                    setAddCompPlan(false);
-                  }}
-                >
-                  Go Back
-                </div>
-                <div
-                  style={{
-                    background: "#59A2DD",
-                    opacity: "0.25",
-                    cursor: "not-allowed",
-                  }}
-                >
-                  Next Step
-                </div>
-              </div>
-            </>
-          )}
-
-          {addCompPlanStep === "step2" && (
-            <>
-              <div className="head-txt">
-                <div>Add Comp Plan</div>
-                <div
-                  onClick={() => {
-                    setAddCompPlan(false);
-                    setAddCompPlanStep("step1");
-                  }}
-                  className="close-div"
-                >
-                  <img src={close} alt="" />
-                </div>
-              </div>
-
-              <div
-                className="overall-div"
-                style={{ height: "calc(100% - 9.5rem)" }}
-              >
-                <div className="subbTxt">
-                  Which Marketplace Are You Listing On?
-                </div>
-                {isfetching
-                  ? Array(10)
-                      .fill(" ")
-                      .map((item, index) => {
-                        return (
-                          <div className="each-action1" key={index}>
-                            <Skeleton width={150} height={30} />
-                          </div>
-                        );
-                      })
-                  : userCreatedApps &&
-                    userCreatedApps?.map((e, i) => {
-                      return (
-                        <div
-                          className="each-action1"
-                          onClick={() => {
-                            setAddCompPlanStep("step3");
-                            setCompPlanApp(e?.app_code);
-                          }}
-                        >
-                          <div>
-                            <img src={e?.app_icon} alt="" />
-                          </div>
-                          <div>{e?.app_name}</div>
-                        </div>
-                      );
-                    })}
-              </div>
-
-              <div className="stepBtnss">
-                <div
-                  style={{ background: "#1F304F" }}
-                  onClick={() => {
-                    setAddCompPlanStep("step1");
-                  }}
-                >
-                  Go Back
-                </div>
-                <div
-                  style={{
-                    background: "#59A2DD",
-                    opacity: "0.25",
-                    cursor: "not-allowed",
-                  }}
-                >
-                  Next Step
-                </div>
-              </div>
-            </>
-          )}
-
-          {addCompPlanStep === "step3" && (
-            <>
-              <div className="head-txt">
-                <div>Add Comp Plan</div>
-                <div
-                  onClick={() => {
-                    setAddCompPlan(false);
-                    setAddCompPlanStep("step1");
-                  }}
-                  className="close-div"
-                >
-                  <img src={close} alt="" />
-                </div>
-              </div>
-
-              <div
-                className="overall-div"
-                style={{ height: "calc(100% - 9.5rem)" }}
-              >
-                <div className="subbTxt">How Many Levels Will Be Paid Out?</div>
-                <div className="each-action1">
-                  <input type="number" onChange={handleLevelChange} />
-                </div>
-              </div>
-
-              <div className="stepBtnss">
-                <div
-                  style={{ background: "#1F304F" }}
-                  onClick={() => {
-                    setAddCompPlanStep("step2");
-                  }}
-                >
-                  Go Back
-                </div>
-                <div
-                  style={{
-                    background: "#59A2DD",
-                    opacity: levels > 0 ? "1" : "0.25",
-                    cursor: levels > 0 ? "pointer" : "not-allowed",
-                  }}
-                  onClick={() => {
-                    if (levels > 0) {
-                      setAddCompPlanStep("step4");
-                    }
-                  }}
-                >
-                  Next Step
-                </div>
-              </div>
-            </>
-          )}
-
-          {addCompPlanStep === "step4" && (
-            <>
-              <div className="head-txt">
-                <div>Add Comp Plan</div>
-                <div
-                  onClick={() => {
-                    setAddCompPlan(false);
-                    setAddCompPlanStep("step1");
-                  }}
-                  className="close-div"
-                >
-                  <img src={close} alt="" />
-                </div>
-              </div>
-
-              <div
-                className="overall-div"
-                style={{ height: "calc(100% - 9.5rem)" }}
-              >
-                <div className="subbTxt">Enter Payout Percentage Per Level</div>
-                {renderLevelInputs(inputValues, setInputValues)}
-              </div>
-
-              <div className="stepBtnss">
-                <div
-                  style={{ background: "#1F304F" }}
-                  onClick={() => {
-                    setAddCompPlanStep("step3");
-                  }}
-                >
-                  Go Back
-                </div>
-                <div
-                  style={{
-                    ...applyStyle(spreadFunc(inputValues)),
-                    background: "#59A2DD",
-                  }}
-                  onClick={() => {
-                    if (levels == inputValues.length) {
-                      setAddCompPlanStep("step5");
-                    }
-                  }}
-                >
-                  Next Step
-                </div>
-              </div>
-            </>
-          )}
-
-          {addCompPlanStep === "step5" && (
-            <>
-              <div className="head-txt">
-                <div>Add Comp Plan</div>
-                <div
-                  onClick={() => {
-                    setAddCompPlan(false);
-                    setAddCompPlanStep("step1");
-                  }}
-                  className="close-div"
-                >
-                  <img src={close} alt="" />
-                </div>
-              </div>
-
-              <div
-                className="overall-div"
-                style={{ height: "calc(100% - 9.5rem)" }}
-              >
-                <div className="subbTxt">Enter Multiplier Per Level</div>
-                {renderLevelInputs(multiplier, setMultiplier)}
-              </div>
-
-              <div className="stepBtnss">
-                <div
-                  style={{ background: "#1F304F" }}
-                  onClick={() => {
-                    setAddCompPlanStep("step4");
-                  }}
-                >
-                  Go Back
-                </div>
-                <div
-                  style={{
-                    background: "#59A2DD",
-                    ...applyStyle(spreadFunc(multiplier)),
-                  }}
-                  onClick={() => {
-                    addComplan();
-                  }}
-                >
-                  Next Step
-                </div>
-              </div>
-            </>
-          )}
-
-          {addingComp && (
-            <div
-              className="loading-component"
-              style={{
-                top: "0",
-                left: "0",
-                width: "100%",
-                height: "100%",
-                position: "absolute",
-                display: "flex",
-              }}
-            >
-              <LoadingAnimation1 icon={lg1} width={200} />
-            </div>
-          )}
-
-          {addCompPlanStep === "step6" && (
-            <>
-              <div className="head-txt" style={{ justifyContent: "flex-end" }}>
-                <div
-                  onClick={() => {
-                    setAddCompPlan(false);
-                    setAddCompPlanStep("step1");
-                    setSelectedService("");
-                  }}
-                  className="close-div"
-                >
-                  <img src={close} alt="" />
-                </div>
-              </div>
-
-              <div
-                className="overall-div"
-                style={{ height: "calc(100% - 6rem)" }}
-              >
-                <div className="successMsg">
-                  You Have Successfully Added A CompPlan To{" "}
-                  {selectedService?.product_name}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
       <ToastContainer />
     </div>
-  );
+  </div>
+);
+
 };
 
 export default AccDashboard;
@@ -4946,7 +1798,7 @@ export const ImageUploadDivProfilePic = ({ setFunc, funcValue }) => {
       style={{
         width: "120px",
         height: "120px",
-        border: "0.5px solid #e7e7e7",
+        border: "0.5px solid #e9ecef",
         borderRadius: "50%",
       }}
     >

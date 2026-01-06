@@ -25,22 +25,22 @@ const LevelThree = ({
   // State to track selected answers for all questions
   const [selectedAnswers, setSelectedAnswers] = useState(Array(48).fill(null));
 
-  useEffect(() => {
-    setLoading(true);
-    axios
-      .get(`/api/personality/questions`)
-      .then(({ data }) => {
-        const sorted = data.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        setAllQuestions(sorted);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching questions:", error);
-        setLoading(false);
-      });
+ useEffect(() => {
+  setLoading(true);
+  axios.get('/api/personality/questions')
+    .then(({ data }) => {
+      setAllQuestions(data.data);
+      setLoading(false);
+    })
+    .catch(() => setLoading(false));
+}, []);
 
+useEffect(() => {
+  if (allQuestions.length && profileData?._id) {
     getAllAnswers();
-  }, []);
+  }
+}, [allQuestions, profileData?._id]);
+
 
   const getAllAnswers = () => {
     axios
@@ -83,20 +83,19 @@ const LevelThree = ({
       });
   };
 
-  const handleSubmit = () => {
-    selectedAnswers.forEach((answer, index) => {
-      if (answer) {
-        axios.post(`/api/userAnswers/add`, {
-          userId: profileData?._id,
-          question: allQuestions[index].question,
-          answer: answer,
-        });
-      }
-    });
+ const handleSubmit = async () => {
+  for (let i = 0; i < selectedAnswers.length; i++) {
+    if (selectedAnswers[i]) {
+      await axios.post('/api/userAnswers/add', {
+        userId: profileData._id,
+        question: allQuestions[i].question,
+        answer: selectedAnswers[i],
+      });
+    }
+  }
+  addPersonality();
+};
 
-    // Optionally add personality after submission
-    addPersonality();
-  };
 
   const addPersonality = () => {
     axios.put(`/api/users/addPersonality`, {

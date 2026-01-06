@@ -9,65 +9,83 @@ const { generateOTP, sendOTP, sendNotificationMail } = require("../middlewares/v
 
 
 const signUp = async (req, res) => {
-  try {
-    const { email, username, password } = req.body;
+    try {
+        const { email, username, password } = req.body;
 
-    if (!email || !username || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields (email, username, password) are required",
-      });
+        if (!email || !username || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields (email, username, password) are required",
+            });
+        }
+
+        // Always generate new OTP
+        const OTP = generateOTP();
+        const currentTime = new Date();
+
+        // Check if partner already exists
+        let partner = await Partner.findOne({ email });
+
+        if (partner) {
+            // Update OTP for existing partner
+            partner.username = username;  // update username if changed
+            partner.password = password;  // auto-hashed in pre-save hook
+            partner.OTP = OTP;
+            partner.OTPCreatedTime = currentTime;
+            partner.OTPverified = false;
+            partner.status = false;
+
+            await partner.save();
+        } else {
+            // Create new partner
+            partner = new Partner({
+                username,
+                email,
+                password,
+                OTP,
+                isBlocked: false,
+                OTPAttempts: 0,
+                OTPverified: false,
+                OTPCreatedTime: currentTime,
+                status: false,
+            });
+
+            await partner.save();
+        }
+
+        console.log("✔ OTP generated:", OTP);
+
+        sendNotificationMail(
+            email,
+            "Naavi Registration Confirmation OTP",
+            `Dear Partner,<br>Your OTP: ${OTP}<br>`
+        );
+
+        const token = jwt.sign(
+            { id: partner._id },
+            process.env.JWT_SECRET_KEY,
+            { expiresIn: "1d" }
+        );
+
+        return res.status(201).json({
+            success: true,
+            message: "Partner created successfully",
+            token,
+            partner: {
+                id: partner._id,
+                username: partner.username,
+                email: partner.email,
+            },
+        });
+
+    } catch (error) {
+        console.error("SignUp Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong",
+            error: error.message,
+        });
     }
-
-    const OTP = generateOTP();
-    const currentTime = new Date();
-
-    const temporalPartner = new Partner({
-      username,
-      email,
-      password, // ✅ plain text; will be hashed by pre("save") hook
-      OTP,
-      isBlocked: false,
-      OTPAttempts: 0,
-      OTPverified: false,
-      OTPCreatedTime: currentTime,
-      status: false,
-    });
-
-    await temporalPartner.save();
-
-    console.log("✅ Partner saved successfully. OTP:", OTP);
-
-    sendNotificationMail(
-      email,
-      "Naavi Registration Confirmation OTP",
-      `Dear Partner,<br>Your OTP: ${OTP}<br>`
-    );
-
-    const token = jwt.sign(
-      { id: temporalPartner._id },
-      process.env.JWT_SECRET_KEY,
-      { expiresIn: "1d" }
-    );
-
-    return res.status(201).json({
-      success: true,
-      message: "Partner created successfully",
-      token,
-      partner: {
-        id: temporalPartner._id,
-        username: temporalPartner.username,
-        email: temporalPartner.email,
-      },
-    });
-  } catch (error) {
-    console.error("SignUp Error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Something went wrong",
-      error: error.message,
-    });
-  }
 };
 
 
@@ -358,7 +376,14 @@ const verifyOtp = async (req, res) => {
             return res.status(400).json({ success: false, message: "Partner not found" });
         }
 
-
+       // 🔍 ADD DEBUG LOGS HERE
+        console.log("=================================");
+        console.log("Stored OTP:", partner.OTP);
+        console.log("Stored OTP Created Time:", partner.OTPCreatedTime);
+        console.log("User entered OTP:", otp);
+        console.log("Now:", new Date());
+        console.log("Time difference (ms):", Date.now() - partner.OTPCreatedTime);
+        console.log("=================================");
         // Check if OTP is expired const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
         if (partner.isOTPExpired()) {
@@ -598,7 +623,7 @@ module.exports = {
     sendResetPasswordEmail,
     resetPassword,
     logout,
-    verifyOtp,
+    verifyOtp, 
     updatePassword,
     getAllPartners,
     updatePartnerProfile,

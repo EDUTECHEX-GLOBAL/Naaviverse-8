@@ -9,26 +9,33 @@ import { useNavigate } from 'react-router-dom';
 
 const MenuNav = ({showDrop, setShowDrop, searchTerm, setSearchterm, searchPlaceholder}) => {
     const navigate = useNavigate();
-    const handleLogout = () => {
-        localStorage.clear();
-        navigate("/login");
-      };
-     
+  const handleLogout = () => {
+  const adminUser = localStorage.getItem("adminuser");
 
+  localStorage.clear();
+
+  if (adminUser) {
+    navigate("/admin/login"); // ✅ admin logout
+  } else {
+    navigate("/login");
+  }
+};
+
+
+    
       
-      const handleNavifateProfile = () => {
-        const userType = localStorage.getItem('userType')
-        
+ const handleNavifateProfile = () => {
+  setShowDrop(false);
 
-        if(userType === 'user'){
-            navigate('/dashboard/users/profile')
-        }else if (userType === 'partner'){
+  const adminUser = localStorage.getItem("adminuser");
 
-            navigate('/dashboard/accountants/profile')
-        }else{
-            navigate('/admin/dashboard/profile')
-        }
-      }
+  if (adminUser) {
+    window.dispatchEvent(new Event("openAdminProfile"));
+  }
+};
+
+
+
     
 
     return ( 
@@ -81,10 +88,11 @@ const MenuNav = ({showDrop, setShowDrop, searchTerm, setSearchterm, searchPlaceh
 
             <>
         {showDrop ? (
-          <div className="m-drop" onMouseDown={(e) => e.stopPropagation()}>
+          <div className="m-drop" onClick={(e) => e.stopPropagation()}>
             <div
               className="m-each"
               onClick={() => {
+                console.log("PROFILE CLICKED"); 
                 handleNavifateProfile()
               }}
             >

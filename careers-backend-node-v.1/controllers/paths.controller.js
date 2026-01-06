@@ -89,58 +89,28 @@ const addPath = async (req, res) => {
 
 const updatePath = async (req, res) => {
     try {
-        let { pathId } = req.body;
-        console.log("Received pathId:", pathId, "Type:", typeof pathId);
+        let { pathId, ...updateData } = req.body;
 
-        // Ensure pathId is a valid string and remove any spaces
-        if (!pathId || typeof pathId !== "string") {
+        if (!pathId || !mongoose.Types.ObjectId.isValid(pathId)) {
             return res.status(400).json({
                 status: false,
-                message: 'Path ID is missing or invalid',
-            });
-        }
-        pathId = pathId.trim(); // Trim spaces
-
-        // Validate ObjectId format
-        if (!mongoose.Types.ObjectId.isValid(pathId)) {
-            return res.status(400).json({
-                status: false,
-                message: 'Invalid path ID format',
+                message: 'Invalid or missing pathId',
             });
         }
 
-        const objectId = new mongoose.Types.ObjectId(pathId);
+        // Update the path with the provided fields
+        const updatedPath = await pathModel.findByIdAndUpdate(
+            pathId,
+            updateData,
+            { new: true }
+        );
 
-        // Check if the path exists
-        let existingPath = await pathModel.findById(objectId);
-        if (!existingPath) {
+        if (!updatedPath) {
             return res.status(404).json({
                 status: false,
                 message: 'Path not found',
             });
         }
-
-        // Extract valid update fields
-        let updateData = {};
-        Object.keys(req.body).forEach((key) => {
-            if (req.body[key] !== undefined && req.body[key] !== null) {
-                updateData[key] = req.body[key];
-            }
-        });
-
-        if (Object.keys(updateData).length === 0) {
-            return res.status(400).json({
-                status: false,
-                message: 'No valid fields provided for update',
-            });
-        }
-
-        // Update path in the database
-        let updatedPath = await pathModel.findByIdAndUpdate(
-            objectId,
-            { $set: updateData },
-            { new: true, runValidators: true }
-        );
 
         return res.status(200).json({
             status: true,
@@ -155,40 +125,47 @@ const updatePath = async (req, res) => {
             message: 'Internal server error',
         });
     }
-}; 
+};
 
 const updatePathStatus = async (req, res) => {
-    const pathId = req.params.id; // Path ID from URL
-    const { status } = req.body;  // Status from the request body (active/inactive)
-  
-    // Validate the status
+    const pathId = req.params.id;
+    const { status } = req.body;
+
     if (!status || !['active', 'inactive'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status. Please use "active" or "inactive".' });
+        return res.status(400).json({ 
+            status: false,
+            message: 'Invalid status'
+        });
     }
-  
+
     try {
-      // Find the path by ID
-      const path = await pathModel.findById(pathId);
-  
-      if (!path) {
-        return res.status(404).json({ error: 'Path not found.' });
-      }
-  
-      // Update the status of the path
-      path.status = status === 'active' ? 'active' : 'inactive';  // Map 'inactive' to 'deleted'
-      
-      await path.save(); // Save the updated path
-  
-      // Send a success response
-      res.status(200).json({ 
-        status: true,
-        message: `Path has been marked as ${status === 'active' ? 'approved' : 'rejected'}.`
-      });
+        const updatedPath = await pathModel.findByIdAndUpdate(
+            pathId,
+            { $set: { status } },
+            { new: true, runValidators: false }  // ⭐ DISABLE VALIDATION ⭐
+        );
+
+        if (!updatedPath) {
+            return res.status(404).json({
+                status: false,
+                message: 'Path not found'
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: `Path has been marked as ${status === 'active' ? 'approved' : 'rejected'}.`,
+            data: updatedPath
+        });
+
     } catch (error) {
-      console.error("Error updating path status:", error);
-      res.status(500).json({ error: 'Internal server error.' });
+        console.error("Error updating path status:", error);
+        return res.status(500).json({
+            status: false,
+            message: 'Internal server error'
+        });
     }
-  };
+};
 
 const getPath = async (req, res) => {
     let filter = {}
@@ -385,7 +362,7 @@ const getPathNormal = async (req, res) => {
         });
     } catch (err) {
         console.log('err=========>', err);
-        res.status(500).json({
+        res.status(500).json({ 
             status: false,
             message: err.message,
         });
@@ -497,47 +474,61 @@ const getActivePaths = async (req, res) => {
     }
   };
 
-  const getPathById = async (req, res) => {
-    try {
-        // Extract path_id from the URL parameters
-        const pathId = req.params.path_id;
+const getPathById = async (req, res) => {
+  try {
+    const pathId = req.params.path_id;
 
-        // Validate the pathId to ensure it is a valid ObjectId
-        if (!mongoose.Types.ObjectId.isValid(pathId)) {
-            return res.status(400).json({
-                status: false,
-                message: 'Invalid path ID provided',
-            });
-        }
-
-        // Find the path in the database by the path_id
-        const path = await pathModel.findById(pathId).lean();
-
-        // If path is not found
-        if (!path) {
-            return res.status(404).json({
-                status: false,
-                message: 'Path not found',
-            });
-        }
-
-        // Return the path data
-        return res.status(200).json({
-            status: true,
-            message: 'Path data found',
-            data: path,
-        });
-    } catch (err) {
-        console.log('Error:', err);
-        res.status(500).json({
-            status: false,
-            message: 'An error occurred while fetching the path data',
-        });
+    if (!mongoose.Types.ObjectId.isValid(pathId)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid path ID"
+      });
     }
+
+    const result = await pathModel.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(pathId) } },
+
+      {
+        $lookup: {
+          from: "career_steps",
+          let: { stepIds: "$the_ids.step_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $in: ["$_id", "$$stepIds"]
+                }
+              }
+            }
+          ],
+          as: "StepDetails"
+        }
+      }
+    ]);
+
+    if (!result || result.length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Path not found"
+      });
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Path data found",
+      data: result[0]
+    });
+
+  } catch (err) {
+    console.error("Error:", err);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error"
+    });
+  }
 };
 
-
-  
+ 
 module.exports = {
     addPath,
     getPath,
@@ -552,3 +543,10 @@ module.exports = {
     getPathById,
 
 }
+
+
+
+
+
+
+

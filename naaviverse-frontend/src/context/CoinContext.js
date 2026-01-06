@@ -160,7 +160,7 @@ export const CoinContextProvider = ({ children }) => {
   });
   const [selectedSteps, setSelectedSteps] = useState([]);
   const [creatingPath, setCreatingPath] = useState(false);
-  const [mypathsMenu, setMypathsMenu] = useState("Paths");
+  const [mypathsMenu, setMypathsMenu] = useState("Active Steps");
   const [currentStepData, setCurrentStepData] = useState("");
   const [currentStepdataPathId, setCurrentStepDataPathId] = useState("");
   const [currentStepDataLength, setCurrentStepDataLength] = useState();

@@ -38,7 +38,7 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
     const [newValue, setNewValue] = useState("");
     const [viewPathEnabled, setViewPathEnabled] = useState(false);
     const [viewPathLoading, setViewPathLoading] = useState(false);
-    const [viewPathData, setViewPathData] = useState([]);
+    const [viewPathData, setViewPathData] = useState(null);
     const [allServicesToRemove, setAllServicesToRemove] = useState([]);
 
     const [showSelectedPath, setShowSelectedPath] = useState(null)
@@ -311,53 +311,56 @@ useEffect(() => {
             });
     };
 
-    const viewPath = (path) => {
-        console.log(path, "lkwehflwehflwf")
-        setViewPathLoading(true);
-        axios
-            .get(`/api/paths/get?nameOfPath=${path}`)
-            .then((response) => {
-                let result = response?.data?.data[0];
-                // console.log(result, "viewPathData result");
-                setViewPathData(result);
-                setViewPathLoading(false);
-            })
-            .catch((error) => {
-                console.log(error, "error in fetching viewPathData");
-            });
-    };
+ const viewPathById = (id) => {
+    setViewPathLoading(true);
+
+    axios
+      .get(`/api/paths/viewpath/${id}`)
+      .then((response) => {
+          let result = response?.data?.data;   // BACKEND RETURNS data not data[0]
+          setViewPathData(result);
+          setViewPathLoading(false);
+      })
+      .catch((error) => {
+          console.log("Error in fetching view path data:", error);
+          setViewPathLoading(false);
+      });
+};
 
 
-    const handleApprovePath = () => {
-        setActionLoading(true);
-        axios.put(`/api/paths/update/${selectedPathId}`,
-            { status: "active" })
-            .then(({ data }) => {
-                if (data.status) {
-                    getNewPath()
-                    setPathActionEnabled(false);
-                    setActionLoading(false);
-                    setPathActionStep(1)
-                }
-            })
-    }
-    const handleRejectPath = () => {
-        setActionLoading(true);
-        axios.put(`/api/paths/update/${selectedPathId}`,
-            { status: "inactive" })
-            .then(({ data }) => {
-                if (data.status) {
-                    if (mypathsMenu === "Pending Paths") {
-                        getNewPath()
-                    } else {
-                        getAllPaths()
-                    }
-                    setPathActionEnabled(false);
-                    setActionLoading(false);
-                    setPathActionStep(1)
-                }
-            })
-    }
+
+const handleApprovePath = () => {
+  setActionLoading(true);
+
+  axios
+    .put(`http://localhost:4545/api/paths/updatepath/${selectedPathId}`, {
+      status: "active",
+    })
+    .then(({ data }) => {
+      if (data.status) {
+        getAllPaths();
+        setPathActionEnabled(false);
+      }
+    })
+    .finally(() => setActionLoading(false));
+};
+
+const handleRejectPath = () => {
+  setActionLoading(true);
+
+  axios
+    .put(`http://localhost:4545/api/paths/updatepath/${selectedPathId}`, {
+      status: "inactive",
+    })
+    .then(({ data }) => {
+      if (data.status) {
+        getAllPaths();
+        setPathActionEnabled(false);
+      }
+    })
+    .finally(() => setActionLoading(false));
+};
+
 
     const handleAddService = (newId) => {
         setActionLoading(true)
@@ -388,7 +391,8 @@ useEffect(() => {
 
 
     const [productDataArray, setProductDataArray] = useState([]);
-    const [productKeys, setProductKeys] = useState(null);
+const [productKeys, setProductKeys] = useState([]);
+
 
     const [allServicesToAdd, setAllServicesToAdd] = useState([]);
 
@@ -744,7 +748,7 @@ const fetchServicesForRemoval = async () => {
                                     <Skeleton width={150} height={30} />
                                 ) : (
                                     <div className="viewpath-bold-text">
-                                        {viewPathData?.length > 0
+                                        {viewPathData
                                             ? viewPathData?.destination_institution
                                             : ""}
                                     </div>
@@ -753,7 +757,7 @@ const fetchServicesForRemoval = async () => {
                                     <Skeleton width={500} height={20} />
                                 ) : (
                                     <div className="viewpath-des">
-                                        {viewPathData?.length > 0 ? viewPathData?.description : ""}
+                                        {viewPathData ? viewPathData?.description : ""}
                                     </div>
                                 )}
                                 <div
@@ -792,7 +796,7 @@ const fetchServicesForRemoval = async () => {
                                                 </div>
                                             );
                                         })
-                                    : viewPathData?.length > 0
+                                    : viewPathData
                                         ? viewPathData?.StepDetails?.map((e, i) => {
                                             return (
                                                 <div onClick={() => {
@@ -979,8 +983,9 @@ const fetchServicesForRemoval = async () => {
                                             className="acc-step-box4"
                                             onClick={() => {
                                                 setViewPathEnabled(true);
-                                                setPathActionEnabled(false);
-                                                navigate(`/dashboard/path/${selectedPathId}`)
+setPathActionEnabled(false);
+ viewPathById(selectedPath?._id)
+
                                             }}
                                         >
                                             View path
