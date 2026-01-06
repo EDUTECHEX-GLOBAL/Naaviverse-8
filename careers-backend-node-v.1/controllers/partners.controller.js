@@ -10,22 +10,34 @@ const { generateOTP, sendOTP, sendNotificationMail } = require("../middlewares/v
 
 const signUp = async (req, res) => {
   try {
-    const { email, username, password } = req.body;
+    const { email, username, password, partnerType } = req.body;
 
-    if (!email || !username || !password) {
+    // Validate required fields
+    if (!email || !username || !password || !partnerType) {
       return res.status(400).json({
         success: false,
-        message: "All fields (email, username, password) are required",
+        message: "Email, username, password and partnerType are required",
+      });
+    }
+
+    // Check if partner already exists
+    const existingPartner = await Partner.findOne({ email });
+    if (existingPartner) {
+      return res.status(400).json({
+        success: false,
+        message: "User is already registered",
       });
     }
 
     const OTP = generateOTP();
     const currentTime = new Date();
 
+    // Create partner with partnerType
     const temporalPartner = new Partner({
       username,
       email,
-      password, // ✅ plain text; will be hashed by pre("save") hook
+      password, // hashed automatically in pre-save
+      partnerType, // ✅ SUPER IMPORTANT!!
       OTP,
       isBlocked: false,
       OTPAttempts: 0,
@@ -58,6 +70,7 @@ const signUp = async (req, res) => {
         id: temporalPartner._id,
         username: temporalPartner.username,
         email: temporalPartner.email,
+        partnerType: temporalPartner.partnerType,
       },
     });
   } catch (error) {
@@ -544,16 +557,24 @@ const getPartnerByEmail = async (req, res) => {
         ];
 
 
-        const missingFields = requiredFields.filter(field => !partner[field]);
-        console.log("Missing fields:", missingFields);
+       const missingFields = requiredFields.filter(field => !partner[field]);
+console.log("Missing fields:", missingFields);
 
+if (missingFields.length > 0) {
+  return res.status(200).json({
+    success: true,                        // ✔ profile exists
+    profileIncomplete: true,              // ✔ new flag
+    missingFields,
+    data: partner
+  });
+}
 
-        if (missingFields.length > 0) {
-            return res.status(200).json({ success: false, message: "Profile incomplete", missingFields });
-        }
+return res.status(200).json({
+  success: true,
+  profileIncomplete: false,
+  data: partner
+});
 
-
-        res.status(200).json({ success: true, data: partner });
 
 
     } catch (error) {

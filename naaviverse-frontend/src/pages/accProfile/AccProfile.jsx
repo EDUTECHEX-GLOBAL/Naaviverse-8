@@ -234,8 +234,12 @@ const AccProfile = () => {
   // //upload part starts here
   const secrAet = "uyrw7826^&(896GYUFWE&*#GBjkbuaf"; // secret not to be disclosed anywhere.
   const emailDev = "rahulrajsb@outlook.com"; // email of the developer.
-  const userDetails = JSON.parse(localStorage.getItem("partner"));
+ const userDetails = JSON.parse(localStorage.getItem("partner"));
+
+useEffect(() => {
   console.log("Partner data retrieved from localStorage:", userDetails);
+}, []);
+
 
 
   const [businessName, setBusinessName] = useState('');
@@ -292,73 +296,128 @@ const AccProfile = () => {
   //   }
   // };
 
-  const uploadBulkPath = async (file) => {
+const uploadBulkPath = async (file) => {
+  try {
     setIsUploadLoading(true);
 
-    const fileName = `${new Date().getTime()}${file?.name?.substr(
-      file.name.lastIndexOf(".")
-    )}`;
-
-    const formData = new FormData();
-    const newfile = renameFile(file, fileName);
-    formData.append("file", newfile);
-
+    const text = await file.text();      // Read file content
+    const json = JSON.parse(text);       // Convert to JSON
 
     let { data } = await axios.post(
-      `http://localhost:4545/paths/addmultiplepaths`,
-      formData,
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-      }
+      "http://localhost:4545/api/paths/bulk",
+      json
     );
 
     if (data?.status) {
-      console.log(data[0], "dfile name upload");
-      setpstep(12)
-      // setCoverImageS3url(data[0]?.urlName);
       setIsUploadLoading(false);
-      // return data[0]?.urlName;
+      alert("Bulk paths uploaded successfully!");
     } else {
-      // setIsUploadLoading(false);
-      console.log("error in uploading image");
+      setIsUploadLoading(false);
+      alert("Error uploading");
     }
-  };
 
-  const uploadBulkStep = async (file) => {
+  } catch (error) {
+    setIsUploadLoading(false);
+    console.error("Bulk upload error:", error);
+  }
+};
+
+const uploadBulkStep = async (file) => {
+  try {
     setIsUploadLoading(true);
 
-    const fileName = `${new Date().getTime()}${file?.name?.substr(
-      file.name.lastIndexOf(".")
-    )}`;
+    // Convert file to JSON
+    const text = await file.text();
+    const records = JSON.parse(text);
 
-    const formData = new FormData();
-    const newfile = renameFile(file, fileName);
-    formData.append("file", newfile);
+    if (!Array.isArray(records) || records.length === 0) {
+      alert("JSON must contain an array of records");
+      setIsUploadLoading(false);
+      return;
+    }
 
+    const email = localStorage.getItem("loginEmail");
 
-    let { data } = await axios.post(
-      `/api/steps/addmultiplesteps`,
-      formData,
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-      }
+    if (!email) {
+      alert("User email missing. Login again.");
+      setIsUploadLoading(false);
+      return;
+    }
+
+    const body = {
+      email,
+      records
+    };
+
+    const res = await axios.post(
+      "http://localhost:4545/api/steps/bulk",
+      body
     );
 
-    if (data?.status) {
-      console.log(data[0], "dfile name upload");
-      setpstep(12)
-      // setCoverImageS3url(data[0]?.urlName);
-      setIsUploadLoading(false);
-      // return data[0]?.urlName;
+    if (res.data?.status) {
+      console.log("Bulk upload success:", res.data);
+      alert(`Uploaded ${res.data.count} steps successfully`);
+      setpstep(12);
     } else {
-      // setIsUploadLoading(false);
-      console.log("error in uploading image");
+      console.log("Upload failed:", res.data);
+      alert("Upload failed, check console");
     }
-  };
+
+  } catch (err) {
+    console.error("Error uploading bulk steps:", err);
+    alert("Bulk upload error. Check console.");
+  } finally {
+    setIsUploadLoading(false);
+  }
+};
+
+
+const uploadBulkService = async (file) => {
+  try {
+    setIsUploadLoading(true);
+
+    // Convert to JSON
+    const text = await file.text();
+    const records = JSON.parse(text);
+
+    if (!Array.isArray(records) || records.length === 0) {
+      alert("JSON must contain an array of records");
+      setIsUploadLoading(false);
+      return;
+    }
+
+    const email = JSON.parse(localStorage.getItem("partner"))?.email;
+
+    if (!email) {
+      alert("User email missing");
+      setIsUploadLoading(false);
+      return;
+    }
+
+    const body = {
+      email,
+      records
+    };
+
+    const res = await axios.post(
+      "http://localhost:4545/api/services/bulk",
+      body
+    );
+
+    if (res.data?.status) {
+      alert(`Uploaded ${res.data.count} services successfully`);
+      setpstep(12);
+    } else {
+      alert("Upload failed, check console");
+    }
+
+  } catch (err) {
+    console.error("Error uploading bulk services:", err);
+    alert("Bulk upload error. Check console.");
+  } finally {
+    setIsUploadLoading(false);
+  }
+};
 
 
   const signJwt = async (fileName, emailDev, secret) => {
@@ -404,24 +463,29 @@ const AccProfile = () => {
   }
 
 
-  const getActiveSteps = () => {
-    console.log("getActiveSteps called");
-    setLoading(true);
-    let email = userDetails?.email;
+const getActiveSteps = () => {
+  console.log("getActiveSteps called");
+  setLoading(true);
 
-    axios
-      .get(`/api/steps/active?email=${email}`)
-      .then((response) => {
-        let result = response?.data?.data;
-        console.log("Active Steps Fetched:", result);
-        setPartnerStepsData(result || []);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching active steps:", error);
-        setLoading(false);
-      });
-  };
+  const email = userDetails?.email || localStorage.getItem("loginEmail");
+
+  console.log("📧 Email used for step fetch:", email);
+
+  axios
+    .get(`http://localhost:4545/api/steps?path_id=selectedPathId`)
+    .then((response) => {
+      let result = response?.data?.data;
+      console.log("Active Steps Retrieved:", result);
+      setPartnerStepsData(result || []);
+      setLoading(false);
+    })
+    .catch((error) => {
+      console.error("❌ Error fetching partner steps:", error.response?.data || error.message);
+      setLoading(false);
+    });
+};
+
+
 
   // Debug: Track state updates
   useEffect(() => {
@@ -613,10 +677,14 @@ const AccProfile = () => {
     setIsSubmit(false);
   };
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/");
-  };
+const handleLogout = () => {
+  localStorage.removeItem("partner");
+  localStorage.removeItem("loginEmail");
+console.trace("🚨 LOGIN REDIRECT TRIGGERED FROM HERE");
+navigate("/login");
+
+};
+
 
   const handleServicesForLogged = () => {
     setIsServicesAcc(true);
@@ -661,6 +729,11 @@ const AccProfile = () => {
     setImage(e.target.files[0]);
     uploadBulkStep(e.target.files[0]);
   };
+  const handleFileInputChange3 = (e) => {
+  setImage(e.target.files[0]);
+  uploadBulkService(e.target.files[0]);
+};
+
   const myTimeoutService = () => {
     setTimeout(reloadService, 3000);
   };
@@ -2539,10 +2612,11 @@ const AccProfile = () => {
                           cursor: "pointer",
                         }}
                         onClick={() => {
-                          console.log("Click event triggered");
-                          getActiveSteps();
-                          setStepsToggle((prev) => !prev);
-                        }}
+  console.log("Click event triggered");
+  getActiveSteps();
+  setStepsToggle((prev) => !prev);
+}}
+
                       >
                         <div
                           style={{
@@ -2731,18 +2805,20 @@ const AccProfile = () => {
                       Select ideal grade for participant
                     </div>
                     <div className="optioncardWrapper">
-                      {gradeList.map((item) => (
-                        <div
-                          className={
-                            grade.includes(item)
-                              ? "optionCardSmallSelected"
-                              : "optionCardSmall"
-                          }
-                          onClick={(e) => handleGrade(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
+                {gradeList.map((item, index) => (
+  <div
+    key={item || index}                           // 👈 ADD KEY
+    className={
+      grade.includes(item)
+        ? "optionCardSmallSelected"
+        : "optionCardSmall"
+    }
+    onClick={() => handleGrade(item)}
+  >
+    {item}
+  </div>
+))}
+
                     </div>
                   </div>
 
@@ -2751,18 +2827,20 @@ const AccProfile = () => {
                       Select ideal grade point average for participant
                     </div>
                     <div className="optionCardFullWrapper">
-                      {gradePointAvg.map((item) => (
-                        <div
-                          className={
-                            gradeAvg.includes(item)
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => handleGradeAvg(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
+                    {gradePointAvg.map((item, index) => (
+  <div
+    key={item || index}                           // 👈 ADD KEY
+    className={
+      gradeAvg.includes(item)
+        ? "optionCardFullSelected"
+        : "optionCardFull"
+    }
+    onClick={() => handleGradeAvg(item)}
+  >
+    {item}
+  </div>
+))}
+
                     </div>
                   </div>
 

@@ -12,67 +12,63 @@ const JourneyPage = () => {
   const { setCurrentStepData, setCurrentStepDataLength } = useCoinContextData();
   const { setsideNav } = useStore();
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [journeyPageData, setJourneyPageData] = useState(null);
 
+  // -------------------------------
+  // LOAD SELECTED PATH ID
+  // -------------------------------
   useEffect(() => {
-    const universityId = localStorage.getItem("selectedUniversityId");
+    const pathId = localStorage.getItem("selectedPathId");
 
-    console.log("Loaded University ID:", universityId);
+    console.log("🔥 Loaded Path ID:", pathId);
 
-    if (!universityId) return;
+    if (!pathId) {
+      setLoading(false);
+      return;
+    }
 
-    fetchJourneyData(universityId);
+    fetchJourneyData(pathId);
   }, []);
 
-  const fetchJourneyData = async (universityId) => {
-    setLoading(true);
+  // -------------------------------
+  // FETCH PATH + STEPS
+  // -------------------------------
+  const fetchJourneyData = async (pathId) => {
     try {
-      const response = await axios.get(
-        `/api/userpaths/steps?universityId=${universityId}`
-      );
+      const response = await axios.get(`/api/userpaths/steps?pathId=${pathId}`);
 
-      if (response.data.success) {
+      console.log("🔥 STEPS RESPONSE:", response.data);
+
+      if (response.data.status) {
         setJourneyPageData(response.data.data);
+      } else {
+        setJourneyPageData(null);
       }
     } catch (error) {
-      console.error("Error fetching steps:", error);
+      console.error("❌ Error fetching steps:", error);
+      setJourneyPageData(null);
     } finally {
       setLoading(false);
     }
   };
 
-const handleStepClick = async (step, index) => {
-  const stepId = step._id; 
-  const universityId = localStorage.getItem("selectedUniversityId");
+  // -------------------------------
+  // STEP CLICK HANDLER (NO AI)
+  // -------------------------------
+  const handleStepClick = (step, index) => {
+    const stepId = step._id;
 
-  console.log("🔥 Step ID:", stepId);
+    console.log("🔥 Selected Step ID:", stepId);
 
-  setsideNav("Current Step");
-  setCurrentStepData(step);
-  setCurrentStepDataLength(journeyPageData?.steps?.length);
+    setsideNav("Current Step");
+    setCurrentStepData(step);
+    setCurrentStepDataLength(journeyPageData?.steps?.length);
 
-  localStorage.setItem("selectedStepId", stepId);
+    localStorage.setItem("selectedStepId", stepId);
 
-  try {
-    // 🔥 FETCH AI-GENERATED MACRO / MICRO / NANO VIEWS
-    const res = await axios.get(
-      `/api/stepviews?stepId=${stepId}&universityId=${universityId}`
-    );
-
-    console.log("🔥 AI STEP VIEWS:", res.data.data);
-
-    // SAVE in localStorage or Context so you can show in Users Page
-    localStorage.setItem("currentStepViews", JSON.stringify(res.data.data));
-
-  } catch (err) {
-    console.error("Error generating StepViews:", err);
-  }
-
-  navigate("/dashboard/users");
-};
-
-
+    navigate("/dashboard/users/current-step");
+  };
 
   return (
     <div className="journeypage">
@@ -82,7 +78,7 @@ const handleStepClick = async (step, index) => {
         {loading ? (
           <Skeleton width={200} height={30} />
         ) : (
-          <div className="path-title">{journeyPageData?.school}</div>
+          <div className="path-title">{journeyPageData?.name || "N/A"}</div>
         )}
 
         {loading ? (
@@ -99,7 +95,7 @@ const handleStepClick = async (step, index) => {
           journeyPageData?.steps?.map((step, index) => (
             <div
               className="step-card"
-              key={index}
+              key={step._id}
               onClick={() => handleStepClick(step, index)}
               style={{ cursor: "pointer" }}
             >

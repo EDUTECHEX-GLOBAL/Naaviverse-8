@@ -1,159 +1,79 @@
 const express = require("express");
 const router = express.Router();
-const Universities = require("../models/universities.model");
-const StepViews = require("../models/stepviews.model");
-const axios = require("axios");
 
-/***********************************************************
- *  AUTO-GENERATE MACRO / MICRO / NANO VIEW
- ***********************************************************/
+const Step = require("../models/steps.model");
+const StepViews = require("../models/StepViews.model");
+
 router.get("/", async (req, res) => {
   try {
-    const { stepId, universityId } = req.query;
+    const { stepId, pathId } = req.query;
 
-    if (!stepId || !universityId) {
+    if (!stepId || !pathId) {
       return res.status(400).json({
         success: false,
-        message: "stepId and universityId are required",
+        message: "stepId and pathId are required",
       });
     }
 
-    /****************************************************
-     * 1️⃣ FIND UNIVERSITY
-     ****************************************************/
-    const uni = await Universities.findById(universityId);
-
-    if (!uni)
-      return res.status(404).json({
-        success: false,
-        message: "University not found",
-      });
-
-    const gp = uni.generatedProgram;
-
-    if (!gp || !gp.steps) {
-      return res.status(404).json({
-        success: false,
-        message: "No generated program found for this university",
-      });
-    }
-
-    /****************************************************
-     * 2️⃣ FIND STEP BY ID (your steps have no _id, so match externally)
-     ****************************************************/
-    const index = gp.steps.findIndex(
-      (_, idx) => `${uni._id}_step_${idx}` === stepId
-    );
-
-    if (index === -1) {
+    // 1️⃣ Fetch step
+    const step = await Step.findById(stepId);
+    if (!step) {
       return res.status(404).json({
         success: false,
         message: "Step not found",
       });
     }
 
-    const step = gp.steps[index];
+    // 2️⃣ MACRO VIEW (string → object)
+    const macroDescription =
+      step.macro_description?.trim() ||
+      step.description ||
+      "";
 
-    /****************************************************
-     * 3️⃣ CHECK IF STEP VIEW ALREADY EXISTS
-     ****************************************************/
-    let existing = await StepViews.findOne({ stepId });
+    // 3️⃣ MICRO VIEW (string)
+    const microDescription =
+      step.micro_description?.trim() || "";
 
-    if (existing) {
-      return res.json({ success: true, data: existing });
-    }
+    // 4️⃣ NANO VIEW (STRING — 🔥 FIX)
+    const nanoDescription =
+      step.nano_description?.trim() || "";
 
-    /****************************************************
-     * 4️⃣ PREPARE PROMPT FOR PERPLEXITY AI
-     ****************************************************/
-    const prompt = `
-Generate 3 views for the following step:
-
-STEP NAME: ${step.name}
-STEP DESCRIPTION: ${step.description}
-
-STUDENT CONTEXT:
-Grade: ${gp.grade}
-Stream: ${gp.stream}
-Curriculum: ${gp.curriculum}
-Performance: ${gp.performance}
-Financial Position: ${gp.financialSituation}
-Personality: ${gp.personality}
-
-Return STRICT JSON:
-{
-  "macroView": "",
-  "microView": {
-     "grade": "",
-     "stream": "",
-     "curriculum": "",
-     "gpa": "",
-     "financialPosition": "",
-     "personality": ""
-  },
-  "nanoView": ["", "", ""]
-}
-`;
-
-    /****************************************************
-     * 5️⃣ CALL PERPLEXITY AI
-     ****************************************************/
-    const aiRes = await axios.post(
-      "https://api.perplexity.ai/chat/completions",
-      {
-        model: "sonar-pro",
-        messages: [{ role: "user", content: prompt }],
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.PERPLEXITY_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    let raw = aiRes?.data?.choices?.[0]?.message?.content || "";
-    raw = raw.replace(/```json/g, "").replace(/```/g, "").trim();
-
-    let generated;
-    try {
-      generated = JSON.parse(raw);
-    } catch (e) {
-      return res.status(500).json({
-        success: false,
-        message: "AI returned invalid JSON",
-        raw,
-      });
-    }
-
-    /****************************************************
-     * 6️⃣ SAVE TO MONGO (MATCHING YOUR MODEL)
-     ****************************************************/
-    const saved = await StepViews.create({
-      universityId,
+    // 5️⃣ Payload EXACTLY matches StepViews schema
+    const payload = {
       stepId,
-      macroView: generated.macroView,
-      microView: {
-        grade: generated.microView.grade,
-        stream: generated.microView.stream,
-        curriculum: generated.microView.curriculum,
-        gpa: generated.microView.gpa,
-        financialPosition: generated.microView.financialPosition,
-        personality: generated.microView.personality,
+      pathId,
+      macroView: {
+        description: macroDescription,
       },
-      nanoView: generated.nanoView,
-      createdAt: new Date(),
-    });
+      microView: {
+        description: microDescription,
+      },
+      nanoView: {
+        description: nanoDescription,
+      },
+    };
 
-    return res.json({
-      success: true,
-      data: saved,
-    });
-  } catch (error) {
-    console.error("❌ Error generating views:", error);
+    // 6️⃣ Find existing StepView
+    let view = await StepViews.findOne({ stepId, pathId });
+
+    if (view) {
+      view.macroView = payload.macroView;
+      view.microView = payload.microView;
+      view.nanoView = payload.nanoView;
+
+      await view.save();
+      return res.json({ success: true, data: view });
+    }
+
+    // 7️⃣ Create new StepView
+    const created = await StepViews.create(payload);
+    return res.json({ success: true, data: created });
+
+  } catch (err) {
+    console.error("STEPVIEWS ERROR:", err);
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: err.message,
     });
   }
 });

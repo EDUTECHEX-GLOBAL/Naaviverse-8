@@ -1254,21 +1254,29 @@ const AccDashboard = () => {
   };
 
 const [adminServices, setAdminServices] = useState([])
-  const getAdminServices = () => {
-    setIsUserLoading(true)
-    axios.get(`/api/services/getservices?status=${crmMenu === "Active Services" ? "active" : "inactive"}`).then(({data}) => {
-      if(data.status){
-        setAdminServices(data?.data)
-        setIsUserLoading(false)
+ const getAdminServices = () => {
+  setIsUserLoading(true);
+
+  axios
+    .get(
+      `/api/services/getservices?status=${
+        serviceMenu === "Active Services" ? "active" : "inactive"
+      }`
+    )
+    .then(({ data }) => {
+      if (data.status) {
+        setAdminServices(data.data);
       }
+      setIsUserLoading(false);
     })
-  }
+    .catch(() => setIsUserLoading(false));
+};
+
+
 
   useEffect(() => {
-    if(crmMenu === "Active Services" || crmMenu === "Inactive Services"){
-      getAdminServices()
-    }
-  }, [crmMenu])
+  getAdminServices();
+}, [serviceMenu]);
 
   const conditionalBilling = (item) => {
     if(item === "lifetime"){
@@ -1845,7 +1853,9 @@ const [adminServices, setAdminServices] = useState([])
                     className="services-main"
                     onClick={() => setShowDrop(false)}
                   >
-                    <div
+                    
+                    
+                      <div
                       className="services-all-menu"
                       style={{ borderBottom: "0.5px solid #E5E5E5" }}
                     >
@@ -1878,6 +1888,8 @@ const [adminServices, setAdminServices] = useState([])
                       >
                         Services
                       </div>
+
+                      
                       <div
                         className="services-each-menu"
                         style={{

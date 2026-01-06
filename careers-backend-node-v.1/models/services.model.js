@@ -6,6 +6,7 @@ const ServiceSchema = new mongoose.Schema(
     name: { type: String, required: true },
     icon: { type: String, default: "" },
     description: { type: String, default: "" },
+
     chargingtype: { type: String, required: true },
     revenue_account: { type: String, default: "" },
     client_app: { type: String, default: "" },
@@ -66,14 +67,22 @@ const ServiceSchema = new mongoose.Schema(
 
     outcome: { type: String, default: "" },
 
-    type: { type: String, default: "" },
+    // EXISTING FIELD (used to group services):
+    type: { type: String, default: "" }, 
+    // Possible: Distributor, Vendor, Mentor, Institution
 
     iterations: { type: Array, default: [] },
+    ServiceDetails: { type: Array, default: [] },
 
-    ServiceDetails: { type: Array, default: [] }
+    // ⭐ NEW FIELD — VIEW TYPE
+    view: {
+      type: String,
+      enum: ["macro", "micro", "nano"],
+      default: "macro", // backward compatible
+    }
   },
   { timestamps: true }
 );
 
-// ✔ Register model with the expected name
+// ✔ Register model
 module.exports = mongoose.model("naavi_services", ServiceSchema);

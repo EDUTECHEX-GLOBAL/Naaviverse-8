@@ -25,25 +25,25 @@ const VaultTransactions = () => {
 
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    setLoading(true);
-    let obj = {
-    app_code: "naavi",
-    email: userDetails?.email,
-    coin: selectedCoin?.coinSymbol,
-  };
+useEffect(() => {
+  if (!userDetails?.email || !selectedCoin?.coinSymbol) return;
+
+  setLoading(true);
 
   axios
-    .post("http://localhost:4545/api/vault/txns", obj)
-    .then((response) => {
-      setTransactionData(response.data.txns);
-      setLoading(false);
+    .get("http://localhost:4545/api/vault/txns", {
+      params: {
+        app_code: "naavi",
+        email: userDetails.email,
+        coin: selectedCoin.coinSymbol,
+      },
     })
-    .catch((error) => {
-      console.log("error fetching transactions", error);
-      setLoading(false);
-    });
-}, []);
+    .then((res) => {
+      setTransactionData(res.data.txns);
+    })
+    .finally(() => setLoading(false));
+}, [userDetails?.email, selectedCoin?.coinSymbol]);
+
 
   function formatTimestamp(timestamp) {
     const months = [

@@ -53,6 +53,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.json({ limit: '50mb' }));
 
 
+
 /* ------------------- DATABASE CONNECTION ------------------- */
 const database_url = process.env.DATABASE_URI;
 
@@ -108,7 +109,7 @@ app.use('/api/steps', stepspathRouter);
 app.use('/api/universities', universitiesRouter);
 app.use("/api/perplexity", require("./routes/perplexity.route"));
 app.use("/api/regenerate", require("./routes/regenerateAll.route"));
-
+app.use("/api/crm", require("./routes/crmRoutes"));
 app.use('/api/paths', pathsRouter);
  app.use('/api/fetch', userpathRouter);
 app.use('/api/pre_login', preLoginRouter);
@@ -133,6 +134,8 @@ app.use("/admin/programs", require("./routes/adminProgramsRouter"));
 app.use("/admin/steps", require("./routes/adminStepsRouter"));
 app.use("/admin/services", require("./routes/adminServicesRouter"));
 
+const proxyRoutes = require("./routes/proxy.routes");
+app.use("/proxy", proxyRoutes);
 
 
 

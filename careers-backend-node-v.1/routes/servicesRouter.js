@@ -11,15 +11,19 @@ router.delete("/delete/:id", servicesController.deleteService);
 router.put("/restore/:id", [verifyToken], servicesController.restoreService);
 router.get("/getservices", servicesController.getAllServices);
 router.put("/icon/:serviceId", servicesController.updateServiceIcon);
+router.post("/bulk", servicesController.bulkUploadServices);
 
-// ✅ this must reference a defined export
+
+router.get("/", servicesController.getServicesByStep);
+
 router.get("/by-step", (req, res, next) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.set('Pragma', 'no-cache');
-  res.set('Expires', '0');
-  res.set('Surrogate-Control', 'no-store');
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
+  res.set("Surrogate-Control", "no-store");
   next();
 }, servicesController.getServicesByStep);
+
 
 
 module.exports = router;

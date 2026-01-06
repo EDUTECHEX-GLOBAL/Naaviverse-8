@@ -60,97 +60,36 @@ const getVaultTxns = async ({ queryKey }) => {
     _key,
     {
       email,
-      appCode,
       coin,
-      profileId,
-      appCurrencyName,
       allDirection,
       allTypes,
     },
   ] = queryKey;
 
-  let body;
-  // console.log("API calling in trasaction ", allDirection, allTypes);
+  if (!email || !coin) return [];
 
-  if (allDirection == "All Directions" && allTypes == "All Types") {
-    // console.log(
-    //   "default transaction",
-    //   email,
-    //   appCode,
-    //   coin,
-    //   profileId,
-    //   appCurrencyName,
-    //   allDirection,
-    //   allTypes
-    // );
-    body = {
-      app_code: appCode,
-      email: email,
-      coin: coin,
-      profile_id: profileId,
-      displayCurrency: appCurrencyName,
-    };
-  } else if (allDirection !== "All Directions" && allTypes !== "All Types") {
-    // console.log(
-    //   "both transaction selected",
-    //   email,
-    //   appCode,
-    //   coin,
-    //   profileId,
-    //   appCurrencyName,
-    //   allDirection,
-    //   allTypes
-    // );
-    body = {
-      app_code: appCode,
-      email: email,
-      coin: coin,
-      [allDirection]: true,
-      type: allTypes,
-    };
-  } else if (allDirection != "All Directions") {
-    // console.log(
-    //   "all transaction selected",
-    //   email,
-    //   appCode,
-    //   coin,
-    //   profileId,
-    //   appCurrencyName,
-    //   allDirection,
-    //   allTypes
-    // );
-    body = {
-      app_code: appCode,
-      email: email,
-      coin: coin,
-      [allDirection]: true,
-    };
-  } else if (allTypes != "All Types") {
-    // console.log(
-    //   "type transaction selected",
-    //   email,
-    //   appCode,
-    //   coin,
-    //   profileId,
-    //   appCurrencyName,
-    //   allDirection,
-    //   allTypes
-    // );
-    body = {
-      app_code: appCode,
-      email: email,
-      coin: coin,
-      type: allTypes,
-    };
-  } else {
+  // Build query params (NOT body)
+  const params = {
+    email,
+    coin,
+  };
+
+  if (allDirection && allDirection !== "All Directions") {
+    params.direction = allDirection;
   }
-  // console.log(body, 'body')
-  const { data } = await axios.post(
+
+  if (allTypes && allTypes !== "All Types") {
+    params.type = allTypes;
+  }
+
+  const { data } = await axios.get(
     "http://localhost:4545/api/vault/txns",
-    body
+    { params }
   );
-  return data.txns || [];
+
+  return data?.txns || [];
 };
+
 
 export const useVaultTxns = (
   email,

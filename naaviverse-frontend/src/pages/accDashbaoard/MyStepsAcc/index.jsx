@@ -38,7 +38,7 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
     const [newValue, setNewValue] = useState("");
     const [viewPathEnabled, setViewPathEnabled] = useState(false);
     const [viewPathLoading, setViewPathLoading] = useState(false);
-    const [viewPathData, setViewPathData] = useState([]);
+    const [viewPathData, setViewPathData] = useState(null);
     const [allServicesToRemove, setAllServicesToRemove] = useState([]);
 
     const [showSelectedPath, setShowSelectedPath] = useState(null)
@@ -168,44 +168,7 @@ useEffect(() => {
 
     }
 
-    useEffect(() => {
-        console.log(accsideNav, "lwjebfjklwebfkwf")
-        if (accsideNav === "Steps") {
-            setMypathsMenu('Active Steps')
-            getAllSteps('active')
-        } else {
-            setMypathsMenu('Paths')
-        }
-    }, [accsideNav])
 
-    const getAllSteps = (status) => {
-        setLoading(true);
-        let email = userDetails?.email;
-        axios
-            .get(`/api/steps/get?email=${email}&status=${status}`)
-            .then((response) => {
-                let result = response?.data?.data;
-                console.log(result, "partnerStepsData result");
-                setPartnerStepsData(result);
-                setLoading(false);
-            })
-            .catch((error) => {
-                console.log(error, "error in partnerStepsData");
-            });
-    };
-
-    useEffect(() => {
-        if (mypathsMenu === "Active Steps") {
-            getAllSteps('active');
-            setMypathsMenu('Active Steps')
-        } else {
-            getAllSteps('inactive');
-        }
-    }, [mypathsMenu]);
-
-    const filteredPartnerStepsData = partnerStepsData?.filter((entry) =>
-        entry?.name?.toLowerCase()?.includes(search?.toLowerCase())
-    );
 
     const myPathsTimeout = () => {
         setTimeout(reload1, 2000);
@@ -227,7 +190,7 @@ useEffect(() => {
     };
 
     function reload2() {
-        getAllSteps();
+       
         setStepActionEnabled(false);
         setStepActionStep(1);
         setSelectedStepId("");
@@ -311,53 +274,56 @@ useEffect(() => {
             });
     };
 
-    const viewPath = (path) => {
-        console.log(path, "lkwehflwehflwf")
-        setViewPathLoading(true);
-        axios
-            .get(`/api/paths/get?nameOfPath=${path}`)
-            .then((response) => {
-                let result = response?.data?.data[0];
-                // console.log(result, "viewPathData result");
-                setViewPathData(result);
-                setViewPathLoading(false);
-            })
-            .catch((error) => {
-                console.log(error, "error in fetching viewPathData");
-            });
-    };
+ const viewPathById = (id) => {
+    setViewPathLoading(true);
+
+    axios
+      .get(`/api/paths/viewpath/${id}`)
+      .then((response) => {
+          let result = response?.data?.data;   // BACKEND RETURNS data not data[0]
+          setViewPathData(result);
+          setViewPathLoading(false);
+      })
+      .catch((error) => {
+          console.log("Error in fetching view path data:", error);
+          setViewPathLoading(false);
+      });
+};
 
 
-    const handleApprovePath = () => {
-        setActionLoading(true);
-        axios.put(`/api/paths/update/${selectedPathId}`,
-            { status: "active" })
-            .then(({ data }) => {
-                if (data.status) {
-                    getNewPath()
-                    setPathActionEnabled(false);
-                    setActionLoading(false);
-                    setPathActionStep(1)
-                }
-            })
-    }
-    const handleRejectPath = () => {
-        setActionLoading(true);
-        axios.put(`/api/paths/update/${selectedPathId}`,
-            { status: "inactive" })
-            .then(({ data }) => {
-                if (data.status) {
-                    if (mypathsMenu === "Pending Paths") {
-                        getNewPath()
-                    } else {
-                        getAllPaths()
-                    }
-                    setPathActionEnabled(false);
-                    setActionLoading(false);
-                    setPathActionStep(1)
-                }
-            })
-    }
+
+const handleApprovePath = () => {
+  setActionLoading(true);
+
+  axios
+    .put(`http://localhost:4545/api/paths/updatepath/${selectedPathId}`, {
+      status: "active",
+    })
+    .then(({ data }) => {
+      if (data.status) {
+        getAllPaths();
+        setPathActionEnabled(false);
+      }
+    })
+    .finally(() => setActionLoading(false));
+};
+
+const handleRejectPath = () => {
+  setActionLoading(true);
+
+  axios
+    .put(`http://localhost:4545/api/paths/updatepath/${selectedPathId}`, {
+      status: "inactive",
+    })
+    .then(({ data }) => {
+      if (data.status) {
+        getAllPaths();
+        setPathActionEnabled(false);
+      }
+    })
+    .finally(() => setActionLoading(false));
+};
+
 
     const handleAddService = (newId) => {
         setActionLoading(true)
@@ -388,7 +354,8 @@ useEffect(() => {
 
 
     const [productDataArray, setProductDataArray] = useState([]);
-    const [productKeys, setProductKeys] = useState(null);
+const [productKeys, setProductKeys] = useState([]);
+
 
     const [allServicesToAdd, setAllServicesToAdd] = useState([]);
 
@@ -744,7 +711,7 @@ const fetchServicesForRemoval = async () => {
                                     <Skeleton width={150} height={30} />
                                 ) : (
                                     <div className="viewpath-bold-text">
-                                        {viewPathData?.length > 0
+                                        {viewPathData
                                             ? viewPathData?.destination_institution
                                             : ""}
                                     </div>
@@ -753,7 +720,7 @@ const fetchServicesForRemoval = async () => {
                                     <Skeleton width={500} height={20} />
                                 ) : (
                                     <div className="viewpath-des">
-                                        {viewPathData?.length > 0 ? viewPathData?.description : ""}
+                                        {viewPathData ? viewPathData?.description : ""}
                                     </div>
                                 )}
                                 <div
@@ -792,7 +759,7 @@ const fetchServicesForRemoval = async () => {
                                                 </div>
                                             );
                                         })
-                                    : viewPathData?.length > 0
+                                    : viewPathData
                                         ? viewPathData?.StepDetails?.map((e, i) => {
                                             return (
                                                 <div onClick={() => {
@@ -862,53 +829,51 @@ const fetchServicesForRemoval = async () => {
                                                 </div>
                                             );
                                         })
-                                    : filteredPartnerStepsData?.map((e, i) => {
-                                        return (
-                                            <div
-                                                className="each-mypaths-data1"
-                                                key={i}
-                                                onClick={() => {
-                                                    setSelectedStepId(e?._id);
-                                                    setStepActionEnabled(true);
-                                                }}
-                                            >
-                                                <div className="each-mypaths-detail">
-                                                    <div className="each-mypathsName">
-                                                        <div>
-                                                            <div>{e?.name}</div>
-                                                            <div
-                                                                style={{
-                                                                    fontSize: "0.8rem",
-                                                                    fontWeight: "300",
-                                                                }}
-                                                            >
-                                                                {e?._id}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="each-mypathsCountry">
-                                                        {e?.length ? e?.length : 0} Days
-                                                    </div>
-                                                    <div className="each-mypathsCountry">{e?.cost}</div>
-                                                    <div className="each-mypathsMicrosteps">
-                              {e?.services ? e.services.length : 0}
-                          </div>
-                                                </div>
-                                                <div className="each-mypaths-desc">
-                                                    <div className="each-mypaths-desc-txt">
-                                                        Description
-                                                    </div>
-                                                    <div className="each-mypaths-desc-txt1">
-                                                        {e?.description}
-                                                    </div>
-                                                </div>
+: selectedPath?.the_ids?.map((item, i) => {
+    const step = item?.StepDetails || item;
 
+    return (
+        <div
+            className="each-mypaths-data1"
+            key={item?.step_id || i}
+            onClick={() => {
+                setSelectedStepId(item?.step_id);
+                setStepActionEnabled(true);
+            }}
+        >
+            <div className="each-mypaths-detail">
+                <div className="each-mypathsName">
+                    <div>
+                        <div>{step?.name || "Step"}</div>
+                        <div style={{ fontSize: "0.8rem", fontWeight: 300 }}>
+                            {item?.step_id}
+                        </div>
+                    </div>
+                </div>
 
-                                                
-                
-                                            </div>
-                                        );
-                                    })}
+                <div className="each-mypathsCountry">
+                    {step?.length || 0} Days
+                </div>
+
+                <div className="each-mypathsCountry">
+                    {step?.cost || "free"}
+                </div>
+
+                <div className="each-mypathsMicrosteps">
+                    {step?.services?.length || 0}
+                </div>
+            </div>
+
+            <div className="each-mypaths-desc">
+                <div className="each-mypaths-desc-txt">Description</div>
+                <div className="each-mypaths-desc-txt1">
+                    {step?.description || "-"}
+                </div>
+            </div>
+        </div>
+    );
+})
+}
                             </div>
                         </>
                     )}
@@ -979,8 +944,9 @@ const fetchServicesForRemoval = async () => {
                                             className="acc-step-box4"
                                             onClick={() => {
                                                 setViewPathEnabled(true);
-                                                setPathActionEnabled(false);
-                                                navigate(`/dashboard/path/${selectedPathId}`)
+setPathActionEnabled(false);
+ viewPathById(selectedPath?._id)
+
                                             }}
                                         >
                                             View path

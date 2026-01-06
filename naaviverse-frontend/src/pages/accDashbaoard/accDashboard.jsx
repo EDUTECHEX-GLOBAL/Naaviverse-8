@@ -56,6 +56,7 @@ import TransactionPage from "../dashboard/TransactionPage/index.jsx";
 import PurchasePage from "./PurchasePage/index.jsx";
 import MenuNav from "../../components/MenuNav/index.jsx";
 import MyStepsAcc from "./MyStepsAcc/index.jsx";
+import { useSelector } from "react-redux";
 
 const AccDashboard = () => {
   const {
@@ -74,7 +75,7 @@ const AccDashboard = () => {
   const [crmMenu, setcrmMenu] = useState("Clients");
   const [servicesMenu, setservicesMenu] = useState("Services");
   const [isLoading, setIsLoading] = useState(false);
-  const [isPurchaseLoading, setIsPurchaseLoading] = useState(false);
+  // const [isPurchaseLoading, setIsPurchaseLoading] = useState(false);
   const [isCatoading, setIsCatLoading] = useState(false);
   const [isUploadLoading, setIsUploadLoading] = useState(false);
   const [followCount, setfollowCount] = useState(0);
@@ -111,6 +112,37 @@ const AccDashboard = () => {
   const [selectedService, setSelectedService] = useState([]);
   const [isloading, setIsloading] = useState(false);
   const [updatedIcon, setUpdatedIcon] = useState("");
+  const [userSteps, setUserSteps] = useState([]);
+const user = useSelector((state) => state.user);
+const [countryApiValue, setCountryApiValue] = useState([]);
+const didFetchCountriesRef = useRef(false);
+const [currentStepId, setCurrentStepId] = useState(null);
+
+useEffect(() => {
+  if (didFetchCountriesRef.current) return;  // ⛔ prevents 2nd execution
+  didFetchCountriesRef.current = true;
+
+  console.log("useEffect for countries running...");
+
+  const fetchCountries = async () => {
+    try {
+      console.log("Fetching countries...");
+      const res = await axios.get("http://localhost:4545/api/countries");
+      console.log("Countries fetched:", res.data);
+      setCountryApiValue(res.data);
+    } catch (err) {
+      console.log("Error fetching countries:", err);
+    }
+  };
+
+  fetchCountries();
+}, []);
+
+
+
+
+
+
 
   //add compPlan
   const [addCompPlan, setAddCompPlan] = useState(false);
@@ -185,14 +217,22 @@ const AccDashboard = () => {
 
   let navigate = useNavigate();
 
-  //users data
-  const [crmUserData, setCrmUserData] = useState([]);
-  const [isUserLoading, setIsUserLoading] = useState(false);
+ // CRM USERS (optional)
+const [crmUserData, setCrmUserData] = useState([]);
+const [isUserLoading, setIsUserLoading] = useState(false);
 
-  //clients data
-  const [crmClientData, setCrmClientData] = useState([]);
-  const [isClientLoading, setClientLoading] = useState(false);
+// CRM CLIENTS
+const [crmClientData, setCrmClientData] = useState([]);
+const [isClientLoading, setClientLoading] = useState(false);
 
+// CRM PURCHASES
+const [crmPurchaseData, setCrmPurchaseData] = useState([]);
+const [isPurchaseLoading, setPurchaseLoading] = useState(false);
+
+
+
+
+  
   const {
     allSteps,
     setAllSteps,
@@ -230,7 +270,7 @@ const AccDashboard = () => {
     forexPathId,
     setForexPathId,
     forexQuote,
-    setForexQuote, countryApiValue
+    setForexQuote,
   } = useCoinContextData();
 
   const [profileId, setProfileId] = useState("");
@@ -334,124 +374,23 @@ const AccDashboard = () => {
     }
   }, []);
 
-  useEffect(() => {
-    handleFollowerPerAccountants();
-    handleGetCurrencies();
-    // setaccsideNav("CRM")
-    resetpop();
-    const userDetails = JSON.parse(localStorage.getItem("partner"));
-    if (userDetails === null || userDetails === undefined) {
-      navigate("/login");
-    }
-  }, []);
+useEffect(() => {
+  const userDetails = JSON.parse(localStorage.getItem("partner"));
+
+  if (!userDetails?.email) {
+    navigate("/login");
+    return;
+  }
+
+  handleFollowerPerAccountants();
+  handleGetCurrencies();
+  resetpop();
+}, []);
 
 
 
-  const uploadBulkPath = async (file) => {
-    setIsUploadLoading(true);
-
-    const fileName = `${new Date().getTime()}${file?.name?.substr(
-      file.name.lastIndexOf(".")
-    )}`;
-
-    const formData = new FormData();
-    const newfile = renameFile(file, fileName);
-    formData.append("file", newfile);
 
 
-    let { data } = await axios.post(
-      `https://careers.marketsverse.com/paths/addmultiplepaths`,
-      formData,
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-      }
-    );
-
-    if (data?.status) {
-      console.log(data[0], "dfile name upload");
-      setpstep(12)
-      // setCoverImageS3url(data[0]?.urlName);
-      setIsUploadLoading(false);
-      // return data[0]?.urlName;
-    } else {
-      // setIsUploadLoading(false);
-      console.log("error in uploading image");
-    }
-  };
-
-  const uploadBulkStep = async (file) => {
-    setIsUploadLoading(true);
-
-    const fileName = `${new Date().getTime()}${file?.name?.substr(
-      file.name.lastIndexOf(".")
-    )}`;
-
-    const formData = new FormData();
-    const newfile = renameFile(file, fileName);
-    formData.append("file", newfile);
-
-
-    let { data } = await axios.post(
-      `/api/steps/addmultiplesteps`,
-      formData,
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-      }
-    );
-
-    if (data?.status) {
-      console.log(data[0], "dfile name upload");
-      setpstep(12)
-      // setCoverImageS3url(data[0]?.urlName);
-      setIsUploadLoading(false);
-      // return data[0]?.urlName;
-    } else {
-      // setIsUploadLoading(false);
-      console.log("error in uploading image");
-    }
-  };
-  const uploadBulkService = async (file) => {
-    setIsUploadLoading(true);
-
-    const fileName = `${new Date().getTime()}${file?.name?.substr(
-      file.name.lastIndexOf(".")
-    )}`;
-
-    const formData = new FormData();
-    const newfile = renameFile(file, fileName);
-    formData.append("file", newfile);
-
-
-    let { data } = await axios.post(
-      `https://careers.marketsverse.com/services/addmultipleservices`,
-      formData,
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-      }
-    );
-
-    if (data?.status) {
-      console.log(data[0], "dfile name upload");
-      setpstep(12)
-      // setCoverImageS3url(data[0]?.urlName);
-      setIsUploadLoading(false);
-      // return data[0]?.urlName;
-
-      setTimeout(() => {
-        resetpop();
-        getAllServices();
-      }, 3000);
-    } else {
-      // setIsUploadLoading(false);
-      console.log("error in uploading image");
-    }
-  };
 
   // const signJwt = async (fileName, emailDev, secret) => {
   //   try {
@@ -498,33 +437,31 @@ const AccDashboard = () => {
       });
   };
 
-  const handleAllCustomerLicenses = () => {
-    // const userDetails = JSON.parse(localStorage.getItem("user"));
-    // setIsPurchaseLoading(true);
-    // GetAllCustomerLicenses(userDetails.user.email)
-    //   .then((res) => {
-    //     let result = res.data;
-    //     if (result.status) {
-    //       setPurchaseData(result.licenses);
-    //       setIsPurchaseLoading(false);
-    //     }
-    //   })
-    //   .catch((err) => {
-    //     // console.log(err)
-    //     setIsPurchaseLoading(false);
-    //   });
+const handleAllCustomerLicenses = () => {
+  const userDetails = JSON.parse(localStorage.getItem("partner"));
+  const email = userDetails?.email;
 
+  if (!email) return;
 
-    const userDetails = JSON.parse(localStorage.getItem("partner"));
-    axios.get(
-      `https://careers.marketsverse.com/userpurchase/get?creatoremail=${userDetails?.email}`
-    ).then(({ data }) => {
-      if (data?.status) {
-        console.log(data, "ljefhkjwefkwef")
-        setPurchaseData(data?.data)
-      }
+  setPurchaseLoading(true);
+
+  axios
+    .get(`/api/crm/purchases?creatoremail=${email}`)
+    .then(({ data }) => {
+      console.log("CRM PURCHASE RESPONSE:", data);
+
+      // Always update crmPurchaseData
+      setCrmPurchaseData(data?.data || []);
+
+      setPurchaseLoading(false);
     })
-  };
+    .catch((err) => {
+      console.log("Error fetching CRM purchases:", err);
+      setPurchaseLoading(false);
+    });
+};
+
+
 
   const handleCategories = () => {
     setIsCatLoading(true);
@@ -545,36 +482,41 @@ const AccDashboard = () => {
       });
   };
 
-const handleGetCurrencies = () => {
+const handleGetCurrencies = React.useCallback(() => {
+  // prevent double calls
+  if (isCurrencies) return;
+
   setIsCurrencies(true);
 
   GetAllCurrencies()
     .then((res) => {
       const result = res?.data;
-      console.log("RESULT:", result);
+      console.log("📦 Currency API result:", result);
 
       if (result?.status && Array.isArray(result.currencies)) {
-        console.log("CURRENCIES:", result.currencies);
+        console.log("💰 Raw currencies:", result.currencies.slice(0, 5), "...");
 
-        // Format for your UI
         const formatted = result.currencies.map((c) => ({
           coinName: c.code,
           coinSymbol: c.code,
-          fullName: c.currency
+          fullName: c.currency,
         }));
 
-        console.log("FORMATTED:", formatted);
+        console.log("🔁 Formatted currencies:", formatted.slice(0, 5), "...");
 
         setallCurrencies(formatted);
+      } else {
+        console.warn("⚠️ Currencies not found or invalid structure");
       }
 
       setIsCurrencies(false);
     })
     .catch((err) => {
-      console.log("ERROR:", err);
+      console.error("❌ Currency fetch failed:", err?.response?.data || err);
       setIsCurrencies(false);
     });
-};
+}, [isCurrencies]);
+
 
 
 
@@ -626,10 +568,12 @@ const handleGetCurrencies = () => {
     setServicePrice(null)
   };
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/");
-  };
+const handleLogout = () => {
+  localStorage.removeItem("partner");
+  localStorage.removeItem("loginEmail");
+  navigate("/login");
+};
+
 
   // const handleServicesForLogged = (value) => {
   //   setIsServicesAcc(true);
@@ -665,6 +609,137 @@ const handleGetCurrencies = () => {
       setImage(uploadedUrl); // Set the final uploaded image URL
     }
   };
+const uploadBulkPath = async (file) => {
+  try {
+    setIsUploadLoading(true);
+
+    const text = await file.text();
+    let records = JSON.parse(text);
+
+    if (!Array.isArray(records) || records.length === 0) {
+      alert("JSON must contain array of paths");
+      return;
+    }
+
+    records = records.map(r => {
+      delete r._id;
+      delete r.createdAt;
+      delete r.updatedAt;
+      delete r.__v;
+
+      if (Array.isArray(r.personality)) r.personality = r.personality[0];
+      if (Array.isArray(r.grade_avg)) r.grade_avg = r.grade_avg[0];
+      if (!['K12','Degree'].includes(r.path_cat)) r.path_cat = 'K12';
+      if (!['education','career','immigration'].includes(r.path_type)) r.path_type = 'education';
+
+      return r;
+    });
+
+    const email = localStorage.getItem("loginEmail");
+
+    const body = { email, records };
+
+    const res = await axios.post(
+      "http://localhost:4545/api/paths/bulk",
+      body
+    );
+
+    console.log("SERVER RESPONSE:", res.data);
+
+    alert(
+      res.data.message 
+      ? `${res.data.message} | Count: ${res.data.count ?? 0}`
+      : `Uploaded ${res.data.count ?? 0} paths successfully`
+    );
+
+    setpstep(12);
+
+  } catch (err) {
+    console.error("Bulk Path upload error:", err);
+    alert("Bulk path upload failed - check console");
+  } finally {
+    setIsUploadLoading(false);
+  }
+};
+
+
+const uploadBulkStep = async (file) => {
+  try {
+    setIsUploadLoading(true);
+
+    const text = await file.text();
+    const records = JSON.parse(text);
+
+    if (!Array.isArray(records) || records.length === 0) {
+      alert("Invalid JSON: Must contain array");
+      return;
+    }
+
+    const email = localStorage.getItem("loginEmail");
+
+    const body = {
+      email,
+      records
+    };
+
+    const res = await axios.post(
+      "http://localhost:4545/api/steps/bulk",
+      body
+    );
+
+    console.log("BULK STEP RESPONSE:", res.data);  // 👈 ADD THIS
+
+    if (res.data?.status === true) {               // 👈 MAKE CHECK STRICT
+      alert(`Uploaded ${res.data.count} steps successfully`);
+      setpstep(12);
+    } else {
+      alert("Step upload failed");
+    }
+
+  } catch (err) {
+    console.error("Bulk Step upload error:", err);
+    alert("Bulk Step upload error");
+  } finally {
+    setIsUploadLoading(false);
+  }
+};
+
+const uploadBulkService = async (file) => {
+  try {
+    setIsUploadLoading(true);
+
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+
+    // IMPORTANT: Ensure parsed is an array
+    const records = Array.isArray(parsed) ? parsed : [parsed];
+
+    const email = localStorage.getItem("loginEmail");
+
+    const body = {
+      email,
+      records
+    };
+
+    const res = await axios.post(
+      "http://localhost:4545/api/services/bulk",
+      body
+    );
+
+    if (res.data?.status) {
+      alert(`Uploaded ${res.data.count} services successfully`);
+    } else {
+      alert("Upload failed");
+    }
+
+  } catch (err) {
+    console.error("Bulk Service upload error:", err);
+  } finally {
+    setIsUploadLoading(false);
+  }
+};
+
+
 
   const handleFileInputChange1 = (e) => {
     setImage(e.target.files[0]);
@@ -699,7 +774,10 @@ const handleGetCurrencies = () => {
 
   // COMMON FIELDS FOR BOTH ONE-TIME & MONTHLY
   const base = {
-    productcreatoremail: userDetails.email,
+  productcreatoremail: userDetails.email,
+
+  ...(currentStepId ? { step_id: currentStepId } : {}),
+
 
     // REQUIRED BACKEND FIELDS
     name: serviceNameInput,                 // ✔ MUST BE `name`
@@ -717,7 +795,7 @@ const handleGetCurrencies = () => {
     points_creation: false,
     sub_text: serviceTagline,
 
-    // FIRST PURCHASE (BOTH MODELS)
+    // FIRST A (BOTH MODELS)
     first_purchase: {
       price: firstMonthPrice ? parseFloat(firstMonthPrice) : 0,
       coin: selectedCurrency.coinSymbol,
@@ -874,7 +952,7 @@ const handleGetCurrencies = () => {
 
     if (userDetails && userDetails.email) {
       const timestamp = new Date().getTime(); // Cache-busting query parameter
-      axios.get(`/api/services/get?productcreatoremail=${userDetails.email}&_=${timestamp}`)
+      axios.get(`http://localhost:4545/api/services/get?productcreatoremail=${userDetails.email}&_=${timestamp}`)
         .then(({ data }) => {
           console.log("Fetched Services:", data);
           if (data.status) {
@@ -893,12 +971,17 @@ const handleGetCurrencies = () => {
     }
   };
 
-  const fetchAllServicesAgain = () => {
-    const userDetails = JSON.parse(localStorage.getItem("partner"));
-    // console.log(userDetails, "kkk");
-    // handleServicesForLogged(userDetails.user.email);
-    getAllServices(userDetails.email)
+const fetchAllServicesAgain = () => {
+  const userDetails = JSON.parse(localStorage.getItem("partner"));
+
+  if (!userDetails || !userDetails.email) {
+    console.warn("⚠ No partner user found in localStorage.");
+    return;
   }
+
+  getAllServices(userDetails.email);
+};
+
 
   useEffect(() => {
     if (!ispopular) {
@@ -1014,9 +1097,12 @@ const handleGetCurrencies = () => {
       });
   };
 
-useEffect(() => {
-  console.log(pathSteps, "kjwegfljwefljwef");
-}, []);
+const handleSavePath = () => {
+  console.log("📨 FINAL PATH STEPS SUBMITTED:", pathSteps);
+  // save logic...
+};
+
+
 
 
   const myTimeout1 = () => {
@@ -1152,49 +1238,200 @@ useEffect(() => {
     getWithCompPlan();
   }, []);
 
-  useEffect(() => {
-    let email = userDetails?.email;
-    axios
-      .get(`https://careers.marketsverse.com/steps/get?email=${email}`)
-      .then((response) => {
-        let result = response?.data?.data;
-        // console.log(result, "all steps fetched");
-        setAllSteps(result);
-      })
-      .catch((error) => {
-        console.log(error, "error in fetching all steps");
-      });
-  }, []);
+  // useEffect(() => {
+  //   let email = userDetails?.email;
+  //   axios
+  //     .get(`https://careers.marketsverse.com/steps/get?email=${email}`)
+  //     .then((response) => {
+  //       let result = response?.data?.data;
+  //       // console.log(result, "all steps fetched");
+  //       setAllSteps(result);
+  //     })
+  //     .catch((error) => {
+  //       console.log(error, "error in fetching all steps");
+  //     });
+  // }, []);
 
-  const pathSubmission = () => {
-    console.log(pathSteps, "api body");
-    setCreatingPath(true);
-    axios
-      .post(`/api/paths/add`, {
+useEffect(() => {
+  const local = JSON.parse(localStorage.getItem("partner"));
+  const email = user?.email || local?.email;
 
-        ...pathSteps,
-        performance: gradeAvg,
-        curriculum: curriculum,
-        grade: grade,
-        stream: stream,
-        financialSituation: finance,
-        personality: personality,
-      })
-      .then((response) => {
-        let result = response?.data;
-        // console.log(result, "pathSubmission result");
-        if (result?.status) {
-          setCreatingPath(false);
-          window.location.reload();
-        } else {
-          setCreatingPath(false);
-        }
-      })
-      .catch((error) => {
-        console.log(error, "error in pathSubmission");
-      });
+  console.log("EMAIL USED:", email);
+
+  if (!email) {
+    console.log("No email found — cannot fetch steps");
+    return;
+  }
+
+  const fetchUserSteps = async () => {
+    try {
+      const res = await axios.get(`/api/steps/user/${email}`);
+      console.log("Fetched user steps:", res.data.data);
+      setUserSteps(res.data.data);
+    } catch (error) {
+      console.log("Error fetching user steps:", error);
+    }
   };
 
+  fetchUserSteps();
+}, [user]);
+
+
+const getCounsellorEmail = () => {
+  const local = JSON.parse(localStorage.getItem("partner"));
+  return user?.email || local?.email;
+};
+
+
+useEffect(() => {
+  const email = getCounsellorEmail();
+  if (!email) return;
+
+  setClientLoading(true);
+
+  axios.get(`/api/crm/clients?creatoremail=${email}`)
+    .then(res => {
+      setCrmClientData(res.data?.data || []);
+      setClientLoading(false);
+    })
+    .catch(err => {
+      console.log("CRM CLIENT ERROR:", err);
+      setClientLoading(false);
+    });
+}, []);
+
+// useEffect(() => {
+//   const email = getCounsellorEmail();
+//   if (!email) return;
+
+//   setPurchaseLoading(true);
+
+//   axios.get(`/api/crm/purchases?creatoremail=${email}`)
+//     .then(res => {
+//       setCrmPurchaseData(res.data?.data || []);
+//       setPurchaseLoading(false);
+//     })
+//     .catch(err => {
+//       console.log("CRM PURCHASE ERROR:", err);
+//       setPurchaseLoading(false);
+//     });
+// }, []);
+
+
+const pathSubmission = () => {
+  console.log("🚀 ---- PATH SUBMISSION TRIGGERED ----");
+
+  // 1️⃣ Log Redux user object
+  console.log("🔥 Redux USER VALUE:", user);
+
+  // 2️⃣ Log localStorage user raw string
+  const rawLocal = localStorage.getItem("user");
+  console.log("🔥 LocalStorage USER VALUE RAW:", rawLocal);
+
+  // 3️⃣ Parse localStorage safely
+  let storedUser = {};
+  try {
+    storedUser = rawLocal ? JSON.parse(rawLocal) : {};
+  } catch (e) {
+    storedUser = {};
+  }
+
+  // 4️⃣ Log parsed localStorage value
+  console.log("🔥 Parsed LocalStorage User:", storedUser);
+
+  // 5️⃣ Find final email from all possible sources
+ const finalEmail =
+  user?.email ||
+  user?.user?.email ||
+  user?.currentUser?.email ||
+  storedUser?.email ||
+  storedUser?.user?.email ||
+  storedUser?.currentUser?.email ||
+  localStorage.getItem("loginEmail");   // ⭐ REQUIRED LAST CHECK
+
+// 6️⃣ Log final email decision
+console.log("🔥 FINAL EMAIL USED:", finalEmail);
+
+// 7️⃣ If missing, stop execution
+if (!finalEmail) {
+  console.log("❌ User email missing. Cannot create path.");
+  alert("User email missing. Please login again.");
+  return;
+}
+
+
+  // 8️⃣ Build the payload
+  const payload = {
+    email: finalEmail,
+    nameOfPath: pathSteps.nameOfPath,
+    description: pathSteps.description,
+   current_coordinates: {
+  grade: grade,
+  curriculum: curriculum,
+  stream: stream,
+  grade_avg: gradeAvg,
+  financialSituation: finance,
+  personality: personality,
+  city: pathSteps.city,
+  country: pathSteps.country,
+},
+
+feature_coordinates: {
+  program: pathSteps.program,
+  destination_degree: pathSteps.destination_degree || "unknown",
+  destination_institution: pathSteps.destination_institution,
+  path_type: pathSteps.path_type || "education",
+  path_cat: pathSteps.path_cat || "K12",
+},
+
+    program: pathSteps.program,
+    university: [],
+    the_ids: pathSteps.the_ids.map((step) => ({
+      step_id: step.step_id,
+      stepName: step.stepName || "",
+      stepDescription: step.stepDescription || "",
+      backup_pathId: step.backup_pathId || null,
+      backupPathName: step.backupPathName || "",
+      backupPathDescription: step.backupPathDescription || ""
+    })),
+    path_type: pathSteps.path_type || "education",
+    path_cat: pathSteps.path_cat || "K12",
+    personality: personality,
+    destination_degree: pathSteps.destination_degree || "unknown",
+    destination_institution: pathSteps.destination_institution,
+    length: Number(pathSteps.length),
+    city: pathSteps.city,
+    country: pathSteps.country,
+    financialSituation: finance,
+    curriculum: curriculum,
+    grade: grade,
+    stream: stream,
+    grade_avg: gradeAvg,
+    performance: gradeAvg[0],
+    status: "waitingforapproval",
+  };
+
+  // 9️⃣ Log the payload before sending
+  console.log("📦 PAYLOAD GOING TO API:", payload);
+
+  setCreatingPath(true);
+
+  // 🔟 Send request
+  axios
+    .post(`http://localhost:4545/api/paths/add`, payload)
+    .then((response) => {
+      console.log("✅ API RESPONSE:", response.data);
+      setCreatingPath(false);
+
+      if (response.data.status) {
+        window.location.reload();
+      }
+    })
+    .catch((err) => {
+      console.log("❌ API ERROR:", err.response?.data || err);
+      setCreatingPath(false);
+    });
+};
   // const removeStep = (stepId) => {
   //   const updatedSelectedSteps = selectedSteps.filter(
   //     (step) => step._id !== stepId
@@ -1225,38 +1462,38 @@ useEffect(() => {
     });
   };
 
-  useEffect(() => {
-    setIsUserLoading(true);
-    axios
-      .get("https://comms.globalxchange.io/gxb/apps/users/get?app_code=naavi")
-      .then((response) => {
-        let result = response?.data?.users;
-        // console.log(result, "crm users data");
-        setIsUserLoading(false);
-        setCrmUserData(result);
-      })
-      .catch((error) => {
-        console.log(error, "error in fetching crm users data");
-      });
-  }, []);
+  // useEffect(() => {
+  //   setIsUserLoading(true);
+  //   axios
+  //     .get("https://comms.globalxchange.io/gxb/apps/users/get?app_code=naavi")
+  //     .then((response) => {
+  //       let result = response?.data?.users;
+  //       // console.log(result, "crm users data");
+  //       setIsUserLoading(false);
+  //       setCrmUserData(result);
+  //     })
+  //     .catch((error) => {
+  //       console.log(error, "error in fetching crm users data");
+  //     });
+  // }, []);
 
-  useEffect(() => {
-    let email = userDetails?.email;
-    setClientLoading(true);
-    axios
-      .get(
-        `https://careers.marketsverse.com/users/purchases?creatoremail=${email}`
-      )
-      .then(({ data }) => {
+useEffect(() => {
+  const email = getCounsellorEmail();
+  if (!email) return;
 
-        // console.log(result, "brands crm clients data");
-        setClientLoading(false);
-        setCrmClientData(data?.data);
-      })
-      .catch((error) => {
-        console.log(error, "error in fetching crm clients data");
-      });
-  }, []);
+  setClientLoading(true);
+
+  axios.get(`/api/crm/clients?creatoremail=${email}`)
+    .then(res => {
+      setCrmClientData(res.data?.data || []);
+      setClientLoading(false);
+    })
+    .catch(err => {
+      console.log("CRM CLIENT ERROR:", err);
+      setClientLoading(false);
+    });
+}, []);
+
 
   function customDateFormat(date) {
     if (date instanceof Date && !isNaN(date.valueOf())) {
@@ -1539,35 +1776,34 @@ useEffect(() => {
                         Clients
                       </div>
 
-                      <div
-                        className="crm-each-menu"
-                        style={{
-                          display: crmMenu === "Purchases" ? "" : "none",
-                          background:
-                            crmMenu === "Purchases"
-                              ? "rgba(241, 241, 241, 0.5)"
-                              : "",
-                          fontWeight: crmMenu === "Purchases" ? "700" : "",
-                        }}
-                        onClick={() => {
-                          setcrmMenu("Purchases");
-                          setSearch("");
-                        }}
-                      >
-                        Purchases (<span>{purchaseData.length}</span>)
-                      </div>
-                      <div
-                        className="crm-each-menu"
-                        style={{
-                          display: crmMenu !== "Purchases" ? "" : "none",
-                        }}
-                        onClick={() => {
-                          setcrmMenu("Purchases");
-                          setSearch("");
-                        }}
-                      >
-                        Purchases
-                      </div>
+   <div
+  className="crm-each-menu"
+  style={{
+    display: crmMenu === "Purchases" ? "" : "none",
+    background: crmMenu === "Purchases" ? "rgba(241,241,241,0.5)" : "",
+    fontWeight: crmMenu === "Purchases" ? "700" : "",
+  }}
+  onClick={() => {
+    setcrmMenu("Purchases");
+    setSearch("");
+  }}
+>
+  Purchases (<span>{crmPurchaseData.length}</span>)
+</div>
+
+<div
+  className="crm-each-menu"
+  style={{
+    display: crmMenu !== "Purchases" ? "" : "none",
+  }}
+  onClick={() => {
+    setcrmMenu("Purchases");
+    setSearch("");
+  }}
+>
+  Purchases
+</div>
+
                     </div>
                     <div className="crm-all-box">
                       {crmMenu === "Followers" ? (
@@ -1632,13 +1868,14 @@ useEffect(() => {
                                   ))}
                               </div>
                             ) : isLoading ? (
-                              <div className="follow-data-main">
-                                {[1, 2, 3, 4, 5, 6].map((each, i) => (
-                                  <div className="follower-box">
-                                    <div className="follower-details">
-                                      <div>
-                                        <Skeleton className="user-icon" />
-                                      </div>
+<div className="follow-data-main">
+  {[1, 2, 3, 4, 5, 6].map((each, index) => (
+    <div key={index} className="follower-box">
+      <div className="follower-details">
+        <div>
+          <Skeleton className="user-icon" />
+        </div>
+
                                       <Skeleton
                                         className="follower-mail"
                                         style={{ width: "200px" }}
@@ -1788,7 +2025,8 @@ useEffect(() => {
                         //     )}
                         //   </div>
                         // </>
-                        <PurchasePage purchaseData={purchaseData} search={search} />
+                      <PurchasePage purchaseData={crmPurchaseData} search={search} />
+
                       ) : crmMenu === "Clients" ? (
                         <>
                           <div
@@ -2169,24 +2407,25 @@ useEffect(() => {
                                     //     .toLowerCase()
                                     //     .startsWith(search.toLowerCase());
                                     // })
-                                    .map((each, i) => (
-                                      <div
-                                        className="follower-box"
-                                        style={{
-                                          background:
-                                            selectedFollower === each
-                                              ? "rgba(241, 241, 241, 0.5)"
-                                              : "",
-                                          padding: "22px 35px",
-                                          width: "100%",
-                                        }}
-                                        onClick={() => {
-                                          setServiceActionEnabled(true)
-                                          setSelectedService(each);
-                                          setServiceActionStep(1);
-                                          setSelectedFollower(each)
-                                        }}
-                                      >
+                                  .map((each, i) => (
+  <div
+    key={each._id || i}        // 👈 ADD THIS LINE
+    className="follower-box"
+    style={{
+      background: selectedFollower === each
+        ? "rgba(241, 241, 241, 0.5)"
+        : "",
+      padding: "22px 35px",
+      width: "100%",
+    }}
+    onClick={() => {
+      setServiceActionEnabled(true);
+      setSelectedService(each);
+      setServiceActionStep(1);
+      setSelectedFollower(each);
+    }}
+  >
+
                                         <div className="rowtext">{each?.name}</div>
                                         <div className="rowtext">
                                           {each?.billing_cycle?.monthly ? "Monthly" :
@@ -3404,7 +3643,7 @@ useEffect(() => {
                   You Have Successfully Created A New Service
                 </div>
               ) : pstep === 8 ? (
-                <div className="acc-addpath">
+                <div className="acc-addpath"> 
                   <div className="each-acc-addpath-field">
                     <div className="each-acc-addpath-field-name">
                       What is the name of the path?
@@ -3560,7 +3799,7 @@ useEffect(() => {
                     </div>
                   </div>
 
-                  <div className="each-acc-addpath-field">
+                  {/* <div className="each-acc-addpath-field">
                     <div className="each-acc-addpath-field-name">Add steps</div>
                     <div
                       className="each-acc-addpath-field-input"
@@ -3603,49 +3842,37 @@ useEffect(() => {
                         className="hidden-steps"
                         style={{ display: stepsToggle ? "flex" : "none" }}
                       >
-                        {allSteps?.map((e, i) => {
-                          return (
-                            <div
-                              className="each-hidden-step"
-                              key={i}
-                              onClick={() => {
-                                setSelectedSteps((prevSelectedSteps) => [
-                                  ...prevSelectedSteps,
-                                  e,
-                                ]);
-                                // setPathSteps((prev) => {
-                                //   return {
-                                //     ...prev,
-                                //     step_ids:
-                                //       prev?.step_ids?.length > 0
-                                //         ? [...prev?.step_ids, e?._id]
-                                //         : [e?._id],
-                                //   };
-                                // });
-                                setPathSteps((prev) => {
-                                  return {
-                                    ...prev,
-                                    the_ids: [
-                                      ...(prev?.the_ids || []), // Copy existing items if they exist
-                                      {
-                                        step_id: e?._id,
-                                      },
-                                    ],
-                                  };
-                                });
-                                setStepsToggle(false);
-                              }}
-                            >
-                              <div className="stepp-textt">{e?.name}</div>
-                              <div className="stepp-textt1">
-                                {e?.description}
-                              </div>
-                            </div>
-                          );
-                        })}
+                      {userSteps?.map((e, i) => {
+  return (
+    <div
+      className="each-hidden-step"
+      key={i}
+      onClick={() => {
+        setSelectedSteps((prevSelectedSteps) => [
+          ...prevSelectedSteps,
+          e,
+        ]);
+
+        setPathSteps((prev) => ({
+          ...prev,
+          the_ids: [
+            ...(prev?.the_ids || []),
+            { step_id: e?._id },
+          ],
+        }));
+
+        setStepsToggle(false);
+      }}
+    >
+      <div className="stepp-textt">{e?.name}</div>
+      <div className="stepp-textt1">{e?.description}</div>
+    </div>
+  );
+})}
+
                       </div>
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="selected-steps">
                     {selectedSteps?.map((e, i) => {
@@ -3900,42 +4127,34 @@ useEffect(() => {
                     </div>
                   </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What country is the university in?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <select name="country" id="country" style={{ border: "none", padding: '1.5rem', width: '100%', fontSize: "16px" }} onChange={(e) => {
-                        setPathSteps((prev) => {
-                          return {
-                            ...prev,
-                            country: e.target.value,
-                          };
-                        });
-                      }}>
-                        <option value="">Country..</option>
-                        {countryApiValue?.map((item) => (
-                          <option key={item.cca2} value={item?.name?.common}>
-                            {item?.name?.common}
-                          </option>
-                        ))}
+<div className="each-acc-addpath-field">
+  <div className="each-acc-addpath-field-name">
+    What country is the university in?
+  </div>
 
-                      </select>
-                      {/* <input
-                        type="text"
-                        placeholder="Country.."
-                        value={pathSteps?.country}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              country: e.target.value,
-                            };
-                          });
-                        }}
-                      /> */}
-                    </div>
-                  </div>
+  <div className="each-acc-addpath-field-input">
+    <select
+      name="country"
+      id="country"
+      style={{ border: "none", padding: "1.5rem", width: "100%", fontSize: "16px" }}
+      onChange={(e) => {
+        setPathSteps((prev) => ({
+          ...prev,
+          country: e.target.value,
+        }));
+      }}
+    >
+      <option value="">Country..</option>
+
+      {countryApiValue?.map((item) => (
+        <option key={item.cca2} value={item.name.common}>
+          {item.name.common}
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
+
 
                   <div className="each-acc-addpath-field">
                     <div className="each-acc-addpath-field-name">

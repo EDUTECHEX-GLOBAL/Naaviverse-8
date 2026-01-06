@@ -3,7 +3,7 @@ import Skeleton from "react-loading-skeleton";
 import { useCoinContextData } from "../../context/CoinContext";
 import "./pathview.scss";
 
-const ITEMS_PER_PAGE = 100;
+const ITEMS_PER_PAGE = 20;
 
 const Pathview = ({ paths, loading }) => {
   const {
@@ -13,112 +13,80 @@ const Pathview = ({ paths, loading }) => {
     searchTerm,
   } = useCoinContextData();
 
-  // ------------------------------------------------------------
-  // ✅ FORMAT DATA CORRECTLY — USE UNIVERSITY _id AS MAIN ID
-  // ------------------------------------------------------------
+  // Format data based on NEW PATH MODEL
   const formattedData = useMemo(() => {
-    return (paths || []).map((u) => ({
-      _id: u._id, // <-- REAL path ID (university ID)
-      school: u.name,
-      program: u.generatedProgram?.program || "N/A",
-      description: u.generatedProgram?.description || "N/A",
-      steps: u.generatedProgram?.steps || [],
+    return (paths || []).map((p) => ({
+      _id: p._id,
+      pathName: p.nameOfPath || "Untitled Path",
+      program: p.program || "-",
+      description: p.description || "-",
+      raw: p,
     }));
   }, [paths]);
 
-  // ------------------------------------------------------------
-  // ✅ SEARCH FILTER
-  // ------------------------------------------------------------
-const filteredData = useMemo(() => {
-  if (!searchTerm?.trim()) return formattedData;
+  // Search
+  const filteredData = useMemo(() => {
+    if (!searchTerm?.trim()) return formattedData;
 
-  const term = String(searchTerm || "").toLowerCase();
+    const term = searchTerm.toLowerCase();
 
-  return formattedData.filter((item) => {
-    const school = String(item.school || "").toLowerCase();
-    const program = String(item.program || "").toLowerCase();
-    const description = String(item.description || "").toLowerCase();
-
-    return (
-      school.includes(term) ||
-      program.includes(term) ||
-      description.includes(term)
+    return formattedData.filter((item) =>
+      item.pathName.toLowerCase().includes(term) ||
+      item.program.toLowerCase().includes(term) ||
+      item.description.toLowerCase().includes(term)
     );
-  });
-}, [formattedData, searchTerm]);
+  }, [formattedData, searchTerm]);
 
-
-  // Pagination logic
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [paths, searchTerm]);
-
-  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
 
   const paginatedData = filteredData.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
-  // ------------------------------------------------------------
-  // ✅ FIXED PATH SELECTION — PROGRAM ID IS NOT USED ANYMORE
-  // ------------------------------------------------------------
-  const handlePathSelection = (selectedPath) => {
-    if (!selectedPath) return;
-
-    console.log("Selected Path Object:", selectedPath);
-
+  // Select path
+  const handlePathSelection = (row) => {
+    setSelectedPathItem(row.raw);
     setPathItemSelected(true);
     setPathItemStep(1);
-    setSelectedPathItem(selectedPath);
-
-    // Save only ONE id — the real path ID (university id)
-    localStorage.setItem("selectedPathId", selectedPath._id);
-
-    console.log("Saved:", {
-      pathId: selectedPath._id,
-    });
   };
 
   return (
     <div className="pathviewPage">
-      {/* HEADER */}
+
+      {/* TABLE HEADER */}
       <div className="pathviewNav">
-        <div className="name-div">School</div>
+        <div className="name-div">Path Name</div>
         <div className="name-div">Program</div>
         <div className="description-div">Description</div>
       </div>
 
-      {/* CONTENT */}
+      {/* TABLE BODY */}
       <div className="pathviewContent">
         {loading ? (
-          Array(10)
-            .fill("")
-            .map((_, i) => (
-              <div className="each-pv-data" key={i}>
-                <div className="each-pv-name">
-                  <Skeleton width={100} height={30} />
-                </div>
-                <div className="each-pv-name">
-                  <Skeleton width={100} height={30} />
-                </div>
-                <div className="each-pv-desc">
-                  <Skeleton width={300} height={30} />
-                </div>
-              </div>
-            ))
+          Array(5).fill("").map((_, i) => (
+            <div className="each-pv-data" key={i}>
+              <div className="each-pv-name"><Skeleton width={160}/></div>
+              <div className="each-pv-name"><Skeleton width={160}/></div>
+              <div className="each-pv-desc"><Skeleton width={300}/></div>
+            </div>
+          ))
         ) : paginatedData.length > 0 ? (
-          paginatedData.map((e) => (
+          paginatedData.map((row) => (
             <div
               className="each-pv-data"
-              key={e._id}
-              onClick={() => handlePathSelection(e)}
+              key={row._id}
+              onClick={() => handlePathSelection(row)}
             >
-              <div className="each-pv-name">{e.school}</div>
-              <div className="each-pv-name">{e.program}</div>
-              <div className="each-pv-desc">{e.description}</div>
+              <div className="each-pv-name">{row.pathName}</div>
+              <div className="each-pv-name">{row.program}</div>
+              <div className="each-pv-desc">{row.description}</div>
             </div>
           ))
         ) : (
@@ -128,21 +96,13 @@ const filteredData = useMemo(() => {
 
       {/* PAGINATION */}
       <div className="pagination-controls">
-        <button
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage((p) => p - 1)}
-        >
+        <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
           Previous
         </button>
 
-        <span>
-          Page {currentPage} / {totalPages}
-        </span>
+        <span>Page {currentPage} / {totalPages}</span>
 
-        <button
-          disabled={currentPage === totalPages}
-          onClick={() => setCurrentPage((p) => p + 1)}
-        >
+        <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
           Next
         </button>
       </div>

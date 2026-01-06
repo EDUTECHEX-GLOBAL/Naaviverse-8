@@ -24,7 +24,17 @@ const partnerSchema = new mongoose.Schema({
   country: { type: String },
   description: { type: String },
   website: { type: String },
-  type: { type: String },
+
+  // ❌ OLD generic field: type
+  // type: { type: String },
+
+  // ✅ NEW correct field: partner category
+  partnerType: {
+    type: String,
+    enum: ["Distributor", "Vendor", "Mentor", "Institution"],
+    required: true
+  },
+
   yourPosition: { type: String }
 }, {
   timestamps: true
@@ -37,7 +47,6 @@ partnerSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
-
 
 // Normalize email
 partnerSchema.pre("save", function (next) {
@@ -54,10 +63,9 @@ partnerSchema.methods.isOTPExpired = function () {
   return diff > 5 * 60 * 1000; // 5 minutes
 };
 
-// ✅ Fix: Correct password comparison
+// Password match
 partnerSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
-
 
 module.exports = mongoose.model('naavi_partners', partnerSchema);

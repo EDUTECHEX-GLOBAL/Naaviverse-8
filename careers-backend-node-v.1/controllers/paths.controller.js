@@ -5,87 +5,114 @@ const axios = require('axios');
 const mongoose = require('mongoose')
 
 const addPath = async (req, res) => {
-    try {
-        // Check if a path with the same name already exists and is active
-        let existingPath = await pathModel.findOne({ nameOfPath: req.body.nameOfPath, status: "waitingforapproval" });
+  try {
+    const body = req.body;
 
-        if (existingPath) {
-            return res.status(400).json({
-                status: false,
-                message: 'Path already exists',
-            });
-        }
+    // 🔹 1. Duplicate path check (unchanged)
+    const existing = await pathModel.findOne({
+      email: body.email,
+      nameOfPath: body.nameOfPath,
+      status: "waitingforapproval"
+    });
 
-        // Create a new path object
-        let createPath = {
-            email: req.body.email,
-            nameOfPath: req.body.nameOfPath,
-            description: req.body.description,
-            current_coordinates: req.body.current_coordinates,
-            feature_coordinates: req.body.feature_coordinates,
-            path_type: req.body.path_type,
-            path_cat: req.body.path_cat,
-            university: req.body.destination_institution,
-            the_ids: req.body.the_ids.map(id => ({
-                step_id: id.step_id, // Step ID
-                stepName: id.stepName, // Step Name
-                stepDescription: id.stepDescription, // Step Description
-                backup_pathId: id.backup_pathId, // Backup Path ID
-                backupPathName: id.backupPathName, // Backup Path Name
-                backupPathDescription: id.backupPathDescription // Backup Path Description
-            })),
-            financialSituation: req.body.financialSituation,
-            destination_degree: req.body.destination_degree,
-            length: req.body.length,
-            country: req.body.country,
-            city: req.body.city,
-            grade_avg: req.body.performance,
-            curriculum: req.body.curriculum,
-            grade: req.body.grade,
-            stream: req.body.stream,
-            program: req.body.program,
-            personality: req.body.personality
-        };
-
-        // Create a new path using the pathModel
-        let path = await pathModel.create(createPath);
-
-        if (!path) {
-            return res.status(500).json({
-                status: false,
-                message: 'Error in creating path',
-            });
-        }
-
-        // Successful response with the created path data
-        return res.status(200).json({
-            status: true,
-            message: 'Path created',
-            data: path
-        });
-    } catch (error) {
-        // Check if the error is a Mongoose validation error
-        if (error.name === 'ValidationError') {
-            const validationErrors = {};
-            for (const key in error.errors) {
-                if (error.errors.hasOwnProperty(key)) {
-                    validationErrors[key] = error.errors[key].message;
-                }
-            }
-            return res.status(400).json({
-                status: false,
-                message: 'Validation error',
-                errors: validationErrors,
-            });
-        }
-
-        console.error(error);
-        return res.status(500).json({
-            status: false,
-            message: 'Internal server error',
-        });
+    if (existing) {
+      return res.status(400).json({
+        status: false,
+        message: "A path with this name already exists and is pending approval"
+      });
     }
+
+    // 🔹 2. STEP VALIDATION — START
+    const stepIds = body.the_ids?.map(s => s.step_id) || [];
+
+    // 2a. Prevent duplicate steps in same path
+    const uniqueStepIds = new Set(stepIds.map(id => id.toString()));
+    if (uniqueStepIds.size !== stepIds.length) {
+      return res.status(400).json({
+        status: false,
+        message: "Duplicate steps are not allowed in a path"
+      });
+    }
+
+    // 2b. Validate step existence & status
+    if (stepIds.length > 0) {
+      const steps = await stepModel.find({
+        _id: { $in: stepIds },
+        status: { $ne: "delete" }
+      });
+
+      if (steps.length !== stepIds.length) {
+        return res.status(400).json({
+          status: false,
+          message: "One or more steps are invalid or deleted"
+        });
+      }
+    }
+    // 🔹 STEP VALIDATION — END
+
+    // 🔹 3. Create path object (unchanged)
+    const newPath = {
+      email: body.email,
+
+      nameOfPath: body.nameOfPath,
+      name: body.nameOfPath,
+
+      description: body.description || "",
+
+      current_coordinates: body.current_coordinates,
+      feature_coordinates: body.feature_coordinates,
+
+      path_type: body.path_type,
+      path_cat: body.path_cat,
+
+      destination_institution: body.destination_institution,
+      destination_degree: body.destination_degree,
+
+      length: body.length,
+      city: body.city,
+      country: body.country,
+
+      program: body.program,
+
+      grade: body.grade || [],
+      grade_avg: body.grade_avg || [],
+      curriculum: body.curriculum || [],
+      stream: body.stream || [],
+      financialSituation: body.financialSituation || [],
+      personality: body.personality || "",
+
+      the_ids: body.the_ids?.map(step => ({
+        step_id: step.step_id,
+        stepName: step.stepName,
+        stepDescription: step.stepDescription,
+        backup_pathId: step.backup_pathId || null,
+        backupPathName: step.backupPathName || "",
+        backupPathDescription: step.backupPathDescription || ""
+      })) || [],
+
+      status: "waitingforapproval"
+    };
+
+    const saved = await pathModel.create(newPath);
+
+    return res.status(200).json({
+      status: true,
+      message: "Path created successfully",
+      data: saved
+    });
+
+  } catch (error) {
+    console.error("Add Path Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+      error: error.message
+    });
+  }
 };
+
+
+
 
 const updatePath = async (req, res) => {
     try {
@@ -158,37 +185,39 @@ const updatePath = async (req, res) => {
 }; 
 
 const updatePathStatus = async (req, res) => {
-    const pathId = req.params.id; // Path ID from URL
-    const { status } = req.body;  // Status from the request body (active/inactive)
-  
-    // Validate the status
-    if (!status || !['active', 'inactive'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status. Please use "active" or "inactive".' });
+  const pathId = req.params.id;
+  const { status } = req.body;
+
+  // Map admin actions to correct DB values
+  const newStatus =
+    status === "approve" ||
+    status === "approved" ||
+    status === "active"
+      ? "active"
+      : "inactive";
+
+  try {
+    const updated = await pathModel.findByIdAndUpdate(
+      pathId,
+      { status: newStatus },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ status: false, message: "Path not found" });
     }
-  
-    try {
-      // Find the path by ID
-      const path = await pathModel.findById(pathId);
-  
-      if (!path) {
-        return res.status(404).json({ error: 'Path not found.' });
-      }
-  
-      // Update the status of the path
-      path.status = status === 'active' ? 'active' : 'inactive';  // Map 'inactive' to 'deleted'
-      
-      await path.save(); // Save the updated path
-  
-      // Send a success response
-      res.status(200).json({ 
-        status: true,
-        message: `Path has been marked as ${status === 'active' ? 'approved' : 'rejected'}.`
-      });
-    } catch (error) {
-      console.error("Error updating path status:", error);
-      res.status(500).json({ error: 'Internal server error.' });
-    }
-  };
+
+    return res.json({
+      status: true,
+      message: `Path has been marked as ${newStatus}`,
+      data: updated,
+    });
+  } catch (error) {
+    console.error("Error updating path status:", error);
+    return res.status(500).json({ status: false, message: "Server error" });
+  }
+};
+
 
 const getPath = async (req, res) => {
     let filter = {}
@@ -260,12 +289,14 @@ const getPath = async (req, res) => {
         },
     ])
         .then(paths => {
-            if (paths.length === 0) {
-                return res.json({
-                    status: false,
-                    message: 'No data found',
-                })
-            }
+           if (paths.length === 0) {
+    return res.json({
+        status: true,
+        data: [],
+        message: 'No data found'
+    })
+}
+
             return res.json({
                 status: true,
                 total: paths.length,
@@ -310,13 +341,14 @@ const getPathSpecific = async (req, res) => {
 
         // Find paths with specified filter and projection
         const paths = await pathModel.find(filter).lean();
+if (paths.length === 0) {
+    return res.json({
+        status: true,
+        data: [],
+        message: 'No data found'
+    })
+}
 
-        if (paths.length === 0) {
-            return res.status(404).json({
-                status: false,
-                message: 'No data found',
-            });
-        }
 
         return res.status(200).json({
             status: true,
@@ -370,12 +402,14 @@ const getPathNormal = async (req, res) => {
 
         const paths = await pathModel.find(filter).lean();
 
-        if (paths.length === 0) {
-            return res.status(404).json({
-                status: false,
-                message: 'No data found',
-            });
-        }
+      if (paths.length === 0) {
+    return res.json({
+        status: true,
+        data: [],
+        message: 'No data found'
+    })
+}
+
 
         return res.status(200).json({
             status: true,
@@ -483,26 +517,58 @@ const updateFields = async (req, res) => {
 
 
 const getActivePaths = async (req, res) => {
-    try {
-      const activePaths = await pathModel.find({ status: "active" });
-  
-      if (!activePaths || activePaths.length === 0) {
-        return res.status(404).json({ success: false, message: "No active paths found" });
-      }
-  
-      res.status(200).json({ success: true, data: activePaths });
-    } catch (error) {
-      console.error("Error fetching active paths:", error);
-      res.status(500).json({ success: false, message: "Server error" });
-    }
-  };
+  try {
+    const query = { status: "active" };
 
-  const getPathById = async (req, res) => {
+    // 🔑 ARRAY FIELDS — MUST USE $in
+    if (req.query.grade) {
+      query.grade = { $in: [req.query.grade] };
+    }
+
+    if (req.query.curriculum) {
+      query.curriculum = { $in: [req.query.curriculum] };
+    }
+
+    if (req.query.stream) {
+      query.stream = { $in: [req.query.stream] };
+    }
+
+    if (req.query.financial) {
+      query.financialSituation = { $in: [req.query.financial] };
+    }
+
+    if (req.query.performance) {
+      query.grade_avg = { $in: [req.query.performance] };
+    }
+
+    if (req.query.personality) {
+      query.personality = req.query.personality;
+    }
+
+    console.log("ACTIVE PATH FILTER 👉", query);
+
+    const activePaths = await pathModel.find(query);
+
+    return res.status(200).json({
+      success: true,
+      total: activePaths.length,
+      data: activePaths
+    });
+  } catch (error) {
+    console.error("Error fetching active paths:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};
+
+
+const getPathById = async (req, res) => {
     try {
-        // Extract path_id from the URL parameters
         const pathId = req.params.path_id;
 
-        // Validate the pathId to ensure it is a valid ObjectId
+        // Validate ObjectId
         if (!mongoose.Types.ObjectId.isValid(pathId)) {
             return res.status(400).json({
                 status: false,
@@ -510,28 +576,95 @@ const getActivePaths = async (req, res) => {
             });
         }
 
-        // Find the path in the database by the path_id
-        const path = await pathModel.findById(pathId).lean();
+        const objId = new mongoose.Types.ObjectId(pathId);
 
-        // If path is not found
-        if (!path) {
+        // Fetch path + join steps
+        const path = await pathModel.aggregate([
+            { $match: { _id: objId } },
+
+            {
+                $lookup: {
+                    from: "career_steps",
+                    let: { stepIds: "$the_ids.step_id" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $in: ["$_id", "$$stepIds"] },
+                                        { $ne: ["$status", "delete"] } // skip deleted
+                                    ]
+                                }
+                            }
+                        },
+                        { $sort: { createdAt: 1 } } // maintain step order
+                    ],
+                    as: "StepDetails"
+                }
+            }
+        ]);
+
+        if (!path || path.length === 0) {
             return res.status(404).json({
                 status: false,
                 message: 'Path not found',
             });
         }
 
-        // Return the path data
+        // Success
         return res.status(200).json({
             status: true,
             message: 'Path data found',
-            data: path,
+            data: path[0],
         });
+
     } catch (err) {
-        console.log('Error:', err);
-        res.status(500).json({
+        console.error('Error:', err);
+        return res.status(500).json({
             status: false,
             message: 'An error occurred while fetching the path data',
+        });
+    }
+};
+
+const uploadBulkPaths = async (req, res) => {
+    try {
+        const { email, records } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                status: false,
+                message: "Email is required"
+            });
+        }
+
+        if (!Array.isArray(records) || records.length === 0) {
+            return res.status(400).json({
+                status: false,
+                message: "Records array is required"
+            });
+        }
+
+        const formatted = records.map(r => ({
+            ...r,
+            email,
+            status: "active"
+        }));
+
+        const inserted = await pathModel.insertMany(formatted);
+
+        return res.status(200).json({
+            status: true,
+            message: "Bulk paths inserted successfully",
+            count: inserted.length
+        });
+
+    } catch (error) {
+        console.error("Bulk upload error:", error);
+        return res.status(500).json({
+            status: false,
+            message: "Internal server error",
+            error: error.message
         });
     }
 };
@@ -550,5 +683,5 @@ module.exports = {
     getActivePaths,
     updatePathStatus,
     getPathById,
-
+    uploadBulkPaths,
 }

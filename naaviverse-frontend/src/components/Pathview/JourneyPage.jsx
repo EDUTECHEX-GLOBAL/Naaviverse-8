@@ -42,7 +42,7 @@ const JourneyPage = () => {
     localStorage.setItem("selectedStepId", step._id);
     localStorage.setItem("selectedStepData", JSON.stringify(step));
 
-    navigate("/dashboard/current-step");
+    navigate("/dashboard/users/current-step");
   };
 
   return (

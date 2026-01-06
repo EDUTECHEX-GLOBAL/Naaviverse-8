@@ -15,6 +15,7 @@ import { useStore } from "../../components/store/store.ts";
 import MobMenu from "../../components/mobMenu/mobMenu";
 import Navbar from "../../components/Navbar/index.jsx";
 
+
 //images
 import logo from "../../static/images/logo.svg";
 import careerIcon from "../../static/images/mapspage/careerIcon.svg";
@@ -239,11 +240,12 @@ const MapsPage = () => {
       });
   }, []);
 
-  useEffect(() => {
-    if (pathname.includes("/maps")) {
-      setPreLoginMenu("Paths");
-    }
-  }, []);
+useEffect(() => {
+  if (pathname.includes("/maps")) {
+    setPreLoginMenu("Paths");
+  }
+}, [pathname, setPreLoginMenu]);
+
 
   const handleGrade = (item) => {
     if (grade.includes(item)) {
@@ -295,43 +297,29 @@ const MapsPage = () => {
     }
   };
 
-  const handleFilter = () => {
-    let obj = {};
-
-    if (grade.length > 0) {
-      obj.grade = grade;
-    }
-
-    if (stream.length > 0) {
-      obj.stream = stream;
-    }
-
-    if (curriculum.length > 0) {
-      obj.curriculum = curriculum;
-    }
-
-    if (gradeAvg.length > 0) {
-      obj.performance = gradeAvg;
-    }
-
-    if (finance.length > 0) {
-      obj.financialSituation = finance;
-    }
-
+const handleFilter = async () => {
+  try {
     setLoading1(true);
-    axios
-      .post(`https://careers.marketsverse.com/paths/get`, obj)
-      .then((response) => {
-        let result = response?.data?.data;
-        setPreLoginPathViewData(result);
-        setLoading1(false);
-      })
-      .catch((error) => {
-        console.log(error, "error in getting filtered path view result");
-        setPreLoginPathViewData([]);
-        setLoading1(false);
-      });
-  };
+
+    const params = {};
+
+    if (grade.length > 0) params.grade = grade;
+    if (stream.length > 0) params.stream = stream;
+    if (curriculum.length > 0) params.curriculum = curriculum;
+    if (gradeAvg.length > 0) params.performance = gradeAvg;
+    if (finance.length > 0) params.financialSituation = finance;
+
+    const res = await axios.get("/api/paths/active", { params });
+
+    setPreLoginPathViewData(res.data.data || []);
+  } catch (error) {
+    console.log("error in getting filtered paths", error);
+    setPreLoginPathViewData([]);
+  } finally {
+    setLoading1(false);
+  }
+};
+
 
   const myTimeout = () => {
     setTimeout(reload, 2000);
@@ -490,26 +478,24 @@ const MapsPage = () => {
               <div className="s-destination-div">
                 <div>Search Destination</div>
                 <div className="input-div1">
-                  <input
-                    type="text"
-                    placeholder="What school?"
-                    onChange={(e) => {
-                      setSchoolSearch(e.target.value);
-                      setProgramSearch("");
-                    }}
-                    value={schoolSearch}
-                  />
+                <input
+  type="text"
+  placeholder="What school?"
+  onChange={(e) => {
+    setSchoolSearch(e.target.value);
+  }}
+  value={schoolSearch}
+/>
                 </div>
                 <div className="input-div1">
-                  <input
-                    type="text"
-                    placeholder="What program?"
-                    onChange={(e) => {
-                      setProgramSearch(e.target.value);
-                      setSchoolSearch("");
-                    }}
-                    value={programSearch}
-                  />
+<input
+  type="text"
+  placeholder="What program?"
+  onChange={(e) => {
+    setProgramSearch(e.target.value);
+  }}
+  value={programSearch}
+/>
                 </div>
               </div>
               <div className="each-filter-div">

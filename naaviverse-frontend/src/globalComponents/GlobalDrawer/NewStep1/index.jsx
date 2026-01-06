@@ -10,6 +10,13 @@ import trash from "../../../pages/accDashbaoard/trash.svg";
 
 const NewStep1 = ({ setpstep }) => {
   const userDetails = JSON.parse(localStorage.getItem("partner"));
+  const selectedPathId = localStorage.getItem("selectedPathId");
+  useEffect(() => {
+  if (!selectedPathId) {
+    toast.error("Please open a Path before creating a Step");
+  }
+}, [selectedPathId]);
+
   const { setaccsideNav, setispopular } = useStore();
   const {
     setMypathsMenu,
@@ -25,6 +32,8 @@ const NewStep1 = ({ setpstep }) => {
     email: userDetails?.email,
     name: "",
     description: "",
+    microDescription: "",
+    nanoDescription: "",
     cost: "",
     gradeData: [
       {
@@ -333,22 +342,49 @@ const NewStep1 = ({ setpstep }) => {
     setStep("");
   }
 
-  const createNewStep = () => {
-    setLoading(true);
-    // console.log(stepForm, "stepform");
-    axios
-      .post(`/api/steps/add`, stepForm)
-      .then((response) => {
-        let result = response?.data;
-        if (result?.status) {
-          setLoading(false);
-          setStep("success");
-          myTimeout();
-        } else {
-          setLoading(false);
-        }
-      });
+const createNewStep = () => {
+  if (!selectedPathId) {
+    toast.error("Please open a Path before creating a Step");
+    return;
+  }
+
+  setLoading(true);
+
+  const payload = {
+    ...stepForm,
+
+    // 🔥 NORMALIZE FIELD NAMES FOR BACKEND
+    macro_description: stepForm.description,
+    micro_description: stepForm.microDescription,
+    nano_description: stepForm.nanoDescription,
+
+    // 🔥 REQUIRED OWNERSHIP
+    path_id: selectedPathId,
   };
+
+  // ❌ Remove frontend-only fields
+  delete payload.microDescription;
+  delete payload.nanoDescription;
+
+  axios
+    .post(`/api/steps/add`, payload)
+    .then((response) => {
+      if (response?.data?.status) {
+        setLoading(false);
+        setStep("success");
+        myTimeout();
+      } else {
+        setLoading(false);
+        toast.error(response?.data?.message || "Failed to create step");
+      }
+    })
+    .catch(() => {
+      setLoading(false);
+      toast.error("Error creating step");
+    });
+};
+
+
 
   useEffect(() => {
     axios
@@ -1276,25 +1312,50 @@ const NewStep1 = ({ setpstep }) => {
                   />
                 </div>
 
-                <div className="name">
-                  What is the instructions for the macro view?
-                </div>
-                <textarea
+<div className="name">What is the instructions for the macro view?</div>
+
+<textarea
   type="text"
   className="text-textarea"
-  placeholder="Enter instructions..."
+  placeholder="Enter macro instructions..."
   rows="5"
   cols="40"
   spellCheck={false}
-  onChange={(e) => {
-    setStepForm((prev) => ({
-      ...prev,
-      description: e.target.value,
-    }));
-  }}
+  onChange={(e) =>
+    setStepForm((prev) => ({ ...prev, description: e.target.value }))
+  }
   value={stepForm?.description}
-></textarea>
+/>
 
+<div className="name">What is the instructions for the micro view?</div>
+
+<textarea
+  type="text"
+  className="text-textarea"
+  placeholder="Enter micro instructions..."
+  rows="5"
+  cols="40"
+  spellCheck={false}
+  onChange={(e) =>
+    setStepForm((prev) => ({ ...prev, microDescription: e.target.value }))
+  }
+  value={stepForm?.microDescription}
+/>
+
+<div className="name">What is the instructions for the nano view?</div>
+
+<textarea
+  type="text"
+  className="text-textarea"
+  placeholder="Enter nano instructions..."
+  rows="5"
+  cols="40"
+  spellCheck={false}
+  onChange={(e) =>
+    setStepForm((prev) => ({ ...prev, nanoDescription: e.target.value }))
+  }
+  value={stepForm?.nanoDescription}
+/>
                 <div className="name">What type of step is it?</div>
                 <div
                   className="inputWrap"
@@ -1522,43 +1583,45 @@ const NewStep1 = ({ setpstep }) => {
               </Scrollbars>
             </div>
 
-            <div
-              className="NextBtn"
-              style={{
-                width: "100%",
-                opacity:
-                  stepForm?.name &&
-                  stepForm?.description &&
-                  stepForm?.length &&
-                  stepForm?.cost
-                  // Object.keys(stepForm?.other_data).length > 0
-                    ? "1"
-                    : "0.5",
-                cursor:
-                  stepForm?.name &&
-                  stepForm?.description &&
-                  stepForm?.length &&
-                  stepForm?.cost
-                  // Object.keys(stepForm?.other_data).length > 0
-                    ? "pointer"
-                    : "not-allowed",
-              }}
-              onClick={() => {
-                if (
-                  stepForm?.name &&
-                  stepForm?.description &&
-                  stepForm?.length &&
-                  stepForm?.cost 
-                  // &&
-                  // Object.keys(stepForm?.other_data).length > 0
-                ) {
-                  setStep("step2");
-                  // console.log(stepForm?.other_data, "stepForm?.other_data");
-                }
-              }}
-            >
-              Next Step
-            </div>
+<div
+  className="NextBtn"
+  style={{
+    width: "100%",
+    opacity:
+      stepForm?.name &&
+      stepForm?.description &&         // Macro View
+      stepForm?.microDescription &&    // Micro View
+      stepForm?.nanoDescription &&     // Nano View
+      stepForm?.length &&
+      stepForm?.cost
+        ? "1"
+        : "0.5",
+    cursor:
+      stepForm?.name &&
+      stepForm?.description &&
+      stepForm?.microDescription &&
+      stepForm?.nanoDescription &&
+      stepForm?.length &&
+      stepForm?.cost
+        ? "pointer"
+        : "not-allowed",
+  }}
+  onClick={() => {
+    if (
+      stepForm?.name &&
+      stepForm?.description &&         // Macro View
+      stepForm?.microDescription &&    // Micro View
+      stepForm?.nanoDescription &&     // Nano View
+      stepForm?.length &&
+      stepForm?.cost
+    ) {
+      setStep("step2");
+    }
+  }}
+>
+  Next Step
+</div>
+
           </>
         );
     }

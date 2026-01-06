@@ -12,6 +12,8 @@ const RegistrationContextProvider = (props) => {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
 
+  const [partnerType, setPartnerType] = useState("");   // ⭐ NEW FIELD
+
   const [pin, setPin] = useState("");
   const [pinMisMatch, setPinMisMatch] = useState(false);
   const [createAccountLoading, setCreateAccountLoading] = useState(false);
@@ -19,7 +21,7 @@ const RegistrationContextProvider = (props) => {
   const [authId, setAuthId] = useState(null);
 
   // ------------------------------------------------
-  //   STEP 1: Create Account (YOUR BACKEND)
+  //   STEP 1: Create Account
   // ------------------------------------------------
   const handleCreateAccount = async () => {
     try {
@@ -30,7 +32,9 @@ const RegistrationContextProvider = (props) => {
         {
           username: userName,
           email: userEmail,
+          
           password: userPassword,
+          partnerType: partnerType   // ⭐ SEND TO BACKEND
         },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -47,7 +51,7 @@ const RegistrationContextProvider = (props) => {
   };
 
   // ------------------------------------------------
-  //   STEP 2: Verify Email OTP (YOUR BACKEND)
+  //   STEP 2: Verify OTP
   // ------------------------------------------------
   const confirmEmail = async () => {
     try {
@@ -71,15 +75,11 @@ const RegistrationContextProvider = (props) => {
     }
   };
 
-  // ------------------------------------------------
-  //   OPTIONAL: Fetch appData from your backend
-  //   (Replace this with your own API if needed)
-  // ------------------------------------------------
   useEffect(() => {
     setLoading(true);
 
     axios
-      .get("http://localhost:4545/api/apps/naavi") // YOUR CUSTOM API
+      .get("http://localhost:4545/api/apps/naavi")
       .then(({ data }) => {
         setAppData(data);
         setLoading(false);
@@ -88,7 +88,6 @@ const RegistrationContextProvider = (props) => {
   }, []);
 
   const value = {
-    // states
     step,
     setStep,
     loading,
@@ -102,13 +101,15 @@ const RegistrationContextProvider = (props) => {
     userPassword,
     setUserPassword,
 
+    partnerType,          // ⭐ EXPOSED
+    setPartnerType,       // ⭐ EXPOSED
+
     pin,
     setPin,
     pinMisMatch,
 
     createAccountLoading,
 
-    // functions
     handleCreateAccount,
     confirmEmail,
 

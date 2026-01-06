@@ -1,63 +1,25 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import MapComponent from "./MapComponent";
-import Listview from "../Listview";
-import {
-  useJsApiLoader,
-  GoogleMap,
-  Marker,
-  Autocomplete,
-} from "@react-google-maps/api";
-import { LoadScript } from "@react-google-maps/api";
-import "./mapspage.scss";
-import DatePicker from "react-datepicker";
-import { useCoinContextData } from "../../context/CoinContext";
-import "react-datepicker/dist/react-datepicker.css";
-import { useStore } from "../../components/store/store.ts";
-
-//images
-import logo from "../../static/images/logo.svg";
-import careerIcon from "../../static/images/mapspage/careerIcon.svg";
-import educationIcon from "../../static/images/mapspage/educationIcon.svg";
-import immigrationIcon from "../../static/images/mapspage/immigrationIcon.svg";
-import plus from "../../static/images/mapspage/plus.svg";
-import close from "../../static/images/mapspage/close.svg";
-import hamIcon from "../../static/images/icons/hamIcon.svg";
 import axios from "axios";
+
+// Components
 import Pathview from "../Pathview";
-import Stepview from "../Stepview";
-import { GlobalContex } from "../../globalContext";
 import JourneyPage from "../Pathview/JourneyPage";
 
-const libraries = ["places"];
+// Contexts
+import { useCoinContextData } from "../../context/CoinContext";
+import { GlobalContex } from "../../globalContext";
+import { useStore } from "../../components/store/store.ts";
+import educationIcon from "../../static/images/mapspage/educationIcon.svg";
+
+// Styles
+import "./mapspage.scss";
 
 const PathComponent = () => {
   const navigate = useNavigate();
   const { sideNav, setsideNav } = useStore();
-  const [option, setOption] = useState("Education");
-  const [containers, setContainers] = useState([
-    { id: 1, inputValue1: "", inputValue2: "", removable: false },
-  ]);
-  const [pathOption, setPathOption] = useState("Path View");
-  const [pathMap, setPathMap] = useState(/** @type google.maps.Map */ (null));
-  const [pathCurrentLocation, setPathCurrentLocation] = useState(null);
-  const [pathSearchTerm, setPathSearchTerm] = useState("");
-  const autocompleteRef = useRef(null);
-  const [pathResetLoaction, setPathResetLocation] = useState(false);
-  const [pathSelectedPlace, setPathSelectedPlace] = useState(null);
-  const [pathPlacesId, setPathPlacesId] = useState(null);
-  const [pathPlaceInfo, setPathPlaceInfo] = useState("");
-  const [pathSelectedDate, setPathSelectedDate] = useState(null);
-  const [pathShowDatePicker, setPathShowDatePicker] = useState(false);
-  const [pathDirections, setPathDirections] = useState(null);
-  const [pathSelectedLocation, setPathSelectedLocation] = useState(null);
-  const [pathShowDirections, setPathShowDirections] = useState(true);
-  const [userProfile, setUserProfile] = useState(null);
-  const [selectedPathId, setSelectedPathId] = useState(null);
 
   const {
-    searchTerm,
-    setSearchterm,
     pathItemSelected,
     setPathItemSelected,
     pathItemStep,
@@ -65,14 +27,11 @@ const PathComponent = () => {
     selectedPathItem,
     setSelectedPathItem,
     showPathDetails,
-    setShowPathDetails,
   } = useCoinContextData();
 
   const {
     gradeToggle,
     setGradeToggle,
-    schoolToggle,
-    setSchoolToggle,
     curriculumToggle,
     setCurriculumToggle,
     streamToggle,
@@ -88,224 +47,43 @@ const PathComponent = () => {
   } = useContext(GlobalContex);
 
   const [loading, setLoading] = useState(false);
-  const [levelThreeData, setLevelThreeData] = useState([]);
+  const [approvedPaths, setApprovedPaths] = useState([]);
+  const [userProfile, setUserProfile] = useState(null);
 
-  let userDetails = JSON.parse(localStorage.getItem("user") || "{}");
-
-
-//   const autoGenerateUniversity = async (uni) => {
-//   try {
-//     if (
-//       uni.generatedProgram &&
-//       uni.generatedProgram.program &&
-//       uni.generatedProgram.description &&
-//       uni.generatedProgram.steps?.length > 0
-//     ) {
-//       return uni; // already generated
-//     }
-
-//     const { data } = await axios.post("/api/perplexity/generate", {
-//       id: uni._id,
-//       name: uni.name,
-//     });
-
-//     console.log("Generated using AI:", data.generatedProgram);
-
-//     return {
-//       ...uni,
-//       generatedProgram: data.generatedProgram,
-//     };
-//   } catch (err) {
-//     console.error("AI generation failed", err);
-//     return uni; // fallback
-//   }
-// };
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
 
-  // --------------------------------------------------------------
-  // ✅ MOVED HERE: pathSelection FIX (to solve "not defined" error)
-  // --------------------------------------------------------------
-const pathSelection = () => {
-  const email = userDetails?.email;
 
-  // 🎯 FIX: USE _id (REAL UNIVERSITY ID)
-  const universityId =
-    selectedPathItem?._id ||
-    localStorage.getItem("selectedUniversityId");
+ const buildFilterParams = () => {
+  if (!userProfile) return {};
 
-  console.log("🔍 selectedPathItem:", selectedPathItem);
-  console.log("🔍 Correct University ID:", universityId);
+  const params = {};
 
-  if (!email || !universityId) {
-    console.log("❌ Missing values:", { email, universityId });
-    return alert("Missing universityId/email!");
-  }
+  if (gradeToggle) params.grade = userProfile.grade;
+  if (curriculumToggle) params.curriculum = userProfile.curriculum;
+  if (streamToggle) params.stream = userProfile.stream;
+  if (performanceToggle) params.performance = userProfile.performance;
+  if (financialToggle) params.financial = userProfile.financialSituation;
+  if (personalityToggle) params.personality = userProfile.personality;
 
-  axios.post("http://localhost:4545/api/fetch/selectpath", {
-    email,
-    universityId,
-  })
-  .then(res => {
-    // SAVE CORRECT ID
-    localStorage.setItem("selectedUniversityId", universityId);
-    reload();
-  })
-  .catch(err => console.error(err));
+  return params;
 };
-
-
-
+ 
   // --------------------------------------------------------------
-
-  const handleAddContainer = () => {
-    const lastContainer = containers[containers.length - 1];
-    const newContainerId = lastContainer.id + 1;
-    const newContainer = {
-      id: newContainerId,
-      inputValue1: "",
-      inputValue2: "",
-      removable: true,
-    };
-    setContainers([...containers, newContainer]);
-  };
-
-  const handleRemoveContainer = (containerId) => {
-    const updatedContainers = containers.filter(
-      (container) => container.id !== containerId
-    );
-    const renumberedContainers = updatedContainers.map((container, index) => {
-      return { ...container, id: index + 1 };
-    });
-    setContainers(renumberedContainers);
-  };
-
-  const handleInputChange = (e, containerId, inputIndex) => {
-    const updatedContainers = [...containers];
-    const containerIndex = updatedContainers.findIndex(
-      (container) => container.id === containerId
-    );
-
-    if (containerIndex !== -1) {
-      if (inputIndex === 1) {
-        updatedContainers[containerIndex].inputValue1 = e.target.value;
-      } else if (inputIndex === 2) {
-        updatedContainers[containerIndex].inputValue2 = e.target.value;
-      }
-
-      setContainers(updatedContainers);
-    }
-  };
-
-  // -------- rest of your component EXACTLY as before --------
-  useEffect(() => {
-    if (navigator.geolocation) {
-      setPathSelectedPlace("");
-      setPathSelectedLocation(null);
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setPathCurrentLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-        },
-        (error) => {
-          console.error(
-            "Error getting current location in path component:",
-            error
-          );
-        }
-      );
-    }
-  }, [pathResetLoaction]);
-
-  const handleResetContainer = () => {
-    window.location.reload();
-  };
-
-  const handlePlaceSelect = () => {
-    if (autocompleteRef?.current) {
-      const place = autocompleteRef?.current?.getPlace();
-      if (place?.geometry && place?.geometry?.location) {
-        const location = {
-          lat: place?.geometry?.location?.lat(),
-          lng: place?.geometry?.location?.lng(),
-        };
-        setPathSelectedLocation(location);
-        setPathSelectedPlace(place?.formatted_address);
-        const placeId = place?.place_id;
-        setPathPlacesId(placeId);
-        if (pathMap) {
-          pathMap.panTo(location);
-        }
-      }
-    }
-  };
-
-  const fetchPlaceDetails = async (placeId) => {
-    if (placeId !== null) {
-      try {
-        const response = await fetch(
-          `https://careers.marketsverse.com/api/places?place_id=${placeId}`
-        );
-        const data = await response.json();
-        setPathPlaceInfo(data?.result);
-        return data.result;
-      } catch (error) {
-        console.log(error, "error in getting place info in path component");
-      }
-    }
-  };
-
-  useEffect(() => {
-    fetchPlaceDetails(pathPlacesId);
-  }, [pathPlacesId]);
-
-  const handleDateChange = (date) => {
-    setPathSelectedDate(date);
-    setPathShowDatePicker(false);
-  };
-
-  const CustomInput = ({ value, onClick }) => (
-    <input
-      type="text"
-      placeholder="By When?"
-      value={value}
-      onClick={onClick}
-      onFocus={() => setPathShowDatePicker(true)}
-      onBlur={() => setPathShowDatePicker(false)}
-    />
-  );
-
-  const myTimeout = () => {
-    setTimeout(reload, 3000);
-  };
-function reload() {
-  setsideNav("My Journey");
-
-  // Do NOT reset these here
-  // setSelectedPathItem(null);
-  // setPathItemSelected(false);
-
-  setPathItemStep(3); // <-- show Congratulations
-  navigate("/dashboard/users");
-}
-
-
-
-
-
+  //  FETCH USER PROFILE
+  // --------------------------------------------------------------
   const fetchUserProfile = async () => {
     try {
-      const email = userDetails?.email;
-      const response = await fetch(`/api/users/get/${email}`);
-      const result = await response.json();
+      const email = user?.email;
+      if (!email) return;
 
-      if (result.status) {
-        localStorage.setItem("userProfile", JSON.stringify(result.data));
-        setUserProfile(result.data);
+      const res = await axios.get(`/api/users/get/${email}`);
+      if (res.data.status) {
+        setUserProfile(res.data.data);
+        localStorage.setItem("userProfile", JSON.stringify(res.data.data));
       }
-    } catch (error) {
-      console.error("Error fetching user:", error);
+    } catch (err) {
+      console.error("Failed to load user profile:", err);
     }
   };
 
@@ -313,168 +91,131 @@ function reload() {
     fetchUserProfile();
   }, []);
 
-  // 🔍 Fetch recommended programs/paths
-  useEffect(() => {
-    if (!userProfile) return;
-
-const fetchPrograms = async () => {
-  try {
-    setLoading(true);
-
-    const params = {};
-
-    if (!gradeToggle && userProfile.grade) params.grade = userProfile.grade;
-    if (!curriculumToggle && userProfile.curriculum)
-      params.curriculum = userProfile.curriculum;
-    if (!streamToggle && userProfile.stream)
-      params.stream = userProfile.stream;
-    if (!performanceToggle && userProfile.performance)
-      params.performance = userProfile.performance;
-    if (!financialToggle && userProfile.financialSituation)
-      params.financialSituation = userProfile.financialSituation;
-    if (!personalityToggle && userProfile.personality)
-      params.personality = userProfile.personality;
-
-    const { data } = await axios.get("/api/universities", { params });
-
-
-setLevelThreeData(data.data);
-
-
-
-
-
-
-  } catch (error) {
-    console.error("Error fetching programs:", error);
-    setLevelThreeData([]);
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-    fetchPrograms();
-  }, [
-    refetchPaths,
-    userProfile,
-    gradeToggle,
-    curriculumToggle,
-    streamToggle,
-    performanceToggle,
-    financialToggle,
-    personalityToggle,
-  ]);
-
-  // -----------------------------------------------
-// 🔍 AUTO-TRIGGER AI ONLY WHEN USER SEARCHES
-// -----------------------------------------------
+// --------------------------------------------------------------
+//  FETCH ADMIN-APPROVED PATHS (WITH TOGGLES)
+// --------------------------------------------------------------
 useEffect(() => {
-  if (!searchTerm || searchTerm.trim().length < 3) return;
-
-  const fetchUniversity = async () => {
+  const fetchApprovedPaths = async () => {
     try {
       setLoading(true);
-      console.log("🔍 Searching for university:", searchTerm);
 
-     const res = await axios.get(
-  `http://localhost:4545/api/universities/find-or-create?name=${searchTerm}`
-);
+      // 🔑 BUILD FILTERS BASED ON TOGGLES
+      const params = {};
 
+      if (gradeToggle) params.grade = userProfile?.grade;
+      if (curriculumToggle) params.curriculum = userProfile?.curriculum;
+      if (streamToggle) params.stream = userProfile?.stream;
+      if (performanceToggle) params.performance = userProfile?.performance;
+      if (financialToggle) params.financial = userProfile?.financialSituation;
+      if (personalityToggle) params.personality = userProfile?.personality;
 
-      if (res.data?.status) {
-        console.log("🎯 University Found/Created:", res.data.data);
-        setLevelThreeData([res.data.data]); // show ONLY the searched university
-      }
-    } catch (error) {
-      console.error("❌ University search failed:", error);
+      console.log("FETCHING PATHS WITH FILTERS 👉", params);
+
+      const res = await axios.get(
+        "http://localhost:4545/api/paths/active",
+        { params }
+      );
+
+      setApprovedPaths(res.data.data || []);
+    } catch (err) {
+      console.error("Failed to load approved paths:", err);
+      setApprovedPaths([]);
     } finally {
       setLoading(false);
     }
   };
 
-  fetchUniversity();
-}, [searchTerm]);
+  // ⛔ prevent API call before profile loads
+  if (userProfile) {
+    fetchApprovedPaths();
+  }
+}, [
+  refetchPaths,
+  gradeToggle,
+  curriculumToggle,
+  streamToggle,
+  performanceToggle,
+  financialToggle,
+  personalityToggle,
+  userProfile
+]);
 
 
+  // --------------------------------------------------------------
+  //  USER CONFIRMS PATH (POST SELECT)
+  // --------------------------------------------------------------
+// --------------------------------------------------------------
+//  USER CONFIRMS PATH (POST SELECT)
+// --------------------------------------------------------------
+const confirmPathSelection = () => {
+  const email = user?.email;
+  const pathId = selectedPathItem?._id;
+
+  if (!email || !pathId) {
+    alert("Missing email or pathId");
+    return;
+  }
+
+  // ⭐ VERY IMPORTANT — SAVE PATH ID FOR JOURNEY PAGE
+  localStorage.setItem("selectedPathId", pathId);
+
+  axios
+    .post("http://localhost:4545/api/fetch/selectpath", {
+      email,
+      pathId,
+    })
+    .then(() => {
+      setPathItemStep(3);
+
+      // ⭐ NAVIGATE TO MY JOURNEY AFTER SUCCESS
+      setTimeout(() => {
+        setsideNav("My Journey");
+        navigate("/dashboard/users");
+      }, 1200);
+    })
+    .catch((err) => console.error("Select path error:", err));
+};
+
+
+  // --------------------------------------------------------------
+  //  RETURN: FULL CLEAN UI
+  // --------------------------------------------------------------
   return (
     <div className="mapspage1">
       {showPathDetails ? (
         <JourneyPage />
       ) : (
         <div className="maps-container1">
+          {/* LEFT SIDEBAR */}
           <div className="maps-sidebar1">
-            <div
-              className="top-icons1"
-              style={{
-                display:
-                  pathItemSelected && pathItemStep === 3 ? "none" : "flex",
-              }}
-            >
-              <div
-                className="each-icon1"
-                onClick={() => {
-                  setOption("Education");
-                }}
-              >
-                <div
-                  className="border-div1"
-                  style={{
-                    border:
-                      option === "Education"
-                        ? "1px solid #100F0D"
-                        : "1px solid #e7e7e7",
-                  }}
-                >
-                  <img src={educationIcon} alt="" />
-                </div>
-                <div
-                  className="icon-name-txt1"
-                  style={{
-                    fontWeight: option === "Education" ? "600" : "",
-                  }}
-                >
-                  Education
-                </div>
-              </div>
-            </div>
-
+            
+            {/* Path Action Flow */}
             {pathItemSelected && pathItemStep === 1 ? (
               <div className="mid-area1" style={{ borderBottom: "none" }}>
-                <div
-                  style={{
-                    fontWeight: "400",
-                    marginTop: "0.5rem",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  What do you want to do with this path?
-                </div>
+                <div style={{ margin: "0.5rem 0" }}>What do you want to do?</div>
+
                 <div className="maps-btns-div1">
                   <div
                     className="reset-btn1"
-                    style={{ fontWeight: "400", textAlign: "left" }}
-                    onClick={() => {
-                      navigate(`/dashboard/path/${selectedPathItem?._id}`);
-                    }}
+                    onClick={() =>
+                      navigate(`/dashboard/path/${selectedPathItem?._id}`)
+                    }
                   >
                     Explore Path
                   </div>
+
                   <div
                     className="reset-btn1"
-                    style={{ fontWeight: "400", textAlign: "left" }}
-                    onClick={() => {
-                      setPathItemStep(2);
-                    }}
+                    onClick={() => setPathItemStep(2)}
                   >
                     Select Path
                   </div>
+
                   <div
                     className="reset-btn1"
-                    style={{ fontWeight: "400", textAlign: "left" }}
                     onClick={() => {
                       setPathItemSelected(false);
-                      setSelectedPathItem([]);
+                      setSelectedPathItem(null);
                     }}
                   >
                     Go Back
@@ -483,35 +224,22 @@ useEffect(() => {
               </div>
             ) : pathItemSelected && pathItemStep === 2 ? (
               <div className="mid-area1" style={{ borderBottom: "none" }}>
-                <div
-                  style={{
-                    fontWeight: "400",
-                    marginTop: "0.5rem",
-                    marginBottom: "0.5rem",
-                  }}
-                >
+                <div style={{ margin: "0.5rem 0" }}>
                   Are you sure you want to select this path?
                 </div>
+
                 <div className="maps-btns-div1">
                   <div
                     className="reset-btn1"
-                    style={{
-                      fontWeight: "400",
-                      textAlign: "left",
-                      opacity: loading ? "0.25" : "1",
-                    }}
-                    onClick={() => {
-                      pathSelection();
-                    }}
+                    onClick={confirmPathSelection}
+                    style={{ opacity: loading ? 0.5 : 1 }}
                   >
                     {loading ? "Loading..." : "Yes, Confirm"}
                   </div>
+
                   <div
                     className="reset-btn1"
-                    style={{ fontWeight: "400", textAlign: "left" }}
-                    onClick={() => {
-                      setPathItemStep(1);
-                    }}
+                    onClick={() => setPathItemStep(1)}
                   >
                     Go Back
                   </div>
@@ -521,88 +249,96 @@ useEffect(() => {
               <div className="congrats-area">
                 <div className="congrats-textt">Congratulations</div>
                 <div className="congrats-textt1">
-                 You have successfully chosen {selectedPathItem?.name}.
-                  You will be redirected to your journey page now.
+                  You have selected: {selectedPathItem?.name}
                 </div>
               </div>
             ) : (
-              <div className="mid-area1">
-                <div className="current-coord-container">
+              // DEFAULT: CURRENT COORDINATES
+<div className="mid-area1">
+
+  {/* ================= EDUCATION HEADER (NEW) ================= */}
+   {/* EDUCATION HEADER */}
+  <div className="education-header">
+    <div className="education-icon">
+      <img src={educationIcon} alt="Education" />
+    </div>
+    <div className="education-title">Education</div>
+  </div>
+  {/* ================= CURRENT COORDINATES ================= */}
+  <div className="current-coord-container">
+
                   <div className="current-text">Current Coordinates</div>
 
-                  {userProfile ? (
+                  {!userProfile ? (
+                    <p>Loading profile...</p>
+                  ) : (
                     <>
                       <div className="each-coo-field">
-                        <div className="field-name">
-                          Grade: {userProfile.grade}
-                        </div>
+                        <div className="field-name">Grade</div>
                         <div
                           className="toggleContainer"
-                          onClick={(e) => setGradeToggle(!gradeToggle)}
+                          onClick={() => setGradeToggle(!gradeToggle)}
                         >
                           <div
                             className="toggle"
                             style={{
                               transform: !gradeToggle
-                                ? "translateX(0px)"
+                                ? "translateX(0)"
                                 : "translateX(20px)",
                             }}
-                          >
-                            &nbsp;
-                          </div>
+                          ></div>
                         </div>
-                        <div className="field-value">{userProfile?.grade}</div>
+                        <div className="field-value">{userProfile.grade}</div>
                       </div>
 
+                      {/* curriculum */}
                       <div className="each-coo-field">
-                        <div className="field-name">
-                          Curriculum: {userProfile.curriculum}
-                        </div>
+                        <div className="field-name">Curriculum</div>
                         <div
                           className="toggleContainer"
-                          onClick={(e) => setCurriculumToggle(!curriculumToggle)}
+                          onClick={() =>
+                            setCurriculumToggle(!curriculumToggle)
+                          }
                         >
                           <div
                             className="toggle"
                             style={{
                               transform: !curriculumToggle
-                                ? "translateX(0px)"
+                                ? "translateX(0)"
                                 : "translateX(20px)",
                             }}
-                          >
-                            &nbsp;
-                          </div>
+                          ></div>
                         </div>
                         <div className="field-value">
-                          {userProfile?.curriculum}
+                          {userProfile.curriculum}
                         </div>
                       </div>
 
+                      {/* Stream */}
                       <div className="each-coo-field">
                         <div className="field-name">Stream</div>
                         <div
                           className="toggleContainer"
-                          onClick={(e) => setStreamToggle(!streamToggle)}
+                          onClick={() => setStreamToggle(!streamToggle)}
                         >
                           <div
                             className="toggle"
                             style={{
                               transform: !streamToggle
-                                ? "translateX(0px)"
+                                ? "translateX(0)"
                                 : "translateX(20px)",
                             }}
-                          >
-                            &nbsp;
-                          </div>
+                          ></div>
                         </div>
-                        <div className="field-value">{userProfile?.stream}</div>
+                        <div className="field-value">{userProfile.stream}</div>
                       </div>
 
+                      {/* Performance */}
                       <div className="each-coo-field">
                         <div className="field-name">Performance</div>
                         <div
                           className="toggleContainer"
-                          onClick={(e) =>
+                          onClick={() =>
                             setPerformanceToggle(!performanceToggle)
                           }
                         >
@@ -610,47 +346,45 @@ useEffect(() => {
                             className="toggle"
                             style={{
                               transform: !performanceToggle
-                                ? "translateX(0px)"
+                                ? "translateX(0)"
                                 : "translateX(20px)",
                             }}
-                          >
-                            &nbsp;
-                          </div>
+                          ></div>
                         </div>
                         <div className="field-value">
-                          {userProfile?.performance}
+                          {userProfile.performance}
                         </div>
                       </div>
 
+                      {/* Financial */}
                       <div className="each-coo-field">
                         <div className="field-name">Financial</div>
                         <div
                           className="toggleContainer"
-                          onClick={(e) => setFinancialToggle(!financialToggle)}
+                          onClick={() =>
+                            setFinancialToggle(!financialToggle)
+                          }
                         >
                           <div
                             className="toggle"
                             style={{
                               transform: !financialToggle
-                                ? "translateX(0px)"
+                                ? "translateX(0)"
                                 : "translateX(20px)",
                             }}
-                          >
-                            &nbsp;
-                          </div>
+                          ></div>
                         </div>
                         <div className="field-value">
-                          {userProfile?.financialSituation}
+                          {userProfile.financialSituation}
                         </div>
                       </div>
 
+                      {/* Personality */}
                       <div className="each-coo-field">
-                        <div className="field-name">
-                          Personality: {userProfile?.personality}
-                        </div>
+                        <div className="field-name">Personality</div>
                         <div
                           className="toggleContainer"
-                          onClick={(e) =>
+                          onClick={() =>
                             setPersonalityToggle(!personalityToggle)
                           }
                         >
@@ -658,41 +392,23 @@ useEffect(() => {
                             className="toggle"
                             style={{
                               transform: !personalityToggle
-                                ? "translateX(0px)"
+                                ? "translateX(0)"
                                 : "translateX(20px)",
                             }}
-                          >
-                            &nbsp;
-                          </div>
+                          ></div>
                         </div>
                         <div className="field-value">
-                          {userProfile?.personality ?? "--"}
-                        </div>
-                      </div>
-
-                      <div className="each-coo-field">
-                        <div className="field-name">School</div>
-                        <div
-                          className="toggleContainer"
-                          style={{ border: "0px" }}
-                        ></div>
-                        <div
-                          className="field-value"
-                          style={{ borderLeft: "0px" }}
-                        >
-                          {userProfile?.school}
+                          {userProfile.personality}
                         </div>
                       </div>
                     </>
-                  ) : (
-                    <p>Loading user profile...</p>
                   )}
                 </div>
 
                 <div className="maps-btns-div1">
                   <div
                     className="gs-Btn-maps1"
-                    onClick={(e) => setRefetchPaths(!refetchPaths)}
+                    onClick={() => setRefetchPaths(!refetchPaths)}
                   >
                     Find Paths
                   </div>
@@ -701,18 +417,18 @@ useEffect(() => {
             )}
           </div>
 
-   <div className="maps-content-area1">
-  <Pathview
-    paths={levelThreeData}
-    loading={loading}
-    onConfirmPath={(uni) => {
-      setSelectedPathItem(uni);
-      setPathItemSelected(true);
-      setPathItemStep(1);
-    }}
-  />
-</div>
-
+          {/* RIGHT SIDE: SHOW APPROVED PATHS */}
+          <div className="maps-content-area1">
+            <Pathview
+              paths={approvedPaths}
+              loading={loading}
+              onConfirmPath={(path) => {
+                setSelectedPathItem(path);
+                setPathItemSelected(true);
+                setPathItemStep(1);
+              }}
+            />
+          </div>
         </div>
       )}
     </div>

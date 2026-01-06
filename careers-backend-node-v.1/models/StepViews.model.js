@@ -1,25 +1,31 @@
 const mongoose = require("mongoose");
 
 const StepViewsSchema = new mongoose.Schema({
-  universityId: { type: mongoose.Schema.Types.ObjectId, ref: "Universities", required: true },
-
-  // ❌ Change from ObjectId → String
-  stepId: { type: String, required: true },
-
-  macroView: String,
-
-  microView: {
-    grade: String,
-    stream: String,
-    curriculum: String,
-    gpa: String,
-    financialPosition: String,
-    personality: String,
+  pathId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Path",
+    required: true,
+  },
+  stepId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "career_steps",
+    required: true,
   },
 
-  nanoView: [String],
+  macroView: {
+    description: { type: String, default: "" },
+  },
 
-  createdAt: { type: Date, default: Date.now }
+  microView: {
+    description: { type: String, default: "" },
+  },
+
+  nanoView: {
+    description: { type: String, default: "" }, // 🔥 FIX
+  },
+
+  createdAt: { type: Date, default: Date.now },
 });
+
 
 module.exports = mongoose.model("StepViews", StepViewsSchema);

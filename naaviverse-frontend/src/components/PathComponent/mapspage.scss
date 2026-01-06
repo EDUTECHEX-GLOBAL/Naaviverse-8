@@ -1,3 +1,57 @@
+/* ================= EDUCATION HEADER ================= */
+
+/* ===== Education Section Header (MATCH IMAGE 2) ===== */
+
+/* ===== Education Header (LEFT + COLUMN) ===== */
+
+.education-header {
+  display: flex;
+  flex-direction: column;     /* icon on top, text below */
+  align-items: flex-start;    /* 👈 LEFT ALIGN */
+
+  width: 100%;
+  padding: 16px 20px;
+  box-sizing: border-box;
+
+  border-bottom: 1px solid #e6e6e6;
+
+  margin-bottom: 0 !important;   /* 🔥 FORCE REMOVE */
+  padding-bottom: 8px !important;
+
+
+}
+
+/* Icon circle */
+.education-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1.5px solid #000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 6px;   /* space between icon & text */
+}
+
+.education-icon img {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+/* Text below icon (LEFT aligned) */
+.education-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #000;
+  text-align: left;     /* 👈 LEFT */
+  line-height: 1.2;
+}
+
+
+
 .search-container-ai {
   padding: 1rem;
   display: flex;
@@ -97,11 +151,12 @@
 
       .mid-area1 {
         width: 100%;
-        padding: 2rem 1rem;
+      padding: 0.75rem 1rem;   // 👈 smaller top space
         border-bottom: 1px solid #e5e5e5;
         display: flex;
         flex-direction: column;
-        gap: 2rem;
+       gap: 0.75rem;
+
 
         .current-coord-container {
           width: 100%;
@@ -111,6 +166,8 @@
           margin-bottom: 1rem;
 
           .current-text {
+             margin-top: 4px;      /* 👈 REDUCED */
+             margin-bottom: 12px;
             font-size: 0.9rem;
             font-weight: 500;
           }

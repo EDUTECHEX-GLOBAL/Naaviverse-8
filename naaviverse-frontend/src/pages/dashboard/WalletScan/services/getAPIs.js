@@ -1,47 +1,65 @@
 import axios from "axios";
-import Axios from "axios";
 
+/**
+ * GET REGISTERED APPS
+ */
 export const getRegisteredApp = () => {
   const userDetails = JSON.parse(localStorage.getItem("adminuser"));
-  let email = userDetails?.email;
-  return axios.get(
-    `https://comms.globalxchange.io/gxb/apps/registered/user?email=${email}`
-  );
+  const email = userDetails?.email;
+
+  return axios.get(`/proxy/applications?email=${email}`);
 };
 
+/**
+ * GET USER DETAILS
+ */
 export const getUserDetails = () => {
   const userDetails = JSON.parse(localStorage.getItem("adminuser"));
-  let email = userDetails?.email;
-  return axios.get(
-    `https://comms.globalxchange.io/user/details/get?email=${email}`
-  );
+  const email = userDetails?.email;
+
+  return axios.get(`/proxy/user-details?email=${email}`);
 };
 
+/**
+ * GET ALL BANKERS
+ */
 export const fetchAllBankers = () => {
-  return Axios(`https://teller2.apimachine.com/admin/allBankers`);
+  return axios.get(`/proxy/bankers`);
 };
-export function fetchAllCoins() {
-  return Axios.get(`https://comms.globalxchange.io/coin/vault/get/all/coins`);
-}
-export const conversionAPI = (from, to) => {
-  return Axios(
-    `https://comms.globalxchange.io/forex/convert?buy=${from}&from=${to}`
-  );
+
+/**
+ * GET ALL COINS
+ */
+export const fetchAllCoins = () => {
+  return axios.get(`/proxy/coins`);
 };
+
+/**
+ * FOREX CONVERSION
+ */
+export const conversionAPI = (buy, from) => {
+  return axios.get(`/proxy/convert?buy=${buy}&from=${from}`);
+};
+
+/**
+ * GET CMC PRICES
+ */
 export const allCoinsConversion = (coin) => {
-  return Axios.get(
-    `https://comms.globalxchange.io/coin/getCmcPrices?convert=${coin}`
-  );
+  return axios.get(`/proxy/cmc?convert=${coin}`);
 };
 
+/**
+ * GET BOND INTEREST LOGS
+ */
 export const bondEarningList = (email, coin) => {
-  return axios.get(
-    `https://comms.globalxchange.io/coin/iced/interest/logs/get?email=${email}&coin=${coin}`
-  );
+  return axios.get(`/proxy/bond-earnings?email=${email}&coin=${coin}`);
 };
 
+/**
+ * GET MONEY MARKET EARNINGS
+ */
 export const moneyMarketList = (email, app, coin) => {
-  return Axios.get(
-    `https://comms.globalxchange.io/coin/vault/service/user/app/interest/logs/get?email=${email}&app_code=${app}&coin=${coin}`
+  return axios.get(
+    `/proxy/money-market?email=${email}&app_code=${app}&coin=${coin}`
   );
 };

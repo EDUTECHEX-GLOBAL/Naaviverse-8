@@ -34,7 +34,7 @@ const addService = async (req, res) => {
       staking_details: req.body.staking_details,
 
       // OPTIONAL FIELDS
-      step_id: req.body.step_id || null,
+    step_id: String(req.body.step_id),
       serviceProvider: req.body.serviceProvider || "",
       access: req.body.access || "",
       goal: req.body.goal || "",
@@ -167,6 +167,51 @@ const getServicesByStep = async (req, res) => {
 };
 
 
+
+const bulkUploadServices = async (req, res) => {
+    try {
+        const { email, records } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                status: false,
+                message: "Email is required"
+            });
+        }
+
+        if (!Array.isArray(records) || records.length === 0) {
+            return res.status(400).json({
+                status: false,
+                message: "Records array is required"
+            });
+        }
+
+        const formatted = records.map(r => ({
+            ...r,
+            email,
+            status: "active"
+        }));
+
+        const inserted = await serviceModel.insertMany(formatted);
+
+        return res.status(200).json({
+            status: true,
+            message: "Bulk services inserted successfully",
+            count: inserted.length
+        });
+
+    } catch (error) {
+        console.error("Bulk services upload error:", error);
+        return res.status(500).json({
+            status: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};
+
+
+
 module.exports = {
     addService,
     getServices,
@@ -175,5 +220,6 @@ module.exports = {
     restoreService,
     getAllServices: getServices,  // reuse
     updateServiceIcon: updateService,
-    getServicesByStep
+    getServicesByStep,
+    bulkUploadServices,
 };

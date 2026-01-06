@@ -44,6 +44,10 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const [stepId, setStepId] = useState("");
   const [backupPathId, setBackupPathId] = useState("")
 
+    /** ============================
+     * FETCH ALL PATHS FOR ADMIN
+     * ============================ */
+
 
   const getAllPaths = () => { 
     setLoading(true);
@@ -82,13 +86,18 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
 
   const [allServices, setAllServices] = useState([])
 
-  const getAllServices = () => {
-    axios.get(`https://comms.globalxchange.io/gxb/product/banker/get?category=education%20consultants`).then(({data}) => {
-      if(data.status){
-        setAllServices(data.data)
+const getAllServices = () => {
+  let email = userDetails?.email;
+
+  axios.get(`/api/services/get?productcreatoremail=${email}`)
+    .then(({ data }) => {
+      if (data.status) {
+        setAllServices(data.data);
       }
     })
-  }
+    .catch(err => console.error("Error fetching local services:", err));
+};
+
 
   useEffect(() => {
     let email = userDetails?.email;
@@ -99,9 +108,10 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     })
   }, [])
 
-  useEffect(() => {
-    getAllServices()
-  }, [])
+useEffect(() => {
+  getAllServices();
+}, []);
+
 
   const getNewPath = () => {
     setLoading(true);
@@ -416,19 +426,17 @@ const [allServicesToAdd, setAllServicesToAdd] = useState([])
   //   }
   // }, []);
 
-  const fetchProductData = async (apiKey) => {
-    try {
-      const apiUrl = `https://comms.globalxchange.io/gxb/product/get?product_id=${apiKey}`;
-      const response = await axios.get(apiUrl);
-      const productData = response.data.products[0];
-      return productData;
+const fetchProductData = async (apiKey) => {
+  try {
+    const response = await axios.get(`/api/services/getbyid/${apiKey}`);
+    const productData = response.data.data;   // adjust based on backend return
+    return productData;
+  } catch (error) {
+    console.error(`Error fetching local product for key ${apiKey}:`, error);
+    return null;
+  }
+};
 
-      return null; // Return null for items that already exist in the array
-    } catch (error) {
-      console.error(`Error fetching productt data for key ${apiKey}:`, error);
-      return null;
-    }
-  };
 
 
   useEffect(() => {
@@ -517,7 +525,7 @@ const [allServicesToAdd, setAllServicesToAdd] = useState([])
 
     // Return the updated array with only step_id and backup_pathId keys
     const updatedBody =  updatedTheIds.map(({ step_id, backup_pathId }) => ({ step_id, backup_pathId }));
-    axios.put(`https://careers.marketsverse.com/paths/update/${selectedPath?._id}`, {the_ids: updatedBody})
+   axios.put(`/api/paths/update/${selectedPath?._id}`, { the_ids: updatedBody })
     .then(res => {
       if(res.data.status){
         resetPathAction();
@@ -537,7 +545,7 @@ const [allServicesToAdd, setAllServicesToAdd] = useState([])
     updatedTheIds.splice(newIndex, 0, movedObject);
     // console.log(fullObject.the_ids, updatedTheIds, "kjwekfjwefkjwegfkwfgwf")
     const updatedTheIdsArray = updatedTheIds.map(({ step_id, backup_pathId }) => ({ step_id, backup_pathId }));
-    axios.put(`https://careers.marketsverse.com/paths/update/${selectedPath?._id}`, {the_ids: updatedTheIdsArray})
+   axios.put(`/api/paths/update/${selectedPath?._id}`, { the_ids: updatedTheIdsArray })
     .then(res => {
       if(res.data.status){
         resetPathAction();
@@ -563,38 +571,56 @@ const handleSelectServicesForStep = (item) => {
 const addServicesToStep = () => {
   setActionLoading(true)
   setLoading(true)
-  console.log({
-    step_id: selectedStepId,
-    service_ids: [
-       ...selectedServices
-    ]
-}, "lkweflkjwhefkjwef")
-  axios.post(`https://careers.marketsverse.com/attachservice/add`, {
-    step_id: selectedStepId,
-    service_ids: [
-       ...selectedServices
-    ]
-}).then(({data}) => {
-  if(data.status){
-    setStepActionEnabled(false)    
-  }
-  setActionLoading(false)
-  setLoading(false)
-  setSelectedServices([])
-})
-}
 
-const removeServiceFromStep = (id) => {
-  axios.put(`https://careers.marketsverse.com/attachservice/remove/${allServicesToRemove?._id}`,{
-    service_id: id
-  }).then(({data}) => {
-    if(data.status){
-      setStepActionEnabled(false)    
+  axios.post(`/api/steps/attachservice`, {
+    step_id: selectedStepId,
+    service_ids: [...selectedServices]
+  })
+  .then(({ data }) => {
+    if (data.status) {
+      setStepActionEnabled(false)
       setActionLoading(false)
       setLoading(false)
+      setSelectedServices([])
+
+      // refresh services and paths
+      getAllServices()
+      fetchAllServicesAgain()
+      getAllPaths()
     }
   })
+  .catch(err => {
+    console.error("Attach service failed", err)
+    setActionLoading(false)
+    setLoading(false)
+  })
 }
+
+
+const removeServiceFromStep = (id) => {
+  setActionLoading(true)
+  setLoading(true)
+
+  axios.delete(`/api/steps/service/${selectedStepId}/${id}`)
+    .then(({ data }) => {
+      if (data.status) {
+        setStepActionEnabled(false)
+        setActionLoading(false)
+        setLoading(false)
+
+        // refresh UI
+        getAllServices()
+        fetchAllServicesAgain()
+        getAllPaths()
+      }
+    })
+    .catch(err => {
+      console.error("Remove service failed", err)
+      setActionLoading(false)
+      setLoading(false)
+    })
+}
+
 
 useEffect(() => {
   if(!stepActionEnabled){

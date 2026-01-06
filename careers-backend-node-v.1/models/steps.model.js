@@ -68,7 +68,13 @@ const stepSchema = new mongoose.Schema({
       ref: 'naavi_services', // assuming you have a Service model; adjust if necessary
     }],
     step_order: { type: String },
-    path_id: {type: Schema.Types.ObjectId, ref: "paths",},
+    path_id: {
+  type: Schema.Types.ObjectId,
+  ref: "paths",
+  required: true,   // 🔥 ENFORCE STEP OWNERSHIP
+  index: true
+},
+
     status: { type: String, enum: ['active', 'inactive','delete'], default: 'active' }    
 }, {
     timestamps: true

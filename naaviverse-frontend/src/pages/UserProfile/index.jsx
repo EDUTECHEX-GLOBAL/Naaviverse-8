@@ -177,7 +177,19 @@ const UserProfile = () => {
   const [previewUrl, setPreviewUrl] = useState(null);
 
 
-  const userDetails = JSON.parse(localStorage.getItem("user"));
+ const getUserFromStorage = () => {
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) {
+    console.error("❌ Invalid user in storage", e);
+    return null;
+  }
+};
+
+const userDetails = getUserFromStorage();
+
 
   // upload part starts here
   // AWS.config.update({
@@ -441,10 +453,23 @@ useEffect(() => {
     setImage(null);
   };
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/");
-  };
+
+
+const handleLogout = () => {
+  console.warn("🔒 User initiated logout");
+
+  const keysToClear = [
+    "authToken",
+    "user",
+    "partner",
+    "userType",
+    "userProfilePic",
+  ];
+
+  keysToClear.forEach((key) => localStorage.removeItem(key));
+
+  navigate("/login", { replace: true });
+};
 
   const fileInputRef = useRef(null);
 

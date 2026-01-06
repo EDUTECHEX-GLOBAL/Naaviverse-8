@@ -2,34 +2,34 @@ const express = require("express");
 const router = express.Router();
 const VaultTransaction = require("../models/VaultTransaction");
 
-router.post("/txns", async (req, res) => {
+/**
+ * ✅ GET – Fetch vault transactions (READ ONLY)
+ */
+router.get("/txns", async (req, res) => {
   try {
-    const { email, coin } = req.body;
+    const { email, coin } = req.query;
 
     if (!email || !coin) {
-      return res.json({
+      return res.status(400).json({
         status: false,
-        message: "email and coin are required"
+        message: "email and coin are required",
       });
     }
 
     const txns = await VaultTransaction.find({
       partnerEmail: email,
-      coin
+      coin,
     }).sort({ timestamp: -1 });
 
-    return res.json({
-      status: true,
-      txns
-    });
-  } catch (error) {
-    return res.status(500).json({
-      status: false,
-      error: error.message
-    });
+    res.json({ status: true, txns });
+  } catch (err) {
+    res.status(500).json({ status: false, error: err.message });
   }
 });
 
+/**
+ * ✅ POST – Create new transaction (PAYMENT)
+ */
 router.post("/add", async (req, res) => {
   try {
     const newTxn = await VaultTransaction.create(req.body);
@@ -38,6 +38,5 @@ router.post("/add", async (req, res) => {
     res.status(500).json({ status: false, error: err.message });
   }
 });
-
 
 module.exports = router;

@@ -39,9 +39,9 @@ const Loginpage = () => {
     const [passwordResetMsg, setPasswordResetMsg] = useState("");
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        localStorage.clear();
-    }, []);
+    // useEffect(() => {
+    //     localStorage.clear();
+    // }, []);
 
 const getProfilePic = async (email, loginType) => {
     try {
@@ -73,39 +73,66 @@ const getProfilePic = async (email, loginType) => {
 
 
 
-    const handleLogin = () => {
-        setIsLoading(true);
-        const obj = { email, password };
+const handleLogin = () => {
+  setIsLoading(true);
+  const obj = { email, password };
 
-        Loginservice(obj, loginType)
-            .then((response) => {
-                const result = response.data;
+  Loginservice(obj, loginType)
+    .then((response) => {
+      const result = response.data;
 
-                if (result?.token) {
-                    localStorage.setItem("authToken", result.token);
-                    localStorage.setItem("user", JSON.stringify(result.user));
-                    localStorage.setItem("partner", JSON.stringify(result.partner));
-                    localStorage.setItem("userType", loginType === "Users" ? "user" : "partner");
+      console.log("🔥 FULL LOGIN RESPONSE:", result);
 
-                    if (loginType === "Users") {
-                        navigate("/dashboard/users/profile");
-                    } else {
-                        navigate("/dashboard/accountants/profile");
-                    }
+      if (!result?.token) {
+        console.error("Login failed:", result?.message || "Unknown error");
+        setiserror(true);
+        return;
+      }
 
-                    getProfilePic(email, loginType);
-                    setiserror(false);
-                } else {
-                    console.error("Login failed:", result?.message || "Unknown error");
-                    setiserror(true);
-                }
-            })
-            .catch((error) => {
-                console.error("Error during login:", error.message || error);
-                setiserror(true);
-            })
-            .finally(() => setIsLoading(false));
-    };
+      // Always store token
+      localStorage.setItem("authToken", result.token);
+
+      // Store user/partner safely
+      if (result.user) {
+        localStorage.setItem("user", JSON.stringify(result.user));
+      }
+      if (result.partner) {
+        localStorage.setItem("partner", JSON.stringify(result.partner));
+      }
+
+      // Store type
+      localStorage.setItem("userType", loginType === "Users" ? "user" : "partner");
+
+      // ⭐⭐⭐ SAFEST EMAIL STORAGE ⭐⭐⭐
+      const emailToStore =
+        result?.user?.email ||
+        result?.partner?.email ||
+        obj.email ||             // login email you typed
+        email ||                 // UI input
+        "";
+
+      localStorage.setItem("loginEmail", emailToStore);
+
+      console.log("🔥 STORED EMAIL:", emailToStore);
+
+      // Redirect
+      if (loginType === "Users") {
+        navigate("/dashboard/users/profile");
+      } else {
+        navigate("/dashboard/accountants/profile");
+      }
+
+      getProfilePic(emailToStore, loginType);
+      setiserror(false);
+    })
+    .catch((error) => {
+      console.error("Error during login:", error.message || error);
+      setiserror(true);
+    })
+    .finally(() => setIsLoading(false));
+};
+
+
 
     // ✅ Updated initiateForgotPassword
     const initiateForgotPassword = async () => {

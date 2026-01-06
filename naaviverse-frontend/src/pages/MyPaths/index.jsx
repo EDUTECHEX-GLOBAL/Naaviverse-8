@@ -26,7 +26,6 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
   } = useCoinContextData();
   const [partnerPathData, setPartnerPathData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [partnerStepsData, setPartnerStepsData] = useState([]);
   const [selectedPathId, setSelectedPathId] = useState("");
   const [pathActionEnabled, setPathActionEnabled] = useState(false);
   const [pathActionStep, setPathActionStep] = useState(1);
@@ -50,29 +49,52 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
   const [stepId, setStepId] = useState("");
   const [backupPathId, setBackupPathId] = useState("");
 
-  const getAllPaths = () => {
-    setPartnerPathData([]);
-    setLoading(true);
-    let email = userDetails?.email;
-    const endpoint = admin
-      ? `/api/paths/get?status=waitingforapproval`
-      : mypathsMenu === "Pending Approval"
-      ? `/api/paths/get?email=${email}&status=waitingforapproval`
-      : mypathsMenu === "Inactive Paths"
-      ? `/api/paths/get?email=${email}&status=inactive`
-      : `/api/paths/get?email=${email}&status=active`;
-    axios
-      .get(endpoint)
-      .then((response) => {
-        let result = response?.data?.data;
-        console.log(result, `partnerPathData result ${mypathsMenu}`);
-        setPartnerPathData(result);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log(error, "error in partnerPathData");
-      });
-  };
+const getAllPaths = () => {
+  setPartnerPathData([]);
+  setLoading(true);
+
+  const email = userDetails?.email;
+
+  let endpoint = "";
+
+  // ADMIN FETCHES ALL PENDING PATHS
+  if (admin && mypathsMenu === "Pending Approval") {
+    endpoint = `http://localhost:4545/api/paths/get?status=waitingforapproval`;
+  }
+
+  // PARTNER FETCHES ONLY THEIR PENDING PATHS
+  else if (!admin && mypathsMenu === "Pending Approval") {
+    endpoint = `http://localhost:4545/api/paths/get?email=${email}&status=waitingforapproval`;
+  }
+
+  // INACTIVE PATHS
+  else if (mypathsMenu === "Inactive Paths") {
+    endpoint = `http://localhost:4545/api/paths/get?email=${email}&status=inactive`;
+  }
+
+  // ACTIVE PATHS (default)
+  else {
+    endpoint = `http://localhost:4545/api/paths/get?email=${email}&status=active`;
+  }
+
+  console.log("➡️ FIXED API CALL:", endpoint);
+
+  axios
+    .get(endpoint)
+    .then((response) => {
+      let result = response?.data?.data || [];
+      console.log(result, `partnerPathData result for ${mypathsMenu}`);
+      setPartnerPathData(result);
+    })
+    .catch((error) => {
+      console.log("❌ Error fetching partnerPathData:", error);
+    })
+    .finally(() => {
+      setLoading(false);
+    });
+};
+
+
 
   // const [remainingStepData, setRemainingStepData] = useState([]);
   // const getAllStepsForPath = () => {
@@ -160,9 +182,12 @@ useEffect(() => {
       });
   };
 
-  useEffect(() => {
-    console.log(selectedPath?.StepDetails, "lwkefhlkwefcwefc");
-  }, [selectedPath]);
+useEffect(() => {
+  if (selectedPath?.StepDetails) {
+    console.log(selectedPath.StepDetails, "lwkefhlkwefcwefc");
+  }
+}, [selectedPath]);
+
 
 //   3️⃣ Load paths when menu changes 
 //    (Fix: prevents duplicate calls)
@@ -185,40 +210,18 @@ useEffect(() => {
 }, [mypathsMenu]);
 
 
-  const getAllSteps = () => {
-    setLoading(true);
-    let email = userDetails?.email;
-    axios
-      .get(`/api/steps/get?email=${email}`)
-      .then((response) => {
-        let result = response?.data?.data;
-        console.log(result, "partnerStepsData result");
-        setPartnerStepsData(result);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log(error, "error in partnerStepsData");
-      });
-  };
 
-  useEffect(() => {
-    getAllSteps();
-  }, []);
 
-  const filteredPartnerPathData = partnerPathData?.filter((entry) =>
-    entry?.nameOfPath?.toLowerCase()?.includes(search?.toLowerCase())
-  );
 
-  const filteredPartnerStepsData = partnerStepsData?.filter((entry) =>
-    entry?.name?.toLowerCase()?.includes(search?.toLowerCase())
-  );
+
+
 
   const myPathsTimeout = () => {
     setTimeout(reload1, 2000);
   };
 
   function reload1() {
-    getAllPaths();
+    
     setPathActionEnabled(false);
     setPathActionStep(1);
     setSelectedPathId("");
@@ -233,7 +236,6 @@ useEffect(() => {
   };
 
   function reload2() {
-    getAllSteps();
     setStepActionEnabled(false);
     setStepActionStep(1);
     setSelectedStepId("");
@@ -317,21 +319,25 @@ useEffect(() => {
       });
   };
 
-  const viewPath = (path) => {
-    console.log(path, "lkwehflwehflwf");
+const viewPathById = (id) => {
+    if (!id) {
+        console.error("❌ NO ID SENT TO API");
+        return;
+    }
     setViewPathLoading(true);
-    axios
-      .get(`/api/paths/get?nameOfPath=${path}`)
-      .then((response) => {
-        let result = response?.data?.data[0];
-        // console.log(result, "viewPathData result");
-        setViewPathData(result);
-        setViewPathLoading(false);
-      })
-      .catch((error) => {
-        console.log(error, "error in fetching viewPathData");
-      });
-  };
+
+    axios.get(`/api/paths/viewpath/${id}`)
+        .then((response) => {
+            let result = response?.data?.data;
+            setViewPathData(result);
+        })
+        .catch((error) => {
+            console.log("Error in fetching view path data:", error);
+        })
+        .finally(() => setViewPathLoading(false));
+};
+
+
 
   const handleApprovePath = () => {
     setActionLoading(true);
@@ -657,9 +663,12 @@ useEffect(() => {
     }
   }, [stepActionEnabled]);
 
-  useEffect(() => {
-    setMypathsMenu("Paths");
-  }, []);
+useEffect(() => {
+  if (!mypathsMenu) {
+      setMypathsMenu("Paths");
+  }
+}, []);
+
 
 
   const handleEditSubmit = () => {
@@ -762,90 +771,47 @@ useEffect(() => {
             </div>
           ) : viewPathEnabled ? (
             <div className="viewpath-container">
-              <div className="viewpath-top-area">
-                <div>Your Selected Path:</div>
-                {viewPathLoading ? (
-                  <Skeleton width={150} height={30} />
-                ) : (
-                  <div className="viewpath-bold-text">
-                    {viewPathData?.length > 0
-                      ? viewPathData?.destination_institution
-                      : ""}
-                  </div>
-                )}
-                {viewPathLoading ? (
-                  <Skeleton width={500} height={20} />
-                ) : (
-                  <div className="viewpath-des">
-                    {viewPathData?.length > 0 ? viewPathData?.description : ""}
-                  </div>
-                )}
-                <div
-                  className="viewpath-goBack-div"
-                  onClick={() => {
-                    setViewPathEnabled(false);
-                  }}
-                >
-                  Go Back
-                </div>
-              </div>
-              <div className="viewpath-steps-area">
-                {viewPathLoading
-                  ? Array(6)
-                      .fill("")
-                      .map((e, i) => {
-                        return (
-                          <div
-                            className="viewpath-each-j-step viewpath-relative-div"
-                            key={i}
-                          >
-                            <div className="viewpath-each-j-img">
-                              <Skeleton width={75} height={75} />
-                            </div>
-                            <div className="viewpath-each-j-step-text">
-                              <Skeleton width={200} height={30} />
-                            </div>
-                            <div className="viewpath-each-j-step-text1">
-                              <Skeleton width={250} height={25} />
-                            </div>
-                            <div className="viewpath-each-j-amount-div">
-                              <div className="viewpath-each-j-amount">
-                                <Skeleton width={100} height={30} />
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })
-                  : viewPathData?.length > 0
-                  ? viewPathData?.StepDetails?.map((e, i) => {
-                      return (
-                        <div
-                          onClick={() => {
-                            setShowSelectedPath(e);
-                            setProductKeys(e?.product_ids);
-                          }}
-                          className="viewpath-each-j-step viewpath-relative-div"
-                          key={i}
-                        >
-                          <div className="viewpath-each-j-img">
-                            <img src={e?.icon} alt="" />
-                          </div>
-                          <div className="viewpath-each-j-step-text">
-                            {e?.name}
-                          </div>
-                          <div className="viewpath-each-j-step-text1">
-                            {e?.description}
-                          </div>
-                          <div className="viewpath-each-j-amount-div">
-                            <div className="viewpath-each-j-amount">
-                              {e?.cost}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })
-                  : ""}
-              </div>
+ <div className="viewpath-top-area">
+   <div>Your Selected Path:</div>
+
+   <div className="viewpath-bold-text">
+      {viewPathData?.destination_institution}
+   </div>
+
+   <div className="viewpath-des">
+      {viewPathData?.description}
+   </div>
+
+   <div
+      className="viewpath-goBack-div"
+      onClick={() => setViewPathEnabled(false)}
+   >
+      Go Back
+   </div>
+</div>
+
+<div className="viewpath-steps-area">
+   {viewPathData?.StepDetails?.map((e, i) => (
+      <div
+         key={i}
+         onClick={() => {
+            setShowSelectedPath(e);
+            setProductKeys(e?.product_ids);
+         }}
+         className="viewpath-each-j-step viewpath-relative-div"
+      >
+         <div className="viewpath-each-j-img">
+            <img src={e?.icon} alt="" />
+         </div>
+         <div className="viewpath-each-j-step-text">{e?.name}</div>
+         <div className="viewpath-each-j-step-text1">{e?.description}</div>
+         <div className="viewpath-each-j-amount-div">
+            <div className="viewpath-each-j-amount">{e?.cost}</div>
+         </div>
+      </div>
+   ))}
+</div>
+
             </div>
           ) : mypathsMenu === "Paths" ||
             mypathsMenu === "Pending Approval" ||
@@ -876,7 +842,8 @@ useEffect(() => {
                           </div>
                         );
                       })
-                  : filteredPartnerPathData?.map((e, i) => {
+                 : partnerPathData?.map((e, i) => {
+
                       return (
                         <div
                           className="each-mypaths-data"
@@ -886,7 +853,7 @@ useEffect(() => {
                             setSelectedPathId(e?._id);
                             setSelectedPath(e);
                             console.log(e, "selected path details");
-                            viewPath(e?.nameOfPath);
+                             localStorage.setItem("selectedPathId", e?._id);
                           }}
                         >
                           <div className="each-mypaths-name">
@@ -974,9 +941,10 @@ useEffect(() => {
                   <div
                     className="acc-step-box4"
                     onClick={() => {
-                      setViewPathEnabled(true);
-                      setPathActionEnabled(false);
-                      navigate(`/dashboard/path/${selectedPathId}`);
+                     setViewPathEnabled(true);
+setPathActionEnabled(false);
+viewPathById(selectedPathId)
+
                     }}
                   >
                     View path

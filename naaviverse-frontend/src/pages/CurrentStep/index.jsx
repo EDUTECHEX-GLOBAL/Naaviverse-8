@@ -7,6 +7,8 @@ import Step4 from "../dashboard/MallProduct/Step4.jsx";
 import CoinComponent from "../dashboard/MallProduct/CoinComponent.jsx";
 
 
+import { useNavigate } from "react-router-dom";
+
 // images
 import dummy from "../JourneyPage/dummy.svg";
 import edutech from "./edutech.svg";
@@ -14,12 +16,111 @@ import resory from "./resory.svg";
 import lek from "./lek.svg";
 import logo from "../../static/images/logo.svg";
 
+const demoMicroServices = [
+  {
+    id: "svc1",
+    name: "IBDP Readiness Mentorship",
+    description:
+      "One-on-one guidance to help students transition smoothly from CBSE to IBDP.",
+    provider: "EduTechX",
+    access: "Appointment Based",
+    cost: "₹3,000 / session",
+  },
+  {
+    id: "svc2",
+    name: "Curriculum Transition Plan",
+    description:
+      "Personalized roadmap covering subjects, assessments, and skill gaps.",
+    provider: "Naavi Mentors",
+    access: "Subscription Required",
+    cost: "Included in Subscription",
+  },
+  {
+    id: "svc3",
+    name: "Academic Skill Assessment",
+    description:
+      "Detailed evaluation of writing, reasoning, and conceptual readiness.",
+    provider: "IB Experts Group",
+    access: "One-Time",
+    cost: "₹5,000",
+  },
+  {
+    id: "svc4",
+    name: "Parent Guidance Session",
+    description:
+      "Helps parents understand IB expectations, workload, and long-term planning.",
+    provider: "Naavi Certified Mentor",
+    access: "Appointment Based",
+    cost: "₹2,000 / session",
+  },
+];
+
+const demoNanoServices = [
+  {
+    id: 1,
+    title: "1-to-1 Academic Foundation Execution",
+    expert: "Naavi Certified Math & Physics Mentor",
+    scope: [
+      "Personalized study plan",
+      "Weekly 1-to-1 sessions",
+      "Assignments & problem-solving",
+      "Progress tracking"
+    ],
+    duration: "4 Weeks",
+    outcome: "Strong Math & Physics foundation",
+    price: "₹15,000"
+  }
+];
+
+
 const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selectedPath }) => {
-  const userDetails = JSON.parse(localStorage.getItem("user"));
+ const userDetails = (() => {
+  try {
+    return JSON.parse(localStorage.getItem("user"));
+  } catch {
+    return null;
+  }
+})();
+useEffect(() => {
+  const rawUser = localStorage.getItem("user");
+  if (rawUser) {
+    console.log("AUTH CHECK:", JSON.parse(rawUser));
+  }
+}, []);
+
+const navigate = useNavigate();
+
+// Controls which micro item is open
+// const [openKey, setOpenKey] = useState(null);
+// const formatMicroTitle = (key) => {
+//   const map = {
+//     grade: "Based On Your Grade",
+//     stream: "Based On Your Stream",
+//     curriculum: "Based On Your Curriculum",
+//     gpa: "Based On Your Grade Point Avg",
+//     financialPosition: "Based On Your Financial Position",
+//     personality: "Based On Your Personality",
+//   };
+//   return map[key] || key;
+// };
+
 
 const [macroView, setMacroView] = useState("");
 const [microView, setMicroView] = useState({});
 const [nanoView, setNanoView] = useState([]);
+const [showServicePopup, setShowServicePopup] = useState(false);
+// const [selectedService, setSelectedService] = useState(null);
+const [microServices, setMicroServices] = useState([]);
+const [servicesLoading, setServicesLoading] = useState(false);
+const [selectedService, setSelectedService] = useState(null);
+const [showCheckout, setShowCheckout] = useState(false);
+// ===================== NANO VIEW STATES =====================
+const [showNanoModal, setShowNanoModal] = useState(false);
+const [selectedNanoService, setSelectedNanoService] = useState(null);
+const [showNanoCheckout, setShowNanoCheckout] = useState(false);
+
+
+
 
 
   const {
@@ -74,6 +175,7 @@ const [nanoView, setNanoView] = useState([]);
   const [gradePointDescription, setGradePointDescription] = useState("");
   const [financialDescription, setFinancialDescription] = useState("");
   const [personalityDescription, setPersonalityDescription] = useState("");
+  const [stepView, setStepView] = useState(null);
 
   const handleRejectClick = () => {
     if (position1 === 1) setPosition1(3);
@@ -110,6 +212,14 @@ const [nanoView, setNanoView] = useState([]);
       ];
     });
   };
+  const getMicroText = (microView) => {
+  if (!microView) return "";
+
+  return Object.values(microView)
+    .filter(Boolean)
+    .join("\n\n");
+};
+
 
   /** ===================== USER DATA FETCH ====================== **/
 
@@ -130,6 +240,34 @@ useEffect(() => {
 
 
 
+useEffect(() => {
+  if (!showServicePopup || !currentStepData?._id) return;
+
+  const fetchMicroServices = async () => {
+    try {
+      setServicesLoading(true);
+
+      const res = await axios.get(
+        `http://localhost:4545/api/services`,
+        {
+          params: {
+            step_id: currentStepData._id,
+            view: "micro",
+          },
+        }
+      );
+
+      setMicroServices(res.data || []);
+    } catch (error) {
+      console.error("Failed to fetch micro services", error);
+      setMicroServices([]);
+    } finally {
+      setServicesLoading(false);
+    }
+  };
+
+  fetchMicroServices();
+}, [showServicePopup, currentStepData?._id]);
 
 
 
@@ -155,239 +293,201 @@ useEffect(() => {
 }, []);
 
   /** ===================== FETCH STEP DATA ====================== **/
-/** ===================== FETCH STEP DETAILS (NAME + DESCRIPTION) ====================== **/
 useEffect(() => {
   const stepId = localStorage.getItem("selectedStepId");
-  const universityId = localStorage.getItem("selectedUniversityId");
+  const pathId = selectedPathId || localStorage.getItem("selectedPathId");
 
-  if (!stepId || !universityId) return;
+  console.log("🔥 Loaded Path ID:", pathId);
+  console.log("🔥 Selected Step ID:", stepId);
+
+  if (!stepId || !pathId) return;
 
   axios
-    .get(`/api/universities/${universityId}/steps`)
+    .get(`/api/userpaths/steps?pathId=${pathId}`)
     .then((res) => {
-      const steps = res.data?.steps || res.data?.data?.steps || [];
+      console.log("🔥 STEPS RESPONSE:", res.data);
 
-      // find the selected step by step_id
-      const step = steps.find((s) => s.step_id === stepId);
+      // ✅ FIX: steps are inside data.steps
+      const steps = res?.data?.data?.steps || [];
+
+      if (!Array.isArray(steps)) {
+        console.error("❌ steps is not an array:", steps);
+        return;
+      }
+
+      const step = steps.find(
+        (s) => s?._id === stepId || s?.step_id === stepId
+      );
 
       if (step) {
-        console.log("🔥 STEP DETAILS FOUND:", step);
+        console.log("✅ STEP FOUND FROM PATH:", step);
         setCurrentStepPageData(step);
+        setCurrentStepPagePathId(pathId);
       } else {
-        console.log("❌ Step not found in university");
+        console.warn("❌ Step not found in path");
       }
     })
     .catch((err) => {
-      console.error("❌ Error fetching steps:", err.message);
+      console.error("❌ Error fetching path steps:", err);
     });
-}, []);
+}, [selectedPathId]);
 
-
-
-
-  /** ===================== FETCH AI STEP VIEWS ====================== **/
+/** ===================== FETCH AI STEP VIEWS (PATH BASED) ====================== **/
 useEffect(() => {
   const loadStepViews = async () => {
     const stepId = localStorage.getItem("selectedStepId");
-    const universityId = localStorage.getItem("selectedUniversityId");
+    const pathId = selectedPathId || localStorage.getItem("selectedPathId");
 
-    if (!stepId || !universityId) return;
+    if (!stepId || !pathId) return;
 
     try {
       const res = await axios.get(
-        `/api/stepviews?stepId=${stepId}&universityId=${universityId}`
+        `/api/stepviews?pathId=${pathId}&stepId=${stepId}`
       );
 
-      console.log("🔥 AI STEP VIEWS:", res.data.data);
+      console.log("🔥 AI STEP VIEWS (PATH):", res.data?.data);
 
-      setMacroView(res.data.data.macroView);
-      setMicroView(res.data.data.microView);
-      setNanoView(res.data.data.nanoView);
+      const data = res?.data?.data || {};
 
+      // ✅ FIX: allow empty strings but avoid undefined
+      setMacroView(data.macroView ?? "No macro insights available");
+      setMicroView(data.microView ?? {});
+      setNanoView(Array.isArray(data.nanoView) ? data.nanoView : []);
     } catch (err) {
-      console.error("Error fetching AI step views:", err);
+      console.error("❌ Error fetching AI step views:", err);
     }
   };
 
   loadStepViews();
-}, []);
+}, [selectedPathId]);
 
-  /** ===================== FALLBACK SERVICES ====================== **/
-  const getFallbackServices = () => {
-    return [
-      {
-        _id: "fallback-1",
-        name: "Academic Counseling Service",
-        description: "Get personalized guidance for your academic journey and subject selection",
-        ServiceDetails: [{
-          first_purchase: { price: 0, coin: "Free" },
-          billing_cycle: {
-            monthly: { price: 0, coin: "Free" },
-            annual: { price: 0, coin: "Free" }
-          },
-          product_name: "Academic Counseling"
-        }]
-      },
-      {
-        _id: "fallback-2", 
-        name: "Portfolio Review",
-        description: "Expert feedback on your creative portfolio for architecture applications",
-        ServiceDetails: [{
-          first_purchase: { price: 50, coin: "USD" },
-          billing_cycle: {
-            monthly: { price: 0, coin: "One-time" },
-            annual: { price: 0, coin: "One-time" }
-          },
-          product_name: "Portfolio Review"
-        }]
-      },
-      {
-        _id: "fallback-3",
-        name: "Test Preparation Guidance", 
-        description: "Strategies and resources for standardized test preparation",
-        ServiceDetails: [{
-          first_purchase: { price: 0, coin: "Free" },
-          billing_cycle: {
-            monthly: { price: 0, coin: "Free" },
-            annual: { price: 0, coin: "Free" }
-          },
-          product_name: "Test Prep Resources"
-        }]
-      }
-    ];
-  };
+
 
   /** ===================== RELOAD SERVICES FOR CURRENT STEP ====================== **/
 const reloadServices = async () => {
   const stepId = localStorage.getItem("selectedStepId");
-
-  if (!stepId) {
-    console.warn("❌ No stepId found.");
-    return;
-  }
+  if (!stepId) return;
 
   try {
     const res = await axios.get(
       `http://localhost:4545/api/services/by-step?step_id=${stepId}`
     );
 
-    let list = res?.data?.data || [];
+    // ✅ services are FLAT objects
+    const list = Array.isArray(res?.data?.data) ? res.data.data : [];
 
-    // ⭐ If no services found → use fallback
-    if (!list.length) {
-      console.log("⚠ No live services. Using fallback.");
-      list = getFallbackServices();
-    }
-
+    console.log("✅ Services loaded:", list);
     setStepServices(list);
-    console.log("SERVICES FINAL LIST:", list);
   } catch (err) {
     console.error("❌ Service reload failed:", err.message);
-    setStepServices(getFallbackServices());
+    setStepServices([]);
   }
 };
 
 /** ===================== PICK SERVICE AFTER stepServices UPDATES ====================== **/
 useEffect(() => {
-  // Only run after drawer is opened
   if (!acceptOffer) return;
-
-  // Wait until services are loaded
   if (!stepServices || stepServices.length === 0) return;
 
-  console.log("🔍 stepServices updated — picking service now...");
+  console.log("🔍 stepServices ready");
 
   const svc = pickServiceForDrawer();
-
   if (!svc) {
-    console.log("❌ No valid service found after update");
     alert("No services available for this step.");
     return;
   }
 
-  console.log("🎯 Service selected:", svc);
-  setIndex(svc);
-  setBuy("step1");  // drawer now moves to step1 with correct data
+  setIndex(svc);       // ✅ svc is now a REAL service
+  setBuy("step1");     // drawer opens correctly
 }, [stepServices]);
 
 
+
   /** ===================== DESCRIPTION RESOLVERS ====================== **/
-  useEffect(() => {
-    if (userData?.length > 0 && currentStepPageData?.length > 0) {
-      const userGrade = userData[0]?.grade;
-      const matchGrade = currentStepPageData?.gradeData?.find(
-        (g) => g?.grade === userGrade
-      );
-      setGradeDescription(matchGrade?.description || "");
+  // useEffect(() => {
+  //   if (userData?.length > 0 && currentStepPageData?.length > 0) {
+  //     const userGrade = userData[0]?.grade;
+  //     const matchGrade = currentStepPageData?.gradeData?.find(
+  //       (g) => g?.grade === userGrade
+  //     );
+  //     setGradeDescription(matchGrade?.description || "");
 
-      const userStream = userData[0]?.stream;
-      const matchStream = currentStepPageData?.streamData?.find(
-        (s) => s?.stream === userStream
-      );
-      setStreamDescription(matchStream?.description || "");
+  //     const userStream = userData[0]?.stream;
+  //     const matchStream = currentStepPageData?.streamData?.find(
+  //       (s) => s?.stream === userStream
+  //     );
+  //     setStreamDescription(matchStream?.description || "");
 
-      const userCurriculum = userData[0]?.curriculum;
-      const matchCurriculum = currentStepPageData?.curriculumData?.find(
-        (c) => c?.curriculum === userCurriculum
-      );
-      setCurriculumDescription(matchCurriculum?.description || "");
+  //     const userCurriculum = userData[0]?.curriculum;
+  //     const matchCurriculum = currentStepPageData?.curriculumData?.find(
+  //       (c) => c?.curriculum === userCurriculum
+  //     );
+  //     setCurriculumDescription(matchCurriculum?.description || "");
 
-      const userGradePoint = userData[0]?.performance;
-      const isPartialMatch = (a, b) => {
-        const x = a?.replace(/\s/g, "");
-        const y = b?.replace(/\s/g, "");
-        return x?.includes(y) || y?.includes(x);
-      };
-      const matchGPA = currentStepPageData?.gradePointAverageData?.find((g) =>
-        isPartialMatch(g?.gradePointAverage, userGradePoint)
-      );
-      setGradePointDescription(matchGPA?.description || "");
+  //     const userGradePoint = userData[0]?.performance;
+  //     const isPartialMatch = (a, b) => {
+  //       const x = a?.replace(/\s/g, "");
+  //       const y = b?.replace(/\s/g, "");
+  //       return x?.includes(y) || y?.includes(x);
+  //     };
+  //     const matchGPA = currentStepPageData?.gradePointAverageData?.find((g) =>
+  //       isPartialMatch(g?.gradePointAverage, userGradePoint)
+  //     );
+  //     setGradePointDescription(matchGPA?.description || "");
 
-      const userFinancial = userData[0]?.financialSituation;
-      const matchFin = currentStepPageData?.financialData?.find(
-        (f) => f?.financialSituation === userFinancial
-      );
-      setFinancialDescription(matchFin?.description || "");
+  //     const userFinancial = userData[0]?.financialSituation;
+  //     const matchFin = currentStepPageData?.financialData?.find(
+  //       (f) => f?.financialSituation === userFinancial
+  //     );
+  //     setFinancialDescription(matchFin?.description || "");
 
-      const userPersonality = userData[0]?.personality;
-      const matchPers = currentStepPageData?.personalityData?.find(
-        (p) => p?.personality === userPersonality
-      );
-      setPersonalityDescription(matchPers?.description || "");
-    }
-  }, [userData, currentStepPageData]);
+  //     const userPersonality = userData[0]?.personality;
+  //     const matchPers = currentStepPageData?.personalityData?.find(
+  //       (p) => p?.personality === userPersonality
+  //     );
+  //     setPersonalityDescription(matchPers?.description || "");
+  //   }
+  // }, [userData, currentStepPageData]);
 
  /** ===================== helpers ====================== **/
 const pickServiceForDrawer = () => {
   try {
-    if (!stepServices || stepServices.length === 0) {
-      console.log("❌ No stepServices loaded yet");
+    if (!Array.isArray(stepServices) || stepServices.length === 0) {
+      console.warn("❌ No stepServices available");
       return null;
     }
 
-    // 1) Try selected card
+    // 1️⃣ Selected card
     const selected = stepServices[selectedCard];
-    if (selected?.ServiceDetails?.length > 0) {
-      console.log("🎯 Using selected card:", selectedCard);
-      return selected.ServiceDetails[0];
+    if (selected?._id) {
+      console.log("🎯 Using selected service:", selected.name);
+      return selected;
     }
 
-    // 2) Try first service
+    // 2️⃣ Fallback to first service
     const first = stepServices[0];
-    if (first?.ServiceDetails?.length > 0) {
-      console.log("🎯 Using first service");
-      return first.ServiceDetails[0];
+    if (first?._id) {
+      console.log("🎯 Using first service:", first.name);
+      return first;
     }
 
-    // 3) No valid service anywhere
-    console.log("❌ No valid ServiceDetails found in any service");
     return null;
-
   } catch (err) {
-    console.error("💥 Error in pickServiceForDrawer:", err);
+    console.error("💥 pickServiceForDrawer error:", err);
     return null;
   }
 };
+
+
+const curriculumService = React.useMemo(() => {
+  if (!Array.isArray(stepServices)) return null;
+
+  return stepServices.find(
+    (s) =>
+      s.service_code === "ASSESS_CBSE_IBDP_CURRICULUM" ||
+      s.service_name === "Assess – CBSE → IBDP Readiness (Curriculum Based)"
+  );
+}, [stepServices]);
 
 
 
@@ -505,108 +605,273 @@ const failStep = async (stepid) => {
               <div className="step-text">
                 {currentStepData?.name || currentStepPageData?.name}
               </div>
-              <div className="macro-text-div">
-  {macroView || "Loading macro view..."}
+<div className="macro-text-div">
+  {currentStepPageData?.macro_description ||
+   currentStepPageData?.description ||
+   macroView?.description ||
+   ""}
 </div>
+
+
 
             </div>
           </div>
 
-          {/* Micro */}
-          <div className="micro-view-box">
-            <div className="micro-text">Micro View:</div>
+{/* ================= MICRO VIEW ================= */}
+<div className="micro-view-box">
+  <div className="micro-text">Micro View:</div>
 
-            <div className="micro-content">
-              <div className="step-text">
-                <span>{currentStepData?.name || currentStepPageData?.name}</span> For You
-              </div>
+  <div className="micro-content">
 
-<div className="micro-text-div-container">
-  {[
-    { title: "Based On Your Grade", key: "grade" },
-    { title: "Based On Your Stream", key: "stream" },
-    { title: "Based On Your Curriculum", key: "curriculum" },
-    { title: "Based On Your Grade Point Avg", key: "gpa" },
-    { title: "Based On Your Financial Position", key: "financialPosition" },
-    { title: "Based On Your Personality", key: "personality" },
-  ].map((item, i) => (
-    <div className="micro-text-div" key={item.key}>
-      <div className="bold-text-div">
-        <div className="bold-text">{item.title}</div>
-        <div
-          className="unlock-Btn"
-          onClick={() => {
-            [
-              setShowGradeDesc,
-              setShowStreamDesc,
-              setShowCurriculumDesc,
-              setShowGradePointDesc,
-              setShowFinancialDesc,
-              setShowPersonalityDesc,
-            ][i]((prev) => !prev);
-          }}
-        >
-          {[
-            showGradeDesc,
-            showStreamDesc,
-            showCurriculumDesc,
-            showGradePointDesc,
-            showFinancialDesc,
-            showPersonalityDesc,
-          ][i]
-            ? "Close"
-            : "Open"}
-        </div>
-      </div>
+    {/* Step title (fixed) */}
+    <div className="micro-step-title">
+      {currentStepData?.name || currentStepPageData?.name}
+    </div>
 
+    {/* Scrollable content */}
+    <div className="micro-scroll-area">
+     <div className="micro-description">
+  {currentStepPageData?.micro_description
+    ? currentStepPageData.micro_description
+        .split("\n")
+        .map((line, i) => <div key={i}>• {line}</div>)
+    : getMicroText(microView)}
+</div>
+
+
+      {/* CTA (opens popup) */}
       <div
-        className="sub-text"
-        style={{
-          display: [
-            showGradeDesc,
-            showStreamDesc,
-            showCurriculumDesc,
-            showGradePointDesc,
-            showFinancialDesc,
-            showPersonalityDesc,
-          ][i]
-            ? "flex"
-            : "none",
-        }}
+        className="micro-inline-cta"
+        onClick={() => setShowServicePopup(true)}
       >
-        {microView[item.key] || "Loading..."}
+        To get more details, click here →
       </div>
     </div>
-  ))}
+
+  </div>
 </div>
 
+{/* ================= MICRO GUIDANCE POPUP ================= */}
+{showServicePopup && (
+  <div className="micro-guidance-popup-overlay">
+    <div className="micro-guidance-popup">
+
+      {/* Header */}
+      <div className="popup-header">
+        <h3 className="popup-title">
+          {currentStepData?.name || currentStepPageData?.name}
+        </h3>
+
+        <span
+          className="popup-close"
+          onClick={() => setShowServicePopup(false)}
+        >
+          ✕
+        </span>
+      </div>
+
+      {/* Body */}
+<div className="popup-body">
+
+  {/* Loading */}
+  {servicesLoading && (
+    <div className="popup-loading">
+      Loading guidance options…
+    </div>
+  )}
+
+  {/* SERVICES LIST (HR DEMO) */}
+  {!servicesLoading && demoMicroServices.length > 0 && (
+    <div className="partner-grid">
+      {demoMicroServices.slice(0, 4).map((service) => (
+        <div className="service-card" key={service.id}>
+
+          <div>
+            <h4 className="service-name">{service.name}</h4>
+
+            <p className="service-description">
+              {service.description}
+            </p>
+
+            <div className="service-meta">
+              <div><strong>Provider:</strong> {service.provider}</div>
+              <div><strong>Access:</strong> {service.access}</div>
+              <div><strong>Cost:</strong> {service.cost}</div>
             </div>
           </div>
 
-          {/* Nano */}
+ <button
+  className="service-cta"
+  onClick={() => {
+    setSelectedService(service);
+    setShowCheckout(true);
+  }}
+>
+  START
+</button>
+
+
+        </div>
+      ))}
+    </div>
+  )}
+
+</div>
+
+    </div>
+  </div>
+)}
+
+{showCheckout && selectedService && (
+  <div className="micro-guidance-popup-overlay">
+    <div className="checkout-popup">
+
+      {/* Header */}
+      <div className="popup-header">
+        <h3>Book Service</h3>
+        <span
+          className="popup-close"
+          onClick={() => setShowCheckout(false)}
+        >
+          ✕
+        </span>
+      </div>
+
+      {/* Body */}
+      <div className="popup-body">
+
+        {/* Service Summary */}
+        <div className="checkout-card">
+          <h4>{selectedService.name}</h4>
+          <p>{selectedService.description}</p>
+
+          <div className="checkout-meta">
+            <div><strong>Provider:</strong> {selectedService.provider}</div>
+            <div><strong>Access:</strong> {selectedService.access}</div>
+            <div><strong>Cost:</strong> {selectedService.cost}</div>
+          </div>
+        </div>
+
+        {/* Booking Form */}
+        <div className="checkout-form">
+          <label>
+            Preferred Date
+            <input type="date" />
+          </label>
+
+          <label>
+            Preferred Time Slot
+            <select>
+              <option>10:00 AM – 11:00 AM</option>
+              <option>12:00 PM – 1:00 PM</option>
+              <option>4:00 PM – 5:00 PM</option>
+            </select>
+          </label>
+        </div>
+
+        {/* Payment Section */}
+        <div className="payment-box">
+          <div className="payment-row">
+            <span>Service Fee</span>
+            <span>{selectedService.cost}</span>
+          </div>
+
+          <button className="pay-now-btn">
+            Proceed to Payment
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+)}
+
+
+
+        
+{/* Nano */}
 <div className="nano-view-box">
   <div className="nano-text">Nano View:</div>
 
   <div className="nano-content">
 
     <div className="step-text">
-      Get A Naavi Certified Vendor To Assist You In Choosing{" "}
+     Work 1-to-1 With A Naavi-Certified Expert For{" "}
       <span>{currentStepData?.name || currentStepPageData?.name}</span>
     </div>
 
-    <div className="nano-scroll-area">
-      {nanoView.length > 0 ? (
-        nanoView.map((line, idx) => <p key={idx}>{line}</p>)
-      ) : (
-        <p>Loading nano insights...</p>
-      )}
+<div className="nano-highlight-box">
+  <ul>
+    <li>Dedicated Naavi-certified expert</li>
+    <li>Personalized execution roadmap</li>
+    <li>Weekly 1-to-1 working sessions</li>
+    <li>Outcome-driven guidance</li>
+  </ul>
+</div>
+
+<div className="nano-cta-wrapper">
+<button
+  className="nano-primary-cta"
+  onClick={() => setShowNanoModal(true)}
+>
+  Start 1-to-1 Expert Execution
+</button>
+</div>
+
+{showNanoModal && (
+  <div className="nano-modal-overlay">
+    <div className="nano-modal">
+
+      <div className="nano-modal-header">
+      <h3>1-to-1 Expert Execution</h3>
+<p className="nano-subtitle">
+  Hands-on execution with a dedicated Naavi-certified expert
+</p>
+
+
+        <span onClick={() => setShowNanoModal(false)}>✕</span>
+      </div>
+
+      <div className="nano-modal-body">
+        {demoNanoServices.map((service, idx) => (
+          <div className="nano-service-card" key={idx}>
+
+            <h4>{service.title}</h4>
+            <p><strong>Expert:</strong> {service.expert}</p>
+
+            <ul>
+              {service.scope.map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
+            </ul>
+
+            <div className="nano-meta">
+              <span><strong>Duration:</strong> {service.duration}</span>
+              <span className="nano-price">{service.price}</span>
+            </div>
+<button
+  className="nano-start-btn"
+  onClick={() => {
+    setSelectedNanoService(service);
+    setShowNanoCheckout(true);
+  }}
+>
+ Start 1-to-1 Execution
+</button>
+
+
+          </div>
+        ))}
+      </div>
+
     </div>
+  </div>
+)}
+
+
+
 
   </div>
-
- 
-
-
               {/* <div className="nano-overall-div">
                 {stepServices?.length > 0 ? (
                   stepServices.slice(0, 3).map((item, idx) => (
@@ -631,6 +896,7 @@ const failStep = async (stepid) => {
                 )}
               </div> */}
             </div>
+
           </div>
         </div>
    
@@ -913,6 +1179,56 @@ onClick={async () => {
            </div> {/* END modal-container */}
         </div> /* END popup-overlay */
       )}        {/* END popup && (...) */}
+{/* ================= SERVICE POPUP ================= */}
+{/* {showServicePopup && selectedService && (
+  <div
+    className="service-modal-overlay"
+    onClick={() => setShowServicePopup(false)}
+  >
+    <div
+      className="service-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        className="close-btn"
+        onClick={() => setShowServicePopup(false)}
+      >
+        ✕
+      </button>
+
+      <h3>{selectedService.service_name}</h3>
+
+      <p style={{ marginTop: "0.75rem" }}>
+        {selectedService.service_description ||
+          selectedService.description}
+      </p>
+
+      <div style={{ marginTop: "1rem", fontWeight: 600 }}>
+        Price:{" "}
+        {Number(selectedService.first_month_price || 0) === 0
+          ? "Free"
+          : `₹${selectedService.first_month_price}`}
+      </div>
+
+      <button
+        className="primary-btn"
+        style={{ marginTop: "1.5rem" }}
+        onClick={() => {
+          setSelectedCard(
+            stepServices.findIndex(
+              (s) => s._id === selectedService._id
+            )
+          );
+          setShowServicePopup(false);
+          setAcceptOffer(true);
+          setBuy("step1");
+        }}
+      >
+        Proceed
+      </button>
+    </div>
+  </div>
+)} */}
 
     </div> /* END main wrapper */
   );     // END return

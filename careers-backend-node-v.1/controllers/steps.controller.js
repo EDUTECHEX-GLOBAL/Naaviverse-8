@@ -7,182 +7,174 @@ const mongoose = require('mongoose');
 
 
 const addStep = async (req, res) => {
-    // console.log(req.body.country)
-    // let existingPath = await pathModel.findOne({ _id: req.body.path_id });
-    // if (!existingPath) {
-    //     return res.json({
-    //         status: false,
-    //         message: 'Path not found',
-    //     })
-    // }
-    
-    let createStep = {
-        email: req.body.email,
-        name: req.body.name,
-        description: req.body.description, // Added description field
-        length: req.body.length, // Added length field
-        cost: req.body.cost,
-        gradeData: req.body.gradeData || [],
-        curriculumData: req.body.curriculumData || [],
-        financialData: req.body.financialData || [],
-        streamData: req.body.streamData || [],
-        gradePointAverageData: req.body.gradePointAverageData || [],
-        personalityData: req.body.personalityData || [],
-        micro_description: req.body.micro_description,
-        micro_name: req.body.micro_name,
-        micro_length: req.body.micro_length,
-        micro_cost: req.body.micro_cost,
-        micro_chances: req.body.micro_chances,
-        microservices: req.body.microservices,
-        macro_description: req.body.macro_description,
-        macro_name: req.body.macro_name,
-        macro_length: req.body.macro_length,
-        macro_cost: req.body.macro_cost,
-        macro_chances: req.body.macro_chances,
-        macroservices: req.body.macroservices,
-        nano_description: req.body.nano_description,
-        nano_name: req.body.nano_name,
-        nano_length: req.body.nano_length,
-        nano_cost: req.body.nano_cost,
-        nano_chances: req.body.nano_chances,
-        nanoservices: req.body.nanoservices,
-        step_order: req.body.step_order,
-        path_id: req.body.path_id,
-        status: req.body.status
+  try {
+    // 🔥 FLEXIBLE path_id (body OR query)
+    const pathId = req.body.path_id || req.query.path_id;
+
+    if (!pathId) {
+      return res.json({
+        status: false,
+        message: "path_id is required to create a step",
+      });
     }
+
+    // 🔐 Validate path exists
+    const existingPath = await pathModel.findById(pathId);
+    if (!existingPath) {
+      return res.json({
+        status: false,
+        message: "Invalid path_id",
+      });
+    }
+
+    let createStep = {
+      email: req.body.email,
+      name: req.body.name,
+      description: req.body.description,
+      length: req.body.length,
+      cost: req.body.cost,
+
+      gradeData: req.body.gradeData || [],
+      curriculumData: req.body.curriculumData || [],
+      financialData: req.body.financialData || [],
+      streamData: req.body.streamData || [],
+      gradePointAverageData: req.body.gradePointAverageData || [],
+      personalityData: req.body.personalityData || [],
+
+      micro_description: req.body.micro_description,
+      micro_name: req.body.micro_name,
+      micro_length: req.body.micro_length,
+      micro_cost: req.body.micro_cost,
+      micro_chances: req.body.micro_chances,
+      microservices: req.body.microservices || [],
+
+      macro_description: req.body.macro_description,
+      macro_name: req.body.macro_name,
+      macro_length: req.body.macro_length,
+      macro_cost: req.body.macro_cost,
+      macro_chances: req.body.macro_chances,
+      macroservices: req.body.macroservices || [],
+
+      nano_description: req.body.nano_description,
+      nano_name: req.body.nano_name,
+      nano_length: req.body.nano_length,
+      nano_cost: req.body.nano_cost,
+      nano_chances: req.body.nano_chances,
+      nanoservices: req.body.nanoservices || [],
+
+      step_order: req.body.step_order,
+      path_id: pathId, // ✅ FINAL FIX
+      status: req.body.status || "active",
+    };
+
     let step = await stepModel.create(createStep);
 
-    // if (existingPath) {
-    //     console.log(existingPath.the_ids);
-        
-    //     existingPath.the_ids.push(step._id);
-        
-    //     console.log(existingPath.the_ids);
-    //     await existingPath.save();    
-    // }
-    if (!step) {
-        return res.json({
-            status: false,
-            message: 'Error in creating step',
-        })
-    }
     return res.json({
-        status: true,
-        message: 'Step created',
-        data: step
-    })
-}
+      status: true,
+      message: "Step created",
+      data: step,
+    });
+  } catch (error) {
+    return res.json({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
+
 
 const getSteps = async (req, res) => {
-    let filter = {}
-    if (req.query.status) {
-        filter.status = req.query.status;
-        if (req.query.status == "all")
-            filter = {};
-    } else {
-        filter.status = "active";
+  try {
+    let filter = {};
+
+    // 🔥 FLEXIBLE path_id (query OR body)
+    const pathId = req.query.path_id || req.body.path_id;
+
+    if (!pathId) {
+      return res.json({
+        status: false,
+        message: "path_id is required",
+      });
     }
+
+    filter.path_id = new mongoose.Types.ObjectId(pathId);
+
+    if (req.query.status) {
+      filter.status =
+        req.query.status === "all" ? { $ne: "delete" } : req.query.status;
+    } else {
+      filter.status = "active";
+    }
+
     if (req.query.name) filter.name = req.query.name;
-    if (req.query.email) filter.email = req.query.email;
     if (req.query.step_id) filter._id = req.query.step_id;
-    if (req.query.length) filter.length = req.query.length
+    if (req.query.length) filter.length = req.query.length;
 
     let steps = await stepModel.aggregate([
-        {
-            $match: filter
-        },
-        {
-            $sort: { "createdAt": -1 }
-        },
-        {
-            $lookup: {
-                from: "naavi_services",
-                let: { "m_ids": "$macroservices" },
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    { $in: ["$_id", "$$m_ids"] },
-                                ],
-                            }
-                        }
-                    },
-                ],
-                as: "MacroServicesDetails"
-            }
-        },
-        {
-            $lookup: {
-                from: "naavi_services",
-                let: { "mi_ids": "$microservices" },
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    { $in: ["$_id", "$$mi_ids"] },
-                                ],
-                            }
-                        }
-                    },
-                ],
-                as: "MicroServicesDetails"
-            }
-        },
-        {
-            $lookup: {
-                from: "naavi_services",
-                let: { "n_ids": "$nanoservices" },
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    { $in: ["$_id", "$$n_ids"] },
-                                ],
-                            }
-                        }
-                    },
-                ],
-                as: "nanoServicesDetails"
-            }
-        },
-        {
-            $lookup: {
-                from: "paths",
-                let: { "p_id": "$path_id" },
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    { $eq: ["$_id", "$$p_id"] },
-                                ],
-                            }
-                        }
-                    },
-                ],
-                as: "pathDetails"
-            }
-        },
+      { $match: filter },
+      { $sort: { createdAt: -1 } },
 
+      {
+        $lookup: {
+          from: "naavi_services",
+          let: { m_ids: "$macroservices" },
+          pipeline: [{ $match: { $expr: { $in: ["$_id", "$$m_ids"] } } }],
+          as: "MacroServicesDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "naavi_services",
+          let: { mi_ids: "$microservices" },
+          pipeline: [{ $match: { $expr: { $in: ["$_id", "$$mi_ids"] } } }],
+          as: "MicroServicesDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "naavi_services",
+          let: { n_ids: "$nanoservices" },
+          pipeline: [{ $match: { $expr: { $in: ["$_id", "$$n_ids"] } } }],
+          as: "nanoServicesDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "paths",
+          let: { p_id: "$path_id" },
+          pipeline: [{ $match: { $expr: { $eq: ["$_id", "$$p_id"] } } }],
+          as: "pathDetails",
+        },
+      },
+      {
+        $addFields: {
+          servicesCount: {
+            $cond: {
+              if: { $isArray: "$services" },
+              then: { $size: "$services" },
+              else: 0,
+            },
+          },
+        },
+      },
     ]);
 
-
-    if (steps.length === 0) {
-        return res.json({
-            status: false,
-            message: 'No data found',
-        })
-    }
     return res.json({
-        status: true,
-        total: steps.length,
-        message: 'Steps data found',
-        data: steps
-    })
-}
+      status: true,
+      total: steps.length,
+      message: "Steps data found",
+      data: steps,
+    });
+  } catch (error) {
+    return res.json({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
+
 
 const updateStep = async (req, res) => {
     let updateData = {}
@@ -201,12 +193,22 @@ const updateStep = async (req, res) => {
     if (req.body.nano_description) updateData.nano_description = req.body.nano_description;
     if (req.body.microservices) updateData.microservices = req.body.microservices;
     if (req.body.macroservices) updateData.macroservices = req.body.macroservices;
-    if (req.body.nanoservices) updateData.nanoservices = req.body.nanooservices;
+    if (req.body.nanoservices) updateData.nanoservices = req.body.nanoservices;
     if (req.body.macro_cost) updateData.macro_cost = req.body.macro_cost;
     if (req.body.micro_cost) updateData.micro_cost = req.body.micro_cost;
     if (req.body.nano_cost) updateData.nano_cost = req.body.nano_cost;
     if (req.body.step_order) updateData.step_order = req.body.step_order;
-    if (req.body.path_id) updateData.path_id = req.body.path_id;
+   if (req.body.path_id) {
+  const pathExists = await pathModel.findById(req.body.path_id);
+  if (!pathExists) {
+    return res.json({
+      status: false,
+      message: "Invalid path_id",
+    });
+  }
+  updateData.path_id = req.body.path_id;
+}
+
     if (req.body.status) updateData.status = req.body.status;
 
     let updateStepData = await stepModel.findOneAndUpdate({ _id: req.params.id, status: "active" }, updateData, { new: true });
@@ -279,7 +281,7 @@ const deleteStep = async (req, res) => {
 
 
 const restoreStep = async (req, res) => {
-    let restoreStepData = await stepModel.findOneAndUpdate({ _id: req.params.id, status: "delete" }, { status: "active" }, { new: true });
+    let restoreStepData = await stepModel.findOneAndUpdate({ _id: req.params.id,status: "inactive" }, { status: "active" }, { new: true });
     if (!restoreStepData) {
         return res.json({
             status: false,
@@ -294,39 +296,36 @@ const restoreStep = async (req, res) => {
 }
 
 const getActiveSteps = async (req, res) => {
-    try {
-        const { email } = req.query;
+  try {
+    // ✅ support both /user/:email and ?email=
+    const email = req.params.email || req.query.email;
 
-        if (!email) {
-            return res.status(400).json({
-                status: false,
-                message: "Email is required.",
-            });
-        }
-
-        // Fetch only active steps
-        const steps = await stepModel.find({ email, status: "active" });
-
-        if (steps.length === 0) {
-            return res.status(404).json({
-                status: false,
-                message: "No active steps found.",
-            });
-        }
-
-        return res.status(200).json({
-            status: true,
-            message: "Active steps retrieved successfully.",
-            data: steps,
-        });
-    } catch (error) {
-        console.error("Error fetching active steps:", error);
-        return res.status(500).json({
-            status: false,
-            message: "Internal server error.",
-        });
+    if (!email) {
+      return res.status(400).json({
+        status: false,
+        message: "Email is required.",
+      });
     }
+
+    const steps = await stepModel.find({
+      email,
+      status: "active",
+    });
+
+    return res.status(200).json({
+      status: true,
+      message: "Active steps retrieved successfully.",
+      data: steps,
+    });
+  } catch (error) {
+    console.error("Error fetching active steps:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error.",
+    });
+  }
 };
+
 const getStepById = async (req, res) => {
     try {
       const { id } = req.params;
@@ -419,56 +418,73 @@ const getStepById = async (req, res) => {
     }
 };  
 
-
 const addServicesToStep = async (req, res) => {
-    const { step_id, service_ids } = req.body;
-
-    // Basic input validation
-    if (!step_id || !Array.isArray(service_ids)) {
-        return res.status(400).json({
-            status: false,
-            message: 'Invalid input. Both step_id and service_ids are required.',
-        });
-    }
-
     try {
-        // Find the step by its ID
-        const step = await stepModel.findById(step_id).populate('services');
-        if (!step) {
-            return res.status(404).json({
+        const { step_id, service_ids } = req.body;
+
+        if (!step_id || !Array.isArray(service_ids)) {
+            return res.status(400).json({
                 status: false,
-                message: 'Step not found.',
+                message: "Invalid input"
             });
         }
 
-        // Merge new services with existing ones, ensuring no duplicates
-        const currentServices = step.services || [];
-        const updatedServices = Array.from(new Set([...currentServices, ...service_ids]));
+        // Fetch step
+        const step = await stepModel.findById(step_id).populate({
+            path: "services",
+            model: "naavi_services"
+        });
 
-        // Update the step document
-        step.services = updatedServices;
+        if (!step) {
+            return res.status(404).json({
+                status: false,
+                message: "Step not found"
+            });
+        }
+
+        // Convert current service objects to string IDs
+        const currentServiceIds = (step.services || []).map(s => s._id.toString());
+
+        // Convert incoming service_ids to ObjectIds
+        const incomingIds = service_ids.map(id => new mongoose.Types.ObjectId(id));
+
+        // Merge avoiding duplicates
+        const merged = Array.from(
+            new Set([...currentServiceIds, ...incomingIds.map(id => id.toString())])
+        ).map(id => new mongoose.Types.ObjectId(id));
+
+        // Save merged list
+        step.services = merged;
         await step.save();
-        await step.populate('services');
+
+        // Populate correctly
+        await step.populate({
+            path: "services",
+            model: "naavi_services"
+        });
 
         return res.json({
             status: true,
-            message: 'Services successfully attached to the step.',
-            data: step,
+            message: "Services added",
+            data: step
         });
+
     } catch (error) {
-        console.error('Error attaching services to step:', error);
+        console.error("Error attaching services to step:", error);
         return res.status(500).json({
             status: false,
-            message: 'Internal server error.',
-            error: error.message,
+            message: "Internal server error",
+            error: error.message
         });
     }
 };
 
 
 
+
 const getServicesForStep = async (req, res) => {
     const { step_id } = req.params;
+    
 
     console.log('Received step_id:', step_id);
 
@@ -492,9 +508,13 @@ const getServicesForStep = async (req, res) => {
         }
 
         // Find the step by its ID and populate services
-        const step = await stepModel.findById(step_id).populate('services');
+       const step = await stepModel.findById(step_id).populate({
+    path: "services",
+    model: "naavi_services"
+});
+        console.log("SERVICES RETURNED =>", step.services);
         console.log('Found step:', step);
-
+   
         if (!step) {
             console.error('Step not found for ID:', step_id);
             return res.status(404).json({
@@ -533,13 +553,18 @@ const removeServiceFromStep = async (req, res) => {
         }
 
         // Check if the service exists in the step
-        const serviceExists = step.services.includes(serviceId);
+        const serviceExists = step.services
+  .map(s => s.toString())
+  .includes(serviceId.toString());
+
         if (!serviceExists) {
             return res.status(404).json({ status: false, message: "Service not found in step" });
         }
 
         // Remove the service from the step's service array
-        step.services = step.services.filter(service => service.toString() !== serviceId);
+        step.services = step.services.filter(
+  service => service.toString() !== serviceId.toString()
+);
 
         // Save the updated step
         await step.save();
@@ -555,6 +580,181 @@ const removeServiceFromStep = async (req, res) => {
         return res.status(500).json({ status: false, message: "Server error" });
     }
 };
+// ================== GET SERVICES OF A STEP ==================
+// ================== GET SERVICES OF A STEP ==================
+const getServicesOfStep = async (req, res) => {
+  try {
+    const { step_id } = req.params;
+
+    if (!step_id) {
+      return res.status(400).json({
+        status: false,
+        message: "step_id is required"
+      });
+    }
+
+    // Validate ID
+    if (!mongoose.Types.ObjectId.isValid(step_id)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid step_id"
+      });
+    }
+
+    // Find the step and populate its services
+    const step = await stepModel.findById(step_id).populate("services");
+
+    if (!step) {
+      return res.status(404).json({
+        status: false,
+        message: "Step not found"
+      });
+    }
+
+    return res.json({
+      status: true,
+      total: step.services.length,
+      data: step.services
+    });
+
+  } catch (error) {
+    console.error("Error in getServicesOfStep:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Server error",
+      error: error.message
+    });
+  }
+};
+
+const repairStepServices = async (req, res) => {
+  try {
+    const steps = await stepModel.find();
+
+    let fixed = [];
+
+    for (const step of steps) {
+      const cleaned = step.services
+        .filter(id => mongoose.Types.ObjectId.isValid(id))   // keep only valid ObjectIds
+        .map(id => new mongoose.Types.ObjectId(id));
+
+      // Update only if different
+      if (JSON.stringify(cleaned) !== JSON.stringify(step.services)) {
+        step.services = cleaned;
+        await step.save();
+        fixed.push(step._id);
+      }
+    }
+
+    res.json({
+      status: true,
+      message: "Repaired all steps",
+      fixedSteps: fixed
+    });
+
+  } catch (error) {
+    res.status(500).json({ status: false, error: error.message });
+  }
+};
+
+// ✅ GET ALL SERVICES (48) + ATTACHED FLAG FOR REMOVE SERVICE
+const getAllServicesForRemove = async (req, res) => {
+  try {
+    const { step_id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(step_id)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid step_id"
+      });
+    }
+
+    // 1️⃣ Fetch step
+    const step = await stepModel.findById(step_id);
+
+    if (!step) {
+      return res.status(404).json({
+        status: false,
+        message: "Step not found"
+      });
+    }
+
+    // 2️⃣ Fetch ALL services (48)
+    const allServices = await serviceModel.find({ status: "active" });
+
+    // 3️⃣ Step attached services
+    const attachedServiceIds = (step.services || []).map(id =>
+      id.toString()
+    );
+
+    // 4️⃣ Merge attached flag
+    const finalServices = allServices.map(service => ({
+      ...service.toObject(),
+      attached: attachedServiceIds.includes(service._id.toString())
+    }));
+
+    return res.json({
+      status: true,
+      total: finalServices.length,
+      data: finalServices
+    });
+
+  } catch (error) {
+    console.error("getAllServicesForRemove error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Server error"
+    });
+  }
+};
+
+const bulkUploadSteps = async (req, res) => {
+  try {
+    const { email, records } = req.body;
+
+    if (!email) {
+      return res.json({
+        status: false,
+        message: "Email is required",
+      });
+    }
+
+    if (!Array.isArray(records) || records.length === 0) {
+      return res.json({
+        status: false,
+        message: "Records array is required",
+      });
+    }
+
+    // 🔥 REQUIRED: path_id validation
+    if (records.some(r => !r.path_id)) {
+      return res.json({
+        status: false,
+        message: "path_id is required for all steps",
+      });
+    }
+
+    const formatted = records.map((r) => ({
+      ...r,
+      email,
+      path_id: r.path_id,
+      status: "active",
+    }));
+
+    const inserted = await stepModel.insertMany(formatted, { ordered: false });
+
+    return res.json({
+      status: true,
+      message: "Bulk steps inserted successfully",
+      count: inserted.length,
+    });
+  } catch (error) {
+    return res.json({
+      status: false,
+      message: error.message,
+    });
+  }
+};
 
 
 module.exports = {
@@ -569,4 +769,8 @@ module.exports = {
     addServicesToStep,
     getServicesForStep ,
     removeServiceFromStep,
+    getServicesOfStep,
+    repairStepServices,
+    getAllServicesForRemove ,
+     bulkUploadSteps,
 }

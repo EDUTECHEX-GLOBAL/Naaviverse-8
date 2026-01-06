@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from "react";
-import axios from 'axios';
-import './mypaths.scss'; // Import the CSS file
+import axios from "axios";
+import "./mypaths.scss";
 
 const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
-  console.log("EditPathForm is rendering...");
-  console.log("Received selectedPath:", selectedPath);
-
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [showForm, setShowForm] = useState(true);
-  const [showMessagePage, setShowMessagePage] = useState(false); // New state
+  const [showMessagePage, setShowMessagePage] = useState(false);
 
+  // ---------- INITIAL STATE ----------
   const [formData, setFormData] = useState({
     nameOfPath: "",
     description: "",
@@ -22,113 +20,165 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
     curriculum: [],
     grade: [],
     stream: [],
-    length: selectedPath?.length || "", // New field
-    destination_institution: selectedPath?.destination_institution || selectedPath?.university || "", // New field
-    city: selectedPath?.city || "", // New field
-    country: selectedPath?.country || "", // New field
-    grade_avg: [], // New field
+    length: "",
+    destination_institution: "",
+    city: "",
+    country: "",
+    grade_avg: [], // keep as array in DB, but we’ll treat as single-select in UI
   });
 
+  // ---------- FILL FORM WHEN PATH CHANGES ----------
   useEffect(() => {
-    if (selectedPath) {
-      setFormData({
-        nameOfPath: selectedPath?.nameOfPath || "",
-        description: selectedPath?.description || "",
-        program: selectedPath?.program || "",
-        path_type: selectedPath?.path_type || "",
-        path_cat: selectedPath?.path_cat || "",
-        personality: selectedPath?.personality || "",
-        financialSituation: selectedPath?.financialSituation || [],
-        curriculum: selectedPath?.curriculum || [],
-        grade: selectedPath?.grade || [],
-        stream: selectedPath?.stream || [],
-        length: selectedPath?.length || "", // New field
-        destination_institution: selectedPath?.destination_institution || selectedPath?.university || "", // New field
-        city: selectedPath?.city || "", // New field
-        country: selectedPath?.country || "", // New field
-        grade_avg:  selectedPath?.grade_avg || [],
-      });
-      setShowForm(true); // Ensure form is visible when a new path is selected
-      setShowMessagePage(false); //reset to false when a new path selected
-    }
+    if (!selectedPath) return;
+
+    setFormData({
+      nameOfPath: selectedPath?.nameOfPath || "",
+      description: selectedPath?.description || "",
+      program: selectedPath?.program || "",
+      path_type: selectedPath?.path_type || "",
+      path_cat: selectedPath?.path_cat || "",
+      personality: selectedPath?.personality || "",
+      financialSituation: selectedPath?.financialSituation || [],
+      curriculum: selectedPath?.curriculum || [],
+      grade: selectedPath?.grade || [],
+      stream: selectedPath?.stream || [],
+      length: selectedPath?.length || "",
+      destination_institution:
+        selectedPath?.destination_institution ||
+        selectedPath?.university ||
+        "",
+      city: selectedPath?.city || "",
+      country: selectedPath?.country || "",
+      grade_avg: selectedPath?.grade_avg || [],
+    });
+
+    setShowForm(true);
+    setShowMessagePage(false);
+    setMessage("");
   }, [selectedPath]);
 
+  // ---------- BASIC INPUT CHANGE ----------
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+
+    // grade_avg we store as array (single selected value)
+    if (name === "grade_avg") {
+      setFormData((prev) => ({
+        ...prev,
+        grade_avg: value ? [value] : [],
+      }));
+      return;
+    }
+
+    // destination_institution must be updated by this input
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
+  // ---------- MULTI SELECT FIELDS ----------
   const handleMultiSelectChange = (e, fieldName) => {
-    const selectedValues = Array.from(e.target.selectedOptions, (option) => option.value);
-    setFormData({ ...formData, [fieldName]: selectedValues });
+    const selectedValues = Array.from(
+      e.target.selectedOptions,
+      (option) => option.value
+    );
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: selectedValues,
+    }));
   };
 
+  // ---------- SAVE ----------
   const handleSave = async () => {
     if (!selectedPath || !selectedPath._id) {
-        setMessage('No path selected.');
-        return;
+      setMessage("No path selected.");
+      return;
     }
 
     setLoading(true);
 
     const updatedFields = {};
+
     Object.keys(formData).forEach((key) => {
-        if (formData[key] !== selectedPath[key]) {
-            // Check if the field is an array and convert it to a string
-            if (Array.isArray(formData[key])) {
-                updatedFields[key] = formData[key].join(','); // Convert array to string
-            } else {
-                updatedFields[key] = typeof formData[key] === 'string' ? formData[key].toLowerCase() : formData[key];
-            }
+      const newVal = formData[key];
+      const oldVal = selectedPath[key];
+
+      // Compare arrays deeply
+      if (Array.isArray(newVal)) {
+        const oldArr = Array.isArray(oldVal) ? oldVal : [];
+        const isSameLength = newVal.length === oldArr.length;
+        const isSameContent =
+          isSameLength &&
+          newVal.every((v, i) => String(v) === String(oldArr[i]));
+
+        if (!isSameContent) {
+          updatedFields[key] = newVal; // ✅ keep as ARRAY, do NOT join
         }
+      } else {
+        // Compare scalars
+        if (newVal !== oldVal) {
+          updatedFields[key] = typeof newVal === "string" ? newVal.trim() : newVal;
+        }
+      }
     });
 
     if (Object.keys(updatedFields).length === 0) {
-        setMessage('No changes made.');
-        setLoading(false);
-        return;
+      setMessage("No changes made.");
+      setLoading(false);
+      return;
     }
 
     try {
-        const response = await axios.patch(`/api/paths/edit`, {
-            pathId: selectedPath._id,
-            ...updatedFields,
-        });
+      const response = await axios.patch(`/api/paths/edit`, {
+        pathId: selectedPath._id,
+        ...updatedFields,
+      });
 
-        console.log(" Response:", response.data);
-        setMessage('Path updated successfully!');
-        setShowForm(false); // Hide the form
-        setShowMessagePage(true); // Show the message page
+      setMessage("Path updated successfully!");
+      setShowForm(false);
+      setShowMessagePage(true);
+
+      if (onSave && typeof onSave === "function") {
+        onSave(response.data?.data || null);
+      }
     } catch (error) {
-        console.error(" API call failed", error.response?.data || error.message);
-        setMessage('Failed to update path.');
+      console.error("API call failed", error.response?.data || error.message);
+      setMessage("Failed to update path.");
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-}
-
-
-  //Modified the onCancel function
-  const handleCancelClick = () => {
-    setMessage(''); // Clear the message
-    setShowMessagePage(false); // Hide the message page
-    onCancel(); // Call the original onCancel to close the form
   };
 
+  // ---------- CANCEL ----------
+  const handleCancelClick = () => {
+    setMessage("");
+    setShowMessagePage(false);
+    onCancel && onCancel();
+  };
+
+  // ---------- MESSAGE PAGE ----------
   if (showMessagePage) {
     return (
       <div className="message-page">
         <p className="text-center text-sm text-green-600">{message}</p>
+        <div className="button-container" style={{ marginTop: "1rem" }}>
+          <button className="form-button save-button" onClick={handleCancelClick}>
+            Close
+          </button>
+        </div>
       </div>
     );
   }
 
-  if (!showForm) return null; // Hide the form when showForm is false
+  if (!showForm) return null;
 
+  // ---------- FORM UI ----------
   return (
     <div className="acc-addpath">
-      {/* Display message */}
-      {message && <p className="text-center text-sm text-green-600">{message}</p>}
+      {message && (
+        <p className="text-center text-sm text-green-600">{message}</p>
+      )}
 
       {/* Name */}
       <div className="each-acc-addpath-field">
@@ -170,7 +220,9 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
             placeholder="Enter program"
           />
         </div>
-      </div>{/* Path Type */}
+      </div>
+
+      {/* Path Type */}
       <div className="each-acc-addpath-field">
         <div className="each-acc-addpath-field-name">Path Type</div>
         <div className="each-acc-addpath-field-input">
@@ -179,6 +231,7 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
             value={formData.path_type}
             onChange={handleChange}
           >
+            <option value="">Select path type</option>
             <option value="immigration">immigration</option>
             <option value="education">education</option>
             <option value="career">career</option>
@@ -195,17 +248,18 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
             value={formData.personality}
             onChange={handleChange}
           >
-          
-            <option value="Realistic">realistic</option>
-            <option value="Investigative">investigative</option>
-            <option value="Artistic">artistic</option>
-            <option value="Social">social</option>
-            <option value="Enterprising">enterprising</option>
-            <option value="Conventional">conventional</option>
+            <option value="">Select personality</option>
+            <option value="realistic">realistic</option>
+            <option value="investigative">investigative</option>
+            <option value="artistic">artistic</option>
+            <option value="social">social</option>
+            <option value="enterprising">enterprising</option>
+            <option value="conventional">conventional</option>
           </select>
         </div>
       </div>
 
+      {/* Length */}
       <div className="each-acc-addpath-field">
         <div className="each-acc-addpath-field-name">Length</div>
         <div className="each-acc-addpath-field-input">
@@ -218,18 +272,22 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
           />
         </div>
       </div>
+
+      {/* Destination Institution */}
       <div className="each-acc-addpath-field">
         <div className="each-acc-addpath-field-name">Destination</div>
         <div className="each-acc-addpath-field-input">
           <input
             type="text"
-            name="destination"
+            name="destination_institution"
             value={formData.destination_institution}
             onChange={handleChange}
-            placeholder="Enter destination"
+            placeholder="Enter destination institution"
           />
         </div>
       </div>
+
+      {/* City */}
       <div className="each-acc-addpath-field">
         <div className="each-acc-addpath-field-name">City</div>
         <div className="each-acc-addpath-field-input">
@@ -242,6 +300,8 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
           />
         </div>
       </div>
+
+      {/* Country */}
       <div className="each-acc-addpath-field">
         <div className="each-acc-addpath-field-name">Country</div>
         <div className="each-acc-addpath-field-input">
@@ -254,21 +314,26 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
           />
         </div>
       </div>
+
+      {/* Grade Average */}
       <div className="each-acc-addpath-field">
         <div className="each-acc-addpath-field-name">Grade Average</div>
         <div className="each-acc-addpath-field-input">
-          <select name="grade_avg" value={formData.grade_avg} onChange={handleChange}>
-            
+          <select
+            name="grade_avg"
+            value={formData.grade_avg[0] || ""}
+            onChange={handleChange}
+          >
+            <option value="">Select grade range</option>
             <option value="0%-35%">0%-35%</option>
             <option value="36%-60%">36%-60%</option>
             <option value="61%-75%">61%-75%</option>
             <option value="76%-85%">76%-85%</option>
             <option value="86%-95%">86%-95%</option>
-            <option value="95%-100%">95%-100%</option>
+            <option value="96%-100%">96%-100%</option>
           </select>
         </div>
       </div>
-
 
       {/* Financial Situation */}
       <div className="each-acc-addpath-field">
@@ -321,7 +386,9 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
             <option value="Nordic">Nordic</option>
           </select>
         </div>
-      </div> {/* Grade */}
+      </div>
+
+      {/* Grade */}
       <div className="each-acc-addpath-field">
         <div className="each-acc-addpath-field-name">Grade</div>
         <div className="each-acc-addpath-field-input">
@@ -337,9 +404,14 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
           </select>
         </div>
       </div>
+
       {/* Buttons */}
       <div className="button-container">
-        <button className="form-button cancel-button" onClick={handleCancelClick} disabled={loading}>
+        <button
+          className="form-button cancel-button"
+          onClick={handleCancelClick}
+          disabled={loading}
+        >
           Cancel
         </button>
         <button
