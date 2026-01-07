@@ -1,815 +1,42 @@
-// mypaths.scss - Scoped for Admin Flow Only
-// All classes prefixed with "admin-" to avoid conflicts
+// mypaths.scss - Modern Admin UI with CRM Blue Shades
 
 @import "../../static/scss/colors";
 @import "../../static/scss/mixin";
 
-.admin-mypaths {
-  width: 100%;
-  height: 100%;
-  background: #ffffff;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  position: relative;
+// ===========================================
+// VARIABLES - CRM Blue Shades
+// ===========================================
+$crm-blue-primary: #2A7AB1;
+$crm-blue-secondary: #45A9C4;
+$crm-blue-light: #6FC3D9;
+$crm-blue-ultralight: #E8F4F8;
+$crm-blue-gradient: linear-gradient(135deg, $crm-blue-primary 0%, $crm-blue-secondary 100%);
+$crm-blue-shadow: rgba(42, 122, 177, 0.35);
+$crm-pending: #FFA726;
+$crm-inactive: #EF5350;
+$crm-success: #4CAF50;
+$text-dark: #2C3E50;
+$text-medium: #546E7A;
+$text-light: #90A4AE;
+$border-color: #E1E8ED;
+$background-light: #F5F9FC;
+$background-white: #FFFFFF;
 
-  /* Admin Menu Tabs */
-  .admin-mypaths-menu {
-    width: 100%;
-    height: 4rem;
-    padding: 12px 30px;
-    display: flex;
-    gap: 2.5vw;
-    border-bottom: 0.5px solid rgb(229, 229, 229);
-
-    .admin-each-mypath-menu {
-      padding: 10px 30px;
-      border-radius: 35px;
-      font-weight: 400;
-      font-size: 15px;
-      color: #1f304f;
-      cursor: pointer;
-      transition: all ease 0.2s;
-
-      &:hover {
-        transform: scale(1.05);
-      }
-    }
+// ===========================================
+// ANIMATIONS
+// ===========================================
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
   }
-
-  /* Main Content Area - Admin */
-  .admin-mypaths-content {
-    width: 100%;
-    height: calc(100% - 4rem);
-    position: relative;
-    
-    /* Table Header - Admin */
-    .admin-mypathsNav {
-      width: 100%;
-      height: 2.5rem;
-      border-bottom: 0.5px solid #e5e5e5;
-      display: flex;
-      align-items: center;
-      background: #fff;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-
-      .admin-mypaths-name-div {
-        width: 30%;
-        display: flex;
-        align-items: end;
-        padding-left: 35px;
-        font-weight: 400;
-        font-size: 0.9rem;
-      }
-
-      .admin-mypaths-description-div {
-        width: 50%;
-        display: flex;
-        align-items: end;
-        padding-left: 35px;
-        font-weight: 400;
-        font-size: 0.9rem;
-      }
-
-      .admin-mypathsName {
-        width: 25%;
-        display: flex;
-        padding-left: 35px;
-        font-weight: 500;
-        font-size: 0.8rem;
-      }
-
-      .admin-mypathsCountry {
-        width: 25%;
-        display: flex;
-        font-weight: 500;
-        font-size: 0.8rem;
-        padding-left: 1rem;
-      }
-
-      .admin-mypathsMicrosteps {
-        width: 25%;
-        display: flex;
-        font-weight: 500;
-        font-size: 0.8rem;
-        padding-left: 1rem;
-      }
-    }
-
-    /* Scrollable Content - Admin */
-    .admin-mypathsScroll-div {
-      height: calc(100% - 2.5rem);
-      overflow-y: auto;
-      
-      .admin-each-mypaths-data {
-        width: 100%;
-        border-bottom: 0.5px solid #e5e5e5;
-        display: flex;
-        font-size: 0.8rem;
-        cursor: pointer;
-        transition: all ease 0.2s;
-        background: #fff;
-        position: relative;
-
-        &:hover {
-          background: rgba(237, 237, 237, 0.37);
-        }
-
-        .admin-each-mypaths-name {
-          width: 30%;
-          padding: 2rem 0 2rem 35px;
-          line-height: 1.7;
-          font-size: 0.9rem;
-        }
-
-        .admin-each-mypaths-desc {
-          width: 50%;
-          padding: 2rem 0;
-          font-weight: 300;
-          padding-left: 35px;
-          line-height: 1.8;
-          padding-right: 1rem;
-        }
-      }
-
-      .admin-each-mypaths-data1 {
-        width: 100%;
-        border-bottom: 0.5px solid #e5e5e5;
-        display: flex;
-        flex-direction: column;
-        padding: 2rem 0;
-        cursor: pointer;
-        transition: all ease 0.2s;
-        background: #fff;
-
-        &:hover {
-          background: rgba(237, 237, 237, 0.37);
-        }
-
-        .admin-each-mypaths-detail {
-          width: 100%;
-          display: flex;
-          align-items: center;
-
-          .admin-each-mypathsName {
-            width: 25%;
-            display: flex;
-            align-items: center;
-            padding-left: 35px;
-            font-weight: 500;
-            font-size: 0.9rem;
-            gap: 10px;
-          }
-
-          .admin-each-mypathsCountry {
-            width: 25%;
-            display: flex;
-            font-weight: 500;
-            font-size: 0.9rem;
-            padding-left: 1rem;
-          }
-
-          .admin-each-mypathsMicrosteps {
-            width: 25%;
-            display: flex;
-            font-weight: 500;
-            font-size: 0.9rem;
-            padding-left: 1rem;
-          }
-        }
-
-        .admin-each-mypaths-desc {
-          width: 100%;
-          padding: 3rem 35px 0 35px;
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-
-          .admin-each-mypaths-desc-txt {
-            font-size: 0.9rem;
-            font-weight: 500;
-          }
-
-          .admin-each-mypaths-desc-txt1 {
-            line-height: 1.8;
-            font-size: 0.8rem;
-            font-weight: 300;
-          }
-        }
-      }
-    }
-  }
-
-  /* =========================================== */
-  /* ADMIN POPUP PANEL - FIXED FOR OVERLAP
-  /* =========================================== */
-
-  .admin-acc-popular1 {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 420px;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-    box-shadow: -4px 0 16px rgba(0, 0, 0, 0.08);
-    z-index: 2000;
-    
-    /* Fixed header section - Admin */
-    .admin-acc-popular-top1 {
-      flex-shrink: 0;
-      padding: 20px 24px;
-      border-bottom: 1px solid #e5e7eb;
-      background: white;
-      z-index: 10;
-    }
-    
-    .admin-acc-popular-top {
-      flex-shrink: 0;
-      padding: 20px 24px;
-      border-bottom: 1px solid #e5e7eb;
-      background: white;
-      z-index: 10;
-    }
-  }
-
-  /* Main container for popup content - Admin */
-  .admin-acc-mt-div {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0; // CRITICAL for Firefox
-    overflow: hidden; // Prevent outer scroll
-    
-    .admin-acc-sub-text {
-      flex-shrink: 0;
-      padding: 16px 24px 8px 24px;
-      font-weight: 500;
-      color: #1f304f;
-      background: white;
-      margin: 0;
-    }
-
-    .admin-acc-sub-textt {
-      font-weight: 500;
-      color: #1f304f;
-      margin: 8px 0;
-      font-size: 13px;
-      padding: 0 24px;
-    }
-  }
-
-  /* SCROLLABLE CONTENT AREA - FIXED HEIGHT - Admin */
-  .admin-acc-scroll-div {
-    flex: 1 1 auto;
-    overflow-y: auto;
-    overflow-x: hidden;
-    min-height: 0; // CRITICAL for flex scrolling
-    padding: 0 24px 20px 24px;
-    
-    /* Custom scrollbar - Admin */
-    &::-webkit-scrollbar {
-      width: 6px;
-    }
-    
-    &::-webkit-scrollbar-track {
-      background: #f1f5f9;
-      border-radius: 3px;
-    }
-    
-    &::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 3px;
-    }
-    
-    &::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
-    }
-  }
-
-  /* =========================================== */
-  /* ADMIN STEP BOX STYLES - PREVENT OVERLAP
-  /* =========================================== */
-
-  .admin-acc-step-box4 {
-    border: 1px solid #e5e7eb;
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: #fff;
-    width: 100%;
-    
-    &:hover {
-      background: #f9fafb;
-      border-color: #2563eb;
-    }
-  }
-
-  .admin-acc-step-box4-selected {
-    border: 2px solid #2563eb;
-    background: #eff6ff;
-  }
-
-  .admin-acc-step-box {
-    border: 1px solid #e5e7eb;
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: #fff;
-    width: 100%;
-    
-    &:hover {
-      background: #f9fafb;
-      border-color: #2563eb;
-    }
-  }
-
-  /* Step boxes in Add New Step - PROPER SPACING - Admin */
-  .admin-acc-step-box6 {
-    border: 1px solid #e5e7eb;
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 12px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: #fff;
-    width: 100%;
-    
-    /* Prevent text overflow */
-    overflow: hidden;
-    word-wrap: break-word;
-    
-    &:hover {
-      background: #f9fafb;
-      border-color: #2563eb;
-    }
-    
-    div {
-      width: 100%;
-      
-      /* Title styling */
-      &:first-child {
-        font-weight: 600;
-        font-size: 14px;
-        color: #1f304f;
-        margin-bottom: 8px;
-        line-height: 1.4;
-      }
-      
-      /* Description styling */
-      &:last-child {
-        font-weight: 300;
-        font-size: 12px;
-        color: #666;
-        line-height: 1.6;
-        padding-top: 8px;
-        border-top: 1px solid #e7e7e7;
-      }
-    }
-  }
-
-  .admin-acc-step-box5 {
-    border: 1px solid #e5e7eb;
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 10px;
-    background: #f9fafb;
-  }
-
-  /* Admin substep style (when selecting backup path) */
-  .admin-substepstyle {
-    border: 1px solid #e5e7eb;
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 12px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: #fff;
-    width: 100%;
-    
-    &:hover {
-      background: #f9fafb;
-      border-color: #2563eb;
-    }
-    
-    /* First line with two columns */
-    div:first-child {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 600;
-      font-size: 14px;
-      color: #1f304f;
-      margin-bottom: 8px;
-      
-      div {
-        width: auto;
-      }
-    }
-    
-    /* Description */
-    div:nth-child(2) {
-      font-weight: 300;
-      font-size: 12px;
-      color: #666;
-      line-height: 1.6;
-      margin-bottom: 8px;
-    }
-    
-    /* Path ID */
-    div:last-child {
-      font-weight: 300;
-      font-size: 11px;
-      color: #888;
-      padding-top: 8px;
-      border-top: 1px solid #f0f0f0;
-    }
-  }
-
-  /* Admin subpath style (when positioning steps) */
-  .admin-subpathstyle {
-    border: 1px solid #e5e7eb;
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 16px;
-    background: #fff;
-    position: relative;
-    width: 100%;
-    
-    /* Title section */
-    > div:first-child {
-      font-weight: 600;
-      font-size: 14px;
-      color: #1f304f;
-      margin-bottom: 8px;
-    }
-    
-    /* Description */
-    > div:nth-child(2) {
-      font-weight: 300;
-      font-size: 12px;
-      color: #666;
-      line-height: 1.6;
-      margin-bottom: 12px;
-    }
-    
-    /* Backup Path label */
-    > div:nth-child(3) {
-      font-weight: 600;
-      font-size: 13px;
-      color: #1f304f;
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
-    }
-    
-    /* Backup Path ID box */
-    > div:last-child {
-      border-radius: 15px;
-      border: 1px solid #e7e7e7;
-      padding: 12px;
-      font-size: 11px;
-      color: #888;
-      background: #f9f9f9;
-      word-break: break-all;
-    }
-  }
-
-  /* Admin Place Here button - PROPER SPACING */
-  .admin-placehere {
-    width: calc(100% - 48px); // Account for padding
-    margin: 8px auto 16px auto;
-    padding: 12px;
-    background: #2563eb;
-    color: white;
-    border-radius: 10px;
-    font-weight: 600;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    
-    &:hover {
-      background: #1e4ed8;
-      transform: translateY(-2px);
-    }
-  }
-
-  /* Admin Delete button positioning */
-  .admin-deletePathStyle {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: #dc2626;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    
-    &:hover {
-      transform: scale(1.1);
-    }
-    
-    img {
-      width: 12px;
-      height: 12px;
-      filter: invert(1);
-    }
-  }
-
-  /* =========================================== */
-  /* ADMIN BUTTONS AND FOOTER STYLES
-  /* =========================================== */
-
-  /* Save button in edit metadata - Admin */
-  .admin-save-Btn {
-    flex-shrink: 0;
-    margin: 16px 24px;
-    padding: 14px;
-    border-radius: 20px;
-    background: #2563eb;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.2s ease;
-    
-    &:hover:not([style*="opacity: 0.5"]) {
-      background: #1e4ed8;
-    }
-  }
-
-  /* FIXED FOOTER - GO BACK BUTTON - Admin */
-  .admin-goBack3 {
-    flex-shrink: 0 !important;
-    margin: 12px 24px;
-    padding: 12px;
-    border-radius: 20px;
-    background: #f1f1f1;
-    font-weight: 600;
-    cursor: pointer;
-    text-align: center;
-    
-    /* Make it stick to bottom */
-    position: sticky;
-    bottom: 0;
-    background: white;
-    border-top: 1px solid #e5e7eb;
-    margin-top: auto;
-    
-    &:hover {
-      background: #e5e7eb;
-    }
-  }
-
-  .admin-goBack2 {
-    flex-shrink: 0 !important;
-    margin: 12px 24px;
-    padding: 12px;
-    border-radius: 20px;
-    background: #f1f1f1;
-    font-weight: 600;
-    cursor: pointer;
-    text-align: center;
-    
-    &:hover {
-      background: #e5e7eb;
-    }
-  }
-
-  /* Input boxes in edit metadata - Admin */
-  .admin-acc-step-box5, .admin-acc-step-box6 input {
-    width: 100%;
-    padding: 12px 16px;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    font-size: 14px;
-    margin-bottom: 16px;
-    
-    &:focus {
-      outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    }
-  }
-
-  /* Success/Message boxes - Admin */
-  .admin-success-box1, .admin-success-box2 {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 24px;
-    text-align: center;
-    font-weight: 500;
-    color: #16a34a;
-    background: rgba(34, 197, 94, 0.05);
-    border-radius: 10px;
-    margin: 20px;
-    line-height: 1.6;
-  }
-
-  /* Loading overlay - Admin */
-  .admin-popularlogo {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.9);
-    z-index: 20;
-    
-    .admin-popularlogoimg {
-      width: 50px;
-      height: 50px;
-      animation: admin-spin 1s linear infinite;
-    }
-  }
-
-  @keyframes admin-spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  /* =========================================== */
-  /* ADMIN VIEW PATH STYLES
-  /* =========================================== */
-
-  .admin-viewpath-container {
-    width: 100%;
-    height: 100%;
-    padding: 2rem 35px;
-    color: #1f304f;
-    overflow-y: auto;
-
-    .admin-viewpath-top-area {
-      width: 100%;
-      height: auto;
-      min-height: 8rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      position: relative;
-
-      .admin-viewpath-bold-text {
-        font-size: 1.5rem;
-        font-weight: 500;
-      }
-
-      .admin-viewpath-des {
-        font-size: 0.8rem;
-        font-weight: 300;
-        line-height: 1.7;
-      }
-
-      .admin-viewpath-goBack-div {
-        position: absolute;
-        top: 0;
-        right: 0;
-        font-weight: 600;
-        text-decoration: underline;
-        cursor: pointer;
-        transition: all ease 0.2s;
-
-        &:hover {
-          transform: scale(1.05);
-        }
-      }
-    }
-
-    .admin-viewpath-steps-area {
-      display: flex;
-      width: 100%;
-      gap: 0 4rem;
-      flex-wrap: wrap;
-
-      .admin-viewpath-each-j-step {
-        width: calc((100% - 8rem) / 3);
-        border-radius: 10px;
-        border: 1px solid #e5e5e5;
-        display: flex;
-        flex-direction: column;
-        padding: 2rem 1rem;
-        gap: 2rem;
-        margin-top: 2rem;
-        z-index: 2;
-        cursor: pointer;
-        transition: all ease 0.2s;
-
-        &:hover {
-          border: 1px solid #1f304f;
-        }
-
-        .admin-viewpath-each-j-step-text {
-          width: 100%;
-          font-size: 1.1rem;
-          font-weight: 500;
-        }
-
-        .admin-viewpath-each-j-step-text1 {
-          width: 100%;
-          font-size: 0.8rem;
-          font-weight: 300;
-          line-height: 1.7;
-          margin-top: -1rem;
-        }
-
-        .admin-viewpath-each-j-amount-div {
-          display: flex;
-          align-items: center;
-          width: 100%;
-          justify-content: space-between;
-
-          .admin-viewpath-each-j-amount {
-            font-size: 1.1rem;
-            font-weight: 500;
-          }
-        }
-      }
-
-      .admin-viewpath-relative-div {
-        position: relative;
-
-        .admin-viewpath-j-arr-div {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          display: flex;
-          justify-self: center;
-          align-items: center;
-          left: calc(100% + 1rem);
-          z-index: 1;
-          cursor: default;
-        }
-      }
-    }
-  }
-
-  /* =========================================== */
-  /* ADMIN EMERGENCY FIXES - FORCE PROPER LAYOUT
-  /* =========================================== */
-
-  /* EMERGENCY FIX - Force proper layout - Admin */
-  .admin-acc-mt-div > .admin-acc-scroll-div {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-    
-    .admin-acc-step-box6, .admin-substepstyle, .admin-subpathstyle {
-      flex-shrink: 0 !important;
-      min-height: fit-content !important;
-      max-height: none !important;
-    }
-  }
-
-  /* Prevent text overflow in all step boxes - Admin */
-  .admin-acc-step-box6 div,
-  .admin-substepstyle div,
-  .admin-subpathstyle div {
-    overflow: visible !important;
-    white-space: normal !important;
-    text-overflow: clip !important;
-  }
-
-  /* Ensure no overlap with bottom buttons - Admin */
-  .admin-acc-mt-div:has(.admin-goBack3) .admin-acc-scroll-div {
-    padding-bottom: 80px !important;
-  }
-
-  /* When showing step boxes (Add New Step) - Admin */
-  .admin-acc-scroll-div:has(.admin-acc-step-box6) {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding-top: 12px;
-    
-    /* Add scrollbar only when needed */
-    max-height: calc(100vh - 200px);
-    
-    /* Smooth scrolling */
-    scroll-behavior: smooth;
-  }
-
-  /* Animation for loading - Admin */
-  .admin-path-item {
-    animation: admin-fadeIn 0.3s ease forwards;
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
-/* =========================================== */
-/* ADMIN ANIMATIONS
-/* =========================================== */
-
-@keyframes admin-fadeInUp {
+@keyframes fadeInUp {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -820,319 +47,924 @@
   }
 }
 
-@keyframes admin-shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+@keyframes pathSelect {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 20px rgba(42, 122, 177, 0.15);
+  }
+  50% {
+    transform: scale(0.98);
+    box-shadow: 0 8px 30px rgba(42, 122, 177, 0.25);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 12px 40px rgba(42, 122, 177, 0.35);
+  }
 }
 
-@keyframes admin-fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+@keyframes pulseBorder {
+  0%, 100% {
+    border-color: $crm-blue-primary;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  50% {
+    border-color: $crm-blue-secondary;
   }
 }
 
-/* =========================================== */
-/* ADMIN RESPONSIVE DESIGN
-/* =========================================== */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
 
-@media (max-width: 768px) {
-  .admin-mypaths {
-    .admin-mypaths-menu {
-      padding: 12px 15px;
-      gap: 1vw;
-      
-      .admin-each-mypath-menu {
-        padding: 8px 20px;
-        font-size: 14px;
+// ===========================================
+// MAIN CONTAINER
+// ===========================================
+.admin-mypaths {
+  width: 100%;
+  height: 100%;
+  background: $background-light;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  position: relative;
+  overflow: hidden;
+
+  // ===========================================
+  // HEADER TABS - CRM Style
+  // ===========================================
+  .admin-mypaths-menu {
+    width: 100%;
+    height: 4rem;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: $background-white;
+    border-bottom: 1px solid $border-color;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+
+    .admin-each-mypath-menu {
+      padding: 0.75rem 2rem;
+      border-radius: 25px;
+      font-weight: 500;
+      font-size: 14px;
+      color: $text-medium;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid transparent;
+      background: $background-light;
+      position: relative;
+      overflow: hidden;
+
+      &:hover {
+        color: $crm-blue-primary;
+        background: $crm-blue-ultralight;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(42, 122, 177, 0.1);
+      }
+
+      &.active {
+        background: $crm-blue-gradient;
+        color: #ffffff;
+        border-color: transparent;
+        box-shadow: 0 12px 30px $crm-blue-shadow;
+        transform: scale(1.05);
+        font-weight: 600;
+
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: 4px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 60%;
+          height: 3px;
+          background: rgba(255, 255, 255, 0.8);
+          border-radius: 2px;
+        }
+      }
+    }
+  }
+
+  // ===========================================
+  // PATH LIST SECTION
+  // ===========================================
+  .admin-mypaths-content {
+    width: 100%;
+    height: calc(100% - 4rem);
+    position: relative;
+    padding: 1.5rem 2rem;
+    overflow: auto;
+
+    // Table Header
+    .admin-mypathsNav {
+      width: 100%;
+      height: 3.5rem;
+      background: $crm-blue-gradient;
+      border-radius: 12px 12px 0 0;
+      display: flex;
+      align-items: center;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 20px $crm-blue-shadow;
+
+      .admin-mypaths-name-div {
+        width: 30%;
+        padding-left: 2rem;
+      }
+
+      .admin-mypaths-description-div {
+        width: 50%;
+        padding-left: 2rem;
+      }
+
+      .admin-mypaths-count-div {
+        width: 20%;
+        padding-left: 2rem;
       }
     }
 
-    .admin-mypaths-content {
-      .admin-mypathsNav {
-        .admin-mypaths-name-div,
-        .admin-mypaths-description-div {
-          padding-left: 15px;
-          font-size: 0.8rem;
+    // Path Items List
+    .admin-mypathsScroll-div {
+      background: $background-white;
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      max-height: calc(100vh - 12rem);
+      overflow-y: auto;
+
+      .admin-each-mypaths-data {
+        width: 100%;
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid $border-color;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: $background-white;
+        position: relative;
+        animation: fadeInUp 0.4s ease-out backwards;
+
+        @for $i from 1 through 20 {
+          &:nth-child(#{$i}) {
+            animation-delay: #{$i * 0.05}s;
+          }
+        }
+
+        &:hover {
+          background: linear-gradient(90deg, $crm-blue-ultralight 0%, transparent 100%);
+          transform: translateX(8px);
+          box-shadow: inset 4px 0 0 $crm-blue-primary;
+        }
+
+        &.selected {
+          background: linear-gradient(90deg, rgba(42, 122, 177, 0.1) 0%, transparent 100%);
+          animation: pathSelect 0.6s ease-out;
+          box-shadow: 0 12px 40px rgba(42, 122, 177, 0.35);
+          border: 2px solid $crm-blue-primary;
+          border-radius: 8px;
+          margin: 4px;
+          padding: 1.5rem calc(2rem - 2px);
+          animation: pulseBorder 2s infinite;
+        }
+
+        .admin-each-mypaths-name {
+          width: 30%;
+          font-weight: 600;
+          color: $text-dark;
+          font-size: 15px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+
+          &::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: $crm-blue-primary;
+            display: inline-block;
+          }
+        }
+
+        .admin-each-mypaths-desc {
+          width: 50%;
+          color: $text-medium;
+          font-size: 14px;
+          line-height: 1.6;
+          font-weight: 400;
+          padding-right: 1rem;
+        }
+
+        .admin-each-mypaths-count {
+          width: 20%;
+          font-weight: 600;
+          color: $crm-blue-primary;
+          font-size: 15px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          &::before {
+            content: '🔗';
+            font-size: 14px;
+          }
+        }
+
+        // Status indicator
+        .admin-path-status {
+          position: absolute;
+          right: 2rem;
+          top: 50%;
+          transform: translateY(-50%);
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+
+          &.active {
+            background: rgba(76, 175, 80, 0.1);
+            color: $crm-success;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+          }
+
+          &.pending {
+            background: rgba(255, 167, 38, 0.1);
+            color: $crm-pending;
+            border: 1px solid rgba(255, 167, 38, 0.3);
+          }
+
+          &.inactive {
+            background: rgba(239, 83, 80, 0.1);
+            color: $crm-inactive;
+            border: 1px solid rgba(239, 83, 80, 0.3);
+          }
         }
       }
 
-      .admin-mypathsScroll-div {
-        .admin-each-mypaths-data {
-          .admin-each-mypaths-name,
-          .admin-each-mypaths-desc {
-            padding-left: 15px;
+      // Loading skeleton
+      .admin-mypaths-loading {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid $border-color;
+
+        .admin-loading-line {
+          height: 20px;
+          background: linear-gradient(90deg, 
+            $border-color 25%, 
+            lighten($border-color, 5%) 50%, 
+            $border-color 75%);
+          background-size: 200% 100%;
+          border-radius: 4px;
+          margin-bottom: 12px;
+          animation: shimmer 1.5s infinite;
+
+          &.name {
+            width: 30%;
+          }
+
+          &.desc {
+            width: 50%;
+          }
+
+          &.count {
+            width: 20%;
           }
         }
       }
     }
 
-    /* Adjust popup for mobile - Admin */
-    .admin-acc-popular1 {
-      width: 100%;
+    // Empty state
+    .admin-empty-paths {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 2rem;
+      text-align: center;
+      background: $background-white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+      .admin-empty-icon {
+        font-size: 64px;
+        color: $crm-blue-light;
+        margin-bottom: 1.5rem;
+        opacity: 0.5;
+      }
+
+      .admin-empty-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: $text-dark;
+        margin-bottom: 0.5rem;
+      }
+
+      .admin-empty-desc {
+        font-size: 14px;
+        color: $text-medium;
+        max-width: 400px;
+        line-height: 1.6;
+      }
+    }
+  }
+
+  // ===========================================
+  // MY PATH ACTIONS PANEL - Simple Rectangle
+  // ===========================================
+  .admin-acc-popular1 {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 420px;
+    height: 100vh;
+    background: $background-white;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+    z-index: 2000;
+    animation: slideInRight 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+    border-left: 4px solid $crm-blue-primary;
+
+    // Panel Header
+    .admin-acc-popular-top1 {
+      padding: 1.5rem 2rem;
+      background: $crm-blue-gradient;
+      color: white;
+      position: relative;
+
+      .admin-acc-popular-head1 {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0;
+      }
+
+      .admin-acc-popular-img-box1 {
+        position: absolute;
+        right: 1.5rem;
+        top: 1.5rem;
+        width: 32px;
+        height: 32px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.3);
+          transform: rotate(90deg);
+        }
+
+        .admin-acc-popular-img1 {
+          width: 16px;
+          height: 16px;
+          filter: invert(1);
+        }
+      }
+    }
+
+    // Panel Content
+    .admin-acc-mt-div {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+      background: $background-light;
+
+      // Action Steps - Simple Rectangular Boxes
+      .admin-acc-step-box4 {
+        background: $background-white;
+        border: 2px solid $border-color;
+        border-radius: 10px;
+        padding: 1.25rem;
+        margin-bottom: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        color: $text-dark;
+        font-size: 14px;
+        position: relative;
+        overflow: hidden;
+
+        &:hover {
+          border-color: $crm-blue-primary;
+          background: $crm-blue-ultralight;
+          transform: translateX(8px);
+          box-shadow: 0 6px 20px rgba(42, 122, 177, 0.15);
+
+          &::before {
+            content: '→';
+            position: absolute;
+            right: 1.25rem;
+            color: $crm-blue-primary;
+            font-weight: bold;
+          }
+        }
+
+        &:active {
+          transform: translateX(8px) scale(0.98);
+        }
+      }
+
+      // Selected state
+      .admin-acc-step-box4-selected {
+        border-color: $crm-blue-primary;
+        background: $crm-blue-ultralight;
+        box-shadow: 0 6px 20px rgba(42, 122, 177, 0.15);
+      }
+
+      // Subtext
+      .admin-acc-sub-text {
+        font-size: 13px;
+        color: $text-medium;
+        margin-bottom: 1rem;
+        font-weight: 500;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid $crm-blue-light;
+      }
+
+      // Input Box
+      .admin-acc-step-box6 {
+        background: $background-white;
+        border: 2px solid $border-color;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        width: 100%;
+
+        input {
+          width: 100%;
+          border: none;
+          outline: none;
+          font-size: 14px;
+          color: $text-dark;
+          background: transparent;
+
+          &::placeholder {
+            color: $text-light;
+          }
+
+          &:focus {
+            outline: none;
+          }
+        }
+
+        &:focus-within {
+          border-color: $crm-blue-primary;
+          box-shadow: 0 0 0 3px rgba(42, 122, 177, 0.1);
+        }
+      }
+
+      // Step Selection Boxes
+      .admin-substepstyle, .admin-subpathstyle {
+        background: $background-white;
+        border: 2px solid $border-color;
+        border-radius: 10px;
+        padding: 1.25rem;
+        margin-bottom: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+          border-color: $crm-blue-primary;
+          background: $crm-blue-ultralight;
+          transform: translateX(4px);
+        }
+
+        div:first-child {
+          font-weight: 600;
+          color: $text-dark;
+          font-size: 14px;
+          margin-bottom: 8px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        div:nth-child(2) {
+          font-size: 13px;
+          color: $text-medium;
+          line-height: 1.5;
+          margin-bottom: 8px;
+        }
+
+        div:last-child {
+          font-size: 12px;
+          color: $crm-blue-primary;
+          font-weight: 500;
+          padding-top: 8px;
+          border-top: 1px solid $border-color;
+        }
+      }
+
+      // Save Button
+      .admin-save-Btn {
+        background: $crm-blue-gradient;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 1rem;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        margin-top: 1rem;
+        width: 100%;
+        box-shadow: 0 6px 20px $crm-blue-shadow;
+
+        &:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 30px $crm-blue-shadow;
+        }
+
+        &:active:not(:disabled) {
+          transform: translateY(0);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+
+      // Go Back Button
+      .admin-goBack3 {
+        background: $background-white;
+        color: $crm-blue-primary;
+        border: 2px solid $crm-blue-primary;
+        border-radius: 10px;
+        padding: 1rem;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        margin-top: 1rem;
+        width: 100%;
+
+        &:hover {
+          background: $crm-blue-primary;
+          color: white;
+          transform: translateY(-2px);
+        }
+      }
+
+      // Success Message
+      .admin-success-box2 {
+        background: rgba(76, 175, 80, 0.1);
+        border: 2px solid rgba(76, 175, 80, 0.3);
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        margin-top: 2rem;
+
+        &::before {
+          content: '✓';
+          display: block;
+          font-size: 48px;
+          color: $crm-success;
+          margin-bottom: 1rem;
+        }
+
+        div {
+          font-weight: 600;
+          color: $crm-success;
+          font-size: 16px;
+          line-height: 1.5;
+        }
+      }
+
+      // Loading
+      .admin-popularlogo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+
+        .admin-popularlogoimg {
+          width: 40px;
+          height: 40px;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      }
+    }
+
+    // Edit Steps - Step by Step Rectangles
+    .admin-edit-steps-container {
+      .admin-edit-step {
+        background: $background-white;
+        border: 2px solid $border-color;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        animation: fadeInUp 0.3s ease-out;
+        transition: all 0.3s ease;
+
+        &:hover {
+          border-color: $crm-blue-light;
+          box-shadow: 0 4px 15px rgba(42, 122, 177, 0.1);
+        }
+
+        .admin-edit-step-title {
+          font-weight: 600;
+          color: $text-dark;
+          margin-bottom: 0.5rem;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          &::before {
+            content: '📍';
+            font-size: 16px;
+          }
+        }
+
+        .admin-edit-step-desc {
+          font-size: 13px;
+          color: $text-medium;
+          line-height: 1.5;
+          margin-bottom: 1rem;
+        }
+
+        .admin-edit-step-actions {
+          display: flex;
+          gap: 8px;
+          padding-top: 1rem;
+          border-top: 1px solid $border-color;
+
+          button {
+            flex: 1;
+            padding: 0.5rem;
+            border: 2px solid $border-color;
+            border-radius: 6px;
+            background: $background-white;
+            color: $text-dark;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+
+            &:hover {
+              background: $crm-blue-ultralight;
+              border-color: $crm-blue-primary;
+              color: $crm-blue-primary;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // ===========================================
+  // VIEW PATH CONTAINER
+  // ===========================================
+  .admin-viewpath-container {
+    width: 100%;
+    height: 100%;
+    padding: 2rem;
+    animation: fadeInUp 0.4s ease-out;
+
+    .admin-viewpath-top-area {
+      background: $crm-blue-gradient;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      color: white;
+      position: relative;
+      box-shadow: 0 8px 30px $crm-blue-shadow;
+
+      .admin-viewpath-bold-text {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      .admin-viewpath-des {
+        font-size: 14px;
+        opacity: 0.9;
+        line-height: 1.6;
+        max-width: 800px;
+      }
+
+      .admin-viewpath-goBack-div {
+        position: absolute;
+        top: 2rem;
+        right: 2rem;
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.3);
+          transform: translateY(-2px);
+        }
+      }
+    }
+
+    .admin-viewpath-steps-area {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 1.5rem;
+
+      .admin-viewpath-each-j-step {
+        background: $background-white;
+        border: 2px solid $border-color;
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+
+        &:hover {
+          border-color: $crm-blue-primary;
+          transform: translateY(-8px);
+          box-shadow: 0 12px 40px rgba(42, 122, 177, 0.25);
+
+          .admin-viewpath-each-j-amount {
+            color: $crm-blue-primary;
+          }
+        }
+
+        .admin-viewpath-each-j-step-text {
+          font-size: 16px;
+          font-weight: 600;
+          color: $text-dark;
+          margin-bottom: 0.5rem;
+        }
+
+        .admin-viewpath-each-j-step-text1 {
+          font-size: 14px;
+          color: $text-medium;
+          line-height: 1.6;
+          margin-bottom: 1rem;
+        }
+
+        .admin-viewpath-each-j-amount-div {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding-top: 1rem;
+          border-top: 1px solid $border-color;
+
+          .admin-viewpath-each-j-amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: $crm-blue-secondary;
+            transition: color 0.3s ease;
+          }
+        }
+      }
     }
   }
 }
 
-/* Scrollbar styling - Admin */
-.admin-mypathsScroll-div::-webkit-scrollbar,
-.admin-viewpath-container::-webkit-scrollbar {
-  width: 6px;
-}
-
-.admin-mypathsScroll-div::-webkit-scrollbar-track,
-.admin-viewpath-container::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 3px;
-}
-
-.admin-mypathsScroll-div::-webkit-scrollbar-thumb,
-.admin-viewpath-container::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
-}
-
-.admin-mypathsScroll-div::-webkit-scrollbar-thumb:hover,
-.admin-viewpath-container::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* =========================================== */
-/* ADMIN REORDER STEPS SPECIFIC STYLES
-/* =========================================== */
-
-/* Admin Step number indicator */
-.admin-step-number {
-  width: 30px;
-  height: 30px;
-  min-width: 30px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 14px;
-  flex-shrink: 0;
-  margin-top: 5px;
-}
-
-/* Admin Drag handle */
-.admin-drag-handle {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
-  cursor: grab;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #94a3b8;
-  font-size: 18px;
-  letter-spacing: 2px;
-  opacity: 0.6;
-  transition: all 0.2s ease;
-  user-select: none;
-  
-  &:hover {
-    color: #2563eb;
-    opacity: 1;
-    transform: scale(1.1);
-  }
-  
-  &:active {
-    cursor: grabbing;
+// ===========================================
+// RESPONSIVE DESIGN
+// ===========================================
+@media (max-width: 1200px) {
+  .admin-mypaths {
+    .admin-viewpath-steps-area {
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
   }
 }
 
-/* Admin Draggable step styling */
-.admin-draggable-step {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid transparent;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  
-  &:hover {
-    border-color: #e5e7eb;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    transform: translateY(-2px);
-  }
-  
-  &:active {
-    cursor: grabbing;
-    border-color: #2563eb;
-    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.15);
-  }
-}
-
-/* Admin Dragging state */
-.admin-draggable-step.dragging {
-  opacity: 0.8;
-  border-color: #2563eb;
-  background: #f0f9ff;
-  transform: scale(1.02);
-}
-
-/* Admin Drop zone indicator */
-.admin-drop-zone {
-  border: 2px dashed #2563eb;
-  background: rgba(37, 99, 235, 0.05);
-  border-radius: 12px;
-  margin-bottom: 10px;
-  min-height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #2563eb;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-/* Admin Save button animation */
-.admin-save-Btn {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  
-  &:not(:disabled):hover {
-    background: #1d4ed8;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
-  }
-  
-  &:not(:disabled):active {
-    transform: translateY(0);
-  }
-}
-
-/* Admin Loading animation for save */
-.admin-save-Btn.loading {
-  background: #94a3b8;
-  cursor: wait;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    top: 50%;
-    left: 50%;
-    margin: -10px 0 0 -10px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: admin-spin 1s linear infinite;
-  }
-}
-
-/* Admin Step info tooltip */
-.admin-step-info {
-  font-size: 11px;
-  color: #64748b;
-  background: #f8fafc;
-  padding: 4px 8px;
-  border-radius: 4px;
-  display: inline-block;
-  margin-right: 8px;
-  margin-bottom: 4px;
-  border: 1px solid #e2e8f0;
-  
-  &:last-child {
-    margin-right: 0;
-  }
-}
-
-/* Admin Mobile optimization for reorder */
 @media (max-width: 768px) {
-  .admin-draggable-step {
-    padding: 12px !important;
-  }
-  
-  .admin-step-number {
-    width: 25px;
-    height: 25px;
-    min-width: 25px;
-    font-size: 12px;
-  }
-  
-  .admin-drag-handle {
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
-    font-size: 16px;
-  }
-  
-  .admin-step-info {
-    font-size: 10px;
-    padding: 3px 6px;
-    margin-right: 6px;
-    margin-bottom: 3px;
+  .admin-mypaths {
+    .admin-mypaths-menu {
+      padding: 0 1rem;
+      height: 3.5rem;
+      gap: 0.5rem;
+
+      .admin-each-mypath-menu {
+        padding: 0.5rem 1rem;
+        font-size: 13px;
+      }
+    }
+
+    .admin-mypaths-content {
+      padding: 1rem;
+
+      .admin-mypathsNav {
+        height: 3rem;
+        font-size: 13px;
+
+        .admin-mypaths-name-div,
+        .admin-mypaths-description-div,
+        .admin-mypaths-count-div {
+          padding-left: 1rem;
+        }
+      }
+
+      .admin-mypathsScroll-div {
+        .admin-each-mypaths-data {
+          padding: 1rem;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+
+          .admin-each-mypaths-name,
+          .admin-each-mypaths-desc,
+          .admin-each-mypaths-count {
+            width: 100%;
+            padding: 0;
+          }
+
+          .admin-path-status {
+            position: static;
+            transform: none;
+            margin-top: 0.5rem;
+            align-self: flex-start;
+          }
+        }
+      }
+    }
+
+    .admin-acc-popular1 {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .admin-viewpath-container {
+      padding: 1rem;
+
+      .admin-viewpath-steps-area {
+        grid-template-columns: 1fr;
+      }
+    }
   }
 }
 
-/* Admin Animation for when order changes */
-@keyframes admin-highlightChange {
-  0% { background-color: rgba(37, 99, 235, 0.1); }
-  100% { background-color: transparent; }
+// ===========================================
+// UTILITY CLASSES
+// ===========================================
+.admin-click-animation {
+  &:active {
+    animation: pathSelect 0.4s ease-out;
+  }
 }
 
-.admin-order-changed {
-  animation: admin-highlightChange 1s ease;
-}
-
-/* Admin View path image styles */
-.admin-viewpath-each-j-img {
-  width: 75px;
-  height: 75px;
+.admin-status-dot {
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  overflow: hidden;
-  margin-bottom: 10px;
-  
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  display: inline-block;
+  margin-right: 6px;
+
+  &.active {
+    background: $crm-success;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+  }
+
+  &.pending {
+    background: $crm-pending;
+    box-shadow: 0 0 0 3px rgba(255, 167, 38, 0.2);
+  }
+
+  &.inactive {
+    background: $crm-inactive;
+    box-shadow: 0 0 0 3px rgba(239, 83, 80, 0.2);
   }
 }
 
-/* Admin Popup header styles */
-.admin-acc-popular-head1 {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #1f304f;
-}
+// ===========================================
+// CUSTOM SCROLLBAR
+// ===========================================
+.admin-custom-scroll {
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
 
-.admin-acc-popular-head {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #1f304f;
-}
+  &::-webkit-scrollbar-track {
+    background: $background-light;
+    border-radius: 4px;
+  }
 
-.admin-acc-popular-img-box1 {
-  position: absolute;
-  right: 20px;
-  top: 20px;
-  cursor: pointer;
-}
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, $crm-blue-primary 0%, $crm-blue-secondary 100%);
+    border-radius: 4px;
 
-.admin-acc-popular-img-box {
-  position: absolute;
-  right: 20px;
-  top: 20px;
-  cursor: pointer;
-}
-
-.admin-acc-popular-img1, .admin-acc-popular-img {
-  width: 20px;
-  height: 20px;
+    &:hover {
+      background: $crm-blue-primary;
+    }
+  }
 }

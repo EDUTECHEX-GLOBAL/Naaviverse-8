@@ -83,17 +83,17 @@ const [isDragging, setIsDragging] = useState(false);
 
   const [allServices, setAllServices] = useState([])
 
-const getAllServices = () => {
-  let email = userDetails?.email;
+  // const getAllServices = () => {
+  //   let email = userDetails?.email;
 
-  axios.get(`/api/services/get?productcreatoremail=${email}`)
-    .then(({ data }) => {
-      if (data.status) {
-        setAllServices(data.data);
-      }
-    })
-    .catch(err => console.error("Error fetching local services:", err));
-};
+  //   axios.get(`/api/services/get?productcreatoremail=${email}`)
+  //     .then(({ data }) => {
+  //       if (data.status) {
+  //         setAllServices(data.data);
+  //       }
+  //     })
+  //     .catch(err => console.error("Error fetching local services:", err));
+  // };
 
 
  useEffect(() => {
@@ -105,9 +105,9 @@ const getAllServices = () => {
 }, [])
 
 
-useEffect(() => {
-  getAllServices();
-}, []);
+// useEffect(() => {
+//   getAllServices();
+// }, []);
 
 
   const getNewPath = () => {
@@ -373,7 +373,7 @@ const handleApprovePath = () => {
           }else{
             getAllPaths()
           }
-          getAllServices()
+          // getAllServices()
           setPathActionEnabled(false);
           setStepActionEnabled(false)
           setActionLoading(false);
@@ -661,7 +661,7 @@ const addServicesToStep = () => {
       setSelectedServices([])
 
       // refresh services and paths
-      getAllServices()
+      // getAllServices()
       fetchAllServicesAgain()
       getAllPaths()
     }
@@ -686,7 +686,7 @@ const removeServiceFromStep = (id) => {
         setLoading(false)
 
         // refresh UI
-        getAllServices()
+        // getAllServices()
         fetchAllServicesAgain()
         getAllPaths()
       }

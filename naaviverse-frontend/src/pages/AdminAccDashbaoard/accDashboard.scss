@@ -759,3 +759,60 @@
   color: #9ca3af;
   font-size: 14px;
 }
+
+/* ================= CRM USERS / PARTNERS TABS ================= */
+
+.crm-tabs {
+  display: flex;
+  gap: 16px; /* clean spacing between buttons */
+  padding: 18px 35px;
+  background: #ffffff;
+}
+
+.crm-tabs button {
+  position: relative;
+  padding: 10px 26px;
+  border-radius: 999px;
+  border: 1px solid rgba(42, 122, 177, 0.25);
+  background: linear-gradient(
+    135deg,
+    rgba(42, 122, 177, 0.08),
+    rgba(69, 169, 196, 0.08)
+  );
+  color: #2A7AB1;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease,
+    color 0.25s ease;
+}
+
+/* Hover – subtle lift */
+.crm-tabs button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(42, 122, 177, 0.18);
+  background: linear-gradient(
+    135deg,
+    rgba(42, 122, 177, 0.15),
+    rgba(69, 169, 196, 0.15)
+  );
+}
+
+/* Active tab – solid & confident */
+.crm-tabs button.active {
+  background: linear-gradient(135deg, #2A7AB1, #45A9C4);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 12px 30px rgba(42, 122, 177, 0.35);
+  transform: scale(1.05);
+}
+
+/* Click feedback */
+.crm-tabs button:active {
+  transform: scale(0.96);
+}

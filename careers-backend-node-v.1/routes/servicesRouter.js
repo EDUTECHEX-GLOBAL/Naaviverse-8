@@ -14,6 +14,12 @@ router.post("/add", servicesController.addService);
 router.get("/getservices", servicesController.getServices);
 
 /* ==========================
+   ADMIN: GET ALL SERVICES
+========================== */
+router.get("/admin", servicesController.getAllServicesForAdmin);
+
+
+/* ==========================
    UPDATE SERVICE
 ========================== */
 router.put("/update/:id", servicesController.updateService);
