@@ -927,44 +927,8 @@ useEffect(() => {
           //               </div>
           //             );
           //           })
-          //       : filteredPartnerStepsData?.map((e, i) => {
-          //           return (
-          //             <div
-          //               className="admin-each-mypaths-data1"
-          //               key={i}
-          //               onClick={() => {
-          //                 setSelectedStepId(e?._id);
-          //                 setStepActionEnabled(true);
-          //               }}
-          //             >
-          //               <div className="admin-each-mypaths-detail">
-          //                 <div className="admin-each-mypathsName">
-          //                   <div>
-          //                     <div>{e?.name}</div>
-          //                     <div
-          //                       style={{
-          //                         fontSize: "0.8rem",
-          //                         fontWeight: "300",
-          //                       }}
-          //                     >
-          //                       {e?._id}
-          //                     </div>
-          //                   </div>
-          //                 </div>
-          //                 <div className="admin-each-mypathsCountry">
-          //                   {e?.length ? e?.length : 0} Days
-          //                 </div>
-          //                 <div className="admin-each-mypathsCountry">{e?.cost}</div>
-          //                 <div className="admin-each-mypathsMicrosteps">
-          //                   {e?.other_data
-          //                     ? Object.keys(e.other_data).length
-          //                     : 0}
-          //                 </div>
-          //               </div>
-          //               <div className="admin-each-mypaths-desc">
-          //                 <div className="admin-each-mypaths-desc-txt">
-          //                   Description
-          //                 </div>
+         
+          //              
           //                 <div className="admin-each-mypaths-desc-txt1">
           //                   {e?.description}
           //                 </div>
