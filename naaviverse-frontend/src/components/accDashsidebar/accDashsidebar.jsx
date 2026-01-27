@@ -12,24 +12,28 @@ const sidebarMenu1 = [
     display: "CRM",
     title: "CRM",
     click: true,
+    path: "/dashboard/accountants",
   },
   {
     id: 1,
     display: "My Paths",
     title: "Paths",
     click: true,
+    path: "/dashboard/accountants/paths",
   },
   {
     id: 2,
     display: "My Steps",
     title: "Steps",
     click: true,
+    path: "/dashboard/accountants/steps",
   },
   {
     id: 3,
     display: "My Services",
     title: "My Services",
     click: true,
+    path: "/dashboard/accountants/services",
   },
 ];
 
@@ -78,7 +82,8 @@ const sidebarMenu4 = [
 
 
 const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar , admin}) => {
-  const [selectedMenu, setSelectedMenu] = useState(admin ? sidebarMenu2: sidebarMenu1)
+  const selectedMenu = admin ? sidebarMenu2 : sidebarMenu1;
+
   const { accsideNav, setaccsideNav, setispopular } = useStore();
   const navigate = useNavigate();
   return (
@@ -146,15 +151,22 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar , admin}) 
                 }}
                 key={i}
                 onClick={() => {
-                  if (handleChangeAccDashsidebar) {
-                    handleChangeAccDashsidebar();
-                    setaccsideNav(each.title);
-                  } else if (each.click && isNotOnMainPage) {
-                    navigate("/dashboard/accountants");
-                  } else if (each.click) {
-                    setaccsideNav(each.title);
-                  }
-                }}
+  if (!each.click) return;
+
+  // Close sidebar (mobile)
+  if (handleChangeAccDashsidebar) {
+    handleChangeAccDashsidebar();
+  }
+
+  // Update active menu
+  setaccsideNav(each.title);
+
+  // 🔥 CHANGE URL BASED ON MENU
+  if (each.path) {
+    navigate(each.path);
+  }
+}}
+
               >
                 {each.display}
               </div>

@@ -54,45 +54,44 @@ const getAllPaths = () => {
   setLoading(true);
 
   const email = userDetails?.email;
-
   let endpoint = "";
 
-  // ADMIN FETCHES ALL PENDING PATHS
-  if (admin && mypathsMenu === "Pending Approval") {
+  // 1️⃣ ADMIN – Pending Approval
+  if (
+    admin &&
+    (mypathsMenu === "Pending Approval" || mypathsMenu === "Pending Paths")
+  ) {
     endpoint = `http://localhost:4545/api/paths/get?status=waitingforapproval`;
   }
 
-  // PARTNER FETCHES ONLY THEIR PENDING PATHS
+  // 2️⃣ PARTNER – Pending Approval  ✅ MISSING CASE
   else if (!admin && mypathsMenu === "Pending Approval") {
     endpoint = `http://localhost:4545/api/paths/get?email=${email}&status=waitingforapproval`;
   }
 
-  // INACTIVE PATHS
+  // 3️⃣ Inactive Paths
   else if (mypathsMenu === "Inactive Paths") {
     endpoint = `http://localhost:4545/api/paths/get?email=${email}&status=inactive`;
   }
 
-  // ACTIVE PATHS (default)
+  // 4️⃣ Active Paths (default)
   else {
     endpoint = `http://localhost:4545/api/paths/get?email=${email}&status=active`;
   }
 
-  console.log("➡️ FIXED API CALL:", endpoint);
+  console.log("➡️ FINAL API CALL:", endpoint);
 
   axios
     .get(endpoint)
     .then((response) => {
-      let result = response?.data?.data || [];
-      console.log(result, `partnerPathData result for ${mypathsMenu}`);
-      setPartnerPathData(result);
+      setPartnerPathData(response?.data?.data || []);
     })
     .catch((error) => {
       console.log("❌ Error fetching partnerPathData:", error);
     })
-    .finally(() => {
-      setLoading(false);
-    });
+    .finally(() => setLoading(false));
 };
+
 
 
 
@@ -165,22 +164,22 @@ useEffect(() => {
   getAllServices();
 }, [selectedStepId]);
 
-  const getNewPath = () => {
-    setLoading(true);
-    axios
-      .get(
-        `/api/paths/get?status=waitingforapproval`
-      )
-      .then((response) => {
-        let result = response?.data?.data;
-        // console.log(result, "partnerPathData result");
-        setPartnerPathData(result);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log(error, "error in partnerPathData");
-      });
-  };
+
+  //   setLoading(true);
+  //   axios
+  //     .get(
+  //       `/api/paths/get?status=waitingforapproval`
+  //     )
+  //     .then((response) => {
+  //       let result = response?.data?.data;
+  //       // console.log(result, "partnerPathData result");
+  //       setPartnerPathData(result);
+  //       setLoading(false);
+  //     })
+  //     .catch((error) => {
+  //       console.log(error, "error in partnerPathData");
+  //     });
+  // };
 
 useEffect(() => {
   if (selectedPath?.StepDetails) {
@@ -198,20 +197,13 @@ useEffect(() => {
   const loadPaths = async () => {
     if (cancelled) return;
 
-    if (mypathsMenu === "Pending Paths") {
-      await getNewPath();
-    } else {
-      await getAllPaths();
-    }
+    // Single source of truth
+    await getAllPaths();
   };
 
   loadPaths();
   return () => (cancelled = true);
 }, [mypathsMenu]);
-
-
-
-
 
 
 
@@ -347,11 +339,8 @@ const viewPathById = (id) => {
       })
       .then(({ data }) => {
         if (data.status) {
-          if (mypathsMenu === "Active Paths") {
-            getNewPath();
-          } else {
-            getAllPaths();
-          }
+         getAllPaths();
+
           setPathActionEnabled(false);
           setActionLoading(false);
           setPathActionStep(1);
@@ -366,11 +355,8 @@ const viewPathById = (id) => {
       })
       .then(({ data }) => {
         if (data.status) {
-          if (mypathsMenu === "Pending Paths") {
-            getNewPath();
-          } else {
-            getAllPaths();
-          }
+         getAllPaths();
+
           setPathActionEnabled(false);
           setActionLoading(false);
           setPathActionStep(1);
@@ -392,11 +378,8 @@ const viewPathById = (id) => {
       )
       .then(({ data }) => {
         if (data.status) {
-          if (mypathsMenu === "Pending Paths") {
-            getNewPath();
-          } else {
-            getAllPaths();
-          }
+         getAllPaths();
+
           getAllServices();
           setPathActionEnabled(false);
           setStepActionEnabled(false);

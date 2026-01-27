@@ -89,11 +89,12 @@ const getServices = async (req, res) => {
   try {
     const services = await serviceModel.find({
       productcreatoremail: req.query.productcreatoremail,
+      status: "active", // 👈 KEY FIX
     });
 
     return res.status(200).json({
       status: true,
-      data: services || [],
+      data: services,
     });
   } catch (error) {
     console.error("Error fetching services:", error);
@@ -104,6 +105,7 @@ const getServices = async (req, res) => {
     });
   }
 };
+
 
 /**
  * Update service
@@ -188,6 +190,36 @@ const restoreService = async (req, res) => {
     return res.status(500).json({ status: false, message: "Error restoring service", error: error.message });
   }
 };
+
+const getAllServicesForAdmin = async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    let filter = {};
+
+    if (status && status !== "all") {
+      filter.status = status;
+    }
+
+    const services = await serviceModel
+      .find(filter)
+      .sort({ createdAt: -1 });
+
+    return res.json({
+      status: true,
+      total: services.length,
+      data: services,
+    });
+  } catch (error) {
+    console.error("Admin get services error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Failed to fetch services",
+    });
+  }
+};
+
+
 
 /**
  * Get services by step
@@ -279,5 +311,6 @@ module.exports = {
   restoreService,
   getServicesByStep,
   bulkUploadServices,
-  updateServiceIcon,
+  updateServiceIcon,    
+  getAllServicesForAdmin,
 };

@@ -67,28 +67,37 @@ const EditStepForm = ({ selectedStep, onSave, onCancel }) => {
     setFormData({ ...formData, [field]: updatedData });
   };
 
-  const handleSave = async () => {
-    if (!selectedStep?._id) return;
+const handleSave = async () => {
+  if (!selectedStep?._id) return;
 
-    setLoading(true);
-    try {
-      const response = await axios.put(
-        `/api/steps/update/${selectedStep._id}`,
-        formData
-      );
+  setLoading(true);
+  try {
+    const partner = JSON.parse(localStorage.getItem("partner"));
 
-      if (response.data.status) {
-        setMessage("Step updated successfully!");
-        setShowMessagePage(true);
-        onSave();
+    const response = await axios.put(
+      `/api/steps/update/${selectedStep._id}`,
+      formData,
+      {
+        headers: {
+          email: partner?.email,
+          token: partner?.token || partner?.idToken, // 🔥 THIS IS THE FIX
+        },
       }
-    } catch (error) {
-      console.error(error);
-      setMessage("Failed to update step.");
-    } finally {
-      setLoading(false);
+    );
+
+    if (response.data.status) {
+      setMessage("Step updated successfully!");
+      setShowMessagePage(true);
+      onSave(response.data.data);
     }
-  };
+  } catch (error) {
+    console.error(error.response?.data || error);
+    setMessage("Failed to update step.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   if (showMessagePage) {
     return (

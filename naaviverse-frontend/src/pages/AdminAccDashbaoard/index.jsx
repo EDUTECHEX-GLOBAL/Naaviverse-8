@@ -91,7 +91,7 @@ const [followData, setfollowData] = useState([]);
 
 /* ---------------- PAGINATION ---------------- */
 const [currentPage, setCurrentPage] = useState(1);
-const itemsPerPage = 10;
+const itemsPerPage = 10; 
 
 /* ---------------- PAGINATION CALCULATIONS ---------------- */
 /* ---------------- PAGINATION CALCULATIONS ---------------- */
@@ -847,7 +847,7 @@ useEffect(() => {
   }
 
  useEffect(() => {
-  if (!ispopular && accsideNav === "My Services") {
+  if (!ispopular && accsideNav === "Services") {
     getAdminServices();
   }
 }, [ispopular, accsideNav, servicesMenu]);
@@ -1317,7 +1317,7 @@ const getAdminServices = () => {
   setIsUserLoading(true);
 
   axios
-    .get(`/api/services/getservices?status=${serviceStatus}`)
+    .get(`/api/services/admin?status=${serviceStatus}`)
     .then(({ data }) => {
       if (data?.status) {
         setAdminServices(data.data || []);
@@ -1331,6 +1331,7 @@ const getAdminServices = () => {
       setIsUserLoading(false);
     });
 };
+
 
 
 
@@ -1351,7 +1352,7 @@ useEffect(() => {
   }
 
  return (
-  <div style={{ overflow: "hidden" }}>
+  <div>
     <div className="dashboard-main">
       <div className="dashboard-body">
 
@@ -1361,7 +1362,16 @@ useEffect(() => {
         </div>
 
         {/* MAIN CONTENT */}
-        <div className="dashboard-screens" onClick={() => resetpop()}>
+    <div
+  className="dashboard-screens"
+  onClick={() => resetpop()}
+  style={{
+    height: "100vh",
+    overflowY: "auto",
+    overflowX: "hidden"
+  }}
+>
+
           
           <div style={{ height: "100%" }}>
 
@@ -1532,7 +1542,7 @@ useEffect(() => {
 )}
 
   </>
-) : accsideNav === "My Services" ? (
+) : accsideNav === "Services" ? (
   /* your existing My Services block */
 
                   <>

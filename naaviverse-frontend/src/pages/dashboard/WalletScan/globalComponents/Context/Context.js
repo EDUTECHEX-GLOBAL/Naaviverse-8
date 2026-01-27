@@ -57,78 +57,89 @@ export default class ContextProvider extends Component {
     d && this.setState({ tabApps: JSON.parse(d) });
   };
 
-  setUpRApps = async () => {
-    let res = await getRegisteredApp();
-    if (res.data.status) {
+setUpRApps = async () => {
+  try {
+    const res = await getRegisteredApp();
+    if (res?.data?.status) {
       this.setState({ registeredApps: res.data.userApps });
+
       let tempObj = {};
-      let temp = res.data.userApps.map((x) => {
-        tempObj = {
-          ...tempObj,
-          [x.app_code]: { app_name: x.app_name, app_icon: x.app_icon },
+      res.data.userApps.forEach((x) => {
+        tempObj[x.app_code] = {
+          app_name: x.app_name,
+          app_icon: x.app_icon,
         };
-        return x;
       });
-      this.setState({ allAppsData: { ...tempObj } });
-    } else {
+
+      this.setState({ allAppsData: tempObj });
     }
-  };
-  setUpUserDetails = async () => {
-    let res = await getUserDetails();
-    if (res.data.status) {
+  } catch (e) {
+    console.error("getRegisteredApp failed", e);
+  }
+};
+
+setUpUserDetails = async () => {
+  try {
+    const res = await getUserDetails();
+    if (res?.data?.status) {
       this.setState({ userDetails: res.data.user });
     } else {
       this.setState({ userDetails: null });
     }
-  };
-  setUpAllCoins = async () => {
-    let res = await fetchAllCoins();
-    let temp1 = res.data.coins.filter((item) => {
-      return item.type === "fiat";
-    });
-    let justCoins = temp1.map((obj) => {
-      return obj.coinSymbol;
-    });
-    let temp2 = res.data.coins.filter((item) => {
-      return item.type === "crypto";
-    });
-    let justCoinsTwo = temp2.map((obj) => {
-      return obj.coinSymbol;
-    });
+  } catch (e) {
+    console.error("getUserDetails failed", e);
+    this.setState({ userDetails: null });
+  }
+};
+
+setUpAllCoins = async () => {
+  try {
+    const res = await fetchAllCoins();
+    const coins = Array.isArray(res?.data?.coins) ? res.data.coins : [];
+
+    const fiat = coins.filter(c => c.type === "fiat").map(c => c.coinSymbol);
+    const crypto = coins.filter(c => c.type === "crypto").map(c => c.coinSymbol);
+
     let tempObj = {};
     let tempObjTwo = {};
-    res.data.coins.forEach((element) => {
-      let t = {
-        [`${element.coinSymbol}`]: element?.coinImage,
+
+    coins.forEach((element) => {
+      tempObj[element.coinSymbol] = element?.coinImage;
+      tempObjTwo[element.coinSymbol] = {
+        _24hrchange: element?._24hrchange,
+        coinName: element?.coinName,
+        _id: element?._id,
+        coinImage: element?.coinImage,
       };
-      let t2 = {
-        [`${element.coinSymbol}`]: {
-          _24hrchange: element?._24hrchange,
-          coinName: element?.coinName,
-          _id: element?._id,
-          coinImage: element?.coinImage,
-        },
-      };
-      tempObj = { ...tempObj, ...t };
-      tempObjTwo = { ...tempObjTwo, ...t2 };
     });
+
     this.setState({
-      currencyImageList: { ...tempObj },
-      cryptoCoins: [...justCoinsTwo],
-      fiatCoins: [...justCoins],
-      nameImageList: { ...tempObjTwo },
+      currencyImageList: tempObj,
+      cryptoCoins: crypto,
+      fiatCoins: fiat,
+      nameImageList: tempObjTwo,
     });
-  };
+  } catch (e) {
+    console.error("fetchAllCoins failed", e);
+  }
+};
+
   logOut = () =>{
     localStorage.clear();
     this.resetContext();
   }
-  componentDidMount() {
+componentDidMount() {
+  const role = localStorage.getItem("role"); // or wherever you store role
+
+  if (role === "ADMIN") {
     this.setUpRApps();
     this.setUpUserDetails();
-    this.setUpAllCoins();
-    this.checkLocalData();
   }
+
+  this.setUpAllCoins();
+  this.checkLocalData();
+}
+
   // componentWillMount() {
   //   this.setUpRApps();
   //   this.setUpUserDetails();

@@ -1,6 +1,80 @@
 .journeypage {
   padding: 40px 50px;
 }
+.dashboard-body,
+.dashboard-screens {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.global-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 9999;
+
+  display: flex;
+  justify-content: flex-end;   // 👈 push drawer to right
+}
+
+.global-drawer-panel {
+  width: 420px;
+  height: 100vh;
+
+  background: #ffffff;
+  padding: 24px;
+  overflow-y: auto;
+
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+
+  /* Optional animation */
+  animation: slideIn 0.25s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+
+.steps-grid-premium {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)); // 🔥 key fix
+  gap: 24px;
+
+  width: 100%;
+  max-width: 100%;
+}
+
+
+.step-card-premium {
+  position: relative;
+
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 28px 22px 22px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  min-height: 180px;
+    min-width: 0; 
+  box-sizing: border-box;
+
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.step-card-premium:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+}
 
 /* Header with title + Go Back */
 .journey-header {
@@ -38,12 +112,15 @@
   line-height: 1.6;
 }
 
-/* Steps aligned like 2nd screenshot */
-.steps-grid {
+.steps-grid-premium {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 25px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+
+  width: 100%;
+  max-width: 100%;
 }
+
 
 .step-card {
   background: white;
@@ -67,6 +144,16 @@
   line-height: 1.4;
 }
 
+.step-desc-premium {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #475569;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
 
 // .journeypage {

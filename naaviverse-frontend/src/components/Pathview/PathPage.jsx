@@ -1,54 +1,59 @@
-// PathPage.jsx (Merged & Corrected)
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import axios from "axios";
 import Skeleton from "react-loading-skeleton";
 import "./journey.scss";
 import { motion } from "framer-motion";
+import NewStep1 from "../../globalComponents/GlobalDrawer/NewStep1";
 
 const PathPage = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // path id from URL
+  const { id } = useParams();
+  const location = useLocation();
 
+  const [openNewStep, setOpenNewStep] = useState(false);
   const [loading, setLoading] = useState(true);
   const [pathName, setPathName] = useState("N/A");
   const [steps, setSteps] = useState([]);
   const [error, setError] = useState(null);
 
+  const isPartnerFlow = location.pathname.startsWith(
+    "/dashboard/accountants"
+  );
+
+  // ✅ reusable fetch
+const fetchPath = async () => {
+  setLoading(true);
+  setError(null);
+
+  const pathId = id || localStorage.getItem("selectedPathId");
+  if (!pathId) {
+    setError("No selected path id found.");
+    setLoading(false);
+    return;
+  }
+
+  try {
+    // 1️⃣ Fetch path info
+    const pathRes = await axios.get(`/api/paths/viewpath/${pathId}`);
+    setPathName(pathRes?.data?.data?.nameOfPath || "N/A");
+
+    // 2️⃣ Fetch steps BY PATH (🔥 source of truth)
+    const stepsRes = await axios.get(`/api/steps/get`, {
+      params: { path_id: pathId },
+    });
+
+    setSteps(stepsRes?.data?.data || []);
+  } catch (err) {
+    setError("Failed to fetch path.");
+    setSteps([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   useEffect(() => {
-    const fetchPath = async () => {
-      setLoading(true);
-      setError(null);
-
-      const pathId = id || localStorage.getItem("selectedPathId");
-
-      if (!pathId) {
-        setError("No selected path id found.");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const res = await axios.get(`/api/paths/viewpath/${pathId}`);
-        const data = res?.data?.data;
-
-        if (!data) {
-          setError("No path data found.");
-          setSteps([]);
-          return;
-        }
-
-        setPathName(data.nameOfPath || "N/A");
-        setSteps(data.StepDetails || []);
-      } catch (err) {
-        console.error("Error fetching path:", err);
-        setError("Failed to fetch path.");
-        setSteps([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPath();
   }, [id]);
 
@@ -57,7 +62,7 @@ const PathPage = () => {
       <div className="dashboard-body">
         <div className="dashboard-screens" style={{ width: "100%" }}>
           <div style={{ padding: "3rem 3.5rem" }}>
-            {/* Top Section */}
+            {/* HEADER */}
             <div className="journey-top-area-premium">
               <div className="premium-title-small">Your Selected Path</div>
 
@@ -70,26 +75,43 @@ const PathPage = () => {
               <div className="premium-back" onClick={() => navigate(-1)}>
                 ← Go Back
               </div>
+
+              {/* ✅ Partner-only */}
+              {isPartnerFlow && (
+                <button
+                  className="premium-create-step-btn"
+                  onClick={() => setOpenNewStep(true)}
+                >
+                  + Create Step
+                </button>
+              )}
             </div>
 
-            {/* Steps Section */}
+            {/* 🔥 STEP CREATOR */}
+{openNewStep && (
+  <div
+    className="global-drawer-overlay"
+    onClick={() => setOpenNewStep(false)}   // ✅ close on backdrop
+  >
+    <div
+      className="global-drawer-panel"
+      onClick={(e) => e.stopPropagation()}  // ✅ prevent close when clicking inside
+    >
+      <NewStep1
+        pathId={id || localStorage.getItem("selectedPathId")}
+        onSuccess={() => {
+          setOpenNewStep(false);
+          fetchPath();
+        }}
+      />
+    </div>
+  </div>
+)}
+
+            {/* STEPS */}
             <div className="steps-grid-premium">
               {loading ? (
-                Array(3)
-                  .fill("")
-                  .map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="step-card-premium"
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: 0.1 * i }}
-                    >
-                      <Skeleton width="60%" height={22} />
-                      <Skeleton width="95%" height={14} style={{ marginTop: 8 }} />
-                      <Skeleton width="92%" height={14} style={{ marginTop: 6 }} />
-                    </motion.div>
-                  ))
+                <Skeleton count={3} />
               ) : error ? (
                 <p className="premium-error">{error}</p>
               ) : steps.length === 0 ? (
@@ -97,18 +119,16 @@ const PathPage = () => {
               ) : (
                 steps.map((step, index) => (
                   <motion.div
-                    key={step._id || index}
+                    key={step._id}
                     className="step-card-premium"
                     initial={{ opacity: 0, y: 25 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
                   >
-                    <div className="step-number">
-                      <div className="bubble">{index + 1}</div>
-                    </div>
-
+                    <div className="bubble">{index + 1}</div>
                     <div className="step-title-premium">{step.name}</div>
-                    <div className="step-desc-premium">{step.description}</div>
+                    <div className="step-desc-premium">
+                      {step.description}
+                    </div>
                   </motion.div>
                 ))
               )}

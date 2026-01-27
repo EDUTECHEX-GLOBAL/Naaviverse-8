@@ -8,14 +8,14 @@ import { useCoinContextData } from "../../../context/CoinContext";
 import arrow from "../../../pages/accDashbaoard/arrow.svg";
 import trash from "../../../pages/accDashbaoard/trash.svg";
 
-const NewStep1 = ({ setpstep }) => {
+const NewStep1 = ({ pathId, onSuccess }) => {
   const userDetails = JSON.parse(localStorage.getItem("partner"));
-  const selectedPathId = localStorage.getItem("selectedPathId");
-  useEffect(() => {
-  if (!selectedPathId) {
-    toast.error("Please open a Path before creating a Step");
-  }
-}, [selectedPathId]);
+//  useEffect(() => {
+//   if (!pathId) {
+//     toast.error("Please open a Path before creating a Step");
+//   }
+// }, [pathId]);
+
 
   const { setaccsideNav, setispopular } = useStore();
   const {
@@ -27,7 +27,7 @@ const NewStep1 = ({ setpstep }) => {
   } = useCoinContextData();
 
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState("");
+ const [step, setStep] = useState("step1");
   const [stepForm, setStepForm] = useState({
     email: userDetails?.email,
     name: "",
@@ -192,7 +192,7 @@ const NewStep1 = ({ setpstep }) => {
 
   function reload() {
     setispopular(false);
-    setpstep(1);
+    
     setStepForm({
       email: userDetails?.email,
       name: "",
@@ -343,8 +343,14 @@ const NewStep1 = ({ setpstep }) => {
   }
 
 const createNewStep = () => {
-  if (!selectedPathId) {
+  if (!pathId) {
     toast.error("Please open a Path before creating a Step");
+    return;
+  }
+
+  const localUser = JSON.parse(localStorage.getItem("partner"));
+  if (!localUser?.email) {
+    toast.error("User not found");
     return;
   }
 
@@ -352,54 +358,56 @@ const createNewStep = () => {
 
   const payload = {
     ...stepForm,
+    email: localUser.email,
+    path_id: pathId,
 
-    // 🔥 NORMALIZE FIELD NAMES FOR BACKEND
     macro_description: stepForm.description,
     micro_description: stepForm.microDescription,
     nano_description: stepForm.nanoDescription,
-
-    // 🔥 REQUIRED OWNERSHIP
-    path_id: selectedPathId,
   };
 
-  // ❌ Remove frontend-only fields
   delete payload.microDescription;
   delete payload.nanoDescription;
 
+  console.log("🚀 STEP CREATE PAYLOAD:", payload);
+
   axios
-    .post(`/api/steps/add`, payload)
-    .then((response) => {
-      if (response?.data?.status) {
-        setLoading(false);
+    .post("/api/steps/add", payload)
+    .then((res) => {
+      if (res?.data?.status) {
         setStep("success");
-        myTimeout();
+        onSuccess?.(); // refresh PathPage
       } else {
-        setLoading(false);
-        toast.error(response?.data?.message || "Failed to create step");
+        toast.error(res?.data?.message || "Failed to create step");
       }
     })
-    .catch(() => {
-      setLoading(false);
+    .catch((err) => {
+      console.error(err);
       toast.error("Error creating step");
-    });
+    })
+    .finally(() => setLoading(false));
 };
 
 
 
-  useEffect(() => {
-    axios
-      .get(
-        `/api/services/get?productcreatoremail=${userDetails?.email}`
-      )
-      .then((response) => {
-        let result = response?.data?.data;
-        console.log(result, "all services result");
-        setAllServices(result);
-      })
-      .catch((error) => {
-        console.log(error, "error in fetching all services");
-      });
-  }, []);
+
+
+useEffect(() => {
+  if (!userDetails?.email) return;
+
+  // OPTIONAL: only fetch when services UI is enabled
+  if (!servicesToggle) return;
+
+  axios
+    .get(`/api/services/get?productcreatoremail=${userDetails.email}`)
+    .then((res) => {
+      setAllServices(res?.data?.data || []);
+    })
+    .catch(() => {
+      console.log("Services API not available – skipping");
+    });
+}, [servicesToggle]);
+
 
   const removeStep = (stepId) => {
     // Find the key corresponding to the value stepId

@@ -56,6 +56,8 @@ import PurchasePage from "./PurchasePage/index.jsx";
 import MenuNav from "../../components/MenuNav/index.jsx";
 import MyStepsAcc from "./MyStepsAcc/index.jsx";
 import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
+import PathPage from "../../components/Pathview/PathPage";
 
 
 const getPartner = () => {
@@ -63,14 +65,15 @@ const getPartner = () => {
     const raw = localStorage.getItem("partner");
 
     if (!raw || raw === "undefined" || raw === "null") {
-      return {};   // instead of null
+      return {};
     }
 
     return JSON.parse(raw);
   } catch {
-    return {};   // prevent redirect
+    return {};
   }
 };
+
 
 
 
@@ -136,6 +139,26 @@ const user = useSelector((state) => state.user);
 const [countryApiValue, setCountryApiValue] = useState([]);
 const didFetchCountriesRef = useRef(false);
 const [currentStepId, setCurrentStepId] = useState(null);
+ const location = useLocation();   // ✅ MUST COME FIRST
+
+  const isViewPathRoute =
+    location.pathname.startsWith("/dashboard/accountants/path/");
+
+  const [viewPathMode, setViewPathMode] = useState(isViewPathRoute);
+
+  useEffect(() => {
+    setViewPathMode(
+      location.pathname.startsWith("/dashboard/accountants/path/")
+    );
+  }, [location.pathname]);
+
+useEffect(() => {
+  const isPath =
+    location.pathname.startsWith("/dashboard/accountants/path/");
+  setViewPathMode(isPath);
+}, [location.pathname]);
+
+
 
 useEffect(() => {
   if (didFetchCountriesRef.current) return;  // ⛔ prevents 2nd execution
@@ -156,13 +179,6 @@ useEffect(() => {
 
   fetchCountries();
 }, []);
-
-
-
-
-
-
-
   //add compPlan
   const [addCompPlan, setAddCompPlan] = useState(false);
   const [addCompPlanStep, setAddCompPlanStep] = useState("step1");
@@ -302,7 +318,7 @@ const [isPurchaseLoading, setPurchaseLoading] = useState(false);
 const userDetails = getPartner();
 const partnerEmail = userDetails?.email || userDetails?.user?.email || null;
 const partnerToken = userDetails?.idToken || userDetails?.token || null;
-console.log("PARTNER VALUE:", userDetails);
+// console.log("PARTNER VALUE:", userDetails);
 
 
   const handleGrade = (item) => {
@@ -404,12 +420,14 @@ setShowBackupPathList(false);
   }, []);
 
 useEffect(() => {
-  const userDetails = JSON.parse(localStorage.getItem("partner"));
+const partner = getPartner();
 
-  if (!userDetails?.email) {
-    navigate("/login");
-    return;
-  }
+if (!partner?.email) {
+  console.warn("Partner missing — skipping protected calls");
+  return;
+}
+
+
 
   handleFollowerPerAccountants();
   handleGetCurrencies();
@@ -993,7 +1011,7 @@ const getAllServices = async () => {
 
   try {
     const { data } = await axios.get(
-      `/api/services/get?productcreatoremail=${userDetails.email}`
+      `/api/services/getservices?productcreatoremail=${userDetails.email}`
     );
 
     if (data?.status) {
@@ -1056,73 +1074,130 @@ useEffect(() => {
   }
 }, [crmMenu, servicesMenu, accsideNav]);
 
-  const myTimeout = () => {
-    setTimeout(reload, 3000);
-  };
+const myTimeout = () => {
+  setTimeout(reload, 2000);
+};
 
 function reload() {
   setServiceActionEnabled(false);
   setServiceActionStep(1);
   setSelectedService("");
   setUpdatedIcon("");
-  getAllServices();
+  // Force refresh services
+  const userDetails = JSON.parse(localStorage.getItem("partner"));
+  if (userDetails?.email) {
+    getAllServices(userDetails.email);
+  }
 }
 
 
-  const deleteService = () => {
+const deleteService = async () => {
+  const serviceId = selectedService?._id;
+  if (!serviceId) return;
+
+  try {
     setIsloading(true);
-    let obj = {
-      email: userDetails?.email,
-      token: userDetails?.idToken,
-      product_id: selectedService?.product_id,
-    };
-    // DeleteServiceFunction(obj).then((response) => {
-    //   let result = response?.data;
-    //   if (result?.status) {
-    //     setIsloading(false);
-    //     setServiceActionStep(3);
-    //     myTimeout();
-    //   } else {
-    //     setIsloading(false);
-    //   }
-    // });
-    axios.delete(`/api/services/delete/${selectedService?._id}`).then(({ data }) => {
-      if (data.status) {
-        setServiceActionEnabled(false)
-        setIsloading(false);
-        resetpop();
-        getAllServices()
-      }
-    })
+
+    await axios.delete(`/api/services/delete/${serviceId}`, {
+      headers: {
+        Authorization: `Bearer ${userDetails?.idToken}`,
+        email: userDetails?.email,
+      },
+    });
+
+    // If request succeeds (200), consider delete successful
+    setServiceActionEnabled(false);
+    resetpop();
+    getAllServices();
+  } catch (error) {
+    console.error("Delete service failed:", error);
+  } finally {
+    setIsloading(false);
+  }
+};
+
+
+const changeServiceIcon = () => {
+  // Debug log
+  console.log("Starting icon update:", {
+    serviceId: selectedService?._id,
+    serviceName: selectedService?.name,
+    currentIcon: selectedService?.product_icon,
+    newIcon: updatedIcon
+  });
+
+  if (!updatedIcon || !selectedService?._id) {
+    toast.error("Please upload an image first");
+    return;
+  }
+
+  setIsloading(true);
+
+  // Get user details
+  const userDetails = JSON.parse(localStorage.getItem("partner"));
+  const payload = {
+    icon: updatedIcon,
+    email: userDetails?.email
   };
 
-  const changeServiceIcon = () => {
-    if (!updatedIcon || !selectedService?._id) {
-        console.error("Missing required fields: updatedIcon or _id");
-        return;
-    }
+  console.log("Sending payload:", payload);
+  console.log("Service ID:", selectedService._id);
 
-    setIsloading(true);
-
-    axios
-        .put(`/api/services/icon/${selectedService._id}`, { icon: updatedIcon }) // Use _id instead of product_id
-        .then((response) => {
-            let result = response?.data;
-            console.log(result, "changeServiceIcon result");
-
-            if (result?.status) {
-                setServiceActionStep(6);
-                myTimeout();
-            } else {
-                console.error("Failed to update icon:", result?.message);
-            }
-        })
-        .catch((error) => {
-            console.error("Error updating service icon:", error);
-        })
-        .finally(() => {
-            setIsloading(false);
+  // Try updating with product_icon field
+  axios
+    .put(`/api/services/update/${selectedService._id}`, {
+      ...payload,
+      product_icon: updatedIcon  // Use product_icon field
+    })
+    .then((response) => {
+      console.log("API Response:", response.data);
+      
+      if (response.data?.status) {
+        toast.success("Icon updated successfully!");
+        setServiceActionStep(6);
+        myTimeout();
+      } else {
+        // Try alternative endpoint
+        return axios.put(`/api/services/updateIcon`, {
+          product_id: selectedService._id,
+          product_icon: updatedIcon,
+          email: userDetails?.email
         });
+      }
+    })
+    .then((response) => {
+      if (response?.data?.status) {
+        toast.success("Icon updated successfully!");
+        setServiceActionStep(6);
+        myTimeout();
+      } else {
+        toast.error(response?.data?.message || "Failed to update icon");
+      }
+    })
+    .catch((error) => {
+      console.error("Update error:", error);
+      console.error("Error response:", error.response?.data);
+      
+      // Try one more endpoint as fallback
+      axios.put(`/api/services/icon/${selectedService._id}`, { 
+        product_icon: updatedIcon 
+      })
+      .then(res => {
+        if (res.data?.status) {
+          toast.success("Icon updated!");
+          setServiceActionStep(6);
+          myTimeout();
+        } else {
+          toast.error("All update attempts failed");
+        }
+      })
+      .catch(err => {
+        toast.error("Could not update icon. Check console.");
+      });
+    })
+    .finally(() => {
+      setIsloading(false);
+    });
 };
 
   const getAppsforUser = () => {
@@ -1295,29 +1370,7 @@ const handleSavePath = () => {
   //     });
   // }, []);
 
-useEffect(() => {
-  const local = JSON.parse(localStorage.getItem("partner"));
-  const email = user?.email || local?.email;
 
-  console.log("EMAIL USED:", email);
-
-  if (!email) {
-    console.log("No email found — cannot fetch steps");
-    return;
-  }
-
-  const fetchUserSteps = async () => {
-    try {
-      const res = await axios.get(`/api/steps/user/${email}`);
-      console.log("Fetched user steps:", res.data.data);
-      setUserSteps(res.data.data);
-    } catch (error) {
-      console.log("Error fetching user steps:", error);
-    }
-  };
-
-  fetchUserSteps();
-}, [user]);
 
 
 const getCounsellorEmail = () => {
@@ -1415,8 +1468,6 @@ if (!finalEmail) {
   grade_avg: gradeAvg,
   financialSituation: finance,
   personality: personality,
-  city: pathSteps.city,
-  country: pathSteps.country,
 },
 
 feature_coordinates: {
@@ -1425,6 +1476,8 @@ feature_coordinates: {
   destination_institution: pathSteps.destination_institution,
   path_type: pathSteps.path_type || "education",
   path_cat: pathSteps.path_cat || "K12",
+  city: pathSteps.city,
+  country: pathSteps.country,
 },
 
     program: pathSteps.program,
@@ -1460,20 +1513,35 @@ feature_coordinates: {
   setCreatingPath(true);
 
   // 🔟 Send request
-  axios
-    .post(`http://localhost:4545/api/paths/add`, payload)
-    .then((response) => {
-      console.log("✅ API RESPONSE:", response.data);
+axios
+  .post(`http://localhost:4545/api/paths/add`, payload)
+  .then((response) => {
+    console.log("✅ API RESPONSE:", response.data);
+
+    if (response.data?.status) {
+      const createdPathId = response.data.data._id;
+
+      // 1️⃣ Save path id (optional)
+      localStorage.setItem("selectedPathId", createdPathId);
+
+      // 2️⃣ Close create-path UI first
       setCreatingPath(false);
 
-      if (response.data.status) {
-        window.location.reload();
-      }
-    })
-    .catch((err) => {
-      console.log("❌ API ERROR:", err.response?.data || err);
-      setCreatingPath(false);
-    });
+      // 3️⃣ Switch dashboard mode to VIEW_PATH
+      setaccsideNav("VIEW_PATH");
+
+      // 4️⃣ Navigate to view path
+      setTimeout(() => {
+        navigate(`/dashboard/accountants/path/${createdPathId}`, {
+          replace: true,
+        });
+      }, 0);
+    }
+  })
+  .catch((err) => {
+    console.log("❌ API ERROR:", err.response?.data || err);
+    setCreatingPath(false);
+  });
 };
   // const removeStep = (stepId) => {
   //   const updatedSelectedSteps = selectedSteps.filter(
@@ -1676,6 +1744,38 @@ let obj = {
     }
   }
 
+  const getBillingInfo = (billing_cycle = {}) => {
+  if (billing_cycle?.monthly?.price !== undefined) {
+    return {
+      type: "Monthly",
+      price: billing_cycle.monthly.price,
+      coin: billing_cycle.monthly.coin || "-"
+    };
+  }
+
+  if (billing_cycle?.annual?.price !== undefined) {
+    return {
+      type: "Annual",
+      price: billing_cycle.annual.price,
+      coin: billing_cycle.annual.coin || "-"
+    };
+  }
+
+  if (billing_cycle?.lifetime?.price !== undefined) {
+    return {
+      type: "One Time",
+      price: billing_cycle.lifetime.price,
+      coin: billing_cycle.lifetime.coin || "-"
+    };
+  }
+
+  return {
+    type: "N/A",
+    price: "-",
+    coin: "-"
+  };
+};
+
   const handleDownload = (type) => {
     // Create a temporary anchor element
     const link = document.createElement('a');
@@ -1703,15 +1803,21 @@ let obj = {
 
 
   return (
-    <div style={{ overflow: "hidden" }}>
+<div style={{ height: "100vh", overflow: "hidden" }}>
+
       <div className="dashboard-main">
         <div className="dashboard-body">
           <div onClick={() => setShowDrop(false)}>
             <AccDashsidebar />
           </div>
-          <div className="dashboard-screens" onClick={() => resetpop()}>
+         <div className="dashboard-screens">
+            
             <div style={{ height: "100%" }}>
-              {accsideNav === "CRM" ? (
+  {viewPathMode ? (
+      <PathPage />
+
+              ):
+              accsideNav === "CRM" ? (
                 <>
                   <MenuNav
                     showDrop={showDrop}
@@ -2436,95 +2542,66 @@ let obj = {
                     </div>
                     <div>
                       <>
-                        {servicesMenu === "Services" ? (
-                          <>
-                            <div
-                              className="crm-follow-tab"
-                              style={{ padding: "10px 35px" }}
-                            >
-                              <div className="crm-follow-col2">Name</div>
-                              <div className="crm-follow-col2">
-                                Billing Frequency
-                              </div>
-                              <div className="crm-follow-col2">
-                                Billing Amount
-                              </div>
-                              <div className="crm-follow-col2">
-                                Currency
-                              </div>
-                            </div>
-                            <>
+                       {servicesMenu === "Services" ? (
+  <>
+    <div
+      className="crm-follow-tab"
+      style={{ padding: "10px 35px" }}
+    >
+      <div className="crm-follow-col2">Name</div>
+      <div className="crm-follow-col2">
+        Billing Frequency
+      </div>
+      <div className="crm-follow-col2">
+        Billing Amount
+      </div>
+      <div className="crm-follow-col2">
+        Currency
+      </div>
+    </div>
+    
+    {/* Add style to enable scrolling */}
+    <div className="services-table-wrapper" style={{ 
+      maxHeight: "calc(100vh - 200px)", // Adjust this value as needed
+      overflowY: "auto" 
+    }}>
 {servicesAcc.length > 0 ? (
-  <div className="follow-data-main">
-    {servicesAcc.map((each, i) => (
-      <div
-        key={each._id || i}
-        className="follower-box"
-        style={{
-          background:
-            selectedFollower === each
-              ? "rgba(241, 241, 241, 0.5)"
-              : "",
-          padding: "22px 35px",
-          width: "100%",
-        }}
-        onClick={() => {
-          setServiceActionEnabled(true);
-          setSelectedService(each);
-          setServiceActionStep(1);
-          setSelectedFollower(each);
-        }}
-      >
-        <div className="rowtext">{each?.name}</div>
-        <div className="rowtext">
-          {each?.billing_cycle?.monthly
-            ? "Monthly"
-            : each?.billing_cycle?.annual
-            ? "Annual"
-            : each?.billing_cycle?.lifetime
-            ? "Lifetime"
-            : "N/A"}
-        </div>
-        <div className="rowtext">
-          {each?.billing_cycle?.lifetime?.price ||
-            each?.billing_cycle?.monthly?.price ||
-            each?.billing_cycle?.annual?.price}
-        </div>
-        <div className="rowtext">
-          {each?.billing_cycle?.lifetime?.coin ||
-            each?.billing_cycle?.monthly?.coin ||
-            each?.billing_cycle?.annual?.coin}
-        </div>
-      </div>
-    ))}
-  </div>
-) : isLoading ? (
-  <div className="follow-data-main">
-    {[1, 2, 3, 4, 5, 6].map((_, i) => (
-      <div className="follower-box" key={i}>
-        <Skeleton height={20} />
-      </div>
-    ))}
+  <div className="services-list">
+    {servicesAcc
+      .filter(each =>
+        each?.name?.toLowerCase().includes(search.toLowerCase())
+      )
+      .map((each) => {
+        const billing = getBillingInfo(each?.billing_cycle);
+
+        return (
+          <div
+            key={each._id}   // ✅ FIXED
+            className={`service-row ${
+              selectedFollower === each ? "active" : ""
+            }`}
+            onClick={() => {
+              setServiceActionEnabled(true);
+              setSelectedService(each);
+              setServiceActionStep(1);
+              setSelectedFollower(each);
+            }}
+          >
+            <div className="service-cell name">{each?.name}</div>
+            <div className="service-cell">{billing.type}</div>
+            <div className="service-cell">{billing.price}</div>
+            <div className="service-cell">{billing.coin}</div>
+          </div>
+        );
+      })}
   </div>
 ) : (
-  <div className="services-main">
-    <div
-      style={{
-        width: "100%",
-        height: "200px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontWeight: "600",
-        fontSize: "1.2rem",
-      }}
-    >
-      Coming Soon
-    </div>
-  </div>
+  <div className="services-empty">Coming Soon</div>
 )}
 
-                            </>
+</div>
+
+
                           </>
                           //   <div className="service-body">
                           //     <div className="service-body-left">
@@ -3069,7 +3146,7 @@ let obj = {
 
 )
 }: (
-                <>
+                {/* <>
                   <MenuNav
                     showDrop={showDrop}
                     setShowDrop={setShowDrop}
@@ -3096,7 +3173,7 @@ let obj = {
                       Coming Soon
                     </div>
                   </div>
-                </>
+                </> */}
               )
             </div>
           </div>
@@ -4814,12 +4891,12 @@ let obj = {
             </>
           )}
 
-          {serviceActionStep === 3 && (
-            <div className="successMsg">
-              You have successfully deleted {selectedService?.product_name}. You
-              will be redirected to the updated services list.
-            </div>
-          )}
+{serviceActionStep === 3 && (
+  <div className="successMsg">
+    You have successfully deleted {selectedService?.name}. You
+    will be redirected to the updated services list.
+  </div>
+)}
 
           {serviceActionStep === 4 && (
             <>
@@ -4840,14 +4917,21 @@ let obj = {
                 style={{ height: "calc(100% - 8.5rem)" }}
               >
                 <div className="subbTxt">What do you want to edit?</div>
-                <div
-                  className="each-action1"
-                  onClick={() => {
-                    setServiceActionStep(5);
-                  }}
-                >
-                  Service Icon
-                </div>
+<div
+  className="each-action1"
+  onClick={() => {
+    console.log("=== SERVICE DATA ===");
+    console.log("Full object:", selectedService);
+    console.log("Available properties:", Object.keys(selectedService || {}));
+    console.log("_id:", selectedService?._id);
+    console.log("name:", selectedService?.name);
+    console.log("product_icon:", selectedService?.product_icon);
+    console.log("icon (if exists):", selectedService?.icon);
+    setServiceActionStep(5);
+  }}
+>
+  Service Icon
+</div>
               </div>
               <div className="stepBtns" style={{ height: "4.5rem" }}>
                 <div
@@ -4862,108 +4946,120 @@ let obj = {
             </>
           )}
 
-          {serviceActionStep === 5 && (
-            <>
-              <div className="head-txt">
-                <div>Edit Service Icon</div>
-                <div
-                  onClick={() => {
-                    setServiceActionEnabled(false);
-                    setServiceActionStep(1);
-                  }}
-                  className="close-div"
-                >
-                  <img src={close} alt="" />
-                </div>
-              </div>
+{serviceActionStep === 5 && (
+  <>
+    <div className="head-txt">
+      <div>Edit Service Icon</div>
+      <div
+        onClick={() => {
+          setServiceActionEnabled(false);
+          setServiceActionStep(1);
+        }}
+        className="close-div"
+      >
+        <img src={close} alt="" />
+      </div>
+    </div>
 
-              <div
-                className="overall-div"
-                style={{ height: "calc(100% - 14rem)" }}
-              >
-                <div
-                  className="each-action1"
-                  style={{ border: "none", justifyContent: "center" }}
-                >
-                  <div style={{ height: "120px", width: "120px" }}>
-                    <img
-                      src={selectedService?.icon}
-                      alt=""
-                      style={{ height: "100%", width: "100%" }}
-                    />
-                  </div>
-                </div>
-                <div className="line-container">
-                  <div className="linee"></div>
-                  <div className="new-txt">New</div>
-                  <div className="linee"></div>
-                </div>
-                <div
-                  className="each-action1"
-                  style={{ border: "none", justifyContent: "center" }}
-                >
-                  <ImageUploadDivProfilePic
-                    setFunc={setUpdatedIcon}
-                    funcValue={updatedIcon}
-                  />
-                </div>
-              </div>
-
-              <div
-                className="stepBtns"
-                style={{
-                  height: "8rem",
-                  gap: "1rem",
-                  flexDirection: "column",
-                  padding: "0",
-                }}
-              >
-                <div
-                  style={{
-                    opacity: updatedIcon ? "1" : "0.25",
-                    cursor: updatedIcon ? "pointer" : "not-allowed",
-                    background: "#59A2DD",
-                    height: "3.5rem",
-                  }}
-                  onClick={() => {
-                    if (updatedIcon) {
-                      changeServiceIcon();
-                    }
-                  }}
-                >
-                  Complete Update
-                </div>
-                <div
-                  style={{
-                    background: "#1F304F",
-                    height: "3.5rem",
-                  }}
-                  onClick={() => {
-                    setServiceActionStep(4);
-                    setUpdatedIcon("");
-                  }}
-                >
-                  Go Back
-                </div>
-              </div>
-
-              {isloading && (
-                <div
-                  className="loading-component"
-                  style={{
-                    top: "0",
-                    left: "0",
-                    width: "100%",
-                    height: "100%",
-                    position: "absolute",
-                    display: "flex",
-                  }}
-                >
-                  <LoadingAnimation1 icon={lg1} width={200} />
-                </div>
-              )}
-            </>
+    <div
+      className="overall-div"
+      style={{ height: "calc(100% - 14rem)" }}
+    >
+      <div
+        className="each-action1"
+        style={{ border: "none", justifyContent: "center" }}
+      >
+        <div style={{ height: "120px", width: "120px", border: "1px solid #e7e7e7", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {selectedService?.product_icon ? (
+            <img
+              src={selectedService.product_icon}
+              alt="Current Icon"
+              style={{ 
+                height: "100%", 
+                width: "100%",
+                objectFit: "contain",
+                borderRadius: "10px" 
+              }}
+            />
+          ) : (
+            <div style={{ color: "#666", fontSize: "14px" }}>No Icon</div>
           )}
+        </div>
+      </div>
+      <div className="line-container">
+        <div className="linee"></div>
+        <div className="new-txt">New</div>
+        <div className="linee"></div>
+      </div>
+      <div
+        className="each-action1"
+        style={{ border: "none", justifyContent: "center" }}
+      >
+        <ImageUploadDivProfilePic
+          setFunc={setUpdatedIcon}
+          funcValue={updatedIcon}
+        />
+      </div>
+    </div>
+
+    <div
+      className="stepBtns"
+      style={{
+        height: "8rem",
+        gap: "1rem",
+        flexDirection: "column",
+        padding: "0",
+      }}
+    >
+      <div
+        style={{
+          opacity: updatedIcon && !isloading ? "1" : "0.25",
+          cursor: updatedIcon && !isloading ? "pointer" : "not-allowed",
+          background: "#59A2DD",
+          height: "3.5rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        onClick={() => {
+          if (updatedIcon && !isloading) {
+            changeServiceIcon();
+          }
+        }}
+      >
+        {isloading ? "Updating..." : "Complete Update"}
+      </div>
+      <div
+        style={{
+          background: "#1F304F",
+          height: "3.5rem",
+        }}
+        onClick={() => {
+          setServiceActionStep(4);
+          setUpdatedIcon("");
+        }}
+      >
+        Go Back
+      </div>
+    </div>
+
+    {isloading && (
+      <div
+        className="loading-component"
+        style={{
+          top: "0",
+          left: "0",
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          display: "flex",
+        }}
+      >
+        <LoadingAnimation1 icon={lg1} width={200} />
+      </div>
+    )}
+  </>
+)}
 
           {serviceActionStep === 6 && (
             <div className="successMsg">

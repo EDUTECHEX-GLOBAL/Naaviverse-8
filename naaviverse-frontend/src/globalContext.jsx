@@ -38,13 +38,22 @@ export const GlobalContexProvider = ({ children }) => {
   const [categories, setCategories] = useState([]);
   const [refetchCategories, setRefetchCategories] = useState(false);
 
-  const getCategories = () => {
-    axios.get("http://localhost:4545/api/categories").then((res) => {
-      if (res.data.status) {
-        setCategories(res.data.categories);
-      }
-    });
-  };
+const getCategories = async () => {
+  try {
+    const res = await axios.get("http://localhost:4545/api/categories");
+
+    if (!res?.data?.status || !Array.isArray(res.data.categories)) {
+      setCategories([]);
+      return;
+    }
+
+    setCategories(res.data.categories);
+  } catch (err) {
+    console.error("Categories API error:", err);
+    setCategories([]);
+  }
+};
+
 
   useEffect(() => {
     getCategories();
@@ -56,22 +65,32 @@ export const GlobalContexProvider = ({ children }) => {
   const [allCurrencies, setAllCurrencies] = useState([]);
   const [currencyLoading, setCurrencyLoading] = useState(false);
 
-  const loadCurrencies = () => {
-    setCurrencyLoading(true);
-    axios
-      .get("http://localhost:4545/api/currencies")
-      .then((res) => {
-        if (res.data.status) {
-          const formatted = res.data.currencies.map((c) => ({
-            coinName: c.code,
-            coinSymbol: c.code,
-            fullName: c.currency,
-          }));
-          setAllCurrencies(formatted);
-        }
-      })
-      .finally(() => setCurrencyLoading(false));
-  };
+const loadCurrencies = async () => {
+  setCurrencyLoading(true);
+
+  try {
+    const res = await axios.get("http://localhost:4545/api/currencies");
+
+    if (!res?.data?.status || !Array.isArray(res.data.currencies)) {
+      setAllCurrencies([]);
+      return;
+    }
+
+    const formatted = res.data.currencies.map((c) => ({
+      coinName: c.code,
+      coinSymbol: c.code,
+      fullName: c.currency,
+    }));
+
+    setAllCurrencies(formatted);
+  } catch (err) {
+    console.error("Currencies API error:", err);
+    setAllCurrencies([]);
+  } finally {
+    setCurrencyLoading(false);
+  }
+};
+
 
   useEffect(() => {
     loadCurrencies();

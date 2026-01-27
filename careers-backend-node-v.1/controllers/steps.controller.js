@@ -8,7 +8,6 @@ const mongoose = require('mongoose');
 
 const addStep = async (req, res) => {
   try {
-    // 🔥 FLEXIBLE path_id (body OR query)
     const pathId = req.body.path_id || req.query.path_id;
 
     if (!pathId) {
@@ -27,7 +26,7 @@ const addStep = async (req, res) => {
       });
     }
 
-    let createStep = {
+    const createStep = {
       email: req.body.email,
       name: req.body.name,
       description: req.body.description,
@@ -63,24 +62,41 @@ const addStep = async (req, res) => {
       nanoservices: req.body.nanoservices || [],
 
       step_order: req.body.step_order,
-      path_id: pathId, // ✅ FINAL FIX
+      path_id: pathId,
       status: req.body.status || "active",
     };
 
-    let step = await stepModel.create(createStep);
+    // 1️⃣ Create step
+    const step = await stepModel.create(createStep);
+
+    // 2️⃣ 🔥 LINK STEP TO PATH
+    await pathModel.findByIdAndUpdate(
+      pathId,
+      {
+        $push: {
+          the_ids: {
+            step_id: step._id,
+          },
+        },
+      },
+      { new: true }
+    );
 
     return res.json({
       status: true,
-      message: "Step created",
+      message: "Step created and linked to path",
       data: step,
     });
+
   } catch (error) {
+    console.error("addStep error:", error);
     return res.json({
       status: false,
       message: error.message,
     });
   }
 };
+
 
 
 
@@ -113,7 +129,8 @@ const getSteps = async (req, res) => {
 
     const steps = await stepModel.aggregate([
       { $match: filter },
-      { $sort: { createdAt: -1 } },
+     { $sort: { createdAt: 1 } }, // ✅ CORRECT
+
 
       {
         $lookup: {
@@ -319,36 +336,41 @@ const restoreStep = async (req, res) => {
     })
 }
 
-const getActiveSteps = async (req, res) => {
+const getStepsByPartner = async (req, res) => {
   try {
-    // ✅ support both /user/:email and ?email=
     const email = req.params.email || req.query.email;
+    const status = req.query.status; // active | inactive | all
 
     if (!email) {
       return res.status(400).json({
         status: false,
-        message: "Email is required.",
+        message: "Email is required",
       });
     }
 
-    const steps = await stepModel.find({
-      email,
-      status: "active",
-    });
+    let filter = { email };
 
-    return res.status(200).json({
+    if (status && status !== "all") {
+      filter.status = status;
+    }
+
+    const steps = await stepModel.find(filter).sort({ createdAt: -1 });
+
+    return res.json({
       status: true,
-      message: "Active steps retrieved successfully.",
+      total: steps.length,
       data: steps,
     });
+
   } catch (error) {
-    console.error("Error fetching active steps:", error);
+    console.error("getStepsByPartner error:", error);
     return res.status(500).json({
       status: false,
-      message: "Internal server error.",
+      message: "Server error",
     });
   }
 };
+
 
 const getStepById = async (req, res) => {
     try {
@@ -787,7 +809,7 @@ module.exports = {
     updateStep,
     deleteStep,
     restoreStep,
-    getActiveSteps,
+    getStepsByPartner,
     getStepById,
     editStep,
     addServicesToStep,
@@ -796,5 +818,5 @@ module.exports = {
     getServicesOfStep,
     repairStepServices,
     getAllServicesForRemove ,
-     bulkUploadSteps,
+    bulkUploadSteps,
 }

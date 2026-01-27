@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./loginpage.scss";
+
 import lg1 from "../../static/images/login/lg1.svg";
 import lg2 from "../../static/images/login/lg2.svg";
 import google from "../../static/images/login/google.svg";
@@ -438,16 +439,26 @@ const handleLogin = () => {
                     <div className="login-btn" onClick={handleLogin}>
                         Login
                     </div>
-                    <div className="google-btn" onClick={() => navigate(`/register?role=${loginType}`)}>
-                        <div>Register With Email</div>
-                    </div>
+                   <div
+  className="google-btn"
+  onClick={() => {
+    console.log("REGISTER CLICKED");
+    navigate(`/register?role=${loginType}`);
+
+  }}
+>
+  Register With Email
+</div>
+
+
                 </div>
             )}
-            {isLoading && (
-                <div className="otclogo">
-                    <img className="otclogoimg" src={loadinglogo} alt="" />
-                </div>
-            )}
+           {isLoading && (
+  <div className="otclogo">
+    <img className="otclogoimg" src={loadinglogo} alt="" />
+  </div>
+)}
+
         </div>
     );
 };

@@ -6,7 +6,7 @@ const { verifyToken } = require("../middlewares/authJwt");
 
 router.post("/add", stepsController.addStep);
 router.get("/get", stepsController.getSteps);
-router.put("/update/:id", [verifyToken], stepsController.updateStep);
+router.put("/update/:id", stepsController.updateStep);
 router.delete("/delete/:id", stepsController.deleteStep);
 router.put("/restore/:id", [verifyToken], stepsController.restoreStep);
 // ⭐ BULK UPLOAD (KEEP BEFORE dynamic routes)
@@ -14,10 +14,12 @@ router.post("/bulk", stepsController.bulkUploadSteps);
 console.log("bulkUploadSteps =>", stepsController.bulkUploadSteps);
  
 
-router.get("/active", stepsController.getActiveSteps);
+
 
 // ⭐ ADD THIS — MUST BE ABOVE /:id ⭐
-router.get("/user/:email", stepsController.getActiveSteps);
+router.get("/partner", stepsController.getStepsByPartner);
+
+
 
 router.get("/:id", stepsController.getStepById);
 

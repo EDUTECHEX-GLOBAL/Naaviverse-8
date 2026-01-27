@@ -2,11 +2,12 @@
 @import "../../static/scss/mixin";
 
 .dashboard-body {
-  height: calc(100vh);
+  height: 100vh;
   width: 100vw;
   display: flex;
   text-transform: capitalize !important;
-  overflow: hidden;
+  overflow-x: hidden;   // ✅ keep horizontal clean
+  overflow-y: auto;     // ✅ ALLOW vertical scroll
   position: relative;
 }
 
@@ -123,11 +124,18 @@
 }
 
 .account-left {
-  width: calc(60vw);
+  width: 60vw;
   height: calc(100vh - 70px);
+
+  display: flex;              // ✅ REQUIRED
+  flex-direction: column;     // ✅ REQUIRED
+
   background-color: #ffffff;
-  padding: 0px 40px 40px 30px;
+  padding: 0 40px 40px 30px;
+
+  overflow: hidden;           // ✅ prevents double scroll
 }
+
 
 .account-right {
   border-left: 0.5px solid #e5e5e5;
@@ -154,15 +162,133 @@
   @include btn-animate(#1f304f);
 }
 
-.all-account {
-  height: 87%;
-  overflow-y: scroll;
-  width: calc(60vw - 70px);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  padding-bottom: 40px;
+/* Partner → My Services list wrapper */
+
+.services-table-wrapper {
+  height: 100%;
+  overflow-y: auto;
+  padding: 0 35px; // Match your other content padding
 }
+
+.services-list {
+  display: table;
+  width: 100%;
+}
+
+.service-row {
+  display: table-row;
+  border-bottom: 1px solid #E5E5E5;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: rgba(241, 241, 241, 0.5);
+  }
+  
+  &.active {
+    background-color: rgba(241, 241, 241, 0.5);
+  }
+}
+
+.service-cell {
+  display: table-cell;
+  padding: 22px 10px;
+  vertical-align: middle;
+  
+  &.name {
+    font-weight: 600;
+  }
+}
+
+.services-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* List */
+.services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Row */
+.service-row {
+  display: grid;
+  grid-template-columns: 3fr 2fr 2fr 1fr;
+  align-items: center;
+
+  padding: 18px 32px;
+  border-radius: 14px;
+
+  background: linear-gradient(
+    90deg,
+    #ffffff 0%,
+    #f6fbff 100%
+  );
+
+  border: 1px solid #e6eef6;
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+/* Hover */
+.service-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(31, 48, 79, 0.12);
+  border-color: #4fb6d4;
+}
+
+/* Active */
+.service-row.active {
+  background: linear-gradient(
+    90deg,
+    rgba(79, 182, 212, 0.18),
+    rgba(47, 127, 176, 0.18)
+  );
+  border-color: #2f7fb0;
+}
+
+/* Cells */
+.service-cell {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f304f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Name emphasis */
+.service-cell.name {
+  font-weight: 600;
+  color: #0f1f3a;
+}
+
+/* Empty state */
+.services-empty {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #1f304f;
+}
+
+.all-account {
+  height: calc(100vh - 180px);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+}
+
 
 .each-account {
   width: 48%;
@@ -538,45 +664,29 @@
   width: 20px;
 }
 
+/* Partner → My Services single row */
 .each-service {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  cursor: pointer;
+  display: grid;
+  grid-template-columns: 3fr 2fr 2fr 1fr;
+  align-items: center;
+
   background: #ffffff;
-  border: 1px solid #e5e5e5;
-  border-radius: 10px;
-  padding: 20px;
-  margin-right: 35px;
-  width: 400px;
-  height: 31vh;
+  border-bottom: 0.5px solid #e5e5e5;
+  border-radius: 0;
+
+  padding: 18px 24px;
+  width: 100%;
+  height: auto;
+  margin: 0;
+
+  cursor: pointer;
+  transition: background 0.2s ease;
 
   &:hover {
-    background-color: #f5f5f5;
-
-    .check1-text {
-      color: #182542;
-      display: inline-flex;
-      margin-left: 9px;
-      margin-top: 5px;
-      font-size: 15px;
-      font-weight: 700;
-    }
-
-    .clickarrow-img {
-      margin-left: 0.2rem;
-      margin-top: 0.3rem;
-      width: 20px;
-    }
-
-    .zoom1 {
-      background: #fffbf0;
-      height: 40px;
-      text-align: center;
-      width: 120px;
-    }
+    background: #f7f9fc;
   }
 }
+
 
 .serviceby-box {
   display: flex;
@@ -899,80 +1009,99 @@
 }
 
 .crm-follow-tab {
+  display: grid;
+  grid-template-columns: 3fr 2fr 2fr 1fr;
+  align-items: center;
+
   background: linear-gradient(90deg, #29449D 4.23%, #47B4D5 100%);
-  // background: #1f304f;
   font-weight: 600;
   font-size: 13px;
-  display: flex;
-  align-items: center;
   color: #ffffff;
-  padding: 10px 4.5vw;
+
+  padding: 10px 35px;
   margin-bottom: 20px;
 }
 
-.crm-follow-col1,
-.follower-details {
-  width: 70%;
-  display: flex;
-  align-items: center;
+.rowtext {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.crm-follow-tab > div {
+  white-space: nowrap;
 }
 
-.crm-follow-col2,
-.follow-time {
-  width: 30%;
-}
 
 .follower-box {
-  font-weight: 600;
-  font-size: 13px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 3fr 2fr 2fr 1fr;
   align-items: center;
-  color: #ffffff;
-  padding: 22px 2.5vw;
-  border-radius: 10px;
-  width: 75vw;
-  margin: auto;
-  transition: all ease 0.3s;
+
+  padding: 22px 35px;   // 🔥 THIS WAS MISSING
+
+  border-radius: 12px;
+  background: linear-gradient(90deg, #2f7fb0, #4fb6d4);
+  color: #fff;
+
   cursor: pointer;
+  transition: all 0.2s ease;
 
   &:hover {
-    transform: scale(1.05);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
   }
 }
 
-.follower-mail {
-  margin-left: 10px;
-  font-size: 18px;
-  line-height: 22px;
-  display: flex;
-  align-items: center;
-  color: #1f304f;
+.rowtext {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.follower-name {
-  margin-top: 5px;
-  margin-left: 10px;
-  font-weight: 400;
-  font-size: 12px;
-  line-height: 22px;
-  display: flex;
-  align-items: center;
-  color: #1f304f;
-}
 
-.follow-time {
-  font-weight: 600;
-  font-size: 18px;
-  line-height: 22px;
-  display: flex;
-  align-items: center;
-  color: #1f304f;
-}
+
+// .follower-mail {
+//   margin-left: 10px;
+//   font-size: 18px;
+//   line-height: 22px;
+//   display: flex;
+//   align-items: center;
+//   color: #1f304f;
+// }
+
+// .follower-name {
+//   margin-top: 5px;
+//   margin-left: 10px;
+//   font-weight: 400;
+//   font-size: 12px;
+//   line-height: 22px;
+//   display: flex;
+//   align-items: center;
+//   color: #1f304f;
+// }
+
+// .follow-time {
+//   font-weight: 600;
+//   font-size: 18px;
+//   line-height: 22px;
+//   display: flex;
+//   align-items: center;
+//   color: #1f304f;
+// }
 
 .follow-data-main {
-  height: calc(100vh - 189px);
-  overflow-y: scroll;
+  flex: 1;                    // ✅ take remaining height
+  overflow-y: auto;           // ✅ enable scroll
+  padding-right: 6px;
 }
+
+
 
 .acc-popular {
   padding: 20px 35px;
@@ -1006,7 +1135,7 @@
     .each-acc-addpath-field {
       width: 100%;
       display: flex;
-      flex-direction: column;
+      flex-direction: column; 
       gap: 1.5rem;
 
       .each-acc-addpath-field-name {
@@ -1859,24 +1988,25 @@ input[type="file"] {
 }
 
 .service-body {
-  background-color: #fff;
-  height: calc(100vh - 133.2px);
-  width: 80vw;
+  flex: 1;
+  height: 100%;
   display: flex;
 }
 
+
+/* My Services → List container */
 .service-body-left {
   background-color: #fff;
   height: calc(100vh - 133.2px);
-  // width: calc(60vw - 0.5px);
   width: 80vw;
-  overflow-y: scroll;
-  padding: 10px 2.5vw 35px 2.5vw;
+
+  padding: 0;
+
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  gap: 0 5%;
+  flex-direction: column;
+  gap: 0;
 }
+
 
 .each-service-map {
   // width: 47%;
@@ -1903,16 +2033,29 @@ input[type="file"] {
   width: 40px;
 }
 
+/* My Services → Single Service Row */
 .each-service-map {
+  display: grid;
+  grid-template-columns: 3fr 2fr 2fr 1fr;
+  align-items: center;
+
   background: #ffffff;
-  border: 1px solid #e5e5e5;
-  border-radius: 10px;
-  padding: 25px;
-  margin-top: 35px;
-  min-height: 250px;
+  border-bottom: 0.5px solid #e5e5e5;
+  border-radius: 0;
+
+  padding: 18px 24px;
+  margin: 0;
+  height: auto;
+  min-height: unset;
   position: relative;
-  height: 250px;
+
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: #f7f9fc;
+  }
 }
+
 
 .dot-box {
   display: flex;
@@ -3053,12 +3196,6 @@ input[type="file"] {
   color: #fff;
 }
 
-.optionCardFullWrapper {
-  // display: flex;
-  // justify-content: space-between;
-  // align-items: center;
-  // margin-top: 1rem;
-}
 
 .optionCardFull {
   border-radius: 35px;

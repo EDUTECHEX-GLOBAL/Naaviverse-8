@@ -420,14 +420,7 @@
             height: 2.5rem;
           }
 
-          .nano-scroll-area {
-  background: #ffffff;
-  padding: 12px 16px;
-  border-radius: 12px;
-  max-height: 240px;        /* same size as Macro view */
-  overflow-y: scroll;         /* scroll instead of overflow */
-  line-height: 24px;
-          }
+
           .step-text {
             font-size: 1.1rem;
             font-weight: 500;
@@ -524,8 +517,8 @@
     height: 2rem;
   }
 
- .nano-content {
-  flex: 1;
+.nano-content {
+  height: calc(100% - 2rem);   /* ⭐ SAME AS MICRO */
   border-radius: 25px;
   border: 1px solid #e5e5e5;
   background: #ffffff;
@@ -535,7 +528,10 @@
   flex-direction: column;
   gap: 1rem;
 
-  overflow: hidden; /* ⬅️ IMPORTANT */
+  /* ✅ NOW SAFE */
+
+
+  /* ⬅️ IMPORTANT */
 .nano-highlight-box {
   background: #f9fafb;
   padding: 14px 18px;
@@ -743,16 +739,19 @@
     }
 
     /* ⭐ ADD THIS ⭐ */
-    .nano-scroll-area {
-      background: #ffffff;
-      padding: 12px 16px;
-      border-radius: 12px;
-      max-height: calc(100% - 6rem);
-      overflow-y: auto;
-      border: 1px solid #ececec;
-      line-height: 1.6;
-      font-size: 0.9rem;
-    }
+.nano-scroll-area {
+  flex: 1;              /* ⭐ KEY */
+  overflow-y: auto;     /* ⭐ SCROLL HERE */
+
+  background: #ffffff;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid #ececec;
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+
   }
 }
 

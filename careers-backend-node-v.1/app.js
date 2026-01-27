@@ -23,6 +23,7 @@ AWS.config.update({ region: 'ap-south-1' });
 const s3 = new AWS.S3();
 
 /* ------------------- ROUTER IMPORTS ------------------- */
+/* ------------------- ROUTER IMPORTS ------------------- */
 var indexRouter = require('./routes/index');
 var authRouter = require('./routes/authRouter');
 var servicesRouter = require('./routes/servicesRouter');
@@ -37,9 +38,10 @@ var partnerRouter = require('./routes/partnerRouter');
 var adminRouter = require('./routes/adminRouter');
 var personalityRouter = require('./routes/personalityRouter');
 var programRouter = require('./routes/programRouter');
+var uploadRouter = require('./routes/uploadRouter'); // <-- ADD THIS
 
 /* ------------------- NEW CORRECT STEPS ROUTER ------------------- */
-const stepsRouter = require("./routes/steps.routes");
+const stepsRouter = require("./routes/stepsRouter");
 
 /* ------------------- APP SETUP ------------------- */
 app.set('views', path.join(__dirname, 'views'));
@@ -93,6 +95,7 @@ app.use('/api/users', (req, res, next) => {
 app.use('/', indexRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/upload', uploadRouter); // <-- ADD THIS
 
 /* -------- FIXED: only ONE mount for services -------- */
 app.use('/api/services', servicesRouter);   // ✅ keep this only

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import logo from "./assets/new/favicon.png";
 import axios from 'axios';
+import "./App.scss"; 
 import { useLocation } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
 import tickMark from "./tick.svg";

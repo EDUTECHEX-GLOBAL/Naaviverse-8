@@ -5,6 +5,8 @@ import { Route, Routes, Navigate } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import Loginpage from "./pages/login/loginpage";
 import MapsPage from "./pages/MapsPage";
+import NewHomePage from "./pages/Registration/Home";
+
 
 /* ========== USER ========== */
 import Dashboard from "./pages/dashboard/dashboard";
@@ -15,6 +17,9 @@ import MallProduct from "./pages/dashboard/MallProduct/MallProduct";
 /* ========== ACCOUNTANT ========== */
 import AccDashboard from "./pages/accDashbaoard/accDashboard";
 import AccProfile from "./pages/accProfile/AccProfile";
+import MyPaths from "./pages/MyPaths/index.jsx";
+import MyStepsAcc from "./pages/accDashbaoard/MyStepsAcc/index.jsx";
+
 
 /* ========== DIRECTORY ========== */
 import NodesPage from "./pages/NodesPage";
@@ -53,6 +58,7 @@ function App() {
       {/* ================= PUBLIC ================= */}
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<Loginpage />} />
+      <Route path="/register" element={<NewHomePage />} /> 
       <Route path="/maps" element={<MapsPage />} />
 
       {/* ================= USER DASHBOARD ================= */}
@@ -63,7 +69,15 @@ function App() {
       <Route path="/dashboard/users/:id" element={<MallProduct />} />
 
       {/* ================= ACCOUNTANT ================= */}
-      <Route path="/dashboard/accountants" element={<AccDashboard />} />
+     <Route path="/dashboard/accountants" element={<AccDashboard />}>
+  <Route index element={<Dashboard />} />
+  <Route path="paths" element={<MyPaths />} />
+  <Route path="steps" element={<MyStepsAcc />} />
+  <Route path="services" element={<Dashboard/>} />
+<Route path="path/:id" element={<PathPage />} />
+</Route>
+
+
       <Route path="/dashboard/accountants/profile" element={<AccProfile />} />
 
       {/* ================= ADMIN ================= */}
@@ -88,10 +102,8 @@ function App() {
       <Route path="/purchase/success" element={<PurchaseSuccess />} />
 
       {/* ================= AUTH FALLBACK ================= */}
-      <Route
-        path="/*"
-        element={loginData ? <RoutePage /> : <Navigate to="/login" />}
-      />
+     <Route path="/*" element={<RoutePage />} />
+
     </Routes>
   );
 }
