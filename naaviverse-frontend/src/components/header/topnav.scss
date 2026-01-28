@@ -1,0 +1,28 @@
+.menu-icon-btn1 {
+    background-color: #198754;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin-right: 25px;
+    cursor: pointer
+}
+
+/* 🔥 HARD BLOCK DESKTOP MENU ON MOBILE — FINAL */
+@media (max-width: 991px) {
+  .desktop-menu-only {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Kill Bootstrap navbar behavior */
+  .navbar-nav.desktop-menu-only {
+    display: none !important;
+  }
+}

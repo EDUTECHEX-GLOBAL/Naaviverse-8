@@ -1,0 +1,71 @@
+.featureSection {
+  padding: 60px 0;
+  background-color: white;
+
+  @media (min-width:300px) and (max-width: 539px) {
+    padding: 10px 0;
+  }
+
+
+  @media (min-width:540px) and (max-width: 768px) {
+    padding: 150px 0;
+  }
+}
+
+
+.featureIcon {
+  width: 60px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.featureTitle {
+  font-size: 22px;
+  font-weight: 600;
+  padding-top:10px;
+  margin-bottom: 12px;
+  color: #222;
+
+  @media (max-width: 768px) {
+    font-size: 20px;
+  }
+}
+
+.featureText {
+  font-size: 20px;
+  color: var(--text-color);
+  margin-top:-10px !important;
+  line-height: 28px;
+  max-width: 300px;
+  margin: 0px auto;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
+}
+
+.map-visual-wrapper {
+  background-color: #f9f9f9;
+  padding: 0rem 0rem;
+  text-align: center;
+
+  .map-visual-img {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    
+    transition: all 0.3s ease-in-out;
+  }
+
+  @media (min-width: 1200px) {
+    .map-visual-img {
+      width: 100%;
+    }
+  }
+
+  @media (min-width: 1600px) {
+    .map-visual-img {
+      width: 100%;
+    }
+  }
+}
