@@ -5,7 +5,7 @@ import "slick-carousel/slick/slick-theme.css";
 
 const TestimonialContent = [
     {
-        logo: 'Plogo-1',
+        logo: 'mg_12.jpg',
         icon: 'icon_05',
         desc: `Certainly from my perspective quis been a great success with due WP giving us
         that enterprises level assured quality.`,

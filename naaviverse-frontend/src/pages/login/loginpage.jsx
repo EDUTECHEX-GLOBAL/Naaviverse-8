@@ -9,7 +9,8 @@ import realtorfull from "../../static/images/login/realtorfull.svg";
 import eye1 from "../../static/images/login/eye1.svg";
 import eye2 from "../../static/images/login/eye2.svg";
 import { useStore } from "../../components/store/store.ts";
-import logo from "./naavi_final_logo4.jpg";
+import logo from '../../assets/images/logo/naavi_final_logo2.png';
+
 import loadinglogo from "./naaviicon.png";
 import axios from "axios";
 import info from "./info.svg";

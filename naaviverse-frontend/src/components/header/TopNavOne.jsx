@@ -2,7 +2,9 @@ import React, {Fragment, useState} from 'react'
 import { Link } from 'react-router-dom';
 import SearchModal from '../../components/search-modal/SearchModal';
 // import MobileMenu from './MobileMenu';
-import ThemeMainMenue from './ThemeMainMenu';
+import ThemeMainMenu from './ThemeMainMenu';
+
+
 import Naavi from '../../assets/images/logo/logo_01.png';
 
 const TopNavOne = () => {
@@ -44,7 +46,7 @@ const TopNavOne = () => {
                         {/* /.right-widget */}
                         <nav className="navbar navbar-expand-lg order-lg-2">
                             <div className="collapse navbar-collapse" id="navbarNav">
-                                <ThemeMainMenue />
+                                <ThemeMainMenu />
                                 {/* Mobile Content */}
                                 <div className="mobile-content d-block d-lg-none">
                                     <div

@@ -19,7 +19,8 @@ import Skill from '../../components/skill/Skill';
 const ArtificialIntelligence = () => {
 
     return (
-        <div className="main-page-wrapper">
+        <div className="main-page-wrapper landing-scope">
+
             <Helmet>
                 <title>Artificial Intelligence || Sinco - Data Science & Analytics React Template</title>
             </Helmet>

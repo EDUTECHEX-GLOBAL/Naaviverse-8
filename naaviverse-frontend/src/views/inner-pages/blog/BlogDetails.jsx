@@ -12,6 +12,9 @@ import BannerAdd from '../../../components/blog/BannerAdd';
 import BannerFive from '../../../components/short-banner/BannerFive';
 import Footer from '../../../components/footernew/index';
 
+import blogImg20 from '../../../assets/images/blog/blog_img_20.jpg';
+import shape39 from '../../../assets/images/shape/shape_39.svg';
+
 
 
 
@@ -27,11 +30,24 @@ const BlogDetails = () => {
 
                 <TopNavFour/> {/* theme-menu-four */}
 
-                <div className="theme-inner-banner">
-                    <InnerBanner intro="Single Blog" currpage="Blog"/>
-                    <img src="images/shape/shape_38.svg" alt="" className="shapes shape-one"/>
-                    <img src="images/shape/shape_39.svg" alt="" className="shapes shape-two"/>
-                </div>
+               <div className="theme-inner-banner">
+  <InnerBanner intro="Single Blog" currpage="Blog" />
+
+  {/* Blog image */}
+  <img
+    src={blogImg20}
+    alt="Blog banner"
+    className="shapes shape-one"
+  />
+
+  {/* Decorative shape */}
+  <img
+    src={shape39}
+    alt=""
+    className="shapes shape-two"
+  />
+</div>
+
                 {/* /.theme-inner-banner */}
 
                 <div className="blog-details pt-90 mb-150 lg-pt-40 lg-mb-100">

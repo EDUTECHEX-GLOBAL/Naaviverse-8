@@ -13,6 +13,13 @@ import BrandTwo from '../../../../components/brand/BrandTwo';
 import Footer from '../../../../components/footernew/index';
 
 import NewsFormTwo from '../../../../components/form/NewsFormTwo';
+import img12 from '../../../../assets/images/media/img_12.jpg';
+import ils17 from '../../../../assets/images/assets/ils_17.svg';
+import ils18 from '../../../../assets/images/assets/ils_18.svg';
+
+import shape25 from '../../../../assets/images/shape/shape_25.svg';
+import shape46 from '../../../../assets/images/shape/shape_46.svg';
+
 
 
 const AboutUsTwo = () => {
@@ -42,7 +49,7 @@ const AboutUsTwo = () => {
                             <li className="current-page">About us</li>
                         </ul>
                     </div>
-                    <img src="images/assets/ils_17.svg" alt="" className="shapes illustration-one"/>
+                    <img src={ils17} alt="" className="shapes illustration-one"/>
                 </div>
                 {/* /.theme-inner-banner */}
 
@@ -51,7 +58,10 @@ const AboutUsTwo = () => {
                         <div
                             className="bg-wrapper d-flex align-items-center justify-content-center"
                             style={{
-                            backgroundImage: 'url(images/media/img_12.jpg)'
+                            
+                                        // backgroundImage: `url(${img12})`
+
+
                         }}>
                             <a
                                 className="fancybox video-icon tran3s d-flex align-items-center justify-content-center"
@@ -90,13 +100,13 @@ const AboutUsTwo = () => {
                                 <div
                                     className="illustration-holder position-relative d-inline-block pe-md-5 me-xxl-5 sm-mt-60">
                                     <Tilt tiltMaxAngleX={5} tiltMaxAngleY={5}>
-                                        <img src="images/assets/ils_18.svg" alt="" className="transform-img-meta"/>
+                                        <img src={ils18} alt="" className="transform-img-meta"/>
                                     </Tilt>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <img src="images/shape/shape_25.svg" alt="" className="shapes bg-shape"/>
+                    <img src={shape25} alt="" className="shapes bg-shape"/>
                 </div>
                 {/* /.fancy-feature-twelve */}
 
@@ -134,7 +144,7 @@ const AboutUsTwo = () => {
                             <ContactTwo/>
                         </div>
                     </div>
-                    <img src="images/shape/shape_46.svg" alt="" className="shapes bg-shape"/>
+                    <img src={shape46} alt="" className="shapes bg-shape"/>
                 </div>
                 {/* /.feedback-section-four */}
 

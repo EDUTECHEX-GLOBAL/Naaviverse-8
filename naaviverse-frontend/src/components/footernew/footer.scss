@@ -26,6 +26,11 @@
   gap: 30px;
 }
 
+.contact-socials {
+  position: relative;
+  z-index: 10;
+}
+
 .footer-col {
   flex: 1 1 250px;
   min-width: 250px;

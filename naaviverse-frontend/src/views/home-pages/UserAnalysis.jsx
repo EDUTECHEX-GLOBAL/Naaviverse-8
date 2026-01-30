@@ -28,7 +28,9 @@ import Footer from '../../components/footernew/index';
 const UserAnalysis = () => {
     return (
         <Fragment>
-            <div className="main-page-wrapper">
+       <div className="main-page-wrapper landing-scope">
+
+
                 <Helmet>
                     <title>Naavi - Navigate Your Passion</title>
                 </Helmet>

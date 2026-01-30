@@ -59,12 +59,44 @@ const Footer = () => {
                 Telangana 500081 INDIA
                 </p>
               </div>
-              <div className="footer-socials">
-                <a href="#"><i className="fab fa-linkedin-in"></i></a>
-                <a href="#"><i className="fab fa-instagram"></i></a>
-                <a href="#"><i className="fab fa-facebook-f"></i></a>
-                <a href="#"><i className="fab fa-twitter"></i></a>
-              </div>
+<div className="footer-socials">
+  <a
+    href="https://www.linkedin.com/company/onnes-cryogenics/"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="LinkedIn"
+  >
+    <i className="fab fa-linkedin-in"></i>
+  </a>
+
+  <a
+    href="https://www.instagram.com/onnes.cryogenics/"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Instagram"
+  >
+    <i className="fab fa-instagram"></i>
+  </a>
+
+  <a
+    href="https://www.facebook.com/onnescryogenics"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Facebook"
+  >
+    <i className="fab fa-facebook-f"></i>
+  </a>
+
+  <a
+    href="https://twitter.com/OCryogenics"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Twitter"
+  >
+    <i className="fab fa-twitter"></i>
+  </a>
+</div>
+
             </div>
 
             <div className="footer-col3">

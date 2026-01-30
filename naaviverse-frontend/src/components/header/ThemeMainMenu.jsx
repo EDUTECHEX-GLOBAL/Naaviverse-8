@@ -191,16 +191,26 @@ const ThemeMainMenu = () => {
   </span>
 
   <ul className="dropdown-menu">
-    <li>
-      <Link to="/problem" className="dropdown-item" onClick={() => handlePageNavigation('/problem/about-us')}>
-        PATHWAYS
-      </Link>
-    </li>
-    <li>
-      <Link to="/solution" className="dropdown-item" onClick={() => handlePageNavigation('/problem/why-naavi')}>
-        LLMS-KGs
-      </Link>
-    </li>
+ <li>
+  <Link
+    to="/technology/pathways"
+    className="dropdown-item"
+    onClick={() => handlePageNavigation('/technology/pathways')}
+  >
+    PATHWAYS
+  </Link>
+</li>
+
+<li>
+  <Link
+    to="/technology/llms-kgs"
+    className="dropdown-item"
+    onClick={() => handlePageNavigation('/technology/llms-kgs')}
+  >
+    LLMS-KGs
+  </Link>
+</li>
+
     
   </ul>
 </li>
@@ -253,7 +263,7 @@ const ThemeMainMenu = () => {
       </Link>
     </li>
     <li>
-      <Link to="/problem/why-naavi" className="dropdown-item" onClick={() => handlePageNavigation('/problem/why-naavi')}>
+      <Link to="/blog" className="dropdown-item" onClick={() => handlePageNavigation('/problem/why-naavi')}>
         BLOG & NEWS
       </Link>
     </li>

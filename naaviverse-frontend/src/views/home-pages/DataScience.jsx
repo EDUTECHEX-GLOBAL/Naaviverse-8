@@ -21,7 +21,7 @@ import Footer from '../../components/footernew/index';
 const DataScience = () => {
     return (
         <Fragment>
-            <div className="main-page-wrapper">
+            <div className="main-page-wrapper landing-scope">
                 <Helmet>
                     <title>Data Science || Sinco - Data Science & Analytics React Template</title>
                 </Helmet>

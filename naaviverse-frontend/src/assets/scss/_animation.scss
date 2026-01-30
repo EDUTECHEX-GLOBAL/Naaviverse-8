@@ -604,3 +604,12 @@
         transform: translateY(-70%);
     }
 }
+
+.block-style-twelve .icon {
+  background: transparent !important;
+  opacity: 1 !important;
+}
+.block-style-twelve .icon img {
+  opacity: 1 !important;
+  filter: none !important;
+}

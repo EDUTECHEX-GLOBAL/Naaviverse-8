@@ -142,8 +142,13 @@ import MyPaths from "./pages/MyPaths";
 import MyStepsAcc from "./pages/accDashbaoard/MyStepsAcc";
 import PathPage from "./components/Pathview/PathPage";
 
-/* ================= ADMIN ================= */
-import AdminLogin from "./AdminDashboard/pages/AdminLogin";
+ /* ========== ADMIN ========== */
+ import AdminLogin from "./pages/AdminLogin";
+ import AdminAccDashbaoard from "./pages/AdminAccDashbaoard";
+ import AdminProfilePage from "./pages/AdminAccDashbaoard/Profile/profile_page";
+
+/* ================= SUPER ADMIN ================= */
+import SuperAdminLogin from "./AdminDashboard/pages/SuperAdminLogin";
 import AdminDashboard from "./AdminDashboard/pages/AdminDashboard";
 import PrivateRoute from "./AdminDashboard/components/PrivateRoute";
 import HomeDashboard from "./AdminDashboard/components/Home";
@@ -182,11 +187,17 @@ function App() {
           <Route path="/register" element={<NewHomePage />} />
           <Route path="/maps" element={<MapsPage />} />
 
-          {/* ================= USER DASHBOARD ================= */}
-          <Route path="/dashboard/users" element={<Dashboard />} />
-          <Route path="/dashboard/users/profile" element={<UserProfile />} />
-          <Route path="/dashboard/users/current-step" element={<StepPage />} />
-          <Route path="/dashboard/users/:id" element={<MallProduct />} />
+         
+      {/* ================= USER DASHBOARD ================= */}
+      <Route path="/dashboard/users" element={<Dashboard />} />
+      <Route path="/dashboard/users/profile" element={<UserProfile />} />
+      <Route path="/dashboard/users/my-journey" element={<Dashboard />} />
+      <Route path="/dashboard/users/current-step" element={<Dashboard />} />
+      <Route path="/dashboard/users/:id" element={<MallProduct />} />
+
+             {/* ================= PATH / STEP ================= */}
+          <Route path="/dashboard/path/:id" element={<PathPage />} />
+          <Route path="/dashboard/step/:id" element={<StepPage />} />
 
           {/* ================= ACCOUNTANT ================= */}
           <Route path="/dashboard/accountants" element={<AccDashboard />}>
@@ -194,6 +205,7 @@ function App() {
             <Route path="paths" element={<MyPaths />} />
             <Route path="steps" element={<MyStepsAcc />} />
             <Route path="path/:id" element={<PathPage />} />
+             <Route path="services" element={<Dashboard/>} />
           </Route>
 
           <Route
@@ -201,17 +213,29 @@ function App() {
             element={<AccProfile />}
           />
 
-          {/* ================= ADMIN ================= */}
-          <Route path="/admin-login" element={<AdminLogin />} />
-          <Route path="/admin-dashboard" element={<PrivateRoute />}>
-            <Route element={<AdminDashboard />}>
-              <Route index element={<HomeDashboard />} />
-              <Route path="admin-contact" element={<ContactList />} />
-              <Route path="admin-subscribe" element={<SubscriptionList />} />
-              <Route path="admin-visitors" element={<VisitorsList />} />
-            </Route>
-          </Route>
 
+
+    {/* ================= ADMIN ================= */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin/dashboard/profile" element={<AdminProfilePage />} />
+
+       <Route
+        path="/admin/dashboard/accountants"
+         element={<AdminAccDashbaoard />}/>
+      
+         {/* ================= SUPER ADMIN ================= */}
+<Route path="/admin-login" element={<SuperAdminLogin />} />
+
+<Route path="/admin-dashboard" element={<AdminDashboard  />}>
+  {/* <Route element={<AdminDashboard />}> */}
+    <Route path="admin-home" element={<HomeDashboard />} />
+    <Route path="admin-contact" element={<ContactList />} />
+    <Route path="admin-subscribe" element={<SubscriptionList />} />
+    <Route path="admin-visitors" element={<VisitorsList />} />
+  </Route>
+
+
+   
           {/* ================= PURCHASE ================= */}
           <Route path="/purchase/success" element={<PurchaseSuccess />} />
 

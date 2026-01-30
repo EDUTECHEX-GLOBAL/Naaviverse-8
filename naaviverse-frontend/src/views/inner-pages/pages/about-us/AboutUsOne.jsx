@@ -13,7 +13,31 @@ import TestimonialThree from '../../../../components/testimonial/TestimonialThre
 import BrandSix from '../../../../components/brand/BrandSix';
 import AdressOne from '../../../../components/adress/AdressOne';
 import Info from '../../../../components/adress/Info';
-import FooterTwo from '../../../../components/footer/FooterTwo';
+
+
+import shape38 from '../../../../assets/images/shape/shape_38.svg';
+import shape39 from '../../../../assets/images/shape/shape_39.svg';
+import shape40 from '../../../../assets/images/shape/shape_40.svg';
+import shape41 from '../../../../assets/images/shape/shape_41.svg';
+import shape42 from '../../../../assets/images/shape/shape_42.svg';
+import shape43 from '../../../../assets/images/shape/shape_43.svg';
+import shape44 from '../../../../assets/images/shape/shape_44.svg';
+import shape45 from '../../../../assets/images/shape/shape_45.svg';
+
+
+import ils05 from '../../../../assets/images/assets/ils_05.svg';
+import ils051 from '../../../../assets/images/assets/ils_05_1.svg';
+import ils052 from '../../../../assets/images/assets/ils_05_2.svg';
+import ils053 from '../../../../assets/images/assets/ils_05_3.svg';
+import ils054 from '../../../../assets/images/assets/ils_05_4.svg';
+import ils055 from '../../../../assets/images/assets/ils_05_5.svg';
+
+import ils06 from '../../../../assets/images/assets/ils_06.svg';
+import ils061 from '../../../../assets/images/assets/ils_06_1.svg';
+import ils062 from '../../../../assets/images/assets/ils_06_2.svg';
+import ils063 from '../../../../assets/images/assets/ils_06_3.svg';
+import ils064 from '../../../../assets/images/assets/ils_06_4.svg';
+import ils065 from '../../../../assets/images/assets/ils_06_5.svg';
 
 const AboutUsOne = () => {
     return (
@@ -28,8 +52,8 @@ const AboutUsOne = () => {
 
                 <div className="theme-inner-banner">
                     <InnerBanner intro='About Company' currpage='About Us'/>
-                    <img src="images/shape/shape_38.svg" alt="" className="shapes shape-one"/>
-                    <img src="images/shape/shape_39.svg" alt="" className="shapes shape-two"/>
+                   <img src={shape38} alt="" className="shapes shape-one"/>
+                    <img src={shape39} alt="" className="shapes shape-two"/>
                 </div>
                 {/* /.theme-inner-banner */}
 
@@ -43,26 +67,26 @@ const AboutUsOne = () => {
                     </div>
                     {/* /.container */}
                     <div className="illustration-holder-two sm-mt-40">
-                        <img src="images/assets/ils_05.svg" alt="" className="main-illustration w-100"/>
-                        <img src="images/assets/ils_05_1.svg" alt="" className="shapes shape-one"/>
-                        <img
-                            src="images/assets/ils_05_2.svg"
+                        <img src={ils05} alt="" className="main-illustration w-100"/>
+                        <img src={ils051} alt="" className="shapes shape-one"/>
+                        <img src={ils052}
+        
                             alt=""
                             className="shapes shape-two"
                             data-aos="fade-up"
                             data-aos-anchor=".fancy-feature-two"
                             data-aos-delay={100}
                             data-aos-duration={2000}/>
-                        <img
-                            src="images/assets/ils_05_3.svg"
+                        <img src={ils053}
+                            
                             alt=""
                             className="shapes shape-three"
                             data-aos="fade-up"
                             data-aos-anchor=".fancy-feature-two"
                             data-aos-delay={150}
                             data-aos-duration={2000}/>
-                        <img src="images/assets/ils_05_4.svg" alt="" className="shapes shape-four"/>
-                        <img src="images/assets/ils_05_5.svg" alt="" className="shapes shape-five"/>
+                       <img src={ils054} alt="" className="shapes shape-four"/>
+                        <img src={ils055} alt="" className="shapes shape-five"/>
                     </div>
                     {/* /.illustration-holder-two */}
                 </div>
@@ -80,8 +104,8 @@ const AboutUsOne = () => {
                         <div className="container">
                             <CommonCounter/>
                         </div>
-                        <img src="images/shape/shape_40.svg" alt="" className="shapes shape-three"/>
-                        <img src="images/shape/shape_41.svg" alt="" className="shapes shape-four"/>
+                        <img src={shape40} alt="" className="shapes shape-three"/>
+                        <img src={shape41} alt="" className="shapes shape-four"/>
                     </div>
                     {/* /.inner-container */}
                 </div>
@@ -104,22 +128,20 @@ const AboutUsOne = () => {
                             </div>
                             <div className="col-xxl-8 col-lg-7 col-md-6 text-end">
                                 <div className="illustration-holder d-inline-block position-relative xs-mt-20">
-                                    <img src="images/assets/ils_06.svg" alt="" className="main-illustration w-100"/>
-                                    <img src="images/assets/ils_06_1.svg" alt="" className="shapes shape-one"/>
-                                    <img src="images/assets/ils_06_2.svg" alt="" className="shapes shape-two"/>
-                                    <img
-                                        src="images/assets/ils_06_3.svg"
+                                    <img src={ils06} alt="" className="main-illustration w-100"/>
+                                    <img src={ils061} alt="" className="shapes shape-one"/>
+                                    <img src={ils062} alt="" className="shapes shape-two"/>
+                                    <img src={ils063}
                                         alt=""
                                         className="shapes shape-three"
                                         data-aos="fade-down"
                                         data-aos-duration={1800}/>
-                                    <img
-                                        src="images/assets/ils_06_4.svg"
+                                    <img src={ils064}
                                         alt=""
                                         className="shapes shape-four"
                                         data-aos="fade-left"
                                         data-aos-duration={1800}/>
-                                    <img src="images/assets/ils_06_5.svg" alt="" className="shapes shape-five"/>
+                                    <img src={ils065} alt="" className="shapes shape-five"/>
                                 </div>{/*  /.illustration-holder */}
                             </div>
                         </div>
@@ -150,8 +172,8 @@ const AboutUsOne = () => {
                         </div>
                         <Team/>
                     </div>
-                    <img src="images/shape/shape_42.svg" alt="" className="shapes shape-one"/>
-                    <img src="images/shape/shape_43.svg" alt="" className="shapes shape-two"/>
+                    <img src={shape42} alt="" className="shapes shape-one"/>
+                    <img src={shape43} alt="" className="shapes shape-two"/>
                 </div>
                 {/* /.team-section-one */}
 
@@ -205,7 +227,7 @@ const AboutUsOne = () => {
                 <div className="footer-style-one bg-color theme-basic-footer">
                 <div className="container">
                     <div className="inner-wrapper">
-                        <FooterTwo />
+                      
                         <div className="bottom-footer">
                             <div className="d-lg-flex justify-content-between align-items-center">
                                 <ul
@@ -226,8 +248,8 @@ const AboutUsOne = () => {
                     </div>
                     {/* /.inner-wrapper */}
                 </div>
-                <img src="images/shape/shape_44.svg" alt="" className="shapes shape-one"/>
-                <img src="images/shape/shape_45.svg" alt="" className="shapes shape-two"/>
+                <img src={shape44} alt="" className="shapes shape-one"/>
+                <img src={shape45} alt="" className="shapes shape-two"/>
             </div>
                 {/* /.footer-style-one */}
 

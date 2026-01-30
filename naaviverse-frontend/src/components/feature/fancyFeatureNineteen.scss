@@ -1,0 +1,154 @@
+/* =========================================
+   FancyFeatureNineteen – Image overrides
+   ========================================= */
+
+.fancy-feature-nineteen {
+
+  /* Right column container */
+  .illustration-holder {
+    display: flex;
+    justify-content: flex-start;   // 👉 move image LEFT
+    align-items: center;
+    position: relative;
+  }
+
+  /* Main illustration image */
+  .main-illustration {
+    max-width: 420px;              // 👉 decrease image size
+    width: 100%;
+    height: auto;
+  }
+}
+
+/* ------------------------------
+   Responsive adjustments
+   ------------------------------ */
+@media (max-width: 991px) {
+  .fancy-feature-nineteen {
+
+    .illustration-holder {
+      justify-content: center;     // center image on mobile
+      margin-top: 40px;
+    }
+
+    .main-illustration {
+      max-width: 320px;            // smaller image on mobile
+    }
+  }
+}
+/* ---------------------------------
+   Books stack - MAKE BOOKS FLY
+---------------------------------- */
+
+.books-stack {
+  position: absolute;
+  right: 20px;
+  top: 130px;                     // 👉 Move books higher (from 150px to 130px)
+  width: 110px;
+  z-index: 2;
+  animation: floatBooks 3s ease-in-out infinite; // 👉 Add floating animation
+}
+
+/* Paper fixed on books */
+.paper-fixed-on-books {
+  position: absolute;
+  right: 35px;                    // 👉 Position on top of books
+  top: 100px;                     // 👉 Position above books
+  width: 50px;
+  z-index: 3;
+  transform: rotate(-5deg);
+}
+
+/* ---------------------------------
+   Flying papers - ADD 4 PAPERS
+---------------------------------- */
+
+.paper {
+  position: absolute;
+  z-index: 4;
+}
+
+/* Paper 1 */
+.paper-one {
+  left: 200px;
+  top: -50px;
+  width: 45px;
+  transform: rotate(-15deg);
+  animation: floatPaper1 4s ease-in-out infinite;
+}
+
+/* Paper 2 */
+.paper-two {
+  left: 280px;
+  top: -100px;
+  width: 40px;
+  transform: rotate(10deg);
+  animation: floatPaper2 5s ease-in-out infinite;
+}
+
+/* Paper 3 - NEW */
+.paper-three {
+  left: 220px;
+  top: -120px;
+  width: 35px;
+  transform: rotate(5deg);
+  animation: floatPaper3 4.5s ease-in-out infinite;
+}
+
+/* Paper 4 - NEW */
+.paper-four {
+  left: 260px;
+  top: -130px;
+  width: 38px;
+  transform: rotate(-8deg);
+  animation: floatPaper4 5.5s ease-in-out infinite;
+}
+
+/* ---------------------------------
+   Floating Animations
+---------------------------------- */
+
+@keyframes floatBooks {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes floatPaper1 {
+  0%, 100% {
+    transform: translateY(0) rotate(-15deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(-20deg);
+  }
+}
+
+@keyframes floatPaper2 {
+  0%, 100% {
+    transform: translateY(0) rotate(10deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(15deg);
+  }
+}
+
+@keyframes floatPaper3 {
+  0%, 100% {
+    transform: translateY(0) rotate(5deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(0deg);
+  }
+}
+
+@keyframes floatPaper4 {
+  0%, 100% {
+    transform: translateY(0) rotate(-8deg);
+  }
+  50% {
+    transform: translateY(-18px) rotate(-13deg);
+  }
+}

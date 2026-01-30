@@ -8,6 +8,8 @@ import BlogGridOne from '../../../components/blog/BlogGridOne';
 
 import BannerFive from '../../../components/short-banner/BannerFive';
 import Footer from '../../../components/footernew/index';
+import shape38 from '../../../assets/images/shape/shape_38.svg';
+import shape39 from '../../../assets/images/shape/shape_39.svg';
 
 
 const GridLayout = () => {
@@ -23,8 +25,9 @@ const GridLayout = () => {
 
                 <div className="theme-inner-banner">
                     <InnerBanner intro="Blog Grid" currpage="Blog"/>
-                    <img src="images/shape/shape_38.svg" alt="" className="shapes shape-one"/>
-                    <img src="images/shape/shape_39.svg" alt="" className="shapes shape-two"/>
+                    <img src={shape38} alt="" className="shapes shape-one"/>
+                    <img src={shape39} alt="" className="shapes shape-two"/>
+
                 </div>
                 {/* /.theme-inner-banner */}
 

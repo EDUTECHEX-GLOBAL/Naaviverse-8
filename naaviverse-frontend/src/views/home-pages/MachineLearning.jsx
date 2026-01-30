@@ -17,7 +17,7 @@ import SkillTwo from '../../components/skill/SkillTwo';
 const MachineLearning = () => {
     return (
         <Fragment>
-            <div className="main-page-wrapper">
+            <div className="main-page-wrapper landing-scope">
                 <Helmet>
                     <title>Machine Learning || Sinco - Data Science & Analytics React Template</title>
                 </Helmet>

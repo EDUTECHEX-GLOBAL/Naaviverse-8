@@ -22,6 +22,8 @@ import ServicesOne from '../views/inner-pages/pages/services/ServicesOne';
 import ServicesTwo from '../views/inner-pages/pages/services/ServicesTwo';
 import ServicesDetails from '../views/inner-pages/pages/services/ServicesDetails';
 
+
+
 //All Team Page Routes
 import TeamMember from '../views/inner-pages/pages/team/TeamMember';
 import TeamDetails from '../views/inner-pages/pages/team/TeamDetails';
@@ -53,12 +55,6 @@ import Contact from '../views/inner-pages/contact/Contact';
 import NotFound from "../views/NotFound";
 
 
-
-
-
-
-
-
 const AppRouter = () => {
   return (
     <Fragment>
@@ -76,8 +72,15 @@ const AppRouter = () => {
         <Route path="/service-two" element={<ServicesTwo />} />
         <Route path="/service-details" element={<ServicesDetails />} />
 
+      {/* Team Pages - Added the new routes your ThemeMainMenu.jsx uses */}
+        <Route path="/team/founders" element={<TeamDetails />} />
+        <Route path="/team/members" element={<TeamMember />} />
+        
+        {/* Keep existing team routes for compatibility */}
         <Route path="/team-member" element={<TeamMember />} />
         <Route path="/team-details" element={<TeamDetails />} />
+
+
 
         <Route path="/testimonial" element={<Testimonial />} />
         <Route path="/price" element={<OurPricing />} />
@@ -88,6 +91,14 @@ const AppRouter = () => {
         <Route path="/portfolio-2" element={<Portfolio2Column />} />
         <Route path="/portfolio-masonry" element={<PortfolioMasonry />} />
         <Route path="/portfolio-single" element={<PortfolioSingle />} />
+
+{/* Problem / About pages */}
+<Route path="/problem/about-us" element={<AboutUsOne />} />
+<Route path="/problem/why-naavi" element={<AboutUsTwo />} />
+<Route path="/problem/vision-mission" element={<AboutUsTwo />} />
+
+
+<Route path="/blog" element={<GridLayout />} />
 
         <Route path="/blog-grid" element={<GridLayout />} />
         <Route path="/blog-sidebar" element={<GridWithSidebar />} />
