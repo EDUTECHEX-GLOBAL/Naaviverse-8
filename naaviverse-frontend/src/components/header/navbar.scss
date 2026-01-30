@@ -194,4 +194,76 @@
 .navbar-nav .nav-link {
   padding-bottom: 10px !important;
   margin-bottom: 3px !important;
+} 
+
+
+/* ===============================
+   AUTH BUTTONS (RIGHT SIDE)
+   =============================== */
+
+.nav-auth-buttons {
+  margin-left: auto !important; /* pushes to right */
+  display: flex !important;
+  align-items: center !important;
+  gap: 18px !important;
+}
+
+/* Login = plain text */
+.login-text {
+  color: #002244 !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: color 0.2s ease !important;
+}
+
+.login-text:hover {
+  color: #00b5f9 !important;
+}
+
+
+/* Get Started = colored box */
+.get-started-btn {
+  background: #0f9b8b !important;
+  color: white !important;
+  border: none !important;
+  padding: 10px 22px !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.25s ease !important;
+}
+
+.get-started-btn:hover {
+  background: #009bd6 !important;
+}
+/* Container for the entire navbar content */
+.navbar > .container,
+.navbar > .container-fluid {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  padding: 0 20px !important;
+}
+
+/* Logo stays on left */
+.navbar-brand {
+  margin-right: auto !important;
+}
+
+/* Center the main nav menu */
+.navbar-collapse {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-grow: 1 !important;
+}
+
+/* Auth buttons on the right */
+.nav-auth-buttons {
+  margin-left: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 18px !important;
+  padding-right: 10px !important;
 }

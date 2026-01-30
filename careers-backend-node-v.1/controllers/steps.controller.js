@@ -104,17 +104,12 @@ const getSteps = async (req, res) => {
   try {
     let filter = {};
 
-    // 🔥 FLEXIBLE path_id (query OR body)
     const pathId = req.query.path_id || req.body.path_id;
 
-    if (!pathId) {
-      return res.json({
-        status: false,
-        message: "path_id is required",
-      });
+    // ⭐ FIX: make optional
+    if (pathId) {
+      filter.path_id = new mongoose.Types.ObjectId(pathId);
     }
-
-    filter.path_id = new mongoose.Types.ObjectId(pathId);
 
     if (req.query.status) {
       filter.status =
@@ -123,88 +118,11 @@ const getSteps = async (req, res) => {
       filter.status = "active";
     }
 
-    if (req.query.name) filter.name = req.query.name;
-    if (req.query.step_id) filter._id = req.query.step_id;
-    if (req.query.length) filter.length = req.query.length;
-
-    const steps = await stepModel.aggregate([
-      { $match: filter },
-     { $sort: { createdAt: 1 } }, // ✅ CORRECT
-
-
-      {
-        $lookup: {
-          from: "naavi_services",
-          let: { m_ids: "$macroservices" },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $in: ["$_id", "$$m_ids"] },
-              },
-            },
-          ],
-          as: "MacroServicesDetails",
-        },
-      },
-      {
-        $lookup: {
-          from: "naavi_services",
-          let: { mi_ids: "$microservices" },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $in: ["$_id", "$$mi_ids"] },
-              },
-            },
-          ],
-          as: "MicroServicesDetails",
-        },
-      },
-      {
-        $lookup: {
-          from: "naavi_services",
-          let: { n_ids: "$nanoservices" },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $in: ["$_id", "$$n_ids"] },
-              },
-            },
-          ],
-          as: "nanoServicesDetails",
-        },
-      },
-      {
-        $lookup: {
-          from: "paths",
-          let: { p_id: "$path_id" },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $eq: ["$_id", "$$p_id"] },
-              },
-            },
-          ],
-          as: "pathDetails",
-        },
-      },
-      {
-        $addFields: {
-          servicesCount: {
-            $cond: {
-              if: { $isArray: "$services" },
-              then: { $size: "$services" },
-              else: 0,
-            },
-          },
-        },
-      },
-    ]);
+    const steps = await stepModel.find(filter).sort({ createdAt: 1 });
 
     return res.json({
       status: true,
       total: steps.length,
-      message: "Steps data found",
       data: steps,
     });
   } catch (error) {
@@ -214,7 +132,6 @@ const getSteps = async (req, res) => {
     });
   }
 };
-
 
 
 const updateStep = async (req, res) => {

@@ -565,9 +565,10 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   }
 
   return (
-    <div className="currentstep" style={{ height: "91vh", overflow: "hidden" }}>
+    <div className="currentstep">
       {/* ==== HEADER ==== */}
-      <div className="cs-top-area" style={{ height: "10rem" }}>
+     <div className="cs-top-area">
+
         <div className="cs-text1">
           <div>Your Current Step</div>
 
@@ -597,8 +598,9 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
       </div>
 
       {/* ==== CONTENT ==== */}
-      <div className="cs-content" style={{ height: "60vh" }}>
-        <div className="overall-cs-content">
+   <div className="cs-content">
+     <div className="overall-cs-content grid-layout">
+
           {/* Macro */}
           <div className="macro-view-box">
             <div className="macro-text">Macro View:</div>
@@ -814,14 +816,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   </div>
 
   {/* ✅ CTA FIXED */}
-  <div className="nano-cta-wrapper">
-    <button
-      className="nano-primary-cta"
-      onClick={() => setShowNanoModal(true)}
-    >
-      Start 1-to-1 Expert Execution
-    </button>
-  </div>
+ 
 </div>
 
             {/* <div className="nano-overall-div">

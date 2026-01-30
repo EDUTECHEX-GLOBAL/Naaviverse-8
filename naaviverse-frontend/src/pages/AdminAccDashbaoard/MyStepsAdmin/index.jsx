@@ -4,7 +4,7 @@ import Skeleton from "react-loading-skeleton";
 import "./mypaths.scss";
 import axios from "axios";
 
-import { Draggable } from "react-drag-reorder";
+import { Draggable } from "react-beautiful-dnd";
 import EditStepForm from "../../accDashbaoard/MyStepsAcc/steps.jsx";
 
 // images
@@ -14,6 +14,8 @@ import lg1 from "../../../static/images/login/lg1.svg";
 import CurrentStep from "../../CurrentStep/index.jsx";
 import { useStore } from "../../../components/store/store.ts";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) => {
   const navigate = useNavigate()
@@ -43,17 +45,23 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const [selectedSubStep, setSelectedSubStep] = useState(null)
   const [allServices, setAllServices] = useState([]);           // ADD
   const [attachedServices, setAttachedServices] = useState([]); // REMOVE
- const [serviceToRemove, setServiceToRemove] = useState(null);
-const [selectedStep, setSelectedStep] = useState(null);
-
+  const [serviceToRemove, setServiceToRemove] = useState(null);
+  const [selectedStep, setSelectedStep] = useState(null);
+  const [allPaths, setAllPaths] = useState([]);
   const [backupPathData, setBackupPathData] = useState([])
   const [stepId, setStepId] = useState("");
   const [backupPathId, setBackupPathId] = useState("")
-
+  const [serviceCountMap, setServiceCountMap] = useState({});
   //useEffect(() => {
    // setMypathsMenu('Active Steps')
   //}, [])
 
+useEffect(() => {
+  if (stepActionEnabled && selectedStepId) {
+    const step = partnerStepsData.find(s => s._id === selectedStepId);
+    setSelectedStep(step || null);
+  }
+}, [stepActionEnabled, selectedStepId, partnerStepsData]);
 
   const getAllPaths = () => { 
     setLoading(true);
@@ -72,14 +80,15 @@ const [selectedStep, setSelectedStep] = useState(null);
       });
   };
 
-  useEffect(() => {
-    let email = userDetails?.email;
-    axios.get(`/api/paths/get?email=${email}`).then(({data}) => {
-      if(data.status){
-        setBackupPathData(data?.data)
-      }
-    })
-  }, [])
+ useEffect(() => {
+  if (!userDetails?.email) return;
+
+  axios.get(`/api/paths/get?email=${userDetails.email}`)
+    .then(({ data }) => {
+      if (data.status) setBackupPathData(data.data);
+    });
+}, [userDetails?.email]);
+
 
   const getNewPath = () => {
     setLoading(true);
@@ -101,60 +110,122 @@ const [selectedStep, setSelectedStep] = useState(null);
     console.log(selectedPath?.StepDetails, "lwkefhlkwefcwefc")
   }, [selectedPath])
 
-  const getAllSteps = () => {
-    setLoading(true);
-    let email = userDetails?.email;
-    
-    axios
-      .get(`/api/steps/get?status=${mypathsMenu==="Active Steps"?"active":"inactive"}`)
-      .then((response) => {
-        let result = response?.data?.data;
-        console.log(result, "partnerStepsData result");
-        setPartnerStepsData(result);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log(error, "error in partnerStepsData");
-      });
-  };
+
+  const fetchServiceCounts = async (steps = []) => {
+  if (!Array.isArray(steps) || steps.length === 0) {
+    setServiceCountMap({});
+    return;
+  }
+
+  const counts = {};
+
+  await Promise.all(
+    steps.map(async (step) => {
+      try {
+        const { data } = await axios.get(`/api/steps/getall/${step._id}`);
+        counts[step._id] = data?.data?.length || 0;
+      } catch {
+        counts[step._id] = 0;
+      }
+    })
+  );
+
+  setServiceCountMap(counts);
+};
+
+const refreshStepServices = async (stepId) => {
+  if (!stepId) return;
+
+  try {
+    const { data } = await axios.get(`/api/steps/getall/${stepId}`);
+
+    if (data?.status) {
+      setAttachedServices(data.data || []);
+    } else {
+      setAttachedServices([]);
+    }
+  } catch (err) {
+    console.error("refreshStepServices failed", err);
+    setAttachedServices([]);
+  }
+};
+const getPathNameForStep = (stepId) => {
+  if (!stepId || !partnerPathData?.length) return null;
+
+  const matchedPath = partnerPathData.find((path) =>
+    path?.StepDetails?.some((s) => s?._id === stepId) ||
+    path?.the_ids?.some((s) => s?.step_id === stepId)
+  );
+
+  return matchedPath?.nameOfPath || null;
+};
+
+ const getAllSteps = () => {
+  setLoading(true);
+
+  axios
+    .get(`/api/steps/get?status=${mypathsMenu === "Active Steps" ? "active" : "inactive"}`)
+    .then((response) => {
+      const result = response?.data?.data || []; // ⭐ FIX
+
+      console.log(result, "partnerStepsData result");
+
+      setPartnerStepsData(result);
+
+      if (result.length > 0) {
+        fetchServiceCounts(result);
+      } else {
+        setServiceCountMap({});
+      }
+
+      setLoading(false);
+    })
+    .catch((error) => {
+      console.log(error, "error in partnerStepsData");
+      setPartnerStepsData([]); // ⭐ SAFE FALLBACK
+      setLoading(false);
+    });
+};
 
   useEffect(() => {
     getAllSteps();
   }, [mypathsMenu]);
 
 
-  // ✅ ADD SERVICE – FETCH ALL
-  useEffect(() => {
-    if (stepActionStep !== 5) return;
+useEffect(() => {
+  if (stepActionStep !== 5) return;
 
-    axios
-      .get(`/api/services/getservices?status=active&_=${Date.now()}`)
-      .then(({ data }) => {
-        if (data?.status) {
-          setAllServices(data.data || []);
-        } else {
-          setAllServices([]);
-        }
-      })
-      .catch(() => setAllServices([]));
-  }, [stepActionStep]);
+  axios
+    .get(`/api/services/admin?status=active`)
+    .then(({ data }) => {
+      if (data?.status) {
+        setAllServices(data.data || []);
+      } else {
+        setAllServices([]);
+      }
+    })
+    .catch(() => setAllServices([]));
+}, [stepActionStep]);
 
-  // ✅ REMOVE SERVICE – FETCH ATTACHED
-  useEffect(() => {
-    if (stepActionStep !== 6) return;
-    if (!selectedStepId) return;
 
-    axios
-      .get(`/api/steps/services/${selectedStepId}?_=${Date.now()}`)
-      .then(({ data }) => {
-        if (data?.status) {
-          setAttachedServices(data.data || []);
-        } else {
-          setAttachedServices([]);
-        }
-      })
-      .catch(() => setAttachedServices([]));
-  }, [stepActionStep, selectedStepId]);
+
+
+useEffect(() => {
+  if (stepActionStep !== 6) return;
+  if (!selectedStepId) return;
+
+  axios.get(`/api/steps/getall/${selectedStepId}`)
+    .then(({ data }) => {
+      if (data?.status) {
+        setAttachedServices(data.data || []);
+      } else {
+        setAttachedServices([]);
+      }
+    })
+    .catch(() => setAttachedServices([]));
+}, [stepActionStep, selectedStepId]);
+
+
 
   const filteredPartnerPathData = partnerPathData?.filter((entry) =>
     entry?.nameOfPath?.toLowerCase()?.includes(search?.toLowerCase())
@@ -228,30 +299,31 @@ const [selectedStep, setSelectedStep] = useState(null);
 
 
 
-const addServiceToStepInstant = (serviceId) => {
-  if (!selectedStepId || !serviceId) return;
+const addServiceToStepInstant = async (serviceId) => {
+  if (!selectedStepId) {
+    toast.error("No step selected");
+    return;
+  }
 
-  setActionLoading(true);
+  try {
+    await axios.post("/api/steps/attachservice", {
+  step_id: selectedStepId,
+  service_ids: [serviceId],
+});
 
-  axios
-    .post(`/api/steps/services/add`, {
-      step_id: selectedStepId,
-      service_ids: [serviceId], // 🔥 single service
-    })
-    .then(({ data }) => {
-      if (data?.status) {
-        // Option 1: go back to step actions
-        setStepActionStep(1);
 
-        // Optional refresh
-        fetchAllServicesAgain?.();
-      }
-    })
-    .catch(err => {
-      console.error("ADD SERVICE ERROR", err.response?.data);
-    })
-    .finally(() => setActionLoading(false));
+toast.success("Service added successfully");
+
+// 🔥 HARD REFRESH FROM BACKEND
+await refreshStepServices(selectedStepId);
+fetchServiceCounts(partnerStepsData);
+   
+  } catch (error) {
+    console.error("ADD SERVICE ERROR", error.response?.data || error);
+    toast.error("Failed to add service");
+  }
 };
+
 
 
   const resetPathAction = () => {
@@ -341,23 +413,27 @@ const addServiceToStepInstant = (serviceId) => {
     })
   }
 
-const removeServiceFromStep = (id) => {
+const removeServiceFromStep = async (id) => {
   if (!selectedStepId || !id) return;
 
   setActionLoading(true);
 
-  axios
-    .delete(`/api/steps/services/${selectedStepId}/${id}`)
-    .then(({ data }) => {
-      if (data?.status) {
-        setAttachedServices(prev =>
-          prev.filter(service => service._id !== id)
-        );
-        setServiceToRemove(null); // ✅ RESET
-      }
-    })
-    .finally(() => setActionLoading(false));
+  try {
+    await axios.delete(`/api/steps/remove/${selectedStepId}/${id}`);
+
+    toast.success("Service removed");
+
+    // 🔥 ALWAYS REFRESH FROM BACKEND
+    await refreshStepServices(selectedStepId);
+    fetchServiceCounts(partnerStepsData);
+  } catch (err) {
+    console.error("REMOVE SERVICE ERROR", err);
+    toast.error("Failed to remove service");
+  } finally {
+    setActionLoading(false);
+  }
 };
+
 
   useEffect(() => {
     setShowSelectedPath(null)
@@ -471,7 +547,56 @@ const fetchData = React.useCallback(async () => {
     })
   }
 
- 
+//  const handleAddServiceToStep = async (service) => {
+//   if (!selectedStepId) {
+//     toast.error("No step selected");
+//     return;
+//   }
+
+//   try {
+//     await axios.post("/api/steps/services/add", {
+//       step_id: selectedStepId,
+//       service_ids: [service._id],
+//     });
+
+//     toast.success(`"${service.name}" added to step`);
+
+//     // refresh attached services
+//     setStepActionStep(6); // switch to remove view
+//   } catch (err) {
+//     console.error(err);
+//     toast.error("Failed to add service");
+//   }
+// };
+const pathNameMap = React.useMemo(() => {
+  const map = {};
+  allPaths.forEach((p) => {
+    map[String(p._id)] = p.nameOfPath;
+  });
+  return map;
+}, [allPaths]);
+useEffect(() => {
+  axios.get("/api/paths/get?status=active").then(({ data }) => {
+    if (data?.status) {
+      setAllPaths(data.data);
+    }
+  });
+}, []);
+
+useEffect(() => {
+  if (pathActionEnabled || stepActionEnabled) {
+    document.body.classList.add('admin-popup-open');
+  } else {
+    document.body.classList.remove('admin-popup-open');
+  }
+  
+
+  
+  return () => {
+    document.body.classList.remove('admin-popup-open');
+  };
+}, [pathActionEnabled, stepActionEnabled]);
+
   return (
     <div className="admin-mypaths">
       <div className="admin-mypaths-menu">
@@ -616,7 +741,10 @@ const fetchData = React.useCallback(async () => {
                     .fill("")
                     .map((e, i) => {
                       return (
-                        <div className="admin-each-mypaths-data" key={i}>
+                        <div
+  className="admin-each-mypaths-data1"
+  style={{ position: "relative" }}
+>
                           <div className="admin-each-mypaths-name">
                             <Skeleton width={100} height={30} />
                           </div>
@@ -662,7 +790,9 @@ const fetchData = React.useCallback(async () => {
                     .fill("")
                     ?.map((e, i) => {
                       return (
-                        <div className="admin-each-mypaths-data1" key={i}>
+                        <div
+  className="admin-each-mypaths-data1"
+  style={{ position: "relative" }} key={i}>
                           <div className="admin-each-mypaths-detail">
                             <div className="admin-each-mypathsName">
                               <Skeleton width={100} height={30} />
@@ -688,1032 +818,1117 @@ const fetchData = React.useCallback(async () => {
                         </div>
                       );
                     })
-                : filteredPartnerStepsData?.map((e, i) => {
-                    return (
-                      <div
-                        className="admin-each-mypaths-data1"
-                        key={i}
-                       onClick={() => {
-              setSelectedStepId(e._id);
-setSelectedStep(e); // FULL OBJECT
+                :filteredPartnerStepsData?.map((e) => {
+  return (
+    <div
+      className="admin-each-mypaths-data1"
+      key={e._id}   // ✅ FIXED
+      onClick={() => {
+        setSelectedStepId(e._id);
+        setSelectedStep(e);
+        setStepActionEnabled(true);
+      }}
+    >
+      <div className="admin-each-mypaths-detail">
+        <div className="admin-each-mypathsName">
+          <div>{e?.name}</div>
+          {/* <div style={{ fontSize: "0.8rem", fontWeight: "300" }}>
+            {e?._id}
+          </div> */}
+        </div>
 
-              setStepActionEnabled(true);
-            }}
+        <div className="admin-each-mypathsCountry">
+          {e?.length || 0} Days
+        </div>
 
-                      >
-                        <div className="admin-each-mypaths-detail">
-                          <div className="admin-each-mypathsName">
-                            <div>
-                              <div>{e?.name}</div>
-                              <div
-                                style={{
-                                  fontSize: "0.8rem",
-                                  fontWeight: "300",
-                                }}
-                              >
-                                {e?._id}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="admin-each-mypathsCountry">
-                            {e?.length ? e?.length : 0} Days
-                          </div>
-                          <div className="admin-each-mypathsCountry">{e?.cost}</div>
-                                <div className="admin-each-mypathsMicrosteps">
-                        {e?.servicesCount ?? "-"}
-                      </div>
+        <div className="admin-each-mypathsCountry">
+          {e?.cost}
+        </div>
 
-                        </div>
-                        <div className="admin-each-mypaths-desc">
-                          <div className="admin-each-mypaths-desc-txt">
-                            Description
-                          </div>
-                          <div className="admin-each-mypaths-desc-txt1">
-                            {e?.description}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+        <div className="admin-each-mypathsMicrosteps">
+          {serviceCountMap[e._id] ?? 0}
+        </div>
+      </div>
+
+      <div
+  className="admin-each-mypaths-desc"
+  style={{ paddingBottom: "36px" }}   // 👈 space for caption
+>
+  <div className="admin-each-mypaths-desc-txt">Description</div>
+  <div className="admin-each-mypaths-desc-txt1">
+    {e?.description}
+  </div>
+</div>
+{/* CREATED BY + PATH INFO */}
+<div
+  style={{
+    position: "absolute",
+    left: "14px",
+    bottom: "10px",
+    width: "calc(100% - 28px)",
+    fontSize: "11px",
+    color: "#4b5563",
+    lineHeight: "1.4",
+    pointerEvents: "none",
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  }}
+>
+  {/* CREATED BY SECTION */}
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "6px",
+      marginBottom: "6px",
+      flexWrap: "wrap",
+    }}
+  >
+    <span style={{ color: "#6b7280", fontSize: "10.5px", fontWeight: 500 }}>
+      CREATED BY
+    </span>
+    <span style={{ color: "#111827", fontWeight: 500 }}>
+      {e?.email || "N/A"}
+    </span>
+    <span style={{ color: "#d1d5db" }}>•</span>
+    <span style={{ color: "#6b7280" }}>
+      {e?.createdAt
+        ? new Date(e.createdAt).toLocaleString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          })
+        : "No date"}
+    </span>
+  </div>
+
+  {/* BELONGS TO PATH */}
+  {e?.path_id && pathNameMap[String(e.path_id)] && (
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "6px",
+        padding: "4px 10px",
+        borderRadius: "12px",
+        background: "linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%)",
+        border: "1px solid #bfdbfe",
+        color: "#1e40af",
+        fontSize: "10.5px",
+        fontWeight: 600,
+        boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+      }}
+    >
+      <svg
+        width="10"
+        height="10"
+        viewBox="0 0 16 16"
+        fill="none"
+        style={{ marginRight: "2px" }}
+      >
+        <path
+          d="M8 1L10.5 5.5L15.5 6.5L12 10L13 15L8 12.5L3 15L4 10L0.5 6.5L5.5 5.5L8 1Z"
+          fill="#3b82f6"
+          fillOpacity="0.7"
+        />
+      </svg>
+      <span>Belongs to:</span>
+      <span style={{ color: "#1e3a8a", fontWeight: 700 }}>
+        {pathNameMap[String(e.path_id)]}
+      </span>
+    </div>
+  )}
+</div>
+
+
+
+    </div>
+  );
+})
+
+                  }
             </div>
           </>
         )}
 
-        {pathActionEnabled && (
-          <div className="admin-acc-popular1">
+       {pathActionEnabled && (
+  <>
+    {/* ADD BACKDROP */}
+    <div className="admin-popup-backdrop" onClick={() => resetPathAction()}></div>
+    
+    <div className="admin-acc-popular1">
+      <div
+        className="admin-acc-popular-top1"
+        style={{
+          display:
+            pathActionStep === 3
+              ? "none"
+              : metaDataStep === "success"
+              ? "none"
+              : "",
+        }}
+      >
+        <div className="admin-acc-popular-head1">
+          {pathActionStep > 3 ? "Edit Paths" : pathActionStep >7 ? "Add service": "My Path Actions"}
+        </div>
+        <div
+          className="admin-acc-popular-img-box1"
+          style={{ cursor: "pointer" }}
+          onClick={() => {
+            resetPathAction();
+          }}
+        >
+          <img className="admin-acc-popular-img1" src={closepop} alt="" />
+        </div>
+      </div>
+      {pathActionStep === 1 && mypathsMenu !== "Pending Paths" && (
+        <div className="admin-acc-mt-div">
+          <div className="admin-acc-scroll-div">
             <div
-              className="admin-acc-popular-top1"
-              style={{
-                display:
-                  pathActionStep === 3
-                    ? "none"
-                    : metaDataStep === "success"
-                    ? "none"
-                    : "",
+              className="admin-acc-step-box4"
+              onClick={() => {
+                setPathActionStep(4);
               }}
             >
-              <div className="admin-acc-popular-head1">
-                {pathActionStep > 3 ? "Edit Paths" : pathActionStep >7 ? "Add service": "My Path Actions"}
-              </div>
+              Edit path
+            </div>
+            <div
+              className="admin-acc-step-box4"
+              onClick={() => {
+                setPathActionStep(2);
+              }}
+            >
+              Delete path
+            </div>
+            {admin && 
+            <div
+              className="admin-acc-step-box4"
+              onClick={() => {
+                setPathActionStep(6);
+              }}
+            >
+              Reject Path
+            </div>}
+            <div
+              className="admin-acc-step-box4"
+              onClick={() => {
+                setViewPathEnabled(true);
+                setPathActionEnabled(false);
+                navigate(`/dashboard/path/${selectedPathId}`)
+              }}
+            >
+              View path
+            </div>
+          </div>
+        </div>
+      )}
+
+      {pathActionStep === 1 && mypathsMenu === "Pending Paths" && (
+        <div className="admin-acc-mt-div">
+          <div className="admin-acc-scroll-div">
+            <div
+              className="admin-acc-step-box4"
+              onClick={() => {
+                setPathActionStep(5);
+              }}
+            >
+              Approve Path
+            </div>
+            <div
+              className="admin-acc-step-box4"
+              onClick={() => {
+                setPathActionStep(6);
+              }}
+            >
+              Reject Path
+            </div>
+            <div
+              className="admin-acc-step-box4"
+              onClick={() => {
+                setPathActionStep(9);
+              }}
+            >
+              Add Services
+            </div>
+            <div
+              className="admin-acc-step-box4"
+              onClick={() => {
+                setPathActionStep(4);
+              }}
+            >
+              Edit path
+            </div>
+            <div
+              className="admin-acc-step-box4"
+              onClick={() => {
+                setPathActionStep(2);
+              }}
+            >
+              Delete path
+            </div>
+            <div
+              className="admin-acc-step-box4"
+              onClick={() => {
+                setViewPathEnabled(true);
+                setPathActionEnabled(false);
+              }}
+            >
+              View path
+            </div>
+          </div>
+        </div>
+      )}
+
+      {pathActionStep === 2 && (
+        <div className="admin-acc-mt-div">
+          <div className="admin-acc-scroll-div">
+            <div
+              className="admin-acc-step-box4"
+              onClick={() => {
+                deletePath();
+              }}
+            >
+              Confirm and delete
+            </div>
+          </div>
+          <div
+            className="admin-goBack3"
+            onClick={() => {
+              setPathActionStep(1);
+            }}
+          >
+            Go Back
+          </div>
+        </div>
+      )}
+
+      {actionLoading ? (
+        <div className="admin-popularlogo">
+          <img className="admin-popularlogoimg" src={lg1} alt="" />
+        </div>
+      ) : (
+        ""
+      )}
+
+      {pathActionStep === 3 && (
+        <div className="admin-success-box2">Path Successfully Deleted</div>
+      )}
+
+      {pathActionStep === 4 &&
+        (editPaths === "default" ? (
+          <div className="admin-acc-mt-div">
+            <div className="admin-acc-sub-text">
+              What type of data do you want to edit?
+            </div>
+            <div className="admin-acc-scroll-div">
               <div
-                className="admin-acc-popular-img-box1"
-                style={{ cursor: "pointer" }}
+                className="admin-acc-step-box"
                 onClick={() => {
-                  resetPathAction();
+                  setStepActionStep(7);
                 }}
               >
-                <img className="admin-acc-popular-img1" src={closepop} alt="" />
+                Edit Step
               </div>
             </div>
-            {pathActionStep === 1 && mypathsMenu !== "Pending Paths" && (
-              <div className="admin-acc-mt-div">
-                <div className="admin-acc-scroll-div">
-                  <div
-                    className="admin-acc-step-box4"
-                    onClick={() => {
-                      setPathActionStep(4);
-                    }}
-                  >
-                    Edit path
-                  </div>
-                  <div
-                    className="admin-acc-step-box4"
-                    onClick={() => {
-                      setPathActionStep(2);
-                    }}
-                  >
-                    Delete path
-                  </div>
-                  {admin && 
-                  <div
-                    className="admin-acc-step-box4"
-                    onClick={() => {
-                      setPathActionStep(6);
-                    }}
-                  >
-                    Reject Path
-                  </div>}
-                  {/* <div
-                    className="admin-acc-step-box4"
-                    onClick={() => {
-                      setPathActionStep(9);
-                    }}
-                  >
-                    Add Services
-                  </div> */}
-                  <div
-                    className="admin-acc-step-box4"
-                    onClick={() => {
-                      setViewPathEnabled(true);
-                      setPathActionEnabled(false);
-                      navigate(`/dashboard/path/${selectedPathId}`)
-                    }}
-                  >
-                    View path
-                  </div>
-                </div>
+            <div
+              className="admin-goBack3"
+              onClick={() => {
+                setPathActionStep(1);
+              }}
+            >
+              Go Back
+            </div>
+          </div>
+        ) : editPaths === "Edit meta data" ? (
+          metaDataStep === "default" ? (
+            <div className="admin-acc-mt-div">
+              <div className="admin-acc-sub-text">
+                Which meta data do you want to edit?
               </div>
-            )}
-
-            {pathActionStep === 1 && mypathsMenu === "Pending Paths" && (
-              <div className="admin-acc-mt-div">
-                <div className="admin-acc-scroll-div">
-                  <div
-                    className="admin-acc-step-box4"
-                    onClick={() => {
-                      setPathActionStep(5);
-                    }}
-                  >
-                    Approve Path
-                  </div>
-                  <div
-                    className="admin-acc-step-box4"
-                    onClick={() => {
-                      setPathActionStep(6);
-                    }}
-                  >
-                    Reject Path
-                  </div>
-                  <div
-                    className="admin-acc-step-box4"
-                    onClick={() => {
-                      setPathActionStep(9);
-                    }}
-                  >
-                    Add Services
-                  </div>
-                  <div
-                    className="admin-acc-step-box4"
-                    onClick={() => {
-                      setPathActionStep(4);
-                    }}
-                  >
-                    Edit path
-                  </div>
-                  <div
-                    className="admin-acc-step-box4"
-                    onClick={() => {
-                      setPathActionStep(2);
-                    }}
-                  >
-                    Delete path
-                  </div>
-                  <div
-                    className="admin-acc-step-box4"
-                    onClick={() => {
-                      setViewPathEnabled(true);
-                      setPathActionEnabled(false);
-                    }}
-                  >
-                    View path
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {pathActionStep === 2 && (
-              <div className="admin-acc-mt-div">
-                <div className="admin-acc-scroll-div">
-                  <div
-                    className="admin-acc-step-box4"
-                    onClick={() => {
-                      deletePath();
-                    }}
-                  >
-                    Confirm and delete
-                  </div>
-                </div>
+              <div className="admin-acc-scroll-div">
                 <div
-                  className="admin-goBack3"
+                  className="admin-acc-step-box4"
                   onClick={() => {
-                    setPathActionStep(1);
+                    setMetaDataStep("nameOfPath");
                   }}
                 >
-                  Go Back
+                  Name
+                </div>
+                <div
+                  className="admin-acc-step-box4"
+                  onClick={() => {
+                    setMetaDataStep("length");
+                  }}
+                >
+                  Length
+                </div>
+                <div
+                  className="admin-acc-step-box4"
+                  onClick={() => {
+                    setMetaDataStep("description");
+                  }}
+                >
+                  Description
+                </div>
+                <div
+                  className="admin-acc-step-box4"
+                  onClick={() => {
+                    setMetaDataStep("path_type");
+                  }}
+                >
+                  Path type
+                </div>
+                <div
+                  className="admin-acc-step-box4"
+                  onClick={() => {
+                    setMetaDataStep("destination_institution");
+                  }}
+                >
+                  Destination institution
+                </div>
+                <div
+                  className="admin-acc-step-box4"
+                  onClick={() => {
+                    setMetaDataStep("program");
+                  }}
+                >
+                  Program
+                </div>
+                <div
+                  className="admin-acc-step-box4"
+                  onClick={() => {
+                    setMetaDataStep("city");
+                  }}
+                >
+                  City
+                </div>
+                <div
+                  className="admin-acc-step-box4"
+                  onClick={() => {
+                    setMetaDataStep("country");
+                  }}
+                >
+                  Country
                 </div>
               </div>
-            )}
-
-            {actionLoading ? (
-              <div className="admin-popularlogo">
-                <img className="admin-popularlogoimg" src={lg1} alt="" />
+              <div
+                className="admin-goBack3"
+                onClick={() => {
+                  setEditPaths("default");
+                }}
+              >
+                Go Back
               </div>
-            ) : (
-              ""
-            )}
-
-            {pathActionStep === 3 && (
-              <div className="admin-success-box2">Path Successfully Deleted</div>
-            )}
-
-            {pathActionStep === 4 &&
-              (editPaths === "default" ? (
-                <div className="admin-acc-mt-div">
-                  <div className="admin-acc-sub-text">
-                    What type of data do you want to edit?
-                  </div>
-                  <div className="admin-acc-scroll-div">
-                    {/* <div
-                      className="admin-acc-step-box4"
-                      onClick={() => {
-                        setEditPaths("Edit meta data");
-                      }}
-                    >
-                      Edit meta data
-                    </div> */}
-  <div
-  className="admin-acc-step-box"
-  onClick={() => {
-    setStepActionStep(7);
-  }}
->
-  Edit Step
-</div>
-
-
-                    {/* <div
-                      className="admin-acc-step-box4"
-                      onClick={() => {
-                        setEditPaths("Edit who qualifies");
-                      }}
-                    >
-                      Edit who qualifies
-                    </div> */}
-                  </div>
-                  <div
-                    className="admin-goBack3"
-                    onClick={() => {
-                      setPathActionStep(1);
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              ) : editPaths === "Edit meta data" ? (
-                metaDataStep === "default" ? (
-                  <div className="admin-acc-mt-div">
-                    <div className="admin-acc-sub-text">
-                      Which meta data do you want to edit?
-                    </div>
-                    <div className="admin-acc-scroll-div">
-                      <div
-                        className="admin-acc-step-box4"
-                        onClick={() => {
-                          setMetaDataStep("nameOfPath");
-                        }}
-                      >
-                        Name
-                      </div>
-                      <div
-                        className="admin-acc-step-box4"
-                        onClick={() => {
-                          setMetaDataStep("length");
-                        }}
-                      >
-                        Length
-                      </div>
-                      <div
-                        className="admin-acc-step-box4"
-                        onClick={() => {
-                          setMetaDataStep("description");
-                        }}
-                      >
-                        Description
-                      </div>
-                      <div
-                        className="admin-acc-step-box4"
-                        onClick={() => {
-                          setMetaDataStep("path_type");
-                        }}
-                      >
-                        Path type
-                      </div>
-                      <div
-                        className="admin-acc-step-box4"
-                        onClick={() => {
-                          setMetaDataStep("destination_institution");
-                        }}
-                      >
-                        Destination institution
-                      </div>
-                      <div
-                        className="admin-acc-step-box4"
-                        onClick={() => {
-                          setMetaDataStep("program");
-                        }}
-                      >
-                        Program
-                      </div>
-                      <div
-                        className="admin-acc-step-box4"
-                        onClick={() => {
-                          setMetaDataStep("city");
-                        }}
-                      >
-                        City
-                      </div>
-                      <div
-                        className="admin-acc-step-box4"
-                        onClick={() => {
-                          setMetaDataStep("country");
-                        }}
-                      >
-                        Country
-                      </div>
-                    </div>
-                    <div
-                      className="admin-goBack3"
-                      onClick={() => {
-                        setEditPaths("default");
-                      }}
-                    >
-                      Go Back
-                    </div>
-                  </div>
-                ) : metaDataStep === "success" ? (
-                  <div className="admin-success-box2">
-                    You have successfully updated the{" "}
+            </div>
+          ) : metaDataStep === "success" ? (
+            <div className="admin-success-box2">
+              You have successfully updated the{" "}
+              {metaDataStep === "nameOfPath"
+                ? "name"
+                : metaDataStep === "path_type"
+                ? "path type"
+                : metaDataStep === "destination_institution"
+                ? "destination institution"
+                : metaDataStep}{" "}
+              for this page. You will automatically be redirected to the
+              updated path page.
+            </div>
+          ) : (
+            <>
+              <div className="admin-acc-mt-div">
+                <div className="admin-acc-scroll-div">
+                  <div className="admin-acc-sub-textt">
+                    Current{" "}
                     {metaDataStep === "nameOfPath"
                       ? "name"
                       : metaDataStep === "path_type"
                       ? "path type"
                       : metaDataStep === "destination_institution"
                       ? "destination institution"
-                      : metaDataStep}{" "}
-                    for this page. You will automatically be redirected to the
-                    updated path page.
+                      : metaDataStep}
                   </div>
-                ) : (
-                  <>
-                    <div className="admin-acc-mt-div">
-                      <div className="admin-acc-scroll-div">
-                        <div className="admin-acc-sub-textt">
-                          Current{" "}
-                          {metaDataStep === "nameOfPath"
-                            ? "name"
-                            : metaDataStep === "path_type"
-                            ? "path type"
-                            : metaDataStep === "destination_institution"
-                            ? "destination institution"
-                            : metaDataStep}
-                        </div>
-                        <div className="admin-acc-step-box5">
-                          {selectedPath?.[metaDataStep] || ""}
-                        </div>
-                        <div className="admin-acc-sub-textt">
-                          New{" "}
-                          {metaDataStep === "nameOfPath"
-                            ? "name"
-                            : metaDataStep === "path_type"
-                            ? "path type"
-                            : metaDataStep === "destination_institution"
-                            ? "destination institution"
-                            : metaDataStep}
-                        </div>
-                        <div className="admin-acc-step-box6">
-                          <input
-                            type="text"
-                            placeholder={`Enter ${
-                              metaDataStep === "nameOfPath"
-                                ? "name"
-                                : metaDataStep === "path_type"
-                                ? "path type"
-                                : metaDataStep === "destination_institution"
-                                ? "destination institution"
-                                : metaDataStep
-                            }`}
-                            onChange={(e) => {
-                              setNewValue(e.target.value);
-                            }}
-                            value={newValue}
-                          />
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          opacity: newValue?.length > 1 ? "1" : "0.5",
-                          cursor:
-                            newValue?.length > 1 ? "pointer" : "not-allowed",
-                        }}
-                        className="admin-save-Btn"
-                        onClick={() => {
-                          if (newValue?.length > 1) {
-                            editMetaData(metaDataStep);
-                          }
-                        }}
-                      >
-                        Save Changes
-                      </div>
-                      <div
-                        className="admin-goBack3"
-                        onClick={() => {
-                          setMetaDataStep("default");
-                        }}
-                      >
-                        Go Back
-                      </div>
-                    </div>
-                    {actionLoading ? (
-                      <div className="admin-popularlogo">
-                        <img className="admin-popularlogoimg" src={lg1} alt="" />
-                      </div>
-                    ) : (
-                      ""
-                    )}
-                  </>
-                )
-              ) : editPaths === "Edit steps" ? (
-                <div className="admin-acc-mt-div">
-                  <div className="admin-acc-sub-text">
-                    How do you want to edit the steps in this path?
+                  <div className="admin-acc-step-box5">
+                    {selectedPath?.[metaDataStep] || ""}
                   </div>
-                  <div className="admin-acc-scroll-div">
-                    <div className="admin-acc-step-box4" onClick={e => {
-                       setEditPaths("add_step");
-                    }}>Add new step</div>
-                    <div className="admin-acc-step-box4" onClick={e => {
-                       setEditPaths("remove_step");
-                    }}>Remove existing step</div>
-                    {/* <div className="admin-acc-step-box4">
-                      Edit backup path for existing step
-                    </div>
-                    */}
-                     <div className="admin-acc-step-box" onClick={e => {
-                       setEditPaths("reorder_step");
-                    }}>Reorder existing steps</div>
+                  <div className="admin-acc-sub-textt">
+                    New{" "}
+                    {metaDataStep === "nameOfPath"
+                      ? "name"
+                      : metaDataStep === "path_type"
+                      ? "path type"
+                      : metaDataStep === "destination_institution"
+                      ? "destination institution"
+                      : metaDataStep}
                   </div>
-                  <div
-                    className="admin-goBack3"
-                    onClick={() => {
-                      setEditPaths("default");
-                    }}
-                  >
-                    Go Back
+                  <div className="admin-acc-step-box6">
+                    <input
+                      type="text"
+                      placeholder={`Enter ${
+                        metaDataStep === "nameOfPath"
+                          ? "name"
+                          : metaDataStep === "path_type"
+                          ? "path type"
+                          : metaDataStep === "destination_institution"
+                          ? "destination institution"
+                          : metaDataStep
+                      }`}
+                      onChange={(e) => {
+                        setNewValue(e.target.value);
+                      }}
+                      value={newValue}
+                    />
                   </div>
                 </div>
-              ): editPaths === "add_step" ? (
-                <div className="admin-acc-mt-div">
-                  <div className="admin-acc-sub-text">
-                  Which step do you want to add?
-                  </div>
-                  <div className="admin-acc-scroll-div" >
-                    {partnerStepsData?.map(item => (
-                    <div className="admin-acc-step-box6" onClick={e => {
-                      setEditPaths("add_sub_step");
-                      setStepId(item?._id)
-                    }}>
-                      <div style={{fontWeight: 600, fontSize:"14px"}}>{item?.name}</div><br/>
-                      <div style={{fontWeight: 300, fontSize:"12px", lineHeight:"25px", paddingBottom:"10px", borderBottom:'1px solid #e7e7e7'}}>{item?.description?.substring(0, 150) + "..."}</div>
-                    </div>
-                    ))}
-                    
-                  </div>
-                  <div
-                    className="admin-goBack3"
-                    onClick={() => {
-                      setEditPaths("default");
-                    }}
-                  >
-                    Go Back
-                  </div>
+                <div
+                  style={{
+                    opacity: newValue?.length > 1 ? "1" : "0.5",
+                    cursor:
+                      newValue?.length > 1 ? "pointer" : "not-allowed",
+                  }}
+                  className="admin-save-Btn"
+                  onClick={() => {
+                    if (newValue?.length > 1) {
+                      editMetaData(metaDataStep);
+                    }
+                  }}
+                >
+                  Save Changes
                 </div>
-              ) : editPaths === "add_sub_step" ? (
-                <div className="admin-acc-mt-div">
-                  <div className="admin-acc-sub-text">
-                  Select backup path for this step
-                  </div>
-                  <div className="admin-acc-scroll-div" >
-                    {backupPathData?.map(item => (
-                    <div className="admin-substepstyle" onClick={e => {
-                      setEditPaths("show_all_paths");
-                      setBackupPathId(item?._id)
-                    }}>
-                      <div style={{fontWeight: 600, fontSize:"14px", display:'flex', justifyContent:'space-between'}}>
-                        <div>{item?.program}</div> 
-                        <div>{item?.destination_institution}</div>
-                      </div>
-                      <div style={{fontWeight: 300, fontSize:"12px", lineHeight:"25px",}}>{item?.description?.substring(0, 150) + "..."}</div><br/>
-                      <div style={{paddingBottom:"10px", fontWeight: 300, fontSize:"12px", lineHeight:"25px"}}>Path id: {item?._id}</div>
-                    </div>
-                    ))}
-                    
-                  </div>
-                  <div
-                    className="admin-goBack3"
-                    onClick={() => {
-                      setEditPaths("default");
-                    }}
-                  >
-                    Go Back
-                  </div>
+                <div
+                  className="admin-goBack3"
+                  onClick={() => {
+                    setMetaDataStep("default");
+                  }}
+                >
+                  Go Back
                 </div>
-              ): editPaths === "show_all_paths" ? (
-                <div className="admin-acc-mt-div">
-                  <div className="admin-acc-sub-text">
-                  Select the positioning of the new step
-                  </div>
-                  <div className="admin-acc-scroll-div" style={{}}>
-                    {selectedPath?.the_ids?.map((item, index) => (
-                      <>
-                        <div className="admin-subpathstyle">
-                          <div style={{fontWeight: 600, fontSize:"14px"}}>
-                            <div>{selectedPath?.nameOfPath}</div>                        
-                          </div>
-                          <div style={{fontWeight: 300, fontSize:"12px", lineHeight:"25px",}}>{selectedPath?.description?.substring(0, 150) + "..."}</div><br/>
-                          <div style={{fontWeight: 600, fontSize:"14px", display:'flex', justifyContent:'space-between', paddingBottom:"10px"}}>Backup Path</div>
-                          <div style={{borderRadius:"15px", border:"1px solid #e7e7e7", padding:'10px'}}>
-                            {item?._id}
-                          </div>
-                        </div>
-                        <center>
-                        <div className="admin-placehere" onClick={e => handlePlace(selectedPath, index+1)}>Place Here</div>
-                        </center>
-                      </>
-                    ))}
-                    
-                  </div>
-                  <div
-                    className="admin-goBack3"
-                    onClick={() => {
-                      setEditPaths("default");
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              ) :editPaths === "remove_step" ? (
-                <div className="admin-acc-mt-div">
-                  <div className="admin-acc-sub-text">
-                  Select the positioning of the new step
-                  </div>
-                  <div className="admin-acc-scroll-div" style={{}}>
-                    {selectedPath?.the_ids?.map((item, index) => (
-                      <>
-                        <div className="admin-subpathstyle" style={{position:"relative"}}>
-                          <div className="admin-deletePathStyle" onClick={e => handledeletePathPosition(selectedPath, item?._id)}>
-                            <img src={require("./delete.svg").default} alt="" />
-                          </div>
-                          <div style={{fontWeight: 600, fontSize:"14px"}}>
-                            <div>{selectedPath?.nameOfPath}</div>                        
-                          </div>
-                          <div style={{fontWeight: 300, fontSize:"12px", lineHeight:"25px",}}>{selectedPath?.description?.substring(0, 150) + "..."}</div><br/>
-                          <div style={{fontWeight: 600, fontSize:"14px", display:'flex', justifyContent:'space-between', paddingBottom:"10px"}}>Backup Path</div>
-                          <div style={{borderRadius:"15px", border:"1px solid #e7e7e7", padding:'10px'}}>
-                            {item?._id}
-                          </div>
-                        </div>
-                        
-                      </>
-                    ))}
-                    
-                  </div>
-                  <div
-                    className="admin-goBack3"
-                    onClick={() => {
-                      setEditPaths("default");
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              ):editPaths === "reorder_step" ? (
-                <div className="admin-acc-mt-div">
-                  <div className="admin-acc-sub-text">
-                  Select the positioning of the new step
-                  </div>
-                  <div className="admin-acc-scroll-div" style={{}}>
-                    <Draggable onPosChange={getChangedPos}>
-                      {selectedPath?.the_ids?.map((item, index) => (
-                        <>
-                          <div className="admin-subpathstyle" style={{position:"relative"}}>
-                           
-                            <div style={{fontWeight: 600, fontSize:"14px"}}>
-                              <div>{selectedPath?.nameOfPath}</div>                        
-                            </div>
-                            <div style={{fontWeight: 300, fontSize:"12px", lineHeight:"25px",}}>{selectedPath?.description?.substring(0, 150) + "..."}</div><br/>
-                            <div style={{fontWeight: 600, fontSize:"14px", display:'flex', justifyContent:'space-between', paddingBottom:"10px"}}>Backup Path</div>
-                            <div style={{borderRadius:"15px", border:"1px solid #e7e7e7", padding:'10px'}}>
-                              {item?._id}
-                            </div>
-                          </div>
-                          
-                        </>
-                      ))}
-                    </Draggable>
-                  </div>
-                  <div
-                    className="admin-goBack3"
-                    onClick={() => {
-                      setEditPaths("default");
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              )  : editPaths === "Edit who qualifies" ? (
-                <div className="admin-acc-mt-div">
-                  <div className="admin-acc-sub-text">
-                    Which of the current coordinates do you want to edit?
-                  </div>
-                  <div className="admin-acc-scroll-div">
-                    <div className="admin-acc-step-box4">Grade</div>
-                    <div className="admin-acc-step-box4">Grade point avg</div>
-                    <div className="admin-acc-step-box4">Curriculum</div>
-                    <div className="admin-acc-step-box4">Stream</div>
-                    <div className="admin-acc-step-box4">Financial situation</div>
-                    <div className="admin-acc-step-box4">Personality</div>
-                  </div>
-                  <div
-                    className="admin-goBack3"
-                    onClick={() => {
-                      setEditPaths("default");
-                    }}
-                  >
-                    Go Back
-                  </div>
+              </div>
+              {actionLoading ? (
+                <div className="admin-popularlogo">
+                  <img className="admin-popularlogoimg" src={lg1} alt="" />
                 </div>
               ) : (
                 ""
+              )}
+            </>
+          )
+        ) : editPaths === "Edit steps" ? (
+          <div className="admin-acc-mt-div">
+            <div className="admin-acc-sub-text">
+              How do you want to edit the steps in this path?
+            </div>
+            <div className="admin-acc-scroll-div">
+              <div className="admin-acc-step-box4" onClick={e => {
+                 setEditPaths("add_step");
+              }}>Add new step</div>
+              <div className="admin-acc-step-box4" onClick={e => {
+                 setEditPaths("remove_step");
+              }}>Remove existing step</div>
+               <div className="admin-acc-step-box" onClick={e => {
+                 setEditPaths("reorder_step");
+              }}>Reorder existing steps</div>
+            </div>
+            <div
+              className="admin-goBack3"
+              onClick={() => {
+                setEditPaths("default");
+              }}
+            >
+              Go Back
+            </div>
+          </div>
+        ): editPaths === "add_step" ? (
+          <div className="admin-acc-mt-div">
+            <div className="admin-acc-sub-text">
+            Which step do you want to add?
+            </div>
+            <div className="admin-acc-scroll-div" >
+              {partnerStepsData?.map(item => (
+              <div className="admin-acc-step-box6" onClick={e => {
+                setEditPaths("add_sub_step");
+                setStepId(item?._id)
+              }}>
+                <div style={{fontWeight: 600, fontSize:"14px"}}>{item?.name}</div><br/>
+                <div style={{fontWeight: 300, fontSize:"12px", lineHeight:"25px", paddingBottom:"10px", borderBottom:'1px solid #e7e7e7'}}>{item?.description?.substring(0, 150) + "..."}</div>
+              </div>
               ))}
-              {pathActionStep === 5 &&     
-                <div className="admin-acc-mt-div">
-                  <div className="admin-acc-sub-text">
-                  Are you sure you want to approve this path?
-                  </div>
-                  <div className="admin-acc-scroll-div">
-                    <div
-                      className="admin-acc-step-box4"
-                      onClick={e => handleApprovePath()}
-                    >
-                     Yes
-                    </div>
-                    <div
-                      className="admin-acc-step-box4"
-                      onClick={() => {
-                        setPathActionStep(1);
-                      }}
-                    >
-                     Never mind
-                    </div>
-                   
-                  </div>
-                  <div
-                    className="admin-goBack3"
-                    onClick={() => {
-                      setPathActionStep(1);
-                    }}
-                  >
-                    Go Back
-                  </div>
+              
+            </div>
+            <div
+              className="admin-goBack3"
+              onClick={() => {
+                setEditPaths("default");
+              }}
+            >
+              Go Back
+            </div>
+          </div>
+        ) : editPaths === "add_sub_step" ? (
+          <div className="admin-acc-mt-div">
+            <div className="admin-acc-sub-text">
+            Select backup path for this step
+            </div>
+            <div className="admin-acc-scroll-div" >
+              {backupPathData?.map(item => (
+              <div className="admin-substepstyle" onClick={e => {
+                setEditPaths("show_all_paths");
+                setBackupPathId(item?._id)
+              }}>
+                <div style={{fontWeight: 600, fontSize:"14px", display:'flex', justifyContent:'space-between'}}>
+                  <div>{item?.program}</div> 
+                  <div>{item?.destination_institution}</div>
                 </div>
-              }
-              {pathActionStep === 6 &&
-                <div className="admin-acc-mt-div">
-                  <div className="admin-acc-sub-text">
-                  Are you sure you want to reject this path?
-                  </div>
-                  <div className="admin-acc-scroll-div">
-                    <div
-                      className="admin-acc-step-box4"
-                      onClick={() => {
-                        handleRejectPath()
-                      }}
-                    >
-                      Yes
+                <div style={{fontWeight: 300, fontSize:"12px", lineHeight:"25px",}}>{item?.description?.substring(0, 150) + "..."}</div><br/>
+                <div style={{paddingBottom:"10px", fontWeight: 300, fontSize:"12px", lineHeight:"25px"}}>Path id: {item?._id}</div>
+              </div>
+              ))}
+              
+            </div>
+            <div
+              className="admin-goBack3"
+              onClick={() => {
+                setEditPaths("default");
+              }}
+            >
+              Go Back
+            </div>
+          </div>
+        ): editPaths === "show_all_paths" ? (
+          <div className="admin-acc-mt-div">
+            <div className="admin-acc-sub-text">
+            Select the positioning of the new step
+            </div>
+            <div className="admin-acc-scroll-div" style={{}}>
+              {selectedPath?.the_ids?.map((item, index) => (
+                <>
+                  <div className="admin-subpathstyle">
+                    <div style={{fontWeight: 600, fontSize:"14px"}}>
+                      <div>{selectedPath?.nameOfPath}</div>                        
                     </div>
-                    <div
-                      className="admin-acc-step-box4"
-                      onClick={() => {
-                        setPathActionStep(1);
-                      }}
-                    >
-                      Never mind
+                    <div style={{fontWeight: 300, fontSize:"12px", lineHeight:"25px",}}>{selectedPath?.description?.substring(0, 150) + "..."}</div><br/>
+                    <div style={{fontWeight: 600, fontSize:"14px", display:'flex', justifyContent:'space-between', paddingBottom:"10px"}}>Backup Path</div>
+                    <div style={{borderRadius:"15px", border:"1px solid #e7e7e7", padding:'10px'}}>
+                      {item?._id}
                     </div>
-                    
                   </div>
-                  <div
-                    className="admin-goBack3"
-                    onClick={() => {
-                      setPathActionStep(1);
-                    }}
-                  >
-                    Go Back
+                  <center>
+                  <div className="admin-placehere" onClick={e => handlePlace(selectedPath, index+1)}>Place Here</div>
+                  </center>
+                </>
+              ))}
+              
+            </div>
+            <div
+              className="admin-goBack3"
+              onClick={() => {
+                setEditPaths("default");
+              }}
+            >
+              Go Back
+            </div>
+          </div>
+        ) :editPaths === "remove_step" ? (
+          <div className="admin-acc-mt-div">
+            <div className="admin-acc-sub-text">
+            Select the positioning of the new step
+            </div>
+            <div className="admin-acc-scroll-div" style={{}}>
+              {selectedPath?.the_ids?.map((item, index) => (
+                <>
+                  <div className="admin-subpathstyle" style={{position:"relative"}}>
+                    <div className="admin-deletePathStyle" onClick={e => handledeletePathPosition(selectedPath, item?._id)}>
+                      <img src={require("./delete.svg").default} alt="" />
+                    </div>
+                    <div style={{fontWeight: 600, fontSize:"14px"}}>
+                      <div>{selectedPath?.nameOfPath}</div>                        
+                    </div>
+                    <div style={{fontWeight: 300, fontSize:"12px", lineHeight:"25px",}}>{selectedPath?.description?.substring(0, 150) + "..."}</div><br/>
+                    <div style={{fontWeight: 600, fontSize:"14px", display:'flex', justifyContent:'space-between', paddingBottom:"10px"}}>Backup Path</div>
+                    <div style={{borderRadius:"15px", border:"1px solid #e7e7e7", padding:'10px'}}>
+                      {item?._id}
+                    </div>
                   </div>
-                </div>
-              }
-              {pathActionStep === 7 && (
-                <div className="admin-success-box2">Path is Approved.</div>
-              )}
-              {pathActionStep === 8 && (
-                <div className="admin-success-box2">Path is Rejected.</div>
-              )}
-
-              {/* Add Service Steps */}
-
-              {pathActionStep === 9 &&
-                <div className="admin-acc-mt-div">
-                  <div className="admin-acc-sub-text">
-                  Which step do you want to add the service to?
-                  </div>
-                  <div className="admin-acc-scroll-div">
-                    {selectedPath && selectedPath?.StepDetails?.map(item => (
-                      <div
-                        className="admin-acc-step-box4"
-                        style={{flexDirection:'column', alignItems:'flex-start', justifyContent:'center'}}
-                        onClick={() => {
-                          setAddServiceStep(item)
-                        setPathActionStep(10)
-                      }}
-                      >
-                        <div>{item?.name}</div> 
-                        <div style={{fontSize:'12px', fontWeight: 400, paddingTop:'5px'}}>{item?._id}</div>
+                  
+                </>
+              ))}
+              
+            </div>
+            <div
+              className="admin-goBack3"
+              onClick={() => {
+                setEditPaths("default");
+              }}
+            >
+              Go Back
+            </div>
+          </div>
+        ):editPaths === "reorder_step" ? (
+          <div className="admin-acc-mt-div">
+            <div className="admin-acc-sub-text">
+            Select the positioning of the new step
+            </div>
+            <div className="admin-acc-scroll-div" style={{}}>
+              <Draggable onPosChange={getChangedPos}>
+                {selectedPath?.the_ids?.map((item, index) => (
+                  <>
+                    <div className="admin-subpathstyle" style={{position:"relative"}}>
+                     
+                      <div style={{fontWeight: 600, fontSize:"14px"}}>
+                        <div>{selectedPath?.nameOfPath}</div>                        
                       </div>
-                    ))}
-                
-          
+                      <div style={{fontWeight: 300, fontSize:"12px", lineHeight:"25px",}}>{selectedPath?.description?.substring(0, 150) + "..."}</div><br/>
+                      <div style={{fontWeight: 600, fontSize:"14px", display:'flex', justifyContent:'space-between', paddingBottom:"10px"}}>Backup Path</div>
+                      <div style={{borderRadius:"15px", border:"1px solid #e7e7e7", padding:'10px'}}>
+                        {item?._id}
+                      </div>
+                    </div>
                     
-                  </div>
-                  <div
-                    className="admin-goBack3"
-                    onClick={() => {
-                      setPathActionStep(1);
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              }
-    
-
+                  </>
+                ))}
+              </Draggable>
+            </div>
+            <div
+              className="admin-goBack3"
+              onClick={() => {
+                setEditPaths("default");
+              }}
+            >
+              Go Back
+            </div>
           </div>
+        )  : editPaths === "Edit who qualifies" ? (
+          <div className="admin-acc-mt-div">
+            <div className="admin-acc-sub-text">
+              Which of the current coordinates do you want to edit?
+            </div>
+            <div className="admin-acc-scroll-div">
+              <div className="admin-acc-step-box4">Grade</div>
+              <div className="admin-acc-step-box4">Grade point avg</div>
+              <div className="admin-acc-step-box4">Curriculum</div>
+              <div className="admin-acc-step-box4">Stream</div>
+              <div className="admin-acc-step-box4">Financial situation</div>
+              <div className="admin-acc-step-box4">Personality</div>
+            </div>
+            <div
+              className="admin-goBack3"
+              onClick={() => {
+                setEditPaths("default");
+              }}
+            >
+              Go Back
+            </div>
+          </div>
+        ) : (
+          ""
+        ))}
+        {pathActionStep === 5 &&     
+          <div className="admin-acc-mt-div">
+            <div className="admin-acc-sub-text">
+            Are you sure you want to approve this path?
+            </div>
+            <div className="admin-acc-scroll-div">
+              <div
+                className="admin-acc-step-box4"
+                onClick={e => handleApprovePath()}
+              >
+               Yes
+              </div>
+              <div
+                className="admin-acc-step-box4"
+                onClick={() => {
+                  setPathActionStep(1);
+                }}
+              >
+               Never mind
+              </div>
+             
+            </div>
+            <div
+              className="admin-goBack3"
+              onClick={() => {
+                setPathActionStep(1);
+              }}
+            >
+              Go Back
+            </div>
+          </div>
+        }
+        {pathActionStep === 6 &&
+          <div className="admin-acc-mt-div">
+            <div className="admin-acc-sub-text">
+            Are you sure you want to reject this path?
+            </div>
+            <div className="admin-acc-scroll-div">
+              <div
+                className="admin-acc-step-box4"
+                onClick={() => {
+                  handleRejectPath()
+                }}
+              >
+                Yes
+              </div>
+              <div
+                className="admin-acc-step-box4"
+                onClick={() => {
+                  setPathActionStep(1);
+                }}
+              >
+                Never mind
+              </div>
+              
+            </div>
+            <div
+              className="admin-goBack3"
+              onClick={() => {
+                setPathActionStep(1);
+              }}
+            >
+              Go Back
+            </div>
+          </div>
+        }
+        {pathActionStep === 7 && (
+          <div className="admin-success-box2">Path is Approved.</div>
         )}
-{stepActionEnabled && (
-  <div className="admin-acc-popular1">
-    <div
-      className="admin-acc-popular-top"
-      style={{ display: stepActionStep === 3 ? "none" : "" }}
-    >
-      <div className="admin-acc-popular-head">My Step Actions</div>
-      <div
-        className="admin-acc-popular-img-box"
-        style={{ cursor: "pointer" }}
-        onClick={() => {
-          setStepActionEnabled(false);
-          setStepActionStep(1);
-          setSelectedStepId("");
-        }}
-      >
-        <img className="admin-acc-popular-img" src={closepop} alt="" />
-      </div>
-    </div>
+        {pathActionStep === 8 && (
+          <div className="admin-success-box2">Path is Rejected.</div>
+        )}
 
-    {stepActionStep === 1 && (
-      <div style={{ marginTop: "3rem" }}>
-        <div
-          className="admin-acc-step-box"
-          onClick={() => {
-            setStepActionStep(4);
-          }}
-        >
-          Edit Services
-        </div>
-        <div
-          className="admin-acc-step-box"
-          onClick={() => {
-            setStepActionStep(7);
-          }}
-        >
-          Edit Step
-        </div>
-        <div
-          className="admin-acc-step-box"
-          onClick={() => {
-            deleteStep();
-          }}
-        >
-          Delete step
-        </div>
-      </div>
-    )}
-
-    {stepActionStep === 2 && (
-      <div style={{ marginTop: "3rem" }}>
-        <div
-          className="admin-acc-step-box"
-          onClick={() => {
-            deleteStep();
-          }}
-        >
-          Confirm and delete
-        </div>
-        <div
-          className="admin-goBack2"
-          onClick={() => {
-            setStepActionStep(1);
-          }}
-        >
-          Go Back
-        </div>
-      </div>
-    )}
-
-    {stepActionStep === 3 && (
-      <div className="admin-success-box1">Step Successfully Deleted</div>
-    )}
-
-    {stepActionStep === 4 && (
-      <div className="admin-acc-mt-div">
-        <div className="admin-acc-sub-text">What do you want to do?</div>
-        <div className="admin-acc-scroll-div">
-          <div
-            className="admin-acc-step-box4"
-            style={{
-              flexDirection: "column",
-              alignItems: "flex-start",
-              justifyContent: "center",
-            }}
-            onClick={() => setStepActionStep(5)}
-          >
-            <div>Add a Service</div>
+        {pathActionStep === 9 &&
+          <div className="admin-acc-mt-div">
+            <div className="admin-acc-sub-text">
+            Which step do you want to add the service to?
+            </div>
+            <div className="admin-acc-scroll-div">
+              {selectedPath && selectedPath?.StepDetails?.map(item => (
+                <div
+                  className="admin-acc-step-box4"
+                  style={{flexDirection:'column', alignItems:'flex-start', justifyContent:'center'}}
+                  onClick={() => {
+                    setAddServiceStep(item)
+                  setPathActionStep(10)
+                }}
+                >
+                  <div>{item?.name}</div> 
+                  <div style={{fontSize:'12px', fontWeight: 400, paddingTop:'5px'}}>{item?._id}</div>
+                </div>
+              ))}
+            </div>
+            <div
+              className="admin-goBack3"
+              onClick={() => {
+                setPathActionStep(1);
+              }}
+            >
+              Go Back
+            </div>
           </div>
-          <div
-            className="admin-acc-step-box4"
-            style={{
-              flexDirection: "column",
-              alignItems: "flex-start",
-              justifyContent: "center",
-            }}
-            onClick={() => setStepActionStep(6)}
-          >
-            <div>Remove a Service</div>
-          </div>
-        </div>
-        <div
-          className="admin-goBack3"
-          onClick={() => {
-            setStepActionStep(1);
-          }}
-        >
-          Go Back
-        </div>
-      </div>
-    )}
-     {stepActionStep === 5 && (
-  <div className="admin-acc-mt-div">
-    <div className="admin-acc-sub-text">
-      Which service do you want to add?
+        }
     </div>
-
-    <div className="admin-acc-scroll-div">
-      {allServices.length > 0 ? (
-        allServices.map(item => (
-          <div
-            key={item._id}
-            className="admin-acc-step-box4"
-            style={{
-              flexDirection: "column",
-              alignItems: "flex-start",
-              justifyContent: "center",
-            }}
-            onClick={() => addServiceToStepInstant(item._id)}
-          >
-            <div style={{ fontWeight: 500 }}>
-  {item.name}
-</div>
-
-          </div>
-        ))
-      ) : (
-        <div style={{ opacity: 0.6 }}>No services found</div>
-      )}
-    </div>
-
-    <div
-      className="admin-goBack3"
-      onClick={() => {
-        setStepActionStep(1);
-      }}
-    >
-      Go Back
-    </div>
-  </div>
+  </>
 )}
 
-
-    {stepActionStep === 6 && (
-      <div className="admin-acc-mt-div">
-        <div className="admin-acc-sub-text">
-          Which service do you want to remove?
-        </div>
-        <div className="admin-acc-scroll-div">
-          {attachedServices.length > 0 ? (
-            attachedServices.map(item => (
-              <div
-                key={item._id}
-                className="admin-acc-step-box4"
-                style={{
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  justifyContent: "center",
-                }}
-                onClick={() => removeServiceFromStep(item._id)}
-              >
-               <div style={{ fontWeight: 500 }}>
-  {item.name}
-</div>
-
-              </div>
-            ))
-          ) : (
-            <div style={{ opacity: 0.6 }}>
-              No services attached to this step
-            </div>
-          )}
-        </div>
+{stepActionEnabled && (
+  <>
+    {/* ADD BACKDROP */}
+    <div className="admin-popup-backdrop" onClick={() => {
+      setStepActionEnabled(false);
+      setStepActionStep(1);
+      setSelectedStepId("");
+      setSelectedStep(null);
+    }}></div>
+    
+    <div className="admin-acc-popular1">
+      <div
+        className="admin-acc-popular-top"
+        style={{ display: stepActionStep === 3 ? "none" : "" }}
+      >
+        <div className="admin-acc-popular-head">My Step Actions</div>
         <div
-          className="admin-goBack3"
+          className="admin-acc-popular-img-box"
+          style={{ cursor: "pointer" }}
           onClick={() => {
+            setStepActionEnabled(false);
             setStepActionStep(1);
+            setSelectedStepId("");
+            setSelectedStep(null);
           }}
         >
-          Go Back
+          <img className="admin-acc-popular-img" src={closepop} alt="" />
         </div>
       </div>
-    )}
 
-    {stepActionStep === 7 && (
-      <div>
+      {stepActionStep === 1 && (
+        <div style={{ marginTop: "3rem" }}>
+          <div
+            className="admin-acc-step-box"
+            onClick={() => {
+              setStepActionStep(4);
+            }}
+          >
+            Edit Services
+          </div>
+          <div
+            className="admin-acc-step-box"
+            onClick={() => {
+              setStepActionStep(7);
+            }}
+          >
+            Edit Step
+          </div>
+          <div
+            className="admin-acc-step-box"
+            onClick={() => {
+              deleteStep();
+            }}
+          >
+            Delete step
+          </div>
+        </div>
+      )}
+
+      {stepActionStep === 2 && (
+        <div style={{ marginTop: "3rem" }}>
+          <div
+            className="admin-acc-step-box"
+            onClick={() => {
+              deleteStep();
+            }}
+          >
+            Confirm and delete
+          </div>
+          <div
+            className="admin-goBack2"
+            onClick={() => {
+              setStepActionStep(1);
+            }}
+          >
+            Go Back
+          </div>
+        </div>
+      )}
+
+      {stepActionStep === 3 && (
+        <div className="admin-success-box1">Step Successfully Deleted</div>
+      )}
+
+      {stepActionStep === 4 && (
+        <div className="admin-acc-mt-div">
+          <div className="admin-acc-sub-text">What do you want to do?</div>
+          <div className="admin-acc-scroll-div">
+            <div
+              className="admin-acc-step-box4"
+              style={{
+                flexDirection: "column",
+                alignItems: "flex-start",
+                justifyContent: "center",
+              }}
+              onClick={() => setStepActionStep(5)}
+            >
+              <div>Add a Service</div>
+            </div>
+            <div
+              className="admin-acc-step-box4"
+              style={{
+                flexDirection: "column",
+                alignItems: "flex-start",
+                justifyContent: "center",
+              }}
+              onClick={() => setStepActionStep(6)}
+            >
+              <div>Remove a Service</div>
+            </div>
+          </div>
+          <div
+            className="admin-goBack3"
+            onClick={() => {
+              setStepActionStep(1);
+            }}
+          >
+            Go Back
+          </div>
+        </div>
+      )}
+      
+      {stepActionStep === 5 && (
+        <div className="admin-acc-mt-div">
+          <div className="admin-acc-sub-text">
+            Which service do you want to add?
+          </div>
+
+          <div className="admin-acc-scroll-div">
+            {allServices.length > 0 ? (
+              allServices.map(item => {
+                const isAlreadyAdded = attachedServices?.some(
+                  s => s._id === item._id
+                );
+
+                return (
+                  <div
+                    key={item._id}
+                    className="admin-acc-step-box4"
+                    onClick={() => {
+                      if (!isAlreadyAdded) addServiceToStepInstant(item._id);
+                    }}
+                    style={{
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      justifyContent: "center",
+                      cursor: isAlreadyAdded ? "not-allowed" : "pointer",
+                      opacity: isAlreadyAdded ? 0.5 : 1,
+                    }}
+                  >
+                    <div style={{ fontWeight: 500 }}>
+                      {item.name}
+                    </div>
+
+                    {isAlreadyAdded && (
+                      <div style={{ fontSize: 12, color: "#28a745", marginTop: 4 }}>
+                        ✔ Already added
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              <div style={{ opacity: 0.6 }}>No services found</div>
+            )}
+          </div>
+
+          <div
+            className="admin-goBack3"
+            onClick={() => {
+              setStepActionStep(1);
+            }}
+          >
+            Go Back
+          </div>
+        </div>
+      )}
+
+      {stepActionStep === 6 && (
+        <div className="admin-acc-mt-div">
+          <div className="admin-acc-sub-text">
+            Which service do you want to remove?
+          </div>
+          <div className="admin-acc-scroll-div">
+            {attachedServices.length > 0 ? (
+              attachedServices.map(item => (
+                <div
+                  key={item._id}
+                  className="admin-acc-step-box4"
+                  style={{
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    justifyContent: "center",
+                  }}
+                  onClick={() => removeServiceFromStep(item._id)}
+                >
+                  <div style={{ fontWeight: 500 }}>
+                    {item.name}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ opacity: 0.6 }}>
+                No services attached to this step
+              </div>
+            )}
+          </div>
+          <div
+            className="admin-goBack3"
+            onClick={() => {
+              setStepActionStep(1);
+            }}
+          >
+            Go Back
+          </div>
+        </div>
+      )}
+
+      {stepActionStep === 7 && selectedStep && (
         <EditStepForm
           selectedStep={selectedStep}
-          onSave={updatedStep => {
-            console.log("Updated Step Data:", updatedStep);
-            setTimeout(() => {
-              setStepActionStep(null);
-            }, 2000);
+          onSave={(updatedStep) => {
+            setPartnerStepsData((prev) =>
+              prev.map((step) =>
+                step._id === updatedStep._id
+                  ? { ...step, ...updatedStep }
+                  : step
+              )
+            );
+            setSelectedStep(updatedStep);
+            setStepActionEnabled(false);
+            setStepActionStep(1);
           }}
-          onCancel={() => setStepActionStep(null)}
+          onCancel={() => {
+            setStepActionEnabled(false);
+            setStepActionStep(1);
+            setSelectedStep(null);
+          }}
         />
-      </div>
-    )}
+      )}
 
-    {stepActionStep === 8 && (
-      <div className="admin-acc-mt-div">
-        <div className="admin-acc-sub-text">
-          Add New Step Functionality Coming Soon!
+      {stepActionStep === 8 && (
+        <div className="admin-acc-mt-div">
+          <div className="admin-acc-sub-text">
+            Add New Step Functionality Coming Soon!
+          </div>
+          <div
+            className="admin-goBack3"
+            onClick={() => {
+              setStepActionStep(7);
+            }}
+          >
+            Go Back
+          </div>
         </div>
-        <div
-          className="admin-goBack3"
-          onClick={() => {
-            setStepActionStep(7);
-          }}
-        >
-          Go Back
-        </div>
-      </div>
-    )}
+      )}
 
-    {stepActionStep === 9 && (
-      <div className="admin-acc-mt-div">
-        <div className="admin-acc-sub-text">
-          Remove Existing Step Functionality Coming Soon!
+      {stepActionStep === 9 && (
+        <div className="admin-acc-mt-div">
+          <div className="admin-acc-sub-text">
+            Remove Existing Step Functionality Coming Soon!
+          </div>
+          <div
+            className="admin-goBack3"
+            onClick={() => {
+              setStepActionStep(7);
+            }}
+          >
+            Go Back
+          </div>
         </div>
-        <div
-          className="admin-goBack3"
-          onClick={() => {
-            setStepActionStep(7);
-          }}
-        >
-          Go Back
-        </div>
-      </div>
-    )}
+      )}
 
-    {stepActionStep === 10 && (
-      <div className="admin-acc-mt-div">
-        <div className="admin-acc-sub-text">
-          Reorder Existing Steps Functionality Coming Soon!
+      {stepActionStep === 10 && (
+        <div className="admin-acc-mt-div">
+          <div className="admin-acc-sub-text">
+            Reorder Existing Steps Functionality Coming Soon!
+          </div>
+          <div
+            className="admin-goBack3"
+            onClick={() => {
+              setStepActionStep(7);
+            }}
+          >
+            Go Back
+          </div>
         </div>
-        <div
-          className="admin-goBack3"
-          onClick={() => {
-            setStepActionStep(7);
-          }}
-        >
-          Go Back
-        </div>
-      </div>
-    )}
+      )}
 
-    {actionLoading ? (
-      <div className="admin-popularlogo">
-        <img className="admin-popularlogoimg" src={lg1} alt="" />
-      </div>
-    ) : (
-      ""
-    )}
-       
-                               </div>
-                           )}
+      {actionLoading ? (
+        <div className="admin-popularlogo">
+          <img className="admin-popularlogoimg" src={lg1} alt="" />
+        </div>
+      ) : (
+        ""
+      )}
+    </div>
+  </>
+)}
        
                            {/* {showSelectedPath && <CurrentStep productDataArray={[]}/>} */}
        

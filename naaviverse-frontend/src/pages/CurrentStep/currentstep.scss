@@ -1,3 +1,125 @@
+.currentstep {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===== HEADER ===== */
+.cs-top-area {
+  height: 8rem;
+  padding: 2rem 35px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* ===== CONTENT AREA ===== */
+.cs-content {
+  flex: 1;
+  padding: 1.25rem 35px;
+  overflow: hidden;
+}
+
+/* ===== 3 COLUMN GRID ===== */
+.grid-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+  height: 100%;
+}
+
+/* ===== SHARED CARD STYLE ===== */
+.macro-view-box,
+.micro-view-box,
+.nano-view-box {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.macro-text,
+.micro-text,
+.nano-text {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+/* ===== CARD CONTAINERS ===== */
+.macro-content,
+.micro-content,
+.nano-content {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.micro-content {
+  background: #f9fbff;
+}
+
+/* ===== TITLES ===== */
+.step-text,
+.micro-step-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* ===== SCROLL AREAS (ONLY THESE SCROLL) ===== */
+.macro-text-div,
+.micro-scroll-area,
+.nano-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: #475569;
+}
+
+/* ===== MICRO CTA ===== */
+.micro-inline-cta {
+  margin-top: 12px;
+  font-weight: 600;
+  color: #2563eb;
+  cursor: pointer;
+}
+
+/* ===== NANO CTA FIXED BOTTOM ===== */
+.nano-cta-wrapper {
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.nano-primary-cta {
+  width: 100%;
+  padding: 12px;
+  border-radius: 999px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ===== FOOTER ===== */
+.cs-footer1 {
+  height: 70px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+}
+
+
 .partner-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -377,12 +499,17 @@
             height: 2.5rem;
           }
 
-          .step-text {
-            font-size: 1.1rem;
-            font-weight: 500;
-            height: 5rem;
-            line-height: 1.5;
-          }
+.step-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: 1.4;
+
+  /* ✅ REMOVE height */
+  height: auto;
+
+  /* ✅ Prevent collision */
+  margin-bottom: 0.75rem;
+}
 
           .macro-text-div {
             font-weight: 300;
@@ -421,12 +548,18 @@
           }
 
 
-          .step-text {
-            font-size: 1.1rem;
-            font-weight: 500;
-            height: 5rem;
-            line-height: 1.5;
-          }
+.step-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: 1.4;
+
+  /* ✅ REMOVE height */
+  height: auto;
+
+  /* ✅ Prevent collision */
+  margin-bottom: 0.75rem;
+}
+
 
           .micro-text-div-container {
             width: 100%;
@@ -731,12 +864,17 @@
 }
 
 
-    .step-text {
-      font-size: 1.1rem;
-      font-weight: 500;
-      height: 5rem;
-      line-height: 1.5;
-    }
+.step-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: 1.4;
+
+  /* ✅ REMOVE height */
+  height: auto;
+
+  /* ✅ Prevent collision */
+  margin-bottom: 0.75rem;
+}
 
     /* ⭐ ADD THIS ⭐ */
 .nano-scroll-area {
@@ -779,13 +917,18 @@
           .nano-image-div {
             height: 2.5rem;
           }
+.step-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: 1.4;
 
-          .step-text {
-            font-size: 1.1rem;
-            font-weight: 500;
-            height: 5rem;
-            line-height: 1.5;
-          }
+  /* ✅ REMOVE height */
+  height: auto;
+
+  /* ✅ Prevent collision */
+  margin-bottom: 0.75rem;
+}
+
 
           .nano-overall-div {
             width: 100%;
