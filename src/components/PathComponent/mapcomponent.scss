@@ -1,0 +1,154 @@
+.map-component1 {
+  width: 100%;
+  height: calc(100% - 3rem);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .map-content1 {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  .place-details1 {
+    width: 25%;
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    top: calc(75px + 3rem);
+    bottom: 10px;
+    left: calc(20vw + 5px);
+    background: white;
+    height: calc(100% - 85px - 3rem);
+    padding: 1rem;
+    border-radius: 10px;
+    gap: 1rem;
+    overflow-y: scroll;
+
+    .place-photo1 {
+      display: flex;
+      width: 100%;
+
+      img {
+        width: 100%;
+      }
+    }
+
+    .place-photo {
+      display: flex;
+      width: 100%;
+
+      img {
+        width: 100%;
+      }
+    }
+
+    .place-name1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .user-rating-div1 {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      .ratings1 {
+        font-size: 1.25rem;
+        font-weight: 500;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+
+        img {
+          width: 15px;
+          height: 15px;
+        }
+      }
+    }
+
+    .address-div1 {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+
+      img {
+        width: 30px;
+        height: 30px;
+      }
+    }
+
+    .phone-no-div1 {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+
+      img {
+        width: 30px;
+        height: 30px;
+      }
+    }
+
+    .web-div1 {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+
+      img {
+        width: 30px;
+        height: 30px;
+      }
+    }
+
+    .reviews-div1 {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+
+      .reviews-text1 {
+        font-weight: 500;
+        margin-top: 1rem;
+      }
+
+      .each-review1 {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+
+        .author-div1 {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+
+          img {
+            width: 35px;
+            height: 35px;
+          }
+        }
+
+        .author-rating-div1 {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          text-transform: lowercase;
+
+          img {
+            width: 15px;
+            height: 15px;
+          }
+        }
+
+        .author-text1 {
+          font-size: 0.8rem;
+          display: -webkit-box;
+          -webkit-line-clamp: 4; /* Limit to 4 lines */
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          word-wrap: break-word;
+        }
+      }
+    }
+  }
+}

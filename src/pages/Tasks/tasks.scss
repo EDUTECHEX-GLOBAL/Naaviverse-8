@@ -1,0 +1,115 @@
+.page-wrapper {
+  width: 100%;
+  height: 100%;
+  color: #1f304f;
+
+  .top-area {
+    width: 100%;
+    padding: 35px 35px 0;
+    height: 10rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-bottom: 0.5px solid #e5e5e5;
+    border-left: 0.5px solid #e7e7e7;
+
+    .task-txt {
+      font-size: 30px;
+      font-weight: 500;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 3rem;
+
+      .each-tab {
+        font-size: 17px;
+        font-weight: 500;
+        padding-bottom: 5px;
+        cursor: pointer;
+        transition: all ease 0.2s;
+
+        p {
+          margin: 0;
+          transition: all ease 0.2s;
+        }
+
+        &:hover {
+          p {
+            transform: scale(1.04);
+          }
+        }
+      }
+    }
+  }
+
+  .middle-area {
+    width: 100%;
+    padding: 20px 35px;
+    height: 12rem;
+    border-bottom: 0.5px solid #e5e5e5;
+    border-left: 0.5px solid #e7e7e7;
+
+    .client-data-div {
+      width: 100%;
+      height: 100%;
+      border: 0.5px solid #e5e5e5;
+      border-radius: 15px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+
+      .client-data {
+        display: flex;
+        gap: 1rem;
+
+        img {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+        }
+
+        .details {
+          .name-txt {
+            font-size: 20px;
+            font-weight: 500;
+          }
+          .mail-txt {
+            font-size: 13px;
+            font-weight: 400;
+            text-transform: lowercase;
+          }
+        }
+      }
+
+      .chng-btn {
+        color: #ffffff;
+        background: #59a2dd;
+        border-radius: 35px;
+        cursor: pointer;
+        height: 2rem;
+        width: 8rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 11px;
+        font-weight: 600;
+        transition: all ease 0.2s;
+
+        &:hover {
+          box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+        }
+      }
+    }
+  }
+
+  .bottom-area {
+    width: 100%;
+    padding: 35px;
+    background: rgba(237, 237, 237, 0.37);
+    height: calc(100% - 22rem);
+    overflow-y: scroll;
+    border-left: 0.5px solid #e7e7e7;
+  }
+}

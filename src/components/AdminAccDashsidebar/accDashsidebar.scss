@@ -1,0 +1,52 @@
+@import "../../static/scss/colors";
+@import "../../static/scss/mixin";
+
+.dashboard-sidebar {
+    height: 100vh;
+    padding: 30px 2vw 0px 2vw;
+    overflow-y: scroll;
+    width: 20vw;
+    background: #ededed5e;
+
+    .dashboard-left{
+      width: calc(100%);
+      // margin: auto;
+    }
+  
+    .each-sidenav {
+      border-radius: 5px;
+      height: 43px;
+      width: calc(100%);
+      display: flex;
+      align-items: center;
+      font-weight: 500;
+      font-size: 17px;
+      line-height: 21px;
+      color: #100F0D;
+      cursor: pointer;
+      margin: 15px auto;
+      &:hover{
+        transform: scale(1.05);
+        transition: all ease .2s;
+        font-weight: 600;
+        
+      }
+    }
+  
+    .sidebar-line{
+      padding-right: 2vw;
+      margin: 30px 0px;
+      height: 1px;
+      width: 100%;
+      margin-left: -20px;
+    }
+  }
+
+  .dashboard-logo{
+    width: 14vw;
+  }
+
+  .side-btn{
+    cursor: pointer;
+    @include btn-animate(#FFF);
+  }

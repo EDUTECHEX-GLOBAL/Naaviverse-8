@@ -1,0 +1,177 @@
+/* src/components/SideTogglePanel.css */
+
+.side-panel {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 460px;
+  max-width: 160%;
+  height: 100%;
+  background: #fff;
+  z-index: 9999;
+  overflow-y: auto;
+  transition: right 0.3s ease;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.side-panel.active {
+  right: 0;
+}
+
+.side-panel-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 10001;
+  width: 30px;
+  height: 30px;
+}
+
+.side-panel-close::before {
+  content: "×";
+  font-size: 32px;
+  color: #000;
+}
+
+.side-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: calc(100% - 400px);
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 9998;
+  display: none;
+}
+
+.side-panel.active ~ .side-panel-overlay {
+  display: block;
+}
+
+.side-panel-content {
+  padding: 40px 40px;
+  position: relative;
+  z-index: 10000;
+}
+
+// .side-panel-shape {
+//   height: 5px;
+//   background: #000;
+//   margin-bottom: 30px;
+//   width: 60px;
+// }
+
+.side-panel-logo img {
+  width: 190px;
+  margin-bottom: 30px;
+}
+
+.side-panel-box {
+  margin-bottom: 30px;
+  
+}
+
+.side-panel-heading {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 70px;
+  color: #222;
+}
+
+
+
+/* Newsletter container */
+.newsletter {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* Form styles */
+.newsletter-form {
+  display: flex;
+  align-items: center;
+  background:white;
+  height: 56px;  
+  border: 0.5px solid black; 
+  border-radius: 10px;
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
+  max-width: 400px;
+  margin-bottom: 1.5rem;
+  box-shadow: none;
+}
+
+/* Input styles */
+.newsletter-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #000000;
+  font-size: 1.1rem;
+  padding: 0.75rem 0.5rem;
+  outline: none;
+  border-radius: 8px 0 0 8px;
+}
+
+.newsletter-input::placeholder {
+  color: #bdbdbd;
+  opacity: 1;
+  font-size: 1.1rem;
+}
+
+/* Button styles */
+.newsletter-btn {
+  background: #198754;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+}
+
+.newsletter-btn:hover {
+  background: #19873eb5;
+}
+
+/* Subtitle styles */
+.newsletter-subtitle {
+  color: #000000;
+  font-size: 1.1rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+/* Message styles */
+.message {
+  margin-top: 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.contact-socials a{
+  display: inline-block;
+  margin-right: 10px;
+  font-size: 20px;
+  color: #f8f8f8;
+  background: #000;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  border-radius: 50%;
+  transition: background 0.3s;
+}
+

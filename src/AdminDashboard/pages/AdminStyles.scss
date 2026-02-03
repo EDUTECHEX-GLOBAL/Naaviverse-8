@@ -1,0 +1,496 @@
+/* Background container */
+.admin-login-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #E8F4FA
+
+  ; /* PURE white background */
+  position: fixed; /* Cover the entire screen */
+  top: 0;
+  left: 0;
+  z-index: 9999; /* Stay on top */
+}
+
+/* Card */
+.admin-login-card {
+  background: #ffffff;
+  padding: 30px 40px; /* Increased padding for a slightly larger card */
+  border-radius: 16px;
+  box-shadow: 0px 10px 20px rgba(0,0,0,0.1);
+  height:50% !important;
+  width: 100%;
+  margin-top: 30px;
+  margin-bottom:30px;
+  max-width: 450px; /* Increased max width for larger card */
+}
+
+/* Logo */
+.logo-container {
+  text-align: center; /* Center the logo */
+  margin-bottom: 20px;
+}
+
+.logo-image {
+  height: 50px; /* Reduced size of logo */
+  margin: 0 auto; /* Ensure it's centered */
+  margin-left: -15px;
+  width:50%;
+}
+
+/* Title */
+.admin-login-title {
+  font-size: 23px;
+  color: #0d6efd; /* Azure Radiance */
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: bold;
+}
+
+/* Form */
+.admin-login-form .form-group {
+  margin-bottom: 35px;
+}
+
+.admin-login-form label {
+  display: block;
+  margin-bottom: 8px;
+  margin-top:-15px;
+  color: #333333;
+  font-weight: 600;
+}
+
+.admin-login-form input {
+  width: 100%;
+  padding: 4px 15px;
+  border: 1px solid #cccccc;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+  color: #000000; /* Add this */
+  background-color: #ffffff; /* Ensure background is white */
+}
+
+
+/* Password field with eye icon */
+.password-group {
+  position: relative;
+}
+
+.password-input-wrapper {
+  position: relative;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 40px; /* space for the eye icon */
+}
+
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* Focus state */
+.admin-login-form input:focus {
+  border-color: #0d6efd;
+  outline: none;
+}
+
+/* Button */
+.admin-login-button {
+  width: 100%;
+  background-color: #198754;
+  color: white;
+  font-weight: 600;
+  padding: 4px;
+  margin-top:10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.admin-login-button:hover {
+  background-color: #1ba766; /* darker blue on hover */
+}
+
+/* Error message */
+/* Overall Layout */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: white;
+}
+.admin-dashboard {
+  display: flex;
+  height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Sidebar Offcanvas for Mobile */
+.sidebar-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: none;
+  z-index: 1050;
+}
+
+.sidebar-container.open {
+  display: block;
+}
+
+.sidebar-content {
+  width: 250px;
+  height: 100%;
+  background: white;
+  overflow-y: auto;
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(0);
+}
+
+@media (min-width: 768px) {
+  .sidebar-container {
+    display: block !important;
+    position: static;
+    background: transparent;
+    width: 250px;
+  }
+
+  .sidebar-content {
+    transform: none;
+    height: auto;
+    width: 100%;
+  }
+
+  .btn-close-custom {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: #333;
+  cursor: pointer;
+  transition: color 0.3s;
+
+  &:hover {
+    color: red;
+  }
+}
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  background-color: #f5f7fa;
+  padding: 30px;
+  overflow-y: auto;
+}
+
+/* Table Container */
+.table-container {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.table-container h2 {
+  margin-bottom: 20px;
+  color: #161617;
+}
+
+/* Table Styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  font-size: 16px;
+  text-align: center;
+  color: black;
+}
+
+th, td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Welcome Message */
+.welcome-message {
+  text-align: center;
+  margin-top: 100px;
+}
+
+.welcome-message h2 {
+  color: #0488f2;
+}
+
+.welcome-message p {
+  color: #333;
+  font-size: 18px;
+}
+
+.admin-sidebar{
+  font-size:16px;
+  padding:20px 20px;
+  gap:3px;
+  line-height: 25px;
+  font-weight:500;
+  color:black
+
+}
+
+/* Base styles (unchanged from your input) above this line */
+
+/* ========== Responsive Media Queries ========== */
+
+/* Medium Devices (Tablets, 768px and below) */
+@media (max-width: 768px) {
+  
+
+  .admin-login-title {
+    font-size: 20px;
+  }
+
+  .logo-image {
+    width: 60%;
+    height: auto;
+    margin-left: 0;
+  }
+
+  .admin-login-form label {
+    font-size: 14px;
+  }
+
+  .admin-login-form input {
+    font-size: 13px;
+    padding: 4px 12px;
+  }
+
+  .admin-login-button {
+    font-size: 15px;
+    padding: 6px;
+  }
+
+  .sidebar {
+    width: 200px;
+    padding: 15px;
+  }
+
+  .sidebar h2 {
+    font-size: 20px;
+  }
+
+  .sidebar button {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  .main-content {
+    padding: 20px;
+  }
+
+  .table-container {
+    padding: 15px;
+  }
+
+  .table-container h2 {
+    font-size: 18px;
+  }
+
+  th, td {
+    padding: 10px 10px;
+    font-size: 14px;
+  }
+
+  .admin-sidebar {
+    font-size: 14px;
+    padding: 15px;
+    line-height: 22px;
+  }
+}
+
+/* Small Devices (Phones, 576px and below) */
+@media (min-width:300px) and (max-width: 576px) {
+  .admin-login-card {
+    padding: 20px 15px;
+    max-width: 95%;
+  }
+
+  .admin-login-title {
+    font-size: 18px;
+  }
+
+  .logo-image {
+    height: 50px; /* Reduced size of logo */
+    margin: 0 auto; /* Ensure it's centered */
+    margin-left: -15px;
+    width:50%;
+  }
+
+  .admin-login-form label {
+    font-size: 13px;
+  }
+
+  .admin-login-form input {
+    font-size: 12px;
+  }
+
+  .admin-login-button {
+    font-size: 14px;
+    padding: 5px;
+  }
+
+  .sidebar {
+    width: 100%;
+    padding: 10px;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .sidebar h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .main-content {
+    padding: 15px;
+  }
+
+  .table-container {
+    padding: 10px;
+  }
+
+  th, td {
+    font-size: 12px;
+    padding: 8px;
+  }
+
+  .admin-sidebar {
+    font-size: 13px;
+    padding: 10px;
+    line-height: 20px;
+  }
+
+  .welcome-message h2 {
+    font-size: 20px;
+  }
+
+  .welcome-message p {
+    font-size: 16px;
+  }
+
+  .admin-logo-container {
+  text-align: center;
+  padding-bottom: 1rem;
+  margin-top:-32px !important;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.admin-logo {
+  width: 150px;
+  margin-left: -4rem;
+
+  
+}
+}
+
+
+
+@media (min-width: 577px) and (max-width:1024px){
+  
+
+  .admin-login-title {
+    font-size: 18px;
+  }
+
+  .logo-image {
+    height: 50px; /* Reduced size of logo */
+    margin: 0 auto; /* Ensure it's centered */
+    margin-left: -15px;
+    width:50%;
+  }
+
+  .admin-login-form label {
+    font-size: 13px;
+  }
+
+  .admin-login-form input {
+    font-size: 12px;
+  }
+
+  .admin-login-button {
+    font-size: 14px;
+    padding: 5px;
+  }
+
+  .sidebar {
+    width: 100%;
+    padding: 10px;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .sidebar h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .main-content {
+    padding: 15px;
+  }
+
+  .table-container {
+    padding: 10px;
+  }
+
+  th, td {
+    font-size: 12px;
+    padding: 8px;
+  }
+
+  .admin-sidebar {
+    font-size: 13px;
+    padding: 10px;
+    line-height: 20px;
+  }
+
+  .welcome-message h2 {
+    font-size: 20px;
+  }
+
+  .welcome-message p {
+    font-size: 16px;
+  }
+}
+
+.admin-logo-container {
+  text-align: center;
+  padding-bottom: 1rem;
+  margin-top:32px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.admin-logo {
+  width: 150px;
+  margin-left: -4rem;
+
+ 
+}
+

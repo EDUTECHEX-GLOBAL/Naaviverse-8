@@ -1,0 +1,155 @@
+.transaction-page {
+  width: 100%;
+  height: calc(100% - 63px);
+  overflow: hidden;
+  color: #343c5b;
+
+  .transaction-top-area {
+    width: 100%;
+    height: 10rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0 35px;
+    justify-content: center;
+
+    .coinvalues {
+      display: flex;
+      gap: 0.5rem;
+      align-items: baseline;
+
+      .coin-balance {
+        font-size: 1.75rem;
+        font-weight: 600;
+      }
+
+      .coin-value {
+        font-size: 0.9rem;
+      }
+    }
+
+    .vault-name {
+      font-size: 0.9rem;
+    }
+  }
+
+  .transaction-content {
+    width: 100%;
+    height: calc(100% - 10rem);
+    overflow-y: scroll;
+
+    .date-div {
+      width: 100%;
+      padding: 1.5rem 0 0.5rem 35px;
+      display: flex;
+      align-items: center;
+
+      div {
+        font-size: 0.7rem;
+        font-weight: 600;
+      }
+    }
+
+    .each-transaction {
+      width: 100%;
+      display: flex;
+      padding: 1.5rem 35px;
+      align-items: center;
+      cursor: pointer;
+      transition: all ease 0.3s;
+
+      &:hover {
+        background: #eee;
+      }
+
+      .arr-div {
+        width: 35px;
+        height: 35px;
+        margin-right: 1rem;
+
+        img {
+          width: 100%;
+          height: 100%;
+        }
+      }
+
+      .txn-details {
+        display: flex;
+        flex-direction: column;
+        width: 28%;
+        gap: 3px;
+        margin-right: 1rem;
+
+        .txn-txt1 {
+          font-weight: 600;
+          font-size: 0.9rem;
+          display: block;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .txn-txt2 {
+          font-size: 0.7rem;
+        }
+      }
+
+      .txn-btns {
+        width: 18%;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-right: 1rem;
+
+        div {
+          display: flex;
+        }
+
+        .notes {
+          border: 0.5px solid #eee;
+          border-radius: 5px;
+          font-size: 0.6rem;
+          padding: 0.4rem 2rem;
+          font-weight: 700;
+        }
+
+        img {
+          width: 25px;
+        }
+      }
+
+      .amnt1 {
+        width: 16%;
+        color: #3ea254;
+        text-align: right;
+      }
+
+      .amnt2 {
+        width: 16%;
+        color: #ea0f0f;
+        text-align: right;
+      }
+
+      .amnt3 {
+        width: 16%;
+        font-weight: 600;
+        text-align: right;
+      }
+    }
+
+    .no-data {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      div {
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+    }
+  }
+}

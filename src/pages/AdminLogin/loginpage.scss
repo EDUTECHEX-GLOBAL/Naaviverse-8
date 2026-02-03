@@ -1,0 +1,434 @@
+@import "../../static/scss/colors";
+@import "../../static/scss/mixin";
+
+.login-main {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-icons {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 90px;
+  padding: 25px;
+  border-right: 0.25px solid #e5e5e5;
+}
+
+.icons-box {
+  cursor: pointer;
+}
+
+.icons-box:hover {
+  transform: scale(1.1);
+  transform: all ease 0.3s;
+  .icon {
+    opacity: 1 !important;
+  }
+}
+
+.icon {
+  opacity: 0.25;
+  margin: 35px 0 35px 0;
+  width: 40px;
+  height: 40px;
+}
+
+.login-signin {
+  display: table;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: calc(50vw);
+}
+
+.loginForm {
+  color: #5f6163;
+  display: table-cell;
+  vertical-align: middle;
+  padding-left: 160px;
+  // display: flex;
+  // flex: 1 1;
+  // flex-direction: column;
+  // padding: 0 10%;
+  // position: relative;
+  .indianOTClogo {
+    width: 268px;
+  }
+  .group,
+  .group1 {
+    position: relative;
+    margin: 0;
+    display: flex;
+    width: 322px;
+    margin-top: 60px;
+    input {
+      width: 322px;
+      line-height: 15px;
+    }
+    input[type="password"],
+    input[type="text"] {
+      background: none;
+      color: #5f6163;
+      font-size: 18px;
+      padding: 10px 10px 10px 0;
+      display: block;
+      border: none;
+      border-radius: 0;
+      border-bottom: 1px solid #d9d9d9;
+      &:focus {
+        outline: none;
+      }
+      &:focus ~ label,
+      &:valid ~ label {
+        top: -14px;
+        font-size: 12px;
+        color: #5f6163;
+        font-weight: 700;
+      }
+    }
+    input[type="password"] {
+      letter-spacing: 0.3em;
+    }
+    label {
+      color: #5f6163;
+      font-size: 14px;
+      font-weight: normal;
+      position: absolute;
+      pointer-events: none;
+      left: 0;
+      top: 10px;
+      transition: 300ms ease all;
+      opacity: 0.25;
+    }
+    .eye {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 15px;
+      margin: auto;
+      height: 20px;
+      width: 20px;
+      opacity: 0.25;
+      cursor: pointer;
+    }
+  }
+  .loginbtn {
+    width: 268.26px;
+    height: 66.94px;
+    background-color: #1f304f;
+    color: white;
+    // padding: 15px;
+    border: 0;
+    outline: none;
+    border-radius: 15px;
+    margin-top: 75px;
+    font-size: 20px;
+    font-weight: 600;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    &:active {
+      box-shadow: 0 2px 15px #1f304f;
+    }
+  }
+  .loginbtn::after {
+    background: white;
+    content: "";
+    height: 155px;
+    left: -75px;
+    opacity: 1;
+    position: absolute;
+    top: -50px;
+    -webkit-transform: rotate(35deg);
+    transform: rotate(35deg);
+    transition: all 0.55s cubic-bezier(0.19, 1, 0.22, 1);
+    width: 50px;
+    z-index: -10;
+  }
+
+  .loginbtn:hover::after {
+    left: 120%;
+    transition: all 0.55s cubic-bezier(0.19, 1, 0.22, 1);
+    z-index: 50;
+  }
+  .forgot {
+    margin-top: 15vh;
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 22px;
+    color: #5f6163;
+    .forgot-btn {
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 22px;
+      color: #5f6163;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  }
+}
+
+.login-register {
+  display: table;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: calc(50vw);
+  background-color: #1f304f;
+  padding: 0px 136px;
+  .reg-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: calc(100vh);
+  }
+  .reg-head {
+    font-weight: 700;
+    font-size: 60px;
+    line-height: 85px;
+    color: white;
+  }
+}
+
+.reg-btn {
+  margin-top: 30px;
+  width: 268.26px;
+  height: 66.94px;
+  border: 2px solid #ffffff;
+  border-radius: 10px;
+  // background-color: #292929;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: 800;
+  font-size: 25px;
+  line-height: 30px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  &:active {
+    box-shadow: 0 2px 25px white;
+  }
+}
+
+.reg-btn::after {
+  background: white;
+  content: "";
+  height: 155px;
+  left: -75px;
+  opacity: 1;
+  position: absolute;
+  top: -50px;
+  -webkit-transform: rotate(35deg);
+  transform: rotate(35deg);
+  transition: all 0.55s cubic-bezier(0.19, 1, 0.22, 1);
+  width: 50px;
+  z-index: -10;
+}
+
+.reg-btn:hover::after {
+  left: 120%;
+  transition: all 0.55s cubic-bezier(0.19, 1, 0.22, 1);
+  z-index: 50;
+}
+
+@keyframes heartbeat {
+  0% {
+    transform: scale(0.75);
+  }
+  20% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(0.75);
+  }
+  60% {
+    transform: scale(1);
+  }
+  80% {
+    transform: scale(0.75);
+  }
+  100% {
+    transform: scale(0.75);
+  }
+}
+
+.otclogo {
+  background-color: transparent;
+  bottom: 0;
+  height: 100vh;
+  width: calc(100vw);
+  align-items: center;
+  overflow: hidden !important;
+  position: fixed !important;
+  right: 0;
+  top: 0;
+  z-index: 11;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  .otclogoimg {
+    margin-top: -100px;
+    margin-left: 90px;
+    width: 400px;
+    height: 220px;
+    animation: heartbeat 1.3s infinite;
+  }
+}
+
+.login-box {
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 25px;
+  width: 40vw;
+  display: flex;
+  flex-direction: column;
+  padding: 5vh 5vw;
+}
+
+.full-logo-box {
+  display: flex;
+  justify-content: center;
+}
+
+.full-logo {
+  width: 450px;
+  margin-bottom: 20px;
+}
+
+.toggle-box {
+  margin: 20px 0px;
+  background: #ffffff;
+  opacity: 0.9;
+  border: 1px solid #e5e5e5;
+  border-radius: 35px;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 15px;
+}
+
+.toggle-each {
+  font-weight: 400;
+  font-size: 18px;
+  color: #1f304f;
+  padding: 18px 0px;
+  width: 41%;
+  border-radius: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all ease 0.2s;
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.input-box {
+  border: 0.5px solid #e5e5e5;
+  border-radius: 35px;
+  padding: 0px 10px;
+  margin-bottom: 20px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+}
+
+.input-inp {
+  padding-left: 30px;
+  border-radius: 35px;
+  outline: none;
+  border: none;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 18px;
+  height: 50px;
+  width: 100%;
+  color: #1f304f !important;
+}
+
+.prompt-div {
+  margin: 0.5rem 0 1.5rem 0;
+  width: 100%;
+  display: flex;
+  border-radius: 15px;
+  background: #fffdf2;
+  padding: 1rem 1.5rem;
+  align-items: center;
+  gap: 10px;
+  color: #343C5B;
+  font-weight: 500;
+}
+
+.password-check {
+  width: 10%;
+  display: flex;
+  height: 50px;
+  align-items: center;
+  justify-content: center;
+
+  div {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+}
+
+.forgot {
+  display: flex;
+  margin-left: auto;
+  font-weight: 400;
+  font-size: 16px;
+  color: #1f304f;
+  margin-bottom: 20px;
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+    transform: scale(1.1);
+    transition: all ease 0.2s;
+  }
+}
+
+.login-btn {
+  width: 100%;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(89deg, #47b4d5 0%, #29449d 100%);
+  padding: 0px 20px;
+  border-radius: 35px;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 20px;
+  cursor: pointer;
+  height: 70px;
+  @include btn-animate(#fff);
+}
+
+.google-btn {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0px 20px;
+  height: 70px;
+  border-radius: 35px;
+  border: 1px solid #e5e5e5;
+  color: #1f304f;
+  font-size: 16px;
+  cursor: pointer;
+  @include btn-animate(#356cbe);
+}
+
+.g-img {
+  margin-right: 15px;
+}
