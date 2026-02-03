@@ -32,14 +32,15 @@ router.get('/', async (req, res) => {
 });
 
 
-// Add this route
 router.get('/count', async (req, res) => {
   try {
     const count = await Subscription.countDocuments();
+
+    res.set('Cache-Control', 'no-store');   // 🔥 ADD THIS
     res.status(200).json({ count });
+
   } catch (err) {
-    console.error("Error fetching subscription count", err);
-    res.status(500).send('Error fetching subscription count');
+    res.status(500).json({ message: "Error" });
   }
 });
 

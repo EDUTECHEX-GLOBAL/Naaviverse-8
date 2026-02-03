@@ -40,36 +40,39 @@ export default function Contact() {
   const [status, setStatus] = useState("");
   const [statusType, setStatusType] = useState(""); // success or error
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const contactData = {
-      fullName,
-      email,
-      product,
-      mobile,
-      message,
-    };
-
-    try {
-      await axios.post("/api/admin-contact", contactData);
-      setStatus("Message sent successfully!");
-      setStatusType("success");
-      setFullName("");
-      setEmail("");
-      setProduct("");
-      setMobile("");
-      setMessage("");
-    } catch (error) {
-      setStatus("Error sending message. Please try again.");
-      setStatusType("error");
-    }
-
-    setTimeout(() => {
-      setStatus("");
-      setStatusType("");
-    }, 5000);
+  const contactData = {
+    fullName,
+    email,
+    product,
+    mobile,
+    message,
   };
+
+  try {
+    await axios.post("http://localhost:4545/api/admin-contact", contactData);
+
+    setStatus("Message sent successfully!");
+    setStatusType("success");
+
+    setFullName("");
+    setEmail("");
+    setProduct("");
+    setMobile("");
+    setMessage("");
+
+  } catch (error) {
+    setStatus("Error sending message. Please try again.");
+    setStatusType("error");
+  }
+
+  setTimeout(() => {
+    setStatus("");
+    setStatusType("");
+  }, 5000);
+};
 
   return (
    

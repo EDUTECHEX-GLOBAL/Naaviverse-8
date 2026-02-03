@@ -35,71 +35,83 @@
 }
 
 
-.form-input{
-  width: 90%;
-  background-color: white;
-  border: 1px solid #3f3f3f;
-  color: #ffffff;
-  padding: 5px 16px;
-  border-radius: 14px;
-  font-size: 14px;
-  transition: border-color 0.3s ease;
 
-}
+/* =====================================================
+   CONTACT FORM INPUT FIX (VISIBLE TEXT GUARANTEED)
+   ===================================================== */
 
-.form-input1{
-  width: 95%;
-  background-color: white;
-  border: 1px solid #3f3f3f;
-  color: #ffffff;
-  padding: 5px 16px;
-  border-radius: 14px;
-  font-size: 14px;
-  transition: border-color 0.3s ease;
-
-}
-.form-textarea{
-  width: 95%;
-  background-color: white;
-  border: 1px solid #3f3f3f;
-  color: #ffffff;
-  padding: 6px 16px;
-  border-radius: 14px;
-  font-size: 14px;
-  transition: border-color 0.3s ease;
-
-}
+/* All inputs */
+.form-input,
+.form-input1,
+.form-textarea,
 .custom-select {
-  display: block;
-  width: 90%;
-  padding:  12px 16px; /* Equivalent to 0.375rem 2.25rem 0.375rem 0.75rem */
-  font-size: 16px; /* 1rem */
-  font-weight: 400;
-  line-height: 1.5;
-  color: #212529;
-  background-color: #fff;
-
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 16px 12px;
-
-  border: 1px solid #ced4da;
-  border-radius: 4px; /* 0.25rem */
-  appearance: none;
+  width: 95%;
+  background-color: #ffffff !important;
+  color: #000000 !important;       /* 🔥 ALWAYS BLACK TEXT */
+  border: 1px solid #3f3f3f;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  transition: 0.2s;
 }
 
+/* Placeholder color */
+.form-input::placeholder,
+.form-input1::placeholder,
+.form-textarea::placeholder {
+  color: #888;
+}
+
+/* Focus */
 .form-input:focus,
+.form-input1:focus,
 .form-textarea:focus,
-.form-select:focus {
-  border-color: #00b5f9;
+.custom-select:focus {
+  border-color: #198754;
   outline: none;
 }
 
-.form-select option {
-  background-color: white;
-  color: #ffffff;
+/* Dropdown select */
+.custom-select {
+  appearance: none;
 }
+
+/* Dropdown options (MOST IMPORTANT) */
+.custom-select option {
+  background-color: #ffffff !important;
+  color: #000000 !important;     /* 🔥 FIXED */
+}
+// .custom-select {
+//   display: block;
+//   width: 90%;
+//   padding:  12px 16px; /* Equivalent to 0.375rem 2.25rem 0.375rem 0.75rem */
+//   font-size: 16px; /* 1rem */
+//   font-weight: 400;
+//   line-height: 1.5;
+//   color: #212529;
+//   background-color: #fff;
+
+//   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+//   background-repeat: no-repeat;
+//   background-position: right 12px center;
+//   background-size: 16px 12px;
+
+//   border: 1px solid #ced4da;
+//   border-radius: 4px; /* 0.25rem */
+//   appearance: none;
+// }
+
+// .form-input:focus,
+// .form-textarea:focus,
+// .form-select:focus {
+//   border-color: #00b5f9;
+//   outline: none;
+// }
+
+// .custom-select option {
+//   background-color: #fff;
+//   color: #000;   /* 🔥 FIX */
+// }
 
 .form-button {
   background-color: #198754;
@@ -271,4 +283,65 @@
   .status-message {
     text-align: center;
   }
+}
+.contact-form-box {
+  background: #ffffff;
+  padding: 35px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.contact-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  color: #000; /* 🔥 FIX: black text */
+  font-size: 14px;
+}
+
+.contact-input::placeholder {
+  color: #888;
+}
+
+.contact-textarea {
+  min-height: 120px;
+  resize: none;
+}
+
+.contact-btn {
+  background: #198754;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.contact-status.success {
+  color: green;
+}
+
+.contact-status.error {
+  color: red;
+}
+
+/* ===== FORCE VISIBLE INPUT TEXT ===== */
+.form-input,
+.form-input1,
+.form-textarea,
+.custom-select {
+  color: #000;
+  background: #fff;
+}
+
+.form-input::placeholder,
+.form-input1::placeholder,
+.form-textarea::placeholder {
+  color: #888;
 }

@@ -17,7 +17,7 @@ var cors = require('cors');
 var mongoose = require('mongoose');
 
 const app = express();
-
+const adminAuthRoutes = require('./Admin/routes/adminAuthRoutes');
 /* ------------------- AWS CONFIG ------------------- */
 AWS.config.update({ region: 'ap-south-1' });
 const s3 = new AWS.S3();
@@ -39,10 +39,12 @@ var adminRouter = require('./routes/adminRouter');
 var personalityRouter = require('./routes/personalityRouter');
 var programRouter = require('./routes/programRouter');
 var uploadRouter = require('./routes/uploadRouter'); // <-- ADD THIS
+var visitorRoutes = require('./Admin/routes/VisitorRoute');
 
 /* ------------------- NEW CORRECT STEPS ROUTER ------------------- */
 const stepsRouter = require("./routes/stepsRouter");
-
+const subscriptionRoutes = require("./Admin/routes/subscriptionRoutes");
+const contactRoutes = require('./Admin/routes/contactRoutes');
 /* ------------------- APP SETUP ------------------- */
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -101,6 +103,10 @@ app.use('/api/upload', uploadRouter); // <-- ADD THIS
 app.use('/api/services', servicesRouter);   // ✅ keep this only
 
 app.use('/admin/services', adminServicesRouter);
+// auth routes (register/login/reset)
+app.use('/api/admin/auth', adminAuthRoutes);
+
+// admin dashboard routes
 
 app.use('/api/universities', universitiesRouter);
 app.use("/api/perplexity", require("./routes/perplexity.route"));
@@ -114,7 +120,10 @@ app.use('/api/partner', partnerRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/personality', personalityRouter);
 app.use("/api/payment", require("./routes/paymentRoutes"));
-app.use("/api/subscription", require("./routes/subscriptionRoutes"));
+//app.use("/api/subscription", require("./routes/subscriptionRoutes"));
+app.use("/api/admin-subscribe", subscriptionRoutes);
+app.use('/api/admin-contact', contactRoutes);
+
 app.use("/api", require("./routes/checkFormatted"));
 app.use("/api/regenerate", require("./routes/regenerateBatch.route"));
 app.use("/api/utils", require("./routes/addStepIds.route"));
@@ -134,6 +143,10 @@ app.use('/api/userpaths', userpathRouter);
 app.use('/api/countries', countryRoutes);
 app.use('/api/states', stateRoutes);
 app.use('/api/cities', cityRoutes);
+
+
+/* ------------------- VISITOR ROUTES ------------------- */
+app.use('/api/admin-visitors', visitorRoutes);
 
 /* ------------------- ERROR HANDLING ------------------- */
 app.use(function (req, res, next) {

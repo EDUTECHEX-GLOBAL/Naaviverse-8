@@ -14,7 +14,7 @@ const NewHomePage = () => {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [partnerType, setPartnerType] = useState(""); // ⭐ Required field
+  const [partnerType, setPartnerType] = useState("");
   const [showOtp, setShowOtp] = useState(false);
   const [userOtp, setUserOtp] = useState('');
   const [wrongOtp, setWrongOtp] = useState(false);
@@ -29,6 +29,17 @@ const NewHomePage = () => {
     tenCharacters: false,
     oneNumber: false
   });
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const role = urlParams.get("role");
+    setSignupRole(role || "Accountants");
+  }, [location]);
+
+  const isUser = signupRole === "Users";
+  const isPartner = signupRole === "Accountants";
 
   useEffect(() => {
     validatePassword(userPassword);
@@ -47,16 +58,8 @@ const NewHomePage = () => {
     });
   };
 
-  const location = useLocation();
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(location.search);
-    const role = urlParams.get('role');
-    setSignupRole(role || "Partner"); // Default to Partner
-  }, [location]);
-
   const handleCreateAccount = () => {
-    if (!partnerType) {
+    if (isPartner && !partnerType) {
       alert("Please select a Partner Type.");
       return;
     }
@@ -85,35 +88,50 @@ const NewHomePage = () => {
         setLoading(false);
         setErrorMessage("Error checking email.");
       });
-
     } else {
       alert("Ensure all password requirements are met.");
     }
   };
 
   const registerUser = () => {
-    axios.post("http://localhost:4545/api/partner/signup", {
-      username: userName,
-      email: userEmail,
-      password: userPassword,
-      partnerType: partnerType // ⭐ MUST SEND THIS
-    })
-    .then(({ data }) => {
-      setLoading(false);
-      if (data.success) {
-        setShowOtp(true);
-      } else {
+    const signupUrl = isUser
+      ? "http://localhost:4545/api/auth/signup"
+      : "http://localhost:4545/api/partner/signup";
+
+    const payload = isUser
+      ? {
+          username: userName,
+          email: userEmail,
+          password: userPassword,
+        }
+      : {
+          username: userName,
+          email: userEmail,
+          password: userPassword,
+          partnerType: partnerType,
+        };
+
+    axios.post(signupUrl, payload)
+      .then(({ data }) => {
+        setLoading(false);
+        if (data.success) {
+          setShowOtp(true);
+        } else {
+          alert("Signup failed.");
+        }
+      })
+      .catch(() => {
+        setLoading(false);
         alert("Signup failed.");
-      }
-    })
-    .catch(() => {
-      setLoading(false);
-      alert("Signup failed.");
-    });
+      });
   };
 
   const confirmEmail = () => {
-    axios.post("http://localhost:4545/api/partner/verifyotp", {
+    const verifyOtpUrl = isUser
+      ? "http://localhost:4545/api/auth/verifyotp"
+      : "http://localhost:4545/api/partner/verifyotp";
+
+    axios.post(verifyOtpUrl, {
       email: userEmail.trim(),
       username: userName.trim(),
       otp: userOtp.trim(),
@@ -140,7 +158,6 @@ const NewHomePage = () => {
             <img src={logo} alt="" className='logoimg' />
             <h2>Register</h2>
 
-            {/* EMAIL */}
             <div className='input1'>
               <input
                 type="email"
@@ -151,7 +168,6 @@ const NewHomePage = () => {
               />
             </div>
 
-            {/* USERNAME */}
             <div className='input1'>
               <input
                 type="text"
@@ -162,21 +178,21 @@ const NewHomePage = () => {
               />
             </div>
 
-            {/* CLEAN PARTNER DROPDOWN */}
-            <select
-              disabled={showOtp}
-              value={partnerType}
-              onChange={(e) => setPartnerType(e.target.value)}
-              className="partnerTypeDropdown"
-            >
-              <option value="">Select Partner Type</option>
-              <option value="Distributor">Distributor</option>
-              <option value="Vendor">Vendor</option>
-              <option value="Mentor">Mentor</option>
-              <option value="Institution">Institution</option>
-            </select>
+            {isPartner && (
+              <select
+                disabled={showOtp}
+                value={partnerType}
+                onChange={(e) => setPartnerType(e.target.value)}
+                className="partnerTypeDropdown"
+              >
+                <option value="">Select Partner Type</option>
+                <option value="Distributor">Distributor</option>
+                <option value="Vendor">Vendor</option>
+                <option value="Mentor">Mentor</option>
+                <option value="Institution">Institution</option>
+              </select>
+            )}
 
-            {/* PASSWORD FIELDS */}
             <div className='passwordWrapper'>
               <div className='input2'>
                 <input
@@ -202,33 +218,19 @@ const NewHomePage = () => {
               </div>
             </div>
 
-            {/* PASSWORD REQUIREMENTS */}
             <div className='passreq' onClick={() => setShowPassReq(!showPassReq)}>
               See Password Requirements
             </div>
 
             {showPassReq && (
               <div className='passreqCard'>
-                <div style={{ color: validations.capitalLetter ? 'green' : 'red' }}>
-                  {validations.capitalLetter ? <img src={tickMarkValid} /> : <img src={tickMark} />}
-                  Minimum One Capital Letter
-                </div>
-                <div style={{ color: validations.specialCharacter ? 'green' : 'red' }}>
-                  {validations.specialCharacter ? <img src={tickMarkValid} /> : <img src={tickMark} />}
-                  Minimum One Special Character
-                </div>
-                <div style={{ color: validations.tenCharacters ? 'green' : 'red' }}>
-                  {validations.tenCharacters ? <img src={tickMarkValid} /> : <img src={tickMark} />}
-                  Minimum Ten Characters
-                </div>
-                <div style={{ color: validations.oneNumber ? 'green' : 'red' }}>
-                  {validations.oneNumber ? <img src={tickMarkValid} /> : <img src={tickMark} />}
-                  Minimum One Number
-                </div>
+                <div>{validations.capitalLetter ? <img src={tickMarkValid} /> : <img src={tickMark} />} One Capital Letter</div>
+                <div>{validations.specialCharacter ? <img src={tickMarkValid} /> : <img src={tickMark} />} One Special Character</div>
+                <div>{validations.tenCharacters ? <img src={tickMarkValid} /> : <img src={tickMark} />} Ten Characters</div>
+                <div>{validations.oneNumber ? <img src={tickMarkValid} /> : <img src={tickMark} />} One Number</div>
               </div>
             )}
 
-            {/* OTP FIELD */}
             {showOtp && (
               <div className='input2' style={{ width: '100%', marginTop: "40px" }}>
                 <input
@@ -240,14 +242,13 @@ const NewHomePage = () => {
               </div>
             )}
 
-            {/* NEXT BUTTON */}
             <div
               className='nextStep'
               style={{
                 opacity:
                   userEmail &&
                   userName &&
-                  partnerType &&
+                  (isUser || partnerType) &&
                   userPassword &&
                   confirmPassword &&
                   userPassword === confirmPassword &&
@@ -265,31 +266,6 @@ const NewHomePage = () => {
           </div>
         </div>
       </div>
-
-      {/* CSS FIX */}
-      <style>{`
-        .partnerTypeDropdown {
-          width: 100%;
-          height: 56px;
-          padding: 0 15px;
-          font-size: 16px;
-          border-radius: 12px;
-          border: 1px solid #c4d2e3;
-          background-color: white;
-          appearance: none;
-          margin-bottom: 20px;
-          background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='24' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24'><path d='M7 10l5 5 5-5z'/></svg>");
-          background-repeat: no-repeat;
-          background-position: right 12px center;
-          background-size: 18px;
-        }
-
-        .partnerTypeDropdown:focus {
-          outline: none;
-          border-color: #7aa7ff;
-          box-shadow: 0 0 0 2px rgba(122,167,255,0.2);
-        }
-      `}</style>
     </>
   );
 };

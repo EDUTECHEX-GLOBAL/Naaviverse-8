@@ -2,7 +2,6 @@
 
 const express = require('express');
 const axios = require('axios');
-const requestIp = require('request-ip');
 const Visitor = require('../models/Visitor');
 const dotenv = require('dotenv');
 
@@ -23,24 +22,40 @@ router.get('/', async (req, res) => {
 // ✅ Log visitor data
 router.post('/admin-visitor', async (req, res) => {
   try {
-    let clientIp = req.ip || requestIp.getClientIp(req);
+    // ✅ Get real client IP
+    let clientIp =
+      req.headers['x-forwarded-for']?.split(',')[0] ||
+      req.socket.remoteAddress ||
+      req.ip;
 
-    // Clean up IP (e.g., "::ffff:192.0.2.1" → "192.0.2.1")
+    // ✅ Clean IPv6 (::ffff:127.0.0.1 → 127.0.0.1)
     if (clientIp?.includes('::ffff:')) {
       clientIp = clientIp.split('::ffff:')[1];
     }
 
-    // Exclude localhost IPs
+    // ✅ DEFINE isLocalhost (🔥 THIS WAS MISSING)
     const isLocalhost = ['::1', '127.0.0.1', '0.0.0.0'].includes(clientIp);
+
+    // ✅ DEV MODE: rotate fake IPs
+    const fakeIps = [
+      "8.8.8.8",        // USA
+      "1.1.1.1",        // Australia
+      "49.37.0.1",      // India
+      "91.198.174.192", // Europe
+      "3.108.45.22"     // India (AWS)
+    ];
+
     if (isLocalhost) {
-      return res.status(200).send('Localhost IP ignored');
+      clientIp = fakeIps[Math.floor(Math.random() * fakeIps.length)];
     }
 
+    // 🌍 Fetch geo info
     const response = await axios.get(`https://ipapi.co/${clientIp}/json`);
     const { city, region, country_name, postal } = response.data;
 
+    // 💾 Save visitor
     const newVisitor = new Visitor({
-      ip: clientIp || '0.0.0.0',
+      ip: clientIp,
       city: city || 'Unknown',
       region: region || 'Unknown',
       postalCode: postal || 'Unknown',
@@ -48,12 +63,15 @@ router.post('/admin-visitor', async (req, res) => {
     });
 
     await newVisitor.save();
+
     res.status(200).send('Visitor data logged successfully!');
   } catch (err) {
-    console.error("Error logging visitor:", err.message);
+    console.error('Error logging visitor:', err.message);
     res.status(500).send('Error logging visitor data');
   }
 });
+
+
 
 // ✅ Count route
 router.get('/count', async (req, res) => {

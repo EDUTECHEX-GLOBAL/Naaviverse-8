@@ -17,7 +17,7 @@ export default function Newsletter({ title, subtitle, placeholder }) {
     }
 
     try {
-      const res = await axios.post("/api/admin-subscribe", { email });
+      const res = await axios.post("http://localhost:4545/api/admin-subscribe", { email });
 
       if (res.status === 201) {
         setMessage("Subscription successful!");

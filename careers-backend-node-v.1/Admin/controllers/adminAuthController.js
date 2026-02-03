@@ -1,54 +1,118 @@
 const AdminUser = require('../models/AdminUser');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+
+// ================= REGISTER (only once) =================
+const registerAdmin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const exists = await AdminUser.findOne({ email });
+    if (exists) {
+      return res.status(400).json({ message: "Admin already exists" });
+    }
+
+    await AdminUser.create({ email, password });
+
+    res.json({ message: "Admin created successfully" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
+// ================= LOGIN =================
 const loginAdmin = async (req, res) => {
   try {
-    let { email, password } = req.body;
+    const { email, password } = req.body;
 
-    // validate input
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password required" });
-    }
-
-    // normalize email
-    email = email.trim().toLowerCase();
-
-    // find admin
-    const admin = await AdminUser.findOne({ email });
+    const admin = await AdminUser.findOne({ email: email.trim().toLowerCase() });
 
     if (!admin) {
-      return res.status(400).json({ message: "Email not found" });
+      return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // check password
-console.log("EMAIL FROM FRONTEND:", email);
-console.log("PASSWORD FROM FRONTEND:", JSON.stringify(password));
-console.log("HASH IN DB:", admin.password);
+    const match = await admin.comparePassword(password);
 
-const isMatch = await bcrypt.compare(password, admin.password);
-console.log("MATCH RESULT:", isMatch);
-
-    if (!isMatch) {
-      return res.status(400).json({ message: "Wrong password" });
+    if (!match) {
+      return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // create JWT token
     const token = jwt.sign(
       { id: admin._id, role: "admin" },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    return res.status(200).json({
-      message: "Login successful",
-      token
-    });
+    res.json({ token });
 
-  } catch (error) {
-    console.error("Admin Login Error:", error);
-    return res.status(500).json({ message: "Server Error" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-module.exports = { loginAdmin };
+
+
+// ================= RESET PASSWORD =================
+const resetPassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    const admin = await AdminUser.findOne({ email });
+
+    if (!admin) return res.status(400).json({ message: "Admin not found" });
+
+    admin.password = newPassword; // auto hashed by pre-save
+    await admin.save();
+
+    res.json({ message: "Password updated successfully" });
+
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ================= SUPER ADMIN LOGIN =================
+const loginSuperAdmin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const admin = await AdminUser.findOne({
+      email: email.trim().toLowerCase(),
+      role: "super-admin"   // 🔥 only super admins allowed
+    });
+
+    if (!admin) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const match = await admin.comparePassword(password);
+
+    if (!match) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign(
+      { id: admin._id, role: "super-admin" },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.json({ token });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = {
+  registerAdmin,
+  loginAdmin,
+  loginSuperAdmin,
+  resetPassword
+};

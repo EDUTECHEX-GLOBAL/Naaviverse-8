@@ -44,7 +44,7 @@ const MenuNav = ({
     if (userType === "user") {
       navigate("/dashboard/users/profile");
     } else if (userType === "partner") {
-      navigate("/dashboard/partners/profile");
+      navigate("/dashboard/accountants/profile");
     }
   };
 

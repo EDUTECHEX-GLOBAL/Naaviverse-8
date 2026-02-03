@@ -4,7 +4,7 @@ const crypto = require("crypto");
 const Razorpay = require("razorpay");
 
 const Payment = require("../models/payment.model");
-const Subscription = require("../models/subscription.model");
+const Subscription = require('../Admin/models/Subscription');
 
 // -----------------------------
 //  Razorpay Init

@@ -201,6 +201,7 @@ const handleLogin = () => {
 
     return (
         <div className="login-main">
+            
             {forgotPassword ? (
                 forgotPasswordStep === 1 ? (
                     <div className="login-box">
@@ -422,18 +423,26 @@ const handleLogin = () => {
                             }}
                         />
                     </div>
-                    <div className="input-box">
-                        <input
-                            className="input-inp"
-                            type="password"
-                            placeholder="Password"
-                            value={password}
-                            onInput={(e) => {
-                                setiserror(false);
-                                setpassword(e.target.value);
-                            }}
-                        />
-                    </div>
+                    <div className="input-box password-box">
+  <input
+    className="input-inp"
+    type={eye ? "text" : "password"}
+    placeholder="Password"
+    value={password}
+    onChange={(e) => {
+      setiserror(false);
+      setpassword(e.target.value);
+    }}
+  />
+
+  <img
+    src={eye ? eye2 : eye1}
+    alt="toggle password"
+    className="eye-icon"
+    onClick={() => seteye(!eye)}
+  />
+</div>
+
                     <div className="forgot" onClick={() => setForgotPassword(true)}>
                         Forgot Password
                     </div>
@@ -445,9 +454,13 @@ const handleLogin = () => {
   onClick={() => {
     console.log("REGISTER CLICKED");
     navigate(`/register?role=${loginType}`);
-
   }}
 >
+  <img
+    src={google}
+    alt="Google"
+    style={{ width: 20, height: 20, marginRight: 10 }}
+  />
   Register With Email
 </div>
 

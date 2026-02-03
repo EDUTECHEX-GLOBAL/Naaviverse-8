@@ -2,14 +2,20 @@ import React, { useState } from "react";
 import "./AdminStyles.scss";
 import logo from "../../assets/images/logo/naavi_final_logo2.png";
 import { Eye, EyeOff } from "lucide-react";
-import axios from "axios"; // Add this
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
+// ✅ SUPER ADMIN API
+const API = "http://localhost:4545/api/admin/auth";
 const AdminLogin = () => {
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
@@ -18,27 +24,30 @@ const AdminLogin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    setError("");
+    setLoading(true);
+
     try {
-      const response = await axios.post("http://localhost:5000/api/admin/login", {
-        email,
-        password,
+      const res = await axios.post(`${API}/super-login`, {
+        email: email.trim().toLowerCase(),
+        password: password.trim(),
       });
 
-      if (response.status === 200) {
-        localStorage.setItem("adminToken", response.data.token);
-        window.location.href = "/admin-dashboard"; // Redirect to your dashboard
-      }
+      // 🔐 SAVE SUPER ADMIN TOKEN
+      localStorage.setItem("superAdminToken", res.data.token);
+
+      // 🚀 REDIRECT TO SUPER ADMIN DASHBOARD
+      navigate("/admin-dashboard/admin-home");
+
     } catch (err) {
-      console.error(err);
       setError(
-        err.response?.data?.message || "Login failed. Please try again."
+        err.response?.data?.message || "Invalid email or password"
       );
-      setSuccess("");
+    } finally {
+      setLoading(false);
     }
   };
 
-
-  
   return (
     <div className="admin-login-container">
       <div className="admin-login-card">
@@ -46,53 +55,56 @@ const AdminLogin = () => {
           <img src={logo} alt="Logo" className="logo-image" />
         </div>
 
-        <h2 className="admin-login-title">Admin Login</h2>
+        <h2 className="admin-login-title">Super Admin Login</h2>
 
         <form className="admin-login-form" onSubmit={handleSubmit}>
+
+          {/* EMAIL */}
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label>Email</label>
             <input
               type="email"
-              id="email"
-              placeholder="admin@example.com"
+              placeholder="admin@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
 
+          {/* PASSWORD */}
           <div className="form-group password-group">
-            <label htmlFor="password">Password</label>
+            <label>Password</label>
             <div className="password-input-wrapper">
               <input
                 type={showPassword ? "text" : "password"}
-                id="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+
               <span
                 className="toggle-password"
                 onClick={togglePasswordVisibility}
-                style={{
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  color: "#333",
-                }}
+                style={{ cursor: "pointer" }}
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </span>
             </div>
           </div>
 
+          {/* ERROR */}
           {error && <p className="error-text">{error}</p>}
-          {success && <p className="success-text">{success}</p>}
 
-          <button type="submit" className="admin-login-button">
-            Login
+          {/* BUTTON */}
+          <button
+            type="submit"
+            className="admin-login-button"
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
           </button>
+
         </form>
       </div>
     </div>

@@ -53,12 +53,13 @@ import { useCoinContextData } from "../../context/CoinContext";
 import MyPaths1 from "../MyPathsAdmin/index.jsx";
 import NewStep1 from "../../globalComponents/GlobalDrawer/NewStep1";
 import VaultTransactions from "../VaultTransactions/index.jsx";
-import { Country, State, City }  from 'country-state-city';
+import { Country, State, City } from "country-state-city";
 import MyPathsAdmin from "../MyPathsAdmin/index.jsx";
 import AdminAccDashsidebar from "../../components/AdminAccDashsidebar/index.jsx";
 import AdminStepDataPage from "./AdminStepDataPage.jsx";
 import MyStepsAdmin from "./MyStepsAdmin/index.jsx";
 import MenuNav from "../../components/MenuNav/index.jsx";
+import EditServiceForm from "./EditServices";
 
 const AccDashboard = () => {
   const {
@@ -74,33 +75,30 @@ const AccDashboard = () => {
 
   const Country = require("country-state-city").Country;
 
-/* ---------------- BASIC UI STATES ---------------- */
-const [search, setSearch] = useState("");
-const [crmMenu, setcrmMenu] = useState("Clients");
+  /* ---------------- BASIC UI STATES ---------------- */
+  const [search, setSearch] = useState("");
+  const [crmMenu, setcrmMenu] = useState("Clients");
 
-/* 🔥 ADD THESE BACK */
-const [servicesMenu, setservicesMenu] = useState("Active Services");
-const [showAdminProfile, setShowAdminProfile] = useState(false);
+  /* 🔥 ADD THESE BACK */
+  const [servicesMenu, setservicesMenu] = useState("Active Services");
+  const [showAdminProfile, setShowAdminProfile] = useState(false);
 
+  /* ---------------- CRM STATES ---------------- */
+  const [crmUserData, setCrmUserData] = useState([]);
+  const [isUserLoading, setIsUserLoading] = useState(false);
+  const [partnerData, setPartnerData] = useState([]);
+  const [followData, setfollowData] = useState([]);
 
-/* ---------------- CRM STATES ---------------- */
-const [crmUserData, setCrmUserData] = useState([]);
-const [isUserLoading, setIsUserLoading] = useState(false);
-const [partnerData, setPartnerData] = useState([]);
-const [followData, setfollowData] = useState([]);
+  /* ---------------- PAGINATION ---------------- */
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-/* ---------------- PAGINATION ---------------- */
-const [currentPage, setCurrentPage] = useState(1);
-const itemsPerPage = 10; 
-
-/* ---------------- PAGINATION CALCULATIONS ---------------- */
-/* ---------------- PAGINATION CALCULATIONS ---------------- */
-const totalPages = Math.ceil(crmUserData.length / itemsPerPage);
-const startIndex = (currentPage - 1) * itemsPerPage;
-const endIndex = startIndex + itemsPerPage;
-const currentUsers = crmUserData.slice(startIndex, endIndex);
-
-
+  /* ---------------- PAGINATION CALCULATIONS ---------------- */
+  /* ---------------- PAGINATION CALCULATIONS ---------------- */
+  const totalPages = Math.ceil(crmUserData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUsers = crmUserData.slice(startIndex, endIndex);
 
   /* ---------------- OTHER STATES (UNCHANGED) ---------------- */
   const [isLoading, setIsLoading] = useState(false);
@@ -133,21 +131,19 @@ const currentUsers = crmUserData.slice(startIndex, endIndex);
   const [thirdChargeAttempt, setthirdChargeAttempt] = useState("");
   const [image, setImage] = useState(null);
   const [isSubmit, setIsSubmit] = useState(false);
-  const [serviceActionEnabled, setServiceActionEnabled] = useState(false);
-  const [serviceActionStep, setServiceActionStep] = useState(1);
-  const [selectedService, setSelectedService] = useState([]);
+ const [selectedService, setSelectedService] = useState(null);
+const [serviceDrawerOpen, setServiceDrawerOpen] = useState(false);
+const [serviceMode, setServiceMode] = useState("actions"); 
+// actions | view | edit
+
+
   const [isloading, setIsloading] = useState(false);
   const [updatedIcon, setUpdatedIcon] = useState("");
   const [serviceStatus, setServiceStatus] = useState("active");
 
   // routing
-const location = useLocation();
-const isProfilePage = location.pathname === "/admin/dashboard/profile";
-
-
-
-
-
+  const location = useLocation();
+  const isProfilePage = location.pathname === "/admin/dashboard/profile";
 
   //add compPlan
   const [addCompPlan, setAddCompPlan] = useState(false);
@@ -160,8 +156,6 @@ const isProfilePage = location.pathname === "/admin/dashboard/profile";
   const [multiplier, setMultiplier] = useState([]);
   const [isfetching, setIsfetching] = useState(false);
 
-  
-
   //with compPlan
   const [withCompPlanData, setWithCompPlanData] = useState([]);
   const [gettingData, setGettingData] = useState(false);
@@ -173,8 +167,8 @@ const isProfilePage = location.pathname === "/admin/dashboard/profile";
   const [backupPathList, setBackupPathList] = useState([]);
   const [showBackupPathList, setShowBackupPathList] = useState(false);
 
-const [universitiesData, setUniversitiesData] = useState([]);
-const [isUniLoading, setIsUniLoading] = useState(false);
+  const [universitiesData, setUniversitiesData] = useState([]);
+  const [isUniLoading, setIsUniLoading] = useState(false);
 
   // new path
   const [grade, setGrade] = useState([]);
@@ -204,11 +198,9 @@ const [isUniLoading, setIsUniLoading] = useState(false);
     "conventional",
   ];
 
-
   let navigate = useNavigate();
 
   //users data
-
 
   //clients data
   const [crmClientData, setCrmClientData] = useState([]);
@@ -251,7 +243,8 @@ const [isUniLoading, setIsUniLoading] = useState(false);
     forexPathId,
     setForexPathId,
     forexQuote,
-    setForexQuote,countryApiValue
+    setForexQuote,
+    countryApiValue,
   } = useCoinContextData();
 
   const [profileId, setProfileId] = useState("");
@@ -322,20 +315,20 @@ const [isUniLoading, setIsUniLoading] = useState(false);
     //   setPersonality([...personality, item]);
     // }
   };
-useEffect(() => {
-  if (accsideNav === "Universities") loadUniversities();
-}, [accsideNav]);
+  useEffect(() => {
+    if (accsideNav === "Universities") loadUniversities();
+  }, [accsideNav]);
 
-const loadUniversities = async () => {
-  setIsUniLoading(true);
-  try {
-    const res = await axios.get("/api/universities");
-    if (res.data.status) setUniversitiesData(res.data.data);
-  } catch (err) {
-    console.log("Error loading universities", err);
-  }
-  setIsUniLoading(false);
-};
+  const loadUniversities = async () => {
+    setIsUniLoading(true);
+    try {
+      const res = await axios.get("/api/universities");
+      if (res.data.status) setUniversitiesData(res.data.data);
+    } catch (err) {
+      console.log("Error loading universities", err);
+    }
+    setIsUniLoading(false);
+  };
 
   useEffect(() => {
     axios.get(`https://careers.marketsverse.com/paths/get`).then((res) => {
@@ -375,22 +368,21 @@ const loadUniversities = async () => {
     // setaccsideNav("CRM")
     resetpop();
     const userDetails = JSON.parse(localStorage.getItem("adminuser"));
-   if (!userDetails?.email) {
-  navigate("/admin/login");
-}
+    if (!userDetails?.email) {
+      navigate("/admin/login");
+    }
   }, []);
 
-useEffect(() => {
-  resetpop();
-  if (accsideNav == "CRM" && crmMenu == "Followers") {
-    handleFollowerPerAccountants();
-  } else if (accsideNav == "CRM" && crmMenu == "Purchases") {
-    handleAllCustomerLicenses();
-  } else if (accsideNav == "My Services") {
-    getAdminServices();
-  }
-}, [crmMenu, servicesMenu, accsideNav]);
-
+  useEffect(() => {
+    resetpop();
+    if (accsideNav == "CRM" && crmMenu == "Followers") {
+      handleFollowerPerAccountants();
+    } else if (accsideNav == "CRM" && crmMenu == "Purchases") {
+      handleAllCustomerLicenses();
+    } else if (accsideNav == "Services") {
+      getAdminServices();
+    }
+  }, [crmMenu, servicesMenu, accsideNav]);
 
   const uploadCoverImage = async (file) => {
     setIsUploadLoading(true);
@@ -433,11 +425,10 @@ useEffect(() => {
     const fileName = `${new Date().getTime()}${file?.name?.substr(
       file.name.lastIndexOf(".")
     )}`;
-        
+
     const formData = new FormData();
     const newfile = renameFile(file, fileName);
     formData.append("file", newfile);
-
 
     let { data } = await axios.post(
       `https://careers.marketsverse.com/paths/addmultiplepaths`,
@@ -451,7 +442,7 @@ useEffect(() => {
 
     if (data?.status) {
       console.log(data[0], "dfile name upload");
-      setpstep(12)
+      setpstep(12);
       // setCoverImageS3url(data[0]?.urlName);
       setIsUploadLoading(false);
       // return data[0]?.urlName;
@@ -472,7 +463,6 @@ useEffect(() => {
     const newfile = renameFile(file, fileName);
     formData.append("file", newfile);
 
-
     let { data } = await axios.post(
       `/api/steps/addmultiplesteps`,
       formData,
@@ -485,7 +475,7 @@ useEffect(() => {
 
     if (data?.status) {
       console.log(data[0], "dfile name upload");
-      setpstep(12)
+      setpstep(12);
       // setCoverImageS3url(data[0]?.urlName);
       setIsUploadLoading(false);
       // return data[0]?.urlName;
@@ -515,10 +505,8 @@ useEffect(() => {
     });
   }
 
-
-
   //upload end here
- const handleFollowerPerAccountants = () => {
+  const handleFollowerPerAccountants = () => {
     setIsLoading(true);
     let mailId = userDetails?.email;
     GetFollowersPerAccount(mailId)
@@ -557,18 +545,19 @@ useEffect(() => {
   };
 
   const getPartnerData = () => {
-    axios.get(`/api/partner/getpartners`).then(({data}) => {
-      if (data.success) {  // Change 'status' to 'success'
-        setPartnerData(data?.partners);  // Change 'data' to 'partners'
+    axios.get(`/api/partner/getpartners`).then(({ data }) => {
+      if (data.success) {
+        // Change 'status' to 'success'
+        setPartnerData(data?.partners); // Change 'data' to 'partners'
       }
-    })
-  }
+    });
+  };
 
   useEffect(() => {
-    if(crmMenu === "Partners"){
-      getPartnerData()
+    if (crmMenu === "Partners") {
+      getPartnerData();
     }
-  }, [crmMenu])
+  }, [crmMenu]);
 
   const handleCategories = () => {
     setIsCatLoading(true);
@@ -652,13 +641,12 @@ useEffect(() => {
     setPersonality("");
     setSearchCurrency("");
   };
-useEffect(() => {
-  const openProfile = () => setShowAdminProfile(true);
-  window.addEventListener("openAdminProfile", openProfile);
+  useEffect(() => {
+    const openProfile = () => setShowAdminProfile(true);
+    window.addEventListener("openAdminProfile", openProfile);
 
-  return () =>
-    window.removeEventListener("openAdminProfile", openProfile);
-}, []);
+    return () => window.removeEventListener("openAdminProfile", openProfile);
+  }, []);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -691,9 +679,9 @@ useEffect(() => {
   function reloadService() {
     setpstep(1);
     setispopular(false);
-    setaccsideNav("My Services");
+    setaccsideNav("Services");
     setservicesMenu("Services");
-  };
+  }
 
   const handleFinalSubmit = () => {
     setIsSubmit(true);
@@ -844,25 +832,26 @@ useEffect(() => {
 
   const fetchAllServicesAgain = () => {
     getAdminServices();
-  }
+  };
 
- useEffect(() => {
-  if (!ispopular && accsideNav === "Services") {
-    getAdminServices();
-  }
-}, [ispopular, accsideNav, servicesMenu]);
+  useEffect(() => {
+    if (!ispopular && accsideNav === "Services") {
+      getAdminServices();
+    }
+  }, [ispopular, accsideNav, servicesMenu]);
 
   const myTimeout = () => {
     setTimeout(reload, 3000);
   };
 
   function reload() {
-    setServiceActionEnabled(false);
-    setServiceActionStep(1);
-    setSelectedService("");
-    setUpdatedIcon("");
-    getAdminServices();
-  }
+  setServiceDrawerOpen(false);
+  setServiceMode("actions");
+  setSelectedService(null);
+  setUpdatedIcon("");
+  getAdminServices();
+}
+
 
   const deleteService = () => {
     setIsloading(true);
@@ -871,36 +860,35 @@ useEffect(() => {
       token: userDetails?.idToken,
       product_id: selectedService?.product_id,
     };
-    axios.delete(`/admin/services/delete/${selectedService?._id}`)
-  .then(res => {
-    console.log("Deleted:", res.data);
-    myTimeout();
-  })
-  .catch(err => console.log("Delete error:", err));
-
+    axios
+      .delete(`/admin/services/delete/${selectedService?._id}`)
+      .then((res) => {
+        console.log("Deleted:", res.data);
+        myTimeout();
+      })
+      .catch((err) => console.log("Delete error:", err));
   };
 
-
   const restoreService = () => {
-  setIsloading(true);
+    setIsloading(true);
 
-  axios.put(`/admin/services/restore/${selectedService?._id}`)
-    .then(({ data }) => {
-      console.log("Service Restored:", data);
+    axios
+      .put(`/admin/services/restore/${selectedService?._id}`)
+      .then(({ data }) => {
+        console.log("Service Restored:", data);
 
-      if (data.status) {
-        setServiceActionStep(3);
-        myTimeout();
-      }
+        if (data.status) {
+          //setServiceActionStep(3);
+          myTimeout();
+        }
 
-      setIsloading(false);
-    })
-    .catch(err => {
-      console.log("Restore Error:", err);
-      setIsloading(false);
-    });
-};
-
+        setIsloading(false);
+      })
+      .catch((err) => {
+        console.log("Restore Error:", err);
+        setIsloading(false);
+      });
+  };
 
   const changeServiceIcon = () => {
     setIsloading(true);
@@ -918,7 +906,7 @@ useEffect(() => {
         console.log(result, "changeServiceIcon result");
         if (result?.status) {
           setIsloading(false);
-          setServiceActionStep(6);
+          // setServiceActionStep(6);
           myTimeout();
         } else {
           setIsloading(false);
@@ -945,10 +933,10 @@ useEffect(() => {
   };
 
   useEffect(() => {
-    if(pathSteps){
-      console.log(pathSteps, "kjwegfljwefljwef")
+    if (pathSteps) {
+      console.log(pathSteps, "kjwegfljwefljwef");
     }
-  }, [pathSteps])
+  }, [pathSteps]);
 
   const myTimeout1 = () => {
     setTimeout(reload1, 3000);
@@ -1153,53 +1141,46 @@ useEffect(() => {
     });
   };
 
-useEffect(() => {
-  if (accsideNav === "CRM" && crmMenu === "Clients") {
-    setIsUserLoading(true);
+  useEffect(() => {
+    if (accsideNav === "CRM" && crmMenu === "Clients") {
+      setIsUserLoading(true);
+
+      axios
+        .get("http://localhost:4545/api/users")
+        .then((response) => {
+          setCrmUserData(response?.data?.data || []);
+          setIsUserLoading(false);
+        })
+        .catch(() => setIsUserLoading(false));
+    }
+  }, [accsideNav, crmMenu]);
+
+  const isFetched = useRef(false);
+
+  const fetchedOnceRef = useRef(false);
+
+  const hasFetchedRef = useRef(false);
+
+  const [hasLoadedUsers, setHasLoadedUsers] = useState(false);
+
+  const usersFetchRef = useRef(false);
+
+  const fetchedRef = useRef(false);
+
+  useEffect(() => {
+    if (fetchedRef.current) return; // prevents all repeated calls
+    fetchedRef.current = true;
+
+    setClientLoading(true);
 
     axios
       .get("http://localhost:4545/api/users")
       .then((response) => {
-        setCrmUserData(response?.data?.data || []);
-        setIsUserLoading(false);
+        setCrmClientData(response.data.data);
+        setClientLoading(false);
       })
-      .catch(() => setIsUserLoading(false));
-  }
-}, [accsideNav, crmMenu]);
-
-
-
-  
-
-
-
-const isFetched = useRef(false);
-
-const fetchedOnceRef = useRef(false);
-
-const hasFetchedRef = useRef(false);
-
-const [hasLoadedUsers, setHasLoadedUsers] = useState(false);
-
-const usersFetchRef = useRef(false);
-
-const fetchedRef = useRef(false);
-
-useEffect(() => {
-  if (fetchedRef.current) return;   // prevents all repeated calls
-  fetchedRef.current = true;
-
-  setClientLoading(true);
-
-  axios
-    .get("http://localhost:4545/api/users")
-    .then((response) => {
-      setCrmClientData(response.data.data);
-      setClientLoading(false);
-    })
-    .catch((error) => console.log(error));
-}, []);
-
+      .catch((error) => console.log(error));
+  }, []);
 
   function customDateFormat(date) {
     if (date instanceof Date && !isNaN(date.valueOf())) {
@@ -1287,509 +1268,814 @@ useEffect(() => {
     const float = parseFloat(e.target.value);
     setAddForexAmount(float.toFixed(2));
   };
- const getQuote = () => {
-  // 🔒 Safety checks (prevents runtime errors)
-  if (!addForexAmount || !selectedCoin?.coinSymbol) {
-    console.warn("Missing amount or coin");
-    return;
-  }
+  const getQuote = () => {
+    // 🔒 Safety checks (prevents runtime errors)
+    if (!addForexAmount || !selectedCoin?.coinSymbol) {
+      console.warn("Missing amount or coin");
+      return;
+    }
 
-  // ✅ Mock quote object (local replacement)
-  const mockQuote = {
-    status: true,
-    coin: selectedCoin.coinSymbol,
-    amount: addForexAmount,
-    paymentMethod: selectedPaymentMethod || "N/A",
-    path_id: forexPathId || null,
-    message: "Quote generated locally",
-    timestamp: Date.now(),
+    // ✅ Mock quote object (local replacement)
+    const mockQuote = {
+      status: true,
+      coin: selectedCoin.coinSymbol,
+      amount: addForexAmount,
+      paymentMethod: selectedPaymentMethod || "N/A",
+      path_id: forexPathId || null,
+      message: "Quote generated locally",
+      timestamp: Date.now(),
+    };
+
+    // ✅ Update state just like API success
+    setForexQuote(mockQuote);
+    setAddActionStep(3);
   };
 
-  // ✅ Update state just like API success
-  setForexQuote(mockQuote);
-  setAddActionStep(3);
-};
+  // =============== SERVICES STATES ===============
+  const [allAdminServices, setAllAdminServices] = useState([]); // All services (for stats)
+  const [filteredAdminServices, setFilteredAdminServices] = useState([]); // Filtered for display
 
+  const getAdminServices = () => {
+    setIsUserLoading(true);
 
-  const [adminServices, setAdminServices] = useState([]);
+    axios
+      .get(`/api/services/admin?status=all`) // Always fetch ALL services
+      .then(({ data }) => {
+        if (data?.status) {
+          setAllAdminServices(data.data || []); // Store ALL services
+          setIsUserLoading(false);
+        } else {
+          setAllAdminServices([]);
+          setFilteredAdminServices([]);
+          setIsUserLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.log("Admin API Error:", err);
+        setAllAdminServices([]);
+        setFilteredAdminServices([]);
+        setIsUserLoading(false);
+      });
+  };
 
-const getAdminServices = () => {
-  setIsUserLoading(true);
+  // Filter services whenever serviceStatus changes
+  useEffect(() => {
+    if (serviceStatus === "all") {
+      setFilteredAdminServices(allAdminServices);
+    } else if (serviceStatus === "active") {
+      setFilteredAdminServices(
+        allAdminServices.filter((s) => s.status === "active")
+      );
+    } else if (serviceStatus === "inactive") {
+      setFilteredAdminServices(
+        allAdminServices.filter((s) => s.status === "inactive")
+      );
+    }
+  }, [serviceStatus, allAdminServices]);
 
-  axios
-    .get(`/api/services/admin?status=${serviceStatus}`)
-    .then(({ data }) => {
-      if (data?.status) {
-        setAdminServices(data.data || []);
-      } else {
-        setAdminServices([]);
-      }
-      setIsUserLoading(false);
-    })
-    .catch((err) => {
-      console.log("Admin API Error:", err);
-      setIsUserLoading(false);
-    });
-};
-
-
-
-
-
-useEffect(() => {
-  getAdminServices();
-}, [serviceStatus]);
-
+  useEffect(() => {
+    getAdminServices();
+  }, [serviceStatus]);
 
   const conditionalBilling = (item) => {
-    if(item === "lifetime"){
-      return "One Time"
-    }else if (item === "monthly"){
-      return "Monthly"
-    }else if (item === "annual"){
-      return "Annual"
+    if (item === "lifetime") {
+      return "One Time";
+    } else if (item === "monthly") {
+      return "Monthly";
+    } else if (item === "annual") {
+      return "Annual";
     }
-  }
+  };
 
- return (
-  <div>
-    <div className="dashboard-main">
-      <div className="dashboard-body">
+  return (
+    <div>
+      <div className="dashboard-main">
+        <div className="dashboard-body">
+          {/* SIDEBAR */}
+          <div onClick={() => setShowDrop(false)}>
+            <AdminAccDashsidebar admin={true} />
+          </div>
 
-        {/* SIDEBAR */}
-        <div onClick={() => setShowDrop(false)}>
-          <AdminAccDashsidebar admin={true} />
-        </div>
-
-        {/* MAIN CONTENT */}
-    <div
+          {/* MAIN CONTENT */}
+<div
   className="dashboard-screens"
   onClick={() => resetpop()}
   style={{
     height: "100vh",
-    overflowY: "auto",
-    overflowX: "hidden"
+    overflow: "hidden",
+    maxWidth: "calc(100vw - 220px)",
+    width: "calc(100% - 20px)",
   }}
 >
 
+
           
-          <div style={{ height: "100%" }}>
+            <div style={{ height: "100%" }}>
+              {/* 🔥 PROFILE ROUTE HANDLER */}
+              {isProfilePage ? (
+                <Outlet />
+              ) : (
+                <>
+                  {accsideNav === "CRM" ? (
+                    <>
+                      {/* TOP SEARCH */}
+                      <MenuNav
+                        showDrop={showDrop}
+                        setShowDrop={setShowDrop}
+                        searchTerm={search}
+                        setSearchterm={setSearch}
+                        searchPlaceholder="Search Clients..."
+                      />
 
-            {/* 🔥 PROFILE ROUTE HANDLER */}
-            {isProfilePage ? (
-              <Outlet />
-            ) : (
-              <>
-             {accsideNav === "CRM" ? (
-  <>
-    {/* TOP SEARCH */}
-    <MenuNav
-      showDrop={showDrop}
-      setShowDrop={setShowDrop}
-      searchTerm={search}
-      setSearchterm={setSearch}
-      searchPlaceholder="Search Clients..."
-    />
-
-    {/* CRM TABS */}
-    <div className="crm-tabs">
-      <button
-        className={crmMenu === "Clients" ? "active" : ""}
-        onClick={() => {
-          setcrmMenu("Clients");
-          setCurrentPage(1);
-        }}
-      >
-        Users ({crmUserData.length})
-      </button>
-
-      <button
-        className={crmMenu === "Partners" ? "active" : ""}
-        onClick={() => {
-          setcrmMenu("Partners");
-          setCurrentPage(1);
-        }}
-      >
-        Partners
-      </button>
-
-     
-    </div>
-
-{/* USERS TABLE */}
-{crmMenu === "Clients" && (
-  <>
-    {/* TABLE HEADER */}
-    <div className="crm-tab" style={{ padding: "10px 35px" }}>
-      <div className="crm-each-col" style={{ width: "20%" }}>Name</div>
-      <div className="crm-each-col" style={{ width: "30%" }}>Email</div>
-      <div className="crm-each-col" style={{ width: "15%" }}>Country</div>
-      <div className="crm-each-col" style={{ width: "20%" }}>Phone</div>
-      <div className="crm-each-col" style={{ width: "15%" }}>Profile Level</div>
-    </div>
-
-    {/* TABLE BODY */}
-    <div className="users-alldata">
-      {isClientLoading ? (
-        Array(8).fill("").map((_, i) => (
-          <div className="each-userData" key={i}>
-            <Skeleton width={200} height={20} />
-          </div>
-        ))
-      ) : crmClientData.length ? (
-        crmClientData.map((u, i) => (
-          <div className="each-userData" key={i}>
-            <div style={{ width: "20%" }}>{u?.name || "—"}</div>
-            <div style={{ width: "30%", textTransform: "none" }}>{u?.email}</div>
-            <div style={{ width: "15%" }}>{u?.country || "—"}</div>
-            <div style={{ width: "20%" }}>{u?.phoneNumber || "—"}</div>
-            <div style={{ width: "15%" }}>{u?.user_level || "—"}</div>
-          </div>
-        ))
-      ) : (
-        <div className="no-data">No Users Found</div>
-      )}
-    </div>
-  </>
-)}
-
-
-{/* PARTNERS TABLE */}
-{crmMenu === "Partners" && (
-  <>
-    {/* TABLE HEADER */}
-    <div className="crm-tab" style={{ padding: "10px 35px" }}>
-      <div className="crm-each-col" style={{ width: "25%" }}>Business</div>
-      <div className="crm-each-col" style={{ width: "30%" }}>Email</div>
-      <div className="crm-each-col" style={{ width: "15%" }}>Country</div>
-      <div className="crm-each-col" style={{ width: "15%" }}>Type</div>
-      <div className="crm-each-col" style={{ width: "15%" }}>POC</div>
-    </div>
-
-    {/* TABLE BODY */}
-    <div className="users-alldata">
-      {isPurchaseLoading ? (
-        Array(8).fill("").map((_, i) => (
-          <div className="each-userData" key={i}>
-            <Skeleton width={200} height={20} />
-          </div>
-        ))
-      ) : partnerData.length ? (
-        partnerData.map((p, i) => (
-          <div className="each-userData" key={i}>
-            <div style={{ width: "25%", display: "flex", alignItems: "center" }}>
-              <img
-                src={p?.logo}
-                alt=""
-                style={{ width: 32, height: 32, borderRadius: "50%", marginRight: 10 }}
-              />
-              {p?.businessName}
-            </div>
-            <div style={{ width: "30%", textTransform: "none" }}>{p?.email}</div>
-            <div style={{ width: "15%" }}>{p?.country || "—"}</div>
-            <div style={{ width: "15%" }}>{p?.type || "—"}</div>
-            <div style={{ width: "15%" }}>
-              {p?.firstName} {p?.lastName}
-            </div>
-          </div>
-        ))
-      ) : (
-        <div className="no-data">No Partners Found</div>
-      )}
-    </div>
-  </>
-)}
-
-
-   {/* PAGINATION – USERS ONLY */}
-{crmMenu === "Clients" && totalPages > 1 && (
-  <div className="crm-pagination">
-    <button
-      className="page-btn"
-      disabled={currentPage === 1}
-      onClick={() => setCurrentPage((p) => p - 1)}
-    >
-      ‹ Prev
-    </button>
-
-    {Array.from({ length: totalPages }, (_, i) => i + 1)
-      .filter(
-        (page) =>
-          page === 1 ||
-          page === totalPages ||
-          Math.abs(page - currentPage) <= 1
-      )
-      .map((page, i, arr) => (
-        <React.Fragment key={page}>
-          {i > 0 && page - arr[i - 1] > 1 && <span className="dots">…</span>}
-          <button
-            className={`page-btn ${currentPage === page ? "active" : ""}`}
-            onClick={() => setCurrentPage(page)}
-          >
-            {page}
-          </button>
-        </React.Fragment>
-      ))}
-
-    <button
-      className="page-btn"
-      disabled={currentPage === totalPages}
-      onClick={() => setCurrentPage((p) => p + 1)}
-    >
-      Next ›
-    </button>
-  </div>
-)}
-
-  </>
-) : accsideNav === "Services" ? (
-  /* your existing My Services block */
-
-                  <>
-                    <MenuNav
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder="Search Services..."
-                    />
-
-                    {/* 🔥 SERVICES LIST - ADDED THIS SECTION */}
-                    <div className="services-container" style={{ padding: "20px" }}>
-                      {/* Status Filter Tabs */}
-                      <div className="status-tabs" style={{ marginBottom: "20px", display: "flex", gap: "10px" }}>
-                        <button 
-                          onClick={() => setServiceStatus("active")}
-                          style={{
-                            padding: "8px 16px",
-                            background: serviceStatus === "active" ? "#007bff" : "#e9ecef",
-                            color: serviceStatus === "active" ? "white" : "#495057",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: "pointer"
+                      {/* CRM TABS */}
+                      <div className="crm-tabs">
+                        <button
+                          className={crmMenu === "Clients" ? "active" : ""}
+                          onClick={() => {
+                            setcrmMenu("Clients");
+                            setCurrentPage(1);
                           }}
                         >
-                          Active Services
+                          Users ({crmUserData.length})
                         </button>
-                        <button 
-                          onClick={() => setServiceStatus("inactive")}
-                          style={{
-                            padding: "8px 16px",
-                            background: serviceStatus === "inactive" ? "#007bff" : "#e9ecef",
-                            color: serviceStatus === "inactive" ? "white" : "#495057",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: "pointer"
+
+                        <button
+                          className={crmMenu === "Partners" ? "active" : ""}
+                          onClick={() => {
+                            setcrmMenu("Partners");
+                            setCurrentPage(1);
                           }}
                         >
-                          Inactive Services
+                          Partners ({partnerData?.length || 0})
                         </button>
                       </div>
 
-                      {/* Services Table */}
-                      {isUserLoading ? (
-                        <Skeleton count={5} height={60} />
-                      ) : adminServices.length > 0 ? (
-                        <div className="services-table" style={{ width: "100%", overflowX: "auto" }}>
-                          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                            <thead>
-                              <tr style={{ backgroundColor: "#f8f9fa", borderBottom: "2px solid #dee2e6" }}>
-                                <th style={{ padding: "12px", textAlign: "left", fontWeight: "600" }}>Service Name</th>
-                                <th style={{ padding: "12px", textAlign: "left", fontWeight: "600" }}>Billing Type</th>
-                                <th style={{ padding: "12px", textAlign: "left", fontWeight: "600" }}>Price</th>
-                                <th style={{ padding: "12px", textAlign: "left", fontWeight: "600" }}>Currency</th>
-                                <th style={{ padding: "12px", textAlign: "left", fontWeight: "600" }}>Status</th>
-                                <th style={{ padding: "12px", textAlign: "left", fontWeight: "600" }}>Partner</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {adminServices.map((service) => {
-                                const billingType = service.billing_cycle ? 
-                                  (service.billing_cycle.lifetime ? "One Time" : 
-                                   service.billing_cycle.monthly ? "Monthly" : 
-                                   service.billing_cycle.annual ? "Annual" : "Custom") : "N/A";
-                                
-                                const price = service.billing_cycle ? 
-                                  (service.billing_cycle.lifetime?.price || 
-                                   service.billing_cycle.monthly?.price || 
-                                   service.billing_cycle.annual?.price || 0) : 0;
-                                
-                                const currency = service.billing_cycle ? 
-                                  (service.billing_cycle.lifetime?.coin || 
-                                   service.billing_cycle.monthly?.coin || 
-                                   service.billing_cycle.annual?.coin || "INR") : "INR";
-                                
-                                return (
-                                  <tr key={service._id} style={{ borderBottom: "1px solid #e9ecef", backgroundColor: "white" }}>
-                                    <td style={{ padding: "12px" }}>
-                                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                                        {service.product_icon && (
-                                          <img 
-                                            src={service.product_icon} 
-                                            alt={service.product_name} 
-                                            style={{ width: "30px", height: "30px", borderRadius: "4px", objectFit: "cover" }}
-                                          />
-                                        )}
-                                        <div>
-                                          <div style={{ fontWeight: "500" }}>{service.product_name || service.name}</div>
-                                          {service.sub_text && (
-                                            <div style={{ fontSize: "12px", color: "#6c757d", marginTop: "2px" }}>
-                                              {service.sub_text}
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </td>
-                                    <td style={{ padding: "12px" }}>{billingType}</td>
-                                    <td style={{ padding: "12px", fontWeight: "500" }}>
-                                      {price.toLocaleString('en-IN')}
-                                    </td>
-                                    <td style={{ padding: "12px" }}>{currency}</td>
-                                    <td style={{ padding: "12px" }}>
-                                      <span style={{
-                                        padding: "4px 8px",
-                                        borderRadius: "12px",
-                                        fontSize: "12px",
-                                        fontWeight: "500",
-                                        backgroundColor: serviceStatus === "active" ? "#d4edda" : "#f8d7da",
-                                        color: serviceStatus === "active" ? "#155724" : "#721c24"
-                                      }}>
-                                        {serviceStatus === "active" ? "Active" : "Inactive"}
-                                      </span>
-                                    </td>
-                                    <td style={{ padding: "12px" }}>{service.revenue_account || "N/A"}</td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        </div>
-                      ) : (
-                        <div
-                          style={{
-                            height: "calc(100% - 70px)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "1.2rem",
-                            fontWeight: "500",
-                            color: "#6c757d"
-                          }}
-                        >
-                          No Services Found
-                        </div>
-                      )}
-                    </div>
-                  </>
-                ) : accsideNav === "Calendar" ? (
-                  <>
-                    <MenuNav
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder="Search..."
-                    />
-                    <EarningCalendar />
-                  </>
-                ) : accsideNav === "Wallet" ? (
-                  <>
-                    <MenuNav
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder="Search Wallet..."
-                    />
-                    {/* EXISTING WALLET CONTENT */}
-                  </>
-                ) : accsideNav === "Tasks" ? (
-                  <>
-                    <MenuNav
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder="Search..."
-                    />
-                    <Tasks />
-                  </>
-                ) : accsideNav === "Paths" ? (
-                  <>
-                    <MenuNav
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder="Search Paths..."
-                    />
-                    <MyPathsAdmin
-                      search={search}
-                      admin={true}
-                      fetchAllServicesAgain={fetchAllServicesAgain}
-                    />
-                  </>
-                ) : accsideNav === "Universities" ? (
-                  <>
-                    <MenuNav
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder="Search Universities..."
-                    />
-                    {/* EXISTING UNIVERSITY CONTENT */}
-                  </>
-                ) : accsideNav === "Steps" ? (
-                  <>
-                    <MenuNav
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder="Search Steps..."
-                    />
-                    <MyStepsAdmin
-                      search={search}
-                      admin={true}
-                      fetchAllServicesAgain={fetchAllServicesAgain}
-                      stepDataPage={true}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <MenuNav
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      searchPlaceholder="Search..."
-                    />
-                    <div
-                      style={{
-                        height: "calc(100% - 70px)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "1.5rem",
-                        fontWeight: "600",
-                      }}
-                    >
-                      Coming Soon
-                    </div>
-                  </>
-                )}
-              </>
-            )}
+                      {/* USERS TABLE */}
+                      {crmMenu === "Clients" && (
+                        <>
+                          {/* TABLE HEADER */}
+                          <div
+                            className="crm-tab"
+                            style={{ padding: "10px 35px" }}
+                          >
+                            <div
+                              className="crm-each-col"
+                              style={{ width: "20%" }}
+                            >
+                              Name
+                            </div>
+                            <div
+                              className="crm-each-col"
+                              style={{ width: "30%" }}
+                            >
+                              Email
+                            </div>
+                            <div
+                              className="crm-each-col"
+                              style={{ width: "15%" }}
+                            >
+                              Country
+                            </div>
+                            <div
+                              className="crm-each-col"
+                              style={{ width: "20%" }}
+                            >
+                              Phone
+                            </div>
+                            <div
+                              className="crm-each-col"
+                              style={{ width: "15%" }}
+                            >
+                              Profile Level
+                            </div>
+                          </div>
 
+                          {/* TABLE BODY */}
+                          <div className="users-alldata">
+                            {isClientLoading ? (
+                              Array(8)
+                                .fill("")
+                                .map((_, i) => (
+                                  <div className="each-userData" key={i}>
+                                    <Skeleton width={200} height={20} />
+                                  </div>
+                                ))
+                            ) : crmClientData.length ? (
+                              crmClientData.map((u, i) => (
+                                <div className="each-userData" key={i}>
+                                  <div style={{ width: "20%" }}>
+                                    {u?.name || "—"}
+                                  </div>
+                                  <div
+                                    style={{
+                                      width: "30%",
+                                      textTransform: "none",
+                                    }}
+                                  >
+                                    {u?.email}
+                                  </div>
+                                  <div style={{ width: "15%" }}>
+                                    {u?.country || "—"}
+                                  </div>
+                                  <div style={{ width: "20%" }}>
+                                    {u?.phoneNumber || "—"}
+                                  </div>
+                                  <div style={{ width: "15%" }}>
+                                    {u?.user_level || "—"}
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="no-data">No Users Found</div>
+                            )}
+                          </div>
+                        </>
+                      )}
+
+                      {/* PARTNERS TABLE */}
+                      {crmMenu === "Partners" && (
+                        <>
+                          {/* TABLE HEADER */}
+                          <div
+                            className="crm-tab"
+                            style={{ padding: "10px 35px" }}
+                          >
+                            <div
+                              className="crm-each-col"
+                              style={{ width: "25%" }}
+                            >
+                              Business
+                            </div>
+                            <div
+                              className="crm-each-col"
+                              style={{ width: "30%" }}
+                            >
+                              Email
+                            </div>
+                            <div
+                              className="crm-each-col"
+                              style={{ width: "15%" }}
+                            >
+                              Country
+                            </div>
+                            <div
+                              className="crm-each-col"
+                              style={{ width: "15%" }}
+                            >
+                              Type
+                            </div>
+                            <div
+                              className="crm-each-col"
+                              style={{ width: "15%" }}
+                            >
+                              POC
+                            </div>
+                          </div>
+
+                          {/* TABLE BODY */}
+                          <div className="users-alldata">
+                            {isPurchaseLoading ? (
+                              Array(8)
+                                .fill("")
+                                .map((_, i) => (
+                                  <div className="each-userData" key={i}>
+                                    <Skeleton width={200} height={20} />
+                                  </div>
+                                ))
+                            ) : partnerData.length ? (
+                              partnerData.map((p, i) => (
+                                <div className="each-userData" key={i}>
+                                  <div
+                                    style={{
+                                      width: "25%",
+                                      display: "flex",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <img
+                                      src={p?.logo}
+                                      alt=""
+                                      style={{
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: "50%",
+                                        marginRight: 10,
+                                      }}
+                                    />
+                                    {p?.businessName}
+                                  </div>
+                                  <div
+                                    style={{
+                                      width: "30%",
+                                      textTransform: "none",
+                                    }}
+                                  >
+                                    {p?.email}
+                                  </div>
+                                  <div style={{ width: "15%" }}>
+                                    {p?.country || "—"}
+                                  </div>
+                                  <div style={{ width: "15%" }}>
+                                    {p?.type || "—"}
+                                  </div>
+                                  <div style={{ width: "15%" }}>
+                                    {p?.firstName} {p?.lastName}
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="no-data">No Partners Found</div>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  ) : accsideNav === "Services" ? (
+                    <>
+                      <MenuNav
+                        showDrop={showDrop}
+                        setShowDrop={setShowDrop}
+                        searchTerm={search}
+                        setSearchterm={setSearch}
+                        searchPlaceholder="Search Services..."
+                      />
+
+                      {/* SERVICES HEADER TABS */}
+                      <div className="crm-tabs">
+                        <button
+                          className={serviceStatus === "active" ? "active" : ""}
+                          onClick={() => setServiceStatus("active")}
+                        >
+                          Active Services
+                        </button>
+                        <button
+                          className={
+                            serviceStatus === "inactive" ? "active" : ""
+                          }
+                          onClick={() => setServiceStatus("inactive")}
+                        >
+                          Inactive Services
+                        </button>
+                        <button
+                          className={serviceStatus === "all" ? "active" : ""}
+                          onClick={() => setServiceStatus("all")}
+                        >
+                          All Services
+                        </button>
+                      </div>
+
+                      {/* SERVICES TABLE HEADER */}
+                      <div className="services-table-header">
+                        <div
+                          className="service-header-col"
+                          style={{ width: "35%" }}
+                        >
+                           Name
+                        </div>
+                        <div
+                          className="service-header-col"
+                          style={{ width: "15%" }}
+                        >
+                          Billing Frequency
+
+                        </div>
+                        <div
+                          className="service-header-col"
+                          style={{ width: "15%" }}
+                        >
+                          Billing Amount
+                        </div>
+                        <div
+                          className="service-header-col"
+                          style={{ width: "10%" }}
+                        >
+                          CURRENCY
+                        </div>
+                        {/* <div
+                          className="service-header-col"
+                          style={{ width: "10%" }}
+                        >
+                          STATUS
+                        </div> */}
+                        <div
+                          className="service-header-col"
+                          style={{ width: "15%" }}
+                        >
+                          PARTNER
+                        </div>
+                      </div>
+
+                      {/* MAIN CONTENT AREA WITH STATIC FOOTER */}
+                      <div className="services-content-wrapper">
+                        {/* SCROLLABLE SERVICES LIST */}
+                        <div className="services-alldata">
+                          {isUserLoading ? (
+                            Array(6)
+                              .fill("")
+                              .map((_, i) => (
+                                <div className="each-service-skeleton" key={i}>
+                                  <Skeleton width="100%" height={80} />
+                                </div>
+                              ))
+                          ) : filteredAdminServices.length > 0 ? (
+                            filteredAdminServices.map((service) => {
+                              // Determine billing type and price
+                              const billingCycle = service.billing_cycle || {};
+                              let billingType = "One Time";
+                              let price = 0;
+                              let currency = "INR";
+
+                              if (billingCycle.lifetime) {
+                                billingType = "One Time";
+                                price = billingCycle.lifetime.price || 0;
+                                currency = billingCycle.lifetime.coin || "INR";
+                              } else if (billingCycle.monthly) {
+                                billingType = "Monthly";
+                                price = billingCycle.monthly.price || 0;
+                                currency = billingCycle.monthly.coin || "INR";
+                              } else if (billingCycle.annual) {
+                                billingType = "Annual";
+                                price = billingCycle.annual.price || 0;
+                                currency = billingCycle.annual.coin || "INR";
+                              } else if (billingCycle.custom) {
+                                billingType = "Custom";
+                                price = billingCycle.custom.price || 0;
+                                currency = billingCycle.custom.coin || "INR";
+                              }
+
+                              // Determine status
+                              const isActive = service.status === "active";
+
+                              return (
+                                <div
+  className="each-service-data"
+  key={service._id || service.product_id}
+  onClick={() => {
+    setSelectedService(service);
+    setServiceDrawerOpen(true);
+    setServiceMode("actions");
+  }}
+  style={{ cursor: "pointer" }}
+>
+
+                                  {/* Service Name */}
+                                  <div className="service-name-col">
+                                    <div className="service-info">
+                                      <div className="service-title">
+                                        {service.product_name ||
+                                          service.name ||
+                                          "Unnamed Service"}
+                                      </div>
+                                      {service.sub_text && (
+                                        <div className="service-subtext">
+                                          {service.sub_text}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Billing Type */}
+                                  <div className="service-billing-col">
+                                    <div className="billing-type">
+                                      {billingType}
+                                    </div>
+                                  </div>
+
+                                  {/* Price */}
+                                  <div className="service-price-col">
+                                    <div className="price-value">
+                                      {price === 0
+                                        ? "0"
+                                        : price.toLocaleString("en-IN")}
+                                    </div>
+                                  </div>
+
+                                  {/* Currency */}
+                                  <div className="service-currency-col">
+                                    <div className="currency-value">
+                                      {currency}
+                                    </div>
+                                  </div>
+
+                                  {/* Status */}
+                                  <div className="service-status-col">
+                                    <div className="status-value">
+                                      <span
+                                        className={`status-indicator ${
+                                          isActive
+                                            ? "status-active"
+                                            : "status-inactive"
+                                        }`}
+                                      ></span>
+                                      {isActive ? "Active" : "Inactive"}
+                                    </div>
+                                  </div>
+
+                                 
+                                  {/* Partner */}
+<div className="service-partner-col">
+  <div className="partner-wrapper">
+    <div className="partner-value">
+      {service.revenue_account ||
+        service.partner_email ||
+        "N/A"}
+    </div>
+
+    
+  </div>
+</div>
+
+
+
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <div className="no-services-found">
+                              {/* <div className="no-data-icon">📊</div> */}
+                              <div className="no-data-title">
+                                No Services Found
+                              </div>
+                              <div className="no-data-subtitle">
+                                {serviceStatus === "active"
+                                  ? "No active services available"
+                                  : serviceStatus === "inactive"
+                                  ? "No inactive services available"
+                                  : "No services created yet"}
+                              </div>
+                              <button
+                                className="create-service-btn"
+                                onClick={() => setispopular(true)}
+                              >
+                                + Create New Service
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* STATIC STATS FOOTER - WON'T SCROLL */}
+                        {allAdminServices.length > 0 && !isUserLoading && (
+                          <div className="services-stats-static">
+                            <div className="stat-card-static">
+                              <div className="stat-value">
+                                {allAdminServices.length}
+                              </div>
+                              <div className="stat-label">Total Services</div>
+                            </div>
+                            <div className="stat-card-static">
+                              <div className="stat-value">
+                                {
+                                  allAdminServices.filter(
+                                    (s) => s.status === "active"
+                                  ).length
+                                }
+                              </div>
+                              <div className="stat-label">Active</div>
+                            </div>
+                            <div className="stat-card-static">
+                              <div className="stat-value">
+                                {
+                                  allAdminServices.filter(
+                                    (s) => s.status === "inactive"
+                                  ).length
+                                }
+                              </div>
+                              <div className="stat-label">Inactive</div>
+                            </div>
+                            <div className="stat-card-static revenue">
+                              <div className="stat-value">
+                                ₹
+                                {allAdminServices
+                                  .reduce((sum, service) => {
+                                    const billingCycle =
+                                      service.billing_cycle || {};
+                                    let price = 0;
+
+                                    // Determine billing type and price
+                                    if (billingCycle.lifetime) {
+                                      price =
+                                        parseFloat(
+                                          billingCycle.lifetime?.price
+                                        ) || 0;
+                                    } else if (billingCycle.monthly) {
+                                      price =
+                                        parseFloat(
+                                          billingCycle.monthly?.price
+                                        ) || 0;
+                                      // For monthly, assume 12 months (1 year) for revenue projection
+                                      price = price * 12;
+                                    } else if (billingCycle.annual) {
+                                      price =
+                                        parseFloat(
+                                          billingCycle.annual?.price
+                                        ) || 0;
+                                    } else if (billingCycle.custom) {
+                                      price =
+                                        parseFloat(
+                                          billingCycle.custom?.price
+                                        ) || 0;
+                                    }
+
+                                    return sum + price;
+                                  }, 0)
+                                  .toLocaleString("en-IN")}
+                              </div>
+                              <div className="stat-label">
+                                Total Revenue (Projected)
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  ) : accsideNav === "Calendar" ? (
+                    <>
+                      <MenuNav
+                        showDrop={showDrop}
+                        setShowDrop={setShowDrop}
+                        searchTerm={search}
+                        setSearchterm={setSearch}
+                        searchPlaceholder="Search..."
+                      />
+                      <EarningCalendar />
+                    </>
+                  ) : accsideNav === "Wallet" ? (
+                    <>
+                      <MenuNav
+                        showDrop={showDrop}
+                        setShowDrop={setShowDrop}
+                        searchTerm={search}
+                        setSearchterm={setSearch}
+                        searchPlaceholder="Search Wallet..."
+                      />
+                      {/* EXISTING WALLET CONTENT */}
+                    </>
+                  ) : accsideNav === "Tasks" ? (
+                    <>
+                      <MenuNav
+                        showDrop={showDrop}
+                        setShowDrop={setShowDrop}
+                        searchTerm={search}
+                        setSearchterm={setSearch}
+                        searchPlaceholder="Search..."
+                      />
+                      <Tasks />
+                    </>
+                  ) : accsideNav === "Paths" ? (
+                    <>
+                      <MenuNav
+                        showDrop={showDrop}
+                        setShowDrop={setShowDrop}
+                        searchTerm={search}
+                        setSearchterm={setSearch}
+                        searchPlaceholder="Search Paths..."
+                      />
+                      <MyPathsAdmin
+                        search={search}
+                        admin={true}
+                        fetchAllServicesAgain={fetchAllServicesAgain}
+                      />
+                    </>
+                  ) : accsideNav === "Universities" ? (
+                    <>
+                      <MenuNav
+                        showDrop={showDrop}
+                        setShowDrop={setShowDrop}
+                        searchTerm={search}
+                        setSearchterm={setSearch}
+                        searchPlaceholder="Search Universities..."
+                      />
+                      {/* EXISTING UNIVERSITY CONTENT */}
+                    </>
+                  ) : accsideNav === "Steps" ? (
+                    <>
+                      <MenuNav
+                        showDrop={showDrop}
+                        setShowDrop={setShowDrop}
+                        searchTerm={search}
+                        setSearchterm={setSearch}
+                        searchPlaceholder="Search Steps..."
+                      />
+                      <MyStepsAdmin
+                        search={search}
+                        admin={true}
+                        fetchAllServicesAgain={fetchAllServicesAgain}
+                        stepDataPage={true}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <MenuNav
+                        showDrop={showDrop}
+                        setShowDrop={setShowDrop}
+                        searchTerm={search}
+                        searchPlaceholder="Search..."
+                      />
+                      <div
+                        style={{
+                          height: "calc(100% - 70px)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "1.5rem",
+                          fontWeight: "600",
+                        }}
+                      >
+                        Coming Soon
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
+{/* ================= SERVICE DRAWER ================= */}
+{/* ================= SERVICE DRAWER ================= */}
+{serviceDrawerOpen && selectedService && (
+  <>
+    {/* BACKDROP */}
+    <div
+      className="service-backdrop"
+      onClick={() => setServiceDrawerOpen(false)}
+    />
+
+    {/* DRAWER */}
+    <div className="service-drawer improved">
+
+      {/* HEADER */}
+      <div className="drawer-header">
+        <h3>Service Actions</h3>
+        <button
+          className="drawer-close"
+          onClick={() => setServiceDrawerOpen(false)}
+        >
+          ✕
+        </button>
       </div>
 
-      <ToastContainer />
-    </div>
-  </div>
-);
+      {/* ACTION LIST */}
+      {serviceMode === "actions" && (
+        <div className="drawer-actions">
 
+          <button
+            className="drawer-action-btn primary"
+            onClick={() => setServiceMode("view")}
+          >
+            👁 View Service
+          </button>
+
+          <button
+            className="drawer-action-btn"
+            onClick={() => setServiceMode("edit")}
+          >
+            ✏️ Edit Service
+          </button>
+
+          <button
+            className="drawer-action-btn danger"
+            onClick={async () => {
+              if (!window.confirm("Delete this service?")) return;
+              await axios.delete(
+                `/admin/services/delete/${selectedService._id}`
+              );
+              setServiceDrawerOpen(false);
+              getAdminServices();
+            }}
+          >
+            🗑 Delete Service
+          </button>
+
+        </div>
+      )}
+
+      {/* VIEW MODE */}
+      {serviceMode === "view" && (
+        <div className="drawer-content">
+          <h4>{selectedService.name}</h4>
+          <p>{selectedService.description || "No description"}</p>
+        </div>
+      )}
+
+      {/* EDIT MODE */}
+      {serviceMode === "edit" && (
+        <EditServiceForm
+          service={selectedService}
+          onSave={() => {
+            setServiceDrawerOpen(false);
+            getAdminServices();
+          }}
+          onCancel={() => setServiceDrawerOpen(false)}
+        />
+      )}
+    </div>
+  </>
+)}
+        <ToastContainer />
+      </div>
+    </div>
+    
+  );
 };
 
 export default AccDashboard;

@@ -118,7 +118,7 @@ import { Helmet } from "react-helmet";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
+import axios from "axios";
 import ScrollToTop from "./components/ScrollToTop";
 
 /* ================= TEMPLATE ROUTER ================= */
@@ -168,6 +168,12 @@ function App() {
     });
   }, []);
 
+  useEffect(() => {
+    axios
+      .post("http://localhost:4545/api/admin-visitors/admin-visitor")
+      .catch(() => {});
+  }, []);
+  
   return (
     <Fragment>
       <Helmet>

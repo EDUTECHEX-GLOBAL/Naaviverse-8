@@ -9,6 +9,78 @@
   align-items: center;
 }
 
+.password-box {
+  position: relative;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  cursor: pointer;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #111827;
+  font-weight: 500;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f9fafb;
+  }
+
+  img {
+    display: block;
+  }
+}
+.login-visual {
+  text-align: center;
+  margin-bottom: 24px;
+
+  img {
+    width: 280px;
+    max-width: 100%;
+  }
+}
+
+.visual-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+
+  span {
+    width: 8px;
+    height: 8px;
+    background: #cbd5e1;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  span.active {
+    background: #2563eb;
+  }
+}
+
+
 .login-icons {
   display: flex;
   flex-direction: column;
@@ -16,6 +88,28 @@
   width: 90px;
   padding: 25px;
   border-right: 0.25px solid #e5e5e5;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  width: 22px;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+.partner-banner {
+  margin-bottom: 1.5rem;
+  text-align: center;
+
+  img {
+    max-width: 220px;
+  }
 }
 
 .icons-box {
