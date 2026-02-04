@@ -39,15 +39,15 @@ const BASE_URL = process.env.REACT_APP_API_BASE_URL;
  */
 
 export const GetCategoriesAcc = () => {
-  return axios.get("${BASE_URL}/api/categories");
+  return axios.get(`${BASE_URL}/api/categories`);
 };
 
 export const GetAllCurrencies = () => {
-  return axios.get("${BASE_URL}/api/currencies");
+  return axios.get(`${BASE_URL}/api/currencies`);
 };
 
 export const CreatePopularService = (object) => {
-  return axios.post("${BASE_URL}/api/services/add", object);
+  return axios.post(`${BASE_URL}/api/services/add`, object);
 };
 
 export const CheckStatusAccountant = async (email) => {

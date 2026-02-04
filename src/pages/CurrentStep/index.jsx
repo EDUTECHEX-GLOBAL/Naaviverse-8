@@ -505,7 +505,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
     try {
       const res = await axios.put(
-        "${BASE_URL}/api/userpaths/completeStep",
+        `${BASE_URL}/api/userpaths/completeStep`,
         {
           email,
           pathId,
@@ -535,7 +535,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
     try {
       const res = await axios.put(
-        "${BASE_URL}/api/userpaths/failedStep",
+        `${BASE_URL}/api/userpaths/failedStep`,
         {
           email,
           pathId,

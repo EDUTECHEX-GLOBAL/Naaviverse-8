@@ -77,7 +77,7 @@ const PathComponent = () => {
       const email = user?.email;
       if (!email) return;
 
-      const res = await axios.get(`/api/users/get/${email}`);
+      const res = await axios.get(`${BASE_URL}/api/users/get/${email}`);
       if (res.data.status) {
         setUserProfile(res.data.data);
         localStorage.setItem("userProfile", JSON.stringify(res.data.data));
@@ -156,18 +156,16 @@ const confirmPathSelection = () => {
     return;
   }
 
-  // ⭐ VERY IMPORTANT — SAVE PATH ID FOR JOURNEY PAGE
   localStorage.setItem("selectedPathId", pathId);
 
   axios
-    .post("${BASE_URL}/api/fetch/selectpath", {
+    .post(`${BASE_URL}/api/fetch/selectpath`, {   // ✅ fixed
       email,
       pathId,
     })
     .then(() => {
       setPathItemStep(3);
 
-      // ⭐ NAVIGATE TO MY JOURNEY AFTER SUCCESS
       setTimeout(() => {
         setsideNav("My Journey");
         navigate("/dashboard/users");
@@ -175,8 +173,6 @@ const confirmPathSelection = () => {
     })
     .catch((err) => console.error("Select path error:", err));
 };
-
-
   // --------------------------------------------------------------
   //  RETURN: FULL CLEAN UI
   // --------------------------------------------------------------

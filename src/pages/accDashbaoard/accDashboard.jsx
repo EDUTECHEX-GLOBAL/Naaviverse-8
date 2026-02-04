@@ -169,7 +169,7 @@ useEffect(() => {
   const fetchCountries = async () => {
     try {
       console.log("Fetching countries...");
-      const res = await axios.get("${BASE_URL}/api/countries");
+      const res = await axios.get(`${BASE_URL}/api/countries`);
       console.log("Countries fetched:", res.data);
       setCountryApiValue(res.data);
     } catch (err) {
@@ -692,7 +692,7 @@ const uploadBulkPath = async (file) => {
     const body = { email, records };
 
     const res = await axios.post(
-      "${BASE_URL}/api/paths/bulk",
+      `${BASE_URL}/api/paths/bulk`,
       body
     );
 
@@ -735,7 +735,7 @@ const uploadBulkStep = async (file) => {
     };
 
     const res = await axios.post(
-      "${BASE_URL}/api/steps/bulk",
+      `${BASE_URL}/api/steps/bulk`,
       body
     );
 
@@ -774,7 +774,7 @@ const uploadBulkService = async (file) => {
     };
 
     const res = await axios.post(
-      "${BASE_URL}/api/services/bulk",
+      `${BASE_URL}/api/services/bulk`,
       body
     );
 

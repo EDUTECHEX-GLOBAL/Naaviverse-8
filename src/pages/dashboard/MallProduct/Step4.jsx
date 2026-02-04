@@ -61,7 +61,7 @@ const Step4 = ({ setAcceptOffer }) => {
 
       // Create order
       const createOrder = await axios.post(
-        "${BASE_URL}/api/payment/create-order",
+        `${BASE_URL}/api/payment/create-order`,
         body
       );
 
@@ -86,7 +86,7 @@ const Step4 = ({ setAcceptOffer }) => {
           console.log("📌 PAYMENT CALLBACK:", response);
 
           const verify = await axios.post(
-            "${BASE_URL}/api/payment/verify",
+            `${BASE_URL}/api/payment/verify`,
             response
           );
 

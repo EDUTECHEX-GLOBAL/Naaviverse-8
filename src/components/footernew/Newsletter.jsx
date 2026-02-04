@@ -17,7 +17,7 @@ const BASE_URL = process.env.REACT_APP_API_BASE_URL;
     }
 
     try {
-      const res = await axios.post("${BASE_URL}/api/admin-subscribe", { email });
+      const res = await axios.post(`${BASE_URL}/api/admin-subscribe`, { email });
 
       if (res.status === 201) {
         setMessage("Subscription successful!");

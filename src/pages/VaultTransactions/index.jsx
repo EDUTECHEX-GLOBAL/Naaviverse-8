@@ -31,7 +31,7 @@ useEffect(() => {
   setLoading(true);
 
   axios
-    .get("${BASE_URL}/api/vault/txns", {
+    .get(`${BASE_URL}/api/vault/txns`, {
       params: {
         app_code: "naavi",
         email: userDetails.email,

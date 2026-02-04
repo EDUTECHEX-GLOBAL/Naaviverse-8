@@ -83,7 +83,7 @@ const getVaultTxns = async ({ queryKey }) => {
   }
 
   const { data } = await axios.get(
-    "${BASE_URL}/api/vault/txns",
+    `${BASE_URL}/api/vault/txns`,
     { params }
   );
 

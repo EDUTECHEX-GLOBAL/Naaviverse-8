@@ -22,7 +22,7 @@ const IconMenu = [
     { id: 1, icon: lg2 },
 ];
 
-const BASE_URL = process.env.REACT_APP_API_BASE_URL|| "${BASE_URL}"; // ✅ default fallback
+const BASE_URL = process.env.REACT_APP_API_BASE_URL|| `${BASE_URL}`; // ✅ default fallback
 
 const Loginpage = () => {
     const navigate = useNavigate();

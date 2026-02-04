@@ -52,7 +52,7 @@ const handleSubmit = async (e) => {
   };
 
   try {
-    await axios.post("${BASE_URL}/api/admin-contact", contactData);
+    await axios.post(`${BASE_URL}/api/admin-contact`, contactData);
 
     setStatus("Message sent successfully!");
     setStatusType("success");

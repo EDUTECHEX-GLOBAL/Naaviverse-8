@@ -73,7 +73,7 @@ const NewHomePage = () => {
     ) {
       setLoading(true);
 
-      axios.post("${BASE_URL}/api/auth/checkEmailDuplicate", {
+      axios.post(`${BASE_URL}/api/auth/checkEmailDuplicate`, {
         email: userEmail
       })
       .then(({ data }) => {
@@ -95,8 +95,8 @@ const NewHomePage = () => {
 
   const registerUser = () => {
     const signupUrl = isUser
-      ? "${BASE_URL}/api/auth/signup"
-      : "${BASE_URL}/api/partner/signup";
+      ? `${BASE_URL}/api/auth/signup`
+      : `${BASE_URL}/api/partner/signup`;
 
     const payload = isUser
       ? {
@@ -128,8 +128,8 @@ const NewHomePage = () => {
 
   const confirmEmail = () => {
     const verifyOtpUrl = isUser
-      ? "${BASE_URL}/api/auth/verifyotp"
-      : "${BASE_URL}/api/partner/verifyotp";
+      ? `${BASE_URL}/api/auth/verifyotp`
+      : `${BASE_URL}/api/partner/verifyotp`;
 
     axios.post(verifyOtpUrl, {
       email: userEmail.trim(),

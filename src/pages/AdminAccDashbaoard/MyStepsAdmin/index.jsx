@@ -576,7 +576,7 @@ const pathNameMap = React.useMemo(() => {
   return map;
 }, [allPaths]);
 useEffect(() => {
-  axios.get("${BASE_URL}/api/paths/get?status=active").then(({ data }) => {
+  axios.get(`${BASE_URL}/api/paths/get?status=active`).then(({ data }) => {
     if (data?.status) {
       setAllPaths(data.data);
     }

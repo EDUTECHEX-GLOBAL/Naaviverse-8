@@ -304,7 +304,7 @@ const uploadBulkPath = async (file) => {
     const json = JSON.parse(text);       // Convert to JSON
 
     let { data } = await axios.post(
-      "${BASE_URL}/api/paths/bulk",
+      `${BASE_URL}/api/paths/bulk`,
       json
     );
 
@@ -350,7 +350,7 @@ const uploadBulkStep = async (file) => {
     };
 
     const res = await axios.post(
-      "${BASE_URL}/api/steps/bulk",
+      `${BASE_URL}/api/steps/bulk`,
       body
     );
 
@@ -400,7 +400,7 @@ const uploadBulkService = async (file) => {
     };
 
     const res = await axios.post(
-      "${BASE_URL}/api/services/bulk",
+      `${BASE_URL}/api/services/bulk`,
       body
     );
 
@@ -1004,7 +1004,7 @@ navigate("/login");
     let token = userDetails?.idToken;
     axios
       .post(
-        "${BASE_URL}/lxUser/register/banker",
+        `${BASE_URL}/lxUser/register/banker`,
         {
           bankerTag: brandUserName,
           colorCode: brandColorCode,
@@ -1063,7 +1063,7 @@ navigate("/login");
     if (email && token) {
       axios
         .post(
-          "${BASE_URL}/banker/assignCategory",
+          `${BASE_URL}/banker/assignCategory`,
           {
             categoryName: value,
             email,
@@ -1193,7 +1193,7 @@ navigate("/login");
 
     try {
       let result = await axios.put(
-        "${BASE_URL}/lxUser/update/banker",
+        `${BASE_URL}/lxUser/update/banker`,
         body,
         {
           headers: { token, email },

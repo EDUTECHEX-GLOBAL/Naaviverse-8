@@ -6,7 +6,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 // ✅ SUPER ADMIN API
-const API = "${BASE_URL}/api/admin/auth";
+const API = `${BASE_URL}/api/admin/auth`;
 const AdminLogin = () => {
   const navigate = useNavigate();
 

@@ -40,7 +40,7 @@ export const GlobalContexProvider = ({ children }) => {
   const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const getCategories = async () => {
   try {
-    const res = await axios.get("${BASE_URL}/api/categories");
+    const res = await axios.get(`${BASE_URL}/api/categories`);
 
     if (!res?.data?.status || !Array.isArray(res.data.categories)) {
       setCategories([]);
@@ -69,7 +69,7 @@ const loadCurrencies = async () => {
   setCurrencyLoading(true);
 
   try {
-    const res = await axios.get("${BASE_URL}/api/currencies");
+    const res = await axios.get(`/api/currencies`);
 
     if (!res?.data?.status || !Array.isArray(res.data.currencies)) {
       setAllCurrencies([]);
