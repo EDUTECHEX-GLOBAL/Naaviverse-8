@@ -4,7 +4,7 @@ require("dotenv").config({ path: ".env" });
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const { generateOTP, sendOTP, sendNotificationMail  } = require("../middlewares/verifySignUp");
 
 const signUp = async (req, res) => {
@@ -178,29 +178,32 @@ const forgotPassword = async (req, res) => {
 };
 const sendConfirmationEmail = async (req, res) => {
   try {
-    // Find the user by email
     const userFound = await User.findOne({ email: req.body.email });
-    if (!userFound) return res.status(404).json({ message: "User not found" });
+    if (!userFound)
+      return res.status(404).json({ message: "User not found" });
 
-    // Create URL for email confirmation
-    const token = userFound._id; // or use a dedicated field like userFound.emailToken
-    const url = `${process.env.HOST || "http://localhost:4545"}/api/auth/verification/${token}`;
+    const token = userFound._id;
 
-    // Send the email
+    const baseUrl = process.env.HOST;
+    const url = `${baseUrl}/api/auth/verification/${token}`;
+
     await sendNotificationMail(
       userFound.email,
       "Naavi Account Confirmation",
-      `Dear ${userFound.username || "User"},<br>Please confirm your account:<br><a href="${url}">${url}</a>`
+      `Dear ${userFound.username || "User"},<br>
+       Please confirm your account:<br>
+       <a href="${url}">${url}</a>`
     );
 
-    // Send success response
     return res.status(200).json({
       success: true,
       message: "Account confirmation email has been sent successfully",
     });
   } catch (error) {
     console.error("sendConfirmationEmail error:", error);
-    return res.status(500).json({ message: "Something went wrong", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Something went wrong", error: error.message });
   }
 };
 
