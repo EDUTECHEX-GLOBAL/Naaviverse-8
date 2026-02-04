@@ -55,22 +55,7 @@ const demoMicroServices = [
   },
 ];
 
-const demoNanoServices = [
-  {
-    id: 1,
-    title: "1-to-1 Academic Foundation Execution",
-    expert: "Naavi Certified Math & Physics Mentor",
-    scope: [
-      "Personalized study plan",
-      "Weekly 1-to-1 sessions",
-      "Assignments & problem-solving",
-      "Progress tracking"
-    ],
-    duration: "4 Weeks",
-    outcome: "Strong Math & Physics foundation",
-    price: "₹15,000"
-  }
-];
+
 
 
 const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selectedPath }) => {
@@ -591,10 +576,10 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
           <div>Apx Takes 3 Days</div>
         </div>
 
-        <div style={{ fontSize: 16, fontWeight: 300, }}>
+        {/* <div style={{ fontSize: 16, fontWeight: 300, }}>
           {currentStepData?.description}
 
-        </div>
+        </div> */}
       </div>
 
       {/* ==== CONTENT ==== */}

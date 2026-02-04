@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+
 import axios from "axios";
 import {
   AreaChart,
@@ -28,6 +29,32 @@ const HomeDashboard = () => {
   });
 
   const [loading, setLoading] = useState(true);
+  const [trendData, setTrendData] = useState([]);
+
+  useEffect(() => {
+  const fetchTrends = async () => {
+    try {
+      const res = await axios.get("/api/admin-dashboard/overview");
+
+      const { months, trends } = res.data;
+
+      const formatted = months.map((month, index) => ({
+        month,
+        contacts: trends.contacts[index] || 0,
+        visitors: trends.visitors[index] || 0,
+        subscribers: trends.subscribers[index] || 0,
+      }));
+
+      setTrendData(formatted);
+    } catch (error) {
+      console.error("Failed to load trend data", error);
+      setTrendData([]);
+    }
+  };
+
+  fetchTrends();
+}, []);
+
 
   // Media queries for responsive design
   const isMobile = useMediaQuery({ maxWidth: 767 });
@@ -64,14 +91,7 @@ const HomeDashboard = () => {
   }, []);
 
   // Sample data for charts (you can replace with real data later)
-  const trendData = [
-    { month: 'Jan', contacts: 30, visitors: 80, subscribers: 20 },
-    { month: 'Feb', contacts: 40, visitors: 100, subscribers: 35 },
-    { month: 'Mar', contacts: 35, visitors: 120, subscribers: 40 },
-    { month: 'Apr', contacts: 50, visitors: 110, subscribers: 45 },
-    { month: 'May', contacts: 45, visitors: 128, subscribers: 50 },
-    { month: 'Jun', contacts: 55, visitors: 140, subscribers: 60 },
-  ];
+
 
   const pieData = [
     { name: "Contacts", value: counts.contacts, color: '#667eea' },
@@ -277,17 +297,40 @@ const HomeDashboard = () => {
             <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
               <PieChart>
                 <Pie
-                  data={pieData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={isMobile ? 70 : 90}
-                  innerRadius={isMobile ? 40 : 60}
-                  paddingAngle={2}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  labelLine={false}
-                >
+  data={pieData}
+  dataKey="value"
+  nameKey="name"
+  cx={isMobile ? "50%" : "45%"}   // 👈 move pie left (KEY FIX)
+  cy="50%"
+  outerRadius={isMobile ? 70 : 90}
+  innerRadius={isMobile ? 40 : 60}
+  paddingAngle={2}
+ label={({ name, percent, value, cx, cy, midAngle, outerRadius }) => {
+  if (value === 0) return null;
+
+  const RADIAN = Math.PI / 180;
+  const radius = outerRadius + 14; // 👈 controlled distance
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <text
+      x={x}
+      y={y}
+      fill="#475569"
+      textAnchor={x > cx ? 'start' : 'end'}
+      dominantBaseline="central"
+      fontSize={13}
+      fontWeight={500}
+    >
+      {`${name}: ${Math.round(percent * 100)}%`}
+    </text>
+  );
+}}
+
+  labelLine={false}
+>
+
                   {pieData.map((entry, index) => (
                     <Cell 
                       key={`cell-${index}`} 

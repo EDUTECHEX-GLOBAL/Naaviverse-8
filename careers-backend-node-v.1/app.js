@@ -148,6 +148,11 @@ app.use('/api/cities', cityRoutes);
 /* ------------------- VISITOR ROUTES ------------------- */
 app.use('/api/admin-visitors', visitorRoutes);
 
+app.use(
+  "/api/admin-dashboard",
+  require("./Admin/routes/adminDashboardRoutes")
+);
+
 /* ------------------- ERROR HANDLING ------------------- */
 app.use(function (req, res, next) {
   next(createError(404));

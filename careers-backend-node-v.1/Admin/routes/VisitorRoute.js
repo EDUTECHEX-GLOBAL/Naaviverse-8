@@ -33,20 +33,33 @@ router.post('/admin-visitor', async (req, res) => {
       clientIp = clientIp.split('::ffff:')[1];
     }
 
-    // ✅ DEFINE isLocalhost (🔥 THIS WAS MISSING)
+    // ✅ Detect localhost
     const isLocalhost = ['::1', '127.0.0.1', '0.0.0.0'].includes(clientIp);
 
     // ✅ DEV MODE: rotate fake IPs
     const fakeIps = [
-      "8.8.8.8",        // USA
-      "1.1.1.1",        // Australia
-      "49.37.0.1",      // India
-      "91.198.174.192", // Europe
-      "3.108.45.22"     // India (AWS)
+      "8.8.8.8",
+      "1.1.1.1",
+      "49.37.0.1",
+      "91.198.174.192",
+      "3.108.45.22"
     ];
 
     if (isLocalhost) {
       clientIp = fakeIps[Math.floor(Math.random() * fakeIps.length)];
+    }
+
+    // 🛑 DUPLICATE PREVENTION (🔥 THIS WAS MISSING)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const alreadyLogged = await Visitor.findOne({
+      ip: clientIp,
+      createdAt: { $gte: today }
+    });
+
+    if (alreadyLogged) {
+      return res.status(200).send('Visitor already logged today');
     }
 
     // 🌍 Fetch geo info
@@ -70,6 +83,7 @@ router.post('/admin-visitor', async (req, res) => {
     res.status(500).send('Error logging visitor data');
   }
 });
+
 
 
 
