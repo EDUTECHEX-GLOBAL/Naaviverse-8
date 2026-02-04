@@ -12,7 +12,7 @@ import lg1 from "../../static/images/login/lg1.svg";
 import CurrentStep from "../CurrentStep/index.jsx";
 import { useStore } from "../../components/store/store.ts";
 import { useNavigate } from "react-router-dom";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) => {
   const navigate = useNavigate()
   const { sideNav, setsideNav } = useStore();

@@ -16,7 +16,7 @@ import { useStore } from "../../../components/store/store.ts";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) => {
   const navigate = useNavigate()
   const { sideNav, setsideNav } = useStore();
