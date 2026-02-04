@@ -112,7 +112,7 @@ useEffect(() => {
       console.log("FETCHING PATHS WITH FILTERS 👉", params);
 
       const res = await axios.get(
-        "${BASE_URL}/api/paths/active",
+       `${BASE_URL}/api/paths/active`,
         { params }
       );
 
