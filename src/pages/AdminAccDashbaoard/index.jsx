@@ -73,7 +73,7 @@ const AccDashboard = () => {
     setBalanceToggle,
   } = useStore();
 
-  const Country = require("country-state-city").Country;
+ 
 
   /* ---------------- BASIC UI STATES ---------------- */
   const [search, setSearch] = useState("");
@@ -95,10 +95,12 @@ const AccDashboard = () => {
 
   /* ---------------- PAGINATION CALCULATIONS ---------------- */
   /* ---------------- PAGINATION CALCULATIONS ---------------- */
-  const totalPages = Math.ceil(crmUserData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentUsers = crmUserData.slice(startIndex, endIndex);
+const safeUsers = Array.isArray(crmUserData) ? crmUserData : [];
+
+const totalPages = Math.ceil(safeUsers.length / itemsPerPage);
+const startIndex = (currentPage - 1) * itemsPerPage;
+const endIndex = startIndex + itemsPerPage;
+const currentUsers = safeUsers.slice(startIndex, endIndex);
 
   /* ---------------- OTHER STATES (UNCHANGED) ---------------- */
   const [isLoading, setIsLoading] = useState(false);
@@ -251,7 +253,7 @@ const [serviceMode, setServiceMode] = useState("actions");
 
   //upload part starts here
 
-  const secret = "uyrw7826^&(896GYUFWE&*#GBjkbuaf"; // secret not to be disclosed anywhere.
+  // const secret = "uyrw7826^&(896GYUFWE&*#GBjkbuaf"; // secret not to be disclosed anywhere.
   const emailDev = "rahulrajsb@outlook.com"; // email of the developer.
   const userDetails = JSON.parse(localStorage.getItem("adminuser"));
 
@@ -396,7 +398,7 @@ const [serviceMode, setServiceMode] = useState("actions");
     formData.append("files", newfile);
     const path_inside_brain = "root/";
 
-    const jwts = await signJwt(fileName, emailDev, secret);
+    const jwts = await signJwt(fileName, emailDev);
     console.log(jwts, "lkjkswedcf");
     let { data } = await axios.post(
       `https://insurance.apimachine.com/insurance/general/upload`,
@@ -1145,8 +1147,8 @@ const [serviceMode, setServiceMode] = useState("actions");
     if (accsideNav === "CRM" && crmMenu === "Clients") {
       setIsUserLoading(true);
 
-      axios
-        .get("${BASE_URL}/api/users")
+     
+        axios.get(`${BASE_URL}/api/users`)
         .then((response) => {
           setCrmUserData(response?.data?.data || []);
           setIsUserLoading(false);
@@ -1167,20 +1169,7 @@ const [serviceMode, setServiceMode] = useState("actions");
 
   const fetchedRef = useRef(false);
 
-  useEffect(() => {
-    if (fetchedRef.current) return; // prevents all repeated calls
-    fetchedRef.current = true;
 
-    setClientLoading(true);
-
-    axios
-      .get("${BASE_URL}/api/users")
-      .then((response) => {
-        setCrmClientData(response.data.data);
-        setClientLoading(false);
-      })
-      .catch((error) => console.log(error));
-  }, []);
 
   function customDateFormat(date) {
     if (date instanceof Date && !isNaN(date.valueOf())) {
@@ -1396,7 +1385,7 @@ const [serviceMode, setServiceMode] = useState("actions");
                             setCurrentPage(1);
                           }}
                         >
-                          Users ({crmUserData.length})
+                        Users ({crmUserData?.length || 0})
                         </button>
 
                         <button
@@ -1460,8 +1449,8 @@ const [serviceMode, setServiceMode] = useState("actions");
                                     <Skeleton width={200} height={20} />
                                   </div>
                                 ))
-                            ) : crmClientData.length ? (
-                              crmClientData.map((u, i) => (
+                            ) : safeUsers.length? (
+                             safeUsers.map((u, i) => (
                                 <div className="each-userData" key={i}>
                                   <div style={{ width: "20%" }}>
                                     {u?.name || "—"}
