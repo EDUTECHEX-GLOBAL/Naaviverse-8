@@ -18,21 +18,28 @@ const AdminLogin = () => {
     const navigate = useNavigate();
     const [code, setCode] = useState('');
 
-    const handleLogin = async () => {
-        setIsLoading(true);
-        try {
-            const response = await axios.post('/api/admin/login', { email, password });
-            if (response.status === 200) {
-                localStorage.setItem("adminuser", JSON.stringify({ email })); // Store user details
-                navigate('/admin/dashboard/accountants');
-            }
-        } catch (error) {
-            setIsError(true);
-            console.error('Login failed:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
+const handleLogin = async () => {
+  setIsLoading(true);
+
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/api/admin/login`,
+      { email, password }
+    );
+
+    if (response.status === 200) {
+      localStorage.setItem("adminuser", JSON.stringify({ email }));
+      navigate('/admin/dashboard/accountants');
+    }
+  } catch (error) {
+    setIsError(true);
+    console.error('Login failed:', error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
     const initiateForgotPassword = () => {
         setIsLoading(true);
