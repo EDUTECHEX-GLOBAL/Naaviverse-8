@@ -56,8 +56,8 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
         setLoading(true);
         let email = userDetails?.email;
         const endpoint = admin ?
-            `/api/paths/get?status=active` :
-            `/api/paths/get?email=${email}`;
+            `${BASE_URL}/api/paths/get?status=active` :
+            `${BASE_URL}/api/paths/get?email=${email}`;
 
         axios.get(endpoint)
             .then((response) => {
@@ -88,7 +88,7 @@ const getAllStepsForPath = () => {
     let email = userDetails?.email;
 
     // 💥 FIX 2 — REMOVE DOUBLE && → only use &
-    axios.get(`/api/paths/getremainingsteps?path_id=${selectedPathId}&email=${email}`)
+    axios.get(`${BASE_URL}/api/paths/getremainingsteps?path_id=${selectedPathId}&email=${email}`)
         .then((response) => {
             console.log('Response from getAllStepsForPath:', response);
             let result = response?.data?.stepIds;
@@ -166,7 +166,7 @@ useEffect(() => {
     const getNewPath = () => {
         setLoading(true);
         axios
-            .get(`/api/paths/get?status=waitingforapproval`)
+            .get(`${BASE_URL}/api/paths/get?status=waitingforapproval`)
             .then((response) => {
                 let result = response?.data?.data;
                 console.log(result, "partnerPathData result");

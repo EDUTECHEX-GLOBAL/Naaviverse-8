@@ -49,7 +49,7 @@ const [isDragging, setIsDragging] = useState(false);
   const getAllPaths = () => { 
     setLoading(true);
     let email = userDetails?.email;
-    const endpoint = admin? `/api/paths/get?status=active` : `/api/paths/get?email=${email}`
+    const endpoint = admin? `${BASE_URL}/api/paths/get?status=active` : `${BASE_URL}/api/paths/get?email=${email}`
     axios
       .get(endpoint)
       .then((response) => {
@@ -66,7 +66,7 @@ const [isDragging, setIsDragging] = useState(false);
   const getInactivePath = () => { 
     setLoading(true);
     let email = userDetails?.email;
-    const endpoint = admin? `/api/paths/get?status=inactive` : `/api/paths/get?email=${email}`
+    const endpoint = admin? `${BASE_URL}/api/paths/get?status=inactive` : `${BASE_URL}/api/paths/get?email=${email}`
     axios
       .get(endpoint)
       .then((response) => {
@@ -97,7 +97,7 @@ const [isDragging, setIsDragging] = useState(false);
 
 
  useEffect(() => {
-    axios.get(`/api/paths/get?status=active`).then(({data}) => {
+    axios.get(`${BASE_URL}/api/paths/get?status=active`).then(({data}) => {
       if(data.status){
         setBackupPathData(data?.data)
       }
@@ -113,7 +113,7 @@ const [isDragging, setIsDragging] = useState(false);
   const getNewPath = () => {
     setLoading(true);
     axios
-      .get(`/api/paths/get?status=waitingforapproval`)
+      .get(`${BASE_URL}/api/paths/get?status=waitingforapproval`)
       .then((response) => {
         let result = response?.data?.data;
         // console.log(result, "partnerPathData result");

@@ -66,7 +66,7 @@ useEffect(() => {
   const getAllPaths = () => { 
     setLoading(true);
     let email = userDetails?.email;
-    const endpoint = admin? `/api/paths/get?status=active` : `/api/paths/get?email=${email}`
+    const endpoint = admin? `${BASE_URL}/api/paths/get?status=active` : `${BASE_URL}/api/paths/get?email=${email}`
     axios
       .get(endpoint)
       .then((response) => {
@@ -83,7 +83,7 @@ useEffect(() => {
  useEffect(() => {
   if (!userDetails?.email) return;
 
-  axios.get(`/api/paths/get?email=${userDetails.email}`)
+  axios.get(`${BASE_URL}/api/paths/get?email=${userDetails.email}`)
     .then(({ data }) => {
       if (data.status) setBackupPathData(data.data);
     });
@@ -93,7 +93,7 @@ useEffect(() => {
   const getNewPath = () => {
     setLoading(true);
     axios
-      .get(`/api/paths/get?status=waitingforapproval`)
+      .get(`${BASE_URL}/api/paths/get?status=waitingforapproval`)
       .then((response) => {
         let result = response?.data?.data;
         // console.log(result, "partnerPathData result");
@@ -369,7 +369,7 @@ fetchServiceCounts(partnerStepsData);
     console.log(path, "lkwehflwehflwf")
     setViewPathLoading(true);
     axios
-      .get(`/api/paths/get?nameOfPath=${path}`)
+      .get(`${BASE_URL}/api/paths/get?nameOfPath=${path}`)
       .then((response) => {
         let result = response?.data?.data[0];
         // console.log(result, "viewPathData result");
@@ -576,7 +576,7 @@ const pathNameMap = React.useMemo(() => {
   return map;
 }, [allPaths]);
 useEffect(() => {
-  axios.get("/api/paths/get?status=active").then(({ data }) => {
+  axios.get("${BASE_URL}/api/paths/get?status=active").then(({ data }) => {
     if (data?.status) {
       setAllPaths(data.data);
     }

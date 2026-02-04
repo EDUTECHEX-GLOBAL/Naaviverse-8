@@ -151,7 +151,7 @@ useEffect(() => {
   const email = userDetails?.email;
   if (!email) return;
 
-  axios.get(`/api/paths/get?email=${email}`).then(({ data }) => {
+  axios.get(`${BASE_URL}/api/paths/get?email=${email}`).then(({ data }) => {
     if (data.status) setBackupPathData(data.data);
   });
 }, []);
