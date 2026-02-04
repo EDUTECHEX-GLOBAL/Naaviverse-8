@@ -170,7 +170,7 @@ function App() {
 
   useEffect(() => {
     axios
-      .post("${BASE_URL}/api/admin-visitors/admin-visitor")
+      .post(`${BASE_URL}/api/admin-visitors/admin-visitor`)
       .catch(() => {});
   }, []);
   
