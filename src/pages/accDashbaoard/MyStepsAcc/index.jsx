@@ -14,7 +14,7 @@ import CurrentStep from "../../CurrentStep";
 import { useStore } from "../../../components/store/store.ts";
 import { useNavigate } from "react-router-dom";
 import MenuNav from "../../../components/MenuNav/index.jsx";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu, showDrop, setShowDrop }) => {
     const navigate = useNavigate()
@@ -309,7 +309,7 @@ const handleApprovePath = () => {
   setActionLoading(true);
 
   axios
-    .put(`http://localhost:4545/api/paths/updatepath/${selectedPathId}`, {
+    .put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, {
       status: "active",
     })
     .then(({ data }) => {
@@ -325,7 +325,7 @@ const handleRejectPath = () => {
   setActionLoading(true);
 
   axios
-    .put(`http://localhost:4545/api/paths/updatepath/${selectedPathId}`, {
+    .put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, {
       status: "inactive",
     })
     .then(({ data }) => {

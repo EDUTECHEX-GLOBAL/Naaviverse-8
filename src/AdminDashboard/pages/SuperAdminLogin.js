@@ -4,9 +4,9 @@ import logo from "../../assets/images/logo/naavi_final_logo2.png";
 import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 // ✅ SUPER ADMIN API
-const API = "http://localhost:4545/api/admin/auth";
+const API = "${BASE_URL}/api/admin/auth";
 const AdminLogin = () => {
   const navigate = useNavigate();
 

@@ -14,7 +14,7 @@ import { login } from "../../app/loginSlice";
 
 async function loginFunc(paramData: any) {
   const { data } = await axios.post(
-    "http://localhost:4545/api/auth/login", // <-- local backend
+    "${BASE_URL}/api/auth/login", // <-- local backend
     paramData
   );
   return data;
@@ -23,7 +23,7 @@ async function loginFunc(paramData: any) {
 // Similarly update other functions:
 async function verifyEmail(paramData: any) {
   const { data } = await axios.post(
-    "http://localhost:4545/api/auth/verifyotp", // example endpoint
+    "${BASE_URL}/api/auth/verifyotp", // example endpoint
     paramData
   );
   return data;
@@ -31,7 +31,7 @@ async function verifyEmail(paramData: any) {
 
 async function resetPswdPin(paramData: any) {
   const { data } = await axios.post(
-    "http://localhost:4545/api/auth/resetPassword", // example endpoint
+    "${BASE_URL}/api/auth/resetPassword", // example endpoint
     paramData
   );
   return data;
@@ -39,7 +39,7 @@ async function resetPswdPin(paramData: any) {
 
 async function forgotPswd(paramData: any) {
   const { data } = await axios.post(
-    "http://localhost:4545/api/auth/forgotPassword", // example endpoint
+    "${BASE_URL}/api/auth/forgotPassword", // example endpoint
     paramData
   );
   return data;

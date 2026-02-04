@@ -13,7 +13,7 @@ import lg1 from "../../static/images/login/lg1.svg";
 import CurrentStep from "../CurrentStep";
 import { useStore } from "../../components/store/store.ts";
 import { useNavigate } from "react-router-dom";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
   const navigate = useNavigate();
   const { sideNav, setsideNav } = useStore();
@@ -61,22 +61,22 @@ const getAllPaths = () => {
     admin &&
     (mypathsMenu === "Pending Approval" || mypathsMenu === "Pending Paths")
   ) {
-    endpoint = `http://localhost:4545/api/paths/get?status=waitingforapproval`;
+    endpoint = `${BASE_URL}/api/paths/get?status=waitingforapproval`;
   }
 
   // 2️⃣ PARTNER – Pending Approval  ✅ MISSING CASE
   else if (!admin && mypathsMenu === "Pending Approval") {
-    endpoint = `http://localhost:4545/api/paths/get?email=${email}&status=waitingforapproval`;
+    endpoint = `${BASE_URL}/api/paths/get?email=${email}&status=waitingforapproval`;
   }
 
   // 3️⃣ Inactive Paths
   else if (mypathsMenu === "Inactive Paths") {
-    endpoint = `http://localhost:4545/api/paths/get?email=${email}&status=inactive`;
+    endpoint = `${BASE_URL}/api/paths/get?email=${email}&status=inactive`;
   }
 
   // 4️⃣ Active Paths (default)
   else {
-    endpoint = `http://localhost:4545/api/paths/get?email=${email}&status=active`;
+    endpoint = `${BASE_URL}/api/paths/get?email=${email}&status=active`;
   }
 
   console.log("➡️ FINAL API CALL:", endpoint);

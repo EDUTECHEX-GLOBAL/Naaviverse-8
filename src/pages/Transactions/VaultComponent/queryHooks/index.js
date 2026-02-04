@@ -2,7 +2,7 @@ import axios from "axios";
 import { useQuery } from "react-query";
 // import CryptoJS from 'crypto-js';
 import { useAppContextDetails } from "../../../../context/AppContext";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 export const getAppByCode = async (app_code) => {
   const { data } = await axios.get(
     `https://comms.globalxchange.io/gxb/apps/get?app_code=${app_code}`
@@ -39,7 +39,7 @@ const getUserVaults = async ({ queryKey }) => {
   const [_key, { email }] = queryKey;
 
   const { data } = await axios.get(
-    `http://localhost:4545/api/vault/coins/${email}`
+    `${BASE_URL}/api/vault/coins/${email}`
   );
 
   return data?.data || [];
@@ -83,7 +83,7 @@ const getVaultTxns = async ({ queryKey }) => {
   }
 
   const { data } = await axios.get(
-    "http://localhost:4545/api/vault/txns",
+    "${BASE_URL}/api/vault/txns",
     { params }
   );
 
@@ -240,7 +240,7 @@ export const useUserMoneyMarketsTxns = (email, coin, appCode) => {
 // const getMarketCoinsList = async ({ queryKey }) => {
 //   const [_key, { appCode, type, appCurrencyName }] = queryKey;
 //   const { data } = await axios.post(
-//     'http://localhost:4545/api/vault/coins/<email>',
+//     '${BASE_URL}/api/vault/coins/<email>',
 //     {
 //       app_code: appCode,
 //       type,
@@ -321,7 +321,7 @@ export const useUserMoneyMarketsTxns = (email, coin, appCode) => {
 //   const [_key, { appCode, email, investmentCoin, coin, appCurrencyName }] =
 //     queryKey;
 //   const { data } = await axios.post(
-//     'http://localhost:4545/api/vault/coins/<email>',
+//     '${BASE_URL}/api/vault/coins/<email>',
 //     {
 //       app_code: appCode,
 //       email: email,

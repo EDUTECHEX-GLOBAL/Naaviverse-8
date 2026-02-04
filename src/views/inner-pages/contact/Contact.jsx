@@ -12,7 +12,7 @@ import TopNavFour from '../../../components/header/TopNavFour';
 import Footer from '../../../components/footernew/index';
 import './contact.scss';
 
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 
 export default function Contact() {
@@ -52,7 +52,7 @@ const handleSubmit = async (e) => {
   };
 
   try {
-    await axios.post("http://localhost:4545/api/admin-contact", contactData);
+    await axios.post("${BASE_URL}/api/admin-contact", contactData);
 
     setStatus("Message sent successfully!");
     setStatusType("success");

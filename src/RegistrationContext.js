@@ -19,7 +19,7 @@ const RegistrationContextProvider = (props) => {
   const [createAccountLoading, setCreateAccountLoading] = useState(false);
 
   const [authId, setAuthId] = useState(null);
-
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
   // ------------------------------------------------
   //   STEP 1: Create Account
   // ------------------------------------------------
@@ -28,7 +28,7 @@ const RegistrationContextProvider = (props) => {
       setCreateAccountLoading(true);
 
       const { data } = await axios.post(
-        "http://localhost:4545/api/partner/signup",
+        "${BASE_URL}/api/partner/signup",
         {
           username: userName,
           email: userEmail,
@@ -56,7 +56,7 @@ const RegistrationContextProvider = (props) => {
   const confirmEmail = async () => {
     try {
       const { data } = await axios.post(
-        "http://localhost:4545/api/partner/verifyotp",
+        "${BASE_URL}/api/partner/verifyotp",
         {
           email: userEmail,
           otp: pin,
@@ -88,7 +88,7 @@ useEffect(() => {
 
   /*
   axios
-    .get("http://localhost:4545/api/apps/naavi")
+    .get("${BASE_URL}/api/apps/naavi")
     .then(({ data }) => {
       setAppData(data);
       setLoading(false);

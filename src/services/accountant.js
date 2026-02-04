@@ -31,7 +31,7 @@ export const GetLogServices = () => dummyList();
 export const GetAllAccountantsWithoutFollowers = () => dummyList();
 export const DeleteServiceFunction = () => dummyResponse();
 export const addCompPlanFunction = () => dummyResponse();
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 /**
  * --------------------------------------------------
  *  REAL NAAVIVERSE APIs (DIRECT LOCALHOST URLs)
@@ -39,21 +39,21 @@ export const addCompPlanFunction = () => dummyResponse();
  */
 
 export const GetCategoriesAcc = () => {
-  return axios.get("http://localhost:4545/api/categories");
+  return axios.get("${BASE_URL}/api/categories");
 };
 
 export const GetAllCurrencies = () => {
-  return axios.get("http://localhost:4545/api/currencies");
+  return axios.get("${BASE_URL}/api/currencies");
 };
 
 export const CreatePopularService = (object) => {
-  return axios.post("http://localhost:4545/api/services/add", object);
+  return axios.post("${BASE_URL}/api/services/add", object);
 };
 
 export const CheckStatusAccountant = async (email) => {
   try {
     const res = await axios.get(
-      `http://localhost:4545/api/partner/get?email=${email}`
+      `${BASE_URL}/api/partner/get?email=${email}`
     );
     return res.data;
   } catch (err) {
@@ -64,7 +64,7 @@ export const CheckStatusAccountant = async (email) => {
 export const CheckStatusNaaviProfile = async (email) => {
   try {
     const res = await axios.get(
-      `http://localhost:4545/api/users/get?email=${email}`
+      `${BASE_URL}/api/users/get?email=${email}`
     );
     return res.data;
   } catch (err) {

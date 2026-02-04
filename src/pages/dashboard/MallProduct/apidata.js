@@ -1,10 +1,10 @@
 import axios from 'axios';
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 // ADD THIS ⬇⬇⬇ REQUIRED FOR CURRENCY SELECTOR UI
 export const getOfficialCurrencies = async () => {
   try {
     const response = await axios.get(
-      "http://localhost:4545/api/currencies"
+      "${BASE_URL}/api/currencies"
     );
     return response;
   } catch (error) {
@@ -21,7 +21,7 @@ export const coinData = async () => {
 // export const coinData = async (email, object) => {
 //   try {
 //     const response = await axios.post(
-//       "http://localhost:4545/api/vault/coins/add",
+//       "${BASE_URL}/api/vault/coins/add",
 //       { email, ...object }
 //     );
 //     return response;

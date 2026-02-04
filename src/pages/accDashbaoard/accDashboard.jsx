@@ -125,7 +125,7 @@ const AccDashboard = () => {
   const [image, setImage] = useState(
   localStorage.getItem("profileImage") || null
 );
-
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
   const [isSubmit, setIsSubmit] = useState(false);
   const [isServicesAcc, setIsServicesAcc] = useState(false);
   const [servicesAcc, setservicesAcc] = useState([]);
@@ -169,7 +169,7 @@ useEffect(() => {
   const fetchCountries = async () => {
     try {
       console.log("Fetching countries...");
-      const res = await axios.get("http://localhost:4545/api/countries");
+      const res = await axios.get("${BASE_URL}/api/countries");
       console.log("Countries fetched:", res.data);
       setCountryApiValue(res.data);
     } catch (err) {
@@ -692,7 +692,7 @@ const uploadBulkPath = async (file) => {
     const body = { email, records };
 
     const res = await axios.post(
-      "http://localhost:4545/api/paths/bulk",
+      "${BASE_URL}/api/paths/bulk",
       body
     );
 
@@ -735,7 +735,7 @@ const uploadBulkStep = async (file) => {
     };
 
     const res = await axios.post(
-      "http://localhost:4545/api/steps/bulk",
+      "${BASE_URL}/api/steps/bulk",
       body
     );
 
@@ -774,7 +774,7 @@ const uploadBulkService = async (file) => {
     };
 
     const res = await axios.post(
-      "http://localhost:4545/api/services/bulk",
+      "${BASE_URL}/api/services/bulk",
       body
     );
 
@@ -1514,7 +1514,7 @@ feature_coordinates: {
 
   // 🔟 Send request
 axios
-  .post(`http://localhost:4545/api/paths/add`, payload)
+  .post(`${BASE_URL}/api/paths/add`, payload)
   .then((response) => {
     console.log("✅ API RESPONSE:", response.data);
 

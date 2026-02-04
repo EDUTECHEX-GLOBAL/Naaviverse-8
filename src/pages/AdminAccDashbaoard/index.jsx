@@ -60,7 +60,7 @@ import AdminStepDataPage from "./AdminStepDataPage.jsx";
 import MyStepsAdmin from "./MyStepsAdmin/index.jsx";
 import MenuNav from "../../components/MenuNav/index.jsx";
 import EditServiceForm from "./EditServices";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const AccDashboard = () => {
   const {
     accsideNav,
@@ -1146,7 +1146,7 @@ const [serviceMode, setServiceMode] = useState("actions");
       setIsUserLoading(true);
 
       axios
-        .get("http://localhost:4545/api/users")
+        .get("${BASE_URL}/api/users")
         .then((response) => {
           setCrmUserData(response?.data?.data || []);
           setIsUserLoading(false);
@@ -1174,7 +1174,7 @@ const [serviceMode, setServiceMode] = useState("actions");
     setClientLoading(true);
 
     axios
-      .get("http://localhost:4545/api/users")
+      .get("${BASE_URL}/api/users")
       .then((response) => {
         setCrmClientData(response.data.data);
         setClientLoading(false);

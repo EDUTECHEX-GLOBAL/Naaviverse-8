@@ -14,7 +14,7 @@ import educationIcon from "../../static/images/mapspage/educationIcon.svg";
 
 // Styles
 import "./mapspage.scss";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const PathComponent = () => {
   const navigate = useNavigate();
   const { sideNav, setsideNav } = useStore();
@@ -112,7 +112,7 @@ useEffect(() => {
       console.log("FETCHING PATHS WITH FILTERS 👉", params);
 
       const res = await axios.get(
-        "http://localhost:4545/api/paths/active",
+        "${BASE_URL}/api/paths/active",
         { params }
       );
 
@@ -160,7 +160,7 @@ const confirmPathSelection = () => {
   localStorage.setItem("selectedPathId", pathId);
 
   axios
-    .post("http://localhost:4545/api/fetch/selectpath", {
+    .post("${BASE_URL}/api/fetch/selectpath", {
       email,
       pathId,
     })

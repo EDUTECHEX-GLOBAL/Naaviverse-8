@@ -61,7 +61,7 @@ import LevelThree from "./LevelThree.jsx";
 import MenuNav from "../../components/MenuNav/index.jsx";
 import AWS from "aws-sdk";
 import uploadGrey from "../../images/uploadGrey.svg";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const UserProfile = () => {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -416,7 +416,7 @@ useEffect(() => {
 
   // Fetch cities
   useEffect(() => {
-    axios.get('http://localhost:4545/api/cities')
+    axios.get('${BASE_URL}/api/cities')
       .then((response) => {
         setCityApiValue(response.data);
       })
@@ -842,7 +842,7 @@ const accountantStatus = async () => {
     console.log("Fetching account status for:", userEmail);
 
     const response = await axios.get(
-      `http://localhost:4545/api/users/get/${userEmail}`
+      `${BASE_URL}/api/users/get/${userEmail}`
     );
 
     console.log("Account status response:", response.data);

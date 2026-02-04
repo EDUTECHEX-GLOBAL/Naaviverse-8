@@ -22,7 +22,7 @@ import downarrow from '../../static/images/dashboard/downarrow.svg';
 import AccDashsidebar from "../../components/accDashsidebar/accDashsidebar.jsx";
 import AdminAccDashsidebar from "../../components/AdminAccDashsidebar/index.jsx";
 import MenuNav from "../../components/MenuNav/index.jsx";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 /** ===================== FALLBACK SERVICES ====================== **/
 const getFallbackServices = () => {
   return [
@@ -134,7 +134,7 @@ useEffect(() => {
   }
 
   axios
-    .get(`http://localhost:4545/api/services/by-step?step_id=${storedStepId}`)
+    .get(`${BASE_URL}/api/services/by-step?step_id=${storedStepId}`)
     .then(({ data }) => {
       let list = Array.isArray(data)
         ? data
@@ -238,7 +238,7 @@ const reloadServices = async () => {
   if (!stepId) return;
 
   try {
-    const { data } = await axios.get(`http://localhost:4545/api/services/by-step?step_id=${stepId}`);
+    const { data } = await axios.get(`${BASE_URL}/api/services/by-step?step_id=${stepId}`);
 
     console.log("🔄 SERVICES RELOADED:", data.data);
     setStepServices(data.data || []);

@@ -6,7 +6,7 @@ export default function Newsletter({ title, subtitle, placeholder }) {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
   const handleSubscribe = async (e) => {
     e.preventDefault();
 
@@ -17,7 +17,7 @@ export default function Newsletter({ title, subtitle, placeholder }) {
     }
 
     try {
-      const res = await axios.post("http://localhost:4545/api/admin-subscribe", { email });
+      const res = await axios.post("${BASE_URL}/api/admin-subscribe", { email });
 
       if (res.status === 201) {
         setMessage("Subscription successful!");
