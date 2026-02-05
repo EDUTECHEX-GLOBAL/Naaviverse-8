@@ -8,6 +8,7 @@ import tickMark from "./tick.svg";
 import tickMarkValid from "./tickMarkValid.svg";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const NewHomePage = () => {
+    console.log("🔥 HELLO TEST — NEW FRONTEND BUILD ACTIVE");
   const navigate = useNavigate();
 
   const [userName, setUserName] = useState("");
