@@ -69,7 +69,7 @@ const loadCurrencies = async () => {
   setCurrencyLoading(true);
 
   try {
-    const res = await axios.get(`/api/currencies`);
+    const res = await axios.get(`${BASE_URL}/api/currencies`);
 
     if (!res?.data?.status || !Array.isArray(res.data.currencies)) {
       setAllCurrencies([]);
@@ -90,7 +90,6 @@ const loadCurrencies = async () => {
     setCurrencyLoading(false);
   }
 };
-
 
   useEffect(() => {
     loadCurrencies();

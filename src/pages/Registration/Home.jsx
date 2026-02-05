@@ -76,18 +76,19 @@ const NewHomePage = () => {
       axios.post(`${BASE_URL}/api/auth/checkEmailDuplicate`, {
         email: userEmail
       })
-      .then(({ data }) => {
-        if (data.count === 1) {
-          setLoading(false);
-          setErrorMessage("This email is already registered.");
-        } else {
-          registerUser();
-        }
-      })
-      .catch(() => {
-        setLoading(false);
-        setErrorMessage("Error checking email.");
-      });
+.then(() => {
+  registerUser(); // 200 means available
+})
+.catch((err) => {
+  setLoading(false);
+
+  if (err.response?.status === 400) {
+    setErrorMessage("This email is already registered.");
+  } else {
+    setErrorMessage("Error checking email.");
+  }
+});
+
     } else {
       alert("Ensure all password requirements are met.");
     }
@@ -111,19 +112,21 @@ const NewHomePage = () => {
           partnerType: partnerType,
         };
 
-    axios.post(signupUrl, payload)
-      .then(({ data }) => {
-        setLoading(false);
-        if (data.success) {
-          setShowOtp(true);
-        } else {
-          alert("Signup failed.");
-        }
-      })
-      .catch(() => {
-        setLoading(false);
-        alert("Signup failed.");
-      });
+axios.post(signupUrl, payload)
+  .then(({ data }) => {
+    if (data.success) {
+      setShowOtp(true);
+    } else {
+      alert("Signup failed.");
+    }
+  })
+  .catch(() => {
+    alert("Signup failed.");
+  })
+  .finally(() => {
+    setLoading(false); // 🔥 ALWAYS stop spinner
+  });
+
   };
 
   const confirmEmail = () => {
