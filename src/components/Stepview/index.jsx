@@ -18,7 +18,7 @@ const Stepview = () => {
     setLoading(true);
 
     axios
-      .get("${BASE_URL}/api/steps/get")
+      .get(`${BASE_URL}/api/steps/get`)
       .then((response) => {
         const result = response?.data?.data || [];
         setSteps(result);

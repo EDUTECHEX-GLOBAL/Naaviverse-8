@@ -324,7 +324,7 @@ const [serviceMode, setServiceMode] = useState("actions");
   const loadUniversities = async () => {
     setIsUniLoading(true);
     try {
-      const res = await axios.get("${BASE_URL}/api/universities");
+      const res = await axios.get(`${BASE_URL}/api/universities`);
       if (res.data.status) setUniversitiesData(res.data.data);
     } catch (err) {
       console.log("Error loading universities", err);

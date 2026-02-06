@@ -306,7 +306,7 @@ const addServiceToStepInstant = async (serviceId) => {
   }
 
   try {
-    await axios.post("${BASE_URL}/api/steps/attachservice", {
+    await axios.post(`${BASE_URL}/api/steps/attachservice`, {
   step_id: selectedStepId,
   service_ids: [serviceId],
 });
