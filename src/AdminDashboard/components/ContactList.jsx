@@ -7,7 +7,7 @@ import 'antd/dist/reset.css';
 import dayjs from 'dayjs';
 import { FiDownload, FiFilter, FiCalendar, FiGrid } from 'react-icons/fi';
 import './ContactList.scss';
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const { Option } = Select;
 
 const ContactList = () => {
@@ -25,7 +25,7 @@ const ContactList = () => {
     const fetchContacts = async () => {
       try {
         setIsLoading(true);
-        const res = await axios.get("/api/admin-contact");
+        const res = await axios.get(`${BASE_URL}/api/admin-contact`);
         setContacts(res.data);
         setFilteredContacts(res.data);
       } catch (err) {

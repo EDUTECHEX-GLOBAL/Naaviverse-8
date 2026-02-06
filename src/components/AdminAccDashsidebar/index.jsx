@@ -4,7 +4,8 @@ import "./accDashsidebar.scss";
 import { useStore } from "../store/store.ts";
 import { useNavigate } from "react-router-dom";
 // import logo from "./logo.svg";
-import logo from "./naavilogo.png";
+import logo from "../../assets/images/logo/naavi_final_logo2.png";
+
 
 
 const sidebarMenu1 = [

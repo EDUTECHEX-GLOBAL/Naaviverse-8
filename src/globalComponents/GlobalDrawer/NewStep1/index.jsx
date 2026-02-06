@@ -372,7 +372,7 @@ const createNewStep = () => {
   console.log("🚀 STEP CREATE PAYLOAD:", payload);
 
   axios
-    .post("${BASE_URL}/api/steps/add", payload)
+    .post(`${BASE_URL}/api/steps/add`, payload)
     .then((res) => {
       if (res?.data?.status) {
         setStep("success");
