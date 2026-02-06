@@ -7,7 +7,7 @@ import { useStore } from "../../../components/store/store.ts";
 import { useCoinContextData } from "../../../context/CoinContext";
 import arrow from "../../../pages/accDashbaoard/arrow.svg";
 import trash from "../../../pages/accDashbaoard/trash.svg";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const NewStep1 = ({ pathId, onSuccess }) => {
   const userDetails = JSON.parse(localStorage.getItem("partner"));
 //  useEffect(() => {
@@ -372,7 +372,7 @@ const createNewStep = () => {
   console.log("🚀 STEP CREATE PAYLOAD:", payload);
 
   axios
-    .post("/api/steps/add", payload)
+    .post("${BASE_URL}/api/steps/add", payload)
     .then((res) => {
       if (res?.data?.status) {
         setStep("success");
@@ -399,7 +399,7 @@ useEffect(() => {
   if (!servicesToggle) return;
 
   axios
-    .get(`/api/services/get?productcreatoremail=${userDetails.email}`)
+    .get(`${BASE_URL}/api/services/get?productcreatoremail=${userDetails.email}`)
     .then((res) => {
       setAllServices(res?.data?.data || []);
     })

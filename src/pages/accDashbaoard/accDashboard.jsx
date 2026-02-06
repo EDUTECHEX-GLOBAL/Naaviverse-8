@@ -59,7 +59,7 @@ import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import PathPage from "../../components/Pathview/PathPage";
 
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const getPartner = () => {
   try {
     const raw = localStorage.getItem("partner");
@@ -125,7 +125,7 @@ const AccDashboard = () => {
   const [image, setImage] = useState(
   localStorage.getItem("profileImage") || null
 );
-  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+  
   const [isSubmit, setIsSubmit] = useState(false);
   const [isServicesAcc, setIsServicesAcc] = useState(false);
   const [servicesAcc, setservicesAcc] = useState([]);
@@ -498,7 +498,7 @@ const handleAllCustomerLicenses = () => {
   setPurchaseLoading(true);
 
   axios
-    .get(`/api/crm/purchases?creatoremail=${email}`)
+    .get(`${BASE_URL}/api/crm/purchases?creatoremail=${email}`)
     .then(({ data }) => {
       console.log("CRM PURCHASE RESPONSE:", data);
 
@@ -1011,7 +1011,7 @@ const getAllServices = async () => {
 
   try {
     const { data } = await axios.get(
-      `/api/services/getservices?productcreatoremail=${userDetails.email}`
+      `${BASE_URL}/api/services/getservices?productcreatoremail=${userDetails.email}`
     );
 
     if (data?.status) {
@@ -1098,7 +1098,7 @@ const deleteService = async () => {
   try {
     setIsloading(true);
 
-    await axios.delete(`/api/services/delete/${serviceId}`, {
+    await axios.delete(`${BASE_URL}/api/services/delete/${serviceId}`, {
       headers: {
         Authorization: `Bearer ${userDetails?.idToken}`,
         email: userDetails?.email,
@@ -1145,7 +1145,7 @@ const changeServiceIcon = () => {
 
   // Try updating with product_icon field
   axios
-    .put(`/api/services/update/${selectedService._id}`, {
+    .put(`${BASE_URL}/api/services/update/${selectedService._id}`, {
       ...payload,
       product_icon: updatedIcon  // Use product_icon field
     })
@@ -1158,7 +1158,7 @@ const changeServiceIcon = () => {
         myTimeout();
       } else {
         // Try alternative endpoint
-        return axios.put(`/api/services/updateIcon`, {
+        return axios.put(`${BASE_URL}/api/services/updateIcon`, {
           product_id: selectedService._id,
           product_icon: updatedIcon,
           email: userDetails?.email
@@ -1179,7 +1179,7 @@ const changeServiceIcon = () => {
       console.error("Error response:", error.response?.data);
       
       // Try one more endpoint as fallback
-      axios.put(`/api/services/icon/${selectedService._id}`, { 
+      axios.put(`${BASE_URL}/api/services/icon/${selectedService._id}`, { 
         product_icon: updatedIcon 
       })
       .then(res => {
@@ -1385,7 +1385,7 @@ useEffect(() => {
 
   setClientLoading(true);
 
-  axios.get(`/api/crm/clients?creatoremail=${email}`)
+  axios.get(`${BASE_URL}/api/crm/clients?creatoremail=${email}`)
     .then(res => {
       setCrmClientData(res.data?.data || []);
       setClientLoading(false);
@@ -1594,7 +1594,7 @@ useEffect(() => {
 
   setClientLoading(true);
 
-  axios.get(`/api/crm/clients?creatoremail=${email}`)
+  axios.get(`${BASE_URL}/api/crm/clients?creatoremail=${email}`)
     .then(res => {
       setCrmClientData(res.data?.data || []);
       setClientLoading(false);

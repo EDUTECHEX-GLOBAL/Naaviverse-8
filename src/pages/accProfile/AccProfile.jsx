@@ -434,7 +434,7 @@ const uploadBulkService = async (file) => {
   };
 
   useEffect(() => {
-    axios.get(`/api/paths/active`).then((res) => {
+    axios.get(`${BASE_URL}/api/paths/active`).then((res) => {
       let result = res?.data?.data;
       console.log("All paths fetched:", result);
       // console.log(result, "all paths fetched");
@@ -972,7 +972,7 @@ navigate("/login");
       yourPosition: position,
     }, "Creating Partner Profile");
 
-    axios.put(`/api/partner/add`, {
+    axios.put(`${BASE_URL}/api/partner/add`, {
       email,
       firstName,
       lastName,
@@ -1236,7 +1236,7 @@ navigate("/login");
     // console.log(personality, "api body");
     setCreatingPath(true);
     axios
-      .post(`/api/paths/add`, {
+      .post(`${BASE_URL}/api/paths/add`, {
         ...pathSteps,
         performance: gradeAvg,
         curriculum: curriculum,
