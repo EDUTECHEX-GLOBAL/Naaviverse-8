@@ -148,7 +148,7 @@ useEffect(() => {
       : "active";
 
   axios
-    .get(`/api/steps/partner?email=${userDetails.email}&status=${status}`)
+    .get(`${BASE_URL}/api/steps/partner?email=${userDetails.email}&status=${status}`)
     .then(({ data }) => {
       if (data.status) {
         setPartnerStepsData(data.data);
@@ -210,7 +210,7 @@ useEffect(() => {
     const deletePath = () => {
         setActionLoading(true);
         axios
-            .delete(`/api/paths/delete/${selectedPathId}`)
+            .delete(`${BASE_URL}/api/paths/delete/${selectedPathId}`)
             .then((response) => {
                 let result = response?.data;
                 // console.log(result, "deletePath result");
@@ -227,7 +227,7 @@ useEffect(() => {
 
     const deleteStep = () => {
         setActionLoading(true);
-      axios.delete(`/api/steps/delete/${selectedStepId}`, {
+      axios.delete(`${BASE_URL}/api/steps/delete/${selectedStepId}`, {
   headers: {
     email: userDetails?.email
   }
@@ -270,7 +270,7 @@ useEffect(() => {
 
         axios
             .put(
-                `/api/paths/update/${selectedPathId}`,
+                `${BASE_URL}/api/paths/update/${selectedPathId}`,
                 obj
             )
             .then((response) => {
@@ -291,7 +291,7 @@ useEffect(() => {
     setViewPathLoading(true);
 
     axios
-      .get(`/api/paths/viewpath/${id}`)
+      .get(`${BASE_URL}/api/paths/viewpath/${id}`)
       .then((response) => {
           let result = response?.data?.data;   // BACKEND RETURNS data not data[0]
           setViewPathData(result);
@@ -341,7 +341,7 @@ const handleRejectPath = () => {
     const handleAddService = (newId) => {
         setActionLoading(true)
 
-        axios.post(`/api/steps/addproducts/${selectedStepId}`, {
+        axios.post(`${BASE_URL}/api/steps/addproducts/${selectedStepId}`, {
             "product_ids": [newId]
         }).then(({ data }) => {
             if (data.status) {
@@ -378,7 +378,7 @@ useEffect(() => {
     if (!selectedStepId || !userDetails?.email) return;
 
 axios.get(
-  `/api/services/getservices?productcreatoremail=${userDetails.email}`
+  `${BASE_URL}/api/services/getservices?productcreatoremail=${userDetails.email}`
 )
 .then(({ data }) => {
   if (data.status) {
@@ -400,7 +400,7 @@ const fetchServicesForRemoval = async () => {
         const trimmedStepId = selectedStepId.trim();
         console.log("Fetching services for step:", trimmedStepId);
         
-        const url = `/api/steps/getall/${trimmedStepId}`
+        const url = `${BASE_URL}/api/steps/getall/${trimmedStepId}`
         console.log("URL:", url);
         
         const response = await axios.get(url);
@@ -506,7 +506,7 @@ const fetchServicesForRemoval = async () => {
         console.log(item, index, "lwkeflkwefwef")
         const updatedPathObject = addIdToObjectAtIndex(item?.the_ids, stepId, backupPathId, index);
         // console.log(updatedPathObject, "kjwebfkwjebfkwejf")
-        axios.put(`/api/paths/update/${selectedPath?._id}`, { the_ids: updatedPathObject })
+        axios.put(`${BASE_URL}/api/paths/update/${selectedPath?._id}`, { the_ids: updatedPathObject })
             .then(res => {
                 if (res.data.status) {
                     resetPathAction();
@@ -552,7 +552,7 @@ const fetchServicesForRemoval = async () => {
 
         // Return the updated array with only step_id and backup_pathId keys
         const updatedBody = updatedTheIds.map(({ step_id, backup_pathId }) => ({ step_id, backup_pathId }));
-        axios.put(`/api/paths/update/${selectedPath?._id}`, { the_ids: updatedBody })
+        axios.put(`${BASE_URL}/api/paths/update/${selectedPath?._id}`, { the_ids: updatedBody })
             .then(res => {
                 if (res.data.status) {
                     resetPathAction();
@@ -572,7 +572,7 @@ const fetchServicesForRemoval = async () => {
         updatedTheIds.splice(newIndex, 0, movedObject);
         // console.log(fullObject.the_ids, updatedTheIds, "kjwekfjwefkjwegfkwfgwf")
         const updatedTheIdsArray = updatedTheIds.map(({ step_id, backup_pathId }) => ({ step_id, backup_pathId }));
-        axios.put(`/api/paths/update/${selectedPath?._id}`, { the_ids: updatedTheIdsArray })
+        axios.put(`${BASE_URL}/api/paths/update/${selectedPath?._id}`, { the_ids: updatedTheIdsArray })
             .then(res => {
                 if (res.data.status) {
                     resetPathAction();
@@ -604,7 +604,7 @@ const fetchServicesForRemoval = async () => {
                 ...selectedServices
             ]
         }, "lkweflkjwhefkjwef")
-        axios.post(`/api/steps/attachservice`, {
+        axios.post(`${BASE_URL}/api/steps/attachservice`, {
             step_id: selectedStepId,
             service_ids: [
                 ...selectedServices
@@ -630,7 +630,7 @@ const fetchServicesForRemoval = async () => {
             setLoading(true);
     
             // Construct the correct URL with both parameters
-            const url = `/api/steps/remove/${selectedStepId}/${serviceId}`;
+            const url = `${BASE_URL}/api/steps/remove/${selectedStepId}/${serviceId}`;
             
             console.log("Removing service from step:", url);
     
