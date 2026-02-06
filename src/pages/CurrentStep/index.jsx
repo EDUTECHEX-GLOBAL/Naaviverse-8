@@ -284,7 +284,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     }
 
     axios
-      .get(`/api/users/get/${userEmail}`)
+      .get(`${BASE_URL}/api/users/get/${userEmail}`)
       .then((response) => setUserData(response?.data?.data || []))
       .catch((error) => {
         console.warn("User data fetch failed, using empty data:", error.message);
@@ -303,7 +303,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     if (!stepId || !pathId) return;
 
     axios
-      .get(`/api/userpaths/steps?pathId=${pathId}`)
+      .get(`${BASE_URL}/api/userpaths/steps?pathId=${pathId}`)
       .then((res) => {
         console.log("🔥 STEPS RESPONSE:", res.data);
 
@@ -342,7 +342,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
       try {
         const res = await axios.get(
-          `/api/stepviews?pathId=${pathId}&stepId=${stepId}`
+          `${BASE_URL}/api/stepviews?pathId=${pathId}&stepId=${stepId}`
         );
 
         console.log("🔥 AI STEP VIEWS (PATH):", res.data?.data);
@@ -591,10 +591,10 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
           <div>Apx Takes 3 Days</div>
         </div>
 
-        <div style={{ fontSize: 16, fontWeight: 300, }}>
+        {/* <div style={{ fontSize: 16, fontWeight: 300, }}>
           {currentStepData?.description}
 
-        </div>
+        </div> */}
       </div>
 
       {/* ==== CONTENT ==== */}
