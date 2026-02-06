@@ -324,7 +324,7 @@ const [serviceMode, setServiceMode] = useState("actions");
   const loadUniversities = async () => {
     setIsUniLoading(true);
     try {
-      const res = await axios.get("/api/universities");
+      const res = await axios.get("${BASE_URL}/api/universities");
       if (res.data.status) setUniversitiesData(res.data.data);
     } catch (err) {
       console.log("Error loading universities", err);
@@ -466,7 +466,7 @@ const [serviceMode, setServiceMode] = useState("actions");
     formData.append("file", newfile);
 
     let { data } = await axios.post(
-      `/api/steps/addmultiplesteps`,
+      `${BASE_URL}/api/steps/addmultiplesteps`,
       formData,
       {
         headers: {
@@ -547,7 +547,7 @@ const [serviceMode, setServiceMode] = useState("actions");
   };
 
   const getPartnerData = () => {
-    axios.get(`/api/partner/getpartners`).then(({ data }) => {
+    axios.get(`${BASE_URL}/api/partner/getpartners`).then(({ data }) => {
       if (data.success) {
         // Change 'status' to 'success'
         setPartnerData(data?.partners); // Change 'data' to 'partners'
@@ -1074,7 +1074,7 @@ const [serviceMode, setServiceMode] = useState("actions");
   useEffect(() => {
     let email = userDetails?.email;
     axios
-      .get(`/api/steps/get?email=${email}`)
+      .get(`${BASE_URL}/api/steps/get?email=${email}`)
       .then((response) => {
         let result = response?.data?.data;
         // console.log(result, "all steps fetched");
@@ -1089,7 +1089,7 @@ const [serviceMode, setServiceMode] = useState("actions");
     console.log(pathSteps, "api body");
     setCreatingPath(true);
     axios
-      .post(`/api/paths/add`, {
+      .post(`${BASE_URL}/api/paths/add`, {
         ...pathSteps,
         performance: gradeAvg,
         curriculum: curriculum,
@@ -1288,7 +1288,7 @@ const [serviceMode, setServiceMode] = useState("actions");
     setIsUserLoading(true);
 
     axios
-      .get(`/api/services/admin?status=all`) // Always fetch ALL services
+      .get(`${BASE_URL}/api/services/admin?status=all`) // Always fetch ALL services
       .then(({ data }) => {
         if (data?.status) {
           setAllAdminServices(data.data || []); // Store ALL services

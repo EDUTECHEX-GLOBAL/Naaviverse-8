@@ -3,7 +3,7 @@ import Skeleton from "react-loading-skeleton";
 import axios from "axios";
 import { useCoinContextData } from "../../context/CoinContext";
 import "./stepview.scss";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const Stepview = () => {
   const { searchTerm } = useCoinContextData();
 
@@ -18,7 +18,7 @@ const Stepview = () => {
     setLoading(true);
 
     axios
-      .get("/api/steps/get")
+      .get("${BASE_URL}/api/steps/get")
       .then((response) => {
         const result = response?.data?.data || [];
         setSteps(result);
@@ -41,7 +41,7 @@ const Stepview = () => {
   // -------------------------------------------
   const fetchServices = (step_id) => {
     axios
-      .get(`/api/steps/getall/${step_id}`) // YOUR actual API
+      .get(`${BASE_URL}/api/steps/getall/${step_id}`) // YOUR actual API
       .then((response) => {
         const services = response?.data?.services || [];
 
