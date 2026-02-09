@@ -171,12 +171,12 @@
 }
 
 .services-list {
-  display: table;
+  
   width: 100%;
 }
 
 .service-row {
-  display: table-row;
+  
   border-bottom: 1px solid #E5E5E5;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -191,7 +191,7 @@
 }
 
 .service-cell {
-  display: table-cell;
+  
   padding: 22px 10px;
   vertical-align: middle;
   

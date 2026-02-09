@@ -88,7 +88,7 @@ const NewHomePage = () => {
         setLoading(false);
         setErrorMessage("Error checking email.");
       });
-    } else {
+    } else {   
       alert("Ensure all password requirements are met.");
     }
   };
@@ -270,4 +270,4 @@ const NewHomePage = () => {
   );
 };
 
-export default NewHomePage;
+export default NewHomePage; 

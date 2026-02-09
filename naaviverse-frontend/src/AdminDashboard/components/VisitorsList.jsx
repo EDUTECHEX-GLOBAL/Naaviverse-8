@@ -46,7 +46,7 @@ const VisitorsList = () => {
     const fetchVisitors = async () => {
       try {
         setIsLoading(true);
-        const res = await axios.get('a/api/admin-visitors');
+        const res = await axios.get('http://localhost:4545/api/admin-visitors');
         const data = res.data || [];
         setVisitors(data);
         setFilteredVisitors(data);
