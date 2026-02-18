@@ -6,6 +6,7 @@ const { verifyToken } = require("../middlewares/authJwt");
 
 // ADD NEW PATH
 router.post("/add", pathController.addPath);
+router.put("/submit", pathController.submitForApproval);
 
 // GET PATHS (general fetch)
 router.get("/get", pathController.getPath);
@@ -26,10 +27,17 @@ router.put("/restore/:id", [verifyToken], pathController.restorePath);
 router.put("/updateFields", pathController.updateFields);
 
 // EDIT PATH
-router.patch("/edit", pathController.updatePath);
+router.put("/update/:id", pathController.updatePath);
+
 
 // GET ACTIVE PATHS
 router.get("/active", pathController.getActivePaths);
+
+//FOR REACTIVATING PATHS
+router.put("/reactivate/:id", pathController.reactivatePath);
+
+router.put("/reactivate/:id", pathController.reactivateInactivePath);
+
 
 // UPDATE PATH STATUS
 router.put("/updatepath/:id", pathController.updatePathStatus);

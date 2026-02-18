@@ -1,7 +1,10 @@
 import React, { useState, useLayoutEffect, useEffect, useRef } from "react";
 import axios from "axios";
+import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
 import "./accDashboard.scss";
+import DraftPathView from "../DraftPathView";
+import { Outlet } from "react-router-dom";
 import searchic from "../../static/images/dashboard/searchic.svg";
 import downarrow from "../../static/images/dashboard/downarrow.svg";
 import uploadv from "../../static/images/dashboard/uploadv.svg";
@@ -627,6 +630,7 @@ const handleLogout = () => {
 };
 
 
+
   // const handleServicesForLogged = (value) => {
   //   setIsServicesAcc(true);
   //   GetLogServices(value)
@@ -802,10 +806,48 @@ const uploadBulkService = async (file) => {
     uploadBulkStep(e.target.files[0]);
   };
 
-  const handleFileInputChange3 = (e) => {
-    setImage(e.target.files[0]);
-    uploadBulkService(e.target.files[0]);
+const handleFileInputChange3 = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const storedUser = JSON.parse(localStorage.getItem("partner"));
+
+  if (!storedUser || !storedUser.email) {
+    console.error("Partner email not found");
+    return;
+  }
+
+  const email = storedUser.email;
+
+  const reader = new FileReader();
+
+  reader.onload = async (evt) => {
+    const data = new Uint8Array(evt.target.result);
+    const workbook = XLSX.read(data, { type: "array" });
+
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+
+    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+    console.log("Email:", email);
+    console.log("Records:", jsonData.length);
+
+    try {
+      const response = await axios.post("/api/services/bulk", {
+        email: email,
+        records: jsonData
+      });
+
+      console.log("Bulk success:", response.data);
+    } catch (error) {
+      console.error("Bulk upload error:", error.response?.data || error.message);
+    }
   };
+
+  reader.readAsArrayBuffer(file);
+};
+
 
 
   const myTimeoutService = () => {
@@ -1084,7 +1126,10 @@ function reload() {
   setSelectedService("");
   setUpdatedIcon("");
   // Force refresh services
-  const userDetails = JSON.parse(localStorage.getItem("partner"));
+  const userDetails =
+  JSON.parse(localStorage.getItem("partner")) ||
+  JSON.parse(localStorage.getItem("user"));
+
   if (userDetails?.email) {
     getAllServices(userDetails.email);
   }
@@ -1776,31 +1821,32 @@ let obj = {
   };
 };
 
-  const handleDownload = (type) => {
-    // Create a temporary anchor element
-    const link = document.createElement('a');
-    let filePath;
-    if (type === 'Path') {
-      filePath = "/PathTemplate.xlsx";
-    } else if (type === 'Step') {
-      filePath = "/StepTemplate.xlsx";
-    } else {
-      filePath = "/ServiceTemplate.xlsx";
-    }
-    link.href = filePath;
-    link.setAttribute('download', filePath.substring(filePath.lastIndexOf("/") + 1));
+const handleDownload = (type) => {
+  
 
-    // Simulate click
-    document.body.appendChild(link);
-    link.click();
+  let filePath;
 
-    // Cleanup
-    document.body.removeChild(link);
-    resetpop()
-  };
+  if (type === "Path") {
+    filePath = "/PathTemplate.xlsx";
+  } else if (type === "Step") {
+    filePath = "/StepTemplate.xlsx";
+  } else {
+    filePath = "/ServiceTemplate.xlsx";
+  }
 
+  const link = document.createElement("a");
+  link.href = filePath;
+  link.download = filePath.substring(filePath.lastIndexOf("/") + 1);
 
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 
+  // 🔥 Delay closing modal
+  setTimeout(() => {
+    resetpop();
+  }, 300);
+};
 
   return (
 <div style={{ height: "100vh", overflow: "hidden" }}>
@@ -1814,7 +1860,7 @@ let obj = {
             
             <div style={{ height: "100%" }}>
   {viewPathMode ? (
-      <PathPage />
+      <DraftPathView />
 
               ):
               accsideNav === "CRM" ? (

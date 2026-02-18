@@ -118,7 +118,7 @@ const getSteps = async (req, res) => {
       filter.status = "active";
     }
 
-    const steps = await stepModel.find(filter).sort({ createdAt: 1 });
+    const steps = await stepModel.find(filter).sort({ createdAt: -1 });
 
     return res.json({
       status: true,
@@ -132,8 +132,6 @@ const getSteps = async (req, res) => {
     });
   }
 };
-
-
 const updateStep = async (req, res) => {
     let updateData = {}
     if (req.body.name) updateData.name = req.body.name;

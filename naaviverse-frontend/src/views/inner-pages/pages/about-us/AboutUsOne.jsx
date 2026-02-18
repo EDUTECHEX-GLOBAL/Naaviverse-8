@@ -2,7 +2,7 @@ import React, {Fragment} from 'react';
 import {Helmet} from 'react-helmet';
 import {Link} from 'react-router-dom';
 
-import TopNavOne from '../../../../components/header/TopNavOne'
+import TopNavFour from '../../../../components/header/TopNavFour';
 import InnerBanner from '../../../../components/page-title/InnerBanner';
 import AboutFour from '../../../../components/about/AboutFour';
 import FancyFeatureTwentyTwo from '../../../../components/feature/FancyFeatureTwentyTwo';
@@ -48,7 +48,7 @@ const AboutUsOne = () => {
                     <title>About Us One || Sinco - Data Science & Analytics React Template</title>
                 </Helmet>
 
-                <TopNavOne/> {/* theme-menu-one */}
+               <TopNavFour /> {/* theme-menu-one */}
 
                 <div className="theme-inner-banner">
                     <InnerBanner intro='About Company' currpage='About Us'/>

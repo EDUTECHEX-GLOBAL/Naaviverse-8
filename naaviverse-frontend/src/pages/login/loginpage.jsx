@@ -11,7 +11,7 @@ import eye2 from "../../static/images/login/eye2.svg";
 import { useStore } from "../../components/store/store.ts";
 import logo from '../../assets/images/logo/naavi_final_logo2.png';
 
-import loadinglogo from "./naaviicon.png";
+import loadinglogo from "./favicon3.png";
 import axios from "axios";
 import info from "./info.svg";
 import { Loginservice } from "../../services/loginapis";
@@ -70,11 +70,6 @@ const getProfilePic = async (email, loginType) => {
         return null;
     }
 };
-
-
-
-
-
 const handleLogin = () => {
   setIsLoading(true);
   const obj = { email, password };
@@ -133,9 +128,6 @@ const handleLogin = () => {
     })
     .finally(() => setIsLoading(false));
 };
-
-
-
     // ✅ Updated initiateForgotPassword
     const initiateForgotPassword = async () => {
         if (!email) return;

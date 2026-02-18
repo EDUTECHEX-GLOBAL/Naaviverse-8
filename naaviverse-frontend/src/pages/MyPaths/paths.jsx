@@ -130,10 +130,10 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
     }
 
     try {
-      const response = await axios.patch(`/api/paths/edit`, {
-        pathId: selectedPath._id,
-        ...updatedFields,
-      });
+      const response = await axios.put(
+        `/api/paths/update/${selectedPath._id}`,
+        updatedFields
+      );
 
       setMessage("Path updated successfully!");
       setShowForm(false);
@@ -145,7 +145,8 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
     } catch (error) {
       console.error("API call failed", error.response?.data || error.message);
       setMessage("Failed to update path.");
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
@@ -325,12 +326,12 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
             onChange={handleChange}
           >
             <option value="">Select grade range</option>
-            <option value="0%-35%">0%-35%</option>
-            <option value="36%-60%">36%-60%</option>
-            <option value="61%-75%">61%-75%</option>
-            <option value="76%-85%">76%-85%</option>
-            <option value="86%-95%">86%-95%</option>
-            <option value="96%-100%">96%-100%</option>
+            <option value="0% - 35%">0% - 35%</option>
+            <option value="36% - 60%">36% - 60%</option>
+            <option value="61% - 75%">61% - 75%</option>
+            <option value="76% - 85%">76% - 85%</option>
+            <option value="86% - 95%">86% - 95%</option>
+            <option value="96% - 100%">96% - 100%</option>
           </select>
         </div>
       </div>

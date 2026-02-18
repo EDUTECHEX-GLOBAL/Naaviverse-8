@@ -21,41 +21,59 @@ const PathPage = () => {
     "/dashboard/accountants"
   );
 
-  // ✅ reusable fetch
-const fetchPath = async () => {
-  setLoading(true);
-  setError(null);
+  // ✅ Open drawer when query param exists
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("createStep") === "true") {
+      setOpenNewStep(true);
+    } else {
+      setOpenNewStep(false);
+    }
+  }, [location.search]);
 
-  const pathId = id || localStorage.getItem("selectedPathId");
-  if (!pathId) {
-    setError("No selected path id found.");
-    setLoading(false);
-    return;
-  }
+  // ✅ Fetch path + steps
+  const fetchPath = async () => {
+    setLoading(true);
+    setError(null);
 
-  try {
-    // 1️⃣ Fetch path info
-    const pathRes = await axios.get(`/api/paths/viewpath/${pathId}`);
-    setPathName(pathRes?.data?.data?.nameOfPath || "N/A");
+    const pathId = id || localStorage.getItem("selectedPathId");
+    if (!pathId) {
+      setError("No selected path id found.");
+      setLoading(false);
+      return;
+    }
 
-    // 2️⃣ Fetch steps BY PATH (🔥 source of truth)
-    const stepsRes = await axios.get(`/api/steps/get`, {
-      params: { path_id: pathId },
-    });
+    try {
+      const pathRes = await axios.get(`/api/paths/viewpath/${pathId}`);
+      setPathName(pathRes?.data?.data?.nameOfPath || "N/A");
 
-    setSteps(stepsRes?.data?.data || []);
-  } catch (err) {
-    setError("Failed to fetch path.");
-    setSteps([]);
-  } finally {
-    setLoading(false);
-  }
-};
+      const stepsRes = await axios.get(`/api/steps/get`, {
+        params: { path_id: pathId },
+      });
 
+      setSteps(stepsRes?.data?.data || []);
+    } catch (err) {
+      setError("Failed to fetch path.");
+      setSteps([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchPath();
   }, [id]);
+
+  // ✅ Handle create step click
+  const handleCreateStep = () => {
+    navigate(`?createStep=true`);
+  };
+
+  // ✅ Close drawer properly
+  const closeDrawer = () => {
+    setOpenNewStep(false);
+    navigate(location.pathname, { replace: true });
+  };
 
   return (
     <div className="dashboard-main">
@@ -76,37 +94,36 @@ const fetchPath = async () => {
                 ← Go Back
               </div>
 
-              {/* ✅ Partner-only */}
               {isPartnerFlow && (
                 <button
                   className="premium-create-step-btn"
-                  onClick={() => setOpenNewStep(true)}
+                  onClick={handleCreateStep}
                 >
                   + Create Step
                 </button>
               )}
             </div>
 
-            {/* 🔥 STEP CREATOR */}
-{openNewStep && (
-  <div
-    className="global-drawer-overlay"
-    onClick={() => setOpenNewStep(false)}   // ✅ close on backdrop
-  >
-    <div
-      className="global-drawer-panel"
-      onClick={(e) => e.stopPropagation()}  // ✅ prevent close when clicking inside
-    >
-      <NewStep1
-        pathId={id || localStorage.getItem("selectedPathId")}
-        onSuccess={() => {
-          setOpenNewStep(false);
-          fetchPath();
-        }}
-      />
-    </div>
-  </div>
-)}
+            {/* 🔥 Drawer */}
+            {openNewStep && (
+              <div
+                className="global-drawer-overlay"
+                onClick={closeDrawer}
+              >
+                <div
+                  className="global-drawer-panel"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <NewStep1
+                    pathId={id || localStorage.getItem("selectedPathId")}
+                    onSuccess={() => {
+                      closeDrawer();
+                      fetchPath();
+                    }}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* STEPS */}
             <div className="steps-grid-premium">

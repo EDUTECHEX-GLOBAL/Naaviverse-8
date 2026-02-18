@@ -81,8 +81,9 @@ feature_coordinates: {
     // 🔥 Status
     status: {
       type: String,
-      enum: ['active', 'inactive', 'waitingforapproval', 'delete'],
-      default: 'waitingforapproval'
+enum: ['draft', 'waitingforapproval', 'active', 'rejected', 'inactive', 'delete'],
+default: 'draft'
+
     },
 
     // 🔥 Arrays

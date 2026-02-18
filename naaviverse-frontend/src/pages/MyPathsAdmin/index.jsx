@@ -198,16 +198,12 @@ const deletePath = () => {
   setActionLoading(true);
 
   axios
-    .patch(`/api/paths/edit`, {
-      pathId: selectedPathId,
-      status: "inactive"
-    })
+    .delete(`/api/paths/delete/${selectedPathId}`)
     .then((response) => {
       if (response?.data?.status) {
         setActionLoading(false);
         setPathActionStep(3);
 
-        // refresh correct list
         if (mypathsMenu === "Paths") {
           getAllPaths();
         } else {
@@ -221,29 +217,24 @@ const deletePath = () => {
     });
 };
 
+const reactivatePath = () => {
+  setActionLoading(true);
 
- const reactivatePath = () => {
-    setActionLoading(true);
-
-    axios
-        .patch(`/api/paths/edit`, {
-            pathId: selectedPathId,
-            status: "active"
-        })
-        .then((response) => {
-            let result = response?.data;
-
-            if (result?.status) {
-                setActionLoading(false);
-                setPathActionStep(3);
-                myPathsTimeout();
-            }
-        })
-        .catch((error) => {
-            console.log("reactivatePath error:", error);
-            setActionLoading(false);
-        });
+  axios
+    .put(`/api/paths/reactivate/${selectedPathId}`)
+    .then((response) => {
+      if (response?.data?.status) {
+        setActionLoading(false);
+        setPathActionStep(3);
+        getAllPaths();
+      }
+    })
+    .catch((error) => {
+      console.log("reactivatePath error:", error);
+      setActionLoading(false);
+    });
 };
+
 
   const deleteStep = () => {
     setActionLoading(true);
@@ -277,7 +268,7 @@ const deletePath = () => {
  const editMetaData = (field) => {
   setActionLoading(true);
 
-  axios.patch(`/api/paths/edit`, {
+  axios.patch(` /api/paths/edit`, {
       pathId: selectedPathId,
       [field]: newValue,
   })
@@ -346,7 +337,7 @@ const handleApprovePath = () => {
   const handleRejectPath = () => {
     setActionLoading(true);
     axios.put(`/api/paths/updatepath/${selectedPathId}`, 
-    {status:"inactive"})
+    { status: "draft" })
     .then(({data}) => {
       if(data.status){
         if(mypathsMenu === "Pending Paths"){
@@ -518,7 +509,7 @@ const fetchProductData = async (apiKey) => {
     console.log(item, index, "lwkeflkwefwef")
     const updatedPathObject = addIdToObjectAtIndex(item?.the_ids, stepId, backupPathId, index);
     // console.log(updatedPathObject, "kjwebfkwjebfkwejf")
-    axios.patch(`/api/paths/edit`, {
+    axios.patch(` /api/paths/edit`, {
     pathId: selectedPath?._id,
     the_ids: updatedPathObject
 })
@@ -562,7 +553,7 @@ const fetchProductData = async (apiKey) => {
 
     // Return the updated array with only step_id and backup_pathId keys
     const updatedBody =  updatedTheIds.map(({ step_id, backup_pathId }) => ({ step_id, backup_pathId }));
-    axios.patch(`/api/paths/edit`, {
+    axios.patch(` /api/paths/edit`, {
     pathId: selectedPath?._id,
     the_ids: updatedBody
 })
@@ -589,7 +580,7 @@ const getChangedPos = (currentPos, newPos) => {
     backup_pathId: step.backup_pathId || null
   }));
 
-  axios.patch(`/api/paths/edit`, {
+  axios.patch(` /api/paths/edit`, {
     pathId: selectedPath._id,
     the_ids: updatedBody
   }).then(res => {
@@ -617,7 +608,7 @@ const getChangedPos = (currentPos, newPos) => {
     //backup_pathId,
   //}));
 
-  //axios.patch(`/api/paths/edit`, {
+  //axios.patch(` /api/paths/edit`, {
     //pathId: fullObject._id,
     //the_ids: updatedBody,
   //}).then(res => {

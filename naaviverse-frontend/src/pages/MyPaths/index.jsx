@@ -57,27 +57,33 @@ const getAllPaths = () => {
   let endpoint = "";
 
   // 1️⃣ ADMIN – Pending Approval
-  if (
-    admin &&
-    (mypathsMenu === "Pending Approval" || mypathsMenu === "Pending Paths")
-  ) {
-    endpoint = `http://localhost:4545/api/paths/get?status=waitingforapproval`;
-  }
+  // 1️⃣ ADMIN – Pending Approval
+if (
+  admin &&
+  (mypathsMenu === "Pending Approval" || mypathsMenu === "Pending Paths")
+) {
+  endpoint = `/api/paths/get?status=waitingforapproval`;
+}
 
-  // 2️⃣ PARTNER – Pending Approval  ✅ MISSING CASE
-  else if (!admin && mypathsMenu === "Pending Approval") {
-    endpoint = `http://localhost:4545/api/paths/get?email=${email}&status=waitingforapproval`;
-  }
+// 2️⃣ PARTNER – Draft
+else if (!admin && mypathsMenu === "Draft") {
+  endpoint = `/api/paths/get?email=${email}&status=draft`;
+}
 
-  // 3️⃣ Inactive Paths
-  else if (mypathsMenu === "Inactive Paths") {
-    endpoint = `http://localhost:4545/api/paths/get?email=${email}&status=inactive`;
-  }
+// 3️⃣ PARTNER – Pending Approval
+else if (!admin && mypathsMenu === "Pending Approval") {
+  endpoint = `/api/paths/get?email=${email}&status=waitingforapproval`;
+}
 
-  // 4️⃣ Active Paths (default)
-  else {
-    endpoint = `http://localhost:4545/api/paths/get?email=${email}&status=active`;
-  }
+// 4️⃣ Inactive
+else if (mypathsMenu === "Inactive Paths") {
+  endpoint = `/api/paths/get?email=${email}&status=inactive`;
+}
+
+// 5️⃣ Default Active
+else {
+  endpoint = `/api/paths/get?email=${email}&status=active`;
+}
 
   console.log("➡️ FINAL API CALL:", endpoint);
 
@@ -331,41 +337,43 @@ const viewPathById = (id) => {
 
 
 
-  const handleApprovePath = () => {
-    setActionLoading(true);
-    axios
-      .put(`/api/paths/update/${selectedPathId}`, {
-        status: "active",
-      })
-      .then(({ data }) => {
-        if (data.status) {
-         getAllPaths();
+const handleApprovePath = () => {
+  setActionLoading(true);
 
-          setPathActionEnabled(false);
-          setActionLoading(false);
-          setPathActionStep(1);
-        }
-      });
-  };
-  const handleRejectPath = () => {
-    setActionLoading(true);
-    axios
-      .put(`/api/paths/update/${selectedPathId}`, {
-        status: "inactive",
-      })
-      .then(({ data }) => {
-        if (data.status) {
-         getAllPaths();
+  axios
+    .put(`/api/paths/updatepath/${selectedPathId}`, {
+      status: "active",
+    })
+    .then(({ data }) => {
+      if (data.status) {
+        getAllPaths();
+        setPathActionEnabled(false);
+        setActionLoading(false);
+        setPathActionStep(1);
+      }
+    })
+    .catch(() => setActionLoading(false));
+};
 
-          setPathActionEnabled(false);
-          setActionLoading(false);
-          setPathActionStep(1);
-        }
-      });
-  };
+const handleRejectPath = () => {
+  setActionLoading(true);
 
+  axios
+    .put(`/api/paths/updatepath/${selectedPathId}`, {
+      status: "draft",
+    })
+    .then(({ data }) => {
+      if (data.status) {
+        setMypathsMenu("Draft");   // 👈 automatically switch tab
+        getAllPaths();
+        setPathActionEnabled(false);
+        setActionLoading(false);
+        setPathActionStep(1);
+      }
+    })
+    .catch(() => setActionLoading(false));
+};
 
-  
   const handleAddService = (newId) => {
     setActionLoading(true);
 
@@ -681,6 +689,24 @@ useEffect(() => {
           {admin ? "Active Paths" : "Paths"}
         </div>
         <div
+  className="each-mypath-menu"
+  style={{
+    fontWeight: mypathsMenu === "Draft" ? "700" : "",
+    background:
+      mypathsMenu === "Draft"
+        ? "rgba(241, 241, 241, 0.5)"
+        : "",
+  }}
+  onClick={() => {
+    setMypathsMenu("Draft");
+    setViewPathEnabled(false);
+    setViewPathData([]);
+  }}
+>
+  Draft
+</div>
+
+        <div
           className="each-mypath-menu"
           style={{
             fontWeight: mypathsMenu === "Pending Approval" ? "700" : "",
@@ -797,6 +823,7 @@ useEffect(() => {
 
             </div>
           ) : mypathsMenu === "Paths" ||
+           mypathsMenu === "Draft" ||
             mypathsMenu === "Pending Approval" ||
             mypathsMenu === "Inactive Paths" ||
             (mypathsMenu === "Pending Paths" && !viewPathEnabled) ? (
@@ -825,32 +852,40 @@ useEffect(() => {
                           </div>
                         );
                       })
-                 : partnerPathData?.map((e, i) => {
+ : partnerPathData?.map((e, i) => {
+  return (
+    <div
+      className="each-mypaths-data"
+      key={i}
+      onClick={() => {
+        setSelectedPathId(e?._id);
+        setSelectedPath(e);
+        localStorage.setItem("selectedPathId", e?._id);
 
-                      return (
-                        <div
-                          className="each-mypaths-data"
-                          key={i}
-                          onClick={() => {
-                            setPathActionEnabled(true);
-                            setSelectedPathId(e?._id);
-                            setSelectedPath(e);
-                            console.log(e, "selected path details");
-                             localStorage.setItem("selectedPathId", e?._id);
-                          }}
-                        >
-                          <div className="each-mypaths-name">
-                            {e?.nameOfPath}
-                          </div>
-                          <div className="each-mypaths-desc">
-                            {e?.description}
-                          </div>
-                          <div className="each-mypaths-name">
-                            {e?.the_ids?.length}
-                          </div>
-                        </div>
-                      );
-                    })}
+        // ✅ IF DRAFT → Open Full Path Page
+        if (e?.status === "draft") {
+     navigate(`/dashboard/accountants/path/${e._id}`);
+
+        } 
+        // ✅ ELSE → Show Action Panel
+        else {
+          setPathActionEnabled(true);
+        }
+      }}
+    >
+      <div className="each-mypaths-name">
+        {e?.nameOfPath}
+      </div>
+      <div className="each-mypaths-desc">
+        {e?.description}
+      </div>
+      <div className="each-mypaths-name">
+        {e?.the_ids?.length}
+      </div>
+    </div>
+  );
+})
+}
               </div>
             </>
           ) : (

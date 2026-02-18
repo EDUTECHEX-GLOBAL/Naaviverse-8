@@ -259,23 +259,25 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
 
   /** ===================== USER DATA FETCH ====================== **/
-  useEffect(() => {
-    const userEmail = userDetails?.user?.email || userDetails?.email || "";
+ useEffect(() => {
+  if (!userDetails) return;   // 🔥 ADD THIS LINE
 
-    // Add proper error handling and check if API is available
-    if (!userEmail) {
-      console.warn("No user email found");
-      return;
-    }
+  const userEmail =
+    userDetails?.user?.email || userDetails?.email;
 
-    axios
-      .get(`/api/users/get/${userEmail}`)
-      .then((response) => setUserData(response?.data?.data || []))
-      .catch((error) => {
-        console.warn("User data fetch failed, using empty data:", error.message);
-        setUserData([]); // Set empty array instead of failing
-      });
-  }, []);
+  if (!userEmail) {
+    console.warn("No user email found");
+    return;
+  }
+
+  axios.get(`/api/users/get/${userEmail}`)
+    .then((res) => {
+      // your logic
+    })
+    .catch((err) => console.error(err));
+
+}, [userDetails]);   // 🔥 MAKE SURE THIS EXISTS
+
 
   /** ===================== FETCH STEP DATA ====================== **/
   useEffect(() => {

@@ -112,9 +112,9 @@ const AboutUsTwo = () => {
 
                 <div className="counter-section-one mt-100">
                     <div className="container">
-                        <div className="inner-container bg-color">
+                        
                             <CommonCounter/>
-                        </div>
+                        
                         {/* /.inner-container */}
                     </div>
                 </div>

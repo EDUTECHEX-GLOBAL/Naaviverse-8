@@ -6,10 +6,10 @@
   width: 100vw;
   display: flex;
   text-transform: capitalize !important;
-  overflow-x: hidden;   // ✅ keep horizontal clean
-  overflow-y: auto;     // ✅ ALLOW vertical scroll
+  overflow: hidden;   // 🔥 important
   position: relative;
 }
+
 
 .dashboard-screens {
   width: 80vw;
@@ -118,31 +118,32 @@
 .account-container {
   display: flex;
   width: 80vw;
-  height: calc(100vh - 70px);
+  flex: 1;          // 🔥 take remaining height
+  min-height: 0;    // 🔥 allow shrink
   background-color: #ffffff;
-  overflow: hidden;
 }
+
 
 .account-left {
   width: 60vw;
-  height: calc(100vh - 70px);
 
-  display: flex;              // ✅ REQUIRED
-  flex-direction: column;     // ✅ REQUIRED
+  display: flex;
+  flex-direction: column;
 
-  background-color: #ffffff;
-  padding: 0 40px 40px 30px;
-
-  overflow: hidden;           // ✅ prevents double scroll
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 
 .account-right {
   border-left: 0.5px solid #e5e5e5;
   width: 20vw;
-  height: calc(100vh - 70px);
-  background-color: #ffffff;
+  flex: 0 0 20vw;
+  min-height: 0;
+  overflow-y: auto;
 }
+
 
 .filter-actions-box {
   display: flex;
@@ -165,48 +166,10 @@
 /* Partner → My Services list wrapper */
 
 .services-table-wrapper {
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 0 35px; // Match your other content padding
-}
-
-.services-list {
-  
-  width: 100%;
-}
-
-.service-row {
-  
-  border-bottom: 1px solid #E5E5E5;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  
-  &:hover {
-    background-color: rgba(241, 241, 241, 0.5);
-  }
-  
-  &.active {
-    background-color: rgba(241, 241, 241, 0.5);
-  }
-}
-
-.service-cell {
-  
-  padding: 22px 10px;
-  vertical-align: middle;
-  
-  &.name {
-    font-weight: 600;
-  }
-}
-
-.services-empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 300px;
-  font-size: 1.2rem;
-  color: #666;
+  padding:  24px 0 80px 0;   // 🔥 increase bottom padding
 }
 
 /* List */
@@ -248,11 +211,14 @@
 .service-row.active {
   background: linear-gradient(
     90deg,
-    rgba(79, 182, 212, 0.18),
-    rgba(47, 127, 176, 0.18)
+    rgba(79, 182, 212, 0.35),
+    rgba(47, 127, 176, 0.35)
   );
-  border-color: #2f7fb0;
+
+  border: 2px solid #2f7fb0;
+  box-shadow: 0 8px 18px rgba(47, 127, 176, 0.25);
 }
+
 
 /* Cells */
 .service-cell {
@@ -579,13 +545,12 @@
 
 .service-main {
   width: 80vw;
-  overflow-x: scroll;
-  height: calc(100vh - 70px);
+  flex: 1;                 // ✅ instead of height
+  min-height: 0;           // ✅ VERY IMPORTANT
   background-color: #ffffff;
   padding: 40px 0px 20px 35px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
 .serviceby-allbox {
@@ -1784,20 +1749,20 @@
 
 .goBack {
   font-weight: 700;
-  height: 41px !important;
-  margin-top: 5px !important;
+  height: 60px;
+  margin-top: 10px;
   display: flex;
-  width: 388.4px;
+  width: 100%;
   justify-content: center;
   align-items: center;
   background: #1f304f;
-  border-radius: 10px;
+  border-radius: 15px;
   color: #ffffff;
-  @include btn-animate(#fff);
-  // position: fixed;
-  bottom: 20px;
-  right: 70px;
+
+  cursor: pointer;   
 }
+
+
 
 .goBack2 {
   font-weight: 500;
@@ -1997,15 +1962,13 @@ input[type="file"] {
 /* My Services → List container */
 .service-body-left {
   background-color: #fff;
-  height: calc(100vh - 133.2px);
+  flex: 1;          // 🔥 important
+  min-height: 0;    // 🔥 required for flex scroll
   width: 80vw;
-
-  padding: 0;
-
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
+
 
 
 .each-service-map {
@@ -2016,10 +1979,12 @@ input[type="file"] {
 .service-body-right {
   background-color: #fff;
   border-left: 0.5px solid #e5e5e5;
-  height: calc(100vh - 133.2px);
   width: 20vw;
-  overflow-y: scroll;
+  flex: 0 0 20vw;
+  min-height: 0;
+  overflow-y: auto;
 }
+
 
 .service-box1 {
   padding: 20px 25px;
@@ -2039,22 +2004,27 @@ input[type="file"] {
   grid-template-columns: 3fr 2fr 2fr 1fr;
   align-items: center;
 
-  background: #ffffff;
-  border-bottom: 0.5px solid #e5e5e5;
-  border-radius: 0;
+  padding: 20px 30px;
+  border-radius: 14px;
+  margin-bottom: 14px;
 
-  padding: 18px 24px;
-  margin: 0;
-  height: auto;
-  min-height: unset;
-  position: relative;
+  background: linear-gradient(
+    90deg,
+    #ffffff 0%,
+    #f6fbff 100%
+  );
 
-  transition: background 0.2s ease;
-
-  &:hover {
-    background: #f7f9fc;
-  }
+  border: 1px solid #e6eef6;
+  transition: all 0.25s ease;
 }
+
+.each-service-map:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(31, 48, 79, 0.12);
+  border-color: #4fb6d4;
+}
+
+
 
 
 .dot-box {
