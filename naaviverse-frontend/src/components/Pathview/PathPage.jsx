@@ -5,7 +5,7 @@ import Skeleton from "react-loading-skeleton";
 import "./journey.scss";
 import { motion } from "framer-motion";
 import NewStep1 from "../../globalComponents/GlobalDrawer/NewStep1";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const PathPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -35,11 +35,11 @@ const fetchPath = async () => {
 
   try {
     // 1️⃣ Fetch path info
-    const pathRes = await axios.get(`/api/paths/viewpath/${pathId}`);
+    const pathRes = await axios.get(`${BASE_URL}/api/paths/viewpath/${pathId}`);
     setPathName(pathRes?.data?.data?.nameOfPath || "N/A");
 
     // 2️⃣ Fetch steps BY PATH (🔥 source of truth)
-    const stepsRes = await axios.get(`/api/steps/get`, {
+    const stepsRes = await axios.get(`${BASE_URL}/api/steps/get`, {
       params: { path_id: pathId },
     });
 

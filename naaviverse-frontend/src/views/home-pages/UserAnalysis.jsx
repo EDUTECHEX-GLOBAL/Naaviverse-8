@@ -1,4 +1,5 @@
-import React,{Fragment} from 'react';
+import React,{Fragment, useEffect} from 'react';
+
 import {Helmet} from 'react-helmet';
 import {Link} from 'react-router-dom';
 
@@ -26,6 +27,8 @@ import Footer from '../../components/footernew/index';
 
 
 const UserAnalysis = () => {
+
+    
     return (
         <Fragment>
        <div className="main-page-wrapper landing-scope">
@@ -87,7 +90,10 @@ const UserAnalysis = () => {
                                 {/* /.title-style-three */}
                             </div>
                             <div className="col-xl-6 col-lg-7" data-aos="fade-left">
-                                <p className="m0 text-center text-lg-start md-pt-30">Leveraging AI and Data Science, we unlock your educational potential with personalized pathways. Our advanced algorithms craft unique roadmaps to guide you toward academic success.</p>
+                                <p className="m0 text-center text-lg-start md-pt-30"><p className="m0 text-center text-lg-start md-pt-30">
+At Naaviverse, we craft intelligent digital ecosystems powered by AI and the cloud
+</p>
+</p>
                             </div>
                         </div>
                         <FancyFeatureSeventeen/>
@@ -193,7 +199,10 @@ const UserAnalysis = () => {
 
                 <Contact/> {/* /.Fancy Feature 21 end */}
 
-                <div className="partner-section-two mt-30 mb-130 lg-mb-80">
+    <div id="partners-section" className="partner-section-two mt-30 mb-130 lg-mb-80">
+
+
+
                     <div className="container">
                         <div className="row">
                             <div className="col-12 m-auto">

@@ -7,8 +7,12 @@ const AdressOne = () => {
                 <div className="icon"><img src="images/icon/icon_06.svg" alt=""/></div>
                 <div className="text-meta">
                     <h4 className="title">Our Address</h4>
-                    <p>1012 Pebda Parkway, Mirpur 2
-                        <br/>Dhaka, Bangladesh</p>
+                    <p className='footer-head'><strong>NAAVI NETWORK</strong><br />
+                T-Hub, Knowledge City<br />
+                Hyderabad,<br />
+                Telangana 500081 INDIA
+                </p>
+
                 </div>
                 {/* /.text-meta */}
             </div>

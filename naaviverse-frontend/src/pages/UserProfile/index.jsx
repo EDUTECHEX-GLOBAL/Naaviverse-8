@@ -61,7 +61,7 @@ import LevelThree from "./LevelThree.jsx";
 import MenuNav from "../../components/MenuNav/index.jsx";
 import AWS from "aws-sdk";
 import uploadGrey from "../../images/uploadGrey.svg";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const UserProfile = () => {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -299,7 +299,7 @@ useEffect(() => {
     if (!userName) return;
     setChecking(true); // <-- Start loading
     try {
-      const res = await axios.get('/api/users/check-username?username=' + userName);
+      const res = await axios.get(`${BASE_URL}/api/users/check-username?username=${userName}`);
       setUserNameAvailable(res.data.available); // <-- Available or unavailable
     } catch (err) {
       setUserNameAvailable(null); // <-- Error checking
@@ -391,8 +391,9 @@ useEffect(() => {
 
   // Fetch countries
   useEffect(() => {
-    axios.get('/api/countries')
+   axios.get(`${BASE_URL}/api/countries`)
       .then((response) => {
+        if (!Array.isArray(response.data)) return;
         const sortedCountries = response.data.sort((a, b) =>
           a.name.common.localeCompare(b.name.common)
         );
@@ -405,9 +406,9 @@ useEffect(() => {
 
   // Fetch states
   useEffect(() => {
-    axios.get('/api/states')
+    axios.get(`${BASE_URL}/api/states`)
       .then((response) => {
-        setStateApiValue(response.data);
+       setStateApiValue(Array.isArray(response.data) ? response.data : []);
       })
       .catch((error) => {
         console.error('Error fetching states:', error);
@@ -416,9 +417,9 @@ useEffect(() => {
 
   // Fetch cities
   useEffect(() => {
-    axios.get('http://localhost:4545/api/cities')
+    axios.get(`${BASE_URL}/api/cities`)
       .then((response) => {
-        setCityApiValue(response.data);
+       setCityApiValue(Array.isArray(response.data) ? response.data : []);
       })
       .catch((error) => {
         console.error('Error fetching cities:', error);
@@ -491,7 +492,7 @@ const handleLogout = () => {
 
     try {
       // Fetch presigned URL from backend
-      const response = await fetch('/api/get-presigned-url', {
+      const response = await fetch(`${BASE_URL}/api/get-presigned-url`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -722,7 +723,7 @@ const handleLogout = () => {
     const mailId = userDetails?.email;
 
 try {
-  const response = await axios.get(`/api/users/get/${mailId}`);
+  const response = await axios.get(`${BASE_URL}/api/users/get/${mailId}`);
   const result = response.data;
 
   console.log("API Response:", result);
@@ -808,7 +809,7 @@ try {
     };
 
     try {
-      const response = await axios.post(`/api/users/add`, body);
+      const response = await axios.post(`${BASE_URL}/api/users/add`, body)
       const result = response?.data;
 
       if (result?.status) {
@@ -842,7 +843,7 @@ const accountantStatus = async () => {
     console.log("Fetching account status for:", userEmail);
 
     const response = await axios.get(
-      `http://localhost:4545/api/users/get/${userEmail}`
+      `${BASE_URL}/api/users/get/${userEmail}`
     );
 
     console.log("Account status response:", response.data);
@@ -999,7 +1000,7 @@ const editData = async (field, value) => {
       setLevelTwoLoading(true);
       axios
         .put(
-          `/api/users/update/${profileDataId}`,
+           `${BASE_URL}/api/users/update/${profileDataId}`,
           levelTwoFields
         )
         .then((response) => {
@@ -2125,292 +2126,195 @@ useEffect(() => {
 
 
 
-      <>
-        {createBrandProfile && (
-  <div
-    className={createLevelThree ? "popularS1" : "popularS"}
-    style={{
-      position: "fixed",
-      inset: 0,
-      zIndex: 999999,        // 🔥 KEY FIX
-      background: "white",
-      overflowY: "auto",
-    }}
-  >
-            {createBrandProfileStep === 1 && (
-              <>
-                <div className="head-txt" style={{ height: "4rem" }}>
-                  <div>Naavi Profile Level One</div>
-                  <div
-                    onClick={() => {
-                      setCreateBrandProfile(false);
-                      setUserName("");
-                      setFullName("");
-                      setProfilePicture("");
-                      setSelectedCountry("");
-                      setSelectState("");
-                      setCity("");
-                      setPostalCode("");
-                    }}
-                    className="close-div"
-                  >
-                    <img src={close} alt="" />
-                  </div>
-                </div>
-                <div
-                  className="overall-div"
-                  style={{ height: "calc(100% - 4rem)" }}
-                >
-                  <div
-                    style={{
-                      marginBottom: "0.5rem",
-                      fontSize: "1rem",
-                      marginTop: "2rem",
-                    }}
-                  >
-                    Upload Profile Picture *
-                  </div>
-                  <ImageUploadDivCoverPic
-  setFunc={setProfilePicture}
-  funcValue={profilePicture}
-/>
+<>
+  {createBrandProfile && (
+    <div className="modalOverlay">
+      <div className={createLevelThree ? "popularS1" : "popularS"}>
 
-                  <div
-                    className="imageUploadDiv"
-                    onClick={() => setSelectedDropDown("")}
-                    style={{
-                      minWidth: "140px",
-                      minHeight: "140px",
-                      maxWidth: "140px",
-                      maxHeight: "140px",
-                      border: "0.5px solid #e7e7e7",
-                      borderRadius: "50%",
-                    }}
-                  >
-                    {profilePicture ? (
-                      <div
-                        className="imageDiv"
-                        style={{ height: "100%", width: "100%", marginRight: "0" }}
-                      >
-                        <img
-                          src={`${profilePicture}?${new Date().getTime()}`}  // Display uploaded profile picture
-                          alt="UploadedProfilePic"
-                          className="profileImg"
-                          htmlFor="profileUpdateImg"
-                          style={{ width: "100%", height: "100%" }}
-                        />
-                      </div>
-                    ) : (
-                      <label
-                        htmlFor="profileUpdateImg"
-                        className="uploadFileDiv"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          marginBottom: "0",
-                        }}
-                      >
-                        <input
-                          className="uploadNewPic"
-                          type="file"
-                          onChange={(e) => {
-                            handleFileInputChange(e, setFunc, setUploading);
-                          }}
-                          accept="image/*"
-                          id="profileUpdateImg"
-                        />
+        {createBrandProfileStep === 1 && (
+          <>
+            <div className="head-txt" style={{ height: "4rem" }}>
+              <div>Naavi Profile Level One</div>
 
-                        <div
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            border: "0.5px solid #2c7cb2 ",
-                            borderRadius: "50%",
-                          }}
-                        >
-                          {uploading ? (
-                            <div>Uploading...</div>
-                          ) : (
-                            <div>
-                              <img
-                                src={uploadGrey}  // Placeholder image while uploading
-                                alt="UploadPlaceholder"
-                                style={{ width: "40px", height: "40px" }}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </label>
-                    )}
-
-                  </div>
-                  <InputDivsWithMT
-                    heading="What is your full name? *"
-                    placeholderText="Name.."
-                    setFunc={setFullName}
-                    funcValue={fullName}
-                  />
-                  <InputDivsWithMT
-                    heading="What is your phone number? *"
-                    placeholderText="+91"
-                    setFunc={setPhoneNo}
-                    funcValue={phoneNo}
-                  />
-                  {/* <InputDivsCheckFunctionality1
-                    heading="Select a username *"
-                    placeholderText="Username..."
-                    setFunc={setUserName}
-                    funcValue={userName}
-                    userNameAvailable={userNameAvailable}
-                  /> */}
-                  {/* <InputDivCounty
-                    heading="What country are you from?"
-                    placeholderText="Click here to select"
-                    setFunc={setCountry}
-                    funcValue={country}
-                  /> */}
-                  <div style={{ paddingTop: "30px" }}>What country are you from? *</div>
-                  <div className={styles.inputDivs} style={{ border: "1px solid #2c7cb2", borderRadius: "30px", fontSize: "13px", fontWeight: "500", paddingLeft: "10px" }}>
-                    <select
-                      name="country"
-                      id="country"
-                      style={{ border: "none", padding: "1rem", width: "90%", fontSize: "16px" }}
-                      onChange={(e) => setSelectedCountry(e.target.value)}
-                    >
-                      <option value="">New Country..</option>
-                     {countryApiValue?.map((item) => (
-  <option key={item.cca2} value={item?.name?.common}>
-
-                          {item?.name?.common}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div style={{ paddingTop: "30px" }}>What state are you from? *</div>
-                  <div className={styles.inputDivs} style={{ border: "1px solid #2c7cb2", borderRadius: "30px", fontSize: "13px", fontWeight: "500", paddingLeft: "10px" }}>
-                    <select
-                      name="state"
-                      id="state"
-                      style={{ border: "none", padding: "1rem", width: "90%", fontSize: "16px" }}
-                      onChange={(e) => setSelectState(e.target.value)}
-                      value={selectState}
-                    >
-                      <option value="">Select State..</option>
-                      {stateApiValue?.map((item) => (
-                        <option key={item._id || item.name} value={item.name}>
-                          {item.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <InputDivsWithMT
-                    heading="What city are you from?"
-                    placeholderText="City..."
-                    setFunc={setCity}
-                    funcValue={city}
-                  />
-
-                  <div className="stepBtns" style={{ marginTop: "3.5rem" }}>
-                    <div
-                      style={{
-                        background: "#1F304F",
-                        width: "48%",
-                        minHeight: "3.5rem",
-                        maxHeight: "3.5rem",
-                      }}
-                      onClick={() => {
-                        setCreateBrandProfile(false);
-                        setUserName("");
-                        setFullName("");
-                        setProfilePicture("");
-                        setSelectedCountry("");
-                        setSelectState("");
-                        setCity("");
-                        setPostalCode("");
-                      }}
-                    >
-                      Go Back
-                    </div>
-                    <div
-                      style={{
-                        opacity:
-                          profilePicture &&
-                            fullName &&
-                            userName.length > 0 &&
-                            userNameAvailable &&
-                            selectedCountry &&
-                            selectState &&
-                            city &&
-                            postalCode &&
-                            phoneNo
-                            ? "1"
-                            : "0.25",
-                        cursor:
-                          profilePicture &&
-                            fullName &&
-                            userName.length > 0 &&
-                            userNameAvailable &&
-                            selectedCountry &&
-                            selectState &&
-                            city &&
-                            postalCode &&
-                            phoneNo
-                            ? "pointer"
-                            : "not-allowed",
-                        background: "#59A2DD",
-                        width: "48%",
-                      }}
-                      onClick={() => {
-                        if (
-                          profilePicture &&
-                          fullName &&
-                          userName.length > 0 &&
-                          userNameAvailable &&
-                          selectedCountry &&
-                          selectState &&
-                          city &&
-                          postalCode &&
-                          phoneNo
-                        ) {
-                          levelOneProfile();
-                        }
-                      }}
-                    >
-                      Next Step
-                    </div>
-                  </div>
-                </div>
-                {isloading && (
-                  <div
-                    className="loading-component"
-                    style={{
-                      top: "0",
-                      left: "0",
-                      width: "100%",
-                      height: "100%",
-                      position: "absolute",
-                      display: "flex",
-                    }}
-                  >
-                    <LoadingAnimation1 icon={lg1} width={200} />
-                  </div>
-                )}
-              </>
-            )}
-
-            {createBrandProfileStep === 2 && (
-              <div className="successMsg">
-                You Have Successfully Created Your Naavi Profile.
+              <div
+                className="close-div"
+                onClick={() => {
+                  setCreateBrandProfile(false);
+                  setUserName("");
+                  setFullName("");
+                  setProfilePicture("");
+                  setSelectedCountry("");
+                  setSelectState("");
+                  setCity("");
+                  setPostalCode("");
+                }}
+              >
+                <img src={close} alt="" />
               </div>
-            )}
+            </div>
+
+            <div
+              className="overall-div"
+              style={{ height: "calc(100% - 4rem)" }}
+            >
+
+              <div
+                style={{
+                  marginBottom: "0.5rem",
+                  fontSize: "1rem",
+                  marginTop: "2rem",
+                }}
+              >
+                Upload Profile Picture *
+              </div>
+
+              <ImageUploadDivCoverPic
+                setFunc={setProfilePicture}
+                funcValue={profilePicture}
+              />
+
+              <InputDivsWithMT
+                heading="What is your full name? *"
+                placeholderText="Name.."
+                setFunc={setFullName}
+                funcValue={fullName}
+              />
+
+              <InputDivsWithMT
+                heading="What is your phone number? *"
+                placeholderText="+91"
+                setFunc={setPhoneNo}
+                funcValue={phoneNo}
+              />
+
+              {/* COUNTRY */}
+              <div style={{ paddingTop: "30px" }}>
+                What country are you from? *
+              </div>
+
+              <div
+                className={styles.inputDivs}
+                style={{
+                  border: "1px solid #2c7cb2",
+                  borderRadius: "30px",
+                  paddingLeft: "10px",
+                }}
+              >
+                <select
+                  style={{ border: "none", padding: "1rem", width: "90%" }}
+                  onChange={(e) => setSelectedCountry(e.target.value)}
+                >
+                  <option value="">Select Country..</option>
+
+                  {countryApiValue?.map((item) => (
+                    <option key={item.cca2} value={item?.name?.common}>
+                      {item?.name?.common}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* STATE */}
+              <div style={{ paddingTop: "30px" }}>
+                What state are you from? *
+              </div>
+
+              <div
+                className={styles.inputDivs}
+                style={{
+                  border: "1px solid #2c7cb2",
+                  borderRadius: "30px",
+                  paddingLeft: "10px",
+                }}
+              >
+                <select
+                  style={{ border: "none", padding: "1rem", width: "90%" }}
+                  onChange={(e) => setSelectState(e.target.value)}
+                  value={selectState}
+                >
+                  <option value="">Select State..</option>
+
+                  {stateApiValue?.map((item) => (
+                    <option key={item._id || item.name} value={item.name}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <InputDivsWithMT
+                heading="What city are you from?"
+                placeholderText="City..."
+                setFunc={setCity}
+                funcValue={city}
+              />
+
+              {/* BUTTONS */}
+              <div className="stepBtns" style={{ marginTop: "3.5rem" }}>
+                <div
+                  style={{
+                    background: "#1F304F",
+                    width: "48%",
+                  }}
+                  onClick={() => setCreateBrandProfile(false)}
+                >
+                  Go Back
+                </div>
+
+                <div
+                  style={{
+                    opacity:
+                      profilePicture &&
+                      fullName &&
+                      selectedCountry &&
+                      selectState &&
+                      city &&
+                      phoneNo
+                        ? "1"
+                        : "0.25",
+                    cursor:
+                      profilePicture &&
+                      fullName &&
+                      selectedCountry &&
+                      selectState &&
+                      city &&
+                      phoneNo
+                        ? "pointer"
+                        : "not-allowed",
+                    background: "#59A2DD",
+                    width: "48%",
+                  }}
+                  onClick={() => {
+                    if (
+                      profilePicture &&
+                      fullName &&
+                      selectedCountry &&
+                      selectState &&
+                      city &&
+                      phoneNo
+                    ) {
+                      levelOneProfile();
+                    }
+                  }}
+                >
+                  Next Step
+                </div>
+              </div>
+
+            </div>
+          </>
+        )}
+
+        {createBrandProfileStep === 2 && (
+          <div className="successMsg">
+            You Have Successfully Created Your Naavi Profile.
           </div>
         )}
-      </>
+
+      </div>
+    </div>
+  )}
+</>
 
 <>
   {createLevelTwo && (

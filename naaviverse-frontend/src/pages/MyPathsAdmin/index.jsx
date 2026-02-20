@@ -12,7 +12,7 @@ import lg1 from "../../static/images/login/lg1.svg";
 import CurrentStep from "../CurrentStep/index.jsx";
 import { useStore } from "../../components/store/store.ts";
 import { useNavigate } from "react-router-dom";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) => {
   const navigate = useNavigate()
   const { sideNav, setsideNav } = useStore();
@@ -49,7 +49,7 @@ const [isDragging, setIsDragging] = useState(false);
   const getAllPaths = () => { 
     setLoading(true);
     let email = userDetails?.email;
-    const endpoint = admin? `/api/paths/get?status=active` : `/api/paths/get?email=${email}`
+    const endpoint = admin? `${BASE_URL}/api/paths/get?status=active` : `${BASE_URL}/api/paths/get?email=${email}`
     axios
       .get(endpoint)
       .then((response) => {
@@ -66,7 +66,7 @@ const [isDragging, setIsDragging] = useState(false);
   const getInactivePath = () => { 
     setLoading(true);
     let email = userDetails?.email;
-    const endpoint = admin? `/api/paths/get?status=inactive` : `/api/paths/get?email=${email}`
+    const endpoint = admin? `${BASE_URL}/api/paths/get?status=inactive` : `${BASE_URL}/api/paths/get?email=${email}`
     axios
       .get(endpoint)
       .then((response) => {
@@ -97,7 +97,7 @@ const [isDragging, setIsDragging] = useState(false);
 
 
  useEffect(() => {
-    axios.get(`/api/paths/get?status=active`).then(({data}) => {
+    axios.get(`${BASE_URL}/api/paths/get?status=active`).then(({data}) => {
       if(data.status){
         setBackupPathData(data?.data)
       }
@@ -113,7 +113,7 @@ const [isDragging, setIsDragging] = useState(false);
   const getNewPath = () => {
     setLoading(true);
     axios
-      .get(`/api/paths/get?status=waitingforapproval`)
+      .get(`${BASE_URL}/api/paths/get?status=waitingforapproval`)
       .then((response) => {
         let result = response?.data?.data;
         // console.log(result, "partnerPathData result");
@@ -144,7 +144,7 @@ const [isDragging, setIsDragging] = useState(false);
     setLoading(true);
     let email = userDetails?.email;
    axios
-  .get(`/api/steps/get?status=active`)
+  .get(`${BASE_URL}/api/steps/get?status=active`)
   .then((response) => {
     let result = response?.data?.data;
     console.log(result, "partnerStepsData result");  // debugging
@@ -198,7 +198,7 @@ const deletePath = () => {
   setActionLoading(true);
 
   axios
-    .patch(`/api/paths/edit`, {
+    .patch(`${BASE_URL}/api/paths/edit`, {
       pathId: selectedPathId,
       status: "inactive"
     })
@@ -226,7 +226,7 @@ const deletePath = () => {
     setActionLoading(true);
 
     axios
-        .patch(`/api/paths/edit`, {
+        .patch(`${BASE_URL}/api/paths/edit`, {
             pathId: selectedPathId,
             status: "active"
         })
@@ -248,7 +248,7 @@ const deletePath = () => {
   const deleteStep = () => {
     setActionLoading(true);
     axios
-      .delete(`/api/steps/delete/${selectedStepId}`)
+      .delete(`${BASE_URL}/api/steps/delete/${selectedStepId}`)
       .then((response) => {
         let result = response?.data;
         // console.log(result, "deleteStep result");
@@ -277,7 +277,7 @@ const deletePath = () => {
  const editMetaData = (field) => {
   setActionLoading(true);
 
-  axios.patch(`/api/paths/edit`, {
+  axios.patch(`${BASE_URL}/api/paths/edit`, {
       pathId: selectedPathId,
       [field]: newValue,
   })
@@ -304,7 +304,7 @@ const viewPath = () => {
   setViewPathLoading(true);
 
   axios
-    .get(`/api/paths/viewpath/${selectedPathId}`)
+    .get(`${BASE_URL}/api/paths/viewpath/${selectedPathId}`)
     .then((response) => {
       let result = response?.data?.data;
       setViewPathData(result);
@@ -325,7 +325,7 @@ const handleApprovePath = () => {
   setActionLoading(true);
 
   axios
-    .put(`/api/paths/updatepath/${selectedPathId}`, { status: "active" })
+    .put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, { status: "active" })
     .then(({ data }) => {
       if (data.status) {
         getAllPaths();
@@ -345,7 +345,7 @@ const handleApprovePath = () => {
   
   const handleRejectPath = () => {
     setActionLoading(true);
-    axios.put(`/api/paths/updatepath/${selectedPathId}`, 
+    axios.put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, 
     {status:"inactive"})
     .then(({data}) => {
       if(data.status){
@@ -364,7 +364,7 @@ const handleApprovePath = () => {
   const handleAddService = (newId) => {
     setActionLoading(true)
       
-      axios.post(`/api/steps/addproducts/${selectedStepId}`, {
+      axios.post(`${BASE_URL}/api/steps/addproducts/${selectedStepId}`, {
         "product_ids": [newId]
        }).then(({data})=> {
         if(data.status){
@@ -397,7 +397,7 @@ const [allServicesToAdd, setAllServicesToAdd] = useState([]);
 
 useEffect(() => {
   axios
-    .get(`/api/services/getservices?status=active`)
+    .get(`${BASE_URL}/api/services/getservices?status=active`)
     .then(({ data }) => {
       if (data.status) {
         setAllServicesToAdd(data.data);
@@ -412,7 +412,7 @@ useEffect(() => {
   const [allServicesToRemove, setAllServicesToRemove] = useState([])
   useEffect(() => {
     if(selectedStepId){
-      axios.get(`/api/attachservice/get?step_id=${selectedStepId}`).then(({data}) => {
+      axios.get(`${BASE_URL}/api/attachservice/get?step_id=${selectedStepId}`).then(({data}) => {
         if(data.status){
           setAllServicesToRemove(data?.data[0])
         }
@@ -426,7 +426,7 @@ const openAddStep = async (pathId) => {
   try {
     setSelectedPathId(pathId);
 
-    const response = await axios.get(`/api/paths/viewpath/${pathId}`);
+    const response = await axios.get(`${BASE_URL}/api/paths/viewpath/${pathId}`);
     if (response.data?.data) {
       setSelectedPath(response.data.data);   // ⭐ correct
     }
@@ -455,7 +455,7 @@ const openAddStep = async (pathId) => {
 
 const fetchProductData = async (apiKey) => {
   try {
-    const response = await axios.get(`/api/services/getbyid/${apiKey}`);
+    const response = await axios.get(`${BASE_URL}/api/services/getbyid/${apiKey}`);
     const productData = response.data.data;   // adjust based on backend return
     return productData;
   } catch (error) {
@@ -518,7 +518,7 @@ const fetchProductData = async (apiKey) => {
     console.log(item, index, "lwkeflkwefwef")
     const updatedPathObject = addIdToObjectAtIndex(item?.the_ids, stepId, backupPathId, index);
     // console.log(updatedPathObject, "kjwebfkwjebfkwejf")
-    axios.patch(`/api/paths/edit`, {
+    axios.patch(`${BASE_URL}/api/paths/edit`, {
     pathId: selectedPath?._id,
     the_ids: updatedPathObject
 })
@@ -562,7 +562,7 @@ const fetchProductData = async (apiKey) => {
 
     // Return the updated array with only step_id and backup_pathId keys
     const updatedBody =  updatedTheIds.map(({ step_id, backup_pathId }) => ({ step_id, backup_pathId }));
-    axios.patch(`/api/paths/edit`, {
+    axios.patch(`${BASE_URL}/api/paths/edit`, {
     pathId: selectedPath?._id,
     the_ids: updatedBody
 })
@@ -589,13 +589,13 @@ const getChangedPos = (currentPos, newPos) => {
     backup_pathId: step.backup_pathId || null
   }));
 
-  axios.patch(`/api/paths/edit`, {
+  axios.patch(`${BASE_URL}/api/paths/edit`, {
     pathId: selectedPath._id,
     the_ids: updatedBody
   }).then(res => {
     if (res.data.status) {
       // reload fresh data
-      axios.get(`/api/paths/viewpath/${selectedPath._id}`).then(({data}) => {
+      axios.get(`${BASE_URL}/api/paths/viewpath/${selectedPath._id}`).then(({data}) => {
         if (data?.data) {
           setSelectedPath(data.data);
         }
@@ -649,7 +649,7 @@ const addServicesToStep = () => {
   setActionLoading(true)
   setLoading(true)
 
-  axios.post(`/api/steps/attachservice`, {
+  axios.post(`${BASE_URL}/api/steps/attachservice`, {
     step_id: selectedStepId,
     service_ids: [...selectedServices]
   })
@@ -678,7 +678,7 @@ const removeServiceFromStep = (id) => {
   setActionLoading(true)
   setLoading(true)
 
-  axios.delete(`/api/steps/service/${selectedStepId}/${id}`)
+  axios.delete(`${BASE_URL}/api/steps/service/${selectedStepId}/${id}`)
     .then(({ data }) => {
       if (data.status) {
         setStepActionEnabled(false)
@@ -901,7 +901,7 @@ useEffect(() => {
               setPathActionEnabled(true);
               setSelectedPathId(e?._id);
 
-              const res = await axios.get(`/api/paths/viewpath/${e?._id}`);
+              const res = await axios.get(`${BASE_URL}/api/paths/viewpath/${e?._id}`);
               if (res.data?.data) {
                 setSelectedPath(res.data.data);
               }

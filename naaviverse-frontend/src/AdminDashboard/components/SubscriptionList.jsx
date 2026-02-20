@@ -15,7 +15,7 @@ import './SubscriptionList.scss';
 dayjs.extend(relativeTime);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const SubscriptionList = () => {
   const [subscriptions, setSubscriptions] = useState([]);
   const [filteredSubscriptions, setFilteredSubscriptions] = useState([]);
@@ -36,7 +36,7 @@ const SubscriptionList = () => {
     const fetchSubscriptions = async () => {
       try {
         setIsLoading(true);
-        const res = await axios.get("/api/admin-subscribe");
+        const res = await axios.get(`${BASE_URL}/api/admin-subscribe`);
         const data = res.data || [];
         setSubscriptions(data);
         setFilteredSubscriptions(data);

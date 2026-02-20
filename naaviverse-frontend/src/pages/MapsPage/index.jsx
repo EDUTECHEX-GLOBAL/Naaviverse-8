@@ -25,7 +25,7 @@ import plus from "../../static/images/mapspage/plus.svg";
 import close from "../../static/images/mapspage/close.svg";
 import hamIcon from "../../static/images/icons/hamIcon.svg";
 import arrow from "./darrow.svg";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const libraries = ["places"];
 
 const MapsPage = () => {
@@ -226,7 +226,7 @@ const MapsPage = () => {
   useEffect(() => {
     setLoading1(true);
     axios
-      .get(`/api/userpaths/programs`)
+      .get(`${BASE_URL}/api/userpaths/programs`)
       .then((response) => {
         let result = response?.data?.data;
         // console.log(result, "path view result");
@@ -309,7 +309,7 @@ const handleFilter = async () => {
     if (gradeAvg.length > 0) params.performance = gradeAvg;
     if (finance.length > 0) params.financialSituation = finance;
 
-    const res = await axios.get("/api/paths/active", { params });
+    const res = await axios.get(`${BASE_URL}/api/paths/active`, { params });
 
     setPreLoginPathViewData(res.data.data || []);
   } catch (error) {

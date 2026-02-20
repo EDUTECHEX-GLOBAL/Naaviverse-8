@@ -1,4 +1,4 @@
-import React, {Fragment} from 'react';
+import React, { Fragment, useEffect } from 'react';
 import {Helmet} from 'react-helmet';
 
 import TopNavFour from '../../../../components/header/TopNavFour';
@@ -9,6 +9,27 @@ import Footer from '../../../../components/footernew/index';
 
 
 const TeamDetails = () => {
+
+    useEffect(() => {
+
+        if (window.location.hash) {
+
+            const element = document.querySelector(window.location.hash);
+
+            if (element) {
+
+                setTimeout(() => {
+                    element.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+                }, 300);
+
+            }
+
+        }
+
+    }, []);
     return (
         <Fragment>
             <div className="main-page-wrapper">
@@ -38,16 +59,14 @@ const TeamDetails = () => {
                 </div>
                 {/* /.team-details */}
 
-                <div className="fancy-short-banner-five">
-                    <div className="container">
-                        <div className="bg-wrapper">
-                            <BannerFive/>
-                        </div>
-                        {/* /.bg-wrapper */}
-                    </div>
-                    {/* /.container */}
-                </div>
-                {/* /.fancy-short-banner-five */}
+                <div className="fancy-short-banner-five" style={{ marginTop: "-180px", marginBottom: "40px" }}>
+    <div className="container">
+        <div className="bg-wrapper">
+            <BannerFive/>
+        </div>
+    </div>
+</div>
+
 
                 <div className="footer-style-four space-fix-one theme-basic-footer">
                     <div className="container">

@@ -1,6 +1,6 @@
 import axios from "axios";
 import Axios from "axios";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 export const login = async (credentials) => {
   try {
     console.log("Payload Sent to API:", credentials); // Debugging step
@@ -36,7 +36,7 @@ export const login = async (credentials) => {
 
 export const getCoinsForApp = (app) => {
   return axios.post(
-    `http://localhost:4545/api/vault/coins/<email>`,
+    `${BASE_URL}/api/vault/coins/<email>`,
     {
       app_code: app,
     }
@@ -46,7 +46,7 @@ export const getCoinsForApp = (app) => {
 
 export const liquidAssetList = (data) => {
   return axios.post(
-    `http://localhost:4545/vault/txns`,
+    `${BASE_URL}/vault/txns`,
     { ...data }
   );
 };

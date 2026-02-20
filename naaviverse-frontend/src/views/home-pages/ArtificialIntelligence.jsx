@@ -22,7 +22,8 @@ const ArtificialIntelligence = () => {
         <div className="main-page-wrapper landing-scope">
 
             <Helmet>
-                <title>Artificial Intelligence || Sinco - Data Science & Analytics React Template</title>
+                <title>Naaviverse | Intelligent Automation & Smart Digital Solutions</title>
+
             </Helmet>
             <TopNavTwo/> 
             {/* /.theme-main-one */}
@@ -36,9 +37,9 @@ const ArtificialIntelligence = () => {
             <div className="partner-section-two mt-110">
                 <div className="container">
                     <div className="title-style-one text-center" data-aos="fade-up">
-                        <div className="sc-title-three">over 150k+ client</div>
-                        <h2 className="main-title md">Join 27,000+ companies who’ve reached
-                        </h2>
+                        <div className="sc-title-three">Trusted by growing teams</div>
+<h2 className="main-title md">Businesses rely on Naaviverse to streamline and scale</h2>
+
                     </div>
                     {/* /.title-style-one */}
                     <div className="row">
@@ -59,12 +60,13 @@ const ArtificialIntelligence = () => {
                                 <div className="col-lg-4 mt-40 d-flex" data-aos="fade-up">
                                     <div className="d-flex justify-content-center flex-column">
                                         <div className="title-style-one">
-                                            <div className="sc-title-three">Services</div>
-                                            <h2 className="main-title">Our experties field.</h2>
+                                            <div className="sc-title-three">Our Services</div>
+<h2 className="main-title">Smart Solutions We Deliver</h2>
+
                                         </div>
                                         {/* /.title-style-one */}
                                         <div>
-                                            <div className="btn-three rev mt-35 lg-mt-20">For more details. <Link to="/service-one">Click here
+                                            <div className="btn-three rev mt-35 lg-mt-20">Explore all services <Link to="/service-one">Click here
                                                     <i className="fas fa-chevron-right"/></Link>
                                             </div>
                                         </div>
@@ -94,7 +96,7 @@ const ArtificialIntelligence = () => {
                     <div className="row align-items-center">
                         <div className="col-xl-5 col-lg-4 col-md-5 col-sm-8">
                             <div className="title-style-one text-center text-sm-start xs-pb-20">
-                                <h2 className="main-title">Client’s success Stories.</h2>
+                                <h2 className="main-title">Success Stories from Our Users</h2>
                             </div>
                             {/* /.title-style-one */}
                         </div>
@@ -117,11 +119,11 @@ const ArtificialIntelligence = () => {
                         <div className="col-xxl-4 col-lg-5 col-md-6">
                             <div className="block-style-five pt-60 md-pt-20" data-aos="fade-right">
                                 <div className="title-style-one">
-                                    <div className="sc-title-three">BESt AI SOLUTION</div>
-                                    <h2 className="main-title">Why you should choose us?</h2>
+                                   <div className="sc-title-three">Why Naaviverse</div>
+<h2 className="main-title">Built for smarter work and faster growth</h2>
                                 </div>
                                 {/* /.title-style-one */}
-                                <p className="pt-10 pb-70">Tell us about your product and we will give you expert assistance.</p>
+                               <p className="pt-10 pb-70">Automate workflows, gain insights, and manage everything from one intelligent platform.</p>
                                 <Skill />
                                 {/* /.skills-progress */}
                                 <Link to="/about-one" className="btn-five ripple-btn mt-60 lg-mt-50">Learn More</Link>
@@ -211,8 +213,9 @@ const ArtificialIntelligence = () => {
             <div className="blog-section-two mt-110 lg-mt-50">
                 <div className="container">
                     <div className="title-style-one text-center mb-50 lg-mb-20" data-aos="fade-up">
-                        <div className="sc-title-three">BLOG</div>
-                        <h2 className="main-title">Company News</h2>
+                        <div className="sc-title-three">Insights</div>
+<h2 className="main-title">Latest Updates & Resources</h2>
+
                     </div>
                     {/* /.title-style-one */}
                     <BlogTwo/>

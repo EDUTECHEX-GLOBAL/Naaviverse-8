@@ -1,139 +1,202 @@
-const crypto = require("crypto");
-const nodemailer = require("nodemailer");
+// =========================================
+//  📧 SENDGRID + AUTH CONTROLLER (FINAL)
+// =========================================
+
 const User = require("../models/users.model");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const sgMail = require("@sendgrid/mail");
 
-// ===============================
-// EMAIL CONFIG
-// ===============================
+
+// =========================================
+// SENDGRID CONFIG
+// =========================================
+
+// ✅ Validate ENV first (prevents silent failures)
+if (!process.env.SENDGRID_API_KEY) {
+  console.error("❌ SENDGRID_API_KEY missing in environment");
+}
+
+if (!process.env.EMAIL_SERVICE_USER) {
+  console.error("❌ EMAIL_SERVICE_USER missing in environment");
+}
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
 const userEmail = process.env.EMAIL_SERVICE_USER;
-const userAppPassword = process.env.EMAIL_SERVICE_PASS;
 
-const gx_transport = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: userEmail,
-    pass: userAppPassword,
-  },
-});
+console.log(
+  "📧 SendGrid Config:",
+  process.env.SENDGRID_API_KEY ? "Key Loaded ✅" : "Key Missing ❌"
+);
 
-// ===============================
+
+// =========================================
 // OTP GENERATOR
-// ===============================
+// =========================================
 const generateOTP = () => {
-  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // ✅ 6-digit numeric OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
   console.log("Generated OTP:", otp);
   return otp;
 };
 
-// ===============================
-// SEND OTP EMAIL
-// ===============================
-const sendOTP = (email, OTP) => {
-  const mailOptions = {
-    from: userEmail,
-    to: email,
-    subject: "Your OTP for Naavi",
-    text: `Your OTP is: ${OTP}`,
-    html: `<p>Your OTP is: <b>${OTP}</b></p>`,
-  };
 
-  gx_transport.sendMail(mailOptions, (error, info) => {
-    if (error) console.error("Failed to send OTP:", error);
-    else console.log("OTP email sent:", info.response);
-  });
-};
-
-// ===============================
-// SEND GENERIC NOTIFICATION MAIL
-// ===============================
-const sendNotificationMail = (email, subject, message) => {
-  return new Promise((resolve, reject) => {
-    const mailOptions = {
-      from: userEmail,
+// =========================================
+// SEND MAIL USING SENDGRID
+// =========================================
+const sendNotificationMail = async (email, subject, message) => {
+  try {
+    const msg = {
       to: email,
-      subject: subject || "User Registration Confirmation",
+      from: userEmail, // must be verified sender
+      subject: subject || "Notification",
       html: `<p>${message}</p>`,
     };
 
-    gx_transport.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error("Failed to send notification email:", error);
-        reject({ success: false, message: "Failed to send email" });
-      } else {
-        console.log("Notification email sent:", info.response);
-        resolve({ success: true, message: "Notification email sent successfully" });
-      }
-    });
-  });
+    const response = await sgMail.send(msg);
+
+    // ✅ VERY IMPORTANT → SendGrid returns 202 if success
+    console.log("✅ SendGrid Status:", response[0].statusCode);
+
+    return true;
+
+  } catch (error) {
+    console.error("❌ SendGrid FULL Error:", error);
+    return false;
+  }
 };
 
-// ===============================
+
+// =========================================
 // SIGNUP FUNCTION
-// ===============================
-const bcrypt = require("bcrypt");
+// =========================================
 const saltRounds = 10;
 
 const signUp = async (req, res) => {
   try {
     const { email, username, password } = req.body;
 
-    console.log("Received signUp request:", { email, username, password });
-
+    // =========================
+    // Validate fields
+    // =========================
     if (!email || !username || !password) {
       return res.status(400).json({
         success: false,
-        message: "All fields (email, username, password) are required",
+        message: "All fields required",
       });
     }
 
-    // ✅ Check for duplicate email
+    // =========================
+    // Check duplicate
+    // =========================
     const existingUser = await User.findOne({ email });
+
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: "User already registered with this email",
+        message: "User already registered",
       });
     }
 
-    // ✅ Generate OTP and hash password
+    // =========================
+    // Create user
+    // =========================
     const OTP = generateOTP();
-    const currentTime = new Date();
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // ✅ Create new user
     const temporalUser = new User({
       username,
       email,
-      password: hashedPassword, // store hashed password
+      password: hashedPassword,
       OTP,
-      isBlocked: false,
-      OTPAttempts: 0,
-      OTPCreatedTime: currentTime,
+      OTPCreatedTime: new Date(),
       OTPverified: false,
       status: false,
     });
 
     await temporalUser.save();
 
-    // ✅ Send OTP email
-    console.log("Sending OTP email...");
-    await sendNotificationMail(
-      email,
-      "Naavi Registration Confirmation OTP",
-      `Dear User,<br>Your OTP is: <b>${OTP}</b><br>`
-    );
+    // =========================
+    // Send OTP Email
+    // =========================
+const mailSent = await sendNotificationMail(
+  email,
+  "Verify your account 🔐",
+  `
+  <div style="
+    background:#f3f7fb;
+    padding:40px 10px;
+    font-family:Arial, sans-serif;
+    text-align:center;
+  ">
 
-    // ✅ Generate JWT
-    const token = jwt.sign({ id: temporalUser._id }, process.env.JWT_SECRET_KEY, {
-      expiresIn: "1d",
-    });
+    <div style="
+      max-width:450px;
+      margin:auto;
+      background:#ffffff;
+      padding:35px;
+      border-radius:12px;
+      box-shadow:0 10px 25px rgba(0,0,0,0.08);
+    ">
+
+      <!-- Logo (only image, no domain text) -->
+      <img 
+        src="/favicon3.png"
+        width="90"
+        style="margin-bottom:18px;"
+        alt="Logo"
+      />
+
+      <h2 style="margin:0;color:#222;">
+        Welcome 👋
+      </h2>
+
+      <p style="color:#555;font-size:14px;line-height:1.6;margin-top:12px;">
+        Thanks for registering.<br/>
+        Please verify your email using the OTP below.
+      </p>
+
+      <div style="
+        margin:25px 0;
+        font-size:34px;
+        font-weight:bold;
+        letter-spacing:7px;
+        background:#00B5F9;
+        color:#ffffff;
+        padding:14px 0;
+        border-radius:8px;
+      ">
+        ${OTP}
+      </div>
+
+      <p style="font-size:12px;color:#888;">
+        This code expires in 5 minutes.
+      </p>
+
+    </div>
+  </div>
+  `
+);
+
+    if (!mailSent) {
+      return res.status(500).json({
+        success: false,
+        message: "Email sending failed. Please try again.",
+      });
+    }
+
+    // =========================
+    // Generate JWT
+    // =========================
+    const token = jwt.sign(
+      { id: temporalUser._id },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "1d" }
+    );
 
     return res.status(201).json({
       success: true,
-      message: "User created successfully. OTP sent to your email.",
+      message: "User created successfully. OTP sent.",
       token,
       user: {
         id: temporalUser._id,
@@ -141,69 +204,66 @@ const signUp = async (req, res) => {
         email: temporalUser.email,
       },
     });
+
   } catch (error) {
-    console.error("SignUp Error:", error);
+    console.error("❌ SignUp Error:", error);
+
     return res.status(500).json({
       success: false,
-      message: "Something went wrong during signup",
+      message: "Signup failed",
     });
   }
 };
 
 
-// ===============================
-// VERIFY OTP FUNCTION
-// ===============================
+// =========================================
+// VERIFY OTP
+// =========================================
 const verifyOTP = async (req, res) => {
   try {
     const { email, otp } = req.body;
 
-    console.log("Received verifyOTP request:", { email, otp });
-
-    if (!email || !otp) {
-      return res.status(400).json({
-        success: false,
-        message: "Email and OTP are required",
-      });
-    }
-
     const userFound = await User.findOne({ email });
+
     if (!userFound) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
     if (otp !== userFound.OTP) {
-      console.log("OTP mismatch");
-      return res.status(400).json({ success: false, message: "Invalid OTP. Please try again." });
-    }
-    const otpAge = Date.now() - new Date(userFound.OTPCreatedTime).getTime();
-    if (otpAge > 5 * 60 * 1000) {
-      return res.status(400).json({ success: false, message: "OTP expired. Please request a new one." });
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
     }
 
+    const otpAge = Date.now() - new Date(userFound.OTPCreatedTime).getTime();
+
+    if (otpAge > 5 * 60 * 1000) {
+      return res.status(400).json({ success: false, message: "OTP expired" });
+    }
 
     userFound.OTPverified = true;
-    userFound.status = true; // ✅ optionally mark as active
+    userFound.status = true;
+
     await userFound.save();
 
     return res.status(200).json({
       success: true,
       message: "OTP Verified successfully",
     });
+
   } catch (err) {
-    console.log("Error during OTP verification:", err);
+    console.error("❌ Verify OTP Error:", err);
+
     return res.status(500).json({
-      success: false, // ✅ Fixed key
-      message: "Something went wrong during OTP verification",
+      success: false,
+      message: "OTP verification failed",
     });
   }
 };
 
-// ===============================
+
+// =========================================
 module.exports = {
   signUp,
   verifyOTP,
-  sendOTP,
   generateOTP,
   sendNotificationMail,
 };

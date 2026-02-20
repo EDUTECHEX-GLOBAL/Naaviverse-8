@@ -3,7 +3,7 @@ import axios from "axios";
 import { useStore } from "../../../components/store/store.ts";
 import { LoadingAnimation1 } from "../../../components/LoadingAnimation1";
 import lg1 from "../../../static/images/login/lg1.svg";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const Step4 = ({ setAcceptOffer }) => {
   const userDetails = JSON.parse(localStorage.getItem("user"));
   const { index, setIndex, setBuy } = useStore();
@@ -22,7 +22,7 @@ const Step4 = ({ setAcceptOffer }) => {
     if (!email) return;
 
     axios
-      .get(`http://localhost:4545/api/users/get?email=${email}`)
+      .get(`${BASE_URL}/api/users/get?email=${email}`)
       .then((res) => {
         console.log("PROFILE RESPONSE (LOCAL API):", res.data);
 
@@ -61,7 +61,7 @@ const Step4 = ({ setAcceptOffer }) => {
 
       // Create order
       const createOrder = await axios.post(
-        "http://localhost:4545/api/payment/create-order",
+        `${BASE_URL}/api/payment/create-order`,
         body
       );
 
@@ -86,7 +86,7 @@ const Step4 = ({ setAcceptOffer }) => {
           console.log("📌 PAYMENT CALLBACK:", response);
 
           const verify = await axios.post(
-            "http://localhost:4545/api/payment/verify",
+            `${BASE_URL}/api/payment/verify`,
             response
           );
 

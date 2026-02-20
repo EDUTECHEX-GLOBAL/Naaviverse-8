@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 export function getVaultsCoin(
   email,
   coinType,
@@ -19,7 +19,7 @@ export function getVaultsCoin(
   };
 
   axios
-    .post('http://localhost:4545/api/vault/coins/<email>', obj)
+    .post('${BASE_URL}/api/vault/coins/<email>', obj)
     .then((response) => {
       // console.log(response?.data?.coins_data, 'getVaultsCoin response');
       setfunc(response?.data?.coins_data);

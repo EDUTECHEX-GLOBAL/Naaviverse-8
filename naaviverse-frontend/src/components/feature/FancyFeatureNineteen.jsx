@@ -1,21 +1,18 @@
 import React, { Fragment } from 'react';
 import "./fancyFeatureNineteen.scss";
+import img22 from '../../assets/images/assets/img_22.png';
 
-/* Main illustration */
+/* Commented unused illustration imports */
+/*
 import ils15 from "../../assets/images/assets/ils_15.svg";
-
-/* Flying papers */
 import ils15_1 from "../../assets/images/assets/ils_15_1.svg";
 import ils15_2 from "../../assets/images/assets/ils_15_2.svg";
-
-/* Books stack */
 import ils15_3 from "../../assets/images/assets/ils_15_3.svg";
-
-/* Existing decorative shapes */
 import ils15_4 from "../../assets/images/assets/ils_15_4.svg";
 import ils15_5 from "../../assets/images/assets/ils_15_5.svg";
 import ils15_6 from "../../assets/images/assets/ils_15_6.svg";
 import ils15_7 from "../../assets/images/assets/ils_15_7.svg";
+*/
 
 const ProcessContent = [
   {
@@ -75,27 +72,13 @@ const FancyFeatureNineteen = () => {
               </ul>
             </div>
 
-            {/* RIGHT SIDE – ILLUSTRATION */}
+            {/* RIGHT SIDE – ONLY img22 */}
             <div className="illustration-holder" data-aos="fade-left">
-              {/* Main illustration */}
               <img
-                src={ils15}
+                src={img22}
                 alt="Naavi process illustration"
                 className="main-illustration"
               />
-
-              {/* Flying papers */}
-              <img src={ils15_1} alt="" className="shape paper paper-one" />
-              <img src={ils15_2} alt="" className="shape paper paper-two" />
-
-              {/* Books stack (FIXED & RESTORED) */}
-              <img src={ils15_3} alt="" className="shape books-stack" />
-
-              {/* Existing shapes */}
-              <img src={ils15_4} alt="" className="shape shape-one" />
-              <img src={ils15_5} alt="" className="shape shape-two" />
-              <img src={ils15_6} alt="" className="shape shape-three" />
-              <img src={ils15_7} alt="" className="shape shape-four" />
             </div>
 
           </div>

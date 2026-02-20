@@ -14,7 +14,7 @@ import c from "./c.svg";
 import downArrow from "./downArrow.svg";
 import upArrow from "./upArrow.svg";
 import axios from "axios";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const VaultTransactions = () => {
   //   let navigate = useNavigate();
   //   const { coinType } = useStore();
@@ -31,7 +31,7 @@ useEffect(() => {
   setLoading(true);
 
   axios
-    .get("http://localhost:4545/api/vault/txns", {
+    .get(`${BASE_URL}/api/vault/txns`, {
       params: {
         app_code: "naavi",
         email: userDetails.email,

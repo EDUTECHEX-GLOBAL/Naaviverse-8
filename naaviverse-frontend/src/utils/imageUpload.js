@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as jose from 'jose';
 import { predefinedToast } from './toast';
 import AWS from 'aws-sdk';
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const secret = 'uyrw7826^&(896GYUFWE&*#GBjkbuaf'; // secret not to be disclosed anywhere.
 const emailDev = 'pavithran@inr.group'; // email of the developer.
 
@@ -45,7 +45,7 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
     console.log('Requesting presigned URL from backend...');
     
     // ✅ Use the correct endpoint: /api/upload/get-presigned-url
-    const response = await fetch('http://localhost:4545/api/upload/get-presigned-url', {
+    const response = await fetch('${BASE_URL}/api/upload/get-presigned-url', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

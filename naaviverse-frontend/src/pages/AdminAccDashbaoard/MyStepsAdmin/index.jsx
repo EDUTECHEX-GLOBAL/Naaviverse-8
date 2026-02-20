@@ -16,7 +16,7 @@ import { useStore } from "../../../components/store/store.ts";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) => {
   const navigate = useNavigate()
   const { sideNav, setsideNav } = useStore();
@@ -66,7 +66,7 @@ useEffect(() => {
   const getAllPaths = () => { 
     setLoading(true);
     let email = userDetails?.email;
-    const endpoint = admin? `/api/paths/get?status=active` : `/api/paths/get?email=${email}`
+    const endpoint = admin? `${BASE_URL}/api/paths/get?status=active` : `${BASE_URL}/api/paths/get?email=${email}`
     axios
       .get(endpoint)
       .then((response) => {
@@ -83,7 +83,7 @@ useEffect(() => {
  useEffect(() => {
   if (!userDetails?.email) return;
 
-  axios.get(`/api/paths/get?email=${userDetails.email}`)
+  axios.get(`${BASE_URL}/api/paths/get?email=${userDetails.email}`)
     .then(({ data }) => {
       if (data.status) setBackupPathData(data.data);
     });
@@ -93,7 +93,7 @@ useEffect(() => {
   const getNewPath = () => {
     setLoading(true);
     axios
-      .get(`/api/paths/get?status=waitingforapproval`)
+      .get(`${BASE_URL}/api/paths/get?status=waitingforapproval`)
       .then((response) => {
         let result = response?.data?.data;
         // console.log(result, "partnerPathData result");
@@ -122,7 +122,7 @@ useEffect(() => {
   await Promise.all(
     steps.map(async (step) => {
       try {
-        const { data } = await axios.get(`/api/steps/getall/${step._id}`);
+        const { data } = await axios.get(`${BASE_URL}/api/steps/getall/${step._id}`);
         counts[step._id] = data?.data?.length || 0;
       } catch {
         counts[step._id] = 0;
@@ -137,7 +137,7 @@ const refreshStepServices = async (stepId) => {
   if (!stepId) return;
 
   try {
-    const { data } = await axios.get(`/api/steps/getall/${stepId}`);
+    const { data } = await axios.get(`${BASE_URL}/api/steps/getall/${stepId}`);
 
     if (data?.status) {
       setAttachedServices(data.data || []);
@@ -164,7 +164,7 @@ const getPathNameForStep = (stepId) => {
   setLoading(true);
 
   axios
-    .get(`/api/steps/get?status=${mypathsMenu === "Active Steps" ? "active" : "inactive"}`)
+    .get(`${BASE_URL}/api/steps/get?status=${mypathsMenu === "Active Steps" ? "active" : "inactive"}`)
     .then((response) => {
       const result = response?.data?.data || []; // ⭐ FIX
 
@@ -196,7 +196,7 @@ useEffect(() => {
   if (stepActionStep !== 5) return;
 
   axios
-    .get(`/api/services/admin?status=active`)
+    .get(`${BASE_URL}/api/services/admin?status=active`)
     .then(({ data }) => {
       if (data?.status) {
         setAllServices(data.data || []);
@@ -214,7 +214,7 @@ useEffect(() => {
   if (stepActionStep !== 6) return;
   if (!selectedStepId) return;
 
-  axios.get(`/api/steps/getall/${selectedStepId}`)
+  axios.get(`${BASE_URL}/api/steps/getall/${selectedStepId}`)
     .then(({ data }) => {
       if (data?.status) {
         setAttachedServices(data.data || []);
@@ -264,7 +264,7 @@ useEffect(() => {
   const deletePath = () => {
     setActionLoading(true);
     axios
-      .delete(`/api/paths/delete/${selectedPathId}`)
+      .delete(`${BASE_URL}/api/paths/delete/${selectedPathId}`)
       .then((response) => {
         let result = response?.data;
         // console.log(result, "deletePath result");
@@ -282,7 +282,7 @@ useEffect(() => {
   const deleteStep = () => {
     setActionLoading(true);
     axios
-      .delete(`/api/steps/delete/${selectedStepId}`)
+      .delete(`${BASE_URL}/api/steps/delete/${selectedStepId}`)
       .then((response) => {
         let result = response?.data;
         // console.log(result, "deleteStep result");
@@ -306,7 +306,7 @@ const addServiceToStepInstant = async (serviceId) => {
   }
 
   try {
-    await axios.post("/api/steps/attachservice", {
+    await axios.post(`${BASE_URL}/api/steps/attachservice`, {
   step_id: selectedStepId,
   service_ids: [serviceId],
 });
@@ -348,7 +348,7 @@ fetchServiceCounts(partnerStepsData);
 
     axios
       .put(
-        `/api/paths/update/${selectedPathId}`,
+        `${BASE_URL}/api/paths/update/${selectedPathId}`,
         obj
       )
       .then((response) => {
@@ -369,7 +369,7 @@ fetchServiceCounts(partnerStepsData);
     console.log(path, "lkwehflwehflwf")
     setViewPathLoading(true);
     axios
-      .get(`/api/paths/get?nameOfPath=${path}`)
+      .get(`${BASE_URL}/api/paths/get?nameOfPath=${path}`)
       .then((response) => {
         let result = response?.data?.data[0];
         // console.log(result, "viewPathData result");
@@ -383,7 +383,7 @@ fetchServiceCounts(partnerStepsData);
 
   const handleApprovePath = () => {
     setActionLoading(true);
-    axios.put(`/api/paths/updatepath/${selectedPathId}`, 
+    axios.put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, 
     {status:"active"})
     .then(({data}) => {
       if(data.status){
@@ -397,7 +397,7 @@ fetchServiceCounts(partnerStepsData);
   
   const handleRejectPath = () => {
     setActionLoading(true);
-    axios.put(`/api/paths/updatepath/${selectedPathId}`, 
+    axios.put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, 
     {status:"inactive"})
     .then(({data}) => {
       if(data.status){
@@ -419,7 +419,7 @@ const removeServiceFromStep = async (id) => {
   setActionLoading(true);
 
   try {
-    await axios.delete(`/api/steps/remove/${selectedStepId}/${id}`);
+    await axios.delete(`${BASE_URL}/api/steps/remove/${selectedStepId}/${id}`);
 
     toast.success("Service removed");
 
@@ -480,7 +480,7 @@ const fetchData = React.useCallback(async () => {
     console.log(item, index, "lwkeflkwefwef")
     const updatedPathObject = addIdToObjectAtIndex(item?.the_ids, stepId, backupPathId, index);
     // console.log(updatedPathObject, "kjwebfkwjebfkwejf")
-    axios.put(`/api/paths/update/${selectedPath?._id}`, {the_ids: updatedPathObject})
+    axios.put(`${BASE_URL}/api/paths/update/${selectedPath?._id}`, {the_ids: updatedPathObject})
     .then(res => {
       if(res.data.status){
         resetPathAction();
@@ -518,7 +518,7 @@ const fetchData = React.useCallback(async () => {
 
     // Return the updated array with only step_id and backup_pathId keys
     const updatedBody =  updatedTheIds.map(({ step_id, backup_pathId }) => ({ step_id, backup_pathId }));
-    axios.put(`/api/paths/update/${selectedPath?._id}`, {the_ids: updatedBody})
+    axios.put(`${BASE_URL}/api/paths/update/${selectedPath?._id}`, {the_ids: updatedBody})
     .then(res => {
       if(res.data.status){
         resetPathAction();
@@ -538,7 +538,7 @@ const fetchData = React.useCallback(async () => {
     updatedTheIds.splice(newIndex, 0, movedObject);
     // console.log(fullObject.the_ids, updatedTheIds, "kjwekfjwefkjwegfkwfgwf")
     const updatedTheIdsArray = updatedTheIds.map(({ step_id, backup_pathId }) => ({ step_id, backup_pathId }));
-    axios.put(`/api/paths/update/${selectedPath?._id}`, {the_ids: updatedTheIdsArray})
+    axios.put(`${BASE_URL}/api/paths/update/${selectedPath?._id}`, {the_ids: updatedTheIdsArray})
     .then(res => {
       if(res.data.status){
         resetPathAction();
@@ -576,7 +576,7 @@ const pathNameMap = React.useMemo(() => {
   return map;
 }, [allPaths]);
 useEffect(() => {
-  axios.get("/api/paths/get?status=active").then(({ data }) => {
+  axios.get(`${BASE_URL}/api/paths/get?status=active`).then(({ data }) => {
     if (data?.status) {
       setAllPaths(data.data);
     }

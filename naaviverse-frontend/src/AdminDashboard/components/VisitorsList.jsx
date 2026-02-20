@@ -22,7 +22,7 @@ import './VisitorsList.scss';
 
 // Extend dayjs with plugins
 dayjs.extend(relativeTime);
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const { Option } = Select;
 
 const VisitorsList = () => {
@@ -46,7 +46,7 @@ const VisitorsList = () => {
     const fetchVisitors = async () => {
       try {
         setIsLoading(true);
-        const res = await axios.get('/api/admin-visitors');
+        const res = await axios.get(`${BASE_URL}/api/admin-visitors`);
         const data = res.data || [];
         setVisitors(data);
         setFilteredVisitors(data);

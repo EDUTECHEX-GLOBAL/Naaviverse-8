@@ -9,19 +9,38 @@
   --text-light: #666666;
   --disabled: #999999;
 }
-
-/* Main Container */
-.popularS {
-  position: relative;
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  background: var(--white);
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+  padding: 20px;
 }
+
+
+.popularS {
+  width: 75vw;
+  height: 80vh;
+
+  max-width: 900px;
+  min-height: 550px;
+
+  background: white;
+  border-radius: 16px;
+  border: 0.5px solid #2c7cb2;
+
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+
 
 /* Header - Clean Version */
 .head-txt {
@@ -56,13 +75,13 @@
   height: 20px;
 }
 
-/* Main Content Area */
 .overall-div {
-  padding: 2rem;
-  height: calc(100% - 4rem);
+  padding: 3rem;   /* was 2rem */
   overflow-y: auto;
-  background: var(--white);
+  flex: 1;
 }
+
+
 
 /* Consistent Question Sections */
 .question-section {
@@ -72,7 +91,7 @@
   border-radius: 12px;
   background: var(--white);
   transition: all 0.3s ease;
-  min-height: 140px;
+  min-height: 180px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -300,10 +319,36 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .popularS {
-    margin: 1rem;
-    border-radius: 8px;
+
+  .modalOverlay {
+    padding: 0;
+    align-items: flex-end; /* bottom sheet feel */
   }
+
+  .popularS {
+    width: 100%;
+    height: 92vh;
+
+    max-width: 100%;
+    min-height: unset;
+
+    border-radius: 20px 20px 0 0;
+
+    animation: slideUp 0.3s ease;
+  }
+
+  .overall-div {
+    padding: 1.2rem;
+  }
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
   
   .head-txt {
     padding: 1rem 1.5rem;
@@ -319,7 +364,7 @@
   
   .question-section, .school-grade-section {
     padding: 1.5rem;
-    min-height: 120px;
+    min-height: 180px;
   }
   
   .school-grade-row {

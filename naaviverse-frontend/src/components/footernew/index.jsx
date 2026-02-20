@@ -102,11 +102,11 @@ const Footer = () => {
             <div className="footer-col3">
               <h4 className="footer-heading">Offerings</h4>
               <ul className="footer-links">
-                <li>Product Design</li>
-                <li>Material Simulations</li>
-                <li>Cryogenic Testing</li>
-                <li>Assembly</li>
-                <li>Manufacturing</li>
+                <li>Smart Path Planning</li>
+                <li>Workflow Automation</li>
+                <li>AI-Driven Insights</li>
+                <li>Resource Optimization</li>
+                <li>Platform Integration</li>
               </ul>
             </div>
 
@@ -129,7 +129,7 @@ const Footer = () => {
 
       <div className="footer-bottom">
         <div className="container footer-bottom-inner">
-          <div className='footer-copy'>Copyright © 2025 Naavi Network.</div>
+          <div className='footer-copy'>Copyright © 2026 Naavi Network.</div>
           <div className="footer-policy-links">
             <a href="/">Terms of Use</a>
             <span>|</span>

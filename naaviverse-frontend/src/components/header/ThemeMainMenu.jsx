@@ -4,21 +4,79 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 const ThemeMainMenu = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const handleSectionNavigation = (sectionId) => {
+
+    if (location.pathname === "/team-details") {
+
+        const element = document.getElementById(sectionId);
+
+        if (element) {
+            element.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+
+    } else {
+
+        navigate("/team-details");
+
+        setTimeout(() => {
+
+            const element = document.getElementById(sectionId);
+
+            if (element) {
+                element.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            }
+
+        }, 400);
+
+    }
+};
+
+
+const handlePartnersNavigation = () => {
+
+    if (location.pathname === "/") {
+
+        const element = document.getElementById("partners-section");
+
+        if (element) {
+            element.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+
+    } else {
+
+        navigate("/");
+
+        setTimeout(() => {
+
+            const element = document.getElementById("partners-section");
+
+            if (element) {
+                element.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            }
+
+        }, 400);
+
+    }
+};
+
 
     const handleHomeClick = () => {
         navigate('/');
         window.scrollTo(0, 0);
     };
 
-    const handlePartnersClick = () => {
-        navigate('/');
-        setTimeout(() => {
-            const partnersSection = document.getElementById('partners-section');
-            if (partnersSection) {
-                partnersSection.scrollIntoView({ behavior: 'smooth' });
-            }
-        }, 100);
-    };
 
     const handlePageNavigation = (path) => {
         window.scrollTo(0, 0);
@@ -38,36 +96,46 @@ const ThemeMainMenu = () => {
                 <li className={`nav-item dropdown ${location.pathname.startsWith('/problem') ? 'active' : ''}`}>
                     <span className="nav-link dropdown-toggle" onClick={(e) => e.preventDefault()}>
                         ABOUT
-                        <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="ml-1"
-                        >
-                            <polyline points="6 9 12 15 18 9" />
-                        </svg>
+                        <span 
+    style={{
+        display: 'inline-block',
+        width: '0',
+        height: '0',
+        borderLeft: '4px solid transparent',
+        borderRight: '4px solid transparent',
+        borderTop: '4px solid currentColor',
+        marginLeft: '4px'
+    }}
+/>
                     </span>
                     <ul className="dropdown-menu">
-                        <li>
-                            <Link to="/problem/about-us" className="dropdown-item" onClick={() => handlePageNavigation('/problem/about-us')}>
-                                ABOUT US
-                            </Link>
-                        </li>
-                        <li>
-                            <Link to="/problem/why-naavi" className="dropdown-item" onClick={() => handlePageNavigation('/problem/why-naavi')}>
-                                WHY NAAVI
-                            </Link>
-                        </li>
-                        <li>
-                            <Link to="/problem/vision-mission" className="dropdown-item" onClick={() => handlePageNavigation('/problem/vision-mission')}>
-                                VISION & MISSION
-                            </Link>
-                        </li>
+                       <li>
+    <Link
+        to="/problem/about-us#who-we-are"
+        className="dropdown-item"
+    >
+        ABOUT US
+    </Link>
+</li>
+
+<li>
+    <Link
+        to="/problem/about-us#why-naavi"
+        className="dropdown-item"
+    >
+        WHY NAAVI
+    </Link>
+</li>
+
+<li>
+    <Link
+        to="/problem/about-us#vision-mission"
+        className="dropdown-item"
+    >
+        VISION & MISSION
+    </Link>
+</li>
+
                     </ul>
                 </li>
 
@@ -75,35 +143,49 @@ const ThemeMainMenu = () => {
                 <li className={`nav-item dropdown ${location.pathname.startsWith('/problem') ? 'active' : ''}`}>
                     <span className="nav-link dropdown-toggle" onClick={(e) => e.preventDefault()}>
                         TEAM
-                        <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="ml-1"
-                        >
-                            <polyline points="6 9 12 15 18 9" />
-                        </svg>
+                        <span 
+    style={{
+        display: 'inline-block',
+        width: '0',
+        height: '0',
+        borderLeft: '4px solid transparent',
+        borderRight: '4px solid transparent',
+        borderTop: '4px solid currentColor',
+        marginLeft: '4px'
+    }}
+/>
                     </span>
                     <ul className="dropdown-menu">
                         <li>
-                            <Link to="/team/founders" className="dropdown-item" onClick={() => handlePageNavigation('/team/founders')}>
-                                FOUNDERS
-                            </Link>
+     <button
+    className="dropdown-item w-full text-left"
+    onClick={() => handleSectionNavigation("founders")}
+>
+    FOUNDERS
+</button>
+
+
                         </li>
                         <li>
-                            <Link to="/team/members" className="dropdown-item" onClick={() => handlePageNavigation('/team/members')}>
-                                TEAM MEMBERS
-                            </Link>
+  <button
+    className="dropdown-item w-full text-left"
+    onClick={() => handleSectionNavigation("team-members")}
+>
+    TEAM MEMBERS
+</button>
+
+
                         </li>
                         <li>
-                            <button className="dropdown-item w-full text-left" onClick={handlePartnersClick}>
-                                PARTNERS
-                            </button>
+  <button
+    className="dropdown-item w-full text-left"
+    onClick={handlePartnersNavigation}
+>
+    PARTNERS
+</button>
+
+
+
                         </li>
                     </ul>
                 </li>
@@ -112,19 +194,17 @@ const ThemeMainMenu = () => {
                 <li className={`nav-item dropdown ${location.pathname.startsWith('/impact') ? 'active' : ''}`}>
                     <span className="nav-link dropdown-toggle" onClick={(e) => e.preventDefault()}>
                         IMPACT
-                        <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="ml-1"
-                        >
-                            <polyline points="6 9 12 15 18 9" />
-                        </svg>
+                        <span 
+    style={{
+        display: 'inline-block',
+        width: '0',
+        height: '0',
+        borderLeft: '4px solid transparent',
+        borderRight: '4px solid transparent',
+        borderTop: '4px solid currentColor',
+        marginLeft: '4px'
+    }}
+/>
                     </span>
                     <ul className="dropdown-menu">
                         <li>
@@ -144,19 +224,17 @@ const ThemeMainMenu = () => {
                 <li className={`nav-item dropdown ${location.pathname.startsWith('/technology') ? 'active' : ''}`}>
                     <span className="nav-link dropdown-toggle" onClick={(e) => e.preventDefault()}>
                         TECHNOLOGY
-                        <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="ml-1"
-                        >
-                            <polyline points="6 9 12 15 18 9" />
-                        </svg>
+                        <span 
+    style={{
+        display: 'inline-block',
+        width: '0',
+        height: '0',
+        borderLeft: '4px solid transparent',
+        borderRight: '4px solid transparent',
+        borderTop: '4px solid currentColor',
+        marginLeft: '4px'
+    }}
+/>
                     </span>
                     <ul className="dropdown-menu">
                         <li>
@@ -176,19 +254,17 @@ const ThemeMainMenu = () => {
                 <li className={`nav-item dropdown ${location.pathname.startsWith('/more') ? 'active' : ''}`}>
                     <span className="nav-link dropdown-toggle" onClick={(e) => e.preventDefault()}>
                         MORE
-                        <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="ml-1"
-                        >
-                            <polyline points="6 9 12 15 18 9" />
-                        </svg>
+                        <span 
+    style={{
+        display: 'inline-block',
+        width: '0',
+        height: '0',
+        borderLeft: '4px solid transparent',
+        borderRight: '4px solid transparent',
+        borderTop: '4px solid currentColor',
+        marginLeft: '4px'
+    }}
+/>
                     </span>
                     <ul className="dropdown-menu">
                         <li>
@@ -224,7 +300,7 @@ const ThemeMainMenu = () => {
     className="get-started-btn"
     onClick={() => handlePageNavigation('/login')}
     style={{
-        background: '#4354cf', // Purple color
+        background: '#2273E6', // Purple color
         color: 'white',
         border: 'none',
         borderRadius: '4px',
@@ -235,8 +311,8 @@ const ThemeMainMenu = () => {
         transition: 'background 0.2s',
         marginLeft: '50px' // Moves button to the right
     }}
-    onMouseEnter={(e) => e.target.style.background = '#7b1fa2'}
-    onMouseLeave={(e) => e.target.style.background = '#8a2be2'}
+    // onMouseEnter={(e) => e.target.style.background = '#7b1fa2'}
+    // onMouseLeave={(e) => e.target.style.background = '#8a2be2'}
 >
     Get Started
 </button>
