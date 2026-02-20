@@ -139,6 +139,7 @@ import MallProduct from "./pages/dashboard/MallProduct/MallProduct";
 import AccDashboard from "./pages/accDashbaoard/accDashboard";
 import AccProfile from "./pages/accProfile/AccProfile";
 import MyPaths from "./pages/MyPaths";
+import NewStep1 from "./globalComponents/GlobalDrawer/NewStep1"
 import MyStepsAcc from "./pages/accDashbaoard/MyStepsAcc";
 import PathPage from "./components/Pathview/PathPage";
 
@@ -210,6 +211,8 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="paths" element={<MyPaths />} />
             <Route path="steps" element={<MyStepsAcc />} />
+            <Route path="path/:id/create-step" element={<NewStep1 />} />
+
             <Route path="path/:id" element={<PathPage />} />
              <Route path="services" element={<Dashboard/>} />
           </Route>

@@ -13,7 +13,7 @@ import lg1 from "../../static/images/login/lg1.svg";
 import CurrentStep from "../CurrentStep";
 import { useStore } from "../../components/store/store.ts";
 import { useNavigate } from "react-router-dom";
-const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
   const navigate = useNavigate();
   const { sideNav, setsideNav } = useStore();
@@ -57,27 +57,33 @@ const getAllPaths = () => {
   let endpoint = "";
 
   // 1️⃣ ADMIN – Pending Approval
-  if (
-    admin &&
-    (mypathsMenu === "Pending Approval" || mypathsMenu === "Pending Paths")
-  ) {
-    endpoint = `${BASE_URL}/api/paths/get?status=waitingforapproval`;
-  }
+  // 1️⃣ ADMIN – Pending Approval
+if (
+  admin &&
+  (mypathsMenu === "Pending Approval" || mypathsMenu === "Pending Paths")
+) {
+  endpoint = `/api/paths/get?status=waitingforapproval`;
+}
 
-  // 2️⃣ PARTNER – Pending Approval  ✅ MISSING CASE
-  else if (!admin && mypathsMenu === "Pending Approval") {
-    endpoint = `${BASE_URL}/api/paths/get?email=${email}&status=waitingforapproval`;
-  }
+// 2️⃣ PARTNER – Draft
+else if (!admin && mypathsMenu === "Draft") {
+  endpoint = `/api/paths/get?email=${email}&status=draft`;
+}
 
-  // 3️⃣ Inactive Paths
-  else if (mypathsMenu === "Inactive Paths") {
-    endpoint = `${BASE_URL}/api/paths/get?email=${email}&status=inactive`;
-  }
+// 3️⃣ PARTNER – Pending Approval
+else if (!admin && mypathsMenu === "Pending Approval") {
+  endpoint = `/api/paths/get?email=${email}&status=waitingforapproval`;
+}
 
-  // 4️⃣ Active Paths (default)
-  else {
-    endpoint = `${BASE_URL}/api/paths/get?email=${email}&status=active`;
-  }
+// 4️⃣ Inactive
+else if (mypathsMenu === "Inactive Paths") {
+  endpoint = `/api/paths/get?email=${email}&status=inactive`;
+}
+
+// 5️⃣ Default Active
+else {
+  endpoint = `/api/paths/get?email=${email}&status=active`;
+}
 
   console.log("➡️ FINAL API CALL:", endpoint);
 
@@ -134,7 +140,7 @@ const getAllPaths = () => {
     // })
     axios
       .get(
-        `${BASE_URL}/api/attachservice/getnotaddedservices?step_id=${selectedStepId}&productcreatoremail=${email}`
+        `/api/attachservice/getnotaddedservices?step_id=${selectedStepId}&productcreatoremail=${email}`
       )
       .then(({ data }) => {
         if (data.status) {
@@ -151,7 +157,7 @@ useEffect(() => {
   const email = userDetails?.email;
   if (!email) return;
 
-  axios.get(`${BASE_URL}/api/paths/get?email=${email}`).then(({ data }) => {
+  axios.get(`/api/paths/get?email=${email}`).then(({ data }) => {
     if (data.status) setBackupPathData(data.data);
   });
 }, []);
@@ -237,7 +243,7 @@ useEffect(() => {
     setActionLoading(true);
   
     axios
-      .delete(`${BASE_URL}/api/paths/delete/${selectedPathId}`, {
+      .delete(`/api/paths/delete/${selectedPathId}`, {
         data: { status }, // Include the status in the request body
       })
       .then((response) => {
@@ -257,7 +263,7 @@ useEffect(() => {
   const deleteStep = () => {
     setActionLoading(true);
     axios
-      .delete(`${BASE_URL}/api/steps/delete/${selectedStepId}`)
+      .delete(`/api/steps/delete/${selectedStepId}`)
       .then((response) => {
         let result = response?.data;
         // console.log(result, "deleteStep result");
@@ -294,7 +300,7 @@ useEffect(() => {
 
     axios
       .put(
-        `${BASE_URL}/api/paths/update/${selectedPathId}`,
+        `/api/paths/update/${selectedPathId}`,
         obj
       )
       .then((response) => {
@@ -318,7 +324,7 @@ const viewPathById = (id) => {
     }
     setViewPathLoading(true);
 
-    axios.get(`${BASE_URL}/api/paths/viewpath/${id}`)
+    axios.get(`/api/paths/viewpath/${id}`)
         .then((response) => {
             let result = response?.data?.data;
             setViewPathData(result);
@@ -331,47 +337,49 @@ const viewPathById = (id) => {
 
 
 
-  const handleApprovePath = () => {
-    setActionLoading(true);
-    axios
-      .put(`${BASE_URL}/api/paths/update/${selectedPathId}`, {
-        status: "active",
-      })
-      .then(({ data }) => {
-        if (data.status) {
-         getAllPaths();
+const handleApprovePath = () => {
+  setActionLoading(true);
 
-          setPathActionEnabled(false);
-          setActionLoading(false);
-          setPathActionStep(1);
-        }
-      });
-  };
-  const handleRejectPath = () => {
-    setActionLoading(true);
-    axios
-      .put(`${BASE_URL}/api/paths/update/${selectedPathId}`, {
-        status: "inactive",
-      })
-      .then(({ data }) => {
-        if (data.status) {
-         getAllPaths();
+  axios
+    .put(`/api/paths/updatepath/${selectedPathId}`, {
+      status: "active",
+    })
+    .then(({ data }) => {
+      if (data.status) {
+        getAllPaths();
+        setPathActionEnabled(false);
+        setActionLoading(false);
+        setPathActionStep(1);
+      }
+    })
+    .catch(() => setActionLoading(false));
+};
 
-          setPathActionEnabled(false);
-          setActionLoading(false);
-          setPathActionStep(1);
-        }
-      });
-  };
+const handleRejectPath = () => {
+  setActionLoading(true);
 
+  axios
+    .put(`/api/paths/updatepath/${selectedPathId}`, {
+      status: "draft",
+    })
+    .then(({ data }) => {
+      if (data.status) {
+        setMypathsMenu("Draft");   // 👈 automatically switch tab
+        getAllPaths();
+        setPathActionEnabled(false);
+        setActionLoading(false);
+        setPathActionStep(1);
+      }
+    })
+    .catch(() => setActionLoading(false));
+};
 
-  
   const handleAddService = (newId) => {
     setActionLoading(true);
 
     axios
       .post(
-        `${BASE_URL}/api/steps/addproducts/${selectedStepId}`,
+        `/api/steps/addproducts/${selectedStepId}`,
         {
           product_ids: [newId],
         }
@@ -422,7 +430,7 @@ useEffect(() => {
     if (selectedStepId) {
       axios
         .get(
-          `${BASE_URL}/api/attachservice/get?step_id=${selectedStepId}`
+          `/api/attachservice/get?step_id=${selectedStepId}`
         )
         .then(({ data }) => {
           if (data.status) {
@@ -487,7 +495,7 @@ useEffect(() => {
     // console.log(updatedPathObject, "kjwebfkwjebfkwejf")
     axios
       .put(
-        `${BASE_URL}/api/paths/update/${selectedPath?._id}`,
+        `/api/paths/update/${selectedPath?._id}`,
         { the_ids: updatedPathObject }
       )
       .then((res) => {
@@ -544,7 +552,7 @@ useEffect(() => {
     }));
     axios
       .put(
-        `${BASE_URL}/api/paths/update/${selectedPath?._id}`,
+        `/api/paths/update/${selectedPath?._id}`,
         { the_ids: updatedBody }
       )
       .then((res) => {
@@ -570,7 +578,7 @@ useEffect(() => {
     );
     axios
       .put(
-        `${BASE_URL}/api/paths/update/${selectedPath?._id}`,
+        `/api/paths/update/${selectedPath?._id}`,
         { the_ids: updatedTheIdsArray }
       )
       .then((res) => {
@@ -608,7 +616,7 @@ useEffect(() => {
       "lkweflkjwhefkjwef"
     );
     axios
-      .post(`${BASE_URL}/api/attachservice/add`, {
+      .post(`/api/attachservice/add`, {
         step_id: selectedStepId,
         service_ids: [...selectedServices],
       })
@@ -625,7 +633,7 @@ useEffect(() => {
   const removeServiceFromStep = (id) => {
     axios
       .put(
-        `${BASE_URL}/api/attachservice/remove/${allServicesToRemove?._id}`,
+        `/api/attachservice/remove/${allServicesToRemove?._id}`,
         {
           service_id: id,
         }
@@ -680,6 +688,24 @@ useEffect(() => {
         >
           {admin ? "Active Paths" : "Paths"}
         </div>
+        <div
+  className="each-mypath-menu"
+  style={{
+    fontWeight: mypathsMenu === "Draft" ? "700" : "",
+    background:
+      mypathsMenu === "Draft"
+        ? "rgba(241, 241, 241, 0.5)"
+        : "",
+  }}
+  onClick={() => {
+    setMypathsMenu("Draft");
+    setViewPathEnabled(false);
+    setViewPathData([]);
+  }}
+>
+  Draft
+</div>
+
         <div
           className="each-mypath-menu"
           style={{
@@ -797,6 +823,7 @@ useEffect(() => {
 
             </div>
           ) : mypathsMenu === "Paths" ||
+           mypathsMenu === "Draft" ||
             mypathsMenu === "Pending Approval" ||
             mypathsMenu === "Inactive Paths" ||
             (mypathsMenu === "Pending Paths" && !viewPathEnabled) ? (
@@ -825,32 +852,40 @@ useEffect(() => {
                           </div>
                         );
                       })
-                 : partnerPathData?.map((e, i) => {
+ : partnerPathData?.map((e, i) => {
+  return (
+    <div
+      className="each-mypaths-data"
+      key={i}
+      onClick={() => {
+        setSelectedPathId(e?._id);
+        setSelectedPath(e);
+        localStorage.setItem("selectedPathId", e?._id);
 
-                      return (
-                        <div
-                          className="each-mypaths-data"
-                          key={i}
-                          onClick={() => {
-                            setPathActionEnabled(true);
-                            setSelectedPathId(e?._id);
-                            setSelectedPath(e);
-                            console.log(e, "selected path details");
-                             localStorage.setItem("selectedPathId", e?._id);
-                          }}
-                        >
-                          <div className="each-mypaths-name">
-                            {e?.nameOfPath}
-                          </div>
-                          <div className="each-mypaths-desc">
-                            {e?.description}
-                          </div>
-                          <div className="each-mypaths-name">
-                            {e?.the_ids?.length}
-                          </div>
-                        </div>
-                      );
-                    })}
+        // ✅ IF DRAFT → Open Full Path Page
+        if (e?.status === "draft") {
+     navigate(`/dashboard/accountants/path/${e._id}`);
+
+        } 
+        // ✅ ELSE → Show Action Panel
+        else {
+          setPathActionEnabled(true);
+        }
+      }}
+    >
+      <div className="each-mypaths-name">
+        {e?.nameOfPath}
+      </div>
+      <div className="each-mypaths-desc">
+        {e?.description}
+      </div>
+      <div className="each-mypaths-name">
+        {e?.the_ids?.length}
+      </div>
+    </div>
+  );
+})
+}
               </div>
             </>
           ) : (

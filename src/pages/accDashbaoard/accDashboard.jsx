@@ -1,7 +1,10 @@
 import React, { useState, useLayoutEffect, useEffect, useRef } from "react";
 import axios from "axios";
+import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
 import "./accDashboard.scss";
+import DraftPathView from "../DraftPathView";
+import { Outlet } from "react-router-dom";
 import searchic from "../../static/images/dashboard/searchic.svg";
 import downarrow from "../../static/images/dashboard/downarrow.svg";
 import uploadv from "../../static/images/dashboard/uploadv.svg";
@@ -102,6 +105,7 @@ const AccDashboard = () => {
   const [coverImageS3url, setCoverImageS3url] = useState("");
   const [selectedFollower, setSelectedFollower] = useState({});
   const [pstep, setpstep] = useState(1);
+  const [stepCount, setStepCount] = useState(1);
   const [selectNew, setselectNew] = useState("");
   const [billingType, setbillingType] = useState("");
   const [categoriesData, setcategoriesData] = useState([]);
@@ -463,6 +467,8 @@ if (!partner?.email) {
 
   //upload end here
 
+
+  
   const handleFollowerPerAccountants = () => {
     setIsLoading(true);
     const partner = getPartner();
@@ -625,6 +631,7 @@ const handleLogout = () => {
   localStorage.removeItem("loginEmail");
   navigate("/login");
 };
+
 
 
   // const handleServicesForLogged = (value) => {
@@ -802,10 +809,48 @@ const uploadBulkService = async (file) => {
     uploadBulkStep(e.target.files[0]);
   };
 
-  const handleFileInputChange3 = (e) => {
-    setImage(e.target.files[0]);
-    uploadBulkService(e.target.files[0]);
+const handleFileInputChange3 = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const storedUser = JSON.parse(localStorage.getItem("partner"));
+
+  if (!storedUser || !storedUser.email) {
+    console.error("Partner email not found");
+    return;
+  }
+
+  const email = storedUser.email;
+
+  const reader = new FileReader();
+
+  reader.onload = async (evt) => {
+    const data = new Uint8Array(evt.target.result);
+    const workbook = XLSX.read(data, { type: "array" });
+
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+
+    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+    console.log("Email:", email);
+    console.log("Records:", jsonData.length);
+
+    try {
+      const response = await axios.post("/api/services/bulk", {
+        email: email,
+        records: jsonData
+      });
+
+      console.log("Bulk success:", response.data);
+    } catch (error) {
+      console.error("Bulk upload error:", error.response?.data || error.message);
+    }
   };
+
+  reader.readAsArrayBuffer(file);
+};
+
 
 
   const myTimeoutService = () => {
@@ -818,7 +863,91 @@ const uploadBulkService = async (file) => {
     setaccsideNav("My Services");
     setservicesMenu("Services");
   };
+const handleStepCountSubmit = () => {
+  if (stepCount < 1) {
+    alert('Please enter at least 1 step');
+    return;
+  }
 
+  // Get user details from your existing userDetails
+  const userDetails = getPartner();
+  
+  // Get email from the same logic as your pathSubmission
+  const finalEmail = user?.email || 
+                     user?.user?.email || 
+                     user?.currentUser?.email || 
+                     userDetails?.email || 
+                     userDetails?.user?.email ||
+                     localStorage.getItem("loginEmail");
+
+  if (!finalEmail) {
+    alert("User email missing. Please login again.");
+    return;
+  }
+
+  // First save the path via API
+  const finalPayload = {
+    email: finalEmail,
+    nameOfPath: pathSteps?.nameOfPath,
+    description: pathSteps?.description,
+    length: Number(pathSteps?.length),
+    path_type: pathSteps?.path_type,
+    current_coordinates: {
+      grade: grade,
+      curriculum: curriculum,
+      stream: stream,
+      grade_avg: gradeAvg,
+      financialSituation: finance,
+      personality: personality,
+    },
+    feature_coordinates: {
+      program: pathSteps?.program,
+      destination_institution: pathSteps?.destination_institution,
+      city: pathSteps?.city,
+      country: pathSteps?.country,
+    },
+    program: pathSteps?.program,
+    destination_institution: pathSteps?.destination_institution,
+    city: pathSteps?.city,
+    country: pathSteps?.country,
+    grade: grade,
+    stream: stream,
+    curriculum: curriculum,
+    grade_avg: gradeAvg,
+    financialSituation: finance,
+    personality: personality,
+    the_ids: pathSteps?.the_ids || [],
+    status: "waitingforapproval",
+  };
+
+  setCreatingPath(true);
+
+  axios.post(`http://localhost:4545/api/paths/add`, finalPayload)
+    .then((response) => {
+      if (response.data?.status) {
+        const createdPathId = response.data.data._id;
+        
+        // Save to localStorage for step creation
+        localStorage.setItem('currentPathData', JSON.stringify({
+          ...finalPayload,
+          pathId: createdPathId
+        }));
+        localStorage.setItem('totalSteps', stepCount);
+        
+        // Close modal
+        document.getElementById('stepsModal').style.display = 'none';
+        setCreatingPath(false);
+        
+        // Navigate to step creation (pstep = 9)
+        setpstep(9);
+      }
+    })
+    .catch((err) => {
+      console.log("❌ API ERROR:", err);
+      setCreatingPath(false);
+      alert('Error creating path. Please try again.');
+    });
+};
  const handleFinalSubmit = () => {
   setIsSubmit(true);
 
@@ -1084,7 +1213,10 @@ function reload() {
   setSelectedService("");
   setUpdatedIcon("");
   // Force refresh services
-  const userDetails = JSON.parse(localStorage.getItem("partner"));
+  const userDetails =
+  JSON.parse(localStorage.getItem("partner")) ||
+  JSON.parse(localStorage.getItem("user"));
+
   if (userDetails?.email) {
     getAllServices(userDetails.email);
   }
@@ -1776,31 +1908,32 @@ let obj = {
   };
 };
 
-  const handleDownload = (type) => {
-    // Create a temporary anchor element
-    const link = document.createElement('a');
-    let filePath;
-    if (type === 'Path') {
-      filePath = "/PathTemplate.xlsx";
-    } else if (type === 'Step') {
-      filePath = "/StepTemplate.xlsx";
-    } else {
-      filePath = "/ServiceTemplate.xlsx";
-    }
-    link.href = filePath;
-    link.setAttribute('download', filePath.substring(filePath.lastIndexOf("/") + 1));
+const handleDownload = (type) => {
+  
 
-    // Simulate click
-    document.body.appendChild(link);
-    link.click();
+  let filePath;
 
-    // Cleanup
-    document.body.removeChild(link);
-    resetpop()
-  };
+  if (type === "Path") {
+    filePath = "/PathTemplate.xlsx";
+  } else if (type === "Step") {
+    filePath = "/StepTemplate.xlsx";
+  } else {
+    filePath = "/ServiceTemplate.xlsx";
+  }
 
+  const link = document.createElement("a");
+  link.href = filePath;
+  link.download = filePath.substring(filePath.lastIndexOf("/") + 1);
 
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 
+  // 🔥 Delay closing modal
+  setTimeout(() => {
+    resetpop();
+  }, 300);
+};
 
   return (
 <div style={{ height: "100vh", overflow: "hidden" }}>
@@ -1814,7 +1947,7 @@ let obj = {
             
             <div style={{ height: "100%" }}>
   {viewPathMode ? (
-      <PathPage />
+      <DraftPathView />
 
               ):
               accsideNav === "CRM" ? (
@@ -3768,626 +3901,498 @@ let obj = {
                   You Have Successfully Created A New Service
                 </div>
               ) : pstep === 8 ? (
-                <div className="acc-addpath"> 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What is the name of the path?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <input
-                        type="text"
-                        placeholder="Name.."
-                        value={pathSteps?.nameOfPath}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              nameOfPath: e.target.value,
-                            };
-                          });
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      How long will the path apx take?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <input
-                        type="number"
-                        placeholder="0"
-                        style={{ width: "70%" }}
-                        value={pathSteps?.length}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              length: e.target.value,
-                            };
-                          });
-                        }}
-                      />
-                      <div className="years-div">Years</div>
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Describe the path
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <textarea
-                        placeholder="Enter description.."
-                        value={pathSteps?.description}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              description: e.target.value,
-                            };
-                          });
-                        }}
-                      ></textarea>
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What type of path is it?
-                    </div>
-                    <div className="each-acc-addpath-field-flex">
-                      <div
-                        onClick={() => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              path_type: "education",
-                            };
-                          });
-                        }}
-                        style={{
-                          background:
-                            pathSteps?.path_type === "education"
-                              ? "linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%)"
-                              : "",
-                          color:
-                            pathSteps?.path_type === "education" ? "white" : "",
-                        }}
-                      >
-                        Education
-                      </div>
-                      <div
-                        onClick={() => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              path_type: "career",
-                            };
-                          });
-                        }}
-                        style={{
-                          background:
-                            pathSteps?.path_type === "career"
-                              ? "linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%)"
-                              : "",
-                          color:
-                            pathSteps?.path_type === "career" ? "white" : "",
-                        }}
-                      >
-                        Career
-                      </div>
-                      <div
-                        onClick={() => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              path_type: "immigration",
-                            };
-                          });
-                        }}
-                        style={{
-                          background:
-                            pathSteps?.path_type === "immigration"
-                              ? "linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%)"
-                              : "",
-                          color:
-                            pathSteps?.path_type === "immigration"
-                              ? "white"
-                              : "",
-                        }}
-                      >
-                        Immigration
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What is the destination of the path?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <input
-                        type="text"
-                        placeholder="Name.."
-                        value={pathSteps?.destination_institution}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              destination_institution: e.target.value,
-                            };
-                          });
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">Add steps</div>
-                    <div
-                      className="each-acc-addpath-field-input"
-                      style={{ flexDirection: "column" }}
-                    >
-                      <div
-                        style={{
-                          width: "100%",
-                          display: "flex",
-                          cursor: "pointer",
-                        }}
-                        onClick={() => {
-                          setStepsToggle(!stepsToggle);
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: "85%",
-                            cursor: "pointer",
-                            padding: "1.5rem",
-                            borderRadius: "15px",
-                            opacity: "0.25",
-                            fontSize: "1rem",
-                            fontWeight: "500",
-                          }}
-                        >
-                          Click To Select
-                        </div>
-                        <div className="arrow-box">
-                          <img
-                            src={arrow}
-                            alt=""
-                            style={{
-                              transform: stepsToggle ? "rotate(180deg)" : "",
-                            }}
-                          />
-                        </div>
-                      </div>
-                      <div
-                        className="hidden-steps"
-                        style={{ display: stepsToggle ? "flex" : "none" }}
-                      >
-                      {userSteps?.map((e, i) => {
-  return (
-    <div
-      className="each-hidden-step"
-      key={i}
-      onClick={() => {
-        setSelectedSteps((prevSelectedSteps) => [
-          ...prevSelectedSteps,
-          e,
-        ]);
-
-        setPathSteps((prev) => ({
-          ...prev,
-          the_ids: [
-            ...(prev?.the_ids || []),
-            { step_id: e?._id },
-          ],
-        }));
-
-        setStepsToggle(false);
-      }}
-    >
-      <div className="stepp-textt">{e?.name}</div>
-      <div className="stepp-textt1">{e?.description}</div>
+  <>
+    {/* Path Name */}
+    <div style={{ marginBottom: "24px" }}>
+      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
+        What is the name of the path?
+      </div>
+      <input
+        type="text"
+        placeholder="Name.."
+        value={pathSteps?.nameOfPath || ""}
+        onChange={(e) => setPathSteps((prev) => ({ ...prev, nameOfPath: e.target.value }))}
+        style={{ width: "100%", padding: "14px 18px", border: "1.5px solid #dce3ec", borderRadius: "18px", fontSize: "15px" }}
+      />
     </div>
-  );
-})}
 
-                      </div>
-                    </div>
-                  </div> */}
+    {/* Duration */}
+    <div style={{ marginBottom: "24px" }}>
+      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
+        How long will the path apx take?
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <input
+          type="number"
+          placeholder="0"
+          value={pathSteps?.length || ""}
+          onChange={(e) => setPathSteps((prev) => ({ ...prev, length: e.target.value }))}
+          style={{ flex: "1", padding: "14px 18px", border: "1.5px solid #dce3ec", borderRadius: "18px", fontSize: "15px" }}
+        />
+        <span style={{ background: "#ecf2f9", padding: "10px 20px", borderRadius: "40px", fontWeight: "600", color: "#1f3a5f", fontSize: "15px", whiteSpace: "nowrap" }}>Years</span>
+      </div>
+    </div>
 
-                  <div className="selected-steps">
-                    {selectedSteps?.map((e, i) => {
-                      return (
-                        <div className="each-selected-step" key={e?._id}>
-                          <div className="stepp-textt">{e?.name}</div>
-                          <div className="stepp-textt1">{e?.description}</div>
-                          <div
-                            className="trash-icon-div"
-                            onClick={() => removeStep(e._id)}
-                          >
-                            <img src={trash} alt="" />
-                          </div>
-                          <div
-                            className="each-acc-addpath-field-input"
-                            style={{
-                              flexDirection: "column",
-                              borderRadius: "15px",
-                              border: "1px solid #e7e7e7",
-                            }}
-                          >
-                            <div
-                              style={{
-                                width: "100%",
-                                display: "flex",
-                                alignItems: "center",
-                                cursor: "pointer",
-                              }}
-                              onClick={() => {
-                                setShowBackupPathList(i);
-                              }}
-                            >
-                              <div
-                                style={{
-                                  width: "85%",
-                                  cursor: "pointer",
-                                  padding: "1.5rem",
-                                  borderRadius: "15px",
-                                  opacity: "0.25",
-                                  fontSize: "1rem",
-                                  fontWeight: "500",
-                                }}
-                              >
-                                {(pathSteps?.the_ids?.find(o => o.step_id === e?._id)?.backup_pathId) || "Select Backup Path"}
+    {/* Description */}
+    <div style={{ marginBottom: "24px" }}>
+      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
+        Describe the path
+      </div>
+      <textarea
+        placeholder="Enter description.."
+        value={pathSteps?.description || ""}
+        onChange={(e) => setPathSteps((prev) => ({ ...prev, description: e.target.value }))}
+        style={{ width: "100%", padding: "14px 18px", border: "1.5px solid #dce3ec", borderRadius: "18px", fontSize: "15px", minHeight: "100px", resize: "vertical" }}
+      ></textarea>
+    </div>
 
+    {/* Path Type */}
+    <div style={{ marginBottom: "24px" }}>
+      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
+        What type of path is it?
+      </div>
+      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+        {["Education", "Career", "Immigration"].map((type) => (
+          <span
+            key={type}
+            onClick={() => setPathSteps((prev) => ({ ...prev, path_type: type.toLowerCase() }))}
+            style={{
+              padding: "12px 30px",
+              background: pathSteps?.path_type === type.toLowerCase() ? "#2a9d8f" : "white",
+              border: "1.5px solid #dce3ec",
+              borderRadius: "40px",
+              fontWeight: "600",
+              fontSize: "15px",
+              color: pathSteps?.path_type === type.toLowerCase() ? "white" : "#1f3a5f",
+              cursor: "pointer",
+              transition: "0.1s"
+            }}
+          >
+            {type}
+          </span>
+        ))}
+      </div>
+    </div>
 
-                                {/* {e?.the_ids?.backup_pathId !== ""
-                                  ? e?.the_ids?.backup_pathId
-                                  : "Select Backup Path"} */}
-                              </div>
-                              <div className="arrow-box">
-                                <img
-                                  src={arrow}
-                                  alt=""
-                                  style={{
-                                    transform: stepsToggle
-                                      ? "rotate(180deg)"
-                                      : "",
-                                  }}
-                                />
-                              </div>
-                            </div>
-                            <div
-                              className="hidden-steps"
-                              style={{
-                                display:
-                                  showBackupPathList === i ? "block" : "none",
-                              }}
-                            >
-                              {backupPathList?.map((item, i) => {
-                                return (
-                                  <div
-                                    onClick={() =>
-                                      addBackupPath(item._id, e._id)
-                                    }
-                                    className="each-hidden-step"
-                                    key={i}
-                                    style={{
-                                      padding: "1rem",
-                                      borderBottom: "1px solid #e7e7e7",
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    <div className="stepp-textt">
-                                      {item?.program}
-                                    </div>
-                                    <div className="stepp-textt1">
-                                      {item?.destination_institution}
-                                    </div>
-                                    <br />
-                                    <div className="stepp-textt1">
-                                      {item?.description}
-                                    </div>
-                                    <br />
-                                    <div className="stepp-textt1">
-                                      Path id:{item?._id}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+    {/* Destination */}
+    <div style={{ marginBottom: "24px" }}>
+      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
+        What is the destination of the path?
+      </div>
+      <input
+        type="text"
+        placeholder="University / institution name.."
+        value={pathSteps?.destination_institution || ""}
+        onChange={(e) => setPathSteps((prev) => ({ ...prev, destination_institution: e.target.value }))}
+        style={{ width: "100%", padding: "14px 18px", border: "1.5px solid #dce3ec", borderRadius: "18px", fontSize: "15px" }}
+      />
+    </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Select ideal grade for participant
-                    </div>
-                    <div className="optioncardWrapper">
-                      {gradeList.map((item) => (
-                        <div
-                          className={
-                            grade.includes(item)
-                              ? "optionCardSmallSelected"
-                              : "optionCardSmall"
-                          }
-                          onClick={(e) => handleGrade(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+    {/* Selected Steps Section */}
+    <div className="selected-steps" style={{ marginBottom: "24px" }}>
+      {selectedSteps?.map((e, i) => (
+        <div className="each-selected-step" key={e?._id} style={{ marginBottom: "20px", padding: "15px", border: "1px solid #e7e7e7", borderRadius: "15px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+            <div>
+              <div style={{ fontWeight: "600", fontSize: "16px", marginBottom: "4px" }}>{e?.name}</div>
+              <div style={{ fontSize: "14px", color: "#666" }}>{e?.description}</div>
+            </div>
+            <div
+              className="trash-icon-div"
+              onClick={() => removeStep(e._id)}
+              style={{ cursor: "pointer" }}
+            >
+              <img src={trash} alt="delete" />
+            </div>
+          </div>
+          
+          {/* Backup Path Selection */}
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              cursor: "pointer",
+              border: "1px solid #e7e7e7",
+              borderRadius: "15px",
+              marginTop: "10px"
+            }}
+            onClick={() => setShowBackupPathList(i)}
+          >
+            <div style={{ width: "85%", padding: "1.5rem", opacity: "0.25", fontSize: "1rem", fontWeight: "500" }}>
+              {pathSteps?.the_ids?.find(o => o.step_id === e?._id)?.backup_pathId || "Select Backup Path"}
+            </div>
+            <div className="arrow-box" style={{ padding: "1.5rem" }}>
+              <img
+                src={arrow}
+                alt="arrow"
+                style={{ transform: showBackupPathList === i ? "rotate(180deg)" : "" }}
+              />
+            </div>
+          </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Select ideal grade point average for participant
-                    </div>
-                    <div className="optionCardFullWrapper">
-                      {gradePointAvg.map((item) => (
-                        <div
-                          className={
-                            gradeAvg.includes(item)
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => handleGradeAvg(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Select ideal curriculum for participant
-                    </div>
-                    <div className="optionCardFullWrapper">
-                      {curriculumList.map((item) => (
-                        <div
-                          className={
-                            curriculum.includes(item)
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => handleCurriculum(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Select ideal stream for participant
-                    </div>
-                    <div className="optionCardFullWrapper">
-                      {streamList.map((item) => (
-                        <div
-                          className={
-                            stream.includes(item)
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => handleStream(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Select ideal financial situation for participant
-                    </div>
-                    <div className="optionCardFullWrapper">
-                      {financeList.map((item) => (
-                        <div
-                          className={
-                            finance.includes(item)
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => handleFinance(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What program will they be studying?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <input
-                        type="text"
-                        placeholder="Name.."
-                        value={pathSteps?.program}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              program: e.target.value,
-                            };
-                          });
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What city is the university in?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <input
-                        type="text"
-                        placeholder="City.."
-                        value={pathSteps?.city}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              city: e.target.value,
-                            };
-                          });
-                        }}
-                      />
-                    </div>
-                  </div>
-
-<div className="each-acc-addpath-field">
-  <div className="each-acc-addpath-field-name">
-    What country is the university in?
-  </div>
-
-  <div className="each-acc-addpath-field-input">
-    <select
-      name="country"
-      id="country"
-      style={{ border: "none", padding: "1.5rem", width: "100%", fontSize: "16px" }}
-      onChange={(e) => {
-        setPathSteps((prev) => ({
-          ...prev,
-          country: e.target.value,
-        }));
-      }}
-    >
-      <option value="">Country..</option>
-
-      {countryApiValue?.map((item) => (
-        <option key={item.cca2} value={item.name.common}>
-          {item.name.common}
-        </option>
-      ))}
-    </select>
-  </div>
-</div>
-
-
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What personality suits this path?
-                    </div>
-                    <div className="optionCardFullWrapper">
-                      {personalityList.map((item) => (
-                        <div
-                          className={
-                            item === personality
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => handlePersonality(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="each-acc-addpath-field">
-                    <div
-                      className="submit-path-btn"
-                      style={{
-                        opacity: creatingPath
-                          ? "0.5"
-                          : pathSteps?.nameOfPath &&
-                            pathSteps?.description &&
-                            pathSteps?.length &&
-                            pathSteps?.path_type &&
-                            // pathSteps?.the_ids?.length > 0 &&
-                            pathSteps?.destination_institution &&
-                            pathSteps?.program &&
-                            pathSteps?.city &&
-                            pathSteps?.country &&
-                            grade.length > 0 &&
-                            gradeAvg.length > 0 &&
-                            curriculum.length > 0 &&
-                            stream.length > 0 &&
-                            finance.length > 0 &&
-                            personality !== ""
-                            ? "1"
-                            : "0.5",
-                        cursor: creatingPath
-                          ? "not-allowed"
-                          : pathSteps?.nameOfPath &&
-                            pathSteps?.description &&
-                            pathSteps?.length &&
-                            pathSteps?.path_type &&
-                            // pathSteps?.the_ids?.length > 0 &&
-                            pathSteps?.destination_institution &&
-                            pathSteps?.program &&
-                            pathSteps?.city &&
-                            pathSteps?.country &&
-                            grade.length > 0 &&
-                            gradeAvg.length > 0 &&
-                            curriculum.length > 0 &&
-                            stream.length > 0 &&
-                            finance.length > 0 &&
-                            personality !== ""
-                            ? "pointer"
-                            : "not-allowed",
-                      }}
-                      onClick={() => {
-                        if (
-                          pathSteps?.nameOfPath &&
-                          pathSteps?.description &&
-                          pathSteps?.length &&
-                          pathSteps?.path_type &&
-                          // pathSteps?.the_ids?.length > 0 &&
-                          pathSteps?.destination_institution &&
-                          pathSteps?.program &&
-                          pathSteps?.city &&
-                          pathSteps?.country &&
-                          grade.length > 0 &&
-                          gradeAvg.length > 0 &&
-                          curriculum.length > 0 &&
-                          stream.length > 0 &&
-                          finance.length > 0 &&
-                          personality !== ""
-                        ) {
-                          pathSubmission();
-                        }
-                      }}
-                    >
-                      {creatingPath ? "Loading.." : "Submit Path"}
-                    </div>
-                    <div
-                      className="go-back-btn"
-                      onClick={() => {
-                        setpstep(1);
-                        setPathSteps({
-                          nameOfPath: "",
-                          description: "",
-                          length: "",
-                          path_type: "",
-                          the_ids: [],
-                          destination_institution: "",
-                        });
-                        setGrade([]);
-                        setGradeAvg([]);
-                        setCurriculum([]);
-                        setStream([]);
-                        setFinance([]);
-                        setPersonality("");
-                      }}
-                    >
-                      Go Back
-                    </div>
-                  </div>
+          {/* Backup Path List Dropdown */}
+          {showBackupPathList === i && (
+            <div style={{ marginTop: "10px", border: "1px solid #e7e7e7", borderRadius: "10px", maxHeight: "200px", overflowY: "auto" }}>
+              {backupPathList?.map((item, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => addBackupPath(item._id, e._id)}
+                  style={{ padding: "1rem", borderBottom: "1px solid #e7e7e7", cursor: "pointer" }}
+                >
+                  <div style={{ fontWeight: "600" }}>{item?.program}</div>
+                  <div style={{ fontSize: "14px", color: "#666" }}>{item?.destination_institution}</div>
+                  <div style={{ fontSize: "12px", color: "#999", marginTop: "5px" }}>{item?.description}</div>
+                  <div style={{ fontSize: "10px", color: "#ccc", marginTop: "5px" }}>Path id: {item?._id}</div>
                 </div>
-              ) : pstep === 9 ? (
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+
+    {/* Grade Selection */}
+    <div style={{ marginBottom: "28px" }}>
+      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
+        Select ideal grade for participant
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 18px", marginTop: "12px" }}>
+        {gradeList.map((item) => (
+          <div
+            key={item}
+            onClick={() => handleGrade(item)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              background: grade.includes(item) ? "#2a9d8f" : "#f8fafd",
+              padding: "8px 18px",
+              borderRadius: "40px",
+              border: "1.5px solid #dce3ec",
+              fontSize: "15px",
+              fontWeight: "500",
+              color: grade.includes(item) ? "white" : "#1f3a5f",
+              cursor: "pointer"
+            }}
+          >
+            {item}
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* GPA Selection */}
+    <div style={{ marginBottom: "28px" }}>
+      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
+        Select ideal grade point average for participant
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 18px", marginTop: "12px" }}>
+        {gradePointAvg.map((item) => (
+          <div
+            key={item}
+            onClick={() => handleGradeAvg(item)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              background: gradeAvg.includes(item) ? "#2a9d8f" : "#f8fafd",
+              padding: "8px 18px",
+              borderRadius: "40px",
+              border: "1.5px solid #dce3ec",
+              fontSize: "15px",
+              fontWeight: "500",
+              color: gradeAvg.includes(item) ? "white" : "#1f3a5f",
+              cursor: "pointer"
+            }}
+          >
+            {item}
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Curriculum Selection */}
+    <div style={{ marginBottom: "28px" }}>
+      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
+        Select ideal curriculum for participant
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 18px", marginTop: "12px" }}>
+        {curriculumList.map((item) => (
+          <div
+            key={item}
+            onClick={() => handleCurriculum(item)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              background: curriculum.includes(item) ? "#2a9d8f" : "#f8fafd",
+              padding: "8px 18px",
+              borderRadius: "40px",
+              border: "1.5px solid #dce3ec",
+              fontSize: "15px",
+              fontWeight: "500",
+              color: curriculum.includes(item) ? "white" : "#1f3a5f",
+              cursor: "pointer"
+            }}
+          >
+            {item}
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Stream Selection */}
+    <div style={{ marginBottom: "28px" }}>
+      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
+        Select ideal stream for participant
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 18px", marginTop: "12px" }}>
+        {streamList.map((item) => (
+          <div
+            key={item}
+            onClick={() => handleStream(item)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              background: stream.includes(item) ? "#2a9d8f" : "#f8fafd",
+              padding: "8px 18px",
+              borderRadius: "40px",
+              border: "1.5px solid #dce3ec",
+              fontSize: "15px",
+              fontWeight: "500",
+              color: stream.includes(item) ? "white" : "#1f3a5f",
+              cursor: "pointer"
+            }}
+          >
+            {item}
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Financial Selection */}
+    <div style={{ marginBottom: "28px" }}>
+      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
+        Select ideal financial situation for participant
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 18px", marginTop: "12px" }}>
+        {financeList.map((item) => (
+          <div
+            key={item}
+            onClick={() => handleFinance(item)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              background: finance.includes(item) ? "#2a9d8f" : "#f8fafd",
+              padding: "8px 18px",
+              borderRadius: "40px",
+              border: "1.5px solid #dce3ec",
+              fontSize: "15px",
+              fontWeight: "500",
+              color: finance.includes(item) ? "white" : "#1f3a5f",
+              cursor: "pointer"
+            }}
+          >
+            {item}
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Program */}
+    <div style={{ marginBottom: "24px" }}>
+      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
+        What program will they be studying?
+      </div>
+      <input
+        type="text"
+        placeholder="Name.."
+        value={pathSteps?.program || ""}
+        onChange={(e) => setPathSteps((prev) => ({ ...prev, program: e.target.value }))}
+        style={{ width: "100%", padding: "14px 18px", border: "1.5px solid #dce3ec", borderRadius: "18px", fontSize: "15px" }}
+      />
+    </div>
+
+    {/* City */}
+    <div style={{ marginBottom: "24px" }}>
+      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
+        What city is the university in?
+      </div>
+      <input
+        type="text"
+        placeholder="City.."
+        value={pathSteps?.city || ""}
+        onChange={(e) => setPathSteps((prev) => ({ ...prev, city: e.target.value }))}
+        style={{ width: "100%", padding: "14px 18px", border: "1.5px solid #dce3ec", borderRadius: "18px", fontSize: "15px" }}
+      />
+    </div>
+
+    {/* Country */}
+    <div style={{ marginBottom: "24px" }}>
+      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
+        What country is the university in?
+      </div>
+      <select
+        value={pathSteps?.country || ""}
+        onChange={(e) => setPathSteps((prev) => ({ ...prev, country: e.target.value }))}
+        style={{ width: "100%", padding: "14px 18px", border: "1.5px solid #dce3ec", borderRadius: "18px", fontSize: "15px", background: "white" }}
+      >
+        <option value="">Country..</option>
+        {countryApiValue?.map((item) => (
+          <option key={item.cca2} value={item.name.common}>
+            {item.name.common}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    {/* Personality Selection */}
+    <div style={{ marginBottom: "28px" }}>
+      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
+        What personality suits this path?
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 18px", marginTop: "12px" }}>
+        {personalityList.map((item) => (
+          <div
+            key={item}
+            onClick={() => handlePersonality(item)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              background: personality === item ? "#2a9d8f" : "#f8fafd",
+              padding: "8px 18px",
+              borderRadius: "40px",
+              border: "1.5px solid #dce3ec",
+              fontSize: "15px",
+              fontWeight: "500",
+              color: personality === item ? "white" : "#1f3a5f",
+              cursor: "pointer"
+            }}
+          >
+            {item}
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Next Step Button */}
+    <div style={{ display: "flex", justifyContent: "flex-end", gap: "18px", marginTop: "30px" }}>
+      <button
+        onClick={() => {
+          // Validate all fields are filled
+          if (
+            pathSteps?.nameOfPath &&
+            pathSteps?.description &&
+            pathSteps?.length &&
+            pathSteps?.path_type &&
+            pathSteps?.destination_institution &&
+            pathSteps?.program &&
+            pathSteps?.city &&
+            pathSteps?.country &&
+            grade.length > 0 &&
+            gradeAvg.length > 0 &&
+            curriculum.length > 0 &&
+            stream.length > 0 &&
+            finance.length > 0 &&
+            personality !== ""
+          ) {
+            // Show modal
+            document.getElementById('stepsModal').style.display = 'flex';
+          } else {
+            alert('Please fill all required fields');
+          }
+        }}
+        style={{
+          padding: "16px 42px",
+          borderRadius: "50px",
+          fontWeight: "700",
+          fontSize: "16px",
+          border: "none",
+          cursor: "pointer",
+          background: "#2a9d8f",
+          color: "white",
+          boxShadow: "0 8px 20px -8px #2a9d8f"
+        }}
+      >
+        Next Step →
+      </button>
+      
+      <button
+        onClick={() => {
+          setpstep(1);
+          setPathSteps({
+            nameOfPath: "",
+            description: "",
+            length: "",
+            path_type: "",
+            the_ids: [],
+            destination_institution: "",
+            program: "",
+            city: "",
+            country: "",
+          });
+          setGrade([]);
+          setGradeAvg([]);
+          setCurriculum([]);
+          setStream([]);
+          setFinance([]);
+          setPersonality("");
+        }}
+        style={{
+          padding: "16px 42px",
+          borderRadius: "50px",
+          fontWeight: "700",
+          fontSize: "16px",
+          border: "2px solid #d3deed",
+          background: "white",
+          color: "#1f3a5f",
+          cursor: "pointer"
+        }}
+      >
+        Go Back
+      </button>
+    </div>
+
+    {/* Modal for asking number of steps */}
+    <div
+      className="modal-overlay"
+      id="stepsModal"
+      style={{ display: "none", position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center", zIndex: 1000 }}
+    >
+      <div style={{ background: "white", borderRadius: "32px", padding: "40px", maxWidth: "500px", width: "90%", boxShadow: "0 30px 60px rgba(0,0,0,0.3)" }}>
+        <h2 style={{ fontSize: "24px", color: "#0b1e3a", marginBottom: "16px" }}>Add Steps to Your Path</h2>
+        <p style={{ color: "#617388", marginBottom: "24px" }}>How many steps do you want to add to this path? You can add as many as you need.</p>
+        <input
+          type="number"
+          id="stepCount"
+          min="1"
+          value={stepCount}
+          onChange={(e) => setStepCount(e.target.value)}
+          placeholder="Enter number of steps"
+          style={{ width: "100%", padding: "16px", border: "1.5px solid #dce3ec", borderRadius: "16px", fontSize: "18px", marginBottom: "24px" }}
+        />
+        <div style={{ display: "flex", gap: "16px", justifyContent: "flex-end" }}>
+          <button
+            onClick={() => document.getElementById('stepsModal').style.display = 'none'}
+            style={{ padding: "16px 42px", borderRadius: "50px", fontWeight: "700", fontSize: "16px", border: "2px solid #d3deed", background: "white", color: "#1f3a5f", cursor: "pointer" }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleStepCountSubmit}
+            style={{ padding: "16px 42px", borderRadius: "50px", fontWeight: "700", fontSize: "16px", border: "none", background: "#2a9d8f", color: "white", cursor: "pointer" }}
+          >
+            Continue →
+          </button>
+        </div>
+      </div>
+    </div>
+  </>
+) : pstep === 9 ? (
                 <NewStep1 setpstep={setpstep} />
               ) : pstep === 10 ? (
                 <div>

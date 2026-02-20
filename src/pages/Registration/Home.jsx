@@ -6,9 +6,8 @@ import { useLocation } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
 import tickMark from "./tick.svg";
 import tickMarkValid from "./tickMarkValid.svg";
-const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const NewHomePage = () => {
-    console.log("🔥 HELLO TEST — NEW FRONTEND BUILD ACTIVE");
   const navigate = useNavigate();
 
   const [userName, setUserName] = useState("");
@@ -74,31 +73,30 @@ const NewHomePage = () => {
     ) {
       setLoading(true);
 
-      axios.post(`${BASE_URL}/api/auth/checkEmailDuplicate`, {
+      axios.post("http://localhost:4545/api/auth/checkEmailDuplicate", {
         email: userEmail
       })
-.then(() => {
-  registerUser(); // 200 means available
-})
-.catch((err) => {
-  setLoading(false);
-
-  if (err.response?.status === 400) {
-    setErrorMessage("This email is already registered.");
-  } else {
-    setErrorMessage("Error checking email.");
-  }
-});
-
-    } else {
+      .then(({ data }) => {
+        if (data.count === 1) {
+          setLoading(false);
+          setErrorMessage("This email is already registered.");
+        } else {
+          registerUser();
+        }
+      })
+      .catch(() => {
+        setLoading(false);
+        setErrorMessage("Error checking email.");
+      });
+    } else {   
       alert("Ensure all password requirements are met.");
     }
   };
 
   const registerUser = () => {
     const signupUrl = isUser
-      ? `${BASE_URL}/api/auth/signup`
-      : `${BASE_URL}/api/partner/signup`;
+      ? "http://localhost:4545/api/auth/signup"
+      : "http://localhost:4545/api/partner/signup";
 
     const payload = isUser
       ? {
@@ -113,27 +111,25 @@ const NewHomePage = () => {
           partnerType: partnerType,
         };
 
-axios.post(signupUrl, payload)
-  .then(({ data }) => {
-    if (data.success) {
-      setShowOtp(true);
-    } else {
-      alert("Signup failed.");
-    }
-  })
-  .catch(() => {
-    alert("Signup failed.");
-  })
-  .finally(() => {
-    setLoading(false); // 🔥 ALWAYS stop spinner
-  });
-
+    axios.post(signupUrl, payload)
+      .then(({ data }) => {
+        setLoading(false);
+        if (data.success) {
+          setShowOtp(true);
+        } else {
+          alert("Signup failed.");
+        }
+      })
+      .catch(() => {
+        setLoading(false);
+        alert("Signup failed.");
+      });
   };
 
   const confirmEmail = () => {
     const verifyOtpUrl = isUser
-      ? `${BASE_URL}/api/auth/verifyotp`
-      : `${BASE_URL}/api/partner/verifyotp`;
+      ? "http://localhost:4545/api/auth/verifyotp"
+      : "http://localhost:4545/api/partner/verifyotp";
 
     axios.post(verifyOtpUrl, {
       email: userEmail.trim(),
@@ -274,4 +270,4 @@ axios.post(signupUrl, payload)
   );
 };
 
-export default NewHomePage;
+export default NewHomePage; 

@@ -54,7 +54,8 @@ const handleSubmit = async (e) => {
   try {
     await axios.post(`${BASE_URL}/api/admin-contact`, contactData);
 
-    setStatus("Message sent successfully!");
+    setStatus("Thank you for reaching out! Our team will get back to you shortly."
+);
     setStatusType("success");
 
     setFullName("");
@@ -89,8 +90,8 @@ const handleSubmit = async (e) => {
         <Div className="custom-row">
           <Div className="custom-col-half">
             <SectionHeading
-              title="Do you have a project <br/>in your mind?"
-              subtitle="Getting Touch"
+title="How Can We Help You?"
+subtitle="Get in Touch"
             />
             <Spacing lg="55" md="30" />
             <ContactInfoWidget withIcon />
@@ -126,29 +127,23 @@ const handleSubmit = async (e) => {
                 <Spacing lg="20" md="20" />
               </Div>
               <Div className="col-sm-6">
-                <label className="form-label">Project Type*</label>
+                <label className="form-label">Inquiry Type*</label>
                 <select
-                  className="custom-select"
-                  value={product}
-                  onChange={(e) => setProduct(e.target.value)}
-                  required
-                >
-                  <option className="bg-black text-white">
-                    Select Project Type
-                  </option>
-                  <option className="bg-black text-white hover:bg-blue-500">
-                    SPACE
-                  </option>
-                  <option className="bg-black text-white hover:bg-blue-500">
-                    DEFENCE
-                  </option>
-                  <option className="bg-black text-white hover:bg-blue-500">
-                    GROUND
-                  </option>
-                  <option className="bg-black text-white hover:bg-blue-500">
-                    OTHERS
-                  </option>
-                </select>
+  className="custom-select"
+  value={product}
+  onChange={(e) => setProduct(e.target.value)}
+  required
+>
+  <option value="">Select Inquiry Type</option>
+  <option value="GENERAL">General Information</option>
+  <option value="SUPPORT">Technical Support</option>
+  <option value="PRICING">Pricing & Plans</option>
+  <option value="DEMO">Request a Demo</option>
+  <option value="PARTNERSHIP">Partnership Opportunity</option>
+  <option value="FEEDBACK">Feedback & Suggestions</option>
+  <option value="OTHER">Other Questions</option>
+</select>
+
                 <Spacing lg="20" md="20" />
               </Div>
               <Div className="col-sm-6">
@@ -176,6 +171,7 @@ const handleSubmit = async (e) => {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   required
+                  placeholder="How can we help you today? Please share your question or details..."
                 ></textarea>
                 <Spacing lg="25" md="25" />
               </Div>

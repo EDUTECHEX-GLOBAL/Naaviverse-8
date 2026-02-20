@@ -1,15 +1,20 @@
 import React, {Fragment, useState} from 'react';
+import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
+
 import {Helmet} from 'react-helmet';
 import ModalVideos from '../../../../components/ModalVideo/ModalVideos';
 import Tilt from 'react-parallax-tilt';
 import { Link } from 'react-router-dom';
 
 import TopNavFour from '../../../../components/header/TopNavFour';
-import FancyFeatureTwentyThree from '../../../../components/feature/FancyFeatureTwentyThree';
+// import FancyFeatureTwentyThree from '../../../../components/feature/FancyFeatureTwentyThree';
+import FancyFeatureTwentyTwo from '../../../../components/feature/FancyFeatureTwentyTwo';
 import CommonCounter from '../../../../components/counter/CommonCounter';
-import TestimonialOne from '../../../../components/testimonial/TestimonialOne';
-import ContactTwo from '../../../../components/contact/ContactTwo';
-import BrandTwo from '../../../../components/brand/BrandTwo';
+//import TestimonialOne from '../../../../components/testimonial/TestimonialOne';
+import TestimonialThree from '../../../../components/testimonial/TestimonialThree';
+//import ContactTwo from '../../../../components/contact/ContactTwo';
+//import BrandTwo from '../../../../components/brand/BrandTwo';
 import Footer from '../../../../components/footernew/index';
 
 import NewsFormTwo from '../../../../components/form/NewsFormTwo';
@@ -23,7 +28,19 @@ import shape46 from '../../../../assets/images/shape/shape_46.svg';
 
 
 const AboutUsTwo = () => {
+      const location = useLocation();   // ✅ inside component
     const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+        if (location.pathname === "/problem/vision-mission") {
+            setTimeout(() => {
+                const section = document.getElementById("vision-mission-section");
+                if (section) {
+                    section.scrollIntoView({ behavior: "smooth" });
+                }
+            }, 200);
+        }
+    }, [location]);
     const OpenModal = () => {
         setOpen(!open)
     }
@@ -32,7 +49,8 @@ const AboutUsTwo = () => {
             <div className="main-page-wrapper">
             <ModalVideos isOpen={open} onClick={OpenModal} />
                 <Helmet>
-                    <title>About Us Two || Sinco - Data Science & Analytics React Template</title>
+                    <title>About Us | naavinetwork.ai – Smart Path Planning & Career Guidance</title>
+
                 </Helmet>
                 {/* helmet end */}
 
@@ -40,7 +58,7 @@ const AboutUsTwo = () => {
 
                 <div className="theme-inner-banner space-fix-one">
                     <div className="container">
-                        <h2 className="intro-title">About <span>Company</span>
+                        <h2 className="intro-title">About <span>Our Platform</span>
                         </h2>
                         <ul className="page-breadcrumb style-none d-flex">
                             <li>
@@ -73,7 +91,7 @@ const AboutUsTwo = () => {
 
                 <div className="fancy-feature-twentyThree mt-30">
                     <div className="container">
-                        <FancyFeatureTwentyThree/>
+                        <FancyFeatureTwentyTwo/>
                     </div>
                 </div>
                 {/* /.fancy-feature-twentyThree */}
@@ -83,17 +101,18 @@ const AboutUsTwo = () => {
                         <div className="row align-items-center align-items-xl-start">
                             <div className="col-xl-5 col-md-6 order-md-last">
                                 <div className="block-style-nine color-two">
-                                    <div className="title-style-three pb-10" data-aos="fade-up">
-                                        <div className="sc-title">WHY CHOOSE US</div>
-                                        <h2 className="main-title">Why <span>choose us</span> for your business.</h2>
-                                    </div>
-                                    {/* /.title-style-three */}
-                                    <ul className="style-none list-item">
-                                        <li data-aos="fade-up">Learn content by interacting with an expert lesson or watching a video.</li>
-                                        <li data-aos="fade-up" data-aos-delay={100}>Practice what you learned on realistic SAT test questions.</li>
-                                        <li data-aos="fade-up" data-aos-delay={200}>Review your practice questions and learn how to improve.</li>
-                                    </ul>
-                                </div>
+    <div className="title-style-three pb-10" data-aos="fade-up">
+        <div className="sc-title">WHY CHOOSE US</div>
+        <h2 className="main-title">Why <span>choose us</span> for your future</h2>
+    </div>
+
+    <ul className="style-none list-item">
+        <li data-aos="fade-up">Discover the right career and education path based on your interests, strengths, and goals.</li>
+        <li data-aos="fade-up" data-aos-delay={100}>Get personalized guidance on what to study now and which colleges or universities to target next.</li>
+        <li data-aos="fade-up" data-aos-delay={200}>Plan every step with clear insights, curated resources, and structured roadmaps for success.</li>
+    </ul>
+</div>
+
                                 {/* /.block-style-nine */}
                             </div>
                             <div className="col-xl-7 col-md-6 order-md-first" data-aos="fade-right">
@@ -112,9 +131,9 @@ const AboutUsTwo = () => {
 
                 <div className="counter-section-one mt-100">
                     <div className="container">
-                        <div className="inner-container bg-color">
+                        
                             <CommonCounter/>
-                        </div>
+                        
                         {/* /.inner-container */}
                     </div>
                 </div>
@@ -124,31 +143,30 @@ const AboutUsTwo = () => {
                     className="feedback-section-four position-relative mt-150 pb-75 lg-mt-110 sm-pb-20">
                     <div className="container">
                         <div className="title-style-three text-center" data-aos="fade-up">
-                            <div className="sc-title">Testimonials</div>
-                            <h2 className="main-title">Trsuted by <span>Clients</span>
+                            <div className="sc-title">Success Stories</div>
+                            <h2 className="main-title">Trsuted by <span>Students & Aspirants</span>
                             </h2>
                         </div>
                         {/* /.title-style-three */}
                     </div>
                     {/* /.container */}
                     <div className="inner-content mt-90 lg-mt-60">
-                        <div className="slider-wrapper">
-                            <TestimonialOne/> 
-                            {/* /.feedback_slider_one */}
-                        </div>
-                        {/* /.slider-wrapper */}
-                    </div>
+    <div className="slider-wrapper">
+        <TestimonialThree/>
+    </div>
+</div>
+
                     {/* /.inner-content */}
-                    <div className="mt-100 lg-mt-70">
+                    {/* <div className="mt-100 lg-mt-70">
                         <div className="container">
                             <ContactTwo/>
                         </div>
-                    </div>
+                    </div> */}
                     <img src={shape46} alt="" className="shapes bg-shape"/>
                 </div>
                 {/* /.feedback-section-four */}
 
-                <div className="partner-section-two mb-130 lg-mb-80">
+                {/* <div className="partner-section-two mb-130 lg-mb-80">
                     <div className="container">
                         <div className="row">
                             <div className="col-12 m-auto">
@@ -156,38 +174,79 @@ const AboutUsTwo = () => {
                             </div>
                         </div>
                     </div>
-                    {/* /.container */}
-                </div>
+                </div> */}
                 {/* /.partner-section-two */}
 
-                <div className="footer-style-four theme-basic-footer">
+               {/* <div className="footer-style-four theme-basic-footer mt-150 lg-mt-80">
+
                     <div className="container">
                         <div className="inner-wrapper">
                             <div className="subscribe-area">
                                 <div className="row align-items-center">
                                     <div className="col-md-6">
                                         <div className="title-style-four sm-pb-20">
-                                            <h4 className="main-title">Join Our <span>Newsletter</span> &amp; Get updated.</h4>
+                                           <h4 className="main-title">Get Career Tips, Updates & <span>Guidance</span></h4>
+
                                         </div>
-                                        {/* /.title-style-four */}
+                                      
                                     </div>
                                     <div className="col-md-6">
                                         <div className="subscribe-form">
                                             <NewsFormTwo />
                                             <p>We only send interesting and relevant emails.</p>
                                         </div>
-                                        {/* /.subscribe-form */}
+                                       
                                     </div>
                                 </div>
                             </div>
-                            {/* /.subscribe-area */}
+                           
                             <Footer />
                             
                         </div>
-                        {/* /.inner-wrapper */}
+                    
                     </div>
+                </div> */}
+              
+{/* Signup block + new footer */}
+
+<div className="footer-style-four theme-basic-footer mt-150 lg-mt-80">
+
+    <div className="container">
+
+        <div className="inner-wrapper">
+
+            {/* Signup block */}
+            <div className="subscribe-area">
+                <div className="row align-items-center">
+
+                    <div className="col-md-6">
+                        <div className="title-style-four sm-pb-20">
+                            <h4 className="main-title">
+                                Get Career Tips, Updates & <span>Guidance</span>
+                            </h4>
+                    </div>
+                    </div>
+
+                    <div className="col-md-6">
+                        <div className="subscribe-form">
+                            <NewsFormTwo />
+                            <p>
+                                We only send interesting and relevant emails.
+                            </p>
+                        </div>
+                    </div>
+
                 </div>
-                {/* /.footer-style-four */}
+            </div>
+
+            {/* Your NEW landing page footer */}
+            <Footer />
+
+        </div>
+
+    </div>
+
+</div>
 
             </div>
         </Fragment>

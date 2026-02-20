@@ -20,7 +20,7 @@ import CountUp from "react-countup";
 import { useMediaQuery } from 'react-responsive';
 import { FiTrendingUp, FiTrendingDown, FiUsers, FiMail, FiEye } from "react-icons/fi";
 import './Home.scss';
-const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const HomeDashboard = () => {
   const [counts, setCounts] = useState({
     contacts: 0,
@@ -34,7 +34,7 @@ const HomeDashboard = () => {
   useEffect(() => {
   const fetchTrends = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/admin-dashboard/overview`);
+      const res = await axios.get("/api/admin-dashboard/overview");
 
       const { months, trends } = res.data;
 
@@ -65,9 +65,9 @@ const HomeDashboard = () => {
       try {
         setLoading(true);
         const [contactRes, visitorRes, subRes] = await Promise.all([
-          axios.get(`${BASE_URL}/api/admin-contact/count`, { headers: { "Cache-Control": "no-cache" } }),
-          axios.get(`${BASE_URL}/api/admin-visitors/count`, { headers: { "Cache-Control": "no-cache" } }),
-          axios.get(`${BASE_URL}/api/admin-subscribe/count`, { headers: { "Cache-Control": "no-cache" } }),
+          axios.get("/api/admin-contact/count", { headers: { "Cache-Control": "no-cache" } }),
+          axios.get("/api/admin-visitors/count", { headers: { "Cache-Control": "no-cache" } }),
+          axios.get("/api/admin-subscribe/count", { headers: { "Cache-Control": "no-cache" } }),
         ]);
 
         setCounts({

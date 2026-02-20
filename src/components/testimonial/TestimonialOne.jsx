@@ -1,46 +1,26 @@
-import React, {Fragment} from 'react';
+import React, { Fragment } from 'react';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 const TestimonialContent = [
     {
-        logo: 'mg_12.jpg',
-        icon: 'icon_05',
-        desc: `Certainly from my perspective quis been a great success with due WP giving us
-        that enterprises level assured quality.`,
-        text: 'Qulaity & Cost:',
-        price: '5.00',
-        logo2: 'Plogo-5',
+        rating: 5,
+        desc: "This platform helped me discover the right career path and shortlist the best colleges. Now I have a clear roadmap for my future."
     },
     {
-        logo: 'Plogo-2',
-        icon: 'icon_05',
-        desc: `Certainly from my perspective quis been a great success with due WP giving us
-        that enterprises level assured quality.`,
-        text: 'Qulaity & Cost:',
-        price: '35.00',
-        logo2: 'Plogo-5',
+        rating: 4.5,
+        desc: "I was confused about what to study next, but the personalized suggestions made everything simple and easy to follow."
     },
     {
-        logo: 'Plogo-3',
-        icon: 'icon_05',
-        desc: `Certainly from my perspective quis been a great success with due WP giving us
-        that enterprises level assured quality.`,
-        text: 'Qulaity & Cost:',
-        price: '19.00',
-        logo2: 'Plogo-5',
+        rating: 5,
+        desc: "After taking the subscription, I received one-to-one mentorship and expert guidance. It felt like having a personal career coach."
     },
     {
-        logo: 'Plogo-4',
-        icon: 'icon_05',
-        desc: `Certainly from my perspective quis been a great success with due WP giving us
-        that enterprises level assured quality.`,
-        text: 'Qulaity & Cost:',
-        price: '15.00',
-        logo2: 'Plogo-5',
-    },
-]
+        rating: 4,
+        desc: "The insights and resources helped me plan early and prepare better. It saved me time and reduced a lot of stress."
+    }
+];
 
 const settings1 = {
     dots: true,
@@ -48,67 +28,62 @@ const settings1 = {
     speed: 500,
     centerMode: true,
     autoplay: true,
-    autoplaySpeed: 2000,
+    autoplaySpeed: 2500,
     slidesToShow: 3,
     slidesToScroll: 1,
     responsive: [
-        {
-            breakpoint: 1024,
-            settings: {
-                slidesToShow: 3
-            }
-        }, {
-            breakpoint: 767,
-            settings: {
-                slidesToShow: 2
-            }
-        }, {
-            breakpoint: 575,
-            settings: {
-                slidesToShow: 1,
-                slidesToScroll: 1,
-                centerMode: false
-            }
-        }
+        { breakpoint: 1024, settings: { slidesToShow: 3 } },
+        { breakpoint: 767, settings: { slidesToShow: 2 } },
+        { breakpoint: 575, settings: { slidesToShow: 1, centerMode: false } }
     ]
+};
+
+// ⭐ star renderer
+const renderStars = (rating) => {
+    const full = Math.floor(rating);
+    const half = rating % 1 !== 0;
+    const empty = 5 - full - (half ? 1 : 0);
+
+    return (
+        <>
+            {[...Array(full)].map((_, i) => (
+                <i key={"f"+i} className="bi bi-star-fill" />
+            ))}
+            {half && <i className="bi bi-star-half" />}
+            {[...Array(empty)].map((_, i) => (
+                <i key={"e"+i} className="bi bi-star" />
+            ))}
+        </>
+    );
 };
 
 const TestimonialOne = () => {
     return (
         <Fragment>
             <Slider className="feedback_slider_one" {...settings1}>
-                {TestimonialContent.map((val, i)=>(
+                {TestimonialContent.map((val, i) => (
                     <div key={i} className="item">
-                    <div className="feedback-block-one margin-2">
-                        <div className="top-header d-flex align-items-center justify-content-between">
-                            <div>
-                                <img src={`images/logo/${val.logo}.png`} alt=""/>
-                                <ul className="style-none d-flex rating pt-15">
-                                    <li><i className="bi bi-star-fill"/></li>
-                                    <li><i className="bi bi-star-fill"/></li>
-                                    <li><i className="bi bi-star-fill"/></li>
-                                    <li><i className="bi bi-star-fill"/></li>
-                                    <li><i className="bi bi-star-fill"/></li>
-                                </ul>
+                        <div className="feedback-block-one margin-2">
+
+                            {/* ⭐ Stars */}
+                            <ul className="style-none d-flex rating mb-15">
+                                {renderStars(val.rating)}
+                            </ul>
+
+                            {/* Feedback text */}
+                            <p>{val.desc}</p>
+
+                            {/* Rating text */}
+                            <div className="mt-15 fw-bold">
+                                {val.rating}/5 Rating
                             </div>
-                            <img src={`images/icon/${val.icon}.svg`} alt="" width={50}/>
-                        </div>
-                        {/* /.top-header */}
-                        <p>Certainly from my perspective quis been a great success with due WP giving us
-                            that enterprises level assured quality.</p>
-                        <div className="d-flex align-items-center justify-content-between">
-                            <div className="cost">
-                                <span>{val.text}</span> {val.price}</div>
-                            <img src={`images/logo/{val.logo2}.png`} alt=""/>
+
                         </div>
                     </div>
-                    {/* /.feedback-block-one */}
-                </div>
                 ))}
             </Slider>
-            {/* /.feedback_slider_one */}
         </Fragment>
     )
 }
 
-export default TestimonialOne
+export default TestimonialOne;

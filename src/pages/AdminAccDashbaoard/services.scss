@@ -1,0 +1,338 @@
+/* =========================================================
+   SERVICES SPECIFIC STYLES
+   Styles for Active/Inactive/All services
+========================================================= */
+
+.services-tabs {
+  @extend .tab-container;
+  
+  button {
+    @extend .tab-button;
+    position: relative;
+    
+    &.active {
+      background: #2563eb;
+      color: #ffffff;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -16px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 20px;
+        height: 3px;
+        background: #2563eb;
+        border-radius: 2px;
+      }
+    }
+  }
+}
+
+/* SERVICES TABLE HEADER */
+.services-table-header {
+  display: grid;
+  grid-template-columns: 35% 15% 15% 10% 15%;
+  align-items: center;
+  height: 56px;
+  padding: 0 24px;
+  background: linear-gradient(135deg, #2f4aa1 0%, #3aa0c8 100%);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.service-header-col {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 16px;
+}
+
+/* SERVICES CONTENT AREA */
+.services-content-wrapper {
+  @extend .content-wrapper;
+}
+
+.services-alldata {
+  flex: 1;
+  overflow-y: auto;
+  @extend .custom-scrollbar;
+}
+
+/* SERVICE ROWS */
+.each-service-data {
+  display: grid;
+  grid-template-columns: 35% 15% 15% 10% 15%;
+  align-items: center;
+  min-height: 64px;
+  padding: 0 24px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #ffffff;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  
+  &:hover {
+    background: #f8fafc;
+    transform: translateX(4px);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  }
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  & > div {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 16px 16px 16px 0;
+  }
+}
+
+/* SERVICE NAME COLUMN */
+.service-name-col {
+  .service-title {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  
+  .service-description {
+    font-size: 13px;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* BILLING TYPE BADGE */
+.billing-type {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  background: #e0f2fe;
+  color: #0369a1;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* PRICE STYLING */
+.price-value {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 16px;
+  
+  &::before {
+    content: '₹';
+    font-size: 14px;
+    margin-right: 2px;
+    opacity: 0.7;
+  }
+}
+
+/* CURRENCY STYLING */
+.currency-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  padding: 6px 12px;
+  background: #f1f5f9;
+  color: #475569;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+}
+
+/* PARTNER COLUMN */
+.partner-wrapper {
+  position: relative;
+  
+  .partner-value {
+    font-size: 13px;
+    color: #475569;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: all 0.2s ease;
+  }
+  
+  &:hover .partner-value {
+    overflow: visible;
+    white-space: normal;
+    position: absolute;
+    background: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    max-width: 300px;
+    word-break: break-all;
+  }
+}
+
+/* SERVICES STATS FOOTER */
+.services-stats-static {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 20px 24px;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  
+  .stat-card-static {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 1px solid #e2e8f0;
+    
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 8px;
+      line-height: 1;
+    }
+    
+    .stat-label {
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+    
+    &.revenue {
+      background: linear-gradient(135deg, #2f4aa1 0%, #3aa0c8 100%);
+      border: none;
+      
+      .stat-value,
+      .stat-label {
+        color: #ffffff;
+      }
+      
+      .stat-value::before {
+        content: '₹';
+        font-size: 20px;
+        margin-right: 4px;
+        opacity: 0.9;
+      }
+    }
+  }
+}
+
+/* NO SERVICES FOUND */
+.no-services-found {
+  @extend .no-data-container;
+  
+  .services-empty-icon {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    
+    svg {
+      width: 40px;
+      height: 40px;
+      color: #94a3b8;
+    }
+  }
+  
+  .create-service-btn {
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+    }
+    
+    &::before {
+      content: '+';
+      font-size: 18px;
+      font-weight: 700;
+    }
+  }
+}
+
+/* SERVICE STATUS INDICATOR */
+.status-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  
+  &.status-active {
+    background: #10b981;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+  }
+  
+  &.status-inactive {
+    background: #ef4444;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2);
+  }
+}
+
+.status-value {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Add this to your services.scss file */
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+  
+  .detail-label {
+    font-weight: 500;
+    color: #64748b;
+    font-size: 14px;
+  }
+  
+  .detail-value {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 14px;
+  }
+}
+
+.service-info-section {
+  margin-bottom: 24px;
+}

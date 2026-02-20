@@ -4753,6 +4753,7 @@ body .btn-eight:hover {
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
+    
 }
 .fancy-short-banner-four .video-icon {
     width: 85px;
@@ -4762,6 +4763,7 @@ body .btn-eight:hover {
     font-size: 35px;
     padding-left: 8px;
     color: var(--prime-three);
+    
 }
 .fancy-short-banner-four .video-icon:hover {
     background: var(--prime-two);
@@ -4796,7 +4798,7 @@ body .btn-eight:hover {
 .fancy-short-banner-five h3 {
     font-family: "gorditamedium";
     color: #fff;
-    font-size: 44px;
+    font-size: 22px;
     line-height: 1.25em;
     margin: 0 0 0;
 }
@@ -5756,4 +5758,36 @@ body .btn-eight:hover {
 }
 
 
+/* ===== IMAGE SIZE FIX FOR FANCY FEATURE EIGHTEEN ===== */
+.fancy-feature-eighteen .illustration-holder {
+    width: 45% !important;        /* Increase container width */
+    left: 2% !important;           /* Adjust position */
+}
 
+.fancy-feature-eighteen .main-illustration {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 700px !important;   /* Control maximum size */
+    object-fit: contain !important;
+}
+
+/* Larger screens */
+@media (min-width: 1600px) {
+    .fancy-feature-eighteen .illustration-holder {
+        width: 48% !important;
+    }
+    
+    .fancy-feature-eighteen .main-illustration {
+        max-width: 850px !important;
+    }
+}
+
+/* Tablet and mobile */
+@media (max-width: 991px) {
+    .fancy-feature-eighteen .illustration-holder {
+        position: relative !important;
+        width: 90% !important;
+        left: 0 !important;
+        margin: 40px auto !important;
+    }
+}

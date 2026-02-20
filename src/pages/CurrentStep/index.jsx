@@ -15,7 +15,7 @@ import edutech from "./edutech.svg";
 import resory from "./resory.svg";
 import lek from "./lek.svg";
 import logo from "../../static/images/logo.svg";
-const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const demoMicroServices = [
   {
     id: "svc1",
@@ -55,22 +55,7 @@ const demoMicroServices = [
   },
 ];
 
-const demoNanoServices = [
-  {
-    id: 1,
-    title: "1-to-1 Academic Foundation Execution",
-    expert: "Naavi Certified Math & Physics Mentor",
-    scope: [
-      "Personalized study plan",
-      "Weekly 1-to-1 sessions",
-      "Assignments & problem-solving",
-      "Progress tracking"
-    ],
-    duration: "4 Weeks",
-    outcome: "Strong Math & Physics foundation",
-    price: "₹15,000"
-  }
-];
+
 
 
 const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selectedPath }) => {
@@ -248,7 +233,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         setServicesLoading(true);
 
         const res = await axios.get(
-          `${BASE_URL}/api/services`,
+          `http://localhost:4545/api/services`,
           {
             params: {
               step_id: currentStepData._id,
@@ -274,23 +259,25 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
 
   /** ===================== USER DATA FETCH ====================== **/
-  useEffect(() => {
-    const userEmail = userDetails?.user?.email || userDetails?.email || "";
+ useEffect(() => {
+  if (!userDetails) return;   // 🔥 ADD THIS LINE
 
-    // Add proper error handling and check if API is available
-    if (!userEmail) {
-      console.warn("No user email found");
-      return;
-    }
+  const userEmail =
+    userDetails?.user?.email || userDetails?.email;
 
-    axios
-      .get(`${BASE_URL}/api/users/get/${userEmail}`)
-      .then((response) => setUserData(response?.data?.data || []))
-      .catch((error) => {
-        console.warn("User data fetch failed, using empty data:", error.message);
-        setUserData([]); // Set empty array instead of failing
-      });
-  }, []);
+  if (!userEmail) {
+    console.warn("No user email found");
+    return;
+  }
+
+  axios.get(`/api/users/get/${userEmail}`)
+    .then((res) => {
+      // your logic
+    })
+    .catch((err) => console.error(err));
+
+}, [userDetails]);   // 🔥 MAKE SURE THIS EXISTS
+
 
   /** ===================== FETCH STEP DATA ====================== **/
   useEffect(() => {
@@ -303,7 +290,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     if (!stepId || !pathId) return;
 
     axios
-      .get(`${BASE_URL}/api/userpaths/steps?pathId=${pathId}`)
+      .get(`/api/userpaths/steps?pathId=${pathId}`)
       .then((res) => {
         console.log("🔥 STEPS RESPONSE:", res.data);
 
@@ -342,7 +329,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
       try {
         const res = await axios.get(
-          `${BASE_URL}/api/stepviews?pathId=${pathId}&stepId=${stepId}`
+          `/api/stepviews?pathId=${pathId}&stepId=${stepId}`
         );
 
         console.log("🔥 AI STEP VIEWS (PATH):", res.data?.data);
@@ -371,7 +358,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
     try {
       const res = await axios.get(
-        `${BASE_URL}/api/services/by-step?step_id=${stepId}`
+        `http://localhost:4545/api/services/by-step?step_id=${stepId}`
       );
 
       // ✅ services are FLAT objects
@@ -505,7 +492,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
     try {
       const res = await axios.put(
-        `${BASE_URL}/api/userpaths/completeStep`,
+        "http://localhost:4545/api/userpaths/completeStep",
         {
           email,
           pathId,
@@ -535,7 +522,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
     try {
       const res = await axios.put(
-        `${BASE_URL}/api/userpaths/failedStep`,
+        "http://localhost:4545/api/userpaths/failedStep",
         {
           email,
           pathId,
