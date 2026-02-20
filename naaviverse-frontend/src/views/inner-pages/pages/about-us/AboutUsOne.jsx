@@ -110,8 +110,325 @@ useEffect(() => {
                 <Helmet>
                     <title>About Us One || Naavi - AI Powered Path Engine</title>
                 </Helmet>
+        
+                {/* Inline Styles */}
+                <style>
+                    {`
+                    /* Hero Stats Section */
+                    .hero-stats-section {
+                        position: relative;
+                        padding: 100px 0;
+                        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+                        overflow: hidden;
+                        margin: 80px 0;
+                    }
 
-                <TopNavOne/> {/* theme-menu-one */}
+                    .hero-content-wrapper {
+                        max-width: 1200px;
+                        margin: 0 auto;
+                        text-align: center;
+                        position: relative;
+                        z-index: 2;
+                    }
+
+                    .hero-tagline {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 10px;
+                        background: white;
+                        padding: 10px 25px;
+                        border-radius: 50px;
+                        font-size: 0.95rem;
+                        font-weight: 600;
+                        color: #4da6ff;
+                        margin-bottom: 30px;
+                        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+                    }
+
+                    .live-dot {
+                        width: 8px;
+                        height: 8px;
+                        background: #4cd964;
+                        border-radius: 50%;
+                        animation: blink 1.5s infinite;
+                    }
+
+                    .hero-main-title {
+                        font-size: 3.2rem;
+                        font-weight: 800;
+                        line-height: 1.2;
+                        margin-bottom: 25px;
+                        color: #1a202c;
+                    }
+
+                    .gradient-text {
+                        background: linear-gradient(135deg, #4da6ff, #1a8cff);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        background-clip: text;
+                        position: relative;
+                    }
+
+                    .gradient-text::after {
+                        content: '';
+                        position: absolute;
+                        bottom: 5px;
+                        left: 0;
+                        right: 0;
+                        height: 8px;
+                        background: rgba(77, 166, 255, 0.2);
+                        z-index: -1;
+                        border-radius: 4px;
+                    }
+
+                    .hero-description {
+                        font-size: 1.2rem;
+                        color: #4a5568;
+                        line-height: 1.6;
+                        max-width: 700px;
+                        margin: 0 auto 50px;
+                    }
+
+                    .stats-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                        gap: 30px;
+                        margin: 60px auto;
+                        max-width: 1000px;
+                    }
+
+                    .stat-card {
+                        background: white;
+                        padding: 35px 25px;
+                        border-radius: 20px;
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+                        border: 1px solid rgba(255, 255, 255, 0.8);
+                        transition: all 0.3s ease;
+                        position: relative;
+                        overflow: hidden;
+                    }
+
+                    .stat-card::before {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        height: 4px;
+                        background: linear-gradient(90deg, #4da6ff, #1a8cff);
+                    }
+
+                    .stat-card:hover {
+                        transform: translateY(-10px);
+                        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                    }
+
+                    .stat-number {
+                        font-size: 2.8rem;
+                        font-weight: 800;
+                        color: #2c3e50;
+                        margin-bottom: 10px;
+                        font-feature-settings: "tnum";
+                        font-variant-numeric: tabular-nums;
+                    }
+
+                    .stat-label {
+                        color: #718096;
+                        font-size: 1rem;
+                        font-weight: 500;
+                    }
+
+                    .trusted-brands {
+                        margin: 80px 0 50px;
+                    }
+
+                    .brands-title {
+                        font-size: 1rem;
+                        color: #a0aec0;
+                        text-transform: uppercase;
+                        letter-spacing: 2px;
+                        margin-bottom: 30px;
+                        font-weight: 600;
+                    }
+
+                    .brands-grid {
+                        opacity: 0.8;
+                        transition: opacity 0.3s ease;
+                    }
+
+                    .brands-grid:hover {
+                        opacity: 1;
+                    }
+
+                    .hero-cta {
+                        display: flex;
+                        gap: 20px;
+                        justify-content: center;
+                        margin-top: 60px;
+                        flex-wrap: wrap;
+                    }
+
+                    .btn-primary {
+                        background: linear-gradient(135deg, #4da6ff, #1a8cff);
+                        color: white;
+                        padding: 16px 40px;
+                        border-radius: 12px;
+                        font-weight: 600;
+                        font-size: 1.1rem;
+                        text-decoration: none;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 12px;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 10px 25px rgba(77, 166, 255, 0.25);
+                    }
+
+                    .btn-primary:hover {
+                        transform: translateY(-3px);
+                        box-shadow: 0 15px 30px rgba(77, 166, 255, 0.35);
+                        color: white;
+                    }
+
+                    .btn-secondary {
+                        background: white;
+                        color: #4da6ff;
+                        padding: 16px 40px;
+                        border-radius: 12px;
+                        font-weight: 600;
+                        font-size: 1.1rem;
+                        text-decoration: none;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 12px;
+                        transition: all 0.3s ease;
+                        border: 2px solid #4da6ff;
+                    }
+
+                    .btn-secondary:hover {
+                        background: rgba(77, 166, 255, 0.05);
+                        transform: translateY(-3px);
+                        box-shadow: 0 10px 20px rgba(77, 166, 255, 0.15);
+                        color: #4da6ff;
+                    }
+
+                    .hero-bg-decoration {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        z-index: 1;
+                        overflow: hidden;
+                    }
+
+                    .floating-circle {
+                        position: absolute;
+                        border-radius: 50%;
+                        opacity: 0.1;
+                        filter: blur(40px);
+                    }
+
+                    .circle-1 {
+                        width: 300px;
+                        height: 300px;
+                        background: linear-gradient(135deg, #4da6ff, #1a8cff);
+                        top: 10%;
+                        left: 10%;
+                        animation: float 20s ease-in-out infinite;
+                    }
+
+                    .circle-2 {
+                        width: 200px;
+                        height: 200px;
+                        background: linear-gradient(135deg, #4cd964, #2ecc71);
+                        bottom: 20%;
+                        right: 15%;
+                        animation: float 15s ease-in-out infinite reverse;
+                        animation-delay: 2s;
+                    }
+
+                    .circle-3 {
+                        width: 150px;
+                        height: 150px;
+                        background: linear-gradient(135deg, #ff9500, #ff5e3a);
+                        top: 40%;
+                        right: 20%;
+                        animation: pulse 10s ease-in-out infinite;
+                        animation-delay: 1s;
+                    }
+
+                    @keyframes blink {
+                        0%, 100% { opacity: 1; }
+                        50% { opacity: 0.5; }
+                    }
+
+                    @keyframes float {
+                        0%, 100% { transform: translateY(0) rotate(0deg); }
+                        50% { transform: translateY(-20px) rotate(5deg); }
+                    }
+
+                    @keyframes pulse {
+                        0%, 100% { opacity: 0.1; }
+                        50% { opacity: 0.2; }
+                    }
+
+                    /* Responsive */
+                    @media (max-width: 992px) {
+                        .hero-stats-section {
+                            padding: 80px 0;
+                        }
+                        
+                        .hero-main-title {
+                            font-size: 2.5rem;
+                        }
+                        
+                        .stats-grid {
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 20px;
+                        }
+                    }
+
+                    @media (max-width: 768px) {
+                        .hero-cta {
+                            flex-direction: column;
+                            align-items: center;
+                        }
+                        
+                        .btn-primary, .btn-secondary {
+                            width: 100%;
+                            max-width: 300px;
+                            justify-content: center;
+                        }
+                        
+                        .stats-grid {
+                            grid-template-columns: 1fr;
+                        }
+                    }
+
+                    @media (max-width: 576px) {
+                        .hero-main-title {
+                            font-size: 2rem;
+                        }
+                        
+                        .hero-description {
+                            font-size: 1.1rem;
+                        }
+                        
+                        .stat-card {
+                            padding: 25px 20px;
+                        }
+                        
+                        .stat-number {
+                            font-size: 2.2rem;
+                        }
+                    }
+
+
+                    
+                    `}
+                </style>
+
+               <TopNavFour />
 
                 <div className="theme-inner-banner">
                     <InnerBanner intro='About Company' currpage='About Us'/>
