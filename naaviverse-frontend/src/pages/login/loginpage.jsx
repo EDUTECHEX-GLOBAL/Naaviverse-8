@@ -22,7 +22,7 @@ const IconMenu = [
     { id: 1, icon: lg2 },
 ];
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:4545"; // ✅ default fallback
+const BASE_URL = process.env.REACT_APP_API_BASE_URL|| `${BASE_URL}`; // ✅ default fallback
 
 const Loginpage = () => {
     const navigate = useNavigate();
@@ -46,13 +46,13 @@ const Loginpage = () => {
     // }, []);
 
 const getProfilePic = async (email, loginType) => {
-    try {
-        const url =
-            loginType === "Users"
-                ? `/api/auth/get-profile-pic`
-                : `http://localhost:4545/api/partner/get-profile-pic`;
+  try {
+    const url =
+      loginType === "Users"
+        ? `${BASE_URL}/api/auth/get-profile-pic`
+        : `${BASE_URL}/api/partner/get-profile-pic`;
 
-        const response = await axios.get(url, { params: { email } });
+    const response = await axios.get(url, { params: { email } });
 
         if (response.data.status && response.data.profilePic) {
             localStorage.setItem("userProfilePic", response.data.profilePic);
@@ -135,7 +135,7 @@ const handleLogin = () => {
         setLoading(true);
         try {
             const response = await axios.post(
-                `${API_BASE_URL}/${loginType === "Users" ? "api/auth" : "api/partner"}/forgotPassword`,
+                `${BASE_URL}/${loginType === "Users" ? "api/auth" : "api/partner"}/forgotPassword`,
                 { email }
             );
 
@@ -168,7 +168,7 @@ const handleLogin = () => {
 
         try {
             const response = await axios.post(
-                `${API_BASE_URL}/${loginType === "Users" ? "api/auth" : "api/partner"}/updatepassword`,
+                `${BASE_URL}/${loginType === "Users" ? "api/auth" : "api/partner"}/updatepassword`,
                 obj
             );
 

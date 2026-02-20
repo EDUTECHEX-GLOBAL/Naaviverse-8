@@ -62,7 +62,7 @@ import classNames from "../../components/createAccountant/components.module.scss
 import trash from "../accDashbaoard/trash.svg";
 import { State } from "country-state-city";
 import MenuNav from "../../components/MenuNav/index.jsx";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const AccProfile = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [show2FAModal, setShow2FAModal] = useState(false);
@@ -304,7 +304,7 @@ const uploadBulkPath = async (file) => {
     const json = JSON.parse(text);       // Convert to JSON
 
     let { data } = await axios.post(
-      "http://localhost:4545/api/paths/bulk",
+      `${BASE_URL}/api/paths/bulk`,
       json
     );
 
@@ -350,7 +350,7 @@ const uploadBulkStep = async (file) => {
     };
 
     const res = await axios.post(
-      "http://localhost:4545/api/steps/bulk",
+      `${BASE_URL}/api/steps/bulk`,
       body
     );
 
@@ -400,7 +400,7 @@ const uploadBulkService = async (file) => {
     };
 
     const res = await axios.post(
-      "http://localhost:4545/api/services/bulk",
+      `${BASE_URL}/api/services/bulk`,
       body
     );
 
@@ -434,7 +434,7 @@ const uploadBulkService = async (file) => {
   };
 
   useEffect(() => {
-    axios.get(`/api/paths/active`).then((res) => {
+    axios.get(`${BASE_URL}/api/paths/active`).then((res) => {
       let result = res?.data?.data;
       console.log("All paths fetched:", result);
       // console.log(result, "all paths fetched");
@@ -472,7 +472,7 @@ const getActiveSteps = () => {
   console.log("📧 Email used for step fetch:", email);
 
   axios
-    .get(`http://localhost:4545/api/steps?path_id=selectedPathId`)
+    .get(`${BASE_URL}/api/steps?path_id=selectedPathId`)
     .then((response) => {
       let result = response?.data?.data;
       console.log("Active Steps Retrieved:", result);
@@ -972,7 +972,7 @@ navigate("/login");
       yourPosition: position,
     }, "Creating Partner Profile");
 
-    axios.put(`/api/partner/add`, {
+    axios.put(`${BASE_URL}/api/partner/add`, {
       email,
       firstName,
       lastName,
@@ -1004,7 +1004,7 @@ navigate("/login");
     let token = userDetails?.idToken;
     axios
       .post(
-        "http://localhost:4545/lxUser/register/banker",
+        `${BASE_URL}/lxUser/register/banker`,
         {
           bankerTag: brandUserName,
           colorCode: brandColorCode,
@@ -1043,7 +1043,7 @@ navigate("/login");
   // const accountantStatus = () => {
   //   let userEmail =userDetails.email;
   //   axios
-  //     .get(`http://localhost:4545/admin/allBankers?email=${userEmail}`)
+  //     .get(`${BASE_URL}/admin/allBankers?email=${userEmail}`)
   //     .then((response) => {
   //       let result = response?.data?.data?.[0]?.category;
   //       // console.log(result, "accountantStatus result");
@@ -1063,7 +1063,7 @@ navigate("/login");
     if (email && token) {
       axios
         .post(
-          "http://localhost:4545/banker/assignCategory",
+          `${BASE_URL}/banker/assignCategory`,
           {
             categoryName: value,
             email,
@@ -1098,7 +1098,7 @@ navigate("/login");
 
   // const fetchData = debounce(async () => {
   //   const response = await fetch(
-  //     `http://localhost:4545/lxUser/checkLXTag?lxTag=${userName}`
+  //     `${BASE_URL}/lxUser/checkLXTag?lxTag=${userName}`
   //   );
   //   const data = await response.json();
   //   // console.log(data, "username data");
@@ -1117,7 +1117,7 @@ navigate("/login");
 
   // const fetchData1 = debounce(async () => {
   //   const response = await fetch(
-  //     `http://localhost:4545/lxUser/checkBankerTag?bankerTag=${brandUserName}`
+  //     `${BASE_URL}/lxUser/checkBankerTag?bankerTag=${brandUserName}`
   //   );
   //   const data = await response.json();
   //   // console.log(data, "username data");
@@ -1193,7 +1193,7 @@ navigate("/login");
 
     try {
       let result = await axios.put(
-        "http://localhost:4545/lxUser/update/banker",
+        `${BASE_URL}/lxUser/update/banker`,
         body,
         {
           headers: { token, email },
@@ -1221,7 +1221,7 @@ navigate("/login");
   useEffect(() => {
     let email = userDetails?.email;
     axios
-      .get(`http://localhost:4545/steps/get?email=${email}`)
+      .get(`${BASE_URL}/steps/get?email=${email}`)
       .then((response) => {
         let result = response?.data?.data;
         // console.log(result, "all steps fetched accprofile");
@@ -1236,7 +1236,7 @@ navigate("/login");
     // console.log(personality, "api body");
     setCreatingPath(true);
     axios
-      .post(`/api/paths/add`, {
+      .post(`${BASE_URL}/api/paths/add`, {
         ...pathSteps,
         performance: gradeAvg,
         curriculum: curriculum,

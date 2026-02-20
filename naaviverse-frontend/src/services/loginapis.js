@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Base URL for backend
-const BASE_URL = "http://localhost:4545";
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 export const Loginservice = async (object, loginType) => {
   try {

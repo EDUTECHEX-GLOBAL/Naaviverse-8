@@ -16,7 +16,8 @@ import PortfolioGallery from '../../components/portfolio/PortfolioGallery'
 import PricingTab from '../../components/pricing/pricetab/PricingTab';
 import TestimonialOne from '../../components/testimonial/TestimonialOne';
 import Footer from '../../components/footernew/index';
-
+// Add this import at the top:
+import BrandSix from '../../components/brand/BrandSix';
 
 const DataScience = () => {
     return (
@@ -224,22 +225,80 @@ const DataScience = () => {
                 </div>
                 {/* /.feedback-section-one */}
 
-                <div className="partner-section-one">
-                    <div className="container">
-                        <div className="title-style-one text-center" data-aos="fade-up">
-                            <div className="sc-title">over 150k+ client</div>
-                            <h2 className="main-title md">Join 27,000+ companies who’ve reached
-                            </h2>
-                        </div>
-                        {/* /.title-style-one */}
-                        <div className="row">
-                            <div className="col-xxl-11 m-auto">
-                                <BrandOne/>
-                            </div>
-                        </div>
-                    </div>
-                    {/* /.container */}
+                <div className="hero-stats-section mt-130 lg-mt-70 lg-pb-20">
+    <div className="container">
+        <div className="hero-content-wrapper">
+            {/* Tagline */}
+            <div className="hero-tagline" data-aos="fade-up">
+                <span className="live-dot"></span>
+                Trusted by 150,000+ Students Worldwide
+            </div>
+            
+            {/* Main Title */}
+            <h1 className="hero-main-title" data-aos="fade-up" data-aos-delay="100">
+                Join <span className="gradient-text">27,000+ Institutions</span> 
+                <br />
+                Transforming Education with AI
+            </h1>
+            
+            {/* Description */}
+            <p className="hero-description" data-aos="fade-up" data-aos-delay="200">
+                Universities, colleges, and educational institutions trust Naavi to provide 
+                intelligent career guidance and academic pathway optimization for their students.
+            </p>
+            
+            {/* Animated Stats Grid */}
+            <div className="stats-grid" data-aos="fade-up" data-aos-delay="300">
+                <div className="stat-card">
+                    <div className="stat-number" data-count="150000">150,000+</div>
+                    <div className="stat-label">Active Students</div>
                 </div>
+                <div className="stat-card">
+                    <div className="stat-number" data-count="27000">27,000+</div>
+                    <div className="stat-label">Partner Institutions</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-number" data-count="98">98%</div>
+                    <div className="stat-label">Success Rate</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-number" data-count="50">50+</div>
+                    <div className="stat-label">Countries</div>
+                </div>
+            </div>
+            
+            {/* Brand Logos */}
+            <div className="trusted-brands" data-aos="fade-up" data-aos-delay="400">
+                <p className="brands-title">Trusted by leading institutions</p>
+                <div className="brands-grid">
+                    <BrandSix/>
+                </div>
+            </div>
+            
+            {/* CTA Button */}
+            <div className="hero-cta" data-aos="fade-up" data-aos-delay="500">
+                <Link to="/contact" className="btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
+                    </svg>
+                    Partner With Us
+                </Link>
+                <Link to="/demo" className="btn-secondary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M8 5v14l11-7z" fill="currentColor"/>
+                    </svg>
+                    Request a Demo
+                </Link>
+            </div>
+        </div>
+    </div>
+    {/* Background Decoration */}
+    <div className="hero-bg-decoration">
+        <div className="floating-circle circle-1"></div>
+        <div className="floating-circle circle-2"></div>
+        <div className="floating-circle circle-3"></div>
+    </div>
+</div>
                 {/* /.partner-section-one */}
 
                 <div className="blog-section-one pt-100 pb-140 lg-pt-80 lg-pb-80">

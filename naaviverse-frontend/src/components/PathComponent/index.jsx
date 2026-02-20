@@ -14,7 +14,7 @@ import educationIcon from "../../static/images/mapspage/educationIcon.svg";
 
 // Styles
 import "./mapspage.scss";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const PathComponent = () => {
   const navigate = useNavigate();
   const { sideNav, setsideNav } = useStore();
@@ -77,7 +77,7 @@ const PathComponent = () => {
       const email = user?.email;
       if (!email) return;
 
-      const res = await axios.get(`/api/users/get/${email}`);
+      const res = await axios.get(`${BASE_URL}/api/users/get/${email}`);
       if (res.data.status) {
         setUserProfile(res.data.data);
         localStorage.setItem("userProfile", JSON.stringify(res.data.data));
@@ -112,7 +112,7 @@ useEffect(() => {
       console.log("FETCHING PATHS WITH FILTERS 👉", params);
 
       const res = await axios.get(
-        "http://localhost:4545/api/paths/active",
+       `${BASE_URL}/api/paths/active`,
         { params }
       );
 
@@ -156,18 +156,16 @@ const confirmPathSelection = () => {
     return;
   }
 
-  // ⭐ VERY IMPORTANT — SAVE PATH ID FOR JOURNEY PAGE
   localStorage.setItem("selectedPathId", pathId);
 
   axios
-    .post("http://localhost:4545/api/fetch/selectpath", {
+    .post(`${BASE_URL}/api/fetch/selectpath`, {   // ✅ fixed
       email,
       pathId,
     })
     .then(() => {
       setPathItemStep(3);
 
-      // ⭐ NAVIGATE TO MY JOURNEY AFTER SUCCESS
       setTimeout(() => {
         setsideNav("My Journey");
         navigate("/dashboard/users");
@@ -175,8 +173,6 @@ const confirmPathSelection = () => {
     })
     .catch((err) => console.error("Select path error:", err));
 };
-
-
   // --------------------------------------------------------------
   //  RETURN: FULL CLEAN UI
   // --------------------------------------------------------------

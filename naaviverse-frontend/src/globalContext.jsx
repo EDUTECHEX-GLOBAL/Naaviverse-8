@@ -37,10 +37,10 @@ export const GlobalContexProvider = ({ children }) => {
   // --------------------------------------------
   const [categories, setCategories] = useState([]);
   const [refetchCategories, setRefetchCategories] = useState(false);
-
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const getCategories = async () => {
   try {
-    const res = await axios.get("http://localhost:4545/api/categories");
+    const res = await axios.get(`${BASE_URL}/api/categories`);
 
     if (!res?.data?.status || !Array.isArray(res.data.categories)) {
       setCategories([]);
@@ -69,7 +69,7 @@ const loadCurrencies = async () => {
   setCurrencyLoading(true);
 
   try {
-    const res = await axios.get("http://localhost:4545/api/currencies");
+    const res = await axios.get(`${BASE_URL}/api/currencies`);
 
     if (!res?.data?.status || !Array.isArray(res.data.currencies)) {
       setAllCurrencies([]);
@@ -91,7 +91,6 @@ const loadCurrencies = async () => {
   }
 };
 
-
   useEffect(() => {
     loadCurrencies();
   }, []);
@@ -108,7 +107,7 @@ const loadCurrencies = async () => {
 
     setCoinLoading(true);
     axios
-      .get(`http://localhost:4545/api/vault/coins/${encodeURIComponent(email)}`)
+      .get(`${BASE_URL}/api/vault/coins/${encodeURIComponent(email)}`)
       .then((res) => {
         if (res.data.status) {
           setVaultCoins(res.data.data);

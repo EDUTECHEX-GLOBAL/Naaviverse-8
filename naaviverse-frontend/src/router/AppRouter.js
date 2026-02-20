@@ -72,10 +72,6 @@ const AppRouter = () => {
         <Route path="/service-two" element={<ServicesTwo />} />
         <Route path="/service-details" element={<ServicesDetails />} />
 
-      {/* Team Pages - Added the new routes your ThemeMainMenu.jsx uses */}
-        <Route path="/team/founders" element={<TeamDetails />} />
-        <Route path="/team/members" element={<TeamMember />} />
-        
         {/* Keep existing team routes for compatibility */}
         <Route path="/team-member" element={<TeamMember />} />
         <Route path="/team-details" element={<TeamDetails />} />
@@ -94,8 +90,8 @@ const AppRouter = () => {
 
 {/* Problem / About pages */}
 <Route path="/problem/about-us" element={<AboutUsOne />} />
-<Route path="/problem/why-naavi" element={<AboutUsTwo />} />
-<Route path="/problem/vision-mission" element={<AboutUsTwo />} />
+{/* <Route path="/problem/why-naavi" element={<AboutUsTwo />} />
+<Route path="/problem/vision-mission" element={<AboutUsTwo />} /> */}
 
 
 <Route path="/blog" element={<GridLayout />} />

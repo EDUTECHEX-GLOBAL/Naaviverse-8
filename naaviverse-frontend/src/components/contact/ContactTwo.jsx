@@ -3,37 +3,45 @@ import { Link } from 'react-router-dom';
 import Tilt from 'react-parallax-tilt';
 
 const ContactTwo = () => {
-    return (
-        <Fragment>
-            <div className="row align-items-center">
-                <div className="col-md-6 order-md-last">
-                    <div className="block-style-nine ps-lg-5 ms-xxl-3">
-                        <div className="title-style-three" data-aos="fade-up">
-                            <div className="sc-title">Contact us</div>
-                            <h2 className="main-title">Get Ready to <span>Started.</span> It’s Fast &amp; Easy.</h2>
-                        </div>
-                        {/* /.title-style-three */}
-                        <p className="pt-20 pb-30" data-aos="fade-up" data-aos-delay={80}>Lorem ipsum
-                            dolor sit amet, consectetur adipiscing elit, sed eiusmod tempor incididunt ut
-                            labore et dolore magna aliqua. Ut quis nostrud ullamco laboris nisi.</p>
-                        <Link
-                            to="/contact"
-                            className="btn-eight"
-                            data-aos="fade-up"
-                            data-aos-delay={130}>Send Message</Link>
+   return (
+    <Fragment>
+        <div className="row align-items-center">
+            <div className="col-md-6 order-md-last">
+                <div className="block-style-nine ps-lg-5 ms-xxl-3">
+                    <div className="title-style-three" data-aos="fade-up">
+                        <div className="sc-title">Get Started</div>
+                        <h2 className="main-title">
+                            Plan Your <span>Future Path</span> with Confidence.
+                        </h2>
                     </div>
-                    {/* /.block-style-nine */}
-                </div>
-                <div className="col-md-6 order-md-first" data-aos="fade-right">
-                    <div className="illustration-holder position-relative d-inline-block sm-mt-60">
-                        <Tilt tiltMaxAngleX={5} tiltMaxAngleY={5}>
-                        <img src="images/assets/ils_19.svg" alt="" className="transform-img-meta"/>
-                        </Tilt>
-                    </div>
+
+                    <p className="pt-20 pb-30" data-aos="fade-up" data-aos-delay={80}>
+                        Discover the right courses, colleges, and career direction with personalized guidance and smart insights. 
+                        Take the first step today and build a clear roadmap toward your goals.
+                    </p>
+
+                    <Link
+                        to="/contact"
+                        className="btn-eight"
+                        data-aos="fade-up"
+                        data-aos-delay={130}
+                    >
+                        Start Your Journey
+                    </Link>
                 </div>
             </div>
-        </Fragment>
-    )
+
+            <div className="col-md-6 order-md-first" data-aos="fade-right">
+                <div className="illustration-holder position-relative d-inline-block sm-mt-60">
+                    <Tilt tiltMaxAngleX={5} tiltMaxAngleY={5}>
+                        <img src="images/assets/ils_19.svg" alt="" className="transform-img-meta"/>
+                    </Tilt>
+                </div>
+            </div>
+        </div>
+    </Fragment>
+)
+
 }
 
 export default ContactTwo

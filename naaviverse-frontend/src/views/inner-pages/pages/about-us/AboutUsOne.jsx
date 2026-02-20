@@ -1,6 +1,8 @@
-import React, {Fragment} from 'react';
+/* eslint-disable no-unused-vars */
+/* eslint-disable jsx-a11y/anchor-is-valid */
+import React, {Fragment, useEffect} from 'react';
 import {Helmet} from 'react-helmet';
-import {Link} from 'react-router-dom';
+import {Link, useLocation} from 'react-router-dom';
 
 import TopNavFour from '../../../../components/header/TopNavFour';
 import InnerBanner from '../../../../components/page-title/InnerBanner';
@@ -14,7 +16,6 @@ import BrandSix from '../../../../components/brand/BrandSix';
 import AdressOne from '../../../../components/adress/AdressOne';
 import Info from '../../../../components/adress/Info';
 
-
 import shape38 from '../../../../assets/images/shape/shape_38.svg';
 import shape39 from '../../../../assets/images/shape/shape_39.svg';
 import shape40 from '../../../../assets/images/shape/shape_40.svg';
@@ -23,7 +24,6 @@ import shape42 from '../../../../assets/images/shape/shape_42.svg';
 import shape43 from '../../../../assets/images/shape/shape_43.svg';
 import shape44 from '../../../../assets/images/shape/shape_44.svg';
 import shape45 from '../../../../assets/images/shape/shape_45.svg';
-
 
 import ils05 from '../../../../assets/images/assets/ils_05.svg';
 import ils051 from '../../../../assets/images/assets/ils_05_1.svg';
@@ -39,38 +39,99 @@ import ils063 from '../../../../assets/images/assets/ils_06_3.svg';
 import ils064 from '../../../../assets/images/assets/ils_06_4.svg';
 import ils065 from '../../../../assets/images/assets/ils_06_5.svg';
 
+
+import Tilt from 'react-parallax-tilt';
+import ils18 from '../../../../assets/images/assets/ils_18.svg';
+import shape25 from '../../../../assets/images/shape/shape_25.svg';
+import Footer from '../../../../components/footernew/index';
+import NewsFormTwo from '../../../../components/form/NewsFormTwo';
+
 const AboutUsOne = () => {
+
+    const location = useLocation();
+useEffect(() => {
+    if (location.hash) {
+        const id = location.hash.replace("#", "");
+        const element = document.getElementById(id);
+        if (element) {
+            setTimeout(() => {
+                element.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            }, 200);
+        }
+    } else {
+        window.scrollTo(0, 0);
+    }
+}, [location]);
+    // Number counter animation effect
+    useEffect(() => {
+        const countUp = (element, target) => {
+            let current = 0;
+            const increment = target / 100;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target.toLocaleString() + (element.dataset.suffix || '');
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current).toLocaleString() + (element.dataset.suffix || '');
+                }
+            }, 20);
+        };
+
+
+
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const numberElement = entry.target.querySelector('.stat-number');
+                    if (numberElement && numberElement.dataset.count) {
+                        countUp(numberElement, parseInt(numberElement.dataset.count));
+                    }
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.stat-card').forEach(card => {
+            observer.observe(card);
+        });
+
+        return () => observer.disconnect();
+    }, []);
+
     return (
         <Fragment>
             <div className="main-page-wrapper">
 
                 <Helmet>
-                    <title>About Us One || Sinco - Data Science & Analytics React Template</title>
+                    <title>About Us One || Naavi - AI Powered Path Engine</title>
                 </Helmet>
 
-               <TopNavFour /> {/* theme-menu-one */}
+                <TopNavOne/> {/* theme-menu-one */}
 
                 <div className="theme-inner-banner">
                     <InnerBanner intro='About Company' currpage='About Us'/>
                    <img src={shape38} alt="" className="shapes shape-one"/>
                     <img src={shape39} alt="" className="shapes shape-two"/>
                 </div>
-                {/* /.theme-inner-banner */}
 
-                <div className="fancy-feature-two position-relative mt-140 lg-mt-100">
+                <div id="who-we-are" className="fancy-feature-two position-relative mt-140 lg-mt-100">
+
                     <div className="container">
                         <div className="row">
                             <div className="col-xxl-5 col-lg-6 col-md-7 ms-auto">
-                                <AboutFour/> {/* /.block-style-two */}
+                                <AboutFour/>
                             </div>
                         </div>
                     </div>
-                    {/* /.container */}
                     <div className="illustration-holder-two sm-mt-40">
                         <img src={ils05} alt="" className="main-illustration w-100"/>
                         <img src={ils051} alt="" className="shapes shape-one"/>
                         <img src={ils052}
-        
                             alt=""
                             className="shapes shape-two"
                             data-aos="fade-up"
@@ -78,7 +139,6 @@ const AboutUsOne = () => {
                             data-aos-delay={100}
                             data-aos-duration={2000}/>
                         <img src={ils053}
-                            
                             alt=""
                             className="shapes shape-three"
                             data-aos="fade-up"
@@ -88,16 +148,14 @@ const AboutUsOne = () => {
                        <img src={ils054} alt="" className="shapes shape-four"/>
                         <img src={ils055} alt="" className="shapes shape-five"/>
                     </div>
-                    {/* /.illustration-holder-two */}
                 </div>
-                {/* /.fancy-feature-two */}
 
-                <div className="fancy-feature-twentyTwo mt-150 lg-mt-60">
+                <div id="vision-mission" className="fancy-feature-twentyTwo mt-150 lg-mt-60">
+
                     <div className="container">
                         <FancyFeatureTwentyTwo/>
                     </div>
                 </div>
-                {/* /.fancy-feature-twentyTwo */}
 
                 <div className="counter-section-one">
                     <div className="inner-container bg-color style-two rounded-0 w-100">
@@ -107,9 +165,7 @@ const AboutUsOne = () => {
                         <img src={shape40} alt="" className="shapes shape-three"/>
                         <img src={shape41} alt="" className="shapes shape-four"/>
                     </div>
-                    {/* /.inner-container */}
                 </div>
-                {/* /.counter-section-one */}
 
                 <div className="fancy-feature-five position-relative mt-50">
                     <div className="container">
@@ -120,11 +176,9 @@ const AboutUsOne = () => {
                                         <div className="sc-title-four">WHY CHOOSE US</div>
                                         <h2 className="main-title">Why you should choose us?</h2>
                                     </div>
-                                    {/* /.title-style-one */}
                                     <p className="pt-10 pb-70">Tell us about your product and we will give you expert assistance.</p>
-                                    <Skill/> {/* /.skills-progress */}
+                                    <Skill/>
                                 </div>
-                                {/* /.block-style-five */}
                             </div>
                             <div className="col-xxl-8 col-lg-7 col-md-6 text-end">
                                 <div className="illustration-holder d-inline-block position-relative xs-mt-20">
@@ -142,119 +196,253 @@ const AboutUsOne = () => {
                                         data-aos="fade-left"
                                         data-aos-duration={1800}/>
                                     <img src={ils065} alt="" className="shapes shape-five"/>
-                                </div>{/*  /.illustration-holder */}
-                            </div>
-                        </div>
-                    </div>
-                    {/* /.container */}
-                </div>
-                {/* /.fancy-feature-five */}
-
-                <div
-                    className="team-section-one mt-110 pt-110 pb-170 lg-mt-80 lg-pt-80 lg-pb-80">
-                    <div className="container">
-                        <div className="row align-items-center">
-                            <div className="col-sm-6">
-                                <div
-                                    className="title-style-one text-center text-sm-start xs-pb-20"
-                                    data-aos="fade-right">
-                                    <div className="sc-title-four">OUR TEAM</div>
-                                    <h2 className="main-title">Our Members</h2>
                                 </div>
-                                {/* /.title-style-one */}
-                            </div>
-                            <div
-                                className="col-sm-6 ms-auto d-flex justify-content-center justify-content-sm-end"
-                                data-aos="fade-left">
-                                <Link to="/team-member" className="btn-one xs ripple-btn">See all members
-                                    <i className="fas fa-chevron-right"/></Link>
                             </div>
                         </div>
-                        <Team/>
                     </div>
-                    <img src={shape42} alt="" className="shapes shape-one"/>
-                    <img src={shape43} alt="" className="shapes shape-two"/>
                 </div>
-                {/* /.team-section-one */}
 
-                <div
-                    className="feedback-section-three style-two mt-150 lg-mt-90"
-                    data-aos="fade-up">
+              <div id="why-naavi" className="fancy-feature-twelve mt-130 pb-50 lg-mt-80">
+
+    <div className="container">
+        <div className="row align-items-center align-items-xl-start">
+
+            {/* TEXT SIDE */}
+            <div className="col-xl-5 col-md-6 order-md-last">
+                <div className="block-style-nine color-two">
+
+                    <div className="title-style-three pb-10" data-aos="fade-up">
+                        <div className="sc-title">WHY CHOOSE US</div>
+
+                        <h2 className="main-title">
+                            Why <span>choose us</span> for your future
+                        </h2>
+                    </div>
+
+                    <ul className="style-none list-item">
+
+                        <li data-aos="fade-up">
+                            Discover the right career and education path based on your interests and goals
+                        </li>
+
+                        <li data-aos="fade-up" data-aos-delay={100}>
+                            Get personalized guidance on what to study and which universities to target next
+                        </li>
+
+                        <li data-aos="fade-up" data-aos-delay={200}>
+                            Plan every step with clear insights and structured roadmaps for success
+                        </li>
+
+                    </ul>
+
+                </div>
+            </div>
+
+
+            {/* IMAGE SIDE */}
+            <div className="col-xl-7 col-md-6 order-md-first" data-aos="fade-right">
+
+                <div className="illustration-holder position-relative d-inline-block pe-md-5 me-xxl-5 sm-mt-60">
+
+                    <Tilt tiltMaxAngleX={5} tiltMaxAngleY={5}>
+
+                        <img
+                            src={ils18}
+                            alt=""
+                            className="transform-img-meta"
+                        />
+
+                    </Tilt>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <img src={shape25} alt="" className="shapes bg-shape"/>
+
+</div>
+
+
+                <div className="feedback-section-three style-two mt-150 lg-mt-90" data-aos="fade-up">
                     <div className="container">
                         <div className="slider-wrapper">
-                            <TestimonialThree/> {/* /.feedback_slider_three */}
+                            <TestimonialThree/>
                         </div>
-                        {/* /.slider-wrapper */}
                     </div>
-                    {/* /.container */}
                 </div>
-                {/* /.feedback-section-three */}
 
-                <div className="partner-section-two mt-130 lg-mt-70 lg-pb-20">
+                {/* ENHANCED SECTION - REPLACEMENT FOR PARTNER SECTION */}
+                <div className="hero-stats-section">
                     <div className="container">
-                        <div className="title-style-one text-center" data-aos="fade-up">
-                            <div className="sc-title-four">over 150k+ client</div>
-                            <h2 className="main-title md">Join 27,000+ companies who’ve reached
-                            </h2>
-                        </div>
-                        {/* /.title-style-one */}
-                        <div className="row">
-                            <div className="col-12 m-auto">
-                                <BrandSix/>
+                        <div className="hero-content-wrapper">
+                            {/* Tagline */}
+                            <div className="hero-tagline" data-aos="fade-up">
+                                <span className="live-dot"></span>
+                                Trusted by 150,000+ Students Worldwide
+                            </div>
+                            
+                            {/* Main Title */}
+                            <h1 className="hero-main-title" data-aos="fade-up" data-aos-delay="100">
+                                Join <span className="gradient-text">27,000+ Institutions</span> 
+                                <br />
+                                Transforming Education with AI
+                            </h1>
+                            
+                            {/* Description */}
+                            <p className="hero-description" data-aos="fade-up" data-aos-delay="200">
+                                Universities, colleges, and educational institutions trust Naavi to provide 
+                                intelligent career guidance and academic pathway optimization for their students.
+                            </p>
+                            
+                            {/* Animated Stats Grid */}
+                            <div className="stats-grid" data-aos="fade-up" data-aos-delay="300">
+                                <div className="stat-card">
+                                    <div className="stat-number" data-count="150000" data-suffix="+">0</div>
+                                    <div className="stat-label">Active Students</div>
+                                </div>
+                                <div className="stat-card">
+                                    <div className="stat-number" data-count="27000" data-suffix="+">0</div>
+                                    <div className="stat-label">Partner Institutions</div>
+                                </div>
+                                <div className="stat-card">
+                                    <div className="stat-number" data-count="98" data-suffix="%">0</div>
+                                    <div className="stat-label">Success Rate</div>
+                                </div>
+                                <div className="stat-card">
+                                    <div className="stat-number" data-count="50" data-suffix="+">0</div>
+                                    <div className="stat-label">Countries</div>
+                                </div>
+                            </div>
+                            
+                            {/* Brand Logos */}
+                            <div className="trusted-brands" data-aos="fade-up" data-aos-delay="400">
+                                <p className="brands-title">Trusted by leading institutions</p>
+                                <div className="brands-grid">
+                                    <BrandSix/>
+                                </div>
+                            </div>
+                            
+                            {/* CTA Button */}
+                            <div className="hero-cta" data-aos="fade-up" data-aos-delay="500">
+                                <Link to="/contact" className="btn-primary">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
+                                    </svg>
+                                    Partner With Us
+                                </Link>
+                                <Link to="/demo" className="btn-secondary">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                        <path d="M8 5v14l11-7z" fill="currentColor"/>
+                                    </svg>
+                                    Request a Demo
+                                </Link>
                             </div>
                         </div>
                     </div>
-                    {/* /.container */}
+                    {/* Background Decoration */}
+                    <div className="hero-bg-decoration">
+                        <div className="floating-circle circle-1"></div>
+                        <div className="floating-circle circle-2"></div>
+                        <div className="floating-circle circle-3"></div>
+                    </div>
                 </div>
-                {/* /.partner-section-two */}
 
-                <div className="address-section-one">
+                {/* <div className="address-section-one">
                     <div className="container">
                         <div className="inner-content bg-white" data-aos="fade-up" data-aos-delay={100}>
                             <div className="row g-0">
                                 <div className="col-md-6 d-flex">
-                                    <AdressOne/> {/* /.address-block-one */}
+                                    <AdressOne/>
                                 </div>
                                 <div className="col-md-6 d-flex">
-                                    <Info/> {/* /.address-block-one */}
+                                    <Info/>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                {/* /.address-section-one */}
+                </div> */}
 
-                <div className="footer-style-one bg-color theme-basic-footer">
-                <div className="container">
-                    <div className="inner-wrapper">
-                      
-                        <div className="bottom-footer">
-                            <div className="d-lg-flex justify-content-between align-items-center">
-                                <ul
-                                    className="order-lg-1 pb-15 d-flex justify-content-center footer-nav style-none">
-                                    <li>
-                                        <a href="faq.html">Privacy &amp; Terms.</a>
-                                    </li>
-                                    <li>
-                                        <a href="faq.html">FAQ</a>
-                                    </li>
-                                    <li>
-                                        <a href="contact-us.html">Contact Us</a>
-                                    </li>
-                                </ul>
-                                <p className="copyright text-center order-lg-0 pb-15">Copyright @2022 naavi inc.</p>
+                {/* <div className="footer-style-one bg-color theme-basic-footer">
+                    <div className="container">
+                        <div className="inner-wrapper">
+                            <div className="bottom-footer">
+                                <div className="d-lg-flex justify-content-between align-items-center">
+                                    <ul className="order-lg-1 pb-15 d-flex justify-content-center footer-nav style-none">
+                                        <li>
+                                            <a href="#!" onClick={(e) => e.preventDefault()}>Privacy &amp; Terms.</a>
+                                        </li>
+                                        <li>
+                                            <a href="#!" onClick={(e) => e.preventDefault()}>FAQ</a>
+                                        </li>
+                                        <li>
+                                            <Link to="/contact">Contact Us</Link>
+                                        </li>
+                                    </ul>
+                                    <p className="copyright text-center order-lg-0 pb-15">Copyright @2026 naavi inc.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    {/* /.inner-wrapper */}
+                    <img src={shape44} alt="" className="shapes shape-one"/>
+                    <img src={shape45} alt="" className="shapes shape-two"/>
+                </div> */}
+
+{/* NEW SIGNUP BLOCK + LANDING FOOTER */}
+<div className="footer-style-four theme-basic-footer mt-150 lg-mt-80">
+
+    <div className="container">
+
+        <div className="inner-wrapper">
+
+            {/* Signup Block */}
+            <div className="subscribe-area">
+
+                <div className="row align-items-center">
+
+                    <div className="col-md-6">
+
+                        <div className="title-style-four sm-pb-20">
+
+                            <h4 className="main-title">
+                                Get Career Tips, Updates & <span>Guidance</span>
+                            </h4>
+
+                        </div>
+
+                    </div>
+
+                    <div className="col-md-6">
+
+                        <div className="subscribe-form">
+
+                            <NewsFormTwo />
+
+                            <p>
+                                We only send interesting and relevant emails.
+                            </p>
+
+                        </div>
+
+                    </div>
+
                 </div>
-                <img src={shape44} alt="" className="shapes shape-one"/>
-                <img src={shape45} alt="" className="shapes shape-two"/>
-            </div>
-                {/* /.footer-style-one */}
 
             </div>
 
+            {/* Landing Page Footer */}
+            <Footer />
+
+        </div>
+
+    </div>
+
+</div>
+
+
+            </div>
         </Fragment>
     )
 }

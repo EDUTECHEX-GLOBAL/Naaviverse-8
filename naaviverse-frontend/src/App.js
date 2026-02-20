@@ -160,7 +160,7 @@ import VisitorsList from "./AdminDashboard/components/VisitorsList";
 /* ================= OTHER ================= */
 import PurchaseSuccess from "./pages/PurchaseSuccess";
 import RoutePage from "./pages/RoutePage/routepage";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 function App() {
   useEffect(() => {
     AOS.init({
@@ -171,7 +171,7 @@ function App() {
 
   useEffect(() => {
     axios
-      .post("http://localhost:4545/api/admin-visitors/admin-visitor")
+      .post(`${BASE_URL}/api/admin-visitors/admin-visitor`)
       .catch(() => {});
   }, []);
   

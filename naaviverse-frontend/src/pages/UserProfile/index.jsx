@@ -61,7 +61,7 @@ import LevelThree from "./LevelThree.jsx";
 import MenuNav from "../../components/MenuNav/index.jsx";
 import AWS from "aws-sdk";
 import uploadGrey from "../../images/uploadGrey.svg";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const UserProfile = () => {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -299,7 +299,7 @@ useEffect(() => {
     if (!userName) return;
     setChecking(true); // <-- Start loading
     try {
-      const res = await axios.get('/api/users/check-username?username=' + userName);
+      const res = await axios.get(`${BASE_URL}/api/users/check-username?username=${userName}`);
       setUserNameAvailable(res.data.available); // <-- Available or unavailable
     } catch (err) {
       setUserNameAvailable(null); // <-- Error checking
@@ -391,8 +391,9 @@ useEffect(() => {
 
   // Fetch countries
   useEffect(() => {
-    axios.get('/api/countries')
+   axios.get(`${BASE_URL}/api/countries`)
       .then((response) => {
+        if (!Array.isArray(response.data)) return;
         const sortedCountries = response.data.sort((a, b) =>
           a.name.common.localeCompare(b.name.common)
         );
@@ -405,9 +406,9 @@ useEffect(() => {
 
   // Fetch states
   useEffect(() => {
-    axios.get('/api/states')
+    axios.get(`${BASE_URL}/api/states`)
       .then((response) => {
-        setStateApiValue(response.data);
+       setStateApiValue(Array.isArray(response.data) ? response.data : []);
       })
       .catch((error) => {
         console.error('Error fetching states:', error);
@@ -416,9 +417,9 @@ useEffect(() => {
 
   // Fetch cities
   useEffect(() => {
-    axios.get('http://localhost:4545/api/cities')
+    axios.get(`${BASE_URL}/api/cities`)
       .then((response) => {
-        setCityApiValue(response.data);
+       setCityApiValue(Array.isArray(response.data) ? response.data : []);
       })
       .catch((error) => {
         console.error('Error fetching cities:', error);
@@ -491,7 +492,7 @@ const handleLogout = () => {
 
     try {
       // Fetch presigned URL from backend
-      const response = await fetch('/api/get-presigned-url', {
+      const response = await fetch(`${BASE_URL}/api/get-presigned-url`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -722,7 +723,7 @@ const handleLogout = () => {
     const mailId = userDetails?.email;
 
 try {
-  const response = await axios.get(`/api/users/get/${mailId}`);
+  const response = await axios.get(`${BASE_URL}/api/users/get/${mailId}`);
   const result = response.data;
 
   console.log("API Response:", result);
@@ -808,7 +809,7 @@ try {
     };
 
     try {
-      const response = await axios.post(`/api/users/add`, body);
+      const response = await axios.post(`${BASE_URL}/api/users/add`, body)
       const result = response?.data;
 
       if (result?.status) {
@@ -842,7 +843,7 @@ const accountantStatus = async () => {
     console.log("Fetching account status for:", userEmail);
 
     const response = await axios.get(
-      `http://localhost:4545/api/users/get/${userEmail}`
+      `${BASE_URL}/api/users/get/${userEmail}`
     );
 
     console.log("Account status response:", response.data);
@@ -999,7 +1000,7 @@ const editData = async (field, value) => {
       setLevelTwoLoading(true);
       axios
         .put(
-          `/api/users/update/${profileDataId}`,
+           `${BASE_URL}/api/users/update/${profileDataId}`,
           levelTwoFields
         )
         .then((response) => {

@@ -6,7 +6,7 @@ import "./journey.scss";
 
 import { useCoinContextData } from "../../context/CoinContext";
 import { useStore } from "../../components/store/store.ts";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const JourneyPage = () => {
   const navigate = useNavigate();
   const { setCurrentStepData, setCurrentStepDataLength } = useCoinContextData();
@@ -36,7 +36,7 @@ const JourneyPage = () => {
   // -------------------------------
   const fetchJourneyData = async (pathId) => {
     try {
-      const response = await axios.get(`/api/userpaths/steps?pathId=${pathId}`);
+      const response = await axios.get(`${BASE_URL}/api/userpaths/steps?pathId=${pathId}`);
 
       console.log("🔥 STEPS RESPONSE:", response.data);
 
