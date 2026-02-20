@@ -1,7 +1,7 @@
 // controllers/universities.controller.js
 const universitiesModel = require("../models/universities.model");
 const axios = require("axios");
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 // helper wait function
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
