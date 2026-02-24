@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./pathview.scss";
 import { useNavigate } from "react-router-dom";
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const PathView = ({ selectedUniversity, onClose }) => {
   const [showConfirm, setShowConfirm] = useState(false);
@@ -41,7 +42,7 @@ const PathView = ({ selectedUniversity, onClose }) => {
         const user = JSON.parse(localStorage.getItem("user"));
         const email = user?.user?.email;
 
-        const res = await axios.get(`/api/fetch/getSelectedPath?email=${email}`);
+        const res = await axios.get(`${BASE_URL}/api/fetch/getSelectedPath?email=${email}`);
 
         if (res?.data?.status && res.data?.universityId) {
           const backendId = res.data.universityId;
@@ -64,7 +65,7 @@ const PathView = ({ selectedUniversity, onClose }) => {
   --------------------------------------------- */
   const fetchSteps = async () => {
     try {
-      const res = await axios.get(`/api/userpaths/steps?universityId=${uniId}`);
+      const res = await axios.get(`${BASE_URL}/api/userpaths/steps?universityId=${uniId}`);
       if (res?.data?.success) {
         setSteps(res.data.data.steps || []);
       }
@@ -86,7 +87,7 @@ const PathView = ({ selectedUniversity, onClose }) => {
       const user = JSON.parse(localStorage.getItem("user"));
       const email = user?.user?.email;
 
-      const response = await axios.post("/api/fetch/selectpath", {
+      const response = await axios.post(`${BASE_URL}/api/fetch/selectpath`, {
         email,
         universityId: uniId,
       });

@@ -15,7 +15,7 @@ import edutech from "./edutech.svg";
 import resory from "./resory.svg";
 import lek from "./lek.svg";
 import logo from "../../static/images/logo.svg";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const demoMicroServices = [
   {
     id: "svc1",
@@ -233,7 +233,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         setServicesLoading(true);
 
         const res = await axios.get(
-          `http://localhost:4545/api/services`,
+          `${BASE_URL}/api/services`,
           {
             params: {
               step_id: currentStepData._id,
@@ -270,7 +270,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     return;
   }
 
-  axios.get(`/api/users/get/${userEmail}`)
+  axios.get(`${BASE_URL}/api/users/get/${userEmail}`)
     .then((res) => {
       // your logic
     })
@@ -290,7 +290,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     if (!stepId || !pathId) return;
 
     axios
-      .get(`/api/userpaths/steps?pathId=${pathId}`)
+      .get(`${BASE_URL}/api/userpaths/steps?pathId=${pathId}`)
       .then((res) => {
         console.log("🔥 STEPS RESPONSE:", res.data);
 
@@ -329,7 +329,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
       try {
         const res = await axios.get(
-          `/api/stepviews?pathId=${pathId}&stepId=${stepId}`
+          `${BASE_URL}/api/stepviews?pathId=${pathId}&stepId=${stepId}`
         );
 
         console.log("🔥 AI STEP VIEWS (PATH):", res.data?.data);
@@ -358,7 +358,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
     try {
       const res = await axios.get(
-        `http://localhost:4545/api/services/by-step?step_id=${stepId}`
+        `${BASE_URL}/api/services/by-step?step_id=${stepId}`
       );
 
       // ✅ services are FLAT objects
@@ -492,7 +492,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
     try {
       const res = await axios.put(
-        "http://localhost:4545/api/userpaths/completeStep",
+        `${BASE_URL}/api/userpaths/completeStep`,
         {
           email,
           pathId,
@@ -522,7 +522,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
     try {
       const res = await axios.put(
-        "http://localhost:4545/api/userpaths/failedStep",
+        `${BASE_URL}/api/userpaths/failedStep`,
         {
           email,
           pathId,
@@ -1253,7 +1253,7 @@ const Carousel1 = ({
       }
 
       const response = await fetch(
-        "https://careers.marketsverse.com/api/paymentGateway/razorpay/initialize-payment",
+        `${BASE_URL}/api/paymentGateway/razorpay/initialize-payment`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

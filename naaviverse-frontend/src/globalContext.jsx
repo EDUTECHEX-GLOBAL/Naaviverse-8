@@ -8,7 +8,7 @@ import axios from "axios";
 import { MainMenuList } from "./pages/dashboard/WalletScan/WalletScanOverview/ScanWallet/WalletDashboard/Portals/MainMenu/MainMenu";
 
 export const GlobalContex = createContext();
-
+     
 export const GlobalContexProvider = ({ children }) => {
   // --------------------------------------------
   // AUTH & SESSION
