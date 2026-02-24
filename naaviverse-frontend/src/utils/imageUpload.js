@@ -12,7 +12,6 @@ function renameFile(originalFile, newName) {
     lastModified: originalFile.lastModified,
   });
 }
-
 const signJwt = async (fileName, emailDev, secret) => {
   try {
     const jwts = await new jose.SignJWT({ name: fileName, email: emailDev })
@@ -45,7 +44,7 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
     console.log('Requesting presigned URL from backend...');
     
     // ✅ Use the correct endpoint: /api/upload/get-presigned-url
-    const response = await fetch('${BASE_URL}/api/upload/get-presigned-url', {
+    const response = await fetch(`${BASE_URL}/api/upload/get-presigned-url`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

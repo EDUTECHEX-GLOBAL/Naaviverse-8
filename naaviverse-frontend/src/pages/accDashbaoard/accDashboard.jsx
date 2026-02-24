@@ -143,6 +143,10 @@ const user = useSelector((state) => state.user);
 const [countryApiValue, setCountryApiValue] = useState([]);
 const didFetchCountriesRef = useRef(false);
 const [currentStepId, setCurrentStepId] = useState(null);
+const [showStepsModal, setShowStepsModal] = useState(false);
+const [showPathModal, setShowPathModal] = useState(true);
+const [showStepCountModal, setShowStepCountModal] = useState(false);
+const [showCreateStepModal, setShowCreateStepModal] = useState(false);
  const location = useLocation();   // ✅ MUST COME FIRST
 
   const isViewPathRoute =
@@ -864,88 +868,65 @@ const handleFileInputChange3 = async (e) => {
     setservicesMenu("Services");
   };
 const handleStepCountSubmit = () => {
+
   if (stepCount < 1) {
-    alert('Please enter at least 1 step');
+    alert("Enter at least 1 step");
     return;
   }
 
-  // Get user details from your existing userDetails
   const userDetails = getPartner();
-  
-  // Get email from the same logic as your pathSubmission
-  const finalEmail = user?.email || 
-                     user?.user?.email || 
-                     user?.currentUser?.email || 
-                     userDetails?.email || 
-                     userDetails?.user?.email ||
-                     localStorage.getItem("loginEmail");
+
+  const finalEmail =
+    user?.email ||
+    user?.user?.email ||
+    userDetails?.email ||
+    localStorage.getItem("loginEmail");
 
   if (!finalEmail) {
-    alert("User email missing. Please login again.");
+    alert("User email missing");
     return;
   }
 
-  // First save the path via API
   const finalPayload = {
     email: finalEmail,
     nameOfPath: pathSteps?.nameOfPath,
     description: pathSteps?.description,
     length: Number(pathSteps?.length),
     path_type: pathSteps?.path_type,
-    current_coordinates: {
-      grade: grade,
-      curriculum: curriculum,
-      stream: stream,
-      grade_avg: gradeAvg,
-      financialSituation: finance,
-      personality: personality,
-    },
-    feature_coordinates: {
-      program: pathSteps?.program,
-      destination_institution: pathSteps?.destination_institution,
-      city: pathSteps?.city,
-      country: pathSteps?.country,
-    },
-    program: pathSteps?.program,
-    destination_institution: pathSteps?.destination_institution,
-    city: pathSteps?.city,
-    country: pathSteps?.country,
-    grade: grade,
-    stream: stream,
-    curriculum: curriculum,
-    grade_avg: gradeAvg,
-    financialSituation: finance,
-    personality: personality,
-    the_ids: pathSteps?.the_ids || [],
     status: "waitingforapproval",
   };
 
   setCreatingPath(true);
 
-  axios.post(`http://localhost:4545/api/paths/add`, finalPayload)
+  axios.post("http://localhost:4545/api/paths/add", finalPayload)
     .then((response) => {
+
+      console.log("PATH CREATED:", response.data);
+
       if (response.data?.status) {
+
         const createdPathId = response.data.data._id;
-        
-        // Save to localStorage for step creation
-        localStorage.setItem('currentPathData', JSON.stringify({
-          ...finalPayload,
-          pathId: createdPathId
-        }));
-        localStorage.setItem('totalSteps', stepCount);
-        
-        // Close modal
-        document.getElementById('stepsModal').style.display = 'none';
+
+        localStorage.setItem(
+          "currentPathData",
+          JSON.stringify({
+            ...finalPayload,
+            pathId: createdPathId,
+          })
+        );
+
+        localStorage.setItem("totalSteps", stepCount);
+
+        setShowStepsModal(false); // ⭐ FIXED
         setCreatingPath(false);
-        
-        // Navigate to step creation (pstep = 9)
-        setpstep(9);
+
+        setpstep(9); // ⭐ OPEN STEP CREATION
       }
     })
     .catch((err) => {
-      console.log("❌ API ERROR:", err);
+      console.log("API ERROR:", err.response?.data || err);
       setCreatingPath(false);
-      alert('Error creating path. Please try again.');
+      alert("Error creating path");
     });
 };
  const handleFinalSubmit = () => {
@@ -3313,13 +3294,14 @@ const handleDownload = (type) => {
         </div>
       </div>
 
-      <>
-        {ispopular ? (
-          <div
-            className="acc-popular"
-            onClick={() => setShowDrop(false)}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
+<>
+ {ispopular ? (
+  <div
+    className={`acc-popular ${
+      pstep === 8 ? "acc-popular--large" : "acc-popular--small"
+    }`}
+    onMouseDown={(e) => e.stopPropagation()}
+  >
             <div className="acc-popular-top">
               <div className="acc-popular-head">
                 {pstep === 8
@@ -4301,7 +4283,8 @@ const handleDownload = (type) => {
             personality !== ""
           ) {
             // Show modal
-            document.getElementById('stepsModal').style.display = 'flex';
+setispopular(false);   // ⭐ CLOSE old modal completely
+setShowStepsModal(true); // OPEN step count popup
           } else {
             alert('Please fill all required fields');
           }
@@ -4357,43 +4340,12 @@ const handleDownload = (type) => {
       </button>
     </div>
 
-    {/* Modal for asking number of steps */}
-    <div
-      className="modal-overlay"
-      id="stepsModal"
-      style={{ display: "none", position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center", zIndex: 1000 }}
-    >
-      <div style={{ background: "white", borderRadius: "32px", padding: "40px", maxWidth: "500px", width: "90%", boxShadow: "0 30px 60px rgba(0,0,0,0.3)" }}>
-        <h2 style={{ fontSize: "24px", color: "#0b1e3a", marginBottom: "16px" }}>Add Steps to Your Path</h2>
-        <p style={{ color: "#617388", marginBottom: "24px" }}>How many steps do you want to add to this path? You can add as many as you need.</p>
-        <input
-          type="number"
-          id="stepCount"
-          min="1"
-          value={stepCount}
-          onChange={(e) => setStepCount(e.target.value)}
-          placeholder="Enter number of steps"
-          style={{ width: "100%", padding: "16px", border: "1.5px solid #dce3ec", borderRadius: "16px", fontSize: "18px", marginBottom: "24px" }}
-        />
-        <div style={{ display: "flex", gap: "16px", justifyContent: "flex-end" }}>
-          <button
-            onClick={() => document.getElementById('stepsModal').style.display = 'none'}
-            style={{ padding: "16px 42px", borderRadius: "50px", fontWeight: "700", fontSize: "16px", border: "2px solid #d3deed", background: "white", color: "#1f3a5f", cursor: "pointer" }}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleStepCountSubmit}
-            style={{ padding: "16px 42px", borderRadius: "50px", fontWeight: "700", fontSize: "16px", border: "none", background: "#2a9d8f", color: "white", cursor: "pointer" }}
-          >
-            Continue →
-          </button>
-        </div>
-      </div>
-    </div>
+
   </>
 ) : pstep === 9 ? (
                 <NewStep1 setpstep={setpstep} />
+
+            
               ) : pstep === 10 ? (
                 <div>
                   <div className="acc-step-text">Bulk Path Action</div>
@@ -4561,11 +4513,108 @@ const handleDownload = (type) => {
               ) : (
                 ""
               )}
+
+              
             </>
           </div>
         ) : (
           ""
         )}
+
+        {showStepsModal && (
+  <div
+    className="modal-overlay"
+    style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      background: "rgba(0,0,0,0.5)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 1000
+    }}
+  >
+    <div
+      style={{
+        background: "white",
+        borderRadius: "32px",
+        padding: "40px",
+        maxWidth: "500px",
+        width: "90%",
+        boxShadow: "0 30px 60px rgba(0,0,0,0.3)"
+      }}
+    >
+      <h2 style={{ fontSize: "24px", color: "#0b1e3a", marginBottom: "16px" }}>
+        Add Steps to Your Path
+      </h2>
+
+      <p style={{ color: "#617388", marginBottom: "24px" }}>
+        How many steps do you want to add to this path? You can add as many as you need.
+      </p>
+
+      <input
+        type="number"
+        min="1"
+        value={stepCount}
+        onChange={(e) => setStepCount(e.target.value)}
+        placeholder="Enter number of steps"
+        style={{
+          width: "100%",
+          padding: "16px",
+          border: "1.5px solid #dce3ec",
+          borderRadius: "16px",
+          fontSize: "18px",
+          marginBottom: "24px"
+        }}
+      />
+
+      <div style={{ display: "flex", gap: "16px", justifyContent: "flex-end" }}>
+        <button
+          onClick={() => setShowStepsModal(false)}
+          style={{
+            padding: "16px 42px",
+            borderRadius: "50px",
+            fontWeight: "700",
+            fontSize: "16px",
+            border: "2px solid #d3deed",
+            background: "white",
+            color: "#1f3a5f",
+            cursor: "pointer"
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+onClick={() => {
+  setShowStepsModal(false);
+
+  setTimeout(() => {
+    setispopular(true); // ← use your REAL setter name
+    setselectNew("Step");
+    setpstep(9);
+  }, 100);
+}}
+          style={{
+            padding: "16px 42px",
+            borderRadius: "50px",
+            fontWeight: "700",
+            fontSize: "16px",
+            border: "none",
+            background: "#2a9d8f",
+            color: "white",
+            cursor: "pointer"
+          }}
+        >
+          Continue →
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       </>
 
 
