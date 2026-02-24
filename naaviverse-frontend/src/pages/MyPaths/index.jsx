@@ -6,6 +6,7 @@ import axios from "axios";
 import { Draggable } from "react-drag-reorder";
 import EditPathForm from "../MyPaths/paths.jsx";
 
+
 // images
 import dummy from "./dummy.svg";
 import closepop from "../../static/images/dashboard/closepop.svg";
@@ -13,6 +14,7 @@ import lg1 from "../../static/images/login/lg1.svg";
 import CurrentStep from "../CurrentStep";
 import { useStore } from "../../components/store/store.ts";
 import { useNavigate } from "react-router-dom";
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
   const navigate = useNavigate();
@@ -53,11 +55,10 @@ const getAllPaths = () => {
   setPartnerPathData([]);
   setLoading(true);
 
-  const email = userDetails?.email;
-  let endpoint = "";
+const email = userDetails?.email;
+let endpoint = "";
 
-  // 1️⃣ ADMIN – Pending Approval
-  // 1️⃣ ADMIN – Pending Approval
+// ADMIN
 if (
   admin &&
   (mypathsMenu === "Pending Approval" || mypathsMenu === "Pending Paths")
@@ -65,37 +66,37 @@ if (
   endpoint = `/api/paths/get?status=waitingforapproval`;
 }
 
-// 2️⃣ PARTNER – Draft
+// PARTNER Draft
 else if (!admin && mypathsMenu === "Draft") {
   endpoint = `/api/paths/get?email=${email}&status=draft`;
 }
 
-// 3️⃣ PARTNER – Pending Approval
+// PARTNER Pending
 else if (!admin && mypathsMenu === "Pending Approval") {
   endpoint = `/api/paths/get?email=${email}&status=waitingforapproval`;
 }
 
-// 4️⃣ Inactive
+// Inactive
 else if (mypathsMenu === "Inactive Paths") {
   endpoint = `/api/paths/get?email=${email}&status=inactive`;
 }
 
-// 5️⃣ Default Active
+// Default Active
 else {
   endpoint = `/api/paths/get?email=${email}&status=active`;
 }
 
-  console.log("➡️ FINAL API CALL:", endpoint);
+console.log("➡️ FINAL API CALL:", `${BASE_URL}${endpoint}`);
 
-  axios
-    .get(endpoint)
-    .then((response) => {
-      setPartnerPathData(response?.data?.data || []);
-    })
-    .catch((error) => {
-      console.log("❌ Error fetching partnerPathData:", error);
-    })
-    .finally(() => setLoading(false));
+axios
+  .get(`${BASE_URL}${endpoint}`)
+  .then((response) => {
+    setPartnerPathData(response?.data?.data || []);
+  })
+  .catch((error) => {
+    console.log("❌ Error fetching partnerPathData:", error);
+  })
+  .finally(() => setLoading(false));
 };
 
 
@@ -140,7 +141,7 @@ else {
     // })
     axios
       .get(
-        `/api/attachservice/getnotaddedservices?step_id=${selectedStepId}&productcreatoremail=${email}`
+        `${BASE_URL}/api/attachservice/getnotaddedservices?step_id=${selectedStepId}&productcreatoremail=${email}`
       )
       .then(({ data }) => {
         if (data.status) {
@@ -157,7 +158,7 @@ useEffect(() => {
   const email = userDetails?.email;
   if (!email) return;
 
-  axios.get(`/api/paths/get?email=${email}`).then(({ data }) => {
+  axios.get(`${BASE_URL}/api/paths/get?email=${email}`).then(({ data }) => {
     if (data.status) setBackupPathData(data.data);
   });
 }, []);
@@ -243,7 +244,7 @@ useEffect(() => {
     setActionLoading(true);
   
     axios
-      .delete(`/api/paths/delete/${selectedPathId}`, {
+      .delete(`${BASE_URL}/api/paths/delete/${selectedPathId}`, {
         data: { status }, // Include the status in the request body
       })
       .then((response) => {
@@ -263,7 +264,7 @@ useEffect(() => {
   const deleteStep = () => {
     setActionLoading(true);
     axios
-      .delete(`/api/steps/delete/${selectedStepId}`)
+      .delete(`${BASE_URL}/api/steps/delete/${selectedStepId}`)
       .then((response) => {
         let result = response?.data;
         // console.log(result, "deleteStep result");
@@ -300,7 +301,7 @@ useEffect(() => {
 
     axios
       .put(
-        `/api/paths/update/${selectedPathId}`,
+        `${BASE_URL}/api/paths/update/${selectedPathId}`,
         obj
       )
       .then((response) => {
@@ -324,7 +325,7 @@ const viewPathById = (id) => {
     }
     setViewPathLoading(true);
 
-    axios.get(`/api/paths/viewpath/${id}`)
+    axios.get(`${BASE_URL}/api/paths/viewpath/${id}`)
         .then((response) => {
             let result = response?.data?.data;
             setViewPathData(result);
@@ -341,7 +342,7 @@ const handleApprovePath = () => {
   setActionLoading(true);
 
   axios
-    .put(`/api/paths/updatepath/${selectedPathId}`, {
+    .put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, {
       status: "active",
     })
     .then(({ data }) => {
@@ -359,7 +360,7 @@ const handleRejectPath = () => {
   setActionLoading(true);
 
   axios
-    .put(`/api/paths/updatepath/${selectedPathId}`, {
+    .put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, {
       status: "draft",
     })
     .then(({ data }) => {
@@ -379,7 +380,7 @@ const handleRejectPath = () => {
 
     axios
       .post(
-        `/api/steps/addproducts/${selectedStepId}`,
+        `${BASE_URL}/api/steps/addproducts/${selectedStepId}`,
         {
           product_ids: [newId],
         }
@@ -412,11 +413,9 @@ useEffect(() => {
   const [allServicesToAdd, setAllServicesToAdd] = useState([]);
   useEffect(() => {
     if (selectedStepId) {
-      axios
-        .get(
-          // `https://careers.marketsverse.com/services/get?productcreatoremail=${userDetails?.user?.email}`
-          `/attachservice/getnotaddedservices?step_id=${selectedStepId}&productcreatoremail=${userDetails?.user?.email}`
-        )
+      axios.get(
+  `${BASE_URL}/api/attachservice/getnotaddedservices?step_id=${selectedStepId}&productcreatoremail=${userDetails?.user?.email}`
+)
         .then(({ data }) => {
           if (data.status) {
             setAllServicesToAdd(data?.data[0]);
@@ -428,10 +427,9 @@ useEffect(() => {
   const [allServicesToRemove, setAllServicesToRemove] = useState([]);
   useEffect(() => {
     if (selectedStepId) {
-      axios
-        .get(
-          `/api/attachservice/get?step_id=${selectedStepId}`
-        )
+      axios.get(
+  `${BASE_URL}/api/attachservice/get?step_id=${selectedStepId}`
+)
         .then(({ data }) => {
           if (data.status) {
             setAllServicesToRemove(data?.data[0]);
@@ -495,7 +493,7 @@ useEffect(() => {
     // console.log(updatedPathObject, "kjwebfkwjebfkwejf")
     axios
       .put(
-        `/api/paths/update/${selectedPath?._id}`,
+        `${BASE_URL}/api/paths/update/${selectedPath?._id}`,
         { the_ids: updatedPathObject }
       )
       .then((res) => {
@@ -552,7 +550,7 @@ useEffect(() => {
     }));
     axios
       .put(
-        `/api/paths/update/${selectedPath?._id}`,
+        `${BASE_URL}/api/paths/update/${selectedPath?._id}`,
         { the_ids: updatedBody }
       )
       .then((res) => {
@@ -578,7 +576,7 @@ useEffect(() => {
     );
     axios
       .put(
-        `/api/paths/update/${selectedPath?._id}`,
+        `${BASE_URL}/api/paths/update/${selectedPath?._id}`,
         { the_ids: updatedTheIdsArray }
       )
       .then((res) => {
@@ -616,7 +614,7 @@ useEffect(() => {
       "lkweflkjwhefkjwef"
     );
     axios
-      .post(`/api/attachservice/add`, {
+      .post(`${BASE_URL}/api/attachservice/add`, {
         step_id: selectedStepId,
         service_ids: [...selectedServices],
       })
@@ -633,7 +631,7 @@ useEffect(() => {
   const removeServiceFromStep = (id) => {
     axios
       .put(
-        `/api/attachservice/remove/${allServicesToRemove?._id}`,
+        `${BASE_URL}/api/attachservice/remove/${allServicesToRemove?._id}`,
         {
           service_id: id,
         }

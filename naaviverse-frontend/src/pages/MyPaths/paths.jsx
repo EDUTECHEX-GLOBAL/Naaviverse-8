@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./mypaths.scss";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -57,7 +57,7 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
     setMessage("");
   }, [selectedPath]);
 
-  // ---------- BASIC INPUT CHANGE ----------
+  // ---------------------- BASIC INPUT CHANGE ---------------------
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -131,7 +131,7 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
 
     try {
       const response = await axios.put(
-        `/api/paths/update/${selectedPath._id}`,
+        `${BASE_URL}/api/paths/update/${selectedPath._id}`,
         updatedFields
       );
 

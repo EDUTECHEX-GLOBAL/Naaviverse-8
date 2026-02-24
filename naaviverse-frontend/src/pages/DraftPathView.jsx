@@ -24,8 +24,6 @@ const DraftPathView = () => {
   const [selectedStepForService, setSelectedStepForService] = useState(null);
   const [availableServices, setAvailableServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
- 
-  
 
   /* ================= FETCH PATH + STEPS ================= */
   useEffect(() => {
@@ -148,93 +146,90 @@ const handleSubmitForApproval = async () => {
     console.log("Error submitting path:", err);
   }
 };
-  if (!pathData) return <div style={{ padding: "3rem" }}>Loading...</div>;
+
+  if (!pathData) return (
+    <div className="journeypage" style={{ padding: "35px" }}>
+      <div style={{ textAlign: "center", padding: "3rem" }}>Loading...</div>
+    </div>
+  );
+  
   const isLocked = pathData.status === "waitingforapproval";
+  
   return (
-    <div className="dashboard-main">
-      <div className="dashboard-body">
-        <div className="dashboard-screens" style={{ width: "100%" }}>
-          <div className="journeypage">
+    <div className="journeypage" style={{ padding: "20px 35px" }}>
+      {/* HEADER */}
+      <div className="journey-top-area">
+        <div className="path-title-row">
+          <h1 className="path-title">{pathData.nameOfPath}</h1>
+          {pathData.status === "draft" && (
+            <span className="draft-badge">DRAFT</span>
+          )}
+        </div>
 
-            {/* HEADER */}
-            <div className="journey-top-area">
-              <div className="path-title-row">
-                <h1 className="path-title">{pathData.nameOfPath}</h1>
-                {pathData.status === "draft" && (
-                  <span className="draft-badge">DRAFT</span>
-                )}
-              </div>
+        <p className="path-description">
+          {pathData.description}
+        </p>
 
-              <p className="path-description">
-                {pathData.description}
-              </p>
+        <div className="path-actions">
+          <button
+            className="btn-soft"
+            disabled={isLocked}
+            onClick={() =>
+              !isLocked &&
+              navigate(`/dashboard/accountants/path/${id}?createStep=true`)
+            }
+          >
+            + Add Step
+          </button>
 
-              <div className="path-actions">
-<button
-  className="btn-soft"
-  disabled={isLocked}
-  onClick={() =>
-    !isLocked &&
-    navigate(`/dashboard/accountants/path/${id}?createStep=true`)
-  }
->
-  + Add Step
-</button>
+          <button
+            className="btn-text"
+            disabled={isLocked}
+            onClick={() => !isLocked && setEditOpen(true)}
+          >
+            Edit Path
+          </button>
 
-<button
-  className="btn-text"
-  disabled={isLocked}
-  onClick={() => !isLocked && setEditOpen(true)}
->
-  Edit Path
-</button>
+          <button
+            className="btn-text"
+            disabled={isLocked}
+            onClick={() => !isLocked && setServiceDrawerOpen(true)}
+          >
+            Add Services
+          </button>
 
-<button
-  className="btn-text"
-  disabled={isLocked}
-  onClick={() => !isLocked && setServiceDrawerOpen(true)}
->
-  Add Services
-</button>
-
-{!isLocked && (
-  <button
-    className="btn-submit-blue"
-    onClick={handleSubmitForApproval}
-  >
-    Submit for Approval
-  </button>
-)}
-
-
-              </div>
-            </div>
-
-            {/* STEPS DISPLAY */}
-            {steps.length === 0 ? (
-              <div className="empty-state-section">
-                <h2>No steps added yet.</h2>
-                <p>Click "Add Step" to begin creating steps.</p>
-              </div>
-            ) : (
-              <div className="steps-grid-premium">
-                {steps.map((step, index) => (
-                  <div key={step._id} className="step-card-premium">
-                    <div className="bubble">{index + 1}</div>
-                    <div className="step-title-premium">
-                      {step.name}
-                    </div>
-                    <div className="step-desc-premium">
-                      {step.description}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-          </div>
+          {!isLocked && (
+            <button
+              className="btn-submit-blue"
+              onClick={handleSubmitForApproval}
+            >
+              Submit for Approval
+            </button>
+          )}
         </div>
       </div>
+
+      {/* STEPS DISPLAY */}
+      {steps.length === 0 ? (
+        <div className="empty-state-section">
+          <h2>No steps added yet.</h2>
+          <p>Click "Add Step" to begin creating steps.</p>
+        </div>
+      ) : (
+        <div className="steps-grid-premium">
+          {steps.map((step, index) => (
+            <div key={step._id} className="step-card-premium">
+              <div className="bubble">{index + 1}</div>
+              <div className="step-title-premium">
+                {step.name}
+              </div>
+              <div className="step-desc-premium">
+                {step.description}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* EDIT PATH DRAWER */}
       {editOpen && (
@@ -292,90 +287,86 @@ const handleSubmitForApproval = async () => {
       )}
 
       {/* ADD SERVICES DRAWER */}
-{serviceDrawerOpen && (
-  <div
-    className="global-drawer-overlay"
-    onClick={() => {
-      setServiceDrawerOpen(false);
-      setSelectedStepForService(null);
-      setAvailableServices([]);
-      setSelectedServices([]);
-    }}
-  >
-    <div
-      className="global-drawer-panel"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {!selectedStepForService ? (
-        <>
-          <div className="drawer-title">Select Step</div>
-
-
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            {steps.map((step) => (
-              <div
-                key={step._id}
-                className="step-select-item"
-                onClick={() => handleStepSelect(step)}
-              >
-                {step.name}
-              </div>
-            ))}
-          </div>
-        </>
-      ) : (
-        <>
-          <button
-            className="btn-text"
-            style={{ marginBottom: "1rem" }}
-            onClick={() => {
-              setSelectedStepForService(null);
-              setAvailableServices([]);
-              setSelectedServices([]);
-            }}
+      {serviceDrawerOpen && (
+        <div
+          className="global-drawer-overlay"
+          onClick={() => {
+            setServiceDrawerOpen(false);
+            setSelectedStepForService(null);
+            setAvailableServices([]);
+            setSelectedServices([]);
+          }}
+        >
+          <div
+            className="global-drawer-panel"
+            onClick={(e) => e.stopPropagation()}
           >
-            ← Back to Steps
-          </button>
+            {!selectedStepForService ? (
+              <>
+                <div className="drawer-title">Select Step</div>
 
-          <div className="drawer-title">
-  Assign Services to: {selectedStepForService.name}
-</div>
-
-          {availableServices.length === 0 ? (
-            <p>No services available to assign.</p>
-          ) : (
-            <div style={{ marginBottom: "1.5rem" }}>
-              {availableServices.map((service) => (
-                <div
-                  key={service._id}
-                  className={
-                    selectedServices.includes(service._id)
-                      ? "service-selected"
-                      : "service-item"
-                  }
-                  onClick={() => toggleService(service._id)}
-                >
-                  {service.name}
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  {steps.map((step) => (
+                    <div
+                      key={step._id}
+                      className="step-select-item"
+                      onClick={() => handleStepSelect(step)}
+                    >
+                      {step.name}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
+              </>
+            ) : (
+              <>
+                <button
+                  className="btn-text"
+                  style={{ marginBottom: "1rem" }}
+                  onClick={() => {
+                    setSelectedStepForService(null);
+                    setAvailableServices([]);
+                    setSelectedServices([]);
+                  }}
+                >
+                  ← Back to Steps
+                </button>
 
-          <button
-            className="btn-submit-blue"
-            disabled={selectedServices.length === 0}
-            onClick={handleAssignServices}
-          >
-            Assign Services →
-          </button>
-        </>
+                <div className="drawer-title">
+                  Assign Services to: {selectedStepForService.name}
+                </div>
+
+                {availableServices.length === 0 ? (
+                  <p>No services available to assign.</p>
+                ) : (
+                  <div style={{ marginBottom: "1.5rem" }}>
+                    {availableServices.map((service) => (
+                      <div
+                        key={service._id}
+                        className={
+                          selectedServices.includes(service._id)
+                            ? "service-selected"
+                            : "service-item"
+                        }
+                        onClick={() => toggleService(service._id)}
+                      >
+                        {service.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <button
+                  className="btn-submit-blue"
+                  disabled={selectedServices.length === 0}
+                  onClick={handleAssignServices}
+                >
+                  Assign Services →
+                </button>
+              </>
+            )}
+          </div>
+        </div>
       )}
-    </div>
-  </div>
-)}
-
-
-
     </div>
   );
 };

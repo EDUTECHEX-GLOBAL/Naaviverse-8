@@ -1,0 +1,250 @@
+.new-path-wrapper {
+  width: 100%;
+  padding: 40px;
+  display: flex;
+  justify-content: center;
+  transition: filter 0.3s ease;
+}
+
+.new-path-wrapper.blur-active {
+  filter: blur(6px);
+}
+
+.new-path-card {
+  width: 100%;
+  max-width: 1000px;
+  background: white;
+  border-radius: 32px;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+  overflow: hidden;
+}
+
+.header {
+  padding: 28px 36px;
+  border-bottom: 1px solid #eef2f6;
+
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+  }
+
+  p {
+    color: #617388;
+    margin-top: 4px;
+  }
+}
+
+.form-container {
+  padding: 36px;
+}
+
+.form-section {
+  margin-bottom: 40px;
+
+  h2 {
+    margin-bottom: 24px;
+  }
+}
+
+.field-group {
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  input,
+  textarea,
+  select {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 18px;
+    border: 1.5px solid #dce3ec;
+    font-size: 15px;
+  }
+
+  textarea {
+    min-height: 100px;
+  }
+}
+
+.duration-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+
+  .duration-field {
+    flex: 1;
+  }
+}
+
+.options-grid {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.option-btn {
+  padding: 10px 22px;
+  border-radius: 40px;
+  border: 1.5px solid #dce3ec;
+  background: #f8fafd;
+  cursor: pointer;
+}
+
+.option-btn.active {
+  background: #2a9d8f;
+  color: white;
+  border-color: #2a9d8f;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.btn-outline {
+  padding: 14px 32px;
+  border-radius: 40px;
+  border: 2px solid #d3deed;
+  background: white;
+  cursor: pointer;
+}
+
+.btn-primary {
+  padding: 14px 32px;
+  border-radius: 40px;
+  background: #2a9d8f;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+/* MODAL */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 20vw; /* sidebar width */
+  width: 80vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal-box {
+  background: white;
+  padding: 40px;
+  border-radius: 32px;
+  width: 400px;
+}
+
+.modal-box input {
+  width: 100%;
+  padding: 14px;
+  margin: 20px 0;
+  border-radius: 16px;
+  border: 1.5px solid #dce3ec;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+/* Step Count Popup Styles */
+.step-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+}
+
+.step-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  z-index: 10000;
+}
+
+.step-popup-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.step-popup-description {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.step-popup-input-wrapper {
+  margin-bottom: 25px;
+}
+
+.step-popup-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.step-popup-input:focus {
+  outline: none;
+  border-color: #47B4D5;
+}
+
+.step-popup-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.step-popup-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.step-popup-btn-cancel {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.step-popup-btn-cancel:hover {
+  background: #e0e0e0;
+}
+
+.step-popup-btn-continue {
+  background: #2a9d8f;
+  color: white;
+}
+
+.step-popup-btn-continue:hover {
+  background: #248277;
+}

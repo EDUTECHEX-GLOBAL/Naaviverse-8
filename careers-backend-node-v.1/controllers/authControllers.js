@@ -167,7 +167,7 @@ const sendConfirmationEmail = async (req, res) => {
     const token = userFound._id;
 
     const baseUrl = process.env.HOST;
-    const url = `${baseUrl}/api/auth/verification/${token}`;
+    const url = `${BASE_URL}/api/auth/verification/${token}`;
 
     await sendNotificationMail(
       userFound.email,

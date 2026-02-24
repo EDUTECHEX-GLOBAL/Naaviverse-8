@@ -67,13 +67,32 @@ mongoose
   .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
 /* ------------------- CORS CONFIG ------------------- */
-app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    process.env.FRONTEND_URL
-  ],
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://naaviverse-vercel-frontend-sigma.vercel.app"
+];
+
+const corsOptions = {
+  origin: function(origin, callback) {
+    // allow requests with no origin (like Postman, curl)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log("❌ CORS blocked:", origin);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
-}));
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options("*", cors(corsOptions));
 
 
 const currencyRoutes = require("./routes/currency.route");

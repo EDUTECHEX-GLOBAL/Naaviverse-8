@@ -62,6 +62,7 @@ import MenuNav from "../../components/MenuNav/index.jsx";
 import AWS from "aws-sdk";
 import uploadGrey from "../../images/uploadGrey.svg";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+console.log("BASE_URL VALUE:", BASE_URL);
 
 const UserProfile = () => {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -492,7 +493,8 @@ const handleLogout = () => {
 
     try {
       // Fetch presigned URL from backend
-      const response = await fetch(`${BASE_URL}/api/get-presigned-url`, {
+      console.log("BASE_URL:", BASE_URL);
+     const response = await fetch(`${BASE_URL}/api/upload/get-presigned-url`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

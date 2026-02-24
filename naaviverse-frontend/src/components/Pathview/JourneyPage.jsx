@@ -3,7 +3,7 @@ import axios from "axios";
 import Skeleton from "react-loading-skeleton";
 import "./journey.scss";
 import { useNavigate } from "react-router-dom";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const JourneyPage = () => {
   const [loading, setLoading] = useState(true);
   const [journeyPageData, setJourneyPageData] = useState(null);
@@ -23,7 +23,7 @@ const JourneyPage = () => {
   const fetchJourneyData = async (universityId) => {
     try {
       const response = await axios.get(
-        `/api/userpaths/steps?universityId=${universityId}`
+        `${BASE_URL}//api/userpaths/steps?universityId=${universityId}`
       );
 
       if (response.data.success) {
