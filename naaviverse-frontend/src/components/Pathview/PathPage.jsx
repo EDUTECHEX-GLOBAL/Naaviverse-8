@@ -5,12 +5,15 @@ import Skeleton from "react-loading-skeleton";
 import "./journey.scss";
 import { motion } from "framer-motion";
 import NewStep1 from "../../globalComponents/GlobalDrawer/NewStep1";
+
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const PathPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const location = useLocation();
 
+  // ✅ Add this state declaration
   const [openNewStep, setOpenNewStep] = useState(false);
   const [loading, setLoading] = useState(true);
   const [pathName, setPathName] = useState("N/A");

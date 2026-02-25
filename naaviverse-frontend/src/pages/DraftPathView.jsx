@@ -170,17 +170,18 @@ const handleSubmitForApproval = async () => {
           {pathData.description}
         </p>
 
-        <div className="path-actions">
-          <button
-            className="btn-soft"
-            disabled={isLocked}
-            onClick={() =>
-              !isLocked &&
-              navigate(`/dashboard/accountants/path/${id}?createStep=true`)
-            }
-          >
-            + Add Step
-          </button>
+       <div className="path-actions">
+  <button
+    className="btn-soft"
+    disabled={isLocked}
+    onClick={() =>
+      !isLocked &&
+      navigate(`/dashboard/accountants/path/${id}/create-step`)
+    }
+  >
+    + Add Step
+  </button>
+
 
           <button
             className="btn-text"
@@ -256,35 +257,35 @@ const handleSubmitForApproval = async () => {
         </div>
       )}
 
-      {/* ADD STEP DRAWER */}
-      {openDrawer && (
-        <div
-          className="global-drawer-overlay"
-          onClick={() => {
-            setOpenDrawer(false);
-            navigate(`/dashboard/accountants/path/${id}`);
-          }}
-        >
-          <div
-            className="global-drawer-panel"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <NewStep1
-              pathId={id}
-              onSuccess={async () => {
-                setOpenDrawer(false);
-                navigate(`/dashboard/accountants/path/${id}`);
+    {/* ADD STEP DRAWER */}
+{openDrawer && (
+  <div
+    className="global-drawer-overlay"
+    onClick={() => {
+      setOpenDrawer(false);
+      navigate(`/dashboard/accountants/path/${id}`);
+    }}
+  >
+    <div
+      className="global-drawer-panel"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <NewStep1
+        pathId={id}
+        onSuccess={async () => {
+          setOpenDrawer(false);
+          navigate(`/dashboard/accountants/path/${id}`);
 
-                const stepsRes = await axios.get(`/api/steps/get`, {
-                  params: { path_id: id },
-                });
+          const stepsRes = await axios.get(`/api/steps/get`, {
+            params: { path_id: id },
+          });
 
-                setSteps(stepsRes.data.data || []);
-              }}
-            />
-          </div>
-        </div>
-      )}
+          setSteps(stepsRes.data.data || []);
+        }}
+      />
+    </div>
+  </div>
+)}
 
       {/* ADD SERVICES DRAWER */}
       {serviceDrawerOpen && (

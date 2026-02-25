@@ -31,7 +31,8 @@ import "react-loading-skeleton/dist/skeleton.css";
 import AccDashsidebar from "../../components/accDashsidebar/accDashsidebar";
 import logo from "../../assets/images/logo/naavi_final_logo2.png"; 
 import CreateNewPath from './CreateNewPath';
-import "./CreateNewPath.scss"; // Add this line
+import CreateNewService from './CreateNewService';
+import "./CreateNewPath.scss";
 import {
   GetFollowersPerAccount,
   GetCategoriesAcc,
@@ -80,10 +81,10 @@ const getPartner = () => {
   }
 };
 
-
-
-
 const AccDashboard = () => {
+const location = useLocation();   // ✅ MUST COME FIRST
+  let navigate = useNavigate(); 
+  
   const {
     accsideNav,
     setaccsideNav,
@@ -94,6 +95,8 @@ const AccDashboard = () => {
     balanceToggle,
     setBalanceToggle,
   } = useStore();
+
+
   let Country = require('country-state-city').Country;
   // console.log(Country.getAllCountries(), "kjefbkjbfkjwef")
   const [search, setSearch] = useState("");
@@ -146,12 +149,28 @@ const user = useSelector((state) => state.user);
 const [countryApiValue, setCountryApiValue] = useState([]);
 const didFetchCountriesRef = useRef(false);
 const [currentStepId, setCurrentStepId] = useState(null);
- const location = useLocation();   // ✅ MUST COME FIRST
+const [showStepsModal, setShowStepsModal] = useState(false);
+const [showPathModal, setShowPathModal] = useState(true);
+const [showStepCountModal, setShowStepCountModal] = useState(false);
+const [showCreateStepModal, setShowCreateStepModal] = useState(false);
+ 
 
   const isViewPathRoute =
     location.pathname.startsWith("/dashboard/accountants/path/");
 
   const [viewPathMode, setViewPathMode] = useState(isViewPathRoute);
+
+
+// Add this with your other useEffects
+useEffect(() => {
+  // Check if we came from profile page with openCreatePath state
+  if (location.state?.openCreatePath) {
+    setaccsideNav("CREATE_PATH");
+    // Clear the state so it doesn't reopen on refresh
+    navigate('/dashboard/accountants', { replace: true, state: {} });
+  }
+}, [location.state, setaccsideNav, navigate]);
+
 
   useEffect(() => {
     setViewPathMode(
@@ -164,8 +183,6 @@ useEffect(() => {
     location.pathname.startsWith("/dashboard/accountants/path/");
   setViewPathMode(isPath);
 }, [location.pathname]);
-
-
 
 useEffect(() => {
   if (didFetchCountriesRef.current) return;  // ⛔ prevents 2nd execution
@@ -187,6 +204,8 @@ useEffect(() => {
   fetchCountries();
 }, []);
   //add compPlan
+
+  
   const [addCompPlan, setAddCompPlan] = useState(false);
   const [addCompPlanStep, setAddCompPlanStep] = useState("step1");
   const [userCreatedApps, setUserCreatedApps] = useState([]);
@@ -196,7 +215,6 @@ useEffect(() => {
   const [inputValues, setInputValues] = useState([]);
   const [multiplier, setMultiplier] = useState([]);
   const [isfetching, setIsfetching] = useState(false);
-
 
   //with compPlan
   const [withCompPlanData, setWithCompPlanData] = useState([]);
@@ -251,13 +269,10 @@ useEffect(() => {
       view: 'One time'
     }]
 
-
   const [servicePrice, setServicePrice] = useState(null)
   const [selectedServiceCurrency, setSelectedServiceCurrency] = useState(null)
 
-
-
-  let navigate = useNavigate();
+ 
 
  // CRM USERS (optional)
 const [crmUserData, setCrmUserData] = useState([]);
@@ -271,10 +286,6 @@ const [isClientLoading, setClientLoading] = useState(false);
 const [crmPurchaseData, setCrmPurchaseData] = useState([]);
 const [isPurchaseLoading, setPurchaseLoading] = useState(false);
 
-
-
-
-  
   const {
     allSteps,
     setAllSteps,
@@ -326,7 +337,6 @@ const userDetails = getPartner();
 const partnerEmail = userDetails?.email || userDetails?.user?.email || null;
 const partnerToken = userDetails?.idToken || userDetails?.token || null;
 // console.log("PARTNER VALUE:", userDetails);
-
 
   const handleGrade = (item) => {
     if (grade.includes(item)) {
@@ -434,44 +444,13 @@ if (!partner?.email) {
   return;
 }
 
-
-
   handleFollowerPerAccountants();
   handleGetCurrencies();
   resetpop();
 }, []);
 
-
-
-
-
-
-  // const signJwt = async (fileName, emailDev, secret) => {
-  //   try {
-  //     const jwts = await new jose.SignJWT({ name: fileName, email: emailDev })
-  //       .setProtectedHeader({ alg: "HS512" })
-  //       .setIssuer("gxjwtenchs512")
-  //       .setExpirationTime("10m")
-  //       .sign(new TextEncoder().encode(secret));
-  //     return jwts;
-  //   } catch (error) {
-  //     console.log(error, "kjbedkjwebdw");
-  //   }
-  // };
-
-  function renameFile(originalFile, newName) {
-    return new File([originalFile], newName, {
-      type: originalFile.type,
-      lastModified: originalFile.lastModified,
-    });
-  }
-
-
-
   //upload end here
 
-
-  
   const handleFollowerPerAccountants = () => {
     setIsLoading(true);
     const partner = getPartner();
@@ -521,8 +500,6 @@ const handleAllCustomerLicenses = () => {
       setPurchaseLoading(false);
     });
 };
-
-
 
   const handleCategories = () => {
     setIsCatLoading(true);
@@ -578,10 +555,6 @@ const handleGetCurrencies = React.useCallback(() => {
     });
 }, [isCurrencies]);
 
-
-
-
-
   const resetpop = () => {
     setispopular(false);
     setpstep(1);
@@ -634,25 +607,6 @@ const handleLogout = () => {
   localStorage.removeItem("loginEmail");
   navigate("/login");
 };
-
-
-
-  // const handleServicesForLogged = (value) => {
-  //   setIsServicesAcc(true);
-  //   GetLogServices(value)
-  //     .then((res) => {
-  //       // console.log(res, "kk");
-  //       let result = res?.data;
-  //       if (result?.status) {
-  //         setservicesAcc(result?.products);
-  //       }
-  //       setIsServicesAcc(false);
-  //     })
-  //     .catch((err) => {
-  //       console.log(err, "error in GetLogServices");
-  //       setIsServicesAcc(false);
-  //     });
-  // };
 
   const fileInputRef = useRef(null);
 
@@ -723,7 +677,6 @@ const uploadBulkPath = async (file) => {
     setIsUploadLoading(false);
   }
 };
-
 
 const uploadBulkStep = async (file) => {
   try {
@@ -801,8 +754,6 @@ const uploadBulkService = async (file) => {
   }
 };
 
-
-
   const handleFileInputChange1 = (e) => {
     setImage(e.target.files[0]);
     uploadBulkPath(e.target.files[0]);
@@ -854,8 +805,6 @@ const handleFileInputChange3 = async (e) => {
   reader.readAsArrayBuffer(file);
 };
 
-
-
   const myTimeoutService = () => {
     setTimeout(reloadService, 3000);
   };
@@ -866,91 +815,7 @@ const handleFileInputChange3 = async (e) => {
     setaccsideNav("My Services");
     setservicesMenu("Services");
   };
-const handleStepCountSubmit = () => {
-  if (stepCount < 1) {
-    alert('Please enter at least 1 step');
-    return;
-  }
 
-  // Get user details from your existing userDetails
-  const userDetails = getPartner();
-  
-  // Get email from the same logic as your pathSubmission
-  const finalEmail = user?.email || 
-                     user?.user?.email || 
-                     user?.currentUser?.email || 
-                     userDetails?.email || 
-                     userDetails?.user?.email ||
-                     localStorage.getItem("loginEmail");
-
-  if (!finalEmail) {
-    alert("User email missing. Please login again.");
-    return;
-  }
-
-  // First save the path via API
-  const finalPayload = {
-    email: finalEmail,
-    nameOfPath: pathSteps?.nameOfPath,
-    description: pathSteps?.description,
-    length: Number(pathSteps?.length),
-    path_type: pathSteps?.path_type,
-    current_coordinates: {
-      grade: grade,
-      curriculum: curriculum,
-      stream: stream,
-      grade_avg: gradeAvg,
-      financialSituation: finance,
-      personality: personality,
-    },
-    feature_coordinates: {
-      program: pathSteps?.program,
-      destination_institution: pathSteps?.destination_institution,
-      city: pathSteps?.city,
-      country: pathSteps?.country,
-    },
-    program: pathSteps?.program,
-    destination_institution: pathSteps?.destination_institution,
-    city: pathSteps?.city,
-    country: pathSteps?.country,
-    grade: grade,
-    stream: stream,
-    curriculum: curriculum,
-    grade_avg: gradeAvg,
-    financialSituation: finance,
-    personality: personality,
-    the_ids: pathSteps?.the_ids || [],
-    status: "waitingforapproval",
-  };
-
-  setCreatingPath(true);
-
-  axios.post(`http://localhost:4545/api/paths/add`, finalPayload)
-    .then((response) => {
-      if (response.data?.status) {
-        const createdPathId = response.data.data._id;
-        
-        // Save to localStorage for step creation
-        localStorage.setItem('currentPathData', JSON.stringify({
-          ...finalPayload,
-          pathId: createdPathId
-        }));
-        localStorage.setItem('totalSteps', stepCount);
-        
-        // Close modal
-        document.getElementById('stepsModal').style.display = 'none';
-        setCreatingPath(false);
-        
-        // Navigate to step creation (pstep = 9)
-        setpstep(9);
-      }
-    })
-    .catch((err) => {
-      console.log("❌ API ERROR:", err);
-      setCreatingPath(false);
-      alert('Error creating path. Please try again.');
-    });
-};
  const handleFinalSubmit = () => {
   setIsSubmit(true);
 
@@ -961,7 +826,6 @@ const handleStepCountSubmit = () => {
   productcreatoremail: userDetails.email,
 
   ...(currentStepId ? { step_id: currentStepId } : {}),
-
 
     // REQUIRED BACKEND FIELDS
     name: serviceNameInput,                 // ✔ MUST BE `name`
@@ -1087,50 +951,6 @@ const handleStepCountSubmit = () => {
     });
 };
 
-
-  //   const addService = () => {
-  //     let userDetails = JSON.parse(localStorage.getItem("partner"));
-
-  //     console.log({
-  //       "productcreatoremail": userDetails.email,
-  //       "name": serviceNameInput,
-  //       "description": serviceDescription,
-  //       "chargingtype": billingType,
-  //       "charging currency": {
-  //           "coin": selectedServiceCurrency
-  //       },
-  //       "billing_cycle": {
-  //         [billingType]: {
-  //               "price": servicePrice,
-  //               "coin": selectedServiceCurrency
-  //           }
-  //       }
-  //   }, "kjedkjwehfkwehflkwhef")
-
-  //     axios.post(`/api/services/add`, {
-  //       "productcreatoremail": userDetails.email,
-  //       "name": serviceNameInput,
-  //       "description": serviceDescription,
-  //       "chargingtype": billingType,
-  //       "charging currency": {
-  //           "coin": selectedServiceCurrency
-  //       },
-  //       "billing_cycle": {
-  //         [billingType]: {
-  //               "price": servicePrice,
-  //               "coin": selectedServiceCurrency
-  //           }
-  //       }
-  //   }
-  // ).then(({data}) => {
-  //   if(data.status){
-  //     resetpop()
-  //     setispopular(false)
-  //     // getAllServices()
-  //   }
-  // })
-  //   }
-
 const getAllServices = async () => {
   const userDetails = getPartner();
 
@@ -1159,7 +979,6 @@ const getAllServices = async () => {
   }
 };
 
-
 const fetchAllServicesAgain = () => {
   const userDetails = JSON.parse(localStorage.getItem("partner"));
 
@@ -1171,7 +990,6 @@ const fetchAllServicesAgain = () => {
   getAllServices(userDetails.email);
 };
 
-
 useEffect(() => {
   if (!ispopular) {
     const userDetails = JSON.parse(localStorage.getItem("partner"));
@@ -1182,8 +1000,6 @@ useEffect(() => {
     getAllServices();
   }
 }, [ispopular]);
-
-
 
 useEffect(() => {
   resetpop();
@@ -1225,7 +1041,6 @@ function reload() {
   }
 }
 
-
 const deleteService = async () => {
   const serviceId = selectedService?._id;
   if (!serviceId) return;
@@ -1250,7 +1065,6 @@ const deleteService = async () => {
     setIsloading(false);
   }
 };
-
 
 const changeServiceIcon = () => {
   // Debug log
@@ -1354,9 +1168,6 @@ const handleSavePath = () => {
   console.log("📨 FINAL PATH STEPS SUBMITTED:", pathSteps);
   // save logic...
 };
-
-
-
 
   const myTimeout1 = () => {
     setTimeout(reload1, 3000);
@@ -1465,8 +1276,6 @@ const handleSavePath = () => {
     ));
   };
 
-
-
   const getWithCompPlan = () => {
     setGettingData(true);
     let obj = {
@@ -1491,28 +1300,10 @@ const handleSavePath = () => {
     getWithCompPlan();
   }, []);
 
-  // useEffect(() => {
-  //   let email = userDetails?.email;
-  //   axios
-  //     .get(`https://careers.marketsverse.com/steps/get?email=${email}`)
-  //     .then((response) => {
-  //       let result = response?.data?.data;
-  //       // console.log(result, "all steps fetched");
-  //       setAllSteps(result);
-  //     })
-  //     .catch((error) => {
-  //       console.log(error, "error in fetching all steps");
-  //     });
-  // }, []);
-
-
-
-
 const getCounsellorEmail = () => {
   const local = JSON.parse(localStorage.getItem("partner"));
   return user?.email || local?.email;
 };
-
 
 useEffect(() => {
   const email = getCounsellorEmail();
@@ -1530,24 +1321,6 @@ useEffect(() => {
       setClientLoading(false);
     });
 }, []);
-
-// useEffect(() => {
-//   const email = getCounsellorEmail();
-//   if (!email) return;
-
-//   setPurchaseLoading(true);
-
-//   axios.get(`/api/crm/purchases?creatoremail=${email}`)
-//     .then(res => {
-//       setCrmPurchaseData(res.data?.data || []);
-//       setPurchaseLoading(false);
-//     })
-//     .catch(err => {
-//       console.log("CRM PURCHASE ERROR:", err);
-//       setPurchaseLoading(false);
-//     });
-// }, []);
-
 
 const pathSubmission = () => {
   console.log("🚀 ---- PATH SUBMISSION TRIGGERED ----");
@@ -1589,7 +1362,6 @@ if (!finalEmail) {
   alert("User email missing. Please login again.");
   return;
 }
-
 
   // 8️⃣ Build the payload
   const payload = {
@@ -1681,18 +1453,6 @@ axios
     setCreatingPath(false);
   });
 };
-  // const removeStep = (stepId) => {
-  //   const updatedSelectedSteps = selectedSteps.filter(
-  //     (step) => step._id !== stepId
-  //   );
-  //   setSelectedSteps(updatedSelectedSteps);
-
-  //   const updatedStepIds = pathSteps?.step_ids?.filter((id) => id !== stepId);
-  //   setPathSteps({
-  //     ...pathSteps,
-  //     step_ids: updatedStepIds,
-  //   });
-  // };
 
   const removeStep = (stepId) => {
     // Remove the step from selectedSteps
@@ -1711,21 +1471,6 @@ axios
     });
   };
 
-  // useEffect(() => {
-  //   setIsUserLoading(true);
-  //   axios
-  //     .get("https://comms.globalxchange.io/gxb/apps/users/get?app_code=naavi")
-  //     .then((response) => {
-  //       let result = response?.data?.users;
-  //       // console.log(result, "crm users data");
-  //       setIsUserLoading(false);
-  //       setCrmUserData(result);
-  //     })
-  //     .catch((error) => {
-  //       console.log(error, "error in fetching crm users data");
-  //     });
-  // }, []);
-
 useEffect(() => {
   const email = getCounsellorEmail();
   if (!email) return;
@@ -1742,7 +1487,6 @@ useEffect(() => {
       setClientLoading(false);
     });
 }, []);
-
 
   function customDateFormat(date) {
     if (date instanceof Date && !isNaN(date.valueOf())) {
@@ -1853,7 +1597,6 @@ let obj = {
   path_id: forexPathId,
 };
 
-
     axios
       .post(
         `https://comms.globalxchange.io/coin/vault/service/trade/execute`,
@@ -1915,8 +1658,6 @@ let obj = {
 };
 
 const handleDownload = (type) => {
-  
-
   let filePath;
 
   if (type === "Path") {
@@ -2009,122 +1750,116 @@ return (
     overflow: "hidden"
   }}>
     {/* Use MenuNav but hide the search and user section if needed, or create a simpler header */}
+ 
+    
+   
+<div style={{
+  padding: "0 35px",
+  height: "60px",
+  display: "flex",
+  alignItems: "center",
+  borderBottom: "0.5px solid #E5E5E5",
+  flexShrink: 0,
+  backgroundColor: "#ffffff"
+}}>
+  <div style={{ 
+    padding: "10px 30px",
+    borderRadius: "35px",
+    fontWeight: "700",
+    fontSize: "15px",
+    color: "#1f304f",
+    background: "rgba(241, 241, 241, 0.5)"
+  }}>
+    Create New Path
+  </div>
+</div>
+<div style={{ 
+  flex: 1, 
+  minHeight: 0, 
+  overflowY: "auto",
+  padding: "0", // REMOVED ALL PADDING - let CreateNewPath handle it
+  backgroundColor: "#ffffff"
+}}>
+  <CreateNewPath 
+    setpstep={setpstep}
+    setaccsideNav={setaccsideNav} 
+    pathSubmission={pathSubmission}
+    pathSteps={pathSteps}
+    setPathSteps={setPathSteps}
+    grade={grade}
+    setGrade={setGrade}
+    gradeAvg={gradeAvg}
+    setGradeAvg={setGradeAvg}
+    curriculum={curriculum}
+    setCurriculum={setCurriculum}
+    stream={stream}
+    setStream={setStream}
+    finance={finance}
+    setFinance={setFinance}
+    personality={personality}
+    setPersonality={setPersonality}
+    gradeList={gradeList}
+    gradePointAvg={gradePointAvg}
+    curriculumList={curriculumList}
+    streamList={streamList}
+    financeList={financeList}
+    personalityList={personalityList}
+    countryApiValue={countryApiValue}
+    handleGrade={handleGrade}
+    handleGradeAvg={handleGradeAvg}
+    handleCurriculum={handleCurriculum}
+    handleStream={handleStream}
+    handleFinance={handleFinance}
+    handlePersonality={handlePersonality}
+  />
+</div>
+
+ </div>
+         
+        
+       ) : accsideNav === "CREATE_SERVICE" ? (
+  // SHOW CREATE NEW SERVICE AS FULL PAGE - WITHOUT THE HEADER TABS
+  <div style={{ 
+    display: "flex", 
+    flexDirection: "column", 
+    height: "100%", 
+    width: "100%",
+    overflow: "hidden"
+  }}>
     <div style={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      height: "70px",
       padding: "0 35px",
+      height: "60px",
+      display: "flex",
+      alignItems: "center",
       borderBottom: "0.5px solid #E5E5E5",
-      background: "#ffffff",
-      flexShrink: 0
+      flexShrink: 0,
+      backgroundColor: "#ffffff"
     }}>
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <img 
-          src={logo} 
-          alt="naavi" 
-          style={{ height: "40px", marginRight: "20px" }} 
-        />
-        <span style={{ 
-          fontSize: "20px", 
-          fontWeight: "600",
-          color: "#1f304f",
-          background: "linear-gradient(135deg, #29449D, #47B4D5)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent"
-        }}>
-          AI Powered Path Engine
-        </span>
-      </div>
-      <div
-        style={{
-          fontWeight: "600",
-          textDecorationLine: "underline",
-          cursor: "pointer",
-          fontSize: "0.9rem",
-          color: "#1f304f"
-        }}
-        onClick={() => {
-          setaccsideNav("Paths");
-          resetpop();
-        }}
-      >
-        ← Back to My Paths
+      <div style={{ 
+        padding: "10px 30px",
+        borderRadius: "35px",
+        fontWeight: "700",
+        fontSize: "15px",
+        color: "#1f304f",
+        background: "rgba(241, 241, 241, 0.5)"
+      }}>
+        Create New Service
       </div>
     </div>
-    
-    {/* Main content area */}
     <div style={{ 
       flex: 1, 
       minHeight: 0, 
-      display: "flex", 
-      flexDirection: "column",
-      backgroundColor: "#ffffff",
-      overflow: "hidden"
+      overflowY: "auto",
+      padding: "0",
+      backgroundColor: "#ffffff"
     }}>
-      <div style={{
-        padding: "0 35px",
-        height: "60px",
-        display: "flex",
-        alignItems: "center",
-        borderBottom: "0.5px solid #E5E5E5",
-        flexShrink: 0,
-        backgroundColor: "#ffffff"
-      }}>
-        <div style={{ 
-          padding: "10px 30px",
-          borderRadius: "35px",
-          fontWeight: "700",
-          fontSize: "15px",
-          color: "#1f304f",
-          background: "rgba(241, 241, 241, 0.5)"
-        }}>
-          Create New Path
-        </div>
-      </div>
-      <div style={{ 
-        flex: 1, 
-        minHeight: 0, 
-        overflowY: "auto",
-        padding: "20px 35px",
-        backgroundColor: "#ffffff"
-      }}>
-        <CreateNewPath 
-          setpstep={setpstep}
-          setaccsideNav={setaccsideNav} 
-          pathSubmission={pathSubmission}
-          pathSteps={pathSteps}
-          setPathSteps={setPathSteps}
-          grade={grade}
-          setGrade={setGrade}
-          gradeAvg={gradeAvg}
-          setGradeAvg={setGradeAvg}
-          curriculum={curriculum}
-          setCurriculum={setCurriculum}
-          stream={stream}
-          setStream={setStream}
-          finance={finance}
-          setFinance={setFinance}
-          personality={personality}
-          setPersonality={setPersonality}
-          gradeList={gradeList}
-          gradePointAvg={gradePointAvg}
-          curriculumList={curriculumList}
-          streamList={streamList}
-          financeList={financeList}
-          personalityList={personalityList}
-          countryApiValue={countryApiValue}
-          handleGrade={handleGrade}
-          handleGradeAvg={handleGradeAvg}
-          handleCurriculum={handleCurriculum}
-          handleStream={handleStream}
-          handleFinance={handleFinance}
-          handlePersonality={handlePersonality}
-        />
-      </div>
+      <CreateNewService 
+        setaccsideNav={setaccsideNav}
+      />
     </div>
   </div>
-          ) : accsideNav === "CRM" ? (
+        
+        ) : accsideNav === "CRM" ? (
             // ... keep ALL your existing CRM code exactly as is
                 <>
                   <MenuNav
@@ -2585,7 +2320,6 @@ return (
                   </div>
                 </>
 
-
               ) : accsideNav === "My Services" ? (
                 <>
                   <MenuNav
@@ -3019,7 +2753,6 @@ return (
       setLoading={setLoading}
     />
 
-
 )
 : (
   <div className="services-main">
@@ -3057,21 +2790,22 @@ return (
             <>
               {pstep === 1 ? (
                 <div>
-                  <div className="acc-step-text">New</div>
+                  {/* <div className="acc-step-text">New</div> */}
                   <div>
                     <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setselectNew("Service");
-                        setpstep(2);
-                      }}
-                      style={{
-                        background: selectNew === "Service" ? "#182542" : "",
-                        color: selectNew === "Service" ? "#FFF" : "",
-                      }}
-                    >
-                      Service
-                    </div>
+  className="acc-step-box"
+  onClick={() => {
+    setselectNew("Service");
+    setispopular(false); // Close the modal
+    setaccsideNav("CREATE_SERVICE"); // Set navigation to show create service
+  }}
+  style={{
+    background: selectNew === "Service" ? "#182542" : "",
+    color: selectNew === "Service" ? "#FFF" : "",
+  }}
+>
+  Service
+</div>
 
                     <div
   className="acc-step-box"
@@ -3089,7 +2823,7 @@ return (
   Path
 </div>
 
-                    <div
+                    {/* <div
                       className="acc-step-box"
                       onClick={() => {
                         setselectNew("Step");
@@ -3101,7 +2835,7 @@ return (
                       }}
                     >
                       Step
-                    </div>
+                    </div> */}
                    <div
   className="acc-step-box"
   data-type="bulk-service"
@@ -3569,8 +3303,8 @@ return (
                 <div className="success-box">
                   You Have Successfully Created A New Service
                 </div>
-) : pstep === 9 ? (
-  <NewStep1 setpstep={setpstep} />
+              ) : pstep === 9 ? (
+                <NewStep1 setpstep={setpstep} />
               ) : pstep === 10 ? (
                 <div>
                   <div className="acc-step-text">Bulk Path Action</div>
@@ -3732,11 +3466,108 @@ return (
               ) : (
                 ""
               )}
+
+              
             </>
           </div>
         ) : (
           ""
         )}
+
+        {showStepsModal && (
+  <div
+    className="modal-overlay"
+    style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      background: "rgba(0,0,0,0.5)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 1000
+    }}
+  >
+    <div
+      style={{
+        background: "white",
+        borderRadius: "32px",
+        padding: "40px",
+        maxWidth: "500px",
+        width: "90%",
+        boxShadow: "0 30px 60px rgba(0,0,0,0.3)"
+      }}
+    >
+      <h2 style={{ fontSize: "24px", color: "#0b1e3a", marginBottom: "16px" }}>
+        Add Steps to Your Path
+      </h2>
+
+      <p style={{ color: "#617388", marginBottom: "24px" }}>
+        How many steps do you want to add to this path? You can add as many as you need.
+      </p>
+
+      <input
+        type="number"
+        min="1"
+        value={stepCount}
+        onChange={(e) => setStepCount(e.target.value)}
+        placeholder="Enter number of steps"
+        style={{
+          width: "100%",
+          padding: "16px",
+          border: "1.5px solid #dce3ec",
+          borderRadius: "16px",
+          fontSize: "18px",
+          marginBottom: "24px"
+        }}
+      />
+
+      <div style={{ display: "flex", gap: "16px", justifyContent: "flex-end" }}>
+        <button
+          onClick={() => setShowStepsModal(false)}
+          style={{
+            padding: "16px 42px",
+            borderRadius: "50px",
+            fontWeight: "700",
+            fontSize: "16px",
+            border: "2px solid #d3deed",
+            background: "white",
+            color: "#1f3a5f",
+            cursor: "pointer"
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+onClick={() => {
+  setShowStepsModal(false);
+
+  setTimeout(() => {
+    setispopular(true); // ← use your REAL setter name
+    setselectNew("Step");
+    setpstep(9);
+  }, 100);
+}}
+          style={{
+            padding: "16px 42px",
+            borderRadius: "50px",
+            fontWeight: "700",
+            fontSize: "16px",
+            border: "none",
+            background: "#2a9d8f",
+            color: "white",
+            cursor: "pointer"
+          }}
+        >
+          Continue →
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       </>
 
       {/* Keep all your other modal code (coinActionEnabled, serviceActionEnabled, addCompPlan) exactly as is */}
@@ -3826,4 +3657,3 @@ export const ImageUploadDivProfilePic = ({ setFunc, funcValue }) => {
     </div>
   );
 };
- 

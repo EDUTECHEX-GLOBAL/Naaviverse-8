@@ -2050,649 +2050,649 @@ const AdminAccProfile = () => {
                 <div className="success-box">
                   You Have Successfully Created A New Service
                 </div>
-              ) : pstep === 8 ? (
-                <div className="acc-addpath">
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What is the name of the path?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <input
-                        type="text"
-                        placeholder="Name.."
-                        value={pathSteps?.nameOfPath}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              nameOfPath: e.target.value,
-                            };
-                          });
-                        }}
-                      />
-                    </div>
-                  </div>
+              // ) : pstep === 8 ? (
+              //   <div className="acc-addpath">
+              //     <div className="each-acc-addpath-field">
+              //       <div className="each-acc-addpath-field-name">
+              //         What is the name of the path?
+              //       </div>
+              //       <div className="each-acc-addpath-field-input">
+              //         <input
+              //           type="text"
+              //           placeholder="Name.."
+              //           value={pathSteps?.nameOfPath}
+              //           onChange={(e) => {
+              //             setPathSteps((prev) => {
+              //               return {
+              //                 ...prev,
+              //                 nameOfPath: e.target.value,
+              //               };
+              //             });
+              //           }}
+              //         />
+              //       </div>
+              //     </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      How long will the path apx take?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <input
-                        type="number"
-                        placeholder="0"
-                        style={{ width: "70%" }}
-                        value={pathSteps?.length}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              length: e.target.value,
-                            };
-                          });
-                        }}
-                      />
-                      <div className="years-div">Years</div>
-                    </div>
-                  </div>
+              //     <div className="each-acc-addpath-field">
+              //       <div className="each-acc-addpath-field-name">
+              //         How long will the path apx take?
+              //       </div>
+              //       <div className="each-acc-addpath-field-input">
+              //         <input
+              //           type="number"
+              //           placeholder="0"
+              //           style={{ width: "70%" }}
+              //           value={pathSteps?.length}
+              //           onChange={(e) => {
+              //             setPathSteps((prev) => {
+              //               return {
+              //                 ...prev,
+              //                 length: e.target.value,
+              //               };
+              //             });
+              //           }}
+              //         />
+              //         <div className="years-div">Years</div>
+              //       </div>
+              //     </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Describe the path
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <textarea
-                        placeholder="Enter description.."
-                        value={pathSteps?.description}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              description: e.target.value,
-                            };
-                          });
-                        }}
-                      ></textarea>
-                    </div>
-                  </div>
+              //     <div className="each-acc-addpath-field">
+              //       <div className="each-acc-addpath-field-name">
+              //         Describe the path
+              //       </div>
+              //       <div className="each-acc-addpath-field-input">
+              //         <textarea
+              //           placeholder="Enter description.."
+              //           value={pathSteps?.description}
+              //           onChange={(e) => {
+              //             setPathSteps((prev) => {
+              //               return {
+              //                 ...prev,
+              //                 description: e.target.value,
+              //               };
+              //             });
+              //           }}
+              //         ></textarea>
+              //       </div>
+              //     </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What type of path is it?
-                    </div>
-                    <div className="each-acc-addpath-field-flex">
-                      <div
-                        onClick={() => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              path_type: "education",
-                            };
-                          });
-                        }}
-                        style={{
-                          background:
-                            pathSteps?.path_type === "education"
-                              ? "linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%)"
-                              : "",
-                          color:
-                            pathSteps?.path_type === "education" ? "white" : "",
-                        }}
-                      >
-                        Education
-                      </div>
-                      <div
-                        onClick={() => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              path_type: "career",
-                            };
-                          });
-                        }}
-                        style={{
-                          background:
-                            pathSteps?.path_type === "career"
-                              ? "linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%)"
-                              : "",
-                          color:
-                            pathSteps?.path_type === "career" ? "white" : "",
-                        }}
-                      >
-                        Career
-                      </div>
-                      <div
-                        onClick={() => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              path_type: "immigration",
-                            };
-                          });
-                        }}
-                        style={{
-                          background:
-                            pathSteps?.path_type === "immigration"
-                              ? "linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%)"
-                              : "",
-                          color:
-                            pathSteps?.path_type === "immigration"
-                              ? "white"
-                              : "",
-                        }}
-                      >
-                        Immigration
-                      </div>
-                    </div>
-                  </div>
+              //     <div className="each-acc-addpath-field">
+              //       <div className="each-acc-addpath-field-name">
+              //         What type of path is it?
+              //       </div>
+              //       <div className="each-acc-addpath-field-flex">
+              //         <div
+              //           onClick={() => {
+              //             setPathSteps((prev) => {
+              //               return {
+              //                 ...prev,
+              //                 path_type: "education",
+              //               };
+              //             });
+              //           }}
+              //           style={{
+              //             background:
+              //               pathSteps?.path_type === "education"
+              //                 ? "linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%)"
+              //                 : "",
+              //             color:
+              //               pathSteps?.path_type === "education" ? "white" : "",
+              //           }}
+              //         >
+              //           Education
+              //         </div>
+              //         <div
+              //           onClick={() => {
+              //             setPathSteps((prev) => {
+              //               return {
+              //                 ...prev,
+              //                 path_type: "career",
+              //               };
+              //             });
+              //           }}
+              //           style={{
+              //             background:
+              //               pathSteps?.path_type === "career"
+              //                 ? "linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%)"
+              //                 : "",
+              //             color:
+              //               pathSteps?.path_type === "career" ? "white" : "",
+              //           }}
+              //         >
+              //           Career
+              //         </div>
+              //         <div
+              //           onClick={() => {
+              //             setPathSteps((prev) => {
+              //               return {
+              //                 ...prev,
+              //                 path_type: "immigration",
+              //               };
+              //             });
+              //           }}
+              //           style={{
+              //             background:
+              //               pathSteps?.path_type === "immigration"
+              //                 ? "linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%)"
+              //                 : "",
+              //             color:
+              //               pathSteps?.path_type === "immigration"
+              //                 ? "white"
+              //                 : "",
+              //           }}
+              //         >
+              //           Immigration
+              //         </div>
+              //       </div>
+              //     </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What is the destination of the path?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <input
-                        type="text"
-                        placeholder="Name.."
-                        value={pathSteps?.destination_institution}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              destination_institution: e.target.value,
-                            };
-                          });
-                        }}
-                      />
-                    </div>
-                  </div>
+              //     <div className="each-acc-addpath-field">
+              //       <div className="each-acc-addpath-field-name">
+              //         What is the destination of the path?
+              //       </div>
+              //       <div className="each-acc-addpath-field-input">
+              //         <input
+              //           type="text"
+              //           placeholder="Name.."
+              //           value={pathSteps?.destination_institution}
+              //           onChange={(e) => {
+              //             setPathSteps((prev) => {
+              //               return {
+              //                 ...prev,
+              //                 destination_institution: e.target.value,
+              //               };
+              //             });
+              //           }}
+              //         />
+              //       </div>
+              //     </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">Add steps</div>
-                    <div
-                      className="each-acc-addpath-field-input"
-                      style={{ flexDirection: "column" }}
-                    >
-                      <div
-                        style={{
-                          width: "100%",
-                          display: "flex",
-                          cursor: "pointer",
-                        }}
-                        onClick={() => {
-                          setStepsToggle(!stepsToggle);
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: "85%",
-                            cursor: "pointer",
-                            padding: "1.5rem",
-                            borderRadius: "15px",
-                            opacity: "0.25",
-                            fontSize: "1rem",
-                            fontWeight: "500",
-                          }}
-                        >
-                          Click To Select
-                        </div>
-                        <div className="arrow-box">
-                          <img
-                            src={arrow}
-                            alt=""
-                            style={{
-                              transform: stepsToggle ? "rotate(180deg)" : "",
-                            }}
-                          />
-                        </div>
-                      </div>
-                      <div
-                        className="hidden-steps"
-                        style={{ display: stepsToggle ? "flex" : "none" }}
-                      >
-                        {allSteps?.map((e, i) => {
-                          return (
-                            <div
-                              className="each-hidden-step"
-                              key={i}
-                              onClick={() => {
-                                setSelectedSteps((prevSelectedSteps) => [
-                                  ...prevSelectedSteps,
-                                  e,
-                                ]);
-                                // setPathSteps((prev) => {
-                                //   return {
-                                //     ...prev,
-                                //     step_ids:
-                                //       prev?.step_ids?.length > 0
-                                //         ? [...prev?.step_ids, e?._id]
-                                //         : [e?._id],
-                                //   };
-                                // });
-                                setPathSteps((prev) => {
-                                  return {
-                                    ...prev,
-                                    the_ids: [
-                                      ...(prev?.the_ids || []), // Copy existing items if they exist
-                                      {
-                                        step_id: e?._id,
-                                      },
-                                    ],
-                                  };
-                                });
-                                setStepsToggle(false);
-                              }}
-                            >
-                              <div className="stepp-textt">{e?.name}</div>
-                              <div className="stepp-textt1">
-                                {e?.description}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
+              //     <div className="each-acc-addpath-field">
+              //       <div className="each-acc-addpath-field-name">Add steps</div>
+              //       <div
+              //         className="each-acc-addpath-field-input"
+              //         style={{ flexDirection: "column" }}
+              //       >
+              //         <div
+              //           style={{
+              //             width: "100%",
+              //             display: "flex",
+              //             cursor: "pointer",
+              //           }}
+              //           onClick={() => {
+              //             setStepsToggle(!stepsToggle);
+              //           }}
+              //         >
+              //           <div
+              //             style={{
+              //               width: "85%",
+              //               cursor: "pointer",
+              //               padding: "1.5rem",
+              //               borderRadius: "15px",
+              //               opacity: "0.25",
+              //               fontSize: "1rem",
+              //               fontWeight: "500",
+              //             }}
+              //           >
+              //             Click To Select
+              //           </div>
+              //           <div className="arrow-box">
+              //             <img
+              //               src={arrow}
+              //               alt=""
+              //               style={{
+              //                 transform: stepsToggle ? "rotate(180deg)" : "",
+              //               }}
+              //             />
+              //           </div>
+              //         </div>
+              //         <div
+              //           className="hidden-steps"
+              //           style={{ display: stepsToggle ? "flex" : "none" }}
+              //         >
+              //           {allSteps?.map((e, i) => {
+              //             return (
+              //               <div
+              //                 className="each-hidden-step"
+              //                 key={i}
+              //                 onClick={() => {
+              //                   setSelectedSteps((prevSelectedSteps) => [
+              //                     ...prevSelectedSteps,
+              //                     e,
+              //                   ]);
+              //                   // setPathSteps((prev) => {
+              //                   //   return {
+              //                   //     ...prev,
+              //                   //     step_ids:
+              //                   //       prev?.step_ids?.length > 0
+              //                   //         ? [...prev?.step_ids, e?._id]
+              //                   //         : [e?._id],
+              //                   //   };
+              //                   // });
+              //                   setPathSteps((prev) => {
+              //                     return {
+              //                       ...prev,
+              //                       the_ids: [
+              //                         ...(prev?.the_ids || []), // Copy existing items if they exist
+              //                         {
+              //                           step_id: e?._id,
+              //                         },
+              //                       ],
+              //                     };
+              //                   });
+              //                   setStepsToggle(false);
+              //                 }}
+              //               >
+              //                 <div className="stepp-textt">{e?.name}</div>
+              //                 <div className="stepp-textt1">
+              //                   {e?.description}
+              //                 </div>
+              //               </div>
+              //             );
+              //           })}
+              //         </div>
+              //       </div>
+              //     </div>
 
-                  <div className="selected-steps">
-                    {selectedSteps?.map((e, i) => {
-                      return (
-                        <div className="each-selected-step" key={e?._id}>
-                          <div className="stepp-textt">{e?.name}</div>
-                          <div className="stepp-textt1">{e?.description}</div>
-                          <div
-                            className="trash-icon-div"
-                            onClick={() => removeStep(e._id)}
-                          >
-                            <img src={trash} alt="" />
-                          </div>
-                          <div
-                            className="each-acc-addpath-field-input"
-                            style={{
-                              flexDirection: "column",
-                              borderRadius: "15px",
-                              border: "1px solid #e7e7e7",
-                            }}
-                          >
-                            <div
-                              style={{
-                                width: "100%",
-                                display: "flex",
-                                alignItems: "center",
-                                cursor: "pointer",
-                              }}
-                              onClick={() => {
-                                setShowBackupPathList(i);
-                              }}
-                            >
-                              <div
-                                style={{
-                                  width: "85%",
-                                  cursor: "pointer",
-                                  padding: "1.5rem",
-                                  borderRadius: "15px",
-                                  opacity: "0.25",
-                                  fontSize: "1rem",
-                                  fontWeight: "500",
-                                }}
-                              >
-                                {pathSteps?.the_ids?.find(
-                                  (o) => o.step_id === e._id
-                                )?.backup_pathId !== ""
-                                  ? pathSteps?.the_ids?.find(
-                                      (o) => o.step_id === e._id
-                                    )?.backup_pathId
-                                  : "Select Backup Path"}
+              //     <div className="selected-steps">
+              //       {selectedSteps?.map((e, i) => {
+              //         return (
+              //           <div className="each-selected-step" key={e?._id}>
+              //             <div className="stepp-textt">{e?.name}</div>
+              //             <div className="stepp-textt1">{e?.description}</div>
+              //             <div
+              //               className="trash-icon-div"
+              //               onClick={() => removeStep(e._id)}
+              //             >
+              //               <img src={trash} alt="" />
+              //             </div>
+              //             <div
+              //               className="each-acc-addpath-field-input"
+              //               style={{
+              //                 flexDirection: "column",
+              //                 borderRadius: "15px",
+              //                 border: "1px solid #e7e7e7",
+              //               }}
+              //             >
+              //               <div
+              //                 style={{
+              //                   width: "100%",
+              //                   display: "flex",
+              //                   alignItems: "center",
+              //                   cursor: "pointer",
+              //                 }}
+              //                 onClick={() => {
+              //                   setShowBackupPathList(i);
+              //                 }}
+              //               >
+              //                 <div
+              //                   style={{
+              //                     width: "85%",
+              //                     cursor: "pointer",
+              //                     padding: "1.5rem",
+              //                     borderRadius: "15px",
+              //                     opacity: "0.25",
+              //                     fontSize: "1rem",
+              //                     fontWeight: "500",
+              //                   }}
+              //                 >
+              //                   {pathSteps?.the_ids?.find(
+              //                     (o) => o.step_id === e._id
+              //                   )?.backup_pathId !== ""
+              //                     ? pathSteps?.the_ids?.find(
+              //                         (o) => o.step_id === e._id
+              //                       )?.backup_pathId
+              //                     : "Select Backup Path"}
 
-                                {/* {e?.the_ids?.backup_pathId !== ""
-                                  ? e?.the_ids?.backup_pathId
-                                  : "Select Backup Path"} */}
-                              </div>
-                              <div className="arrow-box">
-                                <img
-                                  src={arrow}
-                                  alt=""
-                                  style={{
-                                    transform: stepsToggle
-                                      ? "rotate(180deg)"
-                                      : "",
-                                  }}
-                                />
-                              </div>
-                            </div>
-                            <div
-                              className="hidden-steps"
-                              style={{
-                                display:
-                                  showBackupPathList === i ? "block" : "none",
-                              }}
-                            >
-                              {backupPathList?.map((item, i) => {
-                                return (
-                                  <div
-                                    onClick={() =>
-                                      addBackupPath(item._id, e._id)
-                                    }
-                                    className="each-hidden-step"
-                                    key={i}
-                                    style={{
-                                      padding: "1rem",
-                                      borderBottom: "1px solid #e7e7e7",
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    <div className="stepp-textt">
-                                      {item?.program}
-                                    </div>
-                                    <div className="stepp-textt1">
-                                      {item?.destination_institution}
-                                    </div>
-                                    <br />
-                                    <div className="stepp-textt1">
-                                      {item?.description}
-                                    </div>
-                                    <br />
-                                    <div className="stepp-textt1">
-                                      Path id:{item?._id}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+              //                   {/* {e?.the_ids?.backup_pathId !== ""
+              //                     ? e?.the_ids?.backup_pathId
+              //                     : "Select Backup Path"} */}
+              //                 </div>
+              //                 <div className="arrow-box">
+              //                   <img
+              //                     src={arrow}
+              //                     alt=""
+              //                     style={{
+              //                       transform: stepsToggle
+              //                         ? "rotate(180deg)"
+              //                         : "",
+              //                     }}
+              //                   />
+              //                 </div>
+              //               </div>
+              //               <div
+              //                 className="hidden-steps"
+              //                 style={{
+              //                   display:
+              //                     showBackupPathList === i ? "block" : "none",
+              //                 }}
+              //               >
+              //                 {backupPathList?.map((item, i) => {
+              //                   return (
+              //                     <div
+              //                       onClick={() =>
+              //                         addBackupPath(item._id, e._id)
+              //                       }
+              //                       className="each-hidden-step"
+              //                       key={i}
+              //                       style={{
+              //                         padding: "1rem",
+              //                         borderBottom: "1px solid #e7e7e7",
+              //                         cursor: "pointer",
+              //                       }}
+              //                     >
+              //                       <div className="stepp-textt">
+              //                         {item?.program}
+              //                       </div>
+              //                       <div className="stepp-textt1">
+              //                         {item?.destination_institution}
+              //                       </div>
+              //                       <br />
+              //                       <div className="stepp-textt1">
+              //                         {item?.description}
+              //                       </div>
+              //                       <br />
+              //                       <div className="stepp-textt1">
+              //                         Path id:{item?._id}
+              //                       </div>
+              //                     </div>
+              //                   );
+              //                 })}
+              //               </div>
+              //             </div>
+              //           </div>
+              //         );
+              //       })}
+              //     </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Select ideal grade for participant
-                    </div>
-                    <div className="optioncardWrapper">
-                      {gradeList.map((item) => (
-                        <div
-                          className={
-                            grade.includes(item)
-                              ? "optionCardSmallSelected"
-                              : "optionCardSmall"
-                          }
-                          onClick={(e) => handleGrade(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+              //     <div className="each-acc-addpath-field">
+              //       <div className="each-acc-addpath-field-name">
+              //         Select ideal grade for participant
+              //       </div>
+              //       <div className="optioncardWrapper">
+              //         {gradeList.map((item) => (
+              //           <div
+              //             className={
+              //               grade.includes(item)
+              //                 ? "optionCardSmallSelected"
+              //                 : "optionCardSmall"
+              //             }
+              //             onClick={(e) => handleGrade(item)}
+              //           >
+              //             {item}
+              //           </div>
+              //         ))}
+              //       </div>
+              //     </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Select ideal grade point average for participant
-                    </div>
-                    <div className="optionCardFullWrapper">
-                      {gradePointAvg.map((item) => (
-                        <div
-                          className={
-                            gradeAvg.includes(item)
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => handleGradeAvg(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+              //     <div className="each-acc-addpath-field">
+              //       <div className="each-acc-addpath-field-name">
+              //         Select ideal grade point average for participant
+              //       </div>
+              //       <div className="optionCardFullWrapper">
+              //         {gradePointAvg.map((item) => (
+              //           <div
+              //             className={
+              //               gradeAvg.includes(item)
+              //                 ? "optionCardFullSelected"
+              //                 : "optionCardFull"
+              //             }
+              //             onClick={(e) => handleGradeAvg(item)}
+              //           >
+              //             {item}
+              //           </div>
+              //         ))}
+              //       </div>
+              //     </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Select ideal curriculum for participant
-                    </div>
-                    <div className="optionCardFullWrapper">
-                      {curriculumList.map((item) => (
-                        <div
-                          className={
-                            curriculum.includes(item)
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => handleCurriculum(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+              //     <div className="each-acc-addpath-field">
+              //       <div className="each-acc-addpath-field-name">
+              //         Select ideal curriculum for participant
+              //       </div>
+              //       <div className="optionCardFullWrapper">
+              //         {curriculumList.map((item) => (
+              //           <div
+              //             className={
+              //               curriculum.includes(item)
+              //                 ? "optionCardFullSelected"
+              //                 : "optionCardFull"
+              //             }
+              //             onClick={(e) => handleCurriculum(item)}
+              //           >
+              //             {item}
+              //           </div>
+              //         ))}
+              //       </div>
+              //     </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Select ideal stream for participant
-                    </div>
-                    <div className="optionCardFullWrapper">
-                      {streamList.map((item) => (
-                        <div
-                          className={
-                            stream.includes(item)
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => handleStream(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+              //     <div className="each-acc-addpath-field">
+              //       <div className="each-acc-addpath-field-name">
+              //         Select ideal stream for participant
+              //       </div>
+              //       <div className="optionCardFullWrapper">
+              //         {streamList.map((item) => (
+              //           <div
+              //             className={
+              //               stream.includes(item)
+              //                 ? "optionCardFullSelected"
+              //                 : "optionCardFull"
+              //             }
+              //             onClick={(e) => handleStream(item)}
+              //           >
+              //             {item}
+              //           </div>
+              //         ))}
+              //       </div>
+              //     </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      Select ideal financial situation for participant
-                    </div>
-                    <div className="optionCardFullWrapper">
-                      {financeList.map((item) => (
-                        <div
-                          className={
-                            finance.includes(item)
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => handleFinance(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+              //     <div className="each-acc-addpath-field">
+              //       <div className="each-acc-addpath-field-name">
+              //         Select ideal financial situation for participant
+              //       </div>
+              //       <div className="optionCardFullWrapper">
+              //         {financeList.map((item) => (
+              //           <div
+              //             className={
+              //               finance.includes(item)
+              //                 ? "optionCardFullSelected"
+              //                 : "optionCardFull"
+              //             }
+              //             onClick={(e) => handleFinance(item)}
+              //           >
+              //             {item}
+              //           </div>
+              //         ))}
+              //       </div>
+              //     </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What program will they be studying?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <input
-                        type="text"
-                        placeholder="Name.."
-                        value={pathSteps?.program}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              program: e.target.value,
-                            };
-                          });
-                        }}
-                      />
-                    </div>
-                  </div>
+              //     <div className="each-acc-addpath-field">
+              //       <div className="each-acc-addpath-field-name">
+              //         What program will they be studying?
+              //       </div>
+              //       <div className="each-acc-addpath-field-input">
+              //         <input
+              //           type="text"
+              //           placeholder="Name.."
+              //           value={pathSteps?.program}
+              //           onChange={(e) => {
+              //             setPathSteps((prev) => {
+              //               return {
+              //                 ...prev,
+              //                 program: e.target.value,
+              //               };
+              //             });
+              //           }}
+              //         />
+              //       </div>
+              //     </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What city is the university in?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                      <input
-                        type="text"
-                        placeholder="City.."
-                        value={pathSteps?.city}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              city: e.target.value,
-                            };
-                          });
-                        }}
-                      />
-                    </div>
-                  </div>
+              //     <div className="each-acc-addpath-field">
+              //       <div className="each-acc-addpath-field-name">
+              //         What city is the university in?
+              //       </div>
+              //       <div className="each-acc-addpath-field-input">
+              //         <input
+              //           type="text"
+              //           placeholder="City.."
+              //           value={pathSteps?.city}
+              //           onChange={(e) => {
+              //             setPathSteps((prev) => {
+              //               return {
+              //                 ...prev,
+              //                 city: e.target.value,
+              //               };
+              //             });
+              //           }}
+              //         />
+              //       </div>
+              //     </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What country is the university in?
-                    </div>
-                    <div className="each-acc-addpath-field-input">
-                    <select name="country" id="country" style={{border:"none", padding:'1.5rem', width:'100%', fontSize:"16px"}}  onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              country: e.target.value,
-                            };
-                          });
-                        }}>
-                          <option value="">Country..</option>
-                          {countryApiValue?.map(item => (
-                            <option value={item?.name}>{item?.name}</option>
-                          ))}
+              //     <div className="each-acc-addpath-field">
+              //       <div className="each-acc-addpath-field-name">
+              //         What country is the university in?
+              //       </div>
+              //       <div className="each-acc-addpath-field-input">
+              //       <select name="country" id="country" style={{border:"none", padding:'1.5rem', width:'100%', fontSize:"16px"}}  onChange={(e) => {
+              //             setPathSteps((prev) => {
+              //               return {
+              //                 ...prev,
+              //                 country: e.target.value,
+              //               };
+              //             });
+              //           }}>
+              //             <option value="">Country..</option>
+              //             {countryApiValue?.map(item => (
+              //               <option value={item?.name}>{item?.name}</option>
+              //             ))}
                       
-                    </select>
-                      {/* <input
-                        type="text"
-                        placeholder="Country.."
-                        value={pathSteps?.country}
-                        onChange={(e) => {
-                          setPathSteps((prev) => {
-                            return {
-                              ...prev,
-                              country: e.target.value,
-                            };
-                          });
-                        }}
-                      /> */}
-                    </div>
-                  </div>
+              //       </select>
+              //         {/* <input
+              //           type="text"
+              //           placeholder="Country.."
+              //           value={pathSteps?.country}
+              //           onChange={(e) => {
+              //             setPathSteps((prev) => {
+              //               return {
+              //                 ...prev,
+              //                 country: e.target.value,
+              //               };
+              //             });
+              //           }}
+              //         /> */}
+              //       </div>
+              //     </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div className="each-acc-addpath-field-name">
-                      What personality suits this path?
-                    </div>
-                    <div className="optionCardFullWrapper">
-                      {personalityList.map((item) => (
-                        <div
-                          className={
-                            item === personality
-                              ? "optionCardFullSelected"
-                              : "optionCardFull"
-                          }
-                          onClick={(e) => handlePersonality(item)}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+              //     <div className="each-acc-addpath-field">
+              //       <div className="each-acc-addpath-field-name">
+              //         What personality suits this path?
+              //       </div>
+              //       <div className="optionCardFullWrapper">
+              //         {personalityList.map((item) => (
+              //           <div
+              //             className={
+              //               item === personality
+              //                 ? "optionCardFullSelected"
+              //                 : "optionCardFull"
+              //             }
+              //             onClick={(e) => handlePersonality(item)}
+              //           >
+              //             {item}
+              //           </div>
+              //         ))}
+              //       </div>
+              //     </div>
 
-                  <div className="each-acc-addpath-field">
-                    <div
-                      className="submit-path-btn"
-                      style={{
-                        opacity: creatingPath
-                          ? "0.5"
-                          : pathSteps?.nameOfPath &&
-                            pathSteps?.description &&
-                            pathSteps?.length &&
-                            pathSteps?.path_type &&
-                            pathSteps?.the_ids?.length > 0 &&
-                            pathSteps?.destination_institution &&
-                            pathSteps?.program &&
-                            pathSteps?.city &&
-                            pathSteps?.country &&
-                            grade.length > 0 &&
-                            gradeAvg.length > 0 &&
-                            curriculum.length > 0 &&
-                            stream.length > 0 &&
-                            finance.length > 0 &&
-                            personality !== ""
-                          ? "1"
-                          : "0.5",
-                        cursor: creatingPath
-                          ? "not-allowed"
-                          : pathSteps?.nameOfPath &&
-                            pathSteps?.description &&
-                            pathSteps?.length &&
-                            pathSteps?.path_type &&
-                            pathSteps?.the_ids?.length > 0 &&
-                            pathSteps?.destination_institution &&
-                            pathSteps?.program &&
-                            pathSteps?.city &&
-                            pathSteps?.country &&
-                            grade.length > 0 &&
-                            gradeAvg.length > 0 &&
-                            curriculum.length > 0 &&
-                            stream.length > 0 &&
-                            finance.length > 0 &&
-                            personality !== ""
-                          ? "pointer"
-                          : "not-allowed",
-                      }}
-                      onClick={() => {
-                        if (
-                          pathSteps?.nameOfPath &&
-                          pathSteps?.description &&
-                          pathSteps?.length &&
-                          pathSteps?.path_type &&
-                          pathSteps?.the_ids?.length > 0 &&
-                          pathSteps?.destination_institution &&
-                          pathSteps?.program &&
-                          pathSteps?.city &&
-                          pathSteps?.country &&
-                          grade.length > 0 &&
-                          gradeAvg.length > 0 &&
-                          curriculum.length > 0 &&
-                          stream.length > 0 &&
-                          finance.length > 0 &&
-                          personality !== ""
-                        ) {
-                          pathSubmission();
-                        }
-                      }}
-                    >
-                      {creatingPath ? "Loading.." : "Submit Path"}
-                    </div>
-                    <div
-                      className="go-back-btn"
-                      onClick={() => {
-                        setpstep(1);
-                        setPathSteps({
-                          nameOfPath: "",
-                          description: "",
-                          length: "",
-                          path_type: "",
-                          the_ids: [],
-                          destination_institution: "",
-                        });
-                        setGrade([]);
-                        setGradeAvg([]);
-                        setCurriculum([]);
-                        setStream([]);
-                        setFinance([]);
-                        setPersonality("");
-                      }}
-                    >
-                      Go Back
-                    </div>
-                  </div>
-                </div>
+              //     <div className="each-acc-addpath-field">
+              //       <div
+              //         className="submit-path-btn"
+              //         style={{
+              //           opacity: creatingPath
+              //             ? "0.5"
+              //             : pathSteps?.nameOfPath &&
+              //               pathSteps?.description &&
+              //               pathSteps?.length &&
+              //               pathSteps?.path_type &&
+              //               pathSteps?.the_ids?.length > 0 &&
+              //               pathSteps?.destination_institution &&
+              //               pathSteps?.program &&
+              //               pathSteps?.city &&
+              //               pathSteps?.country &&
+              //               grade.length > 0 &&
+              //               gradeAvg.length > 0 &&
+              //               curriculum.length > 0 &&
+              //               stream.length > 0 &&
+              //               finance.length > 0 &&
+              //               personality !== ""
+              //             ? "1"
+              //             : "0.5",
+              //           cursor: creatingPath
+              //             ? "not-allowed"
+              //             : pathSteps?.nameOfPath &&
+              //               pathSteps?.description &&
+              //               pathSteps?.length &&
+              //               pathSteps?.path_type &&
+              //               pathSteps?.the_ids?.length > 0 &&
+              //               pathSteps?.destination_institution &&
+              //               pathSteps?.program &&
+              //               pathSteps?.city &&
+              //               pathSteps?.country &&
+              //               grade.length > 0 &&
+              //               gradeAvg.length > 0 &&
+              //               curriculum.length > 0 &&
+              //               stream.length > 0 &&
+              //               finance.length > 0 &&
+              //               personality !== ""
+              //             ? "pointer"
+              //             : "not-allowed",
+              //         }}
+              //         onClick={() => {
+              //           if (
+              //             pathSteps?.nameOfPath &&
+              //             pathSteps?.description &&
+              //             pathSteps?.length &&
+              //             pathSteps?.path_type &&
+              //             pathSteps?.the_ids?.length > 0 &&
+              //             pathSteps?.destination_institution &&
+              //             pathSteps?.program &&
+              //             pathSteps?.city &&
+              //             pathSteps?.country &&
+              //             grade.length > 0 &&
+              //             gradeAvg.length > 0 &&
+              //             curriculum.length > 0 &&
+              //             stream.length > 0 &&
+              //             finance.length > 0 &&
+              //             personality !== ""
+              //           ) {
+              //             pathSubmission();
+              //           }
+              //         }}
+              //       >
+              //         {creatingPath ? "Loading.." : "Submit Path"}
+              //       </div>
+              //       <div
+              //         className="go-back-btn"
+              //         onClick={() => {
+              //           setpstep(1);
+              //           setPathSteps({
+              //             nameOfPath: "",
+              //             description: "",
+              //             length: "",
+              //             path_type: "",
+              //             the_ids: [],
+              //             destination_institution: "",
+              //           });
+              //           setGrade([]);
+              //           setGradeAvg([]);
+              //           setCurriculum([]);
+              //           setStream([]);
+              //           setFinance([]);
+              //           setPersonality("");
+              //         }}
+              //       >
+              //         Go Back
+              //       </div>
+              //     </div>
+              //   </div>
               ) : pstep === 9 ? (
                 <NewStep1 setpstep={setpstep} />
               ) : (
