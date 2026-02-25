@@ -31,6 +31,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 import AccDashsidebar from "../../components/accDashsidebar/accDashsidebar";
 import logo from "../../assets/images/logo/naavi_final_logo2.png"; 
 import CreateNewPath from './CreateNewPath';
+import CreateNewService from './CreateNewService';
 import "./CreateNewPath.scss";
 import {
   GetFollowersPerAccount,
@@ -54,7 +55,7 @@ import arrow from "./arrow.svg";
 import trash from "./trash.svg";
 import { useCoinContextData } from "../../context/CoinContext";
 import MyPaths from "../MyPaths";
-import CreateNewStep from "./CreateNewStep";
+import NewStep1 from "../../globalComponents/GlobalDrawer/NewStep1";
 import VaultTransactions from "../VaultTransactions/index.jsx";
 import { Country, State, City } from 'country-state-city';
 import TransactionPage from "../dashboard/TransactionPage/index.jsx";
@@ -152,7 +153,7 @@ const [showStepsModal, setShowStepsModal] = useState(false);
 const [showPathModal, setShowPathModal] = useState(true);
 const [showStepCountModal, setShowStepCountModal] = useState(false);
 const [showCreateStepModal, setShowCreateStepModal] = useState(false);
- const [createStepForPathId, setCreateStepForPathId] = useState(null);
+ 
 
   const isViewPathRoute =
     location.pathname.startsWith("/dashboard/accountants/path/");
@@ -1690,102 +1691,56 @@ return (
   </div>
   <div className="dashboard-screens"> {/* ← Content area */}
         <div style={{ height: "100%" }}>
-  {viewPathMode ? (
-  createStepForPathId ? (
-    // FULL CONTENT: Create Step view
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
-      <div style={{
-        padding: "0 35px",
-        height: "60px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        borderBottom: "0.5px solid #E5E5E5",
-        background: "#fff",
-        flexShrink: 0
-      }}>
-        <div style={{
-          padding: "10px 30px",
-          borderRadius: "35px",
-          fontWeight: "700",
-          fontSize: "15px",
-          background: "rgba(241,241,241,0.5)"
-        }}>
-          Create New Step
-        </div>
-        <div
-          style={{
-            fontWeight: "600",
-            textDecorationLine: "underline",
-            cursor: "pointer",
-            fontSize: "0.9rem",
-            paddingRight: "35px"
-          }}
-          onClick={() => setCreateStepForPathId(null)}
-        >
-          ← Back to Path
-        </div>
-      </div>
-      <div style={{ flex: 1, overflowY: "auto", background: "#fff", minHeight: 0 }}>
-        <CreateNewStep
-          inlineMode={true}
-          pathId={createStepForPathId}
-          onSuccess={() => setCreateStepForPathId(null)}
-          onCancel={() => setCreateStepForPathId(null)}
-        />
-      </div>
-    </div>
-  ) : (
-    // FULL CONTENT: Path Details view
-    <>
-      <MenuNav
-        showDrop={showDrop}
-        setShowDrop={setShowDrop}
-        searchTerm={search}
-        setSearchterm={setSearch}
-        searchPlaceholder="Search Path..."
-      />
-      <div
-        className="services-main"
-        style={{ height: "calc(100% - 70px)" }}
-        onClick={() => setShowDrop(false)}
-      >
-        <div
-          className="services-all-menu"
-          style={{
-            borderBottom: "0.5px solid #E5E5E5",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center"
-          }}
-        >
-          <div style={{ display: "flex", width: "83%" }}>
-            <div className="services-each-menu" style={{ fontWeight: "700" }}>
-              Path Details
-            </div>
-          </div>
-          <div
-            style={{
-              fontWeight: "600",
-              textDecorationLine: "underline",
-              cursor: "pointer",
-              fontSize: "0.9rem",
-              padding: "12px 35px"
-            }}
-            onClick={() => {
-              setViewPathMode(false);
-              setaccsideNav("Paths");
-              navigate('/dashboard/accountants');
-            }}
-          >
-            ← Back to My Paths
-          </div>
-        </div>
-        <DraftPathView onAddStep={(pathId) => setCreateStepForPathId(pathId)} />
-      </div>
-    </>
-  )
-) : accsideNav === "CREATE_PATH" ? (
+          {viewPathMode ? (
+            // This renders the path view WITH the same layout structure
+            <>
+              <MenuNav
+                showDrop={showDrop}
+                setShowDrop={setShowDrop}
+                searchTerm={search}
+                setSearchterm={setSearch}
+                searchPlaceholder="Search Path..."
+              />
+              <div 
+                className="services-main" 
+                style={{ height: "calc(100% - 70px)" }}
+                onClick={() => setShowDrop(false)}
+              >
+                <div
+                  className="services-all-menu"
+                  style={{ 
+                    borderBottom: "0.5px solid #E5E5E5",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center"
+                  }}
+                >
+                  <div style={{ display: "flex", width: "83%" }}>
+                    <div className="services-each-menu" style={{ fontWeight: "700" }}>
+                      Path Details
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      fontWeight: "600",
+                      textDecorationLine: "underline",
+                      cursor: "pointer",
+                      fontSize: "0.9rem",
+                      padding: "12px 35px"
+                    }}
+                    onClick={() => {
+                      setViewPathMode(false);
+                      setaccsideNav("Paths"); // Go back to My Paths
+                      navigate('/dashboard/accountants');
+                    }}
+                  >
+                    ← Back to My Paths
+                  </div>
+                </div>
+                <DraftPathView />
+              </div>
+            </>
+ ) : accsideNav === "CREATE_PATH" ? (
   // SHOW CREATE NEW PATH AS FULL PAGE - WITHOUT THE HEADER TABS
   <div style={{ 
     display: "flex", 
@@ -1860,12 +1815,14 @@ return (
 </div>
 
  </div>
- // REPLACE WITH:
-) : accsideNav === "CREATE_STEP" ? (
-  <div style={{
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
+         
+        
+       ) : accsideNav === "CREATE_SERVICE" ? (
+  // SHOW CREATE NEW SERVICE AS FULL PAGE - WITHOUT THE HEADER TABS
+  <div style={{ 
+    display: "flex", 
+    flexDirection: "column", 
+    height: "100%", 
     width: "100%",
     overflow: "hidden"
   }}>
@@ -1874,47 +1831,35 @@ return (
       height: "60px",
       display: "flex",
       alignItems: "center",
-      justifyContent: "space-between",
       borderBottom: "0.5px solid #E5E5E5",
-      background: "#fff",
-      flexShrink: 0
+      flexShrink: 0,
+      backgroundColor: "#ffffff"
     }}>
-      <div style={{
+      <div style={{ 
         padding: "10px 30px",
         borderRadius: "35px",
         fontWeight: "700",
-        background: "rgba(241,241,241,.5)"
+        fontSize: "15px",
+        color: "#1f304f",
+        background: "rgba(241, 241, 241, 0.5)"
       }}>
-        Create New Step
-      </div>
-      <div
-        style={{
-          fontWeight: "600",
-          textDecorationLine: "underline",
-          cursor: "pointer",
-          fontSize: "0.9rem",
-          paddingRight: "35px"
-        }}
-        onClick={() => setaccsideNav("Paths")}
-      >
-        ← Back to My Paths
+        Create New Service
       </div>
     </div>
-    <div style={{
-      flex: 1,
+    <div style={{ 
+      flex: 1, 
+      minHeight: 0, 
       overflowY: "auto",
-      background: "#fff",
-      minHeight: 0
+      padding: "0",
+      backgroundColor: "#ffffff"
     }}>
-      <CreateNewStep
-        inlineMode={true}
-        onCancel={() => setaccsideNav("Paths")}
-        onSuccess={() => setaccsideNav("Paths")}
+      <CreateNewService 
+        setaccsideNav={setaccsideNav}
       />
     </div>
   </div>
-
-) : accsideNav === "CRM" ? (
+        
+        ) : accsideNav === "CRM" ? (
             // ... keep ALL your existing CRM code exactly as is
                 <>
                   <MenuNav
@@ -2845,21 +2790,22 @@ return (
             <>
               {pstep === 1 ? (
                 <div>
-                  <div className="acc-step-text">New</div>
+                  {/* <div className="acc-step-text">New</div> */}
                   <div>
                     <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setselectNew("Service");
-                        setpstep(2);
-                      }}
-                      style={{
-                        background: selectNew === "Service" ? "#182542" : "",
-                        color: selectNew === "Service" ? "#FFF" : "",
-                      }}
-                    >
-                      Service
-                    </div>
+  className="acc-step-box"
+  onClick={() => {
+    setselectNew("Service");
+    setispopular(false); // Close the modal
+    setaccsideNav("CREATE_SERVICE"); // Set navigation to show create service
+  }}
+  style={{
+    background: selectNew === "Service" ? "#182542" : "",
+    color: selectNew === "Service" ? "#FFF" : "",
+  }}
+>
+  Service
+</div>
 
                     <div
   className="acc-step-box"
@@ -2877,19 +2823,19 @@ return (
   Path
 </div>
 
-                    <div
+                    {/* <div
                       className="acc-step-box"
-onClick={() => {
-  setispopular(false);
-  setaccsideNav("CREATE_STEP");
-}}
+                      onClick={() => {
+                        setselectNew("Step");
+                        setpstep(9);
+                      }}
                       style={{
                         background: selectNew === "Step" ? "#182542" : "",
                         color: selectNew === "Step" ? "#FFF" : "",
                       }}
                     >
                       Step
-                    </div>
+                    </div> */}
                    <div
   className="acc-step-box"
   data-type="bulk-service"
@@ -3357,7 +3303,8 @@ onClick={() => {
                 <div className="success-box">
                   You Have Successfully Created A New Service
                 </div>
-            
+              ) : pstep === 9 ? (
+                <NewStep1 setpstep={setpstep} />
               ) : pstep === 10 ? (
                 <div>
                   <div className="acc-step-text">Bulk Path Action</div>
@@ -3597,8 +3544,12 @@ onClick={() => {
         <button
 onClick={() => {
   setShowStepsModal(false);
-  setispopular(false);
-  setaccsideNav("CREATE_STEP");
+
+  setTimeout(() => {
+    setispopular(true); // ← use your REAL setter name
+    setselectNew("Step");
+    setpstep(9);
+  }, 100);
 }}
           style={{
             padding: "16px 42px",
