@@ -265,24 +265,34 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar , admin}) 
         </div>
       </div>
       {!admin &&
+
+      
       <div
-        className="side-btn"
-        style={{
-          background: "#59A2DD",
-          borderRadius: "35px",
-          padding: "15px 0px",
-          color: "#FFF",
-          width: "15vw",
-          textAlign: "center",
-          position: "fixed",
-          bottom: "20px",
-          cursor: "pointer",
-          left: "2.5vw",
-        }}
-        onClick={() => setispopular(true)}
-      >
-        Add New
-      </div>}
+  className="side-btn"
+  style={{
+    background: "linear-gradient(135deg, #A8E6CF, #6BAA75)", // Soft mint to sage
+    borderRadius: "35px",
+    padding: "15px 0px",
+    color: "#FFFFFF",
+    width: "13vw",
+    textAlign: "center",
+    position: "fixed",
+    bottom: "20px",
+    cursor: "pointer",
+    left: "2.5vw",
+    boxShadow: "0 4px 15px rgba(107, 170, 117, 0.3)",
+    transition: "all 0.3s ease",
+  }}
+  onClick={() => setispopular(true)}
+  onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-2px)"}
+  onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
+>
+  Add New
+</div>
+
+
+
+}
     </div>
   );
 };

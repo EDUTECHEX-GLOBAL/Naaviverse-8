@@ -145,10 +145,10 @@ import CreateNewStep from "./pages/accDashbaoard/CreateNewStep";
 import MyStepsAcc from "./pages/accDashbaoard/MyStepsAcc";
 import PathPage from "./components/Pathview/PathPage";
 
-/* ========== ADMIN ========== */
-import AdminLogin from "./pages/AdminLogin";
-import AdminAccDashbaoard from "./pages/AdminAccDashbaoard";
-import AdminProfilePage from "./pages/AdminAccDashbaoard/Profile/profile_page";
+ /* ========== ADMIN ========== */
+ import AdminLogin from "./pages/AdminLogin";
+ import AdminAccDashbaoard from "./pages/AdminAccDashbaoard";
+ import AdminProfilePage from "./pages/AdminAccDashbaoard/Profile/profile_page";
 
 /* ================= SUPER ADMIN ================= */
 import SuperAdminLogin from "./AdminDashboard/pages/SuperAdminLogin";
@@ -214,17 +214,21 @@ function App() {
             <Route path="paths" element={<MyPaths />} />
             <Route path="steps" element={<MyStepsAcc />} />
             <Route path="path/:id/create-step" element={<NewStep1 />} />
+
             <Route path="path/:id" element={<PathPage />} />
-            <Route path="services" element={<Dashboard />} />
+             <Route path="services" element={<Dashboard/>} />
           </Route>
-         
+
           <Route
             path="/dashboard/accountants/profile"
             element={<AccProfile />}
           />
-          {/* ================= ADMIN ================= */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/dashboard/profile" element={<AdminProfilePage />} />
+
+
+
+    {/* ================= ADMIN ================= */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin/dashboard/profile" element={<AdminProfilePage />} />
 
           <Route
             path="/admin/dashboard/accountants"

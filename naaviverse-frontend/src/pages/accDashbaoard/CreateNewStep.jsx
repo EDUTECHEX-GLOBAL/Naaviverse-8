@@ -14,7 +14,6 @@ const CreateNewStep = ({ inlineMode = false, pathId: propPathId, onSuccess, onCa
     microDescription: "",
     nanoDescription: "",
     path_id: id || "",
-
     // Guidance sections
     gradeData: [
       { grade: "9", description: "" },
@@ -22,7 +21,6 @@ const CreateNewStep = ({ inlineMode = false, pathId: propPathId, onSuccess, onCa
       { grade: "11", description: "" },
       { grade: "12", description: "" },
     ],
-
     financialData: [
       { financialSituation: "0-25L", description: "" },
       { financialSituation: "25L-75L", description: "" },
@@ -30,7 +28,6 @@ const CreateNewStep = ({ inlineMode = false, pathId: propPathId, onSuccess, onCa
       { financialSituation: "3CR+", description: "" },
       { financialSituation: "other", description: "" },
     ],
-
     streamData: [
       { stream: "MPC", description: "" },
       { stream: "BIPC", description: "" },
@@ -38,7 +35,6 @@ const CreateNewStep = ({ inlineMode = false, pathId: propPathId, onSuccess, onCa
       { stream: "MEC", description: "" },
       { stream: "HEC", description: "" },
     ],
-
     gradePointAverageData: [
       { gradePointAverage: "0% - 35%", description: "" },
       { gradePointAverage: "36% - 60%", description: "" },
@@ -47,7 +43,6 @@ const CreateNewStep = ({ inlineMode = false, pathId: propPathId, onSuccess, onCa
       { gradePointAverage: "86% - 95%", description: "" },
       { gradePointAverage: "96% - 100%", description: "" },
     ],
-
     curriculumData: [
       { curriculum: "IB", description: "" },
       { curriculum: "IGCSE", description: "" },
@@ -55,7 +50,6 @@ const CreateNewStep = ({ inlineMode = false, pathId: propPathId, onSuccess, onCa
       { curriculum: "ICSE", description: "" },
       { curriculum: "Nordic", description: "" },
     ],
-
     personalityData: [
       { personality: "realistic", description: "" },
       { personality: "investigative", description: "" },
@@ -249,7 +243,6 @@ return (
         {/* Additional guidance Section */}
         <div className="form-section">
           <h2 className="section-title">Additional guidance</h2>
-
           <div className="guidance-accordion">
             <div className="guidance-item">
               <h3>Personality guidance</h3>

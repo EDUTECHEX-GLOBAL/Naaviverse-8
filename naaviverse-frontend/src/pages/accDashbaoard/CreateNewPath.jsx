@@ -34,7 +34,7 @@ const CreateNewPath = ({
   pathSubmission
 }) => {
   const [showPopup, setShowPopup] = useState(false);
-  const [stepCount, setStepCount] = useState(1);
+ const [stepCount, setStepCount] = useState('');
   
   // Duration state
   const [duration, setDuration] = useState({
@@ -66,44 +66,47 @@ const CreateNewPath = ({
     setShowPopup(true);
   };
 
-  const handleContinue = () => {
-    setShowPopup(false);
-    
-    // Calculate total duration in days (for backward compatibility)
-    const years = parseInt(duration.years) || 0;
-    const months = parseInt(duration.months) || 0;
-    const days = parseInt(duration.days) || 0;
-    const totalDays = (years * 365) + (months * 30) + days;
-    
-    // Update pathSteps with all data
-    const updatedPathSteps = {
-      ...pathSteps,
-      duration: {
-        years,
-        months,
-        days,
-        totalDays
-      },
-      preferredLocation,
-      // Ensure length field is set for backward compatibility
-      length: totalDays
-    };
-    
-    setPathSteps(updatedPathSteps);
-    
-    // Store in localStorage if needed
-    localStorage.setItem('pathStepCount', stepCount);
-    localStorage.setItem('pathDuration', JSON.stringify(duration));
-    localStorage.setItem('preferredLocation', JSON.stringify(preferredLocation));
-    
-    // Call the submission function
-    pathSubmission();
-  };
+ const handleContinue = () => {
+  if (!stepCount || parseInt(stepCount) < 1) {
+    alert("Please enter a valid number of steps");
+    return;
+  }
+
+  setShowPopup(false);
+
+  const years = parseInt(duration.years) || 0;
+  const months = parseInt(duration.months) || 0;
+  const days = parseInt(duration.days) || 0;
+  const totalDays = (years * 365) + (months * 30) + days;
+
+  setPathSteps({
+    ...pathSteps,
+    duration: {
+      years,
+      months,
+      days,
+      totalDays
+    },
+    preferredLocation
+  });
+
+  localStorage.setItem('pathStepCount', stepCount);
+  localStorage.setItem('pathDuration', JSON.stringify(duration));
+  localStorage.setItem('preferredLocation', JSON.stringify(preferredLocation));
+
+  pathSubmission();
+};
 
   const handleCancel = () => {
-    setShowPopup(false);
-    setStepCount(1);
-  };
+  setShowPopup(false);
+  setStepCount('');
+};
+
+  // Handler for single select (personality) - using parent's handler
+
+
+  // Handler for multi-select - using parent's handlers
+
 
   // Handler for single select (personality) - using parent's handler
   const handlePersonalitySelect = (item) => {
@@ -153,44 +156,51 @@ const CreateNewPath = ({
 
             <div className="form-field">
               <label>How long will the path approx take?</label>
-              <div className="compact-duration">
-                <div className="compact-duration-group">
-                  <div className="compact-duration-item">
-                    <input 
-                      type="number" 
-                      min="0"
-                      value={duration.years}
-                      placeholder="0"
-                      onChange={(e) => setDuration({...duration, years: e.target.value})}
-                    />
-                    <span>Years</span>
-                  </div>
-                  
-                  <div className="compact-duration-item">
-                    <input 
-                      type="number" 
-                      min="0"
-                      max="11"
-                      value={duration.months}
-                      placeholder="0"
-                      onChange={(e) => setDuration({...duration, months: e.target.value})}
-                    />
-                    <span>Months</span>
-                  </div>
-                  
-                  <div className="compact-duration-item">
-                    <input 
-                      type="number" 
-                      min="0"
-                      max="30"
-                      value={duration.days}
-                      placeholder="0"
-                      onChange={(e) => setDuration({...duration, days: e.target.value})}
-                    />
-                    <span>Days</span>
-                  </div>
-                </div>
-              </div>
+              <div className="duration-dropdown-group">
+
+  {/* Years */}
+  <div className="duration-select">
+    <label>Years</label>
+    <select
+      value={duration.years}
+      onChange={(e) => setDuration({ ...duration, years: e.target.value })}
+    >
+      <option value="">Select</option>
+      {[...Array(11)].map((_, i) => (
+        <option key={i} value={i}>{i}</option>
+      ))}
+    </select>
+  </div>
+
+  {/* Months */}
+  <div className="duration-select">
+    <label>Months</label>
+    <select
+      value={duration.months}
+      onChange={(e) => setDuration({ ...duration, months: e.target.value })}
+    >
+      <option value="">Select</option>
+      {[...Array(12)].map((_, i) => (
+        <option key={i} value={i}>{i}</option>
+      ))}
+    </select>
+  </div>
+
+  {/* Days */}
+  <div className="duration-select">
+    <label>Days</label>
+    <select
+      value={duration.days}
+      onChange={(e) => setDuration({ ...duration, days: e.target.value })}
+    >
+      <option value="">Select</option>
+      {[...Array(31)].map((_, i) => (
+        <option key={i} value={i}>{i}</option>
+      ))}
+    </select>
+  </div>
+
+</div>
             </div>
 
             <div className="form-field">
@@ -313,6 +323,48 @@ const CreateNewPath = ({
                 ))}
               </div>
             </div>
+          
+          
+          {/* Preferred Location */}
+<div className="form-field">
+  <label>Preferred Location (Optional)</label>
+
+  <div className="profile-location-grid">
+
+    <input
+      type="text"
+      placeholder="Address"
+      value={preferredLocation.address || ''}
+      onChange={(e) =>
+        setPreferredLocation({ ...preferredLocation, address: e.target.value })
+      }
+    />
+
+    <input
+      type="text"
+      placeholder="City"
+      value={preferredLocation.city}
+      onChange={(e) =>
+        setPreferredLocation({ ...preferredLocation, city: e.target.value })
+      }
+    />
+
+    <select
+      value={preferredLocation.country}
+      onChange={(e) =>
+        setPreferredLocation({ ...preferredLocation, country: e.target.value })
+      }
+    >
+      <option value="">Select Country</option>
+      {countryApiValue?.map((item) => (
+        <option key={item.cca2} value={item.name?.common || item.name}>
+          {item.name?.common || item.name}
+        </option>
+      ))}
+    </select>
+
+  </div>
+</div>
           </div>
 
           {/* Academic Target Section */}
@@ -375,34 +427,36 @@ const CreateNewPath = ({
       </div>
 
       {/* Step Count Popup */}
-      {showPopup && (
-        <>
-          <div className="step-popup-overlay" onClick={handleCancel} />
-          <div className="step-popup" onClick={(e) => e.stopPropagation()}>
-            <h3 className="step-popup-title">Add Steps to Your Path</h3>
-            <p className="step-popup-description">
-              How many steps do you want to add to this path? You can add as many as you need.
-            </p>
-            <div className="step-popup-input-wrapper">
-              <input
-                type="number"
-                min="1"
-                value={stepCount}
-                onChange={(e) => setStepCount(Math.max(1, parseInt(e.target.value) || 1))}
-                className="step-popup-input"
-              />
-            </div>
-            <div className="step-popup-buttons">
-              <button className="step-popup-btn step-popup-btn-cancel" onClick={handleCancel}>
-                Cancel
-              </button>
-              <button className="step-popup-btn step-popup-btn-continue" onClick={handleContinue}>
-                Continue →
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+{showPopup && (
+  <>
+    <div className="step-popup-overlay" onClick={handleCancel} />
+    <div className="step-popup" onClick={(e) => e.stopPropagation()}>
+      <h3 className="step-popup-title">Add Steps to Your Path</h3>
+      <p className="step-popup-description">
+        How many steps do you want to add to this path? You can add as many as you need.
+      </p>
+      <div className="step-popup-input-wrapper">
+       <input
+  type="number"
+  min="1"
+  step="1"
+  placeholder="Enter number of steps"
+  value={stepCount}
+  onChange={(e) => setStepCount(e.target.value)}
+  className="step-popup-input"
+/>
+      </div>
+      <div className="step-popup-buttons">
+        <button className="step-popup-btn step-popup-btn-cancel" onClick={handleCancel}>
+          Cancel
+        </button>
+        <button className="step-popup-btn step-popup-btn-continue" onClick={handleContinue}>
+          Continue →
+        </button>
+      </div>
+    </div>
+  </>
+)}
     </>
   );
 };

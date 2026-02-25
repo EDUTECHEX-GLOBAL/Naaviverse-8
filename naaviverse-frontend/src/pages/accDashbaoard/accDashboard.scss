@@ -685,18 +685,6 @@ $pastel-mint: rgba(220, 240, 230, 0.3);
   }
 }
 
-// Specific icons for each
-.acc-step-box[data-type="bulk-service"]::after {
-  content: '📦'; // Box for service
-}
-
-.acc-step-box[data-type="bulk-path"]::after {
-  content: '📊'; // Chart for path
-}
-
-.acc-step-box[data-type="bulk-step"]::after {
-  content: '📝'; // Document for step
-}
 
 // Different pastel colors for each option type
 .acc-step-box[data-type="service"] {
