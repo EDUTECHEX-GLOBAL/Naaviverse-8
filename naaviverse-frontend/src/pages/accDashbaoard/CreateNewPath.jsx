@@ -35,24 +35,102 @@ const CreateNewPath = ({
 }) => {
   const [showPopup, setShowPopup] = useState(false);
   const [stepCount, setStepCount] = useState(1);
+  
+  // Duration state
+  const [duration, setDuration] = useState({
+    years: '',
+    months: '',
+    days: ''
+  });
+
+  // Location state
+  const [preferredLocation, setPreferredLocation] = useState({
+    city: '',
+    country: ''
+  });
 
   const handleNextStepClick = () => {
-    if (!pathSteps?.nameOfPath || !pathSteps?.length || !pathSteps?.description) {
+    // Validate required fields
+    if (!pathSteps?.nameOfPath || !pathSteps?.description || !pathSteps?.program || !pathSteps?.destination_institution) {
       alert('Please fill in all required fields');
       return;
     }
+    
+    // Validate at least one option selected from each category
+    if (grade.length === 0 || gradeAvg.length === 0 || curriculum.length === 0 || 
+        stream.length === 0 || finance.length === 0 || !personality) {
+      alert('Please select at least one option from each category');
+      return;
+    }
+    
     setShowPopup(true);
   };
 
   const handleContinue = () => {
     setShowPopup(false);
+    
+    // Calculate total duration in days (for backward compatibility)
+    const years = parseInt(duration.years) || 0;
+    const months = parseInt(duration.months) || 0;
+    const days = parseInt(duration.days) || 0;
+    const totalDays = (years * 365) + (months * 30) + days;
+    
+    // Update pathSteps with all data
+    const updatedPathSteps = {
+      ...pathSteps,
+      duration: {
+        years,
+        months,
+        days,
+        totalDays
+      },
+      preferredLocation,
+      // Ensure length field is set for backward compatibility
+      length: totalDays
+    };
+    
+    setPathSteps(updatedPathSteps);
+    
+    // Store in localStorage if needed
     localStorage.setItem('pathStepCount', stepCount);
+    localStorage.setItem('pathDuration', JSON.stringify(duration));
+    localStorage.setItem('preferredLocation', JSON.stringify(preferredLocation));
+    
+    // Call the submission function
     pathSubmission();
   };
 
   const handleCancel = () => {
     setShowPopup(false);
     setStepCount(1);
+  };
+
+  // Handler for single select (personality) - using parent's handler
+  const handlePersonalitySelect = (item) => {
+    handlePersonality(item);
+  };
+
+  // Handler for multi-select - using parent's handlers
+  const handleMultiSelect = (type, item) => {
+    switch(type) {
+      case 'grade':
+        handleGrade(item);
+        break;
+      case 'gradeAvg':
+        handleGradeAvg(item);
+        break;
+      case 'curriculum':
+        handleCurriculum(item);
+        break;
+      case 'stream':
+        handleStream(item);
+        break;
+      case 'finance':
+        handleFinance(item);
+        break;
+      default:
+        break;
+    }
   };
 
   return (
@@ -64,10 +142,10 @@ const CreateNewPath = ({
             <h2 className="section-title">Basic information</h2>
             
             <div className="form-field">
-              <label>What is the name of the path?</label>
+              <label>What is the name of the path? <span className="required">*</span></label>
               <input 
                 type="text" 
-                placeholder="IBDP Engineering Pathway - Germany"
+                placeholder="e.g., IBDP Engineering Pathway - Germany"
                 value={pathSteps?.nameOfPath || ''}
                 onChange={(e) => setPathSteps({...pathSteps, nameOfPath: e.target.value})}
               />
@@ -75,21 +153,50 @@ const CreateNewPath = ({
 
             <div className="form-field">
               <label>How long will the path approx take?</label>
-              <div className="duration-field">
-                <input 
-                  type="number" 
-                  placeholder="3"
-                  value={pathSteps?.length || ''}
-                  onChange={(e) => setPathSteps({...pathSteps, length: e.target.value})}
-                />
-                <span className="years-badge">Years</span>
+              <div className="compact-duration">
+                <div className="compact-duration-group">
+                  <div className="compact-duration-item">
+                    <input 
+                      type="number" 
+                      min="0"
+                      value={duration.years}
+                      placeholder="0"
+                      onChange={(e) => setDuration({...duration, years: e.target.value})}
+                    />
+                    <span>Years</span>
+                  </div>
+                  
+                  <div className="compact-duration-item">
+                    <input 
+                      type="number" 
+                      min="0"
+                      max="11"
+                      value={duration.months}
+                      placeholder="0"
+                      onChange={(e) => setDuration({...duration, months: e.target.value})}
+                    />
+                    <span>Months</span>
+                  </div>
+                  
+                  <div className="compact-duration-item">
+                    <input 
+                      type="number" 
+                      min="0"
+                      max="30"
+                      value={duration.days}
+                      placeholder="0"
+                      onChange={(e) => setDuration({...duration, days: e.target.value})}
+                    />
+                    <span>Days</span>
+                  </div>
+                </div>
               </div>
             </div>
 
             <div className="form-field">
-              <label>Describe the path</label>
+              <label>Describe the path <span className="required">*</span></label>
               <textarea 
-                placeholder="This path guides students from IBDP through admission to top German engineering universities."
+                placeholder="e.g., This path guides students from IBDP through admission to top German engineering universities."
                 value={pathSteps?.description || ''}
                 onChange={(e) => setPathSteps({...pathSteps, description: e.target.value})}
                 rows="4"
@@ -97,12 +204,12 @@ const CreateNewPath = ({
             </div>
 
             <div className="form-field">
-              <label>What type of path is it?</label>
+              <label>What type of path is it? <span className="required">*</span></label>
               <div className="path-type-group">
                 {['Education', 'Career', 'Immigration'].map((type) => (
                   <button
                     key={type}
-                    className={`path-type-btn ${pathSteps?.path_type === type.toLowerCase() ? 'active' : ''}`}
+                    className={`path-type-btn ${pathSteps?.path_type === type.toLowerCase() ? 'active-green' : ''}`}
                     onClick={() => setPathSteps({...pathSteps, path_type: type.toLowerCase()})}
                   >
                     {type}
@@ -115,16 +222,16 @@ const CreateNewPath = ({
           {/* Participant Profile Section */}
           <div className="form-section">
             <h2 className="section-title">Participant profile</h2>
-            <h3 className="section-subtitle">Ideal fit</h3>
+            <h3 className="section-subtitle">Ideal fit (select at least one from each)</h3>
 
             <div className="form-field">
-              <label>Select ideal grade for participant</label>
+              <label>Select ideal grade for participant <span className="required">*</span></label>
               <div className="options-grid">
                 {gradeList.map((item) => (
                   <button
                     key={item}
-                    className={`option-btn ${grade.includes(item) ? 'selected' : ''}`}
-                    onClick={() => handleGrade(item)}
+                    className={`option-btn ${grade.includes(item) ? 'selected-green' : ''}`}
+                    onClick={() => handleMultiSelect('grade', item)}
                   >
                     {item}
                   </button>
@@ -133,13 +240,13 @@ const CreateNewPath = ({
             </div>
 
             <div className="form-field">
-              <label>Select ideal grade point average</label>
+              <label>Select ideal grade point average <span className="required">*</span></label>
               <div className="options-grid">
                 {gradePointAvg.map((item) => (
                   <button
                     key={item}
-                    className={`option-btn ${gradeAvg.includes(item) ? 'selected' : ''}`}
-                    onClick={() => handleGradeAvg(item)}
+                    className={`option-btn ${gradeAvg.includes(item) ? 'selected-green' : ''}`}
+                    onClick={() => handleMultiSelect('gradeAvg', item)}
                   >
                     {item}
                   </button>
@@ -148,13 +255,13 @@ const CreateNewPath = ({
             </div>
 
             <div className="form-field">
-              <label>Select ideal curriculum</label>
+              <label>Select ideal curriculum <span className="required">*</span></label>
               <div className="options-grid">
                 {curriculumList.map((item) => (
                   <button
                     key={item}
-                    className={`option-btn ${curriculum.includes(item) ? 'selected' : ''}`}
-                    onClick={() => handleCurriculum(item)}
+                    className={`option-btn ${curriculum.includes(item) ? 'selected-green' : ''}`}
+                    onClick={() => handleMultiSelect('curriculum', item)}
                   >
                     {item}
                   </button>
@@ -163,13 +270,13 @@ const CreateNewPath = ({
             </div>
 
             <div className="form-field">
-              <label>Select ideal stream</label>
-              <div className="options-grid">
+              <label>Select ideal stream <span className="required">*</span></label>
+              <div className="options-grid streams-grid">
                 {streamList.map((item) => (
                   <button
                     key={item}
-                    className={`option-btn ${stream.includes(item) ? 'selected' : ''}`}
-                    onClick={() => handleStream(item)}
+                    className={`option-btn stream-btn ${stream.includes(item) ? 'selected-green' : ''}`}
+                    onClick={() => handleMultiSelect('stream', item)}
                   >
                     {item}
                   </button>
@@ -178,13 +285,13 @@ const CreateNewPath = ({
             </div>
 
             <div className="form-field">
-              <label>Select ideal financial situation</label>
-              <div className="options-grid">
+              <label>Select ideal financial situation <span className="required">*</span></label>
+              <div className="options-grid finance-grid">
                 {financeList.map((item) => (
                   <button
                     key={item}
-                    className={`option-btn ${finance.includes(item) ? 'selected' : ''}`}
-                    onClick={() => handleFinance(item)}
+                    className={`option-btn finance-btn ${finance.includes(item) ? 'selected-green' : ''}`}
+                    onClick={() => handleMultiSelect('finance', item)}
                   >
                     {item}
                   </button>
@@ -193,13 +300,13 @@ const CreateNewPath = ({
             </div>
 
             <div className="form-field">
-              <label>What personality suits this path?</label>
+              <label>What personality suits this path? <span className="required">*</span></label>
               <div className="personality-grid">
                 {personalityList.map((item) => (
                   <button
                     key={item}
-                    className={`personality-btn ${personality === item ? 'selected' : ''}`}
-                    onClick={() => handlePersonality(item)}
+                    className={`personality-btn ${personality === item ? 'selected-green' : ''}`}
+                    onClick={() => handlePersonalitySelect(item)}
                   >
                     {item}
                   </button>
@@ -213,20 +320,20 @@ const CreateNewPath = ({
             <h2 className="section-title">Academic target</h2>
 
             <div className="form-field">
-              <label>What program will they be studying?</label>
+              <label>What program will they be studying? <span className="required">*</span></label>
               <input 
                 type="text" 
-                placeholder="B.Sc. Mechanical Engineering"
+                placeholder="e.g., B.Sc. Mechanical Engineering"
                 value={pathSteps?.program || ''}
                 onChange={(e) => setPathSteps({...pathSteps, program: e.target.value})}
               />
             </div>
 
             <div className="form-field">
-              <label>What is the destination of the path?</label>
+              <label>What is the destination of the path? <span className="required">*</span></label>
               <input 
                 type="text" 
-                placeholder="Technical University of Munich"
+                placeholder="e.g., Technical University of Munich"
                 value={pathSteps?.destination_institution || ''}
                 onChange={(e) => setPathSteps({...pathSteps, destination_institution: e.target.value})}
               />
@@ -237,7 +344,7 @@ const CreateNewPath = ({
                 <label>City</label>
                 <input 
                   type="text" 
-                  placeholder="Munich"
+                  placeholder="e.g., Munich"
                   value={pathSteps?.city || ''}
                   onChange={(e) => setPathSteps({...pathSteps, city: e.target.value})}
                 />
@@ -256,17 +363,6 @@ const CreateNewPath = ({
                   ))}
                 </select>
               </div>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="progress-section">
-            <div className="progress-label">
-              <span>Completed</span>
-              <span className="progress-percentage">100%</span>
-            </div>
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: '100%' }}></div>
             </div>
           </div>
 
@@ -312,4 +408,3 @@ const CreateNewPath = ({
 };
 
 export default CreateNewPath;
-//new temp

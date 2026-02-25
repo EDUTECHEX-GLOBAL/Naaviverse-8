@@ -4,32 +4,21 @@ import axios from "axios";
 import Skeleton from "react-loading-skeleton";
 import "./journey.scss";
 import { motion } from "framer-motion";
-import NewStep1 from "../../globalComponents/GlobalDrawer/NewStep1";
+
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const PathPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const location = useLocation();
 
-  const [openNewStep, setOpenNewStep] = useState(false);
   const [loading, setLoading] = useState(true);
   const [pathName, setPathName] = useState("N/A");
   const [steps, setSteps] = useState([]);
   const [error, setError] = useState(null);
 
-  const isPartnerFlow = location.pathname.startsWith(
-    "/dashboard/accountants"
-  );
-
-  // ✅ Open drawer when query param exists
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (params.get("createStep") === "true") {
-      setOpenNewStep(true);
-    } else {
-      setOpenNewStep(false);
-    }
-  }, [location.search]);
+  const isPartnerFlow =
+    location.pathname.startsWith("/dashboard/accountants");
 
   // ✅ Fetch path + steps
   const fetchPath = async () => {
@@ -37,6 +26,7 @@ const PathPage = () => {
     setError(null);
 
     const pathId = id || localStorage.getItem("selectedPathId");
+
     if (!pathId) {
       setError("No selected path id found.");
       setLoading(false);
@@ -44,7 +34,9 @@ const PathPage = () => {
     }
 
     try {
-      const pathRes = await axios.get(`${BASE_URL}/api/paths/viewpath/${pathId}`);
+      const pathRes = await axios.get(
+        `${BASE_URL}/api/paths/viewpath/${pathId}`
+      );
       setPathName(pathRes?.data?.data?.nameOfPath || "N/A");
 
       const stepsRes = await axios.get(`${BASE_URL}/api/steps/get`, {
@@ -64,15 +56,9 @@ const PathPage = () => {
     fetchPath();
   }, [id]);
 
-  // ✅ Handle create step click
+  // ✅ Navigate to NEW Create Step page
   const handleCreateStep = () => {
-    navigate(`?createStep=true`);
-  };
-
-  // ✅ Close drawer properly
-  const closeDrawer = () => {
-    setOpenNewStep(false);
-    navigate(location.pathname, { replace: true });
+    navigate(`/dashboard/accountants/create-step/${id}`);
   };
 
   return (
@@ -80,6 +66,7 @@ const PathPage = () => {
       <div className="dashboard-body">
         <div className="dashboard-screens" style={{ width: "100%" }}>
           <div style={{ padding: "3rem 3.5rem" }}>
+
             {/* HEADER */}
             <div className="journey-top-area-premium">
               <div className="premium-title-small">Your Selected Path</div>
@@ -103,27 +90,6 @@ const PathPage = () => {
                 </button>
               )}
             </div>
-
-            {/* 🔥 Drawer */}
-            {openNewStep && (
-              <div
-                className="global-drawer-overlay"
-                onClick={closeDrawer}
-              >
-                <div
-                  className="global-drawer-panel"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <NewStep1
-                    pathId={id || localStorage.getItem("selectedPathId")}
-                    onSuccess={() => {
-                      closeDrawer();
-                      fetchPath();
-                    }}
-                  />
-                </div>
-              </div>
-            )}
 
             {/* STEPS */}
             <div className="steps-grid-premium">
@@ -150,6 +116,7 @@ const PathPage = () => {
                 ))
               )}
             </div>
+
           </div>
         </div>
       </div>

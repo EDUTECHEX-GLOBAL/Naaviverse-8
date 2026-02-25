@@ -1,9 +1,10 @@
+
+
 // import { useEffect, useContext } from "react";
 // import { Route, Routes, Navigate } from "react-router-dom";
 
 // /* ========== PUBLIC ========== */
-// import UserAnalysis from "./views/home-pages/UserAnalysis";
-
+// import UserAnalysis from "./views/home-pages/UserAnalysis"; 
 // import Loginpage from "./pages/login/loginpage";
 // import MapsPage from "./pages/MapsPage";
 // import NewHomePage from "./pages/Registration/Home";
@@ -140,13 +141,14 @@ import AccDashboard from "./pages/accDashbaoard/accDashboard";
 import AccProfile from "./pages/accProfile/AccProfile";
 import MyPaths from "./pages/MyPaths";
 import NewStep1 from "./globalComponents/GlobalDrawer/NewStep1"
+import CreateNewStep from "./pages/accDashbaoard/CreateNewStep";
 import MyStepsAcc from "./pages/accDashbaoard/MyStepsAcc";
 import PathPage from "./components/Pathview/PathPage";
 
- /* ========== ADMIN ========== */
- import AdminLogin from "./pages/AdminLogin";
- import AdminAccDashbaoard from "./pages/AdminAccDashbaoard";
- import AdminProfilePage from "./pages/AdminAccDashbaoard/Profile/profile_page";
+/* ========== ADMIN ========== */
+import AdminLogin from "./pages/AdminLogin";
+import AdminAccDashbaoard from "./pages/AdminAccDashbaoard";
+import AdminProfilePage from "./pages/AdminAccDashbaoard/Profile/profile_page";
 
 /* ================= SUPER ADMIN ================= */
 import SuperAdminLogin from "./AdminDashboard/pages/SuperAdminLogin";
@@ -172,9 +174,9 @@ function App() {
   useEffect(() => {
     axios
       .post(`${BASE_URL}/api/admin-visitors/admin-visitor`)
-      .catch(() => {});
+      .catch(() => { });
   }, []);
-  
+
   return (
     <Fragment>
       <Helmet>
@@ -194,15 +196,15 @@ function App() {
           <Route path="/register" element={<NewHomePage />} />
           <Route path="/maps" element={<MapsPage />} />
 
-         
-      {/* ================= USER DASHBOARD ================= */}
-      <Route path="/dashboard/users" element={<Dashboard />} />
-      <Route path="/dashboard/users/profile" element={<UserProfile />} />
-      <Route path="/dashboard/users/my-journey" element={<Dashboard />} />
-      <Route path="/dashboard/users/current-step" element={<Dashboard />} />
-      <Route path="/dashboard/users/:id" element={<MallProduct />} />
 
-             {/* ================= PATH / STEP ================= */}
+          {/* ================= USER DASHBOARD ================= */}
+          <Route path="/dashboard/users" element={<Dashboard />} />
+          <Route path="/dashboard/users/profile" element={<UserProfile />} />
+          <Route path="/dashboard/users/my-journey" element={<Dashboard />} />
+          <Route path="/dashboard/users/current-step" element={<Dashboard />} />
+          <Route path="/dashboard/users/:id" element={<MallProduct />} />
+
+          {/* ================= PATH / STEP ================= */}
           <Route path="/dashboard/path/:id" element={<PathPage />} />
           <Route path="/dashboard/step/:id" element={<StepPage />} />
 
@@ -212,39 +214,35 @@ function App() {
             <Route path="paths" element={<MyPaths />} />
             <Route path="steps" element={<MyStepsAcc />} />
             <Route path="path/:id/create-step" element={<NewStep1 />} />
-
             <Route path="path/:id" element={<PathPage />} />
-             <Route path="services" element={<Dashboard/>} />
+            <Route path="services" element={<Dashboard />} />
           </Route>
-
+         
           <Route
             path="/dashboard/accountants/profile"
             element={<AccProfile />}
           />
+          {/* ================= ADMIN ================= */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard/profile" element={<AdminProfilePage />} />
+
+          <Route
+            path="/admin/dashboard/accountants"
+            element={<AdminAccDashbaoard />} />
+
+          {/* ================= SUPER ADMIN ================= */}
+          <Route path="/admin-login" element={<SuperAdminLogin />} />
+
+          <Route path="/admin-dashboard" element={<AdminDashboard />}>
+            {/* <Route element={<AdminDashboard />}> */}
+            <Route path="admin-home" element={<HomeDashboard />} />
+            <Route path="admin-contact" element={<ContactList />} />
+            <Route path="admin-subscribe" element={<SubscriptionList />} />
+            <Route path="admin-visitors" element={<VisitorsList />} />
+          </Route>
 
 
 
-    {/* ================= ADMIN ================= */}
-      <Route path="/admin/login" element={<AdminLogin />} />
-      <Route path="/admin/dashboard/profile" element={<AdminProfilePage />} />
-
-       <Route
-        path="/admin/dashboard/accountants"
-         element={<AdminAccDashbaoard />}/>
-      
-         {/* ================= SUPER ADMIN ================= */}
-<Route path="/admin-login" element={<SuperAdminLogin />} />
-
-<Route path="/admin-dashboard" element={<AdminDashboard  />}>
-  {/* <Route element={<AdminDashboard />}> */}
-    <Route path="admin-home" element={<HomeDashboard />} />
-    <Route path="admin-contact" element={<ContactList />} />
-    <Route path="admin-subscribe" element={<SubscriptionList />} />
-    <Route path="admin-visitors" element={<VisitorsList />} />
-  </Route>
-
-
-   
           {/* ================= PURCHASE ================= */}
           <Route path="/purchase/success" element={<PurchaseSuccess />} />
 

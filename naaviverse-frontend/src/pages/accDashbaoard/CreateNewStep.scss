@@ -1,0 +1,436 @@
+// REPLACE YOUR .new-step-container with this:
+.new-step-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  height: auto;           // ← was 100%, change to auto
+  min-height: 100%;
+  background: #ffffff;
+  position: relative;     // ← keep relative, NOT fixed
+  padding: 40px 60px;
+  box-sizing: border-box;
+  // Remove overflow-y: auto — let the parent dashboard div handle scrolling
+
+  .new-step-content {
+    position: relative;
+    z-index: 1;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+}
+
+.form-section {
+  margin-bottom: 50px;
+  
+  .section-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1f304f;
+    margin-bottom: 24px;
+    position: relative;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #2a9d8f, #2c7cb2);
+      border-radius: 3px;
+    }
+  }
+}
+
+.form-field {
+  margin-bottom: 24px;
+  
+  label {
+    display: block;
+    font-size: 16px;
+    font-weight: 500;
+    color: #1f304f;
+    margin-bottom: 8px;
+  }
+  
+  input, textarea, select {
+    width: 100%;
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1.5px solid rgba(42, 157, 143, 0.2);
+    border-radius: 16px;
+    font-size: 15px;
+    color: #1f304f;
+    transition: all 0.2s ease;
+    
+    &::placeholder {
+      color: #a0b8cc;
+    }
+    
+    &:focus {
+      outline: none;
+      border-color: #2a9d8f;
+      box-shadow: 0 0 0 4px rgba(42, 157, 143, 0.1);
+    }
+  }
+  
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+}
+
+.duration-field-compact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  
+  input {
+    flex: 1;
+  }
+  
+  .days-badge {
+    background: #ecf2f9;
+    padding: 14px 24px;
+    border-radius: 16px;
+    font-weight: 600;
+    color: #1f304f;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+}
+
+.cost-options {
+  display: flex;
+  gap: 12px;
+  
+  .cost-btn {
+    flex: 1;
+    padding: 14px 24px;
+    border: 1.5px solid rgba(42, 157, 143, 0.2);
+    border-radius: 40px;
+    background: white;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f304f;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      border-color: #2a9d8f;
+      background: rgba(42, 157, 143, 0.05);
+    }
+    
+    &.active {
+      background: linear-gradient(135deg, #2a9d8f, #2c7cb2);
+      color: white;
+      border-color: transparent;
+    }
+  }
+}
+
+.path-selector {
+  display: flex;
+  gap: 12px;
+  
+  input {
+    flex: 2;
+  }
+  
+  select {
+    flex: 1;
+    cursor: pointer;
+  }
+}
+
+.guidance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.guidance-card {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1.5px solid rgba(42, 157, 143, 0.15);
+  border-radius: 20px;
+  padding: 20px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: rgba(42, 157, 143, 0.3);
+    box-shadow: 0 8px 20px rgba(42, 157, 143, 0.1);
+  }
+  
+  .guidance-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2a9d8f;
+    margin-bottom: 12px;
+  }
+  
+  textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid rgba(42, 157, 143, 0.15);
+    border-radius: 12px;
+    font-size: 14px;
+    resize: vertical;
+    
+    &:focus {
+      border-color: #2a9d8f;
+    }
+  }
+}
+
+.guidance-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.guidance-item {
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f304f;
+    margin-bottom: 16px;
+  }
+}
+
+.personality-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.personality-card {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1.5px solid rgba(42, 157, 143, 0.15);
+  border-radius: 16px;
+  padding: 16px;
+  
+  .personality-label {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: #2a9d8f;
+    margin-bottom: 10px;
+    text-transform: capitalize;
+  }
+  
+  textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1.5px solid rgba(42, 157, 143, 0.15);
+    border-radius: 10px;
+    font-size: 13px;
+    resize: vertical;
+    
+    &:focus {
+      border-color: #2a9d8f;
+    }
+  }
+}
+
+.stream-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stream-card {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1.5px solid rgba(42, 157, 143, 0.15);
+  border-radius: 16px;
+  padding: 16px;
+  
+  .stream-label {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: #2a9d8f;
+    margin-bottom: 10px;
+  }
+  
+  textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1.5px solid rgba(42, 157, 143, 0.15);
+    border-radius: 10px;
+    font-size: 13px;
+    resize: vertical;
+    
+    &:focus {
+      border-color: #2a9d8f;
+    }
+  }
+}
+
+.gpa-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.gpa-card {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1.5px solid rgba(42, 157, 143, 0.15);
+  border-radius: 16px;
+  padding: 16px;
+  
+  .gpa-label {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: #2a9d8f;
+    margin-bottom: 10px;
+  }
+  
+  textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1.5px solid rgba(42, 157, 143, 0.15);
+    border-radius: 10px;
+    font-size: 13px;
+    resize: vertical;
+    
+    &:focus {
+      border-color: #2a9d8f;
+    }
+  }
+}
+
+.curriculum-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.curriculum-card {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1.5px solid rgba(42, 157, 143, 0.15);
+  border-radius: 16px;
+  padding: 16px;
+  
+  .curriculum-label {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: #2a9d8f;
+    margin-bottom: 10px;
+  }
+  
+  textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1.5px solid rgba(42, 157, 143, 0.15);
+    border-radius: 10px;
+    font-size: 13px;
+    resize: vertical;
+    
+    &:focus {
+      border-color: #2a9d8f;
+    }
+  }
+}
+
+.progress-section {
+  margin: 40px 0 30px;
+  
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    
+    span:first-child {
+      font-size: 15px;
+      font-weight: 500;
+      color: #1f304f;
+    }
+    
+    .progress-percentage {
+      font-size: 18px;
+      font-weight: 700;
+      color: #2a9d8f;
+    }
+  }
+  
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(42, 157, 143, 0.1);
+    border-radius: 20px;
+    overflow: hidden;
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #2a9d8f, #2c7cb2);
+      border-radius: 20px;
+      transition: width 0.3s ease;
+    }
+  }
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 18px;
+  margin-top: 40px;
+  padding-bottom: 40px;
+   
+  .btn-draft {
+    padding: 14px 32px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 15px;
+    border: 2px solid #d3deed;
+    background: white;
+    color: #1f3a5f;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: #f5f9ff;
+    }
+  }
+  
+  .btn-submit {
+    padding: 14px 32px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 15px;
+    border: none;
+    background: linear-gradient(135deg, #2a9d8f, #2c7cb2);
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(42, 157, 143, 0.3);
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+  
+  .btn-back {
+    padding: 14px 32px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 15px;
+    border: none;
+    background: transparent;
+    color: #1f304f;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

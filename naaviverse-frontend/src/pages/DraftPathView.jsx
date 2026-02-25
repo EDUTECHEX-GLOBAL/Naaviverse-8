@@ -7,10 +7,11 @@ import {
 } from "react-router-dom";
 import axios from "axios";
 import "../components/Pathview/journey.scss";
-import NewStep1 from "../globalComponents/GlobalDrawer/NewStep1";
 import EditPathForm from "./MyPaths/paths";
+import CreateNewStep from "./accDashbaoard/CreateNewStep"; // adjust path if needed
 
-const DraftPathView = () => {
+// CHANGE signature:
+const DraftPathView = ({ onAddStep }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -24,6 +25,7 @@ const DraftPathView = () => {
   const [selectedStepForService, setSelectedStepForService] = useState(null);
   const [availableServices, setAvailableServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
+  const [createStepOpen, setCreateStepOpen] = useState(false);
 
   /* ================= FETCH PATH + STEPS ================= */
   useEffect(() => {
@@ -174,10 +176,13 @@ const handleSubmitForApproval = async () => {
           <button
             className="btn-soft"
             disabled={isLocked}
-            onClick={() =>
-              !isLocked &&
-              navigate(`/dashboard/accountants/path/${id}?createStep=true`)
-            }
+onClick={() => {
+  if (!isLocked) {
+    if (onAddStep) {
+      onAddStep(id);  // tells parent to switch to CreateNewStep view
+    }
+  }
+}}
           >
             + Add Step
           </button>
@@ -256,35 +261,32 @@ const handleSubmitForApproval = async () => {
         </div>
       )}
 
-      {/* ADD STEP DRAWER */}
-      {openDrawer && (
-        <div
-          className="global-drawer-overlay"
-          onClick={() => {
-            setOpenDrawer(false);
-            navigate(`/dashboard/accountants/path/${id}`);
-          }}
-        >
-          <div
-            className="global-drawer-panel"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <NewStep1
-              pathId={id}
-              onSuccess={async () => {
-                setOpenDrawer(false);
-                navigate(`/dashboard/accountants/path/${id}`);
+    {/* ADD STEP DRAWER */}
+{createStepOpen && (
+  <div
+    className="global-drawer-overlay"
+    onClick={() => setCreateStepOpen(false)}
+  >
+    <div
+      className="global-drawer-panel"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <CreateNewStep
+        inlineMode={true}
+        pathId={id}
+        onSuccess={async () => {
+          const stepsRes = await axios.get(`/api/steps/get`, {
+            params: { path_id: id },
+          });
+          setSteps(stepsRes.data.data || []);
+          setCreateStepOpen(false);
+        }}
+        onCancel={() => setCreateStepOpen(false)}
+      />
+    </div>
+  </div>
+)}
 
-                const stepsRes = await axios.get(`/api/steps/get`, {
-                  params: { path_id: id },
-                });
-
-                setSteps(stepsRes.data.data || []);
-              }}
-            />
-          </div>
-        </div>
-      )}
 
       {/* ADD SERVICES DRAWER */}
       {serviceDrawerOpen && (

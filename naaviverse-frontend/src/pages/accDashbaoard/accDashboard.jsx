@@ -31,7 +31,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 import AccDashsidebar from "../../components/accDashsidebar/accDashsidebar";
 import logo from "../../assets/images/logo/naavi_final_logo2.png"; 
 import CreateNewPath from './CreateNewPath';
-import "./CreateNewPath.scss"; // Add this line
+import "./CreateNewPath.scss";
 import {
   GetFollowersPerAccount,
   GetCategoriesAcc,
@@ -54,7 +54,7 @@ import arrow from "./arrow.svg";
 import trash from "./trash.svg";
 import { useCoinContextData } from "../../context/CoinContext";
 import MyPaths from "../MyPaths";
-import NewStep1 from "../../globalComponents/GlobalDrawer/NewStep1";
+import CreateNewStep from "./CreateNewStep";
 import VaultTransactions from "../VaultTransactions/index.jsx";
 import { Country, State, City } from 'country-state-city';
 import TransactionPage from "../dashboard/TransactionPage/index.jsx";
@@ -80,10 +80,10 @@ const getPartner = () => {
   }
 };
 
-
-
-
 const AccDashboard = () => {
+const location = useLocation();   // ✅ MUST COME FIRST
+  let navigate = useNavigate(); 
+  
   const {
     accsideNav,
     setaccsideNav,
@@ -94,6 +94,8 @@ const AccDashboard = () => {
     balanceToggle,
     setBalanceToggle,
   } = useStore();
+
+
   let Country = require('country-state-city').Country;
   // console.log(Country.getAllCountries(), "kjefbkjbfkjwef")
   const [search, setSearch] = useState("");
@@ -150,12 +152,24 @@ const [showStepsModal, setShowStepsModal] = useState(false);
 const [showPathModal, setShowPathModal] = useState(true);
 const [showStepCountModal, setShowStepCountModal] = useState(false);
 const [showCreateStepModal, setShowCreateStepModal] = useState(false);
- const location = useLocation();   // ✅ MUST COME FIRST
+ const [createStepForPathId, setCreateStepForPathId] = useState(null);
 
   const isViewPathRoute =
     location.pathname.startsWith("/dashboard/accountants/path/");
 
   const [viewPathMode, setViewPathMode] = useState(isViewPathRoute);
+
+
+// Add this with your other useEffects
+useEffect(() => {
+  // Check if we came from profile page with openCreatePath state
+  if (location.state?.openCreatePath) {
+    setaccsideNav("CREATE_PATH");
+    // Clear the state so it doesn't reopen on refresh
+    navigate('/dashboard/accountants', { replace: true, state: {} });
+  }
+}, [location.state, setaccsideNav, navigate]);
+
 
   useEffect(() => {
     setViewPathMode(
@@ -168,8 +182,6 @@ useEffect(() => {
     location.pathname.startsWith("/dashboard/accountants/path/");
   setViewPathMode(isPath);
 }, [location.pathname]);
-
-
 
 useEffect(() => {
   if (didFetchCountriesRef.current) return;  // ⛔ prevents 2nd execution
@@ -191,6 +203,8 @@ useEffect(() => {
   fetchCountries();
 }, []);
   //add compPlan
+
+  
   const [addCompPlan, setAddCompPlan] = useState(false);
   const [addCompPlanStep, setAddCompPlanStep] = useState("step1");
   const [userCreatedApps, setUserCreatedApps] = useState([]);
@@ -200,7 +214,6 @@ useEffect(() => {
   const [inputValues, setInputValues] = useState([]);
   const [multiplier, setMultiplier] = useState([]);
   const [isfetching, setIsfetching] = useState(false);
-
 
   //with compPlan
   const [withCompPlanData, setWithCompPlanData] = useState([]);
@@ -255,13 +268,10 @@ useEffect(() => {
       view: 'One time'
     }]
 
-
   const [servicePrice, setServicePrice] = useState(null)
   const [selectedServiceCurrency, setSelectedServiceCurrency] = useState(null)
 
-
-
-  let navigate = useNavigate();
+ 
 
  // CRM USERS (optional)
 const [crmUserData, setCrmUserData] = useState([]);
@@ -275,10 +285,6 @@ const [isClientLoading, setClientLoading] = useState(false);
 const [crmPurchaseData, setCrmPurchaseData] = useState([]);
 const [isPurchaseLoading, setPurchaseLoading] = useState(false);
 
-
-
-
-  
   const {
     allSteps,
     setAllSteps,
@@ -330,7 +336,6 @@ const userDetails = getPartner();
 const partnerEmail = userDetails?.email || userDetails?.user?.email || null;
 const partnerToken = userDetails?.idToken || userDetails?.token || null;
 // console.log("PARTNER VALUE:", userDetails);
-
 
   const handleGrade = (item) => {
     if (grade.includes(item)) {
@@ -438,44 +443,13 @@ if (!partner?.email) {
   return;
 }
 
-
-
   handleFollowerPerAccountants();
   handleGetCurrencies();
   resetpop();
 }, []);
 
-
-
-
-
-
-  // const signJwt = async (fileName, emailDev, secret) => {
-  //   try {
-  //     const jwts = await new jose.SignJWT({ name: fileName, email: emailDev })
-  //       .setProtectedHeader({ alg: "HS512" })
-  //       .setIssuer("gxjwtenchs512")
-  //       .setExpirationTime("10m")
-  //       .sign(new TextEncoder().encode(secret));
-  //     return jwts;
-  //   } catch (error) {
-  //     console.log(error, "kjbedkjwebdw");
-  //   }
-  // };
-
-  function renameFile(originalFile, newName) {
-    return new File([originalFile], newName, {
-      type: originalFile.type,
-      lastModified: originalFile.lastModified,
-    });
-  }
-
-
-
   //upload end here
 
-
-  
   const handleFollowerPerAccountants = () => {
     setIsLoading(true);
     const partner = getPartner();
@@ -525,8 +499,6 @@ const handleAllCustomerLicenses = () => {
       setPurchaseLoading(false);
     });
 };
-
-
 
   const handleCategories = () => {
     setIsCatLoading(true);
@@ -582,10 +554,6 @@ const handleGetCurrencies = React.useCallback(() => {
     });
 }, [isCurrencies]);
 
-
-
-
-
   const resetpop = () => {
     setispopular(false);
     setpstep(1);
@@ -638,25 +606,6 @@ const handleLogout = () => {
   localStorage.removeItem("loginEmail");
   navigate("/login");
 };
-
-
-
-  // const handleServicesForLogged = (value) => {
-  //   setIsServicesAcc(true);
-  //   GetLogServices(value)
-  //     .then((res) => {
-  //       // console.log(res, "kk");
-  //       let result = res?.data;
-  //       if (result?.status) {
-  //         setservicesAcc(result?.products);
-  //       }
-  //       setIsServicesAcc(false);
-  //     })
-  //     .catch((err) => {
-  //       console.log(err, "error in GetLogServices");
-  //       setIsServicesAcc(false);
-  //     });
-  // };
 
   const fileInputRef = useRef(null);
 
@@ -727,7 +676,6 @@ const uploadBulkPath = async (file) => {
     setIsUploadLoading(false);
   }
 };
-
 
 const uploadBulkStep = async (file) => {
   try {
@@ -805,8 +753,6 @@ const uploadBulkService = async (file) => {
   }
 };
 
-
-
   const handleFileInputChange1 = (e) => {
     setImage(e.target.files[0]);
     uploadBulkPath(e.target.files[0]);
@@ -858,8 +804,6 @@ const handleFileInputChange3 = async (e) => {
   reader.readAsArrayBuffer(file);
 };
 
-
-
   const myTimeoutService = () => {
     setTimeout(reloadService, 3000);
   };
@@ -870,68 +814,7 @@ const handleFileInputChange3 = async (e) => {
     setaccsideNav("My Services");
     setservicesMenu("Services");
   };
-const handleStepCountSubmit = () => {
 
-  if (stepCount < 1) {
-    alert("Enter at least 1 step");
-    return;
-  }
-
-  const userDetails = getPartner();
-
-  const finalEmail =
-    user?.email ||
-    user?.user?.email ||
-    userDetails?.email ||
-    localStorage.getItem("loginEmail");
-
-  if (!finalEmail) {
-    alert("User email missing");
-    return;
-  }
-
-  const finalPayload = {
-    email: finalEmail,
-    nameOfPath: pathSteps?.nameOfPath,
-    description: pathSteps?.description,
-    length: Number(pathSteps?.length),
-    path_type: pathSteps?.path_type,
-    status: "waitingforapproval",
-  };
-
-  setCreatingPath(true);
-
-  axios.post("http://localhost:4545/api/paths/add", finalPayload)
-    .then((response) => {
-
-      console.log("PATH CREATED:", response.data);
-
-      if (response.data?.status) {
-
-        const createdPathId = response.data.data._id;
-
-        localStorage.setItem(
-          "currentPathData",
-          JSON.stringify({
-            ...finalPayload,
-            pathId: createdPathId,
-          })
-        );
-
-        localStorage.setItem("totalSteps", stepCount);
-
-        setShowStepsModal(false); // ⭐ FIXED
-        setCreatingPath(false);
-
-        setpstep(9); // ⭐ OPEN STEP CREATION
-      }
-    })
-    .catch((err) => {
-      console.log("API ERROR:", err.response?.data || err);
-      setCreatingPath(false);
-      alert("Error creating path");
-    });
-};
  const handleFinalSubmit = () => {
   setIsSubmit(true);
 
@@ -942,7 +825,6 @@ const handleStepCountSubmit = () => {
   productcreatoremail: userDetails.email,
 
   ...(currentStepId ? { step_id: currentStepId } : {}),
-
 
     // REQUIRED BACKEND FIELDS
     name: serviceNameInput,                 // ✔ MUST BE `name`
@@ -1068,50 +950,6 @@ const handleStepCountSubmit = () => {
     });
 };
 
-
-  //   const addService = () => {
-  //     let userDetails = JSON.parse(localStorage.getItem("partner"));
-
-  //     console.log({
-  //       "productcreatoremail": userDetails.email,
-  //       "name": serviceNameInput,
-  //       "description": serviceDescription,
-  //       "chargingtype": billingType,
-  //       "charging currency": {
-  //           "coin": selectedServiceCurrency
-  //       },
-  //       "billing_cycle": {
-  //         [billingType]: {
-  //               "price": servicePrice,
-  //               "coin": selectedServiceCurrency
-  //           }
-  //       }
-  //   }, "kjedkjwehfkwehflkwhef")
-
-  //     axios.post(`/api/services/add`, {
-  //       "productcreatoremail": userDetails.email,
-  //       "name": serviceNameInput,
-  //       "description": serviceDescription,
-  //       "chargingtype": billingType,
-  //       "charging currency": {
-  //           "coin": selectedServiceCurrency
-  //       },
-  //       "billing_cycle": {
-  //         [billingType]: {
-  //               "price": servicePrice,
-  //               "coin": selectedServiceCurrency
-  //           }
-  //       }
-  //   }
-  // ).then(({data}) => {
-  //   if(data.status){
-  //     resetpop()
-  //     setispopular(false)
-  //     // getAllServices()
-  //   }
-  // })
-  //   }
-
 const getAllServices = async () => {
   const userDetails = getPartner();
 
@@ -1140,7 +978,6 @@ const getAllServices = async () => {
   }
 };
 
-
 const fetchAllServicesAgain = () => {
   const userDetails = JSON.parse(localStorage.getItem("partner"));
 
@@ -1152,7 +989,6 @@ const fetchAllServicesAgain = () => {
   getAllServices(userDetails.email);
 };
 
-
 useEffect(() => {
   if (!ispopular) {
     const userDetails = JSON.parse(localStorage.getItem("partner"));
@@ -1163,8 +999,6 @@ useEffect(() => {
     getAllServices();
   }
 }, [ispopular]);
-
-
 
 useEffect(() => {
   resetpop();
@@ -1206,7 +1040,6 @@ function reload() {
   }
 }
 
-
 const deleteService = async () => {
   const serviceId = selectedService?._id;
   if (!serviceId) return;
@@ -1231,7 +1064,6 @@ const deleteService = async () => {
     setIsloading(false);
   }
 };
-
 
 const changeServiceIcon = () => {
   // Debug log
@@ -1335,9 +1167,6 @@ const handleSavePath = () => {
   console.log("📨 FINAL PATH STEPS SUBMITTED:", pathSteps);
   // save logic...
 };
-
-
-
 
   const myTimeout1 = () => {
     setTimeout(reload1, 3000);
@@ -1446,8 +1275,6 @@ const handleSavePath = () => {
     ));
   };
 
-
-
   const getWithCompPlan = () => {
     setGettingData(true);
     let obj = {
@@ -1472,28 +1299,10 @@ const handleSavePath = () => {
     getWithCompPlan();
   }, []);
 
-  // useEffect(() => {
-  //   let email = userDetails?.email;
-  //   axios
-  //     .get(`https://careers.marketsverse.com/steps/get?email=${email}`)
-  //     .then((response) => {
-  //       let result = response?.data?.data;
-  //       // console.log(result, "all steps fetched");
-  //       setAllSteps(result);
-  //     })
-  //     .catch((error) => {
-  //       console.log(error, "error in fetching all steps");
-  //     });
-  // }, []);
-
-
-
-
 const getCounsellorEmail = () => {
   const local = JSON.parse(localStorage.getItem("partner"));
   return user?.email || local?.email;
 };
-
 
 useEffect(() => {
   const email = getCounsellorEmail();
@@ -1511,24 +1320,6 @@ useEffect(() => {
       setClientLoading(false);
     });
 }, []);
-
-// useEffect(() => {
-//   const email = getCounsellorEmail();
-//   if (!email) return;
-
-//   setPurchaseLoading(true);
-
-//   axios.get(`/api/crm/purchases?creatoremail=${email}`)
-//     .then(res => {
-//       setCrmPurchaseData(res.data?.data || []);
-//       setPurchaseLoading(false);
-//     })
-//     .catch(err => {
-//       console.log("CRM PURCHASE ERROR:", err);
-//       setPurchaseLoading(false);
-//     });
-// }, []);
-
 
 const pathSubmission = () => {
   console.log("🚀 ---- PATH SUBMISSION TRIGGERED ----");
@@ -1570,7 +1361,6 @@ if (!finalEmail) {
   alert("User email missing. Please login again.");
   return;
 }
-
 
   // 8️⃣ Build the payload
   const payload = {
@@ -1662,18 +1452,6 @@ axios
     setCreatingPath(false);
   });
 };
-  // const removeStep = (stepId) => {
-  //   const updatedSelectedSteps = selectedSteps.filter(
-  //     (step) => step._id !== stepId
-  //   );
-  //   setSelectedSteps(updatedSelectedSteps);
-
-  //   const updatedStepIds = pathSteps?.step_ids?.filter((id) => id !== stepId);
-  //   setPathSteps({
-  //     ...pathSteps,
-  //     step_ids: updatedStepIds,
-  //   });
-  // };
 
   const removeStep = (stepId) => {
     // Remove the step from selectedSteps
@@ -1692,21 +1470,6 @@ axios
     });
   };
 
-  // useEffect(() => {
-  //   setIsUserLoading(true);
-  //   axios
-  //     .get("https://comms.globalxchange.io/gxb/apps/users/get?app_code=naavi")
-  //     .then((response) => {
-  //       let result = response?.data?.users;
-  //       // console.log(result, "crm users data");
-  //       setIsUserLoading(false);
-  //       setCrmUserData(result);
-  //     })
-  //     .catch((error) => {
-  //       console.log(error, "error in fetching crm users data");
-  //     });
-  // }, []);
-
 useEffect(() => {
   const email = getCounsellorEmail();
   if (!email) return;
@@ -1723,7 +1486,6 @@ useEffect(() => {
       setClientLoading(false);
     });
 }, []);
-
 
   function customDateFormat(date) {
     if (date instanceof Date && !isNaN(date.valueOf())) {
@@ -1834,7 +1596,6 @@ let obj = {
   path_id: forexPathId,
 };
 
-
     axios
       .post(
         `https://comms.globalxchange.io/coin/vault/service/trade/execute`,
@@ -1896,8 +1657,6 @@ let obj = {
 };
 
 const handleDownload = (type) => {
-  
-
   let filePath;
 
   if (type === "Path") {
@@ -1931,56 +1690,102 @@ return (
   </div>
   <div className="dashboard-screens"> {/* ← Content area */}
         <div style={{ height: "100%" }}>
-          {viewPathMode ? (
-            // This renders the path view WITH the same layout structure
-            <>
-              <MenuNav
-                showDrop={showDrop}
-                setShowDrop={setShowDrop}
-                searchTerm={search}
-                setSearchterm={setSearch}
-                searchPlaceholder="Search Path..."
-              />
-              <div 
-                className="services-main" 
-                style={{ height: "calc(100% - 70px)" }}
-                onClick={() => setShowDrop(false)}
-              >
-                <div
-                  className="services-all-menu"
-                  style={{ 
-                    borderBottom: "0.5px solid #E5E5E5",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center"
-                  }}
-                >
-                  <div style={{ display: "flex", width: "83%" }}>
-                    <div className="services-each-menu" style={{ fontWeight: "700" }}>
-                      Path Details
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      fontWeight: "600",
-                      textDecorationLine: "underline",
-                      cursor: "pointer",
-                      fontSize: "0.9rem",
-                      padding: "12px 35px"
-                    }}
-                    onClick={() => {
-                      setViewPathMode(false);
-                      setaccsideNav("Paths"); // Go back to My Paths
-                      navigate('/dashboard/accountants');
-                    }}
-                  >
-                    ← Back to My Paths
-                  </div>
-                </div>
-                <DraftPathView />
-              </div>
-            </>
- ) : accsideNav === "CREATE_PATH" ? (
+  {viewPathMode ? (
+  createStepForPathId ? (
+    // FULL CONTENT: Create Step view
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
+      <div style={{
+        padding: "0 35px",
+        height: "60px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        borderBottom: "0.5px solid #E5E5E5",
+        background: "#fff",
+        flexShrink: 0
+      }}>
+        <div style={{
+          padding: "10px 30px",
+          borderRadius: "35px",
+          fontWeight: "700",
+          fontSize: "15px",
+          background: "rgba(241,241,241,0.5)"
+        }}>
+          Create New Step
+        </div>
+        <div
+          style={{
+            fontWeight: "600",
+            textDecorationLine: "underline",
+            cursor: "pointer",
+            fontSize: "0.9rem",
+            paddingRight: "35px"
+          }}
+          onClick={() => setCreateStepForPathId(null)}
+        >
+          ← Back to Path
+        </div>
+      </div>
+      <div style={{ flex: 1, overflowY: "auto", background: "#fff", minHeight: 0 }}>
+        <CreateNewStep
+          inlineMode={true}
+          pathId={createStepForPathId}
+          onSuccess={() => setCreateStepForPathId(null)}
+          onCancel={() => setCreateStepForPathId(null)}
+        />
+      </div>
+    </div>
+  ) : (
+    // FULL CONTENT: Path Details view
+    <>
+      <MenuNav
+        showDrop={showDrop}
+        setShowDrop={setShowDrop}
+        searchTerm={search}
+        setSearchterm={setSearch}
+        searchPlaceholder="Search Path..."
+      />
+      <div
+        className="services-main"
+        style={{ height: "calc(100% - 70px)" }}
+        onClick={() => setShowDrop(false)}
+      >
+        <div
+          className="services-all-menu"
+          style={{
+            borderBottom: "0.5px solid #E5E5E5",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center"
+          }}
+        >
+          <div style={{ display: "flex", width: "83%" }}>
+            <div className="services-each-menu" style={{ fontWeight: "700" }}>
+              Path Details
+            </div>
+          </div>
+          <div
+            style={{
+              fontWeight: "600",
+              textDecorationLine: "underline",
+              cursor: "pointer",
+              fontSize: "0.9rem",
+              padding: "12px 35px"
+            }}
+            onClick={() => {
+              setViewPathMode(false);
+              setaccsideNav("Paths");
+              navigate('/dashboard/accountants');
+            }}
+          >
+            ← Back to My Paths
+          </div>
+        </div>
+        <DraftPathView onAddStep={(pathId) => setCreateStepForPathId(pathId)} />
+      </div>
+    </>
+  )
+) : accsideNav === "CREATE_PATH" ? (
   // SHOW CREATE NEW PATH AS FULL PAGE - WITHOUT THE HEADER TABS
   <div style={{ 
     display: "flex", 
@@ -1990,32 +1795,97 @@ return (
     overflow: "hidden"
   }}>
     {/* Use MenuNav but hide the search and user section if needed, or create a simpler header */}
+ 
+    
+   
+<div style={{
+  padding: "0 35px",
+  height: "60px",
+  display: "flex",
+  alignItems: "center",
+  borderBottom: "0.5px solid #E5E5E5",
+  flexShrink: 0,
+  backgroundColor: "#ffffff"
+}}>
+  <div style={{ 
+    padding: "10px 30px",
+    borderRadius: "35px",
+    fontWeight: "700",
+    fontSize: "15px",
+    color: "#1f304f",
+    background: "rgba(241, 241, 241, 0.5)"
+  }}>
+    Create New Path
+  </div>
+</div>
+<div style={{ 
+  flex: 1, 
+  minHeight: 0, 
+  overflowY: "auto",
+  padding: "0", // REMOVED ALL PADDING - let CreateNewPath handle it
+  backgroundColor: "#ffffff"
+}}>
+  <CreateNewPath 
+    setpstep={setpstep}
+    setaccsideNav={setaccsideNav} 
+    pathSubmission={pathSubmission}
+    pathSteps={pathSteps}
+    setPathSteps={setPathSteps}
+    grade={grade}
+    setGrade={setGrade}
+    gradeAvg={gradeAvg}
+    setGradeAvg={setGradeAvg}
+    curriculum={curriculum}
+    setCurriculum={setCurriculum}
+    stream={stream}
+    setStream={setStream}
+    finance={finance}
+    setFinance={setFinance}
+    personality={personality}
+    setPersonality={setPersonality}
+    gradeList={gradeList}
+    gradePointAvg={gradePointAvg}
+    curriculumList={curriculumList}
+    streamList={streamList}
+    financeList={financeList}
+    personalityList={personalityList}
+    countryApiValue={countryApiValue}
+    handleGrade={handleGrade}
+    handleGradeAvg={handleGradeAvg}
+    handleCurriculum={handleCurriculum}
+    handleStream={handleStream}
+    handleFinance={handleFinance}
+    handlePersonality={handlePersonality}
+  />
+</div>
+
+ </div>
+ // REPLACE WITH:
+) : accsideNav === "CREATE_STEP" ? (
+  <div style={{
+    display: "flex",
+    flexDirection: "column",
+    height: "100%",
+    width: "100%",
+    overflow: "hidden"
+  }}>
     <div style={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      height: "70px",
       padding: "0 35px",
+      height: "60px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
       borderBottom: "0.5px solid #E5E5E5",
-      background: "#ffffff",
+      background: "#fff",
       flexShrink: 0
     }}>
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <img 
-          src={logo} 
-          alt="naavi" 
-          style={{ height: "40px", marginRight: "20px" }} 
-        />
-        <span style={{ 
-          fontSize: "20px", 
-          fontWeight: "600",
-          color: "#1f304f",
-          background: "linear-gradient(135deg, #29449D, #47B4D5)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent"
-        }}>
-          AI Powered Path Engine
-        </span>
+      <div style={{
+        padding: "10px 30px",
+        borderRadius: "35px",
+        fontWeight: "700",
+        background: "rgba(241,241,241,.5)"
+      }}>
+        Create New Step
       </div>
       <div
         style={{
@@ -2023,89 +1893,28 @@ return (
           textDecorationLine: "underline",
           cursor: "pointer",
           fontSize: "0.9rem",
-          color: "#1f304f"
+          paddingRight: "35px"
         }}
-        onClick={() => {
-          setaccsideNav("Paths");
-          resetpop();
-        }}
+        onClick={() => setaccsideNav("Paths")}
       >
         ← Back to My Paths
       </div>
     </div>
-    
-    {/* Main content area */}
-    <div style={{ 
-      flex: 1, 
-      minHeight: 0, 
-      display: "flex", 
-      flexDirection: "column",
-      backgroundColor: "#ffffff",
-      overflow: "hidden"
+    <div style={{
+      flex: 1,
+      overflowY: "auto",
+      background: "#fff",
+      minHeight: 0
     }}>
-      <div style={{
-        padding: "0 35px",
-        height: "60px",
-        display: "flex",
-        alignItems: "center",
-        borderBottom: "0.5px solid #E5E5E5",
-        flexShrink: 0,
-        backgroundColor: "#ffffff"
-      }}>
-        <div style={{ 
-          padding: "10px 30px",
-          borderRadius: "35px",
-          fontWeight: "700",
-          fontSize: "15px",
-          color: "#1f304f",
-          background: "rgba(241, 241, 241, 0.5)"
-        }}>
-          Create New Path
-        </div>
-      </div>
-      <div style={{ 
-        flex: 1, 
-        minHeight: 0, 
-        overflowY: "auto",
-        padding: "20px 35px",
-        backgroundColor: "#ffffff"
-      }}>
-        <CreateNewPath 
-          setpstep={setpstep}
-          setaccsideNav={setaccsideNav} 
-          pathSubmission={pathSubmission}
-          pathSteps={pathSteps}
-          setPathSteps={setPathSteps}
-          grade={grade}
-          setGrade={setGrade}
-          gradeAvg={gradeAvg}
-          setGradeAvg={setGradeAvg}
-          curriculum={curriculum}
-          setCurriculum={setCurriculum}
-          stream={stream}
-          setStream={setStream}
-          finance={finance}
-          setFinance={setFinance}
-          personality={personality}
-          setPersonality={setPersonality}
-          gradeList={gradeList}
-          gradePointAvg={gradePointAvg}
-          curriculumList={curriculumList}
-          streamList={streamList}
-          financeList={financeList}
-          personalityList={personalityList}
-          countryApiValue={countryApiValue}
-          handleGrade={handleGrade}
-          handleGradeAvg={handleGradeAvg}
-          handleCurriculum={handleCurriculum}
-          handleStream={handleStream}
-          handleFinance={handleFinance}
-          handlePersonality={handlePersonality}
-        />
-      </div>
+      <CreateNewStep
+        inlineMode={true}
+        onCancel={() => setaccsideNav("Paths")}
+        onSuccess={() => setaccsideNav("Paths")}
+      />
     </div>
   </div>
-          ) : accsideNav === "CRM" ? (
+
+) : accsideNav === "CRM" ? (
             // ... keep ALL your existing CRM code exactly as is
                 <>
                   <MenuNav
@@ -2566,7 +2375,6 @@ return (
                   </div>
                 </>
 
-
               ) : accsideNav === "My Services" ? (
                 <>
                   <MenuNav
@@ -3000,7 +2808,6 @@ return (
       setLoading={setLoading}
     />
 
-
 )
 : (
   <div className="services-main">
@@ -3072,10 +2879,10 @@ return (
 
                     <div
                       className="acc-step-box"
-                      onClick={() => {
-                        setselectNew("Step");
-                        setpstep(9);
-                      }}
+onClick={() => {
+  setispopular(false);
+  setaccsideNav("CREATE_STEP");
+}}
                       style={{
                         background: selectNew === "Step" ? "#182542" : "",
                         color: selectNew === "Step" ? "#FFF" : "",
@@ -3550,500 +3357,7 @@ return (
                 <div className="success-box">
                   You Have Successfully Created A New Service
                 </div>
-              ) : pstep === 8 ? (
-  <>
-    {/* Path Name */}
-    <div style={{ marginBottom: "24px" }}>
-      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
-        What is the name of the path?
-      </div>
-      <input
-        type="text"
-        placeholder="Name.."
-        value={pathSteps?.nameOfPath || ""}
-        onChange={(e) => setPathSteps((prev) => ({ ...prev, nameOfPath: e.target.value }))}
-        style={{ width: "100%", padding: "14px 18px", border: "1.5px solid #dce3ec", borderRadius: "18px", fontSize: "15px" }}
-      />
-    </div>
-
-    {/* Duration */}
-    <div style={{ marginBottom: "24px" }}>
-      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
-        How long will the path apx take?
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-        <input
-          type="number"
-          placeholder="0"
-          value={pathSteps?.length || ""}
-          onChange={(e) => setPathSteps((prev) => ({ ...prev, length: e.target.value }))}
-          style={{ flex: "1", padding: "14px 18px", border: "1.5px solid #dce3ec", borderRadius: "18px", fontSize: "15px" }}
-        />
-        <span style={{ background: "#ecf2f9", padding: "10px 20px", borderRadius: "40px", fontWeight: "600", color: "#1f3a5f", fontSize: "15px", whiteSpace: "nowrap" }}>Years</span>
-      </div>
-    </div>
-
-    {/* Description */}
-    <div style={{ marginBottom: "24px" }}>
-      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
-        Describe the path
-      </div>
-      <textarea
-        placeholder="Enter description.."
-        value={pathSteps?.description || ""}
-        onChange={(e) => setPathSteps((prev) => ({ ...prev, description: e.target.value }))}
-        style={{ width: "100%", padding: "14px 18px", border: "1.5px solid #dce3ec", borderRadius: "18px", fontSize: "15px", minHeight: "100px", resize: "vertical" }}
-      ></textarea>
-    </div>
-
-    {/* Path Type */}
-    <div style={{ marginBottom: "24px" }}>
-      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
-        What type of path is it?
-      </div>
-      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-        {["Education", "Career", "Immigration"].map((type) => (
-          <span
-            key={type}
-            onClick={() => setPathSteps((prev) => ({ ...prev, path_type: type.toLowerCase() }))}
-            style={{
-              padding: "12px 30px",
-              background: pathSteps?.path_type === type.toLowerCase() ? "#2a9d8f" : "white",
-              border: "1.5px solid #dce3ec",
-              borderRadius: "40px",
-              fontWeight: "600",
-              fontSize: "15px",
-              color: pathSteps?.path_type === type.toLowerCase() ? "white" : "#1f3a5f",
-              cursor: "pointer",
-              transition: "0.1s"
-            }}
-          >
-            {type}
-          </span>
-        ))}
-      </div>
-    </div>
-
-    {/* Destination */}
-    <div style={{ marginBottom: "24px" }}>
-      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
-        What is the destination of the path?
-      </div>
-      <input
-        type="text"
-        placeholder="University / institution name.."
-        value={pathSteps?.destination_institution || ""}
-        onChange={(e) => setPathSteps((prev) => ({ ...prev, destination_institution: e.target.value }))}
-        style={{ width: "100%", padding: "14px 18px", border: "1.5px solid #dce3ec", borderRadius: "18px", fontSize: "15px" }}
-      />
-    </div>
-
-    {/* Selected Steps Section */}
-    <div className="selected-steps" style={{ marginBottom: "24px" }}>
-      {selectedSteps?.map((e, i) => (
-        <div className="each-selected-step" key={e?._id} style={{ marginBottom: "20px", padding: "15px", border: "1px solid #e7e7e7", borderRadius: "15px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-            <div>
-              <div style={{ fontWeight: "600", fontSize: "16px", marginBottom: "4px" }}>{e?.name}</div>
-              <div style={{ fontSize: "14px", color: "#666" }}>{e?.description}</div>
-            </div>
-            <div
-              className="trash-icon-div"
-              onClick={() => removeStep(e._id)}
-              style={{ cursor: "pointer" }}
-            >
-              <img src={trash} alt="delete" />
-            </div>
-          </div>
-          
-          {/* Backup Path Selection */}
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              cursor: "pointer",
-              border: "1px solid #e7e7e7",
-              borderRadius: "15px",
-              marginTop: "10px"
-            }}
-            onClick={() => setShowBackupPathList(i)}
-          >
-            <div style={{ width: "85%", padding: "1.5rem", opacity: "0.25", fontSize: "1rem", fontWeight: "500" }}>
-              {pathSteps?.the_ids?.find(o => o.step_id === e?._id)?.backup_pathId || "Select Backup Path"}
-            </div>
-            <div className="arrow-box" style={{ padding: "1.5rem" }}>
-              <img
-                src={arrow}
-                alt="arrow"
-                style={{ transform: showBackupPathList === i ? "rotate(180deg)" : "" }}
-              />
-            </div>
-          </div>
-
-          {/* Backup Path List Dropdown */}
-          {showBackupPathList === i && (
-            <div style={{ marginTop: "10px", border: "1px solid #e7e7e7", borderRadius: "10px", maxHeight: "200px", overflowY: "auto" }}>
-              {backupPathList?.map((item, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => addBackupPath(item._id, e._id)}
-                  style={{ padding: "1rem", borderBottom: "1px solid #e7e7e7", cursor: "pointer" }}
-                >
-                  <div style={{ fontWeight: "600" }}>{item?.program}</div>
-                  <div style={{ fontSize: "14px", color: "#666" }}>{item?.destination_institution}</div>
-                  <div style={{ fontSize: "12px", color: "#999", marginTop: "5px" }}>{item?.description}</div>
-                  <div style={{ fontSize: "10px", color: "#ccc", marginTop: "5px" }}>Path id: {item?._id}</div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-
-    {/* Grade Selection */}
-    <div style={{ marginBottom: "28px" }}>
-      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
-        Select ideal grade for participant
-      </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 18px", marginTop: "12px" }}>
-        {gradeList.map((item) => (
-          <div
-            key={item}
-            onClick={() => handleGrade(item)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              background: grade.includes(item) ? "#2a9d8f" : "#f8fafd",
-              padding: "8px 18px",
-              borderRadius: "40px",
-              border: "1.5px solid #dce3ec",
-              fontSize: "15px",
-              fontWeight: "500",
-              color: grade.includes(item) ? "white" : "#1f3a5f",
-              cursor: "pointer"
-            }}
-          >
-            {item}
-          </div>
-        ))}
-      </div>
-    </div>
-
-    {/* GPA Selection */}
-    <div style={{ marginBottom: "28px" }}>
-      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
-        Select ideal grade point average for participant
-      </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 18px", marginTop: "12px" }}>
-        {gradePointAvg.map((item) => (
-          <div
-            key={item}
-            onClick={() => handleGradeAvg(item)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              background: gradeAvg.includes(item) ? "#2a9d8f" : "#f8fafd",
-              padding: "8px 18px",
-              borderRadius: "40px",
-              border: "1.5px solid #dce3ec",
-              fontSize: "15px",
-              fontWeight: "500",
-              color: gradeAvg.includes(item) ? "white" : "#1f3a5f",
-              cursor: "pointer"
-            }}
-          >
-            {item}
-          </div>
-        ))}
-      </div>
-    </div>
-
-    {/* Curriculum Selection */}
-    <div style={{ marginBottom: "28px" }}>
-      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
-        Select ideal curriculum for participant
-      </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 18px", marginTop: "12px" }}>
-        {curriculumList.map((item) => (
-          <div
-            key={item}
-            onClick={() => handleCurriculum(item)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              background: curriculum.includes(item) ? "#2a9d8f" : "#f8fafd",
-              padding: "8px 18px",
-              borderRadius: "40px",
-              border: "1.5px solid #dce3ec",
-              fontSize: "15px",
-              fontWeight: "500",
-              color: curriculum.includes(item) ? "white" : "#1f3a5f",
-              cursor: "pointer"
-            }}
-          >
-            {item}
-          </div>
-        ))}
-      </div>
-    </div>
-
-    {/* Stream Selection */}
-    <div style={{ marginBottom: "28px" }}>
-      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
-        Select ideal stream for participant
-      </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 18px", marginTop: "12px" }}>
-        {streamList.map((item) => (
-          <div
-            key={item}
-            onClick={() => handleStream(item)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              background: stream.includes(item) ? "#2a9d8f" : "#f8fafd",
-              padding: "8px 18px",
-              borderRadius: "40px",
-              border: "1.5px solid #dce3ec",
-              fontSize: "15px",
-              fontWeight: "500",
-              color: stream.includes(item) ? "white" : "#1f3a5f",
-              cursor: "pointer"
-            }}
-          >
-            {item}
-          </div>
-        ))}
-      </div>
-    </div>
-
-    {/* Financial Selection */}
-    <div style={{ marginBottom: "28px" }}>
-      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
-        Select ideal financial situation for participant
-      </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 18px", marginTop: "12px" }}>
-        {financeList.map((item) => (
-          <div
-            key={item}
-            onClick={() => handleFinance(item)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              background: finance.includes(item) ? "#2a9d8f" : "#f8fafd",
-              padding: "8px 18px",
-              borderRadius: "40px",
-              border: "1.5px solid #dce3ec",
-              fontSize: "15px",
-              fontWeight: "500",
-              color: finance.includes(item) ? "white" : "#1f3a5f",
-              cursor: "pointer"
-            }}
-          >
-            {item}
-          </div>
-        ))}
-      </div>
-    </div>
-
-    {/* Program */}
-    <div style={{ marginBottom: "24px" }}>
-      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
-        What program will they be studying?
-      </div>
-      <input
-        type="text"
-        placeholder="Name.."
-        value={pathSteps?.program || ""}
-        onChange={(e) => setPathSteps((prev) => ({ ...prev, program: e.target.value }))}
-        style={{ width: "100%", padding: "14px 18px", border: "1.5px solid #dce3ec", borderRadius: "18px", fontSize: "15px" }}
-      />
-    </div>
-
-    {/* City */}
-    <div style={{ marginBottom: "24px" }}>
-      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
-        What city is the university in?
-      </div>
-      <input
-        type="text"
-        placeholder="City.."
-        value={pathSteps?.city || ""}
-        onChange={(e) => setPathSteps((prev) => ({ ...prev, city: e.target.value }))}
-        style={{ width: "100%", padding: "14px 18px", border: "1.5px solid #dce3ec", borderRadius: "18px", fontSize: "15px" }}
-      />
-    </div>
-
-    {/* Country */}
-    <div style={{ marginBottom: "24px" }}>
-      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
-        What country is the university in?
-      </div>
-      <select
-        value={pathSteps?.country || ""}
-        onChange={(e) => setPathSteps((prev) => ({ ...prev, country: e.target.value }))}
-        style={{ width: "100%", padding: "14px 18px", border: "1.5px solid #dce3ec", borderRadius: "18px", fontSize: "15px", background: "white" }}
-      >
-        <option value="">Country..</option>
-        {countryApiValue?.map((item) => (
-          <option key={item.cca2} value={item.name.common}>
-            {item.name.common}
-          </option>
-        ))}
-      </select>
-    </div>
-
-    {/* Personality Selection */}
-    <div style={{ marginBottom: "28px" }}>
-      <div style={{ fontSize: "15px", fontWeight: "600", color: "#1f3a5f", marginBottom: "8px" }}>
-        What personality suits this path?
-      </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 18px", marginTop: "12px" }}>
-        {personalityList.map((item) => (
-          <div
-            key={item}
-            onClick={() => handlePersonality(item)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              background: personality === item ? "#2a9d8f" : "#f8fafd",
-              padding: "8px 18px",
-              borderRadius: "40px",
-              border: "1.5px solid #dce3ec",
-              fontSize: "15px",
-              fontWeight: "500",
-              color: personality === item ? "white" : "#1f3a5f",
-              cursor: "pointer"
-            }}
-          >
-            {item}
-          </div>
-        ))}
-      </div>
-    </div>
-
-    {/* Next Step Button */}
-    <div style={{ display: "flex", justifyContent: "flex-end", gap: "18px", marginTop: "30px" }}>
-      <button
-        onClick={() => {
-          // Validate all fields are filled
-          if (
-            pathSteps?.nameOfPath &&
-            pathSteps?.description &&
-            pathSteps?.length &&
-            pathSteps?.path_type &&
-            pathSteps?.destination_institution &&
-            pathSteps?.program &&
-            pathSteps?.city &&
-            pathSteps?.country &&
-            grade.length > 0 &&
-            gradeAvg.length > 0 &&
-            curriculum.length > 0 &&
-            stream.length > 0 &&
-            finance.length > 0 &&
-            personality !== ""
-          ) {
-            // Show modal
-            document.getElementById('stepsModal').style.display = 'flex';
-          } else {
-            alert('Please fill all required fields');
-          }
-        }}
-        style={{
-          padding: "16px 42px",
-          borderRadius: "50px",
-          fontWeight: "700",
-          fontSize: "16px",
-          border: "none",
-          cursor: "pointer",
-          background: "#2a9d8f",
-          color: "white",
-          boxShadow: "0 8px 20px -8px #2a9d8f"
-        }}
-      >
-        Next Step →
-      </button>
-      
-      <button
-        onClick={() => {
-          setpstep(1);
-          setPathSteps({
-            nameOfPath: "",
-            description: "",
-            length: "",
-            path_type: "",
-            the_ids: [],
-            destination_institution: "",
-            program: "",
-            city: "",
-            country: "",
-          });
-          setGrade([]);
-          setGradeAvg([]);
-          setCurriculum([]);
-          setStream([]);
-          setFinance([]);
-          setPersonality("");
-        }}
-        style={{
-          padding: "16px 42px",
-          borderRadius: "50px",
-          fontWeight: "700",
-          fontSize: "16px",
-          border: "2px solid #d3deed",
-          background: "white",
-          color: "#1f3a5f",
-          cursor: "pointer"
-        }}
-      >
-        Go Back
-      </button>
-    </div>
-
-    {/* Modal for asking number of steps */}
-    <div
-      className="modal-overlay"
-      id="stepsModal"
-      style={{ display: "none", position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center", zIndex: 1000 }}
-    >
-      <div style={{ background: "white", borderRadius: "32px", padding: "40px", maxWidth: "500px", width: "90%", boxShadow: "0 30px 60px rgba(0,0,0,0.3)" }}>
-        <h2 style={{ fontSize: "24px", color: "#0b1e3a", marginBottom: "16px" }}>Add Steps to Your Path</h2>
-        <p style={{ color: "#617388", marginBottom: "24px" }}>How many steps do you want to add to this path? You can add as many as you need.</p>
-        <input
-          type="number"
-          id="stepCount"
-          min="1"
-          value={stepCount}
-          onChange={(e) => setStepCount(e.target.value)}
-          placeholder="Enter number of steps"
-          style={{ width: "100%", padding: "16px", border: "1.5px solid #dce3ec", borderRadius: "16px", fontSize: "18px", marginBottom: "24px" }}
-        />
-        <div style={{ display: "flex", gap: "16px", justifyContent: "flex-end" }}>
-          <button
-            onClick={() => document.getElementById('stepsModal').style.display = 'none'}
-            style={{ padding: "16px 42px", borderRadius: "50px", fontWeight: "700", fontSize: "16px", border: "2px solid #d3deed", background: "white", color: "#1f3a5f", cursor: "pointer" }}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleStepCountSubmit}
-            style={{ padding: "16px 42px", borderRadius: "50px", fontWeight: "700", fontSize: "16px", border: "none", background: "#2a9d8f", color: "white", cursor: "pointer" }}
-          >
-            Continue →
-          </button>
-        </div>
-      </div>
-    </div>
-  </>
-) : pstep === 9 ? (
-                <NewStep1 setpstep={setpstep} />
+            
               ) : pstep === 10 ? (
                 <div>
                   <div className="acc-step-text">Bulk Path Action</div>
@@ -4283,12 +3597,8 @@ return (
         <button
 onClick={() => {
   setShowStepsModal(false);
-
-  setTimeout(() => {
-    setispopular(true); // ← use your REAL setter name
-    setselectNew("Step");
-    setpstep(9);
-  }, 100);
+  setispopular(false);
+  setaccsideNav("CREATE_STEP");
 }}
           style={{
             padding: "16px 42px",
@@ -4396,4 +3706,3 @@ export const ImageUploadDivProfilePic = ({ setFunc, funcValue }) => {
     </div>
   );
 };
- 
