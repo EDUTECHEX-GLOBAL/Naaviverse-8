@@ -440,9 +440,6 @@ const addServicesToStep = async (req, res) => {
     }
 };
 
-
-
-
 const getServicesForStep = async (req, res) => {
     const { step_id } = req.params;
     

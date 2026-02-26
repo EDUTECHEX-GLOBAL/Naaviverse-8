@@ -327,7 +327,7 @@ const CreateNewPath = ({
           
           {/* Preferred Location */}
 <div className="form-field">
-  <label>Preferred Location (Optional)</label>
+  <label> Location </label>
 
   <div className="profile-location-grid">
 

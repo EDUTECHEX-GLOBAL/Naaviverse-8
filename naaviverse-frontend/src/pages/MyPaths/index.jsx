@@ -850,7 +850,15 @@ useEffect(() => {
                           </div>
                         );
                       })
- : partnerPathData?.map((e, i) => {
+// ✅ Fix - filter by search before mapping
+: partnerPathData
+    ?.filter((e) =>
+      !search ||
+      e?.nameOfPath?.toLowerCase().includes(search.toLowerCase()) ||
+      e?.description?.toLowerCase().includes(search.toLowerCase()) ||
+      e?.destination_institution?.toLowerCase().includes(search.toLowerCase())
+    )
+    ?.map((e, i) => {
   return (
     <div
       className="each-mypaths-data"

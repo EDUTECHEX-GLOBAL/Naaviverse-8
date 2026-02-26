@@ -687,12 +687,12 @@ const stepToPathMap = React.useMemo(() => {
     return (
         <>
             <MenuNav
-                showDrop={showDrop}
-                setShowDrop={setShowDrop}
-                searchTerm={search}
-                setSearchterm={setSearch}
-                searchPlaceholder="Search Services..."
-            />
+  showDrop={showDrop}
+  setShowDrop={setShowDrop}
+  searchTerm={search}
+  setSearchterm={setSearch}
+  searchPlaceholder="Search Steps..."   // ← fix this
+/>
             <div className="mypaths">
                 <div className="mypaths-menu">
                     <div
@@ -859,7 +859,12 @@ const stepToPathMap = React.useMemo(() => {
       </div>
     ))
 ) : (
-  partnerStepsData?.map((step) => (
+  partnerStepsData
+  ?.filter((step) =>
+    step?.name?.toLowerCase().includes(search?.toLowerCase()) ||
+    step?.description?.toLowerCase().includes(search?.toLowerCase())
+  )
+  ?.map((step) => (
     <div
       className="each-mypaths-data1"
       key={step._id}

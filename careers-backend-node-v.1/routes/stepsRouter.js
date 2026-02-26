@@ -19,13 +19,11 @@ console.log("bulkUploadSteps =>", stepsController.bulkUploadSteps);
 // ⭐ ADD THIS — MUST BE ABOVE /:id ⭐
 router.get("/partner", stepsController.getStepsByPartner);
 
-
-
-router.get("/:id", stepsController.getStepById);
-
 router.patch("/editstep", stepsController.editStep);
 router.post("/attachservice", stepsController.addServicesToStep);
 router.get("/getall/:step_id", stepsController.getServicesForStep);
 router.delete("/remove/:stepId/:serviceId", stepsController.removeServiceFromStep);
+
+router.get("/:id", stepsController.getStepById);
 
 module.exports = router;

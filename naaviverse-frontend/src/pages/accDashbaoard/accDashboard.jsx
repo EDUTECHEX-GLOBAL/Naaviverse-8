@@ -1751,37 +1751,43 @@ return (
         style={{ height: "calc(100% - 70px)" }}
         onClick={() => setShowDrop(false)}
       >
-        <div
-          className="services-all-menu"
-          style={{
-            borderBottom: "0.5px solid #E5E5E5",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center"
-          }}
-        >
-          <div style={{ display: "flex", width: "83%" }}>
-            <div className="services-each-menu" style={{ fontWeight: "700" }}>
-              Path Details
-            </div>
-          </div>
-          {/* <div
-            style={{
-              fontWeight: "600",
-              textDecorationLine: "underline",
-              cursor: "pointer",
-              fontSize: "0.9rem",
-              padding: "12px 35px"
-            }}
-            onClick={() => {
-              setViewPathMode(false);
-              setaccsideNav("Paths");
-              navigate('/dashboard/accountants');
-            }}
-          >
-            ← Back to My Paths
-          </div> */}
-        </div>
+<div
+  className="services-all-menu"
+  style={{
+    borderBottom: "0.5px solid #E5E5E5",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center"
+  }}
+>
+  <div className="services-each-menu" style={{ fontWeight: "700" }}>
+    Path Details
+  </div>
+
+  <button
+    onClick={() => {
+      setViewPathMode(false);
+      navigate('/dashboard/accountants');
+    }}
+    style={{
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "8px",
+  padding: "6px 12px",        // ← reduced from "8px 20px"
+  backgroundColor: "#f0f4f9",
+  border: "none",
+  borderRadius: "40px",
+  color: "#1f304f",
+  fontSize: "13px",            // ← slightly smaller text too
+  fontWeight: "700",
+  cursor: "pointer",
+  marginLeft: "auto",
+  marginRight: "35px"
+}}
+  >
+    ← Back to Paths
+  </button>
+</div>
         <DraftPathView onAddStep={(pathId) => setCreateStepForPathId(pathId)} />
       </div>
     </>

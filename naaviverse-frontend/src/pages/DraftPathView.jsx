@@ -9,7 +9,7 @@ import axios from "axios";
 import "../components/Pathview/journey.scss";
 import EditPathForm from "./MyPaths/paths";
 import CreateNewStep from "./accDashbaoard/CreateNewStep"; // adjust path if needed
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 // CHANGE signature:
 const DraftPathView = ({ onAddStep }) => {
   const { id } = useParams();
@@ -107,7 +107,7 @@ const handleStepSelect = async (step) => {
     if (!selectedStepForService || selectedServices.length === 0) return;
 
     try {
-await axios.post("/api/steps/attachservice", {
+await axios.post(`${BASE_URL}/api/steps/attachservice`, {
   step_id: selectedStepForService._id,
   service_ids: selectedServices,
 });
@@ -165,39 +165,7 @@ const handleSubmitForApproval = async () => {
         alignItems: "center", 
         marginBottom: "24px"
       }}>
-        <button
-          onClick={() => {
-            navigate('/dashboard/accountants');
-          }}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "8px 16px",
-            backgroundColor: "#f0f4f9",
-            border: "none",
-            borderRadius: "40px",
-            color: "#1f304f",
-            fontSize: "14px",
-            fontWeight: "500",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.03)"
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#e2eaf3";
-            e.currentTarget.style.transform = "translateX(-3px)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "#f0f4f9";
-            e.currentTarget.style.transform = "translateX(0)";
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <span>Back to Paths</span>
-        </button>
+   
       </div>
 
       {/* HEADER */}

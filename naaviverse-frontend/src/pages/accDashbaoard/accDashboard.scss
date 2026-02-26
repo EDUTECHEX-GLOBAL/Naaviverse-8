@@ -198,12 +198,13 @@ $pastel-mint: rgba(220, 240, 230, 0.3);
     transition: all ease 0.2s;
   }
 }
-
 .crm-all-box {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  padding: 0 35px 20px 35px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;        // ← keep 0, margin on tab handles spacing
 }
 
 .crm-tab {
@@ -217,9 +218,10 @@ $pastel-mint: rgba(220, 240, 230, 0.3);
   margin: 20px 0;
 }
 
+
 .crm-follow-tab {
   display: grid;
-  grid-template-columns: 3fr 2fr 2fr 1fr;
+  grid-template-columns: 3fr 2fr 2fr 2fr;
   align-items: center;
   background: linear-gradient(90deg, #29449D 4.23%, #47B4D5 100%);
   font-weight: 600;
@@ -254,6 +256,118 @@ $pastel-mint: rgba(220, 240, 230, 0.3);
   padding-right: 6px;
 }
 
+.services-table-wrapper {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-bottom: 30px;  // ← add this
+}
+
+.services-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 20px;  
+}
+// Purchases header row
+.crm-purchase-tab {
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr 1fr 2fr 1fr;
+  align-items: center;
+  background: linear-gradient(90deg, #29449D 4.23%, #47B4D5 100%);
+  font-weight: 600;        // ← this makes text bold
+  font-size: 13px;
+  color: #ffffff;          // ← pure white, not rgba
+  padding: 10px 35px;
+  margin: 20px 0 0 0;
+  flex-shrink: 0;
+
+  // Make sure child divs inherit the bold white
+  div {
+    font-weight: 600;
+    color: #ffffff;
+  }
+}
+
+.each-purchase {
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr 1fr 2fr 1fr;  // ← must match exactly
+  align-items: center;
+  padding: 15px 35px;
+  border-bottom: 0.5px solid #e7e7e7;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: rgba(237, 237, 237, 0.37);
+  }
+}
+
+// Scrollable data container
+.purchase-alldata {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 30px;
+}
+
+// Column cell base style
+.crm-purchase-col2,
+.crm-purchase-col3,
+.crm-purchase-col4 {
+  font-size: 14px;
+  font-weight: 400;
+  color: #1f304f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// No data message
+.no-data {
+  padding: 40px;
+  text-align: center;
+  color: #1f304f;
+  font-weight: 400;
+  font-size: 15px;
+}
+
+.service-row {
+  display: grid;
+  grid-template-columns: 3fr 2fr 2fr 2fr;  
+  align-items: center;
+  padding: 15px 35px;
+  border-bottom: 0.5px solid #e7e7e7;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: rgba(237, 237, 237, 0.37);
+  }
+
+  &.active {
+    background-color: rgba(196, 229, 255, 0.3);
+  }
+}
+
+.service-cell {
+  font-size: 15px;
+  font-weight: 400;
+  color: #1f304f;
+  
+  &.name {
+    font-weight: 500;
+  }
+}
+
+.services-empty {
+  padding: 40px;
+  text-align: center;
+  color: #1f304f;
+  font-weight: 400;
+}
 .acc-popular {
   position: fixed;
   top: 50% !important;
@@ -2517,7 +2631,7 @@ select {
 .services-main {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 0 !important;
 }
 

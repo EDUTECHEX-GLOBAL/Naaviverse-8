@@ -35,7 +35,7 @@ export const CoinContextProvider = ({ children }) => {
   const [checkedTwo, setCheckedTwo] = useState(false);
   const [initiateWithdraw, setInitiateWithdraw] = useState(false);
   const [isWithdrawConfirmed, setIsWithdrawConfirmed] = useState(false);
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
   // Forex Currency Action
   const [addApiValue, setAddApiValue] = useState();
   const [addApiValueCoin, setAddApiValueCoin] = useState();
@@ -203,7 +203,19 @@ export const CoinContextProvider = ({ children }) => {
     }
   }, [coinType]);
 
-  // useEffect(() => {
+useEffect(() => {
+  const fetchCountries = async () => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/countries`);
+      console.log("✅ Countries fetched:", res.data);
+      setCountryApiValue(res.data);
+    } catch (err) {
+      console.error("❌ Error fetching countries:", err);
+    }
+  };
+
+  fetchCountries();
+}, []);
   //   axios
   //     .get("https://restcountries.com/v3.1/all")
   //     .then(({ data }) => {
