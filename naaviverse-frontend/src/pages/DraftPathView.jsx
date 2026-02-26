@@ -104,32 +104,34 @@ const handleStepSelect = async (step) => {
   };
 
   const handleAssignServices = async () => {
-    if (!selectedStepForService || selectedServices.length === 0) return;
+  if (!selectedStepForService || selectedServices.length === 0) return;
 
-    try {
-await axios.post("/api/steps/attachservice", {
-  step_id: selectedStepForService._id,
-  service_ids: selectedServices,
-});
+  try {
+    // Update each selected service
+    await Promise.all(
+      selectedServices.map((serviceId) =>
+        axios.put(`/api/services/update/${serviceId}`, {
+          step_id: selectedStepForService._id,
+        })
+      )
+    );
 
+    alert("Services assigned successfully!");
 
-      alert("Services assigned successfully!");
+    const stepsRes = await axios.get(`/api/steps/get`, {
+      params: { path_id: id },
+    });
+    setSteps(stepsRes.data.data || []);
 
-      // Refresh steps
-      const stepsRes = await axios.get(`/api/steps/get`, {
-        params: { path_id: id },
-      });
-      setSteps(stepsRes.data.data || []);
+    setServiceDrawerOpen(false);
+    setSelectedStepForService(null);
+    setAvailableServices([]);
+    setSelectedServices([]);
 
-      // Reset
-      setServiceDrawerOpen(false);
-      setSelectedStepForService(null);
-      setAvailableServices([]);
-      setSelectedServices([]);
-    } catch (err) {
-      console.log("Error assigning services:", err);
-    }
-  };
+  } catch (err) {
+    console.log("Error assigning services:", err);
+  }
+};
 
 
   /* ================= SUBMIT FOR APPROVAL ================= */
@@ -225,7 +227,7 @@ onClick={() => {
   }
 }}
           >
-            + Add Step
+             Add Step
           </button>
 
           <button
@@ -375,7 +377,7 @@ onClick={() => {
                     setSelectedServices([]);
                   }}
                 >
-                  ← Back to Steps
+                  Back to Steps
                 </button>
 
                 <div className="drawer-title">
@@ -407,7 +409,7 @@ onClick={() => {
                   disabled={selectedServices.length === 0}
                   onClick={handleAssignServices}
                 >
-                  Assign Services →
+                  Assign Services 
                 </button>
               </>
             )}
