@@ -35,11 +35,11 @@ const DraftPathView = ({ onAddStep }) => {
     const fetchData = async () => {
       try {
         const pathRes = await axios.get(
-          `/api/paths/viewpath/${pathId}`
+          `${BASE_URL}/api/paths/viewpath/${pathId}`
         );
         setPathData(pathRes.data.data);
 
-        const stepsRes = await axios.get(`/api/steps/get`, {
+        const stepsRes = await axios.get(`${BASE_URL}/api/steps/get`, {
           params: { path_id: pathId },
         });
 
@@ -68,14 +68,14 @@ const handleStepSelect = async (step) => {
     const email = partner?.email;
 
     // 1️⃣ Get all services of this creator
-    const allRes = await axios.get(`/api/services/getservices`, {
+    const allRes = await axios.get(`${BASE_URL}/api/services/getservices`, {
       params: { productcreatoremail: email },
     });
 
     const allServices = allRes.data.data || [];
 
     // 2️⃣ Get services already attached to this step
-    const attachedRes = await axios.get(`/api/services/by-step`, {
+    const attachedRes = await axios.get(`${BASE_URL}/api/services/by-step`, {
       params: { step_id: step._id },
     });
 
@@ -116,7 +116,7 @@ await axios.post(`${BASE_URL}/api/steps/attachservice`, {
       alert("Services assigned successfully!");
 
       // Refresh steps
-      const stepsRes = await axios.get(`/api/steps/get`, {
+      const stepsRes = await axios.get(`${BASE_URL}/api/steps/get`, {
         params: { path_id: id },
       });
       setSteps(stepsRes.data.data || []);
@@ -135,13 +135,13 @@ await axios.post(`${BASE_URL}/api/steps/attachservice`, {
   /* ================= SUBMIT FOR APPROVAL ================= */
 const handleSubmitForApproval = async () => {
   try {
-    await axios.put("/api/paths/submit", {
+    await axios.put(`${BASE_URL}/api/paths/submit`, {
       pathId: id,
     });
 
     alert("Path submitted for approval successfully!");
 
-    const updated = await axios.get(`/api/paths/viewpath/${id}`);
+    const updated = await axios.get(`${BASE_URL}/api/paths/viewpath/${id}`);
     setPathData(updated.data.data);
 
   } catch (err) {
@@ -263,7 +263,7 @@ onClick={() => {
               selectedPath={pathData}
               onSave={async () => {
                 const updated = await axios.get(
-                  `/api/paths/viewpath/${id}`
+                  `${BASE_URL}/api/paths/viewpath/${id}`
                 );
                 setPathData(updated.data.data);
                 setEditOpen(false);
@@ -288,7 +288,7 @@ onClick={() => {
         inlineMode={true}
         pathId={id}
         onSuccess={async () => {
-          const stepsRes = await axios.get(`/api/steps/get`, {
+          const stepsRes = await axios.get(`${BASE_URL}/api/steps/get`, {
             params: { path_id: id },
           });
           setSteps(stepsRes.data.data || []);

@@ -106,7 +106,6 @@ const getSteps = async (req, res) => {
 
     const pathId = req.query.path_id || req.body.path_id;
 
-    // ⭐ FIX: make optional
     if (pathId) {
       filter.path_id = new mongoose.Types.ObjectId(pathId);
     }
@@ -118,7 +117,8 @@ const getSteps = async (req, res) => {
       filter.status = "active";
     }
 
-    const steps = await stepModel.find(filter).sort({ createdAt: -1 });
+    // ✅ Change -1 to 1 to get oldest first (creation order)
+    const steps = await stepModel.find(filter).sort({ createdAt: 1 });
 
     return res.json({
       status: true,
