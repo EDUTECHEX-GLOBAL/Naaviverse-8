@@ -159,6 +159,47 @@ const handleSubmitForApproval = async () => {
   
   return (
     <div className="journeypage" style={{ padding: "20px 35px" }}>
+      {/* Back to Paths Button - IMPROVED VERSION */}
+      <div style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        marginBottom: "24px"
+      }}>
+        <button
+          onClick={() => {
+            navigate('/dashboard/accountants');
+          }}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            padding: "8px 16px",
+            backgroundColor: "#f0f4f9",
+            border: "none",
+            borderRadius: "40px",
+            color: "#1f304f",
+            fontSize: "14px",
+            fontWeight: "500",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.03)"
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#e2eaf3";
+            e.currentTarget.style.transform = "translateX(-3px)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "#f0f4f9";
+            e.currentTarget.style.transform = "translateX(0)";
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <span>Back to Paths</span>
+        </button>
+      </div>
+
       {/* HEADER */}
       <div className="journey-top-area">
         <div className="path-title-row">
@@ -214,27 +255,31 @@ onClick={() => {
         </div>
       </div>
 
-      {/* STEPS DISPLAY */}
       {steps.length === 0 ? (
-        <div className="empty-state-section">
-          <h2>No steps added yet.</h2>
-          <p>Click "Add Step" to begin creating steps.</p>
+  <div className="empty-state-section">
+    <h2>No steps added yet.</h2>
+    <p>Click "Add Step" to begin creating steps.</p>
+  </div>
+) : (
+  <div className="steps-grid-premium">
+    {steps.map((step, index) => (
+      <div key={step._id} className="step-card-premium">
+        <div className="bubble">{index + 1}</div>
+        <div className="step-title-premium">
+          {step.name}
         </div>
-      ) : (
-        <div className="steps-grid-premium">
-          {steps.map((step, index) => (
-            <div key={step._id} className="step-card-premium">
-              <div className="bubble">{index + 1}</div>
-              <div className="step-title-premium">
-                {step.name}
-              </div>
-              <div className="step-desc-premium">
-                {step.description}
-              </div>
-            </div>
-          ))}
+        <div className="step-desc-premium">
+          {step.macroDescription || step.description || "No description available"}
         </div>
-      )}
+        {step.microDescription && (
+          <div className="step-micro-desc">
+            <small>Micro: {step.microDescription.substring(0, 100)}...</small>
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+)}
 
       {/* EDIT PATH DRAWER */}
       {editOpen && (

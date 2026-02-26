@@ -1765,7 +1765,7 @@ return (
               Path Details
             </div>
           </div>
-          <div
+          {/* <div
             style={{
               fontWeight: "600",
               textDecorationLine: "underline",
@@ -1780,7 +1780,7 @@ return (
             }}
           >
             ← Back to My Paths
-          </div>
+          </div> */}
         </div>
         <DraftPathView onAddStep={(pathId) => setCreateStepForPathId(pathId)} />
       </div>

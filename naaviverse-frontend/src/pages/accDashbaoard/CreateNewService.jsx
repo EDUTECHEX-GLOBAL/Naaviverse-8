@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './CreateNewService.scss';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { CreatePopularService } from "../../services/accountant"; // Import the working function
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -41,6 +42,7 @@ const CreateNewService = ({
   });
 
   const [imagePreview, setImagePreview] = useState(null);
+  const [coverImageS3url, setCoverImageS3url] = useState("");
 
   // Fetch categories on mount
   useEffect(() => {
@@ -66,15 +68,25 @@ const CreateNewService = ({
     }
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setServiceForm({ ...serviceForm, icon: file });
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    setImagePreview(URL.createObjectURL(file));
+    
+    // Upload image to get S3 URL
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const uploadRes = await axios.post(`${BASE_URL}/api/upload`, formData);
+      if (uploadRes.data?.url) {
+        setCoverImageS3url(uploadRes.data.url);
+        setServiceForm({ ...serviceForm, icon: uploadRes.data.url });
+      }
+    } catch (err) {
+      console.error('Error uploading image:', err);
+      toast.error('Failed to upload image');
     }
   };
 
@@ -102,22 +114,72 @@ const CreateNewService = ({
     }
 
     setLoading(true);
+    
     try {
-      const formData = new FormData();
-      Object.keys(serviceForm).forEach(key => {
-        if (serviceForm[key] !== null && serviceForm[key] !== '') {
-          formData.append(key, serviceForm[key]);
-        }
-      });
+      // Get user details
+      const userDetails = JSON.parse(localStorage.getItem("partner"));
+      
+      // Build payload matching the old working format
+      const base = {
+        productcreatoremail: userDetails.email,
+        name: serviceForm.name,
+        chargingtype: serviceForm.billingType === 'monthly' ? 'Monthly Subscription' : 'One Time',
+        description: serviceForm.description,
+        product_code: serviceForm.code,
+        product_icon: coverImageS3url || serviceForm.icon,
+        revenue_account: userDetails.email,
+        client_app: "naavi",
+        product_category_code: serviceForm.category,
+        sub_category_code: "",
+        custom_product_label: serviceForm.productLabel,
+        points_creation: false,
+        sub_text: serviceForm.tagline,
+        first_purchase: {
+          price: parseFloat(serviceForm.price) || 0,
+          coin: serviceForm.currency,
+        },
+        grace_period: serviceForm.billingType === 'monthly' ? (parseFloat(serviceForm.gracePeriod) || 0) : 0,
+        first_retry: serviceForm.billingType === 'monthly' ? (parseFloat(serviceForm.secondAttempt) || 0) : 0,
+        second_retry: serviceForm.billingType === 'monthly' ? (parseFloat(serviceForm.thirdAttempt) || 0) : 0,
+        staking_allowed: false,
+        staking_details: {},
+      };
 
-      const res = await axios.post(`${BASE_URL}/api/services/create`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      // Add billing cycle based on type
+      let payload;
+      if (serviceForm.billingType === 'monthly') {
+        payload = {
+          ...base,
+          billing_cycle: {
+            monthly: {
+              price: parseFloat(serviceForm.monthlyPrice) || parseFloat(serviceForm.price) || 0,
+              coin: serviceForm.currency,
+            },
+          },
+        };
+      } else {
+        payload = {
+          ...base,
+          billing_cycle: {
+            lifetime: {
+              price: parseFloat(serviceForm.price) || 0,
+              coin: serviceForm.currency,
+            },
+          },
+        };
+      }
 
-      if (res.data?.status) {
+      console.log("FINAL SERVICE PAYLOAD:", payload);
+
+      // Use the working function from services
+      const res = await CreatePopularService(payload);
+
+      if (res?.data?.status) {
         toast.success('Service created successfully!');
         onSuccess?.();
         setaccsideNav('My Services');
+      } else {
+        toast.error(res?.data?.message || 'Failed to create service');
       }
     } catch (err) {
       console.error('Error creating service:', err);
@@ -126,7 +188,6 @@ const CreateNewService = ({
       setLoading(false);
     }
   };
-
 
  const handleGoBack = () => {
   if (typeof setaccsideNav === 'function') {
@@ -254,6 +315,7 @@ const CreateNewService = ({
                     className="remove-icon"
                     onClick={() => {
                       setImagePreview(null);
+                      setCoverImageS3url("");
                       setServiceForm({...serviceForm, icon: null});
                     }}
                   >
@@ -368,7 +430,6 @@ const CreateNewService = ({
 
         {/* Action Buttons */}
       
-{/* Action Buttons */}
 <div className="action-buttons">
   <button 
     className="btn-back" 

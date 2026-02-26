@@ -1,15 +1,12 @@
-// REPLACE YOUR .new-step-container with this:
 .new-step-container {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  height: auto;           // ← was 100%, change to auto
   min-height: 100%;
   background: #ffffff;
-  position: relative;     // ← keep relative, NOT fixed
+  position: relative;
   padding: 40px 60px;
   box-sizing: border-box;
-  // Remove overflow-y: auto — let the parent dashboard div handle scrolling
 
   .new-step-content {
     position: relative;
@@ -23,7 +20,7 @@
   margin-bottom: 50px;
   
   .section-title {
-    font-size: 24px;
+    font-size: 17px;
     font-weight: 600;
     color: #1f304f;
     margin-bottom: 24px;
@@ -39,6 +36,15 @@
       background: linear-gradient(90deg, #2a9d8f, #2c7cb2);
       border-radius: 3px;
     }
+  }
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+  
+  .half {
+    flex: 1;
   }
 }
 
@@ -64,7 +70,9 @@
     transition: all 0.2s ease;
     
     &::placeholder {
-      color: #a0b8cc;
+      color: #cbd5e0; /* Lighter placeholder text */
+      font-weight: 300;
+      opacity: 0.8;
     }
     
     &:focus {
@@ -78,6 +86,13 @@
     resize: vertical;
     min-height: 100px;
   }
+}
+
+/* Light placeholder class for all textareas */
+.light-placeholder::placeholder {
+  color: #cbd5e0 !important;
+  font-weight: 300;
+  opacity: 0.8;
 }
 
 .duration-field-compact {
@@ -129,17 +144,54 @@
   }
 }
 
-.path-selector {
-  display: flex;
-  gap: 12px;
+/* Modern Path Selector */
+.path-selector-modern {
+  position: relative;
   
-  input {
-    flex: 2;
+  .path-search-input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 1.5px solid rgba(42, 157, 143, 0.2);
+    border-radius: 16px;
+    font-size: 15px;
+    
+    &::placeholder {
+      color: #cbd5e0;
+    }
   }
   
-  select {
-    flex: 1;
-    cursor: pointer;
+  .path-suggestions {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid rgba(42, 157, 143, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    max-height: 250px;
+    overflow-y: auto;
+    
+    .path-suggestion-item {
+      padding: 12px 18px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #1f304f;
+      
+      &:hover {
+        background: rgba(42, 157, 143, 0.1);
+      }
+      
+      &.selected {
+        background: rgba(42, 157, 143, 0.15);
+        border-left: 3px solid #2a9d8f;
+      }
+      
+      &:not(:last-child) {
+        border-bottom: 1px solid rgba(42, 157, 143, 0.1);
+      }
+    }
   }
 }
 
@@ -183,152 +235,208 @@
   }
 }
 
-.guidance-accordion {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-}
+
 
 .guidance-item {
+  margin-bottom: 30px;
+  
   h3 {
-    font-size: 18px;
+    font-size: 14px;  // Change this value to whatever you want
     font-weight: 600;
     color: #1f304f;
     margin-bottom: 16px;
-  }
-}
-
-.personality-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 16px;
-}
-
-.personality-card {
-  background: rgba(255, 255, 255, 0.8);
-  border: 1.5px solid rgba(42, 157, 143, 0.15);
-  border-radius: 16px;
-  padding: 16px;
-  
-  .personality-label {
-    display: block;
-    font-size: 15px;
-    font-weight: 600;
-    color: #2a9d8f;
-    margin-bottom: 10px;
-    text-transform: capitalize;
-  }
-  
-  textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1.5px solid rgba(42, 157, 143, 0.15);
-    border-radius: 10px;
-    font-size: 13px;
-    resize: vertical;
+    position: relative;
+    padding-left: 12px;
     
-    &:focus {
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 18px;
+      background: linear-gradient(135deg, #2a9d8f, #2c7cb2);
+      border-radius: 4px;
+    }
+  }
+}
+/* Personality Multi-select Styles */
+.personality-selector {
+  margin-bottom: 20px;
+  
+  .personality-dropdown {
+    padding: 14px 18px;
+    border: 1.5px solid rgba(42, 157, 143, 0.2);
+    border-radius: 16px;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #1f304f;
+    font-size: 14px; 
+    &.open {
       border-color: #2a9d8f;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    
+    .dropdown-arrow {
+      font-size: 11px;
+      transition: transform 0.2s ease;
+    }
+    
+    &.open .dropdown-arrow {
+      transform: rotate(180deg);
+    }
+  }
+  
+  .personality-options {
+    border: 1.5px solid #2a9d8f;
+    border-top: none;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+    background: white;
+    max-height: 200px;
+    overflow-y: auto;
+    
+    .personality-option {
+      padding: 8px 16px;
+      
+      label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        
+        input[type="checkbox"] {
+          width: 16px;
+          height: 16px;
+          cursor: pointer;
+          accent-color: #2a9d8f;
+        }
+        
+        .personality-name {
+          color: #1f304f;
+          text-transform: capitalize;
+          font-size: 14px; 
+        }
+      }
+      
+      &:hover {
+        background: rgba(42, 157, 143, 0.05);
+      }
     }
   }
 }
 
-.stream-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+.personality-descriptions {
+  display: flex;
+  flex-direction: column;
   gap: 16px;
-}
-
-.stream-card {
-  background: rgba(255, 255, 255, 0.8);
-  border: 1.5px solid rgba(42, 157, 143, 0.15);
-  border-radius: 16px;
-  padding: 16px;
+  margin-top: 16px;
   
-  .stream-label {
-    display: block;
-    font-size: 15px;
-    font-weight: 600;
-    color: #2a9d8f;
-    margin-bottom: 10px;
-  }
-  
-  textarea {
-    width: 100%;
-    padding: 10px;
+  .personality-description-item {
+    background: rgba(255, 255, 255, 0.8);
     border: 1.5px solid rgba(42, 157, 143, 0.15);
-    border-radius: 10px;
-    font-size: 13px;
-    resize: vertical;
+    border-radius: 16px;
+    padding: 14px;
     
-    &:focus {
-      border-color: #2a9d8f;
+    .personality-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #2a9d8f;
+      margin-bottom: 8px;
+      text-transform: capitalize;
+    }
+    
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1.5px solid rgba(42, 157, 143, 0.15);
+      border-radius: 12px;
+      font-size: 13px;
+      resize: vertical;
+      
+      &:focus {
+        border-color: #2a9d8f;
+      }
     }
   }
 }
 
-.gpa-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+/* Accordion Styles for Stream, GPA, Curriculum */
+.stream-accordion,
+.gpa-accordion,
+.curriculum-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.gpa-card {
-  background: rgba(255, 255, 255, 0.8);
+.stream-details,
+.gpa-details,
+.curriculum-details {
   border: 1.5px solid rgba(42, 157, 143, 0.15);
   border-radius: 16px;
-  padding: 16px;
+  background: white;
+  overflow: hidden;
   
-  .gpa-label {
-    display: block;
-    font-size: 15px;
-    font-weight: 600;
-    color: #2a9d8f;
-    margin-bottom: 10px;
-  }
-  
-  textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1.5px solid rgba(42, 157, 143, 0.15);
-    border-radius: 10px;
-    font-size: 13px;
-    resize: vertical;
+  &[open] {
+    border-color: #2a9d8f;
     
-    &:focus {
-      border-color: #2a9d8f;
+    .stream-summary .accordion-icon,
+    .gpa-summary .accordion-icon,
+    .curriculum-summary .accordion-icon {
+      transform: rotate(180deg);
     }
   }
 }
 
-.curriculum-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
-}
-
-.curriculum-card {
-  background: rgba(255, 255, 255, 0.8);
-  border: 1.5px solid rgba(42, 157, 143, 0.15);
-  border-radius: 16px;
-  padding: 16px;
+.stream-summary,
+.gpa-summary,
+.curriculum-summary {
+  padding: 14px 20px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  list-style: none;
   
+  &::-webkit-details-marker {
+    display: none;
+  }
+  
+  .stream-label,
+  .gpa-label,
   .curriculum-label {
-    display: block;
-    font-size: 15px;
     font-weight: 600;
     color: #2a9d8f;
-    margin-bottom: 10px;
+    font-size: 15px; 
   }
   
+  .accordion-icon {
+    font-size: 11px;
+    transition: transform 0.2s ease;
+  }
+}
+
+.stream-content,
+.gpa-content,
+.curriculum-content {
+  padding: 0 16px 16px 16px;
   textarea {
     width: 100%;
     padding: 10px;
     border: 1.5px solid rgba(42, 157, 143, 0.15);
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 13px;
     resize: vertical;
-    
+     &::placeholder {
+      font-size: 12px;            // Add smaller placeholder
+    }
     &:focus {
       border-color: #2a9d8f;
     }
@@ -433,4 +541,255 @@
       text-decoration: underline;
     }
   }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .new-step-container {
+    padding: 20px;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    
+    .btn-draft,
+    .btn-submit,
+    .btn-back {
+      width: 100%;
+    }
+  }
+}
+
+/* Enhanced Path Selector Styles */
+.path-selector-modern {
+  position: relative;
+  
+  .path-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    
+    .path-search-input {
+      width: 100%;
+      padding: 14px 45px 14px 18px;
+      border: 1.5px solid rgba(42, 157, 143, 0.2);
+      border-radius: 16px;
+      font-size: 15px;
+      transition: all 0.2s ease;
+      
+      &::placeholder {
+        color: #cbd5e0;
+      }
+      
+      &:focus {
+        outline: none;
+        border-color: #2a9d8f;
+        box-shadow: 0 0 0 4px rgba(42, 157, 143, 0.1);
+      }
+    }
+    
+    .path-dropdown-toggle {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      padding: 8px;
+      cursor: pointer;
+      color: #7c8b9c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      
+      &.open svg {
+        transform: rotate(180deg);
+      }
+      
+      svg {
+        transition: transform 0.2s ease;
+      }
+      
+      &:hover {
+        color: #2a9d8f;
+      }
+    }
+  }
+  
+  .custom-path-input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+    
+    .custom-path-input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1.5px solid rgba(42, 157, 143, 0.2);
+      border-radius: 16px;
+      font-size: 14px;
+      background: #f8fafd;
+      
+      &::placeholder {
+        color: #a0b8cc;
+        font-style: italic;
+      }
+      
+      &:focus {
+        outline: none;
+        border-color: #2a9d8f;
+        background: white;
+      }
+    }
+    
+    .add-path-btn {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #2a9d8f, #2c7cb2);
+      border: none;
+      border-radius: 16px;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(42, 157, 143, 0.3);
+      }
+      
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+  
+  .path-suggestions {
+    position: absolute;
+    top: calc(100% + 80px); // Adjust based on your layout
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1.5px solid #2a9d8f;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    max-height: 280px;
+    overflow-y: auto;
+    
+    .path-suggestion-item {
+      padding: 12px 18px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #1f304f;
+      font-size: 14px;
+      
+      &:hover {
+        background: rgba(42, 157, 143, 0.1);
+      }
+      
+      &.selected {
+        background: rgba(42, 157, 143, 0.15);
+        border-left: 4px solid #2a9d8f;
+        font-weight: 500;
+      }
+      
+      &.create-new {
+        color: #2a9d8f;
+        font-weight: 600;
+        border-top: 1px dashed rgba(42, 157, 143, 0.3);
+        
+        &:hover {
+          background: rgba(42, 157, 143, 0.15);
+        }
+      }
+      
+      &:not(:last-child) {
+        border-bottom: 1px solid rgba(42, 157, 143, 0.1);
+      }
+    }
+  }
+  
+  .path-selector-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #6b859e;
+    padding-left: 4px;
+    
+    svg {
+      color: #2a9d8f;
+    }
+  }
+}
+
+.path-autocomplete {
+  position: relative;
+  width: 100%;
+}
+
+.path-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid rgba(42, 157, 143, 0.25);
+  border-radius: 14px;
+  font-size: 14px;
+  background: white;
+  transition: 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #2a9d8f;
+    box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
+  }
+}
+
+.path-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  margin-top: 6px;
+  background: white;
+  border-radius: 14px;
+  border: 1px solid rgba(42, 157, 143, 0.25);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 9999;
+}
+
+.path-option {
+  padding: 12px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  line-height: 1.5;
+  white-space: normal;        // FIXES vertical letters
+  word-break: normal;         // VERY IMPORTANT
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: rgba(42, 157, 143, 0.08);
+  }
+
+  &.active {
+    background: rgba(42, 157, 143, 0.15);
+    border-left: 4px solid #2a9d8f;
+    font-weight: 500;
+  }
+}
+
+.path-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #7c8b9c;
 }
