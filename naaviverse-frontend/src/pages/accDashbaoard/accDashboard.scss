@@ -8,7 +8,74 @@ $pastel-yellow: rgba(255, 249, 196, 0.3);
 $pastel-green: rgba(200, 250, 205, 0.3);
 $pastel-lavender: rgba(230, 230, 250, 0.3);
 $pastel-mint: rgba(220, 240, 230, 0.3);
+/* Fix for empty space below search */
+.dash-nav {
+  margin-bottom: 0;
+}
 
+.services-main {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+/* Ensure the search bar is compact */
+.search-input-box {
+  height: 60px; // Slightly reduce height
+  padding: 0 35px;
+}
+
+// Service rows - Light pastel alternating colors
+.service-row {
+  display: grid;
+  grid-template-columns: 3fr 2fr 2fr 2fr;
+  align-items: center;
+  padding: 14px 35px; // Reduced padding to fit more rows
+  border-bottom: 1px solid #f0f2f5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  // Alternating pastel backgrounds - very subtle (3% opacity)
+  &:nth-child(odd) {
+    background: rgba(196, 229, 255, 0.03); // Super light blue
+  }
+  
+  &:nth-child(even) {
+    background: rgba(255, 240, 245, 0.03); // Super light pink
+  }
+  
+  // Base background is white, then add very subtle gradients on hover
+  background: white;
+  
+  &:hover {
+    background: linear-gradient(135deg, rgba(196, 229, 255, 0.08), rgba(255, 240, 245, 0.08));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  }
+
+  &.active {
+    background: linear-gradient(135deg, rgba(196, 229, 255, 0.15), rgba(255, 240, 245, 0.15));
+    border-left: 3px solid #a78bfa;
+    margin-left: -3px;
+  }
+}
+
+// Table wrapper with very light pastel border
+.services-table-wrapper {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-bottom: 20px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 16px;
+}
+
+
+// Very light pastel background for the entire services area
+.services-main {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(250, 245, 255, 0.95));
+}
 .dashboard-body {
   height: 100vh;
   width: 100vw;
@@ -198,12 +265,13 @@ $pastel-mint: rgba(220, 240, 230, 0.3);
     transition: all ease 0.2s;
   }
 }
-
 .crm-all-box {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  padding: 0 35px 20px 35px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;        // ← keep 0, margin on tab handles spacing
 }
 
 .crm-tab {
@@ -217,16 +285,22 @@ $pastel-mint: rgba(220, 240, 230, 0.3);
   margin: 20px 0;
 }
 
+
+// Services table header - Very light pastel
 .crm-follow-tab {
   display: grid;
-  grid-template-columns: 3fr 2fr 2fr 1fr;
+  grid-template-columns: 3fr 2fr 2fr 2fr;
   align-items: center;
-  background: linear-gradient(90deg, #29449D 4.23%, #47B4D5 100%);
-  font-weight: 600;
+  background: linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%);
+  font-weight: 500;
   font-size: 13px;
-  color: #ffffff;
-  padding: 10px 35px;
-  margin: 20px 0;
+  color: #4a5a72;
+  padding: 12px 35px;
+  margin: 10px 0 8px 0; // Reduced top margin 
+  border-radius: 12px;
+  letter-spacing: 0.3px;
+  border: 1px solid rgba(180, 200, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(140, 160, 255, 0.05);
 }
 
 .follow-data-main {
@@ -254,6 +328,128 @@ $pastel-mint: rgba(220, 240, 230, 0.3);
   padding-right: 6px;
 }
 
+.services-table-wrapper {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-bottom: 30px;  // ← add this
+}
+
+.services-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 20px;  
+}
+// Purchases header row - Very light gradient
+.crm-purchase-tab {
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr 1fr 2fr 1fr;
+  align-items: center;
+  background: linear-gradient(135deg, #f9fafc 0%, #f1f5f9 100%);
+  font-weight: 500;
+  font-size: 13px;
+  color: #4a5a72;
+  padding: 12px 35px;
+  margin: 20px 0 10px 0;
+  border-radius: 12px;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  
+  div {
+    font-weight: 500;
+    color: #4a5a72;
+  }
+}
+.each-purchase {
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr 1fr 2fr 1fr;
+  align-items: center;
+  padding: 16px 35px;
+  border-bottom: 1px solid #f0f2f5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+
+  &:hover {
+    background: #fafcff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  }
+}
+
+// Scrollable data container
+.purchase-alldata {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 30px;
+}
+
+// Column cell base style
+.crm-purchase-col2,
+.crm-purchase-col3,
+.crm-purchase-col4 {
+  font-size: 14px;
+  font-weight: 400;
+  color: #1f304f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// No data message
+.no-data {
+  padding: 40px;
+  text-align: center;
+  color: #1f304f;
+  font-weight: 400;
+  font-size: 15px;
+}
+
+// Service rows - Clean, minimal design
+.service-row {
+  display: grid;
+  grid-template-columns: 3fr 2fr 2fr 2fr;
+  align-items: center;
+  padding: 16px 35px;
+  border-bottom: 1px solid #f0f2f5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+  
+  &:hover {
+    background: #fafcff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  }
+
+  &.active {
+    background: #f5f9ff;
+    border-left: 3px solid #8b5cf6;
+    margin-left: -3px;
+  }
+}
+
+.service-cell {
+  font-size: 14px;
+  font-weight: 400;
+  color: #2d3a4f;
+  
+  &.name {
+    font-weight: 500;
+    color: #1a2634;
+  }
+}
+
+.services-empty {
+  padding: 40px;
+  text-align: center;
+  color: #1f304f;
+  font-weight: 400;
+}
 .acc-popular {
   position: fixed;
   top: 50% !important;
@@ -293,20 +489,20 @@ $pastel-mint: rgba(220, 240, 230, 0.3);
     pointer-events: none;
   }
 
-  // Smooth scrollbar
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
+  // // Smooth scrollbar
+  // &::-webkit-scrollbar {
+  //   width: 6px;
+  // }
 
-  &::-webkit-scrollbar-track {
-    background: rgba(196, 229, 255, 0.2);
-    border-radius: 10px;
-  }
+  // &::-webkit-scrollbar-track {
+  //   background: rgba(196, 229, 255, 0.2);
+  //   border-radius: 10px;
+  // }
 
-  &::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, rgba(196, 229, 255, 0.8), rgba(255, 223, 211, 0.8));
-    border-radius: 10px;
-  }
+  // &::-webkit-scrollbar-thumb {
+  //   background: linear-gradient(135deg, rgba(196, 229, 255, 0.8), rgba(255, 223, 211, 0.8));
+  //   border-radius: 10px;
+  // }
 }
 
 .acc-popular1 {
@@ -2517,7 +2713,7 @@ select {
 .services-main {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 0 !important;
 }
 
@@ -2565,5 +2761,228 @@ body:has(.step-popup-overlay) {
   
   .dashboard-screens {
     overflow: hidden;
+  }
+}
+/* =============================== */
+/* ENHANCED TABLE STYLES - VERY LIGHT */
+/* =============================== */
+
+// Table wrapper with subtle shadow
+.services-table-wrapper,
+.purchase-alldata {
+  background: white;
+  border-radius: 16px;
+  padding: 0;
+  margin: 0 0 20px 0;
+  border: 1px solid #f0f3f7;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+}
+
+// First row top border radius
+.service-row:first-child,
+.each-purchase:first-child {
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+// Last row bottom border radius
+.service-row:last-child,
+.each-purchase:last-child {
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  border-bottom: none;
+}
+
+// Status badges
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 500;
+  
+  &.active {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  &.pending {
+    background: #fff3e0;
+    color: #ef6c00;
+  }
+  
+  &.completed {
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+}
+
+// Price tag styling
+.price-tag {
+  font-weight: 500;
+  color: #1a2634;
+  
+  &.free {
+    color: #2e7d32;
+    background: #e8f5e9;
+    padding: 2px 8px;
+    border-radius: 30px;
+    font-size: 11px;
+    display: inline-block;
+  }
+}
+
+// Currency symbol styling
+.currency-symbol {
+  font-size: 11px;
+  color: #8b96a4;
+  margin-left: 4px;
+}
+
+// Empty state enhancement
+.services-empty {
+  padding: 60px 40px;
+  text-align: center;
+  color: #8b96a4;
+  font-weight: 400;
+  font-size: 15px;
+  background: #fafcff;
+  border-radius: 16px;
+  border: 1px dashed #e2e8f0;
+}
+
+// Column text colors
+.crm-purchase-col2,
+.crm-purchase-col3,
+.crm-purchase-col4 {
+  font-size: 14px;
+  font-weight: 400;
+  color: #2d3a4f;
+  
+  &.amount {
+    font-weight: 500;
+    color: #1a2634;
+  }
+}
+
+// No data message
+.no-data {
+  padding: 60px 40px;
+  text-align: center;
+  color: #8b96a4;
+  font-weight: 400;
+  font-size: 15px;
+  background: #fafcff;
+}
+
+// Subtle separator for table sections
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+  margin: 20px 35px;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .crm-follow-tab,
+  .crm-purchase-tab {
+    padding: 12px 20px;
+    font-size: 12px;
+  }
+  
+  .service-row,
+  .each-purchase {
+    padding: 14px 20px;
+    font-size: 13px;
+  }
+}
+
+/* =============================== */
+/* MODAL ENHANCEMENTS */
+/* =============================== */
+
+// Remove button styling
+.remove-button {
+  background: white;
+  border: 1px solid #fee2e2;
+  color: #ef4444;
+  padding: 6px 12px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  margin-left: 12px;
+  
+  &:hover:not(:disabled) {
+    background: #fef2f2;
+    border-color: #ef4444;
+    transform: scale(1.02);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+// Step mini card in modal
+.step-mini-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #eef2f6;
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+  
+  &:hover {
+    background: white;
+    border-color: #d0d9e8;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  }
+  
+  .step-mini-icon {
+    width: 28px;
+    height: 28px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
+    color: #4a5a72;
+    flex-shrink: 0;
+  }
+  
+  .step-mini-info {
+    flex: 1;
+    
+    .step-mini-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a2634;
+      margin: 0 0 2px 0;
+    }
+    
+    .step-mini-desc {
+      font-size: 11px;
+      color: #8b96a4;
+      margin: 0;
+    }
   }
 }

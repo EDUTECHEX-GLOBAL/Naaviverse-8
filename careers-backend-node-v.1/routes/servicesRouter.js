@@ -12,7 +12,7 @@ router.post("/add", servicesController.addService);
    GET SERVICES (BY CREATOR EMAIL)
 ========================== */
 router.get("/getservices", servicesController.getServices);
-
+router.get("/steps-using/:serviceId", servicesController.getStepsUsingService);
 /* ==========================
    ADMIN: GET ALL SERVICES
 ========================== */

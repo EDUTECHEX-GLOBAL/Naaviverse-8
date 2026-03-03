@@ -13,6 +13,7 @@ const CreateNewStep = ({ inlineMode = false, pathId: propPathId, onSuccess, onCa
   
   const [stepForm, setStepForm] = useState({
     name: "",
+    description: "", 
     length: "",
     cost: "free",
     macroDescription: "",
@@ -284,7 +285,17 @@ const handleSubmit = async () => {
               onChange={handleInputChange}
             />
           </div>
-
+{/* ADD THIS BELOW */}
+<div className="form-field">
+  <label>What is the description of this step?</label>
+  <textarea
+    name="description"
+    placeholder="e.g., In this step, students will explore research opportunities and learn how to approach lab introductions..."
+    rows="4"
+    value={stepForm.description}
+    onChange={handleInputChange}
+  />
+</div>
           <div className="form-row">
             <div className="form-field half">
               <label>How long does this step take?</label>

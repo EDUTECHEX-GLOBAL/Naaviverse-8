@@ -924,32 +924,33 @@ navigate("/login");
     handleAccountantData();
   }
 
-  const handleAccountantData = () => {
+const handleAccountantData = () => {
     let mailId = userDetails?.email;
     CheckStatusAccountant(mailId)
       .then((res) => {
-        if (res.success && res.data) {
-
+        console.log("🔍 CheckStatusAccountant response:", res); // ADD THIS
+        console.log("🔍 res.success:", res.success);
+        console.log("🔍 res.data:", res.data);
+        
+        if (res.success && res.data && res.data.businessName) { // ← ADD businessName check
           setIsProfileData(true);
           setProfileData(res.data);
           setprofileSpecalities(res.data.specialities || []);
-          setCreateBrandProfile(false); // Hide "Create Profile" for existing users
+          setCreateBrandProfile(false);
         } else {
-
-          console.log("No profile found, enabling profile creation.");
+          console.log("No profile found, opening create profile form");
           setIsProfileData(false);
           setProfileData({});
-          // 🔥 Ensure new users see the "Create Profile" form
+          setCreateBrandProfile(true); // ← Auto open drawer
         }
       })
       .catch((err) => {
         console.log("Error fetching profile data:", err);
         setIsProfileData(false);
         setProfileData({});
-        // Assume new user in case of API error
+        setCreateBrandProfile(true);
       });
   };
-
 
   const createPartnerProfile = () => {
     let email = userDetails?.email;
@@ -972,6 +973,22 @@ navigate("/login");
       yourPosition: position,
     }, "Creating Partner Profile");
 
+    // Add this just above the return statement temporarily
+console.log("allSelected check:", {
+  businessName,
+  businessDesc,
+  website,
+  businessType,
+  businessLogo,
+  street,
+  city,
+  pinCode,
+  businessState,
+  businessCountry,
+  firstName,
+  lastName,
+  position
+});
     axios.put(`${BASE_URL}/api/partner/add`, {
       email,
       firstName,

@@ -97,7 +97,7 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar , admin}) 
         style={{
           padding: "0 2vw",
           height: "70px",
-          borderBottom: "0.5px solid #e5e5e5",
+          // borderBottom: "0.5px solid #e5e5e5",
           display: "flex",
         }}
         onClick={() => {

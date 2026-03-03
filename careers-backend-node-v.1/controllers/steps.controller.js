@@ -99,14 +99,12 @@ const addStep = async (req, res) => {
 
 
 
-
 const getSteps = async (req, res) => {
   try {
     let filter = {};
 
     const pathId = req.query.path_id || req.body.path_id;
 
-    // ⭐ FIX: make optional
     if (pathId) {
       filter.path_id = new mongoose.Types.ObjectId(pathId);
     }
@@ -118,7 +116,14 @@ const getSteps = async (req, res) => {
       filter.status = "active";
     }
 
-    const steps = await stepModel.find(filter).sort({ createdAt: -1 });
+    // ✅ CRITICAL FIX: populate services
+    const steps = await stepModel
+      .find(filter)
+      .populate({
+        path: "services",
+        model: "naavi_services",
+      })
+      .sort({ createdAt: -1 });
 
     return res.json({
       status: true,
@@ -132,6 +137,9 @@ const getSteps = async (req, res) => {
     });
   }
 };
+
+
+
 const updateStep = async (req, res) => {
     let updateData = {}
     if (req.body.name) updateData.name = req.body.name;
@@ -184,6 +192,54 @@ const updateStep = async (req, res) => {
 }
 
 
+const detachStepFromPath = async (req, res) => {
+  try {
+    const { stepId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(stepId)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid step ID",
+      });
+    }
+
+    const step = await stepModel.findById(stepId);
+
+    if (!step) {
+      return res.status(404).json({
+        status: false,
+        message: "Step not found",
+      });
+    }
+
+    const pathId = step.path_id;
+
+    // 1️⃣ Remove from path.the_ids
+    await pathModel.findByIdAndUpdate(
+      pathId,
+      {
+        $pull: { the_ids: { step_id: stepId } }
+      }
+    );
+
+    // 2️⃣ Detach path_id
+    step.path_id = null;
+    await step.save();
+
+    return res.json({
+      status: true,
+      message: "Step detached from path successfully"
+    });
+
+  } catch (error) {
+    console.error("Detach step error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Server error"
+    });
+  }
+};
+
 const deleteStep = async (req, res) => {
     try {
         const stepId = req.params.id; // Extract the step ID from request parameters
@@ -234,7 +290,34 @@ const deleteStep = async (req, res) => {
     }
 };
 
+const toggleStepStatus = async (req, res) => {
+  try {
+    const { stepId } = req.params;
 
+    const step = await stepModel.findById(stepId);
+    if (!step) {
+      return res.status(404).json({
+        status: false,
+        message: "Step not found",
+      });
+    }
+
+    step.status = step.status === "active" ? "inactive" : "active";
+    await step.save();
+
+    return res.json({
+      status: true,
+      message: "Status updated",
+      data: step
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: "Server error"
+    });
+  }
+};
 
 const restoreStep = async (req, res) => {
     let restoreStepData = await stepModel.findOneAndUpdate({ _id: req.params.id,status: "inactive" }, { status: "active" }, { new: true });
@@ -439,9 +522,6 @@ const addServicesToStep = async (req, res) => {
         });
     }
 };
-
-
-
 
 const getServicesForStep = async (req, res) => {
     const { step_id } = req.params;
@@ -734,4 +814,6 @@ module.exports = {
     repairStepServices,
     getAllServicesForRemove ,
     bulkUploadSteps,
+    detachStepFromPath,
+    toggleStepStatus,
 }
