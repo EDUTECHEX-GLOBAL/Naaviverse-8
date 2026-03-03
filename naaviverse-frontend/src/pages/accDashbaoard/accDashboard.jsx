@@ -29,7 +29,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import AccDashsidebar from "../../components/accDashsidebar/accDashsidebar";
-import logo from "../../assets/images/logo/naavi_final_logo2.png"; 
+import logo from "../../assets/images/logo/naavi_final_logo2.png";
 import CreateNewPath from './CreateNewPath';
 import CreateNewService from './CreateNewService';
 import "./CreateNewPath.scss";
@@ -82,9 +82,9 @@ const getPartner = () => {
 };
 
 const AccDashboard = () => {
-const location = useLocation();   // ✅ MUST COME FIRST
-  let navigate = useNavigate(); 
-  
+  const location = useLocation();   // ✅ MUST COME FIRST
+  let navigate = useNavigate();
+
   const {
     accsideNav,
     setaccsideNav,
@@ -133,9 +133,9 @@ const location = useLocation();   // ✅ MUST COME FIRST
   const [secondChargeAttempt, setsecondChargeAttempt] = useState("");
   const [thirdChargeAttempt, setthirdChargeAttempt] = useState("");
   const [image, setImage] = useState(
-  localStorage.getItem("profileImage") || null
-);
-  
+    localStorage.getItem("profileImage") || null
+  );
+
   const [isSubmit, setIsSubmit] = useState(false);
   const [isServicesAcc, setIsServicesAcc] = useState(false);
   const [servicesAcc, setservicesAcc] = useState([]);
@@ -145,15 +145,15 @@ const location = useLocation();   // ✅ MUST COME FIRST
   const [isloading, setIsloading] = useState(false);
   const [updatedIcon, setUpdatedIcon] = useState("");
   const [userSteps, setUserSteps] = useState([]);
-const user = useSelector((state) => state.user);
-const [countryApiValue, setCountryApiValue] = useState([]);
-const didFetchCountriesRef = useRef(false);
-const [currentStepId, setCurrentStepId] = useState(null);
-const [showStepsModal, setShowStepsModal] = useState(false);
-const [showPathModal, setShowPathModal] = useState(true);
-const [showStepCountModal, setShowStepCountModal] = useState(false);
-const [showCreateStepModal, setShowCreateStepModal] = useState(false);
- const [createStepForPathId, setCreateStepForPathId] = useState(null);
+  const user = useSelector((state) => state.user);
+  const [countryApiValue, setCountryApiValue] = useState([]);
+  const didFetchCountriesRef = useRef(false);
+  const [currentStepId, setCurrentStepId] = useState(null);
+  const [showStepsModal, setShowStepsModal] = useState(false);
+  const [showPathModal, setShowPathModal] = useState(true);
+  const [showStepCountModal, setShowStepCountModal] = useState(false);
+  const [showCreateStepModal, setShowCreateStepModal] = useState(false);
+  const [createStepForPathId, setCreateStepForPathId] = useState(null);
 
   const isViewPathRoute =
     location.pathname.startsWith("/dashboard/accountants/path/");
@@ -161,15 +161,15 @@ const [showCreateStepModal, setShowCreateStepModal] = useState(false);
   const [viewPathMode, setViewPathMode] = useState(isViewPathRoute);
 
 
-// Add this with your other useEffects
-useEffect(() => {
-  // Check if we came from profile page with openCreatePath state
-  if (location.state?.openCreatePath) {
-    setaccsideNav("CREATE_PATH");
-    // Clear the state so it doesn't reopen on refresh
-    navigate('/dashboard/accountants', { replace: true, state: {} });
-  }
-}, [location.state, setaccsideNav, navigate]);
+  // Add this with your other useEffects
+  useEffect(() => {
+    // Check if we came from profile page with openCreatePath state
+    if (location.state?.openCreatePath) {
+      setaccsideNav("CREATE_PATH");
+      // Clear the state so it doesn't reopen on refresh
+      navigate('/dashboard/accountants', { replace: true, state: {} });
+    }
+  }, [location.state, setaccsideNav, navigate]);
 
 
   useEffect(() => {
@@ -178,34 +178,34 @@ useEffect(() => {
     );
   }, [location.pathname]);
 
-useEffect(() => {
-  const isPath =
-    location.pathname.startsWith("/dashboard/accountants/path/");
-  setViewPathMode(isPath);
-}, [location.pathname]);
+  useEffect(() => {
+    const isPath =
+      location.pathname.startsWith("/dashboard/accountants/path/");
+    setViewPathMode(isPath);
+  }, [location.pathname]);
 
-useEffect(() => {
-  if (didFetchCountriesRef.current) return;  // ⛔ prevents 2nd execution
-  didFetchCountriesRef.current = true;
+  useEffect(() => {
+    if (didFetchCountriesRef.current) return;  // ⛔ prevents 2nd execution
+    didFetchCountriesRef.current = true;
 
-  console.log("useEffect for countries running...");
+    console.log("useEffect for countries running...");
 
-  const fetchCountries = async () => {
-    try {
-      console.log("Fetching countries...");
-      const res = await axios.get(`${BASE_URL}/api/countries`);
-      console.log("Countries fetched:", res.data);
-      setCountryApiValue(res.data);
-    } catch (err) {
-      console.log("Error fetching countries:", err);
-    }
-  };
+    const fetchCountries = async () => {
+      try {
+        console.log("Fetching countries...");
+        const res = await axios.get(`${BASE_URL}/api/countries`);
+        console.log("Countries fetched:", res.data);
+        setCountryApiValue(res.data);
+      } catch (err) {
+        console.log("Error fetching countries:", err);
+      }
+    };
 
-  fetchCountries();
-}, []);
+    fetchCountries();
+  }, []);
   //add compPlan
 
-  
+
   const [addCompPlan, setAddCompPlan] = useState(false);
   const [addCompPlanStep, setAddCompPlanStep] = useState("step1");
   const [userCreatedApps, setUserCreatedApps] = useState([]);
@@ -272,19 +272,19 @@ useEffect(() => {
   const [servicePrice, setServicePrice] = useState(null)
   const [selectedServiceCurrency, setSelectedServiceCurrency] = useState(null)
 
- 
 
- // CRM USERS (optional)
-const [crmUserData, setCrmUserData] = useState([]);
-const [isUserLoading, setIsUserLoading] = useState(false);
 
-// CRM CLIENTS
-const [crmClientData, setCrmClientData] = useState([]);
-const [isClientLoading, setClientLoading] = useState(false);
+  // CRM USERS (optional)
+  const [crmUserData, setCrmUserData] = useState([]);
+  const [isUserLoading, setIsUserLoading] = useState(false);
 
-// CRM PURCHASES
-const [crmPurchaseData, setCrmPurchaseData] = useState([]);
-const [isPurchaseLoading, setPurchaseLoading] = useState(false);
+  // CRM CLIENTS
+  const [crmClientData, setCrmClientData] = useState([]);
+  const [isClientLoading, setClientLoading] = useState(false);
+
+  // CRM PURCHASES
+  const [crmPurchaseData, setCrmPurchaseData] = useState([]);
+  const [isPurchaseLoading, setPurchaseLoading] = useState(false);
 
   const {
     allSteps,
@@ -332,11 +332,11 @@ const [isPurchaseLoading, setPurchaseLoading] = useState(false);
 
   const secret = "uyrw7826^&(896GYUFWE&*#GBjkbuaf"; // secret not to be disclosed anywhere.
   const emailDev = "rahulrajsb@outlook.com"; // email of the developer.
-// Read partner once, normalize email/token fields for safe use throughout component.
-const userDetails = getPartner();
-const partnerEmail = userDetails?.email || userDetails?.user?.email || null;
-const partnerToken = userDetails?.idToken || userDetails?.token || null;
-// console.log("PARTNER VALUE:", userDetails);
+  // Read partner once, normalize email/token fields for safe use throughout component.
+  const userDetails = getPartner();
+  const partnerEmail = userDetails?.email || userDetails?.user?.email || null;
+  const partnerToken = userDetails?.idToken || userDetails?.token || null;
+  // console.log("PARTNER VALUE:", userDetails);
 
   const handleGrade = (item) => {
     if (grade.includes(item)) {
@@ -410,16 +410,16 @@ const partnerToken = userDetails?.idToken || userDetails?.token || null;
   const addBackupPath = (backupPathId, selectedStepId) => {
     // console.log(pathSteps, "kjedkjweld");
 
-setPathSteps(prev => {
-  const the_ids = Array.isArray(prev?.the_ids) ? prev.the_ids.map(item => {
-    if (item.step_id === selectedStepId) {
-      return { ...item, backup_pathId: backupPathId };
-    }
-    return item;
-  }) : [];
-  return { ...prev, the_ids };
-});
-setShowBackupPathList(false);
+    setPathSteps(prev => {
+      const the_ids = Array.isArray(prev?.the_ids) ? prev.the_ids.map(item => {
+        if (item.step_id === selectedStepId) {
+          return { ...item, backup_pathId: backupPathId };
+        }
+        return item;
+      }) : [];
+      return { ...prev, the_ids };
+    });
+    setShowBackupPathList(false);
 
     // console.log(selectedSteps, "lkashclkweoiuk");
     // const found = pathSteps.find((element) => element._id === backupPathId);
@@ -436,30 +436,30 @@ setShowBackupPathList(false);
     }
   }, []);
 
-useEffect(() => {
-const partner = getPartner();
+  useEffect(() => {
+    const partner = getPartner();
 
-if (!partner?.email) {
-  console.warn("Partner missing — skipping protected calls");
-  return;
-}
+    if (!partner?.email) {
+      console.warn("Partner missing — skipping protected calls");
+      return;
+    }
 
-  handleFollowerPerAccountants();
-  handleGetCurrencies();
-  resetpop();
-}, []);
+    handleFollowerPerAccountants();
+    handleGetCurrencies();
+    resetpop();
+  }, []);
 
   //upload end here
 
   const handleFollowerPerAccountants = () => {
     setIsLoading(true);
     const partner = getPartner();
-if (!partner?.email) {
-  console.warn("No partner set — skipping follower fetch");
-  setIsLoading(false);
-  return;
-}
-GetFollowersPerAccount(partner.email)
+    if (!partner?.email) {
+      console.warn("No partner set — skipping follower fetch");
+      setIsLoading(false);
+      return;
+    }
+    GetFollowersPerAccount(partner.email)
       .then((res) => {
         let result = res?.data;
         if (result?.status) {
@@ -477,29 +477,29 @@ GetFollowersPerAccount(partner.email)
       });
   };
 
-const handleAllCustomerLicenses = () => {
-  const userDetails = JSON.parse(localStorage.getItem("partner"));
-  const email = userDetails?.email;
+  const handleAllCustomerLicenses = () => {
+    const userDetails = JSON.parse(localStorage.getItem("partner"));
+    const email = userDetails?.email;
 
-  if (!email) return;
+    if (!email) return;
 
-  setPurchaseLoading(true);
+    setPurchaseLoading(true);
 
-  axios
-    .get(`${BASE_URL}/api/crm/purchases?creatoremail=${email}`)
-    .then(({ data }) => {
-      console.log("CRM PURCHASE RESPONSE:", data);
+    axios
+      .get(`${BASE_URL}/api/crm/purchases?creatoremail=${email}`)
+      .then(({ data }) => {
+        console.log("CRM PURCHASE RESPONSE:", data);
 
-      // Always update crmPurchaseData
-      setCrmPurchaseData(data?.data || []);
+        // Always update crmPurchaseData
+        setCrmPurchaseData(data?.data || []);
 
-      setPurchaseLoading(false);
-    })
-    .catch((err) => {
-      console.log("Error fetching CRM purchases:", err);
-      setPurchaseLoading(false);
-    });
-};
+        setPurchaseLoading(false);
+      })
+      .catch((err) => {
+        console.log("Error fetching CRM purchases:", err);
+        setPurchaseLoading(false);
+      });
+  };
 
   const handleCategories = () => {
     setIsCatLoading(true);
@@ -520,40 +520,40 @@ const handleAllCustomerLicenses = () => {
       });
   };
 
-const handleGetCurrencies = React.useCallback(() => {
-  // prevent double calls
-  if (isCurrencies) return;
+  const handleGetCurrencies = React.useCallback(() => {
+    // prevent double calls
+    if (isCurrencies) return;
 
-  setIsCurrencies(true);
+    setIsCurrencies(true);
 
-  GetAllCurrencies()
-    .then((res) => {
-      const result = res?.data;
-      console.log("📦 Currency API result:", result);
+    GetAllCurrencies()
+      .then((res) => {
+        const result = res?.data;
+        console.log("📦 Currency API result:", result);
 
-      if (result?.status && Array.isArray(result.currencies)) {
-        console.log("💰 Raw currencies:", result.currencies.slice(0, 5), "...");
+        if (result?.status && Array.isArray(result.currencies)) {
+          console.log("💰 Raw currencies:", result.currencies.slice(0, 5), "...");
 
-        const formatted = result.currencies.map((c) => ({
-          coinName: c.code,
-          coinSymbol: c.code,
-          fullName: c.currency,
-        }));
+          const formatted = result.currencies.map((c) => ({
+            coinName: c.code,
+            coinSymbol: c.code,
+            fullName: c.currency,
+          }));
 
-        console.log("🔁 Formatted currencies:", formatted.slice(0, 5), "...");
+          console.log("🔁 Formatted currencies:", formatted.slice(0, 5), "...");
 
-        setallCurrencies(formatted);
-      } else {
-        console.warn("⚠️ Currencies not found or invalid structure");
-      }
+          setallCurrencies(formatted);
+        } else {
+          console.warn("⚠️ Currencies not found or invalid structure");
+        }
 
-      setIsCurrencies(false);
-    })
-    .catch((err) => {
-      console.error("❌ Currency fetch failed:", err?.response?.data || err);
-      setIsCurrencies(false);
-    });
-}, [isCurrencies]);
+        setIsCurrencies(false);
+      })
+      .catch((err) => {
+        console.error("❌ Currency fetch failed:", err?.response?.data || err);
+        setIsCurrencies(false);
+      });
+  }, [isCurrencies]);
 
   const resetpop = () => {
     setispopular(false);
@@ -602,11 +602,11 @@ const handleGetCurrencies = React.useCallback(() => {
     setServicePrice(null)
   };
 
-const handleLogout = () => {
-  localStorage.removeItem("partner");
-  localStorage.removeItem("loginEmail");
-  navigate("/login");
-};
+  const handleLogout = () => {
+    localStorage.removeItem("partner");
+    localStorage.removeItem("loginEmail");
+    navigate("/login");
+  };
 
   const fileInputRef = useRef(null);
 
@@ -625,134 +625,134 @@ const handleLogout = () => {
       setImage(uploadedUrl); // Set the final uploaded image URL
     }
   };
-const uploadBulkPath = async (file) => {
-  try {
-    setIsUploadLoading(true);
+  const uploadBulkPath = async (file) => {
+    try {
+      setIsUploadLoading(true);
 
-    const text = await file.text();
-    let records = JSON.parse(text);
+      const text = await file.text();
+      let records = JSON.parse(text);
 
-    if (!Array.isArray(records) || records.length === 0) {
-      alert("JSON must contain array of paths");
-      return;
-    }
+      if (!Array.isArray(records) || records.length === 0) {
+        alert("JSON must contain array of paths");
+        return;
+      }
 
-    records = records.map(r => {
-      delete r._id;
-      delete r.createdAt;
-      delete r.updatedAt;
-      delete r.__v;
+      records = records.map(r => {
+        delete r._id;
+        delete r.createdAt;
+        delete r.updatedAt;
+        delete r.__v;
 
-      if (Array.isArray(r.personality)) r.personality = r.personality[0];
-      if (Array.isArray(r.grade_avg)) r.grade_avg = r.grade_avg[0];
-      if (!['K12','Degree'].includes(r.path_cat)) r.path_cat = 'K12';
-      if (!['education','career','immigration'].includes(r.path_type)) r.path_type = 'education';
+        if (Array.isArray(r.personality)) r.personality = r.personality[0];
+        if (Array.isArray(r.grade_avg)) r.grade_avg = r.grade_avg[0];
+        if (!['K12', 'Degree'].includes(r.path_cat)) r.path_cat = 'K12';
+        if (!['education', 'career', 'immigration'].includes(r.path_type)) r.path_type = 'education';
 
-      return r;
-    });
+        return r;
+      });
 
-    const email = localStorage.getItem("loginEmail");
+      const email = localStorage.getItem("loginEmail");
 
-    const body = { email, records };
+      const body = { email, records };
 
-    const res = await axios.post(
-      `${BASE_URL}/api/paths/bulk`,
-      body
-    );
+      const res = await axios.post(
+        `${BASE_URL}/api/paths/bulk`,
+        body
+      );
 
-    console.log("SERVER RESPONSE:", res.data);
+      console.log("SERVER RESPONSE:", res.data);
 
-    alert(
-      res.data.message 
-      ? `${res.data.message} | Count: ${res.data.count ?? 0}`
-      : `Uploaded ${res.data.count ?? 0} paths successfully`
-    );
+      alert(
+        res.data.message
+          ? `${res.data.message} | Count: ${res.data.count ?? 0}`
+          : `Uploaded ${res.data.count ?? 0} paths successfully`
+      );
 
-    setpstep(12);
-
-  } catch (err) {
-    console.error("Bulk Path upload error:", err);
-    alert("Bulk path upload failed - check console");
-  } finally {
-    setIsUploadLoading(false);
-  }
-};
-
-const uploadBulkStep = async (file) => {
-  try {
-    setIsUploadLoading(true);
-
-    const text = await file.text();
-    const records = JSON.parse(text);
-
-    if (!Array.isArray(records) || records.length === 0) {
-      alert("Invalid JSON: Must contain array");
-      return;
-    }
-
-    const email = localStorage.getItem("loginEmail");
-
-    const body = {
-      email,
-      records
-    };
-
-    const res = await axios.post(
-      `${BASE_URL}/api/steps/bulk`,
-      body
-    );
-
-    console.log("BULK STEP RESPONSE:", res.data);  // 👈 ADD THIS
-
-    if (res.data?.status === true) {               // 👈 MAKE CHECK STRICT
-      alert(`Uploaded ${res.data.count} steps successfully`);
       setpstep(12);
-    } else {
-      alert("Step upload failed");
+
+    } catch (err) {
+      console.error("Bulk Path upload error:", err);
+      alert("Bulk path upload failed - check console");
+    } finally {
+      setIsUploadLoading(false);
     }
+  };
 
-  } catch (err) {
-    console.error("Bulk Step upload error:", err);
-    alert("Bulk Step upload error");
-  } finally {
-    setIsUploadLoading(false);
-  }
-};
+  const uploadBulkStep = async (file) => {
+    try {
+      setIsUploadLoading(true);
 
-const uploadBulkService = async (file) => {
-  try {
-    setIsUploadLoading(true);
+      const text = await file.text();
+      const records = JSON.parse(text);
 
-    const text = await file.text();
-    const parsed = JSON.parse(text);
+      if (!Array.isArray(records) || records.length === 0) {
+        alert("Invalid JSON: Must contain array");
+        return;
+      }
 
-    // IMPORTANT: Ensure parsed is an array
-    const records = Array.isArray(parsed) ? parsed : [parsed];
+      const email = localStorage.getItem("loginEmail");
 
-    const email = localStorage.getItem("loginEmail");
+      const body = {
+        email,
+        records
+      };
 
-    const body = {
-      email,
-      records
-    };
+      const res = await axios.post(
+        `${BASE_URL}/api/steps/bulk`,
+        body
+      );
 
-    const res = await axios.post(
-      `${BASE_URL}/api/services/bulk`,
-      body
-    );
+      console.log("BULK STEP RESPONSE:", res.data);  // 👈 ADD THIS
 
-    if (res.data?.status) {
-      alert(`Uploaded ${res.data.count} services successfully`);
-    } else {
-      alert("Upload failed");
+      if (res.data?.status === true) {               // 👈 MAKE CHECK STRICT
+        alert(`Uploaded ${res.data.count} steps successfully`);
+        setpstep(12);
+      } else {
+        alert("Step upload failed");
+      }
+
+    } catch (err) {
+      console.error("Bulk Step upload error:", err);
+      alert("Bulk Step upload error");
+    } finally {
+      setIsUploadLoading(false);
     }
+  };
 
-  } catch (err) {
-    console.error("Bulk Service upload error:", err);
-  } finally {
-    setIsUploadLoading(false);
-  }
-};
+  const uploadBulkService = async (file) => {
+    try {
+      setIsUploadLoading(true);
+
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+
+      // IMPORTANT: Ensure parsed is an array
+      const records = Array.isArray(parsed) ? parsed : [parsed];
+
+      const email = localStorage.getItem("loginEmail");
+
+      const body = {
+        email,
+        records
+      };
+
+      const res = await axios.post(
+        `${BASE_URL}/api/services/bulk`,
+        body
+      );
+
+      if (res.data?.status) {
+        alert(`Uploaded ${res.data.count} services successfully`);
+      } else {
+        alert("Upload failed");
+      }
+
+    } catch (err) {
+      console.error("Bulk Service upload error:", err);
+    } finally {
+      setIsUploadLoading(false);
+    }
+  };
 
   const handleFileInputChange1 = (e) => {
     setImage(e.target.files[0]);
@@ -763,47 +763,47 @@ const uploadBulkService = async (file) => {
     uploadBulkStep(e.target.files[0]);
   };
 
-const handleFileInputChange3 = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+  const handleFileInputChange3 = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const storedUser = JSON.parse(localStorage.getItem("partner"));
+    const storedUser = JSON.parse(localStorage.getItem("partner"));
 
-  if (!storedUser || !storedUser.email) {
-    console.error("Partner email not found");
-    return;
-  }
-
-  const email = storedUser.email;
-
-  const reader = new FileReader();
-
-  reader.onload = async (evt) => {
-    const data = new Uint8Array(evt.target.result);
-    const workbook = XLSX.read(data, { type: "array" });
-
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-
-    const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-    console.log("Email:", email);
-    console.log("Records:", jsonData.length);
-
-    try {
-      const response = await axios.post("/api/services/bulk", {
-        email: email,
-        records: jsonData
-      });
-
-      console.log("Bulk success:", response.data);
-    } catch (error) {
-      console.error("Bulk upload error:", error.response?.data || error.message);
+    if (!storedUser || !storedUser.email) {
+      console.error("Partner email not found");
+      return;
     }
-  };
 
-  reader.readAsArrayBuffer(file);
-};
+    const email = storedUser.email;
+
+    const reader = new FileReader();
+
+    reader.onload = async (evt) => {
+      const data = new Uint8Array(evt.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      console.log("Email:", email);
+      console.log("Records:", jsonData.length);
+
+      try {
+        const response = await axios.post("/api/services/bulk", {
+          email: email,
+          records: jsonData
+        });
+
+        console.log("Bulk success:", response.data);
+      } catch (error) {
+        console.error("Bulk upload error:", error.response?.data || error.message);
+      }
+    };
+
+    reader.readAsArrayBuffer(file);
+  };
 
   const myTimeoutService = () => {
     setTimeout(reloadService, 3000);
@@ -816,338 +816,338 @@ const handleFileInputChange3 = async (e) => {
     setservicesMenu("Services");
   };
 
- const handleFinalSubmit = () => {
-  setIsSubmit(true);
+  const handleFinalSubmit = () => {
+    setIsSubmit(true);
 
-  let userDetails = JSON.parse(localStorage.getItem("partner"));
+    let userDetails = JSON.parse(localStorage.getItem("partner"));
 
-  // COMMON FIELDS FOR BOTH ONE-TIME & MONTHLY
-  const base = {
-  productcreatoremail: userDetails.email,
+    // COMMON FIELDS FOR BOTH ONE-TIME & MONTHLY
+    const base = {
+      productcreatoremail: userDetails.email,
 
-  ...(currentStepId ? { step_id: currentStepId } : {}),
+      ...(currentStepId ? { step_id: currentStepId } : {}),
 
-    // REQUIRED BACKEND FIELDS
-    name: serviceNameInput,                 // ✔ MUST BE `name`
-    chargingtype: billingType,              // ✔ MUST BE `chargingtype`
-    description: serviceDescription,        // ✔ MUST BE `description`
+      // REQUIRED BACKEND FIELDS
+      name: serviceNameInput,                 // ✔ MUST BE `name`
+      chargingtype: billingType,              // ✔ MUST BE `chargingtype`
+      description: serviceDescription,        // ✔ MUST BE `description`
 
-    product_code: serviceCodeInput,
-    product_icon: coverImageS3url,          // ✔ Use uploaded S3 URL
-    revenue_account: userDetails.email,
-    client_app: "naavi",
+      product_code: serviceCodeInput,
+      product_icon: coverImageS3url,          // ✔ Use uploaded S3 URL
+      revenue_account: userDetails.email,
+      client_app: "naavi",
 
-    product_category_code: "CoE",
-    sub_category_code: "",
-    custom_product_label: productLabel,
-    points_creation: false,
-    sub_text: serviceTagline,
+      product_category_code: "CoE",
+      sub_category_code: "",
+      custom_product_label: productLabel,
+      points_creation: false,
+      sub_text: serviceTagline,
 
-    // FIRST A (BOTH MODELS)
-    first_purchase: {
-      price: firstMonthPrice ? parseFloat(firstMonthPrice) : 0,
-      coin: selectedCurrency.coinSymbol,
-    },
-
-    grace_period:
-      billingType === "One Time"
-        ? 0
-        : gracePeriod
-        ? parseFloat(gracePeriod)
-        : 0,
-
-    first_retry:
-      billingType === "One Time"
-        ? 0
-        : secondChargeAttempt
-        ? parseFloat(secondChargeAttempt)
-        : 0,
-
-    second_retry:
-      billingType === "One Time"
-        ? 0
-        : thirdChargeAttempt
-        ? parseFloat(thirdChargeAttempt)
-        : 0,
-
-    staking_allowed: false,
-    staking_details: {},
-  };
-
-  // ------------------------------
-  // MONTHLY PLAN OBJECT
-  // ------------------------------
-  const objmonthly = {
-    ...base,
-    billing_cycle: {
-      monthly: {
-        price:
-          monthlyPrice !== ""
-            ? parseFloat(monthlyPrice)
-            : firstMonthPrice
-            ? parseFloat(firstMonthPrice)
-            : 0,
+      // FIRST A (BOTH MODELS)
+      first_purchase: {
+        price: firstMonthPrice ? parseFloat(firstMonthPrice) : 0,
         coin: selectedCurrency.coinSymbol,
       },
-    },
-  };
 
-  // ------------------------------
-  // ONE-TIME PLAN OBJECT
-  // ------------------------------
-  const objone = {
-    ...base,
-    billing_cycle: {
-      lifetime: {
-        price:
-          firstMonthPrice !== ""
-            ? parseFloat(firstMonthPrice)
-            : monthlyPrice !== ""
-            ? parseFloat(monthlyPrice)
+      grace_period:
+        billingType === "One Time"
+          ? 0
+          : gracePeriod
+            ? parseFloat(gracePeriod)
             : 0,
-        coin: selectedCurrency.coinSymbol,
+
+      first_retry:
+        billingType === "One Time"
+          ? 0
+          : secondChargeAttempt
+            ? parseFloat(secondChargeAttempt)
+            : 0,
+
+      second_retry:
+        billingType === "One Time"
+          ? 0
+          : thirdChargeAttempt
+            ? parseFloat(thirdChargeAttempt)
+            : 0,
+
+      staking_allowed: false,
+      staking_details: {},
+    };
+
+    // ------------------------------
+    // MONTHLY PLAN OBJECT
+    // ------------------------------
+    const objmonthly = {
+      ...base,
+      billing_cycle: {
+        monthly: {
+          price:
+            monthlyPrice !== ""
+              ? parseFloat(monthlyPrice)
+              : firstMonthPrice
+                ? parseFloat(firstMonthPrice)
+                : 0,
+          coin: selectedCurrency.coinSymbol,
+        },
       },
-    },
-  };
+    };
 
-  // FINAL PAYLOAD
-  const obj = billingType === "One Time" ? objone : objmonthly;
+    // ------------------------------
+    // ONE-TIME PLAN OBJECT
+    // ------------------------------
+    const objone = {
+      ...base,
+      billing_cycle: {
+        lifetime: {
+          price:
+            firstMonthPrice !== ""
+              ? parseFloat(firstMonthPrice)
+              : monthlyPrice !== ""
+                ? parseFloat(monthlyPrice)
+                : 0,
+          coin: selectedCurrency.coinSymbol,
+        },
+      },
+    };
 
-  console.log("FINAL SERVICE PAYLOAD:", obj);
+    // FINAL PAYLOAD
+    const obj = billingType === "One Time" ? objone : objmonthly;
 
-  CreatePopularService(obj)
-    .then((res) => {
-      let result = res.data;
+    console.log("FINAL SERVICE PAYLOAD:", obj);
 
-      if (result.status) {
-        myTimeoutService();
-        setpstep(7);
+    CreatePopularService(obj)
+      .then((res) => {
+        let result = res.data;
 
-        // RESET ALL FIELDS
-        setbillingType("");
-        setselectNew("");
-        setselectCategory("");
-        setcategoriesData([]);
-        setSearch("");
-        setSelectedCurrency({});
-        setServiceNameInput("");
-        setServiceCodeInput("");
-        setProductLabel("");
-        setServiceTagline("");
-        setServiceDescription("");
-        setfirstMonthPrice("");
-        setmonthlyPrice("");
-        setgracePeriod("");
-        setsecondChargeAttempt("");
-        setthirdChargeAttempt("");
-        setCoverImageS3url("");
-        setImage(null);
+        if (result.status) {
+          myTimeoutService();
+          setpstep(7);
+
+          // RESET ALL FIELDS
+          setbillingType("");
+          setselectNew("");
+          setselectCategory("");
+          setcategoriesData([]);
+          setSearch("");
+          setSelectedCurrency({});
+          setServiceNameInput("");
+          setServiceCodeInput("");
+          setProductLabel("");
+          setServiceTagline("");
+          setServiceDescription("");
+          setfirstMonthPrice("");
+          setmonthlyPrice("");
+          setgracePeriod("");
+          setsecondChargeAttempt("");
+          setthirdChargeAttempt("");
+          setCoverImageS3url("");
+          setImage(null);
+          setIsSubmit(false);
+        }
+      })
+      .catch((err) => {
+        console.error("SERVICE CREATE ERROR:", err);
         setIsSubmit(false);
-      }
-    })
-    .catch((err) => {
-      console.error("SERVICE CREATE ERROR:", err);
-      setIsSubmit(false);
-    });
-};
+      });
+  };
 
-const getAllServices = async () => {
-  const userDetails = getPartner();
-
-  if (!userDetails?.email) {
-    console.warn("No partner email found");
-    return;
-  }
-
-  setIsLoading(true);
-
-  try {
-    const { data } = await axios.get(
-      `${BASE_URL}/api/services/getservices?productcreatoremail=${userDetails.email}`
-    );
-
-    if (data?.status) {
-      setservicesAcc(data.data || []);
-    } else {
-      setservicesAcc([]);
-    }
-  } catch (err) {
-    console.error("Error fetching services:", err);
-    setservicesAcc([]);
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-const fetchAllServicesAgain = () => {
-  const userDetails = JSON.parse(localStorage.getItem("partner"));
-
-  if (!userDetails || !userDetails.email) {
-    console.warn("⚠ No partner user found in localStorage.");
-    return;
-  }
-
-  getAllServices(userDetails.email);
-};
-
-useEffect(() => {
-  if (!ispopular) {
-    const userDetails = JSON.parse(localStorage.getItem("partner"));
-    if (userDetails?.email) {
-      getAllServices(userDetails.email);
-    }
-  } else {
-    getAllServices();
-  }
-}, [ispopular]);
-
-useEffect(() => {
-  resetpop();
-
-  if (accsideNav === "CRM" && crmMenu === "Followers") {
-    handleFollowerPerAccountants();
-  } 
-  else if (accsideNav === "CRM" && crmMenu === "Purchases") {
-    handleAllCustomerLicenses();
-  } 
-  else if (accsideNav === "My Services" && servicesMenu === "Services") {
+  const getAllServices = async () => {
     const userDetails = getPartner();
 
-    if (!userDetails || !userDetails.email) {
-      console.warn("No partner found — skipping service reload.");
+    if (!userDetails?.email) {
+      console.warn("No partner email found");
       return;
     }
 
-    getAllServices();
-  }
-}, [crmMenu, servicesMenu, accsideNav]);
+    setIsLoading(true);
 
-const myTimeout = () => {
-  setTimeout(reload, 2000);
-};
+    try {
+      const { data } = await axios.get(
+        `${BASE_URL}/api/services/getservices?productcreatoremail=${userDetails.email}`
+      );
 
-function reload() {
-  setServiceActionEnabled(false);
-  setServiceActionStep(1);
-  setSelectedService("");
-  setUpdatedIcon("");
-  // Force refresh services
-  const userDetails =
-  JSON.parse(localStorage.getItem("partner")) ||
-  JSON.parse(localStorage.getItem("user"));
-
-  if (userDetails?.email) {
-    getAllServices(userDetails.email);
-  }
-}
-
-const deleteService = async () => {
-  const serviceId = selectedService?._id;
-  if (!serviceId) return;
-
-  try {
-    setIsloading(true);
-
-    await axios.delete(`${BASE_URL}/api/services/delete/${serviceId}`, {
-      headers: {
-        Authorization: `Bearer ${userDetails?.idToken}`,
-        email: userDetails?.email,
-      },
-    });
-
-    // If request succeeds (200), consider delete successful
-    setServiceActionEnabled(false);
-    resetpop();
-    getAllServices();
-  } catch (error) {
-    console.error("Delete service failed:", error);
-  } finally {
-    setIsloading(false);
-  }
-};
-
-const changeServiceIcon = () => {
-  // Debug log
-  console.log("Starting icon update:", {
-    serviceId: selectedService?._id,
-    serviceName: selectedService?.name,
-    currentIcon: selectedService?.product_icon,
-    newIcon: updatedIcon
-  });
-
-  if (!updatedIcon || !selectedService?._id) {
-    toast.error("Please upload an image first");
-    return;
-  }
-
-  setIsloading(true);
-
-  // Get user details
-  const userDetails = JSON.parse(localStorage.getItem("partner"));
-  const payload = {
-    icon: updatedIcon,
-    email: userDetails?.email
+      if (data?.status) {
+        setservicesAcc(data.data || []);
+      } else {
+        setservicesAcc([]);
+      }
+    } catch (err) {
+      console.error("Error fetching services:", err);
+      setservicesAcc([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  console.log("Sending payload:", payload);
-  console.log("Service ID:", selectedService._id);
+  const fetchAllServicesAgain = () => {
+    const userDetails = JSON.parse(localStorage.getItem("partner"));
 
-  // Try updating with product_icon field
-  axios
-    .put(`${BASE_URL}/api/services/update/${selectedService._id}`, {
-      ...payload,
-      product_icon: updatedIcon  // Use product_icon field
-    })
-    .then((response) => {
-      console.log("API Response:", response.data);
-      
-      if (response.data?.status) {
-        toast.success("Icon updated successfully!");
-        setServiceActionStep(6);
-        myTimeout();
-      } else {
-        // Try alternative endpoint
-        return axios.put(`${BASE_URL}/api/services/updateIcon`, {
-          product_id: selectedService._id,
-          product_icon: updatedIcon,
-          email: userDetails?.email
-        });
+    if (!userDetails || !userDetails.email) {
+      console.warn("⚠ No partner user found in localStorage.");
+      return;
+    }
+
+    getAllServices(userDetails.email);
+  };
+
+  useEffect(() => {
+    if (!ispopular) {
+      const userDetails = JSON.parse(localStorage.getItem("partner"));
+      if (userDetails?.email) {
+        getAllServices(userDetails.email);
       }
-    })
-    .then((response) => {
-      if (response?.data?.status) {
-        toast.success("Icon updated successfully!");
-        setServiceActionStep(6);
-        myTimeout();
-      } else {
-        toast.error(response?.data?.message || "Failed to update icon");
+    } else {
+      getAllServices();
+    }
+  }, [ispopular]);
+
+  useEffect(() => {
+    resetpop();
+
+    if (accsideNav === "CRM" && crmMenu === "Followers") {
+      handleFollowerPerAccountants();
+    }
+    else if (accsideNav === "CRM" && crmMenu === "Purchases") {
+      handleAllCustomerLicenses();
+    }
+    else if (accsideNav === "My Services" && servicesMenu === "Services") {
+      const userDetails = getPartner();
+
+      if (!userDetails || !userDetails.email) {
+        console.warn("No partner found — skipping service reload.");
+        return;
       }
-    })
-    .catch((error) => {
-      console.error("Update error:", error);
-      console.error("Error response:", error.response?.data);
-      
-      // Try one more endpoint as fallback
-      axios.put(`${BASE_URL}/api/services/icon/${selectedService._id}`, { 
-        product_icon: updatedIcon 
+
+      getAllServices();
+    }
+  }, [crmMenu, servicesMenu, accsideNav]);
+
+  const myTimeout = () => {
+    setTimeout(reload, 2000);
+  };
+
+  function reload() {
+    setServiceActionEnabled(false);
+    setServiceActionStep(1);
+    setSelectedService("");
+    setUpdatedIcon("");
+    // Force refresh services
+    const userDetails =
+      JSON.parse(localStorage.getItem("partner")) ||
+      JSON.parse(localStorage.getItem("user"));
+
+    if (userDetails?.email) {
+      getAllServices(userDetails.email);
+    }
+  }
+
+  const deleteService = async () => {
+    const serviceId = selectedService?._id;
+    if (!serviceId) return;
+
+    try {
+      setIsloading(true);
+
+      await axios.delete(`${BASE_URL}/api/services/delete/${serviceId}`, {
+        headers: {
+          Authorization: `Bearer ${userDetails?.idToken}`,
+          email: userDetails?.email,
+        },
+      });
+
+      // If request succeeds (200), consider delete successful
+      setServiceActionEnabled(false);
+      resetpop();
+      getAllServices();
+    } catch (error) {
+      console.error("Delete service failed:", error);
+    } finally {
+      setIsloading(false);
+    }
+  };
+
+  const changeServiceIcon = () => {
+    // Debug log
+    console.log("Starting icon update:", {
+      serviceId: selectedService?._id,
+      serviceName: selectedService?.name,
+      currentIcon: selectedService?.product_icon,
+      newIcon: updatedIcon
+    });
+
+    if (!updatedIcon || !selectedService?._id) {
+      toast.error("Please upload an image first");
+      return;
+    }
+
+    setIsloading(true);
+
+    // Get user details
+    const userDetails = JSON.parse(localStorage.getItem("partner"));
+    const payload = {
+      icon: updatedIcon,
+      email: userDetails?.email
+    };
+
+    console.log("Sending payload:", payload);
+    console.log("Service ID:", selectedService._id);
+
+    // Try updating with product_icon field
+    axios
+      .put(`${BASE_URL}/api/services/update/${selectedService._id}`, {
+        ...payload,
+        product_icon: updatedIcon  // Use product_icon field
       })
-      .then(res => {
-        if (res.data?.status) {
-          toast.success("Icon updated!");
+      .then((response) => {
+        console.log("API Response:", response.data);
+
+        if (response.data?.status) {
+          toast.success("Icon updated successfully!");
           setServiceActionStep(6);
           myTimeout();
         } else {
-          toast.error("All update attempts failed");
+          // Try alternative endpoint
+          return axios.put(`${BASE_URL}/api/services/updateIcon`, {
+            product_id: selectedService._id,
+            product_icon: updatedIcon,
+            email: userDetails?.email
+          });
         }
       })
-      .catch(err => {
-        toast.error("Could not update icon. Check console.");
+      .then((response) => {
+        if (response?.data?.status) {
+          toast.success("Icon updated successfully!");
+          setServiceActionStep(6);
+          myTimeout();
+        } else {
+          toast.error(response?.data?.message || "Failed to update icon");
+        }
+      })
+      .catch((error) => {
+        console.error("Update error:", error);
+        console.error("Error response:", error.response?.data);
+
+        // Try one more endpoint as fallback
+        axios.put(`${BASE_URL}/api/services/icon/${selectedService._id}`, {
+          product_icon: updatedIcon
+        })
+          .then(res => {
+            if (res.data?.status) {
+              toast.success("Icon updated!");
+              setServiceActionStep(6);
+              myTimeout();
+            } else {
+              toast.error("All update attempts failed");
+            }
+          })
+          .catch(err => {
+            toast.error("Could not update icon. Check console.");
+          });
+      })
+      .finally(() => {
+        setIsloading(false);
       });
-    })
-    .finally(() => {
-      setIsloading(false);
-    });
-};
+  };
 
   const getAppsforUser = () => {
     setIsfetching(true);
@@ -1164,10 +1164,10 @@ const changeServiceIcon = () => {
       });
   };
 
-const handleSavePath = () => {
-  console.log("📨 FINAL PATH STEPS SUBMITTED:", pathSteps);
-  // save logic...
-};
+  const handleSavePath = () => {
+    console.log("📨 FINAL PATH STEPS SUBMITTED:", pathSteps);
+    // save logic...
+  };
 
   const myTimeout1 = () => {
     setTimeout(reload1, 3000);
@@ -1300,159 +1300,159 @@ const handleSavePath = () => {
     getWithCompPlan();
   }, []);
 
-const getCounsellorEmail = () => {
-  const local = JSON.parse(localStorage.getItem("partner"));
-  return user?.email || local?.email;
-};
-
-useEffect(() => {
-  const email = getCounsellorEmail();
-  if (!email) return;
-
-  setClientLoading(true);
-
-  axios.get(`${BASE_URL}/api/crm/clients?creatoremail=${email}`)
-    .then(res => {
-      setCrmClientData(res.data?.data || []);
-      setClientLoading(false);
-    })
-    .catch(err => {
-      console.log("CRM CLIENT ERROR:", err);
-      setClientLoading(false);
-    });
-}, []);
-
-const pathSubmission = () => {
-  console.log("🚀 ---- PATH SUBMISSION TRIGGERED ----");
-
-  // 1️⃣ Log Redux user object
-  console.log("🔥 Redux USER VALUE:", user);
-
-  // 2️⃣ Log localStorage user raw string
-  const rawLocal = localStorage.getItem("user");
-  console.log("🔥 LocalStorage USER VALUE RAW:", rawLocal);
-
-  // 3️⃣ Parse localStorage safely
-  let storedUser = {};
-  try {
-    storedUser = rawLocal ? JSON.parse(rawLocal) : {};
-  } catch (e) {
-    storedUser = {};
-  }
-
-  // 4️⃣ Log parsed localStorage value
-  console.log("🔥 Parsed LocalStorage User:", storedUser);
-
-  // 5️⃣ Find final email from all possible sources
- const finalEmail =
-  user?.email ||
-  user?.user?.email ||
-  user?.currentUser?.email ||
-  storedUser?.email ||
-  storedUser?.user?.email ||
-  storedUser?.currentUser?.email ||
-  localStorage.getItem("loginEmail");   // ⭐ REQUIRED LAST CHECK
-
-// 6️⃣ Log final email decision
-console.log("🔥 FINAL EMAIL USED:", finalEmail);
-
-// 7️⃣ If missing, stop execution
-if (!finalEmail) {
-  console.log("❌ User email missing. Cannot create path.");
-  alert("User email missing. Please login again.");
-  return;
-}
-
-  // 8️⃣ Build the payload
-  const payload = {
-    email: finalEmail,
-    nameOfPath: pathSteps.nameOfPath,
-    description: pathSteps.description,
-   current_coordinates: {
-  grade: grade,
-  curriculum: curriculum,
-  stream: stream,
-  grade_avg: gradeAvg,
-  financialSituation: finance,
-  personality: personality,
-},
-
-feature_coordinates: {
-  program: pathSteps.program,
-  destination_degree: pathSteps.destination_degree || "unknown",
-  destination_institution: pathSteps.destination_institution,
-  path_type: pathSteps.path_type || "education",
-  path_cat: pathSteps.path_cat || "K12",
-  city: pathSteps.city,
-  country: pathSteps.country,
-},
-
-    program: pathSteps.program,
-    university: [],
-    the_ids: pathSteps.the_ids.map((step) => ({
-      step_id: step.step_id,
-      stepName: step.stepName || "",
-      stepDescription: step.stepDescription || "",
-      backup_pathId: step.backup_pathId || null,
-      backupPathName: step.backupPathName || "",
-      backupPathDescription: step.backupPathDescription || ""
-    })),
-    path_type: pathSteps.path_type || "education",
-    path_cat: pathSteps.path_cat || "K12",
-    personality: personality,
-    destination_degree: pathSteps.destination_degree || "unknown",
-    destination_institution: pathSteps.destination_institution,
-    length: Number(pathSteps.length),
-    city: pathSteps.city,
-    country: pathSteps.country,
-    financialSituation: finance,
-    curriculum: curriculum,
-    grade: grade,
-    stream: stream,
-    grade_avg: gradeAvg,
-    performance: gradeAvg[0],
-    status: "waitingforapproval",
+  const getCounsellorEmail = () => {
+    const local = JSON.parse(localStorage.getItem("partner"));
+    return user?.email || local?.email;
   };
 
-  // 9️⃣ Log the payload before sending
-  console.log("📦 PAYLOAD GOING TO API:", payload);
+  useEffect(() => {
+    const email = getCounsellorEmail();
+    if (!email) return;
 
-  setCreatingPath(true);
+    setClientLoading(true);
 
-  // 🔟 Send request
-axios
-  .post(`${BASE_URL}/api/paths/add`, payload)
-  .then((response) => {
-    console.log("✅ API RESPONSE:", response.data);
+    axios.get(`${BASE_URL}/api/crm/clients?creatoremail=${email}`)
+      .then(res => {
+        setCrmClientData(res.data?.data || []);
+        setClientLoading(false);
+      })
+      .catch(err => {
+        console.log("CRM CLIENT ERROR:", err);
+        setClientLoading(false);
+      });
+  }, []);
 
-    if (response.data?.status) {
-      const createdPathId = response.data.data._id;
+  const pathSubmission = () => {
+    console.log("🚀 ---- PATH SUBMISSION TRIGGERED ----");
 
-      // 1️⃣ Save path id (optional)
-      localStorage.setItem("selectedPathId", createdPathId);
+    // 1️⃣ Log Redux user object
+    console.log("🔥 Redux USER VALUE:", user);
 
-      // 2️⃣ Close create-path UI first
-      setCreatingPath(false);
-      
-      // 3️⃣ Reset the popup/modal
-      resetpop();
-      
-      // 4️⃣ Set viewPathMode to true to show the path view
-      setViewPathMode(true);
+    // 2️⃣ Log localStorage user raw string
+    const rawLocal = localStorage.getItem("user");
+    console.log("🔥 LocalStorage USER VALUE RAW:", rawLocal);
 
-      // 5️⃣ Navigate to view path
-      setTimeout(() => {
-        navigate(`/dashboard/accountants/path/${createdPathId}`, {
-          replace: true,
-        });
-      }, 0);
+    // 3️⃣ Parse localStorage safely
+    let storedUser = {};
+    try {
+      storedUser = rawLocal ? JSON.parse(rawLocal) : {};
+    } catch (e) {
+      storedUser = {};
     }
-  })
-  .catch((err) => {
-    console.log("❌ API ERROR:", err.response?.data || err);
-    setCreatingPath(false);
-  });
-};
+
+    // 4️⃣ Log parsed localStorage value
+    console.log("🔥 Parsed LocalStorage User:", storedUser);
+
+    // 5️⃣ Find final email from all possible sources
+    const finalEmail =
+      user?.email ||
+      user?.user?.email ||
+      user?.currentUser?.email ||
+      storedUser?.email ||
+      storedUser?.user?.email ||
+      storedUser?.currentUser?.email ||
+      localStorage.getItem("loginEmail");   // ⭐ REQUIRED LAST CHECK
+
+    // 6️⃣ Log final email decision
+    console.log("🔥 FINAL EMAIL USED:", finalEmail);
+
+    // 7️⃣ If missing, stop execution
+    if (!finalEmail) {
+      console.log("❌ User email missing. Cannot create path.");
+      alert("User email missing. Please login again.");
+      return;
+    }
+
+    // 8️⃣ Build the payload
+    const payload = {
+      email: finalEmail,
+      nameOfPath: pathSteps.nameOfPath,
+      description: pathSteps.description,
+      current_coordinates: {
+        grade: grade,
+        curriculum: curriculum,
+        stream: stream,
+        grade_avg: gradeAvg,
+        financialSituation: finance,
+        personality: personality,
+      },
+
+      feature_coordinates: {
+        program: pathSteps.program,
+        destination_degree: pathSteps.destination_degree || "unknown",
+        destination_institution: pathSteps.destination_institution,
+        path_type: pathSteps.path_type || "education",
+        path_cat: pathSteps.path_cat || "K12",
+        city: pathSteps.city,
+        country: pathSteps.country,
+      },
+
+      program: pathSteps.program,
+      university: [],
+      the_ids: pathSteps.the_ids.map((step) => ({
+        step_id: step.step_id,
+        stepName: step.stepName || "",
+        stepDescription: step.stepDescription || "",
+        backup_pathId: step.backup_pathId || null,
+        backupPathName: step.backupPathName || "",
+        backupPathDescription: step.backupPathDescription || ""
+      })),
+      path_type: pathSteps.path_type || "education",
+      path_cat: pathSteps.path_cat || "K12",
+      personality: personality,
+      destination_degree: pathSteps.destination_degree || "unknown",
+      destination_institution: pathSteps.destination_institution,
+      length: Number(pathSteps.length),
+      city: pathSteps.city,
+      country: pathSteps.country,
+      financialSituation: finance,
+      curriculum: curriculum,
+      grade: grade,
+      stream: stream,
+      grade_avg: gradeAvg,
+      performance: gradeAvg[0],
+      status: "waitingforapproval",
+    };
+
+    // 9️⃣ Log the payload before sending
+    console.log("📦 PAYLOAD GOING TO API:", payload);
+
+    setCreatingPath(true);
+
+    // 🔟 Send request
+    axios
+      .post(`${BASE_URL}/api/paths/add`, payload)
+      .then((response) => {
+        console.log("✅ API RESPONSE:", response.data);
+
+        if (response.data?.status) {
+          const createdPathId = response.data.data._id;
+
+          // 1️⃣ Save path id (optional)
+          localStorage.setItem("selectedPathId", createdPathId);
+
+          // 2️⃣ Close create-path UI first
+          setCreatingPath(false);
+
+          // 3️⃣ Reset the popup/modal
+          resetpop();
+
+          // 4️⃣ Set viewPathMode to true to show the path view
+          setViewPathMode(true);
+
+          // 5️⃣ Navigate to view path
+          setTimeout(() => {
+            navigate(`/dashboard/accountants/path/${createdPathId}`, {
+              replace: true,
+            });
+          }, 0);
+        }
+      })
+      .catch((err) => {
+        console.log("❌ API ERROR:", err.response?.data || err);
+        setCreatingPath(false);
+      });
+  };
 
   const removeStep = (stepId) => {
     // Remove the step from selectedSteps
@@ -1471,22 +1471,22 @@ axios
     });
   };
 
-useEffect(() => {
-  const email = getCounsellorEmail();
-  if (!email) return;
+  useEffect(() => {
+    const email = getCounsellorEmail();
+    if (!email) return;
 
-  setClientLoading(true);
+    setClientLoading(true);
 
-  axios.get(`${BASE_URL}/api/crm/clients?creatoremail=${email}`)
-    .then(res => {
-      setCrmClientData(res.data?.data || []);
-      setClientLoading(false);
-    })
-    .catch(err => {
-      console.log("CRM CLIENT ERROR:", err);
-      setClientLoading(false);
-    });
-}, []);
+    axios.get(`${BASE_URL}/api/crm/clients?creatoremail=${email}`)
+      .then(res => {
+        setCrmClientData(res.data?.data || []);
+        setClientLoading(false);
+      })
+      .catch(err => {
+        console.log("CRM CLIENT ERROR:", err);
+        setClientLoading(false);
+      });
+  }, []);
 
   function customDateFormat(date) {
     if (date instanceof Date && !isNaN(date.valueOf())) {
@@ -1575,27 +1575,27 @@ useEffect(() => {
     setAddForexAmount(float.toFixed(2));
   };
   const getQuote = () => {
-   const partner = getPartner();
-const partnerEmailLocal = partner?.email || partner?.user?.email;
-const partnerTokenLocal = partner?.idToken || partner?.token;
+    const partner = getPartner();
+    const partnerEmailLocal = partner?.email || partner?.user?.email;
+    const partnerTokenLocal = partner?.idToken || partner?.token;
 
-if (!partnerEmailLocal) {
-  toast.error("Please login to continue");
-  return;
-}
+    if (!partnerEmailLocal) {
+      toast.error("Please login to continue");
+      return;
+    }
 
-let obj = {
-  token: partnerTokenLocal,
-  email: partnerEmailLocal,
-  app_code: "naavi",
-  profile_id: profileId,
-  coin_purchased: selectedCoin?.coinSymbol,
-  purchased_from: selectedCoin?.coinSymbol,
-  from_amount: addForexAmount,
-  stats: true,
-  identifier: `Add ${addForexAmount} ${selectedCoin?.coinSymbol} Via ${selectedPaymentMethod}`,
-  path_id: forexPathId,
-};
+    let obj = {
+      token: partnerTokenLocal,
+      email: partnerEmailLocal,
+      app_code: "naavi",
+      profile_id: profileId,
+      coin_purchased: selectedCoin?.coinSymbol,
+      purchased_from: selectedCoin?.coinSymbol,
+      from_amount: addForexAmount,
+      stats: true,
+      identifier: `Add ${addForexAmount} ${selectedCoin?.coinSymbol} Via ${selectedPaymentMethod}`,
+      path_id: forexPathId,
+    };
 
     axios
       .post(
@@ -1626,344 +1626,344 @@ let obj = {
   }
 
   const getBillingInfo = (billing_cycle = {}) => {
-  if (billing_cycle?.monthly?.price !== undefined) {
-    return {
-      type: "Monthly",
-      price: billing_cycle.monthly.price,
-      coin: billing_cycle.monthly.coin || "-"
-    };
-  }
+    if (billing_cycle?.monthly?.price !== undefined) {
+      return {
+        type: "Monthly",
+        price: billing_cycle.monthly.price,
+        coin: billing_cycle.monthly.coin || "-"
+      };
+    }
 
-  if (billing_cycle?.annual?.price !== undefined) {
-    return {
-      type: "Annual",
-      price: billing_cycle.annual.price,
-      coin: billing_cycle.annual.coin || "-"
-    };
-  }
+    if (billing_cycle?.annual?.price !== undefined) {
+      return {
+        type: "Annual",
+        price: billing_cycle.annual.price,
+        coin: billing_cycle.annual.coin || "-"
+      };
+    }
 
-  if (billing_cycle?.lifetime?.price !== undefined) {
-    return {
-      type: "One Time",
-      price: billing_cycle.lifetime.price,
-      coin: billing_cycle.lifetime.coin || "-"
-    };
-  }
+    if (billing_cycle?.lifetime?.price !== undefined) {
+      return {
+        type: "One Time",
+        price: billing_cycle.lifetime.price,
+        coin: billing_cycle.lifetime.coin || "-"
+      };
+    }
 
-  return {
-    type: "N/A",
-    price: "-",
-    coin: "-"
+    return {
+      type: "N/A",
+      price: "-",
+      coin: "-"
+    };
   };
-};
 
-const handleDownload = (type) => {
-  let filePath;
+  const handleDownload = (type) => {
+    let filePath;
 
-  if (type === "Path") {
-    filePath = "/PathTemplate.xlsx";
-  } else if (type === "Step") {
-    filePath = "/StepTemplate.xlsx";
-  } else {
-    filePath = "/ServiceTemplate.xlsx";
-  }
+    if (type === "Path") {
+      filePath = "/PathTemplate.xlsx";
+    } else if (type === "Step") {
+      filePath = "/StepTemplate.xlsx";
+    } else {
+      filePath = "/ServiceTemplate.xlsx";
+    }
 
-  const link = document.createElement("a");
-  link.href = filePath;
-  link.download = filePath.substring(filePath.lastIndexOf("/") + 1);
+    const link = document.createElement("a");
+    link.href = filePath;
+    link.download = filePath.substring(filePath.lastIndexOf("/") + 1);
 
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
-  // 🔥 Delay closing modal
-  setTimeout(() => {
-    resetpop();
-  }, 300);
-};
+    // 🔥 Delay closing modal
+    setTimeout(() => {
+      resetpop();
+    }, 300);
+  };
 
-return (
-<div style={{ height: "100vh", overflow: "hidden" }}>
-  <div className="dashboard-main">
-    <div className="dashboard-body">
-  <div onClick={() => setShowDrop(false)}>
-    <AccDashsidebar /> {/* ← Sidebar is always here */}
-  </div>
-  <div className="dashboard-screens"> {/* ← Content area */}
-        <div style={{ height: "100%" }}>
-  {viewPathMode ? (
-  createStepForPathId ? (
-    // FULL CONTENT: Create Step view
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
-      <div style={{
-        padding: "0 35px",
-        height: "60px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        borderBottom: "0.5px solid #E5E5E5",
-        background: "#fff",
-        flexShrink: 0
-      }}>
-        <div style={{
-          padding: "10px 30px",
-          borderRadius: "35px",
-          fontWeight: "700",
-          fontSize: "15px",
-          background: "rgba(241,241,241,0.5)"
-        }}>
-          Create New Step
-        </div>
-        <div
-          style={{
-            fontWeight: "600",
-            textDecorationLine: "underline",
-            cursor: "pointer",
-            fontSize: "0.9rem",
-            paddingRight: "35px"
-          }}
-          onClick={() => setCreateStepForPathId(null)}
-        >
-          ← Back to Path
-        </div>
-      </div>
-      <div style={{ flex: 1, overflowY: "auto", background: "#fff", minHeight: 0 }}>
-        <CreateNewStep
-          inlineMode={true}
-          pathId={createStepForPathId}
-          onSuccess={() => setCreateStepForPathId(null)}
-          onCancel={() => setCreateStepForPathId(null)}
-        />
-      </div>
-    </div>
-  ) : (
-    // FULL CONTENT: Path Details view
-    <>
-      <MenuNav
-        showDrop={showDrop}
-        setShowDrop={setShowDrop}
-        searchTerm={search}
-        setSearchterm={setSearch}
-        searchPlaceholder="Search Path..."
-      />
-      <div
-        className="services-main"
-        style={{ height: "calc(100% - 70px)" }}
-        onClick={() => setShowDrop(false)}
-      >
-<div
-  className="services-all-menu"
-  style={{
-    borderBottom: "0.5px solid #E5E5E5",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center"
-  }}
->
-  <div className="services-each-menu" style={{ fontWeight: "700" }}>
-    Path Details
-  </div>
+  return (
+    <div style={{ height: "100vh", overflow: "hidden" }}>
+      <div className="dashboard-main">
+        <div className="dashboard-body">
+          <div onClick={() => setShowDrop(false)}>
+            <AccDashsidebar /> {/* ← Sidebar is always here */}
+          </div>
+          <div className="dashboard-screens"> {/* ← Content area */}
+            <div style={{ height: "100%" }}>
+              {viewPathMode ? (
+                createStepForPathId ? (
+                  // FULL CONTENT: Create Step view
+                  <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
+                    <div style={{
+                      padding: "0 35px",
+                      height: "60px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      borderBottom: "0.5px solid #E5E5E5",
+                      background: "#fff",
+                      flexShrink: 0
+                    }}>
+                      <div style={{
+                        padding: "10px 30px",
+                        borderRadius: "35px",
+                        fontWeight: "700",
+                        fontSize: "15px",
+                        background: "rgba(241,241,241,0.5)"
+                      }}>
+                        Create New Step
+                      </div>
+                      <div
+                        style={{
+                          fontWeight: "600",
+                          textDecorationLine: "underline",
+                          cursor: "pointer",
+                          fontSize: "0.9rem",
+                          paddingRight: "35px"
+                        }}
+                        onClick={() => setCreateStepForPathId(null)}
+                      >
+                        ← Back to Path
+                      </div>
+                    </div>
+                    <div style={{ flex: 1, overflowY: "auto", background: "#fff", minHeight: 0 }}>
+                      <CreateNewStep
+                        inlineMode={true}
+                        pathId={createStepForPathId}
+                        onSuccess={() => setCreateStepForPathId(null)}
+                        onCancel={() => setCreateStepForPathId(null)}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  // FULL CONTENT: Path Details view
+                  <>
+                    <MenuNav
+                      showDrop={showDrop}
+                      setShowDrop={setShowDrop}
+                      searchTerm={search}
+                      setSearchterm={setSearch}
+                      searchPlaceholder="Search Path..."
+                    />
+                    <div
+                      className="services-main"
+                      style={{ height: "calc(100% - 70px)" }}
+                      onClick={() => setShowDrop(false)}
+                    >
+                      <div
+                        className="services-all-menu"
+                        style={{
+                          borderBottom: "0.5px solid #E5E5E5",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center"
+                        }}
+                      >
+                        <div className="services-each-menu" style={{ fontWeight: "700" }}>
+                          Path Details
+                        </div>
 
-  <button
-    onClick={() => {
-      setViewPathMode(false);
-      navigate('/dashboard/accountants');
-    }}
-    style={{
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "8px",
-  padding: "6px 12px",        // ← reduced from "8px 20px"
-  backgroundColor: "#f0f4f9",
-  border: "none",
-  borderRadius: "40px",
-  color: "#1f304f",
-  fontSize: "13px",            // ← slightly smaller text too
-  fontWeight: "700",
-  cursor: "pointer",
-  marginLeft: "auto",
-  marginRight: "35px"
-}}
-  >
-    ← Back to Paths
-  </button>
-</div>
-        <DraftPathView onAddStep={(pathId) => setCreateStepForPathId(pathId)} />
-      </div>
-    </>
-  )
-) : accsideNav === "CREATE_PATH" ? (
-  // SHOW CREATE NEW PATH AS FULL PAGE - WITHOUT THE HEADER TABS
-  <div style={{ 
-    display: "flex", 
-    flexDirection: "column", 
-    height: "100%", 
-    width: "100%",
-    overflow: "hidden"
-  }}>
-    {/* Use MenuNav but hide the search and user section if needed, or create a simpler header */}
- 
-    
-   
-<div style={{
-  padding: "0 35px",
-  height: "60px",
-  display: "flex",
-  alignItems: "center",
-  borderBottom: "0.5px solid #E5E5E5",
-  flexShrink: 0,
-  backgroundColor: "#ffffff"
-}}>
-  <div style={{ 
-    padding: "10px 30px",
-    borderRadius: "35px",
-    fontWeight: "700",
-    fontSize: "15px",
-    color: "#1f304f",
-    background: "rgba(241, 241, 241, 0.5)"
-  }}>
-    Create New Path
-  </div>
-</div>
-<div style={{ 
-  flex: 1, 
-  minHeight: 0, 
-  overflowY: "auto",
-  padding: "0", // REMOVED ALL PADDING - let CreateNewPath handle it
-  backgroundColor: "#ffffff"
-}}>
-  <CreateNewPath 
-    setpstep={setpstep}
-    setaccsideNav={setaccsideNav} 
-    pathSubmission={pathSubmission}
-    pathSteps={pathSteps}
-    setPathSteps={setPathSteps}
-    grade={grade}
-    setGrade={setGrade}
-    gradeAvg={gradeAvg}
-    setGradeAvg={setGradeAvg}
-    curriculum={curriculum}
-    setCurriculum={setCurriculum}
-    stream={stream}
-    setStream={setStream}
-    finance={finance}
-    setFinance={setFinance}
-    personality={personality}
-    setPersonality={setPersonality}
-    gradeList={gradeList}
-    gradePointAvg={gradePointAvg}
-    curriculumList={curriculumList}
-    streamList={streamList}
-    financeList={financeList}
-    personalityList={personalityList}
-    countryApiValue={countryApiValue}
-    handleGrade={handleGrade}
-    handleGradeAvg={handleGradeAvg}
-    handleCurriculum={handleCurriculum}
-    handleStream={handleStream}
-    handleFinance={handleFinance}
-    handlePersonality={handlePersonality}
-  />
-</div>
+                        <button
+                          onClick={() => {
+                            setViewPathMode(false);
+                            navigate('/dashboard/accountants');
+                          }}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            padding: "6px 12px",        // ← reduced from "8px 20px"
+                            backgroundColor: "#f0f4f9",
+                            border: "none",
+                            borderRadius: "40px",
+                            color: "#1f304f",
+                            fontSize: "13px",            // ← slightly smaller text too
+                            fontWeight: "700",
+                            cursor: "pointer",
+                            marginLeft: "auto",
+                            marginRight: "35px"
+                          }}
+                        >
+                          ← Back to Paths
+                        </button>
+                      </div>
+                      <DraftPathView onAddStep={(pathId) => setCreateStepForPathId(pathId)} />
+                    </div>
+                  </>
+                )
+              ) : accsideNav === "CREATE_PATH" ? (
+                // SHOW CREATE NEW PATH AS FULL PAGE - WITHOUT THE HEADER TABS
+                <div style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                  width: "100%",
+                  overflow: "hidden"
+                }}>
+                  {/* Use MenuNav but hide the search and user section if needed, or create a simpler header */}
 
- </div>
- // REPLACE WITH:
-) : accsideNav === "CREATE_STEP" ? (
-<div style={{
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
-    width: "100%",
-    overflow: "hidden"
-  }}>
-    <div style={{
-      padding: "0 35px",
-      height: "60px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      borderBottom: "0.5px solid #E5E5E5",
-      background: "#fff",
-      flexShrink: 0
-    }}>
-      <div style={{
-        padding: "10px 30px",
-        borderRadius: "35px",
-        fontWeight: "700",
-        background: "rgba(241,241,241,.5)"
-      }}>
-        Create New Step
-      </div>
-      <div
-        style={{
-          fontWeight: "600",
-          textDecorationLine: "underline",
-          cursor: "pointer",
-          fontSize: "0.9rem",
-          paddingRight: "35px"
-        }}
-        onClick={() => setaccsideNav("Paths")}
-      >
-        ← Back to My Paths
-      </div>
-    </div>
-    <div style={{
-      flex: 1,
-      overflowY: "auto",
-      background: "#fff",
-      minHeight: 0
-    }}>
-      <CreateNewStep
-        inlineMode={true}
-        onCancel={() => setaccsideNav("Paths")}
-        onSuccess={() => setaccsideNav("Paths")}
-      />
-    </div>
-  </div>
-       ) : accsideNav === "CREATE_SERVICE" ? (
-  // SHOW CREATE NEW SERVICE AS FULL PAGE - WITHOUT THE HEADER TABS
-  <div style={{ 
-    display: "flex", 
-    flexDirection: "column", 
-    height: "100%", 
-    width: "100%",
-    overflow: "hidden"
-  }}>
-    <div style={{
-      padding: "0 35px",
-      height: "60px",
-      display: "flex",
-      alignItems: "center",
-      borderBottom: "0.5px solid #E5E5E5",
-      flexShrink: 0,
-      backgroundColor: "#ffffff"
-    }}>
-      <div style={{ 
-        padding: "10px 30px",
-        borderRadius: "35px",
-        fontWeight: "700",
-        fontSize: "15px",
-        color: "#1f304f",
-        background: "rgba(241, 241, 241, 0.5)"
-      }}>
-        Create New Service
-      </div>
-    </div>
-    <div style={{ 
-      flex: 1, 
-      minHeight: 0, 
-      overflowY: "auto",
-      padding: "0",
-      backgroundColor: "#ffffff"
-    }}>
-      <CreateNewService 
-        setaccsideNav={setaccsideNav}
-      />
-    </div>
-  </div>
-        
-) : accsideNav === "CRM" ? (
-            // ... keep ALL your existing CRM code exactly as is
+
+
+                  <div style={{
+                    padding: "0 35px",
+                    height: "60px",
+                    display: "flex",
+                    alignItems: "center",
+                    borderBottom: "0.5px solid #E5E5E5",
+                    flexShrink: 0,
+                    backgroundColor: "#ffffff"
+                  }}>
+                    <div style={{
+                      padding: "10px 30px",
+                      borderRadius: "35px",
+                      fontWeight: "700",
+                      fontSize: "15px",
+                      color: "#1f304f",
+                      background: "rgba(241, 241, 241, 0.5)"
+                    }}>
+                      Create New Path
+                    </div>
+                  </div>
+                  <div style={{
+                    flex: 1,
+                    minHeight: 0,
+                    overflowY: "auto",
+                    padding: "0", // REMOVED ALL PADDING - let CreateNewPath handle it
+                    backgroundColor: "#ffffff"
+                  }}>
+                    <CreateNewPath
+                      setpstep={setpstep}
+                      setaccsideNav={setaccsideNav}
+                      pathSubmission={pathSubmission}
+                      pathSteps={pathSteps}
+                      setPathSteps={setPathSteps}
+                      grade={grade}
+                      setGrade={setGrade}
+                      gradeAvg={gradeAvg}
+                      setGradeAvg={setGradeAvg}
+                      curriculum={curriculum}
+                      setCurriculum={setCurriculum}
+                      stream={stream}
+                      setStream={setStream}
+                      finance={finance}
+                      setFinance={setFinance}
+                      personality={personality}
+                      setPersonality={setPersonality}
+                      gradeList={gradeList}
+                      gradePointAvg={gradePointAvg}
+                      curriculumList={curriculumList}
+                      streamList={streamList}
+                      financeList={financeList}
+                      personalityList={personalityList}
+                      countryApiValue={countryApiValue}
+                      handleGrade={handleGrade}
+                      handleGradeAvg={handleGradeAvg}
+                      handleCurriculum={handleCurriculum}
+                      handleStream={handleStream}
+                      handleFinance={handleFinance}
+                      handlePersonality={handlePersonality}
+                    />
+                  </div>
+
+                </div>
+                // REPLACE WITH:
+              ) : accsideNav === "CREATE_STEP" ? (
+                <div style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                  width: "100%",
+                  overflow: "hidden"
+                }}>
+                  <div style={{
+                    padding: "0 35px",
+                    height: "60px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    borderBottom: "0.5px solid #E5E5E5",
+                    background: "#fff",
+                    flexShrink: 0
+                  }}>
+                    <div style={{
+                      padding: "10px 30px",
+                      borderRadius: "35px",
+                      fontWeight: "700",
+                      background: "rgba(241,241,241,.5)"
+                    }}>
+                      Create New Step
+                    </div>
+                    <div
+                      style={{
+                        fontWeight: "600",
+                        textDecorationLine: "underline",
+                        cursor: "pointer",
+                        fontSize: "0.9rem",
+                        paddingRight: "35px"
+                      }}
+                      onClick={() => setaccsideNav("Paths")}
+                    >
+                      ← Back to My Paths
+                    </div>
+                  </div>
+                  <div style={{
+                    flex: 1,
+                    overflowY: "auto",
+                    background: "#fff",
+                    minHeight: 0
+                  }}>
+                    <CreateNewStep
+                      inlineMode={true}
+                      onCancel={() => setaccsideNav("Paths")}
+                      onSuccess={() => setaccsideNav("Paths")}
+                    />
+                  </div>
+                </div>
+              ) : accsideNav === "CREATE_SERVICE" ? (
+                // SHOW CREATE NEW SERVICE AS FULL PAGE - WITHOUT THE HEADER TABS
+                <div style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                  width: "100%",
+                  overflow: "hidden"
+                }}>
+                  <div style={{
+                    padding: "0 35px",
+                    height: "60px",
+                    display: "flex",
+                    alignItems: "center",
+                    borderBottom: "0.5px solid #E5E5E5",
+                    flexShrink: 0,
+                    backgroundColor: "#ffffff"
+                  }}>
+                    <div style={{
+                      padding: "10px 30px",
+                      borderRadius: "35px",
+                      fontWeight: "700",
+                      fontSize: "15px",
+                      color: "#1f304f",
+                      background: "rgba(241, 241, 241, 0.5)"
+                    }}>
+                      Create New Service
+                    </div>
+                  </div>
+                  <div style={{
+                    flex: 1,
+                    minHeight: 0,
+                    overflowY: "auto",
+                    padding: "0",
+                    backgroundColor: "#ffffff"
+                  }}>
+                    <CreateNewService
+                      setaccsideNav={setaccsideNav}
+                    />
+                  </div>
+                </div>
+
+              ) : accsideNav === "CRM" ? (
+                // ... keep ALL your existing CRM code exactly as is
                 <>
                   <MenuNav
                     showDrop={showDrop}
@@ -2016,33 +2016,33 @@ return (
                         Clients
                       </div>
 
-   <div
-  className="crm-each-menu"
-  style={{
-    display: crmMenu === "Purchases" ? "" : "none",
-    background: crmMenu === "Purchases" ? "rgba(241,241,241,0.5)" : "",
-    fontWeight: crmMenu === "Purchases" ? "700" : "",
-  }}
-  onClick={() => {
-    setcrmMenu("Purchases");
-    setSearch("");
-  }}
->
-  Purchases (<span>{crmPurchaseData.length}</span>)
-</div>
+                      <div
+                        className="crm-each-menu"
+                        style={{
+                          display: crmMenu === "Purchases" ? "" : "none",
+                          background: crmMenu === "Purchases" ? "rgba(241,241,241,0.5)" : "",
+                          fontWeight: crmMenu === "Purchases" ? "700" : "",
+                        }}
+                        onClick={() => {
+                          setcrmMenu("Purchases");
+                          setSearch("");
+                        }}
+                      >
+                        Purchases (<span>{crmPurchaseData.length}</span>)
+                      </div>
 
-<div
-  className="crm-each-menu"
-  style={{
-    display: crmMenu !== "Purchases" ? "" : "none",
-  }}
-  onClick={() => {
-    setcrmMenu("Purchases");
-    setSearch("");
-  }}
->
-  Purchases
-</div>
+                      <div
+                        className="crm-each-menu"
+                        style={{
+                          display: crmMenu !== "Purchases" ? "" : "none",
+                        }}
+                        onClick={() => {
+                          setcrmMenu("Purchases");
+                          setSearch("");
+                        }}
+                      >
+                        Purchases
+                      </div>
 
                     </div>
                     <div className="crm-all-box">
@@ -2108,13 +2108,13 @@ return (
                                   ))}
                               </div>
                             ) : isLoading ? (
-<div className="follow-data-main">
-  {[1, 2, 3, 4, 5, 6].map((each, index) => (
-    <div key={index} className="follower-box">
-      <div className="follower-details">
-        <div>
-          <Skeleton className="user-icon" />
-        </div>
+                              <div className="follow-data-main">
+                                {[1, 2, 3, 4, 5, 6].map((each, index) => (
+                                  <div key={index} className="follower-box">
+                                    <div className="follower-details">
+                                      <div>
+                                        <Skeleton className="user-icon" />
+                                      </div>
 
                                       <Skeleton
                                         className="follower-mail"
@@ -2134,7 +2134,7 @@ return (
                           </>
                         </>
                       ) : crmMenu === "Purchases" ? (
-                      <PurchasePage purchaseData={crmPurchaseData} search={search} />
+                        <PurchasePage purchaseData={crmPurchaseData} search={search} />
 
                       ) : crmMenu === "Clients" ? (
                         <>
@@ -2472,64 +2472,63 @@ return (
                     </div>
                     <div>
                       <>
-                       {servicesMenu === "Services" ? (
-  <>
-    <div
-      className="crm-follow-tab"
-      style={{ padding: "10px 35px" }}
-    >
-      <div className="crm-follow-col2">Name</div>
-      <div className="crm-follow-col2">
-        Billing Frequency
-      </div>
-      <div className="crm-follow-col2">
-        Billing Amount
-      </div>
-      <div className="crm-follow-col2">
-        Currency
-      </div>
-    </div>
-    
-    {/* Add style to enable scrolling */}
-    <div className="services-table-wrapper" style={{ 
-      maxHeight: "calc(100vh - 200px)", // Adjust this value as needed
-      overflowY: "auto" 
-    }}>
-{servicesAcc.length > 0 ? (
-  <div className="services-list">
-    {servicesAcc
-      .filter(each =>
-        each?.name?.toLowerCase().includes(search.toLowerCase())
-      )
-      .map((each) => {
-        const billing = getBillingInfo(each?.billing_cycle);
+                        {servicesMenu === "Services" ? (
+                          <>
+                            <div
+                              className="crm-follow-tab"
+                              style={{ padding: "10px 35px" }}
+                            >
+                              <div className="crm-follow-col2">Name</div>
+                              <div className="crm-follow-col2">
+                                Billing Frequency
+                              </div>
+                              <div className="crm-follow-col2">
+                                Billing Amount
+                              </div>
+                              <div className="crm-follow-col2">
+                                Currency
+                              </div>
+                            </div>
 
-        return (
-          <div
-            key={each._id}   // ✅ FIXED
-            className={`service-row ${
-              selectedFollower === each ? "active" : ""
-            }`}
-            onClick={() => {
-              setServiceActionEnabled(true);
-              setSelectedService(each);
-              setServiceActionStep(1);
-              setSelectedFollower(each);
-            }}
-          >
-            <div className="service-cell name">{each?.name}</div>
-            <div className="service-cell">{billing.type}</div>
-            <div className="service-cell">{billing.price}</div>
-            <div className="service-cell">{billing.coin}</div>
-          </div>
-        );
-      })}
-  </div>
-) : (
-  <div className="services-empty">Coming Soon</div>
-)}
+                            {/* Add style to enable scrolling */}
+                            <div className="services-table-wrapper" style={{
+                              maxHeight: "calc(100vh - 200px)", // Adjust this value as needed
+                              overflowY: "auto"
+                            }}>
+                              {servicesAcc.length > 0 ? (
+                                <div className="services-list">
+                                  {servicesAcc
+                                    .filter(each =>
+                                      each?.name?.toLowerCase().includes(search.toLowerCase())
+                                    )
+                                    .map((each) => {
+                                      const billing = getBillingInfo(each?.billing_cycle);
 
-</div>
+                                      return (
+                                        <div
+                                          key={each._id}   // ✅ FIXED
+                                          className={`service-row ${selectedFollower === each ? "active" : ""
+                                            }`}
+                                          onClick={() => {
+                                            setServiceActionEnabled(true);
+                                            setSelectedService(each);
+                                            setServiceActionStep(1);
+                                            setSelectedFollower(each);
+                                          }}
+                                        >
+                                          <div className="service-cell name">{each?.name}</div>
+                                          <div className="service-cell">{billing.type}</div>
+                                          <div className="service-cell">{billing.price}</div>
+                                          <div className="service-cell">{billing.coin}</div>
+                                        </div>
+                                      );
+                                    })}
+                                </div>
+                              ) : (
+                                <div className="services-empty">Coming Soon</div>
+                              )}
+
+                            </div>
 
 
                           </>
@@ -2845,24 +2844,24 @@ return (
                     <MyPaths search={search} fetchAllServicesAgain={fetchAllServicesAgain} />
                   </div>
                 </>
-) : accsideNav === "Steps" ? (
+              ) : accsideNav === "Steps" ? (
 
-    <MyStepsAcc
-      search={search}
-      setSearch={setSearch}
-      showDrop={showDrop}
-      setShowDrop={setShowDrop}
-      loading={loading}
-      setLoading={setLoading}
-    />
+                <MyStepsAcc
+                  search={search}
+                  setSearch={setSearch}
+                  showDrop={showDrop}
+                  setShowDrop={setShowDrop}
+                  loading={loading}
+                  setLoading={setLoading}
+                />
 
-)
-: (
-  <div className="services-main">
-    Coming Soon
-  </div>
+              )
+                : (
+                  <div className="services-main">
+                    Coming Soon
+                  </div>
 
-)}
+                )}
             </div>
           </div>
         </div>
@@ -2879,8 +2878,8 @@ return (
             <div className="acc-popular-top">
               <div className="acc-popular-head">
                 {pstep > 1 && pstep < 8
-                    ? "New Service"
-                    : "Popular Actions"}
+                  ? "New Service"
+                  : "Popular Actions"}
               </div>
               <div
                 className="acc-popular-img-box"
@@ -2896,35 +2895,35 @@ return (
                   {/* <div className="acc-step-text">New</div> */}
                   <div>
                     <div
-  className="acc-step-box"
-  onClick={() => {
-    setselectNew("Service");
-    setispopular(false); // Close the modal
-    setaccsideNav("CREATE_SERVICE"); // Set navigation to show create service
-  }}
-  style={{
-    background: selectNew === "Service" ? "#182542" : "",
-    color: selectNew === "Service" ? "#FFF" : "",
-  }}
->
-  Service
-</div>
+                      className="acc-step-box"
+                      onClick={() => {
+                        setselectNew("Service");
+                        setispopular(false); // Close the modal
+                        setaccsideNav("CREATE_SERVICE"); // Set navigation to show create service
+                      }}
+                      style={{
+                        background: selectNew === "Service" ? "#182542" : "",
+                        color: selectNew === "Service" ? "#FFF" : "",
+                      }}
+                    >
+                      Service
+                    </div>
 
                     <div
-  className="acc-step-box"
-  onClick={() => {
-    setselectNew("Path");
-    setispopular(false); // Close the modal
-    setaccsideNav("CREATE_PATH"); // Set navigation to show create path
-    // Don't call resetpop() here - it might reset things we need
-  }}
-  style={{
-    background: selectNew === "Path" ? "#182542" : "",
-    color: selectNew === "Path" ? "#FFF" : "",
-  }}
->
-  Path
-</div>
+                      className="acc-step-box"
+                      onClick={() => {
+                        setselectNew("Path");
+                        setispopular(false); // Close the modal
+                        setaccsideNav("CREATE_PATH"); // Set navigation to show create path
+                        // Don't call resetpop() here - it might reset things we need
+                      }}
+                      style={{
+                        background: selectNew === "Path" ? "#182542" : "",
+                        color: selectNew === "Path" ? "#FFF" : "",
+                      }}
+                    >
+                      Path
+                    </div>
 
                     {/* <div
                       className="acc-step-box"
@@ -2939,38 +2938,38 @@ return (
                     >
                       Step
                     </div> */}
-                   <div
-  className="acc-step-box"
-  data-type="bulk-service"
-  onClick={() => {
-    setselectNew("Bulk Service");
-    setpstep(13);
-  }}
->
-  Bulk Service
-</div>
+                    <div
+                      className="acc-step-box"
+                      data-type="bulk-service"
+                      onClick={() => {
+                        setselectNew("Bulk Service");
+                        setpstep(13);
+                      }}
+                    >
+                      Bulk Service
+                    </div>
 
-<div
-  className="acc-step-box"
-  data-type="bulk-path"
-  onClick={() => {
-    setselectNew("Bulk Path");
-    setpstep(10);
-  }}
->
-  Bulk Path
-</div>
+                    <div
+                      className="acc-step-box"
+                      data-type="bulk-path"
+                      onClick={() => {
+                        setselectNew("Bulk Path");
+                        setpstep(10);
+                      }}
+                    >
+                      Bulk Path
+                    </div>
 
-<div
-  className="acc-step-box"
-  data-type="bulk-step"
-  onClick={() => {
-    setselectNew("Bulk Step");
-    setpstep(11);
-  }}
->
-  Bulk Step
-</div>
+                    <div
+                      className="acc-step-box"
+                      data-type="bulk-step"
+                      onClick={() => {
+                        setselectNew("Bulk Step");
+                        setpstep(11);
+                      }}
+                    >
+                      Bulk Step
+                    </div>
                   </div>
                 </div>
               ) : pstep === 2 ? (
@@ -3039,31 +3038,31 @@ return (
                   <>
                     {isCatoading ? (
                       <div className="acc-step-allbox">
-                       {[1, 2, 3].map((each, i) => (
-  <div className="acc-step-box" key={i}>
-    <Skeleton style={{ width: "150px" }} />
-  </div>
-))}
+                        {[1, 2, 3].map((each, i) => (
+                          <div className="acc-step-box" key={i}>
+                            <Skeleton style={{ width: "150px" }} />
+                          </div>
+                        ))}
 
-                       
+
                       </div>
                     ) : (
                       <div className="acc-step-allbox">
                         {categoriesData.map((each, i) => (
-<div
-  className="acc-step-box"
-  key={each._id}
-  onClick={() => {
-    setselectCategory(each.name);
-    setpstep(4);
-  }}
-  style={{
-    background: selectCategory === each.name ? "#182542" : "",
-    color: selectCategory === each.name ? "#FFF" : "",
-  }}
->
-  {each.name}
-</div>
+                          <div
+                            className="acc-step-box"
+                            key={each._id}
+                            onClick={() => {
+                              setselectCategory(each.name);
+                              setpstep(4);
+                            }}
+                            style={{
+                              background: selectCategory === each.name ? "#182542" : "",
+                              color: selectCategory === each.name ? "#FFF" : "",
+                            }}
+                          >
+                            {each.name}
+                          </div>
 
                         ))}
                       </div>
@@ -3220,11 +3219,11 @@ return (
                         className="acc-step-allbox"
                         style={{ height: "calc(100% - 76px - 7.5rem)" }}
                       >
-{[1, 2, 3].map((each, i) => (
-  <div className="acc-step-box" key={i}>
-    <Skeleton style={{ width: "150px" }} />
-  </div>
-))}
+                        {[1, 2, 3].map((each, i) => (
+                          <div className="acc-step-box" key={i}>
+                            <Skeleton style={{ width: "150px" }} />
+                          </div>
+                        ))}
 
                       </div>
                     ) : (
@@ -3568,7 +3567,7 @@ return (
                 ""
               )}
 
-              
+
             </>
           </div>
         ) : (
@@ -3576,100 +3575,100 @@ return (
         )}
 
         {showStepsModal && (
-  <div
-    className="modal-overlay"
-    style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      background: "rgba(0,0,0,0.5)",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      zIndex: 1000
-    }}
-  >
-    <div
-      style={{
-        background: "white",
-        borderRadius: "32px",
-        padding: "40px",
-        maxWidth: "500px",
-        width: "90%",
-        boxShadow: "0 30px 60px rgba(0,0,0,0.3)"
-      }}
-    >
-      <h2 style={{ fontSize: "24px", color: "#0b1e3a", marginBottom: "16px" }}>
-        Add Steps to Your Path
-      </h2>
+          <div
+            className="modal-overlay"
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              background: "rgba(0,0,0,0.5)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 1000
+            }}
+          >
+            <div
+              style={{
+                background: "white",
+                borderRadius: "32px",
+                padding: "40px",
+                maxWidth: "500px",
+                width: "90%",
+                boxShadow: "0 30px 60px rgba(0,0,0,0.3)"
+              }}
+            >
+              <h2 style={{ fontSize: "24px", color: "#0b1e3a", marginBottom: "16px" }}>
+                Add Steps to Your Path
+              </h2>
 
-      <p style={{ color: "#617388", marginBottom: "24px" }}>
-        How many steps do you want to add to this path? You can add as many as you need.
-      </p>
+              <p style={{ color: "#617388", marginBottom: "24px" }}>
+                How many steps do you want to add to this path? You can add as many as you need.
+              </p>
 
-      <input
-        type="number"
-        min="1"
-        value={stepCount}
-        onChange={(e) => setStepCount(e.target.value)}
-        placeholder="Enter number of steps"
-        style={{
-          width: "100%",
-          padding: "16px",
-          border: "1.5px solid #dce3ec",
-          borderRadius: "16px",
-          fontSize: "18px",
-          marginBottom: "24px"
-        }}
-      />
+              <input
+                type="number"
+                min="1"
+                value={stepCount}
+                onChange={(e) => setStepCount(e.target.value)}
+                placeholder="Enter number of steps"
+                style={{
+                  width: "100%",
+                  padding: "16px",
+                  border: "1.5px solid #dce3ec",
+                  borderRadius: "16px",
+                  fontSize: "18px",
+                  marginBottom: "24px"
+                }}
+              />
 
-      <div style={{ display: "flex", gap: "16px", justifyContent: "flex-end" }}>
-        <button
-          onClick={() => setShowStepsModal(false)}
-          style={{
-            padding: "16px 42px",
-            borderRadius: "50px",
-            fontWeight: "700",
-            fontSize: "16px",
-            border: "2px solid #d3deed",
-            background: "white",
-            color: "#1f3a5f",
-            cursor: "pointer"
-          }}
-        >
-          Cancel
-        </button>
+              <div style={{ display: "flex", gap: "16px", justifyContent: "flex-end" }}>
+                <button
+                  onClick={() => setShowStepsModal(false)}
+                  style={{
+                    padding: "16px 42px",
+                    borderRadius: "50px",
+                    fontWeight: "700",
+                    fontSize: "16px",
+                    border: "2px solid #d3deed",
+                    background: "white",
+                    color: "#1f3a5f",
+                    cursor: "pointer"
+                  }}
+                >
+                  Cancel
+                </button>
 
-        <button
-onClick={() => {
-  setShowStepsModal(false);
-  setispopular(false);
-  setaccsideNav("CREATE_STEP");
-}}
-          style={{
-            padding: "16px 42px",
-            borderRadius: "50px",
-            fontWeight: "700",
-            fontSize: "16px",
-            border: "none",
-            background: "#2a9d8f",
-            color: "white",
-            cursor: "pointer"
-          }}
-        >
-          Continue →
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+                <button
+                  onClick={() => {
+                    setShowStepsModal(false);
+                    setispopular(false);
+                    setaccsideNav("CREATE_STEP");
+                  }}
+                  style={{
+                    padding: "16px 42px",
+                    borderRadius: "50px",
+                    fontWeight: "700",
+                    fontSize: "16px",
+                    border: "none",
+                    background: "#2a9d8f",
+                    color: "white",
+                    cursor: "pointer"
+                  }}
+                >
+                  Continue →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </>
 
       {/* Keep all your other modal code (coinActionEnabled, serviceActionEnabled, addCompPlan) exactly as is */}
       {/* ... */}
-      
+
       <ToastContainer />
     </div>
   );

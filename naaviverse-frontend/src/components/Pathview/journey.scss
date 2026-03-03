@@ -127,13 +127,12 @@ body {
 }
 
 .dashboard-screens {
-  max-width: 1100px;
-  margin: 0 auto;
+  flex: 1;              
   min-height: 100vh;
-  overflow-y: auto;   // keep this
+  overflow-y: auto;
+  overflow-x: hidden;  
+  position: relative;   
 }
-
-
 
 /* Journey Page Container */
 .journeypage {
@@ -332,12 +331,16 @@ body {
 /* Keep existing drawer styles */
 .global-drawer-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 20vw;     // ← SKIP THE SIDEBAR WIDTH
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.45);
   z-index: 9999;
   display: flex;
   justify-content: flex-end;
 }
+
 
 .global-drawer-panel {
   width: 420px;

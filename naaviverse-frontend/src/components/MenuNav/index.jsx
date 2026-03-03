@@ -33,20 +33,20 @@ const MenuNav = ({
     setShowDrop(false);
 
     const adminUser = localStorage.getItem("adminuser");
-    const userType = localStorage.getItem("userType");
-
     if (adminUser) {
-      // Admin profile handled via event
       window.dispatchEvent(new Event("openAdminProfile"));
       return;
     }
 
-    if (userType === "user") {
-      navigate("/dashboard/users/profile");
-    } else if (userType === "partner") {
+    // ✅ KEY FIX: check "partner" key, not "userType"
+    const partner = localStorage.getItem("partner");
+    if (partner) {
       navigate("/dashboard/accountants/profile");
+    } else {
+      navigate("/dashboard/users/profile");
     }
   };
+
 
   const profilePic = localStorage.getItem("userProfilePic") || profile;
 
