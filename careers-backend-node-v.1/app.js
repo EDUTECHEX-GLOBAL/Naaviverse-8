@@ -70,6 +70,7 @@ mongoose
 
 const allowedOrigins = [
   "http://localhost:3000",
+  "http://localhost:4545",   // ✅ ADD THIS
   "https://naaviverse-vercel-frontend-sigma.vercel.app"
 ];
 

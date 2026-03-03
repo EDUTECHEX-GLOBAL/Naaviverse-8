@@ -9,6 +9,9 @@ router.get("/get", stepsController.getSteps);
 router.put("/update/:id", stepsController.updateStep);
 router.delete("/delete/:id", stepsController.deleteStep);
 router.put("/restore/:id", [verifyToken], stepsController.restoreStep);
+
+router.put("/detach/:stepId", stepsController.detachStepFromPath);
+router.put("/toggle-status/:stepId", stepsController.toggleStepStatus);
 // ⭐ BULK UPLOAD (KEEP BEFORE dynamic routes)
 router.post("/bulk", stepsController.bulkUploadSteps);
 console.log("bulkUploadSteps =>", stepsController.bulkUploadSteps);

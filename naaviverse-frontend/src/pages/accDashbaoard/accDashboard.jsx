@@ -2455,7 +2455,7 @@ const AccDashboard = () => {
                           setSearch("");
                         }}
                       >
-                        Services (<span>{servicesAcc.length}</span>)
+                        {/* Services (<span>{servicesAcc.length}</span>) */}
                       </div>
                       <div
                         className="services-each-menu"

@@ -2,7 +2,7 @@
 
 const serviceModel = require("../models/services.model");
 const mongoose = require("mongoose");
-
+const stepModel = require("../models/steps.model"); 
 /**
  * Add a new service
  */
@@ -302,7 +302,36 @@ const updateServiceIcon = async (req, res) => {
     return res.status(500).json({ status: false, message: "Server error", error: error.message });
   }
 };
+const getStepsUsingService = async (req, res) => {
+  try {
+    const { serviceId } = req.params;
 
+    if (!mongoose.Types.ObjectId.isValid(serviceId)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid service ID"
+      });
+    }
+
+    const steps = await stepModel.find({
+      services: serviceId,
+      status: "active"
+    }).select("name description");
+
+    return res.json({
+      status: true,
+      total: steps.length,
+      data: steps
+    });
+
+  } catch (error) {
+    console.error("Error fetching steps using service:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Server error"
+    });
+  }
+};
 module.exports = {
   addService,
   getServices,
@@ -313,4 +342,5 @@ module.exports = {
   bulkUploadServices,
   updateServiceIcon,    
   getAllServicesForAdmin,
+  getStepsUsingService ,
 };

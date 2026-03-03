@@ -33,13 +33,13 @@
       }
     }
   
-    .sidebar-line{
-      padding-right: 2vw;
-      margin: 30px 0px;
-      height: 1px;
-      width: 100%;
-      margin-left: -20px;
-    }
+    // .sidebar-line{
+    //   padding-right: 2vw;
+    //   margin: 30px 0px;
+    //   height: 1px;
+    //   width: 100%;
+    //   margin-left: -20px;
+    // }
   }
 
   .dashboard-logo{
@@ -53,3 +53,19 @@
     cursor: pointer;
     @include btn-animate(#FFF);
   }
+
+
+  // Hide the white line
+.sidebar-line {
+  display: none !important;
+}
+
+// Add this to your existing dashboard-sidebar styles
+.dashboard-sidebar {
+  .dashboard-left {
+    border-bottom: none !important; // Remove the border
+    
+    // If you want to keep some separation, use a very subtle shadow instead
+    // box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+  }
+}
