@@ -46,6 +46,38 @@ router.get("/formatted/list", async (req, res) => {
   }
 });
 
+    /**************************************************************
+ *  8️⃣ NAME SEARCH (For Destination Field Autocomplete)
+ **************************************************************/
+router.get("/search", async (req, res) => {
+  try {
+    const { q } = req.query;
+
+    if (!q) {
+      return res.json({ status: true, data: [] });
+    }
+
+    const universities = await Universities.find({
+      name: { $regex: q, $options: "i" }
+    })
+      .limit(20)
+      .select({ name: 1 })
+      .lean();
+
+    return res.json({
+      status: true,
+      data: universities
+    });
+
+  } catch (err) {
+    console.error("Search error:", err);
+    return res.status(500).json({
+      status: false,
+      error: err.message
+    });
+  }
+});
+
 /**************************************************************
  *  2️⃣ FIND OR CREATE + GENERATE USING PERPLEXITY
  **************************************************************/
@@ -73,6 +105,9 @@ router.get("/find-or-create", async (req, res) => {
         generatedProgram: null
       });
     }
+
+
+
 
     /**************************************************************
      * 🚨 FIX: If generatedProgram is missing OR steps are empty → call AI

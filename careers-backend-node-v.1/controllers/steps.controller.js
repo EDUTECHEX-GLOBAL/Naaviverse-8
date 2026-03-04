@@ -352,7 +352,7 @@ const getStepsByPartner = async (req, res) => {
       filter.status = status;
     }
 
-    const steps = await stepModel.find(filter).sort({ createdAt: -1 });
+    const steps = await stepModel.find(filter).sort({ createdAt: 1 });
 
     return res.json({
       status: true,

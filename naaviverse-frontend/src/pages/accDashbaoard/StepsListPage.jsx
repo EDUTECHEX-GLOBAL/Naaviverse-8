@@ -6,6 +6,7 @@ import axios from "axios";
 import AccDashsidebar from "../../components/accDashsidebar/accDashsidebar";
 import "./StepsListPage.scss";
 
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const StepsListPage = () => {
   const { pathId } = useParams();
   const navigate = useNavigate();
@@ -27,10 +28,10 @@ const StepsListPage = () => {
     try {
       setLoading(true);
 
-      const pathRes = await axios.get(`/api/paths/viewpath/${pathId}`);
+      const pathRes = await axios.get(`${BASE_URL}/api/paths/viewpath/${pathId}`);
       setPathName(pathRes.data.data?.nameOfPath || "Path Steps");
 
-      const stepsRes = await axios.get(`/api/steps/get`, {
+      const stepsRes = await axios.get(`${BASE_URL}/api/steps/get`, {
         params: { path_id: pathId },
       });
 
@@ -47,7 +48,7 @@ const StepsListPage = () => {
     setModalLoading(true);
 
     const response = await axios.get(
-      `/api/steps/getall/${stepId}`
+      `${BASE_URL}/api/steps/getall/${stepId}`
     );
 
     setServicesForStep(response.data.data || []);
@@ -68,7 +69,7 @@ const handleDeleteStep = async (stepId, e) => {
   if (!confirmDelete) return;
 
   try {
-    await axios.delete(`/api/steps/delete/${stepId}`);
+    await axios.delete(`${BASE_URL}/api/steps/delete/${stepId}`);
 
     // refresh steps
     await fetchSteps();
@@ -83,7 +84,7 @@ const handleDeleteStep = async (stepId, e) => {
     try {
       setRemovingService(serviceId);
 
-      await axios.post(`/api/steps/detachservice`, {
+      await axios.post(`${BASE_URL}/api/steps/detachservice`, {
         step_id: selectedStep._id,
         service_id: serviceId,
       });

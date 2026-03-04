@@ -46,6 +46,10 @@ const stepsRouter = require("./routes/stepsRouter");
 const adminDashboardRoutes = require("./Admin/routes/adminDashboardRoutes");
 const subscriptionRoutes = require("./Admin/routes/subscriptionRoutes");
 const contactRoutes = require('./Admin/routes/contactRoutes');
+const programNameRouter = require('./routes/programName.router');
+const universityProgramRouter = require('./routes/Universityprogram.router');
+const locationRouter = require('./routes/Location.router');
+
 /* ------------------- APP SETUP ------------------- */
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -108,6 +112,9 @@ app.use("/api/steps", stepsRouter);   // ✅ correct mount
 
 const stepViewsRoute = require("./routes/stepviews.route");
 app.use("/api/stepviews", stepViewsRoute);
+app.use('/api/programs', programNameRouter);
+app.use('/api/university-programs', universityProgramRouter);
+app.use('/api/locations', locationRouter);
 
 /* ------------------- NO-CACHE ------------------- */
 app.use('/api/users', (req, res, next) => {
