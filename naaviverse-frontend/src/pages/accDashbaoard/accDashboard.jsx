@@ -1692,107 +1692,71 @@ const AccDashboard = () => {
           <div className="dashboard-screens"> {/* ← Content area */}
             <div style={{ height: "100%" }}>
               {viewPathMode ? (
-                createStepForPathId ? (
-                  // FULL CONTENT: Create Step view
-                  <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
-                    <div style={{
-                      padding: "0 35px",
-                      height: "60px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      borderBottom: "0.5px solid #E5E5E5",
-                      background: "#fff",
-                      flexShrink: 0
-                    }}>
-                      <div style={{
-                        padding: "10px 30px",
-                        borderRadius: "35px",
-                        fontWeight: "700",
-                        fontSize: "15px",
-                        background: "rgba(241,241,241,0.5)"
-                      }}>
-                        Create New Step
-                      </div>
-                      <div
-                        style={{
-                          fontWeight: "600",
-                          textDecorationLine: "underline",
-                          cursor: "pointer",
-                          fontSize: "0.9rem",
-                          paddingRight: "35px"
-                        }}
-                        onClick={() => setCreateStepForPathId(null)}
-                      >
-                        ← Back to Path
-                      </div>
-                    </div>
-                    <div style={{ flex: 1, overflowY: "auto", background: "#fff", minHeight: 0 }}>
-                      <CreateNewStep
-                        inlineMode={true}
-                        pathId={createStepForPathId}
-                        onSuccess={() => setCreateStepForPathId(null)}
-                        onCancel={() => setCreateStepForPathId(null)}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  // FULL CONTENT: Path Details view
-                  <>
-                    <MenuNav
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder="Search Path..."
-                    />
-                    <div
-                      className="services-main"
-                      style={{ height: "calc(100% - 70px)" }}
-                      onClick={() => setShowDrop(false)}
-                    >
-                      <div
-                        className="services-all-menu"
-                        style={{
-                          borderBottom: "0.5px solid #E5E5E5",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center"
-                        }}
-                      >
-                        <div className="services-each-menu" style={{ fontWeight: "700" }}>
-                          Path Details
-                        </div>
-
-                        <button
-                          onClick={() => {
-                            setViewPathMode(false);
-                            navigate('/dashboard/accountants');
-                          }}
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "8px",
-                            padding: "6px 12px",        // ← reduced from "8px 20px"
-                            backgroundColor: "#f0f4f9",
-                            border: "none",
-                            borderRadius: "40px",
-                            color: "#1f304f",
-                            fontSize: "13px",            // ← slightly smaller text too
-                            fontWeight: "700",
-                            cursor: "pointer",
-                            marginLeft: "auto",
-                            marginRight: "35px"
-                          }}
-                        >
-                          ← Back to Paths
-                        </button>
-                      </div>
-                      <DraftPathView onAddStep={(pathId) => setCreateStepForPathId(pathId)} />
-                    </div>
-                  </>
-                )
-              ) : accsideNav === "CREATE_PATH" ? (
+  createStepForPathId ? (
+    // FULL CONTENT: Create Step view
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
+      <div style={{
+        padding: "0 35px",
+        height: "60px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        borderBottom: "0.5px solid #E5E5E5",
+        background: "#fff",
+        flexShrink: 0
+      }}>
+        <div style={{
+          padding: "10px 30px",
+          borderRadius: "35px",
+          fontWeight: "700",
+          fontSize: "15px",
+          background: "rgba(241,241,241,0.5)"
+        }}>
+          Create New Step
+        </div>
+        <div
+          style={{
+            fontWeight: "600",
+            textDecorationLine: "underline",
+            cursor: "pointer",
+            fontSize: "0.9rem",
+            paddingRight: "35px"
+          }}
+          onClick={() => setCreateStepForPathId(null)}
+        >
+          ← Back to Path
+        </div>
+      </div>
+      <div style={{ flex: 1, overflowY: "auto", background: "#fff", minHeight: 0 }}>
+        <CreateNewStep
+          inlineMode={true}
+          pathId={createStepForPathId}
+          onSuccess={() => setCreateStepForPathId(null)}
+          onCancel={() => setCreateStepForPathId(null)}
+        />
+      </div>
+    </div>
+  ) : (
+    // FULL CONTENT: Path Details view - REMOVED THE EMPTY services-all-menu DIV
+    <>
+      <MenuNav
+        showDrop={showDrop}
+        setShowDrop={setShowDrop}
+        searchTerm={search}
+        setSearchterm={setSearch}
+        searchPlaceholder="Search Path..."
+      />
+      <div
+        className="services-main"
+        style={{ height: "calc(100% - 70px)" }}
+        onClick={() => setShowDrop(false)}
+      >
+        {/* REMOVED THE EMPTY services-all-menu DIV COMPLETELY */}
+        <DraftPathView onAddStep={(pathId) => setCreateStepForPathId(pathId)} />
+      </div>
+    </>
+  )
+) : accsideNav === "CREATE_PATH" ? (
                 // SHOW CREATE NEW PATH AS FULL PAGE - WITHOUT THE HEADER TABS
                 <div style={{
                   display: "flex",
@@ -1801,9 +1765,6 @@ const AccDashboard = () => {
                   width: "100%",
                   overflow: "hidden"
                 }}>
-                  {/* Use MenuNav but hide the search and user section if needed, or create a simpler header */}
-
-
 
                   <div style={{
                     padding: "0 35px",
@@ -2449,7 +2410,7 @@ const AccDashboard = () => {
                               ? "rgba(241, 241, 241, 0.5)"
                               : "",
                           fontWeight: servicesMenu === "Services" ? "700" : "",
-                        }}
+                          }}
                         onClick={() => {
                           setservicesMenu("Services");
                           setSearch("");
