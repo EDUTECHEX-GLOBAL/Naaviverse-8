@@ -53,12 +53,12 @@ const CreateNewPath = ({
   const [allUniversityPrograms, setAllUniversityPrograms] = useState([]);
   const [progHighlight, setProgHighlight] = useState(-1);
 
-  // ✅ Participant Profile — cascading location
+  // Participant Profile — cascading location
   const [profileStates, setProfileStates] = useState([]);
   const [profileCities, setProfileCities] = useState([]);
   const [preferredLocation, setPreferredLocation] = useState({ address: '', country: '', state: '', city: '' });
 
-  // ✅ Academic Target — cascading location
+  // Academic Target — cascading location
   const [targetStates, setTargetStates] = useState([]);
   const [targetCities, setTargetCities] = useState([]);
 
@@ -67,7 +67,7 @@ const CreateNewPath = ({
   const uniListRef = useRef(null);
   const progListRef = useRef(null);
 
-  // ─── Participant Profile: fetch states when country changes ───
+  // Participant Profile: fetch states when country changes
   useEffect(() => {
     if (!preferredLocation.country) { setProfileStates([]); setProfileCities([]); return; }
     fetch(`${BASE_URL}/api/locations/states?country=${encodeURIComponent(preferredLocation.country)}`)
@@ -78,7 +78,7 @@ const CreateNewPath = ({
     setProfileCities([]);
   }, [preferredLocation.country]);
 
-  // ─── Participant Profile: fetch cities when state changes ───
+  // Participant Profile: fetch cities when state changes
   useEffect(() => {
     if (!preferredLocation.country || !preferredLocation.state) { setProfileCities([]); return; }
     fetch(`${BASE_URL}/api/locations/cities?country=${encodeURIComponent(preferredLocation.country)}&state=${encodeURIComponent(preferredLocation.state)}`)
@@ -88,7 +88,7 @@ const CreateNewPath = ({
     setPreferredLocation(prev => ({ ...prev, city: '' }));
   }, [preferredLocation.state]);
 
-  // ─── Academic Target: fetch states when country changes ───
+  // Academic Target: fetch states when country changes
   useEffect(() => {
     if (!pathSteps?.country) { setTargetStates([]); setTargetCities([]); return; }
     fetch(`${BASE_URL}/api/locations/states?country=${encodeURIComponent(pathSteps.country)}`)
@@ -99,7 +99,7 @@ const CreateNewPath = ({
     setTargetCities([]);
   }, [pathSteps?.country]);
 
-  // ─── Academic Target: fetch cities when state changes ───
+  // Academic Target: fetch cities when state changes
   useEffect(() => {
     if (!pathSteps?.country || !pathSteps?.state) { setTargetCities([]); return; }
     fetch(`${BASE_URL}/api/locations/cities?country=${encodeURIComponent(pathSteps.country)}&state=${encodeURIComponent(pathSteps.state)}`)
@@ -109,7 +109,7 @@ const CreateNewPath = ({
     setPathSteps(prev => ({ ...prev, city: '' }));
   }, [pathSteps?.state]);
 
-  // ─── University search ───
+  // University search
   useEffect(() => {
     if (uniSearch.length < 2) { setUniResults([]); return; }
     const timeout = setTimeout(() => {
@@ -121,7 +121,7 @@ const CreateNewPath = ({
     return () => clearTimeout(timeout);
   }, [uniSearch]);
 
-  // ─── Fetch programs for selected university ───
+  // Fetch programs for selected university
   useEffect(() => {
     if (!selectedUniversity) { setAllUniversityPrograms([]); return; }
     fetch(`${BASE_URL}/api/university-programs?university=${encodeURIComponent(selectedUniversity)}`)
@@ -130,7 +130,7 @@ const CreateNewPath = ({
       .catch(console.error);
   }, [selectedUniversity]);
 
-  // ─── Filter programs as user types ───
+  // Filter programs as user types
   useEffect(() => {
     if (!selectedUniversity) return;
     if (programSearch.length < 1) { setProgramResults(allUniversityPrograms); return; }
@@ -139,7 +139,7 @@ const CreateNewPath = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [programSearch, allUniversityPrograms, selectedUniversity]);
 
-  // ─── Keyboard nav ───
+  // Keyboard nav
   const scrollToItem = (ref, index) => {
     if (ref.current) {
       const items = ref.current.querySelectorAll('li');
@@ -326,7 +326,7 @@ const CreateNewPath = ({
               </div>
             </div>
 
-            {/* ✅ Participant Profile — Country → State → City */}
+            {/* Participant Profile — Country → State → City */}
             <div className="form-field">
               <label>Participant location</label>
               <div className="profile-location-grid">
@@ -339,12 +339,15 @@ const CreateNewPath = ({
                 <select value={preferredLocation.country}
                   onChange={(e) => setPreferredLocation({ ...preferredLocation, country: e.target.value, state: '', city: '' })}>
                   <option value="">Select Country</option>
-                  {countryApiValue?.map((item) => (
-                    <option key={item.name?.common || item.name} value={item.name?.common || item.name}>{item.name?.common || item.name}</option>
+                  {/* FIX: use index fallback so key is always defined */}
+                  {countryApiValue?.map((item, idx) => (
+                    <option key={item.name?.common || item.name || idx} value={item.name?.common || item.name}>
+                      {item.name?.common || item.name}
+                    </option>
                   ))}
                 </select>
 
-                {/* State — only shows after country selected */}
+                {/* State */}
                 <select value={preferredLocation.state}
                   disabled={!preferredLocation.country || profileStates.length === 0}
                   onChange={(e) => setPreferredLocation({ ...preferredLocation, state: e.target.value, city: '' })}
@@ -352,10 +355,11 @@ const CreateNewPath = ({
                   <option value="">
                     {!preferredLocation.country ? 'Select country first' : profileStates.length === 0 ? 'No states available' : 'Select State'}
                   </option>
+                  {/* FIX: state strings are unique within a country */}
                   {profileStates.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
 
-                {/* City — only shows after state selected */}
+                {/* City */}
                 <select value={preferredLocation.city}
                   disabled={!preferredLocation.state || profileCities.length === 0}
                   onChange={(e) => setPreferredLocation({ ...preferredLocation, city: e.target.value })}
@@ -393,7 +397,8 @@ const CreateNewPath = ({
                 {showUniDropdown && uniResults.length > 0 && (
                   <ul className="autocomplete-dropdown" ref={uniListRef}>
                     {uniResults.map((uni, index) => (
-                      <li key={uni._id}
+                      // FIX: uni._id can be undefined — use name+index as reliable key
+                      <li key={uni._id || `${uni.name}-${index}`}
                         style={{ backgroundColor: uniHighlight === index ? '#e8f5f1' : '' }}
                         onMouseDown={(e) => {
                           e.preventDefault();
@@ -427,7 +432,8 @@ const CreateNewPath = ({
                 {showProgramDropdown && programResults.length > 0 && (
                   <ul className="autocomplete-dropdown" ref={progListRef}>
                     {programResults.map((prog, index) => (
-                      <li key={index}
+                      // FIX: program strings may not be unique — use string+index
+                      <li key={`${prog}-${index}`}
                         style={{ backgroundColor: progHighlight === index ? '#e8f5f1' : '' }}
                         onMouseDown={(e) => {
                           e.preventDefault();
@@ -451,7 +457,7 @@ const CreateNewPath = ({
               )}
             </div>
 
-            {/* ✅ Academic Target — Country → State → City */}
+            {/* Academic Target — Country → State → City */}
             <div className="target-location-stack">
 
               <div>
@@ -459,8 +465,10 @@ const CreateNewPath = ({
                 <select value={pathSteps?.country || ''}
                   onChange={(e) => setPathSteps(prev => ({ ...prev, country: e.target.value, state: '', city: '' }))}>
                   <option value="">Select Country</option>
-                  {countryApiValue?.map((item) => (
-                    <option key={item.name?.common || item.name} value={item.name?.common || item.name}>{item.name?.common || item.name}</option>
+                  {countryApiValue?.map((item, idx) => (
+                    <option key={item.name?.common || item.name || idx} value={item.name?.common || item.name}>
+                      {item.name?.common || item.name}
+                    </option>
                   ))}
                 </select>
               </div>

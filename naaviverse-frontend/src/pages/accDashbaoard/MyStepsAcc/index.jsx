@@ -77,47 +77,47 @@ const MyStepsAcc = ({ search, setSearch, admin, fetchAllServicesAgain, stpesMenu
     };
 
     const [remainingStepData, setRemainingStepData] = useState([])
-const getAllStepsForPath = () => {
-    // 💥 FIX 1 — DO NOT CALL API IF NO PATH SELECTED
-    if (!selectedPathId) {
-        console.log("No selectedPathId — skipping getremainingsteps API");
-        return;
-    }
+    const getAllStepsForPath = () => {
+        // 💥 FIX 1 — DO NOT CALL API IF NO PATH SELECTED
+        if (!selectedPathId) {
+            console.log("No selectedPathId — skipping getremainingsteps API");
+            return;
+        }
 
-    setLoading(true);
-    let email = userDetails?.email;
+        setLoading(true);
+        let email = userDetails?.email;
 
-    // 💥 FIX 2 — REMOVE DOUBLE && → only use &
-    axios.get(`${BASE_URL}/api/paths/getremainingsteps?path_id=${selectedPathId}&email=${email}`)
-        .then((response) => {
-            console.log('Response from getAllStepsForPath:', response);
-            let result = response?.data?.stepIds;
+        // 💥 FIX 2 — REMOVE DOUBLE && → only use &
+        axios.get(`${BASE_URL}/api/paths/getremainingsteps?path_id=${selectedPathId}&email=${email}`)
+            .then((response) => {
+                console.log('Response from getAllStepsForPath:', response);
+                let result = response?.data?.stepIds;
 
-            if (Array.isArray(result)) {
-                console.log(result, "partnerStepsData result");
-                setRemainingStepData(result);
-            } else {
-                console.error('Unexpected data format:', response);
-            }
-        })
-        .catch((error) => {
-            console.error(error, "error in partnerStepsData");
-        })
-        .finally(() => {
-            setLoading(false);
-        });
+                if (Array.isArray(result)) {
+                    console.log(result, "partnerStepsData result");
+                    setRemainingStepData(result);
+                } else {
+                    console.error('Unexpected data format:', response);
+                }
+            })
+            .catch((error) => {
+                console.error(error, "error in partnerStepsData");
+            })
+            .finally(() => {
+                setLoading(false);
+            });
 
-    console.log('Selected Path:', selectedPath);
-    console.log('Selected Path ID:', selectedPath?._id);
-    console.log('Email:', email);
-};
+        console.log('Selected Path:', selectedPath);
+        console.log('Selected Path ID:', selectedPath?._id);
+        console.log('Email:', email);
+    };
 
 
-useEffect(() => {
-    if (selectedPathId) {
-        getAllStepsForPath();
-    }
-}, [selectedPathId]);
+    useEffect(() => {
+        if (selectedPathId) {
+            getAllStepsForPath();
+        }
+    }, [selectedPathId]);
 
 
 
@@ -140,21 +140,21 @@ useEffect(() => {
     // }
 
     useEffect(() => {
-  if (!userDetails?.email) return;
+        if (!userDetails?.email) return;
 
-  let status =
-    mypathsMenu === "Inactive Steps"
-      ? "inactive"
-      : "active";
+        let status =
+            mypathsMenu === "Inactive Steps"
+                ? "inactive"
+                : "active";
 
-  axios
-    .get(`${BASE_URL}/api/steps/partner?email=${userDetails.email}&status=${status}`)
-    .then(({ data }) => {
-      if (data.status) {
-        setPartnerStepsData(data.data);
-      }
-    });
-}, [mypathsMenu]);
+        axios
+            .get(`${BASE_URL}/api/steps/partner?email=${userDetails.email}&status=${status}`)
+            .then(({ data }) => {
+                if (data.status) {
+                    setPartnerStepsData(data.data);
+                }
+            });
+    }, [mypathsMenu]);
 
 
     // useEffect(() => {
@@ -201,7 +201,7 @@ useEffect(() => {
     };
 
     function reload2() {
-       
+
         setStepActionEnabled(false);
         setStepActionStep(1);
         setSelectedStepId("");
@@ -227,11 +227,11 @@ useEffect(() => {
 
     const deleteStep = () => {
         setActionLoading(true);
-      axios.delete(`${BASE_URL}/api/steps/delete/${selectedStepId}`, {
-  headers: {
-    email: userDetails?.email
-  }
-})
+        axios.delete(`${BASE_URL}/api/steps/delete/${selectedStepId}`, {
+            headers: {
+                email: userDetails?.email
+            }
+        })
 
             .then((response) => {
                 const result = response?.data;
@@ -246,8 +246,8 @@ useEffect(() => {
                 setActionLoading(false); // Ensure loading state is reset on error
             });
     };
-    
-    
+
+
     const resetPathAction = () => {
         setPathActionEnabled(false);
         setPathActionStep(1);
@@ -287,55 +287,55 @@ useEffect(() => {
             });
     };
 
- const viewPathById = (id) => {
-    setViewPathLoading(true);
+    const viewPathById = (id) => {
+        setViewPathLoading(true);
 
-    axios
-      .get(`${BASE_URL}/api/paths/viewpath/${id}`)
-      .then((response) => {
-          let result = response?.data?.data;   // BACKEND RETURNS data not data[0]
-          setViewPathData(result);
-          setViewPathLoading(false);
-      })
-      .catch((error) => {
-          console.log("Error in fetching view path data:", error);
-          setViewPathLoading(false);
-      });
-};
+        axios
+            .get(`${BASE_URL}/api/paths/viewpath/${id}`)
+            .then((response) => {
+                let result = response?.data?.data;   // BACKEND RETURNS data not data[0]
+                setViewPathData(result);
+                setViewPathLoading(false);
+            })
+            .catch((error) => {
+                console.log("Error in fetching view path data:", error);
+                setViewPathLoading(false);
+            });
+    };
 
 
 
-const handleApprovePath = () => {
-  setActionLoading(true);
+    const handleApprovePath = () => {
+        setActionLoading(true);
 
-  axios
-    .put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, {
-      status: "active",
-    })
-    .then(({ data }) => {
-      if (data.status) {
-        getAllPaths();
-        setPathActionEnabled(false);
-      }
-    })
-    .finally(() => setActionLoading(false));
-};
+        axios
+            .put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, {
+                status: "active",
+            })
+            .then(({ data }) => {
+                if (data.status) {
+                    getAllPaths();
+                    setPathActionEnabled(false);
+                }
+            })
+            .finally(() => setActionLoading(false));
+    };
 
-const handleRejectPath = () => {
-  setActionLoading(true);
+    const handleRejectPath = () => {
+        setActionLoading(true);
 
-  axios
-    .put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, {
-      status: "inactive",
-    })
-    .then(({ data }) => {
-      if (data.status) {
-        getAllPaths();
-        setPathActionEnabled(false);
-      }
-    })
-    .finally(() => setActionLoading(false));
-};
+        axios
+            .put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, {
+                status: "inactive",
+            })
+            .then(({ data }) => {
+                if (data.status) {
+                    getAllPaths();
+                    setPathActionEnabled(false);
+                }
+            })
+            .finally(() => setActionLoading(false));
+    };
 
 
     const handleAddService = (newId) => {
@@ -367,65 +367,65 @@ const handleRejectPath = () => {
 
 
     const [productDataArray, setProductDataArray] = useState([]);
-const [productKeys, setProductKeys] = useState([]);
+    const [productKeys, setProductKeys] = useState([]);
 
 
     const [allServicesToAdd, setAllServicesToAdd] = useState([]);
 
 
 
-useEffect(() => {
-    if (!selectedStepId || !userDetails?.email) return;
+    useEffect(() => {
+        if (!selectedStepId || !userDetails?.email) return;
 
-axios.get(
-  `${BASE_URL}/api/services/getservices?productcreatoremail=${userDetails.email}`
-)
-.then(({ data }) => {
-  if (data.status) {
-    setAllServicesToAdd(data.data);
-  }
-})
-.catch(console.error);
+        axios.get(
+            `${BASE_URL}/api/services/getservices?productcreatoremail=${userDetails.email}`
+        )
+            .then(({ data }) => {
+                if (data.status) {
+                    setAllServicesToAdd(data.data);
+                }
+            })
+            .catch(console.error);
 
-}, [selectedStepId]);
+    }, [selectedStepId]);
 
 
-const fetchServicesForRemoval = async () => {
-    try {
-        if (!selectedStepId) {
-            console.error("No step ID provided.");
-            return;
+    const fetchServicesForRemoval = async () => {
+        try {
+            if (!selectedStepId) {
+                console.error("No step ID provided.");
+                return;
+            }
+
+            const trimmedStepId = selectedStepId.trim();
+            console.log("Fetching services for step:", trimmedStepId);
+
+            const url = `${BASE_URL}/api/steps/getall/${trimmedStepId}`
+            console.log("URL:", url);
+
+            const response = await axios.get(url);
+
+            console.log("Full Response from server:", response);
+
+            if (response.status === 200 && response.data.status) {
+                // Directly set the services array as returned by the backend
+                setAllServicesToRemove(response.data.data);
+            } else {
+                console.log("No services found or error:", response.data.message);
+            }
+        } catch (error) {
+            if (error.response) {
+                console.error('Error Response:', error.response.data);
+                console.error('Status:', error.response.status);
+                console.error('Headers:', error.response.headers);
+            } else if (error.request) {
+                console.error('No response received');
+            } else {
+                console.error('Error:', error.message);
+            }
+            console.error('Config:', error.config);
         }
-        
-        const trimmedStepId = selectedStepId.trim();
-        console.log("Fetching services for step:", trimmedStepId);
-        
-        const url = `${BASE_URL}/api/steps/getall/${trimmedStepId}`
-        console.log("URL:", url);
-        
-        const response = await axios.get(url);
-        
-        console.log("Full Response from server:", response);
-        
-        if (response.status === 200 && response.data.status) {
-            // Directly set the services array as returned by the backend
-            setAllServicesToRemove(response.data.data);
-        } else {
-            console.log("No services found or error:", response.data.message);
-        }
-    } catch (error) {
-        if (error.response) {
-            console.error('Error Response:', error.response.data);
-            console.error('Status:', error.response.status);
-            console.error('Headers:', error.response.headers);
-        } else if (error.request) {
-            console.error('No response received');
-        } else {
-            console.error('Error:', error.message);
-        }
-        console.error('Config:', error.config);
-    }
-};
+    };
 
 
     // useEffect(() => {
@@ -625,21 +625,21 @@ const fetchServicesForRemoval = async () => {
                 console.error("Step ID or Service ID is missing.");
                 return;
             }
-    
+
             setActionLoading(true);
             setLoading(true);
-    
+
             // Construct the correct URL with both parameters
             const url = `${BASE_URL}/api/steps/remove/${selectedStepId}/${serviceId}`;
-            
+
             console.log("Removing service from step:", url);
-    
+
             const response = await axios.delete(url);
-    
+
             if (response.status === 200 && response.data.status) {
                 console.log("Service removed successfully:", response.data);
                 setStepActionEnabled(false);
-    
+
                 // Refresh the services list after removal
                 fetchServicesForRemoval();
             } else {
@@ -652,7 +652,7 @@ const fetchServicesForRemoval = async () => {
             setLoading(false);
         }
     };
-    
+
 
     useEffect(() => {
         if (!stepActionEnabled) {
@@ -663,36 +663,34 @@ const fetchServicesForRemoval = async () => {
     // 🔥 STEP → PATH NAME MAP
 
     // 🔥 LOAD PATHS ON PAGE LOAD
-useEffect(() => {
-  if (userDetails?.email || admin) {
-    getAllPaths();
-  }
-}, []);
+    useEffect(() => {
+        if (userDetails?.email || admin) {
+            getAllPaths();
+        }
+    }, []);
 
-const stepToPathMap = React.useMemo(() => {
-  const map = {};
-
-  partnerPathData.forEach((path) => {
-    path?.the_ids?.forEach((obj) => {
-      if (obj?.step_id) {
-        map[obj.step_id] = path?.nameOfPath || "Unnamed Path";
-      }
-    });
-  });
-
-  return map;
-}, [partnerPathData]);
+    const stepToPathMap = React.useMemo(() => {
+        const map = {};
+        partnerPathData.forEach((path) => {
+            path?.the_ids?.forEach((obj) => {
+                if (obj?.step_id) {
+                    map[obj.step_id.toString()] = path?.nameOfPath || "Unnamed Path";
+                }
+            });
+        });
+        return map;
+    }, [partnerPathData]);
 
 
     return (
         <>
             <MenuNav
-  showDrop={showDrop}
-  setShowDrop={setShowDrop}
-  searchTerm={search}
-  setSearchterm={setSearch}
-  searchPlaceholder="Search Steps..."   // ← fix this
-/>
+                showDrop={showDrop}
+                setShowDrop={setShowDrop}
+                searchTerm={search}
+                setSearchterm={setSearch}
+                searchPlaceholder="Search Steps..."   // ← fix this
+            />
             <div className="mypaths">
                 <div className="mypaths-menu">
                     <div
@@ -829,94 +827,162 @@ const stepToPathMap = React.useMemo(() => {
                                 <div className="mypathsMicrosteps">Services</div>
                             </div>
                             <div className="mypathsScroll-div">
-                               {loading ? (
-  Array(10)
-    .fill("")
-    .map((e, i) => (
-      <div className="each-mypaths-data1" key={i}>
-        <div className="each-mypaths-detail">
-          <div className="each-mypathsName">
-            <Skeleton width={100} height={30} />
-          </div>
-          <div className="each-mypathsCountry">
-            <Skeleton width={100} height={30} />
-          </div>
-          <div className="each-mypathsCountry">
-            <Skeleton width={100} height={30} />
-          </div>
-          <div className="each-mypathsMicrosteps">
-            <Skeleton width={100} height={30} />
-          </div>
-        </div>
-        <div className="each-mypaths-desc">
-          <div className="each-mypaths-desc-txt">
-            <Skeleton width={100} height={30} />
-          </div>
-          <div className="each-mypaths-desc-txt1">
-            <Skeleton width={"100%"} height={30} />
-          </div>
-        </div>
-      </div>
-    ))
-) : (
-  partnerStepsData
-  ?.filter((step) =>
-    step?.name?.toLowerCase().includes(search?.toLowerCase()) ||
-    step?.description?.toLowerCase().includes(search?.toLowerCase())
-  )
-  ?.map((step) => (
-    <div
-      className="each-mypaths-data1"
-      key={step._id}
-     onClick={() => {
-  setSelectedStep(step);      // ✅ FULL STEP OBJECT
-  setSelectedStepId(step._id); // ✅ keep ID for APIs
-  setStepActionEnabled(true);
-}}
+                                {loading ? (
+                                    // ✅ SKELETON BLOCK — uses (e, i), no "step" variable
+                                    Array(10)
+                                        .fill("")
+                                        .map((e, i) => (
+                                            <div className="each-mypaths-data1" key={i}>
+                                                <div className="each-mypaths-detail">
+                                                    <div className="each-mypathsName">
+                                                        <Skeleton width={100} height={30} />
+                                                    </div>
+                                                    <div className="each-mypathsCountry">
+                                                        <Skeleton width={100} height={30} />
+                                                    </div>
+                                                    <div className="each-mypathsCountry">
+                                                        <Skeleton width={100} height={30} />
+                                                    </div>
+                                                    <div className="each-mypathsMicrosteps">
+                                                        <Skeleton width={100} height={30} />
+                                                    </div>
+                                                </div>
+                                                <div className="each-mypaths-desc">
+                                                    <div className="each-mypaths-desc-txt">
+                                                        <Skeleton width={100} height={30} />
+                                                    </div>
+                                                    <div className="each-mypaths-desc-txt1">
+                                                        <Skeleton width={"100%"} height={30} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                ) : (
+                                    // ✅ REAL DATA BLOCK — uses "step" variable
+                                    partnerStepsData
+                                        ?.filter((step) => {
+                                            const title = step?.macro_name || step?.name || "";
+                                            const desc = step?.macro_description || step?.description || "";
+                                            const q = search?.toLowerCase() || "";
+                                            if (!title.trim()) return false;
+                                            return title.toLowerCase().includes(q) || desc.toLowerCase().includes(q);
+                                        })
+                                        ?.map((step) => (
+                                            <div
+                                                className="each-mypaths-data1"
+                                                key={step._id}
+                                                onClick={() => {
+                                                    setSelectedStep(step);
+                                                    setSelectedStepId(step._id);
+                                                    setStepActionEnabled(true);
+                                                }}
+                                            >
+                                                {/* TOP ROW */}
+                                                <div className="each-mypaths-detail">
+                                                    <div className="each-mypathsName">
+                                                        <div style={{ fontWeight: 600 }}>
+                                                            {step.macro_name || step.name || "Untitled Step"}
+                                                        </div>
+                                                    </div>
+                                                    <div className="each-mypathsCountry">
+                                                        {(() => {
+                                                            try {
+                                                                const dur = typeof step.macro_length === "string"
+                                                                    ? JSON.parse(step.macro_length) : step.macro_length;
+                                                                const parts = [
+                                                                    parseInt(dur?.years) > 0 ? `${dur.years}y` : "",
+                                                                    parseInt(dur?.months) > 0 ? `${dur.months}m` : "",
+                                                                    parseInt(dur?.days) > 0 ? `${dur.days}d` : "",
+                                                                ].filter(Boolean);
+                                                                return parts.length ? parts.join(" ") : `${step.length || 0} Days`;
+                                                            } catch { return `${step.length || 0} Days`; }
+                                                        })()}
+                                                    </div>
+                                                    <div className="each-mypathsCountry">
+                                                        {step.macro_access || step.cost || "Free"}
+                                                    </div>
+                                                    <div className="each-mypathsMicrosteps">
+                                                        {step.services?.length || 0}
+                                                    </div>
+                                                </div>
 
-    >
-      <div className="each-mypaths-data1" key={step._id}>
-  {/* TOP ROW */}
-  <div className="each-mypaths-detail">
-    <div className="each-mypathsName">
-      <div style={{ fontWeight: 600 }}>
-        {step.name}
-      </div>
-    </div>
+                                                {/* MACRO */}
+                                                <div className="each-mypaths-desc">
+                                                    <div className="each-mypaths-desc-txt">Macro</div>
+                                                    <div className="each-mypaths-desc-txt1">
+                                                        {step.macro_description || step.description || "-"}
+                                                    </div>
+                                                </div>
 
-    <div className="each-mypathsCountry">
-      {step.length || 0} Days
-    </div>
+                                                {/* MICRO */}
+                                                {step.micro_name && (
+                                                    <div className="each-mypaths-desc" style={{ borderTop: "1px dashed #e5e5e5", paddingTop: "1rem", marginTop: "0.5rem" }}>
+                                                        <div className="each-mypaths-desc-txt" style={{ display: "flex", justifyContent: "space-between" }}>
+                                                            <span>Micro</span>
+                                                            <span style={{ fontWeight: 300, fontSize: "0.8rem" }}>
+                                                                {(() => {
+                                                                    try {
+                                                                        const dur = typeof step.micro_length === "string"
+                                                                            ? JSON.parse(step.micro_length) : step.micro_length;
+                                                                        const parts = [
+                                                                            parseInt(dur?.years) > 0 ? `${dur.years}y` : "",
+                                                                            parseInt(dur?.months) > 0 ? `${dur.months}m` : "",
+                                                                            parseInt(dur?.days) > 0 ? `${dur.days}d` : "",
+                                                                        ].filter(Boolean);
+                                                                        return parts.length ? parts.join(" ") : "";
+                                                                    } catch { return ""; }
+                                                                })()} · {step.micro_access || "Free"}
+                                                            </span>
+                                                        </div>
+                                                        <div style={{ fontWeight: 600, fontSize: "0.85rem", marginBottom: "0.25rem" }}>
+                                                            {step.micro_name}
+                                                        </div>
+                                                        <div className="each-mypaths-desc-txt1">
+                                                            {step.micro_description || "-"}
+                                                        </div>
+                                                    </div>
+                                                )}
 
-    <div className="each-mypathsCountry">
-      {step.cost || "Free"}
-    </div>
+                                                {/* NANO */}
+                                                {step.nano_name && (
+                                                    <div className="each-mypaths-desc" style={{ borderTop: "1px dashed #e5e5e5", paddingTop: "1rem", marginTop: "0.5rem" }}>
+                                                        <div className="each-mypaths-desc-txt" style={{ display: "flex", justifyContent: "space-between" }}>
+                                                            <span>Nano</span>
+                                                            <span style={{ fontWeight: 300, fontSize: "0.8rem" }}>
+                                                                {(() => {
+                                                                    try {
+                                                                        const dur = typeof step.nano_length === "string"
+                                                                            ? JSON.parse(step.nano_length) : step.nano_length;
+                                                                        const parts = [
+                                                                            parseInt(dur?.years) > 0 ? `${dur.years}y` : "",
+                                                                            parseInt(dur?.months) > 0 ? `${dur.months}m` : "",
+                                                                            parseInt(dur?.days) > 0 ? `${dur.days}d` : "",
+                                                                        ].filter(Boolean);
+                                                                        return parts.length ? parts.join(" ") : "";
+                                                                    } catch { return ""; }
+                                                                })()} · {step.nano_access || "Free"}
+                                                            </span>
+                                                        </div>
+                                                        <div style={{ fontWeight: 600, fontSize: "0.85rem", marginBottom: "0.25rem" }}>
+                                                            {step.nano_name}
+                                                        </div>
+                                                        <div className="each-mypaths-desc-txt1">
+                                                            {step.nano_description || "-"}
+                                                        </div>
+                                                    </div>
+                                                )}
 
-    <div className="each-mypathsMicrosteps">
-      {step.services?.length || 0}
-    </div>
-  </div>
+                                                {/* PATH FOOTER */}
+                                                <div className="each-mypaths-desc" style={{ paddingTop: "0.5rem" }}>
+                                                    <div className="step-path-footer">
+                                                        Path: {stepToPathMap[step._id?.toString()] || stepToPathMap[step._id] || "Not linked"}
+                                                    </div>
+                                                </div>
 
-  {/* DESCRIPTION + PATH (BELOW) */}
-  <div className="each-mypaths-desc">
-    <div className="each-mypaths-desc-txt">Description</div>
-
-    <div className="each-mypaths-desc-txt1">
-      {step.description || "-"}
-    </div>
-
-    {/* ✅ PATH BELOW DESCRIPTION */}
-    <div className="step-path-footer">
-      Path: {stepToPathMap[step._id] || "Not linked"}
-    </div>
-  </div>
-</div>
-
-
-    </div>
-  ))
-)}
-                       </div>
+                                            </div>
+                                        ))
+                                )}
+                            </div>
                         </>
                     )}
 
@@ -986,8 +1052,8 @@ const stepToPathMap = React.useMemo(() => {
                                             className="acc-step-box4"
                                             onClick={() => {
                                                 setViewPathEnabled(true);
-setPathActionEnabled(false);
- viewPathById(selectedPath?._id)
+                                                setPathActionEnabled(false);
+                                                viewPathById(selectedPath?._id)
 
                                             }}
                                         >
@@ -1254,12 +1320,12 @@ setPathActionEnabled(false);
                                                         <input
                                                             type="text"
                                                             placeholder={`Enter ${metaDataStep === "nameOfPath"
-                                                                    ? "name"
-                                                                    : metaDataStep === "path_type"
-                                                                        ? "path type"
-                                                                        : metaDataStep === "destination_institution"
-                                                                            ? "destination institution"
-                                                                            : metaDataStep
+                                                                ? "name"
+                                                                : metaDataStep === "path_type"
+                                                                    ? "path type"
+                                                                    : metaDataStep === "destination_institution"
+                                                                        ? "destination institution"
+                                                                        : metaDataStep
                                                                 }`}
                                                             onChange={(e) => {
                                                                 setNewValue(e.target.value);
@@ -1680,11 +1746,11 @@ setPathActionEnabled(false);
                                     className="acc-popular-img-box"
                                     style={{ cursor: "pointer" }}
                                     onClick={() => {
-    setStepActionEnabled(false);
-    setStepActionStep(1);
-    setSelectedStepId("");
-    setSelectedStep(null); // 🔴 REQUIRED
-}}
+                                        setStepActionEnabled(false);
+                                        setStepActionStep(1);
+                                        setSelectedStepId("");
+                                        setSelectedStep(null); // 🔴 REQUIRED
+                                    }}
 
                                 >
                                     <img className="acc-popular-img" src={closepop} alt="" />
@@ -1696,10 +1762,10 @@ setPathActionEnabled(false);
                                         setStepActionStep(4);
                                     }}>Edit Services</div>
                                     <div className="acc-step-box"
-                                     onClick={() => {
-                                     setStepActionStep(7);
-                                     }}
-                                    
+                                        onClick={() => {
+                                            setStepActionStep(7);
+                                        }}
+
                                     >Edit Step</div>
                                     <div className="acc-step-box" onClick={() => { deleteStep(); }}>
                                         Delete step
@@ -1716,7 +1782,7 @@ setPathActionEnabled(false);
                                             deleteStep();
                                         }}
                                     >
-                                        Confirm and delete 
+                                        Confirm and delete
                                     </div>
                                     <div
                                         className="goBack2"
@@ -1755,7 +1821,7 @@ setPathActionEnabled(false);
                                             onClick={(e) => {
                                                 fetchServicesForRemoval();
                                                 setStepActionStep(6);
-                                              }}
+                                            }}
                                         >
                                             <div>Remove a Service</div>
                                         </div>
@@ -1850,34 +1916,34 @@ setPathActionEnabled(false);
 
                             )}
 
-{stepActionStep === 7 && (
-    <div>
-      <EditStepForm
-    selectedStep={selectedStep}   // ✅ OBJECT, not ID
-    onSave={(updatedStep) => {
-        console.log("Updated Step Data:", updatedStep);
+                            {stepActionStep === 7 && (
+                                <div>
+                                    <EditStepForm
+                                        selectedStep={selectedStep}   // ✅ OBJECT, not ID
+                                        onSave={(updatedStep) => {
+                                            console.log("Updated Step Data:", updatedStep);
 
-        // 🔄 Update UI immediately
-        setPartnerStepsData(prev =>
-            prev.map(step =>
-                step._id === updatedStep._id ? updatedStep : step
-            )
-        );
+                                            // 🔄 Update UI immediately
+                                            setPartnerStepsData(prev =>
+                                                prev.map(step =>
+                                                    step._id === updatedStep._id ? updatedStep : step
+                                                )
+                                            );
 
-        setStepActionEnabled(false);
-        setStepActionStep(1);
-        setSelectedStep(null);
-    }}
-    onCancel={() => {
-        setStepActionEnabled(false);
-        setStepActionStep(1);
-        setSelectedStep(null);
-    }}
-/>
+                                            setStepActionEnabled(false);
+                                            setStepActionStep(1);
+                                            setSelectedStep(null);
+                                        }}
+                                        onCancel={() => {
+                                            setStepActionEnabled(false);
+                                            setStepActionStep(1);
+                                            setSelectedStep(null);
+                                        }}
+                                    />
 
-        
-    </div>
-)}
+
+                                </div>
+                            )}
 
 
                             {stepActionStep === 8 && (

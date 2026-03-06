@@ -26,45 +26,51 @@ const addStep = async (req, res) => {
       });
     }
 
-    const createStep = {
-      email: req.body.email,
-      name: req.body.name,
-      description: req.body.description,
-      length: req.body.length,
-      cost: req.body.cost,
+ const createStep = {
+  email: req.body.email,
+  name: req.body.name,
+  description: req.body.description,
+  length: req.body.length,
+  cost: req.body.cost,
 
-      gradeData: req.body.gradeData || [],
-      curriculumData: req.body.curriculumData || [],
-      financialData: req.body.financialData || [],
-      streamData: req.body.streamData || [],
-      gradePointAverageData: req.body.gradePointAverageData || [],
-      personalityData: req.body.personalityData || [],
+  gradeData: req.body.gradeData || [],
+  curriculumData: req.body.curriculumData || [],
+  financialData: req.body.financialData || [],
+  streamData: req.body.streamData || [],
+  gradePointAverageData: req.body.gradePointAverageData || [],
+  personalityData: req.body.personalityData || [],
 
-      micro_description: req.body.micro_description,
-      micro_name: req.body.micro_name,
-      micro_length: req.body.micro_length,
-      micro_cost: req.body.micro_cost,
-      micro_chances: req.body.micro_chances,
-      microservices: req.body.microservices || [],
+  // MICRO
+  micro_description: req.body.micro_description,
+  micro_name: req.body.micro_name,
+  micro_length: req.body.micro_length,
+  micro_access: req.body.micro_access,
+  micro_instructions: req.body.micro_instructions,
+  micro_chances: req.body.micro_chances,
+  microservices: req.body.microservices || [],
 
-      macro_description: req.body.macro_description,
-      macro_name: req.body.macro_name,
-      macro_length: req.body.macro_length,
-      macro_cost: req.body.macro_cost,
-      macro_chances: req.body.macro_chances,
-      macroservices: req.body.macroservices || [],
+  // MACRO
+  macro_description: req.body.macro_description,
+  macro_name: req.body.macro_name,
+  macro_length: req.body.macro_length,
+  macro_access: req.body.macro_access,
+  macro_instructions: req.body.macro_instructions,
+  macro_chances: req.body.macro_chances,
+  macroservices: req.body.macroservices || [],
 
-      nano_description: req.body.nano_description,
-      nano_name: req.body.nano_name,
-      nano_length: req.body.nano_length,
-      nano_cost: req.body.nano_cost,
-      nano_chances: req.body.nano_chances,
-      nanoservices: req.body.nanoservices || [],
+  // NANO
+  nano_description: req.body.nano_description,
+  nano_name: req.body.nano_name,
+  nano_length: req.body.nano_length,
+  nano_access: req.body.nano_access,
+  nano_instructions: req.body.nano_instructions,
+  nano_chances: req.body.nano_chances,
+  nanoservices: req.body.nanoservices || [],
 
-      step_order: req.body.step_order,
-      path_id: pathId,
-      status: req.body.status || "active",
-    };
+  step_order: req.body.step_order,
+  path_id: pathId,
+  status: req.body.status || "active",
+};
 
     // 1️⃣ Create step
     const step = await stepModel.create(createStep);
@@ -141,55 +147,53 @@ const getSteps = async (req, res) => {
 
 
 const updateStep = async (req, res) => {
-    let updateData = {}
-    if (req.body.name) updateData.name = req.body.name;
-    if (req.body.macro_name) updateData.macro_name = req.body.macro_name;
-    if (req.body.micro_name) updateData.micro_name = req.body.micro_name;
-    if (req.body.nano_name) updateData.nano_name = req.body.nano_name;
-    if (req.body.macro_length) updateData.macro_length = req.body.macro_length;
-    if (req.body.micro_length) updateData.micro_length = req.body.micro_length;
-    if (req.body.nano_length) updateData.nano_length = req.body.nano_length;
-    if (req.body.macro_chances) updateData.macro_chances = req.body.macro_chances;
-    if (req.body.micro_chances) updateData.micro_chances = req.body.micro_chances;
-    if (req.body.nano_chances) updateData.nano_chances = req.body.nano_chances;
-    if (req.body.macro_description) updateData.macro_description = req.body.macro_description;
-    if (req.body.micro_description) updateData.micro_description = req.body.micro_description;
-    if (req.body.nano_description) updateData.nano_description = req.body.nano_description;
-    if (req.body.microservices) updateData.microservices = req.body.microservices;
-    if (req.body.macroservices) updateData.macroservices = req.body.macroservices;
-    if (req.body.nanoservices) updateData.nanoservices = req.body.nanoservices;
-    if (req.body.macro_cost) updateData.macro_cost = req.body.macro_cost;
-    if (req.body.micro_cost) updateData.micro_cost = req.body.micro_cost;
-    if (req.body.nano_cost) updateData.nano_cost = req.body.nano_cost;
-    if (req.body.step_order) updateData.step_order = req.body.step_order;
-   if (req.body.path_id) {
-  const pathExists = await pathModel.findById(req.body.path_id);
-  if (!pathExists) {
-    return res.json({
-      status: false,
-      message: "Invalid path_id",
+  try {
+    // Always build updateData with all provided fields
+    // Use explicit mapping instead of if(truthy) to avoid skipping "free", "0", ""
+    const updateData = {};
+
+    const fields = [
+      'name', 'description', 'length', 'cost', 'step_order', 'status',
+      'macro_name', 'macro_description', 'macro_length', 'macro_access',
+      'macro_instructions', 'macro_chances', 'macroservices',
+      'micro_name', 'micro_description', 'micro_length', 'micro_access',
+      'micro_instructions', 'micro_chances', 'microservices',
+      'nano_name', 'nano_description', 'nano_length', 'nano_access',
+      'nano_instructions', 'nano_chances', 'nanoservices',
+    ];
+
+    fields.forEach((field) => {
+      // ✅ Use hasOwnProperty — saves even if value is "", 0, false, or "free"
+      if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+        updateData[field] = req.body[field];
+      }
     });
-  }
-  updateData.path_id = req.body.path_id;
-}
 
-    if (req.body.status) updateData.status = req.body.status;
-
-    let updateStepData = await stepModel.findOneAndUpdate({ _id: req.params.id, status: "active" }, updateData, { new: true });
-    // console.log(updateStepData)
-    if (!updateStepData) {
-        return res.json({
-            status: false,
-            message: 'Data not found',
-        })
+    if (req.body.path_id) {
+      const pathExists = await pathModel.findById(req.body.path_id);
+      if (!pathExists) {
+        return res.json({ status: false, message: "Invalid path_id" });
+      }
+      updateData.path_id = req.body.path_id;
     }
-    return res.json({
-        status: true,
-        message: 'Step updated',
-        data: updateStepData
-    })
 
-}
+    const updatedStep = await stepModel.findOneAndUpdate(
+      { _id: req.params.id, status: "active" },
+      { $set: updateData },
+      { new: true }
+    );
+
+    if (!updatedStep) {
+      return res.json({ status: false, message: "Step not found or inactive" });
+    }
+
+    return res.json({ status: true, message: "Step updated", data: updatedStep });
+
+  } catch (error) {
+    console.error("updateStep error:", error);
+    return res.json({ status: false, message: error.message });
+  }
+};
 
 
 const detachStepFromPath = async (req, res) => {
@@ -352,7 +356,7 @@ const getStepsByPartner = async (req, res) => {
       filter.status = status;
     }
 
-    const steps = await stepModel.find(filter).sort({ createdAt: 1 });
+   const steps = await stepModel.find(filter).sort({  createdAt: -1 });
 
     return res.json({
       status: true,

@@ -7,6 +7,19 @@ import { motion } from "framer-motion";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
+const parseDuration = (raw) => {
+  try {
+    const l = JSON.parse(raw);
+    const parts = [];
+    if (parseInt(l.years) > 0) parts.push(`${l.years}y`);
+    if (parseInt(l.months) > 0) parts.push(`${l.months}m`);
+    if (parseInt(l.days) > 0) parts.push(`${l.days}d`);
+    return parts.length > 0 ? parts.join(" ") : null;
+  } catch {
+    return null;
+  }
+};
+
 const PathPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -17,10 +30,8 @@ const PathPage = () => {
   const [steps, setSteps] = useState([]);
   const [error, setError] = useState(null);
 
-  const isPartnerFlow =
-    location.pathname.startsWith("/dashboard/accountants");
+  const isPartnerFlow = location.pathname.startsWith("/dashboard/accountants");
 
-  // ✅ Fetch path + steps
   const fetchPath = async () => {
     setLoading(true);
     setError(null);
@@ -34,16 +45,17 @@ const PathPage = () => {
     }
 
     try {
-      const pathRes = await axios.get(
-        `${BASE_URL}/api/paths/viewpath/${pathId}`
-      );
+      const pathRes = await axios.get(`${BASE_URL}/api/paths/viewpath/${pathId}`);
       setPathName(pathRes?.data?.data?.nameOfPath || "N/A");
 
       const stepsRes = await axios.get(`${BASE_URL}/api/steps/get`, {
         params: { path_id: pathId },
       });
 
-      setSteps(stepsRes?.data?.data || []);
+      const sorted = (stepsRes?.data?.data || []).sort(
+        (a, b) => (a.step_order || 0) - (b.step_order || 0)
+      );
+      setSteps(sorted);
     } catch (err) {
       setError("Failed to fetch path.");
       setSteps([]);
@@ -56,70 +68,79 @@ const PathPage = () => {
     fetchPath();
   }, [id]);
 
-  // ✅ Navigate to NEW Create Step page
   const handleCreateStep = () => {
     navigate(`/dashboard/accountants/create-step/${id}`);
   };
 
   return (
-    <div className="dashboard-main">
-      <div className="dashboard-body">
-        <div className="dashboard-screens" style={{ width: "100%" }}>
-          <div style={{ padding: "3rem 3.5rem" }}>
+    <div className="pathpage-root">
 
-            {/* HEADER */}
-            <div className="journey-top-area-premium">
-              <div className="premium-title-small">Your Selected Path</div>
-
-              {loading ? (
-                <Skeleton width={300} height={32} />
-              ) : (
-                <div className="premium-title">{pathName}</div>
-              )}
-
-              <div className="premium-back" onClick={() => navigate(-1)}>
-                ← Go Back
-              </div>
-
-              {isPartnerFlow && (
-                <button
-                  className="premium-create-step-btn"
-                  onClick={handleCreateStep}
-                >
-                  + Create Step
-                </button>
-              )}
-            </div>
-
-            {/* STEPS */}
-            <div className="steps-grid-premium">
-              {loading ? (
-                <Skeleton count={3} />
-              ) : error ? (
-                <p className="premium-error">{error}</p>
-              ) : steps.length === 0 ? (
-                <p className="premium-error">No steps found.</p>
-              ) : (
-                steps.map((step, index) => (
-                  <motion.div
-                    key={step._id}
-                    className="step-card-premium"
-                    initial={{ opacity: 0, y: 25 }}
-                    animate={{ opacity: 1, y: 0 }}
-                  >
-                    <div className="bubble">{index + 1}</div>
-                    <div className="step-title-premium">{step.name}</div>
-                    <div className="step-desc-premium">
-                      {step.description}
-                    </div>
-                  </motion.div>
-                ))
-              )}
-            </div>
-
-          </div>
+      {/* HEADER */}
+      <div className="pathpage-header">
+        <div className="pathpage-header-left">
+          <span className="pathpage-label">Your Selected Path</span>
+          {loading
+            ? <Skeleton width={260} height={28} />
+            : <h1 className="pathpage-title">{pathName}</h1>
+          }
+        </div>
+        <div className="pathpage-header-right">
+          <button className="pathpage-back-btn" onClick={() => navigate(-1)}>
+            ← Go Back
+          </button>
+          {isPartnerFlow && (
+            <button className="pathpage-create-btn" onClick={handleCreateStep}>
+              + Create Step
+            </button>
+          )}
         </div>
       </div>
+
+      {/* SCROLLABLE STEPS AREA */}
+      <div className="pathpage-scroll-area">
+        {loading ? (
+          <div className="pathpage-skeleton-grid">
+            {[1, 2, 3].map(n => <Skeleton key={n} height={220} borderRadius={20} />)}
+          </div>
+        ) : error ? (
+          <p className="pathpage-error">{error}</p>
+        ) : steps.length === 0 ? (
+          <p className="pathpage-error">No steps found for this path.</p>
+        ) : (
+          <div className="pathpage-steps-grid">
+            {steps.map((step, index) => {
+              const duration = parseDuration(step.macro_length);
+              return (
+                <motion.div
+                  key={step._id}
+                  className="pathpage-step-card"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <div className="pathpage-step-number">
+                    {step.step_order || index + 1}
+                  </div>
+
+                  <div className="pathpage-step-name">{step.macro_name}</div>
+
+                  <div className="pathpage-step-desc">{step.macro_description}</div>
+
+                  <div className="pathpage-step-footer">
+                    <span className={`pathpage-badge ${step.macro_access === "free" ? "badge-free" : "badge-paid"}`}>
+                      {step.macro_access === "free" ? "Free" : "Paid"}
+                    </span>
+                    {duration && (
+                      <span className="pathpage-duration">⏱ {duration}</span>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
     </div>
   );
 };

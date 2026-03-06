@@ -328,7 +328,7 @@ const viewPathById = (id) => {
     axios.get(`${BASE_URL}/api/paths/viewpath/${id}`)
         .then((response) => {
             let result = response?.data?.data;
-            setViewPathData(result);
+             setViewPathData(Array.isArray(result) ? result[0] : result);
         })
         .catch((error) => {
             console.log("Error in fetching view path data:", error);
@@ -781,9 +781,9 @@ useEffect(() => {
  <div className="viewpath-top-area">
    <div>Your Selected Path:</div>
 
-   <div className="viewpath-bold-text">
-      {viewPathData?.destination_institution}
-   </div>
+<div className="viewpath-bold-text">
+   {viewPathData?.nameOfPath || viewPathData?.destination_institution || "Untitled Path"}
+</div>
 
    <div className="viewpath-des">
       {viewPathData?.description}
@@ -797,6 +797,9 @@ useEffect(() => {
    </div>
 </div>
 
+
+
+
 <div className="viewpath-steps-area">
    {viewPathData?.StepDetails?.map((e, i) => (
       <div
@@ -807,13 +810,33 @@ useEffect(() => {
          }}
          className="viewpath-each-j-step viewpath-relative-div"
       >
-         <div className="viewpath-each-j-img">
-            <img src={e?.icon} alt="" />
+         {/* Step number badge */}
+
+<div style={{
+   width: 36, height: 36, borderRadius: "50%",
+   background: "#0d6b6e", color: "#fff",
+   display: "flex", alignItems: "center", justifyContent: "center",
+   fontWeight: 700, fontSize: "0.9rem",
+   marginBottom: "0.5rem",   
+   flexShrink: 0,
+   
+   zIndex: 2                
+}}>
+   {i + 1}
+</div>
+
+         <div className="viewpath-each-j-step-text">
+            {e?.macro_name || e?.name || "Untitled Step"}
          </div>
-         <div className="viewpath-each-j-step-text">{e?.name}</div>
-         <div className="viewpath-each-j-step-text1">{e?.description}</div>
+
+         <div className="viewpath-each-j-step-text1">
+            {e?.macro_description || e?.description || ""}
+         </div>
+
          <div className="viewpath-each-j-amount-div">
-            <div className="viewpath-each-j-amount">{e?.cost}</div>
+            <div className="viewpath-each-j-amount">
+               {e?.macro_access || e?.cost || "Free"}
+            </div>
          </div>
       </div>
    ))}
@@ -1027,6 +1050,7 @@ viewPathById(selectedPathId)
                     onClick={() => {
                       setViewPathEnabled(true);
                       setPathActionEnabled(false);
+                      viewPathById(selectedPathId); 
                     }}
                   >
                     View path
