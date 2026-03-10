@@ -73,7 +73,8 @@ feature_coordinates: {
     destination_degree: { type: String },
     destination_institution: { type: String },
 
-    length: { type: Number },  // Years
+    length: { type: Number }, 
+    total_steps: { type: Number, default: 5 },
 
     city: { type: String },
     country: { type: String },

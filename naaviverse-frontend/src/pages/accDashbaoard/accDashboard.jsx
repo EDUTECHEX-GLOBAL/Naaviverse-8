@@ -163,13 +163,30 @@ const AccDashboard = () => {
 
   // Add this with your other useEffects
   useEffect(() => {
-    // Check if we came from profile page with openCreatePath state
     if (location.state?.openCreatePath) {
       setaccsideNav("CREATE_PATH");
-      // Clear the state so it doesn't reopen on refresh
-      navigate('/dashboard/accountants', { replace: true, state: {} });
+      // Only clear state, don't navigate away
+      window.history.replaceState({}, '', location.pathname);
     }
-  }, [location.state, setaccsideNav, navigate]);
+  }, []);
+
+
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes('/dashboard/accountants/paths')) {
+      setaccsideNav("Paths");
+    } else if (path.includes('/dashboard/accountants/steps')) {
+      setaccsideNav("Steps");
+    } else if (path.includes('/dashboard/accountants/marketplace')) {
+      setaccsideNav("Marketplace");
+    } else if (path.includes('/dashboard/accountants/crm')) {
+      setaccsideNav("CRM");
+    } else if (path.includes('/dashboard/accountants/home')) {
+      setaccsideNav("Home");
+    } else if (path === '/dashboard/accountants' || path === '/dashboard/accountants/') {
+      setaccsideNav("CRM");
+    }
+  }, []);
 
 
   useEffect(() => {
@@ -812,9 +829,9 @@ const AccDashboard = () => {
   function reloadService() {
     setpstep(1);
     setispopular(false);
-    setaccsideNav("My Services");
+    setaccsideNav("Marketplace");
     setservicesMenu("Services");
-  };
+  }
 
   const handleFinalSubmit = () => {
     setIsSubmit(true);
@@ -1010,7 +1027,7 @@ const AccDashboard = () => {
     else if (accsideNav === "CRM" && crmMenu === "Purchases") {
       handleAllCustomerLicenses();
     }
-    else if (accsideNav === "My Services" && servicesMenu === "Services") {
+    else if (accsideNav === "Marketplace" && servicesMenu === "Services") {
       const userDetails = getPartner();
 
       if (!userDetails || !userDetails.email) {
@@ -1322,7 +1339,7 @@ const AccDashboard = () => {
       });
   }, []);
 
-  const pathSubmission = () => {
+ const pathSubmission = (totalStepsOverride) => {
     console.log("🚀 ---- PATH SUBMISSION TRIGGERED ----");
 
     // 1️⃣ Log Redux user object
@@ -1368,6 +1385,7 @@ const AccDashboard = () => {
       email: finalEmail,
       nameOfPath: pathSteps.nameOfPath,
       description: pathSteps.description,
+    total_steps: Number(totalStepsOverride ?? stepCount),
       current_coordinates: {
         grade: grade,
         curriculum: curriculum,
@@ -1686,77 +1704,77 @@ const AccDashboard = () => {
     <div style={{ height: "100vh", overflow: "hidden" }}>
       <div className="dashboard-main">
         <div className="dashboard-body">
-          <div onClick={() => setShowDrop(false)}>
+          <div onClick={() => setShowDrop(false)} style={{ display: "contents" }}>
             <AccDashsidebar /> {/* ← Sidebar is always here */}
           </div>
           <div className="dashboard-screens"> {/* ← Content area */}
             <div style={{ height: "100%" }}>
               {viewPathMode ? (
-  createStepForPathId ? (
-    // FULL CONTENT: Create Step view
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
-      <div style={{
-        padding: "0 35px",
-        height: "60px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        borderBottom: "0.5px solid #E5E5E5",
-        background: "#fff",
-        flexShrink: 0
-      }}>
-        <div style={{
-          padding: "10px 30px",
-          borderRadius: "35px",
-          fontWeight: "700",
-          fontSize: "15px",
-          background: "rgba(241,241,241,0.5)"
-        }}>
-          Create New Step
-        </div>
-        <div
-          style={{
-            fontWeight: "600",
-            textDecorationLine: "underline",
-            cursor: "pointer",
-            fontSize: "0.9rem",
-            paddingRight: "35px"
-          }}
-          onClick={() => setCreateStepForPathId(null)}
-        >
-          ← Back to Path
-        </div>
-      </div>
-      <div style={{ flex: 1, overflowY: "auto", background: "#fff", minHeight: 0 }}>
-        <CreateNewStep
-          inlineMode={true}
-          pathId={createStepForPathId}
-          onSuccess={() => setCreateStepForPathId(null)}
-          onCancel={() => setCreateStepForPathId(null)}
-        />
-      </div>
-    </div>
-  ) : (
-    // FULL CONTENT: Path Details view - REMOVED THE EMPTY services-all-menu DIV
-    <>
-      <MenuNav
-        showDrop={showDrop}
-        setShowDrop={setShowDrop}
-        searchTerm={search}
-        setSearchterm={setSearch}
-        searchPlaceholder="Search Path..."
-      />
-      <div
-        className="services-main"
-        style={{ height: "calc(100% - 70px)" }}
-        onClick={() => setShowDrop(false)}
-      >
-        {/* REMOVED THE EMPTY services-all-menu DIV COMPLETELY */}
-        <DraftPathView onAddStep={(pathId) => setCreateStepForPathId(pathId)} />
-      </div>
-    </>
-  )
-) : accsideNav === "CREATE_PATH" ? (
+                createStepForPathId ? (
+                  // FULL CONTENT: Create Step view
+                  <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
+                    <div style={{
+                      padding: "0 35px",
+                      height: "60px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      borderBottom: "0.5px solid #E5E5E5",
+                      background: "#fff",
+                      flexShrink: 0
+                    }}>
+                      <div style={{
+                        padding: "10px 30px",
+                        borderRadius: "35px",
+                        fontWeight: "700",
+                        fontSize: "15px",
+                        background: "rgba(241,241,241,0.5)"
+                      }}>
+                        Create New Step
+                      </div>
+                      <div
+                        style={{
+                          fontWeight: "600",
+                          textDecorationLine: "underline",
+                          cursor: "pointer",
+                          fontSize: "0.9rem",
+                          paddingRight: "35px"
+                        }}
+                        onClick={() => setCreateStepForPathId(null)}
+                      >
+                        ← Back to Path
+                      </div>
+                    </div>
+                    <div style={{ flex: 1, overflowY: "auto", background: "#fff", minHeight: 0 }}>
+                      <CreateNewStep
+                        inlineMode={true}
+                        pathId={createStepForPathId}
+                        onSuccess={() => setCreateStepForPathId(null)}
+                        onCancel={() => setCreateStepForPathId(null)}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  // FULL CONTENT: Path Details view - REMOVED THE EMPTY services-all-menu DIV
+                  <>
+                    <MenuNav
+                      showDrop={showDrop}
+                      setShowDrop={setShowDrop}
+                      searchTerm={search}
+                      setSearchterm={setSearch}
+                      searchPlaceholder="Search Path..."
+                    />
+                    <div
+                      className="services-main"
+                      style={{ height: "calc(100% - 70px)" }}
+                      onClick={() => setShowDrop(false)}
+                    >
+                      {/* REMOVED THE EMPTY services-all-menu DIV COMPLETELY */}
+                      <DraftPathView onAddStep={(pathId) => setCreateStepForPathId(pathId)} />
+                    </div>
+                  </>
+                )
+              ) : accsideNav === "CREATE_PATH" ? (
                 // SHOW CREATE NEW PATH AS FULL PAGE - WITHOUT THE HEADER TABS
                 <div style={{
                   display: "flex",
@@ -1799,6 +1817,7 @@ const AccDashboard = () => {
                       pathSubmission={pathSubmission}
                       pathSteps={pathSteps}
                       setPathSteps={setPathSteps}
+                      setStepCount={setStepCount} 
                       grade={grade}
                       setGrade={setGrade}
                       gradeAvg={gradeAvg}
@@ -2383,8 +2402,28 @@ const AccDashboard = () => {
                     </div>
                   </div>
                 </>
+              ) : accsideNav === "Home" ? (
+                <>
+                  <MenuNav
+                    showDrop={showDrop}
+                    setShowDrop={setShowDrop}
+                    searchTerm={search}
+                    setSearchterm={setSearch}
+                    searchPlaceholder="Search..."
+                  />
+                  <div className="services-main" onClick={() => setShowDrop(false)}>
+                    <div style={{ padding: "35px" }}>
+                      <h2 style={{ fontSize: "20px", fontWeight: "700", color: "#1f304f" }}>
+                        Home
+                      </h2>
+                      <p style={{ color: "#617388", marginTop: "8px" }}>
+                        Welcome back, {getPartner()?.businessName || "Partner"}
+                      </p>
+                    </div>
+                  </div>
+                </>
 
-              ) : accsideNav === "My Services" ? (
+              ) : accsideNav === "Marketplace" ? (
                 <>
                   <MenuNav
                     showDrop={showDrop}
@@ -2410,7 +2449,7 @@ const AccDashboard = () => {
                               ? "rgba(241, 241, 241, 0.5)"
                               : "",
                           fontWeight: servicesMenu === "Services" ? "700" : "",
-                          }}
+                        }}
                         onClick={() => {
                           setservicesMenu("Services");
                           setSearch("");

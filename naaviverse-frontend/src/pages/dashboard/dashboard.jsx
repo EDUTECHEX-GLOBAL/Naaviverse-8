@@ -119,52 +119,52 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   // ✅ FIXED: Safe access for program fetch
-// useEffect(() => {
-//   if (userDetails) {
-//     axios
-//       .get(`/api/userpaths/programs?email=${userDetails?.email}`)
-//       .then(({ data }) => {
-//         if (data?.status && Array.isArray(data?.data) && data.data.length > 0) {
-//           const program = data.data[0]; // first program
-//           const stepDetails = Array.isArray(program?.steps)
-//             ? program.steps
-//             : [];
+  // useEffect(() => {
+  //   if (userDetails) {
+  //     axios
+  //       .get(`/api/userpaths/programs?email=${userDetails?.email}`)
+  //       .then(({ data }) => {
+  //         if (data?.status && Array.isArray(data?.data) && data.data.length > 0) {
+  //           const program = data.data[0]; // first program
+  //           const stepDetails = Array.isArray(program?.steps)
+  //             ? program.steps
+  //             : [];
 
-//           if (stepDetails.length > 0) {
-//             // if your steps have product_ids or similar keys, use that
-//             setProductKeys(stepDetails.map(step => step._id));
-//             console.log("✅ Steps found:", stepDetails);
-//           } else {
-//             console.warn("⚠️ No steps found for this user's program");
-//           }
-//         } else {
-//           console.warn("⚠️ No program data available for this user");
-//         }
-//       })
-//       .catch((err) => console.error("Error fetching programs:", err));
-//   }
-// }, []);
+  //           if (stepDetails.length > 0) {
+  //             // if your steps have product_ids or similar keys, use that
+  //             setProductKeys(stepDetails.map(step => step._id));
+  //             console.log("✅ Steps found:", stepDetails);
+  //           } else {
+  //             console.warn("⚠️ No steps found for this user's program");
+  //           }
+  //         } else {
+  //           console.warn("⚠️ No program data available for this user");
+  //         }
+  //       })
+  //       .catch((err) => console.error("Error fetching programs:", err));
+  //   }
+  // }, []);
 
 
   const [productDataArray, setProductDataArray] = useState([]);
 
-const fetchData = async () => {
-  setProductDataArray([]);
+  const fetchData = async () => {
+    setProductDataArray([]);
 
-  if (Array.isArray(productKeys) && productKeys.length > 0) {
-    try {
-      const fetchDataPromises = productKeys.map((id) => fetchProductData(id));
-      const results = await Promise.all(fetchDataPromises);
-      const updatedProductDataArray = results.filter(Boolean);
-      setProductDataArray(updatedProductDataArray);
-    } catch (error) {
-      console.error("❌ Error fetching product data:", error);
+    if (Array.isArray(productKeys) && productKeys.length > 0) {
+      try {
+        const fetchDataPromises = productKeys.map((id) => fetchProductData(id));
+        const results = await Promise.all(fetchDataPromises);
+        const updatedProductDataArray = results.filter(Boolean);
+        setProductDataArray(updatedProductDataArray);
+      } catch (error) {
+        console.error("❌ Error fetching product data:", error);
+      }
+    } else {
+      // Optional: You can log this once if debugging, otherwise safely remove.
+      // console.warn("⚠️ No valid product keys to fetch");
     }
-  } else {
-    // Optional: You can log this once if debugging, otherwise safely remove.
-    // console.warn("⚠️ No valid product keys to fetch");
-  }
-};
+  };
 
   useEffect(() => {
     fetchData();
@@ -180,6 +180,8 @@ const fetchData = async () => {
       return null;
     }
   };
+
+
 
   useEffect(() => {
     const userDetails = JSON.parse(localStorage.getItem("user"));
@@ -220,63 +222,77 @@ const fetchData = async () => {
       });
   };
 
-
-
-// ✅ Fix: Missing function definitions
-
-// Called inside handleFollowList()
-const handleServicesBy = () => {
-  console.log("handleServicesBy called — implement service fetching here if needed.");
-  // You can later connect it to an API call to fetch services by banker.
+  // ✅ FIX: Sync sideNav with URL on refresh
+  useEffect(() => {
+const urlToSideNav = {
+  "/dashboard/users/current-step": "Current Step",
+  "/dashboard/users/my-journey": "My Journey",
+  "/dashboard/users/transactions": "Transactions",
+  "/dashboard/users/paths": "Paths",   // ✅ changed
+  "/dashboard/users": "Paths",          // ✅ keep as fallback
 };
 
-// Called when clicking "Follow"
-const handleFollowBrand = async (brand) => {
-  try {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const payload = {
-      email: user?.user?.email,
-      brandEmail: brand?.email || "",
-    };
-    const res = await FollowBrand(payload);
-    if (res?.data?.status) {
-      console.log(`✅ Followed ${brand?.displayName}`);
-      setsubmit(true);
-      setFollow(brand);
+    const currentPath = window.location.pathname;
+    const matchedNav = Object.keys(urlToSideNav)
+      .sort((a, b) => b.length - a.length)
+      .find((path) => currentPath === path || currentPath.startsWith(path + "/"));
+
+    if (matchedNav) {
+      setsideNav(urlToSideNav[matchedNav]);
     }
-  } catch (err) {
-    console.error("❌ Error in handleFollowBrand:", err);
-  }
-};
+  }, []);
 
-// Called when clicking "Unfollow"
-const handleUnFollowBrand = async (brand) => {
-  try {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const payload = {
-      email: user?.user?.email,
-      brandEmail: brand?.email || "",
-    };
-    const res = await UnfollowBrand(payload);
-    if (res?.data?.status) {
-      console.log(`✅ Unfollowed ${brand?.displayName}`);
-      setsubmit(true);
-      setFollow(brand);
+
+  const handleServicesBy = () => {
+    console.log("handleServicesBy called — implement service fetching here if needed.");
+   
+  };
+
+  
+  const handleFollowBrand = async (brand) => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const payload = {
+        email: user?.user?.email,
+        brandEmail: brand?.email || "",
+      };
+      const res = await FollowBrand(payload);
+      if (res?.data?.status) {
+        console.log(`✅ Followed ${brand?.displayName}`);
+        setsubmit(true);
+        setFollow(brand);
+      }
+    } catch (err) {
+      console.error("❌ Error in handleFollowBrand:", err);
     }
-  } catch (err) {
-    console.error("❌ Error in handleUnFollowBrand:", err);
-  }
-};
+  };
 
-// Reset coin action popup
-const resetCoinAction = () => {
-  setCoinActionEnabled(false);
-  setCoinAction([]);
-  setAddActionStep(1);
-  setSelectedPaymentMethod("");
-  setAddForexAmount("");
-  console.log("🔄 Coin action reset");
-};
+  const handleUnFollowBrand = async (brand) => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const payload = {
+        email: user?.user?.email,
+        brandEmail: brand?.email || "",
+      };
+      const res = await UnfollowBrand(payload);
+      if (res?.data?.status) {
+        console.log(`✅ Unfollowed ${brand?.displayName}`);
+        setsubmit(true);
+        setFollow(brand);
+      }
+    } catch (err) {
+      console.error("❌ Error in handleUnFollowBrand:", err);
+    }
+  };
+
+  const resetCoinAction = () => {
+    setCoinActionEnabled(false);
+    setCoinAction([]);
+    setAddActionStep(1);
+    setSelectedPaymentMethod("");
+    setAddForexAmount("");
+    console.log("🔄 Coin action reset");
+  };
 
 
 
@@ -328,13 +344,13 @@ const resetCoinAction = () => {
             <div style={{ height: "100%" }}>
               {sideNav === "Partners" ? (
                 <>
-                  <MenuNav 
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder="Search for Partners..."
-                   />
+                  <MenuNav
+                    showDrop={showDrop}
+                    setShowDrop={setShowDrop}
+                    searchTerm={search}
+                    setSearchterm={setSearch}
+                    searchPlaceholder="Search for Partners..."
+                  />
                   <div
                     className="account-container"
                     onClick={() => setShowDrop(false)}
@@ -349,9 +365,9 @@ const resetCoinAction = () => {
                       </div>
                       <div className="all-account">
                         {accountantsList != null &&
-                        accountantsList != undefined &&
-                        accountantsList?.data != null &&
-                        accountantsList?.data != undefined ? (
+                          accountantsList != undefined &&
+                          accountantsList?.data != null &&
+                          accountantsList?.data != undefined ? (
                           <>
                             {accountantsList?.data
                               ?.filter((element) => {
@@ -837,13 +853,13 @@ const resetCoinAction = () => {
                 </>
               ) : sideNav === "Services" ? (
                 <>
-                  <MenuNav 
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder="Search for Services..."
-                   />
+                  <MenuNav
+                    showDrop={showDrop}
+                    setShowDrop={setShowDrop}
+                    searchTerm={search}
+                    setSearchterm={setSearch}
+                    searchPlaceholder="Search for Services..."
+                  />
                   <div
                     className="service-container"
                     onClick={() => setShowDrop(false)}
@@ -894,7 +910,7 @@ const resetCoinAction = () => {
                         ) : (
                           <>
                             {servicesByList != null &&
-                            servicesByList != undefined ? (
+                              servicesByList != undefined ? (
                               <>
                                 {servicesByList
                                   ?.filter((item) =>
@@ -937,12 +953,11 @@ const resetCoinAction = () => {
                                               each.product.pricesWithAppFees
                                                 .length - 1
                                             ].price
-                                          ).toFixed(2)}/${
-                                            each.product.pricesWithAppFees[
+                                          ).toFixed(2)}/${each.product.pricesWithAppFees[
                                               each.product.pricesWithAppFees
                                                 .length - 1
                                             ].billing_method
-                                          }`}
+                                            }`}
                                         </div>
                                         <div
                                           className="zoom1"
@@ -999,7 +1014,7 @@ const resetCoinAction = () => {
                         ) : (
                           <>
                             {automatedservices != null &&
-                            automatedservices != undefined ? (
+                              automatedservices != undefined ? (
                               <>
                                 {automatedservices
                                   ?.filter((item) =>
@@ -1042,12 +1057,11 @@ const resetCoinAction = () => {
                                               each.product.pricesWithAppFees
                                                 .length - 1
                                             ].price
-                                          ).toFixed(2)}/${
-                                            each.product.pricesWithAppFees[
+                                          ).toFixed(2)}/${each.product.pricesWithAppFees[
                                               each.product.pricesWithAppFees
                                                 .length - 1
                                             ].billing_method
-                                          }`}
+                                            }`}
                                         </div>
                                         <div
                                           className="zoom1"
@@ -1086,13 +1100,13 @@ const resetCoinAction = () => {
                 </>
               ) : sideNav === "Calendar" ? (
                 <>
-                  <MenuNav 
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder="Search Events..."
-                   />
+                  <MenuNav
+                    showDrop={showDrop}
+                    setShowDrop={setShowDrop}
+                    searchTerm={search}
+                    setSearchterm={setSearch}
+                    searchPlaceholder="Search Events..."
+                  />
                   <div onClick={() => setShowDrop(false)}>
                     <EarningCalendar />
                   </div>
@@ -1100,12 +1114,12 @@ const resetCoinAction = () => {
               ) : sideNav === "Wallet" ? (
                 transactionSelected ? (
                   <>
-                   <MenuNav 
+                    <MenuNav
                       showDrop={showDrop}
                       setShowDrop={setShowDrop}
                       searchMenu={searchVault}
                       setSearchMenu={setSearchVault}
-                   />
+                    />
                     <div
                       className="services-main"
                       style={{ height: "calc(100% - 70px)" }}
@@ -1177,13 +1191,13 @@ const resetCoinAction = () => {
                   </>
                 ) : (
                   <>
-                   <MenuNav 
+                    <MenuNav
                       showDrop={showDrop}
                       setShowDrop={setShowDrop}
                       searchTerm={searchVault}
                       setSearchterm={setSearchVault}
                       searchPlaceholder="Search Wallet..."
-                   />
+                    />
                     <div
                       className="services-main"
                       style={{ height: "calc(100% - 70px)" }}
@@ -1243,13 +1257,13 @@ const resetCoinAction = () => {
                 )
               ) : sideNav === "Task Manager" ? (
                 <>
-                 <MenuNav 
+                  <MenuNav
                     showDrop={showDrop}
                     setShowDrop={setShowDrop}
                     // searchTerm={search}
                     // setSearchterm={setSearch}
                     searchPlaceholder="Search..."
-                   />
+                  />
                   <div
                     className="services-main"
                     style={{ height: "calc(100% - 70px)" }}
@@ -1260,13 +1274,13 @@ const resetCoinAction = () => {
                 </>
               ) : sideNav === "Scanner" ? (
                 <>
-                <MenuNav 
-                  showDrop={showDrop}
-                  setShowDrop={setShowDrop}
-                  // searchTerm={search}
-                  // setSearchterm={setSearch}
-                  searchPlaceholder="Search..."
-                   />
+                  <MenuNav
+                    showDrop={showDrop}
+                    setShowDrop={setShowDrop}
+                    // searchTerm={search}
+                    // setSearchterm={setSearch}
+                    searchPlaceholder="Search..."
+                  />
                   <div
                     className="services-main"
                     style={{ height: "calc(100% - 70px)" }}
@@ -1277,13 +1291,13 @@ const resetCoinAction = () => {
                 </>
               ) : sideNav === "Paths" ? (
                 <>
-                 <MenuNav 
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={searchTerm}
-                      setSearchterm={setSearchterm}
-                      searchPlaceholder="Find The School Or Program You Want To Attend..."
-                   />
+                  <MenuNav
+                    showDrop={showDrop}
+                    setShowDrop={setShowDrop}
+                    searchTerm={searchTerm}
+                    setSearchterm={setSearchterm}
+                    searchPlaceholder="Find The School Or Program You Want To Attend..."
+                  />
                   <div
                     className="services-main"
                     style={{ height: "calc(100% - 70px)" }}
@@ -1294,13 +1308,13 @@ const resetCoinAction = () => {
                 </>
               ) : sideNav === "My Journey" ? (
                 <>
-                  <MenuNav 
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={searchTerm}
-                      setSearchterm={setSearchterm}
-                      searchPlaceholder="Search..."
-                   />
+                  <MenuNav
+                    showDrop={showDrop}
+                    setShowDrop={setShowDrop}
+                    searchTerm={searchTerm}
+                    setSearchterm={setSearchterm}
+                    searchPlaceholder="Search..."
+                  />
                   <div
                     className="services-main"
                     style={{ height: "calc(100% - 70px)" }}
@@ -1311,13 +1325,13 @@ const resetCoinAction = () => {
                 </>
               ) : sideNav === "Current Step" ? (
                 <>
-                   <MenuNav 
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={searchTerm}
-                      setSearchterm={setSearchterm}
-                      searchPlaceholder="Search..."
-                   />
+                  <MenuNav
+                    showDrop={showDrop}
+                    setShowDrop={setShowDrop}
+                    searchTerm={searchTerm}
+                    setSearchterm={setSearchterm}
+                    searchPlaceholder="Search..."
+                  />
                   <div
                     className="services-main"
                     style={{ height: "calc(100% - 70px)" }}
@@ -1327,10 +1341,10 @@ const resetCoinAction = () => {
                   </div>
                 </>
               ) : sideNav === "Transactions" ? (
-                <TransactionPage 
+                <TransactionPage
                   showDrop={showDrop}
-                  setShowDrop={setShowDrop} 
-                  search={search} 
+                  setShowDrop={setShowDrop}
+                  search={search}
                   setSearch={setSearch}
                   searchic={searchic}
                   profile={profile}
@@ -1338,7 +1352,7 @@ const resetCoinAction = () => {
                 />
               ) : sideNav === "Universities" ? (
                 <>
-                  <MenuNav 
+                  <MenuNav
                     showDrop={showDrop}
                     setShowDrop={setShowDrop}
                     searchTerm={searchTerm}
@@ -1357,7 +1371,7 @@ const resetCoinAction = () => {
                 ""
               )}
 
-              
+
             </div>
           </div>
         </div>
@@ -1434,17 +1448,17 @@ const resetCoinAction = () => {
                   </div>
                   <div
                     className="acc-step-box2"
-                    // onClick={() => {
-                    //   setCoinAction(["Withdraw"]);
-                    // }}
+                  // onClick={() => {
+                  //   setCoinAction(["Withdraw"]);
+                  // }}
                   >
                     Withdraw
                   </div>
                   <div
                     className="acc-step-box2"
-                    // onClick={() => {
-                    //   setCoinAction(["Transfer"]);
-                    // }}
+                  // onClick={() => {
+                  //   setCoinAction(["Transfer"]);
+                  // }}
                   >
                     Transfer
                   </div>

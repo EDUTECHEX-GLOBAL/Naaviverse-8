@@ -30,9 +30,21 @@ const JourneyPage = () => {
   const [loading, setLoading] = useState(true);
   const [journeyPageData, setJourneyPageData] = useState(null);
 
+  // ✅ FIX: On every fresh browser refresh, clear stale selectedPathId
+  // sessionStorage is wiped on refresh — so if no flag exists, it's a fresh load
   useEffect(() => {
+    const sessionActive = sessionStorage.getItem("journeySessionActive");
+
+    if (!sessionActive) {
+      // Fresh refresh — clear stale path from localStorage
+      localStorage.removeItem("selectedPathId");
+      sessionStorage.setItem("journeySessionActive", "true");
+      setLoading(false);
+      return;
+    }
+
+    // User navigated here within the same session — load normally
     const pathId = localStorage.getItem("selectedPathId");
-    console.log("🔥 Loaded Path ID:", pathId);
     if (!pathId) { setLoading(false); return; }
     fetchJourneyData(pathId);
   }, []);
@@ -73,32 +85,89 @@ const JourneyPage = () => {
     navigate("/dashboard/users/current-step");
   };
 
+  // ✅ No path selected — show prompt to go select one
+  const renderNoPathSelected = () => (
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      height: "60vh",
+      gap: "16px",
+      textAlign: "center",
+      padding: "0 20px",
+    }}>
+      <div style={{ fontSize: "3rem" }}>🎯</div>
+      <div style={{
+        fontSize: "1.4rem",
+        fontWeight: "700",
+        color: "#182542",
+      }}>
+        No Path Selected
+      </div>
+      <div style={{
+        fontSize: "1rem",
+        color: "#6c757d",
+        maxWidth: "360px",
+        lineHeight: "1.6",
+      }}>
+        Go to Paths and select your journey to get started.
+      </div>
+      <button
+        onClick={() => {
+          setsideNav("Paths");
+          navigate("/dashboard/users/paths");
+        }}
+        style={{
+          marginTop: "12px",
+          padding: "12px 28px",
+          background: "#182542",
+          color: "#fff",
+          border: "none",
+          borderRadius: "30px",
+          fontSize: "1rem",
+          fontWeight: "600",
+          cursor: "pointer",
+        }}
+      >
+        Go To Paths →
+      </button>
+    </div>
+  );
+
   return (
     <div className="journeypage">
 
-      {/* HEADER */}
-      <div className="journey-top-area">
-        <div className="title">Your Selected Path:</div>
+      {/* ✅ Only show header if a path is loaded */}
+      {journeyPageData && (
+        <div className="journey-top-area">
+          <div className="title">Your Selected Path:</div>
 
-        {loading ? (
-          <Skeleton width={200} height={30} />
-        ) : (
-          <div className="path-title">
-            {journeyPageData?.nameOfPath || journeyPageData?.name || "N/A"}
-          </div>
-        )}
+          {loading ? (
+            <Skeleton width={200} height={30} />
+          ) : (
+            <div className="path-title">
+              {journeyPageData?.nameOfPath || journeyPageData?.name || "N/A"}
+            </div>
+          )}
 
-        {loading ? (
-          <Skeleton width={500} height={20} />
-        ) : (
-          <div className="path-desc">{journeyPageData?.description}</div>
-        )}
-      </div>
+          {loading ? (
+            <Skeleton width={500} height={20} />
+          ) : (
+            <div className="path-desc">{journeyPageData?.description}</div>
+          )}
+        </div>
+      )}
 
       {/* STEPS GRID */}
       <div className="steps-grid">
         {loading ? (
           [1, 2, 3].map(n => <Skeleton key={n} height={200} borderRadius={16} />)
+
+        ) : !localStorage.getItem("selectedPathId") ? (
+          // ✅ Fresh refresh or no path ever selected
+          renderNoPathSelected()
+
         ) : journeyPageData?.steps?.length > 0 ? (
           journeyPageData.steps.map((step, index) => {
             const duration = parseDuration(step.macro_length);
@@ -111,10 +180,10 @@ const JourneyPage = () => {
                 {/* Step number bubble */}
                 <div className="step-bubble">{step.step_order || index + 1}</div>
 
-                {/* Title — macro_name is the correct field */}
+                {/* Title */}
                 <div className="step-title">{step.macro_name}</div>
 
-                {/* Description — macro_description is the correct field */}
+                {/* Description */}
                 <div className="step-desc">{step.macro_description}</div>
 
                 {/* Badges */}
@@ -129,7 +198,9 @@ const JourneyPage = () => {
               </div>
             );
           })
+
         ) : (
+          // Path was selected but no steps found
           <div className="no-steps-msg">No steps found for this path.</div>
         )}
       </div>

@@ -9,6 +9,7 @@ const CreateNewPath = ({
   setaccsideNav,
   pathSteps,
   setPathSteps,
+  setStepCount,
   grade,
   setGrade,
   gradeAvg,
@@ -37,7 +38,7 @@ const CreateNewPath = ({
   pathSubmission
 }) => {
   const [showPopup, setShowPopup] = useState(false);
-  const [stepCount, setStepCount] = useState('');
+  const [stepCount, setLocalStepCount] = useState('');
 
   // University autocomplete
   const [uniSearch, setUniSearch] = useState('');
@@ -136,7 +137,7 @@ const CreateNewPath = ({
     if (programSearch.length < 1) { setProgramResults(allUniversityPrograms); return; }
     setProgramResults(allUniversityPrograms.filter(p => p.toLowerCase().includes(programSearch.toLowerCase())));
     setProgHighlight(-1);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [programSearch, allUniversityPrograms, selectedUniversity]);
 
   // Keyboard nav
@@ -182,20 +183,18 @@ const CreateNewPath = ({
     setShowPopup(true);
   };
 
-  const handleContinue = () => {
-    if (!stepCount || parseInt(stepCount) < 1) { alert("Please enter a valid number of steps"); return; }
-    setShowPopup(false);
-    const years = parseInt(duration.years) || 0;
-    const months = parseInt(duration.months) || 0;
-    const days = parseInt(duration.days) || 0;
-    setPathSteps({ ...pathSteps, duration: { years, months, days, totalDays: (years * 365) + (months * 30) + days }, preferredLocation });
-    localStorage.setItem('pathStepCount', stepCount);
-    localStorage.setItem('pathDuration', JSON.stringify(duration));
-    localStorage.setItem('preferredLocation', JSON.stringify(preferredLocation));
-    pathSubmission();
-  };
+const handleContinue = () => {
+  if (!stepCount || parseInt(stepCount) < 1) { alert("Please enter a valid number of steps"); return; }
+  setShowPopup(false);
+  const years = parseInt(duration.years) || 0;
+  const months = parseInt(duration.months) || 0;
+  const days = parseInt(duration.days) || 0;
+  setPathSteps({ ...pathSteps, duration: { years, months, days, totalDays: (years * 365) + (months * 30) + days }, preferredLocation });
+  setStepCount(Number(stepCount));
+  pathSubmission(Number(stepCount));  // ← pass value directly, bypasses stale state
+};
 
-  const handleCancel = () => { setShowPopup(false); setStepCount(''); };
+const handleCancel = () => { setShowPopup(false); setLocalStepCount(''); };
 
   const handleMultiSelect = (type, item) => {
     switch (type) {
@@ -515,7 +514,7 @@ const CreateNewPath = ({
             <p className="step-popup-description">How many steps do you want to add to this path?</p>
             <div className="step-popup-input-wrapper">
               <input type="number" min="1" step="1" placeholder="Enter number of steps"
-                value={stepCount} onChange={(e) => setStepCount(e.target.value)} className="step-popup-input" />
+                value={stepCount} onChange={(e) => setLocalStepCount(e.target.value)} className="step-popup-input" />
             </div>
             <div className="step-popup-buttons">
               <button className="step-popup-btn step-popup-btn-cancel" onClick={handleCancel}>Cancel</button>

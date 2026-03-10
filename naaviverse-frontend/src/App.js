@@ -78,8 +78,7 @@ function App() {
         <Routes>
           {/* ================= SINCO TEMPLATE (LANDING + INNER PAGES) ================= */}
           <Route path="/" element={<AppRouter />} />
-          <Route path="/*" element={<AppRouter />} />
-
+       
           {/* ================= PUBLIC ================= */}
           <Route path="/login" element={<Loginpage />} />
           <Route path="/register" element={<NewHomePage />} />
@@ -89,26 +88,31 @@ function App() {
           {/* ================= USER DASHBOARD ================= */}
           <Route path="/dashboard/users" element={<Dashboard />} />
           <Route path="/dashboard/users/profile" element={<UserProfile />} />
+          <Route path="/dashboard/users/paths" element={<Dashboard />} />
           <Route path="/dashboard/users/my-journey" element={<Dashboard />} />
           <Route path="/dashboard/users/current-step" element={<Dashboard />} />
+          <Route path="/dashboard/users/transactions" element={<Dashboard />} />
           <Route path="/dashboard/users/:id" element={<MallProduct />} />
 
           {/* ================= PATH / STEP ================= */}
           <Route path="/dashboard/path/:id" element={<PathPage />} />
           <Route path="/dashboard/step/:id" element={<StepPage />} />
           <Route path="/paths/:pathId/steps" element={<StepsListPage />} />
-          
+
           {/* ================= SERVICES ROUTES ================= */}
           <Route path="/services/all" element={<ServicesListPage />} />
-          
+
           {/* ================= ACCOUNTANT ================= */}
+// AFTER
           <Route path="/dashboard/accountants" element={<AccDashboard />}>
-            <Route index element={<Dashboard />} />
-            <Route path="paths" element={<MyPaths />} />
-            <Route path="steps" element={<MyStepsAcc />} />
+            <Route index element={<AccDashboard />} />
+            <Route path="home" element={<AccDashboard />} />
+            <Route path="crm" element={<AccDashboard />} />
+            <Route path="paths" element={<AccDashboard />} />
+            <Route path="steps" element={<AccDashboard />} />
+            <Route path="marketplace" element={<AccDashboard />} />
             <Route path="path/:id/create-step" element={<NewStep1 />} />
             <Route path="path/:id" element={<PathPage />} />
-            <Route path="services" element={<Dashboard/>} />
           </Route>
 
           <Route
@@ -137,6 +141,8 @@ function App() {
 
           {/* ================= FALLBACK ================= */}
           <Route path="*" element={<RoutePage />} />
+          <Route path="/*" element={<AppRouter />} />
+
         </Routes>
       </BrowserRouter>
     </Fragment>

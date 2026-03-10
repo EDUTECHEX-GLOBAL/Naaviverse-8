@@ -2,70 +2,92 @@
 @import "../../static/scss/mixin";
 
 .dashboard-sidebar {
-    height: 100vh;
-    padding: 30px 2vw 0px 2vw;
-    overflow-y: scroll;
-    width: 20vw;
-    background: #ededed5e;
+  height: 100vh;
+  padding: 24px 16px;
+  overflow-y: hidden;
+  width: 260px;
+  background: #FFFFFF;
+  border-right: 1px solid #EDF2F7;
+  display: flex;
+  flex-direction: column;
 
-    .dashboard-left{
-      width: calc(100%);
-      // margin: auto;
-    }
-  
-    .each-sidenav {
-      border-radius: 5px;
-      height: 43px;
-      width: calc(100%);
-      display: flex;
-      align-items: center;
-      font-weight: 500;
-      font-size: 17px;
-      line-height: 21px;
-      color: #100F0D;
-      cursor: pointer;
-      margin: 15px auto;
-      &:hover{
-        transform: scale(1.05);
-        transition: all ease .2s;
-        font-weight: 600;
-        
-      }
-    }
-  
-    // .sidebar-line{
-    //   padding-right: 2vw;
-    //   margin: 30px 0px;
-    //   height: 1px;
-    //   width: 100%;
-    //   margin-left: -20px;
-    // }
-  }
-
-  .dashboard-logo{
+  .dashboard-logo {
     object-fit: contain;
-    width: 12vw !important;
+    width: 100px;
     display: block;
-    margin: 0 auto;
-  }
-
-  .side-btn{
     cursor: pointer;
-    @include btn-animate(#FFF);
   }
 
+  .each-sidenav {
+    height: 42px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    font-size: 14px;
+    color: #4A5568;
+    cursor: pointer;
+    margin: 2px 0;
+    padding: 0 12px;
+    border-radius: 10px;
+    transition: all 0.15s ease;
+    border: none;
+    background: transparent;
 
-  // Hide the white line
+    svg {
+      width: 18px;
+      height: 18px;
+      margin-right: 12px;
+      color: currentColor;
+    }
+
+    &:hover {
+      background: #F7F9FC;
+    }
+  }
+}
+
+// Hide any unwanted borders
 .sidebar-line {
   display: none !important;
 }
 
-// Add this to your existing dashboard-sidebar styles
-.dashboard-sidebar {
-  .dashboard-left {
-    border-bottom: none !important; // Remove the border
+.dashboard-left {
+  border-bottom: none !important;
+}
+
+// Scrollbar styling for the menu area
+.dashboard-sidebar > div:nth-child(2) {
+  &::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #E2E8F0;
+    border-radius: 3px;
     
-    // If you want to keep some separation, use a very subtle shadow instead
-    // box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+    &:hover {
+      background: #CBD5E0;
+    }
   }
 }
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .dashboard-sidebar {
+    width: 100%;
+    position: fixed;
+    left: -100%;
+    transition: left 0.3s ease;
+    z-index: 1000;
+
+    &.open {
+      left: 0;
+    }
+  }
+}
+

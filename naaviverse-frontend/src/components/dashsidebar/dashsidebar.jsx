@@ -8,13 +8,15 @@ import history from "./history.svg";
 
 /* ================= MENU CONFIG ================= */
 
+
 const sidebarMenu1 = [
   {
     id: 0,
     title: "Paths",
-    path: "/dashboard/users",
+    path: "/dashboard/users/paths", 
   },
 ];
+
 
 const sidebarMenu2 = [
   {
@@ -77,7 +79,7 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange }) => {
           className="dashboard-left"
           onClick={() => {
             setsideNav("Paths");
-            navigate("/dashboard/users");
+            navigate("/dashboard/users/paths");
           }}
         >
           <img

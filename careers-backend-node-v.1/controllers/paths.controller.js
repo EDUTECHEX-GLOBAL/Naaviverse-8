@@ -70,6 +70,7 @@ const existing = await pathModel.findOne({
       destination_degree: body.destination_degree,
 
       length: body.length,
+       total_steps: body.total_steps || 5, 
       city: body.city,
       country: body.country,
 

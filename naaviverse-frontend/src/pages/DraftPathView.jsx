@@ -22,7 +22,7 @@ const EMPTY_LAYER = {
 const EMPTY_STEP = {
   macro: { ...EMPTY_LAYER, duration: { years: "", months: "", days: "" }, marketplace: [] },
   micro: { ...EMPTY_LAYER, duration: { years: "", months: "", days: "" }, marketplace: [] },
-  nano:  { ...EMPTY_LAYER, duration: { years: "", months: "", days: "" }, marketplace: [] },
+  nano: { ...EMPTY_LAYER, duration: { years: "", months: "", days: "" }, marketplace: [] },
 };
 
 const EMPTY_MARKET_FORM = {
@@ -55,49 +55,49 @@ const normalizeStep = (raw) => {
       ...raw,
       macro: { ...EMPTY_LAYER, ...raw.macro, marketplace: raw.macro.marketplace || [] },
       micro: { ...EMPTY_LAYER, ...raw.micro, marketplace: raw.micro?.marketplace || [] },
-      nano:  { ...EMPTY_LAYER, ...raw.nano,  marketplace: raw.nano?.marketplace  || [] },
+      nano: { ...EMPTY_LAYER, ...raw.nano, marketplace: raw.nano?.marketplace || [] },
     };
   }
 
   // Flat API shape → nested shape
   return {
     ...raw,
-macro: {
-  ...EMPTY_LAYER,
-  name: raw.macro_name || "",
-  desc: raw.macro_description || "",
-  duration: parseDuration(raw.macro_length),
+    macro: {
+      ...EMPTY_LAYER,
+      name: raw.macro_name || "",
+      desc: raw.macro_description || "",
+      duration: parseDuration(raw.macro_length),
 
-  paid: raw.macro_access === "paid",
-  free: raw.macro_access === "free",
+      paid: raw.macro_access === "paid",
+      free: raw.macro_access === "free",
 
-  instructions: raw.macro_instructions || "",
-  marketplace: raw.macro_marketplace || [],
-},
-micro: {
-  ...EMPTY_LAYER,
-  name: raw.micro_name || "",
-  desc: raw.micro_description || "",
-  duration: parseDuration(raw.micro_length),
+      instructions: raw.macro_instructions || "",
+      marketplace: raw.macro_marketplace || [],
+    },
+    micro: {
+      ...EMPTY_LAYER,
+      name: raw.micro_name || "",
+      desc: raw.micro_description || "",
+      duration: parseDuration(raw.micro_length),
 
-  paid: raw.micro_access === "paid",
-  free: raw.micro_access === "free",
+      paid: raw.micro_access === "paid",
+      free: raw.micro_access === "free",
 
-  instructions: raw.micro_instructions || "",
-  marketplace: raw.micro_marketplace || [],
-},
-nano: {
-  ...EMPTY_LAYER,
-  name: raw.nano_name || "",
-  desc: raw.nano_description || "",
-  duration: parseDuration(raw.nano_length),
+      instructions: raw.micro_instructions || "",
+      marketplace: raw.micro_marketplace || [],
+    },
+    nano: {
+      ...EMPTY_LAYER,
+      name: raw.nano_name || "",
+      desc: raw.nano_description || "",
+      duration: parseDuration(raw.nano_length),
 
-  paid: raw.nano_access === "paid",
-  free: raw.nano_access === "free",
+      paid: raw.nano_access === "paid",
+      free: raw.nano_access === "free",
 
-  instructions: raw.nano_instructions || "",
-  marketplace: raw.nano_marketplace || [],
-},
+      instructions: raw.nano_instructions || "",
+      marketplace: raw.nano_marketplace || [],
+    },
   };
 };
 
@@ -117,12 +117,12 @@ const MarketplaceItemCard = ({ item, compact = false }) => (
       <span>{item.cost}</span>
     </div>
     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.3rem", color: "#2c3e50" }}>
-      {item.goal       && <span><strong>Goal:</strong> {item.goal}</span>}
-      {item.outcomes   && <span><strong>Outcomes:</strong> {item.outcomes}</span>}
-      {item.access     && <span><strong>Access:</strong> {item.access}</span>}
+      {item.goal && <span><strong>Goal:</strong> {item.goal}</span>}
+      {item.outcomes && <span><strong>Outcomes:</strong> {item.outcomes}</span>}
+      {item.access && <span><strong>Access:</strong> {item.access}</span>}
       {item.iterations && <span><strong>Iterations:</strong> {item.iterations}</span>}
-      {item.duration   && <span><strong>Duration:</strong> {item.duration}</span>}
-      {item.discount   && <span><strong>Discount:</strong> {item.discount}</span>}
+      {item.duration && <span><strong>Duration:</strong> {item.duration}</span>}
+      {item.discount && <span><strong>Discount:</strong> {item.discount}</span>}
     </div>
     {item.features && (
       <div style={{ marginTop: "0.4rem" }}><strong>Features:</strong> {item.features}</div>
@@ -132,9 +132,9 @@ const MarketplaceItemCard = ({ item, compact = false }) => (
 
 const DurationSelect = ({ value, onChange, type }) => {
   const configs = {
-    years:  { label: "Years",  count: 11 },
+    years: { label: "Years", count: 11 },
     months: { label: "Months", count: 12 },
-    days:   { label: "Days",   count: 31 },
+    days: { label: "Days", count: 31 },
   };
   const { label, count } = configs[type];
   return (
@@ -191,9 +191,9 @@ const LayerBuilder = ({ layer, layerKey, data, onChange, onAddMarketplace }) => 
       <div className="form-group">
         <label>Duration</label>
         <div className="duration-select-group">
-          <DurationSelect type="years"  value={safeData.duration?.years}  onChange={(v) => updateDuration("years", v)} />
+          <DurationSelect type="years" value={safeData.duration?.years} onChange={(v) => updateDuration("years", v)} />
           <DurationSelect type="months" value={safeData.duration?.months} onChange={(v) => updateDuration("months", v)} />
-          <DurationSelect type="days"   value={safeData.duration?.days}   onChange={(v) => updateDuration("days", v)} />
+          <DurationSelect type="days" value={safeData.duration?.days} onChange={(v) => updateDuration("days", v)} />
         </div>
         <div className="checkbox-group">
           <label className="checkbox-label">
@@ -245,22 +245,24 @@ const LayerDetail = ({ layerKey, data }) => {
 
   const durationText = data.duration
     ? [
-        data.duration.years  ? `${data.duration.years} years`  : "",
-        data.duration.months ? `${data.duration.months} months` : "",
-        data.duration.days   ? `${data.duration.days} days`    : "",
-      ].filter(Boolean).join(" ") || "Not set"
+      data.duration.years ? `${data.duration.years} years` : "",
+      data.duration.months ? `${data.duration.months} months` : "",
+      data.duration.days ? `${data.duration.days} days` : "",
+    ].filter(Boolean).join(" ") || "Not set"
     : "Not set";
 
   return (
     <div className="layer-detail-card">
-      <h3 style={{ color: colorMap[layerKey], fontSize: "0.9rem", fontWeight: 600, marginBottom: "1rem",
-                   paddingBottom: "0.5rem", borderBottom: `2px solid ${colorMap[layerKey]}` }}>
+      <h3 style={{
+        color: colorMap[layerKey], fontSize: "0.9rem", fontWeight: 600, marginBottom: "1rem",
+        paddingBottom: "0.5rem", borderBottom: `2px solid ${colorMap[layerKey]}`
+      }}>
         {layerKey.toUpperCase()}
       </h3>
       {[
-        { label: "NAME",         value: data.name },
-        { label: "DESCRIPTION",  value: data.desc },
-        { label: "DURATION",     value: durationText },
+        { label: "NAME", value: data.name },
+        { label: "DESCRIPTION", value: data.desc },
+        { label: "DURATION", value: durationText },
         { label: "INSTRUCTIONS", value: data.instructions },
       ].map(({ label, value }) => (
         <div className="detail-row" key={label}>
@@ -290,25 +292,25 @@ const DraftPathView = () => {
     return () => el.removeEventListener("click", stopClick, true);
   }, []);
 
-  const [pathData,   setPathData]   = useState(null);
-  const [steps,      setSteps]      = useState([]);
+  const [pathData, setPathData] = useState(null);
+  const [steps, setSteps] = useState([]);
   const [totalSteps, setTotalSteps] = useState(5);
-  const [loading,    setLoading]    = useState(false);
-  const [saving,     setSaving]     = useState(false);
-  const [error,      setError]      = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
 
   const [view, setView] = useState("draft");
 
-  const [viewAllOpen,     setViewAllOpen]     = useState(false);
+  const [viewAllOpen, setViewAllOpen] = useState(false);
   const [marketplaceOpen, setMarketplaceOpen] = useState(false);
-  const [editPathOpen,    setEditPathOpen]    = useState(false);
+  const [editPathOpen, setEditPathOpen] = useState(false);
 
-  const [currentStep,      setCurrentStep]      = useState(null);
+  const [currentStep, setCurrentStep] = useState(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(null);
-  const [currentLayer,     setCurrentLayer]     = useState("macro");
+  const [currentLayer, setCurrentLayer] = useState("macro");
 
   const [selectedRole, setSelectedRole] = useState(null);
-  const [marketForm,   setMarketForm]   = useState(EMPTY_MARKET_FORM);
+  const [marketForm, setMarketForm] = useState(EMPTY_MARKET_FORM);
 
   // ─── Data fetching ────────────────────────────────────────────────────────
 
@@ -335,10 +337,12 @@ const DraftPathView = () => {
         const data = pathRes.data.data;
         setPathData(data);
         // ── totalSteps: read from localStorage where CreateNewPath saves it ──
-        const savedStepCount = localStorage.getItem('pathStepCount');
-        const total = savedStepCount
-          ? parseInt(savedStepCount, 10)
-          : (data?.totalSteps || data?.total_steps || data?.numberOfSteps || 5);
+        const total = data?.total_steps || 5;
+
+        console.log("Path data keys:", Object.keys(data));
+        console.log("Path data:", data);
+        console.log("total_steps from DB:", data?.total_steps);
+
         setTotalSteps(Number(total));
         await fetchSteps(id);
       } catch (err) {
@@ -386,32 +390,32 @@ const DraftPathView = () => {
 
     try {
       const isNew = currentStepIndex === null;
-const payload = {
-  path_id: id,
-  step_order: isNew ? steps.length + 1 : steps[currentStepIndex]?.step_order,
+      const payload = {
+        path_id: id,
+        step_order: isNew ? steps.length + 1 : steps[currentStepIndex]?.step_order,
 
-  // ✅ ADD THIS — required for My Steps page to find these steps
-  email: JSON.parse(localStorage.getItem("partner"))?.email || "",
+        // ✅ ADD THIS — required for My Steps page to find these steps
+        email: JSON.parse(localStorage.getItem("partner"))?.email || "",
 
-  name: currentStep.macro?.name || "",
-  macro_name:         currentStep.macro?.name        || "",
-  macro_description:  currentStep.macro?.desc        || "",
-  macro_length:       JSON.stringify(currentStep.macro?.duration || {}),
-  macro_access:       currentStep.macro?.paid ? "paid" : "free",
-  macro_instructions: currentStep.macro?.instructions || "",
+        name: currentStep.macro?.name || "",
+        macro_name: currentStep.macro?.name || "",
+        macro_description: currentStep.macro?.desc || "",
+        macro_length: JSON.stringify(currentStep.macro?.duration || {}),
+        macro_access: currentStep.macro?.paid ? "paid" : "free",
+        macro_instructions: currentStep.macro?.instructions || "",
 
-  micro_name:         currentStep.micro?.name        || "",
-  micro_description:  currentStep.micro?.desc        || "",
-  micro_length:       JSON.stringify(currentStep.micro?.duration || {}),
-  micro_access:       currentStep.micro?.paid ? "paid" : "free",
-  micro_instructions: currentStep.micro?.instructions || "",
+        micro_name: currentStep.micro?.name || "",
+        micro_description: currentStep.micro?.desc || "",
+        micro_length: JSON.stringify(currentStep.micro?.duration || {}),
+        micro_access: currentStep.micro?.paid ? "paid" : "free",
+        micro_instructions: currentStep.micro?.instructions || "",
 
-  nano_name:          currentStep.nano?.name         || "",
-  nano_description:   currentStep.nano?.desc         || "",
-  nano_length:        JSON.stringify(currentStep.nano?.duration  || {}),
-  nano_access:        currentStep.nano?.paid ? "paid" : "free",
-  nano_instructions:  currentStep.nano?.instructions || "",
-};
+        nano_name: currentStep.nano?.name || "",
+        nano_description: currentStep.nano?.desc || "",
+        nano_length: JSON.stringify(currentStep.nano?.duration || {}),
+        nano_access: currentStep.nano?.paid ? "paid" : "free",
+        nano_instructions: currentStep.nano?.instructions || "",
+      };
 
       if (isNew) {
         const res = await axios.post(`${BASE_URL}/api/steps/add`, payload);
@@ -459,22 +463,22 @@ const payload = {
 
   const addMarketplaceItem = () => {
     const durationParts = [
-      marketForm.durationDays    ? `${marketForm.durationDays} days`   : "",
-      marketForm.durationHours   ? `${marketForm.durationHours} hrs`   : "",
+      marketForm.durationDays ? `${marketForm.durationDays} days` : "",
+      marketForm.durationHours ? `${marketForm.durationHours} hrs` : "",
       marketForm.durationMinutes ? `${marketForm.durationMinutes} min` : "",
     ].filter(Boolean);
 
     const item = {
-      role:       selectedRole,
-      name:       marketForm.name,
-      access:     marketForm.access,
-      cost:       marketForm.cost,
-      goal:       marketForm.goal,
-      outcomes:   marketForm.outcomes,
+      role: selectedRole,
+      name: marketForm.name,
+      access: marketForm.access,
+      cost: marketForm.cost,
+      goal: marketForm.goal,
+      outcomes: marketForm.outcomes,
       iterations: marketForm.iterations,
-      duration:   durationParts.join(" "),
-      discount:   marketForm.discount,
-      features:   marketForm.features,
+      duration: durationParts.join(" "),
+      discount: marketForm.discount,
+      features: marketForm.features,
     };
 
     setCurrentStep((prev) => ({
@@ -525,55 +529,59 @@ const payload = {
     <div ref={containerRef} className="draft-path-container">
 
       {error && (
-        <div style={{ background: "#fff5f5", border: "1px solid #fed7d7", color: "#c53030",
-                      padding: "0.75rem 1.5rem", fontSize: "0.85rem" }}>
+        <div style={{
+          background: "#fff5f5", border: "1px solid #fed7d7", color: "#c53030",
+          padding: "0.75rem 1.5rem", fontSize: "0.85rem"
+        }}>
           {error}
-          <button onClick={() => setError(null)} style={{ marginLeft: "1rem", background: "none",
-            border: "none", cursor: "pointer", color: "inherit", fontWeight: 600 }}>✕</button>
+          <button onClick={() => setError(null)} style={{
+            marginLeft: "1rem", background: "none",
+            border: "none", cursor: "pointer", color: "inherit", fontWeight: 600
+          }}>✕</button>
         </div>
       )}
 
       {/* ══ DRAFT VIEW ══════════════════════════════════════════════════════ */}
-<div className={`draft-view ${view === "draft" ? "active" : ""}`}>
-  <div className="path-header-box">
-    <div className="path-header-content">
+      <div className={`draft-view ${view === "draft" ? "active" : ""}`}>
+        <div className="path-header-box">
+          <div className="path-header-content">
 
-      {/* 🔹 Back Button */}
-      <button
-        className="btn-outline"
-        style={{ marginBottom: "12px" }}
-        onClick={() => navigate("/dashboard/accountants")}
-      >
-        ← Back to Paths
-      </button>
+            {/* 🔹 Back Button */}
+            <button
+              className="btn-outline"
+              style={{ marginBottom: "12px" }}
+              onClick={() => navigate("/dashboard/accountants")}
+            >
+              ← Back to Paths
+            </button>
 
-      <div className="path-title-section">
-        <h1 className="path-title">{pathData.nameOfPath || "Untitled Path"}</h1>
-        <span className="draft-badge">DRAFT</span>
-      </div>
+            <div className="path-title-section">
+              <h1 className="path-title">{pathData.nameOfPath || "Untitled Path"}</h1>
+              <span className="draft-badge">DRAFT</span>
+            </div>
 
-      <div className="path-stats">
-        <span className="steps-count">Steps: {steps.length}/{totalSteps}</span>
-      </div>
+            <div className="path-stats">
+              <span className="steps-count">Steps: {steps.length}/{totalSteps}</span>
+            </div>
 
-      {pathData.description && (
-        <p className="path-description">{pathData.description}</p>
-      )}
+            {pathData.description && (
+              <p className="path-description">{pathData.description}</p>
+            )}
 
-      <div className="path-actions-row">
-        <button className="btn-outline" onClick={() => setViewAllOpen(true)}>
-          View All Steps
-        </button>
-        <button className="btn-outline" onClick={() => setEditPathOpen(true)}>
-          Edit Path
-        </button>
-        <button className="btn-primary" onClick={handleSubmitForApproval}>
-          Submit for Approval
-        </button>
-      </div>
+            <div className="path-actions-row">
+              <button className="btn-outline" onClick={() => setViewAllOpen(true)}>
+                View All Steps
+              </button>
+              <button className="btn-outline" onClick={() => setEditPathOpen(true)}>
+                Edit Path
+              </button>
+              <button className="btn-primary" onClick={handleSubmitForApproval}>
+                Submit for Approval
+              </button>
+            </div>
 
-    </div>
-  </div>
+          </div>
+        </div>
 
         <div className="steps-section">
           <div className="steps-header">
@@ -606,7 +614,7 @@ const payload = {
               disabled={steps.length >= totalSteps}
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 4V16M4 10H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M10 4V16M4 10H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               </svg>
               Add New
             </button>
@@ -622,7 +630,7 @@ const payload = {
               <button className="back-to-paths" onClick={backToDraft}>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5"
-                        strokeLinecap="round" strokeLinejoin="round"/>
+                    strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 Back
               </button>
