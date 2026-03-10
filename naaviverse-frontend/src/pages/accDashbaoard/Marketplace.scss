@@ -1,0 +1,484 @@
+// ═══════════════════════════════════════════════════
+//  Marketplace — clean card grid, Image-1 target layout
+// ═══════════════════════════════════════════════════
+
+.marketplace-container {
+  width: 100%;
+  min-height: 100%;
+  background: #f5f7fa;
+  padding-bottom: 2rem;
+}
+
+// ── Grid ────────────────────────────────────────────
+.marketplace-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.1rem;
+  padding: 1.25rem 1.5rem;
+
+  @media (max-width: 1200px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 700px)  { grid-template-columns: 1fr; }
+}
+
+// ── Card ────────────────────────────────────────────
+.marketplace-card {
+  background: white;
+  border-radius: 18px;
+  padding: 1.1rem 1.1rem 0.9rem;
+  border: 1px solid #e5eaf0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  // No fixed height — cards grow to content, grid rows align naturally
+  transition: box-shadow 0.2s, transform 0.2s;
+  overflow: visible;
+
+  &:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+
+  &.mp-skeleton { pointer-events: none; }
+}
+
+// ── Card Header ─────────────────────────────────────
+.mp-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.mp-header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.mp-role-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.mp-item-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1f304f;
+  margin: 0;
+  line-height: 1.3;
+  // allow wrapping for long names (like Image 1)
+  word-break: break-word;
+}
+
+// access badge: Free (green) / Paid (amber)
+.mp-access-badge {
+  flex-shrink: 0;
+  padding: 0.2rem 0.65rem;
+  border-radius: 30px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  &.free {
+    background: #dcfce7;
+    color: #166534;
+  }
+  &.paid {
+    background: #fef9c3;
+    color: #92400e;
+  }
+}
+
+.mp-divider {
+  height: 1px;
+  background: #eef2f6;
+  margin: 0.55rem 0 0.7rem;
+}
+
+// ── Role pill ────────────────────────────────────────
+.mp-role-pill {
+  display: inline-block;        // fit-content width only
+  width: fit-content;
+  padding: 0.35rem 1.2rem;
+  border-radius: 30px;
+  border: 1.5px solid;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.85rem;
+  white-space: nowrap;
+}
+
+// ── Info rows ────────────────────────────────────────
+.mp-info-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 0.6rem;
+}
+
+.mp-info-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+}
+
+.mp-info-label {
+  color: #8f9fb0;
+  min-width: 52px;
+}
+
+.mp-info-val {
+  color: #1f304f;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── Description ─────────────────────────────────────
+.mp-description {
+  font-size: 0.75rem;
+  color: #4a5a6a;
+  line-height: 1.5;
+  margin: 0 0 0.6rem;
+
+  &.clamped {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+.mp-read-more {
+  background: none;
+  border: none;
+  color: #6d28d9;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+  margin-left: 0.2rem;
+
+  &:hover { text-decoration: underline; }
+}
+
+// ── Source label ─────────────────────────────────────
+.mp-source-label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.62rem;
+  color: #8f9fb0;
+  margin-bottom: 0.5rem;
+  padding-top: 0.3rem;
+  border-top: 1px dashed #e5eaf0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mp-source-dot { font-size: 0.65rem; }
+
+// ── Card Footer ──────────────────────────────────────
+.mp-card-footer {
+  padding-top: 0.6rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid #eef2f6;
+}
+
+.mp-details-btn {
+  width: 100%;
+  padding: 0.55rem 0;
+  border: none;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.15s;
+  letter-spacing: 0.2px;
+
+  &:hover {
+    filter: brightness(0.92);
+    transform: translateY(-1px);
+  }
+}
+
+// ── Empty state ──────────────────────────────────────
+.mp-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #5e6f7e;
+
+  .mp-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .mp-empty-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f304f;
+    margin-bottom: 0.5rem;
+  }
+
+  .mp-empty-sub {
+    font-size: 0.8rem;
+    color: #8f9fb0;
+  }
+}
+
+// ════════════════════════════════════════════════════
+//  MODAL
+// ════════════════════════════════════════════════════
+
+.mp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 20, 40, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 1rem;
+  backdrop-filter: blur(3px);
+}
+
+.mp-modal {
+  background: white;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 540px;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+
+  // smooth scrollbar
+  scrollbar-width: thin;
+  scrollbar-color: #cdd6e0 transparent;
+  &::-webkit-scrollbar { width: 5px; }
+  &::-webkit-scrollbar-thumb { background: #cdd6e0; border-radius: 10px; }
+}
+
+// Top coloured bar
+.mp-modal-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 1.4rem 1rem;
+  border-radius: 24px 24px 0 0;
+  gap: 0.75rem;
+}
+
+.mp-modal-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.mp-modal-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.mp-modal-name {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f304f;
+  line-height: 1.25;
+}
+
+.mp-modal-role-pill {
+  display: inline-block;
+  padding: 0.15rem 0.75rem;
+  border-radius: 30px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.mp-modal-close {
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  transition: background 0.15s;
+
+  &:hover { background: #f0f2f5; }
+
+  img { width: 14px; height: 14px; }
+}
+
+// ── Modal body ───────────────────────────────────────
+.mp-modal-body {
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  flex: 1;
+}
+
+// Pricing banner
+.mp-pricing-banner {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1.5px solid;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fafbfc;
+}
+
+.mp-pricing-item {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.mp-pricing-divider {
+  width: 1px;
+  background: #e5eaf0;
+  align-self: stretch;
+}
+
+.mp-pricing-label {
+  font-size: 0.62rem;
+  color: #8f9fb0;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.mp-pricing-val {
+  font-size: 0.88rem;
+  color: #1f304f;
+  font-weight: 500;
+
+  &.bold { font-weight: 700; }
+}
+
+// Section
+.mp-detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.mp-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1.5px solid #eef2f6;
+
+  .mp-section-icon { font-size: 0.85rem; }
+
+  h4 {
+    margin: 0;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #617388;
+    font-weight: 700;
+  }
+}
+
+.mp-detail-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.mp-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  background: #f5f7fa;
+  border-radius: 10px;
+  padding: 0.45rem 0.85rem;
+  min-width: 90px;
+
+  .mp-chip-label {
+    font-size: 0.6rem;
+    color: #8f9fb0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .mp-chip-val {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #1f304f;
+  }
+}
+
+.mp-detail-row {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.mp-detail-label {
+  font-size: 0.72rem;
+  color: #8f9fb0;
+  min-width: 70px;
+  flex-shrink: 0;
+}
+
+.mp-detail-val {
+  font-size: 0.85rem;
+  color: #1f304f;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.mp-features-text {
+  font-size: 0.83rem;
+  color: #2c3e50;
+  line-height: 1.55;
+  margin: 0;
+  white-space: pre-wrap;
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+}
+
+// ── Modal footer ─────────────────────────────────────
+.mp-modal-footer {
+  padding: 1rem 1.4rem;
+  border-top: 1px solid #eef2f6;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mp-close-btn {
+  padding: 0.55rem 1.75rem;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1f304f;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover { background: #e2e8f0; }
+}

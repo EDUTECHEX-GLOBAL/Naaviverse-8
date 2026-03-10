@@ -6,7 +6,6 @@ import axios from "axios";
 import { Draggable } from "react-drag-reorder";
 import EditPathForm from "../MyPaths/paths.jsx";
 
-
 // images
 import dummy from "./dummy.svg";
 import closepop from "../../static/images/dashboard/closepop.svg";
@@ -14,6 +13,7 @@ import lg1 from "../../static/images/login/lg1.svg";
 import CurrentStep from "../CurrentStep";
 import { useStore } from "../../components/store/store.ts";
 import { useNavigate } from "react-router-dom";
+
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
@@ -26,6 +26,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
     mypathsMenu,
     setMypathsMenu,
   } = useCoinContextData();
+
   const [partnerPathData, setPartnerPathData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedPathId, setSelectedPathId] = useState("");
@@ -42,185 +43,153 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
   const [viewPathEnabled, setViewPathEnabled] = useState(false);
   const [viewPathLoading, setViewPathLoading] = useState(false);
   const [viewPathData, setViewPathData] = useState([]);
-
   const [showSelectedPath, setShowSelectedPath] = useState(null);
   const [addServiceStep, setAddServiceStep] = useState(null);
   const [selectedSubStep, setSelectedSubStep] = useState(null);
-
   const [backupPathData, setBackupPathData] = useState([]);
   const [stepId, setStepId] = useState("");
   const [backupPathId, setBackupPathId] = useState("");
-
-const getAllPaths = () => {
-  setPartnerPathData([]);
-  setLoading(true);
-
-const email = userDetails?.email;
-let endpoint = "";
-
-// ADMIN
-if (
-  admin &&
-  (mypathsMenu === "Pending Approval" || mypathsMenu === "Pending Paths")
-) {
-  endpoint = `/api/paths/get?status=waitingforapproval`;
-}
-
-// PARTNER Draft
-else if (!admin && mypathsMenu === "Draft") {
-  endpoint = `/api/paths/get?email=${email}&status=draft`;
-}
-
-// PARTNER Pending
-else if (!admin && mypathsMenu === "Pending Approval") {
-  endpoint = `/api/paths/get?email=${email}&status=waitingforapproval`;
-}
-
-// Inactive
-else if (mypathsMenu === "Inactive Paths") {
-  endpoint = `/api/paths/get?email=${email}&status=inactive`;
-}
-
-// Default Active
-else {
-  endpoint = `/api/paths/get?email=${email}&status=active`;
-}
-
-console.log("➡️ FINAL API CALL:", `${BASE_URL}${endpoint}`);
-
-axios
-  .get(`${BASE_URL}${endpoint}`)
-  .then((response) => {
-    setPartnerPathData(response?.data?.data || []);
-  })
-  .catch((error) => {
-    console.log("❌ Error fetching partnerPathData:", error);
-  })
-  .finally(() => setLoading(false));
-};
-
-
-
-
-  // const [remainingStepData, setRemainingStepData] = useState([]);
-  // const getAllStepsForPath = () => {
-  //   setLoading(true);
-  //   let email = userDetails?.email;
-
-  //   axios
-  //     .get(
-  //       `/api/paths/getremainingsteps?path_id=${selectedPathId}&&email=${email}`
-  //     )
-  //     .then((response) => {
-  //       let result = response?.data?.stepIds;
-  //       console.log("selectedPath:", selectedPath);  // Check if selectedPath is being set correctly
-  //       console.log("selectedPath._Id:", selectedPathId);  // Ensure _Id exists
-
-  //       console.log(result, "partnerStepsData result");
-  //       setRemainingStepData(result);
-  //       setLoading(false);
-  //     })
-  //     .catch((error) => {
-  //       console.log(error, "error in partnerStepsData");
-  //     });
-  // };
-
-  // useEffect(() => {
-  //   getAllStepsForPath();
-  // }, [selectedPath]);
-
   const [allServices, setAllServices] = useState([]);
+  const [productDataArray, setProductDataArray] = useState([]);
+  const [productKeys, setProductKeys] = useState(null);
+  const [allServicesToAdd, setAllServicesToAdd] = useState([]);
+  const [allServicesToRemove, setAllServicesToRemove] = useState([]);
+  const [selectedServices, setSelectedServices] = useState([]);
+  const [localSearch, setLocalSearch] = useState(search || "");
+  const [expandedDesc, setExpandedDesc] = useState({});
+  // ============================================
+  // API Calls
+  // ============================================
+  const toggleDescription = (pathId) => {
+    setExpandedDesc(prev => ({
+      ...prev,
+      [pathId]: !prev[pathId]
+    }));
+  };
+  const getAllPaths = () => {
+    setPartnerPathData([]);
+    setLoading(true);
+
+    const email = userDetails?.email;
+    let endpoint = "";
+
+    // ADMIN
+    if (admin && (mypathsMenu === "Pending Approval" || mypathsMenu === "Pending Paths")) {
+      endpoint = `/api/paths/get?status=waitingforapproval`;
+    }
+    // PARTNER Draft
+    else if (!admin && mypathsMenu === "Draft") {
+      endpoint = `/api/paths/get?email=${email}&status=draft`;
+    }
+    // PARTNER Pending
+    else if (!admin && mypathsMenu === "Pending Approval") {
+      endpoint = `/api/paths/get?email=${email}&status=waitingforapproval`;
+    }
+    // Inactive
+    else if (mypathsMenu === "Inactive Paths") {
+      endpoint = `/api/paths/get?email=${email}&status=inactive`;
+    }
+    // Default Active
+    else {
+      endpoint = `/api/paths/get?email=${email}&status=active`;
+    }
+
+    console.log("➡️ FINAL API CALL:", `${BASE_URL}${endpoint}`);
+
+    axios
+      .get(`${BASE_URL}${endpoint}`)
+      .then((response) => {
+        setPartnerPathData(response?.data?.data || []);
+      })
+      .catch((error) => {
+        console.log("❌ Error fetching partnerPathData:", error);
+      })
+      .finally(() => setLoading(false));
+  };
 
   const getAllServices = () => {
     let email = userDetails?.email;
-
-    // axios.get(`https://comms.globalxchange.io/gxb/product/banker/get?category=education%20consultants`).then(({data}) => {
-    //   if(data.status){
-    //     setAllServices(data.data)
-    //   }
-    // })
     axios
-      .get(
-        `${BASE_URL}/api/attachservice/getnotaddedservices?step_id=${selectedStepId}&productcreatoremail=${email}`
-      )
+      .get(`${BASE_URL}/api/attachservice/getnotaddedservices?step_id=${selectedStepId}&productcreatoremail=${email}`)
       .then(({ data }) => {
         if (data.status) {
-          console.log(data, "lhqflqhflqhflqf");
           setAllServices(data.data);
         }
       });
   };
 
-/* ------------------------------
-   1️⃣ Load backup paths ONCE
---------------------------------*/
-useEffect(() => {
-  const email = userDetails?.email;
-  if (!email) return;
+  // Load backup paths once
+  useEffect(() => {
+    const email = userDetails?.email;
+    if (!email) return;
+    axios.get(`${BASE_URL}/api/paths/get?email=${email}`).then(({ data }) => {
+      if (data.status) setBackupPathData(data.data);
+    });
+  }, []);
 
-  axios.get(`${BASE_URL}/api/paths/get?email=${email}`).then(({ data }) => {
-    if (data.status) setBackupPathData(data.data);
-  });
-}, []);
+  // Load services when step changes
+  useEffect(() => {
+    if (!selectedStepId) return;
+    getAllServices();
+  }, [selectedStepId]);
 
-/* ------------------------------
-   2️⃣ Load services when step changes
-----------------------------------*/
-useEffect(() => {
-  if (!selectedStepId) return;
-  getAllServices();
-}, [selectedStepId]);
+  // Load paths when menu changes
+  useEffect(() => {
+    let cancelled = false;
+    const loadPaths = async () => {
+      if (cancelled) return;
+      await getAllPaths();
+    };
+    loadPaths();
+    return () => (cancelled = true);
+  }, [mypathsMenu]);
 
+  // Load services for add/remove
+  useEffect(() => {
+    if (selectedStepId) {
+      axios.get(`${BASE_URL}/api/attachservice/getnotaddedservices?step_id=${selectedStepId}&productcreatoremail=${userDetails?.user?.email}`)
+        .then(({ data }) => {
+          if (data.status) setAllServicesToAdd(data?.data[0]);
+        });
+    }
+  }, [selectedStepId]);
 
-  //   setLoading(true);
-  //   axios
-  //     .get(
-  //       `/api/paths/get?status=waitingforapproval`
-  //     )
-  //     .then((response) => {
-  //       let result = response?.data?.data;
-  //       // console.log(result, "partnerPathData result");
-  //       setPartnerPathData(result);
-  //       setLoading(false);
-  //     })
-  //     .catch((error) => {
-  //       console.log(error, "error in partnerPathData");
-  //     });
-  // };
+  useEffect(() => {
+    if (selectedStepId) {
+      axios.get(`${BASE_URL}/api/attachservice/get?step_id=${selectedStepId}`)
+        .then(({ data }) => {
+          if (data.status) setAllServicesToRemove(data?.data[0]);
+        });
+    }
+  }, [selectedStepId]);
 
-useEffect(() => {
-  if (selectedPath?.StepDetails) {
-    console.log(selectedPath.StepDetails, "lwkefhlkwefcwefc");
-  }
-}, [selectedPath]);
+  // Reset selected path when menu changes
+  useEffect(() => {
+    setShowSelectedPath(null);
+  }, [mypathsMenu]);
 
+  useEffect(() => {
+    if (!stepActionEnabled) {
+      setSelectedServices([]);
+      setStepActionStep(1);
+    }
+  }, [stepActionEnabled]);
 
-//   3️⃣ Load paths when menu changes 
-//    (Fix: prevents duplicate calls)
-// ----------------------------------*/
-useEffect(() => {
-  let cancelled = false;
+  useEffect(() => {
+    if (!mypathsMenu) {
+      setMypathsMenu("Paths");
+    }
+  }, []);
 
-  const loadPaths = async () => {
-    if (cancelled) return;
-
-    // Single source of truth
-    await getAllPaths();
-  };
-
-  loadPaths();
-  return () => (cancelled = true);
-}, [mypathsMenu]);
-
-
-
+  // ============================================
+  // Action Handlers
+  // ============================================
 
   const myPathsTimeout = () => {
     setTimeout(reload1, 2000);
   };
 
   function reload1() {
-    
     setPathActionEnabled(false);
     setPathActionStep(1);
     setSelectedPathId("");
@@ -242,10 +211,9 @@ useEffect(() => {
 
   const deletePath = (status) => {
     setActionLoading(true);
-  
     axios
       .delete(`${BASE_URL}/api/paths/delete/${selectedPathId}`, {
-        data: { status }, // Include the status in the request body
+        data: { status },
       })
       .then((response) => {
         let result = response?.data;
@@ -259,15 +227,13 @@ useEffect(() => {
         console.log(error, "error in deletePath");
       });
   };
-  
-  
+
   const deleteStep = () => {
     setActionLoading(true);
     axios
       .delete(`${BASE_URL}/api/steps/delete/${selectedStepId}`)
       .then((response) => {
         let result = response?.data;
-        // console.log(result, "deleteStep result");
         if (result?.status) {
           setActionLoading(false);
           setStepActionStep(3);
@@ -292,21 +258,11 @@ useEffect(() => {
 
   const editMetaData = (field) => {
     setActionLoading(true);
-    let obj = {
-      [field]: newValue,
-    };
-
-    // console.log(obj, "obj");
-    // console.log(selectedPathId, "selectedPathId");
-
+    let obj = { [field]: newValue };
     axios
-      .put(
-        `${BASE_URL}/api/paths/update/${selectedPathId}`,
-        obj
-      )
+      .put(`${BASE_URL}/api/paths/update/${selectedPathId}`, obj)
       .then((response) => {
         let result = response?.data;
-        // console.log(result, "editMetaData result");
         if (result?.status) {
           setMetaDataStep("success");
           setActionLoading(false);
@@ -318,287 +274,84 @@ useEffect(() => {
       });
   };
 
-const viewPathById = (id) => {
+  const viewPathById = (id) => {
     if (!id) {
-        console.error("❌ NO ID SENT TO API");
-        return;
+      console.error("❌ NO ID SENT TO API");
+      return;
     }
     setViewPathLoading(true);
+    axios
+      .get(`${BASE_URL}/api/paths/viewpath/${id}`)
+      .then((response) => {
+        let result = response?.data?.data;
+        setViewPathData(Array.isArray(result) ? result[0] : result);
+      })
+      .catch((error) => {
+        console.log("Error in fetching view path data:", error);
+      })
+      .finally(() => setViewPathLoading(false));
+  };
 
-    axios.get(`${BASE_URL}/api/paths/viewpath/${id}`)
-        .then((response) => {
-            let result = response?.data?.data;
-             setViewPathData(Array.isArray(result) ? result[0] : result);
-        })
-        .catch((error) => {
-            console.log("Error in fetching view path data:", error);
-        })
-        .finally(() => setViewPathLoading(false));
-};
+  const handleApprovePath = () => {
+    setActionLoading(true);
+    axios
+      .put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, {
+        status: "active",
+      })
+      .then(({ data }) => {
+        if (data.status) {
+          getAllPaths();
+          setPathActionEnabled(false);
+          setActionLoading(false);
+          setPathActionStep(1);
+        }
+      })
+      .catch(() => setActionLoading(false));
+  };
 
-
-
-const handleApprovePath = () => {
-  setActionLoading(true);
-
-  axios
-    .put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, {
-      status: "active",
-    })
-    .then(({ data }) => {
-      if (data.status) {
-        getAllPaths();
-        setPathActionEnabled(false);
-        setActionLoading(false);
-        setPathActionStep(1);
-      }
-    })
-    .catch(() => setActionLoading(false));
-};
-
-const handleRejectPath = () => {
-  setActionLoading(true);
-
-  axios
-    .put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, {
-      status: "draft",
-    })
-    .then(({ data }) => {
-      if (data.status) {
-        setMypathsMenu("Draft");   // 👈 automatically switch tab
-        getAllPaths();
-        setPathActionEnabled(false);
-        setActionLoading(false);
-        setPathActionStep(1);
-      }
-    })
-    .catch(() => setActionLoading(false));
-};
+  const handleRejectPath = () => {
+    setActionLoading(true);
+    axios
+      .put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, {
+        status: "draft",
+      })
+      .then(({ data }) => {
+        if (data.status) {
+          setMypathsMenu("Draft");
+          getAllPaths();
+          setPathActionEnabled(false);
+          setActionLoading(false);
+          setPathActionStep(1);
+        }
+      })
+      .catch(() => setActionLoading(false));
+  };
 
   const handleAddService = (newId) => {
     setActionLoading(true);
-
     axios
-      .post(
-        `${BASE_URL}/api/steps/addproducts/${selectedStepId}`,
-        {
-          product_ids: [newId],
-        }
-      )
+      .post(`${BASE_URL}/api/steps/addproducts/${selectedStepId}`, {
+        product_ids: [newId],
+      })
       .then(({ data }) => {
         if (data.status) {
-         getAllPaths();
-
+          getAllPaths();
           getAllServices();
           setPathActionEnabled(false);
           setStepActionEnabled(false);
           setActionLoading(false);
           setPathActionStep(1);
-          setActionLoading(false);
           fetchAllServicesAgain();
         }
       });
   };
 
-/* ------------------------------
-   6️⃣ Reset selected path when menu changes
-----------------------------------*/
-useEffect(() => {
-  setShowSelectedPath(null);
-}, [mypathsMenu]);
-
-  const [productDataArray, setProductDataArray] = useState([]);
-  const [productKeys, setProductKeys] = useState(null);
-
-  const [allServicesToAdd, setAllServicesToAdd] = useState([]);
-  useEffect(() => {
-    if (selectedStepId) {
-      axios.get(
-  `${BASE_URL}/api/attachservice/getnotaddedservices?step_id=${selectedStepId}&productcreatoremail=${userDetails?.user?.email}`
-)
-        .then(({ data }) => {
-          if (data.status) {
-            setAllServicesToAdd(data?.data[0]);
-          }
-        });
-    }
-  }, [selectedStepId]);
-
-  const [allServicesToRemove, setAllServicesToRemove] = useState([]);
-  useEffect(() => {
-    if (selectedStepId) {
-      axios.get(
-  `${BASE_URL}/api/attachservice/get?step_id=${selectedStepId}`
-)
-        .then(({ data }) => {
-          if (data.status) {
-            setAllServicesToRemove(data?.data[0]);
-          }
-        });
-    }
-  }, [selectedStepId]);
-
- 
-
-  const fetchProductData = async (apiKey) => {
-    try {
-      const apiUrl = `https://comms.globalxchange.io/gxb/product/get?product_id=${apiKey}`;
-      const response = await axios.get(apiUrl);
-      const productData = response.data.products[0];
-      return productData;
-
-      return null; // Return null for items that already exist in the array
-    } catch (error) {
-      console.error(`Error fetching productt data for key ${apiKey}:`, error);
-      return null;
-    }
-  };
-
-  useEffect(() => {
-    console.log(stepActionStep, "ejbfkwjebfkwef");
-  }, [stepActionStep]);
-
-  
-  const fetchData = async () => {
-    setProductDataArray([]);
-    console.log(productKeys, "ewlkhflkwheflwerf");
-    if (productKeys && Array.isArray(productKeys)) {
-      // Check if productKeys exists and is an array
-      const fetchDataPromises = productKeys.map((id) => fetchProductData(id)); // Map over the IDs directly
-
-      try {
-        const results = await Promise.all(fetchDataPromises);
-        const updatedProductDataArray = results.filter(Boolean);
-        setProductDataArray([...updatedProductDataArray]);
-      } catch (error) {
-        console.error("Error fetching product data:", error);
-      }
-    } else {
-      console.warn("Product keys is not a valid array:", productKeys);
-    }
-  };
-  useEffect(() => {
-    // Fetch updated product data when productKeys change
-    fetchData();
-  }, [productKeys]);
-
-  const handlePlace = (item, index) => {
-    console.log(item, index, "lwkeflkwefwef");
-    const updatedPathObject = addIdToObjectAtIndex(
-      item?.the_ids,
-      stepId,
-      backupPathId,
-      index
-    );
-    // console.log(updatedPathObject, "kjwebfkwjebfkwejf")
-    axios
-      .put(
-        `${BASE_URL}/api/paths/update/${selectedPath?._id}`,
-        { the_ids: updatedPathObject }
-      )
-      .then((res) => {
-        if (res.data.status) {
-          resetPathAction();
-          getAllPaths();
-        }
-      });
-  };
-
-  function addIdToObjectAtIndex(idsArray, stepId, backupPathId, index) {
-    // Create a shallow copy of the original array and extract only necessary properties
-    const newArray = idsArray.map(({ step_id, backup_pathId }) => ({
-      step_id,
-      backup_pathId,
-    }));
-
-    // Create a new object with the provided stepId and backupPathId
-    let newIdObject;
-    if (backupPathId) {
-      newIdObject = {
-        step_id: stepId,
-        backup_pathId: backupPathId,
-      };
-    } else {
-      newIdObject = {
-        step_id: stepId,
-      };
-    }
-
-    // Insert the new object at the specified index using splice
-    newArray.splice(index, 0, newIdObject);
-
-    return newArray;
-  }
-
-  const handledeletePathPosition = (fullObject, idToDelete) => {
-    const updatedTheIds = [...fullObject.the_ids];
-
-    // Find the index of the object with the specified _id in the copied array
-    const indexToDelete = updatedTheIds.findIndex(
-      (obj) => obj._id === idToDelete
-    );
-
-    // If the object with the specified _id is found, remove it from the copied array
-    if (indexToDelete !== -1) {
-      updatedTheIds.splice(indexToDelete, 1);
-    }
-
-    // Return the updated array with only step_id and backup_pathId keys
-    const updatedBody = updatedTheIds.map(({ step_id, backup_pathId }) => ({
-      step_id,
-      backup_pathId,
-    }));
-    axios
-      .put(
-        `${BASE_URL}/api/paths/update/${selectedPath?._id}`,
-        { the_ids: updatedBody }
-      )
-      .then((res) => {
-        if (res.data.status) {
-          resetPathAction();
-          getAllPaths();
-        }
-      });
-  };
-
-  const getChangedPos = (currentPos, newPos) => {
-    console.log(currentPos, newPos, "kjwbefkwbfkwbfkwjf");
-    updatePositionOfObject(selectedPath, currentPos, newPos);
-  };
-
-  function updatePositionOfObject(fullObject, currentIndex, newIndex) {
-    const updatedTheIds = [...fullObject.the_ids];
-    const [movedObject] = updatedTheIds.splice(currentIndex, 1);
-    updatedTheIds.splice(newIndex, 0, movedObject);
-    // console.log(fullObject.the_ids, updatedTheIds, "kjwekfjwefkjwegfkwfgwf")
-    const updatedTheIdsArray = updatedTheIds.map(
-      ({ step_id, backup_pathId }) => ({ step_id, backup_pathId })
-    );
-    axios
-      .put(
-        `${BASE_URL}/api/paths/update/${selectedPath?._id}`,
-        { the_ids: updatedTheIdsArray }
-      )
-      .then((res) => {
-        if (res.data.status) {
-          resetPathAction();
-          getAllPaths();
-        }
-      });
-  }
-  const [selectedServices, setSelectedServices] = useState([]);
   const handleSelectServicesForStep = (item) => {
-    // Check if the item is already selected
     const isSelected = selectedServices.includes(item);
-
     if (isSelected) {
-      // If already selected, remove it
-      const updatedServices = selectedServices.filter(
-        (service) => service !== item
-      );
+      const updatedServices = selectedServices.filter((service) => service !== item);
       setSelectedServices(updatedServices);
     } else {
-      // If not selected, add it
       setSelectedServices([...selectedServices, item]);
     }
   };
@@ -606,13 +359,6 @@ useEffect(() => {
   const addServicesToStep = () => {
     setActionLoading(true);
     setLoading(true);
-    console.log(
-      {
-        step_id: selectedStepId,
-        service_ids: [...selectedServices],
-      },
-      "lkweflkjwhefkjwef"
-    );
     axios
       .post(`${BASE_URL}/api/attachservice/add`, {
         step_id: selectedStepId,
@@ -630,12 +376,9 @@ useEffect(() => {
 
   const removeServiceFromStep = (id) => {
     axios
-      .put(
-        `${BASE_URL}/api/attachservice/remove/${allServicesToRemove?._id}`,
-        {
-          service_id: id,
-        }
-      )
+      .put(`${BASE_URL}/api/attachservice/remove/${allServicesToRemove?._id}`, {
+        service_id: id,
+      })
       .then(({ data }) => {
         if (data.status) {
           setStepActionEnabled(false);
@@ -645,36 +388,37 @@ useEffect(() => {
       });
   };
 
-  useEffect(() => {
-    if (!stepActionEnabled) {
-      setSelectedServices([]);
-      setStepActionStep(1);
-    }
-  }, [stepActionEnabled]);
-
-useEffect(() => {
-  if (!mypathsMenu) {
-      setMypathsMenu("Paths");
-  }
-}, []);
-
-
-
   const handleEditSubmit = () => {
-    setPathActionStep(1); // Reset pathActionStep after edit submission
-};
+    setPathActionStep(1);
+  };
 
-  
+  // Format date helper
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Recently';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 1) return '1 day ago';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  // ============================================
+  // Render
+  // ============================================
 
   return (
     <div className="mypaths">
-      <div className="mypaths-menu">
-        <div
+      {/* Top Navigation Menu */}
+
+      {/* <div
           className="each-mypath-menu"
           style={{
             fontWeight: mypathsMenu === "Paths" ? "700" : "",
-            background:
-              mypathsMenu === "Paths" ? "rgba(241, 241, 241, 0.5)" : "",
+            background: mypathsMenu === "Paths" ? "rgba(241, 241, 241, 0.5)" : "",
           }}
           onClick={() => {
             setMypathsMenu("Paths");
@@ -685,33 +429,26 @@ useEffect(() => {
           }}
         >
           {admin ? "Active Paths" : "Paths"}
-        </div>
-        <div
-  className="each-mypath-menu"
-  style={{
-    fontWeight: mypathsMenu === "Draft" ? "700" : "",
-    background:
-      mypathsMenu === "Draft"
-        ? "rgba(241, 241, 241, 0.5)"
-        : "",
-  }}
-  onClick={() => {
-    setMypathsMenu("Draft");
-    setViewPathEnabled(false);
-    setViewPathData([]);
-  }}
->
-  Draft
-</div>
-
-        <div
+        </div> */}
+      {/* <div
+          className="each-mypath-menu"
+          style={{
+            fontWeight: mypathsMenu === "Draft" ? "700" : "",
+            background: mypathsMenu === "Draft" ? "rgba(241, 241, 241, 0.5)" : "",
+          }}
+          onClick={() => {
+            setMypathsMenu("Draft");
+            setViewPathEnabled(false);
+            setViewPathData([]);
+          }}
+        >
+          Draft
+        </div> */}
+      {/* <div
           className="each-mypath-menu"
           style={{
             fontWeight: mypathsMenu === "Pending Approval" ? "700" : "",
-            background:
-              mypathsMenu === "Pending Approval"
-                ? "rgba(241, 241, 241, 0.5)"
-                : "",
+            background: mypathsMenu === "Pending Approval" ? "rgba(241, 241, 241, 0.5)" : "",
           }}
           onClick={() => {
             setMypathsMenu("Pending Approval");
@@ -727,10 +464,7 @@ useEffect(() => {
           className="each-mypath-menu"
           style={{
             fontWeight: mypathsMenu === "Inactive Paths" ? "700" : "",
-            background:
-              mypathsMenu === "Inactive Paths"
-                ? "rgba(241, 241, 241, 0.5)"
-                : "",
+            background: mypathsMenu === "Inactive Paths" ? "rgba(241, 241, 241, 0.5)" : "",
           }}
           onClick={() => {
             setMypathsMenu("Inactive Paths");
@@ -741,532 +475,339 @@ useEffect(() => {
           }}
         >
           Inactive Paths
+        </div> */}
+      {admin && (
+        <div
+          className="each-mypath-menu"
+          style={{
+            fontWeight: mypathsMenu === "Pending Paths" ? "700" : "",
+            background: mypathsMenu === "Pending Paths" ? "rgba(241, 241, 241, 0.5)" : "",
+          }}
+          onClick={() => {
+            setMypathsMenu("Pending Paths");
+            if (viewPathEnabled) {
+              setViewPathEnabled(false);
+              setViewPathData([]);
+            }
+          }}
+        >
+          Pending Paths
         </div>
-        {admin && (
-          <div
-            className="each-mypath-menu"
-            style={{
-              fontWeight: mypathsMenu === "Pending Paths" ? "700" : "",
-              background:
-                mypathsMenu === "Pending Paths"
-                  ? "rgba(241, 241, 241, 0.5)"
-                  : "",
-            }}
-            onClick={() => {
-              setMypathsMenu("Pending Paths");
-              if (viewPathEnabled) {
-                setViewPathEnabled(false);
-                setViewPathData([]);
-              }
-            }}
-          >
-            Pending Paths
-          </div>
-        )}
-        
-      </div>
+      )}
+
+
+      {/* Main Content */}
       <div className="mypaths-content">
-        {
-          showSelectedPath ? (
-            <div>
-              <CurrentStep
-                productDataArray={productDataArray}
-                selectedPathId={selectedPathId}
-                showSelectedPath={showSelectedPath}
-                selectedPath={selectedPath}
-              />
-            </div>
-          ) : viewPathEnabled ? (
-            <div className="viewpath-container">
- <div className="viewpath-top-area">
-   <div>Your Selected Path:</div>
-
-<div className="viewpath-bold-text">
-   {viewPathData?.nameOfPath || viewPathData?.destination_institution || "Untitled Path"}
-</div>
-
-   <div className="viewpath-des">
-      {viewPathData?.description}
-   </div>
-
-   <div
-      className="viewpath-goBack-div"
-      onClick={() => setViewPathEnabled(false)}
-   >
-      Go Back
-   </div>
-</div>
-
-
-
-
-<div className="viewpath-steps-area">
-   {viewPathData?.StepDetails?.map((e, i) => (
-      <div
-         key={i}
-         onClick={() => {
-            setShowSelectedPath(e);
-            setProductKeys(e?.product_ids);
-         }}
-         className="viewpath-each-j-step viewpath-relative-div"
-      >
-         {/* Step number badge */}
-
-<div style={{
-   width: 36, height: 36, borderRadius: "50%",
-   background: "#0d6b6e", color: "#fff",
-   display: "flex", alignItems: "center", justifyContent: "center",
-   fontWeight: 700, fontSize: "0.9rem",
-   marginBottom: "0.5rem",   
-   flexShrink: 0,
-   
-   zIndex: 2                
-}}>
-   {i + 1}
-</div>
-
-         <div className="viewpath-each-j-step-text">
-            {e?.macro_name || e?.name || "Untitled Step"}
-         </div>
-
-         <div className="viewpath-each-j-step-text1">
-            {e?.macro_description || e?.description || ""}
-         </div>
-
-         <div className="viewpath-each-j-amount-div">
-            <div className="viewpath-each-j-amount">
-               {e?.macro_access || e?.cost || "Free"}
-            </div>
-         </div>
-      </div>
-   ))}
-</div>
-
-            </div>
-          ) : mypathsMenu === "Paths" ||
-           mypathsMenu === "Draft" ||
-            mypathsMenu === "Pending Approval" ||
-            mypathsMenu === "Inactive Paths" ||
-            (mypathsMenu === "Pending Paths" && !viewPathEnabled) ? (
-            <>
-              <div className="mypathsNav">
-                <div className="mypaths-name-div">Name</div>
-                <div className="mypaths-description-div">Description</div>
-                <div className="mypaths-name-div"># of steps</div>
+        {/* Show Selected Path Details */}
+        {showSelectedPath ? (
+          <div>
+            <CurrentStep
+              productDataArray={productDataArray}
+              selectedPathId={selectedPathId}
+              showSelectedPath={showSelectedPath}
+              selectedPath={selectedPath}
+            />
+          </div>
+        ) : viewPathEnabled ? (
+          /* View Path Details */
+          <div className="viewpath-container">
+            <div className="viewpath-top-area">
+              <div>Your Selected Path:</div>
+              <div className="viewpath-bold-text">
+                {viewPathData?.nameOfPath || viewPathData?.destination_institution || "Untitled Path"}
               </div>
-              <div className="mypathsScroll-div">
-                {loading
-                  ? Array(10)
-                      .fill("")
-                      .map((e, i) => {
-                        return (
-                          <div className="each-mypaths-data" key={i}>
-                            <div className="each-mypaths-name">
-                              <Skeleton width={100} height={30} />
-                            </div>
-                            <div className="each-mypaths-desc">
-                              <Skeleton width={"100%"} height={30} />
-                            </div>
-                            <div className="each-mypaths-name">
-                              <Skeleton width={100} height={30} />
-                            </div>
-                          </div>
-                        );
-                      })
-// ✅ Fix - filter by search before mapping
-: partnerPathData
-    ?.filter((e) =>
-      !search ||
-      e?.nameOfPath?.toLowerCase().includes(search.toLowerCase()) ||
-      e?.description?.toLowerCase().includes(search.toLowerCase()) ||
-      e?.destination_institution?.toLowerCase().includes(search.toLowerCase())
-    )
-    ?.map((e, i) => {
-  return (
-    <div
-      className="each-mypaths-data"
-      key={i}
-      onClick={() => {
-        setSelectedPathId(e?._id);
-        setSelectedPath(e);
-        localStorage.setItem("selectedPathId", e?._id);
-
-        // ✅ IF DRAFT → Open Full Path Page
-        if (e?.status === "draft") {
-     navigate(`/dashboard/accountants/path/${e._id}`);
-
-        } 
-        // ✅ ELSE → Show Action Panel
-        else {
-          setPathActionEnabled(true);
-        }
-      }}
-    >
-      <div className="each-mypaths-name">
-        {e?.nameOfPath}
-      </div>
-      <div className="each-mypaths-desc">
-        {e?.description}
-      </div>
-      <div className="each-mypaths-name">
-        {e?.the_ids?.length}
-      </div>
-    </div>
-  );
-})
-}
-              </div>
-            </>
-          ) : (
-            ""
-          )
-          
-        }
-
-        {pathActionEnabled && (
-          <div className="acc-popular1">
-            <div
-              className="acc-popular-top1"
-              style={{
-                display:
-                  pathActionStep === 3
-                    ? "none"
-                    : metaDataStep === "success"
-                    ? "none"
-                    : "",
-              }}
-            >
-              <div className="acc-popular-head1">
-                {pathActionStep > 3
-                  ? "Edit Paths"
-                  : pathActionStep > 7
-                  ? "Add service"
-                  : "My Path Actions"}
-              </div>
-              <div
-                className="acc-popular-img-box1"
-                style={{ cursor: "pointer" }}
-                onClick={() => {
-                  resetPathAction();
-                }}
-              >
-                <img className="acc-popular-img1" src={closepop} alt="" />
+              <div className="viewpath-des">{viewPathData?.description}</div>
+              <div className="viewpath-goBack-div" onClick={() => setViewPathEnabled(false)}>
+                Go Back
               </div>
             </div>
-            {pathActionStep === 1 && mypathsMenu !== "Pending Paths" && (
-              <div className="acc-mt-div">
-                <div className="acc-scroll-div">
-                  <div
-                    className="acc-step-box4"
-                    onClick={() => {
-                      setPathActionStep(4);
-                      
-                    }}
-                  >
-                    Edit path
-                  </div>
-                  <div
-                    className="acc-step-box4"
-                    onClick={() => {
-                      setPathActionStep(2);
-                      
-                    }}
-                  >
-                    Delete path
-                  </div>
-                  {admin && (
-                    <div
-                      className="acc-step-box4"
-                      onClick={() => {
-                        setPathActionStep(6);
-                      }}
-                    >
-                      Reject Path
-                    </div>
-                  )}
-                  
-                  <div
-                    className="acc-step-box4"
-                    onClick={() => {
-                     setViewPathEnabled(true);
-setPathActionEnabled(false);
-viewPathById(selectedPathId)
 
-                    }}
-                  >
-                    View path
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {pathActionStep === 1 && mypathsMenu === "Pending Paths" && (
-              <div className="acc-mt-div">
-                <div className="acc-scroll-div">
-                  <div
-                    className="acc-step-box4"
-                    onClick={() => {
-                      setPathActionStep(5);
-                    }}
-                  >
-                    Approve Path
-                  </div>
-                  <div
-                    className="acc-step-box4"
-                    onClick={() => {
-                      setPathActionStep(6);
-                    }}
-                  >
-                    Reject Path
-                  </div>
-                  <div
-                    className="acc-step-box4"
-                    onClick={() => {
-                      setPathActionStep(9);
-                    }}
-                  >
-                    Add Services
-                  </div>
-                  <div
-                    className="acc-step-box4"
-                    onClick={() => {
-                       // Ensure this is being updated
-  
-                    setPathActionStep(4);
-                    }}
-                  >
-                    Edit path
-                  </div>
-                  <div
-                    className="acc-step-box4"
-                    onClick={() => {
-                      setPathActionStep(2);
-                    }}
-                  >
-                    Delete path
-                  </div>
-                  <div
-                    className="acc-step-box4"
-                    onClick={() => {
-                      setViewPathEnabled(true);
-                      setPathActionEnabled(false);
-                      viewPathById(selectedPathId); 
-                    }}
-                  >
-                    View path
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {pathActionStep === 2 && (
-              <div className="acc-mt-div">
-                <div className="acc-scroll-div">
-                  <div
-                    className="acc-step-box4"
-                    onClick={() => {
-                      deletePath();
-                    }}
-                  >
-                    Confirm and delete
-                  </div>
-                </div>
+            <div className="viewpath-steps-area">
+              {viewPathData?.StepDetails?.map((e, i) => (
                 <div
-                  className="goBack3"
+                  key={i}
                   onClick={() => {
-                    setPathActionStep(1);
+                    setShowSelectedPath(e);
+                    setProductKeys(e?.product_ids);
                   }}
+                  className="viewpath-each-j-step viewpath-relative-div"
                 >
-                  Go Back
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      background: "#0d6b6e",
+                      color: "#fff",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 700,
+                      fontSize: "0.9rem",
+                      marginBottom: "0.5rem",
+                      flexShrink: 0,
+                      zIndex: 2,
+                    }}
+                  >
+                    {i + 1}
+                  </div>
+                  <div className="viewpath-each-j-step-text">
+                    {e?.macro_name || e?.name || "Untitled Step"}
+                  </div>
+                  <div className="viewpath-each-j-step-text1">
+                    {e?.macro_description || e?.description || ""}
+                  </div>
+                  <div className="viewpath-each-j-amount-div">
+                    <div className="viewpath-each-j-amount">
+                      {e?.macro_access || e?.cost || "Free"}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* Main Paths List - CARD LAYOUT */
+          <>
 
-            {actionLoading ? (
-              <div className="popularlogo">
-                <img className="popularlogoimg" src={lg1} alt="" />
+
+            {/* Filter Tabs */}
+            <div className="filter-tabs">
+              <span
+                className={`filter-tab ${mypathsMenu === 'Paths' ? 'active' : ''}`}
+                onClick={() => setMypathsMenu('Paths')}
+              >
+                Active Paths
+              </span>
+              <span
+                className={`filter-tab ${mypathsMenu === 'Draft' ? 'active' : ''}`}
+                onClick={() => setMypathsMenu('Draft')}
+              >
+                Draft
+              </span>
+              <span
+                className={`filter-tab ${mypathsMenu === 'Pending Approval' ? 'active' : ''}`}
+                onClick={() => setMypathsMenu('Pending Approval')}
+              >
+                Pending Approval
+              </span>
+              <span
+                className={`filter-tab ${mypathsMenu === 'Inactive Paths' ? 'active' : ''}`}
+                onClick={() => setMypathsMenu('Inactive Paths')}
+              >
+                Inactive
+              </span>
+            </div>
+
+            {/* Loading Skeletons */}
+            {loading ? (
+              <div className="paths-grid">
+                {Array(3)
+                  .fill("")
+                  .map((_, i) => (
+                    <div className="path-card" key={i}>
+                      <div className="path-header">
+                        <div className="path-title">
+                          <Skeleton width={200} height={30} />
+                        </div>
+                        <Skeleton width={100} height={25} />
+                      </div>
+                      <Skeleton count={3} />
+                      <div className="path-stats">
+                        <Skeleton width={80} height={30} />
+                        <Skeleton width={120} height={30} />
+                      </div>
+                    </div>
+                  ))}
               </div>
             ) : (
-              ""
-            )}
-            
-           
-           
+              /* Paths Grid - Cards */
+              <div className="paths-grid">
+                {partnerPathData
+                  ?.filter((e) =>
+                    !localSearch ||
+                    e?.nameOfPath?.toLowerCase().includes(localSearch.toLowerCase()) ||
+                    e?.description?.toLowerCase().includes(localSearch.toLowerCase()) ||
+                    e?.destination_institution?.toLowerCase().includes(localSearch.toLowerCase())
+                  )
+                  ?.map((e, i) => {
+                    // Determine status class and text
 
+                    const lastUpdated = formatDate(e?.updatedAt);
 
-            {pathActionStep === 3 && (
-              <div className="success-box2">Path Successfully Deleted</div>
-            )}
-
-
-{pathActionStep === 4 && (
-    <EditPathForm
-        selectedPath={selectedPath}
-        onSave={(updatedPath) => {
-            console.log("Updated Path Data:", updatedPath);
-            setTimeout(() => {
-                setPathActionStep(null); // Close form after success message
-            }, 2000);
-        }}
-        onCancel={() => setPathActionStep(null)} // Close form on cancel
-    />
-)}
-
-
-            
-            {pathActionStep === 5 && (
-              <div className="acc-mt-div">
-                <div className="acc-sub-text">
-                  Are you sure you want to approve this path?
-                </div>
-                <div className="acc-scroll-div">
-                  <div
-                    className="acc-step-box4"
-                    onClick={(e) => handleApprovePath()}
-                  >
-                    Yes
-                  </div>
-                  <div
-                    className="acc-step-box4"
-                    onClick={() => {
-                      setPathActionStep(1);
-                    }}
-                  >
-                    Never mind
-                  </div>
-                </div>
-                <div
-                  className="goBack3"
-                  onClick={() => {
-                    setPathActionStep(1);
-                  }}
-                >
-                  Go Back
-                </div>
-              </div>
-            )}
-            {pathActionStep === 6 && (
-              <div className="acc-mt-div">
-                <div className="acc-sub-text">
-                  Are you sure you want to reject this path?
-                </div>
-                <div className="acc-scroll-div">
-                  <div
-                    className="acc-step-box4"
-                    onClick={() => {
-                      handleRejectPath();
-                    }}
-                  >
-                    Yes
-                  </div>
-                  <div
-                    className="acc-step-box4"
-                    onClick={() => {
-                      setPathActionStep(1);
-                    }}
-                  >
-                    Never mind
-                  </div>
-                </div>
-                <div
-                  className="goBack3"
-                  onClick={() => {
-                    setPathActionStep(1);
-                  }}
-                >
-                  Go Back
-                </div>
-              </div>
-            )}
-            {pathActionStep === 7 && (
-              <div className="success-box2">Path is Approved.</div>
-            )}
-            {pathActionStep === 8 && (
-              <div className="success-box2">Path is Rejected.</div>
-            )}
-
-            {/* Add Service Steps */}
-
-            {pathActionStep === 9 && (
-              <div className="acc-mt-div">
-                <div className="acc-sub-text">
-                  Which step do you want to add the service to?
-                </div>
-                <div className="acc-scroll-div">
-                  {selectedPath &&
-                    selectedPath?.StepDetails?.map((item) => (
+                    return (
                       <div
-                        className="acc-step-box4"
-                        style={{
-                          flexDirection: "column",
-                          alignItems: "flex-start",
-                          justifyContent: "center",
-                        }}
+                        className="path-card"
+                        key={i}
                         onClick={() => {
-                          setAddServiceStep(item);
-                          setPathActionStep(10);
+                          setSelectedPathId(e?._id);
+                          setSelectedPath(e);
+                          localStorage.setItem("selectedPathId", e?._id);
+
+                          if (e?.status === "draft") {
+                            navigate(`/dashboard/accountants/path/${e._id}`);
+                          } else {
+                            setPathActionEnabled(true);
+                          }
                         }}
                       >
-                        <div>{item?.name}</div>
-                        <div
-                          style={{
-                            fontSize: "12px",
-                            fontWeight: 400,
-                            paddingTop: "5px",
-                          }}
-                        >
-                          {item?._id}
+                        {/* Card Header */}
+                        <div className="path-header">
+                          <div className="path-title">
+                            <h3>{e?.nameOfPath || "Untitled Path"}</h3>
+                          </div>
+                          <div className="path-meta">
+                            {/* Show date for non-draft paths, show arrow for draft paths */}
+                            {e?.status === "draft" ? (
+                              <button
+                                className="draft-arrow-btn"
+                                onClick={(event) => {
+                                  event.stopPropagation(); // Prevent card click
+                                  navigate(`/dashboard/accountants/path/${e._id}`);
+                                }}
+                                title="Go to Draft Page"
+                              >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </button>
+                            ) : (
+                              <span className="path-date">📅 {lastUpdated}</span>
+                            )}
+                          </div>
+                        </div>
+
+
+                        {/* Description with Read More - FIXED VERSION */}
+                        <div className="path-description">
+                          {(() => {
+                            const description = e?.description || "No description provided.";
+                            const isExpanded = expandedDesc[e?._id];
+                            const maxLength = 120; // Show first 120 characters
+
+                            if (description.length > maxLength) {
+                              return (
+                                <span>
+                                  {isExpanded
+                                    ? description
+                                    : description.substring(0, maxLength) + "... "}
+                                  <span
+                                    className="read-more-btn"
+                                    onClick={(event) => {
+                                      event.stopPropagation(); // Prevent card click
+                                      toggleDescription(e?._id);
+                                    }}
+                                  >
+                                    {isExpanded ? "Read less" : "Read more"}
+                                  </span>
+                                </span>
+                              );
+                            }
+                            return <span>{description}</span>;
+                          })()}
+                        </div>
+
+                        {/* Stats Row - Match the image style */}
+                        <div className="path-stats-row">
+                          <div className="stats-group">
+                            <span className="stat-item">
+                              <strong>{e?.the_ids?.length || 0}</strong> steps
+                            </span>
+                            <span className="stat-item">
+                              <span className="stat-icon">📅</span>
+                              Updated {lastUpdated}
+                            </span>
+                          </div>
+
+                          <button
+                            className="view-steps-btn"
+                            onClick={(evt) => {
+                              evt.stopPropagation();
+                              setViewPathEnabled(true);
+                              setPathActionEnabled(false);
+                              viewPathById(e?._id);    // ← now e is the map param (the path object)
+                            }}
+                          >
+                            View Steps
+                          </button>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="path-footer" onClick={(e) => e.stopPropagation()}>
+                          {/* <button
+                            className="btn-outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setViewPathEnabled(true);
+                              setPathActionEnabled(false);
+                              viewPathById(e?._id);
+                            }}
+                          >
+                            View Steps
+                          </button> */}
+                          {/* <button
+                            className="btn-outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedPathId(e?._id);
+                              setSelectedPath(e);
+                              setPathActionStep(4);
+                            }}
+                          >
+                            Edit Path
+                          </button> */}
+                          {e?.status === "waitingforapproval" && admin && (
+                            <button
+                              className="btn-primary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedPathId(e?._id);
+                                setPathActionStep(5);
+                              }}
+                            >
+                              Approve
+                            </button>
+                          )}
+                          {/* {e?.status !== "draft" && e?.status !== "waitingforapproval" && (
+                            // <button
+                            //   className="btn-primary"
+                            //   onClick={(e) => {
+                            //     e.stopPropagation();
+                            //     setSelectedPathId(e?._id);
+                            //     setPathActionStep(2);
+                            //   }}
+                            // >
+                            //   Delete
+                            // </button>
+                          )} */}
                         </div>
                       </div>
-                    ))}
-                </div>
-                <div
-                  className="goBack3"
-                  onClick={() => {
-                    setPathActionStep(1);
-                  }}
-                >
-                  Go Back
-                </div>
+                    );
+                  })}
+
+                {/* Show message if no paths */}
+                {partnerPathData?.filter((e) =>
+                  !localSearch ||
+                  e?.nameOfPath?.toLowerCase().includes(localSearch.toLowerCase()) ||
+                  e?.description?.toLowerCase().includes(localSearch.toLowerCase()) ||
+                  e?.destination_institution?.toLowerCase().includes(localSearch.toLowerCase())
+                ).length === 0 && !loading && (
+                    <div style={{ textAlign: 'center', padding: '3rem', color: '#5e6f7e' }}>
+                      No paths found. Click "Create New Path" to get started.
+                    </div>
+                  )}
               </div>
             )}
-        {pathActionStep === 10 &&
-  <div className="acc-mt-div">
-    <div className="acc-sub-text">
-      Which service do you want to add?
-    </div>
 
-    <div className="acc-scroll-div">
-      {allServices?.map(item => (
-        <div
-          className="acc-step-box4"
-          style={{flexDirection:'column', alignItems:'flex-start', justifyContent:'center'}}
-          onClick={() => handleAddService(item?.product_id)}
-        >
-          <div>{item?.product_name}</div>
-          <div style={{fontSize:'12px', fontWeight:400, paddingTop:'5px'}}>
-            {item?.product_id}
-          </div>
-        </div>
-      ))}
-    </div>
-
-    <div className="goBack3" onClick={() => setPathActionStep(1)}>
-      Go Back
-    </div>
-  </div>
-}
-
-
-          </div>
+          </>
         )}
 
+        {/* ============================================
+            Step Action Popup (Keep Existing)
+        ============================================ */}
         {stepActionEnabled && (
           <div className="acc-popular1">
-            <div
-              className="acc-popular-top"
-              style={{ display: stepActionStep === 3 ? "none" : "" }}
-            >
+            <div className="acc-popular-top" style={{ display: stepActionStep === 3 ? "none" : "" }}>
               <div className="acc-popular-head">My Step Actions</div>
               <div
                 className="acc-popular-img-box"
@@ -1280,55 +821,31 @@ viewPathById(selectedPathId)
                 <img className="acc-popular-img" src={closepop} alt="" />
               </div>
             </div>
+
             {stepActionStep === 1 && (
               <div style={{ marginTop: "3rem" }}>
-                <div
-                  className="acc-step-box"
-                  onClick={() => {
-                    setStepActionStep(4);
-                  }}
-                >
+                <div className="acc-step-box" onClick={() => setStepActionStep(4)}>
                   Edit Services
                 </div>
-                <div
-                  className="acc-step-box"
-                  // onClick={() => {
-                  //   setStepActionStep(4);
-                  // }}
-                >
-                  Edit Step
-                </div>
+                <div className="acc-step-box">Edit Step</div>
                 <div className="acc-step-box">Delete step</div>
               </div>
             )}
 
             {stepActionStep === 2 && (
               <div style={{ marginTop: "3rem" }}>
-                <div
-                  className="acc-step-box"
-                  onClick={() => {
-                    deleteStep();
-                  }}
-                >
+                <div className="acc-step-box" onClick={deleteStep}>
                   Confirm and delete
                 </div>
-                <div
-                  className="goBack2"
-                  onClick={() => {
-                    setStepActionStep(1);
-                  }}
-                >
+                <div className="goBack2" onClick={() => setStepActionStep(1)}>
                   Go Back
                 </div>
               </div>
             )}
 
-            {stepActionStep === 3 && (
-              <div className="success-box1">Step Successfully Deleted</div>
-            )}
-            {stepActionStep === 4 && (
-              // <div className="success-box1">Step Successfully Deleted</div>
+            {stepActionStep === 3 && <div className="success-box1">Step Successfully Deleted</div>}
 
+            {stepActionStep === 4 && (
               <div className="acc-mt-div">
                 <div className="acc-sub-text">What do you want to do?</div>
                 <div className="acc-scroll-div">
@@ -1339,7 +856,7 @@ viewPathById(selectedPathId)
                       alignItems: "flex-start",
                       justifyContent: "center",
                     }}
-                    onClick={(e) => setStepActionStep(5)}
+                    onClick={() => setStepActionStep(5)}
                   >
                     <div>Add a Service</div>
                   </div>
@@ -1350,28 +867,20 @@ viewPathById(selectedPathId)
                       alignItems: "flex-start",
                       justifyContent: "center",
                     }}
-                    onClick={(e) => setStepActionStep(6)}
+                    onClick={() => setStepActionStep(6)}
                   >
                     <div>Remove a Service</div>
                   </div>
                 </div>
-                <div
-                  className="goBack3"
-                  onClick={() => {
-                    setStepActionStep(1);
-                  }}
-                >
+                <div className="goBack3" onClick={() => setStepActionStep(1)}>
                   Go Back
                 </div>
               </div>
             )}
-            {stepActionStep === 5 && (
-              // <div className="success-box1">Step Successfully Deleted</div>
 
+            {stepActionStep === 5 && (
               <div className="acc-mt-div">
-                <div className="acc-sub-text">
-                  Which service do you want to add?
-                </div>
+                <div className="acc-sub-text">Which service do you want to add?</div>
                 <div className="acc-scroll-div">
                   {allServicesToAdd &&
                     allServicesToAdd?.serviceDetails?.map((item) => (
@@ -1386,16 +895,11 @@ viewPathById(selectedPathId)
                           alignItems: "flex-start",
                           justifyContent: "center",
                         }}
-                        onClick={(e) => handleSelectServicesForStep(item?._id)}
+                        onClick={() => handleSelectServicesForStep(item?._id)}
+                        key={item?._id}
                       >
                         <div>{item?.name}</div>
-                        <div
-                          style={{
-                            fontSize: "12px",
-                            fontWeight: 400,
-                            paddingTop: "5px",
-                          }}
-                        >
+                        <div style={{ fontSize: "12px", fontWeight: 400, paddingTop: "5px" }}>
                           {item?._id}
                         </div>
                       </div>
@@ -1404,30 +908,19 @@ viewPathById(selectedPathId)
                 <div
                   className="save-Btn"
                   style={{ opacity: selectedServices.length > 0 ? 1 : 0.3 }}
-                  onClick={() =>
-                    selectedServices.length > 0 && addServicesToStep()
-                  }
+                  onClick={() => selectedServices.length > 0 && addServicesToStep()}
                 >
                   Add Selected Services
                 </div>
-                <div
-                  className="goBack3"
-                  onClick={() => {
-                    setStepActionStep(1);
-                  }}
-                >
+                <div className="goBack3" onClick={() => setStepActionStep(1)}>
                   Go Back
                 </div>
               </div>
             )}
 
             {stepActionStep === 6 && (
-              // <div className="success-box1">Step Successfully Deleted</div>
-
               <div className="acc-mt-div">
-                <div className="acc-sub-text">
-                  Which service do you want to remove?
-                </div>
+                <div className="acc-sub-text">Which service do you want to remove?</div>
                 <div className="acc-scroll-div">
                   {allServicesToRemove &&
                     allServicesToRemove?.serviceDetails?.map((item) => (
@@ -1442,44 +935,29 @@ viewPathById(selectedPathId)
                           alignItems: "flex-start",
                           justifyContent: "center",
                         }}
-                        onClick={(e) => removeServiceFromStep(item?._id)}
+                        onClick={() => removeServiceFromStep(item?._id)}
+                        key={item?._id}
                       >
                         <div>{item?.name}</div>
-                        <div
-                          style={{
-                            fontSize: "12px",
-                            fontWeight: 400,
-                            paddingTop: "5px",
-                          }}
-                        >
+                        <div style={{ fontSize: "12px", fontWeight: 400, paddingTop: "5px" }}>
                           {item?._id}
                         </div>
                       </div>
                     ))}
                 </div>
-
-                <div
-                  className="goBack3"
-                  onClick={() => {
-                    setStepActionStep(1);
-                  }}
-                >
+                <div className="goBack3" onClick={() => setStepActionStep(1)}>
                   Go Back
                 </div>
               </div>
             )}
 
-            {actionLoading ? (
+            {actionLoading && (
               <div className="popularlogo">
                 <img className="popularlogoimg" src={lg1} alt="" />
               </div>
-            ) : (
-              ""
             )}
           </div>
         )}
-
-        {/* {showSelectedPath && <CurrentStep productDataArray={[]}/>} */}
       </div>
     </div>
   );

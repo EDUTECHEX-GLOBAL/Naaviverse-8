@@ -39,7 +39,6 @@ const EMPTY_MARKET_FORM = {
   features: "",
 };
 
-// ─── FIX #3: Normalize a raw step from the API into the macro/micro/nano shape ──
 const normalizeStep = (raw) => {
   if (!raw) return JSON.parse(JSON.stringify(EMPTY_STEP));
 
@@ -49,7 +48,6 @@ const normalizeStep = (raw) => {
     try { return JSON.parse(val); } catch { return { years: "", months: "", days: "" }; }
   };
 
-  // If the step already has the nested shape, just ensure marketplace arrays exist
   if (raw.macro && typeof raw.macro === "object") {
     return {
       ...raw,
@@ -59,7 +57,6 @@ const normalizeStep = (raw) => {
     };
   }
 
-  // Flat API shape → nested shape
   return {
     ...raw,
     macro: {
@@ -67,36 +64,33 @@ const normalizeStep = (raw) => {
       name: raw.macro_name || "",
       desc: raw.macro_description || "",
       duration: parseDuration(raw.macro_length),
-
       paid: raw.macro_access === "paid",
       free: raw.macro_access === "free",
-
       instructions: raw.macro_instructions || "",
-      marketplace: raw.macro_marketplace || [],
+      // ✅ CHANGE 1: reads macro_marketplace from flat API shape
+      marketplace: raw.macro_marketplace || raw.macro?.marketplace || [],
     },
     micro: {
       ...EMPTY_LAYER,
       name: raw.micro_name || "",
       desc: raw.micro_description || "",
       duration: parseDuration(raw.micro_length),
-
       paid: raw.micro_access === "paid",
       free: raw.micro_access === "free",
-
       instructions: raw.micro_instructions || "",
-      marketplace: raw.micro_marketplace || [],
+      // ✅ CHANGE 1: reads micro_marketplace from flat API shape
+      marketplace: raw.micro_marketplace || raw.micro?.marketplace || [],
     },
     nano: {
       ...EMPTY_LAYER,
       name: raw.nano_name || "",
       desc: raw.nano_description || "",
       duration: parseDuration(raw.nano_length),
-
       paid: raw.nano_access === "paid",
       free: raw.nano_access === "free",
-
       instructions: raw.nano_instructions || "",
-      marketplace: raw.nano_marketplace || [],
+      // ✅ CHANGE 1: reads nano_marketplace from flat API shape
+      marketplace: raw.nano_marketplace || raw.nano?.marketplace || [],
     },
   };
 };
@@ -149,11 +143,8 @@ const DurationSelect = ({ value, onChange, type }) => {
   );
 };
 
-// ─── FIX #3: Guard data prop so LayerBuilder never crashes on undefined ───────
 const LayerBuilder = ({ layer, layerKey, data, onChange, onAddMarketplace }) => {
   const colorMap = { macro: "#0d6b6e", micro: "#3b82f6", nano: "#a855f7" };
-
-  // Safe fallback if data is somehow undefined
   const safeData = data || { ...EMPTY_LAYER, duration: { years: "", months: "", days: "" }, marketplace: [] };
 
   const update = (field, value) =>
@@ -221,7 +212,7 @@ const LayerBuilder = ({ layer, layerKey, data, onChange, onAddMarketplace }) => 
         <label>Marketplace Items</label>
         <div className="marketplace-items-builder">
           {(safeData.marketplace || []).length === 0 ? (
-            <p className="no-items">No marketplace items added.</p>
+            <p className="no-items">No Marketplace Items Added.</p>
           ) : (
             (safeData.marketplace || []).map((item, i) => (
               <MarketplaceItemCard key={i} item={item} compact />
@@ -309,16 +300,21 @@ const DraftPathView = () => {
   const [currentStepIndex, setCurrentStepIndex] = useState(null);
   const [currentLayer, setCurrentLayer] = useState("macro");
 
-  const [selectedRole, setSelectedRole] = useState(null);
-  const [marketForm, setMarketForm] = useState(EMPTY_MARKET_FORM);
+  const [selectedRole, setSelectedRole] = useState("");
+  const [marketForm,   setMarketForm]   = useState(EMPTY_MARKET_FORM);
 
   // ─── Data fetching ────────────────────────────────────────────────────────
 
   const fetchSteps = useCallback(async (pathId) => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/steps/get`, { params: { path_id: pathId } });
-      // FIX #2: normalize every step so macro.name is always accessible
-      const fetched = (res.data.data || []).map(normalizeStep);
+      const res = await axios.get(`${BASE_URL}/api/steps/get`, {
+        params: { path_id: pathId },
+      });
+
+      const fetched = (res.data.data || [])
+        .map(normalizeStep)
+        .sort((a, b) => (a.step_order || 0) - (b.step_order || 0));
+
       setSteps(fetched);
       return fetched;
     } catch (err) {
@@ -362,7 +358,6 @@ const DraftPathView = () => {
       setCurrentStep(JSON.parse(JSON.stringify(EMPTY_STEP)));
       setCurrentStepIndex(null);
     } else {
-      // FIX #3: use already-normalized step
       setCurrentStep(JSON.parse(JSON.stringify(steps[index])));
       setCurrentStepIndex(index);
     }
@@ -393,39 +388,61 @@ const DraftPathView = () => {
       const payload = {
         path_id: id,
         step_order: isNew ? steps.length + 1 : steps[currentStepIndex]?.step_order,
-
-        // ✅ ADD THIS — required for My Steps page to find these steps
         email: JSON.parse(localStorage.getItem("partner"))?.email || "",
-
         name: currentStep.macro?.name || "",
+
         macro_name: currentStep.macro?.name || "",
         macro_description: currentStep.macro?.desc || "",
         macro_length: JSON.stringify(currentStep.macro?.duration || {}),
         macro_access: currentStep.macro?.paid ? "paid" : "free",
         macro_instructions: currentStep.macro?.instructions || "",
+        macro_marketplace: currentStep.macro?.marketplace || [],
 
         micro_name: currentStep.micro?.name || "",
         micro_description: currentStep.micro?.desc || "",
         micro_length: JSON.stringify(currentStep.micro?.duration || {}),
         micro_access: currentStep.micro?.paid ? "paid" : "free",
         micro_instructions: currentStep.micro?.instructions || "",
+        micro_marketplace: currentStep.micro?.marketplace || [],
 
         nano_name: currentStep.nano?.name || "",
         nano_description: currentStep.nano?.desc || "",
         nano_length: JSON.stringify(currentStep.nano?.duration || {}),
         nano_access: currentStep.nano?.paid ? "paid" : "free",
         nano_instructions: currentStep.nano?.instructions || "",
+        nano_marketplace: currentStep.nano?.marketplace || [],
       };
 
       if (isNew) {
         const res = await axios.post(`${BASE_URL}/api/steps/add`, payload);
-        // FIX #2: normalize the returned step before storing
-        const saved = normalizeStep(res.data.data || payload);
+
+        // ✅ CHANGE 2: Merge API response WITH payload so marketplace
+        // is never lost even if the API doesn't echo back the arrays
+        const merged = {
+          ...payload,
+          ...(res.data.data || {}),
+          macro_marketplace: res.data.data?.macro_marketplace ?? payload.macro_marketplace,
+          micro_marketplace: res.data.data?.micro_marketplace ?? payload.micro_marketplace,
+          nano_marketplace:  res.data.data?.nano_marketplace  ?? payload.nano_marketplace,
+        };
+        const saved = normalizeStep(merged);
         setSteps((prev) => [...prev, saved]);
+
       } else {
         const stepId = steps[currentStepIndex]._id;
         const res = await axios.put(`${BASE_URL}/api/steps/update/${stepId}`, payload);
-        const saved = normalizeStep(res.data.data || { ...payload, _id: stepId });
+
+        // ✅ CHANGE 3: Same merge fix for update — API response may not
+        // return marketplace arrays, so we keep what we sent
+        const merged = {
+          ...payload,
+          _id: stepId,
+          ...(res.data.data || {}),
+          macro_marketplace: res.data.data?.macro_marketplace ?? payload.macro_marketplace,
+          micro_marketplace: res.data.data?.micro_marketplace ?? payload.micro_marketplace,
+          nano_marketplace:  res.data.data?.nano_marketplace  ?? payload.nano_marketplace,
+        };
+        const saved = normalizeStep(merged);
         setSteps((prev) => {
           const copy = [...prev];
           copy[currentStepIndex] = saved;
@@ -450,47 +467,54 @@ const DraftPathView = () => {
 
   const openMarketplace = (layerKey) => {
     setCurrentLayer(layerKey);
-    setSelectedRole(null);
+    setSelectedRole("");  // ✅ CHANGE 4: was null, now "" to match select default
     setMarketForm(EMPTY_MARKET_FORM);
     setMarketplaceOpen(true);
   };
 
   const closeMarketplace = () => {
     setMarketplaceOpen(false);
-    setSelectedRole(null);
+    setSelectedRole("");  // ✅ CHANGE 4: was null, now "" to match select default
     setMarketForm(EMPTY_MARKET_FORM);
   };
 
-  const addMarketplaceItem = () => {
-    const durationParts = [
-      marketForm.durationDays ? `${marketForm.durationDays} days` : "",
-      marketForm.durationHours ? `${marketForm.durationHours} hrs` : "",
-      marketForm.durationMinutes ? `${marketForm.durationMinutes} min` : "",
-    ].filter(Boolean);
+ const addMarketplaceItem = async () => {
 
-    const item = {
-      role: selectedRole,
-      name: marketForm.name,
-      access: marketForm.access,
-      cost: marketForm.cost,
-      goal: marketForm.goal,
-      outcomes: marketForm.outcomes,
-      iterations: marketForm.iterations,
-      duration: durationParts.join(" "),
-      discount: marketForm.discount,
-      features: marketForm.features,
-    };
+try{
 
-    setCurrentStep((prev) => ({
-      ...prev,
-      [currentLayer]: {
-        ...prev[currentLayer],
-        marketplace: [...(prev[currentLayer].marketplace || []), item],
-      },
-    }));
+const userDetails = JSON.parse(localStorage.getItem("partner")) || {};
+const email = userDetails?.email || userDetails?.user?.email;
 
-    closeMarketplace();
-  };
+const payload = {
+partner_email: email,
+path_id: id,
+step_id: currentStepIndex !== null ? steps[currentStepIndex]._id : null,
+layer: currentLayer,
+
+role: selectedRole,
+name: marketForm.name,
+access: marketForm.access,
+cost: marketForm.cost,
+
+goal: marketForm.goal,
+outcomes: marketForm.outcomes,
+
+iterations: marketForm.iterations,
+duration: marketForm.durationDays,
+
+discount: marketForm.discount,
+features: marketForm.features
+};
+
+await axios.post(`${BASE_URL}/api/marketplace/add`, payload);
+
+closeMarketplace();
+
+}catch(error){
+console.error("Marketplace create error",error);
+}
+
+};
 
   // ─── Submit for approval ──────────────────────────────────────────────────
 
@@ -554,7 +578,6 @@ const DraftPathView = () => {
             >
               ← Back to Paths
             </button>
-
             <div className="path-title-section">
               <h1 className="path-title">{pathData.nameOfPath || "Untitled Path"}</h1>
               <span className="draft-badge">DRAFT</span>
@@ -579,7 +602,6 @@ const DraftPathView = () => {
                 Submit for Approval
               </button>
             </div>
-
           </div>
         </div>
 
@@ -597,7 +619,6 @@ const DraftPathView = () => {
                 <div className="step-card" key={step._id || index}>
                   <div className="step-info">
                     <span className="step-number">Step {index + 1}</span>
-                    {/* FIX #2: macro.name is now always available after normalization */}
                     <span className="step-name">
                       {step.macro?.name || step.macro_name || step.name || "Untitled Step"}
                     </span>
@@ -623,7 +644,7 @@ const DraftPathView = () => {
       </div>
 
       {/* ══ DETAIL VIEW ═════════════════════════════════════════════════════ */}
-      <div className={`detail-view ${view === "detail" ? "active" : ""}`}>
+      <div className={`detail-view ${view === "detail" ? "active" : ""}`} style={{ padding: "1rem 2rem" }}>
         {currentStep && (
           <>
             <div className="detail-view-header">
@@ -649,7 +670,6 @@ const DraftPathView = () => {
       </div>
 
       {/* ══ BUILDER VIEW ════════════════════════════════════════════════════ */}
-      {/* FIX #1: builder-view is full height with its own scroll, so Save Step is always reachable */}
       <div className={`builder-view ${view === "builder" ? "active" : ""}`}>
         {currentStep && (
           <>
@@ -677,8 +697,6 @@ const DraftPathView = () => {
                   onAddMarketplace={openMarketplace}
                 />
               ))}
-
-              {/* FIX #1: actions are inside builder-content so they scroll into view naturally */}
               <div className="builder-actions">
                 <button className="btn-outline" onClick={backToDraft} disabled={saving}>
                   Cancel
@@ -720,156 +738,154 @@ const DraftPathView = () => {
       {marketplaceOpen && (
         <div className="modal active" onClick={closeMarketplace}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+
             <div className="marketplace-context">
               Adding to{" "}
               <strong>{currentLayer.charAt(0).toUpperCase() + currentLayer.slice(1)}</strong>
             </div>
 
-            {!selectedRole ? (
-              <div className="role-selector-container">
-                <h2>Choose Marketplace Role</h2>
-                <p>Select the type of partner.</p>
-                <div className="role-selector">
-                  {["vendor", "mentor", "institution", "distributor"].map((role) => (
-                    <div className="role-option" key={role} onClick={() => setSelectedRole(role)}>
-                      <h4>{role.charAt(0).toUpperCase() + role.slice(1)}</h4>
-                    </div>
-                  ))}
-                </div>
-                <div className="modal-footer">
-                  <button className="btn-outline" onClick={closeMarketplace}>Cancel</button>
-                </div>
-              </div>
-            ) : (
-              <div className="marketplace-form">
-                <h3>Marketplace Listing</h3>
+            <div className="marketplace-form">
+              <h3>Marketplace Listing</h3>
 
-                <div className="form-section">
-                  <h4>Basic Information</h4>
+              <div className="form-section">
+                <h4>Basic Information</h4>
 
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Name *</label>
-                      <input
-                        type="text"
-                        placeholder="e.g., edutechex"
-                        value={marketForm.name}
-                        onChange={(e) => setMarketForm((f) => ({ ...f, name: e.target.value }))}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Access</label>
-                      <select
-                        value={marketForm.access}
-                        onChange={(e) => setMarketForm((f) => ({ ...f, access: e.target.value }))}
-                      >
-                        <option>Free</option>
-                        <option>Covered under Subscription</option>
-                        <option>Paid</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Cost</label>
-                      <input
-                        type="text"
-                        placeholder="e.g., Rs. 100, $50"
-                        value={marketForm.cost}
-                        onChange={(e) => setMarketForm((f) => ({ ...f, cost: e.target.value }))}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Goal</label>
-                      <input
-                        type="text"
-                        placeholder="e.g., Assessment, Counselling"
-                        value={marketForm.goal}
-                        onChange={(e) => setMarketForm((f) => ({ ...f, goal: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Outcomes</label>
-                      <input
-                        type="text"
-                        placeholder="e.g., Defined Metrics, 80%"
-                        value={marketForm.outcomes}
-                        onChange={(e) => setMarketForm((f) => ({ ...f, outcomes: e.target.value }))}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Iterations</label>
-                      <input
-                        type="text"
-                        placeholder="e.g., 3 - Unlimited"
-                        value={marketForm.iterations}
-                        onChange={(e) => setMarketForm((f) => ({ ...f, iterations: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Duration</label>
-                      <div className="duration-input-group">
-                        <input
-                          type="number" placeholder="Days" min="0"
-                          className="duration-small-input"
-                          value={marketForm.durationDays}
-                          onChange={(e) => setMarketForm((f) => ({ ...f, durationDays: e.target.value }))}
-                        />
-                        <input
-                          type="number" placeholder="Hours" min="0" max="23"
-                          className="duration-small-input"
-                          value={marketForm.durationHours}
-                          onChange={(e) => setMarketForm((f) => ({ ...f, durationHours: e.target.value }))}
-                        />
-                        <input
-                          type="number" placeholder="Minutes" min="0" max="59"
-                          className="duration-small-input"
-                          value={marketForm.durationMinutes}
-                          onChange={(e) => setMarketForm((f) => ({ ...f, durationMinutes: e.target.value }))}
-                        />
-                      </div>
-                    </div>
-                    <div className="form-group">
-                      <label>Discount</label>
-                      <input
-                        type="text"
-                        placeholder="e.g., 10%"
-                        value={marketForm.discount}
-                        onChange={(e) => setMarketForm((f) => ({ ...f, discount: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Features / Description</label>
-                    <textarea
-                      rows="2"
-                      placeholder="Provide course features, USP, credentials..."
-                      value={marketForm.features}
-                      onChange={(e) => setMarketForm((f) => ({ ...f, features: e.target.value }))}
-                    />
-                  </div>
-                </div>
-
-                <div className="modal-footer">
-                  <button className="btn-outline" onClick={() => setSelectedRole(null)}>Back</button>
-                  <button
-                    className="btn-primary"
-                    onClick={addMarketplaceItem}
-                    disabled={!marketForm.name.trim()}
+                <div className="form-group">
+                  <label>Marketplace Role *</label>
+                  <select
+                    value={selectedRole}
+                    onChange={(e) => setSelectedRole(e.target.value)}
                   >
-                    Add to Step
-                  </button>
+                    <option value="">Select Role</option>
+                    <option value="vendor">Vendor</option>
+                    <option value="mentor">Mentor</option>
+                    <option value="institution">Institution</option>
+                    <option value="distributor">Distributor</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Name *</label>
+                  <input
+                    type="text"
+                    placeholder="Marketplace Name"
+                    value={marketForm.name}
+                    onChange={(e) => setMarketForm((f) => ({ ...f, name: e.target.value }))}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Access</label>
+                  <select
+                    value={marketForm.access}
+                    onChange={(e) => setMarketForm((f) => ({ ...f, access: e.target.value }))}
+                  >
+                    <option value="Free">Free</option>
+                    <option value="Covered under Subscription">Covered under Subscription</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Not Applicable">Not Applicable</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Cost</label>
+                  <select
+                    value={marketForm.cost}
+                    onChange={(e) => setMarketForm((f) => ({ ...f, cost: e.target.value }))}
+                  >
+                    <option value="">Select</option>
+                    <option value="Free">Free</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Not Applicable">Not Applicable</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Goal</label>
+                  <input
+                    type="text"
+                    placeholder="Goal"
+                    value={marketForm.goal}
+                    onChange={(e) => setMarketForm((f) => ({ ...f, goal: e.target.value }))}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Outcomes</label>
+                  <input
+                    type="text"
+                    placeholder="Outcome metrics"
+                    value={marketForm.outcomes}
+                    onChange={(e) => setMarketForm((f) => ({ ...f, outcomes: e.target.value }))}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Iterations</label>
+                  <select
+                    value={marketForm.iterations}
+                    onChange={(e) => setMarketForm((f) => ({ ...f, iterations: e.target.value }))}
+                  >
+                    <option value="">Select</option>
+                    <option value="1">1</option>
+                    <option value="3">3</option>
+                    <option value="Unlimited">Unlimited</option>
+                    <option value="Not Applicable">Not Applicable</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Duration</label>
+                  <select
+                    value={marketForm.durationDays}
+                    onChange={(e) => setMarketForm((f) => ({ ...f, durationDays: e.target.value }))}
+                  >
+                    <option value="">Select Duration</option>
+                    <option value="1 Day">1 Day</option>
+                    <option value="1 Week">1 Week</option>
+                    <option value="1 Month">1 Month</option>
+                    <option value="Not Applicable">Not Applicable</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Discount</label>
+                  <select
+                    value={marketForm.discount}
+                    onChange={(e) => setMarketForm((f) => ({ ...f, discount: e.target.value }))}
+                  >
+                    <option value="">Select</option>
+                    <option value="0%">0%</option>
+                    <option value="10%">10%</option>
+                    <option value="20%">20%</option>
+                    <option value="Not Applicable">Not Applicable</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Features / Description</label>
+                  <textarea
+                    rows="2"
+                    placeholder="Features or description"
+                    value={marketForm.features}
+                    onChange={(e) => setMarketForm((f) => ({ ...f, features: e.target.value }))}
+                  />
                 </div>
               </div>
-            )}
+
+              <div className="modal-footer">
+                <button className="btn-outline" onClick={closeMarketplace}>
+                  Cancel
+                </button>
+                <button
+                  className="btn-primary"
+                  onClick={addMarketplaceItem}
+                  disabled={!marketForm.name || !selectedRole}
+                >
+                  Add to Step
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

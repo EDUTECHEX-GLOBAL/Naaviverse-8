@@ -3,6 +3,7 @@ import axios from "axios";
 import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
 import "./accDashboard.scss";
+import Marketplace from "./Marketplace";// Adjust the path as needed
 import DraftPathView from "../DraftPathView";
 import { Outlet } from "react-router-dom";
 import searchic from "../../static/images/dashboard/searchic.svg";
@@ -154,6 +155,7 @@ const AccDashboard = () => {
   const [showStepCountModal, setShowStepCountModal] = useState(false);
   const [showCreateStepModal, setShowCreateStepModal] = useState(false);
   const [createStepForPathId, setCreateStepForPathId] = useState(null);
+const [selectedRole, setSelectedRole] = useState('all');
 
   const isViewPathRoute =
     location.pathname.startsWith("/dashboard/accountants/path/");
@@ -1710,71 +1712,76 @@ const AccDashboard = () => {
           <div className="dashboard-screens"> {/* ← Content area */}
             <div style={{ height: "100%" }}>
               {viewPathMode ? (
-                createStepForPathId ? (
-                  // FULL CONTENT: Create Step view
-                  <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
-                    <div style={{
-                      padding: "0 35px",
-                      height: "60px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      borderBottom: "0.5px solid #E5E5E5",
-                      background: "#fff",
-                      flexShrink: 0
-                    }}>
-                      <div style={{
-                        padding: "10px 30px",
-                        borderRadius: "35px",
-                        fontWeight: "700",
-                        fontSize: "15px",
-                        background: "rgba(241,241,241,0.5)"
-                      }}>
-                        Create New Step
-                      </div>
-                      <div
-                        style={{
-                          fontWeight: "600",
-                          textDecorationLine: "underline",
-                          cursor: "pointer",
-                          fontSize: "0.9rem",
-                          paddingRight: "35px"
-                        }}
-                        onClick={() => setCreateStepForPathId(null)}
-                      >
-                        ← Back to Path
-                      </div>
-                    </div>
-                    <div style={{ flex: 1, overflowY: "auto", background: "#fff", minHeight: 0 }}>
-                      <CreateNewStep
-                        inlineMode={true}
-                        pathId={createStepForPathId}
-                        onSuccess={() => setCreateStepForPathId(null)}
-                        onCancel={() => setCreateStepForPathId(null)}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  // FULL CONTENT: Path Details view - REMOVED THE EMPTY services-all-menu DIV
-                  <>
-                    <MenuNav
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchTerm={search}
-                      setSearchterm={setSearch}
-                      searchPlaceholder="Search Path..."
-                    />
-                    <div
-                      className="services-main"
-                      style={{ height: "calc(100% - 70px)" }}
-                      onClick={() => setShowDrop(false)}
-                    >
-                      {/* REMOVED THE EMPTY services-all-menu DIV COMPLETELY */}
-                      <DraftPathView onAddStep={(pathId) => setCreateStepForPathId(pathId)} />
-                    </div>
-                  </>
-                )
-              ) : accsideNav === "CREATE_PATH" ? (
+  createStepForPathId ? (
+    // FULL CONTENT: Create Step view
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
+      <div style={{
+        padding: "0 35px",
+        height: "60px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        borderBottom: "0.5px solid #E5E5E5",
+        background: "#fff",
+        flexShrink: 0
+      }}>
+        <div style={{
+          padding: "10px 30px",
+          borderRadius: "35px",
+          fontWeight: "700",
+          fontSize: "15px",
+          background: "rgba(241,241,241,0.5)"
+        }}>
+          Create New Step
+        </div>
+        <div
+          style={{
+            fontWeight: "600",
+            textDecorationLine: "underline",
+            cursor: "pointer",
+            fontSize: "0.9rem",
+            paddingRight: "35px"
+          }}
+          onClick={() => setCreateStepForPathId(null)}
+        >
+          ← Back to Path
+        </div>
+      </div>
+      <div style={{ flex: 1, overflowY: "auto", background: "#fff", minHeight: 0 }}>
+        <CreateNewStep
+          inlineMode={true}
+          pathId={createStepForPathId}
+          onSuccess={() => setCreateStepForPathId(null)}
+          onCancel={() => setCreateStepForPathId(null)}
+        />
+      </div>
+    </div>
+  ) : (
+    // FULL CONTENT: Path Details view - REMOVED THE EMPTY services-all-menu DIV
+    <>
+      <MenuNav
+        showDrop={showDrop}
+        setShowDrop={setShowDrop}
+        searchTerm={search}
+        setSearchterm={setSearch}
+        searchPlaceholder="Search Path..."
+      />
+     <div 
+  className="services-main" 
+  onClick={() => setShowDrop(false)}
+  style={{ 
+    height: "calc(100% - 70px)", 
+    overflowY: "auto", 
+    display: "block",
+    background: "#f5f7fa"
+  }}
+>
+        {/* REMOVED THE EMPTY services-all-menu DIV COMPLETELY */}
+        <DraftPathView onAddStep={(pathId) => setCreateStepForPathId(pathId)} />
+      </div>
+    </>
+  )
+) : accsideNav === "CREATE_PATH" ? (
                 // SHOW CREATE NEW PATH AS FULL PAGE - WITHOUT THE HEADER TABS
                 <div style={{
                   display: "flex",
@@ -2423,267 +2430,65 @@ const AccDashboard = () => {
                   </div>
                 </>
 
-              ) : accsideNav === "Marketplace" ? (
-                <>
-                  <MenuNav
-                    showDrop={showDrop}
-                    setShowDrop={setShowDrop}
-                    searchTerm={search}
-                    setSearchterm={setSearch}
-                    searchPlaceholder="Search Services..."
-                  />
-                  <div
-                    className="services-main"
-                    onClick={() => setShowDrop(false)}
-                  >
-                    <div
-                      className="services-all-menu"
-                      style={{ borderBottom: "0.5px solid #E5E5E5" }}
-                    >
-                      <div
-                        className="services-each-menu"
-                        style={{
-                          display: servicesMenu === "Services" ? "" : "none",
-                          background:
-                            servicesMenu === "Services"
-                              ? "rgba(241, 241, 241, 0.5)"
-                              : "",
-                          fontWeight: servicesMenu === "Services" ? "700" : "",
-                        }}
-                        onClick={() => {
-                          setservicesMenu("Services");
-                          setSearch("");
-                        }}
-                      >
-                        {/* Services (<span>{servicesAcc.length}</span>) */}
-                      </div>
-                      <div
-                        className="services-each-menu"
-                        style={{
-                          display: servicesMenu !== "Services" ? "" : "none",
-                        }}
-                        onClick={() => {
-                          setservicesMenu("Services");
-                          setSearch("");
-                        }}
-                      >
-                        Services
-                      </div>
-                    </div>
-                    <div>
-                      <>
-                        {servicesMenu === "Services" ? (
-                          <>
-                            <div
-                              className="crm-follow-tab"
-                              style={{ padding: "10px 35px" }}
-                            >
-                              <div className="crm-follow-col2">Name</div>
-                              <div className="crm-follow-col2">
-                                Billing Frequency
-                              </div>
-                              <div className="crm-follow-col2">
-                                Billing Amount
-                              </div>
-                              <div className="crm-follow-col2">
-                                Currency
-                              </div>
-                            </div>
+    ) : accsideNav === "Marketplace" ? (
+  <>
+    <MenuNav
+      showDrop={showDrop}
+      setShowDrop={setShowDrop}
+      searchTerm={search}
+      setSearchterm={setSearch}
+      searchPlaceholder="Search marketplace items by name, role, description..."
+    />
+    <div 
+      className="services-main" 
+      onClick={() => setShowDrop(false)}
+      style={{ 
+        height: "calc(100% - 70px)", 
+        overflowY: "auto", 
+        display: "block" 
+      }}
+    >
+      {/* Role Filter Tabs */}
+      <div className="role-tabs">
+        <button 
+          className={`role-tab ${selectedRole === 'all' ? 'active' : ''}`}
+          onClick={() => setSelectedRole('all')}
+        >
+          All
+        </button>
+        <button 
+          className={`role-tab ${selectedRole === 'vendor' ? 'active' : ''}`}
+          onClick={() => setSelectedRole('vendor')}
+        >
+          Vendor
+        </button>
+        <button 
+          className={`role-tab ${selectedRole === 'mentor' ? 'active' : ''}`}
+          onClick={() => setSelectedRole('mentor')}
+        >
+          Mentor
+        </button>
+        <button 
+          className={`role-tab ${selectedRole === 'institution' ? 'active' : ''}`}
+          onClick={() => setSelectedRole('institution')}
+        >
+          Institution
+        </button>
+        <button 
+          className={`role-tab ${selectedRole === 'distributor' ? 'active' : ''}`}
+          onClick={() => setSelectedRole('distributor')}
+        >
+          Distributor
+        </button>
+      </div>
 
-                            {/* Add style to enable scrolling */}
-                            <div className="services-table-wrapper" style={{
-                              maxHeight: "calc(100vh - 200px)", // Adjust this value as needed
-                              overflowY: "auto"
-                            }}>
-                              {servicesAcc.length > 0 ? (
-                                <div className="services-list">
-                                  {servicesAcc
-                                    .filter(each =>
-                                      each?.name?.toLowerCase().includes(search.toLowerCase())
-                                    )
-                                    .map((each) => {
-                                      const billing = getBillingInfo(each?.billing_cycle);
-
-                                      return (
-                                        <div
-                                          key={each._id}   // ✅ FIXED
-                                          className={`service-row ${selectedFollower === each ? "active" : ""
-                                            }`}
-                                          onClick={() => {
-                                            setServiceActionEnabled(true);
-                                            setSelectedService(each);
-                                            setServiceActionStep(1);
-                                            setSelectedFollower(each);
-                                          }}
-                                        >
-                                          <div className="service-cell name">{each?.name}</div>
-                                          <div className="service-cell">{billing.type}</div>
-                                          <div className="service-cell">{billing.price}</div>
-                                          <div className="service-cell">{billing.coin}</div>
-                                        </div>
-                                      );
-                                    })}
-                                </div>
-                              ) : (
-                                <div className="services-empty">Coming Soon</div>
-                              )}
-
-                            </div>
-
-
-                          </>
-                        ) : (
-                          <div className="service-body">
-                            <div className="service-body-left">
-                              {gettingData ? (
-                                <>
-                                  {[1, 2, 3, 4, 5].map((each, i) => (
-                                    <div className="each-service-map" key={i}>
-                                      <div className="dot-box">
-                                        <img
-                                          className="dot-icon"
-                                          src={threedot}
-                                          alt=""
-                                        />
-                                      </div>
-                                      <div>
-                                        <Skeleton
-                                          className="each-service-img"
-                                          style={{ marginBottom: "10px" }}
-                                        />
-                                      </div>
-                                      <Skeleton
-                                        className="serv-price"
-                                        style={{
-                                          width: "100px",
-                                          marginBottom: "10px",
-                                        }}
-                                      />
-                                      <Skeleton
-                                        className="serv-subtext"
-                                        style={{
-                                          width: "200px",
-                                          height: "50px",
-                                        }}
-                                      />
-                                      <div>
-                                        <Skeleton
-                                          className="serv-price"
-                                          style={{ width: "100px" }}
-                                        />
-                                      </div>
-                                    </div>
-                                  ))}
-                                </>
-                              ) : withCompPlanData.length > 0 ? (
-                                <>
-                                  {withCompPlanData
-                                    ?.filter((item) =>
-                                      item?.product?.product_name
-                                        ?.toLowerCase()
-                                        ?.startsWith(search?.toLowerCase())
-                                    )
-                                    ?.map((each, i) => (
-                                      <div
-                                        className="each-service-map"
-                                        key={i}
-                                        style={{ height: "250px" }}
-                                      >
-                                        <div
-                                          className="dot-box"
-                                        >
-                                          <img
-                                            className="dot-icon"
-                                            src={threedot}
-                                            alt=""
-                                          />
-                                        </div>
-                                        <div>
-                                          <img
-                                            className="each-service-img"
-                                            src={each?.product?.product_icon}
-                                            alt=""
-                                          />
-                                        </div>
-                                        <div className="serv-title">
-                                          {each?.product?.product_name}
-                                        </div>
-                                        <div className="serv-subtext">
-                                          {each?.product?.sub_text}
-                                        </div>
-                                        <div>
-                                          {each?.product?.billing_cycle !==
-                                            undefined &&
-                                            each?.product?.billing_cycle !==
-                                            null &&
-                                            Object.keys(
-                                              each?.product?.billing_cycle
-                                            )[0] === "monthly" ? (
-                                            <div className="serv-price">
-                                              {
-                                                allCurrencies?.filter(
-                                                  (item) =>
-                                                    item?.coinSymbol ===
-                                                    each?.product?.billing_cycle
-                                                      ?.monthly.coin
-                                                )[0].symbol
-                                              }{" "}
-                                              {
-                                                each?.product?.billing_cycle
-                                                  ?.monthly?.price
-                                              }{" "}
-                                              /{" "}
-                                              <span
-                                                style={{ fontWeight: "300" }}
-                                              >
-                                                Monthly
-                                              </span>
-                                            </div>
-                                          ) : each?.product?.billing_cycle !==
-                                            undefined &&
-                                            each?.product?.billing_cycle !==
-                                            null &&
-                                            Object.keys(
-                                              each?.product?.billing_cycle
-                                            )[0] === "lifetime" ? (
-                                            <div className="serv-price">
-                                              {
-                                                allCurrencies?.filter(
-                                                  (item) =>
-                                                    item?.coinSymbol ===
-                                                    each?.product?.billing_cycle
-                                                      ?.lifetime.coin
-                                                )[0].symbol
-                                              }{" "}
-                                              {
-                                                each?.product?.billing_cycle
-                                                  ?.lifetime.price
-                                              }{" "}
-                                              /{" "}
-                                              <span
-                                                style={{ fontWeight: "300" }}
-                                              >
-                                                Lifetime
-                                              </span>
-                                            </div>
-                                          ) : (
-                                            ""
-                                          )}
-                                        </div>
-                                      </div>
-                                    ))}
-                                </>
-                              ) : (
-                                ""
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </>
-                    </div>
-                  </div>
-                </>
-              ) : accsideNav === "Calendar" ? (
+      {/* Marketplace Grid */}
+      <Marketplace search={search} selectedRole={selectedRole} />
+    </div>
+  </>
+              
+            
+            ) : accsideNav === "Calendar" ? (
                 <>
                   <MenuNav
                     showDrop={showDrop}
@@ -2836,13 +2641,13 @@ const AccDashboard = () => {
                       ? "Search For Paths..."
                       : "Search For Steps..."}
                   />
-                  <div
-                    className="services-main"
-                    style={{ height: "calc(100% - 70px)" }}
-                    onClick={() => setShowDrop(false)}
-                  >
-                    <MyPaths search={search} fetchAllServicesAgain={fetchAllServicesAgain} />
-                  </div>
+                 <div
+  className="services-main"
+  style={{ height: "calc(100% - 70px)", overflowY: "auto", display: "block" }}
+  onClick={() => setShowDrop(false)}
+>
+  <MyPaths search={search} fetchAllServicesAgain={fetchAllServicesAgain} />
+</div>
                 </>
               ) : accsideNav === "Steps" ? (
 
@@ -3665,6 +3470,379 @@ const AccDashboard = () => {
           </div>
         )}
       </>
+
+
+
+{/* Service Action Popup */}
+{serviceActionEnabled && (
+   <div 
+    className="acc-popular1"
+    style={{
+      background: "linear-gradient(135deg, #e8f4fd 0%, #fef9e7 100%)",
+      borderLeft: "4px solid #0d6b6e",
+      boxShadow: "-8px 0 32px rgba(13, 107, 110, 0.15)",
+      width: "520px",
+      position: "fixed",
+      top: 0,
+      right: 0,
+      height: "100vh",
+      zIndex: 999
+    }}
+  >
+   <div 
+  className="acc-popular-top1"
+  style={{
+    background: "rgba(13, 107, 110, 0.08)",
+    borderBottom: "1px solid rgba(13, 107, 110, 0.2)",
+    padding: "20px 25px"
+  }}
+>
+  <div className="acc-popular-head1">
+        {serviceActionStep === 1 && "Service Actions"}
+        {serviceActionStep === 2 && "Edit Service"}
+        {serviceActionStep === 3 && "Delete Service"}
+        {serviceActionStep === 4 && "Service Details"}
+        {serviceActionStep === 5 && "Change Icon"}
+        {serviceActionStep === 6 && "Success"}
+      </div>
+      <div
+        className="acc-popular-img-box1"
+        style={{ cursor: "pointer" }}
+        onClick={() => {
+          setServiceActionEnabled(false);
+          setServiceActionStep(1);
+          setSelectedService({});
+        }}
+      >
+        <img className="acc-popular-img1" src={closepop} alt="" />
+      </div>
+    </div>
+
+<div className="acc-mt-div" style={{ overflowY: "auto", height: "calc(100vh - 80px)", paddingBottom: "30px" }}>      {serviceActionStep === 1 && (
+        <div className="acc-scroll-div">
+          <div
+            className="acc-step-box4"
+            onClick={() => setServiceActionStep(4)}
+          >
+            View Details
+          </div>
+          <div
+            className="acc-step-box4"
+            onClick={() => setServiceActionStep(2)}
+          >
+            Edit Service
+          </div>
+          <div
+            className="acc-step-box4"
+            onClick={() => setServiceActionStep(5)}
+          >
+            Change Icon
+          </div>
+          <div
+            className="acc-step-box4"
+            onClick={() => setServiceActionStep(3)}
+          >
+            Delete Service
+          </div>
+          <div className="goBack3" onClick={() => setServiceActionEnabled(false)}>
+            Cancel
+          </div>
+        </div>
+      )}
+
+      {/* Step 2: Edit Service */}
+      {serviceActionStep === 2 && (
+        <div>
+          <div className="acc-sub-text">Edit Service: {selectedService?.name}</div>
+          <div className="acc-scroll-div">
+            <div className="acc-step-box4" style={{ height: "auto", padding: "1rem" }}>
+              <input
+                type="text"
+                placeholder="Service Name"
+                value={selectedService?.name || ''}
+                onChange={(e) => setSelectedService({...selectedService, name: e.target.value})}
+                style={{ width: "100%", border: "none", outline: "none" }}
+              />
+            </div>
+            <div className="acc-step-box4" style={{ height: "auto", padding: "1rem" }}>
+              <textarea
+                placeholder="Description"
+                value={selectedService?.description || ''}
+                onChange={(e) => setSelectedService({...selectedService, description: e.target.value})}
+                style={{ width: "100%", border: "none", outline: "none", minHeight: "100px" }}
+              />
+            </div>
+            <div className="acc-step-box4" onClick={() => {/* Save logic */}}>
+              Save Changes
+            </div>
+          </div>
+          <div className="goBack3" onClick={() => setServiceActionStep(1)}>
+            Go Back
+          </div>
+        </div>
+      )}
+
+      {/* Step 3: Delete Confirmation */}
+      {serviceActionStep === 3 && (
+        <div>
+          <div className="acc-sub-text">
+            Are you sure you want to delete "{selectedService?.name}"?
+          </div>
+          <div className="acc-scroll-div">
+            <div className="acc-step-box4" onClick={deleteService}>
+              Yes, Delete
+            </div>
+          </div>
+          <div className="goBack3" onClick={() => setServiceActionStep(1)}>
+            Cancel
+          </div>
+        </div>
+      )}
+
+     {serviceActionStep === 4 && (
+  <div className="service-details-modal" style={{ paddingBottom: "80px" }}>
+    
+    {/* Service Name */}
+    <div className="detail-section">
+      <h4>Service Name</h4>
+      <p className="service-name-large">
+        {selectedService?.name || 'Unnamed Service'}
+      </p>
+    </div>
+
+    {/* Description */}
+    <div className="detail-section">
+      <h4>Description</h4>
+      <p>{selectedService?.description || selectedService?.sub_text || 'No description provided.'}</p>
+    </div>
+
+    {/* Path & Step Association */}
+    <div className="detail-section">
+      <h4>Path & Step Association</h4>
+      <div className="detail-grid">
+        {selectedService?.path_id ? (
+          <div className="detail-item">
+            <div className="label">Path ID</div>
+            <div className="value">{selectedService.path_id}</div>
+          </div>
+        ) : (
+          <div className="detail-item">
+            <div className="label">Path</div>
+            <div className="value">Not linked to any path</div>
+          </div>
+        )}
+        {selectedService?.step_id ? (
+          <div className="detail-item">
+            <div className="label">Step ID</div>
+            <div className="value">{selectedService.step_id}</div>
+          </div>
+        ) : (
+          <div className="detail-item">
+            <div className="label">Step</div>
+            <div className="value">Not linked to any step</div>
+          </div>
+        )}
+        {selectedService?.macro_name && (
+          <div className="detail-item">
+            <div className="label">Macro</div>
+            <div className="value">{selectedService.macro_name}</div>
+          </div>
+        )}
+        {selectedService?.micro_name && (
+          <div className="detail-item">
+            <div className="label">Micro</div>
+            <div className="value">{selectedService.micro_name}</div>
+          </div>
+        )}
+        {selectedService?.nano_name && (
+          <div className="detail-item">
+            <div className="label">Nano</div>
+            <div className="value">{selectedService.nano_name}</div>
+          </div>
+        )}
+      </div>
+    </div>
+    
+    {/* Billing Details */}
+    <div className="detail-section">
+      <h4>Billing Information</h4>
+      <div className="detail-grid">
+        <div className="detail-item">
+          <div className="label">Billing Type</div>
+          <div className="value">
+            {getBillingInfo(selectedService?.billing_cycle).type}
+          </div>
+        </div>
+        <div className="detail-item">
+          <div className="label">Price</div>
+          <div className="value">
+            {getBillingInfo(selectedService?.billing_cycle).price === '-' 
+              ? '0' 
+              : getBillingInfo(selectedService?.billing_cycle).price}{' '}
+            {getBillingInfo(selectedService?.billing_cycle).coin}
+          </div>
+        </div>
+        <div className="detail-item">
+          <div className="label">Service Code</div>
+          <div className="value">
+            {selectedService?.product_code || '-'}
+          </div>
+        </div>
+        <div className="detail-item">
+          <div className="label">Product Label</div>
+          <div className="value">
+            {selectedService?.custom_product_label || '-'}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    {/* Additional Info */}
+    <div className="detail-section">
+      <h4>Additional Information</h4>
+      <div className="detail-grid">
+        {selectedService?.goal && (
+          <div className="detail-item">
+            <div className="label">Goal</div>
+            <div className="value">{selectedService.goal}</div>
+          </div>
+        )}
+        {selectedService?.duration && (
+          <div className="detail-item">
+            <div className="label">Duration</div>
+            <div className="value">{selectedService.duration}</div>
+          </div>
+        )}
+        {selectedService?.outcomes && (
+          <div className="detail-item">
+            <div className="label">Outcomes</div>
+            <div className="value">{selectedService.outcomes}</div>
+          </div>
+        )}
+        {selectedService?.iterations && (
+          <div className="detail-item">
+            <div className="label">Iterations</div>
+            <div className="value">{selectedService.iterations}</div>
+          </div>
+        )}
+      </div>
+    </div>
+    
+    {/* Features */}
+    <div className="detail-section">
+      <h4>Features</h4>
+      <p>
+        {selectedService?.features || 
+         selectedService?.description || 
+         'No features listed.'}
+      </p>
+    </div>
+    
+    {/* Metadata */}
+    <div className="detail-section">
+      <h4>Metadata</h4>
+      <div className="detail-grid">
+        <div className="detail-item">
+          <div className="label">Created</div>
+          <div className="value">
+            {selectedService?.createdAt 
+              ? new Date(selectedService.createdAt).toLocaleDateString() 
+              : '-'}
+          </div>
+        </div>
+        <div className="detail-item">
+          <div className="label">Last Updated</div>
+          <div className="value">
+            {selectedService?.updatedAt 
+              ? new Date(selectedService.updatedAt).toLocaleDateString() 
+              : '-'}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    {/* Close button - inline not fixed */}
+    <div 
+      style={{
+        padding: "15px 0",
+        display: "flex",
+        justifyContent: "center"
+      }}
+    >
+      <button
+        onClick={() => setServiceActionStep(1)}
+        style={{
+          width: "100%",
+          height: "50px",
+          background: "#e2edf5",
+          border: "none",
+          borderRadius: "35px",
+          fontWeight: "600",
+          fontSize: "15px",
+          cursor: "pointer",
+          color: "#1f304f"
+        }}
+      >
+        ← Back
+      </button>
+    </div>
+  </div>
+)}
+
+      {/* Step 5: Change Icon */}
+      {serviceActionStep === 5 && (
+        <div>
+          <div className="acc-sub-text">Upload New Icon</div>
+          <div className="acc-upload-imgbox" style={{ margin: "20px auto", width: "120px", height: "120px" }}>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  const uploadedUrl = await uploadImageFunc(e, setUpdatedIcon, setIsloading);
+                  if (uploadedUrl) {
+                    setUpdatedIcon(uploadedUrl);
+                  }
+                }
+              }}
+              style={{ display: "none" }}
+              id="icon-upload"
+            />
+            <label htmlFor="icon-upload" style={{ cursor: "pointer", width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <img
+                className="acc-upload-img"
+                src={updatedIcon || selectedService?.product_icon || uploadv}
+                alt=""
+                style={{ width: "80px", height: "80px", objectFit: "cover" }}
+              />
+            </label>
+          </div>
+          <div className="acc-scroll-div">
+            <div className="acc-step-box4" onClick={changeServiceIcon}>
+              Save Icon
+            </div>
+          </div>
+          <div className="goBack3" onClick={() => setServiceActionStep(1)}>
+            Cancel
+          </div>
+        </div>
+      )}
+
+      {/* Step 6: Success Message */}
+      {serviceActionStep === 6 && (
+        <div className="success-box1">Action Completed Successfully!</div>
+      )}
+    </div>
+
+    {isloading && (
+      <div className="popularlogo">
+        <img className="popularlogoimg" src={lg1} alt="" />
+      </div>
+    )}
+  </div>
+)}
+
 
       {/* Keep all your other modal code (coinActionEnabled, serviceActionEnabled, addCompPlan) exactly as is */}
       {/* ... */}
