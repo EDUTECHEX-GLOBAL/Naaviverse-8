@@ -31,7 +31,7 @@ const sidebarMenu1 = [
   },
   {
     id: 3,
-    display: "My Services",
+    display: "Market Place",
     title: "My Services",
     click: true,
     path: "/dashboard/accountants/services",
@@ -115,13 +115,13 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar , admin}) 
         />
       </div>
       <div
-        style={{
-          overflowY: "scroll",
-          height: "75vh",
-          marginTop: "30px",
-          padding: "0 2vw",
-        }}
-      >
+  style={{
+    overflowY: "auto",  // ← CHANGE THIS
+    height: "75vh",
+    marginTop: "30px",
+    padding: "0 2vw",
+  }}
+>
         {/* <div
           style={{
             fontWeight: "600",

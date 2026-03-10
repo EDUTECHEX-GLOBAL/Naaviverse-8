@@ -2986,3 +2986,1117 @@ body:has(.step-popup-overlay) {
     }
   }
 }
+
+// ============================================
+// My Marketplace - Card Based Layout
+// ============================================
+
+// Role Filter Tabs
+.role-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 1rem 35px;
+  background: #f8fafd;
+  border-bottom: 1px solid #eef2f6;
+
+  .role-tab {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 40px;
+    padding: 0.5rem 1.2rem;
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: #4a5568;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+
+    .emoji {
+      font-size: 1rem;
+    }
+
+    &.active {
+      background: #0d6b6e;
+      border-color: #0d6b6e;
+      color: white;
+    }
+
+    &:hover {
+      background: #edf2f7;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// Services Grid
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.2rem;
+  padding: 1.5rem 35px;
+  background: #f5f9ff; // Light pastel background
+  min-height: calc(100vh - 250px);
+}
+
+// Service Card
+.service-card {
+  background: white;
+  border-radius: 20px;
+  border: 1px solid #e9f0f5;
+  padding: 1.2rem;
+  box-shadow: 0 4px 12px rgba(13, 107, 110, 0.05);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(13, 107, 110, 0.12);
+    border-color: #0d6b6e40;
+  }
+
+  &.selected {
+    border: 2px solid #0d6b6e;
+    box-shadow: 0 8px 20px rgba(13, 107, 110, 0.15);
+  }
+
+  // Card Header
+  .service-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid #edf2f7;
+
+    .service-title {
+      flex: 1;
+
+      h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #0a1c2a;
+        margin: 0 0 0.4rem 0;
+        line-height: 1.3;
+      }
+    }
+
+    .pricing {
+      background: #e6f3f4;
+      border-radius: 30px;
+      padding: 0.3rem 1rem;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #0d6b6e;
+      white-space: nowrap;
+      margin-left: 0.5rem;
+
+      small {
+        font-weight: 400;
+        font-size: 0.7rem;
+        color: #4b5e6b;
+        margin-left: 0.2rem;
+      }
+    }
+  }
+
+  // Role Badge
+  .role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+
+    &.vendor {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    &.mentor {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    &.institution {
+      background: #d9f99d;
+      color: #3f6212;
+    }
+
+    &.distributor {
+      background: #f1d7fa;
+      color: #6b21a8;
+    }
+  }
+
+  // Service Details
+  .service-details {
+    margin: 0.8rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .detail-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+
+      .detail-label {
+        font-weight: 600;
+        color: #2c3e50;
+        min-width: 60px;
+      }
+
+      .detail-value {
+        color: #1a2b3c;
+      }
+    }
+  }
+
+  // Features/Description
+  .features {
+    margin: 0.8rem 0 1rem 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #4a5568;
+    background: #f8fafd;
+    padding: 0.8rem;
+    border-radius: 12px;
+    border: 1px solid #e9f0f5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 60px;
+  }
+
+  // Card Footer
+  .service-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.8rem;
+    margin-top: 0.5rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid #edf2f7;
+  }
+}
+
+// Button Styles
+.btn-outline {
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 30px;
+  padding: 0.4rem 1.2rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+  color: #1f304f;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #f1f5f9;
+    border-color: #0d6b6e;
+    color: #0d6b6e;
+  }
+}
+
+.btn-primary {
+  background: #0d6b6e;
+  border: none;
+  border-radius: 30px;
+  padding: 0.4rem 1.2rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #0b5a5c;
+  }
+}
+
+// Add New Service Button
+.add-service-container {
+  padding: 1.5rem 35px 2rem 35px;
+  text-align: center;
+  background: #f5f9ff;
+
+  .add-service-btn {
+    background: white;
+    border: 2px dashed #0d6b6e;
+    color: #0d6b6e;
+    border-radius: 60px;
+    padding: 0.8rem 2.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #e6f3f4;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+// Empty State
+.services-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #718096;
+  font-size: 0.95rem;
+  background: white;
+  border-radius: 20px;
+  border: 1px dashed #cbd5e0;
+}
+
+// ============================================
+// Service Details Modal (Step 4)
+// ============================================
+.service-details-modal {
+  .detail-section {
+    margin-bottom: 1.5rem;
+    
+    h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #0a1c2a;
+      margin-bottom: 0.5rem;
+      border-left: 3px solid #0d6b6e;
+      padding-left: 0.8rem;
+    }
+    
+    p {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: #2d3e4f;
+      margin: 0;
+      white-space: pre-wrap;
+    }
+    
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      
+      .detail-item {
+        .label {
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: #4a5568;
+          margin-bottom: 0.2rem;
+        }
+        
+        .value {
+          font-size: 0.95rem;
+          color: #1a2b3c;
+        }
+      }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+    padding: 1rem 20px;
+    gap: 1rem;
+  }
+  
+  .role-tabs {
+    padding: 0.8rem 20px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    
+    .role-tab {
+      white-space: nowrap;
+    }
+  }
+  
+  .service-card {
+    padding: 1rem;
+  }
+}
+
+// ============================================
+// SERVICES PAGE - FIXED SCROLLING
+// ============================================
+
+.services-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: #f5f9ff;
+  width: 100%;
+}
+
+.services-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0;
+  background: #f5f9ff;
+}
+
+// Role Filter Tabs
+.role-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 1rem 35px;
+  background: #f8fafd;
+  border-bottom: 1px solid #eef2f6;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  .role-tab {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 40px;
+    padding: 0.5rem 1.2rem;
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: #4a5568;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+
+    .emoji {
+      font-size: 1rem;
+    }
+
+    &.active {
+      background: #0d6b6e;
+      border-color: #0d6b6e;
+      color: white;
+    }
+
+    &:hover {
+      background: #edf2f7;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// Services Grid Container
+.services-grid-container {
+  padding: 1.5rem 35px;
+  min-height: min-content;
+}
+
+// Services Grid
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.2rem;
+}
+
+// Service Card
+.service-card {
+  background: white;
+  border-radius: 20px;
+  border: 1px solid #e9f0f5;
+  padding: 1.2rem;
+  box-shadow: 0 4px 12px rgba(13, 107, 110, 0.05);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(13, 107, 110, 0.12);
+    border-color: #0d6b6e40;
+  }
+
+  &.selected {
+    border: 2px solid #0d6b6e;
+    box-shadow: 0 8px 20px rgba(13, 107, 110, 0.15);
+  }
+
+  .service-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid #edf2f7;
+
+    .service-title {
+      flex: 1;
+
+      h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #0a1c2a;
+        margin: 0 0 0.4rem 0;
+        line-height: 1.3;
+      }
+    }
+
+    .pricing {
+      background: #e6f3f4;
+      border-radius: 30px;
+      padding: 0.3rem 1rem;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #0d6b6e;
+      white-space: nowrap;
+      margin-left: 0.5rem;
+
+      small {
+        font-weight: 400;
+        font-size: 0.7rem;
+        color: #4b5e6b;
+        margin-left: 0.2rem;
+      }
+    }
+  }
+
+  .role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+
+    &.vendor {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    &.mentor {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    &.institution {
+      background: #d9f99d;
+      color: #3f6212;
+    }
+
+    &.distributor {
+      background: #f1d7fa;
+      color: #6b21a8;
+    }
+  }
+
+  .service-details {
+    margin: 0.8rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .detail-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+
+      .detail-label {
+        font-weight: 600;
+        color: #2c3e50;
+        min-width: 60px;
+      }
+
+      .detail-value {
+        color: #1a2b3c;
+      }
+    }
+  }
+
+  .features {
+    margin: 0.8rem 0 1rem 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #4a5568;
+    background: #f8fafd;
+    padding: 0.8rem;
+    border-radius: 12px;
+    border: 1px solid #e9f0f5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 60px;
+  }
+
+  .service-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.8rem;
+    margin-top: 0.5rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid #edf2f7;
+  }
+}
+
+// Add New Service Button
+.add-service-container {
+  padding: 1.5rem 35px 2.5rem 35px;
+  text-align: center;
+  background: #f5f9ff;
+
+  .add-service-btn {
+    background: white;
+    border: 2px dashed #0d6b6e;
+    color: #0d6b6e;
+    border-radius: 60px;
+    padding: 0.8rem 2.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #e6f3f4;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+// Empty State
+.services-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #718096;
+  font-size: 0.95rem;
+  background: white;
+  border-radius: 20px;
+  border: 1px dashed #cbd5e0;
+}
+
+// ============================================
+// SERVICE DETAILS MODAL - WITH SCROLLING
+// ============================================
+.service-details-modal {
+  padding: 0.5rem 0;
+  overflow-y: auto;
+  
+  .detail-section {
+    margin-bottom: 1.8rem;
+    
+    h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #0a1c2a;
+      margin-bottom: 0.8rem;
+      border-left: 3px solid #0d6b6e;
+      padding-left: 0.8rem;
+    }
+    
+    p {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #2d3e4f;
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .service-name-large {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #0a1c2a;
+      padding: 0.5rem 0;
+    }
+    
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      
+      .detail-item {
+        background: #f8fafd;
+        padding: 0.8rem 1rem;
+        border-radius: 12px;
+        border: 1px solid #e9f0f5;
+        
+        .label {
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: #4a5568;
+          margin-bottom: 0.3rem;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+        }
+        
+        .value {
+          font-size: 0.95rem;
+          font-weight: 500;
+          color: #1a2b3c;
+          word-break: break-word;
+        }
+      }
+    }
+  }
+}
+
+// Button Styles
+.btn-outline {
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 30px;
+  padding: 0.4rem 1.2rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+  color: #1f304f;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #f1f5f9;
+    border-color: #0d6b6e;
+    color: #0d6b6e;
+  }
+}
+
+.btn-primary {
+  background: #0d6b6e;
+  border: none;
+  border-radius: 30px;
+  padding: 0.4rem 1.2rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #0b5a5c;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .role-tabs {
+    padding: 0.8rem 20px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    
+    .role-tab {
+      white-space: nowrap;
+    }
+  }
+  
+  .services-grid-container {
+    padding: 1rem 20px;
+  }
+  
+  .add-service-container {
+    padding: 1rem 20px 2rem 20px;
+  }
+}
+
+// ============================================
+// MARKETPLACE - CLEAN MODERN DESIGN
+// ============================================
+
+.services-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafd;
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+.services-header {
+  padding: 1.5rem 2rem 0.5rem 2rem;
+  
+  h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #0a1c2a;
+    margin: 0;
+  }
+}
+
+// Role Filter Tabs
+.role-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 1rem 2rem;
+  background: #f8fafd;
+  border-bottom: 1px solid #eef2f6;
+
+  .role-tab {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 30px;
+    padding: 0.5rem 1.2rem;
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: #4a5568;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+
+    &.active {
+      background: #0d6b6e;
+      border-color: #0d6b6e;
+      color: white;
+    }
+
+    &:hover {
+      background: #edf2f7;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.marketplace-grid {
+  // REMOVE: flex: 1; overflow-y: auto; min-height: 0;
+  padding: 1.5rem 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.2rem;
+  align-content: start;
+  // NO overflow here - let the parent scroll
+}
+
+// Marketplace Card
+.marketplace-card {
+  background: white;
+  border-radius: 20px;
+  border: 1px solid #e9f0f5;
+  padding: 1.2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(13, 107, 110, 0.08);
+    border-color: #0d6b6e30;
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.8rem;
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #0a1c2a;
+      margin: 0;
+      line-height: 1.3;
+      flex: 1;
+    }
+
+    .price-tag {
+      background: #e6f3f4;
+      border-radius: 30px;
+      padding: 0.3rem 0.8rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #0d6b6e;
+      white-space: nowrap;
+      margin-left: 0.5rem;
+
+      .price-period {
+        font-weight: 400;
+        font-size: 0.7rem;
+        color: #4b5e6b;
+        margin-left: 0.2rem;
+      }
+    }
+  }
+
+  .card-badge {
+    margin-bottom: 1rem;
+
+    .role-badge {
+      display: inline-block;
+      padding: 0.2rem 0.8rem;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+
+      &.vendor {
+        background: #e0f2fe;
+        color: #0369a1;
+      }
+
+      &.mentor {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      &.institution {
+        background: #d9f99d;
+        color: #3f6212;
+      }
+
+      &.distributor {
+        background: #f1d7fa;
+        color: #6b21a8;
+      }
+    }
+  }
+
+  .card-details {
+    background: #f8fafd;
+    border-radius: 12px;
+    padding: 0.8rem;
+    margin-bottom: 1rem;
+    border: 1px solid #e9f0f5;
+
+    .detail-item {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      margin-bottom: 0.3rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .detail-label {
+        font-weight: 600;
+        color: #4a5568;
+        min-width: 60px;
+        font-size: 0.8rem;
+      }
+
+      span:last-child {
+        color: #1a2b3c;
+      }
+    }
+  }
+
+  .card-description {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #4a5568;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 60px;
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: auto;
+
+    .btn-view {
+      background: white;
+      border: 1px solid #0d6b6e;
+      border-radius: 30px;
+      padding: 0.3rem 1.2rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #0d6b6e;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        background: #0d6b6e;
+        color: white;
+      }
+    }
+  }
+}
+
+// Add Service Footer
+.add-service-footer {
+  padding: 1.5rem 2rem;
+  text-align: center;
+  background: #f8fafd;
+  border-top: 1px solid #eef2f6;
+
+  .add-service-btn {
+    background: white;
+    border: 2px dashed #0d6b6e;
+    color: #0d6b6e;
+    border-radius: 40px;
+    padding: 0.8rem 2.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #e6f3f4;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+// Empty State
+.empty-marketplace {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #718096;
+  font-size: 0.95rem;
+  background: white;
+  border-radius: 20px;
+  border: 1px dashed #cbd5e0;
+}
+
+// ============================================
+// SERVICE DETAILS MODAL
+// ============================================
+.service-details-modal {
+  padding: 0.5rem 0;
+  
+  .detail-section {
+    margin-bottom: 1.8rem;
+    
+    h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #0a1c2a;
+      margin-bottom: 0.8rem;
+      border-left: 3px solid #0d6b6e;
+      padding-left: 0.8rem;
+    }
+    
+    p {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #2d3e4f;
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .service-name-large {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #0a1c2a;
+      padding: 0.5rem 0;
+    }
+    
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      
+      .detail-item {
+        background: #f8fafd;
+        padding: 0.8rem 1rem;
+        border-radius: 12px;
+        border: 1px solid #e9f0f5;
+        
+        .label {
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: #4a5568;
+          margin-bottom: 0.3rem;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+        }
+        
+        .value {
+          font-size: 0.95rem;
+          font-weight: 500;
+          color: #1a2b3c;
+          word-break: break-word;
+        }
+      }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .marketplace-grid {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+  
+  .role-tabs {
+    padding: 1rem;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    
+    .role-tab {
+      white-space: nowrap;
+    }
+  }
+  
+  .services-header {
+    padding: 1rem 1rem 0.5rem 1rem;
+    
+    h1 {
+      font-size: 1.5rem;
+    }
+  }
+  
+  .add-service-footer {
+    padding: 1rem;
+  }
+}
+
+.role-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #e5eaf0;
+  background: white;
+
+  .role-tab {
+    padding: 0.5rem 1.2rem;
+    border-radius: 30px;
+    border: 1px solid #d3deed;
+    background: white;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #617388;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #f0f2f5;
+    }
+
+    &.active {
+      background: #0d6b6e;
+      color: white;
+      border-color: #0d6b6e;
+    }
+  }
+}

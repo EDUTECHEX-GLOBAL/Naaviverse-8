@@ -17,7 +17,6 @@ const addStep = async (req, res) => {
       });
     }
 
-    // 🔐 Validate path exists
     const existingPath = await pathModel.findById(pathId);
     if (!existingPath) {
       return res.json({
@@ -26,56 +25,57 @@ const addStep = async (req, res) => {
       });
     }
 
- const createStep = {
-  email: req.body.email,
-  name: req.body.name,
-  description: req.body.description,
-  length: req.body.length,
-  cost: req.body.cost,
+    const createStep = {
+      email: req.body.email,
+      name: req.body.name,
+      description: req.body.description,
+      length: req.body.length,
+      cost: req.body.cost,
 
-  gradeData: req.body.gradeData || [],
-  curriculumData: req.body.curriculumData || [],
-  financialData: req.body.financialData || [],
-  streamData: req.body.streamData || [],
-  gradePointAverageData: req.body.gradePointAverageData || [],
-  personalityData: req.body.personalityData || [],
+      gradeData: req.body.gradeData || [],
+      curriculumData: req.body.curriculumData || [],
+      financialData: req.body.financialData || [],
+      streamData: req.body.streamData || [],
+      gradePointAverageData: req.body.gradePointAverageData || [],
+      personalityData: req.body.personalityData || [],
 
-  // MICRO
-  micro_description: req.body.micro_description,
-  micro_name: req.body.micro_name,
-  micro_length: req.body.micro_length,
-  micro_access: req.body.micro_access,
-  micro_instructions: req.body.micro_instructions,
-  micro_chances: req.body.micro_chances,
-  microservices: req.body.microservices || [],
+      // MICRO
+      micro_description: req.body.micro_description,
+      micro_name: req.body.micro_name,
+      micro_length: req.body.micro_length,
+      micro_access: req.body.micro_access,
+      micro_instructions: req.body.micro_instructions,
+      micro_chances: req.body.micro_chances,
+      microservices: req.body.microservices || [],
+      micro_marketplace: req.body.micro_marketplace || [], // ✅ ADDED
 
-  // MACRO
-  macro_description: req.body.macro_description,
-  macro_name: req.body.macro_name,
-  macro_length: req.body.macro_length,
-  macro_access: req.body.macro_access,
-  macro_instructions: req.body.macro_instructions,
-  macro_chances: req.body.macro_chances,
-  macroservices: req.body.macroservices || [],
+      // MACRO
+      macro_description: req.body.macro_description,
+      macro_name: req.body.macro_name,
+      macro_length: req.body.macro_length,
+      macro_access: req.body.macro_access,
+      macro_instructions: req.body.macro_instructions,
+      macro_chances: req.body.macro_chances,
+      macroservices: req.body.macroservices || [],
+      macro_marketplace: req.body.macro_marketplace || [], // ✅ ADDED
 
-  // NANO
-  nano_description: req.body.nano_description,
-  nano_name: req.body.nano_name,
-  nano_length: req.body.nano_length,
-  nano_access: req.body.nano_access,
-  nano_instructions: req.body.nano_instructions,
-  nano_chances: req.body.nano_chances,
-  nanoservices: req.body.nanoservices || [],
+      // NANO
+      nano_description: req.body.nano_description,
+      nano_name: req.body.nano_name,
+      nano_length: req.body.nano_length,
+      nano_access: req.body.nano_access,
+      nano_instructions: req.body.nano_instructions,
+      nano_chances: req.body.nano_chances,
+      nanoservices: req.body.nanoservices || [],
+      nano_marketplace: req.body.nano_marketplace || [], // ✅ ADDED
 
-  step_order: req.body.step_order,
-  path_id: pathId,
-  status: req.body.status || "active",
-};
+      step_order: req.body.step_order,
+      path_id: pathId,
+      status: req.body.status || "active",
+    };
 
-    // 1️⃣ Create step
     const step = await stepModel.create(createStep);
 
-    // 2️⃣ 🔥 LINK STEP TO PATH
     await pathModel.findByIdAndUpdate(
       pathId,
       {
@@ -104,7 +104,6 @@ const addStep = async (req, res) => {
 };
 
 
-
 const getSteps = async (req, res) => {
   try {
     let filter = {};
@@ -122,7 +121,6 @@ const getSteps = async (req, res) => {
       filter.status = "active";
     }
 
-    // ✅ CRITICAL FIX: populate services
     const steps = await stepModel
       .find(filter)
       .populate({
@@ -145,25 +143,29 @@ const getSteps = async (req, res) => {
 };
 
 
-
 const updateStep = async (req, res) => {
   try {
-    // Always build updateData with all provided fields
-    // Use explicit mapping instead of if(truthy) to avoid skipping "free", "0", ""
     const updateData = {};
 
+    // ✅ FIXED: Added macro_marketplace, micro_marketplace, nano_marketplace
+    // These were missing — that's why marketplace items were never persisted to MongoDB
     const fields = [
       'name', 'description', 'length', 'cost', 'step_order', 'status',
+
       'macro_name', 'macro_description', 'macro_length', 'macro_access',
       'macro_instructions', 'macro_chances', 'macroservices',
+      'macro_marketplace', // ✅ ADDED
+
       'micro_name', 'micro_description', 'micro_length', 'micro_access',
       'micro_instructions', 'micro_chances', 'microservices',
+      'micro_marketplace', // ✅ ADDED
+
       'nano_name', 'nano_description', 'nano_length', 'nano_access',
       'nano_instructions', 'nano_chances', 'nanoservices',
+      'nano_marketplace',  // ✅ ADDED
     ];
 
     fields.forEach((field) => {
-      // ✅ Use hasOwnProperty — saves even if value is "", 0, false, or "free"
       if (Object.prototype.hasOwnProperty.call(req.body, field)) {
         updateData[field] = req.body[field];
       }
@@ -218,7 +220,6 @@ const detachStepFromPath = async (req, res) => {
 
     const pathId = step.path_id;
 
-    // 1️⃣ Remove from path.the_ids
     await pathModel.findByIdAndUpdate(
       pathId,
       {
@@ -226,7 +227,6 @@ const detachStepFromPath = async (req, res) => {
       }
     );
 
-    // 2️⃣ Detach path_id
     step.path_id = null;
     await step.save();
 
@@ -246,9 +246,8 @@ const detachStepFromPath = async (req, res) => {
 
 const deleteStep = async (req, res) => {
     try {
-        const stepId = req.params.id; // Extract the step ID from request parameters
+        const stepId = req.params.id;
 
-        // Check if the step exists in the database
         const step = await stepModel.findById(stepId);
 
         if (!step) {
@@ -259,10 +258,9 @@ const deleteStep = async (req, res) => {
         }
 
         if (step.status === "active") {
-            // Soft delete for active steps (move to inactive)
             const updatedStep = await stepModel.findByIdAndUpdate(
                 stepId,
-                { status: "inactive" }, // Change status to inactive
+                { status: "inactive" },
                 { new: true }
             );
             return res.status(200).json({
@@ -271,7 +269,6 @@ const deleteStep = async (req, res) => {
                 data: updatedStep,
             });
         } else if (step.status === "inactive") {
-            // Permanently delete steps already marked as inactive
             const deletedStep = await stepModel.findByIdAndDelete(stepId);
             return res.status(200).json({
                 status: true,
@@ -279,7 +276,6 @@ const deleteStep = async (req, res) => {
                 data: deletedStep,
             });
         } else {
-            // Handle invalid or unexpected statuses
             return res.status(400).json({
                 status: false,
                 message: 'Invalid step status. Use "active" or "inactive".',
@@ -341,7 +337,7 @@ const restoreStep = async (req, res) => {
 const getStepsByPartner = async (req, res) => {
   try {
     const email = req.params.email || req.query.email;
-    const status = req.query.status; // active | inactive | all
+    const status = req.query.status;
 
     if (!email) {
       return res.status(400).json({
@@ -356,7 +352,7 @@ const getStepsByPartner = async (req, res) => {
       filter.status = status;
     }
 
-   const steps = await stepModel.find(filter).sort({  createdAt: -1 });
+    const steps = await stepModel.find(filter).sort({ createdAt: -1 });
 
     return res.json({
       status: true,
@@ -378,7 +374,6 @@ const getStepById = async (req, res) => {
     try {
       const { id } = req.params;
   
-      // Validate MongoDB ObjectId
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ status: false, message: "Invalid Step ID" });
       }
@@ -398,19 +393,17 @@ const getStepById = async (req, res) => {
 
   const editStep = async (req, res) => {
     try {
-        let { stepId } = req.body; // Get stepId from the request body
+        let { stepId } = req.body;
         console.log("Received stepId:", stepId, "Type:", typeof stepId);
 
-        // Ensure stepId is a valid string and remove any spaces
         if (!stepId || typeof stepId !== "string") {
             return res.status(400).json({
                 status: false,
                 message: "Step ID is missing or invalid",
             });
         }
-        stepId = stepId.trim(); // Trim spaces
+        stepId = stepId.trim();
 
-        // Validate ObjectId format
         if (!mongoose.Types.ObjectId.isValid(stepId)) {
             return res.status(400).json({
                 status: false,
@@ -420,7 +413,6 @@ const getStepById = async (req, res) => {
 
         const objectId = new mongoose.Types.ObjectId(stepId);
 
-        // Check if the step exists
         let existingStep = await stepModel.findById(objectId);
         if (!existingStep) {
             return res.status(404).json({
@@ -429,7 +421,6 @@ const getStepById = async (req, res) => {
             });
         }
 
-        // Extract valid update fields
         let updateData = {};
         Object.keys(req.body).forEach((key) => {
             if (req.body[key] !== undefined && req.body[key] !== null && key !== "stepId") {
@@ -444,7 +435,6 @@ const getStepById = async (req, res) => {
             });
         }
 
-        // Update step in the database
         let updatedStep = await stepModel.findByIdAndUpdate(
             objectId,
             { $set: updateData },
@@ -477,7 +467,6 @@ const addServicesToStep = async (req, res) => {
             });
         }
 
-        // Fetch step
         const step = await stepModel.findById(step_id).populate({
             path: "services",
             model: "naavi_services"
@@ -490,22 +479,16 @@ const addServicesToStep = async (req, res) => {
             });
         }
 
-        // Convert current service objects to string IDs
         const currentServiceIds = (step.services || []).map(s => s._id.toString());
-
-        // Convert incoming service_ids to ObjectIds
         const incomingIds = service_ids.map(id => new mongoose.Types.ObjectId(id));
 
-        // Merge avoiding duplicates
         const merged = Array.from(
             new Set([...currentServiceIds, ...incomingIds.map(id => id.toString())])
         ).map(id => new mongoose.Types.ObjectId(id));
 
-        // Save merged list
         step.services = merged;
         await step.save();
 
-        // Populate correctly
         await step.populate({
             path: "services",
             model: "naavi_services"
@@ -529,11 +512,9 @@ const addServicesToStep = async (req, res) => {
 
 const getServicesForStep = async (req, res) => {
     const { step_id } = req.params;
-    
 
     console.log('Received step_id:', step_id);
 
-    // Basic input validation
     if (!step_id) {
         console.error('No step_id provided.');
         return res.status(400).json({
@@ -543,7 +524,6 @@ const getServicesForStep = async (req, res) => {
     }
 
     try {
-        // Validate if step_id is a valid ObjectId
         if (!mongoose.Types.ObjectId.isValid(step_id)) {
             console.error('Invalid Step ID:', step_id);
             return res.status(400).json({
@@ -552,11 +532,10 @@ const getServicesForStep = async (req, res) => {
             });
         }
 
-        // Find the step by its ID and populate services
-       const step = await stepModel.findById(step_id).populate({
-    path: "services",
-    model: "naavi_services"
-});
+        const step = await stepModel.findById(step_id).populate({
+            path: "services",
+            model: "naavi_services"
+        });
         console.log("SERVICES RETURNED =>", step.services);
         console.log('Found step:', step);
    
@@ -591,27 +570,23 @@ const removeServiceFromStep = async (req, res) => {
             return res.status(400).json({ status: false, message: "Missing stepId or serviceId" });
         }
 
-        // Find the step
         const step = await stepModel.findById(stepId);
         if (!step) {
             return res.status(404).json({ status: false, message: "Step not found" });
         }
 
-        // Check if the service exists in the step
         const serviceExists = step.services
-  .map(s => s.toString())
-  .includes(serviceId.toString());
+            .map(s => s.toString())
+            .includes(serviceId.toString());
 
         if (!serviceExists) {
             return res.status(404).json({ status: false, message: "Service not found in step" });
         }
 
-        // Remove the service from the step's service array
         step.services = step.services.filter(
-  service => service.toString() !== serviceId.toString()
-);
+            service => service.toString() !== serviceId.toString()
+        );
 
-        // Save the updated step
         await step.save();
 
         return res.status(200).json({
@@ -625,8 +600,7 @@ const removeServiceFromStep = async (req, res) => {
         return res.status(500).json({ status: false, message: "Server error" });
     }
 };
-// ================== GET SERVICES OF A STEP ==================
-// ================== GET SERVICES OF A STEP ==================
+
 const getServicesOfStep = async (req, res) => {
   try {
     const { step_id } = req.params;
@@ -638,7 +612,6 @@ const getServicesOfStep = async (req, res) => {
       });
     }
 
-    // Validate ID
     if (!mongoose.Types.ObjectId.isValid(step_id)) {
       return res.status(400).json({
         status: false,
@@ -646,7 +619,6 @@ const getServicesOfStep = async (req, res) => {
       });
     }
 
-    // Find the step and populate its services
     const step = await stepModel.findById(step_id).populate("services");
 
     if (!step) {
@@ -680,10 +652,9 @@ const repairStepServices = async (req, res) => {
 
     for (const step of steps) {
       const cleaned = step.services
-        .filter(id => mongoose.Types.ObjectId.isValid(id))   // keep only valid ObjectIds
+        .filter(id => mongoose.Types.ObjectId.isValid(id))
         .map(id => new mongoose.Types.ObjectId(id));
 
-      // Update only if different
       if (JSON.stringify(cleaned) !== JSON.stringify(step.services)) {
         step.services = cleaned;
         await step.save();
@@ -702,7 +673,6 @@ const repairStepServices = async (req, res) => {
   }
 };
 
-// ✅ GET ALL SERVICES (48) + ATTACHED FLAG FOR REMOVE SERVICE
 const getAllServicesForRemove = async (req, res) => {
   try {
     const { step_id } = req.params;
@@ -714,7 +684,6 @@ const getAllServicesForRemove = async (req, res) => {
       });
     }
 
-    // 1️⃣ Fetch step
     const step = await stepModel.findById(step_id);
 
     if (!step) {
@@ -724,15 +693,10 @@ const getAllServicesForRemove = async (req, res) => {
       });
     }
 
-    // 2️⃣ Fetch ALL services (48)
     const allServices = await serviceModel.find({ status: "active" });
 
-    // 3️⃣ Step attached services
-    const attachedServiceIds = (step.services || []).map(id =>
-      id.toString()
-    );
+    const attachedServiceIds = (step.services || []).map(id => id.toString());
 
-    // 4️⃣ Merge attached flag
     const finalServices = allServices.map(service => ({
       ...service.toObject(),
       attached: attachedServiceIds.includes(service._id.toString())
@@ -771,7 +735,6 @@ const bulkUploadSteps = async (req, res) => {
       });
     }
 
-    // 🔥 REQUIRED: path_id validation
     if (records.some(r => !r.path_id)) {
       return res.json({
         status: false,
@@ -812,11 +775,11 @@ module.exports = {
     getStepById,
     editStep,
     addServicesToStep,
-    getServicesForStep ,
+    getServicesForStep,
     removeServiceFromStep,
     getServicesOfStep,
     repairStepServices,
-    getAllServicesForRemove ,
+    getAllServicesForRemove,
     bulkUploadSteps,
     detachStepFromPath,
     toggleStepStatus,

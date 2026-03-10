@@ -5,8 +5,8 @@ const Schema = mongoose.Schema;
 const stepSchema = new mongoose.Schema({
     email: { type: String },
     name: { type: String },
-    description: { type: String, required: false }, // Added field
-    length: { type: Number, required: false }, // Added field
+    description: { type: String, required: false },
+    length: { type: Number, required: false },
     cost: { type: String, enum: ["paid", "free"], required: false }, 
 
     gradeData: [
@@ -45,52 +45,51 @@ const stepSchema = new mongoose.Schema({
           description: { type: String },
         },
       ],
+
+// ─── MICRO ────────────────────────────────────────────────────────────────────
 micro_description: { type: String },
 micro_name: { type: String },
 micro_length: { type: String },
-
 micro_access: { type: String, enum: ["paid","free"], default: "free" },
 micro_instructions: { type: String },
-
 micro_cost: { type: String, enum: ['free','an number','vendors descrestion','paid'], default: 'free' },
 micro_chances: { type: String },
+micro_marketplace: { type: Array, default: [] }, // ✅ ADDED
 
-
+// ─── MACRO ────────────────────────────────────────────────────────────────────
 macro_description: { type: String },
 macro_name: { type: String },
 macro_length: { type: String },
-
 macro_access: { type: String, enum: ["paid","free"], default: "free" },
 macro_instructions: { type: String },
-
 macro_cost: { type: String, enum: ['free','an number','vendors descrestion','paid'], default: 'free' },
 macro_chances: { type: String },
+macro_marketplace: { type: Array, default: [] }, // ✅ ADDED
 
-
+// ─── NANO ─────────────────────────────────────────────────────────────────────
 nano_description: { type: String },
 nano_name: { type: String },
 nano_length: { type: String },
-
 nano_access: { type: String, enum: ["paid","free"], default: "free" },
 nano_instructions: { type: String },
-
 nano_cost: { type: String, enum: ['free','an number','vendors descrestion','paid'], default: 'free' },
 nano_chances: { type: String },
+nano_marketplace: { type: Array, default: [] }, // ✅ ADDED
+
     microservices: [{type: Schema.Types.ObjectId, ref: "naavi_services",},],
     macroservices: [{type: Schema.Types.ObjectId, ref: "naavi_services",},],
     nanoservices: [{type: Schema.Types.ObjectId, ref: "naavi_services",},],
     services: [{
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'naavi_services', // assuming you have a Service model; adjust if necessary
+      ref: 'naavi_services',
     }],
     step_order: { type: Number },
     path_id: {
-  type: Schema.Types.ObjectId,
-  ref: "paths",
-  required: true,   // 🔥 ENFORCE STEP OWNERSHIP
-  index: true
-},
-
+      type: Schema.Types.ObjectId,
+      ref: "paths",
+      required: true,
+      index: true
+    },
     status: { type: String, enum: ['active', 'inactive','delete'], default: 'active' }    
 }, {
     timestamps: true
