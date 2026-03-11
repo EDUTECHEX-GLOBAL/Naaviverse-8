@@ -1,7 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-import searchic from "../../static/images/dashboard/searchic.svg";
 import downarrow from "../../static/images/dashboard/downarrow.svg";
 import profile from "../../static/images/dashboard/profile.svg";
 import profilea from "../../static/images/dashboard/profilea.svg";
@@ -11,15 +10,13 @@ import logout from "../../static/images/dashboard/logout.svg";
 const MenuNav = ({
   showDrop,
   setShowDrop,
-  searchTerm,
-  setSearchterm,
-  searchPlaceholder,
-  hideSearch = false,   // ✅ pass hideSearch={true} on Home & Profile pages
+  hideSearch = false,
 }) => {
   const navigate = useNavigate();
+  const isPartner = !!localStorage.getItem("partner");
 
   // ✅ Hide top-right user menu for partner flow — they use the sidebar profile instead
-  const isPartner = !!localStorage.getItem("partner");
+
 
   const handleLogout = () => {
     const adminUser = localStorage.getItem("adminuser");
@@ -52,25 +49,10 @@ const MenuNav = ({
     <>
       {/* ===== TOP NAV ===== */}
       <div className="dash-nav">
-        {/* ✅ Hide search bar on Home and Profile pages */}
-        {!hideSearch && (
-          <>
-            <div className="search-input-box" onClick={() => setShowDrop(false)}>
-              <input
-                className="search-input"
-                type="text"
-                placeholder={searchPlaceholder}
-                value={searchTerm}
-                onChange={(e) => setSearchterm(e.target.value)}
-              />
-            </div>
-            <div className="search-box" onClick={() => setShowDrop(false)}>
-              <img className="search-icon" src={searchic} alt="" />
-            </div>
-          </>
-        )}
+        {/* Empty div for spacing - search is now in Marketplace */}
+        <div style={{ flex: 1 }}></div>
 
-        {/* ✅ Show user icon + dropdown ONLY for user flow, not partner */}
+        {/* User dropdown for non-partner */}
         {!isPartner && (
           <div className="full-user" onClick={() => setShowDrop(!showDrop)}>
             <div className="user-box">
@@ -89,7 +71,7 @@ const MenuNav = ({
         )}
       </div>
 
-      {/* ===== DROPDOWN — user flow only ===== */}
+      {/* Dropdown menu */}
       {!isPartner && showDrop && (
         <div className="m-drop" onMouseDown={(e) => e.stopPropagation()}>
           <div className="m-each" onClick={handleNavigateProfile}>
