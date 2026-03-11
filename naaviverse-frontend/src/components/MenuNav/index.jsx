@@ -14,13 +14,16 @@ const MenuNav = ({
   searchTerm,
   setSearchterm,
   searchPlaceholder,
+  hideSearch = false,   // ✅ pass hideSearch={true} on Home & Profile pages
 }) => {
   const navigate = useNavigate();
+
+  // ✅ Hide top-right user menu for partner flow — they use the sidebar profile instead
+  const isPartner = !!localStorage.getItem("partner");
 
   const handleLogout = () => {
     const adminUser = localStorage.getItem("adminuser");
     localStorage.clear();
-
     if (adminUser) {
       navigate("/admin/login");
     } else {
@@ -28,17 +31,13 @@ const MenuNav = ({
     }
   };
 
-  /** ===== PROFILE NAVIGATION (MERGED) ===== */
   const handleNavigateProfile = () => {
     setShowDrop(false);
-
     const adminUser = localStorage.getItem("adminuser");
     if (adminUser) {
       window.dispatchEvent(new Event("openAdminProfile"));
       return;
     }
-
-    // ✅ KEY FIX: check "partner" key, not "userType"
     const partner = localStorage.getItem("partner");
     if (partner) {
       navigate("/dashboard/accountants/profile");
@@ -47,59 +46,52 @@ const MenuNav = ({
     }
   };
 
-
   const profilePic = localStorage.getItem("userProfilePic") || profile;
 
   return (
     <>
       {/* ===== TOP NAV ===== */}
       <div className="dash-nav">
-        <div
-          className="search-input-box"
-          onClick={() => setShowDrop(false)}
-        >
-          <input
-            className="search-input"
-            type="text"
-            placeholder={searchPlaceholder}
-            value={searchTerm}
-            onChange={(e) => setSearchterm(e.target.value)}
-          />
-        </div>
+        {/* ✅ Hide search bar on Home and Profile pages */}
+        {!hideSearch && (
+          <>
+            <div className="search-input-box" onClick={() => setShowDrop(false)}>
+              <input
+                className="search-input"
+                type="text"
+                placeholder={searchPlaceholder}
+                value={searchTerm}
+                onChange={(e) => setSearchterm(e.target.value)}
+              />
+            </div>
+            <div className="search-box" onClick={() => setShowDrop(false)}>
+              <img className="search-icon" src={searchic} alt="" />
+            </div>
+          </>
+        )}
 
-        <div
-          className="search-box"
-          onClick={() => setShowDrop(false)}
-        >
-          <img className="search-icon" src={searchic} alt="" />
-        </div>
-
-        <div
-          className="full-user"
-          onClick={() => setShowDrop(!showDrop)}
-        >
-          <div className="user-box">
-            <img className="user-icon" src={profilePic} alt="User" />
+        {/* ✅ Show user icon + dropdown ONLY for user flow, not partner */}
+        {!isPartner && (
+          <div className="full-user" onClick={() => setShowDrop(!showDrop)}>
+            <div className="user-box">
+              <img className="user-icon" src={profilePic} alt="User" />
+            </div>
+            <div
+              className="arrow-box"
+              style={{
+                transform: showDrop ? "rotate(180deg)" : "",
+                cursor: "pointer",
+              }}
+            >
+              <img className="arrow-icon" src={downarrow} alt="" />
+            </div>
           </div>
-
-          <div
-            className="arrow-box"
-            style={{
-              transform: showDrop ? "rotate(180deg)" : "",
-              cursor: "pointer",
-            }}
-          >
-            <img className="arrow-icon" src={downarrow} alt="" />
-          </div>
-        </div>
+        )}
       </div>
 
-      {/* ===== DROPDOWN ===== */}
-      {showDrop && (
-        <div
-          className="m-drop"
-          onMouseDown={(e) => e.stopPropagation()}
-        >
+      {/* ===== DROPDOWN — user flow only ===== */}
+      {!isPartner && showDrop && (
+        <div className="m-drop" onMouseDown={(e) => e.stopPropagation()}>
           <div className="m-each" onClick={handleNavigateProfile}>
             <div className="m-left">
               <div className="m-left-icon-box">

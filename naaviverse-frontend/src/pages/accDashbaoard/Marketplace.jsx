@@ -41,13 +41,25 @@ const Marketplace = ({ search = "", selectedRole = "all" }) => {
       const email = userDetails?.email || userDetails?.user?.email;
       if (!email) { setLoading(false); return; }
 
-      const [servicesRes, stepsRes] = await Promise.allSettled([
-        axios.get(`${BASE_URL}/api/services/getservices`, { params: { productcreatoremail: email } }),
+      const [servicesRes, stepsRes, marketplaceRes] = await Promise.allSettled([
+        // Source A: Services collection
+        axios.get(`${BASE_URL}/api/services/getservices`, {
+          params: { productcreatoremail: email },
+        }),
+        // Source B: Step embedded marketplace arrays
         axios.get(`${BASE_URL}/api/steps/partner`, { params: { email } }),
+        // ✅ FIX — Source C: marketplace_items collection
+        // Route: GET /api/marketplace/get  param: email
+        axios.get(`${BASE_URL}/api/marketplace/get`, {
+          params: { email },
+        }),
       ]);
 
-      // Source A: Services
-      const services = servicesRes.status === "fulfilled" ? servicesRes.value.data?.data || [] : [];
+      // ── Source A: Services ───────────────────────────────────────────────
+      const services = servicesRes.status === "fulfilled"
+        ? servicesRes.value.data?.data || []
+        : [];
+
       const serviceItems = services.map((s) => {
         const billing = getBillingInfo(s?.billing_cycle);
         return {
@@ -68,13 +80,14 @@ const Marketplace = ({ search = "", selectedRole = "all" }) => {
         };
       });
 
-      // Source B: Step marketplace arrays
+      // ── Source B: Step embedded marketplace arrays ───────────────────────
       const stepItems = [];
       if (stepsRes.status === "fulfilled") {
         const allSteps = stepsRes.value.data?.data || [];
         allSteps.forEach((step, si) => {
           ["macro", "micro", "nano"].forEach((layer) => {
-            const arr = step[`${layer}_marketplace`] || step[layer]?.marketplace || [];
+            const arr =
+              step[`${layer}_marketplace`] || step[layer]?.marketplace || [];
             arr.forEach((item, ii) => {
               if (!item?.name) return;
               stepItems.push({
@@ -99,7 +112,47 @@ const Marketplace = ({ search = "", selectedRole = "all" }) => {
         });
       }
 
-      setMarketplaceItems([...serviceItems, ...stepItems]);
+      // ── Source C: marketplace_items collection ✅ FIX ────────────────────
+      const collectionItems = [];
+      if (marketplaceRes.status === "fulfilled") {
+        const rawItems = marketplaceRes.value.data?.data || [];
+        rawItems.forEach((item) => {
+          collectionItems.push({
+            _id: item._id,
+            name: item.name || "Unnamed",
+            role: (item.role || "vendor").toLowerCase(),
+            access: item.access || "Free",
+            cost: item.cost || "Free",
+            goal: item.goal || "",
+            outcomes: item.outcomes || "",
+            iterations: item.iterations || "",
+            duration: item.duration || "",
+            discount: item.discount || "",
+            features: item.features || "",
+            sourceType: "marketplace",
+            sourceLabel: "Marketplace Items",
+            // Store path_id/step_id for reference
+            pathId: item.path_id,
+            stepId: item.step_id,
+            layer: item.layer,
+          });
+        });
+      }
+
+      // ── Merge all three sources, deduplicate by name+role ────────────────
+      // Collection items take priority over step-embedded duplicates
+      const seen = new Set();
+      const merged = [];
+
+      [...serviceItems, ...collectionItems, ...stepItems].forEach((item) => {
+        const key = `${item.name?.toLowerCase()}-${item.role?.toLowerCase()}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          merged.push(item);
+        }
+      });
+
+      setMarketplaceItems(merged);
     } catch (err) {
       console.error("Error fetching marketplace items:", err);
     } finally {
@@ -109,7 +162,7 @@ const Marketplace = ({ search = "", selectedRole = "all" }) => {
 
   const getBillingInfo = (billing_cycle = {}) => {
     if (billing_cycle?.monthly?.price !== undefined) return { price: billing_cycle.monthly.price };
-    if (billing_cycle?.annual?.price !== undefined) return { price: billing_cycle.annual.price };
+    if (billing_cycle?.annual?.price !== undefined)  return { price: billing_cycle.annual.price };
     if (billing_cycle?.lifetime?.price !== undefined) return { price: billing_cycle.lifetime.price };
     return { price: 0 };
   };
@@ -118,12 +171,15 @@ const Marketplace = ({ search = "", selectedRole = "all" }) => {
 
   const filteredItems = marketplaceItems.filter((item) => {
     const q = search?.toLowerCase();
-    const matchesSearch = !q ||
+    const matchesSearch =
+      !q ||
       item.name?.toLowerCase().includes(q) ||
       item.role?.toLowerCase().includes(q) ||
       item.features?.toLowerCase().includes(q) ||
       item.goal?.toLowerCase().includes(q);
-    const matchesRole = selectedRole === "all" || item.role?.toLowerCase() === selectedRole.toLowerCase();
+    const matchesRole =
+      selectedRole === "all" ||
+      item.role?.toLowerCase() === selectedRole.toLowerCase();
     return matchesSearch && matchesRole;
   });
 
@@ -156,74 +212,84 @@ const Marketplace = ({ search = "", selectedRole = "all" }) => {
             return (
               <div key={item._id} className="marketplace-card" style={{ "--role-bg": cfg.bg }}>
 
-                {/* ── Card header: icon + name + free/paid badge ── */}
-                <div className="mp-card-header">
-                  <div className="mp-header-left">
-                    <span className="mp-role-icon">{cfg.icon}</span>
-                    <h3 className="mp-item-name">{item.name}</h3>
+                {/* ── Card body (all content above footer) ── */}
+                <div className="mp-card-body">
+
+                  {/* ── Card header: icon + name + free/paid badge ── */}
+                  <div className="mp-card-header">
+                    <div className="mp-header-left">
+                      <span className="mp-role-icon">{cfg.icon}</span>
+                      <h3 className="mp-item-name">{item.name}</h3>
+                    </div>
+                    <span className={`mp-access-badge ${isFree ? "free" : "paid"}`}>
+                      {isFree ? "Free" : price}
+                    </span>
                   </div>
-                  <span className={`mp-access-badge ${isFree ? "free" : "paid"}`}>
-                    {isFree ? "Free" : price}
+
+                  <div className="mp-divider" />
+
+                  {/* ── Role pill ── */}
+                  <span
+                    className="mp-role-pill"
+                    style={{ background: cfg.bg, color: cfg.color, borderColor: cfg.border }}
+                  >
+                    {item.role?.toUpperCase()}
                   </span>
-                </div>
 
-                <div className="mp-divider" />
-
-                {/* ── Role pill ── */}
-                <span
-                  className="mp-role-pill"
-                  style={{ background: cfg.bg, color: cfg.color, borderColor: cfg.border }}
-                >
-                  {item.role?.toUpperCase()}
-                </span>
-
-                {/* ── Info rows ── */}
-                <div className="mp-info-rows">
-                  {item.goal && (
-                    <div className="mp-info-row">
-                      <span className="mp-info-label">Goal</span>
-                      <span className="mp-info-val">{item.goal}</span>
-                    </div>
-                  )}
-                  {item.iterations && item.iterations !== "0" && Number(item.iterations) > 0 && (
-                    <div className="mp-info-row">
-                      <span className="mp-info-label">Iterations</span>
-                      <span className="mp-info-val">{item.iterations}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* ── Description ── */}
-                {(item.features || item.outcomes) && (() => {
-                  const desc = item.features || item.outcomes || "";
-                  const isLong = desc.length > 100;
-                  const isOpen = expandedDesc[item._id];
-                  return (
-                    <div>
-                      <p className={`mp-description${isLong && !isOpen ? " clamped" : ""}`}>
-                        {desc}
-                      </p>
-                      {isLong && (
-                        <button
-                          className="mp-read-more"
-                          onClick={(e) => { e.stopPropagation(); toggleDesc(item._id); }}
-                        >
-                          {isOpen ? "Read less ↑" : "Read more ↓"}
-                        </button>
+                  {/* ── Info rows ── */}
+                  <div className="mp-info-rows">
+                    {item.goal && (
+                      <div className="mp-info-row">
+                        <span className="mp-info-label">Goal</span>
+                        <span className="mp-info-val">{item.goal}</span>
+                      </div>
+                    )}
+                    {item.iterations &&
+                      item.iterations !== "0" &&
+                      Number(item.iterations) > 0 && (
+                        <div className="mp-info-row">
+                          <span className="mp-info-label">Iterations</span>
+                          <span className="mp-info-val">{item.iterations}</span>
+                        </div>
                       )}
-                    </div>
-                  );
-                })()}
-
-                {/* ── Source label for step items ── */}
-                {item.sourceType === "step" && (
-                  <div className="mp-source-label">
-                    <span className="mp-source-dot">📍</span>
-                    <span>{item.sourceLabel}</span>
+                    {item.sourceType === "marketplace" && item.layer && (
+                      <div className="mp-info-row">
+                        <span className="mp-info-label">Layer</span>
+                        <span className="mp-info-val">{item.layer?.toUpperCase()}</span>
+                      </div>
+                    )}
                   </div>
-                )}
 
-                {/* ── Footer ── */}
+                  {/* ── Description ── */}
+                  {(item.features || item.outcomes) &&
+                    (() => {
+                      const desc = item.features || item.outcomes || "";
+                      const isLong = desc.length > 100;
+                      const isOpen = expandedDesc[item._id];
+                      return (
+                        <div>
+                          <p className={`mp-description${isLong && !isOpen ? " clamped" : ""}`}>
+                            {desc}
+                          </p>
+                        </div>
+                      );
+                    })()}
+                  {item.sourceType === "step" && (
+                    <div className="mp-source-label">
+                      <span className="mp-source-dot">📍</span>
+                      <span>{item.sourceLabel}</span>
+                    </div>
+                  )}
+                  {item.sourceType === "marketplace" && (
+                    <div className="mp-source-label">
+                      <span className="mp-source-dot">🗂️</span>
+                      <span>Added via Step · {item.layer?.toUpperCase()}</span>
+                    </div>
+                  )}
+
+                </div>{/* end mp-card-body */}
+
+                {/* ── Footer — always at bottom due to space-between on card ── */}
                 <div className="mp-card-footer">
                   <button
                     className="mp-details-btn"
@@ -233,6 +299,7 @@ const Marketplace = ({ search = "", selectedRole = "all" }) => {
                     View All Details
                   </button>
                 </div>
+
               </div>
             );
           })}
@@ -329,6 +396,22 @@ const Marketplace = ({ search = "", selectedRole = "all" }) => {
                   </div>
                 )}
 
+                {/* ✅ Source section for marketplace collection items */}
+                {selectedItem.sourceType === "marketplace" && selectedItem.layer && (
+                  <div className="mp-detail-section">
+                    <div className="mp-section-header">
+                      <span className="mp-section-icon">🗂️</span>
+                      <h4>Source</h4>
+                    </div>
+                    <div className="mp-detail-chips">
+                      <div className="mp-chip">
+                        <span className="mp-chip-label">Layer</span>
+                        <span className="mp-chip-val">{selectedItem.layer?.toUpperCase()}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Goal & Outcomes */}
                 {(selectedItem.goal || selectedItem.outcomes) && (
                   <div className="mp-detail-section">
@@ -352,7 +435,8 @@ const Marketplace = ({ search = "", selectedRole = "all" }) => {
                 )}
 
                 {/* Duration & Iterations */}
-                {(selectedItem.duration || (selectedItem.iterations && selectedItem.iterations !== "0")) && (
+                {(selectedItem.duration ||
+                  (selectedItem.iterations && selectedItem.iterations !== "0")) && (
                   <div className="mp-detail-section">
                     <div className="mp-section-header">
                       <span className="mp-section-icon">⏱️</span>

@@ -1223,6 +1223,7 @@ const AccProfile = () => {
                 showDrop={showDrop}
                 setShowDrop={setShowDrop}
                 searchPlaceholder="Search..."
+                hideSearch={true}
               />
               <>
                 {isProfileData ? (

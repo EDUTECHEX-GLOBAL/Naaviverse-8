@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════
-//  Marketplace — clean card grid, Image-1 target layout
+//  Marketplace — equal-height card grid
 // ═══════════════════════════════════════════════════
 
 .marketplace-container {
@@ -21,6 +21,9 @@
 }
 
 // ── Card ────────────────────────────────────────────
+// KEY PATTERN: card has height:100% + flex-column
+// mp-card-body has flex:1 to grow and overflow:hidden to clip
+// mp-card-footer has flex-shrink:0 so it's always visible at bottom
 .marketplace-card {
   background: white;
   border-radius: 18px;
@@ -29,9 +32,10 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
-  // No fixed height — cards grow to content, grid rows align naturally
+  height: 100%;          // fill full grid row height
+  overflow: hidden;      // clip anything that tries to overflow
+
   transition: box-shadow 0.2s, transform 0.2s;
-  overflow: visible;
 
   &:hover {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
@@ -41,6 +45,15 @@
   &.mp-skeleton { pointer-events: none; }
 }
 
+// ── Card body ─────────────────────────────────────────
+.mp-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;           // absorbs all height between header and footer
+  overflow: hidden;  // prevents body from expanding card height
+  min-height: 0;     // required for flex children to shrink properly
+}
+
 // ── Card Header ─────────────────────────────────────
 .mp-card-header {
   display: flex;
@@ -48,6 +61,7 @@
   align-items: flex-start;
   gap: 0.5rem;
   margin-bottom: 0.65rem;
+  flex-shrink: 0;
 }
 
 .mp-header-left {
@@ -71,11 +85,12 @@
   color: #1f304f;
   margin: 0;
   line-height: 1.3;
-  // allow wrapping for long names (like Image 1)
-  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-// access badge: Free (green) / Paid (amber)
 .mp-access-badge {
   flex-shrink: 0;
   padding: 0.2rem 0.65rem;
@@ -84,25 +99,19 @@
   font-weight: 700;
   white-space: nowrap;
 
-  &.free {
-    background: #dcfce7;
-    color: #166534;
-  }
-  &.paid {
-    background: #fef9c3;
-    color: #92400e;
-  }
+  &.free { background: #dcfce7; color: #166534; }
+  &.paid { background: #fef9c3; color: #92400e; }
 }
 
 .mp-divider {
   height: 1px;
   background: #eef2f6;
   margin: 0.55rem 0 0.7rem;
+  flex-shrink: 0;
 }
 
-// ── Role pill ────────────────────────────────────────
 .mp-role-pill {
-  display: inline-block;        // fit-content width only
+  display: inline-block;
   width: fit-content;
   padding: 0.35rem 1.2rem;
   border-radius: 30px;
@@ -112,14 +121,17 @@
   letter-spacing: 0.5px;
   margin-bottom: 0.85rem;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
-// ── Info rows ────────────────────────────────────────
+// ── Info rows ─────────────────────────────────────────
 .mp-info-rows {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  margin-bottom: 0.6rem;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
+  min-height: 3.5rem; // fixed height: all cards align at same point below this
 }
 
 .mp-info-row {
@@ -131,7 +143,8 @@
 
 .mp-info-label {
   color: #8f9fb0;
-  min-width: 52px;
+  min-width: 65px;
+  flex-shrink: 0;
 }
 
 .mp-info-val {
@@ -142,19 +155,26 @@
   text-overflow: ellipsis;
 }
 
-// ── Description ─────────────────────────────────────
+// ── Description zone ──────────────────────────────────
+// This is a flex-grow zone — it absorbs leftover space and clips overflow.
+// All cards will therefore have identical heights regardless of text length.
+.mp-desc-zone {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .mp-description {
   font-size: 0.75rem;
   color: #4a5a6a;
   line-height: 1.5;
-  margin: 0 0 0.6rem;
-
-  &.clamped {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
+  margin: 0 0 0.3rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .mp-read-more {
@@ -165,24 +185,25 @@
   font-weight: 600;
   padding: 0;
   cursor: pointer;
-  margin-left: 0.2rem;
+  flex-shrink: 0;
 
   &:hover { text-decoration: underline; }
 }
 
-// ── Source label ─────────────────────────────────────
+// ── Source label ──────────────────────────────────────
 .mp-source-label {
   display: flex;
   align-items: center;
   gap: 0.25rem;
   font-size: 0.62rem;
   color: #8f9fb0;
-  margin-bottom: 0.5rem;
-  padding-top: 0.3rem;
+  margin-top: 0.5rem;
+  padding-top: 0.4rem;
   border-top: 1px dashed #e5eaf0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex-shrink: 0;
 }
 
 .mp-source-dot { font-size: 0.65rem; }
@@ -190,8 +211,9 @@
 // ── Card Footer ──────────────────────────────────────
 .mp-card-footer {
   padding-top: 0.6rem;
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
   border-top: 1px solid #eef2f6;
+  flex-shrink: 0;  // never compress — always visible
 }
 
 .mp-details-btn {
@@ -217,22 +239,9 @@
   padding: 4rem 2rem;
   color: #5e6f7e;
 
-  .mp-empty-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-  }
-
-  .mp-empty-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1f304f;
-    margin-bottom: 0.5rem;
-  }
-
-  .mp-empty-sub {
-    font-size: 0.8rem;
-    color: #8f9fb0;
-  }
+  .mp-empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .mp-empty-title { font-size: 1rem; font-weight: 600; color: #1f304f; margin-bottom: 0.5rem; }
+  .mp-empty-sub { font-size: 0.8rem; color: #8f9fb0; }
 }
 
 // ════════════════════════════════════════════════════
@@ -262,14 +271,12 @@
   display: flex;
   flex-direction: column;
 
-  // smooth scrollbar
   scrollbar-width: thin;
   scrollbar-color: #cdd6e0 transparent;
   &::-webkit-scrollbar { width: 5px; }
   &::-webkit-scrollbar-thumb { background: #cdd6e0; border-radius: 10px; }
 }
 
-// Top coloured bar
 .mp-modal-topbar {
   display: flex;
   justify-content: space-between;
@@ -279,16 +286,8 @@
   gap: 0.75rem;
 }
 
-.mp-modal-title-row {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-}
-
-.mp-modal-icon {
-  font-size: 2rem;
-  line-height: 1;
-}
+.mp-modal-title-row { display: flex; align-items: center; gap: 0.8rem; }
+.mp-modal-icon { font-size: 2rem; line-height: 1; }
 
 .mp-modal-name {
   margin: 0 0 0.35rem;
@@ -322,11 +321,9 @@
   transition: background 0.15s;
 
   &:hover { background: #f0f2f5; }
-
   img { width: 14px; height: 14px; }
 }
 
-// ── Modal body ───────────────────────────────────────
 .mp-modal-body {
   padding: 1.25rem 1.4rem;
   display: flex;
@@ -335,11 +332,9 @@
   flex: 1;
 }
 
-// Pricing banner
 .mp-pricing-banner {
   display: flex;
   align-items: center;
-  gap: 0;
   border: 1.5px solid;
   border-radius: 14px;
   overflow: hidden;
@@ -354,11 +349,7 @@
   gap: 0.15rem;
 }
 
-.mp-pricing-divider {
-  width: 1px;
-  background: #e5eaf0;
-  align-self: stretch;
-}
+.mp-pricing-divider { width: 1px; background: #e5eaf0; align-self: stretch; }
 
 .mp-pricing-label {
   font-size: 0.62rem;
@@ -371,16 +362,10 @@
   font-size: 0.88rem;
   color: #1f304f;
   font-weight: 500;
-
   &.bold { font-weight: 700; }
 }
 
-// Section
-.mp-detail-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
+.mp-detail-section { display: flex; flex-direction: column; gap: 0.65rem; }
 
 .mp-section-header {
   display: flex;
@@ -401,11 +386,7 @@
   }
 }
 
-.mp-detail-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-}
+.mp-detail-chips { display: flex; flex-wrap: wrap; gap: 0.6rem; }
 
 .mp-chip {
   display: flex;
@@ -416,39 +397,15 @@
   padding: 0.45rem 0.85rem;
   min-width: 90px;
 
-  .mp-chip-label {
-    font-size: 0.6rem;
-    color: #8f9fb0;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
-
-  .mp-chip-val {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: #1f304f;
-  }
+  .mp-chip-label { font-size: 0.6rem; color: #8f9fb0; text-transform: uppercase; letter-spacing: 0.3px; }
+  .mp-chip-val { font-size: 0.82rem; font-weight: 600; color: #1f304f; }
 }
 
-.mp-detail-row {
-  display: flex;
-  gap: 1rem;
-  align-items: baseline;
-}
+.mp-detail-row { display: flex; gap: 1rem; align-items: baseline; }
 
-.mp-detail-label {
-  font-size: 0.72rem;
-  color: #8f9fb0;
-  min-width: 70px;
-  flex-shrink: 0;
-}
+.mp-detail-label { font-size: 0.72rem; color: #8f9fb0; min-width: 70px; flex-shrink: 0; }
 
-.mp-detail-val {
-  font-size: 0.85rem;
-  color: #1f304f;
-  font-weight: 500;
-  line-height: 1.4;
-}
+.mp-detail-val { font-size: 0.85rem; color: #1f304f; font-weight: 500; line-height: 1.4; }
 
 .mp-features-text {
   font-size: 0.83rem;
@@ -461,7 +418,6 @@
   padding: 0.75rem 0.9rem;
 }
 
-// ── Modal footer ─────────────────────────────────────
 .mp-modal-footer {
   padding: 1rem 1.4rem;
   border-top: 1px solid #eef2f6;

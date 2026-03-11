@@ -2417,12 +2417,10 @@ const [selectedRole, setSelectedRole] = useState('all');
                     searchTerm={search}
                     setSearchterm={setSearch}
                     searchPlaceholder="Search..."
+                    
                   />
                   <div className="services-main" onClick={() => setShowDrop(false)}>
                     <div style={{ padding: "35px" }}>
-                      <h2 style={{ fontSize: "20px", fontWeight: "700", color: "#1f304f" }}>
-                        Home
-                      </h2>
                       <p style={{ color: "#617388", marginTop: "8px" }}>
                         Welcome back, {getPartner()?.businessName || "Partner"}
                       </p>
@@ -2675,6 +2673,21 @@ const [selectedRole, setSelectedRole] = useState('all');
       {/* Keep all your existing modal code below - don't change anything */}
       <>
         {ispopular && accsideNav !== "CREATE_PATH" && !viewPathMode ? (
+
+                    <>
+            {/* ✅ BLUR OVERLAY */}
+            <div
+              onClick={() => resetpop()}
+              style={{
+                position: "fixed",
+                inset: 0,
+                backdropFilter: "blur(6px)",
+                WebkitBackdropFilter: "blur(6px)",
+                background: "rgba(0, 0, 0, 0.25)",
+                zIndex: 998,
+              }}
+            />
+
           <div
             className="acc-popular"
             onClick={() => setShowDrop(false)}
@@ -3374,7 +3387,8 @@ const [selectedRole, setSelectedRole] = useState('all');
 
 
             </>
-          </div>
+</div>
+          </>
         ) : (
           ""
         )}

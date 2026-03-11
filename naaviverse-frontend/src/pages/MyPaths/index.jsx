@@ -41,6 +41,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
   const [selectedPath, setSelectedPath] = useState([]);
   const [newValue, setNewValue] = useState("");
   const [viewPathEnabled, setViewPathEnabled] = useState(false);
+  const [viewStepsModal, setViewStepsModal] = useState(false);
   const [viewPathLoading, setViewPathLoading] = useState(false);
   const [viewPathData, setViewPathData] = useState([]);
   const [showSelectedPath, setShowSelectedPath] = useState(null);
@@ -56,6 +57,10 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
   const [allServicesToRemove, setAllServicesToRemove] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
   const [localSearch, setLocalSearch] = useState(search || "");
+
+  useEffect(() => {
+    setLocalSearch(search || "");
+  }, [search]);
   const [expandedDesc, setExpandedDesc] = useState({});
   // ============================================
   // API Calls
@@ -625,10 +630,10 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
               <div className="paths-grid">
                 {partnerPathData
                   ?.filter((e) =>
-                    !localSearch ||
-                    e?.nameOfPath?.toLowerCase().includes(localSearch.toLowerCase()) ||
-                    e?.description?.toLowerCase().includes(localSearch.toLowerCase()) ||
-                    e?.destination_institution?.toLowerCase().includes(localSearch.toLowerCase())
+                    !search ||
+                    e?.nameOfPath?.toLowerCase().includes(search.toLowerCase()) ||
+                    e?.description?.toLowerCase().includes(search.toLowerCase()) ||
+                    e?.destination_institution?.toLowerCase().includes(search.toLowerCase())
                   )
                   ?.map((e, i) => {
                     // Determine status class and text
@@ -787,10 +792,10 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
 
                 {/* Show message if no paths */}
                 {partnerPathData?.filter((e) =>
-                  !localSearch ||
-                  e?.nameOfPath?.toLowerCase().includes(localSearch.toLowerCase()) ||
-                  e?.description?.toLowerCase().includes(localSearch.toLowerCase()) ||
-                  e?.destination_institution?.toLowerCase().includes(localSearch.toLowerCase())
+                  !search ||
+                  e?.nameOfPath?.toLowerCase().includes(search.toLowerCase()) ||
+                  e?.description?.toLowerCase().includes(search.toLowerCase()) ||
+                  e?.destination_institution?.toLowerCase().includes(search.toLowerCase())
                 ).length === 0 && !loading && (
                     <div style={{ textAlign: 'center', padding: '3rem', color: '#5e6f7e' }}>
                       No paths found. Click "Create New Path" to get started.

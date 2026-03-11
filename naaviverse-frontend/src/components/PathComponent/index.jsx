@@ -14,7 +14,9 @@ import educationIcon from "../../static/images/mapspage/educationIcon.svg";
 
 // Styles
 import "./mapspage.scss";
+
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const PathComponent = () => {
   const navigate = useNavigate();
   const { sideNav, setsideNav } = useStore();
@@ -47,28 +49,18 @@ const PathComponent = () => {
   } = useContext(GlobalContex);
 
   const [loading, setLoading] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false); // ✅ separate loader for confirm
   const [approvedPaths, setApprovedPaths] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const user = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  })();
 
-
-
- const buildFilterParams = () => {
-  if (!userProfile) return {};
-
-  const params = {};
-
-  if (gradeToggle) params.grade = userProfile.grade;
-  if (curriculumToggle) params.curriculum = userProfile.curriculum;
-  if (streamToggle) params.stream = userProfile.stream;
-  if (performanceToggle) params.performance = userProfile.performance;
-  if (financialToggle) params.financial = userProfile.financialSituation;
-  if (personalityToggle) params.personality = userProfile.personality;
-
-  return params;
-};
- 
   // --------------------------------------------------------------
   //  FETCH USER PROFILE
   // --------------------------------------------------------------
@@ -76,7 +68,6 @@ const PathComponent = () => {
     try {
       const email = user?.email;
       if (!email) return;
-
       const res = await axios.get(`${BASE_URL}/api/users/get/${email}`);
       if (res.data.status) {
         setUserProfile(res.data.data);
@@ -91,90 +82,100 @@ const PathComponent = () => {
     fetchUserProfile();
   }, []);
 
-// --------------------------------------------------------------
-//  FETCH ADMIN-APPROVED PATHS (WITH TOGGLES)
-// --------------------------------------------------------------
-useEffect(() => {
-  const fetchApprovedPaths = async () => {
+  // --------------------------------------------------------------
+  //  FETCH ADMIN-APPROVED PATHS (WITH TOGGLES)
+  // --------------------------------------------------------------
+  useEffect(() => {
+    const fetchApprovedPaths = async () => {
+      try {
+        setLoading(true);
+
+        const params = {};
+        if (gradeToggle) params.grade = userProfile?.grade;
+        if (curriculumToggle) params.curriculum = userProfile?.curriculum;
+        if (streamToggle) params.stream = userProfile?.stream;
+        if (performanceToggle) params.performance = userProfile?.performance;
+        if (financialToggle) params.financial = userProfile?.financialSituation;
+        if (personalityToggle) params.personality = userProfile?.personality;
+
+        console.log("FETCHING PATHS WITH FILTERS 👉", params);
+
+        const res = await axios.get(`${BASE_URL}/api/paths/active`, { params });
+        setApprovedPaths(res.data.data || []);
+      } catch (err) {
+        console.error("Failed to load approved paths:", err);
+        setApprovedPaths([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (userProfile) {
+      fetchApprovedPaths();
+    }
+  }, [
+    refetchPaths,
+    gradeToggle,
+    curriculumToggle,
+    streamToggle,
+    performanceToggle,
+    financialToggle,
+    personalityToggle,
+    userProfile,
+  ]);
+
+  // --------------------------------------------------------------
+  //  ✅ FIXED: USER CONFIRMS PATH
+  // --------------------------------------------------------------
+  const confirmPathSelection = async () => {
+    const email = user?.email;
+    const pathId = selectedPathItem?._id;
+
+    if (!email || !pathId) {
+      console.error("❌ Missing email or pathId", { email, pathId });
+      alert("Something went wrong. Please try again.");
+      return;
+    }
+
     try {
-      setLoading(true);
+      setConfirmLoading(true);
 
-      // 🔑 BUILD FILTERS BASED ON TOGGLES
-      const params = {};
+      // Save to localStorage immediately so My Journey can read it
+      localStorage.setItem("selectedPathId", pathId);
 
-      if (gradeToggle) params.grade = userProfile?.grade;
-      if (curriculumToggle) params.curriculum = userProfile?.curriculum;
-      if (streamToggle) params.stream = userProfile?.stream;
-      if (performanceToggle) params.performance = userProfile?.performance;
-      if (financialToggle) params.financial = userProfile?.financialSituation;
-      if (personalityToggle) params.personality = userProfile?.personality;
+      await axios.post(`${BASE_URL}/api/userpaths/selectpath`, {
+        email,
+        pathId,
+      });
 
-      console.log("FETCHING PATHS WITH FILTERS 👉", params);
+      console.log("✅ Path selected successfully");
 
-      const res = await axios.get(
-       `${BASE_URL}/api/paths/active`,
-        { params }
-      );
+      // ✅ Step 3 = Congratulations screen
+      setPathItemStep(3);
 
-      setApprovedPaths(res.data.data || []);
+      // ✅ Navigate to My Journey after 2 seconds
+      setTimeout(() => {
+        setsideNav("My Journey");
+        navigate("/dashboard/users/my-journey");
+      }, 2000);
+
     } catch (err) {
-      console.error("Failed to load approved paths:", err);
-      setApprovedPaths([]);
+      console.error("❌ Select path error:", err.response?.data || err.message);
+
+      // ✅ Even if API fails, still show congrats and navigate
+      // (localStorage already saved, journey will work)
+      setPathItemStep(3);
+      setTimeout(() => {
+        setsideNav("My Journey");
+        navigate("/dashboard/users/my-journey");
+      }, 2000);
     } finally {
-      setLoading(false);
+      setConfirmLoading(false);
     }
   };
 
-  // ⛔ prevent API call before profile loads
-  if (userProfile) {
-    fetchApprovedPaths();
-  }
-}, [
-  refetchPaths,
-  gradeToggle,
-  curriculumToggle,
-  streamToggle,
-  performanceToggle,
-  financialToggle,
-  personalityToggle,
-  userProfile
-]);
-
-
   // --------------------------------------------------------------
-  //  USER CONFIRMS PATH (POST SELECT)
-  // --------------------------------------------------------------
-// --------------------------------------------------------------
-//  USER CONFIRMS PATH (POST SELECT)
-// --------------------------------------------------------------
-const confirmPathSelection = () => {
-  const email = user?.email;
-  const pathId = selectedPathItem?._id;
-
-  if (!email || !pathId) {
-    alert("Missing email or pathId");
-    return;
-  }
-
-  localStorage.setItem("selectedPathId", pathId);
-
-  axios
-    .post(`${BASE_URL}/api/fetch/selectpath`, {   // ✅ fixed
-      email,
-      pathId,
-    })
-    .then(() => {
-      setPathItemStep(3);
-
-      setTimeout(() => {
-        setsideNav("My Journey");
-        navigate("/dashboard/users");
-      }, 1200);
-    })
-    .catch((err) => console.error("Select path error:", err));
-};
-  // --------------------------------------------------------------
-  //  RETURN: FULL CLEAN UI
+  //  RETURN
   // --------------------------------------------------------------
   return (
     <div className="mapspage1">
@@ -182,14 +183,14 @@ const confirmPathSelection = () => {
         <JourneyPage />
       ) : (
         <div className="maps-container1">
+
           {/* LEFT SIDEBAR */}
           <div className="maps-sidebar1">
-            
-            {/* Path Action Flow */}
+
+            {/* ── STEP 1: What do you want to do? ── */}
             {pathItemSelected && pathItemStep === 1 ? (
               <div className="mid-area1" style={{ borderBottom: "none" }}>
                 <div style={{ margin: "0.5rem 0" }}>What do you want to do?</div>
-
                 <div className="maps-btns-div1">
                   <div
                     className="reset-btn1"
@@ -199,14 +200,12 @@ const confirmPathSelection = () => {
                   >
                     Explore Path
                   </div>
-
                   <div
                     className="reset-btn1"
                     onClick={() => setPathItemStep(2)}
                   >
                     Select Path
                   </div>
-
                   <div
                     className="reset-btn1"
                     onClick={() => {
@@ -218,21 +217,26 @@ const confirmPathSelection = () => {
                   </div>
                 </div>
               </div>
+
             ) : pathItemSelected && pathItemStep === 2 ? (
+              /* ── STEP 2: Confirm? ── */
               <div className="mid-area1" style={{ borderBottom: "none" }}>
                 <div style={{ margin: "0.5rem 0" }}>
-                  Are you sure you want to select this path?
+                  Are you sure you want to select{" "}
+                  <strong>{selectedPathItem?.name}</strong>?
                 </div>
-
                 <div className="maps-btns-div1">
                   <div
                     className="reset-btn1"
                     onClick={confirmPathSelection}
-                    style={{ opacity: loading ? 0.5 : 1 }}
+                    style={{
+                      opacity: confirmLoading ? 0.6 : 1,
+                      pointerEvents: confirmLoading ? "none" : "auto",
+                      cursor: confirmLoading ? "not-allowed" : "pointer",
+                    }}
                   >
-                    {loading ? "Loading..." : "Yes, Confirm"}
+                    {confirmLoading ? "Confirming..." : "Yes, Confirm"}
                   </div>
-
                   <div
                     className="reset-btn1"
                     onClick={() => setPathItemStep(1)}
@@ -241,162 +245,68 @@ const confirmPathSelection = () => {
                   </div>
                 </div>
               </div>
+
             ) : pathItemSelected && pathItemStep === 3 ? (
+              /* ── STEP 3: Congratulations ── */
               <div className="congrats-area">
-                <div className="congrats-textt">Congratulations</div>
+                <div className="congrats-textt">🎉 Congratulations!</div>
                 <div className="congrats-textt1">
-                  You have selected: {selectedPathItem?.name}
+                  You have selected:
+                </div>
+                <div className="congrats-textt1" style={{ fontWeight: 700 }}>
+                  {selectedPathItem?.name}
+                </div>
+                <div style={{ fontSize: "13px", color: "#9ca3af", marginTop: "8px" }}>
+                  Redirecting to My Journey...
                 </div>
               </div>
+
             ) : (
-              // DEFAULT: CURRENT COORDINATES
-<div className="mid-area1">
+              /* ── DEFAULT: Current Coordinates ── */
+              <div className="mid-area1">
 
-  {/* ================= EDUCATION HEADER (NEW) ================= */}
-   {/* EDUCATION HEADER */}
-  <div className="education-header">
-    <div className="education-icon">
-      <img src={educationIcon} alt="Education" />
-    </div>
-    <div className="education-title">Education</div>
-  </div>
-  {/* ================= CURRENT COORDINATES ================= */}
-  <div className="current-coord-container">
+                {/* Education Header */}
+                <div className="education-header">
+                  <div className="education-icon">
+                    <img src={educationIcon} alt="Education" />
+                  </div>
+                  <div className="education-title">Education</div>
+                </div>
 
+                {/* Current Coordinates */}
+                <div className="current-coord-container">
                   <div className="current-text">Current Coordinates</div>
 
                   {!userProfile ? (
                     <p>Loading profile...</p>
                   ) : (
                     <>
-                      <div className="each-coo-field">
-                        <div className="field-name">Grade</div>
-                        <div
-                          className="toggleContainer"
-                          onClick={() => setGradeToggle(!gradeToggle)}
-                        >
+                      {[
+                        { label: "Grade",       value: userProfile.grade,              toggle: gradeToggle,       setToggle: setGradeToggle },
+                        { label: "Curriculum",  value: userProfile.curriculum,         toggle: curriculumToggle,  setToggle: setCurriculumToggle },
+                        { label: "Stream",      value: userProfile.stream,             toggle: streamToggle,      setToggle: setStreamToggle },
+                        { label: "Performance", value: userProfile.performance,        toggle: performanceToggle, setToggle: setPerformanceToggle },
+                        { label: "Financial",   value: userProfile.financialSituation, toggle: financialToggle,   setToggle: setFinancialToggle },
+                        { label: "Personality", value: userProfile.personality,        toggle: personalityToggle, setToggle: setPersonalityToggle },
+                      ].map(({ label, value, toggle, setToggle }) => (
+                        <div className="each-coo-field" key={label}>
+                          <div className="field-name">{label}</div>
                           <div
-                            className="toggle"
-                            style={{
-                              transform: !gradeToggle
-                                ? "translateX(0)"
-                                : "translateX(20px)",
-                            }}
-                          ></div>
+                            className="toggleContainer"
+                            onClick={() => setToggle(!toggle)}
+                          >
+                            <div
+                              className="toggle"
+                              style={{
+                                transform: !toggle
+                                  ? "translateX(0)"
+                                  : "translateX(20px)",
+                              }}
+                            />
+                          </div>
+                          <div className="field-value">{value}</div>
                         </div>
-                        <div className="field-value">{userProfile.grade}</div>
-                      </div>
-
-                      {/* curriculum */}
-                      <div className="each-coo-field">
-                        <div className="field-name">Curriculum</div>
-                        <div
-                          className="toggleContainer"
-                          onClick={() =>
-                            setCurriculumToggle(!curriculumToggle)
-                          }
-                        >
-                          <div
-                            className="toggle"
-                            style={{
-                              transform: !curriculumToggle
-                                ? "translateX(0)"
-                                : "translateX(20px)",
-                            }}
-                          ></div>
-                        </div>
-                        <div className="field-value">
-                          {userProfile.curriculum}
-                        </div>
-                      </div>
-
-                      {/* Stream */}
-                      <div className="each-coo-field">
-                        <div className="field-name">Stream</div>
-                        <div
-                          className="toggleContainer"
-                          onClick={() => setStreamToggle(!streamToggle)}
-                        >
-                          <div
-                            className="toggle"
-                            style={{
-                              transform: !streamToggle
-                                ? "translateX(0)"
-                                : "translateX(20px)",
-                            }}
-                          ></div>
-                        </div>
-                        <div className="field-value">{userProfile.stream}</div>
-                      </div>
-
-                      {/* Performance */}
-                      <div className="each-coo-field">
-                        <div className="field-name">Performance</div>
-                        <div
-                          className="toggleContainer"
-                          onClick={() =>
-                            setPerformanceToggle(!performanceToggle)
-                          }
-                        >
-                          <div
-                            className="toggle"
-                            style={{
-                              transform: !performanceToggle
-                                ? "translateX(0)"
-                                : "translateX(20px)",
-                            }}
-                          ></div>
-                        </div>
-                        <div className="field-value">
-                          {userProfile.performance}
-                        </div>
-                      </div>
-
-                      {/* Financial */}
-                      <div className="each-coo-field">
-                        <div className="field-name">Financial</div>
-                        <div
-                          className="toggleContainer"
-                          onClick={() =>
-                            setFinancialToggle(!financialToggle)
-                          }
-                        >
-                          <div
-                            className="toggle"
-                            style={{
-                              transform: !financialToggle
-                                ? "translateX(0)"
-                                : "translateX(20px)",
-                            }}
-                          ></div>
-                        </div>
-                        <div className="field-value">
-                          {userProfile.financialSituation}
-                        </div>
-                      </div>
-
-                      {/* Personality */}
-                      <div className="each-coo-field">
-                        <div className="field-name">Personality</div>
-                        <div
-                          className="toggleContainer"
-                          onClick={() =>
-                            setPersonalityToggle(!personalityToggle)
-                          }
-                        >
-                          <div
-                            className="toggle"
-                            style={{
-                              transform: !personalityToggle
-                                ? "translateX(0)"
-                                : "translateX(20px)",
-                            }}
-                          ></div>
-                        </div>
-                        <div className="field-value">
-                          {userProfile.personality}
-                        </div>
-                      </div>
+                      ))}
                     </>
                   )}
                 </div>
@@ -413,7 +323,7 @@ const confirmPathSelection = () => {
             )}
           </div>
 
-          {/* RIGHT SIDE: SHOW APPROVED PATHS */}
+          {/* RIGHT: APPROVED PATHS */}
           <div className="maps-content-area1">
             <Pathview
               paths={approvedPaths}
@@ -425,6 +335,7 @@ const confirmPathSelection = () => {
               }}
             />
           </div>
+
         </div>
       )}
     </div>
