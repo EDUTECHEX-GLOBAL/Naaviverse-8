@@ -198,6 +198,7 @@
   margin-bottom: 8px;
   width: fit-content;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 // Goals Section - compact with minimal spacing
@@ -264,6 +265,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex-shrink: 0;
 }
 
 // Card Footer

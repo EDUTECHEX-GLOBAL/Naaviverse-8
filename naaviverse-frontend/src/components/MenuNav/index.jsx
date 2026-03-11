@@ -15,6 +15,9 @@ const MenuNav = ({
   const navigate = useNavigate();
   const isPartner = !!localStorage.getItem("partner");
 
+  // ✅ Hide top-right user menu for partner flow — they use the sidebar profile instead
+
+
   const handleLogout = () => {
     const adminUser = localStorage.getItem("adminuser");
     localStorage.clear();

@@ -2446,7 +2446,39 @@ const [selectedRole, setSelectedRole] = useState('all');
         display: "block" 
       }}
     >
-      
+      {/* Role Filter Tabs
+      <div className="role-tabs">
+        <button 
+          className={`role-tab ${selectedRole === 'all' ? 'active' : ''}`}
+          onClick={() => setSelectedRole('all')}
+        >
+          All
+        </button>
+        <button 
+          className={`role-tab ${selectedRole === 'vendor' ? 'active' : ''}`}
+          onClick={() => setSelectedRole('vendor')}
+        >
+          Vendor
+        </button>
+        <button 
+          className={`role-tab ${selectedRole === 'mentor' ? 'active' : ''}`}
+          onClick={() => setSelectedRole('mentor')}
+        >
+          Mentor
+        </button>
+        <button 
+          className={`role-tab ${selectedRole === 'institution' ? 'active' : ''}`}
+          onClick={() => setSelectedRole('institution')}
+        >
+          Institution
+        </button>
+        <button 
+          className={`role-tab ${selectedRole === 'distributor' ? 'active' : ''}`}
+          onClick={() => setSelectedRole('distributor')}
+        >
+          Distributor
+        </button>
+      </div> */}
 
       {/* Marketplace Grid */}
       <Marketplace search={search} selectedRole={selectedRole} />

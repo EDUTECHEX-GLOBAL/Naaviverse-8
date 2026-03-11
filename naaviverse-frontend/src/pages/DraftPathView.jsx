@@ -67,7 +67,6 @@ const normalizeStep = (raw) => {
       paid: raw.macro_access === "paid",
       free: raw.macro_access === "free",
       instructions: raw.macro_instructions || "",
-      // ✅ CHANGE 1: reads macro_marketplace from flat API shape
       marketplace: raw.macro_marketplace || raw.macro?.marketplace || [],
     },
     micro: {
@@ -78,7 +77,6 @@ const normalizeStep = (raw) => {
       paid: raw.micro_access === "paid",
       free: raw.micro_access === "free",
       instructions: raw.micro_instructions || "",
-      // ✅ CHANGE 1: reads micro_marketplace from flat API shape
       marketplace: raw.micro_marketplace || raw.micro?.marketplace || [],
     },
     nano: {
@@ -89,7 +87,6 @@ const normalizeStep = (raw) => {
       paid: raw.nano_access === "paid",
       free: raw.nano_access === "free",
       instructions: raw.nano_instructions || "",
-      // ✅ CHANGE 1: reads nano_marketplace from flat API shape
       marketplace: raw.nano_marketplace || raw.nano?.marketplace || [],
     },
   };
@@ -111,12 +108,12 @@ const MarketplaceItemCard = ({ item, compact = false }) => (
       <span>{item.cost}</span>
     </div>
     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.3rem", color: "#2c3e50" }}>
-      {item.goal && <span><strong>Goal:</strong> {item.goal}</span>}
-      {item.outcomes && <span><strong>Outcomes:</strong> {item.outcomes}</span>}
-      {item.access && <span><strong>Access:</strong> {item.access}</span>}
+      {item.goal && <span><strong>Goal:</strong>       {item.goal}</span>}
+      {item.outcomes && <span><strong>Outcomes:</strong>   {item.outcomes}</span>}
+      {item.access && <span><strong>Access:</strong>     {item.access}</span>}
       {item.iterations && <span><strong>Iterations:</strong> {item.iterations}</span>}
-      {item.duration && <span><strong>Duration:</strong> {item.duration}</span>}
-      {item.discount && <span><strong>Discount:</strong> {item.discount}</span>}
+      {item.duration && <span><strong>Duration:</strong>   {item.duration}</span>}
+      {item.discount && <span><strong>Discount:</strong>   {item.discount}</span>}
     </div>
     {item.features && (
       <div style={{ marginTop: "0.4rem" }}><strong>Features:</strong> {item.features}</div>
@@ -301,7 +298,7 @@ const DraftPathView = () => {
   const [currentLayer, setCurrentLayer] = useState("macro");
 
   const [selectedRole, setSelectedRole] = useState("");
-  const [marketForm,   setMarketForm]   = useState(EMPTY_MARKET_FORM);
+  const [marketForm, setMarketForm] = useState(EMPTY_MARKET_FORM);
 
   // ─── Data fetching ────────────────────────────────────────────────────────
 
@@ -332,13 +329,7 @@ const DraftPathView = () => {
         const pathRes = await axios.get(`${BASE_URL}/api/paths/viewpath/${id}`);
         const data = pathRes.data.data;
         setPathData(data);
-        // ── totalSteps: read from localStorage where CreateNewPath saves it ──
         const total = data?.total_steps || 5;
-
-        console.log("Path data keys:", Object.keys(data));
-        console.log("Path data:", data);
-        console.log("total_steps from DB:", data?.total_steps);
-
         setTotalSteps(Number(total));
         await fetchSteps(id);
       } catch (err) {
@@ -415,15 +406,12 @@ const DraftPathView = () => {
 
       if (isNew) {
         const res = await axios.post(`${BASE_URL}/api/steps/add`, payload);
-
-        // ✅ CHANGE 2: Merge API response WITH payload so marketplace
-        // is never lost even if the API doesn't echo back the arrays
         const merged = {
           ...payload,
           ...(res.data.data || {}),
           macro_marketplace: res.data.data?.macro_marketplace ?? payload.macro_marketplace,
           micro_marketplace: res.data.data?.micro_marketplace ?? payload.micro_marketplace,
-          nano_marketplace:  res.data.data?.nano_marketplace  ?? payload.nano_marketplace,
+          nano_marketplace: res.data.data?.nano_marketplace ?? payload.nano_marketplace,
         };
         const saved = normalizeStep(merged);
         setSteps((prev) => [...prev, saved]);
@@ -431,16 +419,13 @@ const DraftPathView = () => {
       } else {
         const stepId = steps[currentStepIndex]._id;
         const res = await axios.put(`${BASE_URL}/api/steps/update/${stepId}`, payload);
-
-        // ✅ CHANGE 3: Same merge fix for update — API response may not
-        // return marketplace arrays, so we keep what we sent
         const merged = {
           ...payload,
           _id: stepId,
           ...(res.data.data || {}),
           macro_marketplace: res.data.data?.macro_marketplace ?? payload.macro_marketplace,
           micro_marketplace: res.data.data?.micro_marketplace ?? payload.micro_marketplace,
-          nano_marketplace:  res.data.data?.nano_marketplace  ?? payload.nano_marketplace,
+          nano_marketplace: res.data.data?.nano_marketplace ?? payload.nano_marketplace,
         };
         const saved = normalizeStep(merged);
         setSteps((prev) => {
@@ -467,54 +452,69 @@ const DraftPathView = () => {
 
   const openMarketplace = (layerKey) => {
     setCurrentLayer(layerKey);
-    setSelectedRole("");  // ✅ CHANGE 4: was null, now "" to match select default
+    setSelectedRole("");
     setMarketForm(EMPTY_MARKET_FORM);
     setMarketplaceOpen(true);
   };
 
   const closeMarketplace = () => {
     setMarketplaceOpen(false);
-    setSelectedRole("");  // ✅ CHANGE 4: was null, now "" to match select default
+    setSelectedRole("");
     setMarketForm(EMPTY_MARKET_FORM);
   };
 
- const addMarketplaceItem = async () => {
+  // ✅ FIXED: no longer sends null step_id for new (unsaved) steps.
+  // - New step  → add to local state only; saveStep() will persist it.
+  // - Saved step → persist to API immediately, then update local state.
+  const addMarketplaceItem = async () => {
+    const newItem = {
+      role: selectedRole,
+      name: marketForm.name,
+      access: marketForm.access,
+      cost: marketForm.cost,
+      goal: marketForm.goal,
+      outcomes: marketForm.outcomes,
+      iterations: marketForm.iterations,
+      duration: marketForm.durationDays,
+      discount: marketForm.discount,
+      features: marketForm.features,
+    };
 
-try{
+    const stepId = currentStepIndex !== null ? steps[currentStepIndex]?._id : null;
 
-const userDetails = JSON.parse(localStorage.getItem("partner")) || {};
-const email = userDetails?.email || userDetails?.user?.email;
+    if (stepId) {
+      // Step already exists in DB → persist to marketplace collection immediately
+      try {
+        const userDetails = JSON.parse(localStorage.getItem("partner")) || {};
+        const email = userDetails?.email || userDetails?.user?.email;
 
-const payload = {
-partner_email: email,
-path_id: id,
-step_id: currentStepIndex !== null ? steps[currentStepIndex]._id : null,
-layer: currentLayer,
+        await axios.post(`${BASE_URL}/api/marketplace/add`, {
+          ...newItem,
+          partner_email: email,
+          path_id: id,
+          step_id: stepId,
+          layer: currentLayer,
+        });
+      } catch (err) {
+        console.error("Marketplace create error:", err);
+        return; // keep modal open so user can retry
+      }
+    }
+    // If no stepId (new unsaved step), we skip the API call entirely.
+    // The item lives in currentStep state and gets saved when saveStep() runs,
+    // which sends macro/micro/nano_marketplace arrays to /api/steps/add.
 
-role: selectedRole,
-name: marketForm.name,
-access: marketForm.access,
-cost: marketForm.cost,
+    // Always update local state so the card appears immediately in the builder
+    setCurrentStep((prev) => ({
+      ...prev,
+      [currentLayer]: {
+        ...prev[currentLayer],
+        marketplace: [...(prev[currentLayer]?.marketplace || []), newItem],
+      },
+    }));
 
-goal: marketForm.goal,
-outcomes: marketForm.outcomes,
-
-iterations: marketForm.iterations,
-duration: marketForm.durationDays,
-
-discount: marketForm.discount,
-features: marketForm.features
-};
-
-await axios.post(`${BASE_URL}/api/marketplace/add`, payload);
-
-closeMarketplace();
-
-}catch(error){
-console.error("Marketplace create error",error);
-}
-
-};
+    closeMarketplace();
+  };
 
   // ─── Submit for approval ──────────────────────────────────────────────────
 
@@ -570,7 +570,6 @@ console.error("Marketplace create error",error);
         <div className="path-header-box">
           <div className="path-header-content">
 
-            {/* 🔹 Back Button */}
             <button
               className="btn-outline"
               style={{ marginBottom: "12px" }}
@@ -578,6 +577,7 @@ console.error("Marketplace create error",error);
             >
               ← Back to Paths
             </button>
+
             <div className="path-title-section">
               <h1 className="path-title">{pathData.nameOfPath || "Untitled Path"}</h1>
               <span className="draft-badge">DRAFT</span>
@@ -592,15 +592,9 @@ console.error("Marketplace create error",error);
             )}
 
             <div className="path-actions-row">
-              <button className="btn-outline" onClick={() => setViewAllOpen(true)}>
-                View All Steps
-              </button>
-              <button className="btn-outline" onClick={() => setEditPathOpen(true)}>
-                Edit Path
-              </button>
-              <button className="btn-primary" onClick={handleSubmitForApproval}>
-                Submit for Approval
-              </button>
+              <button className="btn-outline" onClick={() => setViewAllOpen(true)}>View All Steps</button>
+              <button className="btn-outline" onClick={() => setEditPathOpen(true)}>Edit Path</button>
+              <button className="btn-primary" onClick={handleSubmitForApproval}>Submit for Approval</button>
             </div>
           </div>
         </div>
@@ -698,9 +692,7 @@ console.error("Marketplace create error",error);
                 />
               ))}
               <div className="builder-actions">
-                <button className="btn-outline" onClick={backToDraft} disabled={saving}>
-                  Cancel
-                </button>
+                <button className="btn-outline" onClick={backToDraft} disabled={saving}>Cancel</button>
                 <button className="btn-primary" onClick={saveStep} disabled={saving}>
                   {saving ? "Saving…" : "Save Step"}
                 </button>
@@ -752,10 +744,7 @@ console.error("Marketplace create error",error);
 
                 <div className="form-group">
                   <label>Marketplace Role *</label>
-                  <select
-                    value={selectedRole}
-                    onChange={(e) => setSelectedRole(e.target.value)}
-                  >
+                  <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}>
                     <option value="">Select Role</option>
                     <option value="vendor">Vendor</option>
                     <option value="mentor">Mentor</option>
@@ -789,15 +778,12 @@ console.error("Marketplace create error",error);
 
                 <div className="form-group">
                   <label>Cost</label>
-                  <select
+                  <input
+                    type="text"
+                    placeholder="e.g. 65000, 1500 per hour, Free, NA"
                     value={marketForm.cost}
                     onChange={(e) => setMarketForm((f) => ({ ...f, cost: e.target.value }))}
-                  >
-                    <option value="">Select</option>
-                    <option value="Free">Free</option>
-                    <option value="Paid">Paid</option>
-                    <option value="Not Applicable">Not Applicable</option>
-                  </select>
+                  />
                 </div>
 
                 <div className="form-group">
@@ -874,9 +860,7 @@ console.error("Marketplace create error",error);
               </div>
 
               <div className="modal-footer">
-                <button className="btn-outline" onClick={closeMarketplace}>
-                  Cancel
-                </button>
+                <button className="btn-outline" onClick={closeMarketplace}>Cancel</button>
                 <button
                   className="btn-primary"
                   onClick={addMarketplaceItem}

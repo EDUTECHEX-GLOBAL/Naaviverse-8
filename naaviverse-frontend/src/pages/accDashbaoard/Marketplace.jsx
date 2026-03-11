@@ -6,69 +6,46 @@ import closepop from "../../static/images/dashboard/closepop.svg";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-// SVG Icons as React Components (embedded directly)
+// ─── SVG Icons ────────────────────────────────────────────────────────────────
+
 const MentorIcon = () => (
   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path d="M20 11H4V13H20V11Z M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z"/>
+    <path d="M20 11H4V13H20V11Z M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" />
   </svg>
 );
 
 const VendorIcon = () => (
   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z"/>
+    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" />
   </svg>
 );
 
 const InstitutionIcon = () => (
   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 2L2 7V9H22V7L12 2ZM4 11V19H8V11H4ZM10 11V19H14V11H10ZM18 11V19H20V11H18Z"/>
+    <path d="M12 2L2 7V9H22V7L12 2ZM4 11V19H8V11H4ZM10 11V19H14V11H10ZM18 11V19H20V11H18Z" />
   </svg>
 );
 
 const DistributorIcon = () => (
   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path d="M4 3H20V7H4V3ZM2 9H22V21H2V9ZM6 13V17H18V13H6Z"/>
+    <path d="M4 3H20V7H4V3ZM2 9H22V21H2V9ZM6 13V17H18V13H6Z" />
   </svg>
 );
 
 const DefaultIcon = () => (
   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z"/>
+    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" />
   </svg>
 );
 
-// 4 distinct colors for 4 roles - no repetition
+// ─── Role config ──────────────────────────────────────────────────────────────
+
 const ROLE_CONFIG = {
-  mentor: { 
-    color: "#0B6E4F", 
-    bg: "#E3F2E9", 
-    border: "#A8D5BA", 
-    icon: MentorIcon 
-  },
-  vendor: { 
-    color: "#af5918", 
-    bg: "#FEF3C7", 
-    border: "#FCD34D", 
-    icon: VendorIcon 
-  },
-  institution: { 
-    color: "#6D28D9", 
-    bg: "#EDE9FE", 
-    border: "#C4B5FD", 
-    icon: InstitutionIcon 
-  },
-  distributor: { 
-    color: "#c93232", 
-    bg: "#FEE2E2", 
-    border: "#FCA5A5", 
-    icon: DistributorIcon 
-  },
-  default: { 
-    color: "#4B5563", 
-    bg: "#F3F4F6", 
-    border: "#D1D5DB", 
-    icon: DefaultIcon 
-  },
+  mentor:      { color: "#0B6E4F", bg: "#E3F2E9", border: "#A8D5BA", icon: MentorIcon },
+  vendor:      { color: "#af5918", bg: "#FEF3C7", border: "#FCD34D", icon: VendorIcon },
+  institution: { color: "#6D28D9", bg: "#EDE9FE", border: "#C4B5FD", icon: InstitutionIcon },
+  distributor: { color: "#c93232", bg: "#FEE2E2", border: "#FCA5A5", icon: DistributorIcon },
+  default:     { color: "#4B5563", bg: "#F3F4F6", border: "#D1D5DB", icon: DefaultIcon },
 };
 
 const getRoleConfig = (role) =>
@@ -78,6 +55,8 @@ const formatPrice = (cost) => {
   if (typeof cost === "number") return cost === 0 ? "Free" : `$${cost}`;
   return cost || "Free";
 };
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearchChange }) => {
   const [marketplaceItems, setMarketplaceItems] = useState([]);
@@ -93,7 +72,6 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
     // eslint-disable-next-line
   }, []);
 
-  // Update local search when prop changes
   useEffect(() => {
     setLocalSearch(search);
   }, [search]);
@@ -106,20 +84,13 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
       if (!email) { setLoading(false); return; }
 
       const [servicesRes, stepsRes, marketplaceRes] = await Promise.allSettled([
-        axios.get(`${BASE_URL}/api/services/getservices`, {
-          params: { productcreatoremail: email },
-        }),
+        axios.get(`${BASE_URL}/api/services/getservices`, { params: { productcreatoremail: email } }),
         axios.get(`${BASE_URL}/api/steps/partner`, { params: { email } }),
-        axios.get(`${BASE_URL}/api/marketplace/get`, {
-          params: { email },
-        }),
+        axios.get(`${BASE_URL}/api/marketplace/get`, { params: { email } }),
       ]);
 
       // Source A: Services
-      const services = servicesRes.status === "fulfilled"
-        ? servicesRes.value.data?.data || []
-        : [];
-
+      const services = servicesRes.status === "fulfilled" ? servicesRes.value.data?.data || [] : [];
       const serviceItems = services.map((s) => {
         const billing = getBillingInfo(s?.billing_cycle);
         return {
@@ -146,8 +117,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
         const allSteps = stepsRes.value.data?.data || [];
         allSteps.forEach((step, si) => {
           ["macro", "micro", "nano"].forEach((layer) => {
-            const arr =
-              step[`${layer}_marketplace`] || step[layer]?.marketplace || [];
+            const arr = step[`${layer}_marketplace`] || step[layer]?.marketplace || [];
             arr.forEach((item, ii) => {
               if (!item?.name) return;
               stepItems.push({
@@ -163,7 +133,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                 discount: item.discount || "",
                 features: item.features || "",
                 sourceType: "step",
-                sourceLabel: `${step.macro_name || step.name || `Step ${si + 1}`}`,
+                sourceLabel: step.macro_name || step.name || `Step ${si + 1}`,
                 sourceStep: step.macro_name || step.name || `Step ${si + 1}`,
                 sourceLayer: layer.toUpperCase(),
               });
@@ -198,10 +168,9 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
         });
       }
 
-      // Merge all sources
+      // Merge & deduplicate
       const seen = new Set();
       const merged = [];
-
       [...serviceItems, ...collectionItems, ...stepItems].forEach((item) => {
         const key = `${item.name?.toLowerCase()}-${item.role?.toLowerCase()}`;
         if (!seen.has(key)) {
@@ -219,8 +188,8 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
   };
 
   const getBillingInfo = (billing_cycle = {}) => {
-    if (billing_cycle?.monthly?.price !== undefined) return { price: billing_cycle.monthly.price };
-    if (billing_cycle?.annual?.price !== undefined)  return { price: billing_cycle.annual.price };
+    if (billing_cycle?.monthly?.price  !== undefined) return { price: billing_cycle.monthly.price };
+    if (billing_cycle?.annual?.price   !== undefined) return { price: billing_cycle.annual.price };
     if (billing_cycle?.lifetime?.price !== undefined) return { price: billing_cycle.lifetime.price };
     return { price: 0 };
   };
@@ -254,47 +223,24 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
 
   return (
     <div className="marketplace-container">
-      {/* Filter Row - Buttons and Search in one line */}
-           {/* Filter Row - Buttons and Search in one line */}
+
+      {/* ── Filter Row ── */}
       <div className="mp-filter-row">
         <div className="mp-filter-buttons">
-          <button
-            className={`mp-filter-btn ${activeRole === "all" ? "active" : ""}`}
-            onClick={() => handleRoleClick("all")}
-          >
-            All
-          </button>
-          <button
-            className={`mp-filter-btn ${activeRole === "vendor" ? "active" : ""}`}
-            onClick={() => handleRoleClick("vendor")}
-          >
-            Vendor
-          </button>
-          <button
-            className={`mp-filter-btn ${activeRole === "mentor" ? "active" : ""}`}
-            onClick={() => handleRoleClick("mentor")}
-          >
-            Mentor
-          </button>
-          <button
-            className={`mp-filter-btn ${activeRole === "institution" ? "active" : ""}`}
-            onClick={() => handleRoleClick("institution")}
-          >
-            Institution
-          </button>
-          <button
-            className={`mp-filter-btn ${activeRole === "distributor" ? "active" : ""}`}
-            onClick={() => handleRoleClick("distributor")}
-          >
-            Distributor
-          </button>
+          {["all", "vendor", "mentor", "institution", "distributor"].map((role) => (
+            <button
+              key={role}
+              className={`mp-filter-btn ${activeRole === role ? "active" : ""}`}
+              onClick={() => handleRoleClick(role)}
+            >
+              {role.charAt(0).toUpperCase() + role.slice(1)}
+            </button>
+          ))}
         </div>
-
-        {/* Search Bar */}
         <div className="mp-search-wrapper">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="M21 21L16.65 16.65" strokeLinecap="round"/>
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21L16.65 16.65" strokeLinecap="round" />
           </svg>
           <input
             type="text"
@@ -306,6 +252,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
         </div>
       </div>
 
+      {/* ── Loading ── */}
       {loading ? (
         <div className="marketplace-grid">
           {Array(6).fill(null).map((_, i) => (
@@ -317,11 +264,15 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
             </div>
           ))}
         </div>
+
+      /* ── Empty ── */
       ) : filteredItems.length === 0 ? (
         <div className="mp-empty">
           <p className="mp-empty-title">No Marketplace Items Found</p>
           <p className="mp-empty-sub">Create services or add items to steps to see them here.</p>
         </div>
+
+      /* ── Cards ── */
       ) : (
         <div className="marketplace-grid">
           {filteredItems.map((item) => {
@@ -332,6 +283,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
 
             return (
               <div key={item._id} className="marketplace-card">
+
                 {/* Card Header */}
                 <div className="mp-card-header">
                   <div className="mp-header-left">
@@ -343,7 +295,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                   <span className={`mp-access-badge ${isFree ? "free" : "paid"}`}>
                     {price}
                   </span>
-                </div>
+                </div>{/* ✅ closes mp-card-header */}
 
                 {/* Role Pill */}
                 <div className="mp-role-pill" style={{ color: cfg.color }}>
@@ -360,7 +312,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                   )}
                   {item.outcomes && !item.goal && (
                     <div className="mp-goal-item">
-                      <span className="mp-goal-label">Goal</span>
+                      <span className="mp-goal-label">Outcomes</span>
                       <span className="mp-goal-text">{item.outcomes}</span>
                     </div>
                   )}
@@ -377,7 +329,9 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                   <div className="mp-description">
                     {item.features.length > 80 ? (
                       <>
-                        {expandedDesc[item._id] ? item.features : `${item.features.substring(0, 80)}...`}
+                        {expandedDesc[item._id]
+                          ? item.features
+                          : `${item.features.substring(0, 80)}...`}
                         <button
                           className="mp-read-more"
                           onClick={() => toggleDesc(item._id)}
@@ -389,7 +343,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                       item.features
                     )}
                   </div>
-                )}
+                )}{/* ✅ closes mp-description */}
 
                 {/* Source Info */}
                 {(item.sourceType === "step" || item.sourceLayer) && (
@@ -408,13 +362,14 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                     View All Details
                   </button>
                 </div>
-              </div>
+
+              </div> /* ✅ closes marketplace-card */
             );
           })}
         </div>
       )}
 
-      {/* Details Modal */}
+      {/* ══ Details Modal ══════════════════════════════════════════════════════ */}
       {showDetails && selectedItem && (() => {
         const cfg = getRoleConfig(selectedItem.role);
         const price = formatPrice(selectedItem.cost);
@@ -444,7 +399,8 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
 
               {/* Modal Body */}
               <div className="mp-modal-body">
-                {/* Pricing Section */}
+
+                {/* Access & Pricing */}
                 <div className="mp-modal-section">
                   <div className="mp-section-title">ACCESS & PRICING</div>
                   <div className="mp-pricing-grid">
@@ -454,7 +410,10 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                     </div>
                     <div className="mp-pricing-item">
                       <span className="mp-pricing-label">Price</span>
-                      <span className="mp-pricing-value" style={{ color: price === "Free" ? "#166534" : cfg.color }}>
+                      <span
+                        className="mp-pricing-value"
+                        style={{ color: price === "Free" ? "#166534" : cfg.color }}
+                      >
                         {price}
                       </span>
                     </div>
@@ -469,8 +428,8 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                   </div>
                 </div>
 
-                {/* Source Section */}
-                {(selectedItem.sourceLayer || selectedItem.sourceStep) && (
+                {/* Source */}
+                {(selectedItem.sourceLayer || selectedItem.sourceStep || selectedItem.layer) && (
                   <div className="mp-modal-section">
                     <div className="mp-section-title">SOURCE</div>
                     <div className="mp-source-grid">
@@ -480,16 +439,12 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                           <span className="mp-source-value">{selectedItem.sourceStep}</span>
                         </div>
                       )}
-                      {selectedItem.sourceLayer && (
+                      {(selectedItem.sourceLayer || selectedItem.layer) && (
                         <div className="mp-source-item">
                           <span className="mp-source-label">Layer</span>
-                          <span className="mp-source-value">{selectedItem.sourceLayer}</span>
-                        </div>
-                      )}
-                      {selectedItem.sourceType === "marketplace" && selectedItem.layer && (
-                        <div className="mp-source-item">
-                          <span className="mp-source-label">Layer</span>
-                          <span className="mp-source-value">{selectedItem.layer?.toUpperCase()}</span>
+                          <span className="mp-source-value">
+                            {(selectedItem.sourceLayer || selectedItem.layer)?.toUpperCase()}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -543,7 +498,8 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                     <p className="mp-features-text">{selectedItem.features}</p>
                   </div>
                 )}
-              </div>
+
+              </div>{/* end mp-modal-body */}
 
               {/* Modal Footer */}
               <div className="mp-modal-footer">
@@ -551,10 +507,12 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                   Close
                 </button>
               </div>
-            </div>
+
+            </div>{/* end mp-modal */}
           </div>
         );
       })()}
+
     </div>
   );
 };
