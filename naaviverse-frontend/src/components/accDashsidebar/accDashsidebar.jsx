@@ -1,45 +1,52 @@
 import React, { useState, useRef, useEffect } from "react";
-import realtorwhite from "../../static/images/dashboard/realtorwhite.svg";
 import "./accDashsidebar.scss";
 import { useStore } from "../store/store.ts";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/images/logo/naavi_final_logo2.png";
 
-// DeepSeek-style Blue Icons
+// ─── Icons ────────────────────────────────────────────────────────────────────
+
 const HomeIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '12px' }}>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "12px" }}>
     <path d="M12 3L4 9V21H9V15H15V21H20V9L12 3Z" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
     <path d="M12 8V11" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" />
   </svg>
 );
 
 const CRMIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '12px' }}>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "12px" }}>
     <circle cx="12" cy="8" r="4" stroke="#3B82F6" strokeWidth="1.5" />
     <path d="M5 18V16C5 13.7909 6.79086 12 9 12H15C17.2091 12 19 13.7909 19 16V18" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" />
   </svg>
 );
 
 const PathsIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '12px' }}>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "12px" }}>
     <path d="M12 4V20M4 12H20" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" />
     <circle cx="12" cy="12" r="8" stroke="#3B82F6" strokeWidth="1.5" />
   </svg>
 );
 
 const StepsIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '12px' }}>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "12px" }}>
     <path d="M6 9L12 4L18 9L12 14L6 9Z" stroke="#3B82F6" strokeWidth="1.5" strokeLinejoin="round" />
     <path d="M6 15L12 20L18 15" stroke="#3B82F6" strokeWidth="1.5" strokeLinejoin="round" />
   </svg>
 );
 
 const MarketplaceIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '12px' }}>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "12px" }}>
     <path d="M4 8H20L18 15H6L4 8Z" stroke="#3B82F6" strokeWidth="1.5" strokeLinejoin="round" />
     <circle cx="8" cy="19" r="2" stroke="#3B82F6" strokeWidth="1.5" />
     <circle cx="16" cy="19" r="2" stroke="#3B82F6" strokeWidth="1.5" />
     <path d="M20 12H22" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+const LockIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginLeft: "auto", opacity: 0.4 }}>
+    <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M7 11V7C7 4.2 9.2 2 12 2C14.8 2 17 4.2 17 7V11" stroke="currentColor" strokeWidth="1.5" />
   </svg>
 );
 
@@ -71,6 +78,8 @@ const ThreeDotsIcon = () => (
     <circle cx="4" cy="12" r="2" fill="#718096" />
   </svg>
 );
+
+// ─── Menu definitions ─────────────────────────────────────────────────────────
 
 const sidebarMenu1 = [
   {
@@ -116,44 +125,38 @@ const sidebarMenu1 = [
 ];
 
 const sidebarMenu2 = [
-  {
-    id: 0,
-    display: "CRM",
-    title: "CRM",
-    click: true,
-  },
-  {
-    id: 1,
-    display: "Paths",
-    title: "Paths",
-    click: true,
-  },
+  { id: 0, display: "CRM", title: "CRM", click: true },
+  { id: 1, display: "Paths", title: "Paths", click: true },
 ];
 
-const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin }) => {
+// ─── Component ────────────────────────────────────────────────────────────────
+
+const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, accStatus }) => {
   const selectedMenu = admin ? sidebarMenu2 : sidebarMenu1;
   const { accsideNav, setaccsideNav, setispopular } = useStore();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Get user details from localStorage
+  // ── Read partner from localStorage ──────────────────────────────────────────
   const userDetails = JSON.parse(localStorage.getItem("partner") || "{}");
-
-  // Display business name
   const fullName = userDetails?.businessName || "Partner";
-
-  // Initial from first character of business name
   const userInitial = fullName.charAt(0).toUpperCase();
 
-  // Handle logout
+  // ── 🔒 LOCK FLAG ─────────────────────────────────────────────────────────────
+  // Sidebar tabs are disabled unless the account is approved.
+  // profileCreated=false  → profile not yet submitted
+  // status !== "approved" → pending or rejected
+  const partnerStatus = accStatus || userDetails?.approvalStatus;
+  const isLocked = partnerStatus !== "approved";
+  // ── Logout ───────────────────────────────────────────────────────────────────
   const handleLogout = () => {
     localStorage.removeItem("partner");
     localStorage.removeItem("loginEmail");
     navigate("/login");
   };
 
-  // Close dropdown when clicking outside
+  // ── Close dropdown on outside click ─────────────────────────────────────────
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -164,24 +167,21 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin }) 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-const getActiveBackground = (title) => {
-  if (accsideNav === title) {
-    return "#E6F0FF";
-  }
-  return "transparent";
-};
+  const getActiveBackground = (title) =>
+    accsideNav === title ? "#E6F0FF" : "transparent";
 
+  // ─── Render ──────────────────────────────────────────────────────────────────
   return (
     <div
       className="dashboard-sidebar"
       style={{
         overflow: "hidden",
-        padding: "24px 16px",
+        padding: "24px 16px 16px",
         display: "flex",
         flexDirection: "column",
         height: "100vh",
         backgroundColor: "#FFFFFF",
-        borderRight: "1px solid #EDF2F7"
+        borderRight: "1px solid #EDF2F7",
       }}
     >
       {/* Logo */}
@@ -194,13 +194,18 @@ const getActiveBackground = (title) => {
         />
       </div>
 
-      {/* Main Navigation */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "0 4px" }}>
+      {/* ── Main Navigation ────────────────────────────────────────────────── */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 4px", minHeight: 0 }}>
         {selectedMenu?.map((each, i) => {
           const isActive = accsideNav === each.title;
+          // 🔒 Each nav item is clickable only when account is approved
+          const itemClickable = each.click && !isLocked;
+
           return (
             <div
+              key={i}
               className="each-sidenav"
+              title={isLocked ? "Your account is pending admin approval" : ""}
               style={{
                 background: getActiveBackground(each.title),
                 color: isActive ? "#1A1F36" : "#4A5568",
@@ -211,49 +216,63 @@ const getActiveBackground = (title) => {
                 alignItems: "center",
                 fontWeight: isActive ? "600" : "500",
                 fontSize: "14px",
-                cursor: each.click ? "pointer" : "not-allowed",
-                opacity: each.click ? "1" : "0.4",
+                // 🔒 visual cue: greyed-out + not-allowed when locked
+                cursor: itemClickable ? "pointer" : "not-allowed",
+                opacity: itemClickable || isActive ? "1" : "0.4",
                 marginBottom: "2px",
                 transition: "all 0.15s ease",
               }}
-              key={i}
               onClick={() => {
-                if (!each.click) return;
-                if (handleChangeAccDashsidebar) handleChangeAccDashsidebar();
+                if (!itemClickable) return;
                 setaccsideNav(each.title);
-                if (each.path) navigate(each.path);
+                if (each.path) navigate(each.path); // ← Navigate first
+                if (handleChangeAccDashsidebar) handleChangeAccDashsidebar(); // ← Then close dropdown
               }}
               onMouseEnter={(e) => {
-                if (!isActive) e.currentTarget.style.backgroundColor = "#F7F9FC";
+                if (!isActive && itemClickable)
+                  e.currentTarget.style.backgroundColor = "#F7F9FC";
               }}
               onMouseLeave={(e) => {
-                if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
+                if (!isActive)
+                  e.currentTarget.style.backgroundColor = "transparent";
               }}
             >
               {each.icon && <each.icon />}
               <span>{each.display}</span>
+              {/* 🔒 Show lock icon on every restricted tab */}
+              {isLocked && <LockIcon />}
             </div>
           );
         })}
       </div>
 
-      {/* Bottom Section */}
-      <div style={{
-        padding: "16px 4px 0",
-        borderTop: "1px solid #EDF2F7",
-        marginTop: "auto"
-      }}>
-        {/* Add New Button */}
+      {/* ── Bottom Section ─────────────────────────────────────────────────── */}
+      <div
+        style={{
+          padding: "16px 4px 0",
+          borderTop: "1px solid #EDF2F7",
+          marginTop: "auto",
+          display: "flex",
+          flexDirection: "column",
+          gap: "0px",
+        }}
+      >
+        {/* Add New Button — also locked when pending/rejected */}
         {!admin && (
           <div
+            title={isLocked ? "Your account is pending admin approval" : ""}
             style={{
-              background: "linear-gradient(135deg, #1f304f 0%, #0d6b6e 100%)",
+              background: isLocked
+                ? "#CBD5E0"
+                : "linear-gradient(135deg, #1f304f 0%, #0d6b6e 100%)",
               borderRadius: "30px",
               padding: "6px 16px",
               color: "#FFFFFF",
               width: "fit-content",
-              cursor: "pointer",
-              marginBottom: "16px",
+              // 🔒 not-allowed when locked
+              cursor: isLocked ? "not-allowed" : "pointer",
+              opacity: isLocked ? "0.5" : "1",
+              marginBottom: "30px",
               fontSize: "13px",
               fontWeight: "500",
               display: "flex",
@@ -262,80 +281,124 @@ const getActiveBackground = (title) => {
               gap: "6px",
               transition: "all 0.2s ease",
               border: "none",
-              boxShadow: "0 2px 8px rgba(13, 107, 110, 0.3)",
+              boxShadow: isLocked ? "none" : "0 2px 8px rgba(13,107,110,0.3)",
             }}
-            onClick={() => setispopular(true)}
+            onClick={() => {
+              if (isLocked) return; // 🔒
+              setispopular(true);
+            }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = "linear-gradient(135deg, #162238 0%, #0a5254 100%)";
-              e.currentTarget.style.boxShadow = "0 4px 12px rgba(13, 107, 110, 0.45)";
+              if (isLocked) return;
+              e.currentTarget.style.background =
+                "linear-gradient(135deg, #162238 0%, #0a5254 100%)";
+              e.currentTarget.style.boxShadow =
+                "0 4px 12px rgba(13,107,110,0.45)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = "linear-gradient(135deg, #1f304f 0%, #0d6b6e 100%)";
-              e.currentTarget.style.boxShadow = "0 2px 8px rgba(13, 107, 110, 0.3)";
+              if (isLocked) return;
+              e.currentTarget.style.background =
+                "linear-gradient(135deg, #1f304f 0%, #0d6b6e 100%)";
+              e.currentTarget.style.boxShadow =
+                "0 2px 8px rgba(13,107,110,0.3)";
             }}
           >
-            <span style={{ fontSize: "16px", lineHeight: "16px", fontWeight: "400" }}>＋</span>
+            <span style={{ fontSize: "16px", lineHeight: "16px", fontWeight: "400" }}>
+              ＋
+            </span>
             <span>Add New</span>
           </div>
         )}
 
         {/* Partner Profile Row with Three Dots */}
-        <div style={{ position: "relative" }} ref={dropdownRef}>
+        <div style={{ position: "relative", minHeight: "48px" }} ref={dropdownRef}>
           <div
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "6px 8px",
+              padding: "8px 10px",
               borderRadius: "10px",
               cursor: "pointer",
-              backgroundColor: accsideNav === "Profile" ? "#E6F0FF" : "transparent",
+              backgroundColor: "transparent",
+              border: "1px solid #EDF2F7",
               transition: "all 0.15s ease",
+              minHeight: "48px",
             }}
             onClick={() => {
               navigate("/dashboard/accountants/profile");
               setaccsideNav("Profile");
             }}
             onMouseEnter={(e) => {
-              if (accsideNav !== "Profile") e.currentTarget.style.backgroundColor = "#F7F9FC";
+              e.currentTarget.style.backgroundColor = "#F7F9FC";
             }}
             onMouseLeave={(e) => {
-              if (accsideNav !== "Profile") e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.backgroundColor = "transparent";
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", overflow: "hidden", flex: 1 }}>
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              overflow: "hidden",
+              flex: 1,
+              minWidth: 0,
+            }}>
+
               {/* Avatar */}
               <div
                 style={{
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "8px",
-                  background: "linear-gradient(135deg, #4158D0, #C850C0)",
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "7px",
+                  background: "linear-gradient(135deg, #1f304f 0%, #0d6b6e 100%)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   color: "#FFFFFF",
                   fontWeight: "600",
                   fontSize: "14px",
-                  marginRight: "10px",
-                  flexShrink: 0
+                  marginRight: "8px",
+                  flexShrink: 0,
                 }}
               >
                 {userInitial}
               </div>
 
-              {/* Full Name */}
-              <div style={{ overflow: "hidden", flex: 1 }}>
-                <div style={{
-                  fontWeight: "600",
-                  fontSize: "14px",
-                  color: "#1A1F36",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}>
+              {/* Full Name + pending badge */}
+              <div style={{
+                overflow: "hidden",
+                flex: 1,
+                minWidth: 0,
+              }}>
+                <div
+                  style={{
+                    fontWeight: "600",
+                    fontSize: "12px",
+                    color: "#1A1F36",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    maxWidth: "120px",
+                  }}
+                >
                   {fullName}
                 </div>
+                {/* 🔒 Status badge shown when not approved */}
+                {isLocked && (
+                  <div
+                    style={{
+                      fontSize: "10px",
+                      fontWeight: "600",
+                      color: partnerStatus === "rejected" ? "#EF4444" : "#D97706",
+                      marginTop: "1px",
+                    }}
+                  >
+                    {partnerStatus === "rejected"
+                      ? "● Rejected"
+                      : partnerStatus === "pending"
+                        ? "● Pending Approval"
+                        : "● Profile Required"}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -355,9 +418,12 @@ const getActiveBackground = (title) => {
                 transition: "all 0.15s ease",
                 backgroundColor: showDropdown ? "#F1F5F9" : "transparent",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#F1F5F9"; }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#F1F5F9";
+              }}
               onMouseLeave={(e) => {
-                if (!showDropdown) e.currentTarget.style.backgroundColor = "transparent";
+                if (!showDropdown)
+                  e.currentTarget.style.backgroundColor = "transparent";
               }}
             >
               <ThreeDotsIcon />
@@ -377,7 +443,7 @@ const getActiveBackground = (title) => {
                 boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
                 padding: "4px",
                 zIndex: 1000,
-                border: "1px solid #EDF2F7"
+                border: "1px solid #EDF2F7",
               }}
             >
               {/* Settings */}
@@ -399,7 +465,7 @@ const getActiveBackground = (title) => {
                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#4A5568"; }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M17 3L21 7L7 21H3V17L17 3Z" stroke="currentColor" strokeLinejoin="round" />
+                  <path d="M17 3L21 7L7 21H3V17L17 3Z" strokeLinejoin="round" />
                 </svg>
                 <span>Edit Profile</span>
               </div>
@@ -417,7 +483,7 @@ const getActiveBackground = (title) => {
 
               <div style={{ height: "1px", backgroundColor: "#EDF2F7", margin: "4px 0" }} />
 
-              {/* Logout — only inside dropdown, nowhere else */}
+              {/* Logout */}
               <div
                 style={{ display: "flex", alignItems: "center", padding: "8px 10px", borderRadius: "6px", cursor: "pointer", color: "#EF4444", fontSize: "13px", fontWeight: "500", gap: "10px", transition: "all 0.15s ease" }}
                 onClick={() => { setShowDropdown(false); handleLogout(); }}

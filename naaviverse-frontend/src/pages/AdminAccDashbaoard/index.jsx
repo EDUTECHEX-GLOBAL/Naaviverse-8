@@ -2,7 +2,7 @@ import React, { useState, useLayoutEffect, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./accDashboard.scss";
-
+import Dashboard from "./Dashboard";
 import { Outlet, useLocation } from "react-router-dom";
 
 import searchic from "../../static/images/dashboard/searchic.svg";
@@ -60,7 +60,9 @@ import AdminStepDataPage from "./AdminStepDataPage.jsx";
 import MyStepsAdmin from "./MyStepsAdmin/index.jsx";
 import MenuNav from "../../components/MenuNav/index.jsx";
 import EditServiceForm from "./EditServices";
+
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const AccDashboard = () => {
   const {
     accsideNav,
@@ -72,8 +74,6 @@ const AccDashboard = () => {
     balanceToggle,
     setBalanceToggle,
   } = useStore();
-
- 
 
   /* ---------------- BASIC UI STATES ---------------- */
   const [search, setSearch] = useState("");
@@ -94,13 +94,11 @@ const AccDashboard = () => {
   const itemsPerPage = 10;
 
   /* ---------------- PAGINATION CALCULATIONS ---------------- */
-  /* ---------------- PAGINATION CALCULATIONS ---------------- */
-const safeUsers = Array.isArray(crmUserData) ? crmUserData : [];
-
-const totalPages = Math.ceil(safeUsers.length / itemsPerPage);
-const startIndex = (currentPage - 1) * itemsPerPage;
-const endIndex = startIndex + itemsPerPage;
-const currentUsers = safeUsers.slice(startIndex, endIndex);
+  const safeUsers = Array.isArray(crmUserData) ? crmUserData : [];
+  const totalPages = Math.ceil(safeUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUsers = safeUsers.slice(startIndex, endIndex);
 
   /* ---------------- OTHER STATES (UNCHANGED) ---------------- */
   const [isLoading, setIsLoading] = useState(false);
@@ -133,11 +131,10 @@ const currentUsers = safeUsers.slice(startIndex, endIndex);
   const [thirdChargeAttempt, setthirdChargeAttempt] = useState("");
   const [image, setImage] = useState(null);
   const [isSubmit, setIsSubmit] = useState(false);
- const [selectedService, setSelectedService] = useState(null);
-const [serviceDrawerOpen, setServiceDrawerOpen] = useState(false);
-const [serviceMode, setServiceMode] = useState("actions"); 
-// actions | view | edit
-
+  const [selectedService, setSelectedService] = useState(null);
+  const [serviceDrawerOpen, setServiceDrawerOpen] = useState(false);
+  const [serviceMode, setServiceMode] = useState("actions");
+  // actions | view | edit
 
   const [isloading, setIsloading] = useState(false);
   const [updatedIcon, setUpdatedIcon] = useState("");
@@ -847,13 +844,12 @@ const [serviceMode, setServiceMode] = useState("actions");
   };
 
   function reload() {
-  setServiceDrawerOpen(false);
-  setServiceMode("actions");
-  setSelectedService(null);
-  setUpdatedIcon("");
-  getAdminServices();
-}
-
+    setServiceDrawerOpen(false);
+    setServiceMode("actions");
+    setSelectedService(null);
+    setUpdatedIcon("");
+    getAdminServices();
+  }
 
   const deleteService = () => {
     setIsloading(true);
@@ -1147,8 +1143,8 @@ const [serviceMode, setServiceMode] = useState("actions");
     if (accsideNav === "CRM" && crmMenu === "Clients") {
       setIsUserLoading(true);
 
-     
-        axios.get(`${BASE_URL}/api/users`)
+      axios
+        .get(`${BASE_URL}/api/users`)
         .then((response) => {
           setCrmUserData(response?.data?.data || []);
           setIsUserLoading(false);
@@ -1168,8 +1164,6 @@ const [serviceMode, setServiceMode] = useState("actions");
   const usersFetchRef = useRef(false);
 
   const fetchedRef = useRef(false);
-
-
 
   function customDateFormat(date) {
     if (date instanceof Date && !isNaN(date.valueOf())) {
@@ -1346,19 +1340,16 @@ const [serviceMode, setServiceMode] = useState("actions");
           </div>
 
           {/* MAIN CONTENT */}
-<div
-  className="dashboard-screens"
-  onClick={() => resetpop()}
-  style={{
-    height: "100vh",
-    overflow: "hidden",
-    maxWidth: "calc(100vw - 220px)",
-    width: "calc(100% - 20px)",
-  }}
->
-
-
-          
+          <div
+            className="dashboard-screens"
+            onClick={() => resetpop()}
+            style={{
+              height: "100vh",
+              overflow: "hidden",
+              maxWidth: "calc(100vw - 220px)",
+              width: "calc(100% - 20px)",
+            }}
+          >
             <div style={{ height: "100%" }}>
               {/* 🔥 PROFILE ROUTE HANDLER */}
               {isProfilePage ? (
@@ -1367,13 +1358,12 @@ const [serviceMode, setServiceMode] = useState("actions");
                 <>
                   {accsideNav === "CRM" ? (
                     <>
-                      {/* TOP SEARCH */}
                       <MenuNav
                         showDrop={showDrop}
                         setShowDrop={setShowDrop}
                         searchTerm={search}
                         setSearchterm={setSearch}
-                        searchPlaceholder="Search Clients..."
+                        searchPlaceholder="Search..."
                       />
 
                       {/* CRM TABS */}
@@ -1385,7 +1375,7 @@ const [serviceMode, setServiceMode] = useState("actions");
                             setCurrentPage(1);
                           }}
                         >
-                        Users ({crmUserData?.length || 0})
+                          Users ({crmUserData?.length || 0})
                         </button>
 
                         <button
@@ -1449,8 +1439,8 @@ const [serviceMode, setServiceMode] = useState("actions");
                                     <Skeleton width={200} height={20} />
                                   </div>
                                 ))
-                            ) : safeUsers.length? (
-                             safeUsers.map((u, i) => (
+                            ) : safeUsers.length ? (
+                              safeUsers.map((u, i) => (
                                 <div className="each-userData" key={i}>
                                   <div style={{ width: "20%" }}>
                                     {u?.name || "—"}
@@ -1619,14 +1609,13 @@ const [serviceMode, setServiceMode] = useState("actions");
                           className="service-header-col"
                           style={{ width: "35%" }}
                         >
-                           Name
+                          Name
                         </div>
                         <div
                           className="service-header-col"
                           style={{ width: "15%" }}
                         >
                           Billing Frequency
-
                         </div>
                         <div
                           className="service-header-col"
@@ -1640,12 +1629,12 @@ const [serviceMode, setServiceMode] = useState("actions");
                         >
                           CURRENCY
                         </div>
-                        {/* <div
+                        <div
                           className="service-header-col"
                           style={{ width: "10%" }}
                         >
                           STATUS
-                        </div> */}
+                        </div>
                         <div
                           className="service-header-col"
                           style={{ width: "15%" }}
@@ -1697,18 +1686,20 @@ const [serviceMode, setServiceMode] = useState("actions");
 
                               return (
                                 <div
-  className="each-service-data"
-  key={service._id || service.product_id}
-  onClick={() => {
-    setSelectedService(service);
-    setServiceDrawerOpen(true);
-    setServiceMode("actions");
-  }}
-  style={{ cursor: "pointer" }}
->
-
+                                  className="each-service-data"
+                                  key={service._id || service.product_id}
+                                  onClick={() => {
+                                    setSelectedService(service);
+                                    setServiceDrawerOpen(true);
+                                    setServiceMode("actions");
+                                  }}
+                                  style={{ cursor: "pointer" }}
+                                >
                                   {/* Service Name */}
-                                  <div className="service-name-col">
+                                  <div
+                                    className="service-name-col"
+                                    style={{ width: "35%" }}
+                                  >
                                     <div className="service-info">
                                       <div className="service-title">
                                         {service.product_name ||
@@ -1724,14 +1715,20 @@ const [serviceMode, setServiceMode] = useState("actions");
                                   </div>
 
                                   {/* Billing Type */}
-                                  <div className="service-billing-col">
+                                  <div
+                                    className="service-billing-col"
+                                    style={{ width: "15%" }}
+                                  >
                                     <div className="billing-type">
                                       {billingType}
                                     </div>
                                   </div>
 
                                   {/* Price */}
-                                  <div className="service-price-col">
+                                  <div
+                                    className="service-price-col"
+                                    style={{ width: "15%" }}
+                                  >
                                     <div className="price-value">
                                       {price === 0
                                         ? "0"
@@ -1740,14 +1737,20 @@ const [serviceMode, setServiceMode] = useState("actions");
                                   </div>
 
                                   {/* Currency */}
-                                  <div className="service-currency-col">
+                                  <div
+                                    className="service-currency-col"
+                                    style={{ width: "10%" }}
+                                  >
                                     <div className="currency-value">
                                       {currency}
                                     </div>
                                   </div>
 
                                   {/* Status */}
-                                  <div className="service-status-col">
+                                  <div
+                                    className="service-status-col"
+                                    style={{ width: "10%" }}
+                                  >
                                     <div className="status-value">
                                       <span
                                         className={`status-indicator ${
@@ -1760,28 +1763,24 @@ const [serviceMode, setServiceMode] = useState("actions");
                                     </div>
                                   </div>
 
-                                 
                                   {/* Partner */}
-<div className="service-partner-col">
-  <div className="partner-wrapper">
-    <div className="partner-value">
-      {service.revenue_account ||
-        service.partner_email ||
-        "N/A"}
-    </div>
-
-    
-  </div>
-</div>
-
-
-
+                                  <div
+                                    className="service-partner-col"
+                                    style={{ width: "15%" }}
+                                  >
+                                    <div className="partner-wrapper">
+                                      <div className="partner-value">
+                                        {service.revenue_account ||
+                                          service.partner_email ||
+                                          "N/A"}
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
                               );
                             })
                           ) : (
                             <div className="no-services-found">
-                              {/* <div className="no-data-icon">📊</div> */}
                               <div className="no-data-title">
                                 No Services Found
                               </div>
@@ -1952,12 +1951,24 @@ const [serviceMode, setServiceMode] = useState("actions");
                         stepDataPage={true}
                       />
                     </>
+                  ) : accsideNav === "Dashboard" ? (
+                    <>
+                      <MenuNav
+                        showDrop={showDrop}
+                        setShowDrop={setShowDrop}
+                        searchTerm={search}
+                        setSearchterm={setSearch}
+                        searchPlaceholder="Search..."
+                      />
+                      <Dashboard />
+                    </>
                   ) : (
                     <>
                       <MenuNav
                         showDrop={showDrop}
                         setShowDrop={setShowDrop}
                         searchTerm={search}
+                        setSearchterm={setSearch}
                         searchPlaceholder="Search..."
                       />
                       <div
@@ -1979,91 +1990,90 @@ const [serviceMode, setServiceMode] = useState("actions");
             </div>
           </div>
         </div>
-{/* ================= SERVICE DRAWER ================= */}
-{/* ================= SERVICE DRAWER ================= */}
-{serviceDrawerOpen && selectedService && (
-  <>
-    {/* BACKDROP */}
-    <div
-      className="service-backdrop"
-      onClick={() => setServiceDrawerOpen(false)}
-    />
+        {/* ================= SERVICE DRAWER ================= */}
+        {serviceDrawerOpen && selectedService && (
+          <>
+            {/* BACKDROP */}
+            <div
+              className="service-backdrop"
+              onClick={() => setServiceDrawerOpen(false)}
+            />
 
-    {/* DRAWER */}
-    <div className="service-drawer improved">
+            {/* DRAWER */}
+            <div className="service-drawer improved">
+              {/* HEADER */}
+              <div className="drawer-header">
+                <h3>Service Actions</h3>
+                <button
+                  className="drawer-close"
+                  onClick={() => setServiceDrawerOpen(false)}
+                >
+                  ✕
+                </button>
+              </div>
 
-      {/* HEADER */}
-      <div className="drawer-header">
-        <h3>Service Actions</h3>
-        <button
-          className="drawer-close"
-          onClick={() => setServiceDrawerOpen(false)}
-        >
-          ✕
-        </button>
-      </div>
+              {/* ACTION LIST */}
+              {serviceMode === "actions" && (
+                <div className="drawer-actions">
+                  <button
+                    className="drawer-action-btn primary"
+                    onClick={() => setServiceMode("view")}
+                  >
+                    👁 View Service
+                  </button>
 
-      {/* ACTION LIST */}
-      {serviceMode === "actions" && (
-        <div className="drawer-actions">
+                  <button
+                    className="drawer-action-btn"
+                    onClick={() => setServiceMode("edit")}
+                  >
+                    ✏️ Edit Service
+                  </button>
 
-          <button
-            className="drawer-action-btn primary"
-            onClick={() => setServiceMode("view")}
-          >
-            👁 View Service
-          </button>
+                  <button
+                    className="drawer-action-btn danger"
+                    onClick={async () => {
+                      if (!window.confirm("Delete this service?")) return;
+                      await axios.delete(
+                        `/admin/services/delete/${selectedService._id}`
+                      );
+                      setServiceDrawerOpen(false);
+                      getAdminServices();
+                    }}
+                  >
+                    🗑 Delete Service
+                  </button>
+                </div>
+              )}
 
-          <button
-            className="drawer-action-btn"
-            onClick={() => setServiceMode("edit")}
-          >
-            ✏️ Edit Service
-          </button>
+              {/* VIEW MODE */}
+              {serviceMode === "view" && (
+                <div className="drawer-content">
+                  <h4>{selectedService.product_name || selectedService.name}</h4>
+                  <p>
+                    {selectedService.full_description ||
+                      selectedService.description ||
+                      "No description"}
+                  </p>
+                </div>
+              )}
 
-          <button
-            className="drawer-action-btn danger"
-            onClick={async () => {
-              if (!window.confirm("Delete this service?")) return;
-              await axios.delete(
-                `/admin/services/delete/${selectedService._id}`
-              );
-              setServiceDrawerOpen(false);
-              getAdminServices();
-            }}
-          >
-            🗑 Delete Service
-          </button>
-
-        </div>
-      )}
-
-      {/* VIEW MODE */}
-      {serviceMode === "view" && (
-        <div className="drawer-content">
-          <h4>{selectedService.name}</h4>
-          <p>{selectedService.description || "No description"}</p>
-        </div>
-      )}
-
-      {/* EDIT MODE */}
-      {serviceMode === "edit" && (
-        <EditServiceForm
-          service={selectedService}
-          onSave={() => {
-            setServiceDrawerOpen(false);
-            getAdminServices();
-          }}
-          onCancel={() => setServiceDrawerOpen(false)}
-        />
-      )}
-    </div>
-  </>
-)}
+              {/* EDIT MODE */}
+              {serviceMode === "edit" && (
+                <EditServiceForm
+                  service={selectedService}
+                  onSave={() => {
+                    setServiceDrawerOpen(false);
+                    getAdminServices();
+                  }}
+                  onCancel={() => setServiceDrawerOpen(false)}
+                />
+              )}
+            </div>
+          </>
+        )}
         <ToastContainer />
       </div>
     </div>
-    
   );
 };
 

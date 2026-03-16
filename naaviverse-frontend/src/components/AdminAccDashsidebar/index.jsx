@@ -37,6 +37,13 @@ const sidebarMenu1 = [
 ];
 
 const sidebarMenu2 = [
+
+  {
+    id: 0,
+    display: "Dashboard",
+    title: "Dashboard",
+    click: true,
+  },
   {
     id: 0,
     display: "CRM",
@@ -57,8 +64,8 @@ const sidebarMenu2 = [
   },
   {
     id: 3,
-    display: "Services",
-    title: "Services",
+    display: "Marketplace",
+    title: "Marketplace",
     click: true,
   },
 

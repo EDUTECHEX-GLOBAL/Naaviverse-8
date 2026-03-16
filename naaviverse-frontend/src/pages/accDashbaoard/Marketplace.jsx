@@ -115,6 +115,20 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
       const stepItems = [];
       if (stepsRes.status === "fulfilled") {
         const allSteps = stepsRes.value.data?.data || [];
+        
+        // Fetch path details for each step to get path names
+        for (const step of allSteps) {
+          try {
+            if (step.path_id) {
+              const pathRes = await axios.get(`${BASE_URL}/api/paths/viewpath/${step.path_id}`);
+              const pathData = pathRes.data.data;
+              step.path_name = pathData?.nameOfPath || "Unknown Path";
+            }
+          } catch (err) {
+            console.error("Error fetching path details:", err);
+          }
+        }
+
         allSteps.forEach((step, si) => {
           ["macro", "micro", "nano"].forEach((layer) => {
             const arr = step[`${layer}_marketplace`] || step[layer]?.marketplace || [];
@@ -136,6 +150,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                 sourceLabel: step.macro_name || step.name || `Step ${si + 1}`,
                 sourceStep: step.macro_name || step.name || `Step ${si + 1}`,
                 sourceLayer: layer.toUpperCase(),
+                pathName: step.path_name || "Unknown Path",
               });
             });
           });
@@ -146,6 +161,26 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
       const collectionItems = [];
       if (marketplaceRes.status === "fulfilled") {
         const rawItems = marketplaceRes.value.data?.data || [];
+        
+        // Fetch additional details for each marketplace item
+        for (const item of rawItems) {
+          try {
+            if (item.path_id) {
+              const pathRes = await axios.get(`${BASE_URL}/api/paths/viewpath/${item.path_id}`);
+              const pathData = pathRes.data.data;
+              item.path_name = pathData?.nameOfPath || "Unknown Path";
+            }
+            
+            if (item.step_id) {
+              const stepRes = await axios.get(`${BASE_URL}/api/steps/get/${item.step_id}`);
+              const stepData = stepRes.data.data;
+              item.step_name = stepData?.macro_name || stepData?.name || "Unknown Step";
+            }
+          } catch (err) {
+            console.error("Error fetching details for marketplace item:", err);
+          }
+        }
+
         rawItems.forEach((item) => {
           collectionItems.push({
             _id: item._id,
@@ -161,9 +196,9 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
             features: item.features || "",
             sourceType: "marketplace",
             sourceLabel: "Marketplace Items",
-            pathId: item.path_id,
-            stepId: item.step_id,
-            layer: item.layer,
+            pathName: item.path_name,
+            stepName: item.step_name,
+            sourceLayer: item.layer?.toUpperCase(),
           });
         });
       }
@@ -265,14 +300,12 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
           ))}
         </div>
 
-      /* ── Empty ── */
       ) : filteredItems.length === 0 ? (
         <div className="mp-empty">
           <p className="mp-empty-title">No Marketplace Items Found</p>
           <p className="mp-empty-sub">Create services or add items to steps to see them here.</p>
         </div>
 
-      /* ── Cards ── */
       ) : (
         <div className="marketplace-grid">
           {filteredItems.map((item) => {
@@ -295,7 +328,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                   <span className={`mp-access-badge ${isFree ? "free" : "paid"}`}>
                     {price}
                   </span>
-                </div>{/* ✅ closes mp-card-header */}
+                </div>
 
                 {/* Role Pill */}
                 <div className="mp-role-pill" style={{ color: cfg.color }}>
@@ -343,7 +376,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                       item.features
                     )}
                   </div>
-                )}{/* ✅ closes mp-description */}
+                )}
 
                 {/* Source Info */}
                 {(item.sourceType === "step" || item.sourceLayer) && (
@@ -352,7 +385,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                   </div>
                 )}
 
-                {/* Footer */}
+                {/* Card Footer */}
                 <div className="mp-card-footer">
                   <button
                     className="mp-details-btn"
@@ -362,8 +395,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                     View All Details
                   </button>
                 </div>
-
-              </div> /* ✅ closes marketplace-card */
+              </div>
             );
           })}
         </div>
@@ -374,6 +406,22 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
         const cfg = getRoleConfig(selectedItem.role);
         const price = formatPrice(selectedItem.cost);
         const RoleIcon = cfg.icon;
+
+        const getLayerColor = (layer) => {
+          const layerLower = layer?.toLowerCase();
+          if (layerLower === 'macro') return '#0d6b6e';
+          if (layerLower === 'micro') return '#3b82f6';
+          if (layerLower === 'nano') return '#a855f7';
+          return cfg.color;
+        };
+
+        const getLayerBgColor = (layer) => {
+          const layerLower = layer?.toLowerCase();
+          if (layerLower === 'macro') return '#e6f3f4';
+          if (layerLower === 'micro') return '#eff6ff';
+          if (layerLower === 'nano') return '#f3e8ff';
+          return '#f3f4f6';
+        };
 
         return (
           <div className="mp-modal-overlay" onClick={() => setShowDetails(false)}>
@@ -428,25 +476,129 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                   </div>
                 </div>
 
-                {/* Source */}
-                {(selectedItem.sourceLayer || selectedItem.sourceStep || selectedItem.layer) && (
+                {/* SOURCE - Path Name, Step Name & Layer Name */}
+                {(selectedItem.sourceLayer || selectedItem.layer || 
+                  selectedItem.sourceStep || selectedItem.stepName || 
+                  selectedItem.pathName) && (
                   <div className="mp-modal-section">
                     <div className="mp-section-title">SOURCE</div>
-                    <div className="mp-source-grid">
-                      {selectedItem.sourceStep && (
-                        <div className="mp-source-item">
-                          <span className="mp-source-label">Step</span>
-                          <span className="mp-source-value">{selectedItem.sourceStep}</span>
+                    <div className="mp-source-grid" style={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      gap: '0.75rem',
+                      backgroundColor: '#f8fafc',
+                      padding: '1rem',
+                      borderRadius: '12px'
+                    }}>
+                      
+                      {/* Path Name */}
+                      {selectedItem.pathName && (
+                        <div className="mp-source-item" style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          borderBottom: '1px solid #e2e8f0',
+                          paddingBottom: '0.5rem'
+                        }}>
+                          <span className="mp-source-label" style={{ 
+                            fontWeight: 600, 
+                            color: '#1e293b',
+                            fontSize: '0.9rem'
+                          }}>
+                            Path
+                          </span>
+                          <span className="mp-source-value" style={{ 
+                            fontWeight: 500, 
+                            color: '#0d6b6e',
+                            backgroundColor: '#e6f3f4',
+                            padding: '0.25rem 1rem',
+                            borderRadius: '20px',
+                            fontSize: '0.9rem'
+                          }}>
+                            {selectedItem.pathName}
+                          </span>
                         </div>
                       )}
+                      
+                      {/* Step Name */}
+                      {(selectedItem.sourceStep || selectedItem.stepName) && (
+                        <div className="mp-source-item" style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          borderBottom: '1px solid #e2e8f0',
+                          paddingBottom: '0.5rem'
+                        }}>
+                          <span className="mp-source-label" style={{ 
+                            fontWeight: 600, 
+                            color: '#1e293b',
+                            fontSize: '0.9rem'
+                          }}>
+                            Step
+                          </span>
+                          <span className="mp-source-value" style={{ 
+                            fontWeight: 500, 
+                            color: '#0d6b6e',
+                            backgroundColor: '#e6f3f4',
+                            padding: '0.25rem 1rem',
+                            borderRadius: '20px',
+                            fontSize: '0.9rem'
+                          }}>
+                            {selectedItem.sourceStep || selectedItem.stepName}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {/* Layer Name */}
                       {(selectedItem.sourceLayer || selectedItem.layer) && (
-                        <div className="mp-source-item">
-                          <span className="mp-source-label">Layer</span>
-                          <span className="mp-source-value">
+                        <div className="mp-source-item" style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between',
+                          alignItems: 'center'
+                        }}>
+                          <span className="mp-source-label" style={{ 
+                            fontWeight: 600, 
+                            color: '#1e293b',
+                            fontSize: '0.9rem'
+                          }}>
+                            Layer
+                          </span>
+                          <span 
+                            className="mp-source-value" 
+                            style={{ 
+                              fontWeight: 600,
+                              color: getLayerColor(selectedItem.sourceLayer || selectedItem.layer),
+                              backgroundColor: getLayerBgColor(selectedItem.sourceLayer || selectedItem.layer),
+                              padding: '0.35rem 1.2rem',
+                              borderRadius: '30px',
+                              display: 'inline-block',
+                              fontSize: '0.9rem',
+                              border: `1px solid ${getLayerColor(selectedItem.sourceLayer || selectedItem.layer)}40`
+                            }}
+                          >
                             {(selectedItem.sourceLayer || selectedItem.layer)?.toUpperCase()}
                           </span>
                         </div>
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Duration */}
+                {selectedItem.duration && (
+                  <div className="mp-modal-section">
+                    <div className="mp-section-title">DURATION</div>
+                    <div className="mp-duration-item" style={{
+                      backgroundColor: '#f8fafc',
+                      padding: '0.75rem 1rem',
+                      borderRadius: '8px',
+                      display: 'inline-block'
+                    }}>
+                      <span className="mp-duration-value" style={{
+                        color: '#0d6b6e',
+                        fontWeight: 500,
+                        fontSize: '1rem'
+                      }}>{selectedItem.duration}</span>
                     </div>
                   </div>
                 )}
@@ -456,37 +608,64 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                   <div className="mp-modal-section">
                     <div className="mp-section-title">GOAL & OUTCOMES</div>
                     {selectedItem.goal && (
-                      <div className="mp-goal-detail">
-                        <span className="mp-goal-detail-label">Goal</span>
-                        <span className="mp-goal-detail-value">{selectedItem.goal}</span>
+                      <div className="mp-goal-detail" style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.25rem',
+                        marginBottom: '0.75rem'
+                      }}>
+                        <span className="mp-goal-detail-label" style={{
+                          fontWeight: 600,
+                          color: '#4b5563',
+                          fontSize: '0.85rem'
+                        }}>Goal</span>
+                        <span className="mp-goal-detail-value" style={{
+                          color: '#1e293b',
+                          backgroundColor: '#f8fafc',
+                          padding: '0.5rem',
+                          borderRadius: '8px',
+                          fontSize: '0.95rem'
+                        }}>{selectedItem.goal}</span>
                       </div>
                     )}
                     {selectedItem.outcomes && (
-                      <div className="mp-goal-detail">
-                        <span className="mp-goal-detail-label">Outcomes</span>
-                        <span className="mp-goal-detail-value">{selectedItem.outcomes}</span>
+                      <div className="mp-goal-detail" style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.25rem'
+                      }}>
+                        <span className="mp-goal-detail-label" style={{
+                          fontWeight: 600,
+                          color: '#4b5563',
+                          fontSize: '0.85rem'
+                        }}>Outcomes</span>
+                        <span className="mp-goal-detail-value" style={{
+                          color: '#1e293b',
+                          backgroundColor: '#f8fafc',
+                          padding: '0.5rem',
+                          borderRadius: '8px',
+                          fontSize: '0.95rem'
+                        }}>{selectedItem.outcomes}</span>
                       </div>
                     )}
                   </div>
                 )}
 
-                {/* Duration & Iterations */}
-                {(selectedItem.duration || (selectedItem.iterations && selectedItem.iterations !== "0")) && (
+                {/* Iterations */}
+                {selectedItem.iterations && selectedItem.iterations !== "0" && (
                   <div className="mp-modal-section">
-                    <div className="mp-section-title">DURATION & ITERATIONS</div>
-                    <div className="mp-duration-grid">
-                      {selectedItem.duration && (
-                        <div className="mp-duration-item">
-                          <span className="mp-duration-label">Duration</span>
-                          <span className="mp-duration-value">{selectedItem.duration}</span>
-                        </div>
-                      )}
-                      {selectedItem.iterations && selectedItem.iterations !== "0" && (
-                        <div className="mp-duration-item">
-                          <span className="mp-duration-label">Iterations</span>
-                          <span className="mp-duration-value">{selectedItem.iterations}</span>
-                        </div>
-                      )}
+                    <div className="mp-section-title">ITERATIONS</div>
+                    <div className="mp-iterations-item" style={{
+                      backgroundColor: '#f8fafc',
+                      padding: '0.75rem 1rem',
+                      borderRadius: '8px',
+                      display: 'inline-block'
+                    }}>
+                      <span className="mp-iterations-value" style={{
+                        color: '#0d6b6e',
+                        fontWeight: 500,
+                        fontSize: '1rem'
+                      }}>{selectedItem.iterations}</span>
                     </div>
                   </div>
                 )}
@@ -495,11 +674,19 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                 {selectedItem.features && (
                   <div className="mp-modal-section">
                     <div className="mp-section-title">FEATURES</div>
-                    <p className="mp-features-text">{selectedItem.features}</p>
+                    <p className="mp-features-text" style={{
+                      backgroundColor: '#f8fafc',
+                      padding: '1rem',
+                      borderRadius: '8px',
+                      color: '#1e293b',
+                      lineHeight: '1.6',
+                      fontSize: '0.95rem',
+                      margin: 0
+                    }}>{selectedItem.features}</p>
                   </div>
                 )}
 
-              </div>{/* end mp-modal-body */}
+              </div>
 
               {/* Modal Footer */}
               <div className="mp-modal-footer">
@@ -508,7 +695,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                 </button>
               </div>
 
-            </div>{/* end mp-modal */}
+            </div>
           </div>
         );
       })()}
