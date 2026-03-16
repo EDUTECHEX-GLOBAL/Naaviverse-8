@@ -1330,7 +1330,7 @@ e.target.parentNode.style.background = "linear-gradient(135deg, #667eea, #764ba2
                       }}>
                         {[
                           { label: "Business Name", value: profileData?.businessName, field: "businessName" },
-                          { label: "Business Type", value: profileData?.type, field: "type" },
+                          { label: "Business Type", value: profileData?.partnerType, field: "partnerType" },
                           { label: "Website", value: profileData?.website, field: "website" },
                           { label: "Email", value: userDetails?.email, field: null },
                         ].map((item, i, arr) => (

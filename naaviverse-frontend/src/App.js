@@ -29,8 +29,8 @@ import NewStep1 from "./globalComponents/GlobalDrawer/NewStep1"
 import CreateNewStep from "./pages/accDashbaoard/CreateNewStep";
 import MyStepsAcc from "./pages/accDashbaoard/MyStepsAcc";
 import PathPage from "./components/Pathview/PathPage";
-import StepsListPage from "./pages/accDashbaoard/StepsListPage"; // ✅ CORRECT PATH
-import ServicesListPage from "./pages/accDashbaoard/ServicesListPage"; // ✅ NEW - Services List Page
+import StepsListPage from "./pages/accDashbaoard/StepsListPage";
+import ServicesListPage from "./pages/accDashbaoard/ServicesListPage";
 
 /* ========== ADMIN ========== */
 import AdminLogin from "./pages/AdminLogin";
@@ -78,12 +78,11 @@ function App() {
         <Routes>
           {/* ================= SINCO TEMPLATE (LANDING + INNER PAGES) ================= */}
           <Route path="/" element={<AppRouter />} />
-       
+
           {/* ================= PUBLIC ================= */}
           <Route path="/login" element={<Loginpage />} />
           <Route path="/register" element={<NewHomePage />} />
           <Route path="/maps" element={<MapsPage />} />
-
 
           {/* ================= USER DASHBOARD ================= */}
           <Route path="/dashboard/users" element={<Dashboard />} />
@@ -92,6 +91,11 @@ function App() {
           <Route path="/dashboard/users/my-journey" element={<Dashboard />} />
           <Route path="/dashboard/users/current-step" element={<Dashboard />} />
           <Route path="/dashboard/users/transactions" element={<Dashboard />} />
+
+          {/* ✅ MUST be before /:id wildcard so it doesn't get caught by MallProduct */}
+          <Route path="/dashboard/users/Marketplace" element={<Dashboard />} />
+
+          {/* This wildcard catches everything else like /dashboard/users/some-product-code */}
           <Route path="/dashboard/users/:id" element={<MallProduct />} />
 
           {/* ================= PATH / STEP ================= */}
@@ -103,7 +107,6 @@ function App() {
           <Route path="/services/all" element={<ServicesListPage />} />
 
           {/* ================= ACCOUNTANT ================= */}
-// AFTER
           <Route path="/dashboard/accountants" element={<AccDashboard />}>
             <Route index element={<AccDashboard />} />
             <Route path="home" element={<AccDashboard />} />
@@ -115,17 +118,12 @@ function App() {
             <Route path="path/:id" element={<PathPage />} />
           </Route>
 
-          <Route
-            path="/dashboard/accountants/profile"
-            element={<AccProfile />}
-          />
+          <Route path="/dashboard/accountants/profile" element={<AccProfile />} />
 
           {/* ================= ADMIN ================= */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard/profile" element={<AdminProfilePage />} />
-          <Route
-            path="/admin/dashboard/accountants"
-            element={<AdminAccDashbaoard />} />
+          <Route path="/admin/dashboard/accountants" element={<AdminAccDashbaoard />} />
 
           {/* ================= SUPER ADMIN ================= */}
           <Route path="/admin-login" element={<SuperAdminLogin />} />

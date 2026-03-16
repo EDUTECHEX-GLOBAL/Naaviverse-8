@@ -8,15 +8,13 @@ import history from "./history.svg";
 
 /* ================= MENU CONFIG ================= */
 
-
 const sidebarMenu1 = [
   {
     id: 0,
     title: "Paths",
-    path: "/dashboard/users/paths", 
+    path: "/dashboard/users/paths",
   },
 ];
-
 
 const sidebarMenu2 = [
   {
@@ -64,7 +62,7 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange }) => {
     setTransactionSelected(false);
     setTransactionData([]);
 
-    // Update sidebar state
+    // Update sidebar state — this is what Dashboard.jsx reads
     setsideNav(title);
 
     // Navigate
@@ -73,6 +71,7 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange }) => {
 
   return (
     <div className="dashboard-sidebar1" style={{ overflow: "hidden" }}>
+
       {/* ================= LOGO ================= */}
       <div className="logo-border">
         <div
@@ -92,12 +91,8 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange }) => {
       </div>
 
       {/* ================= MENU ================= */}
-      <div
-        style={{
-          overflowY: "scroll",
-          height: "calc(100% - 70px)",
-        }}
-      >
+      <div style={{ overflowY: "scroll", height: "calc(100% - 70px)" }}>
+
         {/* ----------- DISCOVER ----------- */}
         <div style={{ padding: "0 2vw" }}>
           {sidebarMenu1.map((each) => (
@@ -105,10 +100,10 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange }) => {
               key={each.id}
               className="each-sidenav"
               style={{
-                background: sideNav === each.title ? "#FFFFFF" : "",
-                color: sideNav === each.title ? "#100F0D" : "",
-                paddingLeft: sideNav === each.title ? "20px" : "",
-                borderRadius: sideNav === each.title ? "35px" : "",
+                background:   sideNav === each.title ? "#FFFFFF" : "",
+                color:        sideNav === each.title ? "#100F0D" : "",
+                paddingLeft:  sideNav === each.title ? "20px"    : "",
+                borderRadius: sideNav === each.title ? "35px"    : "",
               }}
               onClick={() => handleNavigation(each.title, each.path)}
             >
@@ -117,17 +112,17 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange }) => {
           ))}
         </div>
 
-        {/* ----------- MANAGE ----------- */}
+        {/* ----------- MY JOURNEY ----------- */}
         <div style={{ padding: "0 2vw" }}>
           {sidebarMenu2.map((ele) => (
             <div
               key={ele.id}
               className="each-sidenav"
               style={{
-                background: sideNav === ele.title ? "#FFFFFF" : "",
-                color: sideNav === ele.title ? "#100F0D" : "",
-                paddingLeft: sideNav === ele.title ? "20px" : "",
-                borderRadius: sideNav === ele.title ? "35px" : "",
+                background:   sideNav === ele.title ? "#FFFFFF" : "",
+                color:        sideNav === ele.title ? "#100F0D" : "",
+                paddingLeft:  sideNav === ele.title ? "20px"    : "",
+                borderRadius: sideNav === ele.title ? "35px"    : "",
               }}
               onClick={() => handleNavigation(ele.title, ele.path)}
             >
@@ -171,6 +166,7 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange }) => {
             </div>
           </div>
         )}
+
       </div>
     </div>
   );

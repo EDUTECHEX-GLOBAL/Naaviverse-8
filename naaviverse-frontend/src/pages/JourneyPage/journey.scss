@@ -1,182 +1,366 @@
+// ── Design Tokens — Naavi Logo Pastels ─────────────────────────────────────
+$navy:         #1f304f;          // logo navy — used sparingly for text only
+$teal:         #0d9488;          // logo teal
+$teal-light:   #e6f7f6;          // pastel teal bg
+$teal-mid:     #b2e8e5;
+$orange:       #f97316;          // logo orange-red
+$orange-light: #fff3ec;          // pastel orange bg
+$green:        #22c55e;          // logo green
+$green-light:  #f0fdf4;          // pastel green bg
+$green-mid:    #bbf7d0;
+$sky:          #0ea5e9;          // logo sky-blue accent
+$sky-light:    #e0f2fe;          // pastel sky bg
+
+$gray50:       #f8fafc;
+$gray100:      #f1f5f9;
+$gray200:      #e2e8f0;
+$gray300:      #cbd5e1;
+$gray400:      #94a3b8;
+$gray600:      #475569;
+
+$radius:       14px;
+$shadow:       0 2px 12px rgba(15, 31, 61, 0.06);
+$shadow-md:    0 4px 20px rgba(15, 31, 61, 0.09);
+
+// ── Base ────────────────────────────────────────────────────────────────────
 .journeypage {
   width: 100%;
-  height: 100%;
-  padding: 2rem 35px;
-  overflow-y: scroll;
-  color: #1f304f;
-  .steps-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
+  min-height: 100%;
+  padding: 28px 36px 48px;
+  overflow-y: auto;
+  background: $gray50;
+  font-family: 'DM Sans', sans-serif;
+  color: $navy;
+  box-sizing: border-box;
 }
+
+// ── Path Header ─────────────────────────────────────────────────────────────
+.journey-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  background: #fff;
+  border: 1.5px solid $teal-mid;
+  border-radius: 18px;
+  padding: 28px 32px;
+  margin-bottom: 28px;
+  box-shadow: 0 2px 16px rgba(13, 148, 136, 0.08);
+}
+
+.jh-left { flex: 1; min-width: 0; }
+
+.jh-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  color: $teal;
+  margin-bottom: 10px;
+  .jh-icon { display: flex; align-items: center; color: $teal; }
+}
+
+.jh-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: $navy;
+  margin: 0 0 10px;
+  line-height: 1.25;
+}
+
+.jh-desc {
+  font-size: 13.5px;
+  color: $gray600;
+  line-height: 1.65;
+  margin: 0;
+  max-width: 680px;
+}
+
+.jh-right { flex-shrink: 0; }
+
+.jh-stat {
+  background: $teal-light;
+  border: 1.5px solid $teal-mid;
+  border-radius: 14px;
+  padding: 18px 28px;
+  text-align: center;
+  min-width: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.jh-stat-num {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  color: $teal;
+}
+
+.jh-stat-lbl {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: $teal;
+  opacity: 0.7;
+}
+
+// ── Section Header ──────────────────────────────────────────────────────────
+.steps-section-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.ssh-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: $gray400;
+  white-space: nowrap;
+}
+.ssh-line { flex: 1; height: 1px; background: $gray200; }
+.ssh-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: $gray400;
+  white-space: nowrap;
+}
+
+// ── Steps Grid ──────────────────────────────────────────────────────────────
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+// ── Step Card ───────────────────────────────────────────────────────────────
+// Cycle card accent colors using logo palette
+$card-accents: (
+  1: ($teal,   $teal-light,  $teal-mid),
+  2: ($sky,    $sky-light,   #bae6fd),
+  3: ($orange, $orange-light,#fed7aa),
+  4: ($green,  $green-light, $green-mid),
+);
 
 .step-card {
-  background: #fafafa;
-  border-radius: 14px;
-  border: 1px solid #eaeaea;
-  padding: 2rem;
+  background: #fff;
+  border-radius: $radius;
+  border: 1.5px solid $gray200;
+  box-shadow: $shadow;
+  padding: 20px 22px;
+  cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px;
+    height: 100%;
+    background: $gray200;
+    transition: background 0.2s;
+  }
+
+  &:hover {
+    box-shadow: $shadow-md;
+    border-color: $teal-mid;
+    transform: translateY(-2px);
+    &::before { background: $teal; }
+    .sc-cta { color: $teal; }
+  }
+
+  // Cycle accent bar color per card position
+  &:nth-child(4n+1)::before { background: $teal; }
+  &:nth-child(4n+2)::before { background: $sky; }
+  &:nth-child(4n+3)::before { background: $orange; }
+  &:nth-child(4n+4)::before { background: $green; }
+
+  // Cycle number bubble bg
+  .sc-number {
+    &--1 { background: $teal-light;   color: $teal;   border: 1.5px solid $teal-mid; }
+    &--2 { background: $sky-light;    color: $sky;    border: 1.5px solid #bae6fd; }
+    &--3 { background: $orange-light; color: $orange; border: 1.5px solid #fed7aa; }
+    &--4 { background: $green-light;  color: $green;  border: 1.5px solid $green-mid; }
+  }
 }
 
-.step-card:hover {
-  transform: translateY(-4px);
-  border-color: #1f304f;
+// ── Card Top Row ────────────────────────────────────────────────────────────
+.sc-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.step-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 10px;
+.sc-number {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  // default — overridden by --1/--2/--3/--4 above
+  background: $teal-light;
+  color: $teal;
+  border: 1.5px solid $teal-mid;
 }
 
-.step-desc {
-  font-size: 0.9rem;
+// nth-child drives bubble color without needing extra class
+.step-card:nth-child(4n+1) .sc-number { background: $teal-light;   color: $teal;   border-color: $teal-mid; }
+.step-card:nth-child(4n+2) .sc-number { background: $sky-light;    color: $sky;    border-color: #bae6fd; }
+.step-card:nth-child(4n+3) .sc-number { background: $orange-light; color: $orange; border-color: #fed7aa; }
+.step-card:nth-child(4n+4) .sc-number { background: $green-light;  color: $green;  border-color: $green-mid; }
+
+.sc-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  &--free { background: $green-light; color: $green; border: 1px solid $green-mid; }
+  &--paid { background: $orange-light; color: $orange; border: 1px solid #fed7aa; }
+}
+
+// ── Card Body ───────────────────────────────────────────────────────────────
+.sc-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sc-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: $navy;
+  line-height: 1.35;
+}
+
+.sc-desc {
+  font-size: 12.5px;
+  color: $gray600;
   line-height: 1.6;
-  color: #6b6b6b;
-
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
+// ── Card Footer ─────────────────────────────────────────────────────────────
+.sc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid $gray100;
+}
 
-  .journey-top-area {
-    width: 100%;
-    // height: 8rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    position: relative;
+.sc-duration {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: $gray400;
+}
 
-    .bold-text {
-      font-size: 1.5rem;
-      font-weight: 500;
-    }
+.sc-cta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: $gray400;
+  transition: color 0.2s;
+}
 
-    .journey-des {
-      font-size: 0.8rem;
-      font-weight: 300;
-      line-height: 1.7;
-    }
+// ── No Path ──────────────────────────────────────────────────────────────────
+.no-path-wrap {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  text-align: center;
+  gap: 14px;
+}
 
-    .goBack-div {
-      position: absolute;
-      top: 0;
-      right: 0;
-      font-weight: 600;
-      text-decoration: underline;
-      cursor: pointer;
-      transition: all ease 0.2s;
+.no-path-icon {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: $teal-light;
+  border: 1.5px solid $teal-mid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $teal;
+  margin-bottom: 4px;
+}
 
-      &:hover {
-        transform: scale(1.05);
-      }
-    }
-  }
+.no-path-title { font-size: 20px; font-weight: 800; color: $navy; }
 
-  .journey-steps-area {
-    display: flex;
-    width: 100%;
-    gap: 0 4rem;
-    flex-wrap: wrap;
+.no-path-sub {
+  font-size: 14px;
+  color: $gray600;
+  max-width: 320px;
+  line-height: 1.6;
+}
 
-    .each-j-step-container {
-      width: calc((100% - 8rem) / 3);
-      border-radius: 10px;
-      border: 1px solid #e5e5e5;
-      display: flex;
-      flex-direction: column;
-      padding: 2rem 1rem;
-      gap: 2rem;
-      margin-top: 2rem;
-      z-index: 2;
-      position: relative;
-      cursor: pointer;
-      transition: all ease 0.2s;
+.no-path-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 12px 28px;
+  background: $teal;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  &:hover { background: darken($teal, 8%); }
+}
 
-      &:hover {
-        border: 1px solid #1f304f;
-      }
+// ── No steps ──────────────────────────────────────────────────────────────────
+.no-steps-msg {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px;
+  font-size: 14px;
+  color: $gray400;
+  font-weight: 600;
+}
 
-      .each-j-stepp {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-        padding-bottom: 2rem;
+// ── Skeleton ──────────────────────────────────────────────────────────────────
+.step-card-skeleton { border-radius: $radius; overflow: hidden; }
 
-        .each-j-step-text {
-          width: 100%;
-          font-size: 1.1rem;
-          font-weight: 500;
-        }
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 1100px) {
+  .steps-grid { grid-template-columns: repeat(2, 1fr); }
+}
 
-        .each-j-step-text1 {
-          width: 100%;
-          font-size: 0.8rem;
-          font-weight: 300;
-          line-height: 1.7;
-          margin-top: -1rem;
-        }
-
-        .each-j-amount-div {
-          display: flex;
-          align-items: center;
-          width: 100%;
-          justify-content: space-between;
-
-          .each-j-amount {
-            font-size: 1.1rem;
-            font-weight: 500;
-          }
-        }
-      }
-
-      .current-step-indicator {
-        position: absolute;
-        width: 100%;
-        left: 0;
-        bottom: 0;
-        padding: 1rem;
-        border-radius: 0px 0px 10px 10px;
-        background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%);
-        color: white;
-        font-size: 0.8rem;
-        font-weight: 600;
-        justify-content: center;
-      }
-
-      .completed-step-indicator {
-        position: absolute;
-        width: 100%;
-        left: 0;
-        bottom: 0;
-        padding: 1rem;
-        border-radius: 0px 0px 10px 10px;
-        background: #8ed8c6;
-        color: white;
-        font-size: 0.8rem;
-        font-weight: 600;
-        justify-content: center;
-      }
-    }
-
-    .relative-div {
-      position: relative;
-
-      .j-arr-div {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-self: center;
-        align-items: center;
-        left: calc(100% + 1rem);
-        z-index: 1;
-        cursor: default;
-      }
-    }
-  }
+@media (max-width: 680px) {
+  .journeypage { padding: 20px 16px 40px; }
+  .journey-header { flex-direction: column; padding: 22px 20px; }
+  .jh-right .jh-stat { flex-direction: row; justify-content: center; gap: 12px; width: 100%; }
+  .steps-grid { grid-template-columns: 1fr; }
 }

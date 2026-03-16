@@ -154,9 +154,34 @@ const getMarketplaceItemsByStep = async (req, res) => {
   }
 
 };
+/* =====================================
+   GET ALL MARKETPLACE ITEMS (ADMIN)
+===================================== */
+const getAllMarketplaceItems = async (req, res) => {
+  try {
+    const items = await marketplaceModel
+      .find({ status: "active" })
+      .sort({ createdAt: -1 })
+      .populate("step_id", "name title") // Populate step details if needed
+      .populate("path_id", "name title"); // Populate path details if needed
+
+    return res.json({
+      status: true,
+      data: items
+    });
+
+  } catch (error) {
+    console.error("Get all marketplace error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Failed to fetch marketplace items"
+    });
+  }
+};
 
 module.exports = {
   addMarketplaceItem,
   getMarketplaceItems,
-  getMarketplaceItemsByStep
+  getMarketplaceItemsByStep,
+  getAllMarketplaceItems
 };

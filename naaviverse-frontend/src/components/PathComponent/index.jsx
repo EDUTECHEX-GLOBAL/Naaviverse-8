@@ -49,7 +49,7 @@ const PathComponent = () => {
   } = useContext(GlobalContex);
 
   const [loading, setLoading] = useState(false);
-  const [confirmLoading, setConfirmLoading] = useState(false); // ✅ separate loader for confirm
+  const [confirmLoading, setConfirmLoading] = useState(false);
   const [approvedPaths, setApprovedPaths] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
 
@@ -125,7 +125,7 @@ const PathComponent = () => {
   ]);
 
   // --------------------------------------------------------------
-  //  ✅ FIXED: USER CONFIRMS PATH
+  //  USER CONFIRMS PATH
   // --------------------------------------------------------------
   const confirmPathSelection = async () => {
     const email = user?.email;
@@ -140,8 +140,12 @@ const PathComponent = () => {
     try {
       setConfirmLoading(true);
 
-      // Save to localStorage immediately so My Journey can read it
+      // ✅ Save new pathId to localStorage
       localStorage.setItem("selectedPathId", pathId);
+
+      // ✅ FIX: Clear stale step data from previous path
+      // Without this, My Journey and Current Step show old path's data
+      localStorage.removeItem("selectedStepId");
 
       await axios.post(`${BASE_URL}/api/userpaths/selectpath`, {
         email,
@@ -150,10 +154,8 @@ const PathComponent = () => {
 
       console.log("✅ Path selected successfully");
 
-      // ✅ Step 3 = Congratulations screen
       setPathItemStep(3);
 
-      // ✅ Navigate to My Journey after 2 seconds
       setTimeout(() => {
         setsideNav("My Journey");
         navigate("/dashboard/users/my-journey");
@@ -162,7 +164,7 @@ const PathComponent = () => {
     } catch (err) {
       console.error("❌ Select path error:", err.response?.data || err.message);
 
-      // ✅ Even if API fails, still show congrats and navigate
+      // Even if API fails, show congrats and navigate
       // (localStorage already saved, journey will work)
       setPathItemStep(3);
       setTimeout(() => {

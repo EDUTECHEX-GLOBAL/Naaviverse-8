@@ -3,7 +3,7 @@
 
 .dashboard-sidebar {
   height: 100vh;
-  padding: 24px 16px;
+   padding: 0 16px; 
   overflow-y: hidden;
   width: 260px;
   background: #FFFFFF;
@@ -76,18 +76,58 @@
   }
 }
 
-// Responsive adjustments
 @media (max-width: 768px) {
   .dashboard-sidebar {
-    width: 100%;
-    position: fixed;
-    left: -100%;
-    transition: left 0.3s ease;
-    z-index: 1000;
+    width: 260px !important;
+    position: fixed !important;
+    left: -260px !important;
+    top: 0 !important;
+    height: 100vh !important;
+    transition: left 0.3s ease !important;
+    z-index: 1001 !important;
 
     &.open {
-      left: 0;
+      left: 0 !important;
+      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15) !important;
     }
+
+    // Fix text clipping inside sidebar
+    .each-sidenav {
+      white-space: nowrap;
+      overflow: visible;
+      width: 100%;
+      padding: 0 12px !important;
+
+      span {
+        display: inline !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+    }
+  }
+
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+    backdrop-filter: blur(2px);
   }
 }
 
+@media (min-width: 769px) {
+  .sidebar-overlay {
+    display: none;
+  }
+
+  .mobile-topbar {
+    display: none !important;
+  }
+}
+
+
+.sidebar-add-new-btn {
+  display: none !important;
+}

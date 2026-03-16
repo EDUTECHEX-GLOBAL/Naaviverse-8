@@ -50,3 +50,56 @@
     cursor: pointer;
     @include btn-animate(#FFF);
   }
+
+  /* Add these styles to your existing accDashsidebar.scss */
+
+.dashboard-sidebar {
+  position: relative;
+  background: white;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.03);
+}
+
+/* Scrollbar styling */
+.sidebar-menu-scrollable {
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+    
+    &:hover {
+      background: #94a3b8;
+    }
+  }
+}
+
+/* Logout button styling */
+.logout-btn {
+  margin: 0;
+  font-weight: 500;
+  
+  img {
+    transition: transform 0.2s;
+  }
+  
+  &:hover {
+    img {
+      transform: translateX(2px);
+    }
+  }
+}
+
+/* Ensure the sidebar takes full height */
+.dashboard-sidebar {
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  left: 0;
+}

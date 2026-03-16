@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import "./accDashboard.scss";
 
 import { Outlet, useLocation } from "react-router-dom";
-
+import AdminMarketplace from "./AdminMarketplace";
 import searchic from "../../static/images/dashboard/searchic.svg";
 import downarrow from "../../static/images/dashboard/downarrow.svg";
 import uploadv from "../../static/images/dashboard/uploadv.svg";
@@ -60,7 +60,9 @@ import AdminStepDataPage from "./AdminStepDataPage.jsx";
 import MyStepsAdmin from "./MyStepsAdmin/index.jsx";
 import MenuNav from "../../components/MenuNav/index.jsx";
 import EditServiceForm from "./EditServices";
+
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const AccDashboard = () => {
   const {
     accsideNav,
@@ -73,13 +75,9 @@ const AccDashboard = () => {
     setBalanceToggle,
   } = useStore();
 
- 
-
   /* ---------------- BASIC UI STATES ---------------- */
   const [search, setSearch] = useState("");
   const [crmMenu, setcrmMenu] = useState("Clients");
-
-  /* 🔥 ADD THESE BACK */
   const [servicesMenu, setservicesMenu] = useState("Active Services");
   const [showAdminProfile, setShowAdminProfile] = useState(false);
 
@@ -93,16 +91,14 @@ const AccDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  /* ---------------- PAGINATION CALCULATIONS ---------------- */
-  /* ---------------- PAGINATION CALCULATIONS ---------------- */
-const safeUsers = Array.isArray(crmUserData) ? crmUserData : [];
+  /* ---------------- SAFE PAGINATION CALCULATIONS ---------------- */
+  const safeUsers = Array.isArray(crmUserData) ? crmUserData : [];
+  const totalPages = Math.ceil(safeUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUsers = safeUsers.slice(startIndex, endIndex);
 
-const totalPages = Math.ceil(safeUsers.length / itemsPerPage);
-const startIndex = (currentPage - 1) * itemsPerPage;
-const endIndex = startIndex + itemsPerPage;
-const currentUsers = safeUsers.slice(startIndex, endIndex);
-
-  /* ---------------- OTHER STATES (UNCHANGED) ---------------- */
+  /* ---------------- OTHER STATES ---------------- */
   const [isLoading, setIsLoading] = useState(false);
   const [isPurchaseLoading, setIsPurchaseLoading] = useState(false);
   const [isCatoading, setIsCatLoading] = useState(false);
@@ -133,12 +129,9 @@ const currentUsers = safeUsers.slice(startIndex, endIndex);
   const [thirdChargeAttempt, setthirdChargeAttempt] = useState("");
   const [image, setImage] = useState(null);
   const [isSubmit, setIsSubmit] = useState(false);
- const [selectedService, setSelectedService] = useState(null);
-const [serviceDrawerOpen, setServiceDrawerOpen] = useState(false);
-const [serviceMode, setServiceMode] = useState("actions"); 
-// actions | view | edit
-
-
+  const [selectedService, setSelectedService] = useState(null);
+  const [serviceDrawerOpen, setServiceDrawerOpen] = useState(false);
+  const [serviceMode, setServiceMode] = useState("actions");
   const [isloading, setIsloading] = useState(false);
   const [updatedIcon, setUpdatedIcon] = useState("");
   const [serviceStatus, setServiceStatus] = useState("active");
@@ -203,7 +196,6 @@ const [serviceMode, setServiceMode] = useState("actions");
   let navigate = useNavigate();
 
   //users data
-
   //clients data
   const [crmClientData, setCrmClientData] = useState([]);
   const [isClientLoading, setClientLoading] = useState(false);
@@ -221,8 +213,6 @@ const [serviceMode, setServiceMode] = useState("actions");
     setMypathsMenu,
     selectedSteps,
     setSelectedSteps,
-
-    //vault action
     transactionSelected,
     setTransactionSelected,
     setTransactionData,
@@ -232,8 +222,6 @@ const [serviceMode, setServiceMode] = useState("actions");
     coinAction,
     setCoinAction,
     selectedCoin,
-
-    // Forex Currency Add Action
     addActionStep,
     setAddActionStep,
     paymentMethodData,
@@ -251,72 +239,63 @@ const [serviceMode, setServiceMode] = useState("actions");
 
   const [profileId, setProfileId] = useState("");
 
-  //upload part starts here
+  // Get user details safely
+  const getUserDetails = () => {
+    try {
+      const user = localStorage.getItem("adminuser");
+      return user ? JSON.parse(user) : {};
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+      return {};
+    }
+  };
 
-  // const secret = "uyrw7826^&(896GYUFWE&*#GBjkbuaf"; // secret not to be disclosed anywhere.
-  const emailDev = "rahulrajsb@outlook.com"; // email of the developer.
-  const userDetails = JSON.parse(localStorage.getItem("adminuser"));
+  const userDetails = getUserDetails();
 
   const handleGrade = (item) => {
     if (grade.includes(item)) {
-      // If the grade is already selected, remove it
       setGrade(grade.filter((o) => o !== item));
     } else {
-      // If the grade is not selected, add it
       setGrade([...grade, item]);
     }
   };
 
   const handleGradeAvg = (item) => {
     if (gradeAvg.includes(item)) {
-      // If the gradeAvg is already selected, remove it
       setGradeAvg(gradeAvg.filter((o) => o !== item));
     } else {
-      // If the gradeAvg is not selected, add it
       setGradeAvg([...gradeAvg, item]);
     }
   };
 
   const handleCurriculum = (item) => {
     if (curriculum.includes(item)) {
-      // If the curriculum is already selected, remove it
       setCurriculum(curriculum.filter((o) => o !== item));
     } else {
-      // If the curriculum is not selected, add it
       setCurriculum([...curriculum, item]);
     }
   };
 
   const handleStream = (item) => {
     if (stream.includes(item)) {
-      // If the stream is already selected, remove it
       setStream(stream.filter((o) => o !== item));
     } else {
-      // If the stream is not selected, add it
       setStream([...stream, item]);
     }
   };
 
   const handleFinance = (item) => {
     if (finance.includes(item)) {
-      // If the finance is already selected, remove it
       setFinance(finance.filter((o) => o !== item));
     } else {
-      // If the finance is not selected, add it
       setFinance([...finance, item]);
     }
   };
 
   const handlePersonality = (item) => {
     setPersonality(item);
-    // if (personality.includes(item)) {
-    //   // If the personality is already selected, remove it
-    //   setPersonality(personality.filter((o) => o !== item));
-    // } else {
-    //   // If the personality is not selected, add it
-    //   setPersonality([...personality, item]);
-    // }
   };
+
   useEffect(() => {
     if (accsideNav === "Universities") loadUniversities();
   }, [accsideNav]);
@@ -335,41 +314,36 @@ const [serviceMode, setServiceMode] = useState("actions");
   useEffect(() => {
     axios.get(`https://careers.marketsverse.com/paths/get`).then((res) => {
       let result = res?.data?.data;
-      // console.log(result, "all paths fetched");
-      setBackupPathList(result);
+      setBackupPathList(result || []);
     });
   }, []);
 
   const addBackupPath = (backupPathId, selectedStepId) => {
-    // console.log(pathSteps, "kjedkjweld");
-
-    pathSteps.the_ids.map((item) => {
-      if (item.step_id === selectedStepId) {
-        item.backup_pathId = backupPathId;
-      }
-    });
+    if (pathSteps?.the_ids) {
+      pathSteps.the_ids.map((item) => {
+        if (item.step_id === selectedStepId) {
+          item.backup_pathId = backupPathId;
+        }
+      });
+    }
     setShowBackupPathList(false);
-    // console.log(selectedSteps, "lkashclkweoiuk");
-    // const found = pathSteps.find((element) => element._id === backupPathId);
   };
 
   useEffect(() => {
     if (userDetails) {
-      setPathSteps((prev) => {
-        return {
-          ...prev,
-          email: userDetails?.email,
-        };
-      });
+      setPathSteps((prev) => ({
+        ...prev,
+        email: userDetails?.email || "",
+      }));
     }
   }, []);
 
   useEffect(() => {
     handleFollowerPerAccountants();
     handleGetCurrencies();
-    // setaccsideNav("CRM")
     resetpop();
-    const userDetails = JSON.parse(localStorage.getItem("adminuser"));
+    
+    const userDetails = getUserDetails();
     if (!userDetails?.email) {
       navigate("/admin/login");
     }
@@ -377,113 +351,106 @@ const [serviceMode, setServiceMode] = useState("actions");
 
   useEffect(() => {
     resetpop();
-    if (accsideNav == "CRM" && crmMenu == "Followers") {
+    if (accsideNav === "CRM" && crmMenu === "Followers") {
       handleFollowerPerAccountants();
-    } else if (accsideNav == "CRM" && crmMenu == "Purchases") {
+    } else if (accsideNav === "CRM" && crmMenu === "Purchases") {
       handleAllCustomerLicenses();
-    } else if (accsideNav == "Services") {
+    } else if (accsideNav === "Services") {
       getAdminServices();
     }
   }, [crmMenu, servicesMenu, accsideNav]);
 
   const uploadCoverImage = async (file) => {
     setIsUploadLoading(true);
+    try {
+      const fileName = `${new Date().getTime()}${file.name.substr(
+        file.name.lastIndexOf(".")
+      )}`;
 
-    const fileName = `${new Date().getTime()}${file.name.substr(
-      file.name.lastIndexOf(".")
-    )}`;
+      const formData = new FormData();
+      const newfile = renameFile(file, fileName);
+      formData.append("files", newfile);
 
-    const formData = new FormData();
-    const newfile = renameFile(file, fileName);
-    formData.append("files", newfile);
-    const path_inside_brain = "root/";
+      const { data } = await axios.post(
+        `https://insurance.apimachine.com/insurance/general/upload`,
+        formData,
+        {
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+          },
+        }
+      );
 
-    const jwts = await signJwt(fileName, emailDev);
-    console.log(jwts, "lkjkswedcf");
-    let { data } = await axios.post(
-      `https://insurance.apimachine.com/insurance/general/upload`,
-      formData,
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
+      if (data?.length > 0) {
+        setCoverImageS3url(data[0]?.urlName);
+        return data[0]?.urlName;
       }
-    );
-
-    if (data?.length > 0) {
-      console.log(data[0], "dfile name upload");
-      setCoverImageS3url(data[0]?.urlName);
+    } catch (error) {
+      console.log("error in uploading image", error);
+    } finally {
       setIsUploadLoading(false);
-      return data[0]?.urlName;
-    } else {
-      // setIsUploadLoading(false);
-      console.log("error in uploading image");
     }
   };
 
   const uploadBulkPath = async (file) => {
     setIsUploadLoading(true);
+    try {
+      const fileName = `${new Date().getTime()}${file?.name?.substr(
+        file.name.lastIndexOf(".")
+      )}`;
 
-    const fileName = `${new Date().getTime()}${file?.name?.substr(
-      file.name.lastIndexOf(".")
-    )}`;
+      const formData = new FormData();
+      const newfile = renameFile(file, fileName);
+      formData.append("file", newfile);
 
-    const formData = new FormData();
-    const newfile = renameFile(file, fileName);
-    formData.append("file", newfile);
+      const { data } = await axios.post(
+        `https://careers.marketsverse.com/paths/addmultiplepaths`,
+        formData,
+        {
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+          },
+        }
+      );
 
-    let { data } = await axios.post(
-      `https://careers.marketsverse.com/paths/addmultiplepaths`,
-      formData,
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
+      if (data?.status) {
+        setpstep(12);
       }
-    );
-
-    if (data?.status) {
-      console.log(data[0], "dfile name upload");
-      setpstep(12);
-      // setCoverImageS3url(data[0]?.urlName);
+    } catch (error) {
+      console.log("error in uploading bulk path", error);
+    } finally {
       setIsUploadLoading(false);
-      // return data[0]?.urlName;
-    } else {
-      // setIsUploadLoading(false);
-      console.log("error in uploading image");
     }
   };
 
   const uploadBulkStep = async (file) => {
     setIsUploadLoading(true);
+    try {
+      const fileName = `${new Date().getTime()}${file?.name?.substr(
+        file.name.lastIndexOf(".")
+      )}`;
 
-    const fileName = `${new Date().getTime()}${file?.name?.substr(
-      file.name.lastIndexOf(".")
-    )}`;
+      const formData = new FormData();
+      const newfile = renameFile(file, fileName);
+      formData.append("file", newfile);
 
-    const formData = new FormData();
-    const newfile = renameFile(file, fileName);
-    formData.append("file", newfile);
+      const { data } = await axios.post(
+        `${BASE_URL}/api/steps/addmultiplesteps`,
+        formData,
+        {
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+          },
+        }
+      );
 
-    let { data } = await axios.post(
-      `${BASE_URL}/api/steps/addmultiplesteps`,
-      formData,
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
+      if (data?.status) {
+        setpstep(12);
       }
-    );
-
-    if (data?.status) {
-      console.log(data[0], "dfile name upload");
-      setpstep(12);
-      // setCoverImageS3url(data[0]?.urlName);
+    } catch (error) {
+      console.log("error in uploading bulk step", error);
+    } finally {
       setIsUploadLoading(false);
-      // return data[0]?.urlName;
-    } else {
-      // setIsUploadLoading(false);
-      console.log("error in uploading image");
     }
   };
 
@@ -496,7 +463,7 @@ const [serviceMode, setServiceMode] = useState("actions");
         .sign(new TextEncoder().encode(secret));
       return jwts;
     } catch (error) {
-      console.log(error, "kjbedkjwebdw");
+      console.log(error);
     }
   };
 
@@ -507,21 +474,26 @@ const [serviceMode, setServiceMode] = useState("actions");
     });
   }
 
-  //upload end here
   const handleFollowerPerAccountants = () => {
     setIsLoading(true);
-    let mailId = userDetails?.email;
+    const mailId = userDetails?.email;
+    
+    if (!mailId) {
+      setIsLoading(false);
+      return;
+    }
+
     GetFollowersPerAccount(mailId)
       .then((res) => {
-        let result = res?.data;
+        const result = res?.data;
         if (result?.status) {
-          setfollowCount(result?.data?.count);
-          setfollowData(result?.data?.followers);
-          setIsLoading(false);
+          setfollowCount(result?.data?.count || 0);
+          setfollowData(result?.data?.followers || []);
         }
+        setIsLoading(false);
       })
       .catch((err) => {
-        console.log(err, "jkjkk");
+        console.log(err);
         setIsLoading(false);
         toast.error("Something Went Wrong!", {
           position: toast.POSITION.TOP_RIGHT,
@@ -530,18 +502,24 @@ const [serviceMode, setServiceMode] = useState("actions");
   };
 
   const handleAllCustomerLicenses = () => {
-    const userDetails = JSON.parse(localStorage.getItem("adminuser"));
+    const userDetails = getUserDetails();
     setIsPurchaseLoading(true);
+    
+    if (!userDetails?.user?.email) {
+      setIsPurchaseLoading(false);
+      return;
+    }
+
     GetAllCustomerLicenses(userDetails.user.email)
       .then((res) => {
-        let result = res.data;
+        const result = res.data;
         if (result.status) {
-          setPurchaseData(result.licenses);
-          setIsPurchaseLoading(false);
+          setPurchaseData(result.licenses || []);
         }
+        setIsPurchaseLoading(false);
       })
       .catch((err) => {
-        // console.log(err)
+        console.log(err);
         setIsPurchaseLoading(false);
       });
   };
@@ -549,8 +527,7 @@ const [serviceMode, setServiceMode] = useState("actions");
   const getPartnerData = () => {
     axios.get(`${BASE_URL}/api/partner/getpartners`).then(({ data }) => {
       if (data.success) {
-        // Change 'status' to 'success'
-        setPartnerData(data?.partners); // Change 'data' to 'partners'
+        setPartnerData(data?.partners || []);
       }
     });
   };
@@ -565,15 +542,15 @@ const [serviceMode, setServiceMode] = useState("actions");
     setIsCatLoading(true);
     GetCategoriesAcc()
       .then((res) => {
-        let result = res.data;
+        const result = res.data;
         if (result.status) {
-          setcategoriesData(result.categories);
-          setIsCatLoading(false);
+          setcategoriesData(result.categories || []);
         }
+        setIsCatLoading(false);
       })
       .catch((err) => {
         setIsCatLoading(false);
-        console.log(err, "jkjkk");
+        console.log(err);
         toast.error("Something Went Wrong!", {
           position: toast.POSITION.TOP_RIGHT,
         });
@@ -584,14 +561,14 @@ const [serviceMode, setServiceMode] = useState("actions");
     setIsCurrencies(true);
     GetAllCurrencies()
       .then((res) => {
-        let result = res?.data;
+        const result = res?.data;
         if (result?.status) {
-          setallCurrencies(result?.coins);
-          setIsCurrencies(false);
+          setallCurrencies(result?.coins || []);
         }
+        setIsCurrencies(false);
       })
       .catch((err) => {
-        console.log(err, "jkjkk");
+        console.log(err);
         setIsCurrencies(false);
         toast.error("Something Went Wrong!", {
           position: toast.POSITION.TOP_RIGHT,
@@ -618,15 +595,10 @@ const [serviceMode, setServiceMode] = useState("actions");
     setgracePeriod("");
     setsecondChargeAttempt("");
     setthirdChargeAttempt("");
-    setfirstMonthPrice("");
-    setmonthlyPrice("");
-    setgracePeriod("");
-    setsecondChargeAttempt("");
-    setthirdChargeAttempt("");
     setCoverImageS3url("");
     setImage(null);
     setPathSteps({
-      email: userDetails?.email,
+      email: userDetails?.email || "",
       nameOfPath: "",
       description: "",
       length: "",
@@ -643,10 +615,10 @@ const [serviceMode, setServiceMode] = useState("actions");
     setPersonality("");
     setSearchCurrency("");
   };
+
   useEffect(() => {
     const openProfile = () => setShowAdminProfile(true);
     window.addEventListener("openAdminProfile", openProfile);
-
     return () => window.removeEventListener("openAdminProfile", openProfile);
   }, []);
 
@@ -655,23 +627,25 @@ const [serviceMode, setServiceMode] = useState("actions");
     navigate("/");
   };
 
-  //   const fileInputRef = useRef(null);
-
-  //   const handleImageClick = () => {
-  //     fileInputRef.current.click();
-  //   };
-
   const handleFileInputChange = (e) => {
-    setImage(e.target.files[0]);
-    uploadCoverImage(e.target.files[0]);
+    if (e.target.files?.[0]) {
+      setImage(e.target.files[0]);
+      uploadCoverImage(e.target.files[0]);
+    }
   };
+  
   const handleFileInputChange1 = (e) => {
-    setImage(e.target.files[0]);
-    uploadBulkPath(e.target.files[0]);
+    if (e.target.files?.[0]) {
+      setImage(e.target.files[0]);
+      uploadBulkPath(e.target.files[0]);
+    }
   };
+  
   const handleFileInputChange2 = (e) => {
-    setImage(e.target.files[0]);
-    uploadBulkStep(e.target.files[0]);
+    if (e.target.files?.[0]) {
+      setImage(e.target.files[0]);
+      uploadBulkStep(e.target.files[0]);
+    }
   };
 
   const myTimeoutService = () => {
@@ -687,8 +661,15 @@ const [serviceMode, setServiceMode] = useState("actions");
 
   const handleFinalSubmit = () => {
     setIsSubmit(true);
-    let userDetails = JSON.parse(localStorage.getItem("adminuser"));
-    let objmonthly = {
+    const userDetails = getUserDetails();
+    
+    if (!userDetails?.email || !selectedCurrency?.coinSymbol) {
+      setIsSubmit(false);
+      toast.error("Missing required fields");
+      return;
+    }
+
+    const baseObj = {
       email: userDetails.email,
       token: userDetails.idToken,
       product_code: serviceCodeInput,
@@ -703,131 +684,53 @@ const [serviceMode, setServiceMode] = useState("actions");
       sub_text: serviceTagline,
       full_description: serviceDescription,
       first_purchase: {
-        price: firstMonthPrice !== "" ? parseFloat(firstMonthPrice) : 0,
+        price: firstMonthPrice ? parseFloat(firstMonthPrice) : 0,
         coin: selectedCurrency.coinSymbol,
       },
+      staking_allowed: false,
+      staking_details: {},
+    };
+
+    const objmonthly = {
+      ...baseObj,
       billing_cycle: {
         monthly: {
-          price:
-            billingType === "One Time"
-              ? firstMonthPrice !== ""
-                ? parseFloat(firstMonthPrice)
-                : 0
-              : monthlyPrice !== ""
-              ? parseFloat(monthlyPrice)
-              : 0,
+          price: monthlyPrice ? parseFloat(monthlyPrice) : 0,
           coin: selectedCurrency.coinSymbol,
         },
       },
-      grace_period:
-        billingType === "One Time"
-          ? 0
-          : gracePeriod !== ""
-          ? parseFloat(gracePeriod)
-          : 0,
-      first_retry:
-        billingType === "One Time"
-          ? 0
-          : secondChargeAttempt !== ""
-          ? parseFloat(secondChargeAttempt)
-          : 0,
-      second_retry:
-        billingType === "One Time"
-          ? 0
-          : thirdChargeAttempt !== ""
-          ? parseFloat(thirdChargeAttempt)
-          : 0,
-      staking_allowed: false,
-      staking_details: {},
+      grace_period: gracePeriod ? parseFloat(gracePeriod) : 0,
+      first_retry: secondChargeAttempt ? parseFloat(secondChargeAttempt) : 0,
+      second_retry: thirdChargeAttempt ? parseFloat(thirdChargeAttempt) : 0,
     };
 
-    let objone = {
-      email: userDetails.email,
-      token: userDetails.idToken,
-      product_code: serviceCodeInput,
-      product_name: serviceNameInput,
-      product_icon: coverImageS3url,
-      revenue_account: userDetails.user.email,
-      client_app: "naavi",
-      product_category_code: "CoE",
-      sub_category_code: "",
-      custom_product_label: productLabel,
-      points_creation: false,
-      sub_text: serviceTagline,
-      full_description: serviceDescription,
-      first_purchase: {
-        price: firstMonthPrice !== "" ? parseFloat(firstMonthPrice) : 0,
-        coin: selectedCurrency.coinSymbol,
-      },
+    const objone = {
+      ...baseObj,
       billing_cycle: {
         lifetime: {
-          price:
-            billingType === "One Time"
-              ? firstMonthPrice !== ""
-                ? parseFloat(firstMonthPrice)
-                : 0
-              : monthlyPrice !== ""
-              ? parseFloat(monthlyPrice)
-              : 0,
+          price: firstMonthPrice ? parseFloat(firstMonthPrice) : 0,
           coin: selectedCurrency.coinSymbol,
         },
       },
-      grace_period:
-        billingType === "One Time"
-          ? 0
-          : gracePeriod !== ""
-          ? parseFloat(gracePeriod)
-          : 0,
-      first_retry:
-        billingType === "One Time"
-          ? 0
-          : secondChargeAttempt !== ""
-          ? parseFloat(secondChargeAttempt)
-          : 0,
-      second_retry:
-        billingType === "One Time"
-          ? 0
-          : thirdChargeAttempt !== ""
-          ? parseFloat(thirdChargeAttempt)
-          : 0,
-      staking_allowed: false,
-      staking_details: {},
+      grace_period: 0,
+      first_retry: 0,
+      second_retry: 0,
     };
 
-    let obj = billingType === "One Time" ? objone : objmonthly;
+    const obj = billingType === "One Time" ? objone : objmonthly;
+
     CreatePopularService(obj)
       .then((res) => {
-        let result = res.data;
+        const result = res.data;
         if (result.status) {
           myTimeoutService();
           setpstep(7);
-          setbillingType("");
-          setselectNew("");
-          setselectCategory("");
-          setcategoriesData([]);
-          setSearch("");
-          setSelectedCurrency({});
-          setServiceNameInput("");
-          setServiceCodeInput("");
-          setProductLabel("");
-          setServiceTagline("");
-          setServiceDescription("");
-          setfirstMonthPrice("");
-          setmonthlyPrice("");
-          setgracePeriod("");
-          setsecondChargeAttempt("");
-          setthirdChargeAttempt("");
-          setfirstMonthPrice("");
-          setmonthlyPrice("");
-          setgracePeriod("");
-          setsecondChargeAttempt("");
-          setthirdChargeAttempt("");
-          setIsSubmit(false);
-          setCoverImageS3url("");
-          setImage(null);
+          resetpop();
         }
+        setIsSubmit(false);
       })
       .catch((err) => {
+        console.log(err);
         setIsSubmit(false);
       });
   };
@@ -847,54 +750,44 @@ const [serviceMode, setServiceMode] = useState("actions");
   };
 
   function reload() {
-  setServiceDrawerOpen(false);
-  setServiceMode("actions");
-  setSelectedService(null);
-  setUpdatedIcon("");
-  getAdminServices();
-}
-
+    setServiceDrawerOpen(false);
+    setServiceMode("actions");
+    setSelectedService(null);
+    setUpdatedIcon("");
+    getAdminServices();
+  }
 
   const deleteService = () => {
     setIsloading(true);
-    let obj = {
-      email: userDetails?.email,
-      token: userDetails?.idToken,
-      product_id: selectedService?.product_id,
-    };
     axios
       .delete(`/admin/services/delete/${selectedService?._id}`)
       .then((res) => {
         console.log("Deleted:", res.data);
         myTimeout();
       })
-      .catch((err) => console.log("Delete error:", err));
+      .catch((err) => console.log("Delete error:", err))
+      .finally(() => setIsloading(false));
   };
 
   const restoreService = () => {
     setIsloading(true);
-
     axios
       .put(`/admin/services/restore/${selectedService?._id}`)
       .then(({ data }) => {
         console.log("Service Restored:", data);
-
         if (data.status) {
-          //setServiceActionStep(3);
           myTimeout();
         }
-
-        setIsloading(false);
       })
       .catch((err) => {
         console.log("Restore Error:", err);
-        setIsloading(false);
-      });
+      })
+      .finally(() => setIsloading(false));
   };
 
   const changeServiceIcon = () => {
     setIsloading(true);
-    let obj = {
+    const obj = {
       email: userDetails?.email,
       token: userDetails?.idToken,
       field_name: "product_icon",
@@ -904,19 +797,15 @@ const [serviceMode, setServiceMode] = useState("actions");
     axios
       .post(`https://comms.globalxchange.io/gxb/product/edit`, obj)
       .then((response) => {
-        let result = response?.data;
-        console.log(result, "changeServiceIcon result");
+        const result = response?.data;
         if (result?.status) {
-          setIsloading(false);
-          // setServiceActionStep(6);
           myTimeout();
-        } else {
-          setIsloading(false);
         }
       })
       .catch((error) => {
         console.log(error, "error in changeServiceIcon");
-      });
+      })
+      .finally(() => setIsloading(false));
   };
 
   const getAppsforUser = () => {
@@ -924,19 +813,19 @@ const [serviceMode, setServiceMode] = useState("actions");
     axios
       .get("https://comms.globalxchange.io/gxb/apps/get")
       .then((response) => {
-        let result = response?.data?.apps;
-        // console.log(result, 'getAppsforUser result');
-        setUserCreatedApps(result);
+        const result = response?.data?.apps;
+        setUserCreatedApps(result || []);
         setIsfetching(false);
       })
       .catch((error) => {
         console.log(error, "getAppsforUser error");
+        setIsfetching(false);
       });
   };
 
   useEffect(() => {
     if (pathSteps) {
-      console.log(pathSteps, "kjwegfljwefljwef");
+      console.log(pathSteps);
     }
   }, [pathSteps]);
 
@@ -959,23 +848,17 @@ const [serviceMode, setServiceMode] = useState("actions");
   const addComplan = () => {
     setAddingComp(true);
 
-    let fixedPayouts = inputValues.map((e, i) => {
-      return {
-        level: i,
-        percentage: e,
-      };
-    });
-    // console.log(fixedPayouts, 'fixedPayouts');
+    const fixedPayouts = inputValues.map((e, i) => ({
+      level: i,
+      percentage: e,
+    }));
 
-    let numValues = multiplier.map((e, i) => {
-      return {
-        level: i,
-        numerator: e,
-      };
-    });
-    // console.log(numValues, 'numValues');
+    const numValues = multiplier.map((e, i) => ({
+      level: i,
+      numerator: e,
+    }));
 
-    let obj = {
+    const obj = {
       email: userDetails?.email,
       token: userDetails?.idToken,
       app_code: compPlanApp,
@@ -984,34 +867,20 @@ const [serviceMode, setServiceMode] = useState("actions");
       fixed_payouts: fixedPayouts,
       numeratorValues: numValues,
     };
-    // console.log(obj, 'object');
 
-    addCompPlanFunction(obj).then((response) => {
-      let result = response?.data;
-      console.log(result);
-      if (result?.status) {
-        setAddingComp(false);
-        setAddCompPlanStep("step6");
-        myTimeout1();
-      } else {
-        setAddingComp(false);
-      }
-    });
+    addCompPlanFunction(obj)
+      .then((response) => {
+        const result = response?.data;
+        if (result?.status) {
+          setAddCompPlanStep("step6");
+          myTimeout1();
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => setAddingComp(false));
   };
-
-  const styles = {
-    opacity: "0.25",
-    pointerEvents: "none",
-  };
-  const applyStyle = (condition) => (condition ? {} : styles);
-
-  function spreadFunc(value) {
-    if (value.length > 0) {
-      const result = value.reduce((acc, val) => acc && val);
-      // console.log(result, 'resultttt');
-      return result;
-    }
-  }
 
   const handleLevelChange = (event) => {
     const newLevel = parseInt(event.target.value);
@@ -1025,7 +894,6 @@ const [serviceMode, setServiceMode] = useState("actions");
   const handleInputChange = (index, event, funcValue, func) => {
     const newInputValues = [...funcValue];
     newInputValues[index] = event.target.value;
-    // console.log(newInputValues, 'newInputValues');
     func(newInputValues);
   };
 
@@ -1049,7 +917,7 @@ const [serviceMode, setServiceMode] = useState("actions");
 
   const getWithCompPlan = () => {
     setGettingData(true);
-    let obj = {
+    const obj = {
       product_creator: userDetails?.user?.email,
     };
     axios
@@ -1058,12 +926,13 @@ const [serviceMode, setServiceMode] = useState("actions");
         obj
       )
       .then((response) => {
-        let result = response?.data?.products;
-        setWithCompPlanData(result);
+        const result = response?.data?.products;
+        setWithCompPlanData(result || []);
         setGettingData(false);
       })
       .catch((error) => {
         console.log(error, "error in getWithCompPlan");
+        setGettingData(false);
       });
   };
 
@@ -1072,21 +941,21 @@ const [serviceMode, setServiceMode] = useState("actions");
   }, []);
 
   useEffect(() => {
-    let email = userDetails?.email;
-    axios
-      .get(`${BASE_URL}/api/steps/get?email=${email}`)
-      .then((response) => {
-        let result = response?.data?.data;
-        // console.log(result, "all steps fetched");
-        setAllSteps(result);
-      })
-      .catch((error) => {
-        console.log(error, "error in fetching all steps");
-      });
+    const email = userDetails?.email;
+    if (email) {
+      axios
+        .get(`${BASE_URL}/api/steps/get?email=${email}`)
+        .then((response) => {
+          const result = response?.data?.data;
+          setAllSteps(result || []);
+        })
+        .catch((error) => {
+          console.log(error, "error in fetching all steps");
+        });
+    }
   }, []);
 
   const pathSubmission = () => {
-    console.log(pathSteps, "api body");
     setCreatingPath(true);
     axios
       .post(`${BASE_URL}/api/paths/add`, {
@@ -1099,56 +968,37 @@ const [serviceMode, setServiceMode] = useState("actions");
         personality: personality,
       })
       .then((response) => {
-        let result = response?.data;
-        // console.log(result, "pathSubmission result");
+        const result = response?.data;
         if (result?.status) {
-          setCreatingPath(false);
           window.location.reload();
-        } else {
-          setCreatingPath(false);
         }
       })
       .catch((error) => {
         console.log(error, "error in pathSubmission");
-      });
+      })
+      .finally(() => setCreatingPath(false));
   };
 
-  // const removeStep = (stepId) => {
-  //   const updatedSelectedSteps = selectedSteps.filter(
-  //     (step) => step._id !== stepId
-  //   );
-  //   setSelectedSteps(updatedSelectedSteps);
-
-  //   const updatedStepIds = pathSteps?.step_ids?.filter((id) => id !== stepId);
-  //   setPathSteps({
-  //     ...pathSteps,
-  //     step_ids: updatedStepIds,
-  //   });
-  // };
-
   const removeStep = (stepId) => {
-    // Remove the step from selectedSteps
     const updatedSelectedSteps = selectedSteps.filter(
-      (step) => step._id !== stepId
+      (step) => step?._id !== stepId
     );
     setSelectedSteps(updatedSelectedSteps);
 
-    // Remove the step_id from pathSteps
     const updatedTheIds = pathSteps?.the_ids?.filter(
-      (obj) => obj.step_id !== stepId
+      (obj) => obj?.step_id !== stepId
     );
     setPathSteps({
       ...pathSteps,
-      the_ids: updatedTheIds,
+      the_ids: updatedTheIds || [],
     });
   };
 
   useEffect(() => {
     if (accsideNav === "CRM" && crmMenu === "Clients") {
       setIsUserLoading(true);
-
-     
-        axios.get(`${BASE_URL}/api/users`)
+      axios
+        .get(`${BASE_URL}/api/users`)
         .then((response) => {
           setCrmUserData(response?.data?.data || []);
           setIsUserLoading(false);
@@ -1156,20 +1006,6 @@ const [serviceMode, setServiceMode] = useState("actions");
         .catch(() => setIsUserLoading(false));
     }
   }, [accsideNav, crmMenu]);
-
-  const isFetched = useRef(false);
-
-  const fetchedOnceRef = useRef(false);
-
-  const hasFetchedRef = useRef(false);
-
-  const [hasLoadedUsers, setHasLoadedUsers] = useState(false);
-
-  const usersFetchRef = useRef(false);
-
-  const fetchedRef = useRef(false);
-
-
 
   function customDateFormat(date) {
     if (date instanceof Date && !isNaN(date.valueOf())) {
@@ -1180,11 +1016,9 @@ const [serviceMode, setServiceMode] = useState("actions");
       const suffix =
         day === 1 ? "st" : day === 2 ? "nd" : day === 3 ? "rd" : "th";
 
-      const customFormattedDate = `${month} ${day}${suffix} ${year}`;
-      return customFormattedDate;
-    } else {
-      console.log("Invalid date object");
+      return `${month} ${day}${suffix} ${year}`;
     }
+    return "";
   }
 
   // coin action
@@ -1203,19 +1037,18 @@ const [serviceMode, setServiceMode] = useState("actions");
 
   // get profile id
   useEffect(() => {
-    let email = userDetails?.email;
-    if (coinAction?.includes("Add") && addActionStep === 1) {
+    const email = userDetails?.email;
+    if (coinAction?.includes("Add") && addActionStep === 1 && email) {
       axios
         .get(`https://comms.globalxchange.io/user/details/get?email=${email}`)
         .then((res) => {
           const { data } = res;
           if (data?.status) {
-            // console.log(data?.user["naavi_profile_id"], "profile id");
-            setProfileId(data?.user["naavi_profile_id"]);
+            setProfileId(data?.user?.["naavi_profile_id"] || "");
           }
         });
     }
-  }, [coinAction, addActionStep]);
+  }, [coinAction, addActionStep, userDetails?.email]);
 
   // get payment methods for forex add action
   useEffect(() => {
@@ -1225,9 +1058,8 @@ const [serviceMode, setServiceMode] = useState("actions");
           `https://comms.globalxchange.io/coin/vault/service/payment/stats/get?select_type=fund&to_currency=${selectedCoin?.coinSymbol}&from_currency=${selectedCoin?.coinSymbol}&country=India&banker=shorupan@indianotc.com`
         )
         .then((response) => {
-          let result = response?.data?.pathData?.paymentMethod;
-          // console.log(result, "payment methods result");
-          setPaymentMethodData(result);
+          const result = response?.data?.pathData?.paymentMethod;
+          setPaymentMethodData(result || []);
         })
         .catch((error) => {
           console.log(error, "error in fetching payment methods");
@@ -1241,11 +1073,9 @@ const [serviceMode, setServiceMode] = useState("actions");
         `https://comms.globalxchange.io/coin/vault/service/payment/paths/get?from_currency=${selectedCoin?.coinSymbol}&to_currency=${selectedCoin?.coinSymbol}&select_type=fund&banker=shorupan@indianotc.com&paymentMethod=${selectedPaymentMethod}`
       )
       .then((response) => {
-        let result = response?.data?.paths;
-        // console.log(result, "getPathId result");
+        const result = response?.data?.paths;
         if (result?.length > 0) {
           setForexPathId(result[0]?.path_id);
-          // console.log(result[0]?.path_id, "pathId");
         }
       })
       .catch((error) => {
@@ -1257,14 +1087,13 @@ const [serviceMode, setServiceMode] = useState("actions");
     const float = parseFloat(e.target.value);
     setAddForexAmount(float.toFixed(2));
   };
+
   const getQuote = () => {
-    // 🔒 Safety checks (prevents runtime errors)
     if (!addForexAmount || !selectedCoin?.coinSymbol) {
       console.warn("Missing amount or coin");
       return;
     }
 
-    // ✅ Mock quote object (local replacement)
     const mockQuote = {
       status: true,
       coin: selectedCoin.coinSymbol,
@@ -1275,29 +1104,26 @@ const [serviceMode, setServiceMode] = useState("actions");
       timestamp: Date.now(),
     };
 
-    // ✅ Update state just like API success
     setForexQuote(mockQuote);
     setAddActionStep(3);
   };
 
   // =============== SERVICES STATES ===============
-  const [allAdminServices, setAllAdminServices] = useState([]); // All services (for stats)
-  const [filteredAdminServices, setFilteredAdminServices] = useState([]); // Filtered for display
+  const [allAdminServices, setAllAdminServices] = useState([]);
+  const [filteredAdminServices, setFilteredAdminServices] = useState([]);
 
   const getAdminServices = () => {
     setIsUserLoading(true);
-
     axios
-      .get(`${BASE_URL}/api/services/admin?status=all`) // Always fetch ALL services
+      .get(`${BASE_URL}/api/services/admin?status=all`)
       .then(({ data }) => {
         if (data?.status) {
-          setAllAdminServices(data.data || []); // Store ALL services
-          setIsUserLoading(false);
+          setAllAdminServices(data.data || []);
         } else {
           setAllAdminServices([]);
           setFilteredAdminServices([]);
-          setIsUserLoading(false);
         }
+        setIsUserLoading(false);
       })
       .catch((err) => {
         console.log("Admin API Error:", err);
@@ -1307,17 +1133,16 @@ const [serviceMode, setServiceMode] = useState("actions");
       });
   };
 
-  // Filter services whenever serviceStatus changes
   useEffect(() => {
     if (serviceStatus === "all") {
       setFilteredAdminServices(allAdminServices);
     } else if (serviceStatus === "active") {
       setFilteredAdminServices(
-        allAdminServices.filter((s) => s.status === "active")
+        allAdminServices.filter((s) => s?.status === "active")
       );
     } else if (serviceStatus === "inactive") {
       setFilteredAdminServices(
-        allAdminServices.filter((s) => s.status === "inactive")
+        allAdminServices.filter((s) => s?.status === "inactive")
       );
     }
   }, [serviceStatus, allAdminServices]);
@@ -1327,13 +1152,10 @@ const [serviceMode, setServiceMode] = useState("actions");
   }, [serviceStatus]);
 
   const conditionalBilling = (item) => {
-    if (item === "lifetime") {
-      return "One Time";
-    } else if (item === "monthly") {
-      return "Monthly";
-    } else if (item === "annual") {
-      return "Annual";
-    }
+    if (item === "lifetime") return "One Time";
+    if (item === "monthly") return "Monthly";
+    if (item === "annual") return "Annual";
+    return item;
   };
 
   return (
@@ -1346,37 +1168,27 @@ const [serviceMode, setServiceMode] = useState("actions");
           </div>
 
           {/* MAIN CONTENT */}
-<div
-  className="dashboard-screens"
-  onClick={() => resetpop()}
-  style={{
-    height: "100vh",
-    overflow: "hidden",
-    maxWidth: "calc(100vw - 220px)",
-    width: "calc(100% - 20px)",
-  }}
->
-
-
-          
+          <div
+            className="dashboard-screens"
+            onClick={() => resetpop()}
+            style={{
+              height: "100vh",
+              overflow: "hidden",
+              maxWidth: "calc(100vw - 220px)",
+              width: "calc(100% - 20px)",
+            }}
+          >
             <div style={{ height: "100%" }}>
-              {/* 🔥 PROFILE ROUTE HANDLER */}
+              {/* PROFILE ROUTE HANDLER */}
               {isProfilePage ? (
                 <Outlet />
               ) : (
                 <>
-                  {accsideNav === "CRM" ? (
+                  {/* CRM SECTION */}
+                  {accsideNav === "CRM" && (
                     <>
-                      {/* TOP SEARCH */}
-                      <MenuNav
-                        showDrop={showDrop}
-                        setShowDrop={setShowDrop}
-                        searchTerm={search}
-                        setSearchterm={setSearch}
-                        searchPlaceholder="Search Clients..."
-                      />
+                      
 
-                      {/* CRM TABS */}
                       <div className="crm-tabs">
                         <button
                           className={crmMenu === "Clients" ? "active" : ""}
@@ -1385,7 +1197,7 @@ const [serviceMode, setServiceMode] = useState("actions");
                             setCurrentPage(1);
                           }}
                         >
-                        Users ({crmUserData?.length || 0})
+                          Users ({crmUserData?.length || 0})
                         </button>
 
                         <button
@@ -1402,7 +1214,6 @@ const [serviceMode, setServiceMode] = useState("actions");
                       {/* USERS TABLE */}
                       {crmMenu === "Clients" && (
                         <>
-                          {/* TABLE HEADER */}
                           <div
                             className="crm-tab"
                             style={{ padding: "10px 35px" }}
@@ -1439,7 +1250,6 @@ const [serviceMode, setServiceMode] = useState("actions");
                             </div>
                           </div>
 
-                          {/* TABLE BODY */}
                           <div className="users-alldata">
                             {isClientLoading ? (
                               Array(8)
@@ -1449,8 +1259,8 @@ const [serviceMode, setServiceMode] = useState("actions");
                                     <Skeleton width={200} height={20} />
                                   </div>
                                 ))
-                            ) : safeUsers.length? (
-                             safeUsers.map((u, i) => (
+                            ) : safeUsers.length > 0 ? (
+                              safeUsers.map((u, i) => (
                                 <div className="each-userData" key={i}>
                                   <div style={{ width: "20%" }}>
                                     {u?.name || "—"}
@@ -1484,7 +1294,6 @@ const [serviceMode, setServiceMode] = useState("actions");
                       {/* PARTNERS TABLE */}
                       {crmMenu === "Partners" && (
                         <>
-                          {/* TABLE HEADER */}
                           <div
                             className="crm-tab"
                             style={{ padding: "10px 35px" }}
@@ -1521,7 +1330,6 @@ const [serviceMode, setServiceMode] = useState("actions");
                             </div>
                           </div>
 
-                          {/* TABLE BODY */}
                           <div className="users-alldata">
                             {isPurchaseLoading ? (
                               Array(8)
@@ -1531,7 +1339,7 @@ const [serviceMode, setServiceMode] = useState("actions");
                                     <Skeleton width={200} height={20} />
                                   </div>
                                 ))
-                            ) : partnerData.length ? (
+                            ) : partnerData.length > 0 ? (
                               partnerData.map((p, i) => (
                                 <div className="each-userData" key={i}>
                                   <div
@@ -1541,16 +1349,18 @@ const [serviceMode, setServiceMode] = useState("actions");
                                       alignItems: "center",
                                     }}
                                   >
-                                    <img
-                                      src={p?.logo}
-                                      alt=""
-                                      style={{
-                                        width: 32,
-                                        height: 32,
-                                        borderRadius: "50%",
-                                        marginRight: 10,
-                                      }}
-                                    />
+                                    {p?.logo && (
+                                      <img
+                                        src={p.logo}
+                                        alt=""
+                                        style={{
+                                          width: 32,
+                                          height: 32,
+                                          borderRadius: "50%",
+                                          marginRight: 10,
+                                        }}
+                                      />
+                                    )}
                                     {p?.businessName}
                                   </div>
                                   <div
@@ -1579,305 +1389,14 @@ const [serviceMode, setServiceMode] = useState("actions");
                         </>
                       )}
                     </>
-                  ) : accsideNav === "Services" ? (
-                    <>
-                      <MenuNav
-                        showDrop={showDrop}
-                        setShowDrop={setShowDrop}
-                        searchTerm={search}
-                        setSearchterm={setSearch}
-                        searchPlaceholder="Search Services..."
-                      />
+                  )}
 
-                      {/* SERVICES HEADER TABS */}
-                      <div className="crm-tabs">
-                        <button
-                          className={serviceStatus === "active" ? "active" : ""}
-                          onClick={() => setServiceStatus("active")}
-                        >
-                          Active Services
-                        </button>
-                        <button
-                          className={
-                            serviceStatus === "inactive" ? "active" : ""
-                          }
-                          onClick={() => setServiceStatus("inactive")}
-                        >
-                          Inactive Services
-                        </button>
-                        <button
-                          className={serviceStatus === "all" ? "active" : ""}
-                          onClick={() => setServiceStatus("all")}
-                        >
-                          All Services
-                        </button>
-                      </div>
+                 {accsideNav === "Marketplace" && (
+  <AdminMarketplace />
+)}
 
-                      {/* SERVICES TABLE HEADER */}
-                      <div className="services-table-header">
-                        <div
-                          className="service-header-col"
-                          style={{ width: "35%" }}
-                        >
-                           Name
-                        </div>
-                        <div
-                          className="service-header-col"
-                          style={{ width: "15%" }}
-                        >
-                          Billing Frequency
-
-                        </div>
-                        <div
-                          className="service-header-col"
-                          style={{ width: "15%" }}
-                        >
-                          Billing Amount
-                        </div>
-                        <div
-                          className="service-header-col"
-                          style={{ width: "10%" }}
-                        >
-                          CURRENCY
-                        </div>
-                        {/* <div
-                          className="service-header-col"
-                          style={{ width: "10%" }}
-                        >
-                          STATUS
-                        </div> */}
-                        <div
-                          className="service-header-col"
-                          style={{ width: "15%" }}
-                        >
-                          PARTNER
-                        </div>
-                      </div>
-
-                      {/* MAIN CONTENT AREA WITH STATIC FOOTER */}
-                      <div className="services-content-wrapper">
-                        {/* SCROLLABLE SERVICES LIST */}
-                        <div className="services-alldata">
-                          {isUserLoading ? (
-                            Array(6)
-                              .fill("")
-                              .map((_, i) => (
-                                <div className="each-service-skeleton" key={i}>
-                                  <Skeleton width="100%" height={80} />
-                                </div>
-                              ))
-                          ) : filteredAdminServices.length > 0 ? (
-                            filteredAdminServices.map((service) => {
-                              // Determine billing type and price
-                              const billingCycle = service.billing_cycle || {};
-                              let billingType = "One Time";
-                              let price = 0;
-                              let currency = "INR";
-
-                              if (billingCycle.lifetime) {
-                                billingType = "One Time";
-                                price = billingCycle.lifetime.price || 0;
-                                currency = billingCycle.lifetime.coin || "INR";
-                              } else if (billingCycle.monthly) {
-                                billingType = "Monthly";
-                                price = billingCycle.monthly.price || 0;
-                                currency = billingCycle.monthly.coin || "INR";
-                              } else if (billingCycle.annual) {
-                                billingType = "Annual";
-                                price = billingCycle.annual.price || 0;
-                                currency = billingCycle.annual.coin || "INR";
-                              } else if (billingCycle.custom) {
-                                billingType = "Custom";
-                                price = billingCycle.custom.price || 0;
-                                currency = billingCycle.custom.coin || "INR";
-                              }
-
-                              // Determine status
-                              const isActive = service.status === "active";
-
-                              return (
-                                <div
-  className="each-service-data"
-  key={service._id || service.product_id}
-  onClick={() => {
-    setSelectedService(service);
-    setServiceDrawerOpen(true);
-    setServiceMode("actions");
-  }}
-  style={{ cursor: "pointer" }}
->
-
-                                  {/* Service Name */}
-                                  <div className="service-name-col">
-                                    <div className="service-info">
-                                      <div className="service-title">
-                                        {service.product_name ||
-                                          service.name ||
-                                          "Unnamed Service"}
-                                      </div>
-                                      {service.sub_text && (
-                                        <div className="service-subtext">
-                                          {service.sub_text}
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {/* Billing Type */}
-                                  <div className="service-billing-col">
-                                    <div className="billing-type">
-                                      {billingType}
-                                    </div>
-                                  </div>
-
-                                  {/* Price */}
-                                  <div className="service-price-col">
-                                    <div className="price-value">
-                                      {price === 0
-                                        ? "0"
-                                        : price.toLocaleString("en-IN")}
-                                    </div>
-                                  </div>
-
-                                  {/* Currency */}
-                                  <div className="service-currency-col">
-                                    <div className="currency-value">
-                                      {currency}
-                                    </div>
-                                  </div>
-
-                                  {/* Status */}
-                                  <div className="service-status-col">
-                                    <div className="status-value">
-                                      <span
-                                        className={`status-indicator ${
-                                          isActive
-                                            ? "status-active"
-                                            : "status-inactive"
-                                        }`}
-                                      ></span>
-                                      {isActive ? "Active" : "Inactive"}
-                                    </div>
-                                  </div>
-
-                                 
-                                  {/* Partner */}
-<div className="service-partner-col">
-  <div className="partner-wrapper">
-    <div className="partner-value">
-      {service.revenue_account ||
-        service.partner_email ||
-        "N/A"}
-    </div>
-
-    
-  </div>
-</div>
-
-
-
-                                </div>
-                              );
-                            })
-                          ) : (
-                            <div className="no-services-found">
-                              {/* <div className="no-data-icon">📊</div> */}
-                              <div className="no-data-title">
-                                No Services Found
-                              </div>
-                              <div className="no-data-subtitle">
-                                {serviceStatus === "active"
-                                  ? "No active services available"
-                                  : serviceStatus === "inactive"
-                                  ? "No inactive services available"
-                                  : "No services created yet"}
-                              </div>
-                              <button
-                                className="create-service-btn"
-                                onClick={() => setispopular(true)}
-                              >
-                                + Create New Service
-                              </button>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* STATIC STATS FOOTER - WON'T SCROLL */}
-                        {allAdminServices.length > 0 && !isUserLoading && (
-                          <div className="services-stats-static">
-                            <div className="stat-card-static">
-                              <div className="stat-value">
-                                {allAdminServices.length}
-                              </div>
-                              <div className="stat-label">Total Services</div>
-                            </div>
-                            <div className="stat-card-static">
-                              <div className="stat-value">
-                                {
-                                  allAdminServices.filter(
-                                    (s) => s.status === "active"
-                                  ).length
-                                }
-                              </div>
-                              <div className="stat-label">Active</div>
-                            </div>
-                            <div className="stat-card-static">
-                              <div className="stat-value">
-                                {
-                                  allAdminServices.filter(
-                                    (s) => s.status === "inactive"
-                                  ).length
-                                }
-                              </div>
-                              <div className="stat-label">Inactive</div>
-                            </div>
-                            <div className="stat-card-static revenue">
-                              <div className="stat-value">
-                                ₹
-                                {allAdminServices
-                                  .reduce((sum, service) => {
-                                    const billingCycle =
-                                      service.billing_cycle || {};
-                                    let price = 0;
-
-                                    // Determine billing type and price
-                                    if (billingCycle.lifetime) {
-                                      price =
-                                        parseFloat(
-                                          billingCycle.lifetime?.price
-                                        ) || 0;
-                                    } else if (billingCycle.monthly) {
-                                      price =
-                                        parseFloat(
-                                          billingCycle.monthly?.price
-                                        ) || 0;
-                                      // For monthly, assume 12 months (1 year) for revenue projection
-                                      price = price * 12;
-                                    } else if (billingCycle.annual) {
-                                      price =
-                                        parseFloat(
-                                          billingCycle.annual?.price
-                                        ) || 0;
-                                    } else if (billingCycle.custom) {
-                                      price =
-                                        parseFloat(
-                                          billingCycle.custom?.price
-                                        ) || 0;
-                                    }
-
-                                    return sum + price;
-                                  }, 0)
-                                  .toLocaleString("en-IN")}
-                              </div>
-                              <div className="stat-label">
-                                Total Revenue (Projected)
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  ) : accsideNav === "Calendar" ? (
+                  {/* CALENDAR SECTION */}
+                  {accsideNav === "Calendar" && (
                     <>
                       <MenuNav
                         showDrop={showDrop}
@@ -1888,7 +1407,10 @@ const [serviceMode, setServiceMode] = useState("actions");
                       />
                       <EarningCalendar />
                     </>
-                  ) : accsideNav === "Wallet" ? (
+                  )}
+
+                  {/* WALLET SECTION */}
+                  {accsideNav === "Wallet" && (
                     <>
                       <MenuNav
                         showDrop={showDrop}
@@ -1897,9 +1419,12 @@ const [serviceMode, setServiceMode] = useState("actions");
                         setSearchterm={setSearch}
                         searchPlaceholder="Search Wallet..."
                       />
-                      {/* EXISTING WALLET CONTENT */}
+                      {/* Wallet content here */}
                     </>
-                  ) : accsideNav === "Tasks" ? (
+                  )}
+
+                  {/* TASKS SECTION */}
+                  {accsideNav === "Tasks" && (
                     <>
                       <MenuNav
                         showDrop={showDrop}
@@ -1910,22 +1435,22 @@ const [serviceMode, setServiceMode] = useState("actions");
                       />
                       <Tasks />
                     </>
-                  ) : accsideNav === "Paths" ? (
+                  )}
+
+                  {/* PATHS SECTION */}
+                  {accsideNav === "Paths" && (
                     <>
-                      <MenuNav
-                        showDrop={showDrop}
-                        setShowDrop={setShowDrop}
-                        searchTerm={search}
-                        setSearchterm={setSearch}
-                        searchPlaceholder="Search Paths..."
-                      />
+                      
                       <MyPathsAdmin
                         search={search}
                         admin={true}
                         fetchAllServicesAgain={fetchAllServicesAgain}
                       />
                     </>
-                  ) : accsideNav === "Universities" ? (
+                  )}
+
+                  {/* UNIVERSITIES SECTION */}
+                  {accsideNav === "Universities" && (
                     <>
                       <MenuNav
                         showDrop={showDrop}
@@ -1934,17 +1459,14 @@ const [serviceMode, setServiceMode] = useState("actions");
                         setSearchterm={setSearch}
                         searchPlaceholder="Search Universities..."
                       />
-                      {/* EXISTING UNIVERSITY CONTENT */}
+                      {/* University content here */}
                     </>
-                  ) : accsideNav === "Steps" ? (
+                  )}
+
+                  {/* STEPS SECTION */}
+                  {accsideNav === "Steps" && (
                     <>
-                      <MenuNav
-                        showDrop={showDrop}
-                        setShowDrop={setShowDrop}
-                        searchTerm={search}
-                        setSearchterm={setSearch}
-                        searchPlaceholder="Search Steps..."
-                      />
+                      
                       <MyStepsAdmin
                         search={search}
                         admin={true}
@@ -1952,118 +1474,111 @@ const [serviceMode, setServiceMode] = useState("actions");
                         stepDataPage={true}
                       />
                     </>
-                  ) : (
-                    <>
-                      <MenuNav
-                        showDrop={showDrop}
-                        setShowDrop={setShowDrop}
-                        searchTerm={search}
-                        searchPlaceholder="Search..."
-                      />
-                      <div
-                        style={{
-                          height: "calc(100% - 70px)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "1.5rem",
-                          fontWeight: "600",
-                        }}
-                      >
-                        Coming Soon
-                      </div>
-                    </>
+                  )}
+
+                  {/* COMING SOON FALLBACK */}
+                  {![
+                    "CRM", "Marketplace", "Calendar", "Wallet",
+                    "Tasks", "Paths", "Universities", "Steps"
+                  ].includes(accsideNav) && (
+                    <div
+                      style={{
+                        height: "calc(100% - 70px)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "1.5rem",
+                        fontWeight: "600",
+                      }}
+                    >
+                      Coming Soon
+                    </div>
                   )}
                 </>
               )}
             </div>
           </div>
         </div>
-{/* ================= SERVICE DRAWER ================= */}
-{/* ================= SERVICE DRAWER ================= */}
-{serviceDrawerOpen && selectedService && (
-  <>
-    {/* BACKDROP */}
-    <div
-      className="service-backdrop"
-      onClick={() => setServiceDrawerOpen(false)}
-    />
 
-    {/* DRAWER */}
-    <div className="service-drawer improved">
+        {/* SERVICE DRAWER */}
+        {serviceDrawerOpen && selectedService && (
+          <>
+            <div
+              className="service-backdrop"
+              onClick={() => setServiceDrawerOpen(false)}
+            />
 
-      {/* HEADER */}
-      <div className="drawer-header">
-        <h3>Service Actions</h3>
-        <button
-          className="drawer-close"
-          onClick={() => setServiceDrawerOpen(false)}
-        >
-          ✕
-        </button>
-      </div>
+            <div className="service-drawer improved">
+              <div className="drawer-header">
+                <h3>Service Actions</h3>
+                <button
+                  className="drawer-close"
+                  onClick={() => setServiceDrawerOpen(false)}
+                >
+                  ✕
+                </button>
+              </div>
 
-      {/* ACTION LIST */}
-      {serviceMode === "actions" && (
-        <div className="drawer-actions">
+              {serviceMode === "actions" && (
+                <div className="drawer-actions">
+                  <button
+                    className="drawer-action-btn primary"
+                    onClick={() => setServiceMode("view")}
+                  >
+                    👁 View Service
+                  </button>
 
-          <button
-            className="drawer-action-btn primary"
-            onClick={() => setServiceMode("view")}
-          >
-            👁 View Service
-          </button>
+                  <button
+                    className="drawer-action-btn"
+                    onClick={() => setServiceMode("edit")}
+                  >
+                    ✏️ Edit Service
+                  </button>
 
-          <button
-            className="drawer-action-btn"
-            onClick={() => setServiceMode("edit")}
-          >
-            ✏️ Edit Service
-          </button>
+                  <button
+                    className="drawer-action-btn danger"
+                    onClick={async () => {
+                      if (!window.confirm("Delete this service?")) return;
+                      try {
+                        await axios.delete(
+                          `/admin/services/delete/${selectedService._id}`
+                        );
+                        setServiceDrawerOpen(false);
+                        getAdminServices();
+                      } catch (error) {
+                        console.error("Delete error:", error);
+                      }
+                    }}
+                  >
+                    🗑 Delete Service
+                  </button>
+                </div>
+              )}
 
-          <button
-            className="drawer-action-btn danger"
-            onClick={async () => {
-              if (!window.confirm("Delete this service?")) return;
-              await axios.delete(
-                `/admin/services/delete/${selectedService._id}`
-              );
-              setServiceDrawerOpen(false);
-              getAdminServices();
-            }}
-          >
-            🗑 Delete Service
-          </button>
+              {serviceMode === "view" && (
+                <div className="drawer-content">
+                  <h4>{selectedService.name}</h4>
+                  <p>{selectedService.description || "No description"}</p>
+                </div>
+              )}
 
-        </div>
-      )}
+              {serviceMode === "edit" && (
+                <EditServiceForm
+                  service={selectedService}
+                  onSave={() => {
+                    setServiceDrawerOpen(false);
+                    getAdminServices();
+                  }}
+                  onCancel={() => setServiceDrawerOpen(false)}
+                />
+              )}
+            </div>
+          </>
+        )}
 
-      {/* VIEW MODE */}
-      {serviceMode === "view" && (
-        <div className="drawer-content">
-          <h4>{selectedService.name}</h4>
-          <p>{selectedService.description || "No description"}</p>
-        </div>
-      )}
-
-      {/* EDIT MODE */}
-      {serviceMode === "edit" && (
-        <EditServiceForm
-          service={selectedService}
-          onSave={() => {
-            setServiceDrawerOpen(false);
-            getAdminServices();
-          }}
-          onCancel={() => setServiceDrawerOpen(false)}
-        />
-      )}
-    </div>
-  </>
-)}
         <ToastContainer />
       </div>
     </div>
-    
   );
 };
 
@@ -2114,7 +1629,9 @@ export const ImageUploadDivProfilePic = ({ setFunc, funcValue }) => {
             className="uploadNewPicPlanB"
             type="file"
             onChange={(e) => {
-              uploadImageFunc(e, setFunc, setplanBAccountPicUploading);
+              if (e.target.files?.[0]) {
+                uploadImageFunc(e, setFunc, setplanBAccountPicUploading);
+              }
             }}
             accept="image/*"
             id="profileUpdateImgPlanB"

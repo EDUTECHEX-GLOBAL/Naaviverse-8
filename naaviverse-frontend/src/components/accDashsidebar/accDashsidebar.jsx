@@ -130,7 +130,7 @@ const sidebarMenu2 = [
   },
 ];
 
-const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin }) => {
+const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, isOpen, onClose }) => {
   const selectedMenu = admin ? sidebarMenu2 : sidebarMenu1;
   const { accsideNav, setaccsideNav, setispopular } = useStore();
   const navigate = useNavigate();
@@ -164,274 +164,278 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin }) 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-const getActiveBackground = (title) => {
-  if (accsideNav === title) {
-    return "#E6F0FF";
-  }
-  return "transparent";
-};
+  const getActiveBackground = (title) => {
+    if (accsideNav === title) {
+      return "#E6F0FF";
+    }
+    return "transparent";
+  };
 
   return (
-    <div
-      className="dashboard-sidebar"
-      style={{
-        overflow: "hidden",
-        padding: "24px 16px",
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-        backgroundColor: "#FFFFFF",
-        borderRight: "1px solid #EDF2F7"
-      }}
-    >
-      {/* Logo */}
-      <div style={{ padding: "0 8px", marginBottom: "24px" }}>
-        <img
-          className="dashboard-logo"
-          src={logo}
-          alt="Naavi"
-          style={{ width: "160px", objectFit: "contain", marginBottom: "6px" }}
-        />
-      </div>
+    <>
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div className="sidebar-overlay" onClick={onClose} />
+      )}
 
-      {/* Main Navigation */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "0 4px" }}>
-        {selectedMenu?.map((each, i) => {
-          const isActive = accsideNav === each.title;
-          return (
-            <div
-              className="each-sidenav"
-              style={{
-                background: getActiveBackground(each.title),
-                color: isActive ? "#1A1F36" : "#4A5568",
-                padding: "0 16px",
-                borderRadius: "10px",
-                height: "42px",
-                display: "flex",
-                alignItems: "center",
-                fontWeight: isActive ? "600" : "500",
-                fontSize: "14px",
-                cursor: each.click ? "pointer" : "not-allowed",
-                opacity: each.click ? "1" : "0.4",
-                marginBottom: "2px",
-                transition: "all 0.15s ease",
-              }}
-              key={i}
-              onClick={() => {
-                if (!each.click) return;
-                if (handleChangeAccDashsidebar) handleChangeAccDashsidebar();
-                setaccsideNav(each.title);
-                if (each.path) navigate(each.path);
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive) e.currentTarget.style.backgroundColor = "#F7F9FC";
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
-              }}
-            >
-              {each.icon && <each.icon />}
-              <span>{each.display}</span>
-            </div>
-          );
-        })}
-      </div>
+      <div
+        className={`dashboard-sidebar ${isOpen ? "open" : ""}`}
+        style={{
+          overflow: "hidden",
+          padding: "0 16px",
+          display: "flex",
+          flexDirection: "column",
+          height: "100vh",
+          backgroundColor: "#FFFFFF",
+          borderRight: "1px solid #EDF2F7"
+        }}
+      >
+        {/* Logo */}
+        {/* Logo */}
+        <div style={{ padding: "20px 8px 16px 8px", marginBottom: "8px" }}>
+          <img
+            className="dashboard-logo"
+            src={logo}
+            alt="Naavi"
+            style={{ width: "160px", objectFit: "contain" }}
+          />
+        </div>
 
-      {/* Bottom Section */}
-      <div style={{
-        padding: "16px 4px 0",
-        borderTop: "1px solid #EDF2F7",
-        marginTop: "auto"
-      }}>
-        {/* Add New Button */}
-        {!admin && (
-          <div
-            style={{
-              background: "linear-gradient(135deg, #1f304f 0%, #0d6b6e 100%)",
-              borderRadius: "30px",
-              padding: "6px 16px",
-              color: "#FFFFFF",
-              width: "fit-content",
-              cursor: "pointer",
-              marginBottom: "16px",
-              fontSize: "13px",
-              fontWeight: "500",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "6px",
-              transition: "all 0.2s ease",
-              border: "none",
-              boxShadow: "0 2px 8px rgba(13, 107, 110, 0.3)",
-            }}
-            onClick={() => setispopular(true)}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "linear-gradient(135deg, #162238 0%, #0a5254 100%)";
-              e.currentTarget.style.boxShadow = "0 4px 12px rgba(13, 107, 110, 0.45)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "linear-gradient(135deg, #1f304f 0%, #0d6b6e 100%)";
-              e.currentTarget.style.boxShadow = "0 2px 8px rgba(13, 107, 110, 0.3)";
-            }}
-          >
-            <span style={{ fontSize: "16px", lineHeight: "16px", fontWeight: "400" }}>＋</span>
-            <span>Add New</span>
-          </div>
-        )}
-
-        {/* Partner Profile Row with Three Dots */}
-        <div style={{ position: "relative" }} ref={dropdownRef}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "6px 8px",
-              borderRadius: "10px",
-              cursor: "pointer",
-              backgroundColor: accsideNav === "Profile" ? "#E6F0FF" : "transparent",
-              transition: "all 0.15s ease",
-            }}
-            onClick={() => {
-              navigate("/dashboard/accountants/profile");
-              setaccsideNav("Profile");
-            }}
-            onMouseEnter={(e) => {
-              if (accsideNav !== "Profile") e.currentTarget.style.backgroundColor = "#F7F9FC";
-            }}
-            onMouseLeave={(e) => {
-              if (accsideNav !== "Profile") e.currentTarget.style.backgroundColor = "transparent";
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", overflow: "hidden", flex: 1 }}>
-              {/* Avatar */}
+        {/* Main Navigation */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "0 4px" }}>
+          {selectedMenu?.map((each, i) => {
+            const isActive = accsideNav === each.title;
+            return (
               <div
+                className="each-sidenav"
                 style={{
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "8px",
-                  background: "linear-gradient(135deg, #4158D0, #C850C0)",
+                  background: getActiveBackground(each.title),
+                  color: isActive ? "#1A1F36" : "#4A5568",
+                  padding: "0 16px",
+                  borderRadius: "10px",
+                  height: "42px",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                  color: "#FFFFFF",
-                  fontWeight: "600",
+                  fontWeight: isActive ? "600" : "500",
                   fontSize: "14px",
-                  marginRight: "10px",
-                  flexShrink: 0
+                  cursor: each.click ? "pointer" : "not-allowed",
+                  opacity: each.click ? "1" : "0.4",
+                  marginBottom: "2px",
+                  transition: "all 0.15s ease",
+                }}
+                key={i}
+                onClick={() => {
+                  if (!each.click) return;
+                  if (handleChangeAccDashsidebar) handleChangeAccDashsidebar();
+                  setaccsideNav(each.title);
+                  if (each.path) navigate(each.path);
+                  if (onClose) onClose();
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) e.currentTarget.style.backgroundColor = "#F7F9FC";
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
                 }}
               >
-                {userInitial}
+                {each.icon && <each.icon />}
+                <span>{each.display}</span>
               </div>
+            );
+          })}
+        </div>
 
-              {/* Full Name */}
-              <div style={{ overflow: "hidden", flex: 1 }}>
-                <div style={{
-                  fontWeight: "600",
-                  fontSize: "14px",
-                  color: "#1A1F36",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}>
-                  {fullName}
-                </div>
-              </div>
-            </div>
-
-            {/* Three Dots */}
+        {/* Bottom Section */}
+        <div style={{
+          padding: "16px 4px 0",
+          borderTop: "1px solid #EDF2F7",
+          marginTop: "auto"
+        }}>
+          {/* Add New Button */}
+          {!admin && (
             <div
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowDropdown(!showDropdown);
-              }}
+              className="sidebar-add-new-btn"
               style={{
-                padding: "4px",
-                borderRadius: "6px",
+                background: "linear-gradient(135deg, #1f304f 0%, #0d6b6e 100%)",
+                borderRadius: "30px",
+                padding: "6px 16px",
+                color: "#FFFFFF",
+                width: "fit-content",
                 cursor: "pointer",
+                marginBottom: "16px",
+                fontSize: "13px",
+                fontWeight: "500",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                transition: "all 0.15s ease",
-                backgroundColor: showDropdown ? "#F1F5F9" : "transparent",
+                gap: "6px",
+                transition: "all 0.2s ease",
+                border: "none",
+                boxShadow: "0 2px 8px rgba(13, 107, 110, 0.3)",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#F1F5F9"; }}
-              onMouseLeave={(e) => {
-                if (!showDropdown) e.currentTarget.style.backgroundColor = "transparent";
-              }}
+              onClick={() => setispopular(true)}
             >
-              <ThreeDotsIcon />
-            </div>
-          </div>
-
-          {/* Dropdown Menu */}
-          {showDropdown && (
-            <div
-              style={{
-                position: "absolute",
-                bottom: "calc(100% + 4px)",
-                left: "0",
-                right: "0",
-                backgroundColor: "#FFFFFF",
-                borderRadius: "10px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                padding: "4px",
-                zIndex: 1000,
-                border: "1px solid #EDF2F7"
-              }}
-            >
-              {/* Settings */}
-              <div
-                style={{ display: "flex", alignItems: "center", padding: "8px 10px", borderRadius: "6px", cursor: "pointer", color: "#4A5568", fontSize: "13px", fontWeight: "500", gap: "10px", transition: "all 0.15s ease" }}
-                onClick={() => { setShowDropdown(false); navigate("/dashboard/accountants/settings"); }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#F1F5F9"; e.currentTarget.style.color = "#3B82F6"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#4A5568"; }}
-              >
-                <SettingsIcon />
-                <span>Settings</span>
-              </div>
-
-              {/* Edit Profile */}
-              <div
-                style={{ display: "flex", alignItems: "center", padding: "8px 10px", borderRadius: "6px", cursor: "pointer", color: "#4A5568", fontSize: "13px", fontWeight: "500", gap: "10px", transition: "all 0.15s ease" }}
-                onClick={() => { setShowDropdown(false); navigate("/dashboard/accountants/profile/edit"); }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#F1F5F9"; e.currentTarget.style.color = "#3B82F6"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#4A5568"; }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M17 3L21 7L7 21H3V17L17 3Z" stroke="currentColor" strokeLinejoin="round" />
-                </svg>
-                <span>Edit Profile</span>
-              </div>
-
-              {/* Help & Feedback */}
-              <div
-                style={{ display: "flex", alignItems: "center", padding: "8px 10px", borderRadius: "6px", cursor: "pointer", color: "#4A5568", fontSize: "13px", fontWeight: "500", gap: "10px", transition: "all 0.15s ease" }}
-                onClick={() => { setShowDropdown(false); navigate("/dashboard/accountants/help"); }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#F1F5F9"; e.currentTarget.style.color = "#3B82F6"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#4A5568"; }}
-              >
-                <HelpIcon />
-                <span>Help & Feedback</span>
-              </div>
-
-              <div style={{ height: "1px", backgroundColor: "#EDF2F7", margin: "4px 0" }} />
-
-              {/* Logout — only inside dropdown, nowhere else */}
-              <div
-                style={{ display: "flex", alignItems: "center", padding: "8px 10px", borderRadius: "6px", cursor: "pointer", color: "#EF4444", fontSize: "13px", fontWeight: "500", gap: "10px", transition: "all 0.15s ease" }}
-                onClick={() => { setShowDropdown(false); handleLogout(); }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#FEF2F2"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
-              >
-                <LogoutIcon />
-                <span>Log out</span>
-              </div>
+              <span style={{ fontSize: "16px", lineHeight: "16px", fontWeight: "400" }}>＋</span>
+              <span>Add New</span>
             </div>
           )}
+
+
+          {/* Partner Profile Row with Three Dots */}
+          <div style={{ position: "relative" }} ref={dropdownRef}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "6px 8px",
+                borderRadius: "10px",
+                cursor: "pointer",
+                backgroundColor: accsideNav === "Profile" ? "#E6F0FF" : "transparent",
+                transition: "all 0.15s ease",
+              }}
+              onClick={() => {
+                navigate("/dashboard/accountants/profile");
+                setaccsideNav("Profile");
+              }}
+              onMouseEnter={(e) => {
+                if (accsideNav !== "Profile") e.currentTarget.style.backgroundColor = "#F7F9FC";
+              }}
+              onMouseLeave={(e) => {
+                if (accsideNav !== "Profile") e.currentTarget.style.backgroundColor = "transparent";
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", overflow: "hidden", flex: 1 }}>
+                {/* Avatar */}
+                <div
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "8px",
+                    background: "linear-gradient(135deg, #4158D0, #C850C0)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#FFFFFF",
+                    fontWeight: "600",
+                    fontSize: "14px",
+                    marginRight: "10px",
+                    flexShrink: 0
+                  }}
+                >
+                  {userInitial}
+                </div>
+
+                {/* Full Name */}
+                <div style={{ overflow: "hidden", flex: 1 }}>
+                  <div style={{
+                    fontWeight: "600",
+                    fontSize: "14px",
+                    color: "#1A1F36",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}>
+                    {fullName}
+                  </div>
+                </div>
+              </div>
+
+              {/* Three Dots */}
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDropdown(!showDropdown);
+                }}
+                style={{
+                  padding: "4px",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "all 0.15s ease",
+                  backgroundColor: showDropdown ? "#F1F5F9" : "transparent",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#F1F5F9"; }}
+                onMouseLeave={(e) => {
+                  if (!showDropdown) e.currentTarget.style.backgroundColor = "transparent";
+                }}
+              >
+                <ThreeDotsIcon />
+              </div>
+            </div>
+
+            {/* Dropdown Menu */}
+            {showDropdown && (
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: "calc(100% + 4px)",
+                  left: "0",
+                  right: "0",
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: "10px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                  padding: "4px",
+                  zIndex: 1000,
+                  border: "1px solid #EDF2F7"
+                }}
+              >
+                {/* Settings */}
+                <div
+                  style={{ display: "flex", alignItems: "center", padding: "8px 10px", borderRadius: "6px", cursor: "pointer", color: "#4A5568", fontSize: "13px", fontWeight: "500", gap: "10px", transition: "all 0.15s ease" }}
+                  onClick={() => { setShowDropdown(false); navigate("/dashboard/accountants/settings"); }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#F1F5F9"; e.currentTarget.style.color = "#3B82F6"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#4A5568"; }}
+                >
+                  <SettingsIcon />
+                  <span>Settings</span>
+                </div>
+
+                {/* Edit Profile */}
+                <div
+                  style={{ display: "flex", alignItems: "center", padding: "8px 10px", borderRadius: "6px", cursor: "pointer", color: "#4A5568", fontSize: "13px", fontWeight: "500", gap: "10px", transition: "all 0.15s ease" }}
+                  onClick={() => { setShowDropdown(false); navigate("/dashboard/accountants/profile/edit"); }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#F1F5F9"; e.currentTarget.style.color = "#3B82F6"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#4A5568"; }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M17 3L21 7L7 21H3V17L17 3Z" stroke="currentColor" strokeLinejoin="round" />
+                  </svg>
+                  <span>Edit Profile</span>
+                </div>
+
+                {/* Help & Feedback */}
+                <div
+                  style={{ display: "flex", alignItems: "center", padding: "8px 10px", borderRadius: "6px", cursor: "pointer", color: "#4A5568", fontSize: "13px", fontWeight: "500", gap: "10px", transition: "all 0.15s ease" }}
+                  onClick={() => { setShowDropdown(false); navigate("/dashboard/accountants/help"); }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#F1F5F9"; e.currentTarget.style.color = "#3B82F6"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#4A5568"; }}
+                >
+                  <HelpIcon />
+                  <span>Help & Feedback</span>
+                </div>
+
+                <div style={{ height: "1px", backgroundColor: "#EDF2F7", margin: "4px 0" }} />
+
+                {/* Logout — only inside dropdown, nowhere else */}
+                <div
+                  style={{ display: "flex", alignItems: "center", padding: "8px 10px", borderRadius: "6px", cursor: "pointer", color: "#EF4444", fontSize: "13px", fontWeight: "500", gap: "10px", transition: "all 0.15s ease" }}
+                  onClick={() => { setShowDropdown(false); handleLogout(); }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#FEF2F2"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+                >
+                  <LogoutIcon />
+                  <span>Log out</span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
+
       </div>
-    </div>
+    </>
   );
 };
 

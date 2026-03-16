@@ -1,80 +1,47 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import "./Marketplace.scss";
 import Skeleton from "react-loading-skeleton";
 import closepop from "../../static/images/dashboard/closepop.svg";
+import axios from "axios";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-// ─── SVG Icons ────────────────────────────────────────────────────────────────
-
-const MentorIcon = () => (
-  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path d="M20 11H4V13H20V11Z M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" />
-  </svg>
-);
-
-const VendorIcon = () => (
-  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" />
-  </svg>
-);
-
-const InstitutionIcon = () => (
-  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 2L2 7V9H22V7L12 2ZM4 11V19H8V11H4ZM10 11V19H14V11H10ZM18 11V19H20V11H18Z" />
-  </svg>
-);
-
-const DistributorIcon = () => (
-  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path d="M4 3H20V7H4V3ZM2 9H22V21H2V9ZM6 13V17H18V13H6Z" />
-  </svg>
-);
-
-const DefaultIcon = () => (
-  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" />
-  </svg>
-);
-
-// ─── Role config ──────────────────────────────────────────────────────────────
-
-const ROLE_CONFIG = {
-  mentor:      { color: "#0B6E4F", bg: "#E3F2E9", border: "#A8D5BA", icon: MentorIcon },
-  vendor:      { color: "#af5918", bg: "#FEF3C7", border: "#FCD34D", icon: VendorIcon },
-  institution: { color: "#6D28D9", bg: "#EDE9FE", border: "#C4B5FD", icon: InstitutionIcon },
-  distributor: { color: "#c93232", bg: "#FEE2E2", border: "#FCA5A5", icon: DistributorIcon },
-  default:     { color: "#4B5563", bg: "#F3F4F6", border: "#D1D5DB", icon: DefaultIcon },
+const roleConfig = {
+  institution: { color: "#7c3aed", bg: "#ede9fe", emoji: "🏛" },
+  mentor:       { color: "#0891b2", bg: "#cffafe", emoji: "👤" },
+  distributor:  { color: "#d97706", bg: "#fef3c7", emoji: "📦" },
+  vendor:       { color: "#dc2626", bg: "#fee2e2", emoji: "🛍" },
 };
 
-const getRoleConfig = (role) =>
-  ROLE_CONFIG[role?.toLowerCase()] || ROLE_CONFIG.default;
+const getRoleConf = (role) =>
+  roleConfig[role?.toLowerCase()] || { color: "#64748b", bg: "#f1f5f9", emoji: "❓" };
 
 const formatPrice = (cost) => {
-  if (typeof cost === "number") return cost === 0 ? "Free" : `$${cost}`;
-  return cost || "Free";
+  if (!cost) return "Free";
+  return cost.toString();
 };
 
-// ─── Component ────────────────────────────────────────────────────────────────
+const formatRole = (role) => {
+  if (!role) return "UNKNOWN";
+  return role.toUpperCase();
+};
+
+const getBillingInfo = (billing_cycle = {}) => {
+  if (billing_cycle?.monthly?.price  !== undefined) return { price: billing_cycle.monthly.price };
+  if (billing_cycle?.annual?.price   !== undefined) return { price: billing_cycle.annual.price };
+  if (billing_cycle?.lifetime?.price !== undefined) return { price: billing_cycle.lifetime.price };
+  return { price: 0 };
+};
 
 const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearchChange }) => {
-  const [marketplaceItems, setMarketplaceItems] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [showDetails, setShowDetails] = useState(false);
-  const [expandedDesc, setExpandedDesc] = useState({});
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeRole, setActiveRole] = useState(selectedRole || "all");
   const [localSearch, setLocalSearch] = useState(search || "");
+  const [selectedItem, setSelectedItem] = useState(null);
 
-  useEffect(() => {
-    fetchMarketplaceItems();
-    // eslint-disable-next-line
-  }, []);
-
-  useEffect(() => {
-    setLocalSearch(search);
-  }, [search]);
+  useEffect(() => { fetchMarketplaceItems(); }, []);
+  useEffect(() => { setLocalSearch(search); }, [search]);
 
   const fetchMarketplaceItems = async () => {
     setLoading(true);
@@ -105,7 +72,6 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
           duration: s.duration ? `${s.duration} days` : "",
           discount: s.discountType ? `${s.discountAmount}%` : "",
           features: s.features?.join(", ") || s.description || "",
-          chargingtype: s.chargingtype,
           sourceType: "service",
           sourceLabel: "My Services",
         };
@@ -145,8 +111,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
       // Source C: marketplace_items collection
       const collectionItems = [];
       if (marketplaceRes.status === "fulfilled") {
-        const rawItems = marketplaceRes.value.data?.data || [];
-        rawItems.forEach((item) => {
+        (marketplaceRes.value.data?.data || []).forEach((item) => {
           collectionItems.push({
             _id: item._id,
             name: item.name || "Unnamed",
@@ -173,28 +138,16 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
       const merged = [];
       [...serviceItems, ...collectionItems, ...stepItems].forEach((item) => {
         const key = `${item.name?.toLowerCase()}-${item.role?.toLowerCase()}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          merged.push(item);
-        }
+        if (!seen.has(key)) { seen.add(key); merged.push(item); }
       });
 
-      setMarketplaceItems(merged);
+      setItems(merged);
     } catch (err) {
       console.error("Error fetching marketplace items:", err);
     } finally {
       setLoading(false);
     }
   };
-
-  const getBillingInfo = (billing_cycle = {}) => {
-    if (billing_cycle?.monthly?.price  !== undefined) return { price: billing_cycle.monthly.price };
-    if (billing_cycle?.annual?.price   !== undefined) return { price: billing_cycle.annual.price };
-    if (billing_cycle?.lifetime?.price !== undefined) return { price: billing_cycle.lifetime.price };
-    return { price: 0 };
-  };
-
-  const toggleDesc = (id) => setExpandedDesc((p) => ({ ...p, [id]: !p[id] }));
 
   const handleRoleClick = (role) => {
     setActiveRole(role);
@@ -207,7 +160,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
     if (onSearchChange) onSearchChange(value);
   };
 
-  const filteredItems = marketplaceItems.filter((item) => {
+  const filteredItems = items.filter((item) => {
     const q = localSearch?.toLowerCase();
     const matchesSearch =
       !q ||
@@ -216,27 +169,40 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
       item.features?.toLowerCase().includes(q) ||
       item.goal?.toLowerCase().includes(q);
     const matchesRole =
-      activeRole === "all" ||
-      item.role?.toLowerCase() === activeRole.toLowerCase();
+      activeRole === "all" || item.role?.toLowerCase() === activeRole.toLowerCase();
     return matchesSearch && matchesRole;
   });
 
-  return (
-    <div className="marketplace-container">
+  const isSubscriptionPrice = (cost) =>
+    cost?.toString().toLowerCase().includes("subscription") ||
+    cost?.toString().toLowerCase().includes("covered");
 
-      {/* ── Filter Row ── */}
+  return (
+    <div className="partner-marketplace">
+
+      {/* Header */}
+      <div className="mp-header">
+        <h1>Marketplace</h1>
+        {!loading && (
+          <span className="item-count">
+            {filteredItems.length} {filteredItems.length === 1 ? "item" : "items"}
+          </span>
+        )}
+      </div>
+
+      {/* Filter Row */}
       <div className="mp-filter-row">
-        <div className="mp-filter-buttons">
-          {["all", "vendor", "mentor", "institution", "distributor"].map((role) => (
-            <button
-              key={role}
-              className={`mp-filter-btn ${activeRole === role ? "active" : ""}`}
-              onClick={() => handleRoleClick(role)}
-            >
-              {role.charAt(0).toUpperCase() + role.slice(1)}
-            </button>
-          ))}
-        </div>
+       <select
+  className="mp-filter-select"
+  value={activeRole}
+  onChange={(e) => handleRoleClick(e.target.value)}
+>
+  <option value="all">All Partners</option>
+  <option value="institution">Institutions</option>
+  <option value="mentor">Mentors</option>
+  <option value="distributor">Distributors</option>
+  <option value="vendor">Vendors</option>
+</select>
         <div className="mp-search-wrapper">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2">
             <circle cx="11" cy="11" r="8" />
@@ -252,263 +218,201 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
         </div>
       </div>
 
-      {/* ── Loading ── */}
+      {/* Grid */}
       {loading ? (
-        <div className="marketplace-grid">
-          {Array(6).fill(null).map((_, i) => (
-            <div key={i} className="marketplace-card mp-skeleton">
-              <Skeleton height={24} width="80%" />
-              <Skeleton height={16} width="50%" style={{ marginTop: 8 }} />
-              <Skeleton count={2} style={{ marginTop: 6 }} />
-              <Skeleton height={32} style={{ marginTop: 12, borderRadius: 20 }} />
+        <div className="mp-grid">
+          {Array(6).fill(0).map((_, i) => (
+            <div className="mp-card skeleton" key={i}>
+              <div className="card-top">
+                <Skeleton circle width={40} height={40} />
+                <Skeleton height={18} width="60%" style={{ marginLeft: 10 }} />
+              </div>
+              <div className="card-body">
+                <Skeleton height={14} count={4} style={{ marginTop: 8 }} />
+                <Skeleton height={40} style={{ marginTop: 16, borderRadius: 30 }} />
+              </div>
             </div>
           ))}
         </div>
-
-      /* ── Empty ── */
       ) : filteredItems.length === 0 ? (
-        <div className="mp-empty">
-          <p className="mp-empty-title">No Marketplace Items Found</p>
-          <p className="mp-empty-sub">Create services or add items to steps to see them here.</p>
+        <div className="no-items">
+          <h3>No items found</h3>
+          <p>Create services or add items to steps to see them here.</p>
         </div>
-
-      /* ── Cards ── */
       ) : (
-        <div className="marketplace-grid">
+        <div className="mp-grid">
           {filteredItems.map((item) => {
-            const cfg = getRoleConfig(item.role);
-            const price = formatPrice(item.cost);
-            const isFree = price === "Free";
-            const RoleIcon = cfg.icon;
-
+            const rc = getRoleConf(item.role);
+            const isSub = isSubscriptionPrice(item.cost);
             return (
-              <div key={item._id} className="marketplace-card">
+              <div className="mp-card" key={item._id} onClick={() => setSelectedItem(item)}>
 
-                {/* Card Header */}
-                <div className="mp-card-header">
-                  <div className="mp-header-left">
-                    <div className="mp-role-icon" style={{ backgroundColor: cfg.bg, color: cfg.color }}>
-                      <RoleIcon />
+                {/* Card Top */}
+                <div className="card-top">
+                  <div className="card-top-left">
+                    <div className="avatar" style={{ background: rc.bg }}>
+                      {rc.emoji}
                     </div>
-                    <h3 className="mp-item-name">{item.name}</h3>
+                    <div className="card-name">{item.name || "Untitled"}</div>
                   </div>
-                  <span className={`mp-access-badge ${isFree ? "free" : "paid"}`}>
-                    {price}
-                  </span>
-                </div>{/* ✅ closes mp-card-header */}
-
-                {/* Role Pill */}
-                <div className="mp-role-pill" style={{ color: cfg.color }}>
-                  {item.role?.toUpperCase()}
-                </div>
-
-                {/* Goals Section */}
-                <div className="mp-goals-section">
-                  {item.goal && (
-                    <div className="mp-goal-item">
-                      <span className="mp-goal-label">Goal</span>
-                      <span className="mp-goal-text">{item.goal}</span>
-                    </div>
-                  )}
-                  {item.outcomes && !item.goal && (
-                    <div className="mp-goal-item">
-                      <span className="mp-goal-label">Outcomes</span>
-                      <span className="mp-goal-text">{item.outcomes}</span>
-                    </div>
-                  )}
-                  {item.sourceLayer && (
-                    <div className="mp-goal-item">
-                      <span className="mp-goal-label">Layer</span>
-                      <span className="mp-goal-text">{item.sourceLayer}</span>
-                    </div>
+                  {item.duration && (
+                    <div className="price-badge price-yellow">{item.duration}</div>
                   )}
                 </div>
 
-                {/* Description */}
-                {item.features && (
-                  <div className="mp-description">
-                    {item.features.length > 80 ? (
-                      <>
-                        {expandedDesc[item._id]
-                          ? item.features
-                          : `${item.features.substring(0, 80)}...`}
-                        <button
-                          className="mp-read-more"
-                          onClick={() => toggleDesc(item._id)}
-                        >
-                          {expandedDesc[item._id] ? "Less" : "More"}
-                        </button>
-                      </>
-                    ) : (
-                      item.features
+                <div className="card-divider" />
+
+                {/* Card Body */}
+                <div className="card-body">
+                  <div className="role-row">
+                    <div className="role-dot" style={{ background: rc.color }} />
+                    <div className="role-label" style={{ color: rc.color }}>
+                      {formatRole(item.role)}
+                    </div>
+                    {(item.sourceLayer || item.layer) && (
+                      <div className="layer-chip">{item.sourceLayer || item.layer}</div>
                     )}
                   </div>
-                )}{/* ✅ closes mp-description */}
 
-                {/* Source Info */}
-                {(item.sourceType === "step" || item.sourceLayer) && (
-                  <div className="mp-source-info">
-                    Added Via Step: {item.sourceLayer || "MACRO"}
-                  </div>
-                )}
+                  {item.goal && (
+                    <div className="goal-row">
+                      <span className="goal-label">Goal</span>
+                      <span className="goal-val">{item.goal}</span>
+                    </div>
+                  )}
 
-                {/* Footer */}
-                <div className="mp-card-footer">
+                  {item.features && (
+                    <div className="card-features">{item.features}</div>
+                  )}
+
+                 <div className="card-footer">
+  {item.outcomes && (
+    <div className="partner-email">{item.outcomes}</div>
+  )}
+  {item.discount && (
+    <div className="access-badge badge-green">{item.discount}</div>
+  )}
+</div>
                   <button
-                    className="mp-details-btn"
-                    style={{ backgroundColor: cfg.bg, color: cfg.color }}
-                    onClick={() => { setSelectedItem(item); setShowDetails(true); }}
+                    className="view-btn"
+                    onClick={(e) => { e.stopPropagation(); setSelectedItem(item); }}
                   >
-                    View All Details
+                    View Details
                   </button>
                 </div>
-
-              </div> /* ✅ closes marketplace-card */
+              </div>
             );
           })}
         </div>
       )}
 
-      {/* ══ Details Modal ══════════════════════════════════════════════════════ */}
-      {showDetails && selectedItem && (() => {
-        const cfg = getRoleConfig(selectedItem.role);
-        const price = formatPrice(selectedItem.cost);
-        const RoleIcon = cfg.icon;
-
+      {/* Details Modal */}
+      {selectedItem && (() => {
+        const rc = getRoleConf(selectedItem.role);
         return (
-          <div className="mp-modal-overlay" onClick={() => setShowDetails(false)}>
-            <div className="mp-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-overlay" onClick={() => setSelectedItem(null)}>
+            <div className="modal-container" onClick={(e) => e.stopPropagation()}>
 
-              {/* Modal Header */}
-              <div className="mp-modal-header" style={{ backgroundColor: cfg.bg }}>
-                <div className="mp-modal-title-row">
-                  <div className="mp-modal-icon" style={{ color: cfg.color }}>
-                    <RoleIcon />
+              <div className="modal-head">
+                <div className="modal-head-left">
+                  <div className="modal-avatar" style={{ background: rc.bg }}>
+                    {rc.emoji}
                   </div>
                   <div>
-                    <h2 className="mp-modal-name">{selectedItem.name}</h2>
-                    <span className="mp-modal-role" style={{ color: cfg.color }}>
-                      {selectedItem.role?.toUpperCase()}
-                    </span>
+                    <h2>{selectedItem.name || "Item Details"}</h2>
                   </div>
                 </div>
-                <button className="mp-modal-close" onClick={() => setShowDetails(false)}>
-                  <img src={closepop} alt="Close" />
+                <button className="modal-close" onClick={() => setSelectedItem(null)}>
+                  <img src={closepop} alt="close" />
                 </button>
               </div>
 
-              {/* Modal Body */}
-              <div className="mp-modal-body">
+              <div className="modal-body">
 
                 {/* Access & Pricing */}
-                <div className="mp-modal-section">
-                  <div className="mp-section-title">ACCESS & PRICING</div>
-                  <div className="mp-pricing-grid">
-                    <div className="mp-pricing-item">
-                      <span className="mp-pricing-label">Access</span>
-                      <span className="mp-pricing-value">{selectedItem.access || "Free"}</span>
-                    </div>
-                    <div className="mp-pricing-item">
-                      <span className="mp-pricing-label">Price</span>
-                      <span
-                        className="mp-pricing-value"
-                        style={{ color: price === "Free" ? "#166534" : cfg.color }}
-                      >
-                        {price}
-                      </span>
-                    </div>
-                    {selectedItem.discount && (
-                      <div className="mp-pricing-item">
-                        <span className="mp-pricing-label">Discount</span>
-                        <span className="mp-pricing-value" style={{ color: "#16a34a" }}>
-                          {selectedItem.discount}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <div className="section-title">Access &amp; Pricing</div>
+                <table className="access-table">
+                  <thead>
+                    <tr>
+                      <th>Access</th>
+                      <th>Price</th>
+                      {selectedItem.discount && <th>Discount</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="highlight">{selectedItem.access || "Free"}</td>
+                      <td className="highlight">{formatPrice(selectedItem.cost)}</td>
+                      {selectedItem.discount && (
+                        <td className="discount-val">{selectedItem.discount}</td>
+                      )}
+                    </tr>
+                  </tbody>
+                </table>
 
                 {/* Source */}
-                {(selectedItem.sourceLayer || selectedItem.sourceStep || selectedItem.layer) && (
-                  <div className="mp-modal-section">
-                    <div className="mp-section-title">SOURCE</div>
-                    <div className="mp-source-grid">
-                      {selectedItem.sourceStep && (
-                        <div className="mp-source-item">
-                          <span className="mp-source-label">Step</span>
-                          <span className="mp-source-value">{selectedItem.sourceStep}</span>
-                        </div>
-                      )}
+                {(selectedItem.sourceLayer || selectedItem.layer || selectedItem.sourceStep) && (
+                  <>
+                    <div className="section-title">Source</div>
+                    <div className="detail-grid" style={{ marginBottom: 20 }}>
                       {(selectedItem.sourceLayer || selectedItem.layer) && (
-                        <div className="mp-source-item">
-                          <span className="mp-source-label">Layer</span>
-                          <span className="mp-source-value">
-                            {(selectedItem.sourceLayer || selectedItem.layer)?.toUpperCase()}
-                          </span>
+                        <div className="d-item">
+                          <div className="d-label">Layer</div>
+                          <div className="d-val">{selectedItem.sourceLayer || selectedItem.layer}</div>
                         </div>
                       )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Goal & Outcomes */}
-                {(selectedItem.goal || selectedItem.outcomes) && (
-                  <div className="mp-modal-section">
-                    <div className="mp-section-title">GOAL & OUTCOMES</div>
-                    {selectedItem.goal && (
-                      <div className="mp-goal-detail">
-                        <span className="mp-goal-detail-label">Goal</span>
-                        <span className="mp-goal-detail-value">{selectedItem.goal}</span>
-                      </div>
-                    )}
-                    {selectedItem.outcomes && (
-                      <div className="mp-goal-detail">
-                        <span className="mp-goal-detail-label">Outcomes</span>
-                        <span className="mp-goal-detail-value">{selectedItem.outcomes}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Duration & Iterations */}
-                {(selectedItem.duration || (selectedItem.iterations && selectedItem.iterations !== "0")) && (
-                  <div className="mp-modal-section">
-                    <div className="mp-section-title">DURATION & ITERATIONS</div>
-                    <div className="mp-duration-grid">
+                      {selectedItem.sourceStep && (
+                        <div className="d-item">
+                          <div className="d-label">Step</div>
+                          <div className="d-val">{selectedItem.sourceStep}</div>
+                        </div>
+                      )}
                       {selectedItem.duration && (
-                        <div className="mp-duration-item">
-                          <span className="mp-duration-label">Duration</span>
-                          <span className="mp-duration-value">{selectedItem.duration}</span>
-                        </div>
-                      )}
-                      {selectedItem.iterations && selectedItem.iterations !== "0" && (
-                        <div className="mp-duration-item">
-                          <span className="mp-duration-label">Iterations</span>
-                          <span className="mp-duration-value">{selectedItem.iterations}</span>
+                        <div className="d-item">
+                          <div className="d-label">Duration</div>
+                          <div className="d-val">{selectedItem.duration}</div>
                         </div>
                       )}
                     </div>
-                  </div>
+                  </>
                 )}
 
-                {/* Features */}
-                {selectedItem.features && (
-                  <div className="mp-modal-section">
-                    <div className="mp-section-title">FEATURES</div>
-                    <p className="mp-features-text">{selectedItem.features}</p>
-                  </div>
-                )}
+                {/* Details */}
+                <div className="section-title">Details</div>
+                <div className="detail-grid">
+                  {selectedItem.goal && (
+                    <div className="d-item">
+                      <div className="d-label">Goal</div>
+                      <div className="d-val">{selectedItem.goal}</div>
+                    </div>
+                  )}
+                  {selectedItem.iterations && selectedItem.iterations !== "0" && (
+                    <div className="d-item">
+                      <div className="d-label">Iterations</div>
+                      <div className="d-val">{selectedItem.iterations}</div>
+                    </div>
+                  )}
+                  {selectedItem.outcomes && (
+                    <div className="d-item wide">
+                      <div className="d-label">Outcomes</div>
+                      <div className="d-val">{selectedItem.outcomes}</div>
+                    </div>
+                  )}
+                  {selectedItem.features && (
+                    <div className="d-item wide">
+                      <div className="d-label">Features</div>
+                      <div className="d-val">{selectedItem.features}</div>
+                    </div>
+                  )}
+                </div>
 
-              </div>{/* end mp-modal-body */}
-
-              {/* Modal Footer */}
-              <div className="mp-modal-footer">
-                <button className="mp-close-btn" onClick={() => setShowDetails(false)}>
-                  Close
-                </button>
               </div>
 
-            </div>{/* end mp-modal */}
+              <div className="modal-foot">
+                <button onClick={() => setSelectedItem(null)}>Close</button>
+              </div>
+
+            </div>
           </div>
         );
       })()}

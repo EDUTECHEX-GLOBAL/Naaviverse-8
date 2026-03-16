@@ -15,8 +15,8 @@ const MenuNav = ({
   const navigate = useNavigate();
   const isPartner = !!localStorage.getItem("partner");
 
-  // ✅ Hide top-right user menu for partner flow — they use the sidebar profile instead
-
+  // ✅ Partners use sidebar profile — no top nav needed
+  if (isPartner) return null;
 
   const handleLogout = () => {
     const adminUser = localStorage.getItem("adminuser");
@@ -47,32 +47,25 @@ const MenuNav = ({
 
   return (
     <>
-      {/* ===== TOP NAV ===== */}
       <div className="dash-nav">
-        {/* Empty div for spacing - search is now in Marketplace */}
         <div style={{ flex: 1 }}></div>
-
-        {/* User dropdown for non-partner */}
-        {!isPartner && (
-          <div className="full-user" onClick={() => setShowDrop(!showDrop)}>
-            <div className="user-box">
-              <img className="user-icon" src={profilePic} alt="User" />
-            </div>
-            <div
-              className="arrow-box"
-              style={{
-                transform: showDrop ? "rotate(180deg)" : "",
-                cursor: "pointer",
-              }}
-            >
-              <img className="arrow-icon" src={downarrow} alt="" />
-            </div>
+        <div className="full-user" onClick={() => setShowDrop(!showDrop)}>
+          <div className="user-box">
+            <img className="user-icon" src={profilePic} alt="User" />
           </div>
-        )}
+          <div
+            className="arrow-box"
+            style={{
+              transform: showDrop ? "rotate(180deg)" : "",
+              cursor: "pointer",
+            }}
+          >
+            <img className="arrow-icon" src={downarrow} alt="" />
+          </div>
+        </div>
       </div>
 
-      {/* Dropdown menu */}
-      {!isPartner && showDrop && (
+      {showDrop && (
         <div className="m-drop" onMouseDown={(e) => e.stopPropagation()}>
           <div className="m-each" onClick={handleNavigateProfile}>
             <div className="m-left">
@@ -85,9 +78,7 @@ const MenuNav = ({
               <img className="m-right-icon" src={sidearrow} alt="" />
             </div>
           </div>
-
           <div className="m-each-line" />
-
           <div className="m-each" onClick={handleLogout}>
             <div className="m-left">
               <div className="m-left-icon-box">

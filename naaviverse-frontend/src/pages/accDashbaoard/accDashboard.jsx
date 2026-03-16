@@ -155,7 +155,7 @@ const AccDashboard = () => {
   const [showStepCountModal, setShowStepCountModal] = useState(false);
   const [showCreateStepModal, setShowCreateStepModal] = useState(false);
   const [createStepForPathId, setCreateStepForPathId] = useState(null);
-const [selectedRole, setSelectedRole] = useState('all');
+  const [selectedRole, setSelectedRole] = useState('all');
 
   const isViewPathRoute =
     location.pathname.startsWith("/dashboard/accountants/path/");
@@ -224,7 +224,7 @@ const [selectedRole, setSelectedRole] = useState('all');
   }, []);
   //add compPlan
 
-
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [addCompPlan, setAddCompPlan] = useState(false);
   const [addCompPlanStep, setAddCompPlanStep] = useState("step1");
   const [userCreatedApps, setUserCreatedApps] = useState([]);
@@ -1341,7 +1341,7 @@ const [selectedRole, setSelectedRole] = useState('all');
       });
   }, []);
 
- const pathSubmission = (totalStepsOverride) => {
+  const pathSubmission = (totalStepsOverride) => {
     console.log("🚀 ---- PATH SUBMISSION TRIGGERED ----");
 
     // 1️⃣ Log Redux user object
@@ -1387,7 +1387,7 @@ const [selectedRole, setSelectedRole] = useState('all');
       email: finalEmail,
       nameOfPath: pathSteps.nameOfPath,
       description: pathSteps.description,
-    total_steps: Number(totalStepsOverride ?? stepCount),
+      total_steps: Number(totalStepsOverride ?? stepCount),
       current_coordinates: {
         grade: grade,
         curriculum: curriculum,
@@ -1702,86 +1702,146 @@ const [selectedRole, setSelectedRole] = useState('all');
     }, 300);
   };
 
+
   return (
     <div style={{ height: "100vh", overflow: "hidden" }}>
+
+      {/* ── MOBILE TOP BAR ── */}
+      <div className="mobile-topbar" style={{
+        display: "none",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: "56px",
+        background: "#fff",
+        borderBottom: "1px solid #EDF2F7",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "0 16px",
+        zIndex: 999,
+      }}>
+        {/* Hamburger */}
+        <button
+          onClick={() => setSidebarOpen(true)}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: "8px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "5px",
+          }}
+        >
+          <span style={{ width: "22px", height: "2px", background: "#1f304f", borderRadius: "2px", display: "block" }} />
+          <span style={{ width: "22px", height: "2px", background: "#1f304f", borderRadius: "2px", display: "block" }} />
+          <span style={{ width: "22px", height: "2px", background: "#1f304f", borderRadius: "2px", display: "block" }} />
+        </button>
+
+        {/* Logo */}
+        <img src={logo} alt="Naavi" style={{ height: "28px", objectFit: "contain" }} />
+
+        {/* Add New */}
+        <button
+          onClick={() => setispopular(true)}
+          style={{
+            background: "linear-gradient(135deg, #1f304f 0%, #0d6b6e 100%)",
+            border: "none",
+            borderRadius: "20px",
+            color: "#fff",
+            fontSize: "13px",
+            fontWeight: "600",
+            padding: "6px 14px",
+            cursor: "pointer",
+          }}
+        >
+          + Add
+        </button>
+      </div>
+
       <div className="dashboard-main">
         <div className="dashboard-body">
           <div onClick={() => setShowDrop(false)} style={{ display: "contents" }}>
-            <AccDashsidebar /> {/* ← Sidebar is always here */}
+            <AccDashsidebar
+              isOpen={sidebarOpen}
+              onClose={() => setSidebarOpen(false)}
+            />
           </div>
-          <div className="dashboard-screens"> {/* ← Content area */}
-            <div style={{ height: "100%" }}>
+          <div className="dashboard-screens">
+            <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
               {viewPathMode ? (
-  createStepForPathId ? (
-    // FULL CONTENT: Create Step view
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
-      <div style={{
-        padding: "0 35px",
-        height: "60px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        borderBottom: "0.5px solid #E5E5E5",
-        background: "#fff",
-        flexShrink: 0
-      }}>
-        <div style={{
-          padding: "10px 30px",
-          borderRadius: "35px",
-          fontWeight: "700",
-          fontSize: "15px",
-          background: "rgba(241,241,241,0.5)"
-        }}>
-          Create New Step
-        </div>
-        <div
-          style={{
-            fontWeight: "600",
-            textDecorationLine: "underline",
-            cursor: "pointer",
-            fontSize: "0.9rem",
-            paddingRight: "35px"
-          }}
-          onClick={() => setCreateStepForPathId(null)}
-        >
-          ← Back to Path
-        </div>
-      </div>
-      <div style={{ flex: 1, overflowY: "auto", background: "#fff", minHeight: 0 }}>
-        <CreateNewStep
-          inlineMode={true}
-          pathId={createStepForPathId}
-          onSuccess={() => setCreateStepForPathId(null)}
-          onCancel={() => setCreateStepForPathId(null)}
-        />
-      </div>
-    </div>
-  ) : (
-    // FULL CONTENT: Path Details view - REMOVED THE EMPTY services-all-menu DIV
-    <>
-      <MenuNav
-        showDrop={showDrop}
-        setShowDrop={setShowDrop}
-        searchTerm={search}
-        setSearchterm={setSearch}
-        searchPlaceholder="Search Path..."
-      />
-     <div 
-  className="services-main" 
-  onClick={() => setShowDrop(false)}
-  style={{ 
-    height: "calc(100% - 70px)", 
-    overflowY: "auto", 
-    display: "block",
-    background: "#f5f7fa"
-  }}
->
-        {/* REMOVED THE EMPTY services-all-menu DIV COMPLETELY */}
-        <DraftPathView onAddStep={(pathId) => setCreateStepForPathId(pathId)} />
-      </div>
-    </>
-  )
-) : accsideNav === "CREATE_PATH" ? (
+                createStepForPathId ? (
+                  // FULL CONTENT: Create Step view
+                  <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
+                    <div style={{
+                      padding: "0 35px",
+                      height: "60px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      borderBottom: "0.5px solid #E5E5E5",
+                      background: "#fff",
+                      flexShrink: 0
+                    }}>
+                      <div style={{
+                        padding: "10px 30px",
+                        borderRadius: "35px",
+                        fontWeight: "700",
+                        fontSize: "15px",
+                        background: "rgba(241,241,241,0.5)"
+                      }}>
+                        Create New Step
+                      </div>
+                      <div
+                        style={{
+                          fontWeight: "600",
+                          textDecorationLine: "underline",
+                          cursor: "pointer",
+                          fontSize: "0.9rem",
+                          paddingRight: "35px"
+                        }}
+                        onClick={() => setCreateStepForPathId(null)}
+                      >
+                        ← Back to Path
+                      </div>
+                    </div>
+                    <div style={{ flex: 1, overflowY: "auto", background: "#fff", minHeight: 0 }}>
+                      <CreateNewStep
+                        inlineMode={true}
+                        pathId={createStepForPathId}
+                        onSuccess={() => setCreateStepForPathId(null)}
+                        onCancel={() => setCreateStepForPathId(null)}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  // FULL CONTENT: Path Details view - REMOVED THE EMPTY services-all-menu DIV
+                  <>
+                    <MenuNav
+                      showDrop={showDrop}
+                      setShowDrop={setShowDrop}
+                      searchTerm={search}
+                      setSearchterm={setSearch}
+                      searchPlaceholder="Search Path..."
+                    />
+                    <div
+                      className="services-main"
+                      onClick={() => setShowDrop(false)}
+                      style={{
+                        flex: 1,          // ← REPLACE height calc
+                        minHeight: 0,     // ← ADD THIS
+                        overflowY: "auto",
+                        display: "flex",
+                        flexDirection: "column"
+                      }}
+                    >
+                      {/* REMOVED THE EMPTY services-all-menu DIV COMPLETELY */}
+                      <DraftPathView onAddStep={(pathId) => setCreateStepForPathId(pathId)} />
+                    </div>
+                  </>
+                )
+              ) : accsideNav === "CREATE_PATH" ? (
                 // SHOW CREATE NEW PATH AS FULL PAGE - WITHOUT THE HEADER TABS
                 <div style={{
                   display: "flex",
@@ -1824,7 +1884,7 @@ const [selectedRole, setSelectedRole] = useState('all');
                       pathSubmission={pathSubmission}
                       pathSteps={pathSteps}
                       setPathSteps={setPathSteps}
-                      setStepCount={setStepCount} 
+                      setStepCount={setStepCount}
                       grade={grade}
                       setGrade={setGrade}
                       gradeAvg={gradeAvg}
@@ -1966,71 +2026,26 @@ const [selectedRole, setSelectedRole] = useState('all');
                           : "Search Clients..."}
                   />
                   <div className="crm-main" onClick={() => setShowDrop(false)}>
-                    <div
-                      className="crm-all-menu"
-                      style={{ padding: "12px 35px" }}
-                    >
-                      <div
-                        className="crm-each-menu"
-                        style={{
-                          display: crmMenu === "Clients" ? "" : "none",
-                          background:
-                            crmMenu === "Clients"
-                              ? "rgba(241, 241, 241, 0.5)"
-                              : "",
-                          fontWeight: crmMenu === "Clients" ? "700" : "",
-                          marginLeft: "0px"
-                        }}
-                        onClick={() => {
-                          setcrmMenu("Clients");
-                          setSearch("");
-                        }}
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      padding: "16px 35px",
+                      borderBottom: "0.5px solid #E5E5E5"
+                    }}>
+                      <button
+                        className={`mp-filter-btn ${crmMenu === "Clients" ? "active" : ""}`}
+                        onClick={() => { setcrmMenu("Clients"); setSearch(""); }}
                       >
                         Clients ({crmClientData?.length})
-                      </div>
+                      </button>
 
-                      <div
-                        className="crm-each-menu"
-                        style={{
-                          display: crmMenu !== "Clients" ? "" : "none",
-                          marginLeft: "0px"
-                        }}
-                        onClick={() => {
-                          setcrmMenu("Clients");
-                          setSearch("");
-                        }}
+                      <button
+                        className={`mp-filter-btn ${crmMenu === "Purchases" ? "active" : ""}`}
+                        onClick={() => { setcrmMenu("Purchases"); setSearch(""); }}
                       >
-                        Clients
-                      </div>
-
-                      <div
-                        className="crm-each-menu"
-                        style={{
-                          display: crmMenu === "Purchases" ? "" : "none",
-                          background: crmMenu === "Purchases" ? "rgba(241,241,241,0.5)" : "",
-                          fontWeight: crmMenu === "Purchases" ? "700" : "",
-                        }}
-                        onClick={() => {
-                          setcrmMenu("Purchases");
-                          setSearch("");
-                        }}
-                      >
-                        Purchases (<span>{crmPurchaseData.length}</span>)
-                      </div>
-
-                      <div
-                        className="crm-each-menu"
-                        style={{
-                          display: crmMenu !== "Purchases" ? "" : "none",
-                        }}
-                        onClick={() => {
-                          setcrmMenu("Purchases");
-                          setSearch("");
-                        }}
-                      >
-                        Purchases
-                      </div>
-
+                        Purchases ({crmPurchaseData?.length})
+                      </button>
                     </div>
                     <div className="crm-all-box">
                       {crmMenu === "Followers" ? (
@@ -2417,7 +2432,7 @@ const [selectedRole, setSelectedRole] = useState('all');
                     searchTerm={search}
                     setSearchterm={setSearch}
                     searchPlaceholder="Search..."
-                    
+
                   />
                   <div className="services-main" onClick={() => setShowDrop(false)}>
                     <div style={{ padding: "35px" }}>
@@ -2428,32 +2443,33 @@ const [selectedRole, setSelectedRole] = useState('all');
                   </div>
                 </>
 
-    ) : accsideNav === "Marketplace" ? (
-  <>
-    <MenuNav
-      showDrop={showDrop}
-      setShowDrop={setShowDrop}
-      searchTerm={search}
-      setSearchterm={setSearch}
-      searchPlaceholder="Search marketplace items by name, role, description..."
-    />
-    <div 
-      className="services-main" 
-      onClick={() => setShowDrop(false)}
-      style={{ 
-        height: "calc(100% - 70px)", 
-        overflowY: "auto", 
-        display: "block" 
-      }}
-    >
-     
-      {/* Marketplace Grid */}
-      <Marketplace search={search} selectedRole={selectedRole} />
-    </div>
-  </>
-              
-            
-            ) : accsideNav === "Calendar" ? (
+              ) : accsideNav === "Marketplace" ? (
+                <>
+                  <MenuNav
+                    showDrop={showDrop}
+                    setShowDrop={setShowDrop}
+                    searchTerm={search}
+                    setSearchterm={setSearch}
+                    searchPlaceholder="Search marketplace items by name, role, description..."
+                  />
+                  <div
+                    className="services-main"
+                    onClick={() => setShowDrop(false)}
+                    style={{
+                      flex: 1,
+                      minHeight: 0,
+                      overflowY: "auto",
+                      display: "block"
+                    }}
+                  >
+
+                    {/* Marketplace Grid */}
+                    <Marketplace search={search} selectedRole={selectedRole} />
+                  </div>
+                </>
+
+
+              ) : accsideNav === "Calendar" ? (
                 <>
                   <MenuNav
                     showDrop={showDrop}
@@ -2479,7 +2495,7 @@ const [selectedRole, setSelectedRole] = useState('all');
                     />
                     <div
                       className="services-main"
-                      style={{ height: "calc(100% - 70px)" }}
+                      style={{ flex: 1, minHeight: 0 }}
                       onClick={() => setShowDrop(false)}
                     >
                       <div
@@ -2540,7 +2556,7 @@ const [selectedRole, setSelectedRole] = useState('all');
                     />
                     <div
                       className="services-main"
-                      style={{ height: "calc(100% - 70px)" }}
+                      style={{ flex: 1, minHeight: 0 }}
                       onClick={() => setShowDrop(false)}
                     >
                       <div
@@ -2589,7 +2605,7 @@ const [selectedRole, setSelectedRole] = useState('all');
                   />
                   <div
                     className="services-main"
-                    style={{ height: "calc(100% - 70px)" }}
+                    style={{ flex: 1, minHeight: 0 }}
                     onClick={() => setShowDrop(false)}
                   >
                     <Tasks />
@@ -2606,25 +2622,32 @@ const [selectedRole, setSelectedRole] = useState('all');
                       ? "Search For Paths..."
                       : "Search For Steps..."}
                   />
-                 <div
-  className="services-main"
-  style={{ height: "calc(100% - 70px)", overflowY: "auto", display: "block" }}
-  onClick={() => setShowDrop(false)}
->
-  <MyPaths search={search} fetchAllServicesAgain={fetchAllServicesAgain} />
-</div>
+                  <div
+                    className="services-main"
+                    style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "block" }}
+                    onClick={() => setShowDrop(false)}
+                  >
+
+                    <MyPaths search={search} fetchAllServicesAgain={fetchAllServicesAgain} />
+                  </div>
                 </>
               ) : accsideNav === "Steps" ? (
-
-                <MyStepsAcc
-                  search={search}
-                  setSearch={setSearch}
-                  showDrop={showDrop}
-                  setShowDrop={setShowDrop}
-                  loading={loading}
-                  setLoading={setLoading}
-                />
-
+                <div style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                  overflow: "auto",           // ← CHANGE from "hidden" to "auto"
+                  background: "transparent"  // ← ADD THIS
+                }}>
+                  <MyStepsAcc
+                    search={search}
+                    setSearch={setSearch}
+                    showDrop={showDrop}
+                    setShowDrop={setShowDrop}
+                    loading={loading}
+                    setLoading={setLoading}
+                  />
+                </div>
               )
                 : (
                   <div className="services-main">
@@ -2641,7 +2664,7 @@ const [selectedRole, setSelectedRole] = useState('all');
       <>
         {ispopular && accsideNav !== "CREATE_PATH" && !viewPathMode ? (
 
-                    <>
+          <>
             {/* ✅ BLUR OVERLAY */}
             <div
               onClick={() => resetpop()}
@@ -2655,62 +2678,62 @@ const [selectedRole, setSelectedRole] = useState('all');
               }}
             />
 
-          <div
-            className="acc-popular"
-            onClick={() => setShowDrop(false)}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <div className="acc-popular-top">
-              <div className="acc-popular-head">
-                {pstep > 1 && pstep < 8
-                  ? "New Service"
-                  : "Popular Actions"}
+            <div
+              className="acc-popular"
+              onClick={() => setShowDrop(false)}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <div className="acc-popular-top">
+                <div className="acc-popular-head">
+                  {pstep > 1 && pstep < 8
+                    ? "New Service"
+                    : "Popular Actions"}
+                </div>
+                <div
+                  className="acc-popular-img-box"
+                  onClick={() => resetpop()}
+                  style={{ cursor: "pointer" }}
+                >
+                  <img className="acc-popular-img" src={closepop} alt="" />
+                </div>
               </div>
-              <div
-                className="acc-popular-img-box"
-                onClick={() => resetpop()}
-                style={{ cursor: "pointer" }}
-              >
-                <img className="acc-popular-img" src={closepop} alt="" />
-              </div>
-            </div>
-            <>
-              {pstep === 1 ? (
-                <div>
-                  {/* <div className="acc-step-text">New</div> */}
+              <>
+                {pstep === 1 ? (
                   <div>
-                    <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setselectNew("Service");
-                        setispopular(false); // Close the modal
-                        setaccsideNav("CREATE_SERVICE"); // Set navigation to show create service
-                      }}
-                      style={{
-                        background: selectNew === "Service" ? "#182542" : "",
-                        color: selectNew === "Service" ? "#FFF" : "",
-                      }}
-                    >
-                      Service
-                    </div>
+                    {/* <div className="acc-step-text">New</div> */}
+                    <div>
+                      <div
+                        className="acc-step-box"
+                        onClick={() => {
+                          setselectNew("Service");
+                          setispopular(false); // Close the modal
+                          setaccsideNav("CREATE_SERVICE"); // Set navigation to show create service
+                        }}
+                        style={{
+                          background: selectNew === "Service" ? "#182542" : "",
+                          color: selectNew === "Service" ? "#FFF" : "",
+                        }}
+                      >
+                        Service
+                      </div>
 
-                    <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setselectNew("Path");
-                        setispopular(false); // Close the modal
-                        setaccsideNav("CREATE_PATH"); // Set navigation to show create path
-                        // Don't call resetpop() here - it might reset things we need
-                      }}
-                      style={{
-                        background: selectNew === "Path" ? "#182542" : "",
-                        color: selectNew === "Path" ? "#FFF" : "",
-                      }}
-                    >
-                      Path
-                    </div>
+                      <div
+                        className="acc-step-box"
+                        onClick={() => {
+                          setselectNew("Path");
+                          setispopular(false); // Close the modal
+                          setaccsideNav("CREATE_PATH"); // Set navigation to show create path
+                          // Don't call resetpop() here - it might reset things we need
+                        }}
+                        style={{
+                          background: selectNew === "Path" ? "#182542" : "",
+                          color: selectNew === "Path" ? "#FFF" : "",
+                        }}
+                      >
+                        Path
+                      </div>
 
-                    {/* <div
+                      {/* <div
                       className="acc-step-box"
                       onClick={() => {
                         setselectNew("Step");
@@ -2723,452 +2746,242 @@ const [selectedRole, setSelectedRole] = useState('all');
                     >
                       Step
                     </div> */}
-                    <div
-                      className="acc-step-box"
-                      data-type="bulk-service"
-                      onClick={() => {
-                        setselectNew("Bulk Service");
-                        setpstep(13);
-                      }}
-                    >
-                      Bulk Service
-                    </div>
+                      <div
+                        className="acc-step-box"
+                        data-type="bulk-service"
+                        onClick={() => {
+                          setselectNew("Bulk Service");
+                          setpstep(13);
+                        }}
+                      >
+                        Bulk Service
+                      </div>
 
-                    <div
-                      className="acc-step-box"
-                      data-type="bulk-path"
-                      onClick={() => {
-                        setselectNew("Bulk Path");
-                        setpstep(10);
-                      }}
-                    >
-                      Bulk Path
-                    </div>
+                      <div
+                        className="acc-step-box"
+                        data-type="bulk-path"
+                        onClick={() => {
+                          setselectNew("Bulk Path");
+                          setpstep(10);
+                        }}
+                      >
+                        Bulk Path
+                      </div>
 
-                    <div
-                      className="acc-step-box"
-                      data-type="bulk-step"
-                      onClick={() => {
-                        setselectNew("Bulk Step");
-                        setpstep(11);
-                      }}
-                    >
-                      Bulk Step
+                      <div
+                        className="acc-step-box"
+                        data-type="bulk-step"
+                        onClick={() => {
+                          setselectNew("Bulk Step");
+                          setpstep(11);
+                        }}
+                      >
+                        Bulk Step
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : pstep === 2 ? (
-                <div>
-                  <div className="acc-step-text">Select Billing Type</div>
+                ) : pstep === 2 ? (
                   <div>
-                    <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setbillingType("Monthly Subscription");
-                        handleCategories();
-                        setpstep(3);
-                      }}
-                      style={{
-                        background:
-                          billingType === "Monthly Subscription"
-                            ? "#182542"
-                            : "",
-                        color:
-                          billingType === "Monthly Subscription" ? "#FFF" : "",
-                      }}
-                    >
-                      Monthly Subscription
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      onClick={() => {
-                        setbillingType("One Time");
-                        handleCategories();
-                        setpstep(3);
-                      }}
-                      style={{
-                        background: billingType === "One Time" ? "#182542" : "",
-                        color: billingType === "One Time" ? "#FFF" : "",
-                      }}
-                    >
-                      One Time
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      style={{
-                        opacity: "0.4",
-                        cursor: "not-allowed",
-                        background: billingType === "Staking" ? "#182542" : "",
-                        color: billingType === "Staking" ? "#FFF" : "",
-                      }}
-                    >
-                      Staking
-                    </div>
-                  </div>
-                  <div
-                    className="goBack"
-                    onClick={() => {
-                      setpstep(1);
-                      setbillingType("");
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              ) : pstep === 3 ? (
-                <div>
-                  <div className="acc-step-text">
-                    How would you categorize this product?
-                  </div>
-                  <>
-                    {isCatoading ? (
-                      <div className="acc-step-allbox">
-                        {[1, 2, 3].map((each, i) => (
-                          <div className="acc-step-box" key={i}>
-                            <Skeleton style={{ width: "150px" }} />
-                          </div>
-                        ))}
-
-
-                      </div>
-                    ) : (
-                      <div className="acc-step-allbox">
-                        {categoriesData.map((each, i) => (
-                          <div
-                            className="acc-step-box"
-                            key={each._id}
-                            onClick={() => {
-                              setselectCategory(each.name);
-                              setpstep(4);
-                            }}
-                            style={{
-                              background: selectCategory === each.name ? "#182542" : "",
-                              color: selectCategory === each.name ? "#FFF" : "",
-                            }}
-                          >
-                            {each.name}
-                          </div>
-
-                        ))}
-                      </div>
-                    )}
-                  </>
-                  <div
-                    className="goBack"
-                    onClick={() => {
-                      setpstep(2);
-                      setselectCategory("");
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              ) : pstep === 4 ? (
-                <div>
-                  <div className="acc-step-text">Service Information</div>
-                  <div className="acc-step-allbox1">
-                    <div className="acc-upload">
-                      <div className="acc-upload-title">
-                        Upload Profile Image
-                      </div>
-                      <div className="acc-upload-imgbox">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFileInputChange}
-                          style={{ display: "none" }}
-                          ref={fileInputRef}
-                        />
-                        <img
-                          className="acc-upload-img"
-                          src={
-                            isUploadLoading
-                              ? upgif
-                              : image
-                                ? image
-                                : uploadv
-                          }
-                          alt=""
-                          onClick={handleImageClick}
-                        />
-                      </div>
-                    </div>
-                    <div className="acc-step-box">
-                      <input
-                        className="acc-step-input"
-                        type="text"
-                        placeholder="Service Name"
-                        value={serviceNameInput}
-                        onChange={(e) => setServiceNameInput(e.target.value)}
-                      />
-                    </div>
-                    <div className="acc-step-box">
-                      <input
-                        className="acc-step-input"
-                        type="text"
-                        placeholder="Service Code"
-                        value={serviceCodeInput}
-                        onChange={(e) => setServiceCodeInput(e.target.value)}
-                      />
-                    </div>
-                    <div className="acc-step-box">
-                      <input
-                        className="acc-step-input"
-                        type="text"
-                        placeholder="Product Label"
-                        value={productLabel}
-                        onChange={(e) => setProductLabel(e.target.value)}
-                      />
-                    </div>
-                    <div className="acc-step-box">
-                      <input
-                        className="acc-step-input"
-                        type="text"
-                        placeholder="Service Tagline"
-                        value={serviceTagline}
-                        onChange={(e) => setServiceTagline(e.target.value)}
-                      />
-                    </div>
-                    <div className="acc-step-box1">
-                      <textarea
-                        className="acc-step-input1"
-                        type="text"
-                        placeholder="Service Description"
-                        value={serviceDescription}
-                        onChange={(e) => setServiceDescription(e.target.value)}
-                      />
-                    </div>
+                    <div className="acc-step-text">Select Billing Type</div>
                     <div>
                       <div
-                        className="goNext"
+                        className="acc-step-box"
                         onClick={() => {
-                          handleGetCurrencies();
-                          setpstep(5);
+                          setbillingType("Monthly Subscription");
+                          handleCategories();
+                          setpstep(3);
+                        }}
+                        style={{
+                          background:
+                            billingType === "Monthly Subscription"
+                              ? "#182542"
+                              : "",
+                          color:
+                            billingType === "Monthly Subscription" ? "#FFF" : "",
                         }}
                       >
-                        Next Step
+                        Monthly Subscription
                       </div>
                       <div
-                        className="goBack1"
+                        className="acc-step-box"
                         onClick={() => {
+                          setbillingType("One Time");
+                          handleCategories();
                           setpstep(3);
-                          setServiceNameInput("");
-                          setServiceCodeInput("");
-                          setProductLabel("");
-                          setServiceTagline("");
-                          setServiceDescription("");
-                          setCoverImageS3url("");
-                          setImage(null);
+                        }}
+                        style={{
+                          background: billingType === "One Time" ? "#182542" : "",
+                          color: billingType === "One Time" ? "#FFF" : "",
                         }}
                       >
-                        Go Back
+                        One Time
+                      </div>
+                      <div
+                        className="acc-step-box"
+                        style={{
+                          opacity: "0.4",
+                          cursor: "not-allowed",
+                          background: billingType === "Staking" ? "#182542" : "",
+                          color: billingType === "Staking" ? "#FFF" : "",
+                        }}
+                      >
+                        Staking
                       </div>
                     </div>
-                  </div>
-                </div>
-              ) : pstep === 5 ? (
-                <div style={{ height: "calc(100% - 3rem)" }}>
-                  <div className="acc-step-text">
-                    What currency do you want to collect?
-                  </div>
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "3.5rem",
-                      border: "1px solid #e5e5e5",
-                      borderRadius: "10px",
-                      padding: "0 25px",
-                      marginBottom: "1rem",
-                      marginTop: "1rem",
-                    }}
-                  >
-                    <input
-                      type="text"
-                      placeholder="Search Currency..."
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        border: "none",
-                        fontSize: "1rem",
-                        fontWeight: "500",
+                    <div
+                      className="goBack"
+                      onClick={() => {
+                        setpstep(1);
+                        setbillingType("");
                       }}
-                      onChange={(e) => {
-                        setSearchCurrency(e.target.value);
-                      }}
-                      value={searchCurrency}
-                    />
+                    >
+                      Go Back
+                    </div>
                   </div>
-                  <>
-                    {isCurrencies ? (
-                      <div
-                        className="acc-step-allbox"
-                        style={{ height: "calc(100% - 76px - 7.5rem)" }}
-                      >
-                        {[1, 2, 3].map((each, i) => (
-                          <div className="acc-step-box" key={i}>
-                            <Skeleton style={{ width: "150px" }} />
-                          </div>
-                        ))}
-
-                      </div>
-                    ) : (
-                      <div
-                        className="acc-step-allbox"
-                        style={{ height: "calc(100% - 76px - 7.5rem)" }}
-                      >
-                        {allCurrencies
-                          ?.filter(
-                            (entry) =>
-                              entry?.coinName
-                                ?.toLowerCase()
-                                ?.includes(searchCurrency?.toLowerCase()) ||
-                              entry?.coinSymbol
-                                ?.toLowerCase()
-                                ?.includes(searchCurrency?.toLowerCase())
-                          )
-                          .map((each, i) => (
-                            <div
-                              className="acc-step-box"
-                              onClick={() => {
-                                setSelectedCurrency(each);
-                                setpstep(6);
-                                setSearchCurrency("");
-                              }}
-                              style={{
-                                background:
-                                  selectedCurrency === each ? "#182542" : "",
-                                color: selectedCurrency === each ? "#FFF" : "",
-                              }}
-                            >
-                              {each.coinName}
+                ) : pstep === 3 ? (
+                  <div>
+                    <div className="acc-step-text">
+                      How would you categorize this product?
+                    </div>
+                    <>
+                      {isCatoading ? (
+                        <div className="acc-step-allbox">
+                          {[1, 2, 3].map((each, i) => (
+                            <div className="acc-step-box" key={i}>
+                              <Skeleton style={{ width: "150px" }} />
                             </div>
                           ))}
-                      </div>
-                    )}
-                  </>
-                  <div
-                    className="goBack"
-                    onClick={() => {
-                      setpstep(4);
-                      setSelectedCurrency({});
-                      setSearchCurrency("");
-                    }}
-                  >
-                    Go Back
+
+
+                        </div>
+                      ) : (
+                        <div className="acc-step-allbox">
+                          {categoriesData.map((each, i) => (
+                            <div
+                              className="acc-step-box"
+                              key={each._id}
+                              onClick={() => {
+                                setselectCategory(each.name);
+                                setpstep(4);
+                              }}
+                              style={{
+                                background: selectCategory === each.name ? "#182542" : "",
+                                color: selectCategory === each.name ? "#FFF" : "",
+                              }}
+                            >
+                              {each.name}
+                            </div>
+
+                          ))}
+                        </div>
+                      )}
+                    </>
+                    <div
+                      className="goBack"
+                      onClick={() => {
+                        setpstep(2);
+                        setselectCategory("");
+                      }}
+                    >
+                      Go Back
+                    </div>
                   </div>
-                </div>
-              ) : pstep === 6 ? (
-                <div>
-                  <div className="acc-step-text">Pricing Information</div>
-                  <div className="acc-step-allbox1">
-                    <div className="acc-step-box">
-                      <input
-                        className="acc-step-input2"
-                        type="number"
-                        placeholder={
-                          billingType === "One Time"
-                            ? "Service Price"
-                            : "First Months Price"
-                        }
-                        value={firstMonthPrice}
-                        onChange={(e) => setfirstMonthPrice(e.target.value)}
-                        onWheel={(e) => e.target.blur()}
-                      />
-                      <div className="acc-step-feildHead">
-                        {selectedCurrency.coinSymbol}
+                ) : pstep === 4 ? (
+                  <div>
+                    <div className="acc-step-text">Service Information</div>
+                    <div className="acc-step-allbox1">
+                      <div className="acc-upload">
+                        <div className="acc-upload-title">
+                          Upload Profile Image
+                        </div>
+                        <div className="acc-upload-imgbox">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileInputChange}
+                            style={{ display: "none" }}
+                            ref={fileInputRef}
+                          />
+                          <img
+                            className="acc-upload-img"
+                            src={
+                              isUploadLoading
+                                ? upgif
+                                : image
+                                  ? image
+                                  : uploadv
+                            }
+                            alt=""
+                            onClick={handleImageClick}
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      style={{
-                        display: billingType === "One Time" ? "none" : "",
-                      }}
-                    >
-                      <input
-                        className="acc-step-input2"
-                        type="number"
-                        placeholder="Monthly Price"
-                        value={monthlyPrice}
-                        onChange={(e) => setmonthlyPrice(e.target.value)}
-                        onWheel={(e) => e.target.blur()}
-                      />
-                      <div className="acc-step-feildHead">
-                        {selectedCurrency.coinSymbol}
+                      <div className="acc-step-box">
+                        <input
+                          className="acc-step-input"
+                          type="text"
+                          placeholder="Service Name"
+                          value={serviceNameInput}
+                          onChange={(e) => setServiceNameInput(e.target.value)}
+                        />
                       </div>
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      style={{
-                        display: billingType === "One Time" ? "none" : "",
-                      }}
-                    >
-                      <input
-                        className="acc-step-input2"
-                        type="number"
-                        placeholder="Grace Period"
-                        value={gracePeriod}
-                        onChange={(e) => setgracePeriod(e.target.value)}
-                        onWheel={(e) => e.target.blur()}
-                      />
-                      <div className="acc-step-feildHead">Days</div>
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      style={{
-                        display: billingType === "One Time" ? "none" : "",
-                      }}
-                    >
-                      <input
-                        className="acc-step-input2"
-                        type="number"
-                        placeholder="Second Charge Attempt"
-                        value={secondChargeAttempt}
-                        onChange={(e) => setsecondChargeAttempt(e.target.value)}
-                        onWheel={(e) => e.target.blur()}
-                      />
-                      <div className="acc-step-feildHead">Days</div>
-                    </div>
-                    <div
-                      className="acc-step-box"
-                      style={{
-                        display: billingType === "One Time" ? "none" : "",
-                      }}
-                    >
-                      <input
-                        className="acc-step-input2"
-                        type="number"
-                        placeholder="Third Charge Attempt"
-                        value={thirdChargeAttempt}
-                        onChange={(e) => setthirdChargeAttempt(e.target.value)}
-                        onWheel={(e) => e.target.blur()}
-                      />
-                      <div className="acc-step-feildHead">Days</div>
-                    </div>
-                    <div>
-                      <div
-                        style={{
-                          position:
-                            billingType === "One Time" ? "fixed" : "initial",
-                          bottom: billingType === "One Time" ? "0px" : "",
-                        }}
-                      >
+                      <div className="acc-step-box">
+                        <input
+                          className="acc-step-input"
+                          type="text"
+                          placeholder="Service Code"
+                          value={serviceCodeInput}
+                          onChange={(e) => setServiceCodeInput(e.target.value)}
+                        />
+                      </div>
+                      <div className="acc-step-box">
+                        <input
+                          className="acc-step-input"
+                          type="text"
+                          placeholder="Product Label"
+                          value={productLabel}
+                          onChange={(e) => setProductLabel(e.target.value)}
+                        />
+                      </div>
+                      <div className="acc-step-box">
+                        <input
+                          className="acc-step-input"
+                          type="text"
+                          placeholder="Service Tagline"
+                          value={serviceTagline}
+                          onChange={(e) => setServiceTagline(e.target.value)}
+                        />
+                      </div>
+                      <div className="acc-step-box1">
+                        <textarea
+                          className="acc-step-input1"
+                          type="text"
+                          placeholder="Service Description"
+                          value={serviceDescription}
+                          onChange={(e) => setServiceDescription(e.target.value)}
+                        />
+                      </div>
+                      <div>
                         <div
                           className="goNext"
                           onClick={() => {
-                            handleFinalSubmit();
+                            handleGetCurrencies();
+                            setpstep(5);
                           }}
                         >
-                          Submit
+                          Next Step
                         </div>
                         <div
                           className="goBack1"
                           onClick={() => {
-                            setpstep(5);
-                            setfirstMonthPrice("");
-                            setmonthlyPrice("");
-                            setgracePeriod("");
-                            setsecondChargeAttempt("");
-                            setthirdChargeAttempt("");
+                            setpstep(3);
+                            setServiceNameInput("");
+                            setServiceCodeInput("");
+                            setProductLabel("");
+                            setServiceTagline("");
+                            setServiceDescription("");
+                            setCoverImageS3url("");
+                            setImage(null);
                           }}
                         >
                           Go Back
@@ -3176,185 +2989,395 @@ const [selectedRole, setSelectedRole] = useState('all');
                       </div>
                     </div>
                   </div>
+                ) : pstep === 5 ? (
+                  <div style={{ height: "calc(100% - 3rem)" }}>
+                    <div className="acc-step-text">
+                      What currency do you want to collect?
+                    </div>
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "3.5rem",
+                        border: "1px solid #e5e5e5",
+                        borderRadius: "10px",
+                        padding: "0 25px",
+                        marginBottom: "1rem",
+                        marginTop: "1rem",
+                      }}
+                    >
+                      <input
+                        type="text"
+                        placeholder="Search Currency..."
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          border: "none",
+                          fontSize: "1rem",
+                          fontWeight: "500",
+                        }}
+                        onChange={(e) => {
+                          setSearchCurrency(e.target.value);
+                        }}
+                        value={searchCurrency}
+                      />
+                    </div>
+                    <>
+                      {isCurrencies ? (
+                        <div
+                          className="acc-step-allbox"
+                          style={{ height: "calc(100% - 76px - 7.5rem)" }}
+                        >
+                          {[1, 2, 3].map((each, i) => (
+                            <div className="acc-step-box" key={i}>
+                              <Skeleton style={{ width: "150px" }} />
+                            </div>
+                          ))}
+
+                        </div>
+                      ) : (
+                        <div
+                          className="acc-step-allbox"
+                          style={{ height: "calc(100% - 76px - 7.5rem)" }}
+                        >
+                          {allCurrencies
+                            ?.filter(
+                              (entry) =>
+                                entry?.coinName
+                                  ?.toLowerCase()
+                                  ?.includes(searchCurrency?.toLowerCase()) ||
+                                entry?.coinSymbol
+                                  ?.toLowerCase()
+                                  ?.includes(searchCurrency?.toLowerCase())
+                            )
+                            .map((each, i) => (
+                              <div
+                                className="acc-step-box"
+                                onClick={() => {
+                                  setSelectedCurrency(each);
+                                  setpstep(6);
+                                  setSearchCurrency("");
+                                }}
+                                style={{
+                                  background:
+                                    selectedCurrency === each ? "#182542" : "",
+                                  color: selectedCurrency === each ? "#FFF" : "",
+                                }}
+                              >
+                                {each.coinName}
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                    </>
+                    <div
+                      className="goBack"
+                      onClick={() => {
+                        setpstep(4);
+                        setSelectedCurrency({});
+                        setSearchCurrency("");
+                      }}
+                    >
+                      Go Back
+                    </div>
+                  </div>
+                ) : pstep === 6 ? (
                   <div>
-                    {isSubmit ? (
-                      <div className="popularlogo">
-                        <img className="popularlogoimg" src={lg1} alt="" />
+                    <div className="acc-step-text">Pricing Information</div>
+                    <div className="acc-step-allbox1">
+                      <div className="acc-step-box">
+                        <input
+                          className="acc-step-input2"
+                          type="number"
+                          placeholder={
+                            billingType === "One Time"
+                              ? "Service Price"
+                              : "First Months Price"
+                          }
+                          value={firstMonthPrice}
+                          onChange={(e) => setfirstMonthPrice(e.target.value)}
+                          onWheel={(e) => e.target.blur()}
+                        />
+                        <div className="acc-step-feildHead">
+                          {selectedCurrency.coinSymbol}
+                        </div>
                       </div>
-                    ) : (
-                      ""
-                    )}
+                      <div
+                        className="acc-step-box"
+                        style={{
+                          display: billingType === "One Time" ? "none" : "",
+                        }}
+                      >
+                        <input
+                          className="acc-step-input2"
+                          type="number"
+                          placeholder="Monthly Price"
+                          value={monthlyPrice}
+                          onChange={(e) => setmonthlyPrice(e.target.value)}
+                          onWheel={(e) => e.target.blur()}
+                        />
+                        <div className="acc-step-feildHead">
+                          {selectedCurrency.coinSymbol}
+                        </div>
+                      </div>
+                      <div
+                        className="acc-step-box"
+                        style={{
+                          display: billingType === "One Time" ? "none" : "",
+                        }}
+                      >
+                        <input
+                          className="acc-step-input2"
+                          type="number"
+                          placeholder="Grace Period"
+                          value={gracePeriod}
+                          onChange={(e) => setgracePeriod(e.target.value)}
+                          onWheel={(e) => e.target.blur()}
+                        />
+                        <div className="acc-step-feildHead">Days</div>
+                      </div>
+                      <div
+                        className="acc-step-box"
+                        style={{
+                          display: billingType === "One Time" ? "none" : "",
+                        }}
+                      >
+                        <input
+                          className="acc-step-input2"
+                          type="number"
+                          placeholder="Second Charge Attempt"
+                          value={secondChargeAttempt}
+                          onChange={(e) => setsecondChargeAttempt(e.target.value)}
+                          onWheel={(e) => e.target.blur()}
+                        />
+                        <div className="acc-step-feildHead">Days</div>
+                      </div>
+                      <div
+                        className="acc-step-box"
+                        style={{
+                          display: billingType === "One Time" ? "none" : "",
+                        }}
+                      >
+                        <input
+                          className="acc-step-input2"
+                          type="number"
+                          placeholder="Third Charge Attempt"
+                          value={thirdChargeAttempt}
+                          onChange={(e) => setthirdChargeAttempt(e.target.value)}
+                          onWheel={(e) => e.target.blur()}
+                        />
+                        <div className="acc-step-feildHead">Days</div>
+                      </div>
+                      <div>
+                        <div
+                          style={{
+                            position:
+                              billingType === "One Time" ? "fixed" : "initial",
+                            bottom: billingType === "One Time" ? "0px" : "",
+                          }}
+                        >
+                          <div
+                            className="goNext"
+                            onClick={() => {
+                              handleFinalSubmit();
+                            }}
+                          >
+                            Submit
+                          </div>
+                          <div
+                            className="goBack1"
+                            onClick={() => {
+                              setpstep(5);
+                              setfirstMonthPrice("");
+                              setmonthlyPrice("");
+                              setgracePeriod("");
+                              setsecondChargeAttempt("");
+                              setthirdChargeAttempt("");
+                            }}
+                          >
+                            Go Back
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      {isSubmit ? (
+                        <div className="popularlogo">
+                          <img className="popularlogoimg" src={lg1} alt="" />
+                        </div>
+                      ) : (
+                        ""
+                      )}
+                    </div>
                   </div>
-                </div>
-              ) : pstep === 7 ? (
-                <div className="success-box">
-                  You Have Successfully Created A New Service
-                </div>
-              ) : pstep === 10 ? (
-                <div>
-                  <div className="acc-step-text">Bulk Path Action</div>
+                ) : pstep === 7 ? (
+                  <div className="success-box">
+                    You Have Successfully Created A New Service
+                  </div>
+                ) : pstep === 10 ? (
                   <div>
-                    <div
-                      className="acc-step-box"
+                    <div className="acc-step-text">Bulk Path Action</div>
+                    <div>
+                      <div
+                        className="acc-step-box"
 
-                      style={{
-                        background:
-                          billingType === "Download"
-                            ? "#182542"
-                            : "",
-                        color:
-                          billingType === "Download" ? "#FFF" : "",
-                      }}
-                      onClick={e => handleDownload('Path')}
-                    >
-                      Download
+                        style={{
+                          background:
+                            billingType === "Download"
+                              ? "#182542"
+                              : "",
+                          color:
+                            billingType === "Download" ? "#FFF" : "",
+                        }}
+                        onClick={e => handleDownload('Path')}
+                      >
+                        Download
+
+                      </div>
+                      <div
+                        className="acc-step-box"
+                        onClick={handleImageClick}
+                        style={{
+                          background: billingType === "Upload" ? "#182542" : "",
+                          color: billingType === "Upload" ? "#FFF" : "",
+                        }}
+                      >
+                        Upload
+                        <input
+                          type="file"
+                          onChange={handleFileInputChange1}
+                          style={{ display: "none" }}
+                          ref={fileInputRef}
+                        />
+
+                      </div>
 
                     </div>
                     <div
-                      className="acc-step-box"
-                      onClick={handleImageClick}
-                      style={{
-                        background: billingType === "Upload" ? "#182542" : "",
-                        color: billingType === "Upload" ? "#FFF" : "",
+                      className="goBack"
+                      onClick={() => {
+                        setpstep(1);
                       }}
                     >
-                      Upload
-                      <input
-                        type="file"
-                        onChange={handleFileInputChange1}
-                        style={{ display: "none" }}
-                        ref={fileInputRef}
-                      />
-
+                      Go Back
                     </div>
-
                   </div>
-                  <div
-                    className="goBack"
-                    onClick={() => {
-                      setpstep(1);
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              ) : pstep === 11 ? (
-                <div>
-                  <div className="acc-step-text">Bulk Step Action</div>
+                ) : pstep === 11 ? (
                   <div>
-                    <div
-                      className="acc-step-box"
-                      onClick={e => handleDownload('Step')}
-                      style={{
-                        background:
-                          billingType === "Download"
-                            ? "#182542"
-                            : "",
-                        color:
-                          billingType === "Download" ? "#FFF" : "",
-                      }}
+                    <div className="acc-step-text">Bulk Step Action</div>
+                    <div>
+                      <div
+                        className="acc-step-box"
+                        onClick={e => handleDownload('Step')}
+                        style={{
+                          background:
+                            billingType === "Download"
+                              ? "#182542"
+                              : "",
+                          color:
+                            billingType === "Download" ? "#FFF" : "",
+                        }}
 
-                    >
-                      Download
+                      >
+                        Download
+
+                      </div>
+                      <div
+                        className="acc-step-box"
+                        onClick={handleImageClick}
+                        style={{
+                          background: billingType === "Upload" ? "#182542" : "",
+                          color: billingType === "Upload" ? "#FFF" : "",
+                        }}
+                      >
+                        Upload
+                        <input
+                          type="file"
+                          onChange={handleFileInputChange2}
+                          style={{ display: "none" }}
+                          ref={fileInputRef}
+                        />
+
+                      </div>
 
                     </div>
                     <div
-                      className="acc-step-box"
-                      onClick={handleImageClick}
-                      style={{
-                        background: billingType === "Upload" ? "#182542" : "",
-                        color: billingType === "Upload" ? "#FFF" : "",
+                      className="goBack"
+                      onClick={() => {
+                        setpstep(1);
                       }}
                     >
-                      Upload
-                      <input
-                        type="file"
-                        onChange={handleFileInputChange2}
-                        style={{ display: "none" }}
-                        ref={fileInputRef}
-                      />
-
+                      Go Back
                     </div>
-
                   </div>
-                  <div
-                    className="goBack"
-                    onClick={() => {
-                      setpstep(1);
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              ) : pstep === 12 ? (
-                <div>
-                  <div className="acc-step-text">Uploaded Successfully</div>
-
-                  <div
-                    className="goBack"
-                    onClick={() => {
-                      setpstep(1);
-                      setbillingType("");
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              ) : pstep === 13 ? (
-                <div>
-                  <div className="acc-step-text">Bulk Service Action</div>
+                ) : pstep === 12 ? (
                   <div>
-                    <div
-                      className="acc-step-box"
+                    <div className="acc-step-text">Uploaded Successfully</div>
 
-                      style={{
-                        background:
-                          billingType === "Download"
-                            ? "#182542"
-                            : "",
-                        color:
-                          billingType === "Download" ? "#FFF" : "",
+                    <div
+                      className="goBack"
+                      onClick={() => {
+                        setpstep(1);
+                        setbillingType("");
                       }}
-                      onClick={e => handleDownload('Service')}
                     >
-                      Download
+                      Go Back
+                    </div>
+                  </div>
+                ) : pstep === 13 ? (
+                  <div>
+                    <div className="acc-step-text">Bulk Service Action</div>
+                    <div>
+                      <div
+                        className="acc-step-box"
+
+                        style={{
+                          background:
+                            billingType === "Download"
+                              ? "#182542"
+                              : "",
+                          color:
+                            billingType === "Download" ? "#FFF" : "",
+                        }}
+                        onClick={e => handleDownload('Service')}
+                      >
+                        Download
+
+                      </div>
+                      <div
+                        className="acc-step-box"
+                        onClick={handleImageClick}
+                        style={{
+                          background: billingType === "Upload" ? "#182542" : "",
+                          color: billingType === "Upload" ? "#FFF" : "",
+                        }}
+                      >
+                        Upload
+                        <input
+                          type="file"
+                          onChange={handleFileInputChange3}
+                          style={{ display: "none" }}
+                          ref={fileInputRef}
+                        />
+
+                      </div>
 
                     </div>
                     <div
-                      className="acc-step-box"
-                      onClick={handleImageClick}
-                      style={{
-                        background: billingType === "Upload" ? "#182542" : "",
-                        color: billingType === "Upload" ? "#FFF" : "",
+                      className="goBack"
+                      onClick={() => {
+                        setpstep(1);
                       }}
                     >
-                      Upload
-                      <input
-                        type="file"
-                        onChange={handleFileInputChange3}
-                        style={{ display: "none" }}
-                        ref={fileInputRef}
-                      />
-
+                      Go Back
                     </div>
-
                   </div>
-                  <div
-                    className="goBack"
-                    onClick={() => {
-                      setpstep(1);
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              ) : (
-                ""
-              )}
+                ) : (
+                  ""
+                )}
 
 
-            </>
-</div>
+              </>
+            </div>
           </>
         ) : (
           ""
@@ -3454,375 +3477,375 @@ const [selectedRole, setSelectedRole] = useState('all');
 
 
 
-{/* Service Action Popup */}
-{serviceActionEnabled && (
-   <div 
-    className="acc-popular1"
-    style={{
-      background: "linear-gradient(135deg, #e8f4fd 0%, #fef9e7 100%)",
-      borderLeft: "4px solid #0d6b6e",
-      boxShadow: "-8px 0 32px rgba(13, 107, 110, 0.15)",
-      width: "520px",
-      position: "fixed",
-      top: 0,
-      right: 0,
-      height: "100vh",
-      zIndex: 999
-    }}
-  >
-   <div 
-  className="acc-popular-top1"
-  style={{
-    background: "rgba(13, 107, 110, 0.08)",
-    borderBottom: "1px solid rgba(13, 107, 110, 0.2)",
-    padding: "20px 25px"
-  }}
->
-  <div className="acc-popular-head1">
-        {serviceActionStep === 1 && "Service Actions"}
-        {serviceActionStep === 2 && "Edit Service"}
-        {serviceActionStep === 3 && "Delete Service"}
-        {serviceActionStep === 4 && "Service Details"}
-        {serviceActionStep === 5 && "Change Icon"}
-        {serviceActionStep === 6 && "Success"}
-      </div>
-      <div
-        className="acc-popular-img-box1"
-        style={{ cursor: "pointer" }}
-        onClick={() => {
-          setServiceActionEnabled(false);
-          setServiceActionStep(1);
-          setSelectedService({});
-        }}
-      >
-        <img className="acc-popular-img1" src={closepop} alt="" />
-      </div>
-    </div>
-
-<div className="acc-mt-div" style={{ overflowY: "auto", height: "calc(100vh - 80px)", paddingBottom: "30px" }}>      {serviceActionStep === 1 && (
-        <div className="acc-scroll-div">
+      {/* Service Action Popup */}
+      {serviceActionEnabled && (
+        <div
+          className="acc-popular1"
+          style={{
+            background: "linear-gradient(135deg, #e8f4fd 0%, #fef9e7 100%)",
+            borderLeft: "4px solid #0d6b6e",
+            boxShadow: "-8px 0 32px rgba(13, 107, 110, 0.15)",
+            width: "520px",
+            position: "fixed",
+            top: 0,
+            right: 0,
+            height: "100vh",
+            zIndex: 999
+          }}
+        >
           <div
-            className="acc-step-box4"
-            onClick={() => setServiceActionStep(4)}
+            className="acc-popular-top1"
+            style={{
+              background: "rgba(13, 107, 110, 0.08)",
+              borderBottom: "1px solid rgba(13, 107, 110, 0.2)",
+              padding: "20px 25px"
+            }}
           >
-            View Details
-          </div>
-          <div
-            className="acc-step-box4"
-            onClick={() => setServiceActionStep(2)}
-          >
-            Edit Service
-          </div>
-          <div
-            className="acc-step-box4"
-            onClick={() => setServiceActionStep(5)}
-          >
-            Change Icon
-          </div>
-          <div
-            className="acc-step-box4"
-            onClick={() => setServiceActionStep(3)}
-          >
-            Delete Service
-          </div>
-          <div className="goBack3" onClick={() => setServiceActionEnabled(false)}>
-            Cancel
-          </div>
-        </div>
-      )}
-
-      {/* Step 2: Edit Service */}
-      {serviceActionStep === 2 && (
-        <div>
-          <div className="acc-sub-text">Edit Service: {selectedService?.name}</div>
-          <div className="acc-scroll-div">
-            <div className="acc-step-box4" style={{ height: "auto", padding: "1rem" }}>
-              <input
-                type="text"
-                placeholder="Service Name"
-                value={selectedService?.name || ''}
-                onChange={(e) => setSelectedService({...selectedService, name: e.target.value})}
-                style={{ width: "100%", border: "none", outline: "none" }}
-              />
+            <div className="acc-popular-head1">
+              {serviceActionStep === 1 && "Service Actions"}
+              {serviceActionStep === 2 && "Edit Service"}
+              {serviceActionStep === 3 && "Delete Service"}
+              {serviceActionStep === 4 && "Service Details"}
+              {serviceActionStep === 5 && "Change Icon"}
+              {serviceActionStep === 6 && "Success"}
             </div>
-            <div className="acc-step-box4" style={{ height: "auto", padding: "1rem" }}>
-              <textarea
-                placeholder="Description"
-                value={selectedService?.description || ''}
-                onChange={(e) => setSelectedService({...selectedService, description: e.target.value})}
-                style={{ width: "100%", border: "none", outline: "none", minHeight: "100px" }}
-              />
-            </div>
-            <div className="acc-step-box4" onClick={() => {/* Save logic */}}>
-              Save Changes
-            </div>
-          </div>
-          <div className="goBack3" onClick={() => setServiceActionStep(1)}>
-            Go Back
-          </div>
-        </div>
-      )}
-
-      {/* Step 3: Delete Confirmation */}
-      {serviceActionStep === 3 && (
-        <div>
-          <div className="acc-sub-text">
-            Are you sure you want to delete "{selectedService?.name}"?
-          </div>
-          <div className="acc-scroll-div">
-            <div className="acc-step-box4" onClick={deleteService}>
-              Yes, Delete
-            </div>
-          </div>
-          <div className="goBack3" onClick={() => setServiceActionStep(1)}>
-            Cancel
-          </div>
-        </div>
-      )}
-
-     {serviceActionStep === 4 && (
-  <div className="service-details-modal" style={{ paddingBottom: "80px" }}>
-    
-    {/* Service Name */}
-    <div className="detail-section">
-      <h4>Service Name</h4>
-      <p className="service-name-large">
-        {selectedService?.name || 'Unnamed Service'}
-      </p>
-    </div>
-
-    {/* Description */}
-    <div className="detail-section">
-      <h4>Description</h4>
-      <p>{selectedService?.description || selectedService?.sub_text || 'No description provided.'}</p>
-    </div>
-
-    {/* Path & Step Association */}
-    <div className="detail-section">
-      <h4>Path & Step Association</h4>
-      <div className="detail-grid">
-        {selectedService?.path_id ? (
-          <div className="detail-item">
-            <div className="label">Path ID</div>
-            <div className="value">{selectedService.path_id}</div>
-          </div>
-        ) : (
-          <div className="detail-item">
-            <div className="label">Path</div>
-            <div className="value">Not linked to any path</div>
-          </div>
-        )}
-        {selectedService?.step_id ? (
-          <div className="detail-item">
-            <div className="label">Step ID</div>
-            <div className="value">{selectedService.step_id}</div>
-          </div>
-        ) : (
-          <div className="detail-item">
-            <div className="label">Step</div>
-            <div className="value">Not linked to any step</div>
-          </div>
-        )}
-        {selectedService?.macro_name && (
-          <div className="detail-item">
-            <div className="label">Macro</div>
-            <div className="value">{selectedService.macro_name}</div>
-          </div>
-        )}
-        {selectedService?.micro_name && (
-          <div className="detail-item">
-            <div className="label">Micro</div>
-            <div className="value">{selectedService.micro_name}</div>
-          </div>
-        )}
-        {selectedService?.nano_name && (
-          <div className="detail-item">
-            <div className="label">Nano</div>
-            <div className="value">{selectedService.nano_name}</div>
-          </div>
-        )}
-      </div>
-    </div>
-    
-    {/* Billing Details */}
-    <div className="detail-section">
-      <h4>Billing Information</h4>
-      <div className="detail-grid">
-        <div className="detail-item">
-          <div className="label">Billing Type</div>
-          <div className="value">
-            {getBillingInfo(selectedService?.billing_cycle).type}
-          </div>
-        </div>
-        <div className="detail-item">
-          <div className="label">Price</div>
-          <div className="value">
-            {getBillingInfo(selectedService?.billing_cycle).price === '-' 
-              ? '0' 
-              : getBillingInfo(selectedService?.billing_cycle).price}{' '}
-            {getBillingInfo(selectedService?.billing_cycle).coin}
-          </div>
-        </div>
-        <div className="detail-item">
-          <div className="label">Service Code</div>
-          <div className="value">
-            {selectedService?.product_code || '-'}
-          </div>
-        </div>
-        <div className="detail-item">
-          <div className="label">Product Label</div>
-          <div className="value">
-            {selectedService?.custom_product_label || '-'}
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    {/* Additional Info */}
-    <div className="detail-section">
-      <h4>Additional Information</h4>
-      <div className="detail-grid">
-        {selectedService?.goal && (
-          <div className="detail-item">
-            <div className="label">Goal</div>
-            <div className="value">{selectedService.goal}</div>
-          </div>
-        )}
-        {selectedService?.duration && (
-          <div className="detail-item">
-            <div className="label">Duration</div>
-            <div className="value">{selectedService.duration}</div>
-          </div>
-        )}
-        {selectedService?.outcomes && (
-          <div className="detail-item">
-            <div className="label">Outcomes</div>
-            <div className="value">{selectedService.outcomes}</div>
-          </div>
-        )}
-        {selectedService?.iterations && (
-          <div className="detail-item">
-            <div className="label">Iterations</div>
-            <div className="value">{selectedService.iterations}</div>
-          </div>
-        )}
-      </div>
-    </div>
-    
-    {/* Features */}
-    <div className="detail-section">
-      <h4>Features</h4>
-      <p>
-        {selectedService?.features || 
-         selectedService?.description || 
-         'No features listed.'}
-      </p>
-    </div>
-    
-    {/* Metadata */}
-    <div className="detail-section">
-      <h4>Metadata</h4>
-      <div className="detail-grid">
-        <div className="detail-item">
-          <div className="label">Created</div>
-          <div className="value">
-            {selectedService?.createdAt 
-              ? new Date(selectedService.createdAt).toLocaleDateString() 
-              : '-'}
-          </div>
-        </div>
-        <div className="detail-item">
-          <div className="label">Last Updated</div>
-          <div className="value">
-            {selectedService?.updatedAt 
-              ? new Date(selectedService.updatedAt).toLocaleDateString() 
-              : '-'}
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    {/* Close button - inline not fixed */}
-    <div 
-      style={{
-        padding: "15px 0",
-        display: "flex",
-        justifyContent: "center"
-      }}
-    >
-      <button
-        onClick={() => setServiceActionStep(1)}
-        style={{
-          width: "100%",
-          height: "50px",
-          background: "#e2edf5",
-          border: "none",
-          borderRadius: "35px",
-          fontWeight: "600",
-          fontSize: "15px",
-          cursor: "pointer",
-          color: "#1f304f"
-        }}
-      >
-        ← Back
-      </button>
-    </div>
-  </div>
-)}
-
-      {/* Step 5: Change Icon */}
-      {serviceActionStep === 5 && (
-        <div>
-          <div className="acc-sub-text">Upload New Icon</div>
-          <div className="acc-upload-imgbox" style={{ margin: "20px auto", width: "120px", height: "120px" }}>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={async (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  const uploadedUrl = await uploadImageFunc(e, setUpdatedIcon, setIsloading);
-                  if (uploadedUrl) {
-                    setUpdatedIcon(uploadedUrl);
-                  }
-                }
+            <div
+              className="acc-popular-img-box1"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                setServiceActionEnabled(false);
+                setServiceActionStep(1);
+                setSelectedService({});
               }}
-              style={{ display: "none" }}
-              id="icon-upload"
-            />
-            <label htmlFor="icon-upload" style={{ cursor: "pointer", width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
-              <img
-                className="acc-upload-img"
-                src={updatedIcon || selectedService?.product_icon || uploadv}
-                alt=""
-                style={{ width: "80px", height: "80px", objectFit: "cover" }}
-              />
-            </label>
-          </div>
-          <div className="acc-scroll-div">
-            <div className="acc-step-box4" onClick={changeServiceIcon}>
-              Save Icon
+            >
+              <img className="acc-popular-img1" src={closepop} alt="" />
             </div>
           </div>
-          <div className="goBack3" onClick={() => setServiceActionStep(1)}>
-            Cancel
+
+          <div className="acc-mt-div" style={{ overflowY: "auto", height: "calc(100vh - 80px)", paddingBottom: "30px" }}>      {serviceActionStep === 1 && (
+            <div className="acc-scroll-div">
+              <div
+                className="acc-step-box4"
+                onClick={() => setServiceActionStep(4)}
+              >
+                View Details
+              </div>
+              <div
+                className="acc-step-box4"
+                onClick={() => setServiceActionStep(2)}
+              >
+                Edit Service
+              </div>
+              <div
+                className="acc-step-box4"
+                onClick={() => setServiceActionStep(5)}
+              >
+                Change Icon
+              </div>
+              <div
+                className="acc-step-box4"
+                onClick={() => setServiceActionStep(3)}
+              >
+                Delete Service
+              </div>
+              <div className="goBack3" onClick={() => setServiceActionEnabled(false)}>
+                Cancel
+              </div>
+            </div>
+          )}
+
+            {/* Step 2: Edit Service */}
+            {serviceActionStep === 2 && (
+              <div>
+                <div className="acc-sub-text">Edit Service: {selectedService?.name}</div>
+                <div className="acc-scroll-div">
+                  <div className="acc-step-box4" style={{ height: "auto", padding: "1rem" }}>
+                    <input
+                      type="text"
+                      placeholder="Service Name"
+                      value={selectedService?.name || ''}
+                      onChange={(e) => setSelectedService({ ...selectedService, name: e.target.value })}
+                      style={{ width: "100%", border: "none", outline: "none" }}
+                    />
+                  </div>
+                  <div className="acc-step-box4" style={{ height: "auto", padding: "1rem" }}>
+                    <textarea
+                      placeholder="Description"
+                      value={selectedService?.description || ''}
+                      onChange={(e) => setSelectedService({ ...selectedService, description: e.target.value })}
+                      style={{ width: "100%", border: "none", outline: "none", minHeight: "100px" }}
+                    />
+                  </div>
+                  <div className="acc-step-box4" onClick={() => {/* Save logic */ }}>
+                    Save Changes
+                  </div>
+                </div>
+                <div className="goBack3" onClick={() => setServiceActionStep(1)}>
+                  Go Back
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Delete Confirmation */}
+            {serviceActionStep === 3 && (
+              <div>
+                <div className="acc-sub-text">
+                  Are you sure you want to delete "{selectedService?.name}"?
+                </div>
+                <div className="acc-scroll-div">
+                  <div className="acc-step-box4" onClick={deleteService}>
+                    Yes, Delete
+                  </div>
+                </div>
+                <div className="goBack3" onClick={() => setServiceActionStep(1)}>
+                  Cancel
+                </div>
+              </div>
+            )}
+
+            {serviceActionStep === 4 && (
+              <div className="service-details-modal" style={{ paddingBottom: "80px" }}>
+
+                {/* Service Name */}
+                <div className="detail-section">
+                  <h4>Service Name</h4>
+                  <p className="service-name-large">
+                    {selectedService?.name || 'Unnamed Service'}
+                  </p>
+                </div>
+
+                {/* Description */}
+                <div className="detail-section">
+                  <h4>Description</h4>
+                  <p>{selectedService?.description || selectedService?.sub_text || 'No description provided.'}</p>
+                </div>
+
+                {/* Path & Step Association */}
+                <div className="detail-section">
+                  <h4>Path & Step Association</h4>
+                  <div className="detail-grid">
+                    {selectedService?.path_id ? (
+                      <div className="detail-item">
+                        <div className="label">Path ID</div>
+                        <div className="value">{selectedService.path_id}</div>
+                      </div>
+                    ) : (
+                      <div className="detail-item">
+                        <div className="label">Path</div>
+                        <div className="value">Not linked to any path</div>
+                      </div>
+                    )}
+                    {selectedService?.step_id ? (
+                      <div className="detail-item">
+                        <div className="label">Step ID</div>
+                        <div className="value">{selectedService.step_id}</div>
+                      </div>
+                    ) : (
+                      <div className="detail-item">
+                        <div className="label">Step</div>
+                        <div className="value">Not linked to any step</div>
+                      </div>
+                    )}
+                    {selectedService?.macro_name && (
+                      <div className="detail-item">
+                        <div className="label">Macro</div>
+                        <div className="value">{selectedService.macro_name}</div>
+                      </div>
+                    )}
+                    {selectedService?.micro_name && (
+                      <div className="detail-item">
+                        <div className="label">Micro</div>
+                        <div className="value">{selectedService.micro_name}</div>
+                      </div>
+                    )}
+                    {selectedService?.nano_name && (
+                      <div className="detail-item">
+                        <div className="label">Nano</div>
+                        <div className="value">{selectedService.nano_name}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Billing Details */}
+                <div className="detail-section">
+                  <h4>Billing Information</h4>
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <div className="label">Billing Type</div>
+                      <div className="value">
+                        {getBillingInfo(selectedService?.billing_cycle).type}
+                      </div>
+                    </div>
+                    <div className="detail-item">
+                      <div className="label">Price</div>
+                      <div className="value">
+                        {getBillingInfo(selectedService?.billing_cycle).price === '-'
+                          ? '0'
+                          : getBillingInfo(selectedService?.billing_cycle).price}{' '}
+                        {getBillingInfo(selectedService?.billing_cycle).coin}
+                      </div>
+                    </div>
+                    <div className="detail-item">
+                      <div className="label">Service Code</div>
+                      <div className="value">
+                        {selectedService?.product_code || '-'}
+                      </div>
+                    </div>
+                    <div className="detail-item">
+                      <div className="label">Product Label</div>
+                      <div className="value">
+                        {selectedService?.custom_product_label || '-'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Info */}
+                <div className="detail-section">
+                  <h4>Additional Information</h4>
+                  <div className="detail-grid">
+                    {selectedService?.goal && (
+                      <div className="detail-item">
+                        <div className="label">Goal</div>
+                        <div className="value">{selectedService.goal}</div>
+                      </div>
+                    )}
+                    {selectedService?.duration && (
+                      <div className="detail-item">
+                        <div className="label">Duration</div>
+                        <div className="value">{selectedService.duration}</div>
+                      </div>
+                    )}
+                    {selectedService?.outcomes && (
+                      <div className="detail-item">
+                        <div className="label">Outcomes</div>
+                        <div className="value">{selectedService.outcomes}</div>
+                      </div>
+                    )}
+                    {selectedService?.iterations && (
+                      <div className="detail-item">
+                        <div className="label">Iterations</div>
+                        <div className="value">{selectedService.iterations}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Features */}
+                <div className="detail-section">
+                  <h4>Features</h4>
+                  <p>
+                    {selectedService?.features ||
+                      selectedService?.description ||
+                      'No features listed.'}
+                  </p>
+                </div>
+
+                {/* Metadata */}
+                <div className="detail-section">
+                  <h4>Metadata</h4>
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <div className="label">Created</div>
+                      <div className="value">
+                        {selectedService?.createdAt
+                          ? new Date(selectedService.createdAt).toLocaleDateString()
+                          : '-'}
+                      </div>
+                    </div>
+                    <div className="detail-item">
+                      <div className="label">Last Updated</div>
+                      <div className="value">
+                        {selectedService?.updatedAt
+                          ? new Date(selectedService.updatedAt).toLocaleDateString()
+                          : '-'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Close button - inline not fixed */}
+                <div
+                  style={{
+                    padding: "15px 0",
+                    display: "flex",
+                    justifyContent: "center"
+                  }}
+                >
+                  <button
+                    onClick={() => setServiceActionStep(1)}
+                    style={{
+                      width: "100%",
+                      height: "50px",
+                      background: "#e2edf5",
+                      border: "none",
+                      borderRadius: "35px",
+                      fontWeight: "600",
+                      fontSize: "15px",
+                      cursor: "pointer",
+                      color: "#1f304f"
+                    }}
+                  >
+                    ← Back
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 5: Change Icon */}
+            {serviceActionStep === 5 && (
+              <div>
+                <div className="acc-sub-text">Upload New Icon</div>
+                <div className="acc-upload-imgbox" style={{ margin: "20px auto", width: "120px", height: "120px" }}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const uploadedUrl = await uploadImageFunc(e, setUpdatedIcon, setIsloading);
+                        if (uploadedUrl) {
+                          setUpdatedIcon(uploadedUrl);
+                        }
+                      }
+                    }}
+                    style={{ display: "none" }}
+                    id="icon-upload"
+                  />
+                  <label htmlFor="icon-upload" style={{ cursor: "pointer", width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                    <img
+                      className="acc-upload-img"
+                      src={updatedIcon || selectedService?.product_icon || uploadv}
+                      alt=""
+                      style={{ width: "80px", height: "80px", objectFit: "cover" }}
+                    />
+                  </label>
+                </div>
+                <div className="acc-scroll-div">
+                  <div className="acc-step-box4" onClick={changeServiceIcon}>
+                    Save Icon
+                  </div>
+                </div>
+                <div className="goBack3" onClick={() => setServiceActionStep(1)}>
+                  Cancel
+                </div>
+              </div>
+            )}
+
+            {/* Step 6: Success Message */}
+            {serviceActionStep === 6 && (
+              <div className="success-box1">Action Completed Successfully!</div>
+            )}
           </div>
+
+          {isloading && (
+            <div className="popularlogo">
+              <img className="popularlogoimg" src={lg1} alt="" />
+            </div>
+          )}
         </div>
       )}
-
-      {/* Step 6: Success Message */}
-      {serviceActionStep === 6 && (
-        <div className="success-box1">Action Completed Successfully!</div>
-      )}
-    </div>
-
-    {isloading && (
-      <div className="popularlogo">
-        <img className="popularlogoimg" src={lg1} alt="" />
-      </div>
-    )}
-  </div>
-)}
 
 
       {/* Keep all your other modal code (coinActionEnabled, serviceActionEnabled, addCompPlan) exactly as is */}

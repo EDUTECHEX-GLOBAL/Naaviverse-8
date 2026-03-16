@@ -12,6 +12,69 @@ import logo from "../../static/images/logo.svg";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
+/* ─────────────────────────────────────────
+   SKELETON PRIMITIVES
+───────────────────────────────────────── */
+
+/** A single shimmer bar */
+const SkeletonBar = ({ width = "100%", height = "14px", style = {} }) => (
+  <div
+    className="sk-bar"
+    style={{ width, height, borderRadius: "6px", ...style }}
+  />
+);
+
+/** Multi-line text block skeleton */
+const SkeletonText = ({ lines = 3 }) => (
+  <div className="sk-text-block">
+    {Array.from({ length: lines }).map((_, i) => (
+      <SkeletonBar
+        key={i}
+        width={i === lines - 1 ? "65%" : "100%"}
+        height="13px"
+        style={{ marginBottom: i < lines - 1 ? "8px" : 0 }}
+      />
+    ))}
+  </div>
+);
+
+/** Full view-card skeleton — matches the real card structure exactly */
+const SkeletonViewCard = ({ accent }) => (
+  <div className={`view-card sk-card sk-card--${accent}`}>
+    <div className="vc-head">
+      <SkeletonBar width="18px" height="18px" style={{ borderRadius: "50%", flexShrink: 0 }} />
+      <SkeletonBar width="90px" height="13px" style={{ marginLeft: "8px" }} />
+    </div>
+    <div className="vc-body">
+      <SkeletonBar width="55%" height="16px" style={{ marginBottom: "14px" }} />
+      <SkeletonText lines={4} />
+    </div>
+    <div className="vc-foot">
+      <SkeletonBar width="160px" height="36px" style={{ borderRadius: "8px" }} />
+    </div>
+  </div>
+);
+
+/** Page-head skeleton */
+const SkeletonPageHead = () => (
+  <div className="page-head sk-page-head">
+    {/* breadcrumb + pill + back */}
+    <div className="page-head-top-row">
+      <SkeletonBar width="200px" height="13px" />
+      <SkeletonBar width="110px" height="28px" style={{ borderRadius: "20px" }} />
+      <SkeletonBar width="120px" height="28px" style={{ borderRadius: "20px" }} />
+    </div>
+    {/* title */}
+    <SkeletonBar width="55%" height="32px" style={{ marginTop: "18px", marginBottom: "14px" }} />
+    {/* description — 2 lines */}
+    <SkeletonText lines={2} />
+  </div>
+);
+
+/* ─────────────────────────────────────────
+   MAIN COMPONENT
+───────────────────────────────────────── */
+
 const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selectedPath }) => {
   const userDetails = (() => {
     try {
@@ -30,16 +93,25 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
   const navigate = useNavigate();
 
-  const [macroView, setMacroView] = useState("");
-  const [microView, setMicroView] = useState({});
-  const [nanoView, setNanoView] = useState([]);
-  const [microServices, setMicroServices] = useState([]);
-  const [servicesLoading, setServicesLoading] = useState(false);
-  const [selectedService, setSelectedService] = useState(null);
-  const [showCheckout, setShowCheckout] = useState(false);
-  const [showNanoModal, setShowNanoModal] = useState(false);
+  // ── View states ──────────────────────────────────────────────────────────
+  const [macroView, setMacroView]               = useState(null);
+  const [microView, setMicroView]               = useState(null);
+  const [nanoView,  setNanoView]                = useState(null);
+
+  // ── Loading flags ─────────────────────────────────────────────────────────
+  const [stepLoading,    setStepLoading]         = useState(true);
+  const [viewsLoading,   setViewsLoading]        = useState(true);
+
+  // ── Service / buy states ──────────────────────────────────────────────────
+  const [microServices,  setMicroServices]       = useState([]);
+  const [servicesLoading,setServicesLoading]     = useState(false);
+  const [selectedService,setSelectedService]     = useState(null);
+  const [showCheckout,   setShowCheckout]        = useState(false);
+  const [showNanoModal,  setShowNanoModal]       = useState(false);
   const [selectedNanoService, setSelectedNanoService] = useState(null);
-  const [showNanoCheckout, setShowNanoCheckout] = useState(false);
+  const [showNanoCheckout,    setShowNanoCheckout]    = useState(false);
+
+  const [totalStepsCount, setTotalStepsCount]   = useState(null);
 
   const {
     currentStepData,
@@ -63,70 +135,34 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     setIndex,
   } = useStore();
 
-  const [showNewDiv, setShowNewDiv] = useState(null);
-  const [position1, setPosition1] = useState();
-  const [position2, setPosition2] = useState();
-  const [position3, setPosition3] = useState();
-  const [currentStepPageData, setCurrentStepPageData] = useState([]);
-  const [popup, setPopup] = useState(false);
-  const [popupContent, setPopupContent] = useState("default");
-  const [popupDetails, setPopupDetails] = useState("");
-  const [currentStepPagePathId, setCurrentStepPagePathId] = useState("");
-  const [selectedCard, setSelectedCard] = useState(0);
+  const [showNewDiv,           setShowNewDiv]           = useState(null);
+  const [position1,            setPosition1]            = useState();
+  const [position2,            setPosition2]            = useState();
+  const [position3,            setPosition3]            = useState();
+  const [currentStepPageData,  setCurrentStepPageData]  = useState(null);
+  const [popup,                setPopup]                = useState(false);
+  const [popupContent,         setPopupContent]         = useState("default");
+  const [popupDetails,         setPopupDetails]         = useState("");
+  const [currentStepPagePathId,setCurrentStepPagePathId]= useState("");
+  const [selectedCard,         setSelectedCard]         = useState(0);
 
-  const [cards, setCards] = useState(productDataArray);
+  const [cards,       setCards]       = useState(productDataArray);
   const [centerIndex, setCenterIndex] = useState(0);
   const [acceptOffer, setAcceptOffer] = useState(false);
-  const [userData, setUserData] = useState([]);
+  const [userData,    setUserData]    = useState([]);
+  const [stepView,    setStepView]    = useState(null);
 
-  const [stepView, setStepView] = useState(null);
+  /* ── Helpers ────────────────────────────────────────────────────────────── */
 
-  const handleRejectClick = () => {
-    if (position1 === 1) setPosition1(3);
-    else if (position1 === 2) setPosition1(1);
-    else setPosition1(2);
-
-    if (position2 === 2) setPosition2(1);
-    else if (position2 === 3) setPosition2(2);
-    else setPosition2(3);
-
-    if (position3 === 3) setPosition3(2);
-    else if (position3 === 2) setPosition3(1);
-    else setPosition3(3);
+  const getMicroText = (mv) => {
+    if (!mv) return null;
+    const joined = Object.values(mv).filter(Boolean).join("\n\n");
+    return joined || null;
   };
 
-  const handleCardClick = (index) => {
-    setCenterIndex(index);
-    setCards((prevCards) => {
-      const leftIndex = (index - 1 + prevCards.length) % prevCards.length;
-      const rightIndex = (index + 1) % prevCards.length;
-      const finalIndex = prevCards.length - 1;
-      const finalLeftIndex =
-        index === finalIndex
-          ? (index - 1 + prevCards.length) % prevCards.length
-          : leftIndex;
-      const finalRightIndex = index === finalIndex ? 0 : rightIndex;
-
-      return [
-        prevCards[index],
-        prevCards[finalRightIndex],
-        prevCards[finalLeftIndex],
-        ...prevCards.slice(index + 2),
-        ...prevCards.slice(0, finalLeftIndex),
-      ];
-    });
-  };
-
-  const getMicroText = (microView) => {
-    if (!microView) return "";
-    return Object.values(microView).filter(Boolean).join("\n\n");
-  };
-
-  // Error boundary
+  /* ── Error boundary ─────────────────────────────────────────────────────── */
   useEffect(() => {
-    const handleUnhandledError = (error) => {
-      console.error("Unhandled error:", error);
-    };
+    const handleUnhandledError = (error) => console.error("Unhandled error:", error);
     window.addEventListener("error", handleUnhandledError);
     window.addEventListener("unhandledrejection", handleUnhandledError);
     return () => {
@@ -135,75 +171,75 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     };
   }, []);
 
-  // User data fetch
+  /* ── User data fetch ─────────────────────────────────────────────────────── */
   useEffect(() => {
     if (!userDetails) return;
     const userEmail = userDetails?.user?.email || userDetails?.email;
-    if (!userEmail) {
-      console.warn("No user email found");
-      return;
-    }
+    if (!userEmail) return;
     axios
       .get(`${BASE_URL}/api/users/get/${userEmail}`)
-      .then((res) => {})
       .catch((err) => console.error(err));
   }, []);
 
-  // Fetch step data
+  /* ── Fetch step data ─────────────────────────────────────────────────────── */
   useEffect(() => {
     const stepId = localStorage.getItem("selectedStepId");
     const pathId = selectedPathId || localStorage.getItem("selectedPathId");
+    if (!stepId || !pathId) { setStepLoading(false); return; }
 
-    if (!stepId || !pathId) return;
-
+    setStepLoading(true);
     axios
       .get(`${BASE_URL}/api/userpaths/steps?pathId=${pathId}`)
       .then((res) => {
         const steps = res?.data?.data?.steps || [];
         if (!Array.isArray(steps)) return;
 
-        const step = steps.find(
-          (s) => s?._id === stepId || s?.step_id === stepId
-        );
+        setTotalStepsCount(steps.length);
+
+        const step = steps.find((s) => s?._id === stepId || s?.step_id === stepId);
         if (step) {
           setCurrentStepPageData(step);
           setCurrentStepPagePathId(pathId);
         }
       })
-      .catch((err) => console.error("❌ Error fetching path steps:", err));
+      .catch((err) => console.error("❌ Error fetching path steps:", err))
+      .finally(() => setStepLoading(false));
   }, [selectedPathId]);
 
-  // Fetch AI step views
+  /* ── Fetch AI step views ─────────────────────────────────────────────────── */
   useEffect(() => {
     const loadStepViews = async () => {
       const stepId = localStorage.getItem("selectedStepId");
       const pathId = selectedPathId || localStorage.getItem("selectedPathId");
-      if (!stepId || !pathId) return;
+      if (!stepId || !pathId) { setViewsLoading(false); return; }
 
+      setViewsLoading(true);
       try {
         const res = await axios.get(
           `${BASE_URL}/api/stepviews?pathId=${pathId}&stepId=${stepId}`
         );
         const data = res?.data?.data || {};
-        setMacroView(data.macroView ?? "No macro insights available");
-        setMicroView(data.microView ?? {});
-        setNanoView(data.nanoView || null);
+        setMacroView(data.macroView   || null);
+        setMicroView(data.microView   || null);
+        setNanoView(data.nanoView     || null);
       } catch (err) {
         console.error("❌ Error fetching AI step views:", err);
+        setMacroView(null);
+        setMicroView(null);
+        setNanoView(null);
+      } finally {
+        setViewsLoading(false);
       }
     };
     loadStepViews();
   }, [selectedPathId]);
 
-  // Reload services
+  /* ── Reload services ─────────────────────────────────────────────────────── */
   const reloadServices = async () => {
     const stepId = localStorage.getItem("selectedStepId");
     if (!stepId) return;
-
     try {
-      const res = await axios.get(
-        `${BASE_URL}/api/services/by-step?step_id=${stepId}`
-      );
+      const res = await axios.get(`${BASE_URL}/api/services/by-step?step_id=${stepId}`);
       const list = Array.isArray(res?.data?.data) ? res.data.data : [];
       setStepServices(list);
     } catch (err) {
@@ -212,16 +248,12 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     }
   };
 
-  // Pick service after stepServices updates
+  /* ── Pick service after stepServices updates ─────────────────────────────── */
   useEffect(() => {
     if (!acceptOffer) return;
     if (!stepServices || stepServices.length === 0) return;
-
     const svc = pickServiceForDrawer();
-    if (!svc) {
-      alert("No services available for this step.");
-      return;
-    }
+    if (!svc) { alert("No services available for this step."); return; }
     setIndex(svc);
     setBuy("step1");
   }, [stepServices]);
@@ -234,177 +266,285 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
       const first = stepServices[0];
       if (first?._id) return first;
       return null;
-    } catch (err) {
-      console.error("💥 pickServiceForDrawer error:", err);
-      return null;
-    }
+    } catch { return null; }
   };
 
-  const curriculumService = React.useMemo(() => {
-    if (!Array.isArray(stepServices)) return null;
-    return stepServices.find(
-      (s) =>
-        s.service_code === "ASSESS_CBSE_IBDP_CURRICULUM" ||
-        s.service_name ===
-          "Assess – CBSE → IBDP Readiness (Curriculum Based)"
-    );
-  }, [stepServices]);
-
-  // Complete step
+  /* ── Complete / fail step ────────────────────────────────────────────────── */
   const completeStep = async (stepid) => {
     const pathId = selectedPathId || localStorage.getItem("selectedPathId");
-    const email = userDetails?.email || userDetails?.user?.email;
-
+    const email  = userDetails?.email || userDetails?.user?.email;
     try {
-      await axios.put(`${BASE_URL}/api/userpaths/completeStep`, {
-        email,
-        pathId,
-        step_id: stepid,
-      });
+      await axios.put(`${BASE_URL}/api/userpaths/completeStep`, { email, pathId, step_id: stepid });
       setPopupContent("success");
       setPopupDetails("yes");
-    } catch (error) {
-      console.log("❌ COMPLETE STEP ERROR:", error.response?.data);
+    } catch {
       setPopupContent("success");
       setPopupDetails("yes");
     }
   };
 
-  // Fail step
   const failStep = async (stepid) => {
     const pathId = selectedPathId || localStorage.getItem("selectedPathId");
-    const email = userDetails?.email || userDetails?.user?.email;
-
+    const email  = userDetails?.email || userDetails?.user?.email;
     try {
-      await axios.put(`${BASE_URL}/api/userpaths/failedStep`, {
-        email,
-        pathId,
-        step_id: stepid,
-      });
+      await axios.put(`${BASE_URL}/api/userpaths/failedStep`, { email, pathId, step_id: stepid });
       setPopupContent("success");
       setPopupDetails("no");
-    } catch (error) {
-      console.log("❌ FAILED STEP ERROR:", error.response?.data);
+    } catch {
       setPopupContent("success");
       setPopupDetails("no");
     }
   };
 
   function filterItem(text) {
-    if (!text) {
-      setfilteredcoins(mallCoindata || []);
-      return;
-    }
+    if (!text) { setfilteredcoins(mallCoindata || []); return; }
     const filtered = mallCoindata?.filter((c) =>
       c?.coinSymbol?.toLowerCase()?.includes(text.toLowerCase())
     );
     setfilteredcoins(filtered || []);
   }
 
+  /* ── Back handler ────────────────────────────────────────────────────────── */
+  const handleBackToJourney = () => {
+    setCurrentStepData("");
+    setCurrentStepDataLength("");
+    setCurrentStepDataPathId("");
+    setsideNav("My Journey");
+    navigate("/dashboard/users/my-journey");
+  };
+
+  /* ── Derived values ──────────────────────────────────────────────────────── */
+  const stepName       = currentStepData?.name || currentStepPageData?.name || null;
+  const stepDesc       = currentStepPageData?.macro_description || currentStepPageData?.description || null;
+  const macroDesc      = currentStepPageData?.macro_description || macroView?.description || macroView || null;
+  const microDesc      = currentStepPageData?.micro_description || getMicroText(microView) || null;
+  const nanoDesc       = nanoView?.description || null;
+
+  const isPageLoading  = stepLoading;
+  const isViewsLoad    = viewsLoading;
+
+  const stepNumber     = currentStepPageData?.step_number || localStorage.getItem("selectedStepNumber") || null;
+  const totalSteps     = currentStepDataLength || totalStepsCount || null;
+
+  /* ════════════════════════════════════════════════════════════════════════════
+     RENDER
+  ════════════════════════════════════════════════════════════════════════════ */
   return (
     <div className="currentstep">
-      {/* HEADER */}
-      <div className="cs-top-area">
-        <div className="cs-text1">
-          <div>Your Current Step</div>
-          <div
-            className="back-Btn"
-            onClick={() => {
-              setCurrentStepData("");
-              setCurrentStepDataLength("");
-              setCurrentStepDataPathId("");
-              setsideNav("My Journey");
-            }}
-            style={{ display: currentStepData ? "flex" : "none" }}
-          >
-            Back To Path
-          </div>
+
+      {/* ── STEP PROGRESS BAR ── */}
+      <div className="step-bar">
+        <div className="sp active" id="tab1">
+          <span className="sp-n">1</span>
+          Current Step
         </div>
-
-        <div className="bold-text">
-          <div>{currentStepData?.name || currentStepPageData?.name}</div>
-          <div>Apx Takes 3 Days</div>
+        <span className="sp-arr">›</span>
+        <div className="sp" id="tab2">
+          <span className="sp-n">2</span>
+          Marketplace
         </div>
-      </div>
-
-      {/* CONTENT */}
-      <div className="cs-content">
-        <div className="overall-cs-content grid-layout">
-
-          {/* Macro */}
-          <div className="macro-view-box">
-            <div className="macro-text">Macro View:</div>
-            <div className="macro-content">
-              <div className="step-text">
-                {currentStepData?.name || currentStepPageData?.name}
-              </div>
-              <div className="macro-text-div">
-                {currentStepPageData?.macro_description ||
-                  currentStepPageData?.description ||
-                  macroView?.description ||
-                  ""}
-              </div>
-            </div>
-          </div>
-
-          {/* Micro */}
-          <div className="micro-view-box">
-            <div className="micro-text">Micro View:</div>
-            <div className="micro-content">
-              <div className="micro-step-title">
-                {currentStepData?.name || currentStepPageData?.name}
-              </div>
-              <div className="micro-scroll-area">
-                <div className="micro-description">
-                  {currentStepPageData?.micro_description
-                    ? currentStepPageData.micro_description
-                        .split("\n")
-                        .map((line, i) => <div key={i}>• {line}</div>)
-                    : getMicroText(microView)}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Nano */}
-          <div className="nano-view-box">
-            <div className="nano-text">Nano View:</div>
-            <div className="nano-content">
-              <div className="step-text">
-                Work 1-to-1 With A Naavi-Certified Expert For{" "}
-                <span>{currentStepData?.name || currentStepPageData?.name}</span>
-              </div>
-              <div className="nano-scroll-area">
-                <div className="nano-highlight-box">
-                  {nanoView?.description ? (
-                    nanoView.description
-                      .split("\n")
-                      .map((line, i) => <div key={i}>• {line}</div>)
-                  ) : (
-                    <div>No Nano Actions Available</div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
+        <span className="sp-arr">›</span>
+        <div className="sp" id="tab3">
+          <span className="sp-n">3</span>
+          Cart
+        </div>
+        <span className="sp-arr">›</span>
+        <div className="sp" id="tab4">
+          <span className="sp-n">4</span>
+          Checkout
+        </div>
+        <span className="sp-arr">›</span>
+        <div className="sp" id="tab5">
+          <span className="sp-n">5</span>
+          Confirmed
         </div>
       </div>
 
-      {/* FOOTER */}
-      <center>
-        <div className="cs-footer1">
-          <div onClick={() => { setPopup(true); setPopupDetails("no"); }}>
-            Failed
-          </div>
-          <div>Did you complete this step?</div>
-          <div onClick={() => { setPopup(true); setPopupDetails("yes"); }}>
-            Yes
-          </div>
-        </div>
-      </center>
+      {/* ── PAGE CONTENT ── */}
+      <div className="cs-page-content">
 
-      {/* BUY DRAWER */}
+        {/* ── PAGE HEAD ── */}
+        {isPageLoading ? (
+          <SkeletonPageHead />
+        ) : (
+          <div className="page-head">
+
+            {/* TOP ROW */}
+            <div className="page-head-top-row">
+              <div className="breadcrumb">
+                <span>My Journey</span>
+                <span>›</span>
+                <span className="bc-hi">
+                  {stepNumber ? `Step ${stepNumber}` : "Current Step"}
+                </span>
+              </div>
+
+              {/* Step X of Y pill */}
+              <div className="page-meta">
+                <span className="meta-pill mp-gray">
+                  📍{" "}
+                  {stepNumber && totalSteps
+                    ? `Step ${stepNumber} of ${totalSteps}`
+                    : stepNumber
+                    ? `Step ${stepNumber}`
+                    : ""}
+                </span>
+              </div>
+
+              {/* Back button */}
+              <span
+                className="meta-pill mp-gray back-link"
+                onClick={handleBackToJourney}
+              >
+                ← Back To Path
+              </span>
+            </div>
+
+            {/* Title */}
+            {stepName && <h1>{stepName}</h1>}
+
+            {/* Description */}
+            {stepDesc && <p>{stepDesc}</p>}
+
+          </div>
+        )}
+
+        {/* ── 3 VIEW CARDS ── */}
+        <div className="views-grid">
+
+          {/* MACRO */}
+          {isViewsLoad ? (
+            <SkeletonViewCard accent="macro" />
+          ) : (
+            <div className="view-card vMacro">
+              <div className="vc-head hMacro">
+                <div className="vc-dot dMacro"></div>
+                <span className="vc-lbl lMacro">Macro View</span>
+              </div>
+              <div className="vc-body">
+                <div className="vc-title">Why This Step Matters</div>
+                {macroDesc ? (
+                  <div className="vc-desc">{macroDesc}</div>
+                ) : (
+                  <div className="vc-desc vc-empty">No macro view available yet.</div>
+                )}
+              </div>
+              <div className="vc-foot">
+                <button
+                  className="vc-btn bMacro"
+                  onClick={() => {
+                    setsideNav("Market Place");
+                    navigate("/dashboard/users/Marketplace", { state: { view: "Macro" } });
+                  }}
+                >
+                  🆓 Browse Free Tools
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* MICRO */}
+          {isViewsLoad ? (
+            <SkeletonViewCard accent="micro" />
+          ) : (
+            <div className="view-card vMicro">
+              <div className="vc-head hMicro">
+                <div className="vc-dot dMicro"></div>
+                <span className="vc-lbl lMicro">Micro View</span>
+              </div>
+              <div className="vc-body">
+                <div className="vc-title">How It's Done</div>
+                {microDesc ? (
+                  <div className="vc-desc">{microDesc}</div>
+                ) : (
+                  <div className="vc-desc vc-empty">No micro view available yet.</div>
+                )}
+              </div>
+              <div className="vc-foot">
+                <button
+                  className="vc-btn bMicro"
+                  onClick={() => {
+                    setsideNav("Market Place");
+                    navigate("/dashboard/users/Marketplace", { state: { view: "Micro" } });
+                  }}
+                >
+                  🔄 Browse Subscriptions
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* NANO */}
+          {isViewsLoad ? (
+            <SkeletonViewCard accent="nano" />
+          ) : (
+            <div className="view-card vNano">
+              <div className="vc-head hNano">
+                <div className="vc-dot dNano"></div>
+                <span className="vc-lbl lNano">Nano View</span>
+              </div>
+              <div className="vc-body">
+                <div className="vc-title">Work 1-to-1 With An Expert</div>
+                {nanoDesc ? (
+                  <div className="vc-desc">{nanoDesc}</div>
+                ) : (
+                  <div className="vc-desc vc-empty">No nano view available yet.</div>
+                )}
+              </div>
+              <div className="vc-foot">
+                <button
+                  className="vc-btn bNano"
+                  onClick={() => {
+                    setsideNav("Market Place");
+                    navigate("/dashboard/users/Marketplace", { state: { view: "Nano" } });
+                  }}
+                >
+                  🎓 Book a Session
+                </button>
+              </div>
+            </div>
+          )}
+
+        </div>
+
+        {/* ── COMPLETION BAR ── */}
+        {isPageLoading ? (
+          <div className="comp-bar sk-comp-bar">
+            <div className="cb-left">
+              <SkeletonBar width="120px" height="13px" style={{ marginBottom: "8px" }} />
+              <SkeletonBar width="200px" height="16px" />
+            </div>
+            <div className="cb-btns">
+              <SkeletonBar width="100px" height="40px" style={{ borderRadius: "8px" }} />
+              <SkeletonBar width="140px" height="40px" style={{ borderRadius: "8px" }} />
+            </div>
+          </div>
+        ) : (
+          <div className="comp-bar">
+            <div className="cb-left">
+              <span className="cb-lbl">Step Completion</span>
+              <span className="cb-q">Did You Complete This Step?</span>
+            </div>
+            <div className="cb-btns">
+              <button
+                className="btn-fail"
+                onClick={() => { setPopup(true); setPopupDetails("no"); }}
+              >
+                ✕ Failed
+              </button>
+              <button
+                className="btn-yes"
+                onClick={() => { setPopup(true); setPopupDetails("yes"); }}
+              >
+                ✓ Yes, Completed
+              </button>
+            </div>
+          </div>
+        )}
+
+      </div>
+
+      {/* ── BUY DRAWER ── */}
       {acceptOffer && (
         <div
           className="accept-offer-overlay"
@@ -483,7 +623,11 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                 </div>
                 <div className="boxx-cs" onClick={() => setBuy("step4")}>Confirm Purchase</div>
                 <div className="boxx-cs" style={{ marginTop: "1.5rem" }} onClick={() => setBuy("step1")}>Go Back</div>
-                <div className="boxx-cs" style={{ marginTop: "1.5rem" }} onClick={() => { setBuy("step1"); setAcceptOffer(false); setIndex([]); }}>
+                <div
+                  className="boxx-cs"
+                  style={{ marginTop: "1.5rem" }}
+                  onClick={() => { setBuy("step1"); setAcceptOffer(false); setIndex([]); }}
+                >
                   Cancel Order
                 </div>
               </div>
@@ -496,7 +640,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         </div>
       )}
 
-      {/* POPUP */}
+      {/* ── POPUP ── */}
       {popup && (
         <div
           className="popup-overlay"
@@ -514,16 +658,16 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                   <div
                     className="yes-Btn"
                     onClick={() => {
-                      if (currentStepData?._id) {
-                        completeStep(currentStepData?._id, selectedPathId);
-                      } else {
-                        completeStep(currentStepPageData?._id, selectedPathId);
-                      }
+                      const id = currentStepData?._id || currentStepPageData?._id;
+                      if (id) completeStep(id, selectedPathId);
                     }}
                   >
                     Yes, go to next step
                   </div>
-                  <div className="no-btn" onClick={() => { setPopup(false); setPopupDetails(""); setPopupContent("default"); }}>
+                  <div
+                    className="no-btn"
+                    onClick={() => { setPopup(false); setPopupDetails(""); setPopupContent("default"); }}
+                  >
                     Never mind
                   </div>
                 </div>
@@ -538,16 +682,16 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                     className="yes-Btn"
                     style={{ background: "#100F0D" }}
                     onClick={() => {
-                      if (currentStepData?._id) {
-                        failStep(currentStepData?._id, selectedPathId);
-                      } else {
-                        failStep(currentStepPageData?._id, selectedPathId);
-                      }
+                      const id = currentStepData?._id || currentStepPageData?._id;
+                      if (id) failStep(id, selectedPathId);
                     }}
                   >
                     Yes, move me to another path
                   </div>
-                  <div className="no-btn" onClick={() => { setPopup(false); setPopupDetails(""); setPopupContent("default"); }}>
+                  <div
+                    className="no-btn"
+                    onClick={() => { setPopup(false); setPopupDetails(""); setPopupContent("default"); }}
+                  >
                     Never mind
                   </div>
                 </div>
@@ -587,191 +731,6 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
           </div>
         </div>
       )}
-    </div>
-  );
-};
-
-/* ============================================================
-   SERVICE CARD (Nano)
-============================================================ */
-const Carousel1 = ({
-  item,
-  showNewDiv,
-  handleRejectClick,
-  position,
-  selectedCard,
-  setSelectedCard,
-  setIndex,
-  setAcceptOffer,
-  userDetails,
-}) => {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const service = item?.ServiceDetails?.[0] || item || {};
-
-  const cleanDescription = (text) => {
-    if (!text) return "";
-    const cleaned = text
-      .replace(/[^\w\s.,!?-]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-    return cleaned.length > 120 ? cleaned.substring(0, 120) + "..." : cleaned;
-  };
-
-  const loadScript = (src) =>
-    new Promise((resolve) => {
-      const script = document.createElement("script");
-      script.src = src;
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-
-  const initiatePurchase = async (sService) => {
-    try {
-      if (!sService?._id) return;
-      await axios.post(
-        `https://careers.marketsverse.com/userpurchase/add`,
-        {
-          userId: userDetails?.user?._id,
-          service_id: sService?._id,
-          purchaseStatus: "pending",
-        },
-        { timeout: 10000 }
-      );
-    } catch (error) {
-      console.warn("Purchase initiation failed, but continuing:", error.message);
-    }
-  };
-
-  const initializeRazorpay = async (amount, service) => {
-    try {
-      const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
-      if (!res) { alert("Payment system failed to load. Please try again."); return false; }
-
-      const response = await fetch(
-        `${BASE_URL}/api/paymentGateway/razorpay/initialize-payment`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            user_mobile_number: userDetails?.user?.mobile || "9599677424",
-            amount,
-            user_email: userDetails?.user?.email,
-          }),
-        }
-      );
-
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-      const data = await response.json();
-      if (data?.status) {
-        const { order_id, amount, currency, name, email, contact, callbackUrl } = data.data[1];
-        return {
-          key: "rzp_test_pIO7ySTH850hhP",
-          amount: amount.toString(),
-          currency,
-          name: name || "Marketverse",
-          description: service?.name || "Service Purchase",
-          order_id,
-          callback_url: callbackUrl,
-          prefill: {
-            name: name || userDetails?.user?.name,
-            email: email || userDetails?.user?.email,
-            contact: contact || userDetails?.user?.mobile,
-          },
-          theme: { color: "#3399cc" },
-        };
-      } else {
-        throw new Error("Invalid response from payment gateway");
-      }
-    } catch (error) {
-      console.error("Payment initialization failed:", error.message);
-      alert("Payment initialization failed. Please try again.");
-    }
-    return null;
-  };
-
-  const handleServiceClick = async (e) => {
-    e.stopPropagation();
-    setIsLoading(true);
-    try {
-      await initiatePurchase(service);
-      const amount = Number(
-        service?.billing_cycle?.lifetime?.price ||
-        service?.billing_cycle?.monthly?.price ||
-        service?.billing_cycle?.annual?.price ||
-        service?.first_purchase?.price ||
-        0
-      );
-      if (amount === 0) return;
-      const options = await initializeRazorpay(amount);
-      if (options) {
-        const razorpay = new window.Razorpay(options);
-        razorpay.open();
-      }
-    } catch (error) {
-      console.error("Service selection failed:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getButtonText = () => {
-    const price =
-      service?.first_purchase?.price ||
-      service?.billing_cycle?.monthly?.price ||
-      service?.billing_cycle?.annual?.price ||
-      service?.billing_cycle?.lifetime?.price;
-    if (isLoading) return "Processing...";
-    return price === 0 ? "Get Started" : "Buy Now";
-  };
-
-  const handleCardClick = (e) => {
-    e.stopPropagation();
-    setSelectedCard(position);
-  };
-
-  return (
-    <div
-      onClick={handleCardClick}
-      className={`nano-div2 ${selectedCard === position ? "selected-service" : ""} ${isLoading ? "loading" : ""}`}
-    >
-      <div className="service-title">
-        {service?.name || item?.name || "Unnamed Service"}
-      </div>
-
-      <div className="nano-speed-container">
-        <div className="speed-div">
-          <span>Offered By: </span>
-          <span>{service?.productcreatoremail?.split("@")[0] || "Edutechex"}</span>
-        </div>
-        <div className="speed-div">
-          <span>Billing Type:</span>
-          <span>{service?.chargingtype || "One-Time"}</span>
-        </div>
-        <div className="speed-div cost-div">
-          <span>Cost:</span>
-          <span>
-            {service?.first_purchase?.price === 0
-              ? "Free"
-              : `${service?.first_purchase?.price || 0} USD`}
-          </span>
-        </div>
-        <div className="service-clean-description">
-          {cleanDescription(service?.description)}
-        </div>
-      </div>
-
-      <div className="nano-btns">
-        <button
-          className={`accept-btn ${isLoading ? "loading" : ""} ${service?.first_purchase?.price === 0 ? "free-btn" : ""}`}
-          onClick={handleServiceClick}
-          disabled={isLoading}
-        >
-          {getButtonText()}
-        </button>
-      </div>
     </div>
   );
 };

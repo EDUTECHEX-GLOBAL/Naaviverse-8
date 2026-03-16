@@ -24,6 +24,7 @@ $pastel-mint: rgba(220, 240, 230, 0.3);
   height: 100vh;
   width: 100vw;
   display: flex;
+  align-items: stretch;
   text-transform: capitalize !important;
   overflow: hidden;
   position: relative;
@@ -62,6 +63,8 @@ $pastel-mint: rgba(220, 240, 230, 0.3);
   border-left: none !important;
   position: relative;
   z-index: 5;
+  margin-top: 0 !important;    // ← ADD THIS
+  padding-top: 0 !important; 
 }
 
 .dash-nav {
@@ -181,7 +184,7 @@ $pastel-mint: rgba(220, 240, 230, 0.3);
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 0 35px 20px 35px;
+  padding: 0 35px 0 35px;
   background: #f5f9ff;
 }
 
@@ -2816,7 +2819,7 @@ body:has(.step-popup-overlay) {
 // Marketplace Card
 // ============================================
 .marketplace-grid {
-  padding: 1.5rem 2rem;
+ padding: 1.5rem 2rem 0 2rem;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.2rem;
@@ -3218,5 +3221,96 @@ body:has(.step-popup-overlay) {
 
   .add-service-footer {
     padding: 1rem;
+  }
+}
+
+// ============================================
+// UNIFIED FILTER TABS - Matches Marketplace style
+// Applies to: Paths (.filter-tab) + Steps (.each-mypath-menu)
+// ============================================
+
+.filter-tab,
+.each-mypath-menu {
+  padding: 6px 18px !important;
+  height: 34px !important;
+  border-radius: 30px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  border: 1px solid #e2e8f0 !important;
+  background: white !important;
+  color: #475569 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  margin-right: 8px !important;
+  box-sizing: border-box !important;
+
+  &:hover {
+    border-color: #1F304F !important;
+    color: #1F304F !important;
+    background: white !important;
+  }
+}
+
+// Active state for Steps (uses inline style font-weight:700)
+.each-mypath-menu[style*="font-weight: 700"],
+.each-mypath-menu[style*="font-weight:700"] {
+  background: #1F304F !important;
+  border-color: #1F304F !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+// Active state for Paths (add .active class in JSX)
+.filter-tab.active {
+  background: #1F304F !important;
+  border-color: #1F304F !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+.mypaths-menu {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 0 35px !important;
+  height: 60px !important;
+  flex-shrink: 0 !important;
+  border-bottom: none !important;          // ← remove the line
+  background: transparent !important;     // ← remove the white
+}
+
+// ── MOBILE RESPONSIVE ──
+@media (max-width: 768px) {
+  .mobile-topbar {
+    display: flex !important;
+  }
+
+  .dashboard-main {
+    flex-direction: column;
+  }
+
+  .dashboard-body {
+    flex-direction: column;
+    padding-top: 56px; // height of mobile topbar
+  }
+
+  .dashboard-sidebar {
+    display: none; // hidden by default on mobile, shown via .open class
+  }
+
+  .dashboard-screens {
+    width: 100% !important;
+    height: calc(100vh - 56px) !important;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-screens {
+    padding: 0 !important;
   }
 }

@@ -576,32 +576,49 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
           <>
 
 
-            {/* Filter Tabs */}
-            <div className="filter-tabs">
-              <span
-                className={`filter-tab ${mypathsMenu === 'Paths' ? 'active' : ''}`}
-                onClick={() => setMypathsMenu('Paths')}
-              >
-                Active Paths
-              </span>
-              <span
-                className={`filter-tab ${mypathsMenu === 'Draft' ? 'active' : ''}`}
-                onClick={() => setMypathsMenu('Draft')}
-              >
-                Draft
-              </span>
-              <span
-                className={`filter-tab ${mypathsMenu === 'Pending Approval' ? 'active' : ''}`}
-                onClick={() => setMypathsMenu('Pending Approval')}
-              >
-                Pending Approval
-              </span>
-              <span
-                className={`filter-tab ${mypathsMenu === 'Inactive Paths' ? 'active' : ''}`}
-                onClick={() => setMypathsMenu('Inactive Paths')}
-              >
-                Inactive
-              </span>
+            {/* Filter Tabs + Search Row */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+              <div className="filter-tabs">
+                <span
+                  className={`filter-tab ${mypathsMenu === 'Paths' ? 'active' : ''}`}
+                  onClick={() => setMypathsMenu('Paths')}
+                >
+                  Active Paths
+                </span>
+                <span
+                  className={`filter-tab ${mypathsMenu === 'Draft' ? 'active' : ''}`}
+                  onClick={() => setMypathsMenu('Draft')}
+                >
+                  Draft
+                </span>
+                <span
+                  className={`filter-tab ${mypathsMenu === 'Pending Approval' ? 'active' : ''}`}
+                  onClick={() => setMypathsMenu('Pending Approval')}
+                >
+                  Pending Approval
+                </span>
+                <span
+                  className={`filter-tab ${mypathsMenu === 'Inactive Paths' ? 'active' : ''}`}
+                  onClick={() => setMypathsMenu('Inactive Paths')}
+                >
+                  Inactive
+                </span>
+              </div>
+
+              {/* Search Bar */}
+              <div className="mp-search-wrapper">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="M21 21L16.65 16.65" strokeLinecap="round" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search paths..."
+                  value={localSearch}
+                  onChange={(e) => setLocalSearch(e.target.value)}
+                  className="mp-search-input"
+                />
+              </div>
             </div>
 
             {/* Loading Skeletons */}
@@ -630,10 +647,10 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
               <div className="paths-grid">
                 {partnerPathData
                   ?.filter((e) =>
-                    !search ||
-                    e?.nameOfPath?.toLowerCase().includes(search.toLowerCase()) ||
-                    e?.description?.toLowerCase().includes(search.toLowerCase()) ||
-                    e?.destination_institution?.toLowerCase().includes(search.toLowerCase())
+                    !localSearch ||
+                    e?.nameOfPath?.toLowerCase().includes(localSearch.toLowerCase()) ||
+                    e?.description?.toLowerCase().includes(localSearch.toLowerCase()) ||
+                    e?.destination_institution?.toLowerCase().includes(localSearch.toLowerCase())
                   )
                   ?.map((e, i) => {
                     // Determine status class and text
@@ -792,10 +809,11 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
 
                 {/* Show message if no paths */}
                 {partnerPathData?.filter((e) =>
-                  !search ||
-                  e?.nameOfPath?.toLowerCase().includes(search.toLowerCase()) ||
-                  e?.description?.toLowerCase().includes(search.toLowerCase()) ||
-                  e?.destination_institution?.toLowerCase().includes(search.toLowerCase())
+                  !localSearch ||
+                  e?.nameOfPath?.toLowerCase().includes(localSearch.toLowerCase()) ||
+                  e?.description?.toLowerCase().includes(localSearch.toLowerCase()) ||
+                  e?.destination_institution?.toLowerCase().includes(localSearch.toLowerCase())
+
                 ).length === 0 && !loading && (
                     <div style={{ textAlign: 'center', padding: '3rem', color: '#5e6f7e' }}>
                       No paths found. Click "Create New Path" to get started.
