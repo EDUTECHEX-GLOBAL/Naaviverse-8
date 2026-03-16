@@ -173,6 +173,7 @@ const AccDashboard = () => {
   }, []);
 
 
+  // ✅ FIX — add location.pathname as dependency so it re-runs on URL change
   useEffect(() => {
     const path = location.pathname;
     if (path.includes('/dashboard/accountants/paths')) {
@@ -188,8 +189,7 @@ const AccDashboard = () => {
     } else if (path === '/dashboard/accountants' || path === '/dashboard/accountants/') {
       setaccsideNav("CRM");
     }
-  }, []);
-
+  }, [location.pathname]);
 
   useEffect(() => {
     setViewPathMode(
@@ -224,7 +224,7 @@ const AccDashboard = () => {
   }, []);
   //add compPlan
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   const [addCompPlan, setAddCompPlan] = useState(false);
   const [addCompPlanStep, setAddCompPlanStep] = useState("step1");
   const [userCreatedApps, setUserCreatedApps] = useState([]);
@@ -1702,74 +1702,17 @@ const AccDashboard = () => {
     }, 300);
   };
 
-
   return (
     <div style={{ height: "100vh", overflow: "hidden" }}>
-
-      {/* ── MOBILE TOP BAR ── */}
-      <div className="mobile-topbar" style={{
-        display: "none",
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: "56px",
-        background: "#fff",
-        borderBottom: "1px solid #EDF2F7",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "0 16px",
-        zIndex: 999,
-      }}>
-        {/* Hamburger */}
-        <button
-          onClick={() => setSidebarOpen(true)}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: "8px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "5px",
-          }}
-        >
-          <span style={{ width: "22px", height: "2px", background: "#1f304f", borderRadius: "2px", display: "block" }} />
-          <span style={{ width: "22px", height: "2px", background: "#1f304f", borderRadius: "2px", display: "block" }} />
-          <span style={{ width: "22px", height: "2px", background: "#1f304f", borderRadius: "2px", display: "block" }} />
-        </button>
-
-        {/* Logo */}
-        <img src={logo} alt="Naavi" style={{ height: "28px", objectFit: "contain" }} />
-
-        {/* Add New */}
-        <button
-          onClick={() => setispopular(true)}
-          style={{
-            background: "linear-gradient(135deg, #1f304f 0%, #0d6b6e 100%)",
-            border: "none",
-            borderRadius: "20px",
-            color: "#fff",
-            fontSize: "13px",
-            fontWeight: "600",
-            padding: "6px 14px",
-            cursor: "pointer",
-          }}
-        >
-          + Add
-        </button>
-      </div>
-
       <div className="dashboard-main">
         <div className="dashboard-body">
           <div onClick={() => setShowDrop(false)} style={{ display: "contents" }}>
             <AccDashsidebar
-              isOpen={sidebarOpen}
-              onClose={() => setSidebarOpen(false)}
+              accStatus={JSON.parse(localStorage.getItem("partner") || "{}")?.approvalStatus}
             />
           </div>
-          <div className="dashboard-screens">
-            <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+          <div className="dashboard-screens"> {/* ← Content area */}
+            <div style={{ height: "100%" }}>
               {viewPathMode ? (
                 createStepForPathId ? (
                   // FULL CONTENT: Create Step view
@@ -1829,11 +1772,10 @@ const AccDashboard = () => {
                       className="services-main"
                       onClick={() => setShowDrop(false)}
                       style={{
-                        flex: 1,          // ← REPLACE height calc
-                        minHeight: 0,     // ← ADD THIS
+                        height: "calc(100% - 70px)",
                         overflowY: "auto",
-                        display: "flex",
-                        flexDirection: "column"
+                        display: "block",
+                        background: "#f5f7fa"
                       }}
                     >
                       {/* REMOVED THE EMPTY services-all-menu DIV COMPLETELY */}
@@ -2026,26 +1968,71 @@ const AccDashboard = () => {
                           : "Search Clients..."}
                   />
                   <div className="crm-main" onClick={() => setShowDrop(false)}>
-                    <div style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      padding: "16px 35px",
-                      borderBottom: "0.5px solid #E5E5E5"
-                    }}>
-                      <button
-                        className={`mp-filter-btn ${crmMenu === "Clients" ? "active" : ""}`}
-                        onClick={() => { setcrmMenu("Clients"); setSearch(""); }}
+                    <div
+                      className="crm-all-menu"
+                      style={{ padding: "12px 35px" }}
+                    >
+                      <div
+                        className="crm-each-menu"
+                        style={{
+                          display: crmMenu === "Clients" ? "" : "none",
+                          background:
+                            crmMenu === "Clients"
+                              ? "rgba(241, 241, 241, 0.5)"
+                              : "",
+                          fontWeight: crmMenu === "Clients" ? "700" : "",
+                          marginLeft: "0px"
+                        }}
+                        onClick={() => {
+                          setcrmMenu("Clients");
+                          setSearch("");
+                        }}
                       >
                         Clients ({crmClientData?.length})
-                      </button>
+                      </div>
 
-                      <button
-                        className={`mp-filter-btn ${crmMenu === "Purchases" ? "active" : ""}`}
-                        onClick={() => { setcrmMenu("Purchases"); setSearch(""); }}
+                      <div
+                        className="crm-each-menu"
+                        style={{
+                          display: crmMenu !== "Clients" ? "" : "none",
+                          marginLeft: "0px"
+                        }}
+                        onClick={() => {
+                          setcrmMenu("Clients");
+                          setSearch("");
+                        }}
                       >
-                        Purchases ({crmPurchaseData?.length})
-                      </button>
+                        Clients
+                      </div>
+
+                      <div
+                        className="crm-each-menu"
+                        style={{
+                          display: crmMenu === "Purchases" ? "" : "none",
+                          background: crmMenu === "Purchases" ? "rgba(241,241,241,0.5)" : "",
+                          fontWeight: crmMenu === "Purchases" ? "700" : "",
+                        }}
+                        onClick={() => {
+                          setcrmMenu("Purchases");
+                          setSearch("");
+                        }}
+                      >
+                        Purchases (<span>{crmPurchaseData.length}</span>)
+                      </div>
+
+                      <div
+                        className="crm-each-menu"
+                        style={{
+                          display: crmMenu !== "Purchases" ? "" : "none",
+                        }}
+                        onClick={() => {
+                          setcrmMenu("Purchases");
+                          setSearch("");
+                        }}
+                      >
+                        Purchases
+                      </div>
+
                     </div>
                     <div className="crm-all-box">
                       {crmMenu === "Followers" ? (
@@ -2456,12 +2443,44 @@ const AccDashboard = () => {
                     className="services-main"
                     onClick={() => setShowDrop(false)}
                     style={{
-                      flex: 1,
-                      minHeight: 0,
+                      height: "calc(100% - 70px)",
                       overflowY: "auto",
                       display: "block"
                     }}
                   >
+                    {/* Role Filter Tabs
+      <div className="role-tabs">
+        <button 
+          className={`role-tab ${selectedRole === 'all' ? 'active' : ''}`}
+          onClick={() => setSelectedRole('all')}
+        >
+          All
+        </button>
+        <button 
+          className={`role-tab ${selectedRole === 'vendor' ? 'active' : ''}`}
+          onClick={() => setSelectedRole('vendor')}
+        >
+          Vendor
+        </button>
+        <button 
+          className={`role-tab ${selectedRole === 'mentor' ? 'active' : ''}`}
+          onClick={() => setSelectedRole('mentor')}
+        >
+          Mentor
+        </button>
+        <button 
+          className={`role-tab ${selectedRole === 'institution' ? 'active' : ''}`}
+          onClick={() => setSelectedRole('institution')}
+        >
+          Institution
+        </button>
+        <button 
+          className={`role-tab ${selectedRole === 'distributor' ? 'active' : ''}`}
+          onClick={() => setSelectedRole('distributor')}
+        >
+          Distributor
+        </button>
+      </div> */}
 
                     {/* Marketplace Grid */}
                     <Marketplace search={search} selectedRole={selectedRole} />
@@ -2495,7 +2514,7 @@ const AccDashboard = () => {
                     />
                     <div
                       className="services-main"
-                      style={{ flex: 1, minHeight: 0 }}
+                      style={{ height: "calc(100% - 70px)" }}
                       onClick={() => setShowDrop(false)}
                     >
                       <div
@@ -2556,7 +2575,7 @@ const AccDashboard = () => {
                     />
                     <div
                       className="services-main"
-                      style={{ flex: 1, minHeight: 0 }}
+                      style={{ height: "calc(100% - 70px)" }}
                       onClick={() => setShowDrop(false)}
                     >
                       <div
@@ -2605,7 +2624,7 @@ const AccDashboard = () => {
                   />
                   <div
                     className="services-main"
-                    style={{ flex: 1, minHeight: 0 }}
+                    style={{ height: "calc(100% - 70px)" }}
                     onClick={() => setShowDrop(false)}
                   >
                     <Tasks />
@@ -2624,30 +2643,23 @@ const AccDashboard = () => {
                   />
                   <div
                     className="services-main"
-                    style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "block" }}
+                    style={{ height: "calc(100% - 70px)", overflowY: "auto", display: "block" }}
                     onClick={() => setShowDrop(false)}
                   >
-
                     <MyPaths search={search} fetchAllServicesAgain={fetchAllServicesAgain} />
                   </div>
                 </>
               ) : accsideNav === "Steps" ? (
-                <div style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  height: "100%",
-                  overflow: "auto",           // ← CHANGE from "hidden" to "auto"
-                  background: "transparent"  // ← ADD THIS
-                }}>
-                  <MyStepsAcc
-                    search={search}
-                    setSearch={setSearch}
-                    showDrop={showDrop}
-                    setShowDrop={setShowDrop}
-                    loading={loading}
-                    setLoading={setLoading}
-                  />
-                </div>
+
+                <MyStepsAcc
+                  search={search}
+                  setSearch={setSearch}
+                  showDrop={showDrop}
+                  setShowDrop={setShowDrop}
+                  loading={loading}
+                  setLoading={setLoading}
+                />
+
               )
                 : (
                   <div className="services-main">

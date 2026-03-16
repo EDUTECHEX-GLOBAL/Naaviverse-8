@@ -40,7 +40,7 @@ var adminRouter = require("./routes/adminRouter");
 var personalityRouter = require("./routes/personalityRouter");
 var programRouter = require("./routes/programRouter");
 var uploadRouter = require("./routes/uploadRouter");
-
+var approvalRouter = require("./routes/approvalRouter");
 var visitorRoutes = require("./Admin/routes/VisitorRoute");
 const adminAuthRoutes = require("./Admin/routes/adminAuthRoutes");
 const adminDashboardRoutes = require("./Admin/routes/adminDashboardRoutes");
@@ -134,7 +134,7 @@ app.use("/api/userAnswers", userPersonalityRouter);
 app.use("/api/partner", partnerRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/personality", personalityRouter);
-
+app.use("/api/approvals", approvalRouter);  
 app.use("/api/payment", require("./routes/paymentRoutes"));
 
 app.use("/api/admin/auth", adminAuthRoutes);

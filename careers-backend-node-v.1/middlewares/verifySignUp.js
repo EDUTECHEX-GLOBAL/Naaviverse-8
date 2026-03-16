@@ -48,14 +48,20 @@ const sendNotificationMail = async (email, subject, message) => {
   try {
     const msg = {
       to: email,
-      from: userEmail, // must be verified sender
+      from: {
+        email: process.env.EMAIL_SERVICE_USER,
+        name: "Naavi Platform"
+      },
       subject: subject || "Notification",
       html: `<p>${message}</p>`,
+      trackingSettings: {
+        clickTracking: { enable: false },
+        openTracking: { enable: false }
+      }
     };
 
     const response = await sgMail.send(msg);
 
-    // ✅ VERY IMPORTANT → SendGrid returns 202 if success
     console.log("✅ SendGrid Status:", response[0].statusCode);
 
     return true;

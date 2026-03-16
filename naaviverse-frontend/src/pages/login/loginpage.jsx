@@ -22,7 +22,7 @@ const IconMenu = [
     { id: 1, icon: lg2 },
 ];
 
-const BASE_URL = process.env.REACT_APP_API_BASE_URL|| `${BASE_URL}`; // ✅ default fallback
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const Loginpage = () => {
     const navigate = useNavigate();
@@ -41,93 +41,152 @@ const Loginpage = () => {
     const [passwordResetMsg, setPasswordResetMsg] = useState("");
     const [loading, setLoading] = useState(false);
 
-    // useEffect(() => {
-    //     localStorage.clear();
-    // }, []);
+    const getProfilePic = async (email, loginType) => {
+        try {
+            const url =
+                loginType === "Users"
+                    ? `${BASE_URL}/api/auth/get-profile-pic`
+                    : `${BASE_URL}/api/partner/get-profile-pic`;
 
-const getProfilePic = async (email, loginType) => {
-  try {
-    const url =
-      loginType === "Users"
-        ? `${BASE_URL}/api/auth/get-profile-pic`
-        : `${BASE_URL}/api/partner/get-profile-pic`;
+            const response = await axios.get(url, { params: { email } });
 
-    const response = await axios.get(url, { params: { email } });
+            if (response.data.status && response.data.profilePic) {
+                localStorage.setItem("userProfilePic", response.data.profilePic);
+                return response.data.profilePic;
+            }
 
-        if (response.data.status && response.data.profilePic) {
-            localStorage.setItem("userProfilePic", response.data.profilePic);
-            return response.data.profilePic;
+            return null;
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                console.warn("No profile picture found, using default.");
+                return null;
+            }
+            console.error("Error fetching profile picture:", error);
+            return null;
         }
+    };
 
-        return null;
-    } catch (error) {
-        if (error.response && error.response.status === 404) {
-            console.warn("No profile picture found, using default.");
-            return null;   // VERY IMPORTANT
+    const handleLogin = async () => {
+        setIsLoading(true);
+        const obj = { email, password };
+
+        try {
+            const response = await Loginservice(obj, loginType);
+            const result = response.data;
+
+            console.log("🔥 FULL LOGIN RESPONSE:", result);
+
+            if (!result?.token) {
+                console.error("Login failed:", result?.message || "Unknown error");
+                setiserror(true);
+                setIsLoading(false);
+                return;
+            }
+
+            // Always store token
+            localStorage.setItem("authToken", result.token);
+
+            // Store user/partner safely
+            if (result.user) {
+                localStorage.setItem("user", JSON.stringify(result.user));
+            }
+
+            // Store type
+            localStorage.setItem("userType", loginType === "Users" ? "user" : "partner");
+
+            // Safest email storage
+            const emailToStore =
+                result?.user?.email ||
+                result?.partner?.email ||
+                obj.email ||
+                email ||
+                "";
+
+            localStorage.setItem("loginEmail", emailToStore);
+
+            console.log("🔥 STORED EMAIL:", emailToStore);
+
+            // ✅ ROUTING LOGIC
+            if (loginType === "Users") {
+                // Users go straight to their dashboard
+                if (result.user) {
+                    localStorage.setItem("user", JSON.stringify(result.user));
+                }
+                navigate("/dashboard/users/profile");
+
+            } else {
+                // ── PARTNER LOGIN ──────────────────────────────────────────────
+                const partnerData = result.partner || {};
+
+                // ✅ KEY FIX: Check approval status from API immediately at login
+                // This ensures localStorage has approvalStatus so sidebar shows
+                // correct lock/unlock state without needing to visit profile first
+                let approvalStatus = partnerData.approvalStatus || "";
+
+                try {
+                    const approvalRes = await axios.get(
+                        `${BASE_URL}/api/approvals/status?email=${emailToStore}`
+                    );
+                    const liveStatus = approvalRes.data?.data?.status;
+                    if (liveStatus) {
+                        approvalStatus = liveStatus;
+                        console.log("✅ Approval status fetched at login:", liveStatus);
+                    }
+                } catch (approvalErr) {
+                    console.warn("Could not fetch approval status at login:", approvalErr?.message);
+                    // Fall back to whatever the partner object says
+                }
+
+                // Also fetch partner profile to get businessName for sidebar display
+                let profileData = {};
+                try {
+                    const profileRes = await axios.get(
+                        `${BASE_URL}/api/partner/get?email=${emailToStore}`
+                    );
+                    const raw = profileRes.data?.data || {};
+                    if (raw?.businessName) {
+                        profileData = {
+                            firstName: raw.firstName,
+                            lastName: raw.lastName,
+                            businessName: raw.businessName,
+                        };
+                        console.log("✅ Partner profile fetched at login:", profileData.businessName);
+                    }
+                } catch (profileErr) {
+                    console.warn("Could not fetch partner profile at login:", profileErr?.message);
+                }
+
+                // ✅ Save partner to localStorage WITH approvalStatus + businessName
+                const enrichedPartner = {
+                    ...partnerData,
+                    approvalStatus,
+                    ...profileData, // merge businessName, firstName, lastName if found
+                };
+                localStorage.setItem("partner", JSON.stringify(enrichedPartner));
+
+                console.log("✅ Partner saved to localStorage with approvalStatus:", approvalStatus);
+
+                // ✅ Navigate based on approval status
+                if (!partnerData?.profileCreated && !profileData?.businessName) {
+                    // No profile yet — go to profile creation
+                    navigate("/dashboard/accountants/profile");
+                } else {
+                    // Has profile (pending/approved/rejected) — go to dashboard
+                    navigate("/dashboard/accountants");
+                }
+            }
+
+            getProfilePic(emailToStore, loginType);
+            setiserror(false);
+
+        } catch (error) {
+            console.error("Error during login:", error.message || error);
+            setiserror(true);
+        } finally {
+            setIsLoading(false);
         }
+    };
 
-        console.error("Error fetching profile picture:", error);
-        return null;
-    }
-};
-const handleLogin = () => {
-  setIsLoading(true);
-  const obj = { email, password };
-
-  Loginservice(obj, loginType)
-    .then((response) => {
-      const result = response.data;
-
-      console.log("🔥 FULL LOGIN RESPONSE:", result);
-
-      if (!result?.token) {
-        console.error("Login failed:", result?.message || "Unknown error");
-        setiserror(true);
-        return;
-      }
-
-      // Always store token
-      localStorage.setItem("authToken", result.token);
-
-      // Store user/partner safely
-      if (result.user) {
-        localStorage.setItem("user", JSON.stringify(result.user));
-      }
-      if (result.partner) {
-        localStorage.setItem("partner", JSON.stringify(result.partner));
-      }
-
-      // Store type
-      localStorage.setItem("userType", loginType === "Users" ? "user" : "partner");
-
-      // ⭐⭐⭐ SAFEST EMAIL STORAGE ⭐⭐⭐
-      const emailToStore =
-        result?.user?.email ||
-        result?.partner?.email ||
-        obj.email ||             // login email you typed
-        email ||                 // UI input
-        "";
-
-      localStorage.setItem("loginEmail", emailToStore);
-
-      console.log("🔥 STORED EMAIL:", emailToStore);
-
-      // Redirect
-      if (loginType === "Users") {
-        navigate("/dashboard/users/profile");
-      } else {
-        navigate("/dashboard/accountants/profile");
-      }
-
-      getProfilePic(emailToStore, loginType);
-      setiserror(false);
-    })
-    .catch((error) => {
-      console.error("Error during login:", error.message || error);
-      setiserror(true);
-    })
-    .finally(() => setIsLoading(false));
-};
     // ✅ Updated initiateForgotPassword
     const initiateForgotPassword = async () => {
         if (!email) return;
@@ -193,7 +252,7 @@ const handleLogin = () => {
 
     return (
         <div className="login-main">
-            
+
             {forgotPassword ? (
                 forgotPasswordStep === 1 ? (
                     <div className="login-box">
@@ -416,24 +475,23 @@ const handleLogin = () => {
                         />
                     </div>
                     <div className="input-box password-box">
-  <input
-    className="input-inp"
-    type={eye ? "text" : "password"}
-    placeholder="Password"
-    value={password}
-    onChange={(e) => {
-      setiserror(false);
-      setpassword(e.target.value);
-    }}
-  />
-
-  <img
-    src={eye ? eye2 : eye1}
-    alt="toggle password"
-    className="eye-icon"
-    onClick={() => seteye(!eye)}
-  />
-</div>
+                        <input
+                            className="input-inp"
+                            type={eye ? "text" : "password"}
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => {
+                                setiserror(false);
+                                setpassword(e.target.value);
+                            }}
+                        />
+                        <img
+                            src={eye ? eye2 : eye1}
+                            alt="toggle password"
+                            className="eye-icon"
+                            onClick={() => seteye(!eye)}
+                        />
+                    </div>
 
                     <div className="forgot" onClick={() => setForgotPassword(true)}>
                         Forgot Password
@@ -441,29 +499,27 @@ const handleLogin = () => {
                     <div className="login-btn" onClick={handleLogin}>
                         Login
                     </div>
-                   <div
-  className="google-btn"
-  onClick={() => {
-    console.log("REGISTER CLICKED");
-    navigate(`/register?role=${loginType}`);
-  }}
->
-  <img
-    src={google}
-    alt="Google"
-    style={{ width: 20, height: 20, marginRight: 10 }}
-  />
-  Register With Email
-</div>
-
-
+                    <div
+                        className="google-btn"
+                        onClick={() => {
+                            console.log("REGISTER CLICKED");
+                            navigate(`/register?role=${loginType}`);
+                        }}
+                    >
+                        <img
+                            src={google}
+                            alt="Google"
+                            style={{ width: 20, height: 20, marginRight: 10 }}
+                        />
+                        Register With Email
+                    </div>
                 </div>
             )}
-           {isLoading && (
-  <div className="otclogo">
-    <img className="otclogoimg" src={loadinglogo} alt="" />
-  </div>
-)}
+            {isLoading && (
+                <div className="otclogo">
+                    <img className="otclogoimg" src={loadinglogo} alt="" />
+                </div>
+            )}
 
         </div>
     );

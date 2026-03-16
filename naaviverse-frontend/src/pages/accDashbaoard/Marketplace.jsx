@@ -81,6 +81,20 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
       const stepItems = [];
       if (stepsRes.status === "fulfilled") {
         const allSteps = stepsRes.value.data?.data || [];
+        
+        // Fetch path details for each step to get path names
+        for (const step of allSteps) {
+          try {
+            if (step.path_id) {
+              const pathRes = await axios.get(`${BASE_URL}/api/paths/viewpath/${step.path_id}`);
+              const pathData = pathRes.data.data;
+              step.path_name = pathData?.nameOfPath || "Unknown Path";
+            }
+          } catch (err) {
+            console.error("Error fetching path details:", err);
+          }
+        }
+
         allSteps.forEach((step, si) => {
           ["macro", "micro", "nano"].forEach((layer) => {
             const arr = step[`${layer}_marketplace`] || step[layer]?.marketplace || [];
@@ -102,6 +116,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                 sourceLabel: step.macro_name || step.name || `Step ${si + 1}`,
                 sourceStep: step.macro_name || step.name || `Step ${si + 1}`,
                 sourceLayer: layer.toUpperCase(),
+                pathName: step.path_name || "Unknown Path",
               });
             });
           });
@@ -126,9 +141,9 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
             features: item.features || "",
             sourceType: "marketplace",
             sourceLabel: "Marketplace Items",
-            pathId: item.path_id,
-            stepId: item.step_id,
-            layer: item.layer,
+            pathName: item.path_name,
+            stepName: item.step_name,
+            sourceLayer: item.layer?.toUpperCase(),
           });
         });
       }

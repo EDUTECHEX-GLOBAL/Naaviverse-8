@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Partner = require("../models/partner.model");
+const Approval = require("../models/approval.model");
 require("dotenv").config({ path: ".env" });
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
@@ -125,194 +126,194 @@ const signUp = async (req, res) => {
 
 
 const forgotPassword = async (req, res) => {
-    var partnerFound
+  var partnerFound
 
 
-    if (typeof (req.body.email) !== "undefined")
-        partnerFound = await Partner.findOne({ email: req.body.email });
+  if (typeof (req.body.email) !== "undefined")
+    partnerFound = await Partner.findOne({ email: req.body.email });
 
 
-    if (!partnerFound) return res.status(400).json({ message: "User Not Found" });
+  if (!partnerFound) return res.status(400).json({ message: "User Not Found" });
 
 
-    const OTP = generateOTP();
-    console.log(OTP);
-    const currentTime = new Date();
-    partnerFound.OTP = OTP;
-    partnerFound.OTPCreatedTime = currentTime;
+  const OTP = generateOTP();
+  console.log(OTP);
+  const currentTime = new Date();
+  partnerFound.OTP = OTP;
+  partnerFound.OTPCreatedTime = currentTime;
 
 
 
-    await partnerFound.save();
-    sendNotificationMail(req.body.email, "Naavi forgot password OTP", "Dear Partner,<br>Your OTP:" + OTP + " <br>");
-    //sendOTP(req.body.email, OTP);
-    console.log(partnerFound._id);
-    const oneDayInSeconds = 86400;
+  await partnerFound.save();
+  sendNotificationMail(req.body.email, "Naavi forgot password OTP", "Dear Partner,<br>Your OTP:" + OTP + " <br>");
+  //sendOTP(req.body.email, OTP);
+  console.log(partnerFound._id);
+  const oneDayInSeconds = 86400;
 
 
-    const token = jwt.sign({ id: partnerFound._id }, process.env.JWT_SECRET_KEY, {
-        expiresIn: oneDayInSeconds,
-    });
+  const token = jwt.sign({ id: partnerFound._id }, process.env.JWT_SECRET_KEY, {
+    expiresIn: oneDayInSeconds,
+  });
 
 
-    return res.status(200).json({
-        success: true,
-        token: token,
-        message: "OTP sent to your emailId",
-    });
+  return res.status(200).json({
+    success: true,
+    token: token,
+    message: "OTP sent to your emailId",
+  });
 
 
 };
 const sendConfirmationEmail = async (req, res) => {
-    try {
-        const partnerFound = await TemporalPartner.findOne({ email: req.body.email });
+  try {
+    const partnerFound = await TemporalPartner.findOne({ email: req.body.email });
 
 
-        const token = partnerFound.emailToken;
+    const token = partnerFound.emailToken;
 
 
-        const url = `${process.env.HOST || "localhost:7000"
-            }/api/auth/verification/${token}`;
+    const url = `${process.env.HOST || "localhost:7000"
+      }/api/auth/verification/${token}`;
 
 
-        await sendConfirmationEmailFunction(url, partnerFound.email);
+    await sendConfirmationEmailFunction(url, partnerFound.email);
 
 
-        return res.status(200).json({
-            success: true,
-            message: "Account confirmation email has been send successfully",
-        });
-    } catch (error) {
-        console.log(error);
+    return res.status(200).json({
+      success: true,
+      message: "Account confirmation email has been send successfully",
+    });
+  } catch (error) {
+    console.log(error);
 
 
-        return res.status(500).json({ message: "something went wrong" });
-    }
+    return res.status(500).json({ message: "something went wrong" });
+  }
 };
-
-
-
-
 const login = async (req, res) => {
-    try {
-        const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-
-        // Validate input fields
-        if (!email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: "Both email and password are required",
-            });
-        }
-
-
-        // Find user by email
-        const partner = await Partner.findOne({ email });
-
-
-        if (!partner) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid credentials",
-            });
-        }
-
-
-        // Compare the entered password with the stored hashed password
-        const isMatch = await partner.matchPassword(password);
-
-
-        if (!isMatch) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid password",
-            });
-        }
-
-
-        // Generate a JWT token
-        const token = jwt.sign({ id: partner._id }, process.env.JWT_SECRET_KEY, { expiresIn: '1d' });
-
-
-        // Send the response with user data and token
-        return res.status(200).json({
-            success: true,
-            message: "Login successful",
-            token,
-            partner: {
-                id: partner._id,
-                username: partner.username,
-                email: partner.email,
-            },
-        });
-    } catch (error) {
-        console.error("Login Error:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Something went wrong",
-        });
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Both email and password are required",
+      });
     }
+
+    const partner = await Partner.findOne({ email });
+
+    if (!partner) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    const isMatch = await partner.matchPassword(password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid password",
+      });
+    }
+
+    // ✅ Check if an Approval record exists for this partner
+    const approval = await Approval.findOne({ email: partner.email });
+
+    // profileCreated = true means they submitted their profile form
+    const profileCreated = !!approval;
+
+    // approvalStatus from the Approval collection
+    const approvalStatus = approval ? approval.status : "not_submitted";
+
+    const token = jwt.sign(
+      { id: partner._id },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "1d" }
+    );
+
+    // ✅ Return profileCreated + status so frontend routes correctly
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      partner: {
+        id: partner._id,
+        username: partner.username,
+        email: partner.email,
+        partnerType: partner.partnerType,
+        profileCreated,         // ← frontend uses this to check if profile is filled
+        status: approvalStatus, // ← "not_submitted" | "pending" | "approved" | "rejected"
+      },
+    });
+
+  } catch (error) {
+    console.error("Login Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+    });
+  }
 };
-
-
 const logout = async (req, res) => {
-    try {
-        res.clearCookie("delivery-app-session-token");
-        return res
-            .status(200)
-            .json({ successful: true, message: "partner has logout successfully" });
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: error });
-    }
+  try {
+    res.clearCookie("delivery-app-session-token");
+    return res
+      .status(200)
+      .json({ successful: true, message: "partner has logout successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: error });
+  }
 };
 
 
 const sendResetPasswordEmail = async (req, res) => {
-    try {
-        const partnerFound = await Partner.findOne({ email: req.body.email });
+  try {
+    const partnerFound = await Partner.findOne({ email: req.body.email });
 
 
-        if (!partnerFound)
-            return res.status(422).json({
-                success: false,
-                message: "Doesn't exits account link with that email",
-            });
+    if (!partnerFound)
+      return res.status(422).json({
+        success: false,
+        message: "Doesn't exits account link with that email",
+      });
 
 
-        const id = partnerFound._id;
+    const id = partnerFound._id;
 
 
-        const token = jwt.sign(
-            {
-                id,
-                expiration: Date.now() + 10 * 60 * 1000,
-            },
-            process.env.JWT_SECRET_KEY
-        );
+    const token = jwt.sign(
+      {
+        id,
+        expiration: Date.now() + 10 * 60 * 1000,
+      },
+      process.env.JWT_SECRET_KEY
+    );
 
 
-        const url = `${process.env.HOST || "localhost:3000"
-            }/#/authentication/resetPassword/${token}`;
+    const url = `${process.env.HOST || "localhost:3000"
+      }/#/authentication/resetPassword/${token}`;
 
 
-        await sendResetPasswordEmailFunction(url, req.body.email);
+    await sendResetPasswordEmailFunction(url, req.body.email);
 
 
-        return res.status(200).json({
-            success: true,
-            message: "Reset password email has been send successfully",
-        });
-    } catch (err) {
-        console.log(err);
+    return res.status(200).json({
+      success: true,
+      message: "Reset password email has been send successfully",
+    });
+  } catch (err) {
+    console.log(err);
 
 
-        return res.status(500).json({
-            success: false,
-            message: "Something went wrong, fail to to send reset password email",
-        });
-    }
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong, fail to to send reset password email",
+    });
+  }
 };
 
 
@@ -362,57 +363,57 @@ const resetPassword = async (req, res) => {
 
 
 const verifyOtp = async (req, res) => {
-    try {
-        const { email, otp } = req.body;
-        const partner = await Partner.findOne({ email });
+  try {
+    const { email, otp } = req.body;
+    const partner = await Partner.findOne({ email });
 
 
-        if (!partner) {
-            return res.status(400).json({ success: false, message: "Partner not found" });
-        }
-
-       // 🔍 ADD DEBUG LOGS HERE
-        console.log("=================================");
-        console.log("Stored OTP:", partner.OTP);
-        console.log("Stored OTP Created Time:", partner.OTPCreatedTime);
-        console.log("User entered OTP:", otp);
-        console.log("Now:", new Date());
-        console.log("Time difference (ms):", Date.now() - partner.OTPCreatedTime);
-        console.log("=================================");
-        // Check if OTP is expired const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
-
-        if (partner.isOTPExpired()) {
-            return res.status(400).json({ success: false, message: "OTP expired. Please request a new one." });
-        }
-
-
-        // Compare OTPs safely
-        if (
-            !partner.OTP ||
-            partner.OTP.toString().trim().toLowerCase() !== otp.toString().trim().toLowerCase()
-        ) {
-            return res.status(400).json({ success: false, message: "Invalid OTP. Please try again." });
-        }
-
-
-
-        partner.status = true;
-        partner.OTPverified = true;
-        partner.OTP = null; // clear OTP
-        await partner.save();
-
-
-        return res.status(200).json({
-            success: true,
-            message: "OTP verified successfully",
-        });
-    } catch (error) {
-        console.error("Error verifying OTP:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Server error during OTP verification",
-        });
+    if (!partner) {
+      return res.status(400).json({ success: false, message: "Partner not found" });
     }
+
+    // 🔍 ADD DEBUG LOGS HERE
+    console.log("=================================");
+    console.log("Stored OTP:", partner.OTP);
+    console.log("Stored OTP Created Time:", partner.OTPCreatedTime);
+    console.log("User entered OTP:", otp);
+    console.log("Now:", new Date());
+    console.log("Time difference (ms):", Date.now() - partner.OTPCreatedTime);
+    console.log("=================================");
+    // Check if OTP is expired const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+    if (partner.isOTPExpired()) {
+      return res.status(400).json({ success: false, message: "OTP expired. Please request a new one." });
+    }
+
+
+    // Compare OTPs safely
+    if (
+      !partner.OTP ||
+      partner.OTP.toString().trim().toLowerCase() !== otp.toString().trim().toLowerCase()
+    ) {
+      return res.status(400).json({ success: false, message: "Invalid OTP. Please try again." });
+    }
+
+
+
+    partner.status = true;
+    partner.OTPverified = true;
+    partner.OTP = null; // clear OTP
+    await partner.save();
+
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP verified successfully",
+    });
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error during OTP verification",
+    });
+  }
 };
 
 
@@ -460,176 +461,196 @@ const updatePassword = async (req, res) => {
 
 
 const getAllPartners = async (req, res) => {
-    try {
-        const partners = await Partner.find({}, { password: 0 }); // Exclude password for security
+  try {
+    const partners = await Partner.find({}, { password: 0 }); // Exclude password for security
 
 
-        return res.status(200).json({
-            success: true,
-            message: "Partners retrieved successfully",
-            partners,
-        });
-    } catch (error) {
-        console.error("Error fetching partners:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Something went wrong",
-        });
-    }
+    return res.status(200).json({
+      success: true,
+      message: "Partners retrieved successfully",
+      partners,
+    });
+  } catch (error) {
+    console.error("Error fetching partners:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+    });
+  }
 };
 
 
 
 const updatePartnerProfile = async (req, res) => {
-    try {
-        const { email } = req.body; // Identify the partner by email
+  try {
+    const { email } = req.body; // Identify the partner by email
 
 
-        if (!email) {
-            return res.status(400).json({ success: false, message: "Email is required" });
-        }
-
-
-        // Find the partner by email
-        let partner = await Partner.findOne({ email });
-
-
-        if (!partner) {
-            return res.status(404).json({ success: false, message: "Partner not found" });
-        }
-
-
-        // Update profile details
-        const updatedFields = {
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            businessName: req.body.businessName,
-            logo: req.body.logo,
-            street: req.body.street,
-            city: req.body.city,
-            state: req.body.state,
-            pincode: req.body.pincode,
-            country: req.body.country,
-            description: req.body.description,
-            website: req.body.website,
-            type: req.body.type,
-            yourPosition: req.body.yourPosition
-        };
-
-
-        // Remove undefined values (only update provided fields)
-        Object.keys(updatedFields).forEach(
-            (key) => updatedFields[key] === undefined && delete updatedFields[key]
-        );
-
-
-        // Update the partner's profile
-        await Partner.updateOne({ email }, { $set: updatedFields });
-
-
-        res.status(200).json({ success: true, message: "Profile updated successfully!" });
-
-
-    } catch (error) {
-        console.error("Error updating partner profile:", error);
-        res.status(500).json({ success: false, message: "Internal server error" });
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
     }
+
+
+    // Find the partner by email
+    let partner = await Partner.findOne({ email });
+
+
+    if (!partner) {
+      return res.status(404).json({ success: false, message: "Partner not found" });
+    }
+
+
+    // Update profile details
+    const updatedFields = {
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      businessName: req.body.businessName,
+      logo: req.body.logo,
+      street: req.body.street,
+      city: req.body.city,
+      state: req.body.state,
+      pincode: req.body.pincode,
+      country: req.body.country,
+      description: req.body.description,
+      website: req.body.website,
+      type: req.body.type,
+      yourPosition: req.body.yourPosition
+    };
+
+
+    // Remove undefined values (only update provided fields)
+    Object.keys(updatedFields).forEach(
+      (key) => updatedFields[key] === undefined && delete updatedFields[key]
+    );
+
+    await Partner.updateOne({ email }, { $set: updatedFields });
+
+    /* ---------------- CREATE APPROVAL REQUEST ---------------- */
+
+    const existingApproval = await Approval.findOne({ email });
+
+    if (!existingApproval) {
+
+      await Approval.create({
+        role: "Partner",
+        businessName: updatedFields.businessName || partner.businessName,
+        type: updatedFields.type || partner.type,
+        email: partner.email,
+        website: updatedFields.website || partner.website,
+        firstName: updatedFields.firstName || partner.firstName,
+        lastName: updatedFields.lastName || partner.lastName,
+        position: updatedFields.yourPosition || partner.yourPosition,
+        country: updatedFields.country || partner.country,
+        date: new Date().toDateString(),
+        status: "pending"
+      });
+
+    }
+
+    res.status(200).json({ success: true, message: "Profile updated successfully!" });
+
+
+  } catch (error) {
+    console.error("Error updating partner profile:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 };
 
 
 const getPartnerByEmail = async (req, res) => {
-    try {
-        const { email } = req.query;
-        console.log("Email received:", email);
-
-
-        if (!email) {
-            return res.status(400).json({ success: false, message: "Email is required" });
-        }
-
-
-        const partner = await Partner.findOne({ email });
-        console.log("Partner found:", partner);
-
-
-        if (!partner) {
-            return res.status(200).json({ success: false, message: "No profile found" });
-        }
-
-
-        const requiredFields = [
-            "firstName", "lastName", "businessName", "logo", "street",
-            "city", "state", "pincode", "country", "description",
-            "website", "type", "yourPosition"
-        ];
-
-
-       const missingFields = requiredFields.filter(field => !partner[field]);
-console.log("Missing fields:", missingFields);
-
-if (missingFields.length > 0) {
-  return res.status(200).json({
-    success: true,                        // ✔ profile exists
-    profileIncomplete: true,              // ✔ new flag
-    missingFields,
-    data: partner
-  });
-}
-
-return res.status(200).json({
-  success: true,
-  profileIncomplete: false,
-  data: partner
-});
-
-
-
-    } catch (error) {
-        console.error("Error fetching partner:", error);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
-    }
-};
-
-
-const getPartnerProfilePic = async (req, res) => {
+  try {
     const { email } = req.query;
 
-
     if (!email) {
-        return res.status(400).json({ status: false, message: "Email is required" });
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
+
+    const partner = await Partner.findOne({ email });
+
+    if (!partner) {
+      return res.status(200).json({ success: false, message: "No profile found" });
+    }
+
+    const requiredFields = [
+      "firstName", "lastName", "businessName", "logo", "street",
+      "city", "state", "pincode", "country", "description",
+      "website", "type", "yourPosition"
+    ];
+
+    const missingFields = requiredFields.filter(field => !partner[field]);
+
+    // ✅ If profile is incomplete — let them through to fill it
+    //    (Do NOT block here with approval check)
+    if (missingFields.length > 0) {
+      return res.status(200).json({
+        success: true,
+        profileIncomplete: true,
+        missingFields,
+        data: partner
+      });
+    }
+
+    // ✅ Profile is complete — NOW check approval status
+    const approval = await Approval.findOne({ email: partner.email });
+
+    if (approval && approval.status !== "approved") {
+      return res.status(403).json({
+        success: false,
+        approvalStatus: approval.status, // "pending" or "rejected"
+        message: "Your account is waiting for admin approval",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      profileIncomplete: false,
+      data: partner
+    });
+
+  } catch (error) {
+    console.error("Error fetching partner:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+const getPartnerProfilePic = async (req, res) => {
+  const { email } = req.query;
+
+
+  if (!email) {
+    return res.status(400).json({ status: false, message: "Email is required" });
+  }
+
+
+  try {
+    const partner = await Partner.findOne({ email });
+
+
+    if (!partner || !partner.logo) {
+      return res.status(404).json({ status: false, message: "Partner logo not found" });
     }
 
 
-    try {
-        const partner = await Partner.findOne({ email });
-
-
-        if (!partner || !partner.logo) {
-            return res.status(404).json({ status: false, message: "Partner logo not found" });
-        }
-
-
-        res.json({ status: true, profilePic: partner.logo });
-    } catch (error) {
-        console.error("Error fetching partner logo:", error);
-        res.status(500).json({ status: false, message: "Server Error" });
-    }
+    res.json({ status: true, profilePic: partner.logo });
+  } catch (error) {
+    console.error("Error fetching partner logo:", error);
+    res.status(500).json({ status: false, message: "Server Error" });
+  }
 };
 
 
 
 module.exports = {
-    signUp,
-    forgotPassword,
-    login,
-    sendConfirmationEmail,
-    sendResetPasswordEmail,
-    resetPassword,
-    logout,
-    verifyOtp, 
-    updatePassword,
-    getAllPartners,
-    updatePartnerProfile,
-    getPartnerByEmail,
-    getPartnerProfilePic,
+  signUp,
+  forgotPassword,
+  login,
+  sendConfirmationEmail,
+  sendResetPasswordEmail,
+  resetPassword,
+  logout,
+  verifyOtp,
+  updatePassword,
+  getAllPartners,
+  updatePartnerProfile,
+  getPartnerByEmail,
+  getPartnerProfilePic,
 };
