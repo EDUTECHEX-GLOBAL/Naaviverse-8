@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from "react";
+import realtorwhite from "../../static/images/dashboard/realtorwhite.svg";
 import "./accDashsidebar.scss";
 import { useStore } from "../store/store.ts";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/images/logo/naavi_final_logo2.png";
 
 const sidebarMenu1 = [
-  { id: 0, display: "CRM",          title: "CRM",         click: true },
-  { id: 1, display: "My Services",  title: "My Services", click: true },
-  { id: 2, display: "My Paths",     title: "Paths",       click: true },
-  { id: 3, display: "Marketplace",  title: "Marketplace", click: true },
+  { id: 0, display: "CRM",          title: "CRM",          click: true },
+  { id: 1, display: "My Services",  title: "My Services",  click: true },
+  { id: 2, display: "My Paths",     title: "Paths",        click: true },
+  { id: 3, display: "Universities", title: "Universities", click: true },
 ];
 
+// ✅ Fixed duplicate id: 0 on CRM — was causing React key warnings
 const sidebarMenu2 = [
-  { id: 0, display: "CRM",         title: "CRM",         click: true },
-  { id: 1, display: "Paths",       title: "Paths",       click: true },
-  { id: 2, display: "Steps",       title: "Steps",       click: true },
-  { id: 3, display: "Marketplace", title: "Marketplace", click: true },
+  { id: 0, display: "Dashboard",   title: "Dashboard",   click: true },
+  { id: 1, display: "CRM",         title: "CRM",         click: true },
+  { id: 2, display: "Paths",       title: "Paths",       click: true },
+  { id: 3, display: "Steps",       title: "Steps",       click: true },
+  { id: 4, display: "Marketplace", title: "Marketplace", click: true },
 ];
 
 const sidebarMenu3 = [];
@@ -26,24 +29,34 @@ const AdminAccDashsidebar = ({
   admin,
 }) => {
   const [selectedMenu, setSelectedMenu] = useState([]);
-  const { accsideNav, setaccsideNav } = useStore();
+  const { accsideNav, setaccsideNav, setispopular } = useStore();
   const navigate = useNavigate();
 
   useEffect(() => {
-    setSelectedMenu(admin ? sidebarMenu2 : sidebarMenu1);
+    const menu = admin ? sidebarMenu2 : sidebarMenu1;
+    setSelectedMenu(menu);
+
+    // ✅ THE CORE FIX:
+    // On first load, accsideNav is "" (empty string from the store).
+    // Nothing matched any section → "Coming Soon" was shown.
+    // Now we set the default to the first menu item's title.
+    // For admin=true → "Dashboard" → renders <Dashboard /> in accDashboard.jsx
+    const knownTitles = menu.map((m) => m.title);
+    if (!accsideNav || !knownTitles.includes(accsideNav)) {
+      setaccsideNav(menu[0].title);
+    }
   }, [admin]);
 
- const handleLogout = () => {
+  const handleLogout = () => {
   localStorage.clear();
   navigate("/admin/login");
 };
-
   return (
     <div
       className="dashboard-sidebar"
       style={{ overflow: "hidden", padding: "0" }}
     >
-      {/* Logo */}
+      {/* ── Logo ─────────────────────────────────────────────────────────── */}
       <div
         className="dashboard-left"
         style={{
@@ -54,31 +67,27 @@ const AdminAccDashsidebar = ({
           alignItems: "center",
         }}
         onClick={() => {
-          if (handleChangeAccDashsidebar) {
-            handleChangeAccDashsidebar();
-            setaccsideNav("CRM");
-          }
+          if (handleChangeAccDashsidebar) handleChangeAccDashsidebar();
+          setaccsideNav(admin ? "Dashboard" : "CRM");
         }}
       >
         <img
           className="dashboard-logo"
           src={logo}
-          alt=""
+          alt="Naavi"
           style={{ width: "50%" }}
         />
       </div>
 
-      {/* Menu Items */}
+      {/* ── Nav items ────────────────────────────────────────────────────── */}
       <div
         style={{
           overflowY: "scroll",
-          height: "calc(100vh - 70px)",
-          padding: "30px 2vw 20px",
-          display: "flex",
-          flexDirection: "column",
+          height: "75vh",
+          marginTop: "30px",
+          padding: "0 2vw",
         }}
       >
-        {/* Primary menu */}
         <div>
           {selectedMenu?.map((each, i) => (
             <div
@@ -89,13 +98,17 @@ const AdminAccDashsidebar = ({
                 color:        accsideNav === each.title ? "#100F0D" : "",
                 paddingLeft:  accsideNav === each.title ? "20px"    : "",
                 borderRadius: accsideNav === each.title ? "35px"    : "",
-                opacity: each.click ? "1" : "0.25",
+                opacity: each.click ? "1"       : "0.25",
                 cursor:  each.click ? "pointer" : "not-allowed",
               }}
               onClick={() => {
                 if (!each.click) return;
                 setaccsideNav(each.title);
-                if (handleChangeAccDashsidebar) handleChangeAccDashsidebar();
+                if (handleChangeAccDashsidebar) {
+                  handleChangeAccDashsidebar();
+                } else if (isNotOnMainPage) {
+                  navigate("/dashboard/accountants");
+                }
               }}
             >
               {each.display}
@@ -103,7 +116,6 @@ const AdminAccDashsidebar = ({
           ))}
         </div>
 
-        {/* Secondary menu (currently empty) */}
         <div>
           {sidebarMenu3.map((ele, j) => (
             <div
@@ -114,55 +126,22 @@ const AdminAccDashsidebar = ({
                 color:        accsideNav === ele.title ? "#100F0D" : "",
                 paddingLeft:  accsideNav === ele.title ? "20px"    : "",
                 borderRadius: accsideNav === ele.title ? "35px"    : "",
-                opacity: ele.click ? "1" : "0.25",
+                opacity: ele.click ? "1"       : "0.25",
                 cursor:  ele.click ? "pointer" : "not-allowed",
               }}
               onClick={() => {
                 if (!ele.click) return;
                 setaccsideNav(ele.title);
-                if (handleChangeAccDashsidebar) handleChangeAccDashsidebar();
+                if (handleChangeAccDashsidebar) {
+                  handleChangeAccDashsidebar();
+                } else if (isNotOnMainPage) {
+                  navigate("/dashboard/accountants");
+                }
               }}
             >
               {ele.title}
             </div>
           ))}
-        </div>
-
-        {/* Spacer to push logout to bottom */}
-        <div style={{ flex: 1 }} />
-
-        {/* Logout */}
-        <div
-          style={{
-            paddingTop: "16px",
-            borderTop: "1px solid #e5e5e5",
-          }}
-        >
-          <div
-            className="each-sidenav logout-btn"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              padding: "12px 16px",
-              borderRadius: "35px",
-              cursor: "pointer",
-              color: "#ef4444",
-              backgroundColor: "#fee2e2",
-              transition: "all 0.2s",
-            }}
-            onClick={handleLogout}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#fecaca";
-              e.currentTarget.style.color = "#dc2626";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#fee2e2";
-              e.currentTarget.style.color = "#ef4444";
-            }}
-          >
-            <span style={{ fontWeight: "600", fontSize: "14px" }}>Logout</span>
-          </div>
         </div>
       </div>
     </div>

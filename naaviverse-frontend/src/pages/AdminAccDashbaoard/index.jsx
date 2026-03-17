@@ -342,7 +342,7 @@ const AccDashboard = () => {
     handleFollowerPerAccountants();
     handleGetCurrencies();
     resetpop();
-    
+
     const userDetails = getUserDetails();
     if (!userDetails?.email) {
       navigate("/admin/login");
@@ -477,7 +477,7 @@ const AccDashboard = () => {
   const handleFollowerPerAccountants = () => {
     setIsLoading(true);
     const mailId = userDetails?.email;
-    
+
     if (!mailId) {
       setIsLoading(false);
       return;
@@ -504,7 +504,7 @@ const AccDashboard = () => {
   const handleAllCustomerLicenses = () => {
     const userDetails = getUserDetails();
     setIsPurchaseLoading(true);
-    
+
     if (!userDetails?.user?.email) {
       setIsPurchaseLoading(false);
       return;
@@ -633,14 +633,14 @@ const AccDashboard = () => {
       uploadCoverImage(e.target.files[0]);
     }
   };
-  
+
   const handleFileInputChange1 = (e) => {
     if (e.target.files?.[0]) {
       setImage(e.target.files[0]);
       uploadBulkPath(e.target.files[0]);
     }
   };
-  
+
   const handleFileInputChange2 = (e) => {
     if (e.target.files?.[0]) {
       setImage(e.target.files[0]);
@@ -662,7 +662,7 @@ const AccDashboard = () => {
   const handleFinalSubmit = () => {
     setIsSubmit(true);
     const userDetails = getUserDetails();
-    
+
     if (!userDetails?.email || !selectedCurrency?.coinSymbol) {
       setIsSubmit(false);
       toast.error("Missing required fields");
@@ -1184,11 +1184,17 @@ const AccDashboard = () => {
                 <Outlet />
               ) : (
                 <>
+                  {/* ── DASHBOARD OVERVIEW ────────────────────────────────────
+                      FIX 1: Added this block — was missing entirely.
+                      FIX 2: "Dashboard" added to the known nav list below
+                      so it never hits the "Coming Soon" fallback.          */}
+                  {accsideNav === "Dashboard" && (
+                    <Dashboard />
+                  )}
+
                   {/* CRM SECTION */}
                   {accsideNav === "CRM" && (
                     <>
-                      
-
                       <div className="crm-tabs">
                         <button
                           className={crmMenu === "Clients" ? "active" : ""}
@@ -1218,36 +1224,11 @@ const AccDashboard = () => {
                             className="crm-tab"
                             style={{ padding: "10px 35px" }}
                           >
-                            <div
-                              className="crm-each-col"
-                              style={{ width: "20%" }}
-                            >
-                              Name
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{ width: "30%" }}
-                            >
-                              Email
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{ width: "15%" }}
-                            >
-                              Country
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{ width: "20%" }}
-                            >
-                              Phone
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{ width: "15%" }}
-                            >
-                              Profile Level
-                            </div>
+                            <div className="crm-each-col" style={{ width: "20%" }}>Name</div>
+                            <div className="crm-each-col" style={{ width: "30%" }}>Email</div>
+                            <div className="crm-each-col" style={{ width: "15%" }}>Country</div>
+                            <div className="crm-each-col" style={{ width: "20%" }}>Phone</div>
+                            <div className="crm-each-col" style={{ width: "15%" }}>Profile Level</div>
                           </div>
 
                           <div className="users-alldata">
@@ -1262,26 +1243,11 @@ const AccDashboard = () => {
                             ) : safeUsers.length > 0 ? (
                               safeUsers.map((u, i) => (
                                 <div className="each-userData" key={i}>
-                                  <div style={{ width: "20%" }}>
-                                    {u?.name || "—"}
-                                  </div>
-                                  <div
-                                    style={{
-                                      width: "30%",
-                                      textTransform: "none",
-                                    }}
-                                  >
-                                    {u?.email}
-                                  </div>
-                                  <div style={{ width: "15%" }}>
-                                    {u?.country || "—"}
-                                  </div>
-                                  <div style={{ width: "20%" }}>
-                                    {u?.phoneNumber || "—"}
-                                  </div>
-                                  <div style={{ width: "15%" }}>
-                                    {u?.user_level || "—"}
-                                  </div>
+                                  <div style={{ width: "20%" }}>{u?.name || "—"}</div>
+                                  <div style={{ width: "30%", textTransform: "none" }}>{u?.email}</div>
+                                  <div style={{ width: "15%" }}>{u?.country || "—"}</div>
+                                  <div style={{ width: "20%" }}>{u?.phoneNumber || "—"}</div>
+                                  <div style={{ width: "15%" }}>{u?.user_level || "—"}</div>
                                 </div>
                               ))
                             ) : (
@@ -1298,36 +1264,11 @@ const AccDashboard = () => {
                             className="crm-tab"
                             style={{ padding: "10px 35px" }}
                           >
-                            <div
-                              className="crm-each-col"
-                              style={{ width: "25%" }}
-                            >
-                              Business
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{ width: "30%" }}
-                            >
-                              Email
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{ width: "15%" }}
-                            >
-                              Country
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{ width: "15%" }}
-                            >
-                              Type
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{ width: "15%" }}
-                            >
-                              POC
-                            </div>
+                            <div className="crm-each-col" style={{ width: "25%" }}>Business</div>
+                            <div className="crm-each-col" style={{ width: "30%" }}>Email</div>
+                            <div className="crm-each-col" style={{ width: "15%" }}>Country</div>
+                            <div className="crm-each-col" style={{ width: "15%" }}>Type</div>
+                            <div className="crm-each-col" style={{ width: "15%" }}>POC</div>
                           </div>
 
                           <div className="users-alldata">
@@ -1342,44 +1283,20 @@ const AccDashboard = () => {
                             ) : partnerData.length > 0 ? (
                               partnerData.map((p, i) => (
                                 <div className="each-userData" key={i}>
-                                  <div
-                                    style={{
-                                      width: "25%",
-                                      display: "flex",
-                                      alignItems: "center",
-                                    }}
-                                  >
+                                  <div style={{ width: "25%", display: "flex", alignItems: "center" }}>
                                     {p?.logo && (
                                       <img
                                         src={p.logo}
                                         alt=""
-                                        style={{
-                                          width: 32,
-                                          height: 32,
-                                          borderRadius: "50%",
-                                          marginRight: 10,
-                                        }}
+                                        style={{ width: 32, height: 32, borderRadius: "50%", marginRight: 10 }}
                                       />
                                     )}
                                     {p?.businessName}
                                   </div>
-                                  <div
-                                    style={{
-                                      width: "30%",
-                                      textTransform: "none",
-                                    }}
-                                  >
-                                    {p?.email}
-                                  </div>
-                                  <div style={{ width: "15%" }}>
-                                    {p?.country || "—"}
-                                  </div>
-                                  <div style={{ width: "15%" }}>
-                                    {p?.type || "—"}
-                                  </div>
-                                  <div style={{ width: "15%" }}>
-                                    {p?.firstName} {p?.lastName}
-                                  </div>
+                                  <div style={{ width: "30%", textTransform: "none" }}>{p?.email}</div>
+                                  <div style={{ width: "15%" }}>{p?.country || "—"}</div>
+                                  <div style={{ width: "15%" }}>{p?.type || "—"}</div>
+                                  <div style={{ width: "15%" }}>{p?.firstName} {p?.lastName}</div>
                                 </div>
                               ))
                             ) : (
@@ -1391,9 +1308,10 @@ const AccDashboard = () => {
                     </>
                   )}
 
-                 {accsideNav === "Marketplace" && (
-  <AdminMarketplace />
-)}
+                  {/* MARKETPLACE SECTION */}
+                  {accsideNav === "Marketplace" && (
+                    <AdminMarketplace />
+                  )}
 
                   {/* CALENDAR SECTION */}
                   {accsideNav === "Calendar" && (
@@ -1439,14 +1357,11 @@ const AccDashboard = () => {
 
                   {/* PATHS SECTION */}
                   {accsideNav === "Paths" && (
-                    <>
-                      
-                      <MyPathsAdmin
-                        search={search}
-                        admin={true}
-                        fetchAllServicesAgain={fetchAllServicesAgain}
-                      />
-                    </>
+                    <MyPathsAdmin
+                      search={search}
+                      admin={true}
+                      fetchAllServicesAgain={fetchAllServicesAgain}
+                    />
                   )}
 
                   {/* UNIVERSITIES SECTION */}
@@ -1465,21 +1380,27 @@ const AccDashboard = () => {
 
                   {/* STEPS SECTION */}
                   {accsideNav === "Steps" && (
-                    <>
-                      
-                      <MyStepsAdmin
-                        search={search}
-                        admin={true}
-                        fetchAllServicesAgain={fetchAllServicesAgain}
-                        stepDataPage={true}
-                      />
-                    </>
+                    <MyStepsAdmin
+                      search={search}
+                      admin={true}
+                      fetchAllServicesAgain={fetchAllServicesAgain}
+                      stepDataPage={true}
+                    />
                   )}
 
-                  {/* COMING SOON FALLBACK */}
+                  {/* ── COMING SOON FALLBACK ──────────────────────────────────
+                      FIX: Added "Dashboard" to this list so it never shows
+                      "Coming Soon" when the default nav loads on first visit  */}
                   {![
-                    "CRM", "Marketplace", "Calendar", "Wallet",
-                    "Tasks", "Paths", "Universities", "Steps"
+                    "Dashboard",   // ← THIS WAS MISSING — caused "Coming Soon" on load
+                    "CRM",
+                    "Marketplace",
+                    "Calendar",
+                    "Wallet",
+                    "Tasks",
+                    "Paths",
+                    "Universities",
+                    "Steps",
                   ].includes(accsideNav) && (
                     <div
                       style={{
