@@ -11,5 +11,5 @@ router.get("/status", approvalController.getApprovalByEmail);
 
 // UPDATE approval status by id
 router.put("/update/:id", approvalController.updateApproval);
-
+//exports 
 module.exports = router;
