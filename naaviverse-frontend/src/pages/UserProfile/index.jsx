@@ -107,7 +107,7 @@ const UserProfile = () => {
   const [profileDataId, setProfileDataId] = useState();
   const [profileData, setProfileData] = useState({});
   const [isProfileIncomplete, setIsProfileIncomplete] = useState(true);
-const [accountStatusFetched, setAccountStatusFetched] = useState(false);
+  const [accountStatusFetched, setAccountStatusFetched] = useState(false);
 
 
 
@@ -179,18 +179,18 @@ const [accountStatusFetched, setAccountStatusFetched] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
 
 
- const getUserFromStorage = () => {
-  try {
-    const raw = localStorage.getItem("user");
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch (e) {
-    console.error("❌ Invalid user in storage", e);
-    return null;
-  }
-};
+  const getUserFromStorage = () => {
+    try {
+      const raw = localStorage.getItem("user");
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (e) {
+      console.error("❌ Invalid user in storage", e);
+      return null;
+    }
+  };
 
-const userDetails = getUserFromStorage();
+  const userDetails = getUserFromStorage();
 
 
   // upload part starts here
@@ -225,34 +225,34 @@ const userDetails = getUserFromStorage();
   // upload end here
 
   // profile level 2
-const [createLevelTwo, setCreateLevelTwo] = useState(false); // FIXED: uppercase 'L'
-const [createLevelThree, setCreateLevelThree] = useState(false);
-const [levelTwoStep, setLevelTwoStep] = useState(1);
-const [levelTwoFields, setLevelTwoFields] = useState({
-  financialSituation: "",
-  school: "",
-  performance: "",
-  curriculum: "",
-  stream: "",
-  grade: "",
-  linkedin: "",
-});
-const [levelTwoLoading, setLevelTwoLoading] = useState(false);
-const [allLev2Filled, setAllLev2Filled] = useState(false);
+  const [createLevelTwo, setCreateLevelTwo] = useState(false); // FIXED: uppercase 'L'
+  const [createLevelThree, setCreateLevelThree] = useState(false);
+  const [levelTwoStep, setLevelTwoStep] = useState(1);
+  const [levelTwoFields, setLevelTwoFields] = useState({
+    financialSituation: "",
+    school: "",
+    performance: "",
+    curriculum: "",
+    stream: "",
+    grade: "",
+    linkedin: "",
+  });
+  const [levelTwoLoading, setLevelTwoLoading] = useState(false);
+  const [allLev2Filled, setAllLev2Filled] = useState(false);
 
-const areAllLev2KeysFilled = (state) => {
-  for (const key in state) {
-    if (state[key] === "") {
-      setAllLev2Filled(false);
-      return;
+  const areAllLev2KeysFilled = (state) => {
+    for (const key in state) {
+      if (state[key] === "") {
+        setAllLev2Filled(false);
+        return;
+      }
     }
-  }
-  setAllLev2Filled(true);
-};
+    setAllLev2Filled(true);
+  };
 
-useEffect(() => {
-  areAllLev2KeysFilled(levelTwoFields);
-}, [levelTwoFields]);
+  useEffect(() => {
+    areAllLev2KeysFilled(levelTwoFields);
+  }, [levelTwoFields]);
 
 
   const handleCategories = () => {
@@ -392,7 +392,7 @@ useEffect(() => {
 
   // Fetch countries
   useEffect(() => {
-   axios.get(`${BASE_URL}/api/countries`)
+    axios.get(`${BASE_URL}/api/countries`)
       .then((response) => {
         if (!Array.isArray(response.data)) return;
         const sortedCountries = response.data.sort((a, b) =>
@@ -409,7 +409,7 @@ useEffect(() => {
   useEffect(() => {
     axios.get(`${BASE_URL}/api/states`)
       .then((response) => {
-       setStateApiValue(Array.isArray(response.data) ? response.data : []);
+        setStateApiValue(Array.isArray(response.data) ? response.data : []);
       })
       .catch((error) => {
         console.error('Error fetching states:', error);
@@ -420,7 +420,7 @@ useEffect(() => {
   useEffect(() => {
     axios.get(`${BASE_URL}/api/cities`)
       .then((response) => {
-       setCityApiValue(Array.isArray(response.data) ? response.data : []);
+        setCityApiValue(Array.isArray(response.data) ? response.data : []);
       })
       .catch((error) => {
         console.error('Error fetching cities:', error);
@@ -458,21 +458,21 @@ useEffect(() => {
 
 
 
-const handleLogout = () => {
-  console.warn("🔒 User initiated logout");
+  const handleLogout = () => {
+    console.warn("🔒 User initiated logout");
 
-  const keysToClear = [
-    "authToken",
-    "user",
-    "partner",
-    "userType",
-    "userProfilePic",
-  ];
+    const keysToClear = [
+      "authToken",
+      "user",
+      "partner",
+      "userType",
+      "userProfilePic",
+    ];
 
-  keysToClear.forEach((key) => localStorage.removeItem(key));
+    keysToClear.forEach((key) => localStorage.removeItem(key));
 
-  navigate("/login", { replace: true });
-};
+    navigate("/login", { replace: true });
+  };
 
   const fileInputRef = useRef(null);
 
@@ -494,7 +494,7 @@ const handleLogout = () => {
     try {
       // Fetch presigned URL from backend
       console.log("BASE_URL:", BASE_URL);
-     const response = await fetch(`${BASE_URL}/api/upload/get-presigned-url`, {
+      const response = await fetch(`${BASE_URL}/api/upload/get-presigned-url`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -687,10 +687,10 @@ const handleLogout = () => {
     //   });
   };
 
- useEffect(() => {
-  setsideNav("");
-  handleProfileData();
-}, []);
+  useEffect(() => {
+    setsideNav("");
+    handleProfileData();
+  }, []);
 
 
   const myTimeout1 = () => {
@@ -724,53 +724,53 @@ const handleLogout = () => {
   const handleProfileData = async () => {
     const mailId = userDetails?.email;
 
-try {
-  const response = await axios.get(`${BASE_URL}/api/users/get/${mailId}`);
-  const result = response.data;
+    try {
+      const response = await axios.get(`${BASE_URL}/api/users/get/${mailId}`);
+      const result = response.data;
 
-  console.log("API Response:", result);
+      console.log("API Response:", result);
 
-  if (result?.status) {
-    const profile = result?.data;
-    const userLevel = profile?.user_level || 0;
+      if (result?.status) {
+        const profile = result?.data;
+        const userLevel = profile?.user_level || 0;
 
-    // 🔥 SINGLE SOURCE OF TRUTH → user_level
-    if (!profile || userLevel === 0) {
-      // PROFILE NOT STARTED / INCOMPLETE
+        // 🔥 SINGLE SOURCE OF TRUTH → user_level
+        if (!profile || userLevel === 0) {
+          // PROFILE NOT STARTED / INCOMPLETE
+          setIsProfileData(false);
+          setIsProfileIncomplete(true);
+          setCreateBrandProfile(true);
+          setCreateBrandProfileStep(1);
+          setProfileData({});
+          return;
+        }
+
+        // PROFILE EXISTS / COMPLETED
+        setIsProfileIncomplete(false);
+        setCreateBrandProfile(false);
+        setIsProfileData(true);
+        setProfileData(profile);
+        setProfileDataId(profile?._id);
+        setPreviewUrl(profile?.profilePicture || "");
+
+        manageLevelAccess(userLevel);
+      } else {
+        // USER NOT FOUND
+        console.log("User profile not found. Redirecting to create profile.");
+        setIsProfileData(false);
+        setIsProfileIncomplete(true);
+        setCreateBrandProfile(true);
+        setCreateBrandProfileStep(1);
+        setProfileData({});
+      }
+    } catch (err) {
+      console.error("Error fetching profile data:", err);
       setIsProfileData(false);
       setIsProfileIncomplete(true);
       setCreateBrandProfile(true);
       setCreateBrandProfileStep(1);
       setProfileData({});
-      return;
     }
-
-    // PROFILE EXISTS / COMPLETED
-    setIsProfileIncomplete(false);
-    setCreateBrandProfile(false);
-    setIsProfileData(true);
-    setProfileData(profile);
-    setProfileDataId(profile?._id);
-    setPreviewUrl(profile?.profilePicture || "");
-
-    manageLevelAccess(userLevel);
-  } else {
-    // USER NOT FOUND
-    console.log("User profile not found. Redirecting to create profile.");
-    setIsProfileData(false);
-    setIsProfileIncomplete(true);
-    setCreateBrandProfile(true);
-    setCreateBrandProfileStep(1);
-    setProfileData({});
-  }
-} catch (err) {
-  console.error("Error fetching profile data:", err);
-  setIsProfileData(false);
-  setIsProfileIncomplete(true);
-  setCreateBrandProfile(true);
-  setCreateBrandProfileStep(1);
-  setProfileData({});
-}
   }
 
   /**
@@ -792,8 +792,8 @@ try {
   };
 
 
-  const levelOneProfile = async (email) => {
-    if (!fullName || !selectedCountry || !selectState || !city || !postalCode || !profilePicture || !userName || !phoneNo) {
+  const levelOneProfile = async () => {
+    if (!fullName || !selectedCountry || !selectState || !city || !profilePicture || !userName || !phoneNo) {
       alert('Please fill out all fields');
       return;
     }
@@ -804,22 +804,21 @@ try {
       country: selectedCountry,
       state: selectState,
       city,
-      postalCode,
+      postalCode, 
       profilePicture,
       username: userName,
       phoneNumber: `+91${phoneNo}`,
+      userType: "student",
     };
 
     try {
-      const response = await axios.post(`${BASE_URL}/api/users/add`, body)
+      const response = await axios.post(`${BASE_URL}/api/users/add`, body);
       const result = response?.data;
 
       if (result?.status) {
         console.log('Profile created successfully.');
         setIsProfileData(true);
         setCreateBrandProfile(false);
-
-        // Fetch the updated profile data
         await handleProfileData();
       } else {
         console.error('Error creating profile');
@@ -828,43 +827,42 @@ try {
       console.error('Error in levelOneProfile:', error);
     }
   };
-
- useEffect(() => {
-  if (userDetails?.email) {
-    accountantStatus();
-  }
-}, [userDetails?.email]);
-
-
-const accountantStatus = async () => {
-
-  
-  try {
-    const userEmail = userDetails?.email;
-
-    console.log("Fetching account status for:", userEmail);
-
-    const response = await axios.get(
-      `${BASE_URL}/api/users/get/${userEmail}`
-    );
-
-    console.log("Account status response:", response.data);
-
-    const category = response?.data?.data?.category;
-
-    if (category === "marketmakers") {
-      setAccStatus("Private");
-    } else if (category === "accountants") {
-      setAccStatus("Public");
-    } else {
-      setAccStatus("Unknown");
+  useEffect(() => {
+    if (userDetails?.email) {
+      accountantStatus();
     }
-  } catch (error) {
-    console.error("Error fetching account status:", error);
-  }
-};
+  }, [userDetails?.email]);
 
-// ⭐ ADD THIS BELOW THE FUNCTION ⭐
+
+  const accountantStatus = async () => {
+
+
+    try {
+      const userEmail = userDetails?.email;
+
+      console.log("Fetching account status for:", userEmail);
+
+      const response = await axios.get(
+        `${BASE_URL}/api/users/get/${userEmail}`
+      );
+
+      console.log("Account status response:", response.data);
+
+      const category = response?.data?.data?.category;
+
+      if (category === "marketmakers") {
+        setAccStatus("Private");
+      } else if (category === "accountants") {
+        setAccStatus("Public");
+      } else {
+        setAccStatus("Unknown");
+      }
+    } catch (error) {
+      console.error("Error fetching account status:", error);
+    }
+  };
+
+  // ⭐ ADD THIS BELOW THE FUNCTION ⭐
   useEffect(() => {
     if (userDetails?.email) {
       accountantStatus();
@@ -873,15 +871,15 @@ const accountantStatus = async () => {
 
 
 
-const changeStatus = async (value) => {
-  setChanging(true);
+  const changeStatus = async (value) => {
+    setChanging(true);
 
-  console.warn("⚠ changeStatus(): skipped dead teller2 API");
+    console.warn("⚠ changeStatus(): skipped dead teller2 API");
 
-  // Fake success
-  setAccStatus(value === "marketmakers" ? "Private" : "Public");
-  setChanging(false);
-};
+    // Fake success
+    setAccStatus(value === "marketmakers" ? "Private" : "Public");
+    setChanging(false);
+  };
 
 
   const debounce = (fn, delay) => {
@@ -985,15 +983,15 @@ const changeStatus = async (value) => {
     handleProfileData();
   }
 
-const editData = async (field, value) => {
-  setLoading(true);
+  const editData = async (field, value) => {
+    setLoading(true);
 
-  console.warn("⚠ editData(): skipped dead teller2 API");
+    console.warn("⚠ editData(): skipped dead teller2 API");
 
-  // Fallback: update UI only
-  myTimeout();
-  setLoading(false);
-};
+    // Fallback: update UI only
+    myTimeout();
+    setLoading(false);
+  };
 
   const levelTwoProfile = () => {
     if (profileDataId) {
@@ -1002,7 +1000,7 @@ const editData = async (field, value) => {
       setLevelTwoLoading(true);
       axios
         .put(
-           `${BASE_URL}/api/users/update/${profileDataId}`,
+          `${BASE_URL}/api/users/update/${profileDataId}`,
           levelTwoFields
         )
         .then((response) => {
@@ -1029,13 +1027,13 @@ const editData = async (field, value) => {
     navigate("/dashboard/users");
   };
 
-useEffect(() => {
-  console.log("PROFILE DEBUG =>", {
-    isProfileIncomplete,
-    createBrandProfile,
-    createBrandProfileStep,
-  });
-}, [isProfileIncomplete, createBrandProfile]);
+  useEffect(() => {
+    console.log("PROFILE DEBUG =>", {
+      isProfileIncomplete,
+      createBrandProfile,
+      createBrandProfileStep,
+    });
+  }, [isProfileIncomplete, createBrandProfile]);
 
 
   return (
@@ -1046,13 +1044,13 @@ useEffect(() => {
             <Dashsidebar handleChange={handleChange} />
           </div>
           <div
-  className="dashboard-screens"
-  onClick={(e) => {
-    if (e.target.classList.contains("dashboard-screens")) {
-      resetpop();
-    }
-  }}
->
+            className="dashboard-screens"
+            onClick={(e) => {
+              if (e.target.classList.contains("dashboard-screens")) {
+                resetpop();
+              }
+            }}
+          >
 
             <div style={{ height: "100%" }}>
               <MenuNav
@@ -1626,14 +1624,14 @@ useEffect(() => {
                   <>
                     {isProfileIncomplete && (
                       <div
-  className="create-acc"
-  onClick={() => {
-    setIsProfileIncomplete(true);
-    setCreateBrandProfile(true);
-    setCreateBrandProfileStep(1);
-    setShowDrop(false);
-  }}
->
+                        className="create-acc"
+                        onClick={() => {
+                          setIsProfileIncomplete(true);
+                          setCreateBrandProfile(true);
+                          setCreateBrandProfileStep(1);
+                          setShowDrop(false);
+                        }}
+                      >
 
                         <div>Complete Your User Profile</div>
                         <div>
@@ -2127,540 +2125,555 @@ useEffect(() => {
       </>
 
 
-<>
-  {createBrandProfile && (
-    <div className="modalOverlay">
-      <div className={createLevelThree ? "popularS1" : "popularS"}>
+      <>
+        {createBrandProfile && (
+          <div className="modalOverlay">
+            <div className={createLevelThree ? "popularS1" : "popularS"}>
 
-        {createBrandProfileStep === 1 && (
-          <>
-            <div className="head-txt" style={{ height: "4rem" }}>
-              <div>Naavi Profile Level One</div>
+              {createBrandProfileStep === 1 && (
+                <>
+                  <div className="head-txt" style={{ height: "4rem" }}>
+                    <div>Naavi Profile Level One</div>
 
+                    <div
+                      className="close-div"
+                      onClick={() => {
+                        setCreateBrandProfile(false);
+                        setUserName("");
+                        setFullName("");
+                        setProfilePicture("");
+                        setSelectedCountry("");
+                        setSelectState("");
+                        setCity("");
+                        setPostalCode("");
+                      }}
+                    >
+                      <img src={close} alt="" />
+                    </div>
+                  </div>
+
+                  <div
+                    className="overall-div"
+                    style={{ height: "calc(100% - 4rem)" }}
+                  >
+
+                    <div
+                      style={{
+                        marginBottom: "0.5rem",
+                        fontSize: "1rem",
+                        marginTop: "2rem",
+                      }}
+                    >
+                      Upload Profile Picture *
+                    </div>
+
+                    <ImageUploadDivCoverPic
+                      setFunc={setProfilePicture}
+                      funcValue={profilePicture}
+                    />
+
+                    <InputDivsWithMT
+                      heading="What is your full name? *"
+                      placeholderText="Name.."
+                      setFunc={setFullName}
+                      funcValue={fullName}
+                    />
+
+                    <InputDivsWithMT
+                      heading="What is your phone number? *"
+                      placeholderText="+91"
+                      setFunc={setPhoneNo}
+                      funcValue={phoneNo}
+                    />
+                    <InputDivsWithMT
+                      heading="Select a username *"
+                      placeholderText="Username..."
+                      setFunc={setUserName}
+                      funcValue={userName}
+                    />
+
+                    {/* COUNTRY */}
+                    <div style={{ paddingTop: "30px" }}>
+                      What country are you from? *
+                    </div>
+
+                    <div
+                      className={styles.inputDivs}
+                      style={{
+                        border: "1px solid #2c7cb2",
+                        borderRadius: "30px",
+                        paddingLeft: "10px",
+                      }}
+                    >
+                      <select
+                        style={{ border: "none", padding: "1rem", width: "90%" }}
+                        onChange={(e) => setSelectedCountry(e.target.value)}
+                      >
+                        <option value="">Select Country..</option>
+
+                        {countryApiValue?.map((item) => (
+                          <option key={item.cca2} value={item?.name?.common}>
+                            {item?.name?.common}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* STATE */}
+                    <div style={{ paddingTop: "30px" }}>
+                      What state are you from? *
+                    </div>
+
+                    <div
+                      className={styles.inputDivs}
+                      style={{
+                        border: "1px solid #2c7cb2",
+                        borderRadius: "30px",
+                        paddingLeft: "10px",
+                      }}
+                    >
+                      <select
+                        style={{ border: "none", padding: "1rem", width: "90%" }}
+                        onChange={(e) => setSelectState(e.target.value)}
+                        value={selectState}
+                      >
+                        <option value="">Select State..</option>
+
+                        {stateApiValue?.map((item) => (
+                          <option key={item._id || item.name} value={item.name}>
+                            {item.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <InputDivsWithMT
+                      heading="What city are you from?"
+                      placeholderText="City..."
+                      setFunc={setCity}
+                      funcValue={city}
+                    />
+                    <InputDivsWithMT
+                      heading="Postal Code *"
+                      placeholderText="Postal Code..."
+                      setFunc={setPostalCode}
+                      funcValue={postalCode}
+                    />
+
+                    {/* BUTTONS */}
+                    <div className="stepBtns" style={{ marginTop: "3.5rem" }}>
+                      <div
+                        style={{
+                          background: "#1F304F",
+                          width: "48%",
+                        }}
+                        onClick={() => setCreateBrandProfile(false)}
+                      >
+                        Go Back
+                      </div>
+
+                      <div
+                        style={{
+                          opacity:
+                            profilePicture &&
+                              fullName &&
+                              selectedCountry &&
+                              selectState &&
+                              city &&
+                              phoneNo &&
+                              userName
+                              ? "1"
+                              : "0.25",
+                          cursor:
+                            profilePicture &&
+                              fullName &&
+                              selectedCountry &&
+                              selectState &&
+                              city &&
+                              phoneNo &&
+                              userName
+                              ? "pointer"
+                              : "not-allowed",
+                          background: "#59A2DD",
+                          width: "48%",
+                        }}
+                        onClick={() => {
+                          if (
+                            profilePicture &&
+                            fullName &&
+                            selectedCountry &&
+                            selectState &&
+                            city &&
+                            phoneNo &&
+                            userName
+                          ) {
+                            levelOneProfile();
+                          }
+                        }}
+                      >
+                        Next Step
+                      </div>
+                    </div>
+
+                  </div>
+                </>
+              )}
+
+              {createBrandProfileStep === 2 && (
+                <div className="successMsg">
+                  You Have Successfully Created Your Naavi Profile.
+                </div>
+              )}
+
+            </div>
+          </div>
+        )}
+      </>
+
+
+      <>
+        {createLevelTwo && (
+          <div className="popularS">
+            {levelTwoStep === 7 && (
+              <div className="successMsg">
+                You Have Successfully Created Your Naavi Profile Level 2.
+              </div>
+            )}
+            <div className="head-txt">
+              <div>Naavi Profile Level Two</div>
               <div
-                className="close-div"
                 onClick={() => {
-                  setCreateBrandProfile(false);
-                  setUserName("");
-                  setFullName("");
-                  setProfilePicture("");
-                  setSelectedCountry("");
-                  setSelectState("");
-                  setCity("");
-                  setPostalCode("");
+                  setCreateLevelTwo(false);
+                  setLevelTwoFields({
+                    financialSituation: "",
+                    school: "",
+                    performance: "",
+                    curriculum: "",
+                    stream: "",
+                    grade: "",
+                    linkedin: "",
+                  });
                 }}
+                className="close-div"
               >
                 <img src={close} alt="" />
               </div>
             </div>
+            <div className="overall-div">
+              {levelTwoStep === 1 && (
+                <div className="form-content">
+                  {/* Financial Situation - Grid Layout */}
+                  <div className="question-section">
+                    <div className="question-title">
+                      What is your current financial situation? *
+                    </div>
+                    <div className="grid-options">
+                      <div
+                        className="option-btn"
+                        onClick={() => {
+                          setLevelTwoFields((prev) => ({
+                            ...prev,
+                            financialSituation: "0-25Lakhs",
+                          }));
+                        }}
+                        style={{
+                          background:
+                            levelTwoFields?.financialSituation === "0-25Lakhs"
+                              ? "linear-gradient(89deg,#47b4d5,#29449d)"
+                              : "#f5f5f5",
+                          color:
+                            levelTwoFields?.financialSituation === "0-25Lakhs"
+                              ? "white"
+                              : "#333",
+                        }}
+                      >
+                        0-25 Lakhs
+                      </div>
+                      <div
+                        className="option-btn"
+                        onClick={() => {
+                          setLevelTwoFields((prev) => ({
+                            ...prev,
+                            financialSituation: "25-75Lakhs",
+                          }));
+                        }}
+                        style={{
+                          background:
+                            levelTwoFields?.financialSituation === "25-75Lakhs"
+                              ? "linear-gradient(89deg,#47b4d5,#29449d)"
+                              : "#f5f5f5",
+                          color:
+                            levelTwoFields?.financialSituation === "25-75Lakhs"
+                              ? "white"
+                              : "#333",
+                        }}
+                      >
+                        25 Lakhs - 75 Lakhs
+                      </div>
+                      <div
+                        className="option-btn"
+                        onClick={() => {
+                          setLevelTwoFields((prev) => ({
+                            ...prev,
+                            financialSituation: "75Lakhs-3CR",
+                          }));
+                        }}
+                        style={{
+                          background:
+                            levelTwoFields?.financialSituation === "75Lakhs-3CR"
+                              ? "linear-gradient(89deg,#47b4d5,#29449d)"
+                              : "#f5f5f5",
+                          color:
+                            levelTwoFields?.financialSituation === "75Lakhs-3CR"
+                              ? "white"
+                              : "#333",
+                        }}
+                      >
+                        75 Lakhs - 3 CR
+                      </div>
+                      <div
+                        className="option-btn"
+                        onClick={() => {
+                          setLevelTwoFields((prev) => ({
+                            ...prev,
+                            financialSituation: "3CR+",
+                          }));
+                        }}
+                        style={{
+                          background:
+                            levelTwoFields?.financialSituation === "3CR+"
+                              ? "linear-gradient(89deg,#47b4d5,#29449d)"
+                              : "#f5f5f5",
+                          color:
+                            levelTwoFields?.financialSituation === "3CR+" ? "white" : "#333",
+                        }}
+                      >
+                        3 CR+
+                      </div>
+                    </div>
+                  </div>
 
-            <div
-              className="overall-div"
-              style={{ height: "calc(100% - 4rem)" }}
-            >
+                  {/* School and Grade in one row */}
+                  <div className="form-row">
+                    <div className="form-group">
+                      <div className="question-title">
+                        What school do you currently attend? *
+                      </div>
+                      <div className="input-container">
+                        <input
+                          type="text"
+                          placeholder="Enter name.."
+                          value={levelTwoFields?.school}
+                          onChange={(e) => {
+                            setLevelTwoFields((prev) => ({
+                              ...prev,
+                              school: e.target.value,
+                            }));
+                          }}
+                        />
+                      </div>
+                    </div>
 
-              <div
-                style={{
-                  marginBottom: "0.5rem",
-                  fontSize: "1rem",
-                  marginTop: "2rem",
-                }}
-              >
-                Upload Profile Picture *
-              </div>
+                    <div className="form-group">
+                      <div className="question-title">
+                        What grade are you in? *
+                      </div>
+                      <div className="grade-options">
+                        {["9", "10", "11", "12"].map((grade) => (
+                          <div
+                            key={grade}
+                            className="grade-btn"
+                            onClick={() => {
+                              setLevelTwoFields((prev) => ({
+                                ...prev,
+                                grade: grade,
+                              }));
+                            }}
+                            style={{
+                              background:
+                                levelTwoFields?.grade === grade
+                                  ? "linear-gradient(89deg,#47b4d5,#29449d)"
+                                  : "#f5f5f5",
+                              color: levelTwoFields?.grade === grade ? "white" : "#333",
+                            }}
+                          >
+                            {grade}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
 
-              <ImageUploadDivCoverPic
-                setFunc={setProfilePicture}
-                funcValue={profilePicture}
-              />
+                  {/* Grade Point Average */}
+                  <div className="question-section">
+                    <div className="question-title">
+                      What is your current grade point average? *
+                    </div>
+                    <div className="grid-options performance-grid">
+                      {[
+                        "0%-35%",
+                        "36%-60%",
+                        "61%-75%",
+                        "76%-85%",
+                        "86%-95%",
+                        "96%-100%"
+                      ].map((range) => (
+                        <div
+                          key={range}
+                          className="option-btn"
+                          onClick={() => {
+                            setLevelTwoFields((prev) => ({
+                              ...prev,
+                              performance: range,
+                            }));
+                          }}
+                          style={{
+                            background:
+                              levelTwoFields?.performance === range
+                                ? "linear-gradient(89deg,#47b4d5,#29449d)"
+                                : "#f5f5f5",
+                            color: levelTwoFields?.performance === range ? "white" : "#333",
+                          }}
+                        >
+                          {range}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-              <InputDivsWithMT
-                heading="What is your full name? *"
-                placeholderText="Name.."
-                setFunc={setFullName}
-                funcValue={fullName}
-              />
+                  {/* Curriculum */}
+                  <div className="question-section">
+                    <div className="question-title">
+                      What curriculum are you pursuing? *
+                    </div>
+                    <div className="grid-options">
+                      {["IB", "IGCSE", "CBSE", "ICSE", "Nordic"].map((curriculum) => (
+                        <div
+                          key={curriculum}
+                          className="option-btn"
+                          onClick={() => {
+                            setLevelTwoFields((prev) => ({
+                              ...prev,
+                              curriculum: curriculum,
+                            }));
+                          }}
+                          style={{
+                            background:
+                              levelTwoFields?.curriculum === curriculum
+                                ? "linear-gradient(89deg,#47b4d5,#29449d)"
+                                : "#f5f5f5",
+                            color: levelTwoFields?.curriculum === curriculum ? "white" : "#333",
+                          }}
+                        >
+                          {curriculum}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-              <InputDivsWithMT
-                heading="What is your phone number? *"
-                placeholderText="+91"
-                setFunc={setPhoneNo}
-                funcValue={phoneNo}
-              />
+                  {/* Stream */}
+                  <div className="question-section">
+                    <div className="question-title">
+                      What stream are you pursuing? *
+                    </div>
+                    <div className="grid-options">
+                      {["MPC", "BIPC", "CEC", "MEC", "HEC"].map((stream) => (
+                        <div
+                          key={stream}
+                          className="option-btn"
+                          onClick={() => {
+                            setLevelTwoFields((prev) => ({
+                              ...prev,
+                              stream: stream,
+                            }));
+                          }}
+                          style={{
+                            background:
+                              levelTwoFields?.stream === stream
+                                ? "linear-gradient(89deg,#47b4d5,#29449d)"
+                                : "#f5f5f5",
+                            color: levelTwoFields?.stream === stream ? "white" : "#333",
+                          }}
+                        >
+                          {stream}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-              {/* COUNTRY */}
-              <div style={{ paddingTop: "30px" }}>
-                What country are you from? *
-              </div>
+                  {/* LinkedIn - Larger Section with Specific Classes */}
+                  <div className="linkedin-question-section">
+                    <div className="linkedin-question-title">
+                      What is your Linkedin? *
+                    </div>
+                    <div className="linkedin-input-full">
+                      <input
+                        type="text"
+                        placeholder="Enter your LinkedIn profile URL..."
+                        value={levelTwoFields?.linkedin}
+                        onChange={(e) => {
+                          setLevelTwoFields((prev) => ({
+                            ...prev,
+                            linkedin: e.target.value,
+                          }));
+                        }}
+                      />
+                    </div>
+                  </div>
 
-              <div
-                className={styles.inputDivs}
-                style={{
-                  border: "1px solid #2c7cb2",
-                  borderRadius: "30px",
-                  paddingLeft: "10px",
-                }}
-              >
-                <select
-                  style={{ border: "none", padding: "1rem", width: "90%" }}
-                  onChange={(e) => setSelectedCountry(e.target.value)}
-                >
-                  <option value="">Select Country..</option>
-
-                  {countryApiValue?.map((item) => (
-                    <option key={item.cca2} value={item?.name?.common}>
-                      {item?.name?.common}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* STATE */}
-              <div style={{ paddingTop: "30px" }}>
-                What state are you from? *
-              </div>
-
-              <div
-                className={styles.inputDivs}
-                style={{
-                  border: "1px solid #2c7cb2",
-                  borderRadius: "30px",
-                  paddingLeft: "10px",
-                }}
-              >
-                <select
-                  style={{ border: "none", padding: "1rem", width: "90%" }}
-                  onChange={(e) => setSelectState(e.target.value)}
-                  value={selectState}
-                >
-                  <option value="">Select State..</option>
-
-                  {stateApiValue?.map((item) => (
-                    <option key={item._id || item.name} value={item.name}>
-                      {item.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <InputDivsWithMT
-                heading="What city are you from?"
-                placeholderText="City..."
-                setFunc={setCity}
-                funcValue={city}
-              />
-
-              {/* BUTTONS */}
-              <div className="stepBtns" style={{ marginTop: "3.5rem" }}>
-                <div
-                  style={{
-                    background: "#1F304F",
-                    width: "48%",
-                  }}
-                  onClick={() => setCreateBrandProfile(false)}
-                >
-                  Go Back
-                </div>
-
-                <div
-                  style={{
-                    opacity:
-                      profilePicture &&
-                      fullName &&
-                      selectedCountry &&
-                      selectState &&
-                      city &&
-                      phoneNo
-                        ? "1"
-                        : "0.25",
-                    cursor:
-                      profilePicture &&
-                      fullName &&
-                      selectedCountry &&
-                      selectState &&
-                      city &&
-                      phoneNo
-                        ? "pointer"
-                        : "not-allowed",
-                    background: "#59A2DD",
-                    width: "48%",
-                  }}
-                  onClick={() => {
-                    if (
-                      profilePicture &&
-                      fullName &&
-                      selectedCountry &&
-                      selectState &&
-                      city &&
-                      phoneNo
-                    ) {
-                      levelOneProfile();
-                    }
-                  }}
-                >
-                  Next Step
-                </div>
-              </div>
-
-            </div>
-          </>
-        )}
-
-        {createBrandProfileStep === 2 && (
-          <div className="successMsg">
-            You Have Successfully Created Your Naavi Profile.
-          </div>
-        )}
-
-      </div>
-    </div>
-  )}
-</>
- 
-
-<>
-  {createLevelTwo && (
-    <div className="popularS">
-      {levelTwoStep === 7 && (
-        <div className="successMsg">
-          You Have Successfully Created Your Naavi Profile Level 2.
-        </div>
-      )}
-      <div className="head-txt">
-        <div>Naavi Profile Level Two</div>
-        <div
-          onClick={() => {
-            setCreateLevelTwo(false);
-            setLevelTwoFields({
-              financialSituation: "",
-              school: "",
-              performance: "",
-              curriculum: "",
-              stream: "",
-              grade: "",
-              linkedin: "",
-            });
-          }}
-          className="close-div"
-        >
-          <img src={close} alt="" />
-        </div>
-      </div>
-      <div className="overall-div">
-        {levelTwoStep === 1 && (
-          <div className="form-content">
-            {/* Financial Situation - Grid Layout */}
-            <div className="question-section">
-              <div className="question-title">
-                What is your current financial situation? *
-              </div>
-              <div className="grid-options">
-                <div
-                  className="option-btn"
-                  onClick={() => {
-                    setLevelTwoFields((prev) => ({
-                      ...prev,
-                      financialSituation: "0-25Lakhs",
-                    }));
-                  }}
-                  style={{
-                    background:
-                      levelTwoFields?.financialSituation === "0-25Lakhs"
-                        ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                        : "#f5f5f5",
-                    color:
-                      levelTwoFields?.financialSituation === "0-25Lakhs"
-                        ? "white"
-                        : "#333",
-                  }}
-                >
-                  0-25 Lakhs
-                </div>
-                <div
-                  className="option-btn"
-                  onClick={() => {
-                    setLevelTwoFields((prev) => ({
-                      ...prev,
-                      financialSituation: "25-75Lakhs",
-                    }));
-                  }}
-                  style={{
-                    background:
-                      levelTwoFields?.financialSituation === "25-75Lakhs"
-                        ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                        : "#f5f5f5",
-                    color:
-                      levelTwoFields?.financialSituation === "25-75Lakhs"
-                        ? "white"
-                        : "#333",
-                  }}
-                >
-                  25 Lakhs - 75 Lakhs
-                </div>
-                <div
-                  className="option-btn"
-                  onClick={() => {
-                    setLevelTwoFields((prev) => ({
-                      ...prev,
-                      financialSituation: "75Lakhs-3CR",
-                    }));
-                  }}
-                  style={{
-                    background:
-                      levelTwoFields?.financialSituation === "75Lakhs-3CR"
-                        ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                        : "#f5f5f5",
-                    color:
-                      levelTwoFields?.financialSituation === "75Lakhs-3CR"
-                        ? "white"
-                        : "#333",
-                  }}
-                >
-                  75 Lakhs - 3 CR
-                </div>
-                <div
-                  className="option-btn"
-                  onClick={() => {
-                    setLevelTwoFields((prev) => ({
-                      ...prev,
-                      financialSituation: "3CR+",
-                    }));
-                  }}
-                  style={{
-                    background:
-                      levelTwoFields?.financialSituation === "3CR+"
-                        ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                        : "#f5f5f5",
-                    color:
-                      levelTwoFields?.financialSituation === "3CR+" ? "white" : "#333",
-                  }}
-                >
-                  3 CR+
-                </div>
-              </div>
-            </div>
-
-            {/* School and Grade in one row */}
-            <div className="form-row">
-              <div className="form-group">
-                <div className="question-title">
-                  What school do you currently attend? *
-                </div>
-                <div className="input-container">
-                  <input
-                    type="text"
-                    placeholder="Enter name.."
-                    value={levelTwoFields?.school}
-                    onChange={(e) => {
-                      setLevelTwoFields((prev) => ({
-                        ...prev,
-                        school: e.target.value,
-                      }));
-                    }}
-                  />
-                </div>
-              </div>
-              
-              <div className="form-group">
-                <div className="question-title">
-                  What grade are you in? *
-                </div>
-                <div className="grade-options">
-                  {["9", "10", "11", "12"].map((grade) => (
+                  {/* Submit Buttons - Keep your original button structure */}
+                  <div className="stepBtns">
                     <div
-                      key={grade}
-                      className="grade-btn"
-                      onClick={() => {
-                        setLevelTwoFields((prev) => ({
-                          ...prev,
-                          grade: grade,
-                        }));
-                      }}
                       style={{
-                        background:
-                          levelTwoFields?.grade === grade
-                            ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                            : "#f5f5f5",
-                        color: levelTwoFields?.grade === grade ? "white" : "#333",
+                        background: "#1F304F",
+                        width: "48%",
+                        height: "3.5rem",
+                        opacity: "0.5",
+                        cursor: "not-allowed",
                       }}
                     >
-                      {grade}
+                      Go Back
                     </div>
-                  ))}
+                    <div
+                      style={{
+                        height: "3.5rem",
+                        background: "#59A2DD",
+                        width: "48%",
+                        cursor: allLev2Filled ? "pointer" : "not-allowed",
+                        opacity: allLev2Filled ? "1" : "0.5",
+                      }}
+                      onClick={() => {
+                        if (allLev2Filled) {
+                          levelTwoProfile();
+                        }
+                      }}
+                    >
+                      Submit
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              )}
 
-            {/* Grade Point Average */}
-            <div className="question-section">
-              <div className="question-title">
-                What is your current grade point average? *
-              </div>
-              <div className="grid-options performance-grid">
-                {[
-                  "0%-35%",
-                  "36%-60%", 
-                  "61%-75%",
-                  "76%-85%",
-                  "86%-95%",
-                  "96%-100%"
-                ].map((range) => (
-                  <div
-                    key={range}
-                    className="option-btn"
-                    onClick={() => {
-                      setLevelTwoFields((prev) => ({
-                        ...prev,
-                        performance: range,
-                      }));
-                    }}
-                    style={{
-                      background:
-                        levelTwoFields?.performance === range
-                          ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                          : "#f5f5f5",
-                      color: levelTwoFields?.performance === range ? "white" : "#333",
-                    }}
-                  >
-                    {range}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Curriculum */}
-            <div className="question-section">
-              <div className="question-title">
-                What curriculum are you pursuing? *
-              </div>
-              <div className="grid-options">
-                {["IB", "IGCSE", "CBSE", "ICSE", "Nordic"].map((curriculum) => (
-                  <div
-                    key={curriculum}
-                    className="option-btn"
-                    onClick={() => {
-                      setLevelTwoFields((prev) => ({
-                        ...prev,
-                        curriculum: curriculum,
-                      }));
-                    }}
-                    style={{
-                      background:
-                        levelTwoFields?.curriculum === curriculum
-                          ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                          : "#f5f5f5",
-                      color: levelTwoFields?.curriculum === curriculum ? "white" : "#333",
-                    }}
-                  >
-                    {curriculum}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Stream */}
-            <div className="question-section">
-              <div className="question-title">
-                What stream are you pursuing? *
-              </div>
-              <div className="grid-options">
-                {["MPC", "BIPC", "CEC", "MEC", "HEC"].map((stream) => (
-                  <div
-                    key={stream}
-                    className="option-btn"
-                    onClick={() => {
-                      setLevelTwoFields((prev) => ({
-                        ...prev,
-                        stream: stream,
-                      }));
-                    }}
-                    style={{
-                      background:
-                        levelTwoFields?.stream === stream
-                          ? "linear-gradient(89deg,#47b4d5,#29449d)"
-                          : "#f5f5f5",
-                      color: levelTwoFields?.stream === stream ? "white" : "#333",
-                    }}
-                  >
-                    {stream}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* LinkedIn - Larger Section with Specific Classes */}
-<div className="linkedin-question-section">
-  <div className="linkedin-question-title">
-    What is your Linkedin? *
-  </div>
-  <div className="linkedin-input-full">
-    <input
-      type="text"
-      placeholder="Enter your LinkedIn profile URL..."
-      value={levelTwoFields?.linkedin}
-      onChange={(e) => {
-        setLevelTwoFields((prev) => ({
-          ...prev,
-          linkedin: e.target.value,
-        }));
-      }}
-    />
-  </div>
-</div>
-
-            {/* Submit Buttons - Keep your original button structure */}
-            <div className="stepBtns">
-              <div
-                style={{
-                  background: "#1F304F",
-                  width: "48%",
-                  height: "3.5rem",
-                  opacity: "0.5",
-                  cursor: "not-allowed",
-                }}
-              >
-                Go Back
-              </div>
-              <div
-                style={{
-                  height: "3.5rem",
-                  background: "#59A2DD",
-                  width: "48%",
-                  cursor: allLev2Filled ? "pointer" : "not-allowed",
-                  opacity: allLev2Filled ? "1" : "0.5",
-                }}
-                onClick={() => {
-                  if (allLev2Filled) {
-                    levelTwoProfile();
-                  }
-                }}
-              >
-                Submit
-              </div>
+              {levelTwoLoading && (
+                <div className="loading-component">
+                  <LoadingAnimation1 icon={lg1} width={200} />
+                </div>
+              )}
             </div>
           </div>
         )}
+      </>
 
-        {levelTwoLoading && (
-          <div className="loading-component">
-            <LoadingAnimation1 icon={lg1} width={200} />
-          </div>
-        )}
-      </div>
-    </div>
-  )}
-</>
-
-{/* Level Three Section - ADD THIS */}
-{createLevelThree && (
-  <LevelThree
-    profileData={profileData}
-    createLevelThree={createLevelThree}
-    setCreateLevelThree={setCreateLevelThree}
-    handleProfileData={handleProfileData}
-    profileDataId={profileDataId}
-  />
-)}
+      {/* Level Three Section - ADD THIS */}
+      {createLevelThree && (
+        <LevelThree
+          profileData={profileData}
+          createLevelThree={createLevelThree}
+          setCreateLevelThree={setCreateLevelThree}
+          handleProfileData={handleProfileData}
+          profileDataId={profileDataId}
+        />
+      )}
       {editCountry && (
         <div className="popularS">
           <div className="head-txt">
