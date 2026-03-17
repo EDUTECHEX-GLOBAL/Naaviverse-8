@@ -7,6 +7,7 @@ const { getAllUsers, getUserProfilePic } = require("../controllers/authControlle
 
 // User profile CRUD
 router.post("/add", usersController.addUserProfile);
+router.put("/users/update/:profileDataId", usersController.updateUserProfile);
 router.get("/get/:email", usersController.getUserProfile);
 router.put("/update/:profileDataId", usersController.updateLevelTwoProfile);
 router.put("/addPersonality", usersController.addPersonality);

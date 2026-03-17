@@ -10,10 +10,10 @@ const addUserProfile = async (req, res) => {
             let profileUpdated = false;
 
             // Update profile details if not present
-            const fieldsToUpdate = [
-                'name', 'country', 'state', 'city', 
-                'postalCode', 'profilePicture', 
-                'username', 'phoneNumber'
+const fieldsToUpdate = [
+  'name', 'country', 'state', 'city',
+  'postalCode', 'profilePicture',
+  'username', 'phoneNumber', 'userType'
             ];
 
             fieldsToUpdate.forEach(field => {
@@ -58,6 +58,7 @@ const addUserProfile = async (req, res) => {
                 profilePicture: req.body.profilePicture,
                 username: req.body.username,
                 phoneNumber: req.body.phoneNumber,
+                userType: req.body.userType || "student",
                 user_level: 1, // Set user level to 1
                 profileComplete: true, // Mark profile as complete
             });
@@ -79,7 +80,37 @@ const addUserProfile = async (req, res) => {
     }
 };
 
+const updateUserProfile = async (req, res) => {
+  try {
+    const { profileDataId } = req.params;
 
+    const allowedFields = [
+      'name', 'country', 'state', 'city',
+      'postalCode', 'profilePicture', 'username',
+      'phoneNumber', 'userType'
+    ];
+
+    const updateData = {};
+    allowedFields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    });
+
+    const user = await userModel.findByIdAndUpdate(
+      profileDataId,
+      { $set: updateData },
+      { new: true }
+    );
+
+    if (!user) return res.json({ status: false, message: "User not found" });
+
+    return res.json({ status: true, message: "Profile updated", data: user });
+  } catch (err) {
+    console.error("Error in updateUserProfile:", err);
+    return res.status(500).json({ status: false, message: "Update failed" });
+  }
+};
 
 // Controller to fetch user profile details
 const getUserProfile = async (req, res) => {
@@ -232,6 +263,7 @@ const addPersonality = async (req, res) => {
 module.exports = {
     addUserProfile,
     getUserProfile,
+    updateUserProfile,
     updateLevelTwoProfile,
     addPersonality,
 };

@@ -1,266 +1,177 @@
-.level3Section{
-    padding:5vh 5vw; 
-    background:#E5E5E5;
-    border-radius: 15px;
-}
-.allAnswersWrapper{
-    display:flex;
-    justify-content:center; 
-    align-items:center; 
-    gap:4rem;
-    color:#356CBE; 
-    font-size:16px; 
-    font-weight:700;
-    padding-bottom:50px;
-}
-.singleQuestionWrapper{
-    display:flex;
-    justify-content:space-between; 
-    align-items:center;
-    padding-bottom:20px; 
-    font-size:16px; 
-    font-weight:500;
-}
-.answerCircle{
-    width:25px; 
-    height:25px; 
-    border-radius:50%; 
-    border:1px solid #000;
-    background:white; 
-    display:flex;
-    justify-content:center; 
-    align-items:center; 
-    &:hover{
-        background-color: #6FF363;
-        cursor: pointer;
-    }
+/* level3.module.scss — Enhanced */
+
+.level3Section {
+  padding: 24px;
+  background: #F8FAFF;
+  border-radius: 16px;
+  border: 1.5px solid #E8EFF8;
 }
 
-.answerCircleSelected{
-    width:25px; 
-    height:25px; 
-    border-radius:50%; 
-    border:1px solid #000;
-    background-color: #6FF363;
-    display:flex;
-    justify-content:center; 
-    align-items:center; 
+.allAnswersWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+  color: #5CA8E8;
+  font-size: 13px;
+  font-weight: 700;
+  padding-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
 }
 
-.progressText{
-    padding-bottom: 10px;
-}
-.buttons{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.singleQuestionWrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  background: white;
+  border: 1.5px solid #E8EFF8;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1E2D4A;
+  transition: all 0.2s ease;
+  gap: 16px;
+
+  &:hover {
+    border-color: #C8DAEA;
+    box-shadow: 0 2px 12px rgba(44, 90, 160, 0.08);
+  }
 }
 
+.answerCircle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid #C8DAEA;
+  background: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9AABBE;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #DBEEFF;
+    border-color: #5CA8E8;
+    color: #2F6EB5;
+    transform: scale(1.1);
+  }
+}
+
+.answerCircleSelected {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid #3BBFA3;
+  background: linear-gradient(135deg, #3BBFA3, #2A8E78);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(59, 191, 163, 0.35);
+}
+
+.progressText {
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #5A6E8C;
+  padding: 0 4px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 4px;
+    background: #E8EFF8;
+    border-radius: 2px;
+    position: relative;
+  }
+}
+
+.progressBar {
+  flex: 1;
+  height: 6px;
+  background: #E8EFF8;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-left: 10px;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3BBFA3, #5CA8E8);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
 
 .inputDivs {
-    // line-height: 2;
-    font-size: 1rem;
-    // font-weight: 550;
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
+  font-size: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  position: relative;
+  margin-top: 2rem;
+
+  & > .inputHolder {
     position: relative;
-    margin-top: 2rem;
-  
-    // & > .heading {
-    // }
-  
-    & > .inputHolder {
-      position: relative;
-  
-      & > .editIconDiv {
-        border: 0.5px solid #e7e7e7;
-        position: absolute;
-        right: -10px;
-        top: -12px;
-        width: 25px;
-        height: 25px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #ffffff;
-        border-radius: 50%;
-        cursor: pointer;
-      }
-  
-      & > .inputFields {
-        color: #100F0D;
-        font-weight: 550;
-        outline: none;
-        border: 0.5px solid #e5e5e5;
-        border-radius: 10px;
-        padding: 1rem 2rem;
-        width: 100%;
-        transition: all ease 0.4s;
-  
-        &::placeholder {
-          color: rgb(52, 60, 91, 0.75);
-        }
-  
-        &:hover {
-          background-color: #7d7d7d27;
-        }
-      }
-  
-      & > .currencyDiv {
-        position: absolute;
-        top: 50%;
-        right: 1rem;
-        transform: translate(-50%, -50%);
-      }
-  
-      & > .currencyDiv1 {
-        position: absolute;
-        top: 50%;
-        right: -1rem;
-        transform: translate(-50%, -50%);
-        border: 0.5px solid #e5e5e5;
-        width: 12%;
-        height: 70%;
-        border-radius: 5px;
-      }
-  
-      & > .currencyDiv2 {
-        position: absolute;
-        top: 50%;
-        right: -2rem;
-        transform: translate(-50%, -50%);
-        height: 70%;
-        border-radius: 35px;
-        background: #1f304f;
-        color: #ffffff;
-        display: flex;
-        align-items: center;
-        padding: 0 1.5rem;
-        cursor: pointer;
-        font-size: 0.9rem;
-      }
-    }
-  
-    & > .contentBox {
+
+    & > .editIconDiv {
+      border: 0.5px solid #e7e7e7;
+      position: absolute;
+      right: -10px;
+      top: -12px;
+      width: 25px;
+      height: 25px;
       display: flex;
-      // justify-content: space-between;
-      gap: 1rem;
-  
-      & > .valueBox {
-        font-size: 1.3rem;
-        border: 0.5px solid #e5e5e5;
-        border-radius: 10px;
-        padding: 1rem 2rem;
-        width: 90%;
-        font-weight: 600;
-        display: flex;
-        gap: 1rem;
-        transition: all ease 0.4s;
-  
-        // &:hover {
-        //   background-color: #7d7d7d27;
-        // }
-  
-        & > img {
-          height: 2rem;
-          border-radius: 50%;
-        }
-  
-        // & > div {
-        //   width: inherit;
-        // }
-      }
-  
-      & > .dateBox {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-  
-        & > div {
-          width: 31%;
-          border: 0.5px solid #e5e5e5;
-          border-radius: 10px;
-          padding: 1rem 2rem;
-          transition: all ease 0.4s;
-  
-          // &:hover {
-          //   background-color: #7d7d7d27;
-          // }
-        }
-      }
-  
-      & > .imageBox {
-        width: 7rem;
-        height: 7rem;
-  
-        & > img {
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          object-fit: contain;
-          transition: all ease-in 0.4s;
-  
-          // &:hover {
-          //   scale: 1.2;
-          // }
-        }
-      }
-  
-      & > :nth-child(2) {
-        width: 10%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-  
-        & > img {
-          height: 40%;
-          max-height: 1.7rem;
-          object-fit: contain;
-          cursor: pointer;
-          transition: all ease-in 0.4s;
-  
-          &:hover {
-            scale: 1.2;
-          }
-        }
-      }
-  
-      & > .newDataAdd {
-        display: block;
-        border: 0.5px solid #e5e5e5;
-        border-radius: 25px;
-        padding: 1rem 3rem;
-        // min-width: max-content;
-        width: max-content;
-        text-align: center;
-        cursor: pointer;
-        transition: all ease-in 0.4s;
-        // font-weight: 800;
-  
-        &:hover {
-          background: #7d7d7d27;
-        }
-      }
-    }
-  
-    & > .newDataAdd {
-      display: block;
-      border: 0.5px solid #e5e5e5;
-      border-radius: 25px;
-      padding: 1rem 3rem;
-      width: max-content;
-      // width: 50%;
-      text-align: center;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      border-radius: 50%;
       cursor: pointer;
-      transition: all ease-in 0.4s;
-      // font-weight: 800;
-  
+    }
+
+    & > .inputFields {
+      color: #1E2D4A;
+      font-weight: 550;
+      outline: none;
+      border: 1.5px solid #E8EFF8;
+      border-radius: 10px;
+      padding: 1rem 2rem;
+      width: 100%;
+      transition: all ease 0.3s;
+
+      &::placeholder {
+        color: #9AABBE;
+      }
+
       &:hover {
-        background: #7d7d7d27;
+        background-color: #F0F8FF;
+      }
+
+      &:focus {
+        border-color: #5CA8E8;
+        box-shadow: 0 0 0 3px rgba(92, 168, 232, 0.15);
       }
     }
   }
-
-
-
+}
