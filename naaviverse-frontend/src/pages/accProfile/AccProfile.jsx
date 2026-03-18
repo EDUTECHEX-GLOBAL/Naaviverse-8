@@ -17,7 +17,7 @@ import settings from "../../static/images/dashboard/settings.svg";
 import sidearrow from "../../static/images/dashboard/sidearrow.svg";
 import logout from "../../static/images/dashboard/logout.svg";
 import upgif from "../../static/images/dashboard/upgif.gif";
-import lg1 from "../../static/images/login/lg1.svg";
+import lg1 from "../login/favicon3.png";
 import threedot from "../../static/images/dashboard/threedot.svg";
 import { useStore } from "../../components/store/store.ts";
 import { ToastContainer, toast } from "react-toastify";
@@ -1102,8 +1102,8 @@ const AccProfile = () => {
   // ─── JSX ────────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ overflow: "hidden" }}>
-      <div className="dashboard-main">
+    <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <div className="dashboard-main" style={{ flex: 1, display: "flex", minHeight: 0 }}>
         <div className="dashboard-body">
           <div>
             <AccDashsidebar
@@ -1112,7 +1112,7 @@ const AccProfile = () => {
             />
           </div>
           <div className="dashboard-screens" onClick={() => resetpop()} style={{ background: "#F8FAFC" }}>
-            <div style={{ height: "100%" }}>
+            <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", height: "100%" }}>
               <MenuNav
                 showDrop={showDrop}
                 setShowDrop={setShowDrop}
@@ -1128,7 +1128,7 @@ const AccProfile = () => {
 
                 /* ── APPROVED: show full profile ── */
               ) : isProfileData && accStatus === "approved" ? (
-                <div className="profile-modern-container" style={{ maxWidth: "100%", width: "100%", padding: "0 24px", boxSizing: "border-box" }}>
+                <div className="profile-modern-container" style={{ maxWidth: "100%", width: "100%", padding: "0 24px", boxSizing: "border-box", overflowY: "auto", flex: 1, minHeight: 0 }}>
 
                   {/* Cover Banner */}
                   <div style={{ position: "relative", marginBottom: "0" }}>
@@ -1170,7 +1170,7 @@ const AccProfile = () => {
                           e.target.parentNode.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;font-weight:700">${(profileData?.businessName || "P").charAt(0).toUpperCase()}</div>`;
                         }}
                       />
-                     
+
                     </div>
                   </div>
 

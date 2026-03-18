@@ -694,7 +694,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                                 </svg>
                               </button>
                             ) : (
-                              <span className="path-date">📅 {lastUpdated}</span>
+                              <span className="path-date"> {lastUpdated}</span>
                             )}
                           </div>
                         </div>
@@ -732,22 +732,17 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                         {/* Stats Row - Match the image style */}
                         <div className="path-stats-row">
                           <div className="stats-group">
-                            <span className="stat-item">
-                              <strong>{e?.the_ids?.length || 0}</strong> steps
-                            </span>
-                            <span className="stat-item">
-                              <span className="stat-icon">📅</span>
-                              Updated {lastUpdated}
+                            <span className="stat-badge">
+                              {e?.the_ids?.length || 0} Steps
                             </span>
                           </div>
-
                           <button
                             className="view-steps-btn"
                             onClick={(evt) => {
                               evt.stopPropagation();
                               setViewPathEnabled(true);
                               setPathActionEnabled(false);
-                              viewPathById(e?._id);    // ← now e is the map param (the path object)
+                              viewPathById(e?._id);
                             }}
                           >
                             View Steps

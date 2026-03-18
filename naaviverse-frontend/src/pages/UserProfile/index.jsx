@@ -5,7 +5,6 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useStore } from "../../components/store/store.ts";
 import Dashsidebar from "../../components/dashsidebar/dashsidebar";
-import MenuNav from "../../components/MenuNav/index.jsx";
 import { LoadingAnimation1 } from "../../components/LoadingAnimation1";
 import LevelOneModal from "./LevelOneModal";
 import LevelTwoModal from "./LevelTwoModal";
@@ -15,7 +14,6 @@ import "./UserProfile.css";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-// ── Approval overlay icons ───────────────────────────────────────────────────
 const ClockIcon = () => (
   <svg width="52" height="52" viewBox="0 0 24 24" fill="none"
     stroke="#f59e0b" strokeWidth="1.5">
@@ -32,7 +30,6 @@ const XCircleIcon = () => (
   </svg>
 );
 
-// ── localStorage helper ──────────────────────────────────────────────────────
 const updateUserLocalStorage = (status) => {
   try {
     const existing = JSON.parse(localStorage.getItem("user") || "{}");
@@ -40,24 +37,21 @@ const updateUserLocalStorage = (status) => {
   } catch {}
 };
 
-// ── Main Component ───────────────────────────────────────────────────────────
 const UserProfile = () => {
-  const navigate  = useNavigate();
+  const navigate       = useNavigate();
   const { setsideNav } = useStore();
 
-  const [profileData,   setProfileData]   = useState(null);
-  const [isLoading,     setIsLoading]     = useState(true);
-  const [showCreation,  setShowCreation]  = useState(null);
-  const [openBox,       setOpenBox]       = useState(null);
-  const [editingLevel,  setEditingLevel]  = useState(null);
-  const [userDetails,   setUserDetails]   = useState(null);
-  const [profileDataId, setProfileDataId] = useState(null);
-  const [showDrop,      setShowDrop]      = useState(false);
+  const [profileData,    setProfileData]    = useState(null);
+  const [isLoading,      setIsLoading]      = useState(true);
+  const [showCreation,   setShowCreation]   = useState(null);
+  const [openBox,        setOpenBox]        = useState(null);
+  const [editingLevel,   setEditingLevel]   = useState(null);
+  const [userDetails,    setUserDetails]    = useState(null);
+  const [profileDataId,  setProfileDataId]  = useState(null);
 
-  // ── Approval state ───────────────────────────────────────────────────────
-  const [approvalStatus,   setApprovalStatus]   = useState("");
-  const [rejectionReason,  setRejectionReason]  = useState("");
-  const [isLoadingApproval,setIsLoadingApproval]= useState(true);
+  const [approvalStatus,    setApprovalStatus]    = useState("");
+  const [rejectionReason,   setRejectionReason]   = useState("");
+  const [isLoadingApproval, setIsLoadingApproval] = useState(true);
 
   useEffect(() => {
     setsideNav("");
@@ -78,7 +72,6 @@ const UserProfile = () => {
     } catch { return null; }
   };
 
-  // ── Fetch profile + check approval ──────────────────────────────────────
   const fetchProfileData = async () => {
     setIsLoading(true);
     try {
@@ -93,22 +86,17 @@ const UserProfile = () => {
 
         const isComplete =
           data.isProfileCompleted === true ||
-          (data.name &&
-           data.username &&
-           data.phoneNumber &&
-           data.school &&
-           data.personality);
+          (data.name && data.username && data.phoneNumber &&
+           data.school && data.personality);
 
         setShowCreation(!isComplete);
 
-        // ── Only check approval after all 3 levels complete ──────────────
         if (isComplete) {
           await checkApprovalStatus(email, data);
         } else {
           setApprovalStatus("");
           setIsLoadingApproval(false);
         }
-
       } else {
         setProfileData(null);
         setShowCreation(true);
@@ -126,11 +114,9 @@ const UserProfile = () => {
     }
   };
 
-  // ── Approval check ───────────────────────────────────────────────────────
   const checkApprovalStatus = async (email, profile) => {
     setIsLoadingApproval(true);
     try {
-      // Check cache first
       const cached = getUserFromStorage()?.approvalStatus;
       if (cached === "approved") {
         setApprovalStatus("approved");
@@ -139,37 +125,31 @@ const UserProfile = () => {
         return;
       }
 
-      // Live check
-      const res = await axios.get(
+      const res        = await axios.get(
         `${BASE_URL}/api/approvals/status?email=${email}&role=User`
       );
       const liveStatus = res.data?.data?.status;
       const reason     = res.data?.data?.reason
-                      || res.data?.data?.rejectionReason
-                      || "";
+                      || res.data?.data?.rejectionReason || "";
 
       if (liveStatus === "approved") {
         setApprovalStatus("approved");
         updateUserLocalStorage("approved");
-
       } else if (liveStatus === "rejected") {
         setRejectionReason(reason);
         setApprovalStatus("rejected");
         updateUserLocalStorage("rejected");
-
       } else if (liveStatus === "pending") {
         setApprovalStatus("pending");
         updateUserLocalStorage("pending");
-
       } else {
-        // No record yet — auto-create
         try {
           await axios.post(`${BASE_URL}/api/approvals/create`, {
             role:         "User",
-            email:        email,
-            businessName: profile.name || "",
-            firstName:    profile.name || "",
-            country:      profile.country || "",
+            email,
+            businessName: profile.name     || "",
+            firstName:    profile.name     || "",
+            country:      profile.country  || "",
             type:         profile.userType || "Student",
           });
         } catch (e) {
@@ -178,7 +158,6 @@ const UserProfile = () => {
         setApprovalStatus("pending");
         updateUserLocalStorage("pending");
       }
-
     } catch (err) {
       console.warn("Approval API error:", err?.message);
       setApprovalStatus("pending");
@@ -208,13 +187,12 @@ const UserProfile = () => {
     return (
       <div className="dashboard-main">
         <div className="dashboard-body">
-          <Dashsidebar approvalStatus={approvalStatus} />
+          {/* ✅ isProfileIncomplete=true locks sidebar during loading */}
+          <Dashsidebar
+            approvalStatus={approvalStatus}
+            isProfileIncomplete={true}
+          />
           <div className="dashboard-screens">
-            <MenuNav
-              showDrop={showDrop}
-              setShowDrop={setShowDrop}
-              searchPlaceholder="Search..."
-            />
             <div className="up-loading-container">
               <LoadingAnimation1 icon={lg1} width={200} />
             </div>
@@ -229,13 +207,12 @@ const UserProfile = () => {
     return (
       <div className="dashboard-main">
         <div className="dashboard-body">
-          <Dashsidebar approvalStatus={approvalStatus} />
+          {/* ✅ isProfileIncomplete=true — sidebar locked, user must complete profile */}
+          <Dashsidebar
+            approvalStatus={approvalStatus}
+            isProfileIncomplete={true}
+          />
           <div className="dashboard-screens">
-            <MenuNav
-              showDrop={showDrop}
-              setShowDrop={setShowDrop}
-              searchPlaceholder="Search..."
-            />
             <ProfileCreationFlow
               userDetails={userDetails}
               existingProfileId={profileDataId}
@@ -247,67 +224,44 @@ const UserProfile = () => {
     );
   }
 
-  // ── Approval overlay (pending or rejected) ───────────────────────────────
+  // ── Approval overlay ─────────────────────────────────────────────────────
   const ApprovalOverlay = () => (
     <div style={{
-      position:        "fixed",
-      top: 0, left: 0, right: 0, bottom: 0,
-      background:      "rgba(248, 250, 252, 0.97)",
-      zIndex:          9999,
-      display:         "flex",
-      alignItems:      "center",
-      justifyContent:  "center",
-      backdropFilter:  "blur(10px)",
-      WebkitBackdropFilter: "blur(10px)",
+      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+      background: "rgba(248,250,252,0.97)", zIndex: 9999,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)",
     }}>
       <div style={{
-        background:    "#ffffff",
-        borderRadius:  "24px",
-        padding:       "52px 56px",
-        maxWidth:      "500px",
-        width:         "88%",
-        textAlign:     "center",
-        boxShadow:     "0 24px 64px rgba(0,0,0,0.10), 0 4px 16px rgba(0,0,0,0.06)",
-        border:        approvalStatus === "rejected"
-                         ? "1.5px solid #fecaca"
-                         : "1.5px solid #fde68a",
+        background: "#fff", borderRadius: "24px", padding: "52px 56px",
+        maxWidth: "500px", width: "88%", textAlign: "center",
+        boxShadow: "0 24px 64px rgba(0,0,0,0.10), 0 4px 16px rgba(0,0,0,0.06)",
+        border: approvalStatus === "rejected"
+          ? "1.5px solid #fecaca"
+          : "1.5px solid #fde68a",
       }}>
-
-        {/* Icon */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "22px" }}>
           {approvalStatus === "rejected" ? <XCircleIcon /> : <ClockIcon />}
         </div>
-
-        {/* Title */}
         <div style={{
-          fontSize:      "22px",
-          fontWeight:    "700",
-          color:         approvalStatus === "rejected" ? "#991b1b" : "#92400e",
-          marginBottom:  "14px",
-          letterSpacing: "-0.3px",
+          fontSize: "22px", fontWeight: "700",
+          marginBottom: "14px", letterSpacing: "-0.3px",
+          color: approvalStatus === "rejected" ? "#991b1b" : "#92400e",
         }}>
           {approvalStatus === "rejected"
             ? "Application Not Approved"
             : "Profile Under Review"}
         </div>
-
-        {/* Divider */}
         <div style={{
-          width:      "48px",
-          height:     "3px",
-          borderRadius: "4px",
-          margin:     "0 auto 20px",
+          width: "48px", height: "3px", borderRadius: "4px",
+          margin: "0 auto 20px",
           background: approvalStatus === "rejected"
-            ? "linear-gradient(90deg, #f87171, #ef4444)"
-            : "linear-gradient(90deg, #fbbf24, #f59e0b)",
+            ? "linear-gradient(90deg,#f87171,#ef4444)"
+            : "linear-gradient(90deg,#fbbf24,#f59e0b)",
         }} />
-
-        {/* Message */}
         <div style={{
-          fontSize:     "15px",
-          color:        approvalStatus === "rejected" ? "#b91c1c" : "#b45309",
-          lineHeight:   "1.75",
-          marginBottom: "30px",
+          fontSize: "15px", lineHeight: "1.75", marginBottom: "30px",
+          color: approvalStatus === "rejected" ? "#b91c1c" : "#b45309",
         }}>
           {approvalStatus === "rejected"
             ? (rejectionReason
@@ -315,27 +269,18 @@ const UserProfile = () => {
                 : "Your application was not approved. Please contact support.")
             : "Your profile has been submitted and is awaiting admin approval. This usually takes 1–2 business days."}
         </div>
-
-        {/* Status badge */}
         <div style={{
-          display:       "inline-flex",
-          alignItems:    "center",
-          gap:           "6px",
-          padding:       "8px 22px",
-          borderRadius:  "30px",
-          fontSize:      "13px",
-          fontWeight:    "600",
-          background:    approvalStatus === "rejected" ? "#fef2f2" : "#fffbeb",
-          color:         approvalStatus === "rejected" ? "#991b1b" : "#92400e",
-          border:        approvalStatus === "rejected"
-                           ? "1px solid #fecaca"
-                           : "1px solid #fde68a",
-          marginBottom:  "24px",
+          display: "inline-flex", alignItems: "center", gap: "6px",
+          padding: "8px 22px", borderRadius: "30px",
+          fontSize: "13px", fontWeight: "600", marginBottom: "24px",
+          background: approvalStatus === "rejected" ? "#fef2f2" : "#fffbeb",
+          color:      approvalStatus === "rejected" ? "#991b1b" : "#92400e",
+          border:     approvalStatus === "rejected"
+            ? "1px solid #fecaca"
+            : "1px solid #fde68a",
         }}>
           {approvalStatus === "rejected" ? "Not Approved" : "Pending Approval"}
         </div>
-
-        {/* Support */}
         <div style={{ fontSize: "13px", color: "#9ca3af" }}>
           Need help?{" "}
           <a href="mailto:support@naavi.com"
@@ -343,7 +288,6 @@ const UserProfile = () => {
             support@naavi.com
           </a>
         </div>
-
       </div>
     </div>
   );
@@ -352,15 +296,14 @@ const UserProfile = () => {
   return (
     <div className="dashboard-main">
       <div className="dashboard-body">
-        <Dashsidebar approvalStatus={approvalStatus} />
+        {/* ✅ isProfileIncomplete=false — profile done, approval status controls locking */}
+        <Dashsidebar
+          approvalStatus={approvalStatus}
+          isProfileIncomplete={false}
+        />
         <div className="dashboard-screens">
-          <MenuNav
-            showDrop={showDrop}
-            setShowDrop={setShowDrop}
-            searchPlaceholder="Search..."
-          />
 
-          {/* ✅ Approval overlay — sits on top when pending or rejected */}
+          {/* ✅ Approval overlay — blurs content when pending or rejected */}
           {(approvalStatus === "pending" || approvalStatus === "rejected") && (
             <ApprovalOverlay />
           )}
@@ -368,7 +311,9 @@ const UserProfile = () => {
           <div className="up-profile-container">
             <div className="up-page-header">
               <h1 className="up-page-title">My Profile</h1>
-              <p className="up-page-sub">Your Naavi journey profile — all levels completed</p>
+              <p className="up-page-sub">
+                Your Naavi journey profile — all levels completed
+              </p>
             </div>
 
             <div className="up-cards-stack">
@@ -388,17 +333,13 @@ const UserProfile = () => {
                     <span className={`up-chevron ${openBox === 1 ? "up-chevron--up" : ""}`}>›</span>
                   </div>
                 </div>
-
                 {openBox === 1 && (
                   <div className="up-card-body">
                     {editingLevel === 1 ? (
-                      <LevelOneModal
-                        inline
-                        userDetails={userDetails}
+                      <LevelOneModal inline userDetails={userDetails}
                         existingData={profileData}
                         onClose={() => setEditingLevel(null)}
-                        onComplete={handleLevelSaved}
-                      />
+                        onComplete={handleLevelSaved} />
                     ) : (
                       <>
                         <div className="up-info-grid">
@@ -412,15 +353,15 @@ const UserProfile = () => {
                               </div>
                             )}
                           </InfoItem>
-                          <InfoItem label="Full Name"    value={profileData.name} />
-                          <InfoItem label="Email"        value={profileData.email} />
-                          <InfoItem label="Username"     value={profileData.username} />
-                          <InfoItem label="User Type"    value={profileData.userType} />
-                          <InfoItem label="Phone"        value={profileData.phoneNumber} />
-                          <InfoItem label="Country"      value={profileData.country} />
-                          <InfoItem label="State"        value={profileData.state} />
-                          <InfoItem label="City"         value={profileData.city} />
-                          <InfoItem label="Postal Code"  value={profileData.postalCode} />
+                          <InfoItem label="Full Name"   value={profileData.name} />
+                          <InfoItem label="Email"       value={profileData.email} />
+                          <InfoItem label="Username"    value={profileData.username} />
+                          <InfoItem label="User Type"   value={profileData.userType} />
+                          <InfoItem label="Phone"       value={profileData.phoneNumber} />
+                          <InfoItem label="Country"     value={profileData.country} />
+                          <InfoItem label="State"       value={profileData.state} />
+                          <InfoItem label="City"        value={profileData.city} />
+                          <InfoItem label="Postal Code" value={profileData.postalCode} />
                         </div>
                         <button className="up-edit-btn"
                           onClick={() => setEditingLevel(1)}>
@@ -447,27 +388,23 @@ const UserProfile = () => {
                     <span className={`up-chevron ${openBox === 2 ? "up-chevron--up" : ""}`}>›</span>
                   </div>
                 </div>
-
                 {openBox === 2 && (
                   <div className="up-card-body">
                     {editingLevel === 2 ? (
-                      <LevelTwoModal
-                        inline
-                        profileDataId={profileDataId}
+                      <LevelTwoModal inline profileDataId={profileDataId}
                         existingData={profileData}
                         onClose={() => setEditingLevel(null)}
-                        onComplete={handleLevelSaved}
-                      />
+                        onComplete={handleLevelSaved} />
                     ) : (
                       <>
                         <div className="up-info-grid">
-                          <InfoItem label="School"             value={profileData.school} />
-                          <InfoItem label="Grade"              value={profileData.grade} />
-                          <InfoItem label="Curriculum"         value={profileData.curriculum} />
-                          <InfoItem label="Stream"             value={profileData.stream} />
-                          <InfoItem label="Performance"        value={profileData.performance} />
+                          <InfoItem label="School"              value={profileData.school} />
+                          <InfoItem label="Grade"               value={profileData.grade} />
+                          <InfoItem label="Curriculum"          value={profileData.curriculum} />
+                          <InfoItem label="Stream"              value={profileData.stream} />
+                          <InfoItem label="Performance"         value={profileData.performance} />
                           <InfoItem label="Financial Situation" value={profileData.financialSituation} />
-                          <InfoItem label="LinkedIn"           value={profileData.linkedin} fullWidth />
+                          <InfoItem label="LinkedIn"            value={profileData.linkedin} fullWidth />
                         </div>
                         <button className="up-edit-btn up-edit-btn--2"
                           onClick={() => setEditingLevel(2)}>
@@ -494,17 +431,13 @@ const UserProfile = () => {
                     <span className={`up-chevron ${openBox === 3 ? "up-chevron--up" : ""}`}>›</span>
                   </div>
                 </div>
-
                 {openBox === 3 && (
                   <div className="up-card-body">
                     {editingLevel === 3 ? (
-                      <LevelThreeModal
-                        inline
-                        profileDataId={profileDataId}
+                      <LevelThreeModal inline profileDataId={profileDataId}
                         existingData={profileData}
                         onClose={() => setEditingLevel(null)}
-                        onComplete={handleLevelSaved}
-                      />
+                        onComplete={handleLevelSaved} />
                     ) : (
                       <>
                         <div className="up-info-grid">
@@ -530,27 +463,23 @@ const UserProfile = () => {
   );
 };
 
-/* ── Info Item ───────────────────────────────────────────────────────────── */
+// ── Info Item ────────────────────────────────────────────────────────────────
 const InfoItem = ({ label, value, children, fullWidth }) => (
   <div className={`up-info-item ${fullWidth ? "up-info-item--full" : ""}`}>
     <span className="up-info-label">{label}</span>
-    {children ? (
-      <div className="up-info-value">{children}</div>
-    ) : (
-      <span className="up-info-value">{value && value !== "" ? value : "—"}</span>
-    )}
+    {children
+      ? <div className="up-info-value">{children}</div>
+      : <span className="up-info-value">{value && value !== "" ? value : "—"}</span>
+    }
   </div>
 );
 
-/* ── Profile Creation Flow ───────────────────────────────────────────────── */
+// ── Profile Creation Flow ────────────────────────────────────────────────────
 const ProfileCreationFlow = ({ userDetails, existingProfileId, onComplete }) => {
-  const [step,          setStep]         = useState(1);
-  const [profileDataId, setProfileDataId]= useState(existingProfileId || null);
+  const [step,          setStep]          = useState(1);
+  const [profileDataId, setProfileDataId] = useState(existingProfileId || null);
 
-  const handleLevel1Done = (id) => {
-    if (id) setProfileDataId(id);
-    setStep(2);
-  };
+  const handleLevel1Done = (id) => { if (id) setProfileDataId(id); setStep(2); };
   const handleLevel2Done = () => setStep(3);
   const handleLevel3Done = async () => { await onComplete(); };
 
@@ -559,7 +488,6 @@ const ProfileCreationFlow = ({ userDetails, existingProfileId, onComplete }) => 
   return (
     <div className="up-creation-page">
       <div className="up-creation-modal">
-
         <div className="up-creation-header">
           <div className="up-creation-logo-row">
             <span className="up-creation-brand">Complete Your Naavi Profile</span>
@@ -589,35 +517,28 @@ const ProfileCreationFlow = ({ userDetails, existingProfileId, onComplete }) => 
 
         <div className="up-creation-body">
           {step === 1 && (
-            <LevelOneModal
-              inline creation
+            <LevelOneModal inline creation
               userDetails={userDetails}
               existingData={null}
               existingDocId={profileDataId}
               onClose={null}
-              onComplete={handleLevel1Done}
-            />
+              onComplete={handleLevel1Done} />
           )}
           {step === 2 && (
-            <LevelTwoModal
-              inline creation
+            <LevelTwoModal inline creation
               profileDataId={profileDataId}
               existingData={null}
               onClose={null}
-              onComplete={handleLevel2Done}
-            />
+              onComplete={handleLevel2Done} />
           )}
           {step === 3 && (
-            <LevelThreeModal
-              inline creation
+            <LevelThreeModal inline creation
               profileDataId={profileDataId}
               existingData={null}
               onClose={null}
-              onComplete={handleLevel3Done}
-            />
+              onComplete={handleLevel3Done} />
           )}
         </div>
-
       </div>
     </div>
   );

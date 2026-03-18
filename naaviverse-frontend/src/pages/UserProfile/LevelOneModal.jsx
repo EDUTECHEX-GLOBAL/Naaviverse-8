@@ -4,17 +4,6 @@ import { toast } from "react-toastify";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-/**
- * LevelOneModal — Step 1 of profile creation / edit
- *
- * BACKEND FIX APPLIED:
- * POST /api/users/add now uses findOneAndUpdate({email}) with $set.
- * This means it NEVER creates a new doc, NEVER touches the password field.
- * So we can safely call POST /api/users/add for both creation and edit
- * by just sending email + the fields to update.
- *
- * For edit mode (existingData present) we use PUT /api/users/update/:id.
- */
 const LevelOneModal = ({
   inline = false,
   creation = false,
@@ -24,9 +13,9 @@ const LevelOneModal = ({
   onClose,
   onComplete,
 }) => {
-  const [loading,           setLoading]           = useState(false);
-  const [uploading,         setUploading]         = useState(false);
-  const [previewUrl,        setPreviewUrl]        = useState(existingData?.profilePicture || "");
+  const [loading,          setLoading]          = useState(false);
+  const [uploading,        setUploading]        = useState(false);
+  const [previewUrl,       setPreviewUrl]       = useState(existingData?.profilePicture || "");
 
   const [formData, setFormData] = useState({
     name:           existingData?.name           || "",
@@ -41,10 +30,10 @@ const LevelOneModal = ({
     userType:       existingData?.userType       || "student",
   });
 
-  const [countries,         setCountries]         = useState([]);
-  const [states,            setStates]            = useState([]);
-  const [userNameAvailable, setUserNameAvailable] = useState(null);
-  const [checkingUsername,  setCheckingUsername]  = useState(false);
+  const [countries,        setCountries]        = useState([]);
+  const [states,           setStates]           = useState([]);
+  const [userNameAvailable,setUserNameAvailable]= useState(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
 
   useEffect(() => {
     axios.get(`${BASE_URL}/api/countries`)
@@ -109,11 +98,12 @@ const LevelOneModal = ({
         body: file,
       });
 
-      const fileUrl = data.fileUrl || `https://thenaaviversebucket.s3.amazonaws.com/${file.name}`;
+      const fileUrl = data.fileUrl
+        || `https://thenaaviversebucket.s3.amazonaws.com/${file.name}`;
+
       setFormData((p) => ({ ...p, profilePicture: fileUrl }));
       toast.success("Image uploaded");
     } catch (err) {
-      // S3 CORS is a server-config issue — picture is optional, don't block form
       console.warn("Image upload skipped (optional):", err.message);
       toast.warn("Image upload skipped — you can add a picture later");
       setFormData((p) => ({ ...p, profilePicture: "" }));
@@ -137,7 +127,7 @@ const LevelOneModal = ({
     formData.postalCode &&
     userNameAvailable !== false;
 
-  // ── Submit ────────────────────────────────────────────────────────────────
+  // ── Submit ─────────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -156,7 +146,7 @@ const LevelOneModal = ({
     setLoading(true);
     try {
       const email = userDetails?.email || formData.email;
-      const body = {
+      const body  = {
         ...formData,
         email,
         phoneNumber: formData.phoneNumber.startsWith("+")
@@ -166,19 +156,35 @@ const LevelOneModal = ({
 
       let response;
 
-      // Edit mode — use PUT /api/users/update/:id
       const editId = existingData?._id || existingDocId;
       if (editId && !creation) {
+        // Edit mode
         response = await axios.put(`${BASE_URL}/api/users/update/${editId}`, body);
       } else {
-        // Creation mode — POST /api/users/add
-        // BACKEND IS NOW FIXED: uses findOneAndUpdate({email}) with $set
-        // so it NEVER creates a new doc and NEVER touches the password field
+        // Creation mode
         response = await axios.post(`${BASE_URL}/api/users/add`, body);
       }
 
       if (response.data?.status) {
         const savedId = response.data?.data?._id || editId;
+
+        // ✅ Save profile pic + name to localStorage
+        // so sidebar shows correct pic and name immediately
+        if (formData.profilePicture) {
+          localStorage.setItem("userProfilePic", formData.profilePicture);
+        }
+
+        // ✅ Also update the name in localStorage user object
+        // so sidebar shows first name correctly without re-login
+        try {
+          const raw     = localStorage.getItem("user");
+          const parsed  = raw ? JSON.parse(raw) : {};
+          const updated = {
+            ...(parsed?.user ? { ...parsed, user: { ...parsed.user, name: formData.name } } : { ...parsed, name: formData.name }),
+          };
+          localStorage.setItem("user", JSON.stringify(updated));
+        } catch {}
+
         if (typeof onComplete === "function") onComplete(savedId);
       } else {
         toast.error(response.data?.message || "Failed to save profile");
@@ -203,7 +209,7 @@ const LevelOneModal = ({
             : "Update your personal & contact details."}
         </div>
 
-        {/* Profile Picture — optional */}
+        {/* Profile Picture */}
         <div className="up-form-group">
           <label className="up-form-label">Profile Picture (optional)</label>
           <div className="up-pic-wrap">

@@ -20,7 +20,7 @@ import settings from "../../static/images/dashboard/settings.svg";
 import sidearrow from "../../static/images/dashboard/sidearrow.svg";
 import logout from "../../static/images/dashboard/logout.svg";
 import upgif from "../../static/images/dashboard/upgif.gif";
-import lg1 from "../../static/images/login/lg1.svg";
+import lg1 from "../login/favicon3.png";
 import threedot from "../../static/images/dashboard/threedot.svg";
 import close from "../../images/close.svg";
 import upload from "../../images/upload.svg";
@@ -1703,16 +1703,16 @@ const AccDashboard = () => {
   };
 
   return (
-    <div style={{ height: "100vh", overflow: "hidden" }}>
-      <div className="dashboard-main">
+    <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <div className="dashboard-main" style={{ flex: 1, display: "flex", minHeight: 0 }}>
         <div className="dashboard-body">
           <div onClick={() => setShowDrop(false)} style={{ display: "contents" }}>
             <AccDashsidebar
               accStatus={JSON.parse(localStorage.getItem("partner") || "{}")?.approvalStatus}
             />
           </div>
-          <div className="dashboard-screens"> {/* ← Content area */}
-            <div style={{ height: "100%" }}>
+          <div className="dashboard-screens"> 
+           <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", height: "100%" }}>
               {viewPathMode ? (
                 createStepForPathId ? (
                   // FULL CONTENT: Create Step view
@@ -2445,7 +2445,8 @@ const AccDashboard = () => {
                     style={{
                       height: "calc(100% - 70px)",
                       overflowY: "auto",
-                      display: "block"
+                      display: "block",
+                      paddingBottom: "60px"
                     }}
                   >
                     {/* Role Filter Tabs
@@ -2643,7 +2644,7 @@ const AccDashboard = () => {
                   />
                   <div
                     className="services-main"
-                    style={{ height: "calc(100% - 70px)", overflowY: "auto", display: "block" }}
+                    style={{ height: "calc(100% - 70px)", overflowY: "auto", display: "block", paddingBottom: "60px" }}
                     onClick={() => setShowDrop(false)}
                   >
                     <MyPaths search={search} fetchAllServicesAgain={fetchAllServicesAgain} />

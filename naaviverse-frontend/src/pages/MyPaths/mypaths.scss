@@ -73,7 +73,7 @@
       background: white;
       border-radius: 16px;
       border: 1px solid #e6edf4;
-      padding: 1.2rem 1.2rem 0.8rem 1.2rem;
+     padding: 1rem 1.2rem 0.75rem 1.2rem; 
       box-shadow: 0 3px 8px rgba(13, 107, 110, 0.05);
       transition: all 0.15s ease;
       cursor: pointer;
@@ -118,9 +118,9 @@
       // Description
       .path-description {
         color: #2d3e4f;
-        font-size: 0.95rem;
+        font-size: 0.88rem; 
         line-height: 1.5;
-        margin-bottom: 1rem;
+        margin-bottom: 0.6rem;
         word-break: break-word;
         font-weight: 400;
 
@@ -143,13 +143,30 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding-top: 0.75rem;
+        padding-top: 0.6rem; 
         border-top: 1px solid #edf2f7;
 
-        .stats-group {
-          display: flex;
-          align-items: center;
-          gap: 1.5rem;
+.stats-group {
+  .stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: #e6f3f4;
+    color: #0d6b6e;
+    font-size: 0.78rem;      // ← shrink from default large size
+    font-weight: 600;
+    padding: 0.25rem 0.9rem;
+    border-radius: 20px;
+    border: 1px solid #b2dfe0;
+    line-height: 1;
+
+    &::before {
+      content: '◈';           // ← small decorative icon
+      font-size: 0.7rem;
+      opacity: 0.7;
+    }
+  }
+
 
           .stat-item {
             display: flex;

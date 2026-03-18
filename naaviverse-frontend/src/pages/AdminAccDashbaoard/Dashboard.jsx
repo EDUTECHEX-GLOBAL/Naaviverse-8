@@ -12,10 +12,7 @@ function PortalDropdown({ anchorRef, isOpen, onClose, children }) {
   useEffect(() => {
     if (isOpen && anchorRef.current) {
       const rect = anchorRef.current.getBoundingClientRect();
-      setPos({
-        top:  rect.bottom + 6,
-        left: rect.right,
-      });
+      setPos({ top: rect.bottom + 6, left: rect.right });
     } else {
       setPos(null);
     }
@@ -27,21 +24,17 @@ function PortalDropdown({ anchorRef, isOpen, onClose, children }) {
     <>
       <div
         onClick={onClose}
-        style={{
-          position: "fixed",
-          top: 0, left: 0, right: 0, bottom: 0,
-          zIndex: 99998,
-        }}
+        style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }}
       />
       <div
         className="role-dropdown-menu"
         style={{
-          position:  "fixed",
-          top:       pos.top,
-          left:      pos.left,
+          position: "fixed",
+          top: pos.top,
+          left: pos.left,
           transform: "translateX(-100%)",
-          zIndex:    99999,
-          minWidth:  "210px",
+          zIndex: 99999,
+          minWidth: "210px",
         }}
       >
         {children}
@@ -59,13 +52,17 @@ export default function Dashboard() {
   const [roleView, setRoleView]                 = useState("partner");
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
 
-  const [partnerData, setPartnerData] = useState([]);
-  const [userData, setUserData]       = useState([]);
-  const [loadingData, setLoadingData] = useState(false);
+  const [partnerData, setPartnerData]           = useState([]);
+  const [userData, setUserData]                 = useState([]);
+  const [loadingData, setLoadingData]           = useState(false);
+
+  // ── NEW: full user profile state ─────────────────────────────────────────
+  const [fullUserData, setFullUserData]         = useState(null);
+  const [loadingUserDetail, setLoadingUserDetail] = useState(false);
 
   const dropdownRef = useRef(null);
 
-  // ── Fetch helper ─────────────────────────────────────────────────────────
+  // ── Fetch approvals ───────────────────────────────────────────────────────
   const fetchApprovals = (role, setter) => {
     setLoadingData(true);
     axios
@@ -82,6 +79,27 @@ export default function Dashboard() {
       fetchApprovals("User", setUserData);
     }
   }, [roleView]);
+
+  // ── NEW: fetch full user profile when a User row is selected ─────────────
+  useEffect(() => {
+    if (!selected) {
+      setFullUserData(null);
+      return;
+    }
+    if (selected.role?.toLowerCase() !== "user") {
+      setFullUserData(null);
+      return;
+    }
+
+    setLoadingUserDetail(true);
+    axios
+      .get(`${BASE_URL}/api/users/get/${selected.email}`)
+      .then(res => {
+        if (res.data?.status) setFullUserData(res.data.data);
+      })
+      .catch(err => console.log("Error fetching full user data:", err))
+      .finally(() => setLoadingUserDetail(false));
+  }, [selected]);
 
   // ── Active data ───────────────────────────────────────────────────────────
   const activeData    = roleView === "partner" ? partnerData : userData;
@@ -154,10 +172,11 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="details-section-title">Profile Details</div>
-          <div className="details-grid">
-            {isPartner ? (
-              <>
+          {/* ── PARTNER DETAILS ─────────────────────────────────────────── */}
+          {isPartner ? (
+            <>
+              <div className="details-section-title">Profile Details</div>
+              <div className="details-grid">
                 <DetailItem label="Business Name" value={selected.businessName} icon="🏢" />
                 <DetailItem label="Business Type" value={selected.type} />
                 <DetailItem label="Email"         value={selected.email} />
@@ -166,16 +185,63 @@ export default function Dashboard() {
                 <DetailItem label="Last Name"     value={selected.lastName} />
                 <DetailItem label="Position"      value={selected.position} />
                 <DetailItem label="Country"       value={selected.country} />
-              </>
-            ) : (
-              <>
-                <DetailItem label="Full Name"    value={selected.businessName} icon="👤" />
-                <DetailItem label="Email"        value={selected.email} />
-                <DetailItem label="Country"      value={selected.country} />
-                <DetailItem label="Account Type" value={selected.type} />
-              </>
-            )}
-          </div>
+              </div>
+            </>
+
+          ) : loadingUserDetail ? (
+            /* ── USER LOADING ─────────────────────────────────────────── */
+            <div style={{
+              padding: "40px", textAlign: "center", color: "#9CA3AF",
+              fontSize: "14px",
+            }}>
+              Loading full profile...
+            </div>
+
+          ) : (
+            /* ── USER FULL DETAILS (all 3 levels) ────────────────────── */
+            <>
+              {/* Level 1 */}
+              <SectionTitle>Level 1 — Basic Info</SectionTitle>
+              <div className="details-grid">
+                <DetailItem label="Full Name"    value={fullUserData?.name    || selected.businessName} icon="👤" />
+                <DetailItem label="Email"        value={fullUserData?.email   || selected.email} />
+                <DetailItem label="Username"     value={fullUserData?.username} />
+                <DetailItem label="Phone"        value={fullUserData?.phoneNumber} />
+                <DetailItem label="Account Type" value={fullUserData?.userType || selected.type} />
+                <DetailItem label="Country"      value={fullUserData?.country  || selected.country} />
+                <DetailItem label="State"        value={fullUserData?.state} />
+                <DetailItem label="City"         value={fullUserData?.city} />
+                <DetailItem label="Postal Code"  value={fullUserData?.postalCode} />
+              </div>
+
+              {/* Level 2 */}
+              <SectionTitle>Level 2 — Academic Info</SectionTitle>
+              <div className="details-grid">
+                <DetailItem label="School"              value={fullUserData?.school} />
+                <DetailItem label="Grade"               value={fullUserData?.grade} />
+                <DetailItem label="Curriculum"          value={fullUserData?.curriculum} />
+                <DetailItem label="Stream"              value={fullUserData?.stream} />
+                <DetailItem label="Performance"         value={fullUserData?.performance} />
+                <DetailItem label="Financial Situation" value={fullUserData?.financialSituation} />
+                <DetailItem label="LinkedIn"            value={fullUserData?.linkedin} isLink />
+              </div>
+
+              {/* Level 3 */}
+              <SectionTitle>Level 3 — Personality</SectionTitle>
+              <div className="details-grid">
+                <DetailItem
+                  label="Personality Type"
+                  icon="🧠"
+                  value={
+                    fullUserData?.personality
+                      ? fullUserData.personality.charAt(0).toUpperCase() +
+                        fullUserData.personality.slice(1)
+                      : undefined
+                  }
+                />
+              </div>
+            </>
+          )}
 
           {isPending && (
             <>
@@ -394,6 +460,28 @@ export default function Dashboard() {
         </div>
 
       </div>
+    </div>
+  );
+}
+
+// ── Section Title ────────────────────────────────────────────────────────────
+function SectionTitle({ children }) {
+  return (
+    <div
+      className="details-section-title"
+      style={{
+        marginTop: "24px",
+        marginBottom: "4px",
+        paddingBottom: "8px",
+        borderBottom: "1px solid #f0f2f5",
+        fontSize: "13px",
+        fontWeight: "700",
+        color: "#64748b",
+        textTransform: "uppercase",
+        letterSpacing: "0.5px",
+      }}
+    >
+      {children}
     </div>
   );
 }
