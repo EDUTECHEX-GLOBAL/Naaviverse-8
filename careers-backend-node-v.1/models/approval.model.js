@@ -2,11 +2,12 @@ const mongoose = require("mongoose");
 
 const approvalSchema = new mongoose.Schema(
 {
-role:{
-type:String,
-enum:["Partner","User"],
-required:true
+role: {
+  type: String,
+  enum: ["Partner", "User"], 
+  required: true,
 },
+reason: { type: String, default: "" }, 
 
 businessName:String,
 type:String,

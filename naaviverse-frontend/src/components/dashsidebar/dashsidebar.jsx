@@ -6,24 +6,23 @@ import { useCoinContextData } from "../../context/CoinContext";
 import logo from '../../assets/images/logo/naavi_final_logo2.png';
 import history from "./history.svg";
 
-/* ================= MENU CONFIG ================= */
-
 const sidebarMenu1 = [
   { id: 0, title: "Paths", path: "/dashboard/users/paths" },
 ];
 
 const sidebarMenu2 = [
-  { id: 0, title: "My Journey",    path: "/dashboard/users/my-journey"    },
-  { id: 1, title: "Current Step",  path: "/dashboard/users/current-step"  },
-  { id: 2, title: "Transactions",  path: "/dashboard/users/transactions"  },
+  { id: 0, title: "My Journey",   path: "/dashboard/users/my-journey"   },
+  { id: 1, title: "Current Step", path: "/dashboard/users/current-step" },
+  { id: 2, title: "Transactions", path: "/dashboard/users/transactions" },
 ];
 
-/* ================= COMPONENT ================= */
-
-const Dashsidebar = ({ isNotOnMainPage, handleChange }) => {
-  const { sideNav, setsideNav, setBuy } = useStore();
+const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus }) => {
+  const { sideNav, setsideNav } = useStore();
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [imgError, setImgError] = useState(false); // ✅ fallback if image fails
+
+  const isLocked = approvalStatus === "pending" || approvalStatus === "rejected";
 
   const {
     checkForHistory,
@@ -47,16 +46,19 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange }) => {
   };
 
   const userDetails = getUserFromStorage();
-  const fullName = userDetails?.name || userDetails?.email || "User";
-  // Get only first name
-  const firstName = fullName.split(" ")[0];
-  const initials = firstName
-    .split(" ")
-    .map((w) => w[0]?.toUpperCase())
-    .join("") || "U";
+  const fullName    = userDetails?.name || userDetails?.email || "User";
+  const firstName   = fullName.split(" ")[0];
+  const initials    = firstName.split(" ").map((w) => w[0]?.toUpperCase()).join("") || "U";
+
+  // ✅ Get profile picture — from localStorage or from user object
+  const profilePic  = localStorage.getItem("userProfilePic")
+                      || userDetails?.profilePicture
+                      || userDetails?.profilePicURL
+                      || null;
 
   /* ── handlers ── */
   const handleNavigation = (title, path) => {
+    if (isLocked) return;
     setCurrentStepData("");
     setCurrentStepDataLength("");
     setCurrentStepDataPathId("");
@@ -80,34 +82,37 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange }) => {
   };
 
   return (
-    <div className="dashboard-sidebar1">
+    <div className="dashboard-sidebar1" style={{ position: "relative", zIndex: 99999 }}>
 
       {/* ── LOGO ── */}
       <div className="logo-border">
         <div
           className="dashboard-left"
           onClick={() => {
+            if (isLocked) return;
             setsideNav("Paths");
             navigate("/dashboard/users/paths");
           }}
+          style={{ cursor: isLocked ? "default" : "pointer" }}
         >
-          <img
-            className="dashboard-logo"
-            src={logo}
-            alt="logo"
-          />
+          <img className="dashboard-logo" src={logo} alt="logo" />
         </div>
       </div>
 
-      {/* ── MENU (scrollable) ── */}
+      {/* ── MENU ── */}
       <div className="sidebar-menu-container">
-
         <div className="menu-section">
           {sidebarMenu1.map((each) => (
             <div
               key={each.id}
               className={`each-sidenav ${sideNav === each.title ? "active" : ""}`}
               onClick={() => handleNavigation(each.title, each.path)}
+              style={{
+                opacity: isLocked ? 0.35 : 1,
+                cursor: isLocked ? "not-allowed" : "pointer",
+                pointerEvents: isLocked ? "none" : "auto",
+                userSelect: "none",
+              }}
             >
               {each.title}
             </div>
@@ -120,13 +125,19 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange }) => {
               key={ele.id}
               className={`each-sidenav ${sideNav === ele.title ? "active" : ""}`}
               onClick={() => handleNavigation(ele.title, ele.path)}
+              style={{
+                opacity: isLocked ? 0.35 : 1,
+                cursor: isLocked ? "not-allowed" : "pointer",
+                pointerEvents: isLocked ? "none" : "auto",
+                userSelect: "none",
+              }}
             >
               {ele.title}
             </div>
           ))}
         </div>
 
-        {checkForHistory && (
+        {checkForHistory && !isLocked && (
           <div className="history-div">
             <div className="history-box">
               <img src={history} alt="history" />
@@ -159,20 +170,21 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange }) => {
       {/* ── USER POPUP MENU ── */}
       {showUserMenu && (
         <>
-          {/* backdrop */}
-          <div
-            className="popup-backdrop"
-            onClick={() => setShowUserMenu(false)}
-          />
+          <div className="popup-backdrop" onClick={() => setShowUserMenu(false)} />
           <div className="sidebar-user-popup">
+
             <div className="sup-item" onClick={handleProfileClick}>
               <span className="sup-icon">👤</span>
               Profile
             </div>
+
             <div className="sup-divider" />
+
             <div className="sup-item sup-item--logout" onClick={handleLogout}>
               <span className="sup-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2"
+                  strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                   <polyline points="16 17 21 12 16 7"/>
                   <line x1="21" y1="12" x2="9" y2="12"/>
@@ -180,16 +192,37 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange }) => {
               </span>
               Log out
             </div>
+
           </div>
         </>
       )}
 
-      {/* ── BOTTOM USER STRIP (Simplified - First name only) ── */}
+      {/* ── BOTTOM USER STRIP ── */}
       <div
         className={`sidebar-user-strip ${showUserMenu ? "active" : ""}`}
         onClick={() => setShowUserMenu((v) => !v)}
+        style={{ cursor: "pointer" }}
       >
-        <div className="sus-avatar">{initials}</div>
+        {/* ✅ Show profile picture if available, else fallback to initials */}
+        {profilePic && !imgError ? (
+          <img
+            src={profilePic}
+            alt={firstName}
+            onError={() => setImgError(true)}
+            style={{
+              width:        "36px",
+              height:       "36px",
+              borderRadius: "50%",
+              objectFit:    "cover",
+              flexShrink:   0,
+              border:       "2px solid #e2e8f0",
+            }}
+          />
+        ) : (
+          // ✅ Fallback — initials avatar
+          <div className="sus-avatar">{initials}</div>
+        )}
+
         <div className="sus-name">{firstName}</div>
         <div className="sus-dots">•••</div>
       </div>

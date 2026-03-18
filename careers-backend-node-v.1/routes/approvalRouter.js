@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const approvalController = require("../controllers/approval.controller");
 
+
+router.post("/create", approvalController.createApproval);
+
 // GET all approvals (admin)
 router.get("/get", approvalController.getApprovals);
 

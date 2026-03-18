@@ -257,57 +257,51 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
           gap: "0px",
         }}
       >
-        {/* Add New Button — also locked when pending/rejected */}
-        {!admin && (
-          <div
-            title={isLocked ? "Your account is pending admin approval" : ""}
-            style={{
-              background: isLocked
-                ? "#CBD5E0"
-                : "linear-gradient(135deg, #1f304f 0%, #0d6b6e 100%)",
-              borderRadius: "30px",
-              padding: "6px 16px",
-              color: "#FFFFFF",
-              width: "fit-content",
-              // 🔒 not-allowed when locked
-              cursor: isLocked ? "not-allowed" : "pointer",
-              opacity: isLocked ? "0.5" : "1",
-              marginBottom: "30px",
-              fontSize: "13px",
-              fontWeight: "500",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "6px",
-              transition: "all 0.2s ease",
-              border: "none",
-              boxShadow: isLocked ? "none" : "0 2px 8px rgba(13,107,110,0.3)",
-            }}
-            onClick={() => {
-              if (isLocked) return; // 🔒
-              setispopular(true);
-            }}
-            onMouseEnter={(e) => {
-              if (isLocked) return;
-              e.currentTarget.style.background =
-                "linear-gradient(135deg, #162238 0%, #0a5254 100%)";
-              e.currentTarget.style.boxShadow =
-                "0 4px 12px rgba(13,107,110,0.45)";
-            }}
-            onMouseLeave={(e) => {
-              if (isLocked) return;
-              e.currentTarget.style.background =
-                "linear-gradient(135deg, #1f304f 0%, #0d6b6e 100%)";
-              e.currentTarget.style.boxShadow =
-                "0 2px 8px rgba(13,107,110,0.3)";
-            }}
-          >
-            <span style={{ fontSize: "16px", lineHeight: "16px", fontWeight: "400" }}>
-              ＋
-            </span>
-            <span>Add New</span>
-          </div>
-        )}
+ {/* Add Path Button — also locked when pending/rejected */}
+{!admin && (
+  <div
+    title={isLocked ? "Your account is pending admin approval" : ""}
+    style={{
+      background: "#F9FAFB", // Very light background
+      borderRadius: "24px",
+      padding: "4px 14px", // Reduced padding for smaller box
+      color: "#2D3748",
+      width: "fit-content",
+      cursor: isLocked ? "not-allowed" : "pointer",
+      opacity: isLocked ? "0.5" : "1",
+      marginBottom: "24px", // Reduced margin
+      fontSize: "12px", // Slightly smaller font
+      fontWeight: "500",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "4px",
+      transition: "all 0.2s ease",
+      border: "1.5px solid transparent",
+      backgroundImage: "linear-gradient(#F9FAFB, #F9FAFB), linear-gradient(135deg, #FFD1DC 0%, #B5EAD7 50%, #C7CEEA 100%)",
+      backgroundOrigin: "border-box",
+      backgroundClip: "padding-box, border-box",
+      boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+      letterSpacing: "0.3px",
+    }}
+    onClick={() => {
+      if (isLocked) return;
+      setispopular(true);
+    }}
+    onMouseEnter={(e) => {
+      if (isLocked) return;
+      e.currentTarget.style.backgroundImage = "linear-gradient(#F3F4F6, #F3F4F6), linear-gradient(135deg, #FFC0CB 0%, #A8E6CF 50%, #B4D0FF 100%)";
+      e.currentTarget.style.boxShadow = "0 2px 6px rgba(0,0,0,0.04)";
+    }}
+    onMouseLeave={(e) => {
+      if (isLocked) return;
+      e.currentTarget.style.backgroundImage = "linear-gradient(#F9FAFB, #F9FAFB), linear-gradient(135deg, #FFD1DC 0%, #B5EAD7 50%, #C7CEEA 100%)";
+      e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.02)";
+    }}
+  >
+    <span>Add New</span>
+  </div>
+)}
 
         {/* Partner Profile Row with Three Dots */}
         <div style={{ position: "relative", minHeight: "48px" }} ref={dropdownRef}>

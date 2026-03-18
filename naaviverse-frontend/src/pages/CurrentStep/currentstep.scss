@@ -296,36 +296,44 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   }
 }
 
-// ── Completion Bar ──────────────────────────────────────────────────────
+// ── Completion Bar (Redesigned) ──────────────────────────────────────
 .comp-bar {
-  background: $navy;
-  border-radius: $radius;
-  padding: 18px 24px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 16px 22px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  box-shadow: $shadow-lg;
+  box-shadow: 0 4px 14px rgba(15,31,61,0.04);
+  border: 1px solid $gray200;
+  margin-top: 10px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 6px 20px rgba(15,31,61,0.06);
+    border-color: $gray300;
+  }
 }
 
 .cb-left {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .cb-lbl {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.8px;
+  color: $gray400;
 }
 
 .cb-q {
   font-size: 15px;
-  font-weight: 700;
-  color: #fff;
+  font-weight: 600;
+  color: $navy;
 }
 
 .cb-btns {
@@ -334,40 +342,73 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
 }
 
 .btn-fail {
-  background: rgba(239,68,68,0.12);
-  color: #fca5a5;
-  border: 1.5px solid rgba(239,68,68,0.25);
-  padding: 10px 22px;
-  border-radius: 28px;
+  background: #FEF2F2;
+  color: #B91C1C;
+  border: 1px solid #FEE2E2;
+  padding: 8px 20px;
+  border-radius: 30px;
   font-family: 'DM Sans', sans-serif;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.18s;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 
   &:hover {
-    background: $red;
-    color: #fff;
-    border-color: $red;
+    background: #FEE2E2;
+    color: #991B1B;
+    border-color: #FECACA;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 }
 
 .btn-yes {
-  background: $teal;
-  color: #fff;
-  border: none;
-  padding: 10px 22px;
-  border-radius: 28px;
+  background: #F0F9FF;
+  color: #0369a1;
+  border: 1px solid #E0F2FE;
+  padding: 8px 24px;
+  border-radius: 30px;
   font-family: 'DM Sans', sans-serif;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.18s;
-  box-shadow: 0 4px 14px rgba(13,148,136,0.35);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(2, 136, 209, 0.08);
 
-  &:hover { background: #0f766e; }
+  &:hover {
+    background: #E0F2FE;
+    color: #075985;
+    border-color: #BAE6FD;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(2, 136, 209, 0.12);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 }
 
+// Optional: Add subtle icons to buttons (uncomment if you want them)
+// .btn-fail::before {
+//   content: "✕";
+//   font-size: 12px;
+//   opacity: 0.8;
+// }
+// 
+// .btn-yes::after {
+//   content: "✓";
+//   font-size: 14px;
+//   font-weight: 700;
+// }
 // ── Buy Drawer (preserved) ──────────────────────────────────────────────
 .accept-offer-overlay {
   width: 100%;

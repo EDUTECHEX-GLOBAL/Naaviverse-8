@@ -1,8 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap');
 
-/* ============================================================
-   TOKENS
-   ============================================================ */
 :root {
   --partner-50:  #eff6ff;
   --partner-100: #dbeafe;
@@ -58,16 +55,13 @@
   --font: 'DM Sans', sans-serif;
 }
 
-/* ============================================================
-   SHELL
-   ============================================================ */
+/* ── SHELL ── */
 .dashboard {
   height: 100%;
   background: #f0f4fb;
   padding: 28px 24px;
   overflow-y: auto;
   font-family: var(--font);
-
   background-image:
     radial-gradient(circle at 10% 20%, rgba(191,219,254,.35) 0%, transparent 45%),
     radial-gradient(circle at 90% 80%, rgba(245,208,254,.30) 0%, transparent 45%);
@@ -80,9 +74,7 @@
   }
 }
 
-/* ============================================================
-   CARDS
-   ============================================================ */
+/* ── CARDS ── */
 .approvals-card,
 .details-card {
   background: rgba(255,255,255,.92);
@@ -93,24 +85,19 @@
   max-width: 1200px;
   margin: 0 auto;
   border: 1px solid rgba(255,255,255,.8);
-}
-
-/* CRITICAL: allow dropdown to overflow the card */
-.approvals-card {
   overflow: visible;
 }
 
 .details-card { max-width: 820px; }
 
-/* ============================================================
-   CARD HEADER
-   ============================================================ */
+/* ── CARD HEADER ── */
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  /* no overflow:hidden here */
+  position: relative;
+  z-index: 10;
 }
 
 .header-left {
@@ -153,15 +140,13 @@
   margin: 0;
 }
 
-/* ============================================================
-   ROLE DROPDOWN
-   ============================================================ */
+/* ── ROLE DROPDOWN CONTAINER ── */
 .dropdown-container {
   position: relative;
-  z-index: 100;
 }
 
-.dropdown-toggle {
+/* ✅ Renamed from .dropdown-toggle to .role-toggle-btn — avoids Bootstrap conflict */
+.role-toggle-btn {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -174,20 +159,30 @@
   transition: all .18s ease;
   border: 1.5px solid;
 
+  /* ✅ Kill any Bootstrap ::after arrow */
+  &::after { display: none !important; }
+  &::before { display: none !important; }
+
   &.partner-toggle {
     background: var(--partner-50);
     border-color: var(--partner-200);
     color: var(--partner-600);
+
     .toggle-dot { background: var(--partner-400); }
   }
+
   &.user-toggle {
     background: var(--user-50);
     border-color: var(--user-200);
     color: var(--user-600);
+
     .toggle-dot { background: var(--user-400); }
   }
 
-  &:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
 }
 
 .toggle-dot {
@@ -202,16 +197,12 @@
   &.open { transform: rotate(180deg); }
 }
 
-.dropdown-menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
+/* ✅ Renamed from .dropdown-menu to .role-dropdown-menu — avoids Bootstrap display:none */
+.role-dropdown-menu {
   background: white;
   border: 1px solid var(--slate-200);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  z-index: 200;
-  min-width: 200px;
   overflow: hidden;
   animation: dropIn .15s ease;
 
@@ -236,12 +227,17 @@
     gap: 10px;
     transition: background .15s;
 
+    /* ✅ Kill Bootstrap ::after on buttons inside dropdown */
+    &::after  { display: none !important; }
+    &::before { display: none !important; }
+
     &:hover { background: var(--slate-50); }
 
     &.partner-active {
       background: var(--partner-50);
       color: var(--partner-600);
     }
+
     &.user-active {
       background: var(--user-50);
       color: var(--user-600);
@@ -262,15 +258,14 @@
     background: var(--partner-100);
     color: var(--partner-600);
   }
+
   &.user-count {
     background: var(--user-100);
     color: var(--user-600);
   }
 }
 
-/* ============================================================
-   STATS STRIP
-   ============================================================ */
+/* ── STATS STRIP ── */
 .stats-strip {
   display: flex;
   align-items: center;
@@ -316,9 +311,7 @@
   margin: 0 8px;
 }
 
-/* ============================================================
-   STATUS DROPDOWN
-   ============================================================ */
+/* ── STATUS DROPDOWN ── */
 .tab-dropdown-wrapper {
   margin-bottom: 20px;
 
@@ -337,20 +330,14 @@
     box-shadow: var(--shadow-xs);
     transition: border-color .2s;
 
-    &:focus {
-      outline: none;
-      border-color: var(--partner-400);
-    }
+    &:focus { outline: none; border-color: var(--partner-400); }
     &:hover { border-color: var(--slate-300); }
   }
 }
 
-/* ============================================================
-   TABLE
-   ============================================================ */
+/* ── TABLE ── */
 .table-wrapper {
   overflow-x: auto;
-  overflow-y: visible;
   border-radius: var(--radius-lg);
   border: 1px solid var(--slate-200);
 
@@ -391,9 +378,7 @@ table {
   &:hover { background: var(--slate-50); }
 }
 
-/* ============================================================
-   BUSINESS INFO
-   ============================================================ */
+/* ── BUSINESS INFO ── */
 .business-info {
   display: flex;
   align-items: center;
@@ -411,14 +396,8 @@ table {
   font-weight: 700;
   flex-shrink: 0;
 
-  &.partner-row-avatar {
-    background: var(--partner-100);
-    color: var(--partner-600);
-  }
-  &.user-row-avatar {
-    background: var(--user-100);
-    color: var(--user-600);
-  }
+  &.partner-row-avatar { background: var(--partner-100); color: var(--partner-600); }
+  &.user-row-avatar    { background: var(--user-100);    color: var(--user-600); }
 }
 
 .business-name {
@@ -453,9 +432,7 @@ table {
   white-space: nowrap;
 }
 
-/* ============================================================
-   VIEW BUTTON  (replaces icon buttons)
-   ============================================================ */
+/* ── VIEW BUTTON ── */
 .view-btn {
   padding: 6px 16px;
   border-radius: var(--radius-full);
@@ -477,9 +454,7 @@ table {
   }
 }
 
-/* ============================================================
-   EMPTY STATE
-   ============================================================ */
+/* ── EMPTY STATE ── */
 .no-results { padding: 48px !important; }
 
 .empty-state {
@@ -489,17 +464,10 @@ table {
   gap: 8px;
 
   .empty-icon { font-size: 36px; opacity: .4; }
-
-  p {
-    color: var(--slate-400);
-    font-size: 14px;
-    margin: 0;
-  }
+  p { color: var(--slate-400); font-size: 14px; margin: 0; }
 }
 
-/* ============================================================
-   DETAILS PAGE
-   ============================================================ */
+/* ── DETAILS PAGE ── */
 .back-btn {
   display: flex;
   align-items: center;
@@ -576,7 +544,7 @@ table {
   font-size: 12px;
   font-weight: 600;
 
-  &.approved { background: var(--green-100); color: var(--green-700); }
+  &.approved { background: var(--green-100);  color: var(--green-700); }
   &.pending  { background: var(--amber-100); color: var(--amber-700); border: 1px solid #fde68a; }
   &.rejected { background: var(--red-100);   color: var(--red-700);   border: 1px solid #fecaca; }
 }
@@ -652,11 +620,7 @@ table {
   margin-bottom: 24px;
   font-size: 13px;
 
-  span {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+  span { display: flex; align-items: center; gap: 8px; }
 
   &.partner-note {
     background: var(--partner-50);
@@ -688,10 +652,7 @@ table {
     cursor: pointer;
     transition: all .18s ease;
 
-    &:hover {
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-sm);
-    }
+    &:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
   }
 
   .btn-approve {
@@ -704,27 +665,11 @@ table {
     background: white;
     border: 1.5px solid var(--slate-200);
     color: var(--slate-600);
+
     &:hover {
       background: var(--red-50);
       border-color: var(--red-200);
       color: var(--red-700);
     }
   }
-}
-
-
-.dropdown-container {
-  position: relative;
-  z-index: 999;
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  z-index: 9999;
-}
-
-.dropdown-menu {
-  z-index: 9999;
 }

@@ -522,7 +522,6 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         ) : (
           <div className="comp-bar">
             <div className="cb-left">
-              <span className="cb-lbl">Step Completion</span>
               <span className="cb-q">Did You Complete This Step?</span>
             </div>
             <div className="cb-btns">

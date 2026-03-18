@@ -1,348 +1,387 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import close from "../../images/close.svg";
 import { toast } from "react-toastify";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const LevelOneModal = ({ onClose, onComplete, userDetails, existingData }) => {
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState(existingData?.profilePicture || "");
-  
+/**
+ * LevelOneModal — Step 1 of profile creation / edit
+ *
+ * BACKEND FIX APPLIED:
+ * POST /api/users/add now uses findOneAndUpdate({email}) with $set.
+ * This means it NEVER creates a new doc, NEVER touches the password field.
+ * So we can safely call POST /api/users/add for both creation and edit
+ * by just sending email + the fields to update.
+ *
+ * For edit mode (existingData present) we use PUT /api/users/update/:id.
+ */
+const LevelOneModal = ({
+  inline = false,
+  creation = false,
+  userDetails,
+  existingData,
+  existingDocId,
+  onClose,
+  onComplete,
+}) => {
+  const [loading,           setLoading]           = useState(false);
+  const [uploading,         setUploading]         = useState(false);
+  const [previewUrl,        setPreviewUrl]        = useState(existingData?.profilePicture || "");
+
   const [formData, setFormData] = useState({
-    name: existingData?.name || "",
-    username: existingData?.username || "",
-    phoneNumber: existingData?.phoneNumber || "",
-    country: existingData?.country || "",
-    state: existingData?.state || "",
-    city: existingData?.city || "",
-    postalCode: existingData?.postalCode || "",
+    name:           existingData?.name           || "",
+    username:       existingData?.username       || "",
+    phoneNumber:    existingData?.phoneNumber    || "",
+    country:        existingData?.country        || "",
+    state:          existingData?.state          || "",
+    city:           existingData?.city           || "",
+    postalCode:     existingData?.postalCode     || "",
     profilePicture: existingData?.profilePicture || "",
-    email: existingData?.email || userDetails?.email || "",
-    userType: "student"
+    email:          existingData?.email          || userDetails?.email || "",
+    userType:       existingData?.userType       || "student",
   });
 
-  const [countryApiValue, setCountryApiValue] = useState([]);
-  const [stateApiValue, setStateApiValue] = useState([]);
-  const [cityApiValue, setCityApiValue] = useState([]);
+  const [countries,         setCountries]         = useState([]);
+  const [states,            setStates]            = useState([]);
   const [userNameAvailable, setUserNameAvailable] = useState(null);
-  const [checkingUsername, setCheckingUsername] = useState(false);
+  const [checkingUsername,  setCheckingUsername]  = useState(false);
 
-  // Fetch countries
   useEffect(() => {
     axios.get(`${BASE_URL}/api/countries`)
-      .then((response) => {
-        if (Array.isArray(response.data)) {
-          const sorted = response.data.sort((a, b) => 
-            a.name.common.localeCompare(b.name.common)
-          );
-          setCountryApiValue(sorted);
-        }
+      .then((res) => {
+        const list = Array.isArray(res.data) ? res.data : [];
+        setCountries(list.sort((a, b) => a.name.common.localeCompare(b.name.common)));
       })
-      .catch(error => console.error("Error fetching countries:", error));
+      .catch(() => {});
   }, []);
 
-  // Fetch states
   useEffect(() => {
     axios.get(`${BASE_URL}/api/states`)
-      .then((response) => {
-        setStateApiValue(Array.isArray(response.data) ? response.data : []);
-      })
-      .catch(error => console.error("Error fetching states:", error));
-  }, []);
-
-  // Fetch cities
-  useEffect(() => {
-    axios.get(`${BASE_URL}/api/cities`)
-      .then((response) => {
-        setCityApiValue(Array.isArray(response.data) ? response.data : []);
-      })
-      .catch(error => console.error("Error fetching cities:", error));
+      .then((res) => setStates(Array.isArray(res.data) ? res.data : []))
+      .catch(() => {});
   }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
-    // Reset username availability when username changes
-    if (name === "username") {
-      setUserNameAvailable(null);
-    }
+    setFormData((p) => ({ ...p, [name]: value }));
+    if (name === "username") setUserNameAvailable(null);
   };
 
   const handleCheckUsername = async () => {
     if (!formData.username) return;
-    
     setCheckingUsername(true);
     try {
-      const res = await axios.get(`${BASE_URL}/api/users/check-username?username=${formData.username}`);
+      const res = await axios.get(
+        `${BASE_URL}/api/users/check-username?username=${formData.username}`
+      );
       setUserNameAvailable(res.data.available);
-    } catch (err) {
+    } catch {
       setUserNameAvailable(false);
     } finally {
       setCheckingUsername(false);
     }
   };
 
-  const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
     if (!file) return;
+    if (!file.type.startsWith("image/")) { toast.error("Please select an image file"); return; }
+    if (file.size > 5 * 1024 * 1024)    { toast.error("Max file size is 5MB");         return; }
 
     setUploading(true);
-
-    // Create preview
     const reader = new FileReader();
     reader.onloadend = () => setPreviewUrl(reader.result);
     reader.readAsDataURL(file);
 
     try {
-      // Get presigned URL
-      const response = await fetch(`${BASE_URL}/api/upload/get-presigned-url`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`${BASE_URL}/api/upload/get-presigned-url`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fileName: file.name, fileType: file.type }),
       });
+      if (!res.ok) throw new Error("Upload URL request failed");
+      const data = await res.json();
+      if (!data.presignedUrl) throw new Error("No presigned URL");
 
-      if (!response.ok) throw new Error('Failed to get presigned URL');
-
-      const data = await response.json();
-      
-      // Upload to S3
       await fetch(data.presignedUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type },
+        method: "PUT",
+        headers: { "Content-Type": file.type },
         body: file,
       });
 
-      const fileUrl = `https://thenaaviversebucket.s3.amazonaws.com/${file.name}`;
-      setFormData(prev => ({ ...prev, profilePicture: fileUrl }));
-      
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast.error("Failed to upload image");
+      const fileUrl = data.fileUrl || `https://thenaaviversebucket.s3.amazonaws.com/${file.name}`;
+      setFormData((p) => ({ ...p, profilePicture: fileUrl }));
+      toast.success("Image uploaded");
+    } catch (err) {
+      // S3 CORS is a server-config issue — picture is optional, don't block form
+      console.warn("Image upload skipped (optional):", err.message);
+      toast.warn("Image upload skipped — you can add a picture later");
+      setFormData((p) => ({ ...p, profilePicture: "" }));
     } finally {
       setUploading(false);
     }
   };
 
+  const handleRemovePic = () => {
+    setFormData((p) => ({ ...p, profilePicture: "" }));
+    setPreviewUrl("");
+  };
+
+  const isFormValid = () =>
+    formData.name &&
+    formData.username &&
+    formData.phoneNumber &&
+    formData.country &&
+    formData.state &&
+    formData.city &&
+    formData.postalCode &&
+    userNameAvailable !== false;
+
+  // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate required fields
-    const required = ['name', 'username', 'phoneNumber', 'country', 'state', 'city', 'postalCode', 'profilePicture'];
-    for (const field of required) {
-      if (!formData[field]) {
-        toast.error(`Please fill in ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
+
+    const required = ["name", "username", "phoneNumber", "country", "state", "city", "postalCode"];
+    for (const f of required) {
+      if (!formData[f]) {
+        toast.error(`Please fill in ${f.replace(/([A-Z])/g, " $1").toLowerCase()}`);
         return;
       }
     }
+    if (userNameAvailable === false) {
+      toast.error("That username is already taken — please choose another");
+      return;
+    }
 
     setLoading(true);
-    
     try {
+      const email = userDetails?.email || formData.email;
       const body = {
         ...formData,
-        email: userDetails.email,
-        phoneNumber: formData.phoneNumber.startsWith('+') ? formData.phoneNumber : `+${formData.phoneNumber}`
+        email,
+        phoneNumber: formData.phoneNumber.startsWith("+")
+          ? formData.phoneNumber
+          : `+${formData.phoneNumber}`,
       };
 
       let response;
-      if (existingData?._id) {
-        // Update existing profile
-        response = await axios.put(`${BASE_URL}/api/users/update/${existingData._id}`, body);
+
+      // Edit mode — use PUT /api/users/update/:id
+      const editId = existingData?._id || existingDocId;
+      if (editId && !creation) {
+        response = await axios.put(`${BASE_URL}/api/users/update/${editId}`, body);
       } else {
-        // Create new profile
+        // Creation mode — POST /api/users/add
+        // BACKEND IS NOW FIXED: uses findOneAndUpdate({email}) with $set
+        // so it NEVER creates a new doc and NEVER touches the password field
         response = await axios.post(`${BASE_URL}/api/users/add`, body);
       }
 
       if (response.data?.status) {
-        toast.success("Profile saved successfully!");
-        onComplete();
+        const savedId = response.data?.data?._id || editId;
+        if (typeof onComplete === "function") onComplete(savedId);
       } else {
-        toast.error("Failed to save profile");
+        toast.error(response.data?.message || "Failed to save profile");
       }
-    } catch (error) {
-      console.error("Submit error:", error);
-      toast.error("An error occurred");
+    } catch (err) {
+      console.error("Submit error:", err.response?.data || err.message);
+      toast.error(err.response?.data?.message || "An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const isFormValid = () => {
-    return formData.name && 
-           formData.username && 
-           formData.phoneNumber && 
-           formData.country && 
-           formData.state && 
-           formData.city && 
-           formData.postalCode && 
-           formData.profilePicture;
-  };
-
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>{existingData ? "Edit Level 1" : "Complete Level 1"} - Basic Information</h2>
-          <div className="close-btn" onClick={onClose}>
-            <img src={close} alt="close" />
+    <form onSubmit={handleSubmit}>
+      <div className="up-form-wrap">
+        <div className="up-form-title">
+          {creation ? "Step 1 — Basic Information" : "Edit Basic Information"}
+        </div>
+        <div className="up-form-desc">
+          {creation
+            ? "Tell us about yourself to get started."
+            : "Update your personal & contact details."}
+        </div>
+
+        {/* Profile Picture — optional */}
+        <div className="up-form-group">
+          <label className="up-form-label">Profile Picture (optional)</label>
+          <div className="up-pic-wrap">
+            <div
+              className="up-pic-circle"
+              onClick={() => document.getElementById("up-pic-input").click()}
+            >
+              {previewUrl ? (
+                <img src={previewUrl} alt="preview" />
+              ) : (
+                <span className="up-pic-placeholder">Click<br />to upload</span>
+              )}
+            </div>
+            <input
+              id="up-pic-input"
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleFileUpload}
+            />
+            <div className="up-pic-actions">
+              <button
+                type="button"
+                className="up-upload-btn"
+                disabled={uploading}
+                onClick={() => document.getElementById("up-pic-input").click()}
+              >
+                {uploading ? "Uploading…" : "Choose Image"}
+              </button>
+              {previewUrl && (
+                <button type="button" className="up-remove-btn" onClick={handleRemovePic}>
+                  Remove
+                </button>
+              )}
+            </div>
           </div>
         </div>
-        
-        <form onSubmit={handleSubmit}>
-          <div className="modal-body">
-            {/* Profile Picture Upload */}
-            <div className="form-group">
-              <label>Profile Picture *</label>
-              <div className="image-upload-container">
-                <div className="image-preview" onClick={() => document.getElementById('profile-upload').click()}>
-                  {previewUrl ? (
-                    <img src={previewUrl} alt="Preview" />
-                  ) : (
-                    <div style={{ background: '#f0f0f0', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      Upload
-                    </div>
-                  )}
-                </div>
-                <input
-                  id="profile-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  style={{ display: 'none' }}
-                />
-                <button type="button" className="upload-btn" onClick={() => document.getElementById('profile-upload').click()}>
-                  {uploading ? "Uploading..." : "Choose Image"}
-                </button>
-              </div>
-            </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Full Name *</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Enter full name"
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Username *</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <input
-                    type="text"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    placeholder="Choose username"
-                    required
-                    style={{ flex: 1 }}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleCheckUsername}
-                    disabled={!formData.username || checkingUsername}
-                    className="btn btn-secondary"
-                    style={{ padding: '12px 16px' }}
-                  >
-                    {checkingUsername ? "..." : "Check"}
-                  </button>
-                </div>
-                {userNameAvailable === true && (
-                  <small style={{ color: 'green' }}>✓ Username available</small>
-                )}
-                {userNameAvailable === false && (
-                  <small style={{ color: 'red' }}>✗ Username taken</small>
-                )}
-              </div>
-            </div>
+        {/* Name + Username */}
+        <div className="up-form-row">
+          <div className="up-form-group">
+            <label className="up-form-label">Full Name *</label>
+            <input
+              className="up-input"
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Enter full name"
+              required
+            />
+          </div>
 
-            <div className="form-group">
-              <label>Phone Number *</label>
+          <div className="up-form-group">
+            <label className="up-form-label">Username *</label>
+            <div className="up-username-row">
               <input
-                type="tel"
-                name="phoneNumber"
-                value={formData.phoneNumber}
+                className="up-input"
+                type="text"
+                name="username"
+                value={formData.username}
                 onChange={handleChange}
-                placeholder="+1234567890"
+                placeholder="Choose a username"
                 required
               />
+              <button
+                type="button"
+                className="up-check-btn"
+                onClick={handleCheckUsername}
+                disabled={!formData.username || checkingUsername}
+              >
+                {checkingUsername ? "…" : "Check"}
+              </button>
             </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label>Country *</label>
-                <select name="country" value={formData.country} onChange={handleChange} required>
-                  <option value="">Select Country</option>
-                  {countryApiValue.map((item) => (
-                    <option key={item.cca2} value={item.name.common}>
-                      {item.name.common}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="form-group">
-                <label>State *</label>
-                <select name="state" value={formData.state} onChange={handleChange} required>
-                  <option value="">Select State</option>
-                  {stateApiValue.map((item) => (
-                    <option key={item._id || item.name} value={item.name}>
-                      {item.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label>City *</label>
-                <input
-                  type="text"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  placeholder="Enter city"
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Postal Code *</label>
-                <input
-                  type="text"
-                  name="postalCode"
-                  value={formData.postalCode}
-                  onChange={handleChange}
-                  placeholder="Enter postal code"
-                  required
-                />
-              </div>
-            </div>
+            {userNameAvailable === true  && <div className="up-username-ok">✓ Username available</div>}
+            {userNameAvailable === false && <div className="up-username-err">✗ Username already taken</div>}
           </div>
-          
-          <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>
+        </div>
+
+        {/* Phone */}
+        <div className="up-form-group">
+          <label className="up-form-label">Phone Number *</label>
+          <input
+            className="up-input"
+            type="tel"
+            name="phoneNumber"
+            value={formData.phoneNumber}
+            onChange={handleChange}
+            placeholder="+91 9876543210"
+            required
+          />
+        </div>
+
+        {/* Country + State */}
+        <div className="up-form-row">
+          <div className="up-form-group">
+            <label className="up-form-label">Country *</label>
+            <select
+              className="up-select"
+              name="country"
+              value={formData.country}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Select Country</option>
+              {countries.map((c) => (
+                <option key={c.cca2} value={c.name.common}>
+                  {c.name.common}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="up-form-group">
+            <label className="up-form-label">State *</label>
+            <select
+              className="up-select"
+              name="state"
+              value={formData.state}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Select State</option>
+              {states.map((s) => (
+                <option key={s._id || s.name} value={s.name}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* City + Postal */}
+        <div className="up-form-row">
+          <div className="up-form-group">
+            <label className="up-form-label">City *</label>
+            <input
+              className="up-input"
+              type="text"
+              name="city"
+              value={formData.city}
+              onChange={handleChange}
+              placeholder="Enter your city"
+              required
+            />
+          </div>
+
+          <div className="up-form-group">
+            <label className="up-form-label">Postal Code *</label>
+            <input
+              className="up-input"
+              type="text"
+              name="postalCode"
+              value={formData.postalCode}
+              onChange={handleChange}
+              placeholder="Enter postal code"
+              required
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="up-form-footer">
+          {onClose && !creation && (
+            <button type="button" className="up-btn-cancel" onClick={onClose}>
               Cancel
             </button>
-            <button 
-              type="submit" 
-              className="btn btn-primary" 
-              disabled={!isFormValid() || loading || (userNameAvailable === false)}
-            >
-              {loading ? "Saving..." : existingData ? "Update Level 1" : "Complete Level 1"}
-            </button>
-          </div>
-        </form>
+          )}
+          <button
+            type="submit"
+            className="up-btn-primary"
+            disabled={!isFormValid() || loading || uploading}
+          >
+            {loading ? "Saving…" : creation ? "Continue →" : "Save Changes"}
+          </button>
+        </div>
       </div>
-    </div>
+    </form>
   );
 };
 

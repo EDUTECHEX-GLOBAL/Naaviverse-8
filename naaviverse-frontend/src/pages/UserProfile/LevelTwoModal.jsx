@@ -1,204 +1,209 @@
 import React, { useState } from "react";
 import axios from "axios";
-import close from "../../images/close.svg";
 import { toast } from "react-toastify";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const LevelTwoModal = ({ onClose, onComplete, profileDataId, existingData }) => {
+/**
+ * LevelTwoModal
+ *
+ * Props:
+ *  inline        — render without outer overlay
+ *  creation      — true when creating for first time
+ *  profileDataId — MongoDB _id of the user document
+ *  existingData  — existing profile object
+ *  onClose       — cancel handler (null if can't dismiss)
+ *  onComplete    — success callback
+ */
+const LevelTwoModal = ({
+  inline = false,
+  creation = false,
+  profileDataId,
+  existingData,
+  onClose,
+  onComplete,
+}) => {
   const [loading, setLoading] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     financialSituation: existingData?.financialSituation || "",
-    school: existingData?.school || "",
-    performance: existingData?.performance || "",
-    curriculum: existingData?.curriculum || "",
-    stream: existingData?.stream || "",
-    grade: existingData?.grade || "",
-    linkedin: existingData?.linkedin || ""
+    school:             existingData?.school             || "",
+    performance:        existingData?.performance        || "",
+    curriculum:         existingData?.curriculum         || "",
+    stream:             existingData?.stream             || "",
+    grade:              existingData?.grade              || "",
+    linkedin:           existingData?.linkedin           || "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((p) => ({ ...p, [name]: value }));
   };
 
   const handleSelect = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((p) => ({ ...p, [field]: value }));
   };
+
+  const isFormValid = () =>
+    formData.financialSituation &&
+    formData.school &&
+    formData.performance &&
+    formData.curriculum &&
+    formData.stream &&
+    formData.grade &&
+    formData.linkedin;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Check if all fields are filled
-    const allFilled = Object.values(formData).every(val => val && val.trim() !== "");
-    
-    if (!allFilled) {
-      toast.error("Please fill in all fields");
-      return;
-    }
+    if (!isFormValid()) { toast.error("Please fill in all fields"); return; }
 
     setLoading(true);
-    
     try {
       const response = await axios.put(
         `${BASE_URL}/api/users/update/${profileDataId}`,
         formData
       );
-
       if (response.data?.status) {
-        toast.success("Level 2 completed successfully!");
-        onComplete();
+        if (typeof onComplete === "function") onComplete();
       } else {
-        toast.error("Failed to save level 2");
+        toast.error(response.data?.message || "Failed to save");
       }
-    } catch (error) {
-      console.error("Submit error:", error);
-      toast.error("An error occurred");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "An error occurred");
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Complete Level 2 - Academic Information</h2>
-          <div className="close-btn" onClick={onClose}>
-            <img src={close} alt="close" />
-          </div>
-        </div>
-        
-        <form onSubmit={handleSubmit}>
-          <div className="modal-body">
-            {/* Financial Situation */}
-            <div className="form-group">
-              <label>Financial Situation *</label>
-              <div className="options-grid">
-                {["0-25Lakhs", "25-75Lakhs", "75Lakhs-3CR", "3CR+"].map(option => (
-                  <button
-                    key={option}
-                    type="button"
-                    className={`option-btn ${formData.financialSituation === option ? 'selected' : ''}`}
-                    onClick={() => handleSelect('financialSituation', option)}
-                  >
-                    {option.replace('Lakhs', ' L').replace('CR', ' Cr')}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label>School *</label>
-                <input
-                  type="text"
-                  name="school"
-                  value={formData.school}
-                  onChange={handleChange}
-                  placeholder="Enter school name"
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Grade *</label>
-                <div className="options-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-                  {["9", "10", "11", "12"].map(grade => (
-                    <button
-                      key={grade}
-                      type="button"
-                      className={`option-btn ${formData.grade === grade ? 'selected' : ''}`}
-                      onClick={() => handleSelect('grade', grade)}
-                    >
-                      {grade}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Performance */}
-            <div className="form-group">
-              <label>Grade Point Average *</label>
-              <div className="options-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                {["0%-35%", "36%-60%", "61%-75%", "76%-85%", "86%-95%", "96%-100%"].map(range => (
-                  <button
-                    key={range}
-                    type="button"
-                    className={`option-btn ${formData.performance === range ? 'selected' : ''}`}
-                    onClick={() => handleSelect('performance', range)}
-                  >
-                    {range}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Curriculum */}
-            <div className="form-group">
-              <label>Curriculum *</label>
-              <div className="options-grid">
-                {["IB", "IGCSE", "CBSE", "ICSE", "Nordic"].map(curriculum => (
-                  <button
-                    key={curriculum}
-                    type="button"
-                    className={`option-btn ${formData.curriculum === curriculum ? 'selected' : ''}`}
-                    onClick={() => handleSelect('curriculum', curriculum)}
-                  >
-                    {curriculum}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Stream */}
-            <div className="form-group">
-              <label>Stream *</label>
-              <div className="options-grid">
-                {["MPC", "BIPC", "CEC", "MEC", "HEC"].map(stream => (
-                  <button
-                    key={stream}
-                    type="button"
-                    className={`option-btn ${formData.stream === stream ? 'selected' : ''}`}
-                    onClick={() => handleSelect('stream', stream)}
-                  >
-                    {stream}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* LinkedIn */}
-            <div className="form-group">
-              <label>LinkedIn Profile *</label>
-              <input
-                type="url"
-                name="linkedin"
-                value={formData.linkedin}
-                onChange={handleChange}
-                placeholder="https://linkedin.com/in/yourprofile"
-                required
-              />
-            </div>
-          </div>
-          
-          <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>
-              Cancel
-            </button>
-            <button 
-              type="submit" 
-              className="btn btn-primary" 
-              disabled={loading}
-            >
-              {loading ? "Saving..." : "Complete Level 2"}
-            </button>
-          </div>
-        </form>
+  const ChipGroup = ({ label, field, options, required }) => (
+    <div className="up-form-group">
+      <label className="up-form-label">{label}{required ? " *" : ""}</label>
+      <div className="up-chips">
+        {options.map((opt) => (
+          <button
+            key={opt}
+            type="button"
+            className={`up-chip ${formData[field] === opt ? "up-chip--selected" : ""}`}
+            onClick={() => handleSelect(field, opt)}
+          >
+            {opt}
+          </button>
+        ))}
       </div>
     </div>
+  );
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="up-form-wrap">
+        <div className="up-form-title">
+          {creation ? "Step 2 — Academic Information" : "Edit Academic Information"}
+        </div>
+        <div className="up-form-desc">
+          {creation
+            ? "Tell us about your school & academics."
+            : "Update your academic & financial details."}
+        </div>
+
+        {/* Financial Situation */}
+        <ChipGroup
+          label="Financial Situation"
+          field="financialSituation"
+          required
+          options={["0-25Lakhs", "25-75Lakhs", "75Lakhs-3CR", "3CR+"]}
+        />
+
+        {/* School + Grade */}
+        <div className="up-form-row">
+          <div className="up-form-group">
+            <label className="up-form-label">School *</label>
+            <input
+              className="up-input"
+              type="text"
+              name="school"
+              value={formData.school}
+              onChange={handleChange}
+              placeholder="Enter school name"
+              required
+            />
+          </div>
+
+          <div className="up-form-group">
+            <label className="up-form-label">Grade *</label>
+            <div className="up-chips">
+              {["9", "10", "11", "12"].map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  className={`up-chip ${formData.grade === g ? "up-chip--selected" : ""}`}
+                  onClick={() => handleSelect("grade", g)}
+                >
+                  Grade {g}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Performance */}
+        <ChipGroup
+          label="Grade Point Average"
+          field="performance"
+          required
+          options={["0%-35%", "36%-60%", "61%-75%", "76%-85%", "86%-95%", "96%-100%"]}
+        />
+
+        {/* Curriculum */}
+        <ChipGroup
+          label="Curriculum"
+          field="curriculum"
+          required
+          options={["IB", "IGCSE", "CBSE", "ICSE", "Nordic"]}
+        />
+
+        {/* Stream */}
+        <ChipGroup
+          label="Stream"
+          field="stream"
+          required
+          options={["MPC", "BIPC", "CEC", "MEC", "HEC"]}
+        />
+
+        {/* LinkedIn */}
+        <div className="up-form-group">
+          <label className="up-form-label">LinkedIn Profile *</label>
+          <input
+            className="up-input"
+            type="url"
+            name="linkedin"
+            value={formData.linkedin}
+            onChange={handleChange}
+            placeholder="https://linkedin.com/in/yourprofile"
+            required
+          />
+        </div>
+
+        {/* Footer */}
+        <div className="up-form-footer">
+          {onClose && !creation && (
+            <button type="button" className="up-btn-cancel" onClick={onClose}>
+              Cancel
+            </button>
+          )}
+          <button
+            type="submit"
+            className="up-btn-primary"
+            disabled={!isFormValid() || loading}
+          >
+            {loading
+              ? "Saving…"
+              : creation
+              ? "Continue →"
+              : "Save Changes"}
+          </button>
+        </div>
+      </div>
+    </form>
   );
 };
 

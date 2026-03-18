@@ -138,8 +138,9 @@ function App() {
           <Route path="/purchase/success" element={<PurchaseSuccess />} />
 
           {/* ================= FALLBACK ================= */}
-          <Route path="*" element={<RoutePage />} />
           <Route path="/*" element={<AppRouter />} />
+          <Route path="*" element={<RoutePage />} />
+          
 
         </Routes>
       </BrowserRouter>

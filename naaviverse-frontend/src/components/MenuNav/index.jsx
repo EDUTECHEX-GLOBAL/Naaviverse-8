@@ -13,34 +13,33 @@ const MenuNav = ({
   hideSearch = false,
 }) => {
   const navigate = useNavigate();
-  const isPartner = !!localStorage.getItem("partner");
 
-  // ✅ Partners use sidebar profile — no top nav needed
+  const isPartner  = !!localStorage.getItem("partner");
+  const isAdminUser = !!localStorage.getItem("adminuser");
+
+  // ✅ Partners use sidebar — no top nav needed
   if (isPartner) return null;
 
+  // ✅ Regular users — show ONLY clean white space, no profile pic, no dropdown
+  if (!isAdminUser) {
+    return (
+      <div className="dash-nav">
+        <div style={{ flex: 1 }} />
+        {/* ✅ Empty space — keeps layout consistent, no profile section */}
+      </div>
+    );
+  }
+
+  // ── Admin only below this point ──────────────────────────────────────────
+
   const handleLogout = () => {
-    const adminUser = localStorage.getItem("adminuser");
     localStorage.clear();
-    if (adminUser) {
-      navigate("/admin/login");
-    } else {
-      navigate("/login");
-    }
+    navigate("/admin/login");
   };
 
   const handleNavigateProfile = () => {
     setShowDrop(false);
-    const adminUser = localStorage.getItem("adminuser");
-    if (adminUser) {
-      window.dispatchEvent(new Event("openAdminProfile"));
-      return;
-    }
-    const partner = localStorage.getItem("partner");
-    if (partner) {
-      navigate("/dashboard/accountants/profile");
-    } else {
-      navigate("/dashboard/users/profile");
-    }
+    window.dispatchEvent(new Event("openAdminProfile"));
   };
 
   const profilePic = localStorage.getItem("userProfilePic") || profile;
@@ -48,7 +47,7 @@ const MenuNav = ({
   return (
     <>
       <div className="dash-nav">
-        <div style={{ flex: 1 }}></div>
+        <div style={{ flex: 1 }} />
         <div className="full-user" onClick={() => setShowDrop(!showDrop)}>
           <div className="user-box">
             <img className="user-icon" src={profilePic} alt="User" />
