@@ -20,7 +20,7 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus }) => {
   const { sideNav, setsideNav } = useStore();
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [imgError, setImgError] = useState(false); // ✅ fallback if image fails
+  const [imgError, setImgError] = useState(false);
 
   const isLocked = approvalStatus === "pending" || approvalStatus === "rejected";
 
@@ -36,7 +36,6 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus }) => {
     setTransactionData,
   } = useCoinContextData();
 
-  /* ── get user from storage ── */
   const getUserFromStorage = () => {
     try {
       const raw = localStorage.getItem("user");
@@ -46,17 +45,20 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus }) => {
   };
 
   const userDetails = getUserFromStorage();
-  const fullName    = userDetails?.name || userDetails?.email || "User";
-  const firstName   = fullName.split(" ")[0];
-  const initials    = firstName.split(" ").map((w) => w[0]?.toUpperCase()).join("") || "U";
 
-  // ✅ Get profile picture — from localStorage or from user object
-  const profilePic  = localStorage.getItem("userProfilePic")
-                      || userDetails?.profilePicture
-                      || userDetails?.profilePicURL
-                      || null;
+  // ✅ Fix: try name first, fallback to email prefix (not full email)
+  const rawName   = userDetails?.name || userDetails?.fullName || "";
+  const firstName = rawName
+    ? rawName.split(" ")[0]
+    : (userDetails?.email || "User").split("@")[0];
+  const initials  = firstName.charAt(0).toUpperCase() || "U";
 
-  /* ── handlers ── */
+  // ✅ Profile picture from localStorage or user object
+  const profilePic = localStorage.getItem("userProfilePic")
+                  || userDetails?.profilePicture
+                  || userDetails?.profilePicURL
+                  || null;
+
   const handleNavigation = (title, path) => {
     if (isLocked) return;
     setCurrentStepData("");
@@ -108,10 +110,10 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus }) => {
               className={`each-sidenav ${sideNav === each.title ? "active" : ""}`}
               onClick={() => handleNavigation(each.title, each.path)}
               style={{
-                opacity: isLocked ? 0.35 : 1,
-                cursor: isLocked ? "not-allowed" : "pointer",
+                opacity:       isLocked ? 0.35 : 1,
+                cursor:        isLocked ? "not-allowed" : "pointer",
                 pointerEvents: isLocked ? "none" : "auto",
-                userSelect: "none",
+                userSelect:    "none",
               }}
             >
               {each.title}
@@ -126,10 +128,10 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus }) => {
               className={`each-sidenav ${sideNav === ele.title ? "active" : ""}`}
               onClick={() => handleNavigation(ele.title, ele.path)}
               style={{
-                opacity: isLocked ? 0.35 : 1,
-                cursor: isLocked ? "not-allowed" : "pointer",
+                opacity:       isLocked ? 0.35 : 1,
+                cursor:        isLocked ? "not-allowed" : "pointer",
                 pointerEvents: isLocked ? "none" : "auto",
-                userSelect: "none",
+                userSelect:    "none",
               }}
             >
               {ele.title}
@@ -172,14 +174,11 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus }) => {
         <>
           <div className="popup-backdrop" onClick={() => setShowUserMenu(false)} />
           <div className="sidebar-user-popup">
-
             <div className="sup-item" onClick={handleProfileClick}>
               <span className="sup-icon">👤</span>
               Profile
             </div>
-
             <div className="sup-divider" />
-
             <div className="sup-item sup-item--logout" onClick={handleLogout}>
               <span className="sup-icon">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -192,7 +191,6 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus }) => {
               </span>
               Log out
             </div>
-
           </div>
         </>
       )}
@@ -203,7 +201,6 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus }) => {
         onClick={() => setShowUserMenu((v) => !v)}
         style={{ cursor: "pointer" }}
       >
-        {/* ✅ Show profile picture if available, else fallback to initials */}
         {profilePic && !imgError ? (
           <img
             src={profilePic}
@@ -219,10 +216,8 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus }) => {
             }}
           />
         ) : (
-          // ✅ Fallback — initials avatar
           <div className="sus-avatar">{initials}</div>
         )}
-
         <div className="sus-name">{firstName}</div>
         <div className="sus-dots">•••</div>
       </div>

@@ -55,9 +55,6 @@ const StepCard = ({ step, index, onClick }) => {
     <div className="step-card" onClick={onClick}>
       <div className="sc-top">
         <div className="sc-number">{stepNum}</div>
-        <div className={`sc-badge ${isFree ? "sc-badge--free" : "sc-badge--paid"}`}>
-          {isFree ? "Free" : "Paid"}
-        </div>
       </div>
 
       <div className="sc-body">
@@ -66,11 +63,7 @@ const StepCard = ({ step, index, onClick }) => {
       </div>
 
       <div className="sc-footer">
-        {duration && (
-          <span className="sc-duration">
-            <IconClock /> {duration}
-          </span>
-        )}
+       
         <span className="sc-cta">
           View Step <IconArrow />
         </span>

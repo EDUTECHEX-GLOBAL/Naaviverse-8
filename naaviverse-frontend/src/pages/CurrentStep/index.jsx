@@ -379,17 +379,6 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                 </span>
               </div>
 
-              {/* Step X of Y pill */}
-              <div className="page-meta">
-                <span className="meta-pill mp-gray">
-                  📍{" "}
-                  {stepNumber && totalSteps
-                    ? `Step ${stepNumber} of ${totalSteps}`
-                    : stepNumber
-                    ? `Step ${stepNumber}`
-                    : ""}
-                </span>
-              </div>
 
               {/* Back button */}
               <span
@@ -437,7 +426,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                     navigate("/dashboard/users/Marketplace", { state: { view: "Macro" } });
                   }}
                 >
-                  🆓 Browse Free Tools
+                   Browse Free Tools
                 </button>
               </div>
             </div>
@@ -468,7 +457,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                     navigate("/dashboard/users/Marketplace", { state: { view: "Micro" } });
                   }}
                 >
-                  🔄 Browse Subscriptions
+                   Browse Subscriptions
                 </button>
               </div>
             </div>
@@ -499,7 +488,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                     navigate("/dashboard/users/Marketplace", { state: { view: "Nano" } });
                   }}
                 >
-                  🎓 Book a Session
+                   Book a Session
                 </button>
               </div>
             </div>

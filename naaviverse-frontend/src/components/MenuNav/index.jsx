@@ -14,20 +14,19 @@ const MenuNav = ({
 }) => {
   const navigate = useNavigate();
 
-  const isPartner  = !!localStorage.getItem("partner");
+  const isPartner   = !!localStorage.getItem("partner");
   const isAdminUser = !!localStorage.getItem("adminuser");
+  const isUserRoute = window.location.pathname.startsWith("/dashboard/users");
 
-  // ✅ Partners use sidebar — no top nav needed
+  // ✅ Partners use their own sidebar — no MenuNav needed
   if (isPartner) return null;
 
-  // ✅ Regular users — show ONLY clean white space, no profile pic, no dropdown
+  // ✅ User dashboard — return null completely, sidebar handles everything
+  if (isUserRoute) return null;
+
+  // ✅ Non-admin, non-partner, non-user route — just empty nav bar
   if (!isAdminUser) {
-    return (
-      <div className="dash-nav">
-        <div style={{ flex: 1 }} />
-        {/* ✅ Empty space — keeps layout consistent, no profile section */}
-      </div>
-    );
+    return <div className="dash-nav" style={{ minHeight: "70px" }} />;
   }
 
   // ── Admin only below this point ──────────────────────────────────────────
