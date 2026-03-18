@@ -205,7 +205,6 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
                 Log out instead
               </span>
             </div>
-
           </div>
         </div>
       )}
