@@ -16,23 +16,21 @@ const Pathview = ({ paths, loading }) => {
   // Format data based on NEW PATH MODEL
   const formattedData = useMemo(() => {
     return (paths || []).map((p) => ({
-      _id: p._id,
-      pathName: p.nameOfPath || "Untitled Path",
-      program: p.program || "-",
-      description: p.description || "-",
-      raw: p,
+      _id:         p._id,
+      pathName:    p.nameOfPath    || "Untitled Path",
+      program:     p.program       || "-",
+      description: p.description   || "-",
+      raw:         p,
     }));
   }, [paths]);
 
-  // Search
+  // Search filter
   const filteredData = useMemo(() => {
     if (!searchTerm?.trim()) return formattedData;
-
     const term = searchTerm.toLowerCase();
-
     return formattedData.filter((item) =>
-      item.pathName.toLowerCase().includes(term) ||
-      item.program.toLowerCase().includes(term) ||
+      item.pathName.toLowerCase().includes(term)    ||
+      item.program.toLowerCase().includes(term)     ||
       item.description.toLowerCase().includes(term)
     );
   }, [formattedData, searchTerm]);
@@ -60,52 +58,71 @@ const Pathview = ({ paths, loading }) => {
   return (
     <div className="pathviewPage">
 
-      {/* TABLE HEADER */}
-      <div className="pathviewNav">
-        <div className="name-div">Path Name</div>
-        <div className="name-div">Program</div>
-        <div className="description-div">Description</div>
+      {/*
+        Mobile scroll:
+        .pathview-scroll-x   → overflow-x + overflow-y: auto (single scroll zone)
+          .pathview-table-inner → min-width: 640px forces horizontal scroll
+            .pathviewNav     → sticky header
+            .pathviewContent → rows
+        .pagination-controls → outside, always at bottom
+      */}
+      <div className="pathview-scroll-x">
+        <div className="pathview-table-inner">
+
+          {/* COLUMN HEADERS */}
+          <div className="pathviewNav">
+            <div className="name-div">Path Name</div>
+            <div className="name-div">Program</div>
+            <div className="description-div">Description</div>
+          </div>
+
+          {/* ROWS */}
+          <div className="pathviewContent">
+            {loading ? (
+              Array(5).fill("").map((_, i) => (
+                <div className="each-pv-data" key={i}>
+                  <div className="each-pv-name"><Skeleton width={120} /></div>
+                  <div className="each-pv-name"><Skeleton width={120} /></div>
+                  <div className="each-pv-desc"><Skeleton width={220} /></div>
+                </div>
+              ))
+            ) : paginatedData.length > 0 ? (
+              paginatedData.map((row) => (
+                <div
+                  className="each-pv-data"
+                  key={row._id}
+                  onClick={() => handlePathSelection(row)}
+                >
+                  <div className="each-pv-name">{row.pathName}</div>
+                  <div className="each-pv-name">{row.program}</div>
+                  <div className="each-pv-desc">{row.description}</div>
+                </div>
+              ))
+            ) : (
+              <div className="no-data">No Paths Found</div>
+            )}
+          </div>
+
+        </div>
       </div>
 
-      {/* TABLE BODY */}
-      <div className="pathviewContent">
-        {loading ? (
-          Array(5).fill("").map((_, i) => (
-            <div className="each-pv-data" key={i}>
-              <div className="each-pv-name"><Skeleton width={160}/></div>
-              <div className="each-pv-name"><Skeleton width={160}/></div>
-              <div className="each-pv-desc"><Skeleton width={300}/></div>
-            </div>
-          ))
-        ) : paginatedData.length > 0 ? (
-          paginatedData.map((row) => (
-            <div
-              className="each-pv-data"
-              key={row._id}
-              onClick={() => handlePathSelection(row)}
-            >
-              <div className="each-pv-name">{row.pathName}</div>
-              <div className="each-pv-name">{row.program}</div>
-              <div className="each-pv-desc">{row.description}</div>
-            </div>
-          ))
-        ) : (
-          <div className="no-data">No Paths Found</div>
-        )}
-      </div>
-
-      {/* PAGINATION */}
+      {/* PAGINATION — always pinned at bottom, never scrolls */}
       <div className="pagination-controls">
-        <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
+        <button
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage((p) => p - 1)}
+        >
           Previous
         </button>
-
-        <span>Page {currentPage} / {totalPages}</span>
-
-        <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
+        <span>Page {currentPage} / {totalPages || 1}</span>
+        <button
+          disabled={currentPage === totalPages || totalPages === 0}
+          onClick={() => setCurrentPage((p) => p + 1)}
+        >
           Next
         </button>
       </div>
+
     </div>
   );
 };

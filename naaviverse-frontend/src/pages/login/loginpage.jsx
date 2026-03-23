@@ -108,11 +108,16 @@ const Loginpage = () => {
 
             // ✅ ROUTING LOGIC
             if (loginType === "Users") {
-                // Users go straight to their dashboard
                 if (result.user) {
                     localStorage.setItem("user", JSON.stringify(result.user));
+
+                    // ✅ Save profile picture directly from login response
+                    if (result.user.profilePicture) {
+                        localStorage.setItem("userProfilePic", result.user.profilePicture);
+                    }
                 }
                 navigate("/dashboard/users/profile");
+
 
             } else {
                 // ── PARTNER LOGIN ──────────────────────────────────────────────

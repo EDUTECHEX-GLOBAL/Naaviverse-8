@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./dashsidebar.scss";
 import { useStore } from "../store/store.ts";
-import { useNavigate, useLocation } from "react-router-dom"; // ✅ added useLocation
+import { useNavigate, useLocation } from "react-router-dom";
 import { useCoinContextData } from "../../context/CoinContext";
 import logo from '../../assets/images/logo/naavi_final_logo2.png';
 import history from "./history.svg";
@@ -19,16 +19,15 @@ const sidebarMenu2 = [
 const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileIncomplete }) => {
   const { sideNav, setsideNav } = useStore();
   const navigate  = useNavigate();
-  const location  = useLocation(); // ✅ get current path
+  const location  = useLocation();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [imgError, setImgError]         = useState(false);
 
-  // ✅ Two separate lock conditions
+  // ✅ NEW: mobile drawer state
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   const isApprovalLocked = approvalStatus === "pending" || approvalStatus === "rejected";
   const isLocked         = isApprovalLocked || !!isProfileIncomplete;
-
-  // ✅ Don't show incomplete overlay when already on profile page
-  // UserProfile handles the creation form there directly
   const isOnProfilePage  = location.pathname === "/dashboard/users/profile";
 
   const {
@@ -64,6 +63,7 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
                   || userDetails?.profilePicURL
                   || null;
 
+  // ✅ Close drawer after navigation on mobile
   const handleNavigation = (title, path) => {
     if (isLocked) return;
     setCurrentStepData("");
@@ -74,6 +74,7 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
     setsideNav(title);
     navigate(path);
     setShowUserMenu(false);
+    setMobileOpen(false); // close drawer on mobile
   };
 
   const handleLogout = () => {
@@ -86,14 +87,39 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
     setsideNav("User");
     navigate("/dashboard/users/profile");
     setShowUserMenu(false);
+    setMobileOpen(false); // close drawer on mobile
+  };
+
+  const closeMobile = () => {
+    setMobileOpen(false);
+    setShowUserMenu(false);
   };
 
   return (
     <>
       {/* ══════════════════════════════════════════════════════════════
+          HAMBURGER BUTTON — mobile only, always visible
+      ══════════════════════════════════════════════════════════════ */}
+      <button
+        className={`mobile-menu-btn ${mobileOpen ? "open" : ""}`}
+        onClick={() => setMobileOpen((v) => !v)}
+        aria-label="Toggle navigation menu"
+      >
+        <span />
+        <span />
+        <span />
+      </button>
+
+      {/* ══════════════════════════════════════════════════════════════
+          MOBILE BACKDROP — tap outside to close
+      ══════════════════════════════════════════════════════════════ */}
+      <div
+        className={`sidebar-backdrop ${mobileOpen ? "visible" : ""}`}
+        onClick={closeMobile}
+      />
+
+      {/* ══════════════════════════════════════════════════════════════
           PROFILE INCOMPLETE OVERLAY
-          ✅ Only shows on NON-profile pages
-          On /profile page — creation form handles it directly
       ══════════════════════════════════════════════════════════════ */}
       {isProfileIncomplete && !isOnProfilePage && (
         <div style={{
@@ -110,15 +136,13 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
           <div style={{
             background:    "#ffffff",
             borderRadius:  "24px",
-            padding:       "48px 52px",
+            padding:       "48px 32px",
             maxWidth:      "440px",
             width:         "88%",
             textAlign:     "center",
             boxShadow:     "0 24px 64px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08)",
             border:        "1.5px solid #e2e8f0",
           }}>
-
-            {/* Icon */}
             <div style={{
               width:          "68px",
               height:         "68px",
@@ -133,8 +157,6 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
             }}>
               👤
             </div>
-
-            {/* Title */}
             <div style={{
               fontSize:      "21px",
               fontWeight:    "700",
@@ -145,8 +167,6 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
             }}>
               Complete Your Profile First
             </div>
-
-            {/* Divider */}
             <div style={{
               width:        "44px",
               height:       "3px",
@@ -154,8 +174,6 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
               background:   "linear-gradient(90deg, #0d9488, #6366f1)",
               margin:       "0 auto 16px",
             }} />
-
-            {/* Message */}
             <div style={{
               fontSize:     "14px",
               color:        "#64748b",
@@ -166,12 +184,11 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
               You need to complete all <strong>3 levels</strong> of your
               Naavi profile before accessing the platform.
             </div>
-
-            {/* ✅ CTA — navigates to profile page */}
             <div
               onClick={() => {
                 navigate("/dashboard/users/profile");
                 setShowUserMenu(false);
+                setMobileOpen(false);
               }}
               style={{
                 display:      "inline-block",
@@ -189,8 +206,6 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
             >
               Complete Profile →
             </div>
-
-            {/* Logout */}
             <div>
               <span
                 onClick={handleLogout}
@@ -210,9 +225,13 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
       )}
 
       {/* ══════════════════════════════════════════════════════════════
-          SIDEBAR — always above overlay (zIndex: 99999)
+          SIDEBAR
+          desktop: static in flex row
+          mobile:  fixed drawer, slides in/out
       ══════════════════════════════════════════════════════════════ */}
-      <div className="dashboard-sidebar1" style={{ position: "relative", zIndex: 99999 }}>
+      <div
+        className={`dashboard-sidebar1 ${mobileOpen ? "mobile-open" : ""}`}
+      >
 
         {/* ── LOGO ── */}
         <div className="logo-border">
@@ -222,6 +241,7 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
               if (isLocked) return;
               setsideNav("Paths");
               navigate("/dashboard/users/paths");
+              setMobileOpen(false);
             }}
             style={{ cursor: isLocked ? "default" : "pointer" }}
           >
@@ -288,6 +308,7 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
                     setSelectedPathItem(preLoginHistoryData);
                     localStorage.setItem("selectedPath", JSON.stringify(preLoginHistoryData?.nameOfPath));
                     navigate("/dashboard/users/my-journey");
+                    setMobileOpen(false);
                   }}
                 >
                   Open
@@ -297,7 +318,7 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
           )}
         </div>
 
-        {/* ── USER POPUP MENU — always clickable ── */}
+        {/* ── USER POPUP MENU ── */}
         {showUserMenu && (
           <>
             <div className="popup-backdrop" onClick={() => setShowUserMenu(false)} />
@@ -323,7 +344,7 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
           </>
         )}
 
-        {/* ── BOTTOM USER STRIP — always clickable ── */}
+        {/* ── BOTTOM USER STRIP ── */}
         <div
           className={`sidebar-user-strip ${showUserMenu ? "active" : ""}`}
           onClick={() => setShowUserMenu((v) => !v)}

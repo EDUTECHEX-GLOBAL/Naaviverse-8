@@ -83,17 +83,9 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
         const allSteps = stepsRes.value.data?.data || [];
         
         // Fetch path details for each step to get path names
-        for (const step of allSteps) {
-          try {
-            if (step.path_id) {
-              const pathRes = await axios.get(`${BASE_URL}/api/paths/viewpath/${step.path_id}`);
-              const pathData = pathRes.data.data;
-              step.path_name = pathData?.nameOfPath || "Unknown Path";
-            }
-          } catch (err) {
-            console.error("Error fetching path details:", err);
-          }
-        }
+allSteps.forEach(step => {
+  step.path_name = step.name || step.macro_name || "Unknown Path";
+});
 
         allSteps.forEach((step, si) => {
           ["macro", "micro", "nano"].forEach((layer) => {

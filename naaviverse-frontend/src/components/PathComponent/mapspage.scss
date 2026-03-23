@@ -1,38 +1,26 @@
 /* ================= EDUCATION HEADER ================= */
 
-/* ===== Education Section Header (MATCH IMAGE 2) ===== */
-
-/* ===== Education Header (LEFT + COLUMN) ===== */
-
 .education-header {
   display: flex;
-  flex-direction: column;     /* icon on top, text below */
-  align-items: flex-start;    /* 👈 LEFT ALIGN */
-
+  flex-direction: column;
+  align-items: flex-start;
   width: 100%;
   padding: 16px 20px;
   box-sizing: border-box;
-
   border-bottom: 1px solid #e6e6e6;
-
-  margin-bottom: 0 !important;   /* 🔥 FORCE REMOVE */
+  margin-bottom: 0 !important;
   padding-bottom: 8px !important;
-
-
 }
 
-/* Icon circle */
 .education-icon {
   width: 56px;
   height: 56px;
   border-radius: 50%;
   border: 1.5px solid #000;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  margin-bottom: 6px;   /* space between icon & text */
+  margin-bottom: 6px;
 }
 
 .education-icon img {
@@ -41,16 +29,15 @@
   display: block;
 }
 
-/* Text below icon (LEFT aligned) */
 .education-title {
   font-size: 18px;
   font-weight: 600;
   color: #000;
-  text-align: left;     /* 👈 LEFT */
+  text-align: left;
   line-height: 1.2;
 }
 
-
+/* ================= SEARCH ================= */
 
 .search-container-ai {
   padding: 1rem;
@@ -87,6 +74,8 @@
   }
 }
 
+/* ================= MAIN LAYOUT ================= */
+
 .mapspage1 {
   width: 100%;
   height: 100%;
@@ -95,14 +84,69 @@
     width: 100%;
     height: 100%;
     display: flex;
-    flex-direction: row-reverse;
+    flex-direction: row-reverse; /* sidebar on RIGHT, content on LEFT — desktop */
 
+    /* ── LEFT: Path list ── */
+    .maps-content-area1 {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      overflow-y: auto;
+
+      .path-options-div {
+        width: 100%;
+        height: 3rem;
+        display: flex;
+        justify-content: center;
+
+        .path-options {
+          width: fit-content;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          padding: 1rem 2rem;
+          border: 0.5px solid #e5e5e5;
+          border-bottom-left-radius: 45px;
+          border-bottom-right-radius: 45px;
+          border-top: none;
+
+          .each-path-opt {
+            font-size: 0.8rem;
+            padding: 5px 1.5rem;
+            border-radius: 25px;
+          }
+
+          .toggleContainer1 {
+            width: 2.5rem;
+            border: 1px solid #d9d9d9;
+            border-radius: 35px;
+            margin-left: 10px;
+            margin-right: 10px;
+            cursor: pointer;
+
+            .toggle1 {
+              margin: 2px;
+              width: 14px;
+              height: 14px;
+              background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%);
+              border-radius: 50%;
+              transition: all 0.5s ease;
+              cursor: pointer;
+            }
+          }
+        }
+      }
+    }
+
+    /* ── RIGHT: Filters sidebar ── */
     .maps-sidebar1 {
-      // width: 30%;
       width: 350px;
+      min-width: 350px;
       height: 100%;
       border-left: 1px solid #e5e5e5;
-      overflow-y: scroll;
+      overflow-y: auto;
+      flex-shrink: 0;
 
       .top-icons1 {
         display: flex;
@@ -141,7 +185,6 @@
             .border-div1 {
               box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
             }
-
             .icon-name-txt1 {
               transform: scale(1.05);
             }
@@ -151,12 +194,11 @@
 
       .mid-area1 {
         width: 100%;
-      padding: 0.75rem 1rem;   // 👈 smaller top space
+        padding: 0.75rem 1rem;
         border-bottom: 1px solid #e5e5e5;
         display: flex;
         flex-direction: column;
-       gap: 0.75rem;
-
+        gap: 0.75rem;
 
         .current-coord-container {
           width: 100%;
@@ -166,8 +208,8 @@
           margin-bottom: 1rem;
 
           .current-text {
-             margin-top: 4px;      /* 👈 REDUCED */
-             margin-bottom: 12px;
+            margin-top: 4px;
+            margin-bottom: 12px;
             font-size: 0.9rem;
             font-weight: 500;
           }
@@ -185,7 +227,6 @@
             .field-name {
               width: 45%;
               height: 3rem;
-              // padding: 1rem 1rem 1rem 2rem;
               border-right: 1px solid #e5e5e5;
               font-size: 0.9em;
               display: flex;
@@ -231,10 +272,7 @@
             img {
               cursor: pointer;
               transition: all ease 0.2s;
-
-              &:hover {
-                transform: scale(1.05);
-              }
+              &:hover { transform: scale(1.05); }
             }
           }
 
@@ -264,10 +302,7 @@
           gap: 7px;
           cursor: pointer;
           transition: all ease 0.2s;
-
-          &:hover {
-            transform: scale(1.05);
-          }
+          &:hover { transform: scale(1.05); }
         }
 
         .maps-btns-div1 {
@@ -286,10 +321,7 @@
             font-size: 0.8rem;
             cursor: pointer;
             transition: all ease 0.2s;
-
-            &:hover {
-              transform: scale(1.05);
-            }
+            &:hover { transform: scale(1.05); }
           }
 
           .reset-btn1 {
@@ -302,10 +334,7 @@
             border: 1px solid #e5e5e5;
             cursor: pointer;
             transition: all ease 0.2s;
-
-            &:hover {
-              transform: scale(1.05);
-            }
+            &:hover { transform: scale(1.05); }
           }
         }
       }
@@ -323,10 +352,7 @@
         .congrats-textt {
           font-size: 1.25rem;
           font-weight: 500;
-          background: var(
-            --Naavi,
-            linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%)
-          );
+          background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%);
           background-clip: text;
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
@@ -339,62 +365,10 @@
         }
       }
     }
-
-    .maps-content-area1 {
-      width: 77%;
-      height: 100%;
-
-      .path-options-div {
-        width: 100%;
-        height: 3rem;
-        display: flex;
-        justify-content: center;
-
-        .path-options {
-          width: fit-content;
-          height: 100%;
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          padding: 1rem 2rem;
-          border: 0.5px solid #e5e5e5;
-          border-bottom-left-radius: 45px;
-          border-bottom-right-radius: 45px;
-          border-top: none;
-
-          .each-path-opt {
-            font-size: 0.8rem;
-            padding: 5px 1.5rem;
-            border-radius: 25px;
-          }
-
-          .toggleContainer1 {
-            width: 2.5rem;
-            border: 1px solid #d9d9d9;
-            border-radius: 35px;
-            margin-left: 10px;
-            margin-right: 10px;
-            cursor: pointer;
-
-            .toggle1 {
-              margin: 2px;
-              width: 14px;
-              height: 14px;
-              background: linear-gradient(
-                90deg,
-                #47b4d5 0.02%,
-                #29449d 119.26%
-              );
-              border-radius: 50%;
-              transition: all 0.5s ease;
-              cursor: pointer;
-            }
-          }
-        }
-      }
-    }
   }
 }
+
+/* ================= TOGGLE ================= */
 
 .toggleContainer {
   width: 15% !important;
@@ -402,9 +376,8 @@
   border-radius: 35px;
   margin-left: 10px;
   margin-right: 10px;
-  // position: absolute;
-  // justify-content: center;
 }
+
 .toggle {
   margin: 2px;
   width: 14px;
@@ -412,6 +385,166 @@
   background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%);
   border-radius: 50%;
   transition: all 0.5s ease;
-  // transform: translateX(0px);
   cursor: pointer;
+}
+
+/* ================= MOBILE FILTER TOGGLE BAR ================= */
+
+/* Hidden on desktop */
+.mobile-filter-toggle {
+  display: none;
+}
+
+/* On desktop, filter content always visible */
+.sidebar-filter-content {
+  display: block;
+}
+
+/* ═══════════════════════════════════════════════
+   MOBILE  ≤ 768px
+   Stack: filters panel on top, path list below
+═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── Show the toggle bar ── */
+  .mobile-filter-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: #f8faff;
+    border-bottom: 1px solid #e5e5e5;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1E2D4A;
+    user-select: none;
+
+    .mobile-filter-chevron {
+      font-size: 11px;
+      color: #9AABBE;
+    }
+  }
+
+  /* ── Filter content: collapsed by default on mobile ── */
+  .sidebar-filter-content {
+    display: none;
+    &.open {
+      display: block;
+    }
+  }
+
+  .mapspage1 {
+    /* Let content define the height, don't clip it */
+    height: auto !important;
+    min-height: 100%;
+    overflow-y: auto;
+
+    .maps-container1 {
+      flex-direction: column;
+      height: auto !important;
+      overflow: visible;
+
+      /* Filters panel: full width, auto height */
+      .maps-sidebar1 {
+        width: 100% !important;
+        min-width: 100% !important;
+        height: auto !important;
+        border-left: none;
+        border-bottom: 2px solid #e5e5e5;
+        overflow-y: visible;
+        flex-shrink: unset;
+
+        .mid-area1 {
+          padding: 1rem;
+
+          .current-coord-container {
+            gap: 0.6rem;
+            margin-bottom: 0.5rem;
+
+            .each-coo-field {
+              border-radius: 12px;
+
+              .field-name {
+                width: 40%;
+                font-size: 0.8rem;
+                padding-left: 14px;
+                height: 2.6rem;
+              }
+
+              .field-value {
+                width: 40%;
+                font-size: 0.75rem;
+                padding: 0.6rem 0.8rem;
+              }
+            }
+          }
+
+          .maps-btns-div1 {
+            flex-direction: row;
+            flex-wrap: wrap;
+
+            .gs-Btn-maps1,
+            .reset-btn1 {
+              flex: 1;
+              min-width: 120px;
+              padding: 0.75rem 1rem;
+              font-size: 0.85rem;
+            }
+          }
+        }
+
+        .education-header {
+          padding: 12px 16px;
+
+          .education-icon {
+            width: 44px;
+            height: 44px;
+          }
+
+          .education-title {
+            font-size: 15px;
+          }
+        }
+      }
+
+      /* Path list: full width, allow horizontal overflow to reach pathview-scroll-x */
+      .maps-content-area1 {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 200px;
+        overflow: visible;
+        /* Critical: don't set overflow:hidden here or the table h-scroll gets clipped */
+      }
+    }
+  }
+
+  .toggleContainer {
+    width: 36px !important;
+    min-width: 36px;
+    flex-shrink: 0;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   SMALL PHONES  ≤ 480px
+═══════════════════════════════════════════════ */
+@media (max-width: 480px) {
+
+  .mapspage1 .maps-container1 {
+
+    .maps-sidebar1 .mid-area1 {
+      padding: 0.75rem;
+
+      .each-coo-field {
+        .field-name {
+          font-size: 0.75rem;
+          padding-left: 10px;
+        }
+        .field-value {
+          font-size: 0.7rem;
+        }
+      }
+    }
+  }
 }

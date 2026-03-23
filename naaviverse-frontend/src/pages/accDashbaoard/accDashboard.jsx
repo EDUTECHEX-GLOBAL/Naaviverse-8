@@ -3,7 +3,7 @@ import axios from "axios";
 import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
 import "./accDashboard.scss";
-import Marketplace from "./Marketplace";// Adjust the path as needed
+import Marketplace from "./Marketplace";
 import DraftPathView from "../DraftPathView";
 import { Outlet } from "react-router-dom";
 import searchic from "../../static/images/dashboard/searchic.svg";
@@ -156,7 +156,7 @@ const AccDashboard = () => {
   const [showCreateStepModal, setShowCreateStepModal] = useState(false);
   const [createStepForPathId, setCreateStepForPathId] = useState(null);
   const [selectedRole, setSelectedRole] = useState('all');
-
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const isViewPathRoute =
     location.pathname.startsWith("/dashboard/accountants/path/");
 
@@ -1704,15 +1704,48 @@ const AccDashboard = () => {
 
   return (
     <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+
+      {/* ── MOBILE TOPBAR ── only visible on ≤768px via CSS ── */}
+      <div className="mobile-topbar">
+        <div className="mobile-topbar-left">
+          <button
+            className="hamburger-btn"
+            onClick={() => setSidebarOpen(prev => !prev)}
+            aria-label="Open menu"
+          >
+            {/* Hamburger icon */}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+          <img className="mobile-topbar-logo" src={logo} alt="Naavi" />
+        </div>
+        <div className="mobile-topbar-right">
+          {/* Optional: user avatar or notification icon */}
+        </div>
+      </div>
+
+      {/* ── SIDEBAR OVERLAY — tap to close ── */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       <div className="dashboard-main" style={{ flex: 1, display: "flex", minHeight: 0 }}>
         <div className="dashboard-body">
           <div onClick={() => setShowDrop(false)} style={{ display: "contents" }}>
             <AccDashsidebar
               accStatus={JSON.parse(localStorage.getItem("partner") || "{}")?.approvalStatus}
+              isOpen={sidebarOpen}
+              onClose={() => setSidebarOpen(false)}
             />
           </div>
-          <div className="dashboard-screens"> 
-           <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", height: "100%" }}>
+          <div className="dashboard-screens">
+            <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", height: "100%" }}>
               {viewPathMode ? (
                 createStepForPathId ? (
                   // FULL CONTENT: Create Step view

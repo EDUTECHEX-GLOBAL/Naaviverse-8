@@ -23,9 +23,10 @@
   font-size: 0.95rem;
   color: #0066ff;
   text-decoration: underline;
-}
-.premium-back:hover {
-  opacity: 0.6;
+
+  &:hover {
+    opacity: 0.6;
+  }
 }
 
 /* ---- GRID ---- */
@@ -58,14 +59,13 @@
   transition: 0.25s ease;
   position: relative;
   min-height: 190px;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.15);
+  }
 }
 
-.step-card-premium:hover {
-  transform: translateY(-6px);
-  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-/* BUBBLE NUMBER */
 .step-number .bubble {
   width: 42px;
   height: 42px;
@@ -80,7 +80,6 @@
   margin-bottom: 1rem;
 }
 
-/* TEXT */
 .step-title-premium {
   font-size: 1.2rem;
   font-weight: 600;
@@ -100,6 +99,9 @@
   font-weight: 600;
 }
 
+/* ════════════════════════════════════════
+   PATHVIEW — DESKTOP
+════════════════════════════════════════ */
 
 .pathviewPage {
   display: flex;
@@ -108,30 +110,33 @@
   width: 100%;
 }
 
-/* Header */
+/* ── Header row ── */
 .pathviewNav {
   width: 100%;
-  height: 3rem;
+  min-height: 3rem;
   border-bottom: 0.5px solid #e5e5e5;
   display: flex;
   align-items: center;
+  flex-shrink: 0; /* never squish the header */
 
   .name-div {
     width: 30%;
     padding-left: 35px;
     font-size: 0.85rem;
     font-weight: 500;
+    white-space: nowrap;
   }
 
   .description-div {
-    width: 70%;
+    flex: 1;
     padding-left: 35px;
     font-size: 0.85rem;
     font-weight: 500;
+    white-space: nowrap;
   }
 }
 
-/* Scrollable list */
+/* ── Scrollable body ── */
 .pathviewContent {
   flex: 1;
   overflow-y: auto;
@@ -141,7 +146,7 @@
     display: flex;
     border-bottom: 0.5px solid #e5e5e5;
     cursor: pointer;
-    transition: 0.2s ease;
+    transition: background 0.2s ease;
 
     .each-pv-name {
       width: 30%;
@@ -152,7 +157,7 @@
     }
 
     .each-pv-desc {
-      width: 70%;
+      flex: 1;
       padding: 1.5rem 35px;
       line-height: 1.6;
       font-size: 0.85rem;
@@ -165,7 +170,7 @@
   }
 }
 
-/* Pagination bar (fixed at bottom) */
+/* ── Pagination bar ── */
 .pagination-controls {
   display: flex;
   justify-content: center;
@@ -174,6 +179,7 @@
   padding: 15px 0;
   border-top: 1px solid #e5e5e5;
   background: #fff;
+  flex-shrink: 0;
 
   button {
     padding: 8px 16px;
@@ -202,4 +208,131 @@
   justify-content: center;
   align-items: center;
   font-size: 1rem;
+}
+
+/* ════════════════════════════════════════
+   MOBILE  ≤ 768px
+   Table scrolls horizontally inside a
+   fixed-height container
+════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  .pathviewPage {
+    height: calc(100vh - 64px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  /* ── Outer wrapper: ONLY handles horizontal scroll ── */
+  .pathview-scroll-x {
+    flex: 1;
+    overflow-x: auto;   /* horizontal scroll */
+    overflow-y: auto;   /* vertical scroll also here — single scroll axis */
+    -webkit-overflow-scrolling: touch; /* smooth on iOS */
+    width: 100%;
+  }
+
+  /* ── Inner table: wider than screen → forces h-scroll ── */
+  .pathview-table-inner {
+    min-width: 640px;   /* Path(160) + Program(160) + Description(320) */
+    width: max-content; /* shrink-wraps to actual content width */
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header: fixed column widths matching rows ── */
+  .pathviewNav {
+    display: flex;
+    align-items: center;
+    height: 2.5rem;
+    border-bottom: 0.5px solid #e5e5e5;
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    width: 100%;
+
+    .name-div {
+      width: 160px;
+      min-width: 160px;
+      padding-left: 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .description-div {
+      width: 320px;
+      min-width: 320px;
+      padding-left: 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+  }
+
+  /* ── Rows ── */
+  .pathviewContent {
+    flex: 1;
+    overflow: visible; /* parent scroll-x handles it */
+
+    .each-pv-data {
+      display: flex;
+      align-items: flex-start;
+      border-bottom: 0.5px solid #e5e5e5;
+      min-height: auto; /* remove excess height */
+
+      .each-pv-name {
+        width: 160px;
+        min-width: 160px;
+        padding: 12px 8px 12px 14px;
+        font-size: 0.8rem;
+        line-height: 1.5;
+        word-break: break-word;
+      }
+
+      .each-pv-desc {
+        width: 320px;
+        min-width: 320px;
+        padding: 12px 14px;
+        font-size: 0.8rem;
+        line-height: 1.5;
+        word-break: break-word;
+      }
+    }
+  }
+
+  /* ── Pagination: always visible at bottom ── */
+  .pagination-controls {
+    flex-shrink: 0;
+    padding: 10px 0;
+    gap: 10px;
+    border-top: 1px solid #e5e5e5;
+    background: #fff;
+
+    button {
+      padding: 7px 14px;
+      font-size: 0.8rem;
+    }
+
+    span {
+      font-size: 0.8rem;
+    }
+  }
+}
+
+/* ════════════════════════════════════════
+   SMALL PHONES  ≤ 480px
+════════════════════════════════════════ */
+@media (max-width: 480px) {
+
+  .pathviewPage {
+    height: calc(100vh - 64px);
+  }
+
+  .pathview-table-inner,
+  .pathviewNav,
+  .pathviewContent {
+    min-width: 560px;
+  }
 }

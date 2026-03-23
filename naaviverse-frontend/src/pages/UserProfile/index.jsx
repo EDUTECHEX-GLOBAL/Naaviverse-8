@@ -345,8 +345,11 @@ const UserProfile = () => {
                         <div className="up-info-grid">
                           <InfoItem label="Profile Picture">
                             {profileData.profilePicture ? (
+                              console.log("Profile picture URL:", profileData.profilePicture),
                               <img src={profileData.profilePicture}
+                              
                                 alt="Profile" className="up-avatar" />
+                                
                             ) : (
                               <div className="up-avatar-placeholder">
                                 {profileData.name?.charAt(0)?.toUpperCase() || "U"}

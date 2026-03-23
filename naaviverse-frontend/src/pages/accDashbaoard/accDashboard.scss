@@ -1622,19 +1622,22 @@ input[type="file"] {
 
 .popularS {
   position: fixed;
-  top: 55% !important;
+  top: 50% !important;        
   left: 50% !important;
   transform: translate(-50%, -50%);
-  height: auto;
+  height: 85vh !important;    
   width: 60% !important;
   max-width: 600px !important;
-  max-height: 500px !important;
-  padding: 2rem;
+  max-height: 85vh !important; 
+  padding: 1rem 2rem;          
   background: white;
   border: 0.5px solid #2c7cb2;
-  border-left: 0.5px solid #2c7cb2 !important;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  z-index: 3;
+  z-index: 1000;               
+  overflow: hidden;            
+  display: flex;               
+  flex-direction: column;      
+  box-sizing: border-box;      
   transition: all ease-in 0.4s;
 
   .head-txt {
@@ -1657,14 +1660,17 @@ input[type="file"] {
     }
   }
 
-  .overall-div {
-    width: 100%;
-    height: calc(100% - 11rem);
-    display: flex;
-    flex-direction: column;
-    overflow-y: scroll;
-    color: #1f304f;
-  }
+.overall-div {
+  width: 100%;
+  flex: 1;                     
+  min-height: 0;               
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;            
+  overflow-x: hidden;          
+  box-sizing: border-box;      
+  color: #1f304f;
+}
 
   .stepBtns {
     width: 100%;

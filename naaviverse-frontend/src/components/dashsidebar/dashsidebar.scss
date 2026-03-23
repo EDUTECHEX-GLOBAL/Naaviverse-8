@@ -1,5 +1,66 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap');
 
+/* ══════════════════════════════════
+   HAMBURGER BUTTON (mobile only)
+══════════════════════════════════ */
+.mobile-menu-btn {
+  display: none;
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 100002; /* above sidebar (99999) and backdrop (99998) */
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1.5px solid #E4EBF8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px;
+  outline: none;
+
+  span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #1E2D4A;
+    border-radius: 2px;
+    transition: all 0.25s ease;
+    pointer-events: none;
+  }
+
+  &.open span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  &.open span:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  &.open span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+}
+
+/* ══════════════════════════════════
+   MOBILE BACKDROP
+══════════════════════════════════ */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 31, 61, 0.45);
+  z-index: 99998;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+/* ══════════════════════════════════
+   SIDEBAR
+══════════════════════════════════ */
 .dashboard-sidebar1 {
   width: 260px;
   min-width: 260px;
@@ -10,6 +71,8 @@
   flex-direction: column;
   font-family: 'Nunito', sans-serif;
   position: relative;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
 }
 
 /* ── Logo ── */
@@ -39,19 +102,15 @@
   flex: 1;
   overflow-y: auto;
   padding: 8px 0;
-  
-  /* Hide scrollbar for cleaner look */
   scrollbar-width: thin;
   scrollbar-color: #C8DAEA #F4F7FF;
-  
+
   &::-webkit-scrollbar {
     width: 4px;
   }
-  
   &::-webkit-scrollbar-track {
     background: #F4F7FF;
   }
-  
   &::-webkit-scrollbar-thumb {
     background-color: #C8DAEA;
     border-radius: 20px;
@@ -63,7 +122,7 @@
   margin-bottom: 8px;
 }
 
-/* ── Nav Items (Larger text) ── */
+/* ── Nav Items ── */
 .each-sidenav {
   padding: 14px 20px;
   margin: 4px 0;
@@ -80,7 +139,7 @@
     color: #1E2D4A;
     padding-left: 24px;
   }
-  
+
   &.active {
     background: #FFFFFF;
     color: #100F0D;
@@ -106,9 +165,9 @@
   flex-direction: column;
   gap: 8px;
 
-  img { 
-    width: 24px; 
-    opacity: 0.6; 
+  img {
+    width: 24px;
+    opacity: 0.6;
   }
 }
 
@@ -140,7 +199,7 @@
   font-size: 11px;
   color: #9AABBE;
   word-break: break-all;
-  
+
   span {
     font-weight: 600;
   }
@@ -166,7 +225,7 @@
 }
 
 /* ══════════════════════════════════
-   BOTTOM USER STRIP (Simplified)
+   BOTTOM USER STRIP
 ══════════════════════════════════ */
 .sidebar-user-strip {
   display: flex;
@@ -221,7 +280,7 @@
   color: #9AABBE;
   padding: 4px 8px;
   transition: color 0.2s;
-  
+
   .sidebar-user-strip:hover & {
     color: #5CA8E8;
   }
@@ -251,13 +310,13 @@
 }
 
 @keyframes popupSlide {
-  from { 
-    opacity: 0; 
-    transform: translateY(10px); 
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -285,7 +344,7 @@
   font-size: 16px;
   color: #5A6E8C;
 
-  svg { 
+  svg {
     display: block;
     width: 18px;
     height: 18px;
@@ -301,11 +360,61 @@
 .sup-item--logout {
   color: #E05252;
 
-  .sup-icon { 
-    color: #E05252; 
+  .sup-icon {
+    color: #E05252;
   }
 
   &:hover {
     background: #FFF0F0;
+  }
+}
+
+/* ══════════════════════════════════
+   MOBILE BREAKPOINT  ≤ 768px
+══════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Show hamburger button */
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  /* Sidebar becomes a fixed drawer, hidden off-screen by default.
+     width: 280px — doesn't need to fill full screen, just the nav panel */
+  .dashboard-sidebar1 {
+    position: fixed !important;  /* override the inline position:relative from JSX */
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 280px;
+    min-width: 280px;
+    z-index: 99999;
+    transform: translateX(-100%);
+    box-shadow: 4px 0 24px rgba(15, 31, 61, 0.15);
+
+    /* Slide in when open */
+    &.mobile-open {
+      transform: translateX(0);
+    }
+  }
+
+  /* Show backdrop when sidebar is open */
+  .sidebar-backdrop.visible {
+    display: block;
+  }
+
+  /* Push logo down so it clears the hamburger button */
+  .logo-border {
+    padding-top: 24px;
+    padding-left: 20px;
+  }
+
+  /* User popup stays inside drawer */
+  .sidebar-user-popup {
+    position: absolute;
+    bottom: 82px;
+    left: 12px;
+    right: 12px;
+    z-index: 100000;
   }
 }

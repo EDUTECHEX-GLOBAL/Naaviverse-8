@@ -21,6 +21,9 @@ const PathComponent = () => {
   const navigate = useNavigate();
   const { sideNav, setsideNav } = useStore();
 
+  // ✅ Mobile: toggle filters panel visibility
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
   const {
     pathItemSelected,
     setPathItemSelected,
@@ -91,14 +94,12 @@ const PathComponent = () => {
         setLoading(true);
 
         const params = {};
-        if (gradeToggle) params.grade = userProfile?.grade;
-        if (curriculumToggle) params.curriculum = userProfile?.curriculum;
-        if (streamToggle) params.stream = userProfile?.stream;
-        if (performanceToggle) params.performance = userProfile?.performance;
-        if (financialToggle) params.financial = userProfile?.financialSituation;
-        if (personalityToggle) params.personality = userProfile?.personality;
-
-        console.log("FETCHING PATHS WITH FILTERS 👉", params);
+        if (gradeToggle)       params.grade        = userProfile?.grade;
+        if (curriculumToggle)  params.curriculum   = userProfile?.curriculum;
+        if (streamToggle)      params.stream       = userProfile?.stream;
+        if (performanceToggle) params.performance  = userProfile?.performance;
+        if (financialToggle)   params.financial    = userProfile?.financialSituation;
+        if (personalityToggle) params.personality  = userProfile?.personality;
 
         const res = await axios.get(`${BASE_URL}/api/paths/active`, { params });
         setApprovedPaths(res.data.data || []);
@@ -110,17 +111,11 @@ const PathComponent = () => {
       }
     };
 
-    if (userProfile) {
-      fetchApprovedPaths();
-    }
+    if (userProfile) fetchApprovedPaths();
   }, [
     refetchPaths,
-    gradeToggle,
-    curriculumToggle,
-    streamToggle,
-    performanceToggle,
-    financialToggle,
-    personalityToggle,
+    gradeToggle, curriculumToggle, streamToggle,
+    performanceToggle, financialToggle, personalityToggle,
     userProfile,
   ]);
 
@@ -128,44 +123,28 @@ const PathComponent = () => {
   //  USER CONFIRMS PATH
   // --------------------------------------------------------------
   const confirmPathSelection = async () => {
-    const email = user?.email;
+    const email  = user?.email;
     const pathId = selectedPathItem?._id;
 
     if (!email || !pathId) {
-      console.error("❌ Missing email or pathId", { email, pathId });
       alert("Something went wrong. Please try again.");
       return;
     }
 
     try {
       setConfirmLoading(true);
-
-      // ✅ Save new pathId to localStorage
       localStorage.setItem("selectedPathId", pathId);
-
-      // ✅ FIX: Clear stale step data from previous path
-      // Without this, My Journey and Current Step show old path's data
       localStorage.removeItem("selectedStepId");
 
-      await axios.post(`${BASE_URL}/api/userpaths/selectpath`, {
-        email,
-        pathId,
-      });
-
-      console.log("✅ Path selected successfully");
+      await axios.post(`${BASE_URL}/api/userpaths/selectpath`, { email, pathId });
 
       setPathItemStep(3);
-
       setTimeout(() => {
         setsideNav("My Journey");
         navigate("/dashboard/users/my-journey");
       }, 2000);
-
     } catch (err) {
       console.error("❌ Select path error:", err.response?.data || err.message);
-
-      // Even if API fails, show congrats and navigate
-      // (localStorage already saved, journey will work)
       setPathItemStep(3);
       setTimeout(() => {
         setsideNav("My Journey");
@@ -177,7 +156,7 @@ const PathComponent = () => {
   };
 
   // --------------------------------------------------------------
-  //  RETURN
+  //  RENDER
   // --------------------------------------------------------------
   return (
     <div className="mapspage1">
@@ -186,146 +165,147 @@ const PathComponent = () => {
       ) : (
         <div className="maps-container1">
 
-          {/* LEFT SIDEBAR */}
-          <div className="maps-sidebar1">
+          {/* ── RIGHT: Filters Sidebar ── */}
+          <div className={`maps-sidebar1 ${filtersOpen ? "mobile-filters-open" : ""}`}>
 
-            {/* ── STEP 1: What do you want to do? ── */}
-            {pathItemSelected && pathItemStep === 1 ? (
-              <div className="mid-area1" style={{ borderBottom: "none" }}>
-                <div style={{ margin: "0.5rem 0" }}>What do you want to do?</div>
-                <div className="maps-btns-div1">
-                  <div
-                    className="reset-btn1"
-                    onClick={() =>
-                      navigate(`/dashboard/path/${selectedPathItem?._id}`)
-                    }
-                  >
-                    Explore Path
-                  </div>
-                  <div
-                    className="reset-btn1"
-                    onClick={() => setPathItemStep(2)}
-                  >
-                    Select Path
-                  </div>
-                  <div
-                    className="reset-btn1"
-                    onClick={() => {
-                      setPathItemSelected(false);
-                      setSelectedPathItem(null);
-                    }}
-                  >
-                    Go Back
-                  </div>
-                </div>
-              </div>
+            {/* ✅ Mobile toggle bar — only visible on mobile */}
+            <div
+              className="mobile-filter-toggle"
+              onClick={() => setFiltersOpen((v) => !v)}
+            >
+              <span>🎯 Filters & Coordinates</span>
+              <span className="mobile-filter-chevron">
+                {filtersOpen ? "▲" : "▼"}
+              </span>
+            </div>
 
-            ) : pathItemSelected && pathItemStep === 2 ? (
-              /* ── STEP 2: Confirm? ── */
-              <div className="mid-area1" style={{ borderBottom: "none" }}>
-                <div style={{ margin: "0.5rem 0" }}>
-                  Are you sure you want to select{" "}
-                  <strong>{selectedPathItem?.name}</strong>?
-                </div>
-                <div className="maps-btns-div1">
-                  <div
-                    className="reset-btn1"
-                    onClick={confirmPathSelection}
-                    style={{
-                      opacity: confirmLoading ? 0.6 : 1,
-                      pointerEvents: confirmLoading ? "none" : "auto",
-                      cursor: confirmLoading ? "not-allowed" : "pointer",
-                    }}
-                  >
-                    {confirmLoading ? "Confirming..." : "Yes, Confirm"}
-                  </div>
-                  <div
-                    className="reset-btn1"
-                    onClick={() => setPathItemStep(1)}
-                  >
-                    Go Back
+            {/* Filter content — hidden on mobile when closed */}
+            <div className={`sidebar-filter-content ${filtersOpen ? "open" : ""}`}>
+
+              {pathItemSelected && pathItemStep === 1 ? (
+                <div className="mid-area1" style={{ borderBottom: "none" }}>
+                  <div style={{ margin: "0.5rem 0" }}>What do you want to do?</div>
+                  <div className="maps-btns-div1">
+                    <div
+                      className="reset-btn1"
+                      onClick={() => navigate(`/dashboard/path/${selectedPathItem?._id}`)}
+                    >
+                      Explore Path
+                    </div>
+                    <div className="reset-btn1" onClick={() => setPathItemStep(2)}>
+                      Select Path
+                    </div>
+                    <div
+                      className="reset-btn1"
+                      onClick={() => { setPathItemSelected(false); setSelectedPathItem(null); }}
+                    >
+                      Go Back
+                    </div>
                   </div>
                 </div>
-              </div>
 
-            ) : pathItemSelected && pathItemStep === 3 ? (
-              /* ── STEP 3: Congratulations ── */
-              <div className="congrats-area">
-                <div className="congrats-textt">🎉 Congratulations!</div>
-                <div className="congrats-textt1">
-                  You have selected:
-                </div>
-                <div className="congrats-textt1" style={{ fontWeight: 700 }}>
-                  {selectedPathItem?.name}
-                </div>
-                <div style={{ fontSize: "13px", color: "#9ca3af", marginTop: "8px" }}>
-                  Redirecting to My Journey...
-                </div>
-              </div>
-
-            ) : (
-              /* ── DEFAULT: Current Coordinates ── */
-              <div className="mid-area1">
-
-                {/* Education Header */}
-                <div className="education-header">
-                  <div className="education-icon">
-                    <img src={educationIcon} alt="Education" />
+              ) : pathItemSelected && pathItemStep === 2 ? (
+                <div className="mid-area1" style={{ borderBottom: "none" }}>
+                  <div style={{ margin: "0.5rem 0" }}>
+                    Are you sure you want to select{" "}
+                    <strong>{selectedPathItem?.name}</strong>?
                   </div>
-                  <div className="education-title">Education</div>
+                  <div className="maps-btns-div1">
+                    <div
+                      className="reset-btn1"
+                      onClick={confirmPathSelection}
+                      style={{
+                        opacity: confirmLoading ? 0.6 : 1,
+                        pointerEvents: confirmLoading ? "none" : "auto",
+                        cursor: confirmLoading ? "not-allowed" : "pointer",
+                      }}
+                    >
+                      {confirmLoading ? "Confirming..." : "Yes, Confirm"}
+                    </div>
+                    <div className="reset-btn1" onClick={() => setPathItemStep(1)}>
+                      Go Back
+                    </div>
+                  </div>
                 </div>
 
-                {/* Current Coordinates */}
-                <div className="current-coord-container">
-                  <div className="current-text">Current Coordinates</div>
+              ) : pathItemSelected && pathItemStep === 3 ? (
+                <div className="congrats-area">
+                  <div className="congrats-textt">🎉 Congratulations!</div>
+                  <div className="congrats-textt1">You have selected:</div>
+                  <div className="congrats-textt1" style={{ fontWeight: 700 }}>
+                    {selectedPathItem?.name}
+                  </div>
+                  <div style={{ fontSize: "13px", color: "#9ca3af", marginTop: "8px" }}>
+                    Redirecting to My Journey...
+                  </div>
+                </div>
 
-                  {!userProfile ? (
-                    <p>Loading profile...</p>
-                  ) : (
-                    <>
-                      {[
-                        { label: "Grade",       value: userProfile.grade,              toggle: gradeToggle,       setToggle: setGradeToggle },
-                        { label: "Curriculum",  value: userProfile.curriculum,         toggle: curriculumToggle,  setToggle: setCurriculumToggle },
-                        { label: "Stream",      value: userProfile.stream,             toggle: streamToggle,      setToggle: setStreamToggle },
-                        { label: "Performance", value: userProfile.performance,        toggle: performanceToggle, setToggle: setPerformanceToggle },
-                        { label: "Financial",   value: userProfile.financialSituation, toggle: financialToggle,   setToggle: setFinancialToggle },
-                        { label: "Personality", value: userProfile.personality,        toggle: personalityToggle, setToggle: setPersonalityToggle },
-                      ].map(({ label, value, toggle, setToggle }) => (
-                        <div className="each-coo-field" key={label}>
-                          <div className="field-name">{label}</div>
-                          <div
-                            className="toggleContainer"
-                            onClick={() => setToggle(!toggle)}
-                          >
+              ) : (
+                <div className="mid-area1">
+                  {/* Education Header */}
+                  <div className="education-header">
+                    <div className="education-icon">
+                      <img src={educationIcon} alt="Education" />
+                    </div>
+                    <div className="education-title">Education</div>
+                  </div>
+
+                  {/* Current Coordinates */}
+                  <div className="current-coord-container">
+                    <div className="current-text">Current Coordinates</div>
+
+                    {!userProfile ? (
+                      <p>Loading profile...</p>
+                    ) : (
+                      <>
+                        {[
+                          { label: "Grade",       value: userProfile.grade,              toggle: gradeToggle,       setToggle: setGradeToggle },
+                          { label: "Curriculum",  value: userProfile.curriculum,         toggle: curriculumToggle,  setToggle: setCurriculumToggle },
+                          { label: "Stream",      value: userProfile.stream,             toggle: streamToggle,      setToggle: setStreamToggle },
+                          { label: "Performance", value: userProfile.performance,        toggle: performanceToggle, setToggle: setPerformanceToggle },
+                          { label: "Financial",   value: userProfile.financialSituation, toggle: financialToggle,   setToggle: setFinancialToggle },
+                          { label: "Personality", value: userProfile.personality,        toggle: personalityToggle, setToggle: setPersonalityToggle },
+                        ].map(({ label, value, toggle, setToggle }) => (
+                          <div className="each-coo-field" key={label}>
+                            <div className="field-name">{label}</div>
                             <div
-                              className="toggle"
-                              style={{
-                                transform: !toggle
-                                  ? "translateX(0)"
-                                  : "translateX(20px)",
-                              }}
-                            />
+                              className="toggleContainer"
+                              onClick={() => setToggle(!toggle)}
+                            >
+                              <div
+                                className="toggle"
+                                style={{
+                                  transform: !toggle
+                                    ? "translateX(0)"
+                                    : "translateX(20px)",
+                                }}
+                              />
+                            </div>
+                            <div className="field-value">{value}</div>
                           </div>
-                          <div className="field-value">{value}</div>
-                        </div>
-                      ))}
-                    </>
-                  )}
-                </div>
+                        ))}
+                      </>
+                    )}
+                  </div>
 
-                <div className="maps-btns-div1">
-                  <div
-                    className="gs-Btn-maps1"
-                    onClick={() => setRefetchPaths(!refetchPaths)}
-                  >
-                    Find Paths
+                  <div className="maps-btns-div1">
+                    <div
+                      className="gs-Btn-maps1"
+                      onClick={() => {
+                        setRefetchPaths(!refetchPaths);
+                        setFiltersOpen(false); // collapse filters after search on mobile
+                      }}
+                    >
+                      Find Paths
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+
+            </div>{/* end sidebar-filter-content */}
           </div>
 
-          {/* RIGHT: APPROVED PATHS */}
+          {/* ── LEFT: Approved Paths ── */}
           <div className="maps-content-area1">
             <Pathview
               paths={approvedPaths}
@@ -334,6 +314,7 @@ const PathComponent = () => {
                 setSelectedPathItem(path);
                 setPathItemSelected(true);
                 setPathItemStep(1);
+                setFiltersOpen(true); // open filters so user sees action buttons
               }}
             />
           </div>

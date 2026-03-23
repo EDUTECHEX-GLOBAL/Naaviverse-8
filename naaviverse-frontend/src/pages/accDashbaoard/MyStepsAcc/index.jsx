@@ -5,14 +5,12 @@ import "./mypaths.scss";
 import axios from "axios";
 import { Draggable } from "react-drag-reorder";
 import EditStepForm from "./steps.jsx";
-
-// images
 import dummy from "./dummy.svg";
 import closepop from "../../../static/images/dashboard/closepop.svg";
 import lg1 from "../../../static/images/login/lg1.svg";
 import CurrentStep from "../../CurrentStep";
 import { useStore } from "../../../components/store/store.ts";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import MenuNav from "../../../components/MenuNav/index.jsx";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -177,6 +175,10 @@ const MyStepsAcc = ({
     setShowDrop,
 }) => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const urlParams = new URLSearchParams(location.search);
+    const filterPathId = urlParams.get("pathId");
+    const filterPathName = urlParams.get("pathName");
     const { sideNav, setsideNav, accsideNav, setaccsideNav } = useStore();
 
     let userDetails = JSON.parse(localStorage.getItem("partner"));
@@ -585,11 +587,19 @@ const MyStepsAcc = ({
     }, [partnerPathData]);
 
     // ── Filtered step list ────────────────────────────────────────────────────
+    // ✅ AFTER
     const filteredSteps = partnerStepsData?.filter((step) => {
         const title = step?.macro_name || step?.name || "";
         const desc = step?.macro_description || step?.description || "";
         const q = search?.toLowerCase() || "";
         if (!title.trim()) return false;
+
+        // If coming from a path's "View Steps", filter by that path's steps only
+        if (filterPathId) {
+            const linkedToPath = stepToPathMap[step._id?.toString()] === decodeURIComponent(filterPathName || "");
+            if (!linkedToPath) return false;
+        }
+
         return title.toLowerCase().includes(q) || desc.toLowerCase().includes(q);
     });
 
@@ -725,14 +735,36 @@ const MyStepsAcc = ({
                 ) : (
                     /* ── Card List ─────────────────────────────────────────── */
                     <div
-                        style={{
-                            padding: "1.5rem",
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "1.25rem",
-                            paddingBottom: "2rem",
-                        }}
-                    >
+  style={{
+    padding: "1.5rem",
+    display: "flex",
+    flexDirection: "column",
+    gap: "1.25rem",
+    paddingBottom: "2rem",
+  }}
+>
+  {/* Back to Paths banner — only shown when coming from View Steps */}
+  {filterPathId && (
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "0.75rem",
+      background: "#e6f3f4",
+      borderRadius: "12px",
+      padding: "0.75rem 1.25rem",
+    }}>
+      <span
+        onClick={() => navigate("/dashboard/accountants/paths")}
+        style={{ cursor: "pointer", color: "#0d6b6e", fontWeight: 600, fontSize: "0.9rem" }}
+      >
+        ← Back to Paths
+      </span>
+      <span style={{ color: "#4b5e6b", fontSize: "0.9rem" }}>
+        Showing steps for: <strong>{decodeURIComponent(filterPathName || "")}</strong>
+      </span>
+    </div>
+  )}
+
                         {loading ? (
                             Array(3)
                                 .fill("")

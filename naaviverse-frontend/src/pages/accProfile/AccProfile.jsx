@@ -1721,9 +1721,7 @@ const AccProfile = () => {
                   <img src={close} alt="" />
                 </div>
               </div>
-              <div className="overall-div" style={{ height: "calc(100% - 4rem)" }}>
-                <div className={styles.labelClass}>Business information *</div>
-                <InputDivsCreatePartner placeholderText="Business name...." setFunc={setBusinessName} funcValue={businessName} />
+              <div className="overall-div" style={{ overflowY: "auto", overflowX: "hidden" }}>                <InputDivsCreatePartner placeholderText="Business name...." setFunc={setBusinessName} funcValue={businessName} />
                 <InputDivsTextAreaPartner placeholderText="Business description...." setFunc={setBusinessDesc} funcValue={businessDesc} />
                 <InputDivsCreatePartner placeholderText="Website...." setFunc={setWebsite} funcValue={website} />
                 <InputDivsCreatePartner placeholderText="Type of business...." setFunc={setBusinessType} funcValue={businessType} />

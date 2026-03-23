@@ -503,7 +503,6 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
 
       {/* Main Content */}
       <div className="mypaths-content">
-        {/* Show Selected Path Details */}
         {showSelectedPath ? (
           <div>
             <CurrentStep
@@ -511,6 +510,10 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
               selectedPathId={selectedPathId}
               showSelectedPath={showSelectedPath}
               selectedPath={selectedPath}
+              onBack={() => {
+                setShowSelectedPath(null);
+                setViewPathEnabled(false);
+              }}
             />
           </div>
         ) : viewPathEnabled ? (
@@ -531,11 +534,8 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
               {viewPathData?.StepDetails?.map((e, i) => (
                 <div
                   key={i}
-                  onClick={() => {
-                    setShowSelectedPath(e);
-                    setProductKeys(e?.product_ids);
-                  }}
                   className="viewpath-each-j-step viewpath-relative-div"
+                  style={{ cursor: "default", pointerEvents: "none" }}
                 >
                   <div
                     style={{
@@ -740,9 +740,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                             className="view-steps-btn"
                             onClick={(evt) => {
                               evt.stopPropagation();
-                              setViewPathEnabled(true);
-                              setPathActionEnabled(false);
-                              viewPathById(e?._id);
+                              navigate(`/dashboard/accountants/steps?pathId=${e?._id}&pathName=${encodeURIComponent(e?.nameOfPath || "")}`);
                             }}
                           >
                             View Steps

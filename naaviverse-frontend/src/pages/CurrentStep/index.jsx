@@ -94,24 +94,24 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   const navigate = useNavigate();
 
   // ── View states ──────────────────────────────────────────────────────────
-  const [macroView, setMacroView]               = useState(null);
-  const [microView, setMicroView]               = useState(null);
-  const [nanoView,  setNanoView]                = useState(null);
+  const [macroView, setMacroView] = useState(null);
+  const [microView, setMicroView] = useState(null);
+  const [nanoView, setNanoView] = useState(null);
 
   // ── Loading flags ─────────────────────────────────────────────────────────
-  const [stepLoading,    setStepLoading]         = useState(true);
-  const [viewsLoading,   setViewsLoading]        = useState(true);
+  const [stepLoading, setStepLoading] = useState(true);
+  const [viewsLoading, setViewsLoading] = useState(true);
 
   // ── Service / buy states ──────────────────────────────────────────────────
-  const [microServices,  setMicroServices]       = useState([]);
-  const [servicesLoading,setServicesLoading]     = useState(false);
-  const [selectedService,setSelectedService]     = useState(null);
-  const [showCheckout,   setShowCheckout]        = useState(false);
-  const [showNanoModal,  setShowNanoModal]       = useState(false);
+  const [microServices, setMicroServices] = useState([]);
+  const [servicesLoading, setServicesLoading] = useState(false);
+  const [selectedService, setSelectedService] = useState(null);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [showNanoModal, setShowNanoModal] = useState(false);
   const [selectedNanoService, setSelectedNanoService] = useState(null);
-  const [showNanoCheckout,    setShowNanoCheckout]    = useState(false);
+  const [showNanoCheckout, setShowNanoCheckout] = useState(false);
 
-  const [totalStepsCount, setTotalStepsCount]   = useState(null);
+  const [totalStepsCount, setTotalStepsCount] = useState(null);
 
   const {
     currentStepData,
@@ -135,22 +135,22 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     setIndex,
   } = useStore();
 
-  const [showNewDiv,           setShowNewDiv]           = useState(null);
-  const [position1,            setPosition1]            = useState();
-  const [position2,            setPosition2]            = useState();
-  const [position3,            setPosition3]            = useState();
-  const [currentStepPageData,  setCurrentStepPageData]  = useState(null);
-  const [popup,                setPopup]                = useState(false);
-  const [popupContent,         setPopupContent]         = useState("default");
-  const [popupDetails,         setPopupDetails]         = useState("");
-  const [currentStepPagePathId,setCurrentStepPagePathId]= useState("");
-  const [selectedCard,         setSelectedCard]         = useState(0);
+  const [showNewDiv, setShowNewDiv] = useState(null);
+  const [position1, setPosition1] = useState();
+  const [position2, setPosition2] = useState();
+  const [position3, setPosition3] = useState();
+  const [currentStepPageData, setCurrentStepPageData] = useState(null);
+  const [popup, setPopup] = useState(false);
+  const [popupContent, setPopupContent] = useState("default");
+  const [popupDetails, setPopupDetails] = useState("");
+  const [currentStepPagePathId, setCurrentStepPagePathId] = useState("");
+  const [selectedCard, setSelectedCard] = useState(0);
 
-  const [cards,       setCards]       = useState(productDataArray);
+  const [cards, setCards] = useState(productDataArray);
   const [centerIndex, setCenterIndex] = useState(0);
   const [acceptOffer, setAcceptOffer] = useState(false);
-  const [userData,    setUserData]    = useState([]);
-  const [stepView,    setStepView]    = useState(null);
+  const [userData, setUserData] = useState([]);
+  const [stepView, setStepView] = useState(null);
 
   /* ── Helpers ────────────────────────────────────────────────────────────── */
 
@@ -219,9 +219,9 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
           `${BASE_URL}/api/stepviews?pathId=${pathId}&stepId=${stepId}`
         );
         const data = res?.data?.data || {};
-        setMacroView(data.macroView   || null);
-        setMicroView(data.microView   || null);
-        setNanoView(data.nanoView     || null);
+        setMacroView(data.macroView || null);
+        setMicroView(data.microView || null);
+        setNanoView(data.nanoView || null);
       } catch (err) {
         console.error("❌ Error fetching AI step views:", err);
         setMacroView(null);
@@ -272,7 +272,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   /* ── Complete / fail step ────────────────────────────────────────────────── */
   const completeStep = async (stepid) => {
     const pathId = selectedPathId || localStorage.getItem("selectedPathId");
-    const email  = userDetails?.email || userDetails?.user?.email;
+    const email = userDetails?.email || userDetails?.user?.email;
     try {
       await axios.put(`${BASE_URL}/api/userpaths/completeStep`, { email, pathId, step_id: stepid });
       setPopupContent("success");
@@ -285,7 +285,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
   const failStep = async (stepid) => {
     const pathId = selectedPathId || localStorage.getItem("selectedPathId");
-    const email  = userDetails?.email || userDetails?.user?.email;
+    const email = userDetails?.email || userDetails?.user?.email;
     try {
       await axios.put(`${BASE_URL}/api/userpaths/failedStep`, { email, pathId, step_id: stepid });
       setPopupContent("success");
@@ -314,17 +314,17 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   };
 
   /* ── Derived values ──────────────────────────────────────────────────────── */
-  const stepName       = currentStepData?.name || currentStepPageData?.name || null;
-  const stepDesc       = currentStepPageData?.macro_description || currentStepPageData?.description || null;
-  const macroDesc      = currentStepPageData?.macro_description || macroView?.description || macroView || null;
-  const microDesc      = currentStepPageData?.micro_description || getMicroText(microView) || null;
-  const nanoDesc       = nanoView?.description || null;
+  const stepName = currentStepData?.name || currentStepPageData?.name || null;
+  const stepDesc = currentStepPageData?.macro_description || currentStepPageData?.description || null;
+  const macroDesc = currentStepPageData?.macro_description || macroView?.description || macroView || null;
+  const microDesc = currentStepPageData?.micro_description || getMicroText(microView) || null;
+  const nanoDesc = nanoView?.description || null;
 
-  const isPageLoading  = stepLoading;
-  const isViewsLoad    = viewsLoading;
+  const isPageLoading = stepLoading;
+  const isViewsLoad = viewsLoading;
 
-  const stepNumber     = currentStepPageData?.step_number || localStorage.getItem("selectedStepNumber") || null;
-  const totalSteps     = currentStepDataLength || totalStepsCount || null;
+  const stepNumber = currentStepPageData?.step_order || localStorage.getItem("selectedStepNumber") || null;
+  const totalSteps = currentStepDataLength || totalStepsCount || null;
 
   /* ════════════════════════════════════════════════════════════════════════════
      RENDER
@@ -411,6 +411,9 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                 <span className="vc-lbl lMacro">Macro View</span>
               </div>
               <div className="vc-body">
+                {currentStepPageData?.name && (
+                  <div className="vc-step-name">{currentStepPageData.name}</div>
+                )}
                 <div className="vc-title">Why This Step Matters</div>
                 {macroDesc ? (
                   <div className="vc-desc">{macroDesc}</div>
@@ -426,7 +429,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                     navigate("/dashboard/users/Marketplace", { state: { view: "Macro" } });
                   }}
                 >
-                   Browse Free Tools
+                  Browse Free Tools
                 </button>
               </div>
             </div>
@@ -442,6 +445,9 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                 <span className="vc-lbl lMicro">Micro View</span>
               </div>
               <div className="vc-body">
+                {currentStepPageData?.micro_name && (
+                  <div className="vc-step-name">{currentStepPageData.micro_name}</div>
+                )}
                 <div className="vc-title">How It's Done</div>
                 {microDesc ? (
                   <div className="vc-desc">{microDesc}</div>
@@ -457,7 +463,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                     navigate("/dashboard/users/Marketplace", { state: { view: "Micro" } });
                   }}
                 >
-                   Browse Subscriptions
+                  Browse Subscriptions
                 </button>
               </div>
             </div>
@@ -473,7 +479,10 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                 <span className="vc-lbl lNano">Nano View</span>
               </div>
               <div className="vc-body">
-                <div className="vc-title">Work 1-to-1 With An Expert</div>
+                {currentStepPageData?.nano_name && (
+                  <div className="vc-step-name">{currentStepPageData.nano_name}</div>
+                )}
+                <div className="vc-title">Work 1-to-1 With A Naavi-Certified Expert For</div>
                 {nanoDesc ? (
                   <div className="vc-desc">{nanoDesc}</div>
                 ) : (
@@ -488,7 +497,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                     navigate("/dashboard/users/Marketplace", { state: { view: "Nano" } });
                   }}
                 >
-                   Book a Session
+                  Book a Session
                 </button>
               </div>
             </div>
@@ -647,7 +656,17 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                     className="yes-Btn"
                     onClick={() => {
                       const id = currentStepData?._id || currentStepPageData?._id;
-                      if (id) completeStep(id, selectedPathId);
+                      console.log("STEP ID:", id);
+                      console.log("currentStepData:", currentStepData);
+                      console.log("currentStepPageData:", currentStepPageData);
+                      if (id) {
+                        completeStep(id, selectedPathId);
+                      } else {
+                        // ── fallback: try from localStorage ──
+                        const fallbackId = localStorage.getItem("selectedStepId");
+                        console.log("FALLBACK ID:", fallbackId);
+                        if (fallbackId) completeStep(fallbackId, selectedPathId);
+                      }
                     }}
                   >
                     Yes, go to next step
@@ -689,7 +708,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
             {popupContent === "success" && (
               <>
                 <div className="popup-text">
-                  {popupDetails === "yes" ? "Completed step updated!" : "Failed step updated!"}
+                  {popupDetails === "yes" ? "Completed Step Updated!" : "Failed Step Updated!"}
                 </div>
                 <div className="popup-btns">
                   <div
@@ -699,15 +718,83 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                         setPopup(false);
                         setPopupContent("default");
                         setPopupDetails("");
-                        await reloadServices();
-                        setAcceptOffer(true);
-                        setBuy("stepLoading");
-                        filterItem("");
+
+                        try {
+                          const pathId = currentStepPagePathId || localStorage.getItem("selectedPathId");
+                          const currentNumber = parseInt(stepNumber) || 1;
+                          const res = await axios.get(`${BASE_URL}/api/userpaths/steps?pathId=${pathId}`);
+                          const allSteps = res?.data?.data?.steps || [];
+
+                          // ── ADD THESE LOGS ──
+                          console.log("ALL STEPS:", allSteps);
+                          console.log("CURRENT stepNumber:", stepNumber);
+                          console.log("CURRENT currentNumber:", parseInt(stepNumber) || 1);
+                          console.log("FIRST STEP KEYS:", Object.keys(allSteps[0] || {}));
+
+                          // ── sort by step_number to be safe ──
+                          const sorted = [...allSteps].sort((a, b) => a.step_order - b.step_order);
+                          const nextStep = sorted.find(s => s.step_order === currentNumber + 1);
+
+                          if (nextStep) {
+                            if (nextStep) {
+                              const nextId = nextStep._id || nextStep.step_id;
+
+                              // ── update localStorage ──
+                              localStorage.setItem("selectedStepId", nextId);
+                              localStorage.setItem("selectedStepNumber", String(nextStep.step_order));
+
+                              // ── update state directly — no reload needed ──
+                              setCurrentStepPageData(nextStep);
+                              setCurrentStepPagePathId(pathId);
+                              setCurrentStepData(nextStep);
+                              setCurrentStepDataLength(allSteps.length);
+                              setCurrentStepDataPathId(pathId);
+
+                              // ── reset views so they reload for new step ──
+                              setMacroView(null);
+                              setMicroView(null);
+                              setNanoView(null);
+                              setViewsLoading(true);
+                              setStepLoading(false);
+
+                              // ── fetch new step's AI views ──
+                              try {
+                                const viewRes = await axios.get(
+                                  `${BASE_URL}/api/stepviews?pathId=${pathId}&stepId=${nextId}`
+                                );
+                                const viewData = viewRes?.data?.data || {};
+                                setMacroView(viewData.macroView || null);
+                                setMicroView(viewData.microView || null);
+                                setNanoView(viewData.nanoView || null);
+                              } catch {
+                                setMacroView(null);
+                                setMicroView(null);
+                                setNanoView(null);
+                              } finally {
+                                setViewsLoading(false);
+                              }
+
+                              setsideNav("Current Step");
+                            }
+                          } else {
+                            // ── Last step completed → go to My Journey ──
+                            setsideNav("My Journey");
+                            navigate("/dashboard/users/my-journey");
+                          }
+
+                        } catch (err) {
+                          console.error("❌ Failed to load next step:", err);
+                          setsideNav("My Journey");
+                          navigate("/dashboard/users/my-journey");
+                        }
+
                       } else {
+                        // ── Failed → go to My Journey ──
                         setPopup(false);
                         setPopupContent("default");
                         setPopupDetails("");
                         setsideNav("My Journey");
+                        navigate("/dashboard/users/my-journey");
                       }
                     }}
                   >
