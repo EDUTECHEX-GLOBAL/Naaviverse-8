@@ -6,7 +6,7 @@ import { useLocation } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
 import tickMark from "./tick.svg";
 import tickMarkValid from "./tickMarkValid.svg";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const NewHomePage = () => {
   const navigate = useNavigate();
 
@@ -73,7 +73,7 @@ const NewHomePage = () => {
     ) {
       setLoading(true);
 
-      axios.post("http://localhost:4545/api/auth/checkEmailDuplicate", {
+      axios.post(`${BASE_URL}/api/auth/checkEmailDuplicate`, {
         email: userEmail
       })
       .then(({ data }) => {
@@ -95,8 +95,8 @@ const NewHomePage = () => {
 
   const registerUser = () => {
     const signupUrl = isUser
-      ? "http://localhost:4545/api/auth/signup"
-      : "http://localhost:4545/api/partner/signup";
+      ? `${BASE_URL}/api/auth/signup`
+      : `${BASE_URL}/api/partner/signup`;
 
     const payload = isUser
       ? {
@@ -128,8 +128,8 @@ const NewHomePage = () => {
 
   const confirmEmail = () => {
     const verifyOtpUrl = isUser
-      ? "http://localhost:4545/api/auth/verifyotp"
-      : "http://localhost:4545/api/partner/verifyotp";
+      ? `${BASE_URL}/api/auth/verifyotp`
+      : `${BASE_URL}/api/partner/verifyotp`;
 
     axios.post(verifyOtpUrl, {
       email: userEmail.trim(),
