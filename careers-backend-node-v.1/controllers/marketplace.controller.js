@@ -87,6 +87,15 @@ const addMarketplaceItem = async (req, res) => {
 /* =====================================
    GET MARKETPLACE ITEMS (BY PARTNER)
 ===================================== */
+const updateMarketplaceItem = async (req, res) => {
+  try {
+    const item = await marketplaceModel.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
+    return res.json({ status: true, data: item });
+  } catch (error) {
+    return res.status(500).json({ status: false, message: "Update failed" });
+  }
+};
+
 
 const getMarketplaceItems = async (req, res) => {
 
@@ -183,5 +192,6 @@ module.exports = {
   addMarketplaceItem,
   getMarketplaceItems,
   getMarketplaceItemsByStep,
-  getAllMarketplaceItems
+  getAllMarketplaceItems,
+  updateMarketplaceItem
 };

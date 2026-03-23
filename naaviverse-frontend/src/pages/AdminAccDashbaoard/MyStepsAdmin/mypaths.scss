@@ -1,182 +1,148 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap');
 
-// ── Variables ──────────────────────────────────────────────
 $font-display: 'Sora', sans-serif;
 $font-body:    'DM Sans', sans-serif;
-$text:         #0f172a;
-$muted:        #64748b;
-$border:       #e2e8f0;
-$accent:       #4f46e5;
-$danger:       #ef4444;
-$success:      #10b981;
-$bg:           #f8fafc;
+$text:    #0f172a;
+$muted:   #64748b;
+$border:  #e8ecf0;
+$blue:    #3b82f6;
+$blue-bg: #eff6ff;
+$green:   #10b981;
+$green-bg:#ecfdf5;
+$red:     #ef4444;
+$red-bg:  #fef2f2;
+$teal:    #14b8a6;
+$teal-bg: #f0fdfa;
+$amber:   #f59e0b;
+$bg:      #f8fafc;
 
-// ── Base ───────────────────────────────────────────────────
+// ─── Base ────────────────────────────────────────────────────────
 .admin-mypaths {
   width: 100%;
   height: 100%;
   font-family: $font-body;
   display: flex;
   flex-direction: column;
+  background: #fff;
+  overflow: hidden;
 }
 
-// ── Tab Menu ───────────────────────────────────────────────
+// ─── Tabs ────────────────────────────────────────────────────────
 .admin-mypaths-menu {
   width: 100%;
-  height: 56px;
+  height: 52px;
   padding: 0 28px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   border-bottom: 1px solid $border;
   background: #fff;
   flex-shrink: 0;
 
   .admin-each-mypath-menu {
-    padding: 8px 20px;
-    border-radius: 30px;
+    padding: 7px 18px;
+    border-radius: 50px;
     font-weight: 500;
-    font-size: 14px;
+    font-size: 0.875rem;
     color: $muted;
     cursor: pointer;
-    transition: all 0.2s ease;
-    border: 1.5px solid transparent;
+    transition: all 0.15s ease;
+    border: none;
+    background: transparent;
 
-    &:hover {
-      color: $accent;
-      background: #eef2ff;
-      border-color: #c7d2fe;
-    }
+    &:hover { background: $bg; color: $text; }
 
     &.active-tab {
-      color: $accent;
-      background: #eef2ff;
-      border-color: #c7d2fe;
+      background: $text;
+      color: #fff;
       font-weight: 600;
     }
   }
 }
 
-// ── Content ────────────────────────────────────────────────
+// ─── Content ─────────────────────────────────────────────────────
 .admin-mypaths-content {
   width: 100%;
   flex: 1;
   min-height: 0;
-  position: relative;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
-// ── Table Header ───────────────────────────────────────────
+// ─── Table header ────────────────────────────────────────────────
 .admin-mypathsNav {
   width: 100%;
-  height: 42px;
+  height: 40px;
   border-bottom: 1px solid $border;
   display: flex;
   align-items: center;
   background: $bg;
   flex-shrink: 0;
 
-  .admin-mypaths-name-div,
-  .admin-mypaths-description-div {
-    padding-left: 28px;
-    font-weight: 600;
-    font-size: 12px;
-    color: $muted;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
-  .admin-mypaths-name-div        { width: 30%; }
-  .admin-mypaths-description-div { width: 50%; }
-
   .admin-mypathsName {
     width: 25%;
     padding-left: 28px;
-    font-weight: 600;
-    font-size: 12px;
-    color: $muted;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #94a3b8;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
   }
-
   .admin-mypathsCountry {
     width: 25%;
     padding-left: 16px;
-    font-weight: 600;
-    font-size: 12px;
-    color: $muted;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #94a3b8;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
   }
-
   .admin-mypathsMicrosteps {
     width: 25%;
     padding-left: 16px;
-    font-weight: 600;
-    font-size: 12px;
-    color: $muted;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #94a3b8;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
   }
 }
 
-// ── Scroll Container (paths list only) ────────────────────
+// ─── Scroll container ────────────────────────────────────────────
 .admin-mypathsScroll-div {
   overflow-y: auto;
   flex: 1;
   min-height: 0;
 
-  &::-webkit-scrollbar        { width: 5px; }
-  &::-webkit-scrollbar-track  { background: #f1f5f9; border-radius: 4px; }
-  &::-webkit-scrollbar-thumb  { background: #cbd5e1; border-radius: 4px;
-    &:hover { background: #94a3b8; }
-  }
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #dde3ea; border-radius: 4px; }
 }
 
-// ── Step Rows (table style) ────────────────────────────────
+// ─── Step rows ───────────────────────────────────────────────────
 .step-row {
   width: 100%;
   background: #fff;
-  border-bottom: 1px solid $border;
-  padding: 16px 28px 12px;
+  border-bottom: 1px solid #f0f4f8;
+  padding: 14px 28px 12px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.12s;
   position: relative;
 
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: $accent;
-    opacity: 0;
-    transition: opacity 0.18s ease;
-  }
-
-  &:hover {
-    background: #f8faff;
-    &::before { opacity: 1; }
-  }
-
-  &:nth-child(even) {
-    background: #fafbfc;
-    &:hover { background: #f8faff; }
-  }
+  &:hover { background: $bg; }
 }
 
 .step-row-main {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .step-row-name {
   width: 25%;
   font-family: $font-display;
-  font-size: 14px;
+  font-size: 0.88rem;
   font-weight: 600;
   color: $text;
   line-height: 1.4;
@@ -185,7 +151,7 @@ $bg:           #f8fafc;
 .step-row-length {
   width: 25%;
   padding-left: 16px;
-  font-size: 13.5px;
+  font-size: 0.83rem;
   color: $muted;
 }
 
@@ -195,22 +161,13 @@ $bg:           #f8fafc;
 }
 
 .step-cost-pill {
-  font-size: 12px;
+  font-size: 0.72rem;
   font-weight: 600;
-  padding: 3px 12px;
+  padding: 3px 10px;
   border-radius: 20px;
 
-  &.free {
-    background: #d1fae5;
-    color: #065f46;
-    border: 1px solid #a7f3d0;
-  }
-
-  &.paid {
-    background: #ede9fe;
-    color: #5b21b6;
-    border: 1px solid #c4b5fd;
-  }
+  &.free { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+  &.paid { background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; }
 }
 
 .step-row-services {
@@ -222,21 +179,21 @@ $bg:           #f8fafc;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: #e0f2fe;
   color: #0369a1;
-  font-size: 12px;
+  font-size: 0.72rem;
   font-weight: 700;
   border: 1px solid #bae6fd;
 }
 
 .step-row-desc {
-  font-size: 13px;
+  font-size: 0.8rem;
   color: #475569;
   line-height: 1.6;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -250,267 +207,88 @@ $bg:           #f8fafc;
   flex-wrap: wrap;
 }
 
-.step-footer-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: #94a3b8;
-  letter-spacing: 0.06em;
-}
+.step-footer-label { font-size: 0.65rem; font-weight: 700; color: #94a3b8; letter-spacing: 0.06em; }
+.step-footer-email { font-size: 0.75rem; font-weight: 500; color: #334155; }
+.step-footer-dot { color: #d1d5db; font-size: 0.75rem; }
+.step-footer-date { font-size: 0.75rem; color: $muted; }
 
-.step-footer-email {
-  font-size: 12px;
-  font-weight: 500;
-  color: #334155;
-}
-
-.step-footer-dot { color: #d1d5db; font-size: 12px; }
-
-.step-footer-date {
-  font-size: 12px;
-  color: $muted;
-}
-
-.step-path-tag {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 9px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #e0f2fe, #dbeafe);
-  border: 1px solid #bfdbfe;
-  color: #1e40af;
-  margin-left: 4px;
-}
-
-// ── Old row styles kept for paths view ─────────────────────
-.admin-each-mypaths-data,
-.admin-each-mypaths-data1 {
-  width: 100%;
-  border-bottom: 1px solid $border;
-  display: flex;
-  font-size: 13.5px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-  background: #fff;
-  position: relative;
-
-  &:hover { background: #f8faff; }
-}
-
-.admin-each-mypaths-data {
-  .admin-each-mypaths-name {
-    width: 30%;
-    padding: 20px 0 20px 28px;
-    font-weight: 600;
-    font-size: 14px;
-    color: $text;
-    line-height: 1.6;
-  }
-
-  .admin-each-mypaths-desc {
-    width: 50%;
-    padding: 20px 16px 20px 28px;
-    font-weight: 400;
-    color: $muted;
-    line-height: 1.7;
-    font-size: 13px;
-  }
-}
-
-.admin-each-mypaths-data1 {
-  flex-direction: column;
-  padding: 18px 0 40px;
-
-  .admin-each-mypaths-detail {
-    width: 100%;
-    display: flex;
-    align-items: center;
-
-    .admin-each-mypathsName {
-      width: 25%;
-      padding-left: 28px;
-      font-weight: 600;
-      font-size: 14px;
-      color: $text;
-    }
-
-    .admin-each-mypathsCountry {
-      width: 25%;
-      padding-left: 16px;
-      font-size: 13.5px;
-      color: $muted;
-      font-weight: 500;
-    }
-
-    .admin-each-mypathsMicrosteps {
-      width: 25%;
-      padding-left: 16px;
-      font-size: 13.5px;
-      color: $muted;
-      font-weight: 500;
-    }
-  }
-
-  .admin-each-mypaths-desc {
-    width: 100%;
-    padding: 14px 28px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-
-    .admin-each-mypaths-desc-txt {
-      font-size: 11px;
-      font-weight: 600;
-      color: $muted;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .admin-each-mypaths-desc-txt1 {
-      font-size: 13px;
-      font-weight: 400;
-      color: #475569;
-      line-height: 1.6;
-    }
-  }
-}
-
-// ── Step Meta Footer ───────────────────────────────────────
-.step-meta-footer {
-  position: absolute;
-  left: 28px;
-  bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  pointer-events: none;
-}
-
-.step-meta-created {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-}
-
-.step-meta-label {
-  color: $muted;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-}
-
-.step-meta-email {
-  color: $text;
-  font-weight: 500;
-}
-
-.step-meta-dot { color: #d1d5db; }
-
-.step-meta-date { color: $muted; }
-
-.step-path-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #e0f2fe, #dbeafe);
-  border: 1px solid #bfdbfe;
-  color: #1e40af;
-  font-size: 11px;
-  font-weight: 600;
-
-  strong { color: #1e3a8a; }
-}
-
-// ══════════════════════════════════════════════════════════
-//   STEP ACTION MODAL — BEAUTIFUL CENTERED POPUP
-// ══════════════════════════════════════════════════════════
-
-.smodal-overlay {
+// ─── MODAL OVERLAY ───────────────────────────────────────────────
+.sm-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(6px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  padding: 20px;
-  animation: smodal-fade 0.2s ease;
-
-  @keyframes smodal-fade {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
+  background: rgba(15, 23, 42, 0.28);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 1999;
+  animation: smFade 0.2s ease;
 }
 
-.smodal-box {
+// ─── MODAL BOX ───────────────────────────────────────────────────
+.sm-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 520px;
+  max-width: 93vw;
+  max-height: 88vh;
   background: #fff;
-  border-radius: 24px;
-  width: 100%;
-  max-width: 520px;
-  max-height: 80vh;
+  border-radius: 28px;
+  box-shadow: 0 32px 64px -12px rgba(0,0,0,0.2);
+  z-index: 2000;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
-  animation: smodal-slide 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  position: relative;
-
-  @keyframes smodal-slide {
-    from { opacity: 0; transform: translateY(20px) scale(0.97); }
-    to   { opacity: 1; transform: none; }
-  }
+  animation: smSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: fixed;
 }
 
-// Modal Header
-.smodal-header {
+// ─── MODAL HEADER ────────────────────────────────────────────────
+.sm-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px 16px;
+  padding: 16px 22px 13px;
   border-bottom: 1px solid $border;
-  background: linear-gradient(135deg, #f8fafc, #eef2ff);
   flex-shrink: 0;
+  background: #fff;
 }
 
-.smodal-header-left {
+.sm-header-left {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.smodal-back-btn {
-  background: none;
-  border: 1.5px solid $border;
-  border-radius: 20px;
-  padding: 5px 14px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: $muted;
-  cursor: pointer;
-  font-family: $font-body;
-  transition: all 0.2s;
-
-  &:hover {
-    border-color: $accent;
-    color: $accent;
-    background: #eef2ff;
-  }
-}
-
-.smodal-title {
+.sm-title {
   font-family: $font-display;
-  font-size: 16px;
+  font-size: 1.1rem;
   font-weight: 700;
   color: $text;
   margin: 0;
 }
 
-.smodal-close-btn {
-  width: 34px;
-  height: 34px;
+.sm-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1.5px solid $border;
+  border-radius: 50px;
+  background: #fff;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: $muted;
+  cursor: pointer;
+  transition: all 0.14s;
+  outline: none;
+
+  &:hover { border-color: $blue; color: $blue; background: $blue-bg; }
+}
+
+.sm-close-btn {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: 1.5px solid $border;
   background: #fff;
@@ -518,259 +296,409 @@ $bg:           #f8fafc;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  color: $muted;
+  transition: all 0.14s;
+  outline: none;
   flex-shrink: 0;
 
-  &:hover { background: #f1f5f9; transform: rotate(90deg); }
-
-  img { width: 14px; height: 14px; }
+  &:hover { background: $red-bg; border-color: $red; color: $red; }
 }
 
-// Step name chip
-.smodal-step-chip {
+// ─── STEP CHIP ───────────────────────────────────────────────────
+.sm-chip {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 24px;
-  background: #f8fafc;
+  padding: 8px 22px;
+  background: $bg;
   border-bottom: 1px solid $border;
-  font-size: 13px;
+  font-size: 0.8rem;
   font-weight: 600;
   color: $text;
   flex-shrink: 0;
 }
 
-.smodal-chip-dot {
-  width: 8px;
-  height: 8px;
+.sm-chip-dot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: $accent;
+  background: $blue;
   flex-shrink: 0;
 }
 
-// Action buttons grid
-.smodal-actions-grid {
-  padding: 20px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+// ─── MODAL BODY ──────────────────────────────────────────────────
+.sm-body {
+  flex: 1;
   overflow-y: auto;
+  padding: 16px 22px 20px;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: #dde3ea; border-radius: 4px; }
 }
 
-.smodal-action-btn {
+// ─── SECTION LABEL ───────────────────────────────────────────────
+.sm-section-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin: 0 0 10px 0;
+}
+
+// ─── OPTION LIST ─────────────────────────────────────────────────
+.sm-option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sm-option {
   display: flex;
   align-items: center;
   gap: 12px;
-  width: 100%;
-  padding: 16px 18px;
-  border-radius: 14px;
+  padding: 13px 14px;
   border: 1.5px solid $border;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.14s;
   background: #fff;
+
+  &:hover { border-color: $blue; background: $blue-bg; }
+  &--danger:hover { border-color: $red; background: $red-bg; }
+
+  .sm-option-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .sm-option-content {
+    flex: 1;
+    strong { display: block; font-size: 0.87rem; font-weight: 600; color: $text; margin-bottom: 2px; }
+    span   { font-size: 0.74rem; color: $muted; }
+  }
+}
+
+.sm-mkt-actions { display: flex; flex-direction: column; gap: 8px; }
+
+// ─── FORM ────────────────────────────────────────────────────────
+.sm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sm-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sm-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.sm-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.02em;
+}
+
+.sm-required { color: $red; margin-left: 2px; }
+
+.sm-input {
+  padding: 9px 12px;
+  border: 1.5px solid #e8ecf0;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: $text;
+  background: #fff;
+  outline: none;
+  font-family: $font-body;
+  transition: border-color 0.14s;
+  width: 100%;
+
+  &::placeholder { color: #b8c4d0; }
+  &:focus { border-color: $blue; box-shadow: 0 0 0 3px rgba($blue, 0.08); }
+}
+
+.sm-textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.6;
+}
+
+.sm-select { cursor: pointer; appearance: none; }
+
+.sm-form-layer-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f0fdfa;
+  border-radius: 10px;
+  border: 1.5px solid #ccfbf1;
+  font-size: 0.78rem;
+  color: #0f766e;
+  font-weight: 500;
+
+  span { color: #64748b; }
+
+  .sm-layer-select {
+    border: none;
+    background: transparent;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #0f766e;
+    outline: none;
+    cursor: pointer;
+    font-family: $font-body;
+    padding: 0 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
+
+// ─── BUTTONS ─────────────────────────────────────────────────────
+.sm-btn-primary {
+  padding: 11px 22px;
+  background: $blue;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.87rem;
+  font-weight: 600;
   cursor: pointer;
   font-family: $font-body;
-  transition: all 0.18s ease;
-  text-align: left;
+  transition: all 0.15s;
+  margin-top: 4px;
 
-  &:hover {
-    border-color: #a5b4fc;
-    background: #eef2ff;
-    transform: translateX(3px);
-
-    .smodal-action-arrow { color: $accent; }
-  }
-
-  &.danger {
-    &:hover {
-      border-color: #fca5a5;
-      background: #fef2f2;
-      transform: translateX(3px);
-
-      .smodal-action-arrow { color: $danger; }
-    }
-  }
+  &:hover { background: darken($blue, 8%); box-shadow: 0 6px 14px rgba($blue, 0.3); transform: translateY(-1px); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 }
 
-.smodal-action-icon {
-  font-size: 18px;
-  flex-shrink: 0;
-}
-
-.smodal-action-label {
-  flex: 1;
-  font-size: 14.5px;
+.sm-btn-danger {
+  padding: 10px 22px;
+  background: $red;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.87rem;
   font-weight: 600;
-  color: $text;
+  cursor: pointer;
+  font-family: $font-body;
+  transition: all 0.15s;
+
+  &:hover { background: darken($red, 8%); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
 }
 
-.smodal-action-arrow {
-  font-size: 16px;
-  color: #cbd5e1;
-  transition: color 0.2s;
+.sm-btn-ghost {
+  padding: 10px 22px;
+  background: $bg;
+  color: $muted;
+  border: 1.5px solid $border;
+  border-radius: 50px;
+  font-size: 0.87rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: $font-body;
+  transition: all 0.15s;
+
+  &:hover { background: #e2e8f0; color: $text; }
 }
 
-// Service list
-.smodal-list {
-  padding: 16px 24px;
-  overflow-y: auto;
-  flex: 1;
+// ─── SERVICE LIST ────────────────────────────────────────────────
+.sm-service-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 2px;
 
-  &::-webkit-scrollbar        { width: 5px; }
-  &::-webkit-scrollbar-track  { background: #f1f5f9; border-radius: 4px; }
-  &::-webkit-scrollbar-thumb  { background: #cbd5e1; border-radius: 4px; }
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: #dde3ea; border-radius: 4px; }
 }
 
-.smodal-list-item {
+.sm-service-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 13px 16px;
-  border-radius: 12px;
-  border: 1.5px solid $border;
-  cursor: pointer;
-  background: #fff;
-  transition: all 0.18s ease;
-
-  &:hover:not(.already-added) {
-    border-color: #a5b4fc;
-    background: #eef2ff;
-  }
-
-  &.already-added {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background: #f8fafc;
-  }
-
-  &.removable:hover {
-    border-color: #fca5a5;
-    background: #fef2f2;
-  }
-}
-
-.smodal-list-item-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: $text;
-}
-
-.smodal-list-arrow {
-  font-size: 20px;
-  color: #a5b4fc;
-  font-weight: 300;
-}
-
-.smodal-added-badge {
-  font-size: 12px;
-  font-weight: 600;
-  color: #059669;
-  background: #d1fae5;
-  padding: 3px 10px;
-  border-radius: 20px;
-  border: 1px solid #a7f3d0;
-}
-
-.smodal-remove-badge {
-  font-size: 12px;
-  font-weight: 600;
-  color: #dc2626;
-  background: #fee2e2;
-  padding: 3px 10px;
-  border-radius: 20px;
-  border: 1px solid #fca5a5;
-}
-
-.smodal-empty {
-  text-align: center;
-  padding: 32px 16px;
-  color: $muted;
-  font-size: 14px;
-}
-
-// Edit form wrapper
-.smodal-form-wrap {
-  padding: 20px 24px;
-  overflow-y: auto;
-  flex: 1;
-}
-
-// Success state
-.smodal-success {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
   gap: 12px;
-  animation: smodal-fade 0.3s ease;
+  padding: 10px 13px;
+  border: 1.5px solid $border;
+  border-radius: 12px;
+  background: #fff;
+  transition: all 0.14s;
+
+  &--attach {
+    cursor: pointer;
+    &:hover { border-color: $teal; background: $teal-bg; }
+  }
+
+  &--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    &:hover { border-color: $border; background: #fff; }
+  }
+
+  .sm-service-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .sm-service-emoji {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: $bg;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .sm-service-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: $text;
+    margin-bottom: 1px;
+  }
 }
 
-.smodal-success-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: #d1fae5;
-  color: #059669;
-  font-size: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
+.sm-remove-btn {
+  padding: 4px 11px;
+  border-radius: 50px;
+  border: 1.5px solid #fecdd3;
+  background: #fff1f2;
+  color: $red;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.14s;
+  flex-shrink: 0;
+  font-family: $font-body;
+
+  &:hover { background: $red; color: #fff; border-color: $red; }
 }
 
-.smodal-success-title {
-  font-family: $font-display;
-  font-size: 18px;
-  font-weight: 700;
-  color: $text;
+// ─── TAGS ────────────────────────────────────────────────────────
+.sm-tag {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &--gray { background: #f1f5f9; color: #94a3b8; }
+  &--teal { background: $teal-bg; color: $teal; }
+  &--green { background: $green-bg; color: $green; }
 }
 
-.smodal-success-sub {
-  font-size: 13px;
-  color: $muted;
+// ─── CONFIRM ─────────────────────────────────────────────────────
+.sm-confirm {
+  text-align: center;
+  padding: 8px 0;
+
+  .sm-confirm-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: $red-bg;
+    border: 1.5px solid #fecdd3;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  h3 { font-size: 1.1rem; font-weight: 700; color: $text; margin: 0 0 8px 0; }
+
+  p {
+    font-size: 0.87rem;
+    color: $muted;
+    margin: 0 0 20px;
+    line-height: 1.6;
+    strong { color: $text; }
+  }
+
+  .sm-confirm-actions { display: flex; gap: 10px; justify-content: center; }
 }
 
-// Loading overlay
-.smodal-loading {
+// ─── SUCCESS ─────────────────────────────────────────────────────
+.sm-success {
+  text-align: center;
+  padding: 36px 0;
+
+  .sm-success-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: $green-bg;
+    border: 1.5px solid #a7f3d0;
+    margin: 0 auto 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  h3 { font-size: 1.1rem; font-weight: 700; color: $text; margin: 0 0 6px; }
+  p  { font-size: 0.87rem; color: $muted; margin: 0; }
+}
+
+// ─── LOADING OVERLAY ─────────────────────────────────────────────
+.sm-loading-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(255,255,255,0.8);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 24px;
+  background: rgba(255,255,255,0.85);
   z-index: 10;
-
-  .smodal-loading-img {
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-  }
+  border-radius: 28px;
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+// ─── ANIMATIONS ──────────────────────────────────────────────────
+@keyframes smFade    { from { opacity:0; } to { opacity:1; } }
+@keyframes smSlideUp { from { opacity:0; transform:translate(-50%,-44%); } to { opacity:1; transform:translate(-50%,-50%); } }
+@keyframes smSpin    { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+
+body.admin-popup-open { overflow: hidden; }
+
+// ─── RESPONSIVE ──────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .admin-mypaths-menu { padding: 0 16px; }
+  .admin-mypathsNav .admin-mypathsName { padding-left: 16px; }
+  .step-row { padding: 12px 16px 10px; }
+  .sm-modal { max-height: 92vh; border-radius: 22px; }
+  .sm-form-row { grid-template-columns: 1fr; }
 }
 
-// ══════════════════════════════════════════════════════════
-//   PATH RIGHT-SIDE PANEL (kept for path actions)
-// ══════════════════════════════════════════════════════════
-
+// ─── KEEP legacy path panel styles (used by path action panel) ───
 .admin-popup-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.35);
+  background: rgba(15,23,42,0.35);
   backdrop-filter: blur(3px);
   z-index: 1500;
 }
 
 .admin-acc-popular1 {
   position: fixed;
-  top: 0;
-  right: 0;
+  top: 0; right: 0;
   width: 400px;
   height: 100vh;
   background: #fff;
@@ -778,293 +706,100 @@ $bg:           #f8fafc;
   z-index: 2000;
   display: flex;
   flex-direction: column;
-  animation: slide-in-right 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideInRight 0.28s cubic-bezier(0.4,0,0.2,1);
 
-  @keyframes slide-in-right {
-    from { transform: translateX(100%); opacity: 0; }
-    to   { transform: translateX(0);   opacity: 1; }
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity:0; }
+    to   { transform: translateX(0);   opacity:1; }
   }
-
-  .admin-acc-popular-top1 {
-    padding: 20px 24px;
-    border-bottom: 1px solid $border;
-    background: linear-gradient(135deg, #f8fafc, #eef2ff);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-    position: relative;
-  }
-
-  .admin-acc-popular-head1 {
-    font-family: $font-display;
-    font-size: 16px;
-    font-weight: 700;
-    color: $text;
-  }
-
-  .admin-acc-popular-img-box1 { cursor: pointer; }
-  .admin-acc-popular-img1 { width: 18px; height: 18px; }
 }
 
-.admin-acc-mt-div {
+.admin-acc-popular-top1 {
+  padding: 20px 24px;
+  border-bottom: 1px solid $border;
   display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
 }
 
+.admin-acc-popular-head1 { font-size: 1rem; font-weight: 700; color: $text; }
+.admin-acc-popular-img-box1 { cursor: pointer; }
+.admin-acc-popular-img1 { width: 18px; height: 18px; }
+
+.admin-acc-mt-div { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
 .admin-acc-scroll-div {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px 20px;
-
-  &::-webkit-scrollbar        { width: 5px; }
-  &::-webkit-scrollbar-track  { background: #f1f5f9; border-radius: 4px; }
-  &::-webkit-scrollbar-thumb  { background: #cbd5e1; border-radius: 4px; }
+  flex: 1; overflow-y: auto; padding: 16px 20px;
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: #dde3ea; border-radius: 4px; }
 }
 
-.admin-acc-step-box4,
-.admin-acc-step-box {
-  border: 1.5px solid $border;
-  border-radius: 12px;
-  padding: 13px 16px;
-  margin-bottom: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  color: $text;
-  transition: all 0.18s ease;
-  background: #fff;
-
-  &:hover {
-    border-color: #a5b4fc;
-    background: #eef2ff;
-  }
+.admin-acc-step-box4, .admin-acc-step-box {
+  border: 1.5px solid $border; border-radius: 12px;
+  padding: 12px 15px; margin-bottom: 8px;
+  cursor: pointer; font-size: 0.87rem; font-weight: 500; color: $text;
+  transition: all 0.13s; background: #fff;
+  &:hover { border-color: $blue; background: $blue-bg; color: $blue; }
 }
 
-.admin-acc-step-box5 {
-  border: 1.5px solid $border;
-  border-radius: 12px;
-  padding: 13px 16px;
-  margin-bottom: 8px;
-  background: #f8fafc;
-  font-size: 14px;
-  color: $muted;
-}
-
-.admin-acc-step-box6 {
-  border: 1.5px solid $border;
-  border-radius: 12px;
-  padding: 13px 16px;
-  margin-bottom: 8px;
-
-  input {
-    width: 100%;
-    border: none;
-    outline: none;
-    background: transparent;
-    font-size: 14px;
-    font-family: $font-body;
-    color: $text;
-  }
-}
-
-.admin-acc-sub-text {
-  font-size: 13px;
-  color: $muted;
-  padding: 12px 20px 8px;
-  line-height: 1.5;
-}
+.admin-acc-sub-text { font-size: 0.83rem; color: $muted; padding: 12px 20px 8px; line-height: 1.5; }
 
 .admin-goBack3 {
-  margin: 8px 20px 16px;
-  padding: 11px;
-  border-radius: 20px;
-  background: #f1f5f9;
-  font-weight: 600;
-  font-size: 13.5px;
-  cursor: pointer;
-  text-align: center;
-  color: $muted;
-  transition: background 0.2s;
-  flex-shrink: 0;
-
+  margin: 8px 20px 16px; padding: 10px; border-radius: 50px;
+  background: $bg; font-weight: 600; font-size: 0.83rem;
+  cursor: pointer; text-align: center; color: $muted; transition: background 0.15s; flex-shrink: 0;
   &:hover { background: #e2e8f0; }
 }
 
 .admin-goBack2 {
-  margin: 8px 0;
-  padding: 11px;
-  border-radius: 20px;
-  background: #f1f5f9;
-  font-weight: 600;
-  font-size: 13.5px;
-  cursor: pointer;
-  text-align: center;
-  color: $muted;
-  flex-shrink: 0;
+  margin: 8px 0; padding: 10px; border-radius: 50px;
+  background: $bg; font-weight: 600; font-size: 0.83rem;
+  cursor: pointer; text-align: center; color: $muted; flex-shrink: 0;
+}
+
+.admin-success-box1, .admin-success-box2 {
+  padding: 40px 24px; text-align: center;
+  color: $green; font-size: 0.9rem; font-weight: 600;
 }
 
 .admin-save-Btn {
-  padding: 13px;
-  background: $accent;
-  color: #fff;
-  border-radius: 30px;
-  text-align: center;
-  cursor: pointer;
-  margin: 12px 20px;
-  font-weight: 600;
-  font-size: 14px;
-  transition: background 0.2s;
-
-  &:hover { background: #4338ca; }
-}
-
-.admin-success-box1,
-.admin-success-box2 {
-  padding: 40px 24px;
-  text-align: center;
-  color: $success;
-  font-size: 15px;
-  font-weight: 600;
+  padding: 12px; background: $blue; color: #fff; border-radius: 50px;
+  text-align: center; cursor: pointer; margin: 12px 20px;
+  font-weight: 600; font-size: 0.87rem; transition: background 0.15s;
+  &:hover { background: darken($blue, 8%); }
 }
 
 .admin-popularlogo {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255,255,255,0.75);
-  z-index: 10;
-
-  .admin-popularlogoimg {
-    width: 36px;
-    height: 36px;
-    animation: spin 1s linear infinite;
-  }
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.85); z-index: 10;
+  .admin-popularlogoimg { width: 42px; height: 42px; animation: smSpin 1s linear infinite; }
 }
 
-// ── Substep styles ─────────────────────────────────────────
-.admin-substepstyle {
-  border: 1.5px solid $border;
-  border-radius: 12px;
-  padding: 13px 16px;
-  margin-bottom: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover { background: #f8fafc; border-color: $accent; }
-}
-
-.admin-subpathstyle {
-  border: 1.5px solid $border;
-  border-radius: 12px;
-  padding: 13px 16px;
-  margin-bottom: 14px;
-  background: #f8fafc;
-  position: relative;
-}
-
-.admin-placehere {
-  padding: 8px 20px;
-  background: $accent;
-  color: #fff;
-  border-radius: 20px;
-  cursor: pointer;
-  margin: 8px 0;
-  display: inline-block;
-  font-size: 13px;
-  font-weight: 600;
-  transition: background 0.2s;
-
-  &:hover { background: #4338ca; }
-}
-
-.admin-deletePathStyle {
-  position: absolute;
-  right: 14px;
-  top: 14px;
-  cursor: pointer;
-  opacity: 0.6;
-  transition: opacity 0.2s;
-
-  &:hover { opacity: 1; }
-  img { width: 18px; height: 18px; }
-}
-
-// ── View Path ──────────────────────────────────────────────
+// ─── View path (kept for path view) ──────────────────────────────
 .admin-viewpath-container {
-  width: 100%;
-  height: 100%;
-  padding: 28px;
-  color: $text;
-  overflow-y: auto;
-
+  width: 100%; height: 100%; padding: 28px; overflow-y: auto;
   .admin-viewpath-top-area {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 24px;
-    position: relative;
-
-    .admin-viewpath-bold-text { font-size: 22px; font-weight: 700; }
-    .admin-viewpath-des { font-size: 13px; color: $muted; line-height: 1.6; }
-
+    display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; position: relative;
+    .admin-viewpath-bold-text { font-size: 1.3rem; font-weight: 700; color: $text; }
+    .admin-viewpath-des { font-size: 0.87rem; color: $muted; line-height: 1.6; }
     .admin-viewpath-goBack-div {
-      position: absolute;
-      top: 0;
-      right: 0;
-      font-weight: 600;
-      font-size: 13px;
-      text-decoration: underline;
-      cursor: pointer;
-      color: $accent;
+      position: absolute; top: 0; right: 0;
+      font-weight: 600; font-size: 0.83rem; text-decoration: underline;
+      cursor: pointer; color: $blue;
     }
   }
-
   .admin-viewpath-steps-area {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 16px;
     .admin-viewpath-each-j-step {
-      border-radius: 14px;
-      border: 1.5px solid $border;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-
-      &:hover { border-color: $accent; transform: translateY(-2px); }
-
-      .admin-viewpath-each-j-img {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        overflow: hidden;
+      border-radius: 14px; border: 1.5px solid $border; padding: 18px;
+      display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: all 0.15s;
+      &:hover { border-color: $blue; transform: translateY(-2px); }
+      .admin-viewpath-each-j-img { width: 50px; height: 50px; border-radius: 50%; overflow: hidden;
         img { width: 100%; height: 100%; object-fit: cover; }
       }
-
-      .admin-viewpath-each-j-step-text  { font-size: 15px; font-weight: 600; }
-      .admin-viewpath-each-j-step-text1 { font-size: 12px; color: $muted; line-height: 1.6; }
-
-      .admin-viewpath-each-j-amount-div {
-        display: flex;
-        justify-content: space-between;
-        .admin-viewpath-each-j-amount { font-weight: 600; }
-      }
+      .admin-viewpath-each-j-step-text  { font-size: 0.9rem; font-weight: 600; color: $text; }
+      .admin-viewpath-each-j-step-text1 { font-size: 0.77rem; color: $muted; line-height: 1.5; }
     }
   }
-}
-
-// ── Responsive ─────────────────────────────────────────────
-@media (max-width: 768px) {
-  .smodal-box { max-width: 96%; }
-  .admin-acc-popular1 { width: 92%; }
-  .admin-viewpath-steps-area { grid-template-columns: 1fr !important; }
 }

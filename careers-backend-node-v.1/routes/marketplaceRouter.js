@@ -17,5 +17,5 @@ router.get("/step/:step_id", marketplaceController.getMarketplaceItemsByStep);
 
 /* GET ALL MARKETPLACE ITEMS FOR ADMIN */
 router.get("/admin/get-all", marketplaceController.getAllMarketplaceItems);
-
+router.patch("/update/:id", marketplaceController.updateMarketplaceItem);
 module.exports = router;

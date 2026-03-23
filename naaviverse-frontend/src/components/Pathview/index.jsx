@@ -94,7 +94,7 @@ const Pathview = ({ paths, loading }) => {
         )}
       </div>
 
-      {/* PAGINATION */}
+      {/* PAGINATION
       <div className="pagination-controls">
         <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
           Previous
@@ -105,7 +105,7 @@ const Pathview = ({ paths, loading }) => {
         <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
           Next
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };

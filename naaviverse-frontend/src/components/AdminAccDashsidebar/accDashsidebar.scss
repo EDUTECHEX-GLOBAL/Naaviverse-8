@@ -103,3 +103,36 @@
   top: 0;
   left: 0;
 }
+
+.dashboard-sidebar {
+  width: 240px; /* MATCH THE INLINE STYLE */
+  background: #ffffff;
+  border-right: none; /* REMOVE ANY BORDER THAT MIGHT CAUSE WHITE LINE */
+  box-shadow: none; /* REMOVE ANY SHADOW */
+  position: relative;
+  z-index: 100;
+  
+  /* Ensure no pseudo-elements create white lines */
+  &::before,
+  &::after {
+    display: none;
+  }
+}
+
+.each-sidenav {
+  /* Remove hover effects that might highlight */
+  &:hover {
+    background: rgba(0, 0, 0, 0.03) !important; /* Very subtle, no highlight */
+    color: #0f172a !important;
+  }
+}
+
+/* When popup is open, ensure sidebar doesn't get any blur or overlay */
+body.admin-popup-open .dashboard-sidebar {
+  backdrop-filter: none;
+  background: #ffffff;
+  position: relative;
+  z-index: 100;
+  opacity: 1;
+  pointer-events: auto;
+}

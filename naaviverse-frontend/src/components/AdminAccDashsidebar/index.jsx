@@ -12,7 +12,6 @@ const sidebarMenu1 = [
   { id: 3, display: "Universities", title: "Universities", click: true },
 ];
 
-// ✅ Fixed duplicate id: 0 on CRM — was causing React key warnings
 const sidebarMenu2 = [
   { id: 0, display: "Dashboard",   title: "Dashboard",   click: true },
   { id: 1, display: "CRM",         title: "CRM",         click: true },
@@ -36,11 +35,6 @@ const AdminAccDashsidebar = ({
     const menu = admin ? sidebarMenu2 : sidebarMenu1;
     setSelectedMenu(menu);
 
-    // ✅ THE CORE FIX:
-    // On first load, accsideNav is "" (empty string from the store).
-    // Nothing matched any section → "Coming Soon" was shown.
-    // Now we set the default to the first menu item's title.
-    // For admin=true → "Dashboard" → renders <Dashboard /> in accDashboard.jsx
     const knownTitles = menu.map((m) => m.title);
     if (!accsideNav || !knownTitles.includes(accsideNav)) {
       setaccsideNav(menu[0].title);
@@ -48,13 +42,23 @@ const AdminAccDashsidebar = ({
   }, [admin]);
 
   const handleLogout = () => {
-  localStorage.clear();
-  navigate("/admin/login");
-};
+    localStorage.clear();
+    navigate("/admin/login");
+  };
+
   return (
     <div
       className="dashboard-sidebar"
-      style={{ overflow: "hidden", padding: "0" }}
+      style={{ 
+        overflow: "hidden", 
+        padding: "0",
+        width: "210px",
+        flexShrink: 0,
+        position: "relative",
+        zIndex: 100,
+        background: "#ffffff",
+        boxShadow: "none"
+      }}
     >
       {/* ── Logo ─────────────────────────────────────────────────────────── */}
       <div
@@ -75,7 +79,7 @@ const AdminAccDashsidebar = ({
           className="dashboard-logo"
           src={logo}
           alt="Naavi"
-          style={{ width: "50%" }}
+          style={{ width: "60%" }}
         />
       </div>
 
@@ -83,7 +87,7 @@ const AdminAccDashsidebar = ({
       <div
         style={{
           overflowY: "scroll",
-          height: "75vh",
+          height: "calc(100vh - 140px)",
           marginTop: "30px",
           padding: "0 2vw",
         }}
@@ -94,12 +98,17 @@ const AdminAccDashsidebar = ({
               key={i}
               className="each-sidenav"
               style={{
-                background:   accsideNav === each.title ? "#FFFFFF" : "",
-                color:        accsideNav === each.title ? "#100F0D" : "",
-                paddingLeft:  accsideNav === each.title ? "20px"    : "",
-                borderRadius: accsideNav === each.title ? "35px"    : "",
-                opacity: each.click ? "1"       : "0.25",
-                cursor:  each.click ? "pointer" : "not-allowed",
+                background: "transparent",
+                color: "#64748b",
+                paddingLeft: "0",
+                borderRadius: "0",
+                opacity: each.click ? "1" : "0.25",
+                cursor: each.click ? "pointer" : "not-allowed",
+                transition: "all 0.2s ease",
+                padding: "12px 16px",
+                marginBottom: "4px",
+                fontSize: "0.95rem",
+                fontWeight: "500",
               }}
               onClick={() => {
                 if (!each.click) return;
@@ -122,12 +131,17 @@ const AdminAccDashsidebar = ({
               key={j}
               className="each-sidenav"
               style={{
-                background:   accsideNav === ele.title ? "#FFFFFF" : "",
-                color:        accsideNav === ele.title ? "#100F0D" : "",
-                paddingLeft:  accsideNav === ele.title ? "20px"    : "",
-                borderRadius: accsideNav === ele.title ? "35px"    : "",
-                opacity: ele.click ? "1"       : "0.25",
-                cursor:  ele.click ? "pointer" : "not-allowed",
+                background: "transparent",
+                color: "#64748b",
+                paddingLeft: "0",
+                borderRadius: "0",
+                opacity: ele.click ? "1" : "0.25",
+                cursor: ele.click ? "pointer" : "not-allowed",
+                transition: "all 0.2s ease",
+                padding: "12px 16px",
+                marginBottom: "4px",
+                fontSize: "0.95rem",
+                fontWeight: "500",
               }}
               onClick={() => {
                 if (!ele.click) return;
@@ -143,6 +157,66 @@ const AdminAccDashsidebar = ({
             </div>
           ))}
         </div>
+      </div>
+
+      {/* ── LOGOUT BUTTON - UPDATED WITH BETTER DESIGN ─────────────────────────────────── */}
+      <div
+        style={{
+          position: "sticky",
+          bottom: 0,
+          padding: "10px 14px",
+          borderTop: "1px solid #e5e5e5",
+          background: "#ffffff",
+          marginTop: "auto",
+        }}
+      >
+        <button
+          onClick={handleLogout}
+          style={{
+            width: "100%",
+            padding: "8px 12px",
+            background: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
+            color: "#dc2626",
+            border: "1px solid #fecaca",
+            borderRadius: "8px",
+            fontSize: "0.85rem",
+            fontWeight: "500",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)";
+            e.target.style.borderColor = "#f87171";
+            e.target.style.transform = "translateY(-1px)";
+            e.target.style.boxShadow = "0 2px 8px rgba(220, 38, 38, 0.15)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)";
+            e.target.style.borderColor = "#fecaca";
+            e.target.style.transform = "translateY(0)";
+            e.target.style.boxShadow = "none";
+          }}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          Logout
+        </button>
       </div>
     </div>
   );
