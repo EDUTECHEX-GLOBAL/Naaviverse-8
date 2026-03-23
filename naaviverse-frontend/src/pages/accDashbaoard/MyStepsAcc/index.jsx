@@ -904,17 +904,7 @@ const MyStepsAcc = ({
                                                     fontSize: "0.85rem",
                                                 }}
                                             >
-                                                <span
-                                                    style={{
-                                                        background: "#f1f5f9",
-                                                        borderRadius: "30px",
-                                                        padding: "0.25rem 0.75rem",
-                                                        fontSize: "0.8rem",
-                                                        fontWeight: 500,
-                                                    }}
-                                                >
-                                                    🛒 {step.services?.length || 0} services
-                                                </span>
+                                                
                                             </div>
                                         </div>
 

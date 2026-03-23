@@ -126,14 +126,7 @@ const PathPage = () => {
 
                   <div className="pathpage-step-desc">{step.macro_description}</div>
 
-                  <div className="pathpage-step-footer">
-                    <span className={`pathpage-badge ${step.macro_access === "free" ? "badge-free" : "badge-paid"}`}>
-                      {step.macro_access === "free" ? "Free" : "Paid"}
-                    </span>
-                    {duration && (
-                      <span className="pathpage-duration">⏱ {duration}</span>
-                    )}
-                  </div>
+                
                 </motion.div>
               );
             })}

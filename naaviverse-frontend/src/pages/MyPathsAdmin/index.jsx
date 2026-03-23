@@ -4,21 +4,20 @@ import Skeleton from "react-loading-skeleton";
 import "./mypaths.scss";
 import axios from "axios";
 import { Draggable } from "react-drag-reorder";
-
-// images
-import dummy from "./dummy.svg";
 import closepop from "../../static/images/dashboard/closepop.svg";
 import lg1 from "../../static/images/login/lg1.svg";
 import CurrentStep from "../CurrentStep/index.jsx";
 import { useStore } from "../../components/store/store.ts";
 import { useNavigate } from "react-router-dom";
+
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const { sideNav, setsideNav } = useStore();
   let userDetails = JSON.parse(localStorage.getItem("adminuser"));
-  const { setCurrentStepData, setCurrentStepDataLength,mypathsMenu, setMypathsMenu } = useCoinContextData();
+  const { setCurrentStepData, setCurrentStepDataLength, mypathsMenu, setMypathsMenu } = useCoinContextData();
+
   const [partnerPathData, setPartnerPathData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [partnerStepsData, setPartnerStepsData] = useState([]);
@@ -36,225 +35,156 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const [viewPathEnabled, setViewPathEnabled] = useState(false);
   const [viewPathLoading, setViewPathLoading] = useState(false);
   const [viewPathData, setViewPathData] = useState([]);
-
-  const [showSelectedPath, setShowSelectedPath] = useState(null)
-  const [addServiceStep, setAddServiceStep] = useState(null)
-  const [selectedSubStep, setSelectedSubStep] = useState(null)
-
-  const [backupPathData, setBackupPathData] = useState([])
+  const [showSelectedPath, setShowSelectedPath] = useState(null);
+  const [backupPathData, setBackupPathData] = useState([]);
   const [stepId, setStepId] = useState("");
-  const [backupPathId, setBackupPathId] = useState("")
-const [reorderedSteps, setReorderedSteps] = useState([]);
-const [isDragging, setIsDragging] = useState(false);
+  const [backupPathId, setBackupPathId] = useState("");
+  const [searchName, setSearchName] = useState("");
+  const [searchEmail, setSearchEmail] = useState("");
+  const [expandedRows, setExpandedRows] = useState({});
+  const [productDataArray, setProductDataArray] = useState([]);
+  const [productKeys, setProductKeys] = useState(null);
+  const [allServicesToAdd, setAllServicesToAdd] = useState([]);
+  const [allServicesToRemove, setAllServicesToRemove] = useState([]);
+  const [selectedServices, setSelectedServices] = useState([]);
 
-  const getAllPaths = () => { 
+  // Marketplace states
+  const [marketplaceItems, setMarketplaceItems] = useState([]);
+  const [marketplaceLoading, setMarketplaceLoading] = useState(false);
+  const [attachedServices, setAttachedServices] = useState([]);
+  const [marketStepId, setMarketStepId] = useState("");
+
+  // ─── Fetchers ────────────────────────────────────────────────
+  const getAllPaths = () => {
     setLoading(true);
-    let email = userDetails?.email;
+    const email = userDetails?.email;
     const endpoint = admin
-  ? `${BASE_URL}/api/paths/get?status=active`
-  : `${BASE_URL}/api/paths/get?email=${email}`;
-
-axios.get(endpoint)
-      .then((response) => {
-        let result = response?.data?.data;
-        // console.log(result, "partnerPathData result");
-        setPartnerPathData(result);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log(error, "error in partnerPathData");
-      });
+      ? `${BASE_URL}/api/paths/get?status=active`
+      : `${BASE_URL}/api/paths/get?email=${email}`;
+    axios.get(endpoint).then(({ data }) => {
+      setPartnerPathData(data?.data);
+      setLoading(false);
+    }).catch(() => setLoading(false));
   };
 
-  const getInactivePath = () => { 
+  const getInactivePath = () => {
     setLoading(true);
-    let email = userDetails?.email;
+    const email = userDetails?.email;
     const endpoint = admin
-  ? `${BASE_URL}/api/paths/get?status=inactive`
-  : `${BASE_URL}/api/paths/get?email=${email}`;
-    axios
-      .get(endpoint)
-      .then((response) => {
-        let result = response?.data?.data;
-        // console.log(result, "partnerPathData result");
-        setPartnerPathData(result);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log(error, "error in partnerPathData");
-      });
+      ? `${BASE_URL}/api/paths/get?status=inactive`
+      : `${BASE_URL}/api/paths/get?email=${email}`;
+    axios.get(endpoint).then(({ data }) => {
+      setPartnerPathData(data?.data);
+      setLoading(false);
+    }).catch(() => setLoading(false));
   };
-
-
-  const [allServices, setAllServices] = useState([])
-
-  // const getAllServices = () => {
-  //   let email = userDetails?.email;
-
-  //   axios.get(`${API_BASE_URL}/api/services/get?productcreatoremail=${email}`)
-  //     .then(({ data }) => {
-  //       if (data.status) {
-  //         setAllServices(data.data);
-  //       }
-  //     })
-  //     .catch(err => console.error("Error fetching local services:", err));
-  // };
-
-
- useEffect(() => {
-    axios.get(`${BASE_URL}/api/paths/get?status=active`).then(({data}) => {
-      if(data.status){
-        setBackupPathData(data?.data)
-      }
-    })
-}, [])
-
-
-// useEffect(() => {
-//   getAllServices();
-// }, []);
-
 
   const getNewPath = () => {
     setLoading(true);
-   axios.get(`${BASE_URL}/api/paths/get?status=waitingforapproval`)
-      .then((response) => {
-        let result = response?.data?.data;
-        // console.log(result, "partnerPathData result");
-        setPartnerPathData(result);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log(error, "error in partnerPathData");
-      });
-   
-  }
-
-  useEffect(() => {
-    console.log(selectedPath?.StepDetails, "lwkefhlkwefcwefc")
-  }, [selectedPath])
-
-  useEffect(() => {
-    if(mypathsMenu === "Pending Paths"){
-      getNewPath()
-    }else if(mypathsMenu === "Inactive Paths"){
-      getInactivePath()
-    }else{
-      getAllPaths()
-    }
-  }, [mypathsMenu])
+    axios.get(`${BASE_URL}/api/paths/get?status=waitingforapproval`).then(({ data }) => {
+      setPartnerPathData(data?.data);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  };
 
   const getAllSteps = () => {
-    setLoading(true);
-    let email = userDetails?.email;
-  axios.get(`${BASE_URL}/api/steps/get?status=active`)
-  .then((response) => {
-    let result = response?.data?.data;
-    console.log(result, "partnerStepsData result");  // debugging
-    setPartnerStepsData(result);
-  })
-
-      .catch((error) => {
-        console.log(error, "error in partnerStepsData");
-      });
-  };
-
-  useEffect(() => {
-    getAllSteps();
-  }, []);
-
-  const filteredPartnerPathData = partnerPathData?.filter((entry) =>
-    entry?.nameOfPath?.toLowerCase()?.includes(search?.toLowerCase())
-  );
-
-  const filteredPartnerStepsData = partnerStepsData?.filter((entry) =>
-    entry?.name?.toLowerCase()?.includes(search?.toLowerCase())
-  );
-
-  const myPathsTimeout = () => {
-    setTimeout(reload1, 2000);
-  };
-
-  function reload1() {
-    getAllPaths();
-    setPathActionEnabled(false);
-    setPathActionStep(1);
-    setSelectedPathId("");
-    setEditPaths("default");
-    setMetaDataStep("default");
-    setSelectedPath([]);
-    setNewValue("");
-  }
-
-  const myStepsTimeout = () => {
-    setTimeout(reload2, 2000);
-  };
-
-  function reload2() {
-    getAllSteps();
-    setStepActionEnabled(false);
-    setStepActionStep(1);
-    setSelectedStepId("");
-  }
-
-const deletePath = () => {
-  setActionLoading(true);
-
-  axios.delete(`${BASE_URL}/api/paths/delete/${selectedPathId}`)
-    .then((response) => {
-      if (response?.data?.status) {
-        setActionLoading(false);
-        setPathActionStep(3);
-
-        if (mypathsMenu === "Paths") {
-          getAllPaths();
-        } else {
-          getInactivePath();
-        }
-      }
-    })
-    .catch((error) => {
-      console.log("deletePath error:", error);
-      setActionLoading(false);
+    axios.get(`${BASE_URL}/api/steps/get?status=active`).then(({ data }) => {
+      setPartnerStepsData(data?.data);
     });
-};
+  };
 
-const reactivatePath = () => {
-  setActionLoading(true);
+  // Fetch ALL marketplace items (for the "available to attach" list)
+  const fetchMarketplaceItems = () => {
+    setMarketplaceLoading(true);
+    axios.get(`${BASE_URL}/api/marketplace/admin/get-all`).then(({ data }) => {
+      if (data.status) setMarketplaceItems(data.data || []);
+      setMarketplaceLoading(false);
+    }).catch(() => setMarketplaceLoading(false));
+  };
 
- axios.put(`${BASE_URL}/api/paths/reactivate/${selectedPathId}`)
-    .then((response) => {
-      if (response?.data?.status) {
-        setActionLoading(false);
-        setPathActionStep(3);
-        getAllPaths();
-      }
-    })
-    .catch((error) => {
-      console.log("reactivatePath error:", error);
-      setActionLoading(false);
-    });
-};
-
+  // Fetch marketplace items already attached to a specific step
+  const fetchAttachedServices = (sid) => {
+    axios.get(`${BASE_URL}/api/marketplace/step/${sid}`)
+      .then(({ data }) => {
+        if (data.status) setAttachedServices(data?.data || []);
+        else setAttachedServices([]);
+      })
+      .catch(() => setAttachedServices([]));
+  };
 
   const deleteStep = () => {
     setActionLoading(true);
-    axios
-      .delete(`${BASE_URL}/api/steps/delete/${selectedStepId}`)
-      .then((response) => {
-        let result = response?.data;
-        // console.log(result, "deleteStep result");
-        if (result?.status) {
-          setActionLoading(false);
-          setStepActionStep(3);
-          myStepsTimeout();
-        }
-      })
-      .catch((error) => {
-        console.log(error, "error in deleteStep");
-      });
+    axios.delete(`${BASE_URL}/api/steps/delete/${selectedStepId}`).then(({ data }) => {
+      if (data?.status) {
+        setActionLoading(false);
+        setStepActionStep(3);
+        setTimeout(() => {
+          getAllSteps();
+          setStepActionEnabled(false);
+          setStepActionStep(1);
+          setSelectedStepId("");
+        }, 2000);
+      }
+    }).catch(() => setActionLoading(false));
   };
 
+  useEffect(() => {
+    axios.get(`${BASE_URL}/api/paths/get?status=active`).then(({ data }) => {
+      if (data.status) setBackupPathData(data?.data);
+    });
+    getAllSteps();
+    axios.get(`${BASE_URL}/api/services/getservices?status=active`).then(({ data }) => {
+      if (data.status) setAllServicesToAdd(data.data);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (mypathsMenu === "Pending Paths") getNewPath();
+    else if (mypathsMenu === "Inactive Paths") getInactivePath();
+    else getAllPaths();
+  }, [mypathsMenu]);
+
+  useEffect(() => {
+    if (selectedStepId) {
+      axios.get(`${BASE_URL}/api/attachservice/get?step_id=${selectedStepId}`)
+        .then(({ data }) => { if (data.status) setAllServicesToRemove(data?.data[0]); })
+        .catch(() => {});
+    }
+  }, [selectedStepId]);
+
+  useEffect(() => {
+    if (!productKeys || !Array.isArray(productKeys) || productKeys.length === 0) {
+      setProductDataArray([]); return;
+    }
+    Promise.all(productKeys.map(id =>
+      axios.get(`${BASE_URL}/api/services/getbyid/${id}`).then(r => r.data.data).catch(() => null)
+    )).then(results => setProductDataArray(results.filter(Boolean)));
+  }, [productKeys]);
+
+  useEffect(() => { setShowSelectedPath(null); }, [mypathsMenu]);
+  useEffect(() => { setMypathsMenu("Paths"); }, []);
+
+  useEffect(() => {
+    if (pathActionEnabled || stepActionEnabled) document.body.classList.add('admin-popup-open');
+    else document.body.classList.remove('admin-popup-open');
+    return () => document.body.classList.remove('admin-popup-open');
+  }, [pathActionEnabled, stepActionEnabled]);
+
+  useEffect(() => {
+    if (!stepActionEnabled) { setSelectedServices([]); setStepActionStep(1); }
+  }, [stepActionEnabled]);
+
+  // ─── Filter ──────────────────────────────────────────────────
+  const filteredPartnerPathData = partnerPathData?.filter((entry) => {
+    const mn = entry?.nameOfPath?.toLowerCase()?.includes(searchName?.toLowerCase());
+    const me = entry?.email?.toLowerCase()?.includes(searchEmail?.toLowerCase());
+    if (!searchName && !searchEmail) return true;
+    if (searchName && !searchEmail) return mn;
+    if (!searchName && searchEmail) return me;
+    return mn && me;
+  });
+
+  // ─── Actions ─────────────────────────────────────────────────
   const resetPathAction = () => {
     setPathActionEnabled(false);
     setPathActionStep(1);
@@ -264,1723 +194,807 @@ const reactivatePath = () => {
     setSelectedPath([]);
     setNewValue("");
     setViewPathData([]);
+    setMarketStepId("");
+    setAttachedServices([]);
+    setMarketplaceItems([]);
   };
 
- const editMetaData = (field) => {
-  setActionLoading(true);
-
-  axios.patch(`${BASE_URL}/api/paths/edit`, {
-      pathId: selectedPathId,
-      [field]: newValue,
-  })
-  .then((response) => {
-      let result = response?.data;
-      if (result?.status) {
-        setMetaDataStep("success");
+  const deletePath = () => {
+    setActionLoading(true);
+    axios.delete(`${BASE_URL}/api/paths/delete/${selectedPathId}`).then(({ data }) => {
+      if (data?.status) {
         setActionLoading(false);
-        myPathsTimeout();
+        setPathActionStep(3);
+        mypathsMenu === "Paths" ? getAllPaths() : getInactivePath();
       }
-  })
-  .catch((error) => {
-      console.log("editMetaData error", error);
-      setActionLoading(false);
-  });
-};
+    }).catch(() => setActionLoading(false));
+  };
 
-const viewPath = () => {
-  if (!selectedPathId) {
-    console.log("Selected Path ID is missing");
-    return;
-  }
+  const reactivatePath = () => {
+    setActionLoading(true);
+    axios.put(`${BASE_URL}/api/paths/reactivate/${selectedPathId}`).then(({ data }) => {
+      if (data?.status) { setActionLoading(false); setPathActionStep(3); getAllPaths(); }
+    }).catch(() => setActionLoading(false));
+  };
 
-  setViewPathLoading(true);
+  const handleApprovePath = () => {
+    setActionLoading(true);
+    axios.put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, { status: "active" }).then(({ data }) => {
+      if (data.status) { getAllPaths(); setPathActionEnabled(false); setActionLoading(false); setPathActionStep(1); }
+    }).catch(() => setActionLoading(false));
+  };
 
-  axios.get(`${BASE_URL}/api/paths/viewpath/${selectedPathId}`)
-    .then((response) => {
-      let result = response?.data?.data;
-      setViewPathData(result);
-
-      // ⭐ THIS LINE IS THE FIX ⭐
-      setSelectedPath(result);
-
-      setViewPathLoading(false);
-    })
-    .catch((error) => {
-      console.log(error, "error in fetching viewPathData");
-      setViewPathLoading(false);
-    });
-};
-
-
-const handleApprovePath = () => {
-  setActionLoading(true);
-
-  axios.put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, { status: "active" })
-    .then(({ data }) => {
-      if (data.status) {
-        getAllPaths();
-        setPathActionEnabled(false);
-        setActionLoading(false);
-        setPathActionStep(1);
-      }
-    })
-    .catch((error) => {
-      console.error(error, "Error approving path");
-      setActionLoading(false);
-    });
-};
-
-
-
-  
   const handleRejectPath = () => {
     setActionLoading(true);
-    axios.put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, 
-    { status: "draft" })
-    .then(({data}) => {
-      if(data.status){
-        if(mypathsMenu === "Pending Paths"){
-          getNewPath()
-        }else{
-          getAllPaths()
-        }
-        setPathActionEnabled(false);
-        setActionLoading(false);
-        setPathActionStep(1)
-      }
-    })
-  }
-
-  const handleAddService = (newId) => {
-    setActionLoading(true)
-      
-      axios.post(`${BASE_URL}/api/steps/addproducts/${selectedStepId}`, {
-        "product_ids": [newId]
-       }).then(({data})=> {
-        if(data.status){
-          if(mypathsMenu === "Pending Paths"){
-            getNewPath()
-          }else{
-            getAllPaths()
-          }
-          // getAllServices()
-          setPathActionEnabled(false);
-          setStepActionEnabled(false)
-          setActionLoading(false);
-          setPathActionStep(1)
-          setActionLoading(false)
-          fetchAllServicesAgain()
-        }
-      })
-
-  }
-
-  useEffect(() => {
-    setShowSelectedPath(null)
-  }, [mypathsMenu])
-
-
-  const [productDataArray, setProductDataArray] = useState([]);
-  const [productKeys, setProductKeys] = useState(null);
-
-const [allServicesToAdd, setAllServicesToAdd] = useState([]);
-
-useEffect(() => {
-  axios
-    .get(`${BASE_URL}/api/services/getservices?status=active`)
-    .then(({ data }) => {
+    axios.put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, { status: "draft" }).then(({ data }) => {
       if (data.status) {
-        setAllServicesToAdd(data.data);
+        mypathsMenu === "Pending Paths" ? getNewPath() : getAllPaths();
+        setPathActionEnabled(false); setActionLoading(false); setPathActionStep(1);
       }
-    })
-    .catch((err) => {
-      console.error("Error fetching services:", err);
     });
-}, []);
-
-
-  const [allServicesToRemove, setAllServicesToRemove] = useState([])
-  useEffect(() => {
-    if(selectedStepId){
-      axios.get(`${BASE_URL}/api/attachservice/get?step_id=${selectedStepId}`).then(({data}) => {
-        if(data.status){
-          setAllServicesToRemove(data?.data[0])
-        }
-      })
-    }
-  }, [selectedStepId])
-
-//addedddddddddddddd
-
-const openAddStep = async (pathId) => {
-  try {
-    setSelectedPathId(pathId);
-
-    const response = await axios.get(`${BASE_URL}/api/paths/viewpath/${pathId}`);
-    if (response.data?.data) {
-      setSelectedPath(response.data.data);   // ⭐ correct
-    }
-
-    setEditPaths("add_step");   // ⭐ open the Add Step UI
-  } catch (err) {
-    console.log("Error loading path data for Add Step:", err);
-  }
-};
-
-
-  // useEffect(() => {
-  //   if (userDetails) {
-  //     axios
-  //       .get(
-  //         `https://careers.marketsverse.com/userpaths/getCurrentStep?email=${userDetails?.user?.email}`
-  //       )
-  //       .then(({ data }) => {
-  //         if (data.status) {
-  //           // console.log(data.data[0].StepDetails[0].other_data, "ProductKeys");
-  //           setProductKeys(data.data[0].StepDetails[0].other_data);
-  //         }
-  //       });
-  //   }
-  // }, []);
-
-const fetchProductData = async (apiKey) => {
-  try {
-    const response = await axios.get(`${BASE_URL}/api/services/getbyid/${apiKey}`);
-    const productData = response.data.data;   // adjust based on backend return
-    return productData;
-  } catch (error) {
-    console.error(`Error fetching local product for key ${apiKey}:`, error);
-    return null;
-  }
-};
-
-
-
-  useEffect(() => {
-    console.log(stepActionStep, 'ejbfkwjebfkwef')
-  }, [stepActionStep])
-
-  
-
-  // const fetchData = async () => {
-  //   setProductDataArray([]);
-  //   console.log(productKeys, "ewlkhflkwheflwerf")
-  //   if (productKeys) {
-  //     const apiKeys = Object.values(productKeys);
-  //     const fetchDataPromises = apiKeys.map((item) => fetchProductData(item));
-
-  //     try {
-  //       const results = await Promise.all(fetchDataPromises);
-  //       const updatedProductDataArray = results.filter(Boolean);
-  //       setProductDataArray([...updatedProductDataArray]);
-  //     } catch (error) {
-  //       console.error("Error fetching product data:", error);
-  //     }
-  //   }
-  // };
-  const fetchData = async () => {
-    setProductDataArray([]);
-    console.log(productKeys, "ewlkhflkwheflwerf");
-    if (productKeys && Array.isArray(productKeys)) { // Check if productKeys exists and is an array
-      const fetchDataPromises = productKeys.map((id) => fetchProductData(id)); // Map over the IDs directly
-
-      try {
-        const results = await Promise.all(fetchDataPromises);
-        const updatedProductDataArray = results.filter(Boolean);
-        setProductDataArray([...updatedProductDataArray]);
-      } catch (error) {
-        console.error("Error fetching product data:", error);
-      }
-    } else {
-      console.warn("Product keys is not a valid array:", productKeys);
-    }
   };
- useEffect(() => {
-  if (!productKeys || !Array.isArray(productKeys) || productKeys.length === 0) {
-    setProductDataArray([]); 
-    return;  // STOP — do NOT call fetchData
-  }
 
-  fetchData();
-}, [productKeys]);
+  const editMetaData = (field) => {
+    setActionLoading(true);
+    axios.patch(`${BASE_URL}/api/paths/edit`, { pathId: selectedPathId, [field]: newValue }).then(({ data }) => {
+      if (data?.status) { setMetaDataStep("success"); setActionLoading(false); setTimeout(reload1, 2000); }
+    }).catch(() => setActionLoading(false));
+  };
+
+  function reload1() {
+    getAllPaths(); setPathActionEnabled(false); setPathActionStep(1);
+    setSelectedPathId(""); setEditPaths("default"); setMetaDataStep("default"); setSelectedPath([]); setNewValue("");
+  }
 
   const handlePlace = (item, index) => {
-    console.log(item, index, "lwkeflkwefwef")
-    const updatedPathObject = addIdToObjectAtIndex(item?.the_ids, stepId, backupPathId, index);
-    // console.log(updatedPathObject, "kjwebfkwjebfkwejf")
-    axios.patch(`${BASE_URL}/api/paths/edit`, {
-    pathId: selectedPath?._id,
-    the_ids: updatedPathObject
-})
-.then(res => {
-    if(res.data.status){
-        resetPathAction();
-        getAllPaths();
-    }
-})
-
-  }
-
-  function addIdToObjectAtIndex(idsArray, stepId, backupPathId, index) {
-    // Create a shallow copy of the original array and extract only necessary properties
-    const newArray = idsArray.map(({ step_id, backup_pathId }) => ({ step_id, backup_pathId }));
-
-    // Create a new object with the provided stepId and backupPathId
-    const newIdObject = {
-        step_id: stepId,
-        backup_pathId: backupPathId
-    };
-
-    // Insert the new object at the specified index using splice
-    newArray.splice(index, 0, newIdObject);
-
-    return newArray;
-  }
+    const arr = (item?.the_ids || []).map(({ step_id, backup_pathId }) => ({ step_id, backup_pathId }));
+    arr.splice(index, 0, { step_id: stepId, backup_pathId: backupPathId });
+    axios.patch(`${BASE_URL}/api/paths/edit`, { pathId: selectedPath?._id, the_ids: arr }).then(({ data }) => {
+      if (data.status) { resetPathAction(); getAllPaths(); }
+    });
+  };
 
   const handledeletePathPosition = (fullObject, idToDelete) => {
-   const updatedTheIds = [...fullObject.the_ids];
-
-    // Find the index of the object with the specified _id in the copied array
-    const indexToDelete = updatedTheIds.findIndex(
-  obj => obj.step_id === idToDelete
-);
-
-    // If the object with the specified _id is found, remove it from the copied array
-    if (indexToDelete !== -1) {
-        updatedTheIds.splice(indexToDelete, 1);
-    }
-
-    // Return the updated array with only step_id and backup_pathId keys
-    const updatedBody =  updatedTheIds.map(({ step_id, backup_pathId }) => ({ step_id, backup_pathId }));
-    axios.patch(`${BASE_URL}/api/paths/edit`, {
-    pathId: selectedPath?._id,
-    the_ids: updatedBody
-})
-.then(res => {
-    if(res.data.status){
-        resetPathAction();
-        getAllPaths();
-    }
-})
-
-  }
-
-const getChangedPos = (currentPos, newPos) => {
-  if (!Array.isArray(selectedPath?.StepDetails)) return;
-  if (currentPos === newPos) return;
-
-  const reordered = [...selectedPath.StepDetails];
-  const [moved] = reordered.splice(currentPos, 1);
-  reordered.splice(newPos, 0, moved);
-
-  // convert reordered StepDetails → the_ids payload
-  const updatedBody = reordered.map(step => ({
-    step_id: step._id,
-    backup_pathId: step.backup_pathId || null
-  }));
-
-  axios.patch(` ${BASE_URL}/api/paths/edit`, {
-    pathId: selectedPath._id,
-    the_ids: updatedBody
-  }).then(res => {
-    if (res.data.status) {
-      // reload fresh data
-      axios.get(`${BASE_URL}/api/paths/viewpath/${selectedPath._id}`).then(({data}) => {
-        if (data?.data) {
-          setSelectedPath(data.data);
-        }
-      });
-    }
-  });
-};
-
-
-
-//function updatePositionOfObject(fullObject, currentIndex, newIndex) {
-  //const updatedTheIds = [...fullObject.the_ids];
-
-  //const [movedItem] = updatedTheIds.splice(currentIndex, 1);
-  //updatedTheIds.splice(newIndex, 0, movedItem);
-
-  //const updatedBody = updatedTheIds.map(({ step_id, backup_pathId }) => ({
-    //step_id,
-    //backup_pathId,
-  //}));
-
-  //axios.patch(` /api/paths/edit`, {
-    //pathId: fullObject._id,
-    //the_ids: updatedBody,
-  //}).then(res => {
-    //if (res.data.status) {
-      //resetPathAction();
-      //getAllPaths();
-    //}
-  //});
-//}
-
-
-
-const [selectedServices, setSelectedServices] = useState([])
-const handleSelectServicesForStep = (item) => {
-    // Check if the item is already selected
-    const isSelected = selectedServices.includes(item);
-
-    if (isSelected) {
-      // If already selected, remove it
-      const updatedServices = selectedServices.filter(service => service !== item);
-      setSelectedServices(updatedServices);
-    } else {
-      // If not selected, add it
-      setSelectedServices([...selectedServices, item]);
-    }
-}
-
-const addServicesToStep = () => {
-  setActionLoading(true)
-  setLoading(true)
-
-  axios.post(`${BASE_URL}/api/steps/attachservice`, {
-    step_id: selectedStepId,
-    service_ids: [...selectedServices]
-  })
-  .then(({ data }) => {
-    if (data.status) {
-      setStepActionEnabled(false)
-      setActionLoading(false)
-      setLoading(false)
-      setSelectedServices([])
-
-      // refresh services and paths
-      // getAllServices()
-      fetchAllServicesAgain()
-      getAllPaths()
-    }
-  })
-  .catch(err => {
-    console.error("Attach service failed", err)
-    setActionLoading(false)
-    setLoading(false)
-  })
-}
-
-
-const removeServiceFromStep = (id) => {
-  setActionLoading(true)
-  setLoading(true)
-
-  axios.delete(`${BASE_URL}/api/steps/service/${selectedStepId}/${id}`)
-    .then(({ data }) => {
-      if (data.status) {
-        setStepActionEnabled(false)
-        setActionLoading(false)
-        setLoading(false)
-
-        // refresh UI
-        // getAllServices()
-        fetchAllServicesAgain()
-        getAllPaths()
-      }
-    })
-    .catch(err => {
-      console.error("Remove service failed", err)
-      setActionLoading(false)
-      setLoading(false)
-    })
-}
-
-
-useEffect(() => {
-  if(!stepActionEnabled){
-    setSelectedServices([])
-    setStepActionStep(1)
-  }
-}, [stepActionEnabled])
-
-useEffect(() => {
-  setMypathsMenu("Paths");
-}, [])
-
-
-useEffect(() => {
-  if (pathActionEnabled || stepActionEnabled) {
-    document.body.classList.add('admin-popup-open');
-  } else {
-    document.body.classList.remove('admin-popup-open');
-  }
-  
-  return () => {
-    document.body.classList.remove('admin-popup-open');
+    const updated = [...fullObject.the_ids];
+    const idx = updated.findIndex(o => o.step_id === idToDelete);
+    if (idx !== -1) updated.splice(idx, 1);
+    const body = updated.map(({ step_id, backup_pathId }) => ({ step_id, backup_pathId }));
+    axios.patch(`${BASE_URL}/api/paths/edit`, { pathId: selectedPath?._id, the_ids: body }).then(({ data }) => {
+      if (data.status) { resetPathAction(); getAllPaths(); }
+    });
   };
-}, [pathActionEnabled, stepActionEnabled]);
+
+  const getChangedPos = (currentPos, newPos) => {
+    if (!Array.isArray(selectedPath?.StepDetails) || currentPos === newPos) return;
+    const reordered = [...selectedPath.StepDetails];
+    const [moved] = reordered.splice(currentPos, 1);
+    reordered.splice(newPos, 0, moved);
+    const body = reordered.map(s => ({ step_id: s._id, backup_pathId: s.backup_pathId || null }));
+    axios.patch(`${BASE_URL}/api/paths/edit`, { pathId: selectedPath._id, the_ids: body }).then(({ data }) => {
+      if (data.status) {
+        axios.get(`${BASE_URL}/api/paths/viewpath/${selectedPath._id}`).then(({ data }) => {
+          if (data?.data) setSelectedPath(data.data);
+        });
+      }
+    });
+  };
+
+  const handleSelectServicesForStep = (id) =>
+    setSelectedServices(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
+
+  const addServicesToStep = () => {
+    setActionLoading(true);
+    axios.post(`${BASE_URL}/api/steps/attachservice`, { step_id: selectedStepId, service_ids: [...selectedServices] }).then(({ data }) => {
+      if (data.status) { setStepActionEnabled(false); setActionLoading(false); setSelectedServices([]); fetchAllServicesAgain(); getAllPaths(); }
+    }).catch(() => setActionLoading(false));
+  };
+
+  const removeServiceFromStep = (id) => {
+    setActionLoading(true);
+    axios.delete(`${BASE_URL}/api/steps/service/${selectedStepId}/${id}`).then(({ data }) => {
+      if (data.status) { setStepActionEnabled(false); setActionLoading(false); fetchAllServicesAgain(); getAllPaths(); }
+    }).catch(() => setActionLoading(false));
+  };
+
+  // Attach: update the marketplace item's step_id to this step
+  const attachMarketService = (item) => {
+    setActionLoading(true);
+    axios.patch(`${BASE_URL}/api/marketplace/update/${item._id}`, { step_id: marketStepId })
+      .then(({ data }) => {
+        if (data.status) {
+          setActionLoading(false);
+          // Optimistically update UI
+          setAttachedServices(prev => [...prev, { ...item, step_id: marketStepId }]);
+          setMarketplaceItems(prev => prev.filter(m => m._id !== item._id));
+        } else {
+          // Fallback optimistic update even if response unclear
+          setActionLoading(false);
+          setAttachedServices(prev => [...prev, { ...item, step_id: marketStepId }]);
+          setMarketplaceItems(prev => prev.filter(m => m._id !== item._id));
+        }
+      })
+      .catch(() => {
+        setActionLoading(false);
+        // Still update UI optimistically
+        setAttachedServices(prev => [...prev, { ...item, step_id: marketStepId }]);
+        setMarketplaceItems(prev => prev.filter(m => m._id !== item._id));
+      });
+  };
+
+  // Detach: clear the marketplace item's step_id
+  const detachMarketService = (item) => {
+    setActionLoading(true);
+    axios.patch(`${BASE_URL}/api/marketplace/update/${item._id}`, { step_id: null })
+      .then(({ data }) => {
+        setActionLoading(false);
+        // Update UI
+        setAttachedServices(prev => prev.filter(s => s._id !== item._id));
+        setMarketplaceItems(prev => [...prev, item]);
+      })
+      .catch(() => {
+        setActionLoading(false);
+        // Optimistic fallback
+        setAttachedServices(prev => prev.filter(s => s._id !== item._id));
+        setMarketplaceItems(prev => [...prev, item]);
+      });
+  };
+
+  // ─── Back navigation ─────────────────────────────────────────
+  const handleBack = () => {
+    const backMap = {
+      "Edit steps": "default",
+      "add_step": "Edit steps",
+      "add_sub_step": "add_step",
+      "show_all_paths": "add_sub_step",
+      "remove_step": "Edit steps",
+      "reorder_step": "Edit steps",
+      "marketplace_steps": "default",
+      "marketplace_attach": "marketplace_steps",
+    };
+    if (editPaths !== "default") setEditPaths(backMap[editPaths] || "default");
+    else setPathActionStep(1);
+  };
+
+  const showBack = pathActionStep > 1 || editPaths !== "default";
+
+  const getModalTitle = () => {
+    if (["Edit steps", "add_step", "add_sub_step", "show_all_paths", "remove_step", "reorder_step"].includes(editPaths)) return "Edit Path";
+    if (editPaths === "marketplace_steps" || editPaths === "marketplace_attach") return "Marketplace";
+    if (pathActionStep === 5) return "Approve Path";
+    if (pathActionStep === 6) return "Reject Path";
+    if (pathActionStep === 2) return mypathsMenu === "Inactive Paths" ? "Reactivate Path" : "Delete Path";
+    if (pathActionStep === 3) return "Done";
+    if (pathActionStep === 4) return "Edit Path";
+    return "Path Actions";
+  };
+
+  const roleEmoji = { institution: "🏛", mentor: "👤", distributor: "📦", vendor: "🛍" };
+  const roleColor = { institution: "#7c3aed", mentor: "#0891b2", distributor: "#d97706", vendor: "#dc2626" };
+
+  // ─── SVG Icons ───────────────────────────────────────────────
+  const IconPencil = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z" />
+    </svg>
+  );
+  const IconTrash = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0h10" />
+      <line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" />
+    </svg>
+  );
+  const IconCheck = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M20 6L9 17l-5-5" />
+    </svg>
+  );
+  const IconX = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+  const IconShop = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <path d="M16 10a4 4 0 0 1-8 0" />
+    </svg>
+  );
+  const IconChevron = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  );
+
+  const ActionCard = ({ color, icon, title, desc, onClick }) => (
+    <div className={`pp-card pp-card--${color}`} onClick={onClick}>
+      <div className="pp-card-icon">{icon}</div>
+      <h4>{title}</h4>
+      <p>{desc}</p>
+    </div>
+  );
+
+  const OptionRow = ({ iconColor, icon, title, sub, onClick }) => (
+    <div className="pp-option-item" onClick={onClick}>
+      <div className={`pp-option-icon pp-option-icon--${iconColor}`}>{icon}</div>
+      <div className="pp-option-content"><strong>{title}</strong><span>{sub}</span></div>
+      <IconChevron />
+    </div>
+  );
 
   return (
     <div className="admin-mypaths">
-      <div className="admin-mypaths-menu">
-        <div
-          className="admin-each-mypath-menu"
-          style={{
-            fontWeight: mypathsMenu === "Paths" ? "700" : "",
-            background:
-              mypathsMenu === "Paths" ? "rgba(241, 241, 241, 0.5)" : "",
-          }}
-          onClick={() => {
-            setMypathsMenu("Paths");
-            if(viewPathEnabled) {
-              setViewPathEnabled(false);
-              setViewPathData([]);
-            }
-          }}
-        >
-         {admin ? "Active Paths" : "Paths"}
+
+      {/* TOPBAR */}
+      <div className="admin-paths-topbar">
+        <div className="admin-paths-tabs">
+          <button className={`paths-tab ${mypathsMenu === "Paths" ? "active" : ""}`}
+            onClick={() => { setMypathsMenu("Paths"); setViewPathEnabled(false); setViewPathData([]); }}>
+            {admin ? "Active Paths" : "Paths"}
+          </button>
+          {admin && (
+            <button className={`paths-tab ${mypathsMenu === "Pending Paths" ? "active" : ""}`}
+              onClick={() => { setMypathsMenu("Pending Paths"); setViewPathEnabled(false); setViewPathData([]); }}>
+              Pending Paths
+            </button>
+          )}
+          {admin && (
+            <button className={`paths-tab ${mypathsMenu === "Inactive Paths" ? "active" : ""}`}
+              onClick={() => { setMypathsMenu("Inactive Paths"); setViewPathEnabled(false); setViewPathData([]); }}>
+              Inactive Paths
+            </button>
+          )}
         </div>
-        {admin && 
-        <div
-          className="admin-each-mypath-menu"
-          style={{
-            fontWeight: mypathsMenu === "Pending Paths" ? "700" : "",
-            background:
-              mypathsMenu === "Pending Paths" ? "rgba(241, 241, 241, 0.5)" : "",
-          }}
-          onClick={() => {
-            setMypathsMenu("Pending Paths");
-            if(viewPathEnabled) {
-              setViewPathEnabled(false);
-              setViewPathData([]);
-            }
-          }}
-        >
-          Pending Paths
-        </div>}
-        {/* <div
-          className="admin-each-mypath-menu"
-          style={{
-            fontWeight: mypathsMenu === "Steps" ? "700" : "",
-            background:
-              mypathsMenu === "Steps" ? "rgba(241, 241, 241, 0.5)" : "",
-          }}
-          onClick={() => {
-            setMypathsMenu("Steps");
-            if(viewPathEnabled) {
-              setViewPathEnabled(false);
-              setViewPathData([]);
-            }
-          }}
-        >
-          Steps
-        </div> */}
-        <div
-          className="admin-each-mypath-menu"
-          style={{
-            fontWeight: mypathsMenu === "Inactive Paths" ? "700" : "",
-            background:
-              mypathsMenu === "Inactive Paths" ? "rgba(241, 241, 241, 0.5)" : "",
-          }}
-          onClick={() => {
-            setMypathsMenu("Inactive Paths");
-            if(viewPathEnabled) {
-              setViewPathEnabled(false);
-              setViewPathData([]);
-            }
-          }}
-        >
-          Inactive Paths
+        <div className="admin-paths-search-row">
+          <div className="paths-search-input">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input type="text" placeholder="Search by path" value={searchName} onChange={e => setSearchName(e.target.value)} />
+          </div>
+          <div className="paths-search-input">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+            <input type="text" placeholder="Search by email" value={searchEmail} onChange={e => setSearchEmail(e.target.value)} />
+          </div>
         </div>
       </div>
+
+      {/* CONTENT */}
       <div className="admin-mypaths-content">
-        {showSelectedPath ? <div>
-          <CurrentStep productDataArray={productDataArray} selectedPathId={selectedPathId} showSelectedPath={showSelectedPath} selectedPath={selectedPath}/>
-        </div>: viewPathEnabled ? (
+        {showSelectedPath ? (
+          <div>
+            <CurrentStep productDataArray={productDataArray} selectedPathId={selectedPathId} showSelectedPath={showSelectedPath} selectedPath={selectedPath} />
+          </div>
+        ) : viewPathEnabled ? (
           <div className="admin-viewpath-container">
             <div className="admin-viewpath-top-area">
               <div>Your Selected Path:</div>
-              {viewPathLoading ? (
-                <Skeleton width={150} height={30} />
-              ) : (
-                <div className="admin-viewpath-bold-text">
-                { viewPathData && Object.keys(viewPathData).length > 0
-                    ? viewPathData?.destination_institution
-                    : ""}
-                </div>
+              {viewPathLoading ? <Skeleton width={150} height={30} /> : (
+                <div className="admin-viewpath-bold-text">{viewPathData && Object.keys(viewPathData).length > 0 ? viewPathData?.destination_institution : ""}</div>
               )}
-              {viewPathLoading ? (
-                <Skeleton width={500} height={20} />
-              ) : (
-                <div className="admin-viewpath-des">
-                  {viewPathData && Object.keys(viewPathData).length > 0 ? viewPathData?.description : ""}
-                </div>
+              {viewPathLoading ? <Skeleton width={500} height={20} /> : (
+                <div className="admin-viewpath-des">{viewPathData && Object.keys(viewPathData).length > 0 ? viewPathData?.description : ""}</div>
               )}
-              <div
-                className="admin-viewpath-goBack-div"
-                onClick={() => {
-                  setViewPathEnabled(false);
-                }}
-              >
-                Go Back
-              </div>
+              <div className="admin-viewpath-goBack-div" onClick={() => setViewPathEnabled(false)}>Go Back</div>
             </div>
             <div className="admin-viewpath-steps-area">
               {viewPathLoading
-  ? Array(6)
-      .fill("")
-      .map((e, i) => {
-        return (
-          <div className="admin-viewpath-each-j-step admin-viewpath-relative-div" key={i}>
-            ...
-          </div>
-        );
-      })
-  : viewPathData && Object.keys(viewPathData).length > 0
-  ? viewPathData?.StepDetails?.map((e, i) => {
-      return (
-        <div
-          onClick={() => {
-            setShowSelectedPath(e);
-            setProductKeys(e?.product_ids);
-          }}
-          className="admin-viewpath-each-j-step admin-viewpath-relative-div"
-          key={i}
-        >
-          <div className="admin-viewpath-each-j-img">
-            <img src={e?.icon} alt="" />
-          </div>
-          <div className="admin-viewpath-each-j-step-text">{e?.name}</div>
-          <div className="admin-viewpath-each-j-step-text1">{e?.description}</div>
-          <div className="admin-viewpath-each-j-amount-div">
-            <div className="admin-viewpath-each-j-amount">{e?.cost}</div>
-          </div>
-        </div>
-      );
-    })
-  : ""}
-
-            </div>
-          </div>
-        ) : mypathsMenu === "Paths" || mypathsMenu === "Pending Paths" || mypathsMenu === "Inactive Paths" && !viewPathEnabled ? (
-          <>
-            <div className="admin-mypathsNav">
-              <div className="admin-mypaths-name-div">Name</div>
-              <div className="admin-mypaths-description-div">Description</div>
-              <div className="admin-mypaths-name-div"># of steps</div>
-            </div>
-           <div className="admin-mypathsScroll-div">
-  {loading
-    ? Array(10)
-        .fill("")
-        .map((e, i) => {
-          return (
-            <div className="admin-each-mypaths-data" key={i}>
-              <div className="admin-each-mypaths-name">
-                <Skeleton width={100} height={30} />
-              </div>
-              <div className="admin-each-mypaths-desc">
-                <Skeleton width={"100%"} height={30} />
-              </div>
-              <div className="admin-each-mypaths-name">
-                <Skeleton width={100} height={30} />
-              </div>
-            </div>
-          );
-        })
-    : filteredPartnerPathData?.map((e, i) => {
-        return (
-          <div
-            className="admin-each-mypaths-data"
-            key={i}
-            style={{ position: "relative" }}
-            onClick={async () => {
-              setPathActionEnabled(true);
-              setSelectedPathId(e?._id);
-
-              const res = await axios.get(`${BASE_URL}/api/paths/viewpath/${e?._id}`);
-              if (res.data?.data) {
-                setSelectedPath(res.data.data);
-              }
-            }}
-          >
-            <div className="admin-each-mypaths-name">{e?.nameOfPath}</div>
-
-            <div className="admin-each-mypaths-desc">
-              {e?.description}
-            </div>
-
-            <div className="admin-each-mypaths-name">
-              {e?.StepDetails?.length ?? e?.the_ids?.length ?? 0}
-            </div>
-
-            {/* ✅ CREATED BY — RIGHT BOTTOM */}
- {/* ✅ CREATED BY — TAG STYLE */}
-<div className="admin-created-by-line style-tag">
-  <div className="created-badge">
-    <span className="creator-email">{e?.email || "partner@email.com"}</span>
-    <span className="separator">|</span>
-    <span className="created-date">
-      {(function() {
-        const date = e?.createdAt ? new Date(e.createdAt) : new Date();
-        return date.toLocaleString("en-IN", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      })()}
-    </span>
-  </div>
-</div>
-          </div>
-        );
-      })}
-</div>
-          </>
-        ) 
-        : (
-          // <>
-          //   <div className="admin-mypathsNav">
-          //     <div className="admin-mypathsName">Name</div>
-          //     <div className="admin-mypathsCountry">Length</div>
-          //     <div className="admin-mypathsCountry">Cost Structure</div>
-          //     <div className="admin-mypathsMicrosteps">Services</div>
-          //   </div>
-          //   <div className="admin-mypathsScroll-div">
-          //     {loading
-          //       ? Array(10)
-          //           .fill("")
-          //           ?.map((e, i) => {
-          //             return (
-          //               <div className="admin-each-mypaths-data1" key={i}>
-          //                 <div className="admin-each-mypaths-detail">
-          //                   <div className="admin-each-mypathsName">
-          //                     <Skeleton width={100} height={30} />
-          //                   </div>
-          //                   <div className="admin-each-mypathsCountry">
-          //                     <Skeleton width={100} height={30} />
-          //                   </div>
-          //                   <div className="admin-each-mypathsCountry">
-          //                     <Skeleton width={100} height={30} />
-          //                   </div>
-          //                   <div className="admin-each-mypathsMicrosteps">
-          //                     <Skeleton width={100} height={30} />
-          //                   </div>
-          //                 </div>
-          //                 <div className="admin-each-mypaths-desc">
-          //                   <div className="admin-each-mypaths-desc-txt">
-          //                     <Skeleton width={100} height={30} />
-          //                   </div>
-          //                   <div className="admin-each-mypaths-desc-txt1">
-          //                     <Skeleton width={"100%"} height={30} />
-          //                   </div>
-          //                 </div>
-          //               </div>
-          //             );
-          //           })
-          //       : filteredPartnerStepsData?.map((e, i) => {
-          //           return (
-          //             <div
-          //               className="admin-each-mypaths-data1"
-          //               key={i}
-          //               onClick={() => {
-          //                 setSelectedStepId(e?._id);
-          //                 setStepActionEnabled(true);
-          //               }}
-          //             >
-          //               <div className="admin-each-mypaths-detail">
-          //                 <div className="admin-each-mypathsName">
-          //                   <div>
-          //                     <div>{e?.name}</div>
-          //                     <div
-          //                       style={{
-          //                         fontSize: "0.8rem",
-          //                         fontWeight: "300",
-          //                       }}
-          //                     >
-          //                       {e?._id}
-          //                     </div>
-          //                   </div>
-          //                 </div>
-          //                 <div className="admin-each-mypathsCountry">
-          //                   {e?.length ? e?.length : 0} Days
-          //                 </div>
-          //                 <div className="admin-each-mypathsCountry">{e?.cost}</div>
-          //                 <div className="admin-each-mypathsMicrosteps">
-          //                   {e?.other_data
-          //                     ? Object.keys(e.other_data).length
-          //                     : 0}
-          //                 </div>
-          //               </div>
-          //               <div className="admin-each-mypaths-desc">
-          //                 <div className="admin-each-mypaths-desc-txt">
-          //                   Description
-          //                 </div>
-          //                 <div className="admin-each-mypaths-desc-txt1">
-          //                   {e?.description}
-          //                 </div>
-          //               </div>
-          //             </div>
-          //           );
-          //         })}
-          //   </div>
-          // </>
-          <></>
-        )
-        }
-
-      {pathActionEnabled && (
-  <>
-    {/* BACKDROP - ADD THIS */}
-    <div className="admin-popup-backdrop" onClick={() => resetPathAction()}></div>
-    
-    <div className="admin-acc-popular1">
-      <div
-        className="admin-acc-popular-top1"
-        style={{
-          display:
-            pathActionStep === 3
-              ? "none"
-              : metaDataStep === "success"
-              ? "none"
-              : "",
-        }}
-      >
-        <div className="admin-acc-popular-head1">
-          {pathActionStep > 3 ? "Edit Paths" : pathActionStep >7 ? "Add service": "My Path Actions"}
-        </div>
-        <div
-          className="admin-acc-popular-img-box1"
-          style={{ cursor: "pointer" }}
-          onClick={() => {
-            resetPathAction();
-          }}
-        >
-          <img className="admin-acc-popular-img1" src={closepop} alt="" />
-        </div>
-      </div>
-      {pathActionStep === 1 && mypathsMenu !== "Pending Paths" && (
-        <div className="admin-acc-mt-div">
-          <div className="admin-acc-scroll-div">
-            <div
-              className="admin-acc-step-box4"
-              onClick={() => {
-                setPathActionStep(4);
-              }}
-            >
-              Edit path
-            </div>
-            <div
-              className="admin-acc-step-box4"
-              onClick={() => {
-                setPathActionStep(2);
-              }}
-            >
-            {mypathsMenu === "Inactive Paths" ? "Reactivate path":"Delete path"}  
-            </div>
-            <div
-              className="admin-acc-step-box4"
-              onClick={() => {
-                localStorage.setItem("selectedPathId", selectedPathId);
-                navigate(`/dashboard/path/${selectedPathId}`);
-              }}
-            >
-              View path
-            </div>
-          </div>
-        </div>
-      )}
-
-      {pathActionStep === 1 && mypathsMenu === "Pending Paths" && (
-        <div className="admin-acc-mt-div">
-          <div className="admin-acc-scroll-div">
-            <div
-              className="admin-acc-step-box4"
-              onClick={() => {
-                setPathActionStep(5);
-              }}
-            >
-              Approve Path
-            </div>
-            <div
-              className="admin-acc-step-box4"
-              onClick={() => {
-                setPathActionStep(6);
-              }}
-            >
-              Reject Path
-            </div>
-            <div
-              className="admin-acc-step-box4"
-              onClick={() => {
-                setPathActionStep(9);
-              }}
-            >
-              Add Services
-            </div>
-            <div
-              className="admin-acc-step-box4"
-              onClick={() => {
-                setPathActionStep(4);
-              }}
-            >
-              Edit path
-            </div>
-            <div
-              className="admin-acc-step-box4"
-              onClick={() => {
-                localStorage.setItem("selectedPathId", selectedPathId);
-                navigate(`/dashboard/path/${selectedPathId}`);
-              }}
-            >
-              View path
-            </div>
-          </div>
-        </div>
-      )}
-
-    
-      {pathActionStep === 2 && (
-        <div className="admin-acc-mt-div">
-          <div className="admin-acc-sub-text">
-          Are you sure you want to {mypathsMenu === "Inactive Paths" ? "reactivate":"delete"}  this path?
-            </div>
-          <div className="admin-acc-scroll-div">
-            <div
-              className="admin-acc-step-box4"
-              onClick={() => {
-                if(mypathsMenu === "Inactive Paths"){
-                  reactivatePath();
-                }else{
-                  deletePath();
-                }
-              }}
-            >
-              Yes
-            </div>
-            <div
-              className="admin-acc-step-box4"
-              onClick={() => {
-                setPathActionStep(1);
-              }}
-            >
-              Never Mind
-            </div>
-          </div>
-          <div
-            className="admin-goBack3"
-            onClick={() => {
-              setPathActionStep(1);
-            }}
-          >
-            Go Back
-          </div>
-        </div>
-      )}
-  
-
-      {actionLoading ? (
-        <div className="admin-popularlogo">
-          <img className="admin-popularlogoimg" src={lg1} alt="" />
-        </div>
-      ) : (
-        ""
-      )}
-
-      {pathActionStep === 3 && (
-        <div className="admin-success-box2">Path Successfully {mypathsMenu === "Inactive Paths" ? "reactivated" :"deleted"} </div>
-      )}
-
-      {pathActionStep === 4 &&
-        (editPaths === "default" ? (
-          <div className="admin-acc-mt-div">
-            <div className="admin-acc-sub-text">
-              What type of data do you want to edit?
-            </div>
-            <div className="admin-acc-scroll-div">
-              <div
-                className="admin-acc-step-box4"
-                onClick={() => {
-                  setEditPaths("Edit steps");
-                }}
-              >
-                Edit steps
-              </div>
-            </div>
-            <div
-              className="admin-goBack3"
-              onClick={() => {
-                setPathActionStep(1);
-              }}
-            >
-              Go Back
-            </div>
-          </div>
-        ) : editPaths === "Edit meta data" ? (
-          metaDataStep === "default" ? (
-            <div className="admin-acc-mt-div">
-              <div className="admin-acc-sub-text">
-                Which meta data do you want to edit?
-              </div>
-              <div className="admin-acc-scroll-div">
-                <div
-                  className="admin-acc-step-box4"
-                  onClick={() => {
-                    setMetaDataStep("nameOfPath");
-                  }}
-                >
-                  Name
-                </div>
-                <div
-                  className="admin-acc-step-box4"
-                  onClick={() => {
-                    setMetaDataStep("length");
-                  }}
-                >
-                  Length
-                </div>
-                <div
-                  className="admin-acc-step-box4"
-                  onClick={() => {
-                    setMetaDataStep("description");
-                  }}
-                >
-                  Description
-                </div>
-                <div
-                  className="admin-acc-step-box4"
-                  onClick={() => {
-                    setMetaDataStep("path_type");
-                  }}
-                >
-                  Path type
-                </div>
-                <div
-                  className="admin-acc-step-box4"
-                  onClick={() => {
-                    setMetaDataStep("destination_institution");
-                  }}
-                >
-                  Destination institution
-                </div>
-                <div
-                  className="admin-acc-step-box4"
-                  onClick={() => {
-                    setMetaDataStep("program");
-                  }}
-                >
-                  Program
-                </div>
-                <div
-                  className="admin-acc-step-box4"
-                  onClick={() => {
-                    setMetaDataStep("city");
-                  }}
-                >
-                  City
-                </div>
-                <div
-                  className="admin-acc-step-box4"
-                  onClick={() => {
-                    setMetaDataStep("country");
-                  }}
-                >
-                  Country
-                </div>
-              </div>
-              <div
-                className="admin-goBack3"
-                onClick={() => {
-                  setEditPaths("default");
-                }}
-              >
-                Go Back
-              </div>
-            </div>
-          ) : metaDataStep === "success" ? (
-            <div className="admin-success-box2">
-              You have successfully updated the{" "}
-              {metaDataStep === "nameOfPath"
-                ? "name"
-                : metaDataStep === "path_type"
-                ? "path type"
-                : metaDataStep === "destination_institution"
-                ? "destination institution"
-                : metaDataStep}{" "}
-              for this page. You will automatically be redirected to the
-              updated path page.
-            </div>
-          ) : (
-            <>
-              <div className="admin-acc-mt-div">
-                <div className="admin-acc-scroll-div">
-                  <div className="admin-acc-sub-textt">
-                    Current{" "}
-                    {metaDataStep === "nameOfPath"
-                      ? "name"
-                      : metaDataStep === "path_type"
-                      ? "path type"
-                      : metaDataStep === "destination_institution"
-                      ? "destination institution"
-                      : metaDataStep}
+                ? Array(6).fill("").map((e, i) => <div className="admin-viewpath-each-j-step" key={i}>...</div>)
+                : viewPathData?.StepDetails?.map((e, i) => (
+                  <div key={i} className="admin-viewpath-each-j-step"
+                    onClick={() => { setShowSelectedPath(e); setProductKeys(e?.product_ids); }}>
+                    <div className="admin-viewpath-each-j-img"><img src={e?.icon} alt="" /></div>
+                    <div className="admin-viewpath-each-j-step-text">{e?.name}</div>
+                    <div className="admin-viewpath-each-j-step-text1">{e?.description}</div>
+                    <div className="admin-viewpath-each-j-amount">{e?.cost}</div>
                   </div>
-                  <div className="admin-acc-step-box5">
-                    {selectedPath?.[metaDataStep] || ""}
-                  </div>
-                  <div className="admin-acc-sub-textt">
-                    New{" "}
-                    {metaDataStep === "nameOfPath"
-                      ? "name"
-                      : metaDataStep === "path_type"
-                      ? "path type"
-                      : metaDataStep === "destination_institution"
-                      ? "destination institution"
-                      : metaDataStep}
-                  </div>
-                  <div className="admin-acc-step-box6">
-                    <input
-                      type="text"
-                      placeholder={`Enter ${
-                        metaDataStep === "nameOfPath"
-                          ? "name"
-                          : metaDataStep === "path_type"
-                          ? "path type"
-                          : metaDataStep === "destination_institution"
-                          ? "destination institution"
-                          : metaDataStep
-                      }`}
-                      onChange={(e) => {
-                        setNewValue(e.target.value);
-                      }}
-                      value={newValue}
-                    />
-                  </div>
-                </div>
-                <div
-                  style={{
-                    opacity: newValue?.length > 1 ? "1" : "0.5",
-                    cursor:
-                      newValue?.length > 1 ? "pointer" : "not-allowed",
-                  }}
-                  className="admin-save-Btn"
-                  onClick={() => {
-                    if (newValue?.length > 1) {
-                      editMetaData(metaDataStep);
-                    }
-                  }}
-                >
-                  Save Changes
-                </div>
-                <div
-                  className="admin-goBack3"
-                  onClick={() => {
-                    setMetaDataStep("default");
-                  }}
-                >
-                  Go Back
-                </div>
-              </div>
-              {actionLoading ? (
-                <div className="admin-popularlogo">
-                  <img className="admin-popularlogoimg" src={lg1} alt="" />
-                </div>
-              ) : (
-                ""
-              )}
-            </>
-          )
-
-
-      ) : editPaths === "Edit steps" ? (
-<div className="admin-acc-mt-div">
-  <div className="admin-acc-sub-text">
-    How do you want to edit the steps in this path?
-  </div>
-  <div className="admin-acc-scroll-div">
-    <div
-      className="admin-acc-step-box4"
-      onClick={() => setEditPaths("add_step")}
-    >
-      Add new step
-    </div>
-
-    <div
-      className="admin-acc-step-box4"
-      onClick={() => setEditPaths("remove_step")}
-    >
-      Remove existing step
-    </div>
-
-    <div
-      className="admin-acc-step-box4"
-      onClick={() => setEditPaths("reorder_step")}
-    >
-      Reorder existing steps
-    </div>
-  </div>
-
-  <div
-    className="admin-goBack3"
-    onClick={() => setEditPaths("default")}
-  >
-    Go Back
-  </div>
-</div>
-
-) : editPaths === "reorder_step" ? (
-<div className="admin-acc-mt-div">
-  <div className="admin-acc-sub-text">
-    Reorder existing steps
-  </div>
-
-  <div className="admin-acc-scroll-div">
-    {Array.isArray(selectedPath?.StepDetails) &&
-    selectedPath.StepDetails.length > 0 ? (
-      <Draggable
-        onPosChange={(currentPos, newPos) => {
-          if (currentPos !== newPos) {
-            getChangedPos(currentPos, newPos);
-          }
-        }}
-      >
-        {selectedPath.StepDetails.map((item) => (
-          <div
-            key={item._id}
-            className="admin-subpathstyle"
-          >
-            <div style={{ fontWeight: 600, fontSize: "14px" }}>
-              {item.name}
-            </div>
-
-            <div style={{ fontSize: "12px", lineHeight: "20px" }}>
-              {item.description?.substring(0, 150)}…
-            </div>
-
-            <div style={{ fontSize: "12px", opacity: 0.7 }}>
-              Step ID: {item._id}
-            </div>
-          </div>
-        ))}
-      </Draggable>
-    ) : (
-      <div style={{ fontSize: "13px", opacity: 0.6 }}>
-        No steps available to reorder
-      </div>
-    )}
-  </div>
-
-  <div
-    className="admin-goBack3"
-    onClick={() => setEditPaths("default")}
-  >
-    Go Back
-  </div>
-</div>
-
-) : editPaths === "add_step" ? (
-
-
-
-          <div className="admin-acc-mt-div">
-            <div className="admin-acc-sub-text">
-            Which step do you want to add?
-            </div>
-            <div className="admin-acc-scroll-div" >
-              {partnerStepsData?.map(item => (
-              <div className="admin-acc-step-box6" onClick={e => {
-                setEditPaths("add_sub_step");
-                setStepId(item?._id)
-              }}>
-                <div style={{fontWeight: 600, fontSize:"14px"}}>{item?.name}</div><br/>
-                <div style={{fontWeight: 300, fontSize:"12px", lineHeight:"25px", paddingBottom:"10px", borderBottom:'1px solid #e7e7e7'}}>{item?.description?.substring(0, 150) + "..."}</div>
-              </div>
-              ))}
-              
-            </div>
-            <div
-              className="admin-goBack3"
-              onClick={() => {
-                setEditPaths("default");
-              }}
-            >
-              Go Back
-            </div>
-          </div>
-        ) : editPaths === "add_sub_step" ? (
-          <div className="admin-acc-mt-div">
-            <div className="admin-acc-sub-text">
-            Select backup path for this step
-            </div>
-            <div className="admin-acc-scroll-div" >
-              {backupPathData?.map(item => (
-              <div className="admin-substepstyle" onClick={e => {
-                setEditPaths("show_all_paths");
-                setBackupPathId(item?._id)
-              }}>
-     <div style={{fontWeight: 600, fontSize:"14px", display:'flex', justifyContent:'space-between'}}>
-<div>{item?.nameOfPath}</div>
-<div>{item?.program || item?.university}</div>
-</div>
-
-                <div style={{fontWeight: 300, fontSize:"12px", lineHeight:"25px",}}>{item?.description?.substring(0, 150) + "..."}</div><br/>
-                <div style={{paddingBottom:"10px", fontWeight: 300, fontSize:"12px", lineHeight:"25px"}}>Path id: {item?._id}</div>
-              </div>
-              ))}
-              
-            </div>
-            <div
-              className="admin-goBack3"
-              onClick={() => {
-                setEditPaths("default");
-              }}
-            >
-              Go Back
-            </div>
-          </div>
-        ): editPaths === "show_all_paths" ? (
-          <div className="admin-acc-mt-div">
-            <div className="admin-acc-sub-text">
-            Select the positioning of the new step
-            </div>
-            <div className="admin-acc-scroll-div" style={{}}>
-              {selectedPath?.StepDetails?.map((item, index) => (
-                <>
-                  <div className="admin-subpathstyle">
-                    <div style={{fontWeight: 600, fontSize:"14px"}}>
-                      <div>{selectedPath?.nameOfPath}</div>                        
-                    </div>
-                    <div style={{fontWeight: 300, fontSize:"12px", lineHeight:"25px",}}>{selectedPath?.description?.substring(0, 150) + "..."}</div><br/>
-                    <div style={{fontWeight: 600, fontSize:"14px", display:'flex', justifyContent:'space-between', paddingBottom:"10px"}}>Backup Path</div>
-                    <div style={{borderRadius:"15px", border:"1px solid #e7e7e7", padding:'10px'}}>
-                      {item?._id}
-                    </div>
-                  </div>
-                  <center>
-                  <div className="admin-placehere" onClick={e => handlePlace(selectedPath, index+1)}>Place Here</div>
-                  </center>
-                </>
-              ))}
-              
-            </div>
-            <div
-              className="admin-goBack3"
-              onClick={() => {
-                setEditPaths("default");
-              }}
-            >
-              Go Back
-            </div>
-          </div>
-          
-      ) : editPaths === "remove_step" ? (
-<div className="admin-acc-mt-div">
-  <div className="admin-acc-sub-text">
-    Select which step you want to remove
-  </div>
-
-  <div className="admin-acc-scroll-div">
-    {Array.isArray(selectedPath?.StepDetails) &&
-      selectedPath.StepDetails.map((item) => (
-        <div
-          key={item._id}
-          className="admin-subpathstyle"
-          style={{ position: "relative" }}
-        >
-          <div
-            className="admin-deletePathStyle"
-            onClick={() =>
-              handledeletePathPosition(selectedPath, item._id)
-            }
-          >
-            <img src={require("./delete.svg").default} alt="delete" />
-          </div>
-
-          <div style={{ fontWeight: 600, fontSize: "14px" }}>
-            {item?.name}
-          </div>
-
-          <div
-            style={{
-              fontWeight: 300,
-              fontSize: "12px",
-              lineHeight: "22px",
-              marginTop: "6px",
-            }}
-          >
-            {item?.description
-              ? item.description.substring(0, 150) + "..."
-              : "No description"}
-          </div>
-
-          <div
-            style={{
-              marginTop: "10px",
-              fontSize: "12px",
-              opacity: 0.7,
-            }}
-          >
-            Step ID: {item?._id}
-          </div>
-
-          {item?.backup_pathId && (
-            <div
-              style={{
-                marginTop: "8px",
-                padding: "8px",
-                border: "1px solid #e7e7e7",
-                borderRadius: "10px",
-                fontSize: "12px",
-              }}
-            >
-              Backup Path ID: {item.backup_pathId}
-            </div>
-          )}
-        </div>
-      ))}
-  </div>
-
-  <div
-    className="admin-goBack3"
-    onClick={() => setEditPaths("default")}
-  >
-    Go Back
-  </div>
-</div>
-
-
-
-        
-        )  : editPaths === "Edit who qualifies" ? (
-          <div className="admin-acc-mt-div">
-            <div className="admin-acc-sub-text">
-              Which of the current coordinates do you want to edit?
-            </div>
-            <div className="admin-acc-scroll-div">
-              <div className="admin-acc-step-box4">Grade</div>
-              <div className="admin-acc-step-box4">Grade point avg</div>
-              <div className="admin-acc-step-box4">Curriculum</div>
-              <div className="admin-acc-step-box4">Stream</div>
-              <div className="admin-acc-step-box4">Financial situation</div>
-              <div className="admin-acc-step-box4">Personality</div>
-            </div>
-            <div
-              className="admin-goBack3"
-              onClick={() => {
-                setEditPaths("default");
-              }}
-            >
-              Go Back
+                ))}
             </div>
           </div>
         ) : (
-          ""
-        ))}
-        {pathActionStep === 5 &&     
-          <div className="admin-acc-mt-div">
-            <div className="admin-acc-sub-text">
-            Are you sure you want to approve this path?
-            </div>
-            <div className="admin-acc-scroll-div">
-              <div
-                className="admin-acc-step-box4"
-                onClick={e => handleApprovePath()}
-              >
-               Yes
-              </div>
-              <div
-                className="admin-acc-step-box4"
-                onClick={() => {
-                  setPathActionStep(1);
-                }}
-              >
-               Never mind
-              </div>
-             
-            </div>
-            <div
-              className="admin-goBack3"
-              onClick={() => {
-                setPathActionStep(1);
-              }}
-            >
-              Go Back
-            </div>
-          </div>
-        }
-        {pathActionStep === 6 &&
-          <div className="admin-acc-mt-div">
-            <div className="admin-acc-sub-text">
-            Are you sure you want to reject this path?
-            </div>
-            <div className="admin-acc-scroll-div">
-              <div
-                className="admin-acc-step-box4"
-                onClick={() => {
-                  handleRejectPath()
-                }}
-              >
-                Yes
-              </div>
-              <div
-                className="admin-acc-step-box4"
-                onClick={() => {
-                  setPathActionStep(1);
-                }}
-              >
-                Never mind
-              </div>
-              
-            </div>
-            <div
-              className="admin-goBack3"
-              onClick={() => {
-                setPathActionStep(1);
-              }}
-            >
-              Go Back
-            </div>
-          </div>
-        }
-        {pathActionStep === 7 && (
-          <div className="admin-success-box2">Path is Approved.</div>
-        )}
-        {pathActionStep === 8 && (
-          <div className="admin-success-box2">Path is Rejected.</div>
-        )}
-
-        {pathActionStep === 9 &&
-          <div className="admin-acc-mt-div">
-            <div className="admin-acc-sub-text">
-            Which step do you want to add the service to?
-            </div>
-            <div className="admin-acc-scroll-div">
-              {selectedPath && selectedPath?.StepDetails?.map(item => (
-                <div
-                  className="admin-acc-step-box4"
-                  style={{flexDirection:'column', alignItems:'flex-start', justifyContent:'center'}}
-                  onClick={() => {
-                    setAddServiceStep(item)
-                  setPathActionStep(10)
-                }}
-                >
-                  <div>{item?.name}</div> 
-                  <div style={{fontSize:'12px', fontWeight: 400, paddingTop:'5px'}}>{item?._id}</div>
+          <div className="paths-table-body">
+            {loading
+              ? Array(8).fill("").map((_, i) => (
+                <div className="paths-table-row" key={i}>
+                  <div className="paths-col-name"><Skeleton width={120} height={20} /></div>
+                  <div className="paths-col-desc"><Skeleton width="90%" height={20} /></div>
+                  <div className="paths-col-steps"><Skeleton width={70} height={28} borderRadius={50} /></div>
+                </div>
+              ))
+              : filteredPartnerPathData?.map((e, i) => (
+                <div className="paths-table-row" key={i}
+                  onClick={async () => {
+                    setPathActionEnabled(true);
+                    setSelectedPathId(e?._id);
+                    const res = await axios.get(`${BASE_URL}/api/paths/viewpath/${e?._id}`);
+                    if (res.data?.data) setSelectedPath(res.data.data);
+                  }}>
+                  <div className="paths-col-name">
+                    <span className="path-name-text">{e?.nameOfPath}</span>
+                  </div>
+                  <div className="paths-col-desc" onClick={ev => ev.stopPropagation()}>
+                    <span className="path-desc-text">
+                      {expandedRows[e?._id]
+                        ? e?.description
+                        : (e?.description?.length > 120 ? e?.description?.substring(0, 120) + '...' : e?.description)}
+                    </span>
+                    {e?.description?.length > 120 && (
+                      <span className="path-desc-toggle" onClick={ev => {
+                        ev.stopPropagation();
+                        setExpandedRows(prev => ({ ...prev, [e._id]: !prev[e._id] }));
+                      }}>
+                        {expandedRows[e?._id] ? ' Read Less' : ' Read More'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="paths-col-steps">
+                    <span className="actions-pill">Actions</span>
+                  </div>
+                  <div className="path-meta-info">
+                    <span className="meta-date">
+                      {(function () {
+                        const date = e?.createdAt ? new Date(e.createdAt) : new Date();
+                        return date.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+                      })()}
+                    </span>
+                  </div>
                 </div>
               ))}
+          </div>
+        )}
+      </div>
+
+      {/* PATH ACTION MODAL */}
+      {pathActionEnabled && (
+        <>
+          <div className="pp-overlay" onClick={() => resetPathAction()} />
+          <div className="pp-modal">
+
+            <div className="pp-header">
+              <div className="pp-header-left">
+                <h3 className="pp-title">{getModalTitle()}</h3>
+                <p className="pp-subtitle">{selectedPath?.nameOfPath || "—"}</p>
+              </div>
+              <div className="pp-header-right">
+                {showBack && (
+                  <button className="pp-back-btn" onClick={handleBack}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+                    </svg>
+                    Back
+                  </button>
+                )}
+                <button className="pp-close-btn" onClick={() => resetPathAction()}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <div
-              className="admin-goBack3"
-              onClick={() => {
-                setPathActionStep(1);
-              }}
-            >
-              Go Back
+
+            <div className="pp-body">
+
+              {/* MAIN ACTIONS — ACTIVE / INACTIVE */}
+              {pathActionStep === 1 && editPaths === "default" && mypathsMenu !== "Pending Paths" && (
+                <div className="pp-cards-grid">
+                  <ActionCard color="blue" icon={<IconPencil />} title="Edit Path" desc="Modify steps, metadata, or structure" onClick={() => setPathActionStep(4)} />
+                  <ActionCard
+                    color={mypathsMenu === "Inactive Paths" ? "green" : "red"}
+                    icon={mypathsMenu === "Inactive Paths" ? <IconCheck /> : <IconTrash />}
+                    title={mypathsMenu === "Inactive Paths" ? "Reactivate Path" : "Delete Path"}
+                    desc={mypathsMenu === "Inactive Paths" ? "Restore this path to active" : "Permanently remove this path"}
+                    onClick={() => setPathActionStep(2)}
+                  />
+                  <ActionCard color="purple" icon={<IconPencil />} title="Open Path" desc="Open the complete path page"
+                    onClick={() => { localStorage.setItem("selectedPathId", selectedPathId); navigate(`/dashboard/path/${selectedPathId}`); }} />
+                  <ActionCard color="teal" icon={<IconShop />} title="Marketplace" desc="Attach services to steps"
+                    onClick={() => { fetchMarketplaceItems(); setEditPaths("marketplace_steps"); }} />
+                </div>
+              )}
+
+              {/* MAIN ACTIONS — PENDING */}
+              {pathActionStep === 1 && editPaths === "default" && mypathsMenu === "Pending Paths" && (
+                <div className="pp-cards-grid">
+                  <ActionCard color="green" icon={<IconCheck />} title="Approve Path" desc="Publish this path to users" onClick={() => setPathActionStep(5)} />
+                  <ActionCard color="amber" icon={<IconX />} title="Reject Path" desc="Send back for revisions" onClick={() => setPathActionStep(6)} />
+                  <ActionCard color="blue" icon={<IconPencil />} title="Edit Path" desc="Modify steps and structure" onClick={() => setPathActionStep(4)} />
+                  <ActionCard color="purple" icon={<IconPencil />} title="Open Path" desc="Open the complete path page"
+                    onClick={() => { localStorage.setItem("selectedPathId", selectedPathId); navigate(`/dashboard/path/${selectedPathId}`); }} />
+                  <ActionCard color="teal" icon={<IconShop />} title="Marketplace" desc="Attach services to steps"
+                    onClick={() => { fetchMarketplaceItems(); setEditPaths("marketplace_steps"); }} />
+                </div>
+              )}
+
+              {/* DELETE / REACTIVATE CONFIRM */}
+              {pathActionStep === 2 && (
+                <div className="pp-confirm">
+                  <div className={`pp-confirm-icon ${mypathsMenu === "Inactive Paths" ? "pp-confirm-icon--green" : "pp-confirm-icon--red"}`}>
+                    {mypathsMenu === "Inactive Paths"
+                      ? <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6L9 17l-5-5" /></svg>
+                      : <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0h10" /></svg>}
+                  </div>
+                  <h3>{mypathsMenu === "Inactive Paths" ? "Reactivate this path?" : "Delete this path?"}</h3>
+                  <p className="pp-confirm-msg">
+                    <strong>"{selectedPath?.nameOfPath}"</strong> will be {mypathsMenu === "Inactive Paths" ? "restored and visible to users." : "permanently removed. This cannot be undone."}
+                  </p>
+                  <div className="pp-confirm-actions">
+                    <button className={`pp-btn ${mypathsMenu === "Inactive Paths" ? "pp-btn--green" : "pp-btn--red"}`}
+                      onClick={() => mypathsMenu === "Inactive Paths" ? reactivatePath() : deletePath()}>
+                      {actionLoading ? "Processing..." : mypathsMenu === "Inactive Paths" ? "Yes, Reactivate" : "Yes, Delete"}
+                    </button>
+                    <button className="pp-btn pp-btn--ghost" onClick={() => setPathActionStep(1)}>Cancel</button>
+                  </div>
+                </div>
+              )}
+
+              {/* SUCCESS */}
+              {pathActionStep === 3 && (
+                <div className="pp-success">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="1.5">
+                    <circle cx="12" cy="12" r="10" /><path d="M8 12l3 3 6-6" />
+                  </svg>
+                  <h3>Done!</h3>
+                  <p>Action completed successfully</p>
+                </div>
+              )}
+
+              {/* EDIT OPTIONS */}
+              {pathActionStep === 4 && editPaths === "default" && (
+                <div className="pp-option-list">
+                  <p className="pp-section-label">What would you like to edit?</p>
+                  <OptionRow iconColor="blue"
+                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg>}
+                    title="Edit Steps" sub="Add, remove, or reorder steps in this path"
+                    onClick={() => setEditPaths("Edit steps")}
+                  />
+                </div>
+              )}
+
+              {/* STEP MANAGEMENT */}
+              {editPaths === "Edit steps" && (
+                <div className="pp-option-list">
+                  <p className="pp-section-label">Step Management</p>
+                  <OptionRow iconColor="green"
+                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>}
+                    title="Add New Step" sub="Insert a step from your library" onClick={() => setEditPaths("add_step")}
+                  />
+                  <OptionRow iconColor="red"
+                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>}
+                    title="Remove Step" sub="Delete a step from this path" onClick={() => setEditPaths("remove_step")}
+                  />
+                  <OptionRow iconColor="amber"
+                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>}
+                    title="Reorder Steps" sub="Drag and drop to change sequence" onClick={() => setEditPaths("reorder_step")}
+                  />
+                </div>
+              )}
+
+              {/* ADD STEP */}
+              {editPaths === "add_step" && (
+                <div className="pp-selector">
+                  <p className="pp-section-label">Select step to add</p>
+                  <div className="pp-selector-list">
+                    {partnerStepsData?.map(item => {
+                      const added = selectedPath?.StepDetails?.some(s => s._id === item._id);
+                      return (
+                        <div key={item._id} className={`pp-selector-item ${added ? "pp-selector-item--disabled" : ""}`}
+                          onClick={() => { if (!added) { setEditPaths("add_sub_step"); setStepId(item._id); } }}>
+                          <div className="pp-selector-item-body">
+                            <strong>{item?.name}</strong>
+                            {item?.description && <p>{item.description.substring(0, 110)}{item.description.length > 110 ? '...' : ''}</p>}
+                            <code>{item?._id}</code>
+                          </div>
+                          <span className={`pp-tag ${added ? "pp-tag--gray" : "pp-tag--blue"}`}>{added ? "Already Added" : "Select →"}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* SELECT BACKUP PATH */}
+              {editPaths === "add_sub_step" && (
+                <div className="pp-selector">
+                  <p className="pp-section-label">Select backup path</p>
+                  <div className="pp-selector-list">
+                    {backupPathData?.map(item => (
+                      <div key={item._id} className="pp-selector-item"
+                        onClick={() => { setEditPaths("show_all_paths"); setBackupPathId(item._id); }}>
+                        <div className="pp-selector-item-body">
+                          <strong>{item?.nameOfPath}</strong>
+                          {item?.description && <p>{item.description.substring(0, 110)}{item.description.length > 110 ? '...' : ''}</p>}
+                          <code>{item?._id}</code>
+                        </div>
+                        <span className="pp-tag pp-tag--indigo">Select →</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* CHOOSE POSITION */}
+              {editPaths === "show_all_paths" && (
+                <div className="pp-position">
+                  <p className="pp-section-label">Choose insertion position</p>
+                  <div className="pp-position-list">
+                    {selectedPath?.StepDetails?.map((item, index) => (
+                      <React.Fragment key={item._id}>
+                        <div className="pp-position-step">
+                          <span className="pp-step-num">{index + 1}</span>
+                          <span className="pp-step-name">{item.name}</span>
+                        </div>
+                        <button className="pp-insert-btn" onClick={() => handlePlace(selectedPath, index + 1)}>
+                          + Insert Here
+                        </button>
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* REMOVE STEP */}
+              {editPaths === "remove_step" && (
+                <div className="pp-selector">
+                  <p className="pp-section-label">Select step to remove</p>
+                  <div className="pp-selector-list">
+                    {selectedPath?.StepDetails?.filter(item => item?.name)?.map(item => (
+                      <div key={item._id} className="pp-selector-item pp-selector-item--remove"
+                        onClick={() => handledeletePathPosition(selectedPath, item._id)}>
+                        <div className="pp-selector-item-body">
+                          <strong>{item?.name}</strong>
+                          {item?.description && <p>{item.description.substring(0, 110)}{item.description.length > 110 ? '...' : ''}</p>}
+                          <code>{item?._id}</code>
+                        </div>
+                        <span className="pp-tag pp-tag--red">Remove</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* REORDER STEPS */}
+              {editPaths === "reorder_step" && (
+                <div className="pp-reorder">
+                  <p className="pp-section-label">Drag to reorder</p>
+                  <div className="pp-reorder-list">
+                    {Array.isArray(selectedPath?.StepDetails) && selectedPath.StepDetails.length > 0 ? (
+                      <Draggable onPosChange={(cur, nxt) => { if (cur !== nxt) getChangedPos(cur, nxt); }}>
+                        {selectedPath.StepDetails.map((item, idx) => (
+                          <div key={item._id} className="pp-reorder-item">
+                            <div className="pp-reorder-handle">
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
+                                <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+                                <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+                              </svg>
+                            </div>
+                            <span className="pp-reorder-num">{idx + 1}</span>
+                            <div className="pp-reorder-content">
+                              <strong>{item.name}</strong>
+                              {item.description && <span>{item.description.substring(0, 80)}{item.description.length > 80 ? '...' : ''}</span>}
+                            </div>
+                          </div>
+                        ))}
+                      </Draggable>
+                    ) : (
+                      <div className="pp-empty">No steps to reorder</div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* APPROVE CONFIRM */}
+              {pathActionStep === 5 && (
+                <div className="pp-confirm">
+                  <div className="pp-confirm-icon pp-confirm-icon--green">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6L9 17l-5-5" /></svg>
+                  </div>
+                  <h3>Approve this path?</h3>
+                  <p className="pp-confirm-msg">This path will become visible to all users.</p>
+                  <div className="pp-confirm-actions">
+                    <button className="pp-btn pp-btn--green" onClick={handleApprovePath}>{actionLoading ? "Processing..." : "Yes, Approve"}</button>
+                    <button className="pp-btn pp-btn--ghost" onClick={() => setPathActionStep(1)}>Cancel</button>
+                  </div>
+                </div>
+              )}
+
+              {/* REJECT CONFIRM */}
+              {pathActionStep === 6 && (
+                <div className="pp-confirm">
+                  <div className="pp-confirm-icon pp-confirm-icon--red">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </div>
+                  <h3>Reject this path?</h3>
+                  <p className="pp-confirm-msg">It will be moved to drafts for revision.</p>
+                  <div className="pp-confirm-actions">
+                    <button className="pp-btn pp-btn--red" onClick={handleRejectPath}>{actionLoading ? "Processing..." : "Yes, Reject"}</button>
+                    <button className="pp-btn pp-btn--ghost" onClick={() => setPathActionStep(1)}>Cancel</button>
+                  </div>
+                </div>
+              )}
+
+              {/* MARKETPLACE: SELECT STEP */}
+              {editPaths === "marketplace_steps" && (
+                <div className="pp-selector">
+                  <p className="pp-section-label">Select step to manage services</p>
+                  <div className="pp-selector-list">
+                    {selectedPath?.StepDetails?.filter(s => s?.name)?.map(step => (
+                      <div key={step._id} className="pp-selector-item"
+                        onClick={() => {
+                          setMarketStepId(step._id);
+                          fetchAttachedServices(step._id);
+                          setEditPaths("marketplace_attach");
+                        }}>
+                        <div className="pp-selector-item-body">
+                          <strong>{step.name}</strong>
+                          {step.description && <p>{step.description.substring(0, 80)}{step.description.length > 80 ? '...' : ''}</p>}
+                        </div>
+                        <span className="pp-tag pp-tag--teal">Manage →</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* MARKETPLACE: ATTACH / DETACH */}
+              {editPaths === "marketplace_attach" && (
+                <div>
+                  {/* Already attached */}
+                  {attachedServices.length > 0 && (
+                    <div style={{ marginBottom: 20 }}>
+                      <p className="pp-section-label">Currently attached</p>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {attachedServices.map(svc => {
+                          const re = roleEmoji[svc.role?.toLowerCase()] || "🛍";
+                          const rc = roleColor[svc.role?.toLowerCase()] || "#64748b";
+                          return (
+                            <div key={svc._id} className="pp-market-item">
+                              <div className="pp-market-item-info">
+                                <div className="pp-market-emoji">{re}</div>
+                                <div>
+                                  <strong>{svc.name}</strong>
+                                  <span style={{ color: rc, fontWeight: 600, fontSize: "0.7rem", textTransform: "uppercase", display: "block" }}>{svc.role}</span>
+                                </div>
+                              </div>
+                              <button className="pp-market-remove-btn" onClick={() => detachMarketService(svc)}>
+                                {actionLoading ? "..." : "Remove"}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Available to attach */}
+                  <p className="pp-section-label">Add from marketplace</p>
+                  {marketplaceLoading ? (
+                    <div style={{ padding: "16px 0", textAlign: "center", color: "#94a3b8", fontSize: "0.85rem" }}>Loading...</div>
+                  ) : (
+                    <div className="pp-selector-list">
+                      {marketplaceItems
+                        .filter(m => !attachedServices.some(a => a._id === m._id))
+                        .map(item => {
+                          const re = roleEmoji[item.role?.toLowerCase()] || "❓";
+                          const rc = roleColor[item.role?.toLowerCase()] || "#64748b";
+                          // Check if this item already belongs to this step via step_id
+                          const alreadyOnThisStep = item.step_id && item.step_id.toString() === marketStepId.toString();
+                          return (
+                            <div key={item._id}
+                              className={`pp-selector-item ${alreadyOnThisStep ? "pp-selector-item--disabled" : ""}`}
+                              onClick={() => { if (!alreadyOnThisStep) attachMarketService(item); }}>
+                              <div className="pp-selector-item-body" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                <div className="pp-market-emoji">{re}</div>
+                                <div>
+                                  <strong>{item.name}</strong>
+                                  <span style={{ color: rc, fontWeight: 600, fontSize: "0.7rem", textTransform: "uppercase", display: "block" }}>{item.role}</span>
+                                </div>
+                              </div>
+                              {alreadyOnThisStep
+                                ? <span className="pp-tag pp-tag--gray">Already Added</span>
+                                : <span className="pp-tag pp-tag--green">Attach →</span>
+                              }
+                            </div>
+                          );
+                        })}
+                      {marketplaceItems.filter(m => !attachedServices.some(a => a._id === m._id)).length === 0 && (
+                        <div className="pp-empty">All marketplace items are attached</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
             </div>
           </div>
-        }
-{pathActionStep === 10 &&
-<div className="admin-acc-mt-div">
-  <div className="admin-acc-sub-text">
-    Which service do you want to add?
-  </div>
-
-  <div className="admin-acc-scroll-div">
-    {allServices?.map(item => (
-      <div
-        className="admin-acc-step-box4"
-        style={{flexDirection:'column', alignItems:'flex-start', justifyContent:'center'}}
-        onClick={() => handleAddService(item?.product_id)}
-      >
-        <div>{item?.product_name}</div>
-        <div style={{fontSize:'12px', fontWeight:400, paddingTop:'5px'}}>
-          {item?.product_id}
-        </div>
-      </div>
-    ))}
-  </div>
-
-  <div className="admin-goBack3" onClick={() => setPathActionStep(1)}>
-    Go Back
-  </div>
-</div>
-}
-    </div>
-  </>
-)}
-
-{stepActionEnabled && (
-  <>
-    {/* BACKDROP - ADD THIS */}
-    <div className="admin-popup-backdrop" onClick={() => {
-      setStepActionEnabled(false);
-      setStepActionStep(1);
-      setSelectedStepId("");
-    }}></div>
-    
-    <div className="admin-acc-popular1">
-      <div
-        className="admin-acc-popular-top"
-        style={{ display: stepActionStep === 3 ? "none" : "" }}
-      >
-        <div className="admin-acc-popular-head">My Step Actions</div>
-        <div
-          className="admin-acc-popular-img-box"
-          style={{ cursor: "pointer" }}
-          onClick={() => {
-            setStepActionEnabled(false);
-            setStepActionStep(1);
-            setSelectedStepId("");
-          }}
-        >
-          <img className="admin-acc-popular-img" src={closepop} alt="" />
-        </div>
-      </div>
-      {stepActionStep === 1 && (
-        <div style={{ marginTop: "3rem" }}>
-          <div className="admin-acc-step-box"  onClick={() => {
-              setStepActionStep(4);
-            }}>Edit Services</div>
-            <div className="admin-acc-step-box">Edit Step</div>
-          <div
-            className="admin-acc-step-box" onClick={() => { deleteStep(); }}
-          >
-            Delete step
-          </div>
-        </div>
+        </>
       )}
 
-      {stepActionStep === 2 && (
-        <div style={{ marginTop: "3rem" }}>
-          <div
-            className="admin-acc-step-box"
-            onClick={() => {
-              deleteStep();
-            }}
-          >
-            Confirm and delete
-          </div>
-          <div
-            className="admin-goBack2"
-            onClick={() => {
-              setStepActionStep(1);
-            }}
-          >
-            Go Back
-          </div>
-        </div>
-      )}
-
-      {stepActionStep === 3 && (
-        <div className="admin-success-box1">Step Successfully Deleted</div>
-      )}
-       {stepActionStep === 4 && (
-        <div className="admin-acc-mt-div">
-          <div className="admin-acc-sub-text">
-          What do you want to do?
-          </div>
-          <div className="admin-acc-scroll-div">
-              <div
-                className="admin-acc-step-box4"
-                style={{flexDirection:'column', alignItems:'flex-start', justifyContent:'center'}}
-                onClick={(e) => setStepActionStep(5)}
-              >
-                <div>Add a Service</div> 
+      {/* STEP ACTION POPUP */}
+      {stepActionEnabled && (
+        <>
+          <div className="pp-overlay" onClick={() => { setStepActionEnabled(false); setStepActionStep(1); setSelectedStepId(""); }} />
+          <div className="admin-acc-popular1">
+            <div className="admin-acc-popular-top" style={{ display: stepActionStep === 3 ? "none" : "" }}>
+              <div className="admin-acc-popular-head">My Step Actions</div>
+              <div className="admin-acc-popular-img-box" style={{ cursor: "pointer" }}
+                onClick={() => { setStepActionEnabled(false); setStepActionStep(1); setSelectedStepId(""); }}>
+                <img className="admin-acc-popular-img" src={closepop} alt="" />
               </div>
-              <div
-                className="admin-acc-step-box4"
-                style={{flexDirection:'column', alignItems:'flex-start', justifyContent:'center'}}
-                onClick={(e) => setStepActionStep(6)}
-              >
-                <div>Remove a Service</div> 
+            </div>
+            {stepActionStep === 1 && (
+              <div style={{ marginTop: "3rem" }}>
+                <div className="admin-acc-step-box" onClick={() => setStepActionStep(4)}>Edit Services</div>
+                <div className="admin-acc-step-box">Edit Step</div>
+                <div className="admin-acc-step-box" onClick={() => deleteStep()}>Delete step</div>
               </div>
-            
-          </div>
-          <div
-            className="admin-goBack3"
-            onClick={() => {
-              setStepActionStep(1);
-            }}
-          >
-            Go Back
-          </div>
-        </div>
-      
-      )}
-      {stepActionStep === 5 && (
-        <div className="admin-acc-mt-div">
-          <div className="admin-acc-sub-text">
-          Which service do you want to add?
-          </div>
-          <div className="admin-acc-scroll-div">
-            {allServicesToAdd && allServicesToAdd?.map(item => (
-              <div
-                className={selectedServices.includes(item?._id) ? 'admin-acc-step-box4-selected': "admin-acc-step-box4"}
-                style={{flexDirection:'column', alignItems:'flex-start', justifyContent:'center'}}
-                onClick={(e) => handleSelectServicesForStep(item?._id)}
-              >
-                <div>{item?.name}</div> 
-                <div style={{fontSize:'12px', fontWeight: 400, paddingTop:'5px'}}>{item?._id}</div>
+            )}
+            {stepActionStep === 2 && (
+              <div style={{ marginTop: "3rem" }}>
+                <div className="admin-acc-step-box" onClick={() => deleteStep()}>Confirm and delete</div>
+                <div className="admin-goBack2" onClick={() => setStepActionStep(1)}>Go Back</div>
               </div>
-            ))}
-          </div>
-          <div className="admin-save-Btn" 
-          style={{opacity: selectedServices.length>0 ? 1 : 0.3}}
-            onClick={() => selectedServices.length>0 && addServicesToStep()}
-            >
-           Add Selected Services
-          </div>
-          <div
-            className="admin-goBack3"
-            onClick={() => {
-              setStepActionStep(1);
-            }}
-          >
-            Go Back
-          </div>
-        </div>
-      
-      )}
-
-      {stepActionStep === 6 && (
-        <div className="admin-acc-mt-div">
-          <div className="admin-acc-sub-text">
-          Which service do you want to remove? 
-          </div>
-          <div className="admin-acc-scroll-div">
-            {allServicesToRemove && allServicesToRemove?.serviceDetails?.map(item => (
-              <div
-                className={selectedServices.includes(item?._id) ? 'admin-acc-step-box4-selected': "admin-acc-step-box4"}
-                style={{flexDirection:'column', alignItems:'flex-start', justifyContent:'center'}}
-                onClick={(e) => removeServiceFromStep(item?._id)}
-              >
-                <div>{item?.name}</div> 
-                <div style={{fontSize:'12px', fontWeight: 400, paddingTop:'5px'}}>{item?._id}</div>
+            )}
+            {stepActionStep === 3 && <div className="admin-success-box1">Step Successfully Deleted</div>}
+            {stepActionStep === 4 && (
+              <div className="admin-acc-mt-div">
+                <div className="admin-acc-sub-text">What do you want to do?</div>
+                <div className="admin-acc-scroll-div">
+                  <div className="admin-acc-step-box4" style={{ flexDirection: 'column', alignItems: 'flex-start' }} onClick={() => setStepActionStep(5)}>Add a Service</div>
+                  <div className="admin-acc-step-box4" style={{ flexDirection: 'column', alignItems: 'flex-start' }} onClick={() => setStepActionStep(6)}>Remove a Service</div>
+                </div>
+                <div className="admin-goBack3" onClick={() => setStepActionStep(1)}>Go Back</div>
               </div>
-            ))}
+            )}
+            {stepActionStep === 5 && (
+              <div className="admin-acc-mt-div">
+                <div className="admin-acc-sub-text">Which service do you want to add?</div>
+                <div className="admin-acc-scroll-div">
+                  {allServicesToAdd?.map(item => (
+                    <div key={item?._id}
+                      className={selectedServices.includes(item?._id) ? 'admin-acc-step-box4-selected' : "admin-acc-step-box4"}
+                      style={{ flexDirection: 'column', alignItems: 'flex-start' }}
+                      onClick={() => handleSelectServicesForStep(item?._id)}>
+                      <div>{item?.name}</div>
+                      <div style={{ fontSize: '12px', fontWeight: 400, paddingTop: '5px' }}>{item?._id}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="admin-save-Btn" style={{ opacity: selectedServices.length > 0 ? 1 : 0.3 }}
+                  onClick={() => selectedServices.length > 0 && addServicesToStep()}>
+                  Add Selected Services
+                </div>
+                <div className="admin-goBack3" onClick={() => setStepActionStep(1)}>Go Back</div>
+              </div>
+            )}
+            {stepActionStep === 6 && (
+              <div className="admin-acc-mt-div">
+                <div className="admin-acc-sub-text">Which service do you want to remove?</div>
+                <div className="admin-acc-scroll-div">
+                  {allServicesToRemove?.serviceDetails?.map(item => (
+                    <div key={item?._id} className="admin-acc-step-box4"
+                      style={{ flexDirection: 'column', alignItems: 'flex-start' }}
+                      onClick={() => removeServiceFromStep(item?._id)}>
+                      <div>{item?.name}</div>
+                      <div style={{ fontSize: '12px', fontWeight: 400, paddingTop: '5px' }}>{item?._id}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="admin-goBack3" onClick={() => setStepActionStep(1)}>Go Back</div>
+              </div>
+            )}
+            {actionLoading && (
+              <div className="admin-popularlogo">
+                <img className="admin-popularlogoimg" src={lg1} alt="" />
+              </div>
+            )}
           </div>
-          <div
-            className="admin-goBack3"
-            onClick={() => {
-              setStepActionStep(1);
-            }}
-          >
-            Go Back
-          </div>
-        </div>
-      
+        </>
       )}
-
-      {actionLoading ? (
-        <div className="admin-popularlogo">
-          <img className="admin-popularlogoimg" src={lg1} alt="" />
-        </div>
-      ) : (
-        ""
-      )}
-    </div>
-  </>
-)}
-
-        {/* {showSelectedPath && <CurrentStep productDataArray={[]}/>} */}
-
-      
-
-      </div>
     </div>
   );
 };

@@ -106,7 +106,34 @@ const Pathview = ({ paths, loading }) => {
         </div>
       </div>
 
-      {/* PAGINATION — always pinned at bottom, never scrolls */}
+      {/* TABLE BODY */}
+      <div className="pathviewContent">
+        {loading ? (
+          Array(5).fill("").map((_, i) => (
+            <div className="each-pv-data" key={i}>
+              <div className="each-pv-name"><Skeleton width={160}/></div>
+              <div className="each-pv-name"><Skeleton width={160}/></div>
+              <div className="each-pv-desc"><Skeleton width={300}/></div>
+            </div>
+          ))
+        ) : paginatedData.length > 0 ? (
+          paginatedData.map((row) => (
+            <div
+              className="each-pv-data"
+              key={row._id}
+              onClick={() => handlePathSelection(row)}
+            >
+              <div className="each-pv-name">{row.pathName}</div>
+              <div className="each-pv-name">{row.program}</div>
+              <div className="each-pv-desc">{row.description}</div>
+            </div>
+          ))
+        ) : (
+          <div className="no-data">No Paths Found</div>
+        )}
+      </div>
+
+      {/* PAGINATION
       <div className="pagination-controls">
         <button
           disabled={currentPage === 1}
@@ -121,8 +148,7 @@ const Pathview = ({ paths, loading }) => {
         >
           Next
         </button>
-      </div>
-
+      </div> */}
     </div>
   );
 };
