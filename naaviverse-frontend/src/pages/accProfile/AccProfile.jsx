@@ -305,6 +305,21 @@ const AccProfile = () => {
   const [lastName, setLastName] = useState('');
   const [position, setPosition] = useState('');
 
+  const handleDownload = (type) => {
+    let filePath;
+    if (type === "Path") filePath = "/PathTemplate.xlsx";
+    else if (type === "Step") filePath = "/StepTemplate.xlsx";
+    else filePath = "/ServiceTemplate.xlsx";
+
+    const link = document.createElement("a");
+    link.href = filePath;
+    link.download = filePath.substring(filePath.lastIndexOf("/") + 1);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setTimeout(() => resetpop(), 300);
+  };
   const allSelected = businessName && businessDesc && website &&
     businessType && businessLogo && street && city && pinCode &&
     businessState && businessCountry && firstName && lastName && position;
@@ -1560,155 +1575,181 @@ const AccProfile = () => {
           </div>
         </div>
       </div>
-
-      {/* ── Popular Actions Modal ──
-           GATED: only render when partner is fully approved.
-           If not approved, clicking the trigger button (wherever it lives) will
-           show a toast instead — handled by the ispopular guard below.        */}
       {ispopular && accStatus === "approved" && (
-        <div
-          className="acc-popular"
-          onClick={() => setShowDrop(false)}
-          onMouseDown={(e) => e.stopPropagation()}
-        >
-          <div className="acc-popular-top">
-            <div className="acc-popular-head">
-              {pstep === 8 ? "New Path" : pstep > 1 && pstep < 8 ? "New Service" : "Popular Actions"}
+        <>
+          {/* BLUR OVERLAY */}
+          <div
+            onClick={() => resetpop()}
+            style={{
+              position: "fixed",
+              inset: 0,
+              backdropFilter: "blur(6px)",
+              WebkitBackdropFilter: "blur(6px)",
+              background: "rgba(0, 0, 0, 0.25)",
+              zIndex: 998,
+            }}
+          />
+
+          <div
+            className="acc-popular"
+            onClick={() => setShowDrop(false)}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <div className="acc-popular-top">
+              <div className="acc-popular-head">
+                {pstep > 1 && pstep < 8 ? "New Service" : "Popular Actions"}
+              </div>
+              <div
+                className="acc-popular-img-box"
+                onClick={() => resetpop()}
+                style={{ cursor: "pointer" }}
+              >
+                <img className="acc-popular-img" src={closepop} alt="" />
+              </div>
             </div>
-            <div className="acc-popular-img-box" onClick={() => resetpop()} style={{ cursor: "pointer" }}>
-              <img className="acc-popular-img" src={closepop} alt="" />
-            </div>
+
+            <>
+              {pstep === 1 ? (
+                <div>
+                  <div>
+                    {/* ✅ UPDATED: Service */}
+                    <div
+                      className="acc-step-box"
+                      onClick={() => {
+                        setselectNew("Service");
+                        setispopular(false);
+                        navigate("/dashboard/accountants", {
+                          state: { openCreateService: true },
+                        });
+                      }}
+                    >
+                      Service
+                    </div>
+
+                    {/* ✅ UPDATED: Path */}
+                    <div
+                      className="acc-step-box"
+                      onClick={() => {
+                        setselectNew("Path");
+                        setispopular(false);
+                        navigate("/dashboard/accountants", {
+                          state: { openCreatePath: true },
+                        });
+                      }}
+                    >
+                      Path
+                    </div>
+
+                    {/* ✅ UPDATED: Bulk Service */}
+                    <div
+                      className="acc-step-box"
+                      onClick={() => {
+                        setselectNew("Bulk Service");
+                        setpstep(13);
+                      }}
+                    >
+                      Bulk Service
+                    </div>
+
+                    {/* ✅ UPDATED: Bulk Path */}
+                    <div
+                      className="acc-step-box"
+                      onClick={() => {
+                        setselectNew("Bulk Path");
+                        setpstep(10);
+                      }}
+                    >
+                      Bulk Path
+                    </div>
+
+                    {/* ✅ UPDATED: Bulk Step */}
+                    <div
+                      className="acc-step-box"
+                      onClick={() => {
+                        setselectNew("Bulk Step");
+                        setpstep(11);
+                      }}
+                    >
+                      Bulk Step
+                    </div>
+                  </div>
+                </div>
+              ) : pstep === 10 ? (
+                <div>
+                  <div className="acc-step-text">Bulk Path Action</div>
+                  <div>
+                    <div className="acc-step-box" onClick={() => handleDownload("Path")}>
+                      Download
+                    </div>
+                    <div className="acc-step-box" onClick={handleImageClick}>
+                      Upload
+                      <input
+                        type="file"
+                        onChange={handleFileInputChange1}
+                        style={{ display: "none" }}
+                        ref={fileInputRef}
+                      />
+                    </div>
+                  </div>
+                  <div className="goBack" onClick={() => setpstep(1)}>
+                    Go Back
+                  </div>
+                </div>
+              ) : pstep === 11 ? (
+                <div>
+                  <div className="acc-step-text">Bulk Step Action</div>
+                  <div>
+                    <div className="acc-step-box" onClick={() => handleDownload("Step")}>
+                      Download
+                    </div>
+                    <div className="acc-step-box" onClick={handleImageClick}>
+                      Upload
+                      <input
+                        type="file"
+                        onChange={handleFileInputChange2}
+                        style={{ display: "none" }}
+                        ref={fileInputRef}
+                      />
+                    </div>
+                  </div>
+                  <div className="goBack" onClick={() => setpstep(1)}>
+                    Go Back
+                  </div>
+                </div>
+              ) : pstep === 13 ? (
+                <div>
+                  <div className="acc-step-text">Bulk Service Action</div>
+                  <div>
+                    <div className="acc-step-box" onClick={() => handleDownload("Service")}>
+                      Download
+                    </div>
+                    <div className="acc-step-box" onClick={handleImageClick}>
+                      Upload
+                      <input
+                        type="file"
+                        onChange={handleFileInputChange3}
+                        style={{ display: "none" }}
+                        ref={fileInputRef}
+                      />
+                    </div>
+                  </div>
+                  <div className="goBack" onClick={() => setpstep(1)}>
+                    Go Back
+                  </div>
+                </div>
+              ) : pstep === 12 ? (
+                <div>
+                  <div className="acc-step-text">Uploaded Successfully</div>
+                  <div className="goBack" onClick={() => { setpstep(1); setbillingType(""); }}>
+                    Go Back
+                  </div>
+                </div>
+              ) : null}
+            </>
           </div>
-          <>
-            {pstep === 1 ? (
-              <div>
-                <div className="acc-step-text">New</div>
-                <div>
-                  <div className="acc-step-box" onClick={() => { setselectNew("Service"); setpstep(2); }} style={{ background: selectNew === "Service" ? "#182542" : "", color: selectNew === "Service" ? "#FFF" : "" }}>Service</div>
-                  <div className="acc-step-box" onClick={() => { setselectNew("Path"); setispopular(false); navigate('/dashboard/accountants', { state: { openCreatePath: true } }); }} style={{ background: selectNew === "Path" ? "#182542" : "", color: selectNew === "Path" ? "#FFF" : "" }}>Path</div>
-                  <div className="acc-step-box" onClick={() => { setselectNew("Step"); setpstep(9); }} style={{ background: selectNew === "Step" ? "#182542" : "", color: selectNew === "Step" ? "#FFF" : "" }}>Step</div>
-                  <div className="acc-step-box" onClick={() => { setselectNew("Step"); setpstep(10); }} style={{ background: selectNew === "Step" ? "#182542" : "", color: selectNew === "Step" ? "#FFF" : "" }}>Bulk Path</div>
-                  <div className="acc-step-box" onClick={() => { setselectNew("Step"); setpstep(11); }} style={{ background: selectNew === "Step" ? "#182542" : "", color: selectNew === "Step" ? "#FFF" : "" }}>Bulk Step</div>
-                </div>
-              </div>
-            ) : pstep === 2 ? (
-              <div>
-                <div className="acc-step-text">Select Billing Type</div>
-                <div>
-                  <div className="acc-step-box" onClick={() => { setbillingType("Monthly Subscription"); handleCategories(); setpstep(3); }} style={{ background: billingType === "Monthly Subscription" ? "#182542" : "", color: billingType === "Monthly Subscription" ? "#FFF" : "" }}>Monthly Subscription</div>
-                  <div className="acc-step-box" onClick={() => { setbillingType("One Time"); handleCategories(); setpstep(3); }} style={{ background: billingType === "One Time" ? "#182542" : "", color: billingType === "One Time" ? "#FFF" : "" }}>One Time</div>
-                  <div className="acc-step-box" style={{ opacity: "0.4", cursor: "not-allowed" }}>Staking</div>
-                </div>
-                <div className="goBack" onClick={() => { setpstep(1); setbillingType(""); }}>Go Back</div>
-              </div>
-            ) : pstep === 3 ? (
-              <div>
-                <div className="acc-step-text">How would you categorize this product?</div>
-                {isCatoading ? (
-                  <div className="acc-step-allbox">{[1, 2, 3].map((_, i) => <div className="acc-step-box" key={i}><Skeleton style={{ width: "150px" }} /></div>)}</div>
-                ) : (
-                  <div className="acc-step-allbox">
-                    {categoriesData.map((each, i) => (
-                      <div className="acc-step-box" key={i} onClick={() => { setselectCategory(each.name); setpstep(4); }} style={{ background: selectCategory === each.name ? "#182542" : "", color: selectCategory === each.name ? "#FFF" : "" }}>{each.name}</div>
-                    ))}
-                  </div>
-                )}
-                <div className="goBack" onClick={() => { setpstep(2); setselectCategory(""); }}>Go Back</div>
-              </div>
-            ) : pstep === 4 ? (
-              <div>
-                <div className="acc-step-text">Service Information</div>
-                <div className="acc-step-allbox1">
-                  <div className="acc-upload">
-                    <div className="acc-upload-title">Upload Profile Image</div>
-                    <div className="acc-upload-imgbox">
-                      <input type="file" accept="image/*" onChange={handleFileInputChange} style={{ display: "none" }} ref={fileInputRef} />
-                      <img className="acc-upload-img" src={isUploadLoading ? upgif : image ? image : uploadv} alt="" onClick={handleImageClick} />
-                    </div>
-                  </div>
-                  <div className="acc-step-box"><input className="acc-step-input" type="text" placeholder="Service Name" value={serviceNameInput} onChange={(e) => setServiceNameInput(e.target.value)} /></div>
-                  <div className="acc-step-box"><input className="acc-step-input" type="text" placeholder="Service Code" value={serviceCodeInput} onChange={(e) => setServiceCodeInput(e.target.value)} /></div>
-                  <div className="acc-step-box"><input className="acc-step-input" type="text" placeholder="Product Label" value={productLabel} onChange={(e) => setProductLabel(e.target.value)} /></div>
-                  <div className="acc-step-box"><input className="acc-step-input" type="text" placeholder="Service Tagline" value={serviceTagline} onChange={(e) => setServiceTagline(e.target.value)} /></div>
-                  <div className="acc-step-box1"><textarea className="acc-step-input1" placeholder="Service Description" value={serviceDescription} onChange={(e) => setServiceDescription(e.target.value)} /></div>
-                  <div>
-                    <div className="goNext" onClick={() => { handleGetCurrencies(); setpstep(5); }}>Next Step</div>
-                    <div className="goBack1" onClick={() => { setpstep(3); setServiceNameInput(""); setServiceCodeInput(""); setProductLabel(""); setServiceTagline(""); setServiceDescription(""); setCoverImageS3url(""); setImage(null); }}>Go Back</div>
-                  </div>
-                </div>
-              </div>
-            ) : pstep === 5 ? (
-              <div style={{ height: "calc(100% - 3rem)" }}>
-                <div className="acc-step-text">What currency do you want to collect?</div>
-                <div style={{ width: "100%", height: "3.5rem", border: "1px solid #e5e5e5", borderRadius: "10px", padding: "0 25px", marginBottom: "1rem", marginTop: "1rem" }}>
-                  <input type="text" placeholder="Search Currency..." style={{ width: "100%", height: "100%", border: "none", fontSize: "1rem", fontWeight: "500" }} onChange={(e) => setSearchCurrency(e.target.value)} value={searchCurrency} />
-                </div>
-                {isCurrencies ? (
-                  <div className="acc-step-allbox" style={{ height: "calc(100% - 76px - 7.5rem)" }}>{[1, 2, 3].map((_, i) => <div className="acc-step-box" key={i}><Skeleton style={{ width: "150px" }} /></div>)}</div>
-                ) : (
-                  <div className="acc-step-allbox" style={{ height: "calc(100% - 76px - 7.5rem)" }}>
-                    {allCurrencies?.filter(e => e?.coinName?.toLowerCase()?.includes(searchCurrency?.toLowerCase()) || e?.coinSymbol?.toLowerCase()?.includes(searchCurrency?.toLowerCase())).map((each, i) => (
-                      <div className="acc-step-box" key={i} onClick={() => { setSelectedCurrency(each); setpstep(6); setSearchCurrency(""); }} style={{ background: selectedCurrency === each ? "#182542" : "", color: selectedCurrency === each ? "#FFF" : "" }}>{each.coinName}</div>
-                    ))}
-                  </div>
-                )}
-                <div className="goBack" onClick={() => { setpstep(4); setSelectedCurrency({}); setSearchCurrency(""); }}>Go Back</div>
-              </div>
-            ) : pstep === 6 ? (
-              <div>
-                <div className="acc-step-text">Pricing Information</div>
-                <div className="acc-step-allbox1">
-                  <div className="acc-step-box"><input className="acc-step-input2" type="number" placeholder={billingType === "One Time" ? "Service Price" : "First Months Price"} value={firstMonthPrice} onChange={(e) => setfirstMonthPrice(e.target.value)} onWheel={(e) => e.target.blur()} /><div className="acc-step-feildHead">{selectedCurrency.coinSymbol}</div></div>
-                  <div className="acc-step-box" style={{ display: billingType === "One Time" ? "none" : "" }}><input className="acc-step-input2" type="number" placeholder="Monthly Price" value={monthlyPrice} onChange={(e) => setmonthlyPrice(e.target.value)} onWheel={(e) => e.target.blur()} /><div className="acc-step-feildHead">{selectedCurrency.coinSymbol}</div></div>
-                  <div className="acc-step-box" style={{ display: billingType === "One Time" ? "none" : "" }}><input className="acc-step-input2" type="number" placeholder="Grace Period" value={gracePeriod} onChange={(e) => setgracePeriod(e.target.value)} onWheel={(e) => e.target.blur()} /><div className="acc-step-feildHead">Days</div></div>
-                  <div className="acc-step-box" style={{ display: billingType === "One Time" ? "none" : "" }}><input className="acc-step-input2" type="number" placeholder="Second Charge Attempt" value={secondChargeAttempt} onChange={(e) => setsecondChargeAttempt(e.target.value)} onWheel={(e) => e.target.blur()} /><div className="acc-step-feildHead">Days</div></div>
-                  <div className="acc-step-box" style={{ display: billingType === "One Time" ? "none" : "" }}><input className="acc-step-input2" type="number" placeholder="Third Charge Attempt" value={thirdChargeAttempt} onChange={(e) => setthirdChargeAttempt(e.target.value)} onWheel={(e) => e.target.blur()} /><div className="acc-step-feildHead">Days</div></div>
-                  <div>
-                    <div style={{ position: billingType === "One Time" ? "fixed" : "initial", bottom: billingType === "One Time" ? "0px" : "" }}>
-                      <div className="goNext" onClick={handleFinalSubmit}>Submit</div>
-                      <div className="goBack1" onClick={() => { setpstep(5); setfirstMonthPrice(""); setmonthlyPrice(""); setgracePeriod(""); setsecondChargeAttempt(""); setthirdChargeAttempt(""); }}>Go Back</div>
-                    </div>
-                  </div>
-                </div>
-                <div>{isSubmit ? <div className="popularlogo"><img className="popularlogoimg" src={lg1} alt="" /></div> : ""}</div>
-              </div>
-            ) : pstep === 7 ? (
-              <div className="success-box">You Have Successfully Created A New Service</div>
-            ) : pstep === 9 ? (
-              <NewStep1 setpstep={setpstep} />
-            ) : pstep === 10 ? (
-              <div>
-                <div className="acc-step-text">Bulk Path Action</div>
-                <div>
-                  <div className="acc-step-box">Download</div>
-                  <div className="acc-step-box" onClick={handleImageClick}>
-                    Upload
-                    <input type="file" onChange={handleFileInputChange1} style={{ display: "none" }} ref={fileInputRef} />
-                  </div>
-                </div>
-                <div className="goBack" onClick={() => setpstep(1)}>Go Back</div>
-              </div>
-            ) : pstep === 11 ? (
-              <div>
-                <div className="acc-step-text">Bulk Step Action</div>
-                <div>
-                  <div className="acc-step-box">Download</div>
-                  <div className="acc-step-box" onClick={handleImageClick}>
-                    Upload
-                    <input type="file" onChange={handleFileInputChange2} style={{ display: "none" }} ref={fileInputRef} />
-                  </div>
-                </div>
-                <div className="goBack" onClick={() => setpstep(1)}>Go Back</div>
-              </div>
-            ) : pstep === 12 ? (
-              <div>
-                <div className="acc-step-text">Uploaded Successfully</div>
-                <div className="goBack" onClick={() => { setpstep(1); setbillingType(""); }}>Go Back</div>
-              </div>
-            ) : null}
-          </>
-        </div>
+        </>
       )}
+
 
       {/* ── Create Brand Profile Modal ── */}
       {createBrandProfile && (

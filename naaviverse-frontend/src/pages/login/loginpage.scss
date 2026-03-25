@@ -531,3 +531,114 @@
 .g-img {
   margin-right: 15px;
 }
+
+// ── MOBILE RESPONSIVE ────────────────────────────────────────────
+@media (max-width: 768px) {
+
+  .login-main {
+    align-items: flex-start;
+    padding: 20px 16px;
+    min-height: 100vh;
+    height: auto;
+    overflow-y: auto;
+  }
+
+  .login-box {
+    width: 100%;
+    padding: 24px 20px;
+    border-radius: 16px;
+    margin: 0 auto;
+  }
+
+  .full-logo {
+    width: 160px !important;
+    margin-bottom: 12px;
+  }
+
+  .toggle-box {
+    margin: 16px 0;
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .toggle-each {
+    font-size: 14px !important;
+    padding: 12px 8px;
+    width: 48%;
+    border-radius: 20px;
+  }
+
+  .input-box {
+    height: 56px;
+    padding: 0 8px;
+    margin-bottom: 14px;
+  }
+
+  .input-inp {
+    font-size: 14px;
+    height: 40px;
+    padding-left: 16px;
+  }
+
+  .login-btn {
+    height: 56px;
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+
+  .google-btn {
+    height: 56px;
+    font-size: 14px;
+  }
+
+  .forgot {
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+
+  .eye-icon {
+    right: 10px;
+    width: 18px;
+  }
+
+  .prompt-div {
+    font-size: 13px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+  }
+
+  .otclogo {
+    .otclogoimg {
+      margin-left: 0;
+      width: 200px;
+      height: 120px;
+    }
+  }
+}
+
+@media (max-width: 400px) {
+
+  .login-box {
+    padding: 20px 14px;
+  }
+
+  .toggle-each {
+    font-size: 13px !important;
+    padding: 10px 6px;
+  }
+
+  .input-inp {
+    font-size: 13px;
+    padding-left: 12px;
+  }
+
+  .login-btn {
+    font-size: 15px;
+    height: 52px;
+  }
+
+  .google-btn {
+    font-size: 13px;
+    height: 52px;
+  }
+}

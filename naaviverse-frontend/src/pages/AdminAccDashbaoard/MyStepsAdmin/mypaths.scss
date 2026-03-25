@@ -44,7 +44,7 @@ $bg:      #f8fafc;
     border-radius: 50px;
     font-weight: 500;
     font-size: 0.875rem;
-    color: $muted;
+    color: $muted;          // ← was too faint before
     cursor: pointer;
     transition: all 0.15s ease;
     border: none;
@@ -59,6 +59,7 @@ $bg:      #f8fafc;
     }
   }
 }
+
 
 // ─── Content ─────────────────────────────────────────────────────
 .admin-mypaths-content {
@@ -802,4 +803,91 @@ body.admin-popup-open { overflow: hidden; }
       .admin-viewpath-each-j-step-text1 { font-size: 0.77rem; color: $muted; line-height: 1.5; }
     }
   }
+}
+
+// ─── VIEW STEP LAYER TABS ────────────────────────────────────────
+.sm-view-step {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sm-layer-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 4px;
+  background: $bg;
+  border-radius: 12px;
+  border: 1px solid $border;
+}
+
+.sm-layer-tab {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 9px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $muted;
+  cursor: pointer;
+  font-family: $font-body;
+  transition: all 0.16s ease;
+
+  &:hover:not(.active) {
+    background: #fff;
+    color: $text;
+    border-color: $border;
+  }
+
+  &.active {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
+}
+
+.sm-layer-card {
+  border-radius: 14px;
+  border: 1.5px solid $border;
+  overflow: hidden;
+  
+  &--macro { border-color: #e9d5ff; background: #faf5ff; }
+  &--micro { border-color: #a5f3fc; background: #ecfeff; }
+  &--nano  { border-color: #fde68a; background: #fffbeb; }
+}
+
+.sm-layer-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+
+  &:last-child { border-bottom: none; }
+}
+
+.sm-layer-key {
+  width: 110px;
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-top: 2px;
+}
+
+.sm-layer-val {
+  flex: 1;
+  font-size: 0.85rem;
+  color: $text;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.sm-layer-empty {
+  padding: 28px 16px;
+  text-align: center;
+  font-size: 0.83rem;
+  color: $muted;
+  font-style: italic;
 }

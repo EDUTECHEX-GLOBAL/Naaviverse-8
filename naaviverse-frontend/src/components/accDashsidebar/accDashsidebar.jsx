@@ -131,7 +131,7 @@ const sidebarMenu2 = [
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, accStatus }) => {
+const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, accStatus, isOpen, onClose }) => {
   const selectedMenu = admin ? sidebarMenu2 : sidebarMenu1;
   const { accsideNav, setaccsideNav, setispopular } = useStore();
   const navigate = useNavigate();
@@ -173,9 +173,9 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
   // ─── Render ──────────────────────────────────────────────────────────────────
   return (
     <div
-      className="dashboard-sidebar"
+      className={`dashboard-sidebar${isOpen ? " open" : ""}`}
       style={{
-        overflow: "hidden",
+        overflow: "visible",
         padding: "24px 16px 16px",
         display: "flex",
         flexDirection: "column",
@@ -226,7 +226,8 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
                 if (!itemClickable) return;
                 setaccsideNav(each.title);
                 if (each.path) navigate(each.path); // ← Navigate first
-                if (handleChangeAccDashsidebar) handleChangeAccDashsidebar(); // ← Then close dropdown
+                if (handleChangeAccDashsidebar) handleChangeAccDashsidebar();
+                if (onClose) onClose();
               }}
               onMouseEnter={(e) => {
                 if (!isActive && itemClickable)
@@ -286,7 +287,10 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
             }}
             onClick={() => {
               if (isLocked) return;
-              setispopular(true);
+              if (onClose) onClose();          
+              setTimeout(() => {
+                setispopular(true);            
+              }, 300);                         
             }}
             onMouseEnter={(e) => {
               if (isLocked) return;
@@ -440,16 +444,6 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
                 border: "1px solid #EDF2F7",
               }}
             >
-              {/* Settings */}
-              <div
-                style={{ display: "flex", alignItems: "center", padding: "8px 10px", borderRadius: "6px", cursor: "pointer", color: "#4A5568", fontSize: "13px", fontWeight: "500", gap: "10px", transition: "all 0.15s ease" }}
-                onClick={() => { setShowDropdown(false); navigate("/dashboard/accountants/settings"); }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#F1F5F9"; e.currentTarget.style.color = "#3B82F6"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#4A5568"; }}
-              >
-                <SettingsIcon />
-                <span>Settings</span>
-              </div>
 
               {/* Edit Profile */}
               <div
@@ -463,18 +457,6 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
                 </svg>
                 <span>Edit Profile</span>
               </div>
-
-              {/* Help & Feedback */}
-              <div
-                style={{ display: "flex", alignItems: "center", padding: "8px 10px", borderRadius: "6px", cursor: "pointer", color: "#4A5568", fontSize: "13px", fontWeight: "500", gap: "10px", transition: "all 0.15s ease" }}
-                onClick={() => { setShowDropdown(false); navigate("/dashboard/accountants/help"); }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#F1F5F9"; e.currentTarget.style.color = "#3B82F6"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#4A5568"; }}
-              >
-                <HelpIcon />
-                <span>Help & Feedback</span>
-              </div>
-
               <div style={{ height: "1px", backgroundColor: "#EDF2F7", margin: "4px 0" }} />
 
               {/* Logout */}

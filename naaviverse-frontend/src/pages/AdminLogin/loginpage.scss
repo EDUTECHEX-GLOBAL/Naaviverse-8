@@ -25,6 +25,7 @@
 .icons-box:hover {
   transform: scale(1.1);
   transform: all ease 0.3s;
+
   .icon {
     opacity: 1 !important;
   }
@@ -50,6 +51,7 @@
   display: table-cell;
   vertical-align: middle;
   padding-left: 160px;
+
   // display: flex;
   // flex: 1 1;
   // flex-direction: column;
@@ -58,6 +60,7 @@
   .indianOTClogo {
     width: 268px;
   }
+
   .group,
   .group1 {
     position: relative;
@@ -65,10 +68,12 @@
     display: flex;
     width: 322px;
     margin-top: 60px;
+
     input {
       width: 322px;
       line-height: 15px;
     }
+
     input[type="password"],
     input[type="text"] {
       background: none;
@@ -79,20 +84,24 @@
       border: none;
       border-radius: 0;
       border-bottom: 1px solid #d9d9d9;
+
       &:focus {
         outline: none;
       }
-      &:focus ~ label,
-      &:valid ~ label {
+
+      &:focus~label,
+      &:valid~label {
         top: -14px;
         font-size: 12px;
         color: #5f6163;
         font-weight: 700;
       }
     }
+
     input[type="password"] {
       letter-spacing: 0.3em;
     }
+
     label {
       color: #5f6163;
       font-size: 14px;
@@ -104,6 +113,7 @@
       transition: 300ms ease all;
       opacity: 0.25;
     }
+
     .eye {
       position: absolute;
       top: 0;
@@ -116,6 +126,7 @@
       cursor: pointer;
     }
   }
+
   .loginbtn {
     width: 268.26px;
     height: 66.94px;
@@ -131,10 +142,12 @@
     overflow: hidden;
     position: relative;
     cursor: pointer;
+
     &:active {
       box-shadow: 0 2px 15px #1f304f;
     }
   }
+
   .loginbtn::after {
     background: white;
     content: "";
@@ -155,12 +168,14 @@
     transition: all 0.55s cubic-bezier(0.19, 1, 0.22, 1);
     z-index: 50;
   }
+
   .forgot {
     margin-top: 15vh;
     font-weight: 400;
     font-size: 18px;
     line-height: 22px;
     color: #5f6163;
+
     .forgot-btn {
       font-weight: 700;
       font-size: 18px;
@@ -180,12 +195,14 @@
   width: calc(50vw);
   background-color: #1f304f;
   padding: 0px 136px;
+
   .reg-card {
     display: flex;
     flex-direction: column;
     justify-content: center;
     height: calc(100vh);
   }
+
   .reg-head {
     font-weight: 700;
     font-size: 60px;
@@ -212,6 +229,7 @@
   overflow: hidden;
   position: relative;
   cursor: pointer;
+
   &:active {
     box-shadow: 0 2px 25px white;
   }
@@ -242,18 +260,23 @@
   0% {
     transform: scale(0.75);
   }
+
   20% {
     transform: scale(1);
   }
+
   40% {
     transform: scale(0.75);
   }
+
   60% {
     transform: scale(1);
   }
+
   80% {
     transform: scale(0.75);
   }
+
   100% {
     transform: scale(0.75);
   }
@@ -273,6 +296,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+
   .otclogoimg {
     margin-top: -100px;
     margin-left: 90px;
@@ -327,13 +351,14 @@
   align-items: center;
   cursor: pointer;
   transition: all ease 0.2s;
+
   &:hover {
     transform: scale(1.1);
   }
 }
 
 .input-box {
-  border: 0.5px solid #e5e5e5;
+  border: 0.5px solid #2c7cb2 !important;
   border-radius: 35px;
   padding: 0px 10px;
   margin-bottom: 20px;
@@ -387,9 +412,10 @@
   margin-left: auto;
   font-weight: 400;
   font-size: 16px;
-  color: #1f304f;
+  color: #2c7cb2;
   margin-bottom: 20px;
   cursor: pointer;
+
   &:hover {
     text-decoration: underline;
     transform: scale(1.1);
@@ -403,7 +429,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(89deg, #47b4d5 0%, #29449d 100%);
+  background: #2c7cb2 !important;
   padding: 0px 20px;
   border-radius: 35px;
   color: #ffffff;

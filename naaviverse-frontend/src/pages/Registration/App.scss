@@ -76,12 +76,12 @@ h2 {
 
 /* ===== PASSWORD ROW ===== */
 .passwordWrapper {
-  display: flex;
-  gap: 15px;
+  flex-direction: column; /* was row → now stacks vertically */
+  gap: 0;
 }
 
 .passwordWrapper .input2 {
-  width: 50%;
+  width: 100%;
 }
 
 /* ===== PASSWORD REQUIREMENTS ===== */
@@ -129,5 +129,78 @@ h2 {
 
   .regrightside {
     width: 100%;
+  }
+}
+
+
+@media (max-width: 768px) {
+
+  .regrightside {
+    align-items: flex-start;
+    padding: 30px 20px;
+    overflow-y: auto;
+    height: 100vh;
+  }
+
+  .regrightside > div {
+    width: 100%;
+  }
+
+  /* ── Stack password fields vertically ── */
+  .passwordWrapper {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .passwordWrapper .input2 {
+    width: 100%;
+  }
+
+  /* ── Inputs full width ── */
+  .input1,
+  .input2,
+  .partnerTypeDropdown {
+    height: 52px;
+    font-size: 14px;
+    margin-bottom: 14px;
+  }
+
+  /* ── Button ── */
+  .nextStep {
+    height: 52px;
+    font-size: 16px;
+  }
+
+  h2 {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+
+  .logoimg {
+    width: 52px;
+    margin-bottom: 14px;
+  }
+}
+
+@media (max-width: 400px) {
+
+  .regrightside {
+    padding: 20px 14px;
+  }
+
+  .input1,
+  .input2,
+  .partnerTypeDropdown {
+    height: 48px;
+    font-size: 13px;
+  }
+
+  .nextStep {
+    height: 48px;
+    font-size: 15px;
+  }
+
+  h2 {
+    font-size: 24px;
   }
 }

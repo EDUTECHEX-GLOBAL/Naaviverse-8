@@ -257,15 +257,43 @@ const MyStepsAcc = ({
         if (selectedPathId) getAllStepsForPath();
     }, [selectedPathId]);
 
+    // ─── FIX 1 & 2: Fetch steps differently depending on whether we are
+    //     viewing steps for a specific path (filterPathId) or the general list.
+    //     When filterPathId is present, call /api/steps/get?path_id=... directly
+    //     (same endpoint that DraftPathView uses — works for ALL path statuses).
+    //     When not, fall back to the original status-based partner endpoint.
+    // ─────────────────────────────────────────────────────────────────────────
     useEffect(() => {
         if (!userDetails?.email) return;
+
+        // ✅ FIX 1: Coming from "View Steps" on any path (active, draft, etc.)
+        // Fetch steps directly by path_id — no status filter applied.
+        if (filterPathId) {
+            setLoading(true);
+            axios
+                .get(`${BASE_URL}/api/steps/get`, {
+                    params: { path_id: filterPathId },
+                })
+                .then(({ data }) => {
+                    if (data.status || data.data) {
+                        setPartnerStepsData(data.data || []);
+                    }
+                })
+                .catch(console.error)
+                .finally(() => setLoading(false));
+            return; // skip the status-based fetch below
+        }
+
+        // Normal flow (My Steps tab — no path filter in URL)
         const status = mypathsMenu === "Inactive Steps" ? "inactive" : "active";
         axios
             .get(`${BASE_URL}/api/steps/partner?email=${userDetails.email}&status=${status}`)
             .then(({ data }) => {
                 if (data.status) setPartnerStepsData(data.data);
-            });
-    }, [mypathsMenu]);
+            })
+            .catch(console.error);
+
+    }, [mypathsMenu, filterPathId]); // ✅ FIX 2: added filterPathId to deps
 
     const getNewPath = () => {
         setLoading(true);
@@ -586,19 +614,26 @@ const MyStepsAcc = ({
         return map;
     }, [partnerPathData]);
 
-    // ── Filtered step list ────────────────────────────────────────────────────
-    // ✅ AFTER
+    // ─── FIX 3: filteredSteps — when filterPathId is present, data is already
+    //     scoped to that path from the API, so skip the stepToPathMap check.
+    //     Previously this check always returned false for draft path steps
+    //     because stepToPathMap was built only from active paths.
+    // ─────────────────────────────────────────────────────────────────────────
     const filteredSteps = partnerStepsData?.filter((step) => {
         const title = step?.macro_name || step?.name || "";
         const desc = step?.macro_description || step?.description || "";
         const q = search?.toLowerCase() || "";
         if (!title.trim()) return false;
 
-        // If coming from a path's "View Steps", filter by that path's steps only
+        // ✅ FIX 3: When coming from "View Steps", steps are already filtered
+        // by path_id at the API level — just apply the search query filter.
         if (filterPathId) {
-            const linkedToPath = stepToPathMap[step._id?.toString()] === decodeURIComponent(filterPathName || "");
-            if (!linkedToPath) return false;
+            return title.toLowerCase().includes(q) || desc.toLowerCase().includes(q);
         }
+
+        // Normal My Steps view — apply path name filter via stepToPathMap
+        const linkedToPath = stepToPathMap[step._id?.toString()] === decodeURIComponent(filterPathName || "");
+        if (filterPathName && !linkedToPath) return false;
 
         return title.toLowerCase().includes(q) || desc.toLowerCase().includes(q);
     });
@@ -610,11 +645,9 @@ const MyStepsAcc = ({
         <div className="mypaths">
 
             {/* ── Main Content ───────────────────────────────────────────── */}
-            {/* ↑ mypaths-menu is now INSIDE mypaths-content so it scrolls  */}
-            {/* with the cards, matching the Paths page behavior             */}
             <div className="mypaths-content">
 
-                {/* ── Tab Menu (moved inside → scrolls with content) ──────── */}
+                {/* ── Tab Menu ────────────────────────────────────────────── */}
                 <div className="mypaths-menu" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingRight: "24px" }}>
                     <div style={{ display: "flex", gap: "8px" }}>
                         {["Active Steps", "Inactive Steps"].map((tab) => (
@@ -735,35 +768,35 @@ const MyStepsAcc = ({
                 ) : (
                     /* ── Card List ─────────────────────────────────────────── */
                     <div
-  style={{
-    padding: "1.5rem",
-    display: "flex",
-    flexDirection: "column",
-    gap: "1.25rem",
-    paddingBottom: "2rem",
-  }}
->
-  {/* Back to Paths banner — only shown when coming from View Steps */}
-  {filterPathId && (
-    <div style={{
-      display: "flex",
-      alignItems: "center",
-      gap: "0.75rem",
-      background: "#e6f3f4",
-      borderRadius: "12px",
-      padding: "0.75rem 1.25rem",
-    }}>
-      <span
-        onClick={() => navigate("/dashboard/accountants/paths")}
-        style={{ cursor: "pointer", color: "#0d6b6e", fontWeight: 600, fontSize: "0.9rem" }}
-      >
-        ← Back to Paths
-      </span>
-      <span style={{ color: "#4b5e6b", fontSize: "0.9rem" }}>
-        Showing steps for: <strong>{decodeURIComponent(filterPathName || "")}</strong>
-      </span>
-    </div>
-  )}
+                        style={{
+                            padding: "1.5rem",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "1.25rem",
+                            paddingBottom: "2rem",
+                        }}
+                    >
+                        {/* Back to Paths banner — only shown when coming from View Steps */}
+                        {filterPathId && (
+                            <div style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.75rem",
+                                background: "#e6f3f4",
+                                borderRadius: "12px",
+                                padding: "0.75rem 1.25rem",
+                            }}>
+                                <span
+                                    onClick={() => navigate("/dashboard/accountants/paths")}
+                                    style={{ cursor: "pointer", color: "#0d6b6e", fontWeight: 600, fontSize: "0.9rem" }}
+                                >
+                                    ← Back to Paths
+                                </span>
+                                <span style={{ color: "#4b5e6b", fontSize: "0.9rem" }}>
+                                    Showing Steps For: <strong>{decodeURIComponent(filterPathName || "")}</strong>
+                                </span>
+                            </div>
+                        )}
 
                         {loading ? (
                             Array(3)
@@ -778,9 +811,9 @@ const MyStepsAcc = ({
                                 }}
                             >
                                 <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>📌</div>
-                                <div style={{ fontSize: "1.1rem", fontWeight: 600 }}>No steps found</div>
+                                <div style={{ fontSize: "1.1rem", fontWeight: 600 }}>No Steps Found</div>
                                 <div style={{ fontSize: "0.9rem", marginTop: "0.4rem" }}>
-                                    Try adjusting your search or add a new step.
+                                    Try Adjusting Your Search Or Add A New Step.
                                 </div>
                             </div>
                         ) : (
@@ -815,13 +848,11 @@ const MyStepsAcc = ({
                                             transition: "box-shadow 0.2s, transform 0.15s",
                                         }}
                                         onMouseEnter={(e) => {
-                                            e.currentTarget.style.boxShadow =
-                                                "0 8px 28px rgba(0,40,60,0.09)";
+                                            e.currentTarget.style.boxShadow = "0 8px 28px rgba(0,40,60,0.09)";
                                             e.currentTarget.style.transform = "translateY(-1px)";
                                         }}
                                         onMouseLeave={(e) => {
-                                            e.currentTarget.style.boxShadow =
-                                                "0 2px 10px rgba(0,20,40,0.04)";
+                                            e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,20,40,0.04)";
                                             e.currentTarget.style.transform = "translateY(0)";
                                         }}
                                     >
@@ -838,7 +869,6 @@ const MyStepsAcc = ({
                                                 borderBottom: "1px solid #ecf3f9",
                                             }}
                                         >
-                                            {/* Left: title + badges */}
                                             <div
                                                 style={{
                                                     display: "flex",
@@ -893,19 +923,6 @@ const MyStepsAcc = ({
                                                     {isActive ? "Active" : "Inactive"}
                                                 </span>
                                             </div>
-
-                                            {/* Right: services count */}
-                                            <div
-                                                style={{
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    gap: "0.4rem",
-                                                    color: "#5e6f7e",
-                                                    fontSize: "0.85rem",
-                                                }}
-                                            >
-                                                
-                                            </div>
                                         </div>
 
                                         {/* ── Three-Layer Grid ─────────────────────── */}
@@ -937,38 +954,6 @@ const MyStepsAcc = ({
                                                 length={nanoDuration}
                                                 access={step.nano_access}
                                             />
-                                        </div>
-
-                                        {/* ── Card Footer ──────────────────────────── */}
-                                        <div
-                                            style={{
-                                                display: "flex",
-                                                justifyContent: "flex-end",
-                                                marginTop: "1rem",
-                                                paddingTop: "0.85rem",
-                                                borderTop: "1px solid #ecf3f9",
-                                            }}
-                                        >
-                                            <button
-                                                style={{
-                                                    background: "white",
-                                                    border: "1px solid #cbd5e1",
-                                                    borderRadius: "40px",
-                                                    padding: "0.45rem 1.4rem",
-                                                    fontWeight: 600,
-                                                    fontSize: "0.85rem",
-                                                    color: "#0a1c2a",
-                                                    cursor: "pointer",
-                                                }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setSelectedStep(step);
-                                                    setSelectedStepId(step._id);
-                                                    setStepActionEnabled(true);
-                                                }}
-                                            >
-                                                View Details
-                                            </button>
                                         </div>
                                     </div>
                                 );
@@ -1257,129 +1242,6 @@ const MyStepsAcc = ({
                                     ))}
                                 </div>
                                 <div className="goBack3" onClick={() => setPathActionStep(1)}>Go Back</div>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* ═══════════════════════════════════════════════════════════
-                        STEP ACTION PANEL
-                    ══════════════════════════════════════════════════════════════ */}
-                {stepActionEnabled && (
-                    <div className="acc-popular1">
-                        <div
-                            className="acc-popular-top"
-                            style={{ display: stepActionStep === 3 ? "none" : "" }}
-                        >
-                            <div className="acc-popular-head">My Step Actions</div>
-                            <div
-                                className="acc-popular-img-box"
-                                style={{ cursor: "pointer" }}
-                                onClick={() => {
-                                    setStepActionEnabled(false);
-                                    setStepActionStep(1);
-                                    setSelectedStepId("");
-                                    setSelectedStep(null);
-                                }}
-                            >
-                                <img className="acc-popular-img" src={closepop} alt="" />
-                            </div>
-                        </div>
-
-                        {stepActionStep === 1 && (
-                            <div style={{ marginTop: "3rem" }}>
-                                <div className="acc-step-box" onClick={() => setStepActionStep(4)}>Edit Services</div>
-                                <div className="acc-step-box" onClick={() => setStepActionStep(7)}>Edit Step</div>
-                                <div className="acc-step-box" onClick={deleteStep}>Delete step</div>
-                            </div>
-                        )}
-                        {stepActionStep === 2 && (
-                            <div style={{ marginTop: "3rem" }}>
-                                <div className="acc-step-box" onClick={deleteStep}>Confirm and delete</div>
-                                <div className="goBack2" onClick={() => setStepActionStep(1)}>Go Back</div>
-                            </div>
-                        )}
-                        {stepActionStep === 3 && <div className="success-box1">Step Successfully Deleted</div>}
-                        {stepActionStep === 4 && (
-                            <div className="acc-mt-div">
-                                <div className="acc-sub-text">What do you want to do?</div>
-                                <div className="acc-scroll-div">
-                                    <div className="acc-step-box4" style={{ flexDirection: "column", alignItems: "flex-start" }} onClick={() => setStepActionStep(5)}>Add a Service</div>
-                                    <div className="acc-step-box4" style={{ flexDirection: "column", alignItems: "flex-start" }} onClick={() => { fetchServicesForRemoval(); setStepActionStep(6); }}>Remove a Service</div>
-                                </div>
-                                <div className="goBack3" onClick={() => setStepActionStep(1)}>Go Back</div>
-                            </div>
-                        )}
-                        {stepActionStep === 5 && (
-                            <div className="acc-mt-div">
-                                <div className="acc-sub-text">Which service do you want to add?</div>
-                                <div className="acc-scroll-div">
-                                    {allServicesToAdd?.map((item) => (
-                                        <div key={item._id} className={selectedServices.includes(item?._id) ? "acc-step-box4-selected" : "acc-step-box4"} style={{ flexDirection: "column", alignItems: "flex-start" }} onClick={() => handleSelectServicesForStep(item?._id)}>
-                                            <div>{item?.name}</div>
-                                            <div style={{ fontSize: "12px", fontWeight: 400, paddingTop: "5px" }}>{item?._id}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="save-Btn" style={{ opacity: selectedServices.length > 0 ? 1 : 0.3 }} onClick={() => selectedServices.length > 0 && addServicesToStep()}>
-                                    Add Selected Services
-                                </div>
-                                <div className="goBack3" onClick={() => setStepActionStep(1)}>Go Back</div>
-                            </div>
-                        )}
-                        {stepActionStep === 6 && (
-                            <div className="acc-mt-div">
-                                <div className="acc-sub-text">Which service do you want to remove?</div>
-                                <div className="acc-scroll-div">
-                                    {allServicesToRemove?.map((item) => (
-                                        <div key={item._id} className={selectedServices.includes(item?._id) ? "acc-step-box4-selected" : "acc-step-box4"} style={{ flexDirection: "column", alignItems: "flex-start" }} onClick={() => removeServiceFromStep(item?._id)}>
-                                            <div>{item?.name}</div>
-                                            <div style={{ fontSize: "12px", fontWeight: 400, paddingTop: "5px" }}>{item?._id}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="goBack3" onClick={() => setStepActionStep(1)}>Go Back</div>
-                            </div>
-                        )}
-                        {stepActionStep === 7 && (
-                            <EditStepForm
-                                selectedStep={selectedStep}
-                                onSave={(updatedStep) => {
-                                    setPartnerStepsData((prev) =>
-                                        prev.map((step) => (step._id === updatedStep._id ? updatedStep : step))
-                                    );
-                                    setStepActionEnabled(false);
-                                    setStepActionStep(1);
-                                    setSelectedStep(null);
-                                }}
-                                onCancel={() => {
-                                    setStepActionEnabled(false);
-                                    setStepActionStep(1);
-                                    setSelectedStep(null);
-                                }}
-                            />
-                        )}
-                        {stepActionStep === 8 && (
-                            <div className="acc-mt-div">
-                                <div className="acc-sub-text">Add New Step Functionality Coming Soon!</div>
-                                <div className="goBack3" onClick={() => setStepActionStep(7)}>Go Back</div>
-                            </div>
-                        )}
-                        {stepActionStep === 9 && (
-                            <div className="acc-mt-div">
-                                <div className="acc-sub-text">Remove Existing Step Functionality Coming Soon!</div>
-                                <div className="goBack3" onClick={() => setStepActionStep(7)}>Go Back</div>
-                            </div>
-                        )}
-                        {stepActionStep === 10 && (
-                            <div className="acc-mt-div">
-                                <div className="acc-sub-text">Reorder Existing Steps Functionality Coming Soon!</div>
-                                <div className="goBack3" onClick={() => setStepActionStep(7)}>Go Back</div>
-                            </div>
-                        )}
-                        {actionLoading && (
-                            <div className="popularlogo">
-                                <img className="popularlogoimg" src={lg1} alt="" />
                             </div>
                         )}
                     </div>

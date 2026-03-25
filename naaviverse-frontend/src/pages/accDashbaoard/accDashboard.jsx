@@ -1703,7 +1703,14 @@ const AccDashboard = () => {
   };
 
   return (
-    <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+    <div style={{
+      height: "100vh",
+      overflow: "hidden",
+      display: "flex",
+      flexDirection: "column",
+      maxWidth: "100vw"   // ← ADD THIS
+    }}>
+
 
       {/* ── MOBILE TOPBAR ── only visible on ≤768px via CSS ── */}
       <div className="mobile-topbar">
@@ -1727,28 +1734,34 @@ const AccDashboard = () => {
         </div>
       </div>
 
-      {/* ── SIDEBAR OVERLAY — tap to close ── */}
-      {sidebarOpen && (
-        <div
-          className="sidebar-overlay"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
 
-      <div className="dashboard-main" style={{ flex: 1, display: "flex", minHeight: 0 }}>
+      <div className="dashboard-main" style={{ flex: 1, display: "flex", minHeight: 0, width: "100%", overflow: "hidden" }}>
+
+        {sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0, 0, 0, 0.3)",
+              zIndex: 1000,
+              pointerEvents: "all",
+            }}
+          />
+        )}
+
+        {/* ✅ Sidebar OUTSIDE dashboard-body so ::after blur never touches it */}
+        <AccDashsidebar
+          accStatus={JSON.parse(localStorage.getItem("partner") || "{}")?.approvalStatus}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
+
         <div className="dashboard-body">
-          <div onClick={() => setShowDrop(false)} style={{ display: "contents" }}>
-            <AccDashsidebar
-              accStatus={JSON.parse(localStorage.getItem("partner") || "{}")?.approvalStatus}
-              isOpen={sidebarOpen}
-              onClose={() => setSidebarOpen(false)}
-            />
-          </div>
           <div className="dashboard-screens">
             <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", height: "100%" }}>
               {viewPathMode ? (
                 createStepForPathId ? (
-                  // FULL CONTENT: Create Step view
                   <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
                     <div style={{
                       padding: "0 35px",
@@ -1792,7 +1805,6 @@ const AccDashboard = () => {
                     </div>
                   </div>
                 ) : (
-                  // FULL CONTENT: Path Details view - REMOVED THE EMPTY services-all-menu DIV
                   <>
                     <MenuNav
                       showDrop={showDrop}
@@ -1811,13 +1823,11 @@ const AccDashboard = () => {
                         background: "#f5f7fa"
                       }}
                     >
-                      {/* REMOVED THE EMPTY services-all-menu DIV COMPLETELY */}
                       <DraftPathView onAddStep={(pathId) => setCreateStepForPathId(pathId)} />
                     </div>
                   </>
                 )
               ) : accsideNav === "CREATE_PATH" ? (
-                // SHOW CREATE NEW PATH AS FULL PAGE - WITHOUT THE HEADER TABS
                 <div style={{
                   display: "flex",
                   flexDirection: "column",
@@ -1825,7 +1835,6 @@ const AccDashboard = () => {
                   width: "100%",
                   overflow: "hidden"
                 }}>
-
                   <div style={{
                     padding: "0 35px",
                     height: "60px",
@@ -1850,7 +1859,7 @@ const AccDashboard = () => {
                     flex: 1,
                     minHeight: 0,
                     overflowY: "auto",
-                    padding: "0", // REMOVED ALL PADDING - let CreateNewPath handle it
+                    padding: "0",
                     backgroundColor: "#ffffff"
                   }}>
                     <CreateNewPath
@@ -1887,9 +1896,7 @@ const AccDashboard = () => {
                       handlePersonality={handlePersonality}
                     />
                   </div>
-
                 </div>
-                // REPLACE WITH:
               ) : accsideNav === "CREATE_STEP" ? (
                 <div style={{
                   display: "flex",
@@ -1943,7 +1950,6 @@ const AccDashboard = () => {
                   </div>
                 </div>
               ) : accsideNav === "CREATE_SERVICE" ? (
-                // SHOW CREATE NEW SERVICE AS FULL PAGE - WITHOUT THE HEADER TABS
                 <div style={{
                   display: "flex",
                   flexDirection: "column",
@@ -1983,9 +1989,7 @@ const AccDashboard = () => {
                     />
                   </div>
                 </div>
-
               ) : accsideNav === "CRM" ? (
-                // ... keep ALL your existing CRM code exactly as is
                 <>
                   <MenuNav
                     showDrop={showDrop}
@@ -2001,43 +2005,26 @@ const AccDashboard = () => {
                           : "Search Clients..."}
                   />
                   <div className="crm-main" onClick={() => setShowDrop(false)}>
-                    <div
-                      className="crm-all-menu"
-                      style={{ padding: "12px 35px" }}
-                    >
+                    <div className="crm-all-menu" style={{ padding: "12px 35px" }}>
                       <div
                         className="crm-each-menu"
                         style={{
                           display: crmMenu === "Clients" ? "" : "none",
-                          background:
-                            crmMenu === "Clients"
-                              ? "rgba(241, 241, 241, 0.5)"
-                              : "",
+                          background: crmMenu === "Clients" ? "rgba(241, 241, 241, 0.5)" : "",
                           fontWeight: crmMenu === "Clients" ? "700" : "",
                           marginLeft: "0px"
                         }}
-                        onClick={() => {
-                          setcrmMenu("Clients");
-                          setSearch("");
-                        }}
+                        onClick={() => { setcrmMenu("Clients"); setSearch(""); }}
                       >
                         Clients ({crmClientData?.length})
                       </div>
-
                       <div
                         className="crm-each-menu"
-                        style={{
-                          display: crmMenu !== "Clients" ? "" : "none",
-                          marginLeft: "0px"
-                        }}
-                        onClick={() => {
-                          setcrmMenu("Clients");
-                          setSearch("");
-                        }}
+                        style={{ display: crmMenu !== "Clients" ? "" : "none", marginLeft: "0px" }}
+                        onClick={() => { setcrmMenu("Clients"); setSearch(""); }}
                       >
                         Clients
                       </div>
-
                       <div
                         className="crm-each-menu"
                         style={{
@@ -2045,87 +2032,48 @@ const AccDashboard = () => {
                           background: crmMenu === "Purchases" ? "rgba(241,241,241,0.5)" : "",
                           fontWeight: crmMenu === "Purchases" ? "700" : "",
                         }}
-                        onClick={() => {
-                          setcrmMenu("Purchases");
-                          setSearch("");
-                        }}
+                        onClick={() => { setcrmMenu("Purchases"); setSearch(""); }}
                       >
                         Purchases (<span>{crmPurchaseData.length}</span>)
                       </div>
-
                       <div
                         className="crm-each-menu"
-                        style={{
-                          display: crmMenu !== "Purchases" ? "" : "none",
-                        }}
-                        onClick={() => {
-                          setcrmMenu("Purchases");
-                          setSearch("");
-                        }}
+                        style={{ display: crmMenu !== "Purchases" ? "" : "none" }}
+                        onClick={() => { setcrmMenu("Purchases"); setSearch(""); }}
                       >
                         Purchases
                       </div>
-
                     </div>
                     <div className="crm-all-box">
                       {crmMenu === "Followers" ? (
                         <>
-                          <div
-                            className="crm-follow-tab"
-                            style={{ padding: "10px 35px" }}
-                          >
+                          <div className="crm-follow-tab" style={{ padding: "10px 35px" }}>
                             <div className="crm-follow-col1">Name</div>
-                            <div className="crm-follow-col2">
-                              Following Since
-                            </div>
+                            <div className="crm-follow-col2">Following Since</div>
                           </div>
                           <>
                             {followData.length > 0 && !isLoading ? (
                               <div className="follow-data-main">
                                 {followData
-                                  .filter((element) => {
-                                    return element.userEmail
-                                      .toLowerCase()
-                                      .startsWith(search.toLowerCase());
-                                  })
+                                  .filter((element) => element.userEmail.toLowerCase().startsWith(search.toLowerCase()))
                                   .map((each, i) => (
                                     <div
                                       className="follower-box"
                                       style={{
-                                        background:
-                                          selectedFollower === each
-                                            ? "rgba(241, 241, 241, 0.5)"
-                                            : "",
+                                        background: selectedFollower === each ? "rgba(241, 241, 241, 0.5)" : "",
                                         padding: "22px 35px",
                                         width: "100%",
                                       }}
                                       onClick={() => setSelectedFollower(each)}
                                     >
                                       <div className="follower-details">
+                                        <div><img className="user-icon" src={each.profile_img} alt="" /></div>
                                         <div>
-                                          <img
-                                            className="user-icon"
-                                            src={each.profile_img}
-                                            alt=""
-                                          />
-                                        </div>
-                                        <div>
-                                          <div className="follower-mail">
-                                            {each.username}
-                                          </div>
-                                          <div
-                                            className="follower-name"
-                                            style={{
-                                              textTransform: "lowercase",
-                                            }}
-                                          >
-                                            {each.userEmail}
-                                          </div>
+                                          <div className="follower-mail">{each.username}</div>
+                                          <div className="follower-name" style={{ textTransform: "lowercase" }}>{each.userEmail}</div>
                                         </div>
                                       </div>
-                                      <div className="follow-time">
-                                        {formatDate(each.timeStamp)}
-                                      </div>
+                                      <div className="follow-time">{formatDate(each.timeStamp)}</div>
                                     </div>
                                   ))}
                               </div>
@@ -2134,313 +2082,93 @@ const AccDashboard = () => {
                                 {[1, 2, 3, 4, 5, 6].map((each, index) => (
                                   <div key={index} className="follower-box">
                                     <div className="follower-details">
-                                      <div>
-                                        <Skeleton className="user-icon" />
-                                      </div>
-
-                                      <Skeleton
-                                        className="follower-mail"
-                                        style={{ width: "200px" }}
-                                      />
+                                      <div><Skeleton className="user-icon" /></div>
+                                      <Skeleton className="follower-mail" style={{ width: "200px" }} />
                                     </div>
-                                    <Skeleton
-                                      className="follow-time"
-                                      style={{ width: "150px" }}
-                                    />
+                                    <Skeleton className="follow-time" style={{ width: "150px" }} />
                                   </div>
                                 ))}
                               </div>
-                            ) : (
-                              ""
-                            )}
+                            ) : ""}
                           </>
                         </>
                       ) : crmMenu === "Purchases" ? (
                         <PurchasePage purchaseData={crmPurchaseData} search={search} />
-
                       ) : crmMenu === "Clients" ? (
                         <>
-                          <div
-                            className="crm-tab"
-                            style={{ padding: "10px 35px" }}
-                          >
-                            <div
-                              className="crm-each-col"
-                              style={{ margin: "0", width: "25%" }}
-                            >
-                              Name
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                margin: "0",
-                                width: "30%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Email
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                margin: "0",
-                                width: "20%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Phone
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                margin: "0",
-                                width: "15%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Country
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                margin: "0",
-                                width: "10%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Purchases
-                            </div>
+                          <div className="crm-tab" style={{ padding: "10px 35px" }}>
+                            <div className="crm-each-col" style={{ margin: "0", width: "25%" }}>Name</div>
+                            <div className="crm-each-col" style={{ margin: "0", width: "30%", paddingLeft: "1rem" }}>Email</div>
+                            <div className="crm-each-col" style={{ margin: "0", width: "20%", paddingLeft: "1rem" }}>Phone</div>
+                            <div className="crm-each-col" style={{ margin: "0", width: "15%", paddingLeft: "1rem" }}>Country</div>
+                            <div className="crm-each-col" style={{ margin: "0", width: "10%", paddingLeft: "1rem" }}>Purchases</div>
                           </div>
                           <div className="clients-alldata">
                             {isClientLoading
-                              ? Array(10)
-                                .fill("")
-                                .map((e, i) => {
-                                  return (
-                                    <div className="each-clientData" key={i}>
-                                      <div className="each-client-name">
-                                        <Skeleton width={25 * 5} height={30} />
-                                      </div>
-                                      <div className="each-client-email">
-                                        <Skeleton width={30 * 5} height={30} />
-                                      </div>
-                                      <div className="each-client-email">
-                                        <Skeleton width={20 * 5} height={30} />
-                                      </div>
-                                      <div className="each-client-email">
-                                        <Skeleton width={15 * 5} height={30} />
-                                      </div>
-                                      <div className="each-client-email">
-                                        <Skeleton width={10 * 5} height={30} />
-                                      </div>
-                                    </div>
-                                  );
-                                })
+                              ? Array(10).fill("").map((e, i) => (
+                                <div className="each-clientData" key={i}>
+                                  <div className="each-client-name"><Skeleton width={125} height={30} /></div>
+                                  <div className="each-client-email"><Skeleton width={150} height={30} /></div>
+                                  <div className="each-client-email"><Skeleton width={100} height={30} /></div>
+                                  <div className="each-client-email"><Skeleton width={75} height={30} /></div>
+                                  <div className="each-client-email"><Skeleton width={50} height={30} /></div>
+                                </div>
+                              ))
                               : crmClientData
-                                ?.filter(
-                                  (item) =>
-                                    item.name
-                                      .toLowerCase()
-                                      .startsWith(search.toLowerCase()) ||
-                                    item.email
-                                      .toLowerCase()
-                                      .startsWith(search.toLowerCase())
+                                ?.filter((item) =>
+                                  item.name.toLowerCase().startsWith(search.toLowerCase()) ||
+                                  item.email.toLowerCase().startsWith(search.toLowerCase())
                                 )
-                                ?.map((e, i) => {
-                                  return (
-                                    <div className="each-clientData" key={i}>
-                                      <div className="each-client-name" style={{ width: "25%" }}>
-                                        {e?.name}
-                                      </div>
-                                      <div className="each-client-email" style={{ width: "30%" }}>
-                                        {e?.email}
-                                      </div>
-                                      <div className="each-client-email" style={{ width: "20%" }}>
-                                        {e?.phoneNumber}
-                                      </div>
-                                      <div className="each-client-email" style={{ width: "15%" }}>
-                                        {e?.country}
-                                      </div>
-                                      <div className="each-client-email" style={{ width: "10%" }}>
-                                        {e?.purchaseDetails?.length}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
+                                ?.map((e, i) => (
+                                  <div className="each-clientData" key={i}>
+                                    <div className="each-client-name" style={{ width: "25%" }}>{e?.name}</div>
+                                    <div className="each-client-email" style={{ width: "30%" }}>{e?.email}</div>
+                                    <div className="each-client-email" style={{ width: "20%" }}>{e?.phoneNumber}</div>
+                                    <div className="each-client-email" style={{ width: "15%" }}>{e?.country}</div>
+                                    <div className="each-client-email" style={{ width: "10%" }}>{e?.purchaseDetails?.length}</div>
+                                  </div>
+                                ))}
                           </div>
                         </>
                       ) : crmMenu === "Users" ? (
                         <>
-                          <div
-                            className="crm-tab"
-                            style={{ padding: "10px 35px" }}
-                          >
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                textAlign: "left",
-                                margin: "0",
-                                width: "15%",
-                              }}
-                            >
-                              Name
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                textAlign: "left",
-                                margin: "0",
-                                width: "20%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Email
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                textAlign: "left",
-                                margin: "0",
-                                width: "15%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              User Since
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                textAlign: "left",
-                                margin: "0",
-                                width: "25%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Affiliate
-                            </div>
-                            <div
-                              className="crm-each-col"
-                              style={{
-                                textAlign: "left",
-                                margin: "0",
-
-                                width: "25%",
-                                paddingLeft: "1rem",
-                              }}
-                            >
-                              Profile ID
-                            </div>
+                          <div className="crm-tab" style={{ padding: "10px 35px" }}>
+                            <div className="crm-each-col" style={{ textAlign: "left", margin: "0", width: "15%" }}>Name</div>
+                            <div className="crm-each-col" style={{ textAlign: "left", margin: "0", width: "20%", paddingLeft: "1rem" }}>Email</div>
+                            <div className="crm-each-col" style={{ textAlign: "left", margin: "0", width: "15%", paddingLeft: "1rem" }}>User Since</div>
+                            <div className="crm-each-col" style={{ textAlign: "left", margin: "0", width: "25%", paddingLeft: "1rem" }}>Affiliate</div>
+                            <div className="crm-each-col" style={{ textAlign: "left", margin: "0", width: "25%", paddingLeft: "1rem" }}>Profile ID</div>
                           </div>
                           <div className="users-alldata">
                             {isUserLoading
-                              ? Array(10)
-                                .fill("")
-                                .map((e, i) => {
-                                  return (
-                                    <div className="each-userData" key={i}>
-                                      <div
-                                        className="each-user-email"
-                                        style={{ width: "15%" }}
-                                      >
-                                        <Skeleton width={100} height={25} />
-                                      </div>
-                                      <div className="each-user-email">
-                                        <Skeleton width={100} height={25} />
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{ width: "15%" }}
-                                      >
-                                        <Skeleton width={100} height={25} />
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          width: "25%",
-                                        }}
-                                      >
-                                        <Skeleton width={100} height={25} />
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          width: "25%",
-                                        }}
-                                      >
-                                        <Skeleton width={200} height={25} />
-                                      </div>
-                                    </div>
-                                  );
-                                })
+                              ? Array(10).fill("").map((e, i) => (
+                                <div className="each-userData" key={i}>
+                                  <div className="each-user-email" style={{ width: "15%" }}><Skeleton width={100} height={25} /></div>
+                                  <div className="each-user-email"><Skeleton width={100} height={25} /></div>
+                                  <div className="each-user-email" style={{ width: "15%" }}><Skeleton width={100} height={25} /></div>
+                                  <div className="each-user-email" style={{ width: "25%" }}><Skeleton width={100} height={25} /></div>
+                                  <div className="each-user-email" style={{ width: "25%" }}><Skeleton width={200} height={25} /></div>
+                                </div>
+                              ))
                               : crmUserData
-                                ?.filter(
-                                  (item) =>
-                                    item.name
-                                      .toLowerCase()
-                                      .startsWith(search.toLowerCase()) ||
-                                    item.email
-                                      .toLowerCase()
-                                      .startsWith(search.toLowerCase())
+                                ?.filter((item) =>
+                                  item.name.toLowerCase().startsWith(search.toLowerCase()) ||
+                                  item.email.toLowerCase().startsWith(search.toLowerCase())
                                 )
-                                .map((e, i) => {
-                                  return (
-                                    <div className="each-userData" key={i}>
-                                      <div
-                                        className="each-user-email"
-                                        style={{ width: "15%" }}
-                                      >
-                                        {e?.name}
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          textTransform: "none",
-                                          paddingLeft: "1rem",
-                                        }}
-                                      >
-                                        {e?.email}
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          width: "15%",
-                                          paddingLeft: "1rem",
-                                        }}
-                                      >
-                                        {e?.naavi_timestamp
-                                          ? customDateFormat(
-                                            new Date(e.naavi_timestamp)
-                                          )
-                                          : ""}
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          width: "25%",
-                                          textTransform: "none",
-                                          paddingLeft: "1rem",
-                                        }}
-                                      >
-                                        {e?.ref_affiliate}
-                                      </div>
-                                      <div
-                                        className="each-user-email"
-                                        style={{
-                                          width: "25%",
-                                          textTransform: "none",
-                                          paddingLeft: "1rem",
-                                        }}
-                                      >
-                                        {e?.naavi_profile_id}
-                                      </div>
+                                .map((e, i) => (
+                                  <div className="each-userData" key={i}>
+                                    <div className="each-user-email" style={{ width: "15%" }}>{e?.name}</div>
+                                    <div className="each-user-email" style={{ textTransform: "none", paddingLeft: "1rem" }}>{e?.email}</div>
+                                    <div className="each-user-email" style={{ width: "15%", paddingLeft: "1rem" }}>
+                                      {e?.naavi_timestamp ? customDateFormat(new Date(e.naavi_timestamp)) : ""}
                                     </div>
-                                  );
-                                })}
+                                    <div className="each-user-email" style={{ width: "25%", textTransform: "none", paddingLeft: "1rem" }}>{e?.ref_affiliate}</div>
+                                    <div className="each-user-email" style={{ width: "25%", textTransform: "none", paddingLeft: "1rem" }}>{e?.naavi_profile_id}</div>
+                                  </div>
+                                ))}
                           </div>
                         </>
-                      ) : (
-                        ""
-                      )}
+                      ) : ""}
                     </div>
                   </div>
                 </>
@@ -2452,7 +2180,6 @@ const AccDashboard = () => {
                     searchTerm={search}
                     setSearchterm={setSearch}
                     searchPlaceholder="Search..."
-
                   />
                   <div className="services-main" onClick={() => setShowDrop(false)}>
                     <div style={{ padding: "35px" }}>
@@ -2462,7 +2189,6 @@ const AccDashboard = () => {
                     </div>
                   </div>
                 </>
-
               ) : accsideNav === "Marketplace" ? (
                 <>
                   <MenuNav
@@ -2482,46 +2208,9 @@ const AccDashboard = () => {
                       paddingBottom: "60px"
                     }}
                   >
-                    {/* Role Filter Tabs
-      <div className="role-tabs">
-        <button 
-          className={`role-tab ${selectedRole === 'all' ? 'active' : ''}`}
-          onClick={() => setSelectedRole('all')}
-        >
-          All
-        </button>
-        <button 
-          className={`role-tab ${selectedRole === 'vendor' ? 'active' : ''}`}
-          onClick={() => setSelectedRole('vendor')}
-        >
-          Vendor
-        </button>
-        <button 
-          className={`role-tab ${selectedRole === 'mentor' ? 'active' : ''}`}
-          onClick={() => setSelectedRole('mentor')}
-        >
-          Mentor
-        </button>
-        <button 
-          className={`role-tab ${selectedRole === 'institution' ? 'active' : ''}`}
-          onClick={() => setSelectedRole('institution')}
-        >
-          Institution
-        </button>
-        <button 
-          className={`role-tab ${selectedRole === 'distributor' ? 'active' : ''}`}
-          onClick={() => setSelectedRole('distributor')}
-        >
-          Distributor
-        </button>
-      </div> */}
-
-                    {/* Marketplace Grid */}
                     <Marketplace search={search} selectedRole={selectedRole} />
                   </div>
                 </>
-
-
               ) : accsideNav === "Calendar" ? (
                 <>
                   <MenuNav
@@ -2531,66 +2220,31 @@ const AccDashboard = () => {
                     setSearchterm={setSearch}
                     searchPlaceholder="Search Services..."
                   />
-                  <div
-                    className="services-main"
-                    onClick={() => setShowDrop(false)}
-                  >
+                  <div className="services-main" onClick={() => setShowDrop(false)}>
                     <EarningCalendar />
                   </div>
                 </>
               ) : accsideNav === "Wallet" ? (
                 transactionSelected ? (
                   <>
-                    <MenuNav
-                      showDrop={showDrop}
-                      setShowDrop={setShowDrop}
-                      searchPlaceholder="Search..."
-                    />
-                    <div
-                      className="services-main"
-                      style={{ height: "calc(100% - 70px)" }}
-                      onClick={() => setShowDrop(false)}
-                    >
-                      <div
-                        className="services-all-menu"
-                        style={{ borderBottom: "0.5px solid #E5E5E5" }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            width: "calc(100% - 110px)",
-                          }}
-                        >
+                    <MenuNav showDrop={showDrop} setShowDrop={setShowDrop} searchPlaceholder="Search..." />
+                    <div className="services-main" style={{ height: "calc(100% - 70px)" }} onClick={() => setShowDrop(false)}>
+                      <div className="services-all-menu" style={{ borderBottom: "0.5px solid #E5E5E5" }}>
+                        <div style={{ display: "flex", width: "calc(100% - 110px)" }}>
                           <div
                             className="services-each-menu"
                             style={{
-                              background:
-                                coinType === "fiat"
-                                  ? "rgba(241, 241, 241, 0.5)"
-                                  : "",
+                              background: coinType === "fiat" ? "rgba(241, 241, 241, 0.5)" : "",
                               fontWeight: coinType === "fiat" ? "700" : "",
                             }}
-                            onClick={() => {
-                              setCoinType("fiat");
-                              setSearch("");
-                            }}
+                            onClick={() => { setCoinType("fiat"); setSearch(""); }}
                           >
                             Forex
                           </div>
                         </div>
-
                         <div
-                          style={{
-                            fontWeight: "600",
-                            textDecorationLine: "underline",
-                            cursor: "pointer",
-                            fontSize: "0.9rem",
-                          }}
-                          onClick={() => {
-                            setTransactionSelected(false);
-                            setTransactionData([]);
-                            setSelectedCoin({});
-                          }}
+                          style={{ fontWeight: "600", textDecorationLine: "underline", cursor: "pointer", fontSize: "0.9rem" }}
+                          onClick={() => { setTransactionSelected(false); setTransactionData([]); setSelectedCoin({}); }}
                         >
                           Back
                         </div>
@@ -2607,40 +2261,22 @@ const AccDashboard = () => {
                       setSearchterm={setSearch}
                       searchPlaceholder="Search Wallet..."
                     />
-                    <div
-                      className="services-main"
-                      style={{ height: "calc(100% - 70px)" }}
-                      onClick={() => setShowDrop(false)}
-                    >
-                      <div
-                        className="services-all-menu"
-                        style={{ borderBottom: "0.5px solid #E5E5E5" }}
-                      >
+                    <div className="services-main" style={{ height: "calc(100% - 70px)" }} onClick={() => setShowDrop(false)}>
+                      <div className="services-all-menu" style={{ borderBottom: "0.5px solid #E5E5E5" }}>
                         <div style={{ display: "flex", width: "83%" }}>
                           <div
                             className="services-each-menu"
                             style={{
-                              background:
-                                coinType === "fiat"
-                                  ? "rgba(241, 241, 241, 0.5)"
-                                  : "",
+                              background: coinType === "fiat" ? "rgba(241, 241, 241, 0.5)" : "",
                               fontWeight: coinType === "fiat" ? "700" : "",
                             }}
-                            onClick={() => {
-                              setCoinType("fiat");
-                              setSearch("");
-                            }}
+                            onClick={() => { setCoinType("fiat"); setSearch(""); }}
                           >
                             Forex
                           </div>
                         </div>
-
                         <div style={{ display: "flex" }}>
-                          <Toggle
-                            toggle={balanceToggle}
-                            setToggle={setBalanceToggle}
-                            coinType={coinType}
-                          />
+                          <Toggle toggle={balanceToggle} setToggle={setBalanceToggle} coinType={coinType} />
                         </div>
                       </div>
                       <Vaults searchedValue={search} />
@@ -2656,11 +2292,7 @@ const AccDashboard = () => {
                     setSearchterm={setSearch}
                     searchPlaceholder="Search..."
                   />
-                  <div
-                    className="services-main"
-                    style={{ height: "calc(100% - 70px)" }}
-                    onClick={() => setShowDrop(false)}
-                  >
+                  <div className="services-main" style={{ height: "calc(100% - 70px)" }} onClick={() => setShowDrop(false)}>
                     <Tasks />
                   </div>
                 </>
@@ -2671,9 +2303,7 @@ const AccDashboard = () => {
                     setShowDrop={setShowDrop}
                     searchTerm={search}
                     setSearchterm={setSearch}
-                    searchPlaceholder={mypathsMenu === "Paths"
-                      ? "Search For Paths..."
-                      : "Search For Steps..."}
+                    searchPlaceholder={mypathsMenu === "Paths" ? "Search For Paths..." : "Search For Steps..."}
                   />
                   <div
                     className="services-main"
@@ -2684,7 +2314,6 @@ const AccDashboard = () => {
                   </div>
                 </>
               ) : accsideNav === "Steps" ? (
-
                 <MyStepsAcc
                   search={search}
                   setSearch={setSearch}
@@ -2693,14 +2322,9 @@ const AccDashboard = () => {
                   loading={loading}
                   setLoading={setLoading}
                 />
-
-              )
-                : (
-                  <div className="services-main">
-                    Coming Soon
-                  </div>
-
-                )}
+              ) : (
+                <div className="services-main">Coming Soon</div>
+              )}
             </div>
           </div>
         </div>
@@ -2708,7 +2332,8 @@ const AccDashboard = () => {
 
       {/* Keep all your existing modal code below - don't change anything */}
       <>
-        {ispopular && accsideNav !== "CREATE_PATH" && !viewPathMode ? (
+        {ispopular && accsideNav !== "CREATE_PATH" && !viewPathMode &&
+          JSON.parse(localStorage.getItem("partner") || "{}")?.approvalStatus === "approved" ? (
 
           <>
             {/* ✅ BLUR OVERLAY */}

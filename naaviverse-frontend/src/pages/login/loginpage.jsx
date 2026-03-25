@@ -171,13 +171,13 @@ const Loginpage = () => {
 
                 console.log("✅ Partner saved to localStorage with approvalStatus:", approvalStatus);
 
-                // ✅ Navigate based on approval status
-                if (!partnerData?.profileCreated && !profileData?.businessName) {
-                    // No profile yet — go to profile creation
-                    navigate("/dashboard/accountants/profile");
-                } else {
-                    // Has profile (pending/approved/rejected) — go to dashboard
+                
+                if (profileData?.businessName) {
+                    // Has a complete profile — go to dashboard
                     navigate("/dashboard/accountants");
+                } else {
+                    // No profile yet — force profile creation
+                    navigate("/dashboard/accountants/profile");
                 }
             }
 

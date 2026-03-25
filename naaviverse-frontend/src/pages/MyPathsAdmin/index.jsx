@@ -55,6 +55,14 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const [marketStepId, setMarketStepId] = useState("");
 
   // ─── Fetchers ────────────────────────────────────────────────
+  const IconEye = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z"
+        strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+
   const getAllPaths = () => {
     setLoading(true);
     const email = userDetails?.email;
@@ -148,7 +156,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     if (selectedStepId) {
       axios.get(`${BASE_URL}/api/attachservice/get?step_id=${selectedStepId}`)
         .then(({ data }) => { if (data.status) setAllServicesToRemove(data?.data[0]); })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [selectedStepId]);
 
@@ -590,7 +598,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                     desc={mypathsMenu === "Inactive Paths" ? "Restore this path to active" : "Permanently remove this path"}
                     onClick={() => setPathActionStep(2)}
                   />
-                  <ActionCard color="purple" icon={<IconPencil />} title="Open Path" desc="Open the complete path page"
+                  <ActionCard color="purple" icon={<IconEye />} title="View Path" desc="Open the complete path page"
                     onClick={() => { localStorage.setItem("selectedPathId", selectedPathId); navigate(`/dashboard/path/${selectedPathId}`); }} />
                   <ActionCard color="teal" icon={<IconShop />} title="Marketplace" desc="Attach services to steps"
                     onClick={() => { fetchMarketplaceItems(); setEditPaths("marketplace_steps"); }} />
@@ -603,7 +611,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                   <ActionCard color="green" icon={<IconCheck />} title="Approve Path" desc="Publish this path to users" onClick={() => setPathActionStep(5)} />
                   <ActionCard color="amber" icon={<IconX />} title="Reject Path" desc="Send back for revisions" onClick={() => setPathActionStep(6)} />
                   <ActionCard color="blue" icon={<IconPencil />} title="Edit Path" desc="Modify steps and structure" onClick={() => setPathActionStep(4)} />
-                  <ActionCard color="purple" icon={<IconPencil />} title="Open Path" desc="Open the complete path page"
+                  <ActionCard color="purple" icon={<IconEye />} title="View Path" desc="Open the complete path page"
                     onClick={() => { localStorage.setItem("selectedPathId", selectedPathId); navigate(`/dashboard/path/${selectedPathId}`); }} />
                   <ActionCard color="teal" icon={<IconShop />} title="Marketplace" desc="Attach services to steps"
                     onClick={() => { fetchMarketplaceItems(); setEditPaths("marketplace_steps"); }} />
@@ -648,7 +656,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 <div className="pp-option-list">
                   <p className="pp-section-label">What would you like to edit?</p>
                   <OptionRow iconColor="blue"
-                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg>}
+                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 6h13" /><path d="M8 12h13" /><path d="M8 18h13" /><circle cx="3" cy="6" r="1" fill="currentColor" /><circle cx="3" cy="12" r="1" fill="currentColor" /><circle cx="3" cy="18" r="1" fill="currentColor" /></svg>}
                     title="Edit Steps" sub="Add, remove, or reorder steps in this path"
                     onClick={() => setEditPaths("Edit steps")}
                   />
@@ -660,15 +668,15 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 <div className="pp-option-list">
                   <p className="pp-section-label">Step Management</p>
                   <OptionRow iconColor="green"
-                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>}
+                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>}
                     title="Add New Step" sub="Insert a step from your library" onClick={() => setEditPaths("add_step")}
                   />
                   <OptionRow iconColor="red"
-                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>}
+                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>}
                     title="Remove Step" sub="Delete a step from this path" onClick={() => setEditPaths("remove_step")}
                   />
                   <OptionRow iconColor="amber"
-                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>}
+                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>}
                     title="Reorder Steps" sub="Drag and drop to change sequence" onClick={() => setEditPaths("reorder_step")}
                   />
                 </div>
@@ -768,8 +776,8 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                           <div key={item._id} className="pp-reorder-item">
                             <div className="pp-reorder-handle">
                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
-                                <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-                                <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+                                <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
+                                <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
                               </svg>
                             </div>
                             <span className="pp-reorder-num">{idx + 1}</span>
@@ -806,7 +814,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
               {pathActionStep === 6 && (
                 <div className="pp-confirm">
                   <div className="pp-confirm-icon pp-confirm-icon--red">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                   </div>
                   <h3>Reject this path?</h3>
                   <p className="pp-confirm-msg">It will be moved to drafts for revision.</p>
