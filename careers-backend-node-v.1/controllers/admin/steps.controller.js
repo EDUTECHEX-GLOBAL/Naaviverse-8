@@ -1,7 +1,7 @@
 const stepModel = require("../../models/steps.model");
 const pathModel = require("../../models/path.model");
 const mongoose = require("mongoose");
-
+const steps = await stepModel.find({ status: { $ne: "delete" } })
 
 // ================= ADD STEP =================
 const addStep = async (req, res) => {
@@ -35,8 +35,17 @@ const addStep = async (req, res) => {
 // ================= GET STEPS =================
 const getSteps = async (req, res) => {
   try {
+    const filter = {};
+    if (req.query.status) {
+      filter.status = req.query.status === "all" 
+        ? { $ne: "delete" } 
+        : req.query.status;
+    } else {
+      filter.status = "active";
+    }
+
     const steps = await stepModel
-      .find({ status: { $ne: "delete" } })
+      .find(filter)
       .sort({ createdAt: -1 });
 
     res.json({ status: true, total: steps.length, data: steps });
