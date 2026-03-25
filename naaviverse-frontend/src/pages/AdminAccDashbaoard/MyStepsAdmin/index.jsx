@@ -23,7 +23,7 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalScreen, setModalScreen] = useState("main"); // main | editStep | editServices | addService | removeService | addMarketplace | deleteConfirm | success
+  const [modalScreen, setModalScreen] = useState("main");
   const [selectedStep, setSelectedStep] = useState(null);
   const [modalHistory, setModalHistory] = useState([]);
 
@@ -53,6 +53,9 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
   const [stepMarketItems, setStepMarketItems] = useState([]);
   const [allMarketItems, setAllMarketItems] = useState([]);
 
+  // ── CHANGE 3: viewStep layer tab state ───────────────────
+  const [viewLayerTab, setViewLayerTab] = useState("macro");
+
   // ─── Data fetchers ────────────────────────────────────────
   const getAllSteps = () => {
     setLoading(true);
@@ -61,19 +64,20 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
       .then(({ data }) => {
         const result = data?.data || [];
         setPartnerStepsData(result);
-        if (result.length > 0) fetchServiceCounts(result);
+        if (result.length > 0) fetchMarketplaceCounts(result);
         else setServiceCountMap({});
         setLoading(false);
       })
       .catch(() => { setPartnerStepsData([]); setLoading(false); });
   };
 
-  const fetchServiceCounts = async (steps = []) => {
+  // ── CHANGE 1: fetch marketplace counts instead of service counts ──
+  const fetchMarketplaceCounts = async (steps = []) => {
     if (!Array.isArray(steps) || steps.length === 0) return;
     const counts = {};
     await Promise.all(steps.map(async (step) => {
       try {
-        const { data } = await axios.get(`${BASE_URL}/api/steps/getall/${step._id}`);
+        const { data } = await axios.get(`${BASE_URL}/api/marketplace/step/${step._id}`);
         counts[step._id] = data?.data?.length || 0;
       } catch { counts[step._id] = 0; }
     }));
@@ -131,7 +135,7 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
     if (screen === "editStep") {
       setEditName(selectedStep?.name || "");
       setEditDesc(selectedStep?.description || "");
-      setEditLength(selectedStep?.length || "");
+      setEditLength(selectedStep?.length ?? "");
       setEditCost(selectedStep?.cost || "");
     }
     if (screen === "editServices") {
@@ -152,6 +156,10 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
       setMpRole(""); setMpName(""); setMpAccess("Free"); setMpCost("");
       setMpGoal(""); setMpOutcomes(""); setMpDuration(""); setMpLayer("macro");
       setMpFeatures(""); setMpDiscount("");
+    }
+    // ── CHANGE 3: reset layer tab when entering viewStep ──
+    if (screen === "viewStep") {
+      setViewLayerTab("macro");
     }
   };
 
@@ -176,6 +184,7 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
     setAllMarketItems([]);
   };
 
+  // ── CHANGE 4: add viewStep to title map ───────────────────
   const getTitle = () => {
     const titles = {
       main: "Step Actions",
@@ -186,6 +195,7 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
       marketplace: "Marketplace",
       addMarketplace: "Add Marketplace Listing",
       deleteConfirm: "Delete Step",
+      viewStep: "View Step",
       success: "",
     };
     return titles[modalScreen] || "Step Actions";
@@ -210,7 +220,9 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
       const payload = {};
       if (editName) payload.name = editName;
       if (editDesc) payload.description = editDesc;
-      if (editLength) payload.length = editLength;
+     if (editLength !== "" && editLength !== null && editLength !== undefined) {
+  payload.length = Number(editLength);
+}
       if (editCost) payload.cost = editCost;
       await axios.patch(`${BASE_URL}/api/steps/edit/${selectedStep._id}`, payload);
       toast.success("Step updated");
@@ -229,7 +241,7 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
       await axios.post(`${BASE_URL}/api/steps/attachservice`, { step_id: selectedStep._id, service_ids: [serviceId] });
       toast.success("Service added");
       await fetchAttachedServices(selectedStep._id);
-      fetchServiceCounts(partnerStepsData);
+      fetchMarketplaceCounts(partnerStepsData);
     } catch { toast.error("Failed to add service"); }
   };
 
@@ -240,7 +252,7 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
       await axios.delete(`${BASE_URL}/api/steps/remove/${selectedStep._id}/${serviceId}`);
       toast.success("Service removed");
       await fetchAttachedServices(selectedStep._id);
-      fetchServiceCounts(partnerStepsData);
+      fetchMarketplaceCounts(partnerStepsData);
     } catch { toast.error("Failed to remove service"); }
     finally { setActionLoading(false); }
   };
@@ -266,6 +278,8 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
       toast.success("Marketplace item added");
       setActionLoading(false);
       await fetchStepMarketItems(selectedStep._id);
+      // refresh count on list
+      fetchMarketplaceCounts(partnerStepsData);
       goBack();
     } catch {
       toast.error("Failed to add marketplace item");
@@ -279,6 +293,7 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
       await axios.patch(`${BASE_URL}/api/marketplace/update/${itemId}`, { step_id: null });
       toast.success("Removed from step");
       await fetchStepMarketItems(selectedStep._id);
+      fetchMarketplaceCounts(partnerStepsData);
     } catch { toast.error("Failed to remove"); }
     finally { setActionLoading(false); }
   };
@@ -290,6 +305,7 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
       toast.success("Service attached");
       setStepMarketItems(prev => [...prev, { ...item, step_id: selectedStep._id }]);
       setAllMarketItems(prev => prev.filter(m => m._id !== item._id));
+      fetchMarketplaceCounts(partnerStepsData);
     } catch { toast.error("Failed to attach"); }
     finally { setActionLoading(false); }
   };
@@ -344,7 +360,10 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
                 <div className="step-row" key={e._id} onClick={() => openModal(e)}>
                   <div className="step-row-main">
                     <div className="step-row-name">{e?.name || "Untitled"}</div>
-                    <div className="step-row-length">{e?.length || 0} Days</div>
+                    {/* ── CHANGE 2: show "—" instead of "0 Days" when length is empty ── */}
+                    <div className="step-row-length">
+                      {e?.length != null && e?.length !== "" ? `${e.length} Days` : "—"}
+                    </div>
                     <div className="step-row-cost">
                       <span className={`step-cost-pill ${isFree ? "free" : "paid"}`}>
                         {isFree ? "Free" : e?.cost}
@@ -356,7 +375,6 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
                   </div>
                   {e?.description && <div className="step-row-desc">{e.description}</div>}
                   <div className="step-row-footer">
-                   
                     <span className="step-footer-date">
                       {e?.createdAt ? new Date(e.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
                     </span>
@@ -422,6 +440,21 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
                   </div>
 
+                  {/* ── CHANGE 4 & 5: View Step action ── */}
+                  <div className="sm-option" onClick={() => goTo("viewStep")}>
+                    <div className="sm-option-icon" style={{ background: "#f5f3ff" }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    </div>
+                    <div className="sm-option-content">
+                      <strong>View Step</strong>
+                      <span>See Macro, Micro and Nano layer details</span>
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
+                  </div>
+
                   <div className="sm-option" onClick={() => goTo("marketplace")}>
                     <div className="sm-option-icon" style={{ background: "#f0fdfa" }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#14b8a6" strokeWidth="2">
@@ -478,6 +511,95 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
                   <button className="sm-btn-primary" onClick={handleSaveStep} disabled={actionLoading}>
                     {actionLoading ? "Saving..." : "Save Changes"}
                   </button>
+                </div>
+              )}
+
+              {/* ── CHANGE 5: VIEW STEP — Macro / Micro / Nano tabs ── */}
+              {modalScreen === "viewStep" && (
+                <div className="sm-view-step">
+                  {/* Layer tab switcher */}
+                  <div className="sm-layer-tabs">
+                    {[
+                      { key: "macro", label: "Macro", color: "#7c3aed" },
+                      { key: "micro", label: "Micro", color: "#0891b2" },
+                      { key: "nano",  label: "Nano",  color: "#d97706" },
+                    ].map(({ key, label, color }) => (
+                      <button
+                        key={key}
+                        className={`sm-layer-tab ${viewLayerTab === key ? "active" : ""}`}
+                        style={viewLayerTab === key ? { background: color, color: "#fff", borderColor: color } : {}}
+                        onClick={() => setViewLayerTab(key)}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Macro */}
+                  {viewLayerTab === "macro" && (
+                    <div className="sm-layer-card sm-layer-card--macro">
+                      {[
+                        ["Name",         selectedStep?.macro_name],
+                        ["Description",  selectedStep?.macro_description],
+                        ["Length",       selectedStep?.macro_length],
+                        ["Access",       selectedStep?.macro_access],
+                        ["Instructions", selectedStep?.macro_instructions],
+                        ["Chances",      selectedStep?.macro_chances],
+                      ].map(([label, val]) => val ? (
+                        <div key={label} className="sm-layer-row">
+                          <span className="sm-layer-key">{label}</span>
+                          <span className="sm-layer-val">{val}</span>
+                        </div>
+                      ) : null)}
+                      {!selectedStep?.macro_name && !selectedStep?.macro_description && (
+                        <p className="sm-layer-empty">No Macro data configured for this step.</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Micro */}
+                  {viewLayerTab === "micro" && (
+                    <div className="sm-layer-card sm-layer-card--micro">
+                      {[
+                        ["Name",         selectedStep?.micro_name],
+                        ["Description",  selectedStep?.micro_description],
+                        ["Length",       selectedStep?.micro_length],
+                        ["Access",       selectedStep?.micro_access],
+                        ["Instructions", selectedStep?.micro_instructions],
+                        ["Chances",      selectedStep?.micro_chances],
+                      ].map(([label, val]) => val ? (
+                        <div key={label} className="sm-layer-row">
+                          <span className="sm-layer-key">{label}</span>
+                          <span className="sm-layer-val">{val}</span>
+                        </div>
+                      ) : null)}
+                      {!selectedStep?.micro_name && !selectedStep?.micro_description && (
+                        <p className="sm-layer-empty">No Micro data configured for this step.</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Nano */}
+                  {viewLayerTab === "nano" && (
+                    <div className="sm-layer-card sm-layer-card--nano">
+                      {[
+                        ["Name",         selectedStep?.nano_name],
+                        ["Description",  selectedStep?.nano_description],
+                        ["Length",       selectedStep?.nano_length],
+                        ["Access",       selectedStep?.nano_access],
+                        ["Instructions", selectedStep?.nano_instructions],
+                        ["Chances",      selectedStep?.nano_chances],
+                      ].map(([label, val]) => val ? (
+                        <div key={label} className="sm-layer-row">
+                          <span className="sm-layer-key">{label}</span>
+                          <span className="sm-layer-val">{val}</span>
+                        </div>
+                      ) : null)}
+                      {!selectedStep?.nano_name && !selectedStep?.nano_description && (
+                        <p className="sm-layer-empty">No Nano data configured for this step.</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -554,7 +676,7 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
                 </div>
               )}
 
-              {/* ADD MARKETPLACE FORM — inline, no second popup */}
+              {/* ADD MARKETPLACE FORM */}
               {modalScreen === "addMarketplace" && (
                 <div className="sm-form">
                   <div className="sm-form-layer-badge">
