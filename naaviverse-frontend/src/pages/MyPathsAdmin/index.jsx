@@ -48,21 +48,54 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const [allServicesToRemove, setAllServicesToRemove] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
 
-  // Marketplace states
-  const [marketplaceItems, setMarketplaceItems] = useState([]);
+  // ── Marketplace states ────────────────────────────────────────
+  const [marketLayer, setMarketLayer] = useState("");
+  const [marketplaceItems, setMarketplaceItems] = useState([]);       // all items for this layer
   const [marketplaceLoading, setMarketplaceLoading] = useState(false);
-  const [attachedServices, setAttachedServices] = useState([]);
+  const [attachedServices, setAttachedServices] = useState([]);       // items attached to this step+layer
   const [marketStepId, setMarketStepId] = useState("");
+  const [marketStepData, setMarketStepData] = useState(null);
+
+  // ── Marketplace create-listing form states ────────────────────
+  const [mpRole, setMpRole] = useState("");
+  const [mpName, setMpName] = useState("");
+  const [mpAccess, setMpAccess] = useState("Free");
+  const [mpCost, setMpCost] = useState("");
+  const [mpGoal, setMpGoal] = useState("");
+  const [mpOutcomes, setMpOutcomes] = useState("");
+  const [mpDuration, setMpDuration] = useState("");
+  const [mpFeatures, setMpFeatures] = useState("");
+  const [mpDiscount, setMpDiscount] = useState("");
+
+  // ─── layerConfig — reads actual names/descriptions from the step document ───
+  const getLayerConfig = (stepData) => ({
+    macro: {
+      label: "Macro",
+      color: "#7c3aed",
+      bg: "#faf5ff",
+      border: "#e9d5ff",
+      viewName: stepData?.macro_name || "Macro View",
+      viewDesc: stepData?.macro_description || "High-Level Pathway Services",
+    },
+    micro: {
+      label: "Micro",
+      color: "#0891b2",
+      bg: "#ecfeff",
+      border: "#a5f3fc",
+      viewName: stepData?.micro_name || "Micro View",
+      viewDesc: stepData?.micro_description || "Mid-Level Support Services",
+    },
+    nano: {
+      label: "Nano",
+      color: "#d97706",
+      bg: "#fffbeb",
+      border: "#fde68a",
+      viewName: stepData?.nano_name || "Nano View",
+      viewDesc: stepData?.nano_description || "Granular Task-Level Services",
+    },
+  });
 
   // ─── Fetchers ────────────────────────────────────────────────
-  const IconEye = () => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z"
-        strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-
   const getAllPaths = () => {
     setLoading(true);
     const email = userDetails?.email;
@@ -101,23 +134,38 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     });
   };
 
-  // Fetch ALL marketplace items (for the "available to attach" list)
-  const fetchMarketplaceItems = () => {
-    setMarketplaceLoading(true);
-    axios.get(`${BASE_URL}/api/marketplace/admin/get-all`).then(({ data }) => {
-      if (data.status) setMarketplaceItems(data.data || []);
-      setMarketplaceLoading(false);
-    }).catch(() => setMarketplaceLoading(false));
-  };
+  /**
+   * fetchMarketplaceData — loads:
+   *  1. Items attached to this step+layer  (via /marketplace/step/:id?layer=X)
+   *  2. ALL items for this layer            (via /marketplace/admin/get-all?layer=X)
+   *     The "available" list is derived in the render by filtering out attached ones.
+   */
+  const fetchMarketplaceData = (stepId, layer) => {
+    const sid = stepId || marketStepId;
+    const lay = layer || marketLayer;
+    if (!sid || !lay) return;
 
-  // Fetch marketplace items already attached to a specific step
-  const fetchAttachedServices = (sid) => {
-    axios.get(`${BASE_URL}/api/marketplace/step/${sid}`)
+    setMarketplaceLoading(true);
+
+    // 1. Attached to this step+layer
+    axios
+      .get(`${BASE_URL}/api/marketplace/step/${sid}?layer=${lay}`)
       .then(({ data }) => {
-        if (data.status) setAttachedServices(data?.data || []);
-        else setAttachedServices([]);
+        setAttachedServices(data?.status ? data.data : []);
       })
       .catch(() => setAttachedServices([]));
+
+    // 2. ALL items for this layer (we compute "available" = all minus attached in render)
+    axios
+      .get(`${BASE_URL}/api/marketplace/admin/get-all?layer=${lay}`)
+      .then(({ data }) => {
+        setMarketplaceItems(data?.status ? data.data : []);
+        setMarketplaceLoading(false);
+      })
+      .catch(() => {
+        setMarketplaceItems([]);
+        setMarketplaceLoading(false);
+      });
   };
 
   const deleteStep = () => {
@@ -144,12 +192,14 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     axios.get(`${BASE_URL}/api/services/getservices?status=active`).then(({ data }) => {
       if (data.status) setAllServicesToAdd(data.data);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (mypathsMenu === "Pending Paths") getNewPath();
     else if (mypathsMenu === "Inactive Paths") getInactivePath();
     else getAllPaths();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mypathsMenu]);
 
   useEffect(() => {
@@ -170,12 +220,16 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   }, [productKeys]);
 
   useEffect(() => { setShowSelectedPath(null); }, [mypathsMenu]);
-  useEffect(() => { setMypathsMenu("Paths"); }, []);
 
   useEffect(() => {
-    if (pathActionEnabled || stepActionEnabled) document.body.classList.add('admin-popup-open');
-    else document.body.classList.remove('admin-popup-open');
-    return () => document.body.classList.remove('admin-popup-open');
+    setMypathsMenu("Paths");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (pathActionEnabled || stepActionEnabled) document.body.classList.add("admin-popup-open");
+    else document.body.classList.remove("admin-popup-open");
+    return () => document.body.classList.remove("admin-popup-open");
   }, [pathActionEnabled, stepActionEnabled]);
 
   useEffect(() => {
@@ -192,7 +246,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     return mn && me;
   });
 
-  // ─── Actions ─────────────────────────────────────────────────
+  // ─── Reset ───────────────────────────────────────────────────
   const resetPathAction = () => {
     setPathActionEnabled(false);
     setPathActionStep(1);
@@ -203,10 +257,16 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     setNewValue("");
     setViewPathData([]);
     setMarketStepId("");
+    setMarketStepData(null);
     setAttachedServices([]);
     setMarketplaceItems([]);
+    setMarketLayer("");
+    setMpRole(""); setMpName(""); setMpAccess("Free"); setMpCost("");
+    setMpGoal(""); setMpOutcomes(""); setMpDuration("");
+    setMpFeatures(""); setMpDiscount("");
   };
 
+  // ─── Path Actions ─────────────────────────────────────────────
   const deletePath = () => {
     setActionLoading(true);
     axios.delete(`${BASE_URL}/api/paths/delete/${selectedPathId}`).then(({ data }) => {
@@ -304,47 +364,82 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     }).catch(() => setActionLoading(false));
   };
 
-  // Attach: update the marketplace item's step_id to this step
+  // ─── Marketplace Actions ──────────────────────────────────────
+
+  /**
+   * attachMarketService — links an existing marketplace item to this step+layer.
+   * Updates: marketplace item's step_id + step's [layer]_marketplace array.
+   */
   const attachMarketService = (item) => {
     setActionLoading(true);
-    axios.patch(`${BASE_URL}/api/marketplace/update/${item._id}`, { step_id: marketStepId })
+
+    const fieldKey = `${marketLayer}_marketplace`;
+    const currentIds = (marketStepData?.[fieldKey] || []).map(id => id.toString());
+
+    if (currentIds.includes(item._id.toString())) {
+      setActionLoading(false);
+      return;
+    }
+
+    const updatedIds = [...currentIds, item._id.toString()];
+
+    // 1. Update the step's [layer]_marketplace array
+    axios
+      .put(`${BASE_URL}/api/steps/update/${marketStepId}`, { [fieldKey]: updatedIds })
       .then(({ data }) => {
-        if (data.status) {
-          setActionLoading(false);
-          // Optimistically update UI
-          setAttachedServices(prev => [...prev, { ...item, step_id: marketStepId }]);
-          setMarketplaceItems(prev => prev.filter(m => m._id !== item._id));
-        } else {
-          // Fallback optimistic update even if response unclear
-          setActionLoading(false);
-          setAttachedServices(prev => [...prev, { ...item, step_id: marketStepId }]);
-          setMarketplaceItems(prev => prev.filter(m => m._id !== item._id));
+        if (data?.status) {
+          setMarketStepData(prev => ({ ...prev, [fieldKey]: updatedIds }));
+
+          // 2. Update the marketplace item's step_id
+          axios.patch(`${BASE_URL}/api/marketplace/link-step`, {
+            item_id: item._id,
+            step_id: marketStepId,
+          }).then(() => {
+            // 3. Move item from "available" to "attached" in UI
+            setAttachedServices(prev => [...prev, item]);
+            setMarketplaceItems(prev =>
+              prev.map(m => m._id === item._id ? { ...m, step_id: marketStepId } : m)
+            );
+          });
         }
-      })
-      .catch(() => {
         setActionLoading(false);
-        // Still update UI optimistically
-        setAttachedServices(prev => [...prev, { ...item, step_id: marketStepId }]);
-        setMarketplaceItems(prev => prev.filter(m => m._id !== item._id));
-      });
+      })
+      .catch(() => setActionLoading(false));
   };
 
-  // Detach: clear the marketplace item's step_id
+  /**
+   * detachMarketService — removes a marketplace item from this step+layer.
+   * Updates: marketplace item's step_id → null + step's [layer]_marketplace array.
+   */
   const detachMarketService = (item) => {
     setActionLoading(true);
-    axios.patch(`${BASE_URL}/api/marketplace/update/${item._id}`, { step_id: null })
+
+    const fieldKey = `${marketLayer}_marketplace`;
+    const currentIds = (marketStepData?.[fieldKey] || []).map(id => id.toString());
+    const updatedIds = currentIds.filter(id => id !== item._id.toString());
+
+    // 1. Update the step's [layer]_marketplace array
+    axios
+      .put(`${BASE_URL}/api/steps/update/${marketStepId}`, { [fieldKey]: updatedIds })
       .then(({ data }) => {
+        if (data?.status) {
+          setMarketStepData(prev => ({ ...prev, [fieldKey]: updatedIds }));
+
+          // 2. Nullify the marketplace item's step_id
+          axios.patch(`${BASE_URL}/api/marketplace/link-step`, {
+            item_id: item._id,
+            step_id: null,
+          }).then(() => {
+            // 3. Move item from "attached" back to full list in UI
+            setAttachedServices(prev => prev.filter(s => s._id !== item._id));
+            setMarketplaceItems(prev =>
+              prev.map(m => m._id === item._id ? { ...m, step_id: null } : m)
+            );
+          });
+        }
         setActionLoading(false);
-        // Update UI
-        setAttachedServices(prev => prev.filter(s => s._id !== item._id));
-        setMarketplaceItems(prev => [...prev, item]);
       })
-      .catch(() => {
-        setActionLoading(false);
-        // Optimistic fallback
-        setAttachedServices(prev => prev.filter(s => s._id !== item._id));
-        setMarketplaceItems(prev => [...prev, item]);
-      });
+      .catch(() => setActionLoading(false));
   };
 
   // ─── Back navigation ─────────────────────────────────────────
@@ -357,7 +452,9 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
       "remove_step": "Edit steps",
       "reorder_step": "Edit steps",
       "marketplace_steps": "default",
-      "marketplace_attach": "marketplace_steps",
+      "marketplace_layer": "marketplace_steps",
+      "marketplace_attach": "marketplace_layer",
+      "marketplace_create": "marketplace_attach",
     };
     if (editPaths !== "default") setEditPaths(backMap[editPaths] || "default");
     else setPathActionStep(1);
@@ -367,7 +464,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
 
   const getModalTitle = () => {
     if (["Edit steps", "add_step", "add_sub_step", "show_all_paths", "remove_step", "reorder_step"].includes(editPaths)) return "Edit Path";
-    if (editPaths === "marketplace_steps" || editPaths === "marketplace_attach") return "Marketplace";
+    if (["marketplace_steps", "marketplace_layer", "marketplace_attach", "marketplace_create"].includes(editPaths)) return "Marketplace";
     if (pathActionStep === 5) return "Approve Path";
     if (pathActionStep === 6) return "Reject Path";
     if (pathActionStep === 2) return mypathsMenu === "Inactive Paths" ? "Reactivate Path" : "Delete Path";
@@ -375,9 +472,6 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     if (pathActionStep === 4) return "Edit Path";
     return "Path Actions";
   };
-
-  const roleEmoji = { institution: "🏛", mentor: "👤", distributor: "📦", vendor: "🛍" };
-  const roleColor = { institution: "#7c3aed", mentor: "#0891b2", distributor: "#d97706", vendor: "#dc2626" };
 
   // ─── SVG Icons ───────────────────────────────────────────────
   const IconPencil = () => (
@@ -432,24 +526,36 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     </div>
   );
 
+  // Convenience: current layer config object
+  const currentLayerCfg = marketStepData ? getLayerConfig(marketStepData)[marketLayer] : null;
+
+  // Derived: items NOT yet attached to this step (available to attach)
+  const attachedIds = new Set(attachedServices.map(s => s._id?.toString()));
+  const availableItems = marketplaceItems.filter(
+    item => !attachedIds.has(item._id?.toString())
+  );
+
   return (
     <div className="admin-mypaths">
 
       {/* TOPBAR */}
       <div className="admin-paths-topbar">
         <div className="admin-paths-tabs">
-          <button className={`paths-tab ${mypathsMenu === "Paths" ? "active" : ""}`}
+          <button
+            className={`paths-tab ${mypathsMenu === "Paths" ? "active" : ""}`}
             onClick={() => { setMypathsMenu("Paths"); setViewPathEnabled(false); setViewPathData([]); }}>
             {admin ? "Active Paths" : "Paths"}
           </button>
           {admin && (
-            <button className={`paths-tab ${mypathsMenu === "Pending Paths" ? "active" : ""}`}
+            <button
+              className={`paths-tab ${mypathsMenu === "Pending Paths" ? "active" : ""}`}
               onClick={() => { setMypathsMenu("Pending Paths"); setViewPathEnabled(false); setViewPathData([]); }}>
               Pending Paths
             </button>
           )}
           {admin && (
-            <button className={`paths-tab ${mypathsMenu === "Inactive Paths" ? "active" : ""}`}
+            <button
+              className={`paths-tab ${mypathsMenu === "Inactive Paths" ? "active" : ""}`}
               onClick={() => { setMypathsMenu("Inactive Paths"); setViewPathEnabled(false); setViewPathData([]); }}>
               Inactive Paths
             </button>
@@ -476,33 +582,101 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
       <div className="admin-mypaths-content">
         {showSelectedPath ? (
           <div>
-            <CurrentStep productDataArray={productDataArray} selectedPathId={selectedPathId} showSelectedPath={showSelectedPath} selectedPath={selectedPath} />
+            <CurrentStep
+              productDataArray={productDataArray}
+              selectedPathId={selectedPathId}
+              showSelectedPath={showSelectedPath}
+              selectedPath={selectedPath}
+            />
           </div>
         ) : viewPathEnabled ? (
           <div className="admin-viewpath-container">
             <div className="admin-viewpath-top-area">
               <div>Your Selected Path:</div>
               {viewPathLoading ? <Skeleton width={150} height={30} /> : (
-                <div className="admin-viewpath-bold-text">{viewPathData && Object.keys(viewPathData).length > 0 ? viewPathData?.destination_institution : ""}</div>
+                <div className="admin-viewpath-bold-text">
+                  {viewPathData && Object.keys(viewPathData).length > 0 ? viewPathData?.destination_institution : ""}
+                </div>
               )}
               {viewPathLoading ? <Skeleton width={500} height={20} /> : (
-                <div className="admin-viewpath-des">{viewPathData && Object.keys(viewPathData).length > 0 ? viewPathData?.description : ""}</div>
+                <div className="admin-viewpath-des">
+                  {viewPathData && Object.keys(viewPathData).length > 0 ? viewPathData?.description : ""}
+                </div>
               )}
               <div className="admin-viewpath-goBack-div" onClick={() => setViewPathEnabled(false)}>Go Back</div>
             </div>
-            <div className="admin-viewpath-steps-area">
-              {viewPathLoading
-                ? Array(6).fill("").map((e, i) => <div className="admin-viewpath-each-j-step" key={i}>...</div>)
-                : viewPathData?.StepDetails?.map((e, i) => (
-                  <div key={i} className="admin-viewpath-each-j-step"
-                    onClick={() => { setShowSelectedPath(e); setProductKeys(e?.product_ids); }}>
-                    <div className="admin-viewpath-each-j-img"><img src={e?.icon} alt="" /></div>
-                    <div className="admin-viewpath-each-j-step-text">{e?.name}</div>
-                    <div className="admin-viewpath-each-j-step-text1">{e?.description}</div>
-                    <div className="admin-viewpath-each-j-amount">{e?.cost}</div>
-                  </div>
-                ))}
+          <div className="admin-viewpath-steps-area">
+  {viewPathLoading
+    ? Array(6).fill("").map((_, i) => (
+        <div className="admin-viewpath-each-j-step" key={i}>...</div>
+      ))
+    : viewPathData?.StepDetails?.map((e, i) => (
+        <div
+          key={i}
+          className="admin-viewpath-each-j-step enhanced-step-card"
+          onClick={() => {
+            setShowSelectedPath(e);
+            setProductKeys(e?.product_ids);
+          }}
+        >
+          {/* STEP HEADER */}
+          <div className="step-top">
+            <div className="step-icon">
+              <img src={e?.icon} alt="" />
             </div>
+            <div className="step-info">
+              <div className="step-title">{i + 1}. {e?.name}</div>
+              <div className="step-desc">{e?.description}</div>
+            </div>
+          </div>
+
+          {/* 🔥 3 VIEW CARDS */}
+          <div className="step-views">
+
+            {/* MACRO */}
+            <div className="view-card macro">
+              <div className="view-label">Macro</div>
+              <div className="view-name">
+                {e?.macro_name || "Macro View"}
+              </div>
+              <div className="view-desc">
+                {e?.macro_description || "High level overview"}
+              </div>
+            </div>
+
+            {/* MICRO */}
+            <div className="view-card micro">
+              <div className="view-label">Micro</div>
+              <div className="view-name">
+                {e?.micro_name || "Micro View"}
+              </div>
+              <div className="view-desc">
+                {e?.micro_description || "Mid level details"}
+              </div>
+            </div>
+
+            {/* NANO */}
+            <div className="view-card nano">
+              <div className="view-label">Nano</div>
+              <div className="view-name">
+                {e?.nano_name || "Nano View"}
+              </div>
+              <div className="view-desc">
+                {e?.nano_description || "Detailed execution"}
+              </div>
+            </div>
+
+          </div>
+
+          {/* COST (optional) */}
+          {e?.cost && (
+            <div className="step-cost">
+              {e?.cost}
+            </div>
+          )}
+        </div>
+      ))}
+</div>
           </div>
         ) : (
           <div className="paths-table-body">
@@ -515,7 +689,9 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 </div>
               ))
               : filteredPartnerPathData?.map((e, i) => (
-                <div className="paths-table-row" key={i}
+                <div
+                  className="paths-table-row"
+                  key={i}
                   onClick={async () => {
                     setPathActionEnabled(true);
                     setSelectedPathId(e?._id);
@@ -529,35 +705,39 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                     <span className="path-desc-text">
                       {expandedRows[e?._id]
                         ? e?.description
-                        : (e?.description?.length > 120 ? e?.description?.substring(0, 120) + '...' : e?.description)}
+                        : (e?.description?.length > 120 ? e?.description?.substring(0, 120) + "..." : e?.description)}
                     </span>
                     {e?.description?.length > 120 && (
-                      <span className="path-desc-toggle" onClick={ev => {
-                        ev.stopPropagation();
-                        setExpandedRows(prev => ({ ...prev, [e._id]: !prev[e._id] }));
-                      }}>
-                        {expandedRows[e?._id] ? ' Read Less' : ' Read More'}
+                      <span
+                        className="path-desc-toggle"
+                        onClick={ev => {
+                          ev.stopPropagation();
+                          setExpandedRows(prev => ({ ...prev, [e._id]: !prev[e._id] }));
+                        }}>
+                        {expandedRows[e?._id] ? " Read Less" : " Read More"}
                       </span>
                     )}
                   </div>
-                  <div className="paths-col-steps">
-                    <span className="actions-pill">Actions</span>
-                  </div>
-                  <div className="path-meta-info">
-                    <span className="meta-date">
-                      {(function () {
-                        const date = e?.createdAt ? new Date(e.createdAt) : new Date();
-                        return date.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
-                      })()}
-                    </span>
-                  </div>
+<div className="paths-col-steps">
+  <div className="path-meta-info">
+    <span className="meta-date">
+      {(function () {
+        const date = e?.createdAt ? new Date(e.createdAt) : new Date();
+        return date.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+      })()}
+    </span>
+  </div>
+  <span className="actions-pill">Actions</span>
+</div>
                 </div>
               ))}
           </div>
         )}
       </div>
 
-      {/* PATH ACTION MODAL */}
+      {/* ══════════════════════════════════════════════════════════
+          PATH ACTION MODAL
+      ══════════════════════════════════════════════════════════ */}
       {pathActionEnabled && (
         <>
           <div className="pp-overlay" onClick={() => resetPathAction()} />
@@ -587,10 +767,16 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
 
             <div className="pp-body">
 
-              {/* MAIN ACTIONS — ACTIVE / INACTIVE */}
+              {/* ── STEP 1: MAIN ACTIONS — ACTIVE / INACTIVE ── */}
               {pathActionStep === 1 && editPaths === "default" && mypathsMenu !== "Pending Paths" && (
                 <div className="pp-cards-grid">
-                  <ActionCard color="blue" icon={<IconPencil />} title="Edit Path" desc="Modify steps, metadata, or structure" onClick={() => setPathActionStep(4)} />
+                  <ActionCard
+                    color="blue"
+                    icon={<IconPencil />}
+                    title="Edit Path"
+                    desc="Modify steps, metadata, or structure"
+                    onClick={() => setPathActionStep(4)}
+                  />
                   <ActionCard
                     color={mypathsMenu === "Inactive Paths" ? "green" : "red"}
                     icon={mypathsMenu === "Inactive Paths" ? <IconCheck /> : <IconTrash />}
@@ -598,27 +784,47 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                     desc={mypathsMenu === "Inactive Paths" ? "Restore this path to active" : "Permanently remove this path"}
                     onClick={() => setPathActionStep(2)}
                   />
-                  <ActionCard color="purple" icon={<IconEye />} title="View Path" desc="Open the complete path page"
-                    onClick={() => { localStorage.setItem("selectedPathId", selectedPathId); navigate(`/dashboard/path/${selectedPathId}`); }} />
-                  <ActionCard color="teal" icon={<IconShop />} title="Marketplace" desc="Attach services to steps"
-                    onClick={() => { fetchMarketplaceItems(); setEditPaths("marketplace_steps"); }} />
+                  <ActionCard
+                    color="purple"
+                    icon={<IconPencil />}
+                    title="Review Path"
+                    desc="Open the complete path page"
+                    onClick={() => { localStorage.setItem("selectedPathId", selectedPathId); navigate(`/dashboard/path/${selectedPathId}`); }}
+                  />
+                  <ActionCard
+                    color="teal"
+                    icon={<IconShop />}
+                    title="Marketplace"
+                    desc="Attach services to steps"
+                    onClick={() => setEditPaths("marketplace_steps")}
+                  />
                 </div>
               )}
 
-              {/* MAIN ACTIONS — PENDING */}
+              {/* ── STEP 1: MAIN ACTIONS — PENDING ── */}
               {pathActionStep === 1 && editPaths === "default" && mypathsMenu === "Pending Paths" && (
                 <div className="pp-cards-grid">
                   <ActionCard color="green" icon={<IconCheck />} title="Approve Path" desc="Publish this path to users" onClick={() => setPathActionStep(5)} />
                   <ActionCard color="amber" icon={<IconX />} title="Reject Path" desc="Send back for revisions" onClick={() => setPathActionStep(6)} />
                   <ActionCard color="blue" icon={<IconPencil />} title="Edit Path" desc="Modify steps and structure" onClick={() => setPathActionStep(4)} />
-                  <ActionCard color="purple" icon={<IconEye />} title="View Path" desc="Open the complete path page"
-                    onClick={() => { localStorage.setItem("selectedPathId", selectedPathId); navigate(`/dashboard/path/${selectedPathId}`); }} />
-                  <ActionCard color="teal" icon={<IconShop />} title="Marketplace" desc="Attach services to steps"
-                    onClick={() => { fetchMarketplaceItems(); setEditPaths("marketplace_steps"); }} />
+                  <ActionCard
+                    color="purple"
+                    icon={<IconPencil />}
+                    title="Open Path"
+                    desc="Open the complete path page"
+                    onClick={() => { localStorage.setItem("selectedPathId", selectedPathId); navigate(`/dashboard/path/${selectedPathId}`); }}
+                  />
+                  <ActionCard
+                    color="teal"
+                    icon={<IconShop />}
+                    title="Marketplace"
+                    desc="Attach services to steps"
+                    onClick={() => setEditPaths("marketplace_steps")}
+                  />
                 </div>
               )}
 
-              {/* DELETE / REACTIVATE CONFIRM */}
+              {/* ── STEP 2: DELETE / REACTIVATE CONFIRM ── */}
               {pathActionStep === 2 && (
                 <div className="pp-confirm">
                   <div className={`pp-confirm-icon ${mypathsMenu === "Inactive Paths" ? "pp-confirm-icon--green" : "pp-confirm-icon--red"}`}>
@@ -631,7 +837,8 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                     <strong>"{selectedPath?.nameOfPath}"</strong> will be {mypathsMenu === "Inactive Paths" ? "restored and visible to users." : "permanently removed. This cannot be undone."}
                   </p>
                   <div className="pp-confirm-actions">
-                    <button className={`pp-btn ${mypathsMenu === "Inactive Paths" ? "pp-btn--green" : "pp-btn--red"}`}
+                    <button
+                      className={`pp-btn ${mypathsMenu === "Inactive Paths" ? "pp-btn--green" : "pp-btn--red"}`}
                       onClick={() => mypathsMenu === "Inactive Paths" ? reactivatePath() : deletePath()}>
                       {actionLoading ? "Processing..." : mypathsMenu === "Inactive Paths" ? "Yes, Reactivate" : "Yes, Delete"}
                     </button>
@@ -640,7 +847,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 </div>
               )}
 
-              {/* SUCCESS */}
+              {/* ── STEP 3: SUCCESS ── */}
               {pathActionStep === 3 && (
                 <div className="pp-success">
                   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="1.5">
@@ -651,38 +858,55 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 </div>
               )}
 
-              {/* EDIT OPTIONS */}
+              {/* ── STEP 4: EDIT OPTIONS ── */}
               {pathActionStep === 4 && editPaths === "default" && (
                 <div className="pp-option-list">
                   <p className="pp-section-label">What would you like to edit?</p>
-                  <OptionRow iconColor="blue"
-                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 6h13" /><path d="M8 12h13" /><path d="M8 18h13" /><circle cx="3" cy="6" r="1" fill="currentColor" /><circle cx="3" cy="12" r="1" fill="currentColor" /><circle cx="3" cy="18" r="1" fill="currentColor" /></svg>}
-                    title="Edit Steps" sub="Add, remove, or reorder steps in this path"
+                  <OptionRow
+                    iconColor="blue"
+                    icon={
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M8 6h13" /><path d="M8 12h13" /><path d="M8 18h13" />
+                        <circle cx="3" cy="6" r="1" fill="currentColor" />
+                        <circle cx="3" cy="12" r="1" fill="currentColor" />
+                        <circle cx="3" cy="18" r="1" fill="currentColor" />
+                      </svg>
+                    }
+                    title="Edit Steps"
+                    sub="Add, remove, or reorder steps in this path"
                     onClick={() => setEditPaths("Edit steps")}
                   />
                 </div>
               )}
 
-              {/* STEP MANAGEMENT */}
+              {/* ── STEP MANAGEMENT ── */}
               {editPaths === "Edit steps" && (
                 <div className="pp-option-list">
                   <p className="pp-section-label">Step Management</p>
-                  <OptionRow iconColor="green"
+                  <OptionRow
+                    iconColor="green"
                     icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>}
                     title="Add New Step" sub="Insert a step from your library" onClick={() => setEditPaths("add_step")}
                   />
-                  <OptionRow iconColor="red"
+                  <OptionRow
+                    iconColor="red"
                     icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>}
                     title="Remove Step" sub="Delete a step from this path" onClick={() => setEditPaths("remove_step")}
                   />
-                  <OptionRow iconColor="amber"
-                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>}
+                  <OptionRow
+                    iconColor="amber"
+                    icon={
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
+                        <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
+                      </svg>
+                    }
                     title="Reorder Steps" sub="Drag and drop to change sequence" onClick={() => setEditPaths("reorder_step")}
                   />
                 </div>
               )}
 
-              {/* ADD STEP */}
+              {/* ── ADD STEP ── */}
               {editPaths === "add_step" && (
                 <div className="pp-selector">
                   <p className="pp-section-label">Select step to add</p>
@@ -694,7 +918,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                           onClick={() => { if (!added) { setEditPaths("add_sub_step"); setStepId(item._id); } }}>
                           <div className="pp-selector-item-body">
                             <strong>{item?.name}</strong>
-                            {item?.description && <p>{item.description.substring(0, 110)}{item.description.length > 110 ? '...' : ''}</p>}
+                            {item?.description && <p>{item.description.substring(0, 110)}{item.description.length > 110 ? "..." : ""}</p>}
                             <code>{item?._id}</code>
                           </div>
                           <span className={`pp-tag ${added ? "pp-tag--gray" : "pp-tag--blue"}`}>{added ? "Already Added" : "Select →"}</span>
@@ -705,7 +929,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 </div>
               )}
 
-              {/* SELECT BACKUP PATH */}
+              {/* ── SELECT BACKUP PATH ── */}
               {editPaths === "add_sub_step" && (
                 <div className="pp-selector">
                   <p className="pp-section-label">Select backup path</p>
@@ -715,7 +939,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                         onClick={() => { setEditPaths("show_all_paths"); setBackupPathId(item._id); }}>
                         <div className="pp-selector-item-body">
                           <strong>{item?.nameOfPath}</strong>
-                          {item?.description && <p>{item.description.substring(0, 110)}{item.description.length > 110 ? '...' : ''}</p>}
+                          {item?.description && <p>{item.description.substring(0, 110)}{item.description.length > 110 ? "..." : ""}</p>}
                           <code>{item?._id}</code>
                         </div>
                         <span className="pp-tag pp-tag--indigo">Select →</span>
@@ -725,7 +949,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 </div>
               )}
 
-              {/* CHOOSE POSITION */}
+              {/* ── CHOOSE POSITION ── */}
               {editPaths === "show_all_paths" && (
                 <div className="pp-position">
                   <p className="pp-section-label">Choose insertion position</p>
@@ -736,16 +960,14 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                           <span className="pp-step-num">{index + 1}</span>
                           <span className="pp-step-name">{item.name}</span>
                         </div>
-                        <button className="pp-insert-btn" onClick={() => handlePlace(selectedPath, index + 1)}>
-                          + Insert Here
-                        </button>
+                        <button className="pp-insert-btn" onClick={() => handlePlace(selectedPath, index + 1)}>+ Insert Here</button>
                       </React.Fragment>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* REMOVE STEP */}
+              {/* ── REMOVE STEP ── */}
               {editPaths === "remove_step" && (
                 <div className="pp-selector">
                   <p className="pp-section-label">Select step to remove</p>
@@ -755,7 +977,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                         onClick={() => handledeletePathPosition(selectedPath, item._id)}>
                         <div className="pp-selector-item-body">
                           <strong>{item?.name}</strong>
-                          {item?.description && <p>{item.description.substring(0, 110)}{item.description.length > 110 ? '...' : ''}</p>}
+                          {item?.description && <p>{item.description.substring(0, 110)}{item.description.length > 110 ? "..." : ""}</p>}
                           <code>{item?._id}</code>
                         </div>
                         <span className="pp-tag pp-tag--red">Remove</span>
@@ -765,7 +987,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 </div>
               )}
 
-              {/* REORDER STEPS */}
+              {/* ── REORDER STEPS ── */}
               {editPaths === "reorder_step" && (
                 <div className="pp-reorder">
                   <p className="pp-section-label">Drag to reorder</p>
@@ -783,7 +1005,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                             <span className="pp-reorder-num">{idx + 1}</span>
                             <div className="pp-reorder-content">
                               <strong>{item.name}</strong>
-                              {item.description && <span>{item.description.substring(0, 80)}{item.description.length > 80 ? '...' : ''}</span>}
+                              {item.description && <span>{item.description.substring(0, 80)}{item.description.length > 80 ? "..." : ""}</span>}
                             </div>
                           </div>
                         ))}
@@ -795,7 +1017,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 </div>
               )}
 
-              {/* APPROVE CONFIRM */}
+              {/* ── STEP 5: APPROVE CONFIRM ── */}
               {pathActionStep === 5 && (
                 <div className="pp-confirm">
                   <div className="pp-confirm-icon pp-confirm-icon--green">
@@ -810,11 +1032,13 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 </div>
               )}
 
-              {/* REJECT CONFIRM */}
+              {/* ── STEP 6: REJECT CONFIRM ── */}
               {pathActionStep === 6 && (
                 <div className="pp-confirm">
                   <div className="pp-confirm-icon pp-confirm-icon--red">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
                   </div>
                   <h3>Reject this path?</h3>
                   <p className="pp-confirm-msg">It will be moved to drafts for revision.</p>
@@ -825,95 +1049,354 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 </div>
               )}
 
-              {/* MARKETPLACE: SELECT STEP */}
+              {/* ══════════════════════════════════════════════════════
+                  MARKETPLACE STEP 1 — SELECT STEP
+              ══════════════════════════════════════════════════════ */}
               {editPaths === "marketplace_steps" && (
                 <div className="pp-selector">
-                  <p className="pp-section-label">Select step to manage services</p>
+                  <p className="pp-section-label">Select a step to manage its marketplace</p>
                   <div className="pp-selector-list">
                     {selectedPath?.StepDetails?.filter(s => s?.name)?.map(step => (
-                      <div key={step._id} className="pp-selector-item"
+                      <div
+                        key={step._id}
+                        className="pp-selector-item"
                         onClick={() => {
                           setMarketStepId(step._id);
-                          fetchAttachedServices(step._id);
-                          setEditPaths("marketplace_attach");
+                          setAttachedServices([]);
+                          setMarketplaceItems([]);
+                          axios.get(`${BASE_URL}/api/steps/${step._id}`)
+                            .then(({ data }) => {
+                              if (data?.data) setMarketStepData(data.data);
+                            });
+                          setEditPaths("marketplace_layer");
                         }}>
                         <div className="pp-selector-item-body">
                           <strong>{step.name}</strong>
-                          {step.description && <p>{step.description.substring(0, 80)}{step.description.length > 80 ? '...' : ''}</p>}
+                          {step.description && <p>{step.description.substring(0, 80)}{step.description.length > 80 ? "..." : ""}</p>}
                         </div>
-                        <span className="pp-tag pp-tag--teal">Manage →</span>
+                        <span className="pp-tag pp-tag--teal">Select →</span>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* MARKETPLACE: ATTACH / DETACH */}
+              {/* ══════════════════════════════════════════════════════
+                  MARKETPLACE STEP 2 — SELECT LAYER
+              ══════════════════════════════════════════════════════ */}
+              {editPaths === "marketplace_layer" && (
+                <div className="pp-selector">
+                  <p className="pp-section-label">Select a view to manage</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {Object.entries(getLayerConfig(marketStepData)).map(([layerKey, cfg]) => (
+                      <div
+                        key={layerKey}
+                        style={{
+                          padding: "18px 20px",
+                          borderRadius: 16,
+                          cursor: "pointer",
+                          border: `1.5px solid ${cfg.border}`,
+                          background: cfg.bg,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 14,
+                          transition: "all 0.15s",
+                        }}
+                        onClick={() => {
+                          setMarketLayer(layerKey);
+                          setAttachedServices([]);
+                          setMarketplaceItems([]);
+                          // fetchMarketplaceData with explicit args since state hasn't updated yet
+                          fetchMarketplaceData(marketStepId, layerKey);
+                          setEditPaths("marketplace_attach");
+                        }}>
+                        <div style={{
+                          width: 44, height: 44, borderRadius: 12,
+                          background: cfg.color, display: "flex",
+                          alignItems: "center", justifyContent: "center",
+                          color: "#fff", fontWeight: 800, fontSize: "1rem", flexShrink: 0,
+                        }}>
+                          {cfg.label[0]}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{
+                            fontWeight: 700, fontSize: "0.78rem",
+                            color: cfg.color, textTransform: "uppercase",
+                            letterSpacing: "0.07em", marginBottom: 3,
+                          }}>
+                            {cfg.label}
+                          </div>
+                          <div style={{
+                            fontWeight: 600, fontSize: "0.88rem",
+                            color: "#0f172a", marginBottom: 2,
+                            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                          }}>
+                            {cfg.viewName}
+                          </div>
+                          <div style={{
+                            fontSize: "0.74rem", color: "#64748b",
+                            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                          }}>
+                            {cfg.viewDesc}
+                          </div>
+                        </div>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ══════════════════════════════════════════════════════
+                  MARKETPLACE STEP 3 — ATTACH / DETACH
+              ══════════════════════════════════════════════════════ */}
               {editPaths === "marketplace_attach" && (
                 <div>
-                  {/* Already attached */}
-                  {attachedServices.length > 0 && (
-                    <div style={{ marginBottom: 20 }}>
-                      <p className="pp-section-label">Currently attached</p>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                        {attachedServices.map(svc => {
-                          const re = roleEmoji[svc.role?.toLowerCase()] || "🛍";
-                          const rc = roleColor[svc.role?.toLowerCase()] || "#64748b";
-                          return (
-                            <div key={svc._id} className="pp-market-item">
-                              <div className="pp-market-item-info">
-                                <div className="pp-market-emoji">{re}</div>
-                                <div>
-                                  <strong>{svc.name}</strong>
-                                  <span style={{ color: rc, fontWeight: 600, fontSize: "0.7rem", textTransform: "uppercase", display: "block" }}>{svc.role}</span>
-                                </div>
-                              </div>
-                              <button className="pp-market-remove-btn" onClick={() => detachMarketService(svc)}>
-                                {actionLoading ? "..." : "Remove"}
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </div>
+                  {/* Layer title */}
+                  {currentLayerCfg && (
+                    <div style={{ marginBottom: "16px" }}>
+                      <h3 style={{ fontSize: "18px", fontWeight: "600" }}>{currentLayerCfg.viewName}</h3>
+                      <p style={{ color: "#64748b", fontSize: "13px" }}>{currentLayerCfg.viewDesc}</p>
                     </div>
                   )}
 
-                  {/* Available to attach */}
-                  <p className="pp-section-label">Add from marketplace</p>
+                  {/* ATTACHED */}
+                  <p className="pp-section-label">
+                    ATTACHED TO THIS STEP ({marketLayer?.toUpperCase()})
+                  </p>
+
                   {marketplaceLoading ? (
-                    <div style={{ padding: "16px 0", textAlign: "center", color: "#94a3b8", fontSize: "0.85rem" }}>Loading...</div>
+                    <div style={{ padding: "12px 0", color: "#64748b", fontSize: "13px" }}>Loading...</div>
+                  ) : attachedServices.length > 0 ? (
+                    attachedServices.map(item => (
+                      <div className="pp-market-item" key={item._id}>
+                        <div className="pp-market-item-info">
+                          <div className="pp-market-emoji">📦</div>
+                          <div>
+                            <strong>{item.name}</strong>
+                            <span>{item.role}</span>
+                          </div>
+                        </div>
+                        <button
+                          className="pp-market-remove-btn"
+                          disabled={actionLoading}
+                          onClick={() => detachMarketService(item)}>
+                          {actionLoading ? "..." : "Remove"}
+                        </button>
+                      </div>
+                    ))
                   ) : (
-                    <div className="pp-selector-list">
-                      {marketplaceItems
-                        .filter(m => !attachedServices.some(a => a._id === m._id))
-                        .map(item => {
-                          const re = roleEmoji[item.role?.toLowerCase()] || "❓";
-                          const rc = roleColor[item.role?.toLowerCase()] || "#64748b";
-                          // Check if this item already belongs to this step via step_id
-                          const alreadyOnThisStep = item.step_id && item.step_id.toString() === marketStepId.toString();
-                          return (
-                            <div key={item._id}
-                              className={`pp-selector-item ${alreadyOnThisStep ? "pp-selector-item--disabled" : ""}`}
-                              onClick={() => { if (!alreadyOnThisStep) attachMarketService(item); }}>
-                              <div className="pp-selector-item-body" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                <div className="pp-market-emoji">{re}</div>
-                                <div>
-                                  <strong>{item.name}</strong>
-                                  <span style={{ color: rc, fontWeight: 600, fontSize: "0.7rem", textTransform: "uppercase", display: "block" }}>{item.role}</span>
-                                </div>
-                              </div>
-                              {alreadyOnThisStep
-                                ? <span className="pp-tag pp-tag--gray">Already Added</span>
-                                : <span className="pp-tag pp-tag--green">Attach →</span>
-                              }
-                            </div>
-                          );
-                        })}
-                      {marketplaceItems.filter(m => !attachedServices.some(a => a._id === m._id)).length === 0 && (
-                        <div className="pp-empty">All marketplace items are attached</div>
-                      )}
+                    <div className="pp-empty">No items attached to this step</div>
+                  )}
+
+                  {/* CREATE BUTTON */}
+                  <button
+                    className="pp-create-btn"
+                    style={{ marginTop: "16px", marginBottom: "8px" }}
+                    onClick={() => setEditPaths("marketplace_create")}>
+                    + Create New Listing
+                  </button>
+
+                  {/* AVAILABLE (all in this layer, not yet attached to this step) */}
+                  <p className="pp-section-label" style={{ marginTop: "20px" }}>
+                    ALL {marketLayer?.toUpperCase()} MARKETPLACE ({availableItems.length} available)
+                  </p>
+
+                  {marketplaceLoading ? (
+                    <div style={{ padding: "12px 0", color: "#64748b", fontSize: "13px" }}>Loading...</div>
+                  ) : availableItems.length === 0 ? (
+                    <div className="pp-empty">No other {marketLayer} items in marketplace</div>
+                  ) : (
+                    availableItems.map(item => (
+                      <div className="pp-market-item" key={item._id}>
+                        <div className="pp-market-item-info">
+                          <div className="pp-market-emoji">📦</div>
+                          <div>
+                            <strong>{item.name}</strong>
+                            <span>{item.role}</span>
+                            {item.step_id && (
+                              <span style={{ fontSize: "11px", color: "#f59e0b", display: "block" }}>
+                                ⚠ Already linked to another step
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          className="pp-btn pp-btn--blue"
+                          disabled={actionLoading}
+                          onClick={() => attachMarketService(item)}>
+                          {actionLoading ? "..." : "Attach"}
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* ══════════════════════════════════════════════════════
+                  MARKETPLACE STEP 4 — CREATE NEW LISTING
+              ══════════════════════════════════════════════════════ */}
+              {editPaths === "marketplace_create" && (
+                <div className="pp-selector">
+                  {/* Layer badge */}
+                  {currentLayerCfg && (
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: 8,
+                      padding: "8px 14px", background: currentLayerCfg.bg,
+                      borderRadius: 10, border: `1.5px solid ${currentLayerCfg.border}`,
+                      fontSize: "0.78rem", color: currentLayerCfg.color,
+                      fontWeight: 500, marginBottom: 16,
+                    }}>
+                      <span style={{ color: "#64748b" }}>Adding to</span>
+                      <strong style={{ textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                        {currentLayerCfg.label}
+                      </strong>
+                      <span style={{ color: "#64748b" }}>layer</span>
                     </div>
                   )}
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {/* Role */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                      <label className="pp-section-label" style={{ marginBottom: 0 }}>Role *</label>
+                      <select value={mpRole} onChange={e => setMpRole(e.target.value)}
+                        style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none", background: "#fff" }}>
+                        <option value="">Select role...</option>
+                        <option value="institution">Institution</option>
+                        <option value="mentor">Mentor</option>
+                        <option value="distributor">Distributor</option>
+                        <option value="vendor">Vendor</option>
+                      </select>
+                    </div>
+
+                    {/* Name */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                      <label className="pp-section-label" style={{ marginBottom: 0 }}>Name *</label>
+                      <input
+                        style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none" }}
+                        type="text" value={mpName} onChange={e => setMpName(e.target.value)}
+                        placeholder="e.g. Malla Reddy University"
+                      />
+                    </div>
+
+                    {/* Access + Cost */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                        <label className="pp-section-label" style={{ marginBottom: 0 }}>Access</label>
+                        <select value={mpAccess} onChange={e => setMpAccess(e.target.value)}
+                          style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none", background: "#fff" }}>
+                          <option value="Free">Free</option>
+                          <option value="Paid">Paid</option>
+                          <option value="Subscription">Subscription</option>
+                        </select>
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                        <label className="pp-section-label" style={{ marginBottom: 0 }}>Cost</label>
+                        <input
+                          style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none" }}
+                          type="text" value={mpCost} onChange={e => setMpCost(e.target.value)} placeholder="e.g. ₹65,000"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Duration */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                      <label className="pp-section-label" style={{ marginBottom: 0 }}>Duration</label>
+                      <input
+                        style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none" }}
+                        type="text" value={mpDuration} onChange={e => setMpDuration(e.target.value)} placeholder="e.g. 3 months"
+                      />
+                    </div>
+
+                    {/* Goal */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                      <label className="pp-section-label" style={{ marginBottom: 0 }}>Goal</label>
+                      <input
+                        style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none" }}
+                        type="text" value={mpGoal} onChange={e => setMpGoal(e.target.value)} placeholder="What goal does this serve?"
+                      />
+                    </div>
+
+                    {/* Features */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                      <label className="pp-section-label" style={{ marginBottom: 0 }}>Features</label>
+                      <textarea
+                        style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none", minHeight: 70, resize: "vertical", fontFamily: "inherit" }}
+                        value={mpFeatures} onChange={e => setMpFeatures(e.target.value)} placeholder="Key features or offerings"
+                      />
+                    </div>
+
+                    {/* Outcomes + Discount */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                        <label className="pp-section-label" style={{ marginBottom: 0 }}>Outcomes</label>
+                        <input
+                          style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none" }}
+                          type="text" value={mpOutcomes} onChange={e => setMpOutcomes(e.target.value)} placeholder="Expected outcomes"
+                        />
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                        <label className="pp-section-label" style={{ marginBottom: 0 }}>Discount</label>
+                        <input
+                          style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none" }}
+                          type="text" value={mpDiscount} onChange={e => setMpDiscount(e.target.value)} placeholder="e.g. 10%"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Submit */}
+                    <button
+                      className="pp-btn pp-btn--blue"
+                      style={{ marginTop: 4, borderRadius: 50 }}
+                      disabled={actionLoading}
+                      onClick={() => {
+                        if (!mpRole || !mpName) { alert("Role and Name are required"); return; }
+                        setActionLoading(true);
+
+                        axios
+                          .post(`${BASE_URL}/api/marketplace/add`, {
+                            name: mpName,
+                            role: mpRole,
+                            layer: marketLayer,
+                            step_id: marketStepId,
+                            path_id: selectedPathId,
+                            partner_email: userDetails?.email || "",
+                            access: mpAccess,
+                            cost: mpCost,
+                            goal: mpGoal,
+                            outcomes: mpOutcomes,
+                            duration: mpDuration,
+                            features: mpFeatures,
+                            discount: mpDiscount,
+                          })
+                          .then(({ data }) => {
+                            if (data?.status && data?.data) {
+                              const newItem = data.data;
+                              // Add to attached list and to full items list
+                              setAttachedServices(prev => [...prev, newItem]);
+                              setMarketplaceItems(prev => [...prev, newItem]);
+                              setMarketStepData(prev => ({
+                                ...prev,
+                                [`${marketLayer}_marketplace`]: [
+                                  ...(prev?.[`${marketLayer}_marketplace`] || []),
+                                  newItem._id
+                                ]
+                              }));
+                              // Reset form fields
+                              setMpRole(""); setMpName(""); setMpAccess("Free"); setMpCost("");
+                              setMpGoal(""); setMpOutcomes(""); setMpDuration("");
+                              setMpFeatures(""); setMpDiscount("");
+                              setEditPaths("marketplace_attach");
+                            }
+                            setActionLoading(false);
+                          })
+                          .catch(() => setActionLoading(false));
+                      }}>
+                      {actionLoading ? "Adding..." : "Add to Marketplace"}
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -922,10 +1405,15 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
         </>
       )}
 
-      {/* STEP ACTION POPUP */}
+      {/* ══════════════════════════════════════════════════════════
+          STEP ACTION POPUP
+      ══════════════════════════════════════════════════════════ */}
       {stepActionEnabled && (
         <>
-          <div className="pp-overlay" onClick={() => { setStepActionEnabled(false); setStepActionStep(1); setSelectedStepId(""); }} />
+          <div
+            className="pp-overlay"
+            onClick={() => { setStepActionEnabled(false); setStepActionStep(1); setSelectedStepId(""); }}
+          />
           <div className="admin-acc-popular1">
             <div className="admin-acc-popular-top" style={{ display: stepActionStep === 3 ? "none" : "" }}>
               <div className="admin-acc-popular-head">My Step Actions</div>
@@ -952,8 +1440,8 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
               <div className="admin-acc-mt-div">
                 <div className="admin-acc-sub-text">What do you want to do?</div>
                 <div className="admin-acc-scroll-div">
-                  <div className="admin-acc-step-box4" style={{ flexDirection: 'column', alignItems: 'flex-start' }} onClick={() => setStepActionStep(5)}>Add a Service</div>
-                  <div className="admin-acc-step-box4" style={{ flexDirection: 'column', alignItems: 'flex-start' }} onClick={() => setStepActionStep(6)}>Remove a Service</div>
+                  <div className="admin-acc-step-box4" style={{ flexDirection: "column", alignItems: "flex-start" }} onClick={() => setStepActionStep(5)}>Add a Service</div>
+                  <div className="admin-acc-step-box4" style={{ flexDirection: "column", alignItems: "flex-start" }} onClick={() => setStepActionStep(6)}>Remove a Service</div>
                 </div>
                 <div className="admin-goBack3" onClick={() => setStepActionStep(1)}>Go Back</div>
               </div>
@@ -964,11 +1452,11 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 <div className="admin-acc-scroll-div">
                   {allServicesToAdd?.map(item => (
                     <div key={item?._id}
-                      className={selectedServices.includes(item?._id) ? 'admin-acc-step-box4-selected' : "admin-acc-step-box4"}
-                      style={{ flexDirection: 'column', alignItems: 'flex-start' }}
+                      className={selectedServices.includes(item?._id) ? "admin-acc-step-box4-selected" : "admin-acc-step-box4"}
+                      style={{ flexDirection: "column", alignItems: "flex-start" }}
                       onClick={() => handleSelectServicesForStep(item?._id)}>
                       <div>{item?.name}</div>
-                      <div style={{ fontSize: '12px', fontWeight: 400, paddingTop: '5px' }}>{item?._id}</div>
+                      <div style={{ fontSize: "12px", fontWeight: 400, paddingTop: "5px" }}>{item?._id}</div>
                     </div>
                   ))}
                 </div>
@@ -985,10 +1473,10 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 <div className="admin-acc-scroll-div">
                   {allServicesToRemove?.serviceDetails?.map(item => (
                     <div key={item?._id} className="admin-acc-step-box4"
-                      style={{ flexDirection: 'column', alignItems: 'flex-start' }}
+                      style={{ flexDirection: "column", alignItems: "flex-start" }}
                       onClick={() => removeServiceFromStep(item?._id)}>
                       <div>{item?.name}</div>
-                      <div style={{ fontSize: '12px', fontWeight: 400, paddingTop: '5px' }}>{item?._id}</div>
+                      <div style={{ fontSize: "12px", fontWeight: 400, paddingTop: "5px" }}>{item?._id}</div>
                     </div>
                   ))}
                 </div>

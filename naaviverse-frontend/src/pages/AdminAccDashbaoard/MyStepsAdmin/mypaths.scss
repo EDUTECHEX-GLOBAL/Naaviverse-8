@@ -15,9 +15,13 @@ $teal:    #14b8a6;
 $teal-bg: #f0fdfa;
 $amber:   #f59e0b;
 $bg:      #f8fafc;
+$primary: #14b8a6;
+$primary-bg: #f0fdfa;
+$primary: #ec4899;
+$primary-bg: #fdf2f8;
 
-// ─── Base ────────────────────────────────────────────────────────
-.admin-mypaths {
+// ─── Base Container ────────────────────────────────────────────────────────
+.admin-steps-container {
   width: 100%;
   height: 100%;
   font-family: $font-body;
@@ -27,193 +31,240 @@ $bg:      #f8fafc;
   overflow: hidden;
 }
 
-// ─── Tabs ────────────────────────────────────────────────────────
-.admin-mypaths-menu {
-  width: 100%;
-  height: 52px;
-  padding: 0 28px;
+// ─── Steps topbar (tabs + search) ─────────────────────────────────────────
+.admin-steps-topbar {
+  flex-shrink: 0;
+  padding: 8px 20px;
+  background: #fff;
+  border-bottom: 1px solid $border;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-steps-search-row {
+  display: flex;
+  gap: 10px;
+}
+
+.admin-steps-search-input {
   display: flex;
   align-items: center;
   gap: 6px;
-  border-bottom: 1px solid $border;
+  padding: 0 10px;
+  height: 28px;
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 50px;
+  width: 150px;
+  transition: all 0.15s;
+  color: #64748b;
+
+  &:focus-within {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.05);
+  }
+
+  input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 0.76rem;
+    color: #0f172a;
+    outline: none;
+    min-width: 0;
+    &::placeholder { color: #b0bec5; }
+  }
+}
+
+.admin-steps-menu {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   background: #fff;
   flex-shrink: 0;
 
-  .admin-each-mypath-menu {
-    padding: 7px 18px;
+  .admin-steps-menu-item {
+    padding: 5px 14px;
     border-radius: 50px;
     font-weight: 500;
-    font-size: 0.875rem;
-    color: $muted;          // ← was too faint before
+    font-size: 0.775rem;
     cursor: pointer;
-    transition: all 0.15s ease;
     border: none;
-    background: transparent;
+    outline: none;
+    white-space: nowrap;
+    transition: opacity 0.15s ease;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e9eef5 100%);
+    color: $muted;
+    box-shadow: none;
 
-    &:hover { background: $bg; color: $text; }
+    &:hover:not(.active-tab) { opacity: 0.72; }
 
     &.active-tab {
-      background: $text;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
       color: #fff;
       font-weight: 600;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
     }
   }
 }
 
-
-// ─── Content ─────────────────────────────────────────────────────
-.admin-mypaths-content {
+// ─── Content ───────────────────────────────────────────────────────────────
+.admin-steps-content {
   width: 100%;
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+ background: rgba(236, 72, 153, 0.05);
 }
 
-// ─── Table header ────────────────────────────────────────────────
-.admin-mypathsNav {
-  width: 100%;
-  height: 40px;
-  border-bottom: 1px solid $border;
-  display: flex;
-  align-items: center;
-  background: $bg;
-  flex-shrink: 0;
-
-  .admin-mypathsName {
-    width: 25%;
-    padding-left: 28px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .admin-mypathsCountry {
-    width: 25%;
-    padding-left: 16px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .admin-mypathsMicrosteps {
-    width: 25%;
-    padding-left: 16px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-}
-
-// ─── Scroll container ────────────────────────────────────────────
-.admin-mypathsScroll-div {
-  overflow-y: auto;
+// ─── Steps card container ────────────────────────────────────────────────
+.admin-steps-list {
   flex: 1;
-  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 28px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+ background: rgba(236, 72, 153, 0.05);
 
   &::-webkit-scrollbar { width: 4px; }
   &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb { background: #dde3ea; border-radius: 4px; }
 }
 
-// ─── Step rows ───────────────────────────────────────────────────
-.step-row {
-  width: 100%;
-  background: #fff;
-  border-bottom: 1px solid #f0f4f8;
-  padding: 14px 28px 12px;
-  cursor: pointer;
-  transition: background 0.12s;
-  position: relative;
-
-  &:hover { background: $bg; }
-}
-
-.step-row-main {
+// ─── Admin Step Card (No conflicts with journey.scss or journeypage.scss) ──
+.admin-step-card {
   display: flex;
-  align-items: center;
-  margin-bottom: 6px;
+  align-items: stretch;
+  flex-direction: row;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: box-shadow 0.18s ease, transform 0.14s ease, border-color 0.15s ease;
+  overflow: visible;
+  min-width: 0;
+
+  &:hover {
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.10);
+    transform: translateY(-2px);
+    border-color: rgba(20, 184, 166, 0.05);
+  }
+
+  // ── Left: Name ──────────────────────────────────────────────────────
+  .admin-step-name {
+    width: 200px;
+    min-width: 160px;
+    flex-shrink: 0;
+    padding: 10px 12px 10px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    border-right: 1px solid #f1f5f9;
+
+    .admin-step-name-text {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #1e293b;
+      line-height: 1.4;
+      letter-spacing: -0.01em;
+    }
+  }
+
+  // ── Middle: Description ──────────────────────────────────────────────
+  .admin-step-desc {
+    flex: 1;
+    padding: 10px 12px 10px 14px;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+
+    .admin-step-desc-text {
+      font-size: 0.82rem;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    .admin-step-desc-empty {
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      font-style: italic;
+    }
+  }
+
+  // ── Right: date top, button bottom ───────────────────────────────────
+  .admin-step-right {
+    flex-shrink: 0;
+    width: 170px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 10px 14px 10px 8px;
+  }
+
+  .admin-step-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+
+    .admin-step-date {
+      font-size: 0.67rem;
+      color: #94a3b8;
+      white-space: nowrap;
+      text-align: right;
+    }
+
+    .admin-step-mkt-count {
+      font-size: 0.67rem;
+      color: #b0bec5;
+    }
+  }
 }
 
-.step-row-name {
-  width: 25%;
-  font-family: $font-display;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: $text;
-  line-height: 1.4;
-}
-
-.step-row-length {
-  width: 25%;
-  padding-left: 16px;
-  font-size: 0.83rem;
-  color: $muted;
-}
-
-.step-row-cost {
-  width: 25%;
-  padding-left: 16px;
-}
-
-.step-cost-pill {
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 20px;
-
-  &.free { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-  &.paid { background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; }
-}
-
-.step-row-services {
-  width: 25%;
-  padding-left: 16px;
-}
-
-.step-services-count {
+.admin-step-actions-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: #e0f2fe;
-  color: #0369a1;
-  font-size: 0.72rem;
-  font-weight: 700;
-  border: 1px solid #bae6fd;
+  min-width: 90px;
+  height: 34px;
+  padding: 0 18px;
+
+  // ✅ Light transparent pink
+  background: rgba(236, 72, 153, 0.08);
+  border: 1.5px solid rgba(236, 72, 153, 0.25);
+  border-radius: 50px;
+
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #db2777; // darker pink text
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+
+  transition: background 0.14s ease, border-color 0.14s ease, transform 0.12s ease;
+
+  // ✅ Hover — still soft (not filled)
+  &:hover {
+    background: rgba(236, 72, 153, 0.14);
+    border-color: rgba(236, 72, 153, 0.4);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 }
 
-.step-row-desc {
-  font-size: 0.8rem;
-  color: #475569;
-  line-height: 1.6;
-  margin-bottom: 6px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.step-row-footer {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.step-footer-label { font-size: 0.65rem; font-weight: 700; color: #94a3b8; letter-spacing: 0.06em; }
-.step-footer-email { font-size: 0.75rem; font-weight: 500; color: #334155; }
-.step-footer-dot { color: #d1d5db; font-size: 0.75rem; }
-.step-footer-date { font-size: 0.75rem; color: $muted; }
-
-// ─── MODAL OVERLAY ───────────────────────────────────────────────
+// ─── MODAL OVERLAY (shared with other pages - safe) ──────────────────────
 .sm-overlay {
   position: fixed;
   inset: 0;
@@ -224,7 +275,7 @@ $bg:      #f8fafc;
   animation: smFade 0.2s ease;
 }
 
-// ─── MODAL BOX ───────────────────────────────────────────────────
+// ─── MODAL BOX (shared with other pages - safe) ─────────────────────────
 .sm-modal {
   position: fixed;
   top: 50%;
@@ -241,10 +292,9 @@ $bg:      #f8fafc;
   flex-direction: column;
   overflow: hidden;
   animation: smSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  position: fixed;
 }
 
-// ─── MODAL HEADER ────────────────────────────────────────────────
+// ─── MODAL HEADER (shared) ──────────────────────────────────────────────
 .sm-header {
   display: flex;
   align-items: center;
@@ -305,7 +355,7 @@ $bg:      #f8fafc;
   &:hover { background: $red-bg; border-color: $red; color: $red; }
 }
 
-// ─── STEP CHIP ───────────────────────────────────────────────────
+// ─── STEP CHIP (shared) ────────────────────────────────────────────────
 .sm-chip {
   display: flex;
   align-items: center;
@@ -327,7 +377,7 @@ $bg:      #f8fafc;
   flex-shrink: 0;
 }
 
-// ─── MODAL BODY ──────────────────────────────────────────────────
+// ─── MODAL BODY (shared) ───────────────────────────────────────────────
 .sm-body {
   flex: 1;
   overflow-y: auto;
@@ -337,17 +387,7 @@ $bg:      #f8fafc;
   &::-webkit-scrollbar-thumb { background: #dde3ea; border-radius: 4px; }
 }
 
-// ─── SECTION LABEL ───────────────────────────────────────────────
-.sm-section-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: #94a3b8;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  margin: 0 0 10px 0;
-}
-
-// ─── OPTION LIST ─────────────────────────────────────────────────
+// ─── OPTION LIST (shared) ──────────────────────────────────────────────
 .sm-option-list {
   display: flex;
   flex-direction: column;
@@ -385,9 +425,7 @@ $bg:      #f8fafc;
   }
 }
 
-.sm-mkt-actions { display: flex; flex-direction: column; gap: 8px; }
-
-// ─── FORM ────────────────────────────────────────────────────────
+// ─── FORM (shared) ─────────────────────────────────────────────────────
 .sm-form {
   display: flex;
   flex-direction: column;
@@ -413,8 +451,6 @@ $bg:      #f8fafc;
   letter-spacing: 0.02em;
 }
 
-.sm-required { color: $red; margin-left: 2px; }
-
 .sm-input {
   padding: 9px 12px;
   border: 1.5px solid #e8ecf0;
@@ -437,38 +473,7 @@ $bg:      #f8fafc;
   line-height: 1.6;
 }
 
-.sm-select { cursor: pointer; appearance: none; }
-
-.sm-form-layer-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: #f0fdfa;
-  border-radius: 10px;
-  border: 1.5px solid #ccfbf1;
-  font-size: 0.78rem;
-  color: #0f766e;
-  font-weight: 500;
-
-  span { color: #64748b; }
-
-  .sm-layer-select {
-    border: none;
-    background: transparent;
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: #0f766e;
-    outline: none;
-    cursor: pointer;
-    font-family: $font-body;
-    padding: 0 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-}
-
-// ─── BUTTONS ─────────────────────────────────────────────────────
+// ─── BUTTONS (shared) ───────────────────────────────────────────────────
 .sm-btn-primary {
   padding: 11px 22px;
   background: $blue;
@@ -517,99 +522,7 @@ $bg:      #f8fafc;
   &:hover { background: #e2e8f0; color: $text; }
 }
 
-// ─── SERVICE LIST ────────────────────────────────────────────────
-.sm-service-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 280px;
-  overflow-y: auto;
-  padding-right: 2px;
-
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: #dde3ea; border-radius: 4px; }
-}
-
-.sm-service-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 13px;
-  border: 1.5px solid $border;
-  border-radius: 12px;
-  background: #fff;
-  transition: all 0.14s;
-
-  &--attach {
-    cursor: pointer;
-    &:hover { border-color: $teal; background: $teal-bg; }
-  }
-
-  &--disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    &:hover { border-color: $border; background: #fff; }
-  }
-
-  .sm-service-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1;
-  }
-
-  .sm-service-emoji {
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
-    background: $bg;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
-    flex-shrink: 0;
-  }
-
-  .sm-service-name {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: $text;
-    margin-bottom: 1px;
-  }
-}
-
-.sm-remove-btn {
-  padding: 4px 11px;
-  border-radius: 50px;
-  border: 1.5px solid #fecdd3;
-  background: #fff1f2;
-  color: $red;
-  font-size: 0.72rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.14s;
-  flex-shrink: 0;
-  font-family: $font-body;
-
-  &:hover { background: $red; color: #fff; border-color: $red; }
-}
-
-// ─── TAGS ────────────────────────────────────────────────────────
-.sm-tag {
-  flex-shrink: 0;
-  padding: 3px 10px;
-  border-radius: 50px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  white-space: nowrap;
-
-  &--gray { background: #f1f5f9; color: #94a3b8; }
-  &--teal { background: $teal-bg; color: $teal; }
-  &--green { background: $green-bg; color: $green; }
-}
-
-// ─── CONFIRM ─────────────────────────────────────────────────────
+// ─── CONFIRM (shared) ───────────────────────────────────────────────────
 .sm-confirm {
   text-align: center;
   padding: 8px 0;
@@ -639,7 +552,7 @@ $bg:      #f8fafc;
   .sm-confirm-actions { display: flex; gap: 10px; justify-content: center; }
 }
 
-// ─── SUCCESS ─────────────────────────────────────────────────────
+// ─── SUCCESS (shared) ────────────────────────────────────────────────────
 .sm-success {
   text-align: center;
   padding: 36px 0;
@@ -660,7 +573,7 @@ $bg:      #f8fafc;
   p  { font-size: 0.87rem; color: $muted; margin: 0; }
 }
 
-// ─── LOADING OVERLAY ─────────────────────────────────────────────
+// ─── LOADING OVERLAY (shared) ──────────────────────────────────────────
 .sm-loading-overlay {
   position: absolute;
   inset: 0;
@@ -672,140 +585,14 @@ $bg:      #f8fafc;
   border-radius: 28px;
 }
 
-// ─── ANIMATIONS ──────────────────────────────────────────────────
+// ─── ANIMATIONS (shared) ────────────────────────────────────────────────
 @keyframes smFade    { from { opacity:0; } to { opacity:1; } }
 @keyframes smSlideUp { from { opacity:0; transform:translate(-50%,-44%); } to { opacity:1; transform:translate(-50%,-50%); } }
 @keyframes smSpin    { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
 
 body.admin-popup-open { overflow: hidden; }
 
-// ─── RESPONSIVE ──────────────────────────────────────────────────
-@media (max-width: 768px) {
-  .admin-mypaths-menu { padding: 0 16px; }
-  .admin-mypathsNav .admin-mypathsName { padding-left: 16px; }
-  .step-row { padding: 12px 16px 10px; }
-  .sm-modal { max-height: 92vh; border-radius: 22px; }
-  .sm-form-row { grid-template-columns: 1fr; }
-}
-
-// ─── KEEP legacy path panel styles (used by path action panel) ───
-.admin-popup-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(15,23,42,0.35);
-  backdrop-filter: blur(3px);
-  z-index: 1500;
-}
-
-.admin-acc-popular1 {
-  position: fixed;
-  top: 0; right: 0;
-  width: 400px;
-  height: 100vh;
-  background: #fff;
-  box-shadow: -6px 0 24px rgba(0,0,0,0.1);
-  z-index: 2000;
-  display: flex;
-  flex-direction: column;
-  animation: slideInRight 0.28s cubic-bezier(0.4,0,0.2,1);
-
-  @keyframes slideInRight {
-    from { transform: translateX(100%); opacity:0; }
-    to   { transform: translateX(0);   opacity:1; }
-  }
-}
-
-.admin-acc-popular-top1 {
-  padding: 20px 24px;
-  border-bottom: 1px solid $border;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-shrink: 0;
-}
-
-.admin-acc-popular-head1 { font-size: 1rem; font-weight: 700; color: $text; }
-.admin-acc-popular-img-box1 { cursor: pointer; }
-.admin-acc-popular-img1 { width: 18px; height: 18px; }
-
-.admin-acc-mt-div { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
-.admin-acc-scroll-div {
-  flex: 1; overflow-y: auto; padding: 16px 20px;
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: #dde3ea; border-radius: 4px; }
-}
-
-.admin-acc-step-box4, .admin-acc-step-box {
-  border: 1.5px solid $border; border-radius: 12px;
-  padding: 12px 15px; margin-bottom: 8px;
-  cursor: pointer; font-size: 0.87rem; font-weight: 500; color: $text;
-  transition: all 0.13s; background: #fff;
-  &:hover { border-color: $blue; background: $blue-bg; color: $blue; }
-}
-
-.admin-acc-sub-text { font-size: 0.83rem; color: $muted; padding: 12px 20px 8px; line-height: 1.5; }
-
-.admin-goBack3 {
-  margin: 8px 20px 16px; padding: 10px; border-radius: 50px;
-  background: $bg; font-weight: 600; font-size: 0.83rem;
-  cursor: pointer; text-align: center; color: $muted; transition: background 0.15s; flex-shrink: 0;
-  &:hover { background: #e2e8f0; }
-}
-
-.admin-goBack2 {
-  margin: 8px 0; padding: 10px; border-radius: 50px;
-  background: $bg; font-weight: 600; font-size: 0.83rem;
-  cursor: pointer; text-align: center; color: $muted; flex-shrink: 0;
-}
-
-.admin-success-box1, .admin-success-box2 {
-  padding: 40px 24px; text-align: center;
-  color: $green; font-size: 0.9rem; font-weight: 600;
-}
-
-.admin-save-Btn {
-  padding: 12px; background: $blue; color: #fff; border-radius: 50px;
-  text-align: center; cursor: pointer; margin: 12px 20px;
-  font-weight: 600; font-size: 0.87rem; transition: background 0.15s;
-  &:hover { background: darken($blue, 8%); }
-}
-
-.admin-popularlogo {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(255,255,255,0.85); z-index: 10;
-  .admin-popularlogoimg { width: 42px; height: 42px; animation: smSpin 1s linear infinite; }
-}
-
-// ─── View path (kept for path view) ──────────────────────────────
-.admin-viewpath-container {
-  width: 100%; height: 100%; padding: 28px; overflow-y: auto;
-  .admin-viewpath-top-area {
-    display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; position: relative;
-    .admin-viewpath-bold-text { font-size: 1.3rem; font-weight: 700; color: $text; }
-    .admin-viewpath-des { font-size: 0.87rem; color: $muted; line-height: 1.6; }
-    .admin-viewpath-goBack-div {
-      position: absolute; top: 0; right: 0;
-      font-weight: 600; font-size: 0.83rem; text-decoration: underline;
-      cursor: pointer; color: $blue;
-    }
-  }
-  .admin-viewpath-steps-area {
-    display: grid; grid-template-columns: repeat(3,1fr); gap: 16px;
-    .admin-viewpath-each-j-step {
-      border-radius: 14px; border: 1.5px solid $border; padding: 18px;
-      display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: all 0.15s;
-      &:hover { border-color: $blue; transform: translateY(-2px); }
-      .admin-viewpath-each-j-img { width: 50px; height: 50px; border-radius: 50%; overflow: hidden;
-        img { width: 100%; height: 100%; object-fit: cover; }
-      }
-      .admin-viewpath-each-j-step-text  { font-size: 0.9rem; font-weight: 600; color: $text; }
-      .admin-viewpath-each-j-step-text1 { font-size: 0.77rem; color: $muted; line-height: 1.5; }
-    }
-  }
-}
-
-// ─── VIEW STEP LAYER TABS ────────────────────────────────────────
+// ─── VIEW STEP LAYER TABS (shared) ──────────────────────────────────────
 .sm-view-step {
   display: flex;
   flex-direction: column;
@@ -834,22 +621,15 @@ body.admin-popup-open { overflow: hidden; }
   font-family: $font-body;
   transition: all 0.16s ease;
 
-  &:hover:not(.active) {
-    background: #fff;
-    color: $text;
-    border-color: $border;
-  }
-
-  &.active {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-  }
+  &:hover:not(.active) { background: #fff; color: $text; border-color: $border; }
+  &.active { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
 }
 
 .sm-layer-card {
   border-radius: 14px;
   border: 1.5px solid $border;
   overflow: hidden;
-  
+
   &--macro { border-color: #e9d5ff; background: #faf5ff; }
   &--micro { border-color: #a5f3fc; background: #ecfeff; }
   &--nano  { border-color: #fde68a; background: #fffbeb; }
@@ -861,7 +641,6 @@ body.admin-popup-open { overflow: hidden; }
   gap: 12px;
   padding: 10px 14px;
   border-bottom: 1px solid rgba(0,0,0,0.05);
-
   &:last-child { border-bottom: none; }
 }
 
@@ -890,4 +669,123 @@ body.admin-popup-open { overflow: hidden; }
   font-size: 0.83rem;
   color: $muted;
   font-style: italic;
+}
+
+// ─── Admin Marketplace specific styles (scoped) ─────────────────────────
+.admin-pp-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-pp-section-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.admin-pp-market-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border: 1.5px solid #e8ecf0;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  background: #fff;
+}
+
+.admin-pp-market-item-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.admin-pp-market-emoji {
+  width: 36px;
+  height: 36px;
+  background: #f8fafc;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.admin-pp-market-remove-btn {
+  padding: 6px 14px;
+  background: #fff1f2;
+  border: 1.5px solid #fecdd3;
+  border-radius: 50px;
+  color: #ef4444;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.14s;
+  
+  &:hover {
+    background: #ef4444;
+    color: #fff;
+    border-color: #ef4444;
+  }
+}
+
+.admin-pp-create-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  }
+}
+
+.admin-pp-btn {
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.14s;
+  border: none;
+  
+  &--blue {
+    background: #3b82f6;
+    color: #fff;
+    
+    &:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.admin-pp-empty {
+  padding: 24px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1.5px dashed #e2e8f0;
+}
+
+// ─── Responsive ──────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .admin-steps-menu { padding: 0 16px; }
+  .admin-steps-list { padding: 16px; }
+  .sm-modal { max-height: 92vh; border-radius: 22px; }
+  .sm-form-row { grid-template-columns: 1fr; }
 }

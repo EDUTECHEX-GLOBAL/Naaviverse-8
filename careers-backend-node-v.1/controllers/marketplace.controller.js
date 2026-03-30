@@ -1,197 +1,112 @@
 const marketplaceModel = require("../models/marketplace.model");
 const stepModel = require("../models/steps.model");
 
-/* =====================================
-   ADD MARKETPLACE ITEM
-===================================== */
-
+/**
+ * POST /api/marketplace/add
+ * Creates a new marketplace item AND pushes its _id into the step's
+ * [layer]_marketplace array. The item is immediately "attached" to the step.
+ */
 const addMarketplaceItem = async (req, res) => {
   try {
-
     const {
-      name,
-      role,
-      layer,
-      step_id,
-      path_id,
-      partner_email,
-      access,
-      cost,
-      goal,
-      outcomes,
-      duration,
-      iterations,
-      discount,
-      features
+      name, role, layer, step_id, path_id, partner_email,
+      access, cost, goal, outcomes, duration, iterations, discount, features
     } = req.body;
 
     if (!step_id || !layer) {
-      return res.status(400).json({
-        status: false,
-        message: "step_id and layer are required"
-      });
+      return res.status(400).json({ status: false, message: "step_id and layer are required" });
     }
 
-    /* 1️⃣ Create marketplace item */
-
     const item = await marketplaceModel.create({
-      name,
-      role,
-      layer,
-      step_id,
-      path_id,
-      partner_email,
-      access,
-      cost,
-      goal,
-      outcomes,
-      duration,
-      iterations,
-      discount,
-      features,
-      status: "active"
+      name, role, layer, step_id, path_id, partner_email,
+      access, cost, goal, outcomes, duration, iterations,
+      discount, features, status: "active"
     });
 
-    /* 2️⃣ Push into step layer */
-
-    const layerField = `${layer}_marketplace`;
-
+    // Push this item's _id into the step's [layer]_marketplace array
     await stepModel.findByIdAndUpdate(
       step_id,
-      {
-        $push: {
-          [layerField]: item
-        }
-      },
+      { $push: { [`${layer}_marketplace`]: item._id } }
+    );
+
+    return res.json({ status: true, data: item });
+  } catch (error) {
+    console.error("addMarketplaceItem error:", error);
+    res.status(500).json({ status: false, message: error.message });
+  }
+};
+
+/**
+ * GET /api/marketplace/step/:step_id?layer=macro|micro|nano
+ * Returns all marketplace items attached to a specific step (and optionally layer).
+ * Used to populate the "ATTACHED" section in the admin panel.
+ */
+const getMarketplaceItemsByStep = async (req, res) => {
+  try {
+    const { step_id } = req.params;
+    const { layer } = req.query;
+
+    const filter = { step_id, status: "active" };
+    if (layer) filter.layer = layer;
+
+    const items = await marketplaceModel.find(filter);
+    res.json({ status: true, data: items });
+  } catch (err) {
+    console.error("getMarketplaceItemsByStep error:", err);
+    res.status(500).json({ status: false, message: err.message });
+  }
+};
+
+/**
+ * GET /api/marketplace/admin/get-all?layer=macro|micro|nano
+ * Returns ALL active marketplace items for a given layer (no unattached filter).
+ * The frontend computes "available" by subtracting already-attached items.
+ */
+const getAllMarketplaceItems = async (req, res) => {
+  try {
+    const filter = { status: "active" };
+    if (req.query.layer) filter.layer = req.query.layer;
+
+    const items = await marketplaceModel.find(filter).sort({ createdAt: -1 });
+    res.json({ status: true, data: items });
+  } catch (err) {
+    console.error("getAllMarketplaceItems error:", err);
+    res.status(500).json({ status: false, message: err.message });
+  }
+};
+
+/**
+ * PATCH /api/marketplace/link-step
+ * Body: { item_id, step_id }   (step_id can be null to detach)
+ *
+ * Updates the marketplace item's step_id field.
+ * The step's [layer]_marketplace array is managed separately via
+ * PUT /api/steps/update/:id from the frontend.
+ */
+const linkMarketplaceToStep = async (req, res) => {
+  try {
+    const { item_id, step_id } = req.body;
+
+    if (!item_id) {
+      return res.status(400).json({ status: false, message: "item_id is required" });
+    }
+
+    const updated = await marketplaceModel.findByIdAndUpdate(
+      item_id,
+      { step_id: step_id || null },
       { new: true }
     );
 
-    return res.json({
-      status: true,
-      message: "Marketplace item added to step",
-      data: item
-    });
-
+    return res.json({ status: true, data: updated });
   } catch (error) {
-
-    console.error("Add marketplace error:", error);
-
-    return res.status(500).json({
-      status: false,
-      message: "Failed to create marketplace item"
-    });
-  }
-};
-
-
-/* =====================================
-   GET MARKETPLACE ITEMS (BY PARTNER)
-===================================== */
-const updateMarketplaceItem = async (req, res) => {
-  try {
-    const item = await marketplaceModel.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
-    return res.json({ status: true, data: item });
-  } catch (error) {
-    return res.status(500).json({ status: false, message: "Update failed" });
-  }
-};
-
-
-const getMarketplaceItems = async (req, res) => {
-
-  try {
-
-    const email = req.query.email;
-
-    if (!email) {
-      return res.json({
-        status: false,
-        message: "Email required"
-      });
-    }
-
-    const items = await marketplaceModel
-      .find({
-        partner_email: email,
-        status: "active"
-      })
-      .sort({ createdAt: -1 });
-
-    return res.json({
-      status: true,
-      data: items
-    });
-
-  } catch (error) {
-
-    console.error("Get marketplace error:", error);
-
-    return res.status(500).json({
-      status: false,
-      message: "Failed to fetch marketplace items"
-    });
-  }
-};
-
-
-/* =====================================
-   GET MARKETPLACE ITEMS BY STEP
-===================================== */
-
-const getMarketplaceItemsByStep = async (req, res) => {
-
-  try {
-
-    const step_id = req.params.step_id;
-
-    const items = await marketplaceModel.find({
-      step_id,
-      status: "active"
-    });
-
-    return res.json({
-      status: true,
-      data: items
-    });
-
-  } catch (error) {
-
-    return res.status(500).json({
-      status: false
-    });
-
-  }
-
-};
-/* =====================================
-   GET ALL MARKETPLACE ITEMS (ADMIN)
-===================================== */
-const getAllMarketplaceItems = async (req, res) => {
-  try {
-    const items = await marketplaceModel
-      .find({ status: "active" })
-      .sort({ createdAt: -1 })
-      .populate("step_id", "name title") // Populate step details if needed
-      .populate("path_id", "name title"); // Populate path details if needed
-
-    return res.json({
-      status: true,
-      data: items
-    });
-
-  } catch (error) {
-    console.error("Get all marketplace error:", error);
-    return res.status(500).json({
-      status: false,
-      message: "Failed to fetch marketplace items"
-    });
+    console.error("linkMarketplaceToStep error:", error);
+    return res.status(500).json({ status: false, message: "Failed to link marketplace item" });
   }
 };
 
 module.exports = {
   addMarketplaceItem,
-  getMarketplaceItems,
   getMarketplaceItemsByStep,
   getAllMarketplaceItems,
-  updateMarketplaceItem
+  linkMarketplaceToStep,
 };
