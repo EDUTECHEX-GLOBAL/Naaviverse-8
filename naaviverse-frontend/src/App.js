@@ -6,7 +6,7 @@ import "aos/dist/aos.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
 import ScrollToTop from "./components/ScrollToTop";
-
+import MyStepsAdmin from "./pages/AdminAccDashbaoard/MyStepsAdmin"; 
 /* ================= TEMPLATE ROUTER ================= */
 import AppRouter from "./router/AppRouter";
 
@@ -138,7 +138,7 @@ function App() {
 
           {/* ================= PURCHASE ================= */}
           <Route path="/purchase/success" element={<PurchaseSuccess />} />
-
+     
           {/* ================= FALLBACK ================= */}
           <Route path="/*" element={<AppRouter />} />
           <Route path="*" element={<RoutePage />} />

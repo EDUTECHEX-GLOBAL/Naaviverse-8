@@ -172,7 +172,7 @@ const handleDeleteStep = async (stepId, e) => {
             </div>
           ) : (
             steps.map((step, index) => (
-              <div key={step._id} className="step-card">
+              <div key={step._id} className="steps-list-card">
                 <div className="card-header">
                   <span className="step-number">
                     {index + 1}

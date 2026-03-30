@@ -3,13 +3,13 @@ import { useCoinContextData } from "../../../context/CoinContext.js";
 import Skeleton from "react-loading-skeleton";
 import "./mypaths.scss";
 import axios from "axios";
-import closepop from "../../../static/images/dashboard/closepop.svg";
 import lg1 from "../../../static/images/login/lg1.svg";
 import { useStore } from "../../../components/store/store.ts";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-
+import { useLocation } from "react-router-dom";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const parseDuration = (raw) => {
   try {
     const dur = typeof raw === "string" ? JSON.parse(raw) : raw;
@@ -22,8 +22,41 @@ const parseDuration = (raw) => {
   } catch { return null; }
 };
 
+// ─── layerConfig — reads actual names/descriptions from the step document ───
+const getLayerConfig = (stepData) => ({
+  macro: {
+    label: "Macro",
+    color: "#7c3aed",
+    bg: "#faf5ff",
+    border: "#e9d5ff",
+    viewName: stepData?.macro_name || "Macro View",
+    viewDesc: stepData?.macro_description || "High-Level Pathway Services",
+  },
+  micro: {
+    label: "Micro",
+    color: "#0891b2",
+    bg: "#ecfeff",
+    border: "#a5f3fc",
+    viewName: stepData?.micro_name || "Micro View",
+    viewDesc: stepData?.micro_description || "Mid-Level Support Services",
+  },
+  nano: {
+    label: "Nano",
+    color: "#d97706",
+    bg: "#fffbeb",
+    border: "#fde68a",
+    viewName: stepData?.nano_name || "Nano View",
+    viewDesc: stepData?.nano_description || "Granular Task-Level Services",
+  },
+});
+
 const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
   const navigate = useNavigate();
+
+  const location = useLocation();
+const queryParams = new URLSearchParams(location.search);
+const pathId = queryParams.get("pathId");
+const stepsFromPath = location.state?.steps || null;
   let userDetails = JSON.parse(localStorage.getItem("adminuser"));
   const { mypathsMenu, setMypathsMenu } = useCoinContextData();
 
@@ -38,17 +71,22 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
   const [selectedStep, setSelectedStep] = useState(null);
   const [modalHistory, setModalHistory] = useState([]);
 
-  // Services
-  const [allServices, setAllServices] = useState([]);
-  const [attachedServices, setAttachedServices] = useState([]);
-
   // Edit form
   const [editName, setEditName] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [editLength, setEditLength] = useState("");
   const [editCost, setEditCost] = useState("");
 
-  // Marketplace form
+  // View step layer tab
+  const [viewLayerTab, setViewLayerTab] = useState("macro");
+
+  // ── Marketplace states ────────────────────────────────
+  const [marketLayer, setMarketLayer] = useState("");
+  const [marketplaceItems, setMarketplaceItems] = useState([]);
+  const [marketplaceLoading, setMarketplaceLoading] = useState(false);
+  const [attachedServices, setAttachedServices] = useState([]);
+
+  // ── Marketplace create-listing form states ────────────────────────────────
   const [mpRole, setMpRole] = useState("");
   const [mpName, setMpName] = useState("");
   const [mpAccess, setMpAccess] = useState("Free");
@@ -56,18 +94,11 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
   const [mpGoal, setMpGoal] = useState("");
   const [mpOutcomes, setMpOutcomes] = useState("");
   const [mpDuration, setMpDuration] = useState("");
-  const [mpLayer, setMpLayer] = useState("macro");
   const [mpFeatures, setMpFeatures] = useState("");
   const [mpDiscount, setMpDiscount] = useState("");
 
-  // Marketplace items attached to this step
-  const [stepMarketItems, setStepMarketItems] = useState([]);
-  const [allMarketItems, setAllMarketItems] = useState([]);
+  // ─── Data fetchers ────────────────────────────────────────────────────────
 
-  // ── CHANGE 3: viewStep layer tab state ───────────────────
-  const [viewLayerTab, setViewLayerTab] = useState("macro");
-
-  // ─── Data fetchers ────────────────────────────────────────
   const getAllSteps = () => {
     setLoading(true);
     const status = mypathsMenu === "Active Steps" ? "active" : "inactive";
@@ -82,7 +113,6 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
       .catch(() => { setPartnerStepsData([]); setLoading(false); });
   };
 
-  // ── CHANGE 1: fetch marketplace counts instead of service counts ──
   const fetchMarketplaceCounts = async (steps = []) => {
     if (!Array.isArray(steps) || steps.length === 0) return;
     const counts = {};
@@ -95,51 +125,50 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
     setServiceCountMap(counts);
   };
 
-  const fetchAttachedServices = async (stepId) => {
-    try {
-      const { data } = await axios.get(`${BASE_URL}/api/steps/getall/${stepId}`);
-      setAttachedServices(data?.status ? data.data || [] : []);
-    } catch { setAttachedServices([]); }
-  };
+  const fetchMarketplaceData = (stepId, layer) => {
+    const sid = stepId || selectedStep?._id;
+    const lay = layer || marketLayer;
+    if (!sid || !lay) return;
 
-  const fetchAllServices = async () => {
-    try {
-      const { data } = await axios.get(`${BASE_URL}/api/services/admin?status=active`);
-      setAllServices(data?.status ? data.data || [] : []);
-    } catch { setAllServices([]); }
-  };
+    setMarketplaceLoading(true);
 
-  const fetchStepMarketItems = async (stepId) => {
-    try {
-      const { data } = await axios.get(`${BASE_URL}/api/marketplace/step/${stepId}`);
-      setStepMarketItems(data?.status ? data.data || [] : []);
-    } catch { setStepMarketItems([]); }
-  };
+    axios
+      .get(`${BASE_URL}/api/marketplace/step/${sid}?layer=${lay}`)
+      .then(({ data }) => {
+        setAttachedServices(data?.status ? data.data : []);
+      })
+      .catch(() => setAttachedServices([]));
 
-  const fetchAllMarketItems = async () => {
-    try {
-      const { data } = await axios.get(`${BASE_URL}/api/marketplace/admin/get-all`);
-      setAllMarketItems(data?.status ? data.data || [] : []);
-    } catch { setAllMarketItems([]); }
+    axios
+      .get(`${BASE_URL}/api/marketplace/admin/get-all?layer=${lay}`)
+      .then(({ data }) => {
+        setMarketplaceItems(data?.status ? data.data : []);
+        setMarketplaceLoading(false);
+      })
+      .catch(() => {
+        setMarketplaceItems([]);
+        setMarketplaceLoading(false);
+      });
   };
 
   useEffect(() => { getAllSteps(); }, [mypathsMenu]);
 
   useEffect(() => {
-    if (modalOpen) document.body.classList.add('admin-popup-open');
-    else document.body.classList.remove('admin-popup-open');
-    return () => document.body.classList.remove('admin-popup-open');
+    if (modalOpen) document.body.classList.add("admin-popup-open");
+    else document.body.classList.remove("admin-popup-open");
+    return () => document.body.classList.remove("admin-popup-open");
   }, [modalOpen]);
 
-  // ─── Modal navigation ─────────────────────────────────────
-  const openModal = async (step) => {
+  // ─── Modal navigation ─────────────────────────────────────────────────────
+
+  const openModal = (step) => {
     setSelectedStep(step);
     setModalScreen("main");
     setModalHistory([]);
     setModalOpen(true);
   };
 
-  const goTo = async (screen) => {
+  const goTo = (screen) => {
     setModalHistory(prev => [...prev, modalScreen]);
     setModalScreen(screen);
 
@@ -149,26 +178,16 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
       setEditLength(selectedStep?.length ?? "");
       setEditCost(selectedStep?.cost || "");
     }
-    if (screen === "editServices") {
-      await fetchAttachedServices(selectedStep._id);
+    if (screen === "marketplace_layer") {
+      setMarketLayer("");
+      setAttachedServices([]);
+      setMarketplaceItems([]);
     }
-    if (screen === "addService") {
-      await fetchAllServices();
-      await fetchAttachedServices(selectedStep._id);
-    }
-    if (screen === "removeService") {
-      await fetchAttachedServices(selectedStep._id);
-    }
-    if (screen === "marketplace") {
-      await fetchStepMarketItems(selectedStep._id);
-      await fetchAllMarketItems();
-    }
-    if (screen === "addMarketplace") {
+    if (screen === "marketplace_create") {
       setMpRole(""); setMpName(""); setMpAccess("Free"); setMpCost("");
-      setMpGoal(""); setMpOutcomes(""); setMpDuration(""); setMpLayer("macro");
+      setMpGoal(""); setMpOutcomes(""); setMpDuration("");
       setMpFeatures(""); setMpDiscount("");
     }
-    // ── CHANGE 3: reset layer tab when entering viewStep ──
     if (screen === "viewStep") {
       setViewLayerTab("macro");
     }
@@ -189,30 +208,30 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
     setModalScreen("main");
     setModalHistory([]);
     setSelectedStep(null);
+    setMarketLayer("");
     setAttachedServices([]);
-    setAllServices([]);
-    setStepMarketItems([]);
-    setAllMarketItems([]);
+    setMarketplaceItems([]);
+    setMpRole(""); setMpName(""); setMpAccess("Free"); setMpCost("");
+    setMpGoal(""); setMpOutcomes(""); setMpDuration("");
+    setMpFeatures(""); setMpDiscount("");
   };
 
-  // ── CHANGE 4: add viewStep to title map ───────────────────
   const getTitle = () => {
     const titles = {
-      main: "Step Actions",
-      editStep: "Edit Step",
-      editServices: "Manage Services",
-      addService: "Add Service",
-      removeService: "Remove Service",
-      marketplace: "Marketplace",
-      addMarketplace: "Add Marketplace Listing",
-      deleteConfirm: "Delete Step",
-      viewStep: "View Step",
-      success: "",
+      main:                "Step Actions",
+      editStep:            "Edit Step",
+      viewStep:            "View Step",
+      marketplace_layer:   "Marketplace",
+      marketplace_attach:  "Marketplace",
+      marketplace_create:  "Marketplace",
+      deleteConfirm:       "Delete Step",
+      success:             "",
     };
     return titles[modalScreen] || "Step Actions";
   };
 
-  // ─── Actions ──────────────────────────────────────────────
+  // ─── Actions ──────────────────────────────────────────────────────────────
+
   const handleDeleteStep = async () => {
     setActionLoading(true);
     try {
@@ -231,9 +250,9 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
       const payload = {};
       if (editName) payload.name = editName;
       if (editDesc) payload.description = editDesc;
-     if (editLength !== "" && editLength !== null && editLength !== undefined) {
-  payload.length = Number(editLength);
-}
+      if (editLength !== "" && editLength !== null && editLength !== undefined) {
+        payload.length = Number(editLength);
+      }
       if (editCost) payload.cost = editCost;
       await axios.patch(`${BASE_URL}/api/steps/edit/${selectedStep._id}`, payload);
       toast.success("Step updated");
@@ -246,163 +265,184 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
     }
   };
 
-  const handleAddService = async (serviceId) => {
-    if (!selectedStep?._id) return;
-    try {
-      await axios.post(`${BASE_URL}/api/steps/attachservice`, { step_id: selectedStep._id, service_ids: [serviceId] });
-      toast.success("Service added");
-      await fetchAttachedServices(selectedStep._id);
-      fetchMarketplaceCounts(partnerStepsData);
-    } catch { toast.error("Failed to add service"); }
-  };
+  // ─── Marketplace Actions ───────────────────────────────────────────
 
-  const handleRemoveService = async (serviceId) => {
-    if (!selectedStep?._id) return;
+  const attachMarketService = (item) => {
     setActionLoading(true);
-    try {
-      await axios.delete(`${BASE_URL}/api/steps/remove/${selectedStep._id}/${serviceId}`);
-      toast.success("Service removed");
-      await fetchAttachedServices(selectedStep._id);
-      fetchMarketplaceCounts(partnerStepsData);
-    } catch { toast.error("Failed to remove service"); }
-    finally { setActionLoading(false); }
-  };
 
-  const handleAddMarketplace = async () => {
-    if (!mpRole || !mpName) { toast.error("Role and Name are required"); return; }
-    setActionLoading(true);
-    try {
-      await axios.post(`${BASE_URL}/api/marketplace/add`, {
-        name: mpName,
-        role: mpRole,
-        layer: mpLayer,
-        step_id: selectedStep._id,
-        partner_email: userDetails?.email || "",
-        access: mpAccess,
-        cost: mpCost,
-        goal: mpGoal,
-        outcomes: mpOutcomes,
-        duration: mpDuration,
-        features: mpFeatures,
-        discount: mpDiscount,
-      });
-      toast.success("Marketplace item added");
+    const fieldKey = `${marketLayer}_marketplace`;
+    const currentIds = (selectedStep?.[fieldKey] || []).map(id => id.toString());
+
+    if (currentIds.includes(item._id.toString())) {
       setActionLoading(false);
-      await fetchStepMarketItems(selectedStep._id);
-      // refresh count on list
-      fetchMarketplaceCounts(partnerStepsData);
-      goBack();
-    } catch {
-      toast.error("Failed to add marketplace item");
-      setActionLoading(false);
+      return;
     }
+
+    const updatedIds = [...currentIds, item._id.toString()];
+
+    axios
+      .put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, { [fieldKey]: updatedIds })
+      .then(({ data }) => {
+        if (data?.status) {
+          setSelectedStep(prev => ({ ...prev, [fieldKey]: updatedIds }));
+
+          axios.patch(`${BASE_URL}/api/marketplace/link-step`, {
+            item_id: item._id,
+            step_id: selectedStep._id,
+          }).then(() => {
+            setAttachedServices(prev => [...prev, item]);
+            setMarketplaceItems(prev =>
+              prev.map(m => m._id === item._id ? { ...m, step_id: selectedStep._id } : m)
+            );
+            fetchMarketplaceCounts(partnerStepsData);
+          });
+        }
+        setActionLoading(false);
+      })
+      .catch(() => setActionLoading(false));
   };
 
-  const handleDetachMarket = async (itemId) => {
+  const detachMarketService = (item) => {
     setActionLoading(true);
-    try {
-      await axios.patch(`${BASE_URL}/api/marketplace/update/${itemId}`, { step_id: null });
-      toast.success("Removed from step");
-      await fetchStepMarketItems(selectedStep._id);
-      fetchMarketplaceCounts(partnerStepsData);
-    } catch { toast.error("Failed to remove"); }
-    finally { setActionLoading(false); }
+
+    const fieldKey = `${marketLayer}_marketplace`;
+    const currentIds = (selectedStep?.[fieldKey] || []).map(id => id.toString());
+    const updatedIds = currentIds.filter(id => id !== item._id.toString());
+
+    axios
+      .put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, { [fieldKey]: updatedIds })
+      .then(({ data }) => {
+        if (data?.status) {
+          setSelectedStep(prev => ({ ...prev, [fieldKey]: updatedIds }));
+
+          axios.patch(`${BASE_URL}/api/marketplace/link-step`, {
+            item_id: item._id,
+            step_id: null,
+          }).then(() => {
+            setAttachedServices(prev => prev.filter(s => s._id !== item._id));
+            setMarketplaceItems(prev =>
+              prev.map(m => m._id === item._id ? { ...m, step_id: null } : m)
+            );
+            fetchMarketplaceCounts(partnerStepsData);
+          });
+        }
+        setActionLoading(false);
+      })
+      .catch(() => setActionLoading(false));
   };
 
-  const handleAttachExistingMarket = async (item) => {
-    setActionLoading(true);
-    try {
-      await axios.patch(`${BASE_URL}/api/marketplace/update/${item._id}`, { step_id: selectedStep._id });
-      toast.success("Service attached");
-      setStepMarketItems(prev => [...prev, { ...item, step_id: selectedStep._id }]);
-      setAllMarketItems(prev => prev.filter(m => m._id !== item._id));
-      fetchMarketplaceCounts(partnerStepsData);
-    } catch { toast.error("Failed to attach"); }
-    finally { setActionLoading(false); }
-  };
 
-  // ─── Filter ───────────────────────────────────────────────
-  const filtered = partnerStepsData?.filter(e =>
-    e?.name?.toLowerCase()?.includes(search?.toLowerCase() || "")
+
+
+const filtered = (stepsFromPath || partnerStepsData)?.filter(e =>
+  e?.name?.toLowerCase()?.includes(search?.toLowerCase() || "")
+);
+  const currentLayerCfg = selectedStep ? getLayerConfig(selectedStep)[marketLayer] : null;
+  const attachedIds = new Set(attachedServices.map(s => s._id?.toString()));
+  const availableItems = marketplaceItems.filter(
+    item => !attachedIds.has(item._id?.toString())
   );
 
-  const roleEmoji = { institution: "🏛", mentor: "👤", distributor: "📦", vendor: "🛍" };
-  const roleColor = { institution: "#7c3aed", mentor: "#0891b2", distributor: "#d97706", vendor: "#dc2626" };
+  const IconChevron = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  );
 
   return (
-    <div className="admin-mypaths">
+    <div className="admin-steps-container">
 
-      {/* TABS */}
-      <div className="admin-mypaths-menu">
-        {["Active Steps", "Inactive Steps"].map(tab => (
-          <div key={tab}
-            className={`admin-each-mypath-menu ${mypathsMenu === tab ? "active-tab" : ""}`}
-            onClick={() => setMypathsMenu(tab)}>
-            {tab}
+      {/* TABS + SEARCH */}
+      <div className="admin-steps-topbar">
+        <div className="admin-steps-menu">
+          {["Active Steps", "Inactive Steps"].map(tab => (
+            <div key={tab}
+              className={`admin-steps-menu-item ${mypathsMenu === tab ? "active-tab" : ""}`}
+              onClick={() => setMypathsMenu(tab)}>
+              {tab}
+            </div>
+          ))}
+        </div>
+        <div className="admin-steps-search-row">
+          <div className="admin-steps-search-input">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input
+              type="text"
+              placeholder="Search by step"
+              value={search || ""}
+              readOnly
+            />
           </div>
-        ))}
+        </div>
       </div>
 
       {/* CONTENT */}
-      <div className="admin-mypaths-content">
-        {/* Table header */}
-        <div className="admin-mypathsNav">
-          <div className="admin-mypathsName">Name</div>
-          <div className="admin-mypathsCountry">Length</div>
-          <div className="admin-mypathsCountry">Cost</div>
-          <div className="admin-mypathsMicrosteps">MarketPlace</div>
-        </div>
+      <div className="admin-steps-content">
 
-        <div className="admin-mypathsScroll-div">
+        {pathId && (
+  <button
+    className="show-all-btn"
+    onClick={() => navigate("/steps")}
+    style={{ marginBottom: "10px" }}
+  >
+    Show All Steps
+  </button>
+)}
+        <div className="admin-steps-list">
           {loading
-            ? Array(8).fill("").map((_, i) => (
-              <div className="step-row" key={i} style={{ pointerEvents: "none" }}>
-                <div className="step-row-main">
-                  <div style={{ width: "25%" }}><Skeleton height={16} width="70%" /></div>
-                  <div style={{ width: "25%" }}><Skeleton height={16} width="50%" /></div>
-                  <div style={{ width: "25%" }}><Skeleton height={16} width="50%" /></div>
-                  <div style={{ width: "25%" }}><Skeleton height={16} width="30%" /></div>
+            ? Array(6).fill("").map((_, i) => (
+                <div className="admin-step-card" key={i}>
+                  <div className="admin-step-name"><Skeleton width={120} height={20} /></div>
+                  <div className="admin-step-desc"><Skeleton width="90%" height={20} /></div>
+                  <div className="admin-step-right"><Skeleton width={80} height={32} borderRadius={50} /></div>
                 </div>
-              </div>
-            ))
+              ))
             : filtered?.map(e => {
-              const isFree = !e?.cost || e?.cost?.toLowerCase() === "free";
-              return (
-                <div className="step-row" key={e._id} onClick={() => openModal(e)}>
-                  <div className="step-row-main">
-                    <div className="step-row-name">{e?.name || "Untitled"}</div>
-                    {/* ── CHANGE 2: show "—" instead of "0 Days" when length is empty ── */}
-                    <div className="step-row-length">
-                     {parseDuration(e?.macro_length) || (e?.length ? `${e.length} Days` : "—")}
+                const isFree = !e?.cost || e?.cost?.toLowerCase() === "free";
+                const desc = e?.description && e.description.trim().length > 0
+                  ? (e.description.length > 120 ? e.description.substring(0, 120) + "..." : e.description)
+                  : null;
+                return (
+                  <div className="admin-step-card" key={e._id} onClick={() => openModal(e)}>
+                    <div className="admin-step-name">
+                      <span className="admin-step-name-text">{e?.name || "Untitled"}</span>
                     </div>
-                    <div className="step-row-cost">
-                      <span className={`step-cost-pill ${isFree ? "free" : "paid"}`}>
-                        {isFree ? "Free" : e?.cost}
+                    <div className="admin-step-desc" onClick={ev => ev.stopPropagation()}>
+                      {desc
+                        ? <span className="admin-step-desc-text">{desc}</span>
+                        : <span className="admin-step-desc-empty">No description available</span>
+                      }
+                    </div>
+                    <div className="admin-step-right">
+                      <div className="admin-step-meta">
+                        <span className="admin-step-date">
+                          {e?.createdAt
+                            ? new Date(e.createdAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                            : "—"}
+                        </span>
+                        <span className="admin-step-mkt-count">🛒 {serviceCountMap[e._id] ?? 0}</span>
+                      </div>
+                      <span
+                        className="admin-step-actions-pill"
+                        onClick={ev => { ev.stopPropagation(); openModal(e); }}
+                      >
+                        Actions
                       </span>
                     </div>
-                    <div className="step-row-services">
-                      <span className="step-services-count">{serviceCountMap[e._id] ?? 0}</span>
-                    </div>
                   </div>
-                  {e?.description && <div className="step-row-desc">{e.description}</div>}
-                  <div className="step-row-footer">
-                    <span className="step-footer-date">
-                      {e?.createdAt ? new Date(e.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
         </div>
       </div>
 
-      {/* ══ STEP MODAL ══ */}
+      {/* STEP MODAL - Keep same modal classes as they don't conflict */}
       {modalOpen && (
         <>
           <div className="sm-overlay" onClick={closeModal} />
           <div className="sm-modal" onClick={e => e.stopPropagation()}>
 
-            {/* Header */}
             {modalScreen !== "success" && (
               <div className="sm-header">
                 <div className="sm-header-left">
@@ -424,7 +464,6 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
               </div>
             )}
 
-            {/* Step name chip */}
             {selectedStep && modalScreen !== "success" && (
               <div className="sm-chip">
                 <span className="sm-chip-dot" />
@@ -433,8 +472,7 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
             )}
 
             <div className="sm-body">
-
-              {/* MAIN */}
+              {/* MAIN - Keep same content structure but with admin classes where needed */}
               {modalScreen === "main" && (
                 <div className="sm-option-list">
                   <div className="sm-option" onClick={() => goTo("editStep")}>
@@ -448,10 +486,9 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
                       <strong>Edit Step</strong>
                       <span>Update name, description, cost and length</span>
                     </div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
+                    <IconChevron />
                   </div>
 
-                  {/* ── CHANGE 4 & 5: View Step action ── */}
                   <div className="sm-option" onClick={() => goTo("viewStep")}>
                     <div className="sm-option-icon" style={{ background: "#f5f3ff" }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2">
@@ -463,10 +500,10 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
                       <strong>View Step</strong>
                       <span>See Macro, Micro and Nano layer details</span>
                     </div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
+                    <IconChevron />
                   </div>
 
-                  <div className="sm-option" onClick={() => goTo("marketplace")}>
+                  <div className="sm-option" onClick={() => goTo("marketplace_layer")}>
                     <div className="sm-option-icon" style={{ background: "#f0fdfa" }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#14b8a6" strokeWidth="2">
                         <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
@@ -476,9 +513,9 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
                     </div>
                     <div className="sm-option-content">
                       <strong>Marketplace</strong>
-                      <span>Add or manage marketplace listings for this step</span>
+                      <span>Add or manage marketplace listings by layer</span>
                     </div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
+                    <IconChevron />
                   </div>
 
                   <div className="sm-option sm-option--danger" onClick={() => goTo("deleteConfirm")}>
@@ -493,7 +530,7 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
                       <strong>Delete Step</strong>
                       <span>Permanently remove this step</span>
                     </div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
+                    <IconChevron />
                   </div>
                 </div>
               )}
@@ -525,10 +562,9 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
                 </div>
               )}
 
-              {/* ── CHANGE 5: VIEW STEP — Macro / Micro / Nano tabs ── */}
+              {/* VIEW STEP - Keep same structure */}
               {modalScreen === "viewStep" && (
                 <div className="sm-view-step">
-                  {/* Layer tab switcher */}
                   <div className="sm-layer-tabs">
                     {[
                       { key: "macro", label: "Macro", color: "#7c3aed" },
@@ -546,219 +582,329 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
                     ))}
                   </div>
 
-                  {/* Macro */}
-                  {viewLayerTab === "macro" && (
-                    <div className="sm-layer-card sm-layer-card--macro">
-                      {[
-                        ["Name",         selectedStep?.macro_name],
-                        ["Description",  selectedStep?.macro_description],
-                        ["Length",       selectedStep?.macro_length],
-                        ["Access",       selectedStep?.macro_access],
-                        ["Instructions", selectedStep?.macro_instructions],
-                        ["Chances",      selectedStep?.macro_chances],
-                      ].map(([label, val]) => val ? (
-                        <div key={label} className="sm-layer-row">
-                          <span className="sm-layer-key">{label}</span>
-                          <span className="sm-layer-val">{val}</span>
-                        </div>
-                      ) : null)}
-                      {!selectedStep?.macro_name && !selectedStep?.macro_description && (
-                        <p className="sm-layer-empty">No Macro data configured for this step.</p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Micro */}
-                  {viewLayerTab === "micro" && (
-                    <div className="sm-layer-card sm-layer-card--micro">
-                      {[
-                        ["Name",         selectedStep?.micro_name],
-                        ["Description",  selectedStep?.micro_description],
-                        ["Length",       selectedStep?.micro_length],
-                        ["Access",       selectedStep?.micro_access],
-                        ["Instructions", selectedStep?.micro_instructions],
-                        ["Chances",      selectedStep?.micro_chances],
-                      ].map(([label, val]) => val ? (
-                        <div key={label} className="sm-layer-row">
-                          <span className="sm-layer-key">{label}</span>
-                          <span className="sm-layer-val">{val}</span>
-                        </div>
-                      ) : null)}
-                      {!selectedStep?.micro_name && !selectedStep?.micro_description && (
-                        <p className="sm-layer-empty">No Micro data configured for this step.</p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Nano */}
-                  {viewLayerTab === "nano" && (
-                    <div className="sm-layer-card sm-layer-card--nano">
-                      {[
-                        ["Name",         selectedStep?.nano_name],
-                        ["Description",  selectedStep?.nano_description],
-                        ["Length",       selectedStep?.nano_length],
-                        ["Access",       selectedStep?.nano_access],
-                        ["Instructions", selectedStep?.nano_instructions],
-                        ["Chances",      selectedStep?.nano_chances],
-                      ].map(([label, val]) => val ? (
-                        <div key={label} className="sm-layer-row">
-                          <span className="sm-layer-key">{label}</span>
-                          <span className="sm-layer-val">{val}</span>
-                        </div>
-                      ) : null)}
-                      {!selectedStep?.nano_name && !selectedStep?.nano_description && (
-                        <p className="sm-layer-empty">No Nano data configured for this step.</p>
-                      )}
-                    </div>
-                  )}
+                  {["macro", "micro", "nano"].map(layer => (
+                    viewLayerTab === layer && (
+                      <div key={layer} className={`sm-layer-card sm-layer-card--${layer}`}>
+                        {[
+                          ["Name",         selectedStep?.[`${layer}_name`]],
+                          ["Description",  selectedStep?.[`${layer}_description`]],
+                          ["Length",       selectedStep?.[`${layer}_length`]],
+                          ["Access",       selectedStep?.[`${layer}_access`]],
+                          ["Instructions", selectedStep?.[`${layer}_instructions`]],
+                          ["Chances",      selectedStep?.[`${layer}_chances`]],
+                        ].map(([label, val]) => val ? (
+                          <div key={label} className="sm-layer-row">
+                            <span className="sm-layer-key">{label}</span>
+                            <span className="sm-layer-val">{val}</span>
+                          </div>
+                        ) : null)}
+                        {!selectedStep?.[`${layer}_name`] && !selectedStep?.[`${layer}_description`] && (
+                          <p className="sm-layer-empty">No {layer.charAt(0).toUpperCase() + layer.slice(1)} data configured for this step.</p>
+                        )}
+                      </div>
+                    )
+                  ))}
                 </div>
               )}
 
-              {/* MARKETPLACE */}
-              {modalScreen === "marketplace" && (
-                <div>
-                  {stepMarketItems.length > 0 && (
-                    <div style={{ marginBottom: 20 }}>
-                      <p className="sm-section-label">Attached to this step</p>
-                      <div className="sm-service-list">
-                        {stepMarketItems.map(item => {
-                          const re = roleEmoji[item.role?.toLowerCase()] || "📦";
-                          const rc = roleColor[item.role?.toLowerCase()] || "#64748b";
-                          return (
-                            <div key={item._id} className="sm-service-item">
-                              <div className="sm-service-left">
-                                <div className="sm-service-emoji">{re}</div>
-                                <div>
-                                  <div className="sm-service-name">{item.name}</div>
-                                  <div style={{ fontSize: "0.7rem", fontWeight: 600, color: rc, textTransform: "uppercase" }}>{item.role}</div>
-                                </div>
-                              </div>
-                              <button className="sm-remove-btn" onClick={() => handleDetachMarket(item._id)}>Remove</button>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="sm-mkt-actions">
-                    <div className="sm-option" onClick={() => goTo("addMarketplace")}>
-                      <div className="sm-option-icon" style={{ background: "#ecfdf5" }}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
-                          <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              {/* MARKETPLACE LAYER SELECTOR */}
+              {modalScreen === "marketplace_layer" && (
+                <div className="admin-pp-selector">
+                  <p className="admin-pp-section-label">Select a view to manage</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {Object.entries(getLayerConfig(selectedStep)).map(([layerKey, cfg]) => (
+                      <div
+                        key={layerKey}
+                        style={{
+                          padding: "18px 20px",
+                          borderRadius: 16,
+                          cursor: "pointer",
+                          border: `1.5px solid ${cfg.border}`,
+                          background: cfg.bg,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 14,
+                          transition: "all 0.15s",
+                        }}
+                        onClick={() => {
+                          setMarketLayer(layerKey);
+                          setAttachedServices([]);
+                          setMarketplaceItems([]);
+                          fetchMarketplaceData(selectedStep._id, layerKey);
+                          goTo("marketplace_attach");
+                        }}>
+                        <div style={{
+                          width: 44, height: 44, borderRadius: 12,
+                          background: cfg.color, display: "flex",
+                          alignItems: "center", justifyContent: "center",
+                          color: "#fff", fontWeight: 800, fontSize: "1rem", flexShrink: 0,
+                        }}>
+                          {cfg.label[0]}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{
+                            fontWeight: 700, fontSize: "0.78rem",
+                            color: cfg.color, textTransform: "uppercase",
+                            letterSpacing: "0.07em", marginBottom: 3,
+                          }}>
+                            {cfg.label}
+                          </div>
+                          <div style={{
+                            fontWeight: 600, fontSize: "0.88rem",
+                            color: "#0f172a", marginBottom: 2,
+                            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                          }}>
+                            {cfg.viewName}
+                          </div>
+                          <div style={{
+                            fontSize: "0.74rem", color: "#64748b",
+                            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                          }}>
+                            {cfg.viewDesc}
+                          </div>
+                        </div>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
+                          <polyline points="9 18 15 12 9 6" />
                         </svg>
                       </div>
-                      <div className="sm-option-content">
-                        <strong>Create New Listing</strong>
-                        <span>Add a new marketplace item to this step</span>
-                      </div>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
-                    </div>
+                    ))}
                   </div>
+                </div>
+              )}
 
-                  {allMarketItems.filter(m => !stepMarketItems.some(s => s._id === m._id)).length > 0 && (
-                    <div style={{ marginTop: 20 }}>
-                      <p className="sm-section-label">Attach existing item</p>
-                      <div className="sm-service-list">
-                        {allMarketItems.filter(m => !stepMarketItems.some(s => s._id === m._id)).map(item => {
-                          const re = roleEmoji[item.role?.toLowerCase()] || "📦";
-                          const rc = roleColor[item.role?.toLowerCase()] || "#64748b";
-                          const alreadyOnStep = item.step_id && item.step_id.toString() === selectedStep._id.toString();
-                          return (
-                            <div key={item._id}
-                              className={`sm-service-item sm-service-item--attach ${alreadyOnStep ? "sm-service-item--disabled" : ""}`}
-                              onClick={() => { if (!alreadyOnStep) handleAttachExistingMarket(item); }}>
-                              <div className="sm-service-left">
-                                <div className="sm-service-emoji">{re}</div>
-                                <div>
-                                  <div className="sm-service-name">{item.name}</div>
-                                  <div style={{ fontSize: "0.7rem", fontWeight: 600, color: rc, textTransform: "uppercase" }}>{item.role}</div>
-                                </div>
-                              </div>
-                              {alreadyOnStep
-                                ? <span className="sm-tag sm-tag--gray">Added</span>
-                                : <span className="sm-tag sm-tag--teal">Attach →</span>}
-                            </div>
-                          );
-                        })}
-                      </div>
+              {/* MARKETPLACE ATTACH */}
+              {modalScreen === "marketplace_attach" && (
+                <div>
+                  {currentLayerCfg && (
+                    <div style={{ marginBottom: "16px" }}>
+                      <h3 style={{ fontSize: "18px", fontWeight: "600" }}>{currentLayerCfg.viewName}</h3>
+                      <p style={{ color: "#64748b", fontSize: "13px" }}>{currentLayerCfg.viewDesc}</p>
                     </div>
+                  )}
+
+                  <p className="admin-pp-section-label">
+                    ATTACHED TO THIS STEP ({marketLayer?.toUpperCase()})
+                  </p>
+
+                  {marketplaceLoading ? (
+                    <div style={{ padding: "12px 0", color: "#64748b", fontSize: "13px" }}>Loading...</div>
+                  ) : attachedServices.length > 0 ? (
+                    attachedServices.map(item => (
+                      <div className="admin-pp-market-item" key={item._id}>
+                        <div className="admin-pp-market-item-info">
+                          <div className="admin-pp-market-emoji">📦</div>
+                          <div>
+                            <strong>{item.name}</strong>
+                            <span>{item.role}</span>
+                          </div>
+                        </div>
+                        <button
+                          className="admin-pp-market-remove-btn"
+                          disabled={actionLoading}
+                          onClick={() => detachMarketService(item)}>
+                          {actionLoading ? "..." : "Remove"}
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="admin-pp-empty">No items attached to this step</div>
+                  )}
+
+                  <button
+                    className="admin-pp-create-btn"
+                    style={{ marginTop: "16px", marginBottom: "8px" }}
+                    onClick={() => goTo("marketplace_create")}>
+                    + Create New Listing
+                  </button>
+
+                  <p className="admin-pp-section-label" style={{ marginTop: "20px" }}>
+                    ALL {marketLayer?.toUpperCase()} MARKETPLACE ({availableItems.length} available)
+                  </p>
+
+                  {marketplaceLoading ? (
+                    <div style={{ padding: "12px 0", color: "#64748b", fontSize: "13px" }}>Loading...</div>
+                  ) : availableItems.length === 0 ? (
+                    <div className="admin-pp-empty">No other {marketLayer} items in marketplace</div>
+                  ) : (
+                    availableItems.map(item => (
+                      <div className="admin-pp-market-item" key={item._id}>
+                        <div className="admin-pp-market-item-info">
+                          <div className="admin-pp-market-emoji">📦</div>
+                          <div>
+                            <strong>{item.name}</strong>
+                            <span>{item.role}</span>
+                            {item.step_id && (
+                              <span style={{ fontSize: "11px", color: "#f59e0b", display: "block" }}>
+                                ⚠ Already linked to another step
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          className="admin-pp-btn admin-pp-btn--blue"
+                          disabled={actionLoading}
+                          onClick={() => attachMarketService(item)}>
+                          {actionLoading ? "..." : "Attach"}
+                        </button>
+                      </div>
+                    ))
                   )}
                 </div>
               )}
 
-              {/* ADD MARKETPLACE FORM */}
-              {modalScreen === "addMarketplace" && (
-                <div className="sm-form">
-                  <div className="sm-form-layer-badge">
-                    <span>Adding to</span>
-                    <select className="sm-layer-select" value={mpLayer} onChange={e => setMpLayer(e.target.value)}>
-                      <option value="macro">Macro</option>
-                      <option value="micro">Micro</option>
-                      <option value="nano">Nano</option>
-                    </select>
-                  </div>
+              {/* MARKETPLACE CREATE */}
+              {modalScreen === "marketplace_create" && (
+                <div className="admin-pp-selector">
+                  {currentLayerCfg && (
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: 8,
+                      padding: "8px 14px", background: currentLayerCfg.bg,
+                      borderRadius: 10, border: `1.5px solid ${currentLayerCfg.border}`,
+                      fontSize: "0.78rem", color: currentLayerCfg.color,
+                      fontWeight: 500, marginBottom: 16,
+                    }}>
+                      <span style={{ color: "#64748b" }}>Adding to</span>
+                      <strong style={{ textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                        {currentLayerCfg.label}
+                      </strong>
+                      <span style={{ color: "#64748b" }}>layer</span>
+                    </div>
+                  )}
 
-                  <div className="sm-form-group">
-                    <label className="sm-label">Marketplace Role <span className="sm-required">*</span></label>
-                    <select className="sm-input sm-select" value={mpRole} onChange={e => setMpRole(e.target.value)}>
-                      <option value="">Select role...</option>
-                      <option value="institution">Institution</option>
-                      <option value="mentor">Mentor</option>
-                      <option value="distributor">Distributor</option>
-                      <option value="vendor">Vendor</option>
-                    </select>
-                  </div>
-
-                  <div className="sm-form-group">
-                    <label className="sm-label">Name <span className="sm-required">*</span></label>
-                    <input className="sm-input" type="text" value={mpName} onChange={e => setMpName(e.target.value)} placeholder="e.g. Malla Reddy University" />
-                  </div>
-
-                  <div className="sm-form-row">
-                    <div className="sm-form-group">
-                      <label className="sm-label">Access</label>
-                      <select className="sm-input sm-select" value={mpAccess} onChange={e => setMpAccess(e.target.value)}>
-                        <option value="Free">Free</option>
-                        <option value="Paid">Paid</option>
-                        <option value="Subscription">Subscription</option>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                      <label className="admin-pp-section-label" style={{ marginBottom: 0 }}>Role *</label>
+                      <select
+                        value={mpRole} onChange={e => setMpRole(e.target.value)}
+                        style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none", background: "#fff" }}>
+                        <option value="">Select role...</option>
+                        <option value="institution">Institution</option>
+                        <option value="mentor">Mentor</option>
+                        <option value="distributor">Distributor</option>
+                        <option value="vendor">Vendor</option>
                       </select>
                     </div>
-                    <div className="sm-form-group">
-                      <label className="sm-label">Cost</label>
-                      <input className="sm-input" type="text" value={mpCost} onChange={e => setMpCost(e.target.value)} placeholder="e.g. ₹65,000" />
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                      <label className="admin-pp-section-label" style={{ marginBottom: 0 }}>Name *</label>
+                      <input
+                        style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none" }}
+                        type="text" value={mpName} onChange={e => setMpName(e.target.value)}
+                        placeholder="e.g. Malla Reddy University"
+                      />
                     </div>
-                  </div>
 
-                  <div className="sm-form-group">
-                    <label className="sm-label">Duration</label>
-                    <input className="sm-input" type="text" value={mpDuration} onChange={e => setMpDuration(e.target.value)} placeholder="e.g. 3 months, 1 year" />
-                  </div>
-
-                  <div className="sm-form-group">
-                    <label className="sm-label">Goal</label>
-                    <input className="sm-input" type="text" value={mpGoal} onChange={e => setMpGoal(e.target.value)} placeholder="What goal does this serve?" />
-                  </div>
-
-                  <div className="sm-form-group">
-                    <label className="sm-label">Features</label>
-                    <textarea className="sm-input sm-textarea" value={mpFeatures} onChange={e => setMpFeatures(e.target.value)} placeholder="Key features or offerings" />
-                  </div>
-
-                  <div className="sm-form-row">
-                    <div className="sm-form-group">
-                      <label className="sm-label">Outcomes</label>
-                      <input className="sm-input" type="text" value={mpOutcomes} onChange={e => setMpOutcomes(e.target.value)} placeholder="Expected outcomes" />
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                        <label className="admin-pp-section-label" style={{ marginBottom: 0 }}>Access</label>
+                        <select
+                          value={mpAccess} onChange={e => setMpAccess(e.target.value)}
+                          style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none", background: "#fff" }}>
+                          <option value="Free">Free</option>
+                          <option value="Paid">Paid</option>
+                          <option value="Subscription">Subscription</option>
+                        </select>
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                        <label className="admin-pp-section-label" style={{ marginBottom: 0 }}>Cost</label>
+                        <input
+                          style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none" }}
+                          type="text" value={mpCost} onChange={e => setMpCost(e.target.value)} placeholder="e.g. ₹65,000"
+                        />
+                      </div>
                     </div>
-                    <div className="sm-form-group">
-                      <label className="sm-label">Discount</label>
-                      <input className="sm-input" type="text" value={mpDiscount} onChange={e => setMpDiscount(e.target.value)} placeholder="e.g. 10%" />
-                    </div>
-                  </div>
 
-                  <button className="sm-btn-primary" onClick={handleAddMarketplace} disabled={actionLoading}>
-                    {actionLoading ? "Adding..." : "Add to Marketplace"}
-                  </button>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                      <label className="admin-pp-section-label" style={{ marginBottom: 0 }}>Duration</label>
+                      <input
+                        style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none" }}
+                        type="text" value={mpDuration} onChange={e => setMpDuration(e.target.value)} placeholder="e.g. 3 months"
+                      />
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                      <label className="admin-pp-section-label" style={{ marginBottom: 0 }}>Goal</label>
+                      <input
+                        style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none" }}
+                        type="text" value={mpGoal} onChange={e => setMpGoal(e.target.value)} placeholder="What goal does this serve?"
+                      />
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                      <label className="admin-pp-section-label" style={{ marginBottom: 0 }}>Features</label>
+                      <textarea
+                        style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none", minHeight: 70, resize: "vertical", fontFamily: "inherit" }}
+                        value={mpFeatures} onChange={e => setMpFeatures(e.target.value)} placeholder="Key features or offerings"
+                      />
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                        <label className="admin-pp-section-label" style={{ marginBottom: 0 }}>Outcomes</label>
+                        <input
+                          style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none" }}
+                          type="text" value={mpOutcomes} onChange={e => setMpOutcomes(e.target.value)} placeholder="Expected outcomes"
+                        />
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                        <label className="admin-pp-section-label" style={{ marginBottom: 0 }}>Discount</label>
+                        <input
+                          style={{ padding: "9px 12px", border: "1.5px solid #e8ecf0", borderRadius: 10, fontSize: "0.85rem", outline: "none" }}
+                          type="text" value={mpDiscount} onChange={e => setMpDiscount(e.target.value)} placeholder="e.g. 10%"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      className="admin-pp-btn admin-pp-btn--blue"
+                      style={{ marginTop: 4, borderRadius: 50 }}
+                      disabled={actionLoading}
+                      onClick={() => {
+                        if (!mpRole || !mpName) { toast.error("Role and Name are required"); return; }
+                        setActionLoading(true);
+
+                        axios
+                          .post(`${BASE_URL}/api/marketplace/add`, {
+                            name: mpName,
+                            role: mpRole,
+                            layer: marketLayer,
+                            step_id: selectedStep._id,
+                            path_id: null,
+                            partner_email: userDetails?.email || "",
+                            access: mpAccess,
+                            cost: mpCost,
+                            goal: mpGoal,
+                            outcomes: mpOutcomes,
+                            duration: mpDuration,
+                            features: mpFeatures,
+                            discount: mpDiscount,
+                          })
+                          .then(({ data }) => {
+                            if (data?.status && data?.data) {
+                              const newItem = data.data;
+                              setAttachedServices(prev => [...prev, newItem]);
+                              setMarketplaceItems(prev => [...prev, newItem]);
+                              const fieldKey = `${marketLayer}_marketplace`;
+                              setSelectedStep(prev => ({
+                                ...prev,
+                                [fieldKey]: [...(prev?.[fieldKey] || []), newItem._id],
+                              }));
+                              setMpRole(""); setMpName(""); setMpAccess("Free"); setMpCost("");
+                              setMpGoal(""); setMpOutcomes(""); setMpDuration("");
+                              setMpFeatures(""); setMpDiscount("");
+                              fetchMarketplaceCounts(partnerStepsData);
+                              goBack();
+                            }
+                            setActionLoading(false);
+                          })
+                          .catch(() => {
+                            toast.error("Failed to add marketplace item");
+                            setActionLoading(false);
+                          });
+                      }}>
+                      {actionLoading ? "Adding..." : "Add to Marketplace"}
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -794,10 +940,8 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
                   <p>Step deleted successfully</p>
                 </div>
               )}
-
             </div>
-
-            {actionLoading && modalScreen !== "deleteConfirm" && modalScreen !== "editStep" && modalScreen !== "addMarketplace" && (
+            {actionLoading && !["deleteConfirm", "editStep", "marketplace_create"].includes(modalScreen) && (
               <div className="sm-loading-overlay">
                 <img src={lg1} alt="" style={{ width: 40, height: 40, animation: "smSpin 1s linear infinite" }} />
               </div>

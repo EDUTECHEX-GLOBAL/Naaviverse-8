@@ -1,5 +1,7 @@
 import React, { useState, useLayoutEffect, useEffect, useRef } from "react";
 import axios from "axios";
+
+import AdminCRM from "./Admincrm.jsx"; 
 import { useNavigate } from "react-router-dom";
 import "./accDashboard.scss";
 import Dashboard from "./Dashboard";
@@ -1192,121 +1194,7 @@ const AccDashboard = () => {
                     <Dashboard />
                   )}
 
-                  {/* CRM SECTION */}
-                  {accsideNav === "CRM" && (
-                    <>
-                      <div className="crm-tabs">
-                        <button
-                          className={crmMenu === "Clients" ? "active" : ""}
-                          onClick={() => {
-                            setcrmMenu("Clients");
-                            setCurrentPage(1);
-                          }}
-                        >
-                          Users ({crmUserData?.length || 0})
-                        </button>
-
-                        <button
-                          className={crmMenu === "Partners" ? "active" : ""}
-                          onClick={() => {
-                            setcrmMenu("Partners");
-                            setCurrentPage(1);
-                          }}
-                        >
-                          Partners ({partnerData?.length || 0})
-                        </button>
-                      </div>
-
-                      {/* USERS TABLE */}
-                      {crmMenu === "Clients" && (
-                        <>
-                          <div
-                            className="crm-tab"
-                            style={{ padding: "10px 35px" }}
-                          >
-                            <div className="crm-each-col" style={{ width: "20%" }}>Name</div>
-                            <div className="crm-each-col" style={{ width: "30%" }}>Email</div>
-                            <div className="crm-each-col" style={{ width: "15%" }}>Country</div>
-                            <div className="crm-each-col" style={{ width: "20%" }}>Phone</div>
-                            <div className="crm-each-col" style={{ width: "15%" }}>Profile Level</div>
-                          </div>
-
-                          <div className="users-alldata">
-                            {isClientLoading ? (
-                              Array(8)
-                                .fill("")
-                                .map((_, i) => (
-                                  <div className="each-userData" key={i}>
-                                    <Skeleton width={200} height={20} />
-                                  </div>
-                                ))
-                            ) : safeUsers.length > 0 ? (
-                              safeUsers.map((u, i) => (
-                                <div className="each-userData" key={i}>
-                                  <div style={{ width: "20%" }}>{u?.name || "—"}</div>
-                                  <div style={{ width: "30%", textTransform: "none" }}>{u?.email}</div>
-                                  <div style={{ width: "15%" }}>{u?.country || "—"}</div>
-                                  <div style={{ width: "20%" }}>{u?.phoneNumber || "—"}</div>
-                                  <div style={{ width: "15%" }}>{u?.user_level || "—"}</div>
-                                </div>
-                              ))
-                            ) : (
-                              <div className="no-data">No Users Found</div>
-                            )}
-                          </div>
-                        </>
-                      )}
-
-                      {/* PARTNERS TABLE */}
-                      {crmMenu === "Partners" && (
-                        <>
-                          <div
-                            className="crm-tab"
-                            style={{ padding: "10px 35px" }}
-                          >
-                            <div className="crm-each-col" style={{ width: "25%" }}>Business</div>
-                            <div className="crm-each-col" style={{ width: "30%" }}>Email</div>
-                            <div className="crm-each-col" style={{ width: "15%" }}>Country</div>
-                            <div className="crm-each-col" style={{ width: "15%" }}>Type</div>
-                            <div className="crm-each-col" style={{ width: "15%" }}>POC</div>
-                          </div>
-
-                          <div className="users-alldata">
-                            {isPurchaseLoading ? (
-                              Array(8)
-                                .fill("")
-                                .map((_, i) => (
-                                  <div className="each-userData" key={i}>
-                                    <Skeleton width={200} height={20} />
-                                  </div>
-                                ))
-                            ) : partnerData.length > 0 ? (
-                              partnerData.map((p, i) => (
-                                <div className="each-userData" key={i}>
-                                  <div style={{ width: "25%", display: "flex", alignItems: "center" }}>
-                                    {p?.logo && (
-                                      <img
-                                        src={p.logo}
-                                        alt=""
-                                        style={{ width: 32, height: 32, borderRadius: "50%", marginRight: 10 }}
-                                      />
-                                    )}
-                                    {p?.businessName}
-                                  </div>
-                                  <div style={{ width: "30%", textTransform: "none" }}>{p?.email}</div>
-                                  <div style={{ width: "15%" }}>{p?.country || "—"}</div>
-                                  <div style={{ width: "15%" }}>{p?.type || "—"}</div>
-                                  <div style={{ width: "15%" }}>{p?.firstName} {p?.lastName}</div>
-                                </div>
-                              ))
-                            ) : (
-                              <div className="no-data">No Partners Found</div>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </>
-                  )}
+                 {accsideNav === "CRM" && <AdminCRM />}
 
                   {/* MARKETPLACE SECTION */}
                   {accsideNav === "Marketplace" && (
