@@ -30,7 +30,7 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   background: #fff;
   border-bottom: 1px solid $gray200;
   display: flex; align-items: center;
-  height: 46px; padding: 0 24px; gap: 0;
+  height: 46px; padding: 0 24px;
   overflow-x: auto;
   box-shadow: 0 1px 4px rgba(15,31,61,0.04);
   flex-shrink: 0;
@@ -38,8 +38,7 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   .sp {
     display: flex; align-items: center; gap: 7px;
     padding: 0 14px; height: 46px;
-    font-size: 12px; font-weight: 600;
-    color: $gray400;
+    font-size: 12px; font-weight: 600; color: $gray400;
     border-bottom: 2.5px solid transparent;
     transition: all 0.16s; white-space: nowrap;
     &:hover { color: $navy; }
@@ -56,90 +55,186 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
 }
 
 // ── Scrollable body ───────────────────────────────────────────────────────────
-.mkt-body { flex: 1; overflow-y: auto; padding: 26px 28px; }
+.mkt-body { flex: 1; overflow-y: auto; padding: 24px 28px; }
 
-// ── Marketplace layout ────────────────────────────────────────────────────────
-.mkt-layout { display: flex; gap: 18px; max-width: 1080px; width: 100%; }
+// ── Full-width layout (no sidebar) ───────────────────────────────────────────
+.mkt-layout { display: block; max-width: 1200px; width: 100%; }
+.mkt-main   { width: 100%; min-width: 0; }
 
-// ── Sidebar ───────────────────────────────────────────────────────────────────
-.mkt-filters {
-  width: 216px; min-width: 216px;
-  background: #fff; border-radius: $radius;
-  border: 1.5px solid $gray200;
-  padding: 18px 14px;
-  height: fit-content; position: sticky; top: 0;
-  box-shadow: $shadow; flex-shrink: 0;
-}
-.mf-lbl {
-  font-size: 10px; font-weight: 800; text-transform: uppercase;
-  letter-spacing: 1.5px; color: $gray400;
-  margin-bottom: 8px; margin-top: 16px;
-  &:first-child { margin-top: 0; }
-}
-.mf-chip {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 10px; border-radius: 8px;
-  font-size: 13px; cursor: pointer; margin-bottom: 2px;
-  color: $gray600; transition: all 0.14s; font-weight: 500;
-  &:hover { background: $gray100; color: $navy; }
-  &.active { background: $teal-light; color: $teal; font-weight: 700;
-    .mf-cnt { background: $teal-mid; color: $teal; } }
-}
-.mf-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.mf-cnt {
-  margin-left: auto; font-size: 10px; font-weight: 700;
-  background: $gray100; color: $gray400;
-  padding: 1px 6px; border-radius: 8px;
-}
-.price-slider { width: 100%; accent-color: $teal; margin-top: 6px; cursor: pointer; }
-.price-lbl { display: flex; justify-content: space-between; font-size: 11px; color: $gray400; margin-top: 4px; }
-
-// ── Right main ────────────────────────────────────────────────────────────────
-.mkt-main { flex: 1; min-width: 0; }
+// ── Top Bar ───────────────────────────────────────────────────────────────────
 .mkt-topbar {
-  background: #fff; border-radius: $radius; border: 1.5px solid $gray200;
-  padding: 10px 14px; display: flex; align-items: center; gap: 10px;
-  margin-bottom: 18px; box-shadow: $shadow;
+  background: #fff;
+  border-radius: $radius;
+  border: 1.5px solid $gray200;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  box-shadow: $shadow;
+  flex-wrap: nowrap;
 }
-.mkt-sw { flex: 1; display: flex; align-items: center; gap: 8px; }
-.mkt-si { color: $gray400; font-size: 14px; flex-shrink: 0; }
+
+// Search input
+.mkt-sw {
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; gap: 8px;
+  background: $gray50;
+  border: 1.5px solid $gray200;
+  border-radius: 10px;
+  padding: 0 10px;
+  height: 38px;
+  transition: border-color 0.15s;
+  &:focus-within { border-color: $teal; background: #fff; }
+}
+.mkt-si-icon {
+  width: 16px; height: 16px; color: $gray400; flex-shrink: 0;
+}
 .mkt-si-input {
-  border: none; background: transparent;
-  font-family: 'DM Sans', sans-serif; font-size: 14px; color: $navy; outline: none; width: 100%;
+  flex: 1; border: none; background: transparent;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; color: $navy; outline: none;
   &::placeholder { color: $gray400; }
 }
-.mkt-div { width: 1px; height: 24px; background: $gray200; flex-shrink: 0; }
-
-// ── View pills ────────────────────────────────────────────────────────────────
-.vpills { display: flex; gap: 5px; }
-.vpill {
-  padding: 6px 12px; border-radius: 18px; border: 1.5px solid $gray200;
-  font-size: 12px; font-weight: 700; cursor: pointer;
-  background: transparent; transition: all 0.14s; color: $gray600; white-space: nowrap;
-  &:hover { border-color: $navy; color: $navy; }
-  &.active { background: $navy; color: #fff; border-color: $navy; }
+.mkt-si-clear {
+  background: none; border: none; cursor: pointer;
+  color: $gray400; font-size: 11px; padding: 2px 4px; border-radius: 4px;
+  line-height: 1; transition: color 0.12s;
+  &:hover { color: $navy; }
 }
 
-// ── Cart button ───────────────────────────────────────────────────────────────
+.mkt-div { width: 1px; height: 26px; background: $gray200; flex-shrink: 0; }
+
+// ── Layer Filter Pills ────────────────────────────────────────────────────────
+.vpills {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.vpill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 13px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1.5px solid $gray200;
+  background: #fff;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: $gray600;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  outline: none;
+
+  &:hover:not(.active) {
+    border-color: $gray300;
+    background: $gray50;
+    color: $navy;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(15,31,61,0.08);
+  }
+
+  // "All" pill — navy filled when active
+  &--all.active {
+    background: $navy;
+    border-color: $navy;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(15,31,61,0.22);
+    .vpill-cnt { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.9); }
+  }
+
+  // Macro pill — indigo when active
+  &--macro.active {
+    background: #6366f1;
+    border-color: #6366f1;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(99,102,241,0.28);
+    .vpill-cnt { background: rgba(255,255,255,0.2); color: #fff; }
+  }
+
+  // Micro pill — teal when active
+  &--micro.active {
+    background: $teal;
+    border-color: $teal;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(13,148,136,0.28);
+    .vpill-cnt { background: rgba(255,255,255,0.2); color: #fff; }
+  }
+
+  // Nano pill — amber when active
+  &--nano.active {
+    background: #d97706;
+    border-color: #d97706;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(217,119,6,0.28);
+    .vpill-cnt { background: rgba(255,255,255,0.2); color: #fff; }
+  }
+}
+
+.vpill-emoji { font-size: 12px; line-height: 1; }
+.vpill-label { font-weight: 700; letter-spacing: 0.01em; }
+.vpill-cnt {
+  background: $gray100;
+  color: $gray400;
+  border-radius: 20px;
+  padding: 1px 7px;
+  font-size: 10px;
+  font-weight: 800;
+  transition: all 0.15s;
+  min-width: 18px;
+  text-align: center;
+}
+
+// ── Cart Button ───────────────────────────────────────────────────────────────
 .cart-top-btn {
-  position: relative; background: $navy; color: #fff;
-  border: none; border-radius: 9px; padding: 8px 13px;
-  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
-  cursor: pointer; display: flex; align-items: center; gap: 6px;
-  transition: background 0.14s; white-space: nowrap;
-  &:hover { background: $teal; }
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 16px;
+  background: $navy;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(15,31,61,0.18);
+
+  &:hover {
+    background: $teal;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(13,148,136,0.32);
+  }
+  &:active { transform: translateY(0); }
+}
+.cart-icon {
+  width: 16px; height: 16px; flex-shrink: 0;
 }
 .cart-top-badge {
-  position: absolute; top: -6px; right: -6px;
+  position: absolute; top: -7px; right: -7px;
   background: $red; color: #fff;
-  width: 18px; height: 18px; border-radius: 50%;
+  width: 19px; height: 19px; border-radius: 50%;
   font-size: 9px; font-weight: 800;
   display: flex; align-items: center; justify-content: center;
   border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(239,68,68,0.4);
 }
 
 // ── Section header ────────────────────────────────────────────────────────────
-.vsh { display: flex; align-items: center; gap: 11px; margin: 22px 0 13px; &:first-child { margin-top: 0; } }
+.vsh {
+  display: flex; align-items: center; gap: 11px;
+  margin: 22px 0 13px;
+  &:first-child { margin-top: 0; }
+}
 .vsh-badge {
   font-size: 10px; font-weight: 800; text-transform: uppercase;
   letter-spacing: 1.2px; padding: 4px 11px; border-radius: 20px; white-space: nowrap;
@@ -151,8 +246,15 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
 .vsh-line { flex: 1; height: 1px; background: $gray200; }
 .vsh-cnt  { font-size: 11px; color: $gray400; font-weight: 600; white-space: nowrap; }
 
-// ── Services grid ─────────────────────────────────────────────────────────────
-.svc-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 13px; margin-bottom: 4px; }
+// ── Services grid — 3 cols with sidebar gone ──────────────────────────────────
+.svc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 4px;
+  @media (max-width: 960px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 560px) { grid-template-columns: 1fr; }
+}
 
 // ── Service card ──────────────────────────────────────────────────────────────
 .svc-card {
@@ -181,16 +283,22 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   font-size: 10px; color: $gray600; margin-bottom: 3px; display: flex; gap: 5px;
   .svc-detail-lbl { font-weight: 700; color: $gray400; min-width: 60px; }
 }
-.svc-bot { padding: 11px 15px; border-top: 1px solid $gray100; display: flex; align-items: center; justify-content: space-between; }
+.svc-bot {
+  padding: 11px 15px; border-top: 1px solid $gray100;
+  display: flex; align-items: center; justify-content: space-between;
+}
 .svc-price-wrap { display: flex; flex-direction: column; }
-.svc-price { font-size: 15px; font-weight: 800; color: $navy; line-height: 1; &.free-price { color: $teal; } }
+.svc-price {
+  font-size: 15px; font-weight: 800; color: $navy; line-height: 1;
+  &.free-price { color: $teal; }
+}
 .svc-billing { font-size: 10px; color: $gray400; margin-top: 2px; }
 .svc-add {
   background: $navy; color: #fff; border: none; border-radius: 7px;
   padding: 7px 13px; font-family: 'DM Sans', sans-serif;
   font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.14s;
-  &:hover { background: $teal; }
-  &.added { background: $teal; }
+  &:hover  { background: $teal; }
+  &.added  { background: $teal; }
 }
 
 // ── Status / Empty ────────────────────────────────────────────────────────────
@@ -228,7 +336,7 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   &:hover { background: $gray100; color: $navy; }
 }
 .cd-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; }
-.cd-empty-icon { font-size: 42px; margin-bottom: 12px; }
+.cd-empty-icon  { font-size: 42px; margin-bottom: 12px; }
 .cd-empty-title { font-size: 15px; font-weight: 700; color: $gray800; margin-bottom: 6px; }
 .cd-empty-sub   { font-size: 13px; color: $gray400; }
 .cd-items { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -236,11 +344,12 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   background: #fff; border-radius: $radius; border: 1.5px solid $gray200;
   padding: 13px 15px; display: flex; align-items: center; gap: 11px; box-shadow: $shadow;
 }
-.ci-ico { width: 40px; height: 40px; border-radius: 10px; background: $gray100; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-.ci-inf { flex: 1; min-width: 0; }
+.ci-ico  { width: 40px; height: 40px; border-radius: 10px; background: $gray100; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.ci-inf  { flex: 1; min-width: 0; }
 .ci-name { font-size: 12px; font-weight: 700; color: $navy; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ci-meta { font-size: 10px; color: $gray400; margin-top: 3px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-.ci-layer { padding: 2px 6px; border-radius: 6px; font-size: 9px; font-weight: 700;
+.ci-layer {
+  padding: 2px 6px; border-radius: 6px; font-size: 9px; font-weight: 700;
   &.ci-macro { background: #ede9fe; color: #6366f1; }
   &.ci-micro { background: $teal-light; color: $teal; }
   &.ci-nano  { background: #fef3c7; color: #d97706; }
@@ -248,13 +357,19 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
 .ci-price { font-size: 14px; font-weight: 800; color: $navy; margin-right: 8px; white-space: nowrap; }
 .ci-rm {
   background: #fee2e2; color: $red; border: none; border-radius: 7px;
-  padding: 5px 9px; font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.14s; flex-shrink: 0;
+  padding: 5px 9px; font-size: 10px; font-weight: 700; cursor: pointer;
+  transition: all 0.14s; flex-shrink: 0;
   &:hover { background: $red; color: #fff; }
 }
 .cart-sum { background: $navy; color: #fff; padding: 20px 22px; flex-shrink: 0; }
 .cs-r {
-  display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; color: rgba(255,255,255,0.6);
-  &.tot { font-size: 17px; font-weight: 800; color: #fff; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 11px; margin-top: 6px; }
+  display: flex; justify-content: space-between; font-size: 13px;
+  margin-bottom: 8px; color: rgba(255,255,255,0.6);
+  &.tot {
+    font-size: 17px; font-weight: 800; color: #fff;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 11px; margin-top: 6px;
+  }
 }
 .chk-btn {
   width: 100%; margin-top: 15px; padding: 13px;
@@ -266,8 +381,9 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
 
 // ── Loading ───────────────────────────────────────────────────────────────────
 .mkt-loading {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 80px 20px; gap: 16px; color: $gray600; font-size: 0.95rem;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 80px 20px; gap: 16px;
+  color: $gray600; font-size: 0.95rem;
   .mkt-spinner {
     width: 40px; height: 40px; border: 3px solid $gray200;
     border-top-color: $teal; border-radius: 50%;
@@ -282,12 +398,10 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
 .checkout-page { width: 100%; max-width: 900px; }
 .chk-layout { display: flex; gap: 24px; align-items: flex-start; }
 
-// Left form panel
-.chk-left { flex: 1; min-width: 0; }
+.chk-left  { flex: 1; min-width: 0; }
 .chk-title {
   font-family: 'Playfair Display', serif;
-  font-size: 24px; font-weight: 700; color: $navy;
-  margin: 0 0 16px;
+  font-size: 24px; font-weight: 700; color: $navy; margin: 0 0 16px;
 }
 .chk-section {
   background: #fff; border-radius: $radius;
@@ -321,29 +435,26 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
 }
 .chk-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-// Time slots
 .time-slots { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; }
 .time-slot {
   padding: 7px 6px; border-radius: 7px;
   border: 1.5px solid $gray200; background: #fff;
   text-align: center; font-size: 11px; font-weight: 600;
   color: $gray600; cursor: pointer; transition: all 0.14s;
-  &:hover { border-color: $teal; color: $teal; }
+  &:hover  { border-color: $teal; color: $teal; }
   &.active { background: $teal; color: #fff; border-color: $teal; }
 }
 
-// Payment methods
 .pay-methods { display: flex; gap: 8px; margin-bottom: 14px; }
 .pay-method {
   flex: 1; padding: 8px 6px; border-radius: 8px;
   border: 1.5px solid $gray200; background: #fff;
   text-align: center; font-size: 11px; font-weight: 600;
   color: $gray600; cursor: pointer; transition: all 0.14s;
-  &:hover { border-color: $teal; color: $teal; }
+  &:hover  { border-color: $teal; color: $teal; }
   &.active { border-color: $teal; background: $teal-light; color: $teal; }
 }
 
-// Right — order summary
 .chk-right { width: 280px; flex-shrink: 0; position: sticky; top: 0; }
 .order-summary {
   background: $navy; color: #fff;
@@ -382,7 +493,7 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// ── CONFIRMED PAGE ────────────────────────────────────────════════════════════
+// ── CONFIRMED PAGE ────────────────────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════════════════════════
 .confirmed-page {
   display: flex; align-items: center; justify-content: center;
@@ -399,8 +510,7 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   background: $teal-light; color: $teal;
   font-size: 28px; font-weight: 800;
   display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 20px;
-  border: 2px solid $teal-mid;
+  margin: 0 auto 20px; border: 2px solid $teal-mid;
 }
 .conf-title {
   font-family: 'Playfair Display', serif;
@@ -419,7 +529,7 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   display: flex; justify-content: space-between; align-items: center;
   padding: 9px 0; font-size: 13px; color: $gray600;
   border-bottom: 1px solid $gray200;
-  &:last-child { border-bottom: none; padding-bottom: 0; }
+  &:last-child  { border-bottom: none; padding-bottom: 0; }
   &:first-child { padding-top: 0; }
 }
 .conf-val { font-weight: 700; color: $navy; }

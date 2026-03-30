@@ -162,7 +162,7 @@ app.use("/api/crm", require("./routes/crmRoutes"));
 app.use("/api/regenerate", require("./routes/regenerateBatch.route"));
 app.use("/api/utils", require("./routes/addStepIds.route"));
 app.use("/api/stepviews", require("./routes/stepviews.route"));
-app.use("/api/vault", require("./routes/vaultRouter"));
+app.use("/api/wallet", require("./routes/vaultRouter"));
 app.use("/api/categories", require("./routes/categoriesRouter"));
 
 /* ------------------- ERROR HANDLING ------------------- */

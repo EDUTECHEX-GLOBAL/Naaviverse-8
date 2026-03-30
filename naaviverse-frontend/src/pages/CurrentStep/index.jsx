@@ -482,7 +482,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                 {currentStepPageData?.nano_name && (
                   <div className="vc-step-name">{currentStepPageData.nano_name}</div>
                 )}
-                <div className="vc-title">Work 1-to-1 With A Naavi-Certified Expert For</div>
+                <div className="vc-title">Work 1-to-1 With A Naavi-Certified Expert</div>
                 {nanoDesc ? (
                   <div className="vc-desc">{nanoDesc}</div>
                 ) : (

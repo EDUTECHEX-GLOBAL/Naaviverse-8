@@ -111,9 +111,29 @@ const Loginpage = () => {
                 if (result.user) {
                     localStorage.setItem("user", JSON.stringify(result.user));
 
-                    // ✅ Save profile picture directly from login response
                     if (result.user.profilePicture) {
                         localStorage.setItem("userProfilePic", result.user.profilePicture);
+                    }
+
+                    // ✅ Fetch profile to get the real name and save it immediately
+                    try {
+                        const profileRes = await axios.get(
+                            `${BASE_URL}/api/users/get/${result.user.email}`
+                        );
+                        const profileData = profileRes.data?.data;
+                        if (profileData?.name) {
+                            localStorage.setItem("userName", profileData.name);
+                            // Also update the user object with name
+                            localStorage.setItem("user", JSON.stringify({
+                                ...result.user,
+                                name: profileData.name,
+                            }));
+                        }
+                        if (profileData?.profilePicture) {
+                            localStorage.setItem("userProfilePic", profileData.profilePicture);
+                        }
+                    } catch (e) {
+                        console.warn("Could not fetch profile at login:", e?.message);
                     }
                 }
                 navigate("/dashboard/users/profile");
@@ -171,7 +191,7 @@ const Loginpage = () => {
 
                 console.log("✅ Partner saved to localStorage with approvalStatus:", approvalStatus);
 
-                
+
                 if (profileData?.businessName) {
                     // Has a complete profile — go to dashboard
                     navigate("/dashboard/accountants");

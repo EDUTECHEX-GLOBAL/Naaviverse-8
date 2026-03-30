@@ -1,0 +1,208 @@
+/* src/pages/Wallet/wallet.css */
+/* All classes prefixed wallet- to avoid collision with existing dashboard CSS */
+
+.wallet-page-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 28px 12px;
+  border-bottom: 0.5px solid #E5E5E5;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1;
+}
+.wallet-page-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+.wallet-container {
+  padding: 20px 28px 24px;
+  max-width: 680px;
+}
+.wallet-info-note {
+  margin-bottom: 0 !important;
+}
+
+
+/* Welcome banner */
+.wallet-welcome-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #edf9f3;
+  border: 1px solid #b6dfa0;
+  border-radius: 10px;
+  padding: 13px 16px;
+  margin-bottom: 20px;
+}
+.wallet-welcome-icon { font-size: 22px; flex-shrink: 0; line-height: 1.4; }
+.wallet-welcome-text { font-size: 13px; color: #27500a; line-height: 1.6; margin: 0; }
+.wallet-welcome-text strong { font-weight: 700; }
+
+/* Balance card */
+.wallet-balance-card {
+  background: linear-gradient(135deg, #2d1b2e 0%, #5b3fa0 100%);
+  border-radius: 16px;
+  padding: 26px 28px;
+  color: #fff;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.wallet-balance-card::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  pointer-events: none;
+}
+.wallet-balance-card::after {
+  content: '';
+  position: absolute;
+  bottom: -20px; right: 60px;
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+  pointer-events: none;
+}
+.wallet-balance-skeleton { height: 130px !important; border-radius: 16px !important; margin-bottom: 20px; }
+.wallet-balance-badge {
+  position: absolute; top: 20px; right: 20px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 20px; padding: 4px 14px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.4px;
+}
+.wallet-balance-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.65; margin-bottom: 6px; }
+.wallet-balance-amount { font-size: 40px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
+.wallet-balance-unit { font-size: 16px; font-weight: 400; opacity: 0.65; margin-left: 4px; }
+.wallet-balance-sub { font-size: 12px; opacity: 0.5; margin-top: 8px; }
+
+/* Buttons */
+.wallet-actions-row { display: flex; gap: 10px; margin-bottom: 24px; }
+.wallet-btn {
+  flex: 1;
+  padding: 11px 16px;
+  border-radius: 10px;
+  border: 1.5px solid #ddd0f0;
+  background: #ffffff;
+  font-size: 13px; font-weight: 600; color: #2d1b2e;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  font-family: inherit;
+}
+.wallet-btn:hover { background: #f0eaff; border-color: #9b6ddd; color: #5b3fa0; }
+.wallet-btn-primary { background: #2d1b2e; color: #ffffff; border-color: #2d1b2e; }
+.wallet-btn-primary:hover { background: #5b3fa0; border-color: #5b3fa0; color: #ffffff; }
+
+/* Section / day labels */
+.wallet-section-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.8px; color: #999; margin-bottom: 10px;
+}
+.wallet-day-label {
+  font-size: 12px; font-weight: 600; color: #aaa;
+  margin-top: 16px; margin-bottom: 6px; padding-left: 4px;
+}
+
+/* Transaction list */
+.wallet-tx-list {
+  border: 1px solid #ede8f5; border-radius: 12px;
+  overflow: hidden; margin-bottom: 8px; background: #fff;
+}
+.wallet-tx-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 16px; background: #fff;
+  border-bottom: 1px solid #f3eff9;
+  transition: background 0.12s;
+}
+.wallet-tx-row:last-child { border-bottom: none; }
+.wallet-tx-row:hover { background: #faf7ff; }
+.wallet-tx-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 14px; font-weight: 700;
+}
+.wallet-tx-info { flex: 1; }
+.wallet-tx-name { font-size: 13px; font-weight: 600; color: #1a1a2e; }
+.wallet-tx-date { font-size: 11px; color: #bbb; margin-top: 2px; }
+.wallet-tx-amount { font-size: 14px; font-weight: 700; }
+
+/* Empty / info */
+.wallet-empty-state {
+  text-align: center; padding: 40px 0; font-size: 13px; color: #bbb;
+  border: 1px dashed #e0d7f0; border-radius: 12px; margin-bottom: 16px;
+}
+.wallet-info-note {
+  display: flex; align-items: center; gap: 8px;
+  background: #f0eaff; border-radius: 10px; padding: 12px 16px;
+  font-size: 12px; color: #5b3fa0; line-height: 1.5; margin-top: 16px;
+}
+
+/* Modal */
+.wallet-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1000; display: flex; align-items: center; justify-content: center;
+}
+.wallet-modal {
+  background: #fff; border-radius: 16px; padding: 28px; width: 360px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+}
+.wallet-modal-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;
+}
+.wallet-modal-title { font-size: 16px; font-weight: 700; color: #1a1a2e; }
+.wallet-modal-close {
+  background: none; border: none; font-size: 16px; color: #aaa;
+  cursor: pointer; padding: 4px; transition: color 0.15s;
+}
+.wallet-modal-close:hover { color: #2d1b2e; }
+.wallet-modal-label {
+  display: block; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px; color: #888; margin-bottom: 6px;
+}
+.wallet-modal-input {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid #ddd0f0; border-radius: 8px;
+  font-size: 15px; font-weight: 600; color: #1a1a2e;
+  outline: none; margin-bottom: 18px;
+  transition: border-color 0.15s; font-family: inherit;
+}
+.wallet-modal-input:focus { border-color: #5b3fa0; }
+.wallet-modal-input::-webkit-outer-spin-button,
+.wallet-modal-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.wallet-modal-actions { display: flex; gap: 10px; }
+
+.wallet-page-wrapper {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.wallet-page-wrapper .dashboard-body {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.wallet-page-wrapper .dashboard-screens {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.wallet-page-wrapper .services-main {
+  height: calc(100vh - 70px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* ADD at bottom of wallet.css */
+.services-main {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}

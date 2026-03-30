@@ -18,6 +18,7 @@ import NewHomePage from "./pages/Registration/Home";
 /* ================= USER ================= */
 import Dashboard from "./pages/dashboard/dashboard";
 import UserProfile from "./pages/UserProfile";
+import Wallet from "./pages/Wallet";
 import StepPage from "./pages/CurrentStep/StepPage";
 import MallProduct from "./pages/dashboard/MallProduct/MallProduct";
 
@@ -91,6 +92,7 @@ function App() {
           <Route path="/dashboard/users/my-journey" element={<Dashboard />} />
           <Route path="/dashboard/users/current-step" element={<Dashboard />} />
           <Route path="/dashboard/users/transactions" element={<Dashboard />} />
+          <Route path="/dashboard/users/wallet"       element={<Wallet />} />
 
           {/* ✅ MUST be before /:id wildcard so it doesn't get caught by MallProduct */}
           <Route path="/dashboard/users/Marketplace" element={<Dashboard />} />

@@ -183,6 +183,7 @@ const LevelOneModal = ({
             ...(parsed?.user ? { ...parsed, user: { ...parsed.user, name: formData.name } } : { ...parsed, name: formData.name }),
           };
           localStorage.setItem("user", JSON.stringify(updated));
+           localStorage.setItem("userName", formData.name); 
         } catch {}
 
         if (typeof onComplete === "function") onComplete(savedId);

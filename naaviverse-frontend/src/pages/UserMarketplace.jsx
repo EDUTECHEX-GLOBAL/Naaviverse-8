@@ -6,12 +6,19 @@ import "./UserMarketplace.scss";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const LAYER_META = {
-  macro: { label: "MACRO VIEW — FREE TOOLS",       sub: "Free tools to get started.",           badgeCls: "vsh-macro", cardCls: "vMacro", pill: "🔵 Macro" },
-  micro: { label: "MICRO VIEW — SUBSCRIPTIONS",    sub: "Structured progress tracking.",        badgeCls: "vsh-micro", cardCls: "vMicro", pill: "🟢 Micro" },
-  nano:  { label: "NANO VIEW — 1-ON-1 SESSIONS",   sub: "Book a personalised expert session.",  badgeCls: "vsh-nano",  cardCls: "vNano",  pill: "🟡 Nano"  },
+  macro: { label: "MACRO VIEW — FREE TOOLS",      sub: "Free tools to get started.",          badgeCls: "vsh-macro", cardCls: "vMacro" },
+  micro: { label: "MICRO VIEW — SUBSCRIPTIONS",   sub: "Structured progress tracking.",       badgeCls: "vsh-micro", cardCls: "vMicro" },
+  nano:  { label: "NANO VIEW — 1-ON-1 SESSIONS",  sub: "Book a personalised expert session.", badgeCls: "vsh-nano",  cardCls: "vNano"  },
 };
 const LAYER_ICON = { macro: "📊", micro: "📚", nano: "🎓" };
 const TIME_SLOTS = ["10:00 AM","12:00 PM","2:00 PM","4:00 PM","6:00 PM","8:00 PM"];
+
+const LAYER_PILLS = [
+  { key: "all",   label: "All",   emoji: null },
+  { key: "macro", label: "Macro", emoji: "🔵" },
+  { key: "micro", label: "Micro", emoji: "🟢" },
+  { key: "nano",  label: "Nano",  emoji: "🟡" },
+];
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 const isFreeItem = (s) => !s.cost || s.cost === "0" || s.cost?.toLowerCase() === "free";
@@ -151,17 +158,17 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
   const userEmail  = userRaw?.user?.email || userRaw?.email || "";
   const userName   = userRaw?.user?.displayName || userRaw?.displayName || "";
 
-  const [fullName,    setFullName]    = useState(userName);
-  const [email,       setEmail]       = useState(userEmail);
-  const [phone,       setPhone]       = useState("");
-  const [prefDate,    setPrefDate]    = useState("");
-  const [timeSlot,    setTimeSlot]    = useState("10:00 AM");
-  const [payMethod,   setPayMethod]   = useState("Card");
-  const [cardNum,     setCardNum]     = useState("");
-  const [expiry,      setExpiry]      = useState("");
-  const [cvv,         setCvv]         = useState("");
-  const [upiId,       setUpiId]       = useState("");
-  const [submitting,  setSubmitting]  = useState(false);
+  const [fullName,   setFullName]   = useState(userName);
+  const [email,      setEmail]      = useState(userEmail);
+  const [phone,      setPhone]      = useState("");
+  const [prefDate,   setPrefDate]   = useState("");
+  const [timeSlot,   setTimeSlot]   = useState("10:00 AM");
+  const [payMethod,  setPayMethod]  = useState("Card");
+  const [cardNum,    setCardNum]    = useState("");
+  const [expiry,     setExpiry]     = useState("");
+  const [cvv,        setCvv]        = useState("");
+  const [upiId,      setUpiId]      = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const subtotal = cart.reduce((a, s) => a + itemPrice(s), 0);
   const tax      = Math.round(subtotal * 0.18);
@@ -169,7 +176,6 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
 
   const handlePay = async () => {
     setSubmitting(true);
-    // Dummy 1s delay simulating transaction
     await new Promise(r => setTimeout(r, 1000));
     const orderId = genOrderId();
     onConfirm({ orderId, total, itemCount: cart.length, date: new Date() });
@@ -179,12 +185,8 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
   return (
     <div className="checkout-page">
       <div className="chk-layout">
-
-        {/* Left — form */}
         <div className="chk-left">
           <h1 className="chk-title">Checkout</h1>
-
-          {/* Personal Details */}
           <div className="chk-section">
             <div className="chk-section-lbl">Personal Details</div>
             <div className="chk-field">
@@ -200,8 +202,6 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
               <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+91 98765 43210" />
             </div>
           </div>
-
-          {/* Schedule Session */}
           <div className="chk-section">
             <div className="chk-section-lbl">Schedule Session</div>
             <div className="chk-field">
@@ -217,8 +217,6 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
               </div>
             </div>
           </div>
-
-          {/* Payment Method */}
           <div className="chk-section">
             <div className="chk-section-lbl">Payment Method</div>
             <div className="pay-methods">
@@ -228,7 +226,6 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
                 </div>
               ))}
             </div>
-
             {payMethod === "Card" && (
               <>
                 <div className="chk-field">
@@ -255,8 +252,6 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
             )}
           </div>
         </div>
-
-        {/* Right — Order Summary */}
         <div className="chk-right">
           <div className="order-summary">
             <div className="os-title">Order Summary</div>
@@ -273,11 +268,10 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
             <div className="os-sum-row"><span>GST (18%)</span><span>₹{tax === 0 ? "0" : tax.toLocaleString()}</span></div>
             <div className="os-sum-row os-total"><span>Total</span><span>₹{total === 0 ? "0" : total.toLocaleString()}</span></div>
             <button className="os-pay-btn" onClick={handlePay} disabled={submitting}>
-              {submitting ? "Processing..." : `Pay ₹${total === 0 ? "0" : total.toLocaleString()} →`}
+              {submitting ? "Processing…" : `Pay ₹${total === 0 ? "0" : total.toLocaleString()} →`}
             </button>
           </div>
         </div>
-
       </div>
     </div>
   );
@@ -307,12 +301,9 @@ const ConfirmedPage = ({ orderInfo, onBackToJourney }) => (
 const UserMarketplace = ({ onStepChange }) => {
   const location = useLocation();
 
-  // Page: "marketplace" | "checkout" | "confirmed"
-  const [page, setPage] = useState("marketplace");
-
+  const [page,        setPage]        = useState("marketplace");
   const [activeLayer, setActiveLayer] = useState(location.state?.view?.toLowerCase() || "all");
   const [activeRole,  setActiveRole]  = useState("All");
-  const [maxCost,     setMaxCost]     = useState(100000);
   const [searchQ,     setSearchQ]     = useState("");
   const [cart,        setCart]        = useState([]);
   const [showCart,    setShowCart]    = useState(false);
@@ -325,7 +316,6 @@ const UserMarketplace = ({ onStepChange }) => {
     if (location.state?.view) setActiveLayer(location.state.view.toLowerCase());
   }, [location.state?.view]);
 
-  // Fetch real data
   useEffect(() => {
     const fetchItems = async () => {
       setLoading(true); setError("");
@@ -350,35 +340,25 @@ const UserMarketplace = ({ onStepChange }) => {
     nano:  items.filter(s => s.layer === "nano").length,
   }), [items]);
 
-  const allRoles = useMemo(() => {
-    const roles = [...new Set(items.map(s => s.role).filter(Boolean))];
-    return ["All", ...roles];
-  }, [items]);
-
   const filtered = useMemo(() => {
     const q = searchQ.toLowerCase();
-    return items.filter(s => {
-      const cost = Number(s.cost) || 0;
-      return (
-        (activeLayer === "all" || s.layer === activeLayer) &&
-        (activeRole === "All" || s.role === activeRole) &&
-        cost <= maxCost &&
-        (!q || s.name?.toLowerCase().includes(q) || s.partner_email?.toLowerCase().includes(q) || s.goal?.toLowerCase().includes(q))
-      );
-    });
-  }, [items, activeLayer, activeRole, maxCost, searchQ]);
+    return items.filter(s =>
+      (activeLayer === "all" || s.layer === activeLayer) &&
+      (activeRole === "All" || s.role === activeRole) &&
+      (!q || s.name?.toLowerCase().includes(q) || s.partner_email?.toLowerCase().includes(q) || s.goal?.toLowerCase().includes(q))
+    );
+  }, [items, activeLayer, activeRole, searchQ]);
 
-  const toggleCart    = (item) => setCart(prev => prev.find(s => s._id === item._id) ? prev.filter(s => s._id !== item._id) : [...prev, item]);
-  const removeFromCart = (id)  => setCart(prev => prev.filter(s => s._id !== id));
-  const inCart         = (id)  => cart.some(s => s._id === id);
-
-  const handleConfirm = (info) => { setOrderInfo(info); setPage("confirmed"); setShowCart(false); };
+  const toggleCart     = (item) => setCart(prev => prev.find(s => s._id === item._id) ? prev.filter(s => s._id !== item._id) : [...prev, item]);
+  const removeFromCart = (id)   => setCart(prev => prev.filter(s => s._id !== id));
+  const inCart         = (id)   => cart.some(s => s._id === id);
+  const handleConfirm  = (info) => { setOrderInfo(info); setPage("confirmed"); setShowCart(false); };
 
   const currentPageKey = page === "marketplace" ? "marketplace" : page === "checkout" ? "checkout" : "confirmed";
 
   const renderServices = () => {
-    if (error) return <div className="mkt-status-box"><div style={{ fontSize:36 }}>⚠️</div><p>{error}</p></div>;
-    if (filtered.length === 0) return <div className="mkt-status-box"><div style={{ fontSize:36 }}>🔍</div><p>No services found for this step yet.</p></div>;
+    if (error) return <div className="mkt-status-box"><div style={{ fontSize: 36 }}>⚠️</div><p>{error}</p></div>;
+    if (filtered.length === 0) return <div className="mkt-status-box"><div style={{ fontSize: 36 }}>🔍</div><p>No services found for this step yet.</p></div>;
     if (activeLayer !== "all") {
       const meta = LAYER_META[activeLayer];
       return <>
@@ -393,7 +373,7 @@ const UserMarketplace = ({ onStepChange }) => {
         </div>
       </>;
     }
-    return ["macro","micro","nano"].map(layer => {
+    return ["macro", "micro", "nano"].map(layer => {
       const group = filtered.filter(s => s.layer === layer);
       if (!group.length) return null;
       const meta = LAYER_META[layer];
@@ -414,60 +394,80 @@ const UserMarketplace = ({ onStepChange }) => {
   return (
     <div className="user-marketplace">
 
-      <StepBar currentPage={currentPageKey} onStepChange={(key) => { if (key === "currentStep") { onStepChange && onStepChange("currentStep"); } else if (key === "marketplace") setPage("marketplace"); }} />
+      <StepBar
+        currentPage={currentPageKey}
+        onStepChange={(key) => {
+          if (key === "currentStep") { onStepChange && onStepChange("currentStep"); }
+          else if (key === "marketplace") setPage("marketplace");
+        }}
+      />
 
       {/* ── MARKETPLACE PAGE ── */}
       {page === "marketplace" && (
         <div className="mkt-body">
           <div className="mkt-layout">
-            <aside className="mkt-filters">
-              <div className="mf-lbl" style={{ marginTop:0 }}>Layer</div>
-              {[
-                { key:"all",   label:"All Layers", count:layerCounts.all,   dot:"#94a3b8" },
-                { key:"macro", label:"Macro",       count:layerCounts.macro, dot:"#6366f1" },
-                { key:"micro", label:"Micro",       count:layerCounts.micro, dot:"#0d9488" },
-                { key:"nano",  label:"Nano",        count:layerCounts.nano,  dot:"#d97706" },
-              ].map(({ key, label, count, dot }) => (
-                <div key={key} className={`mf-chip ${activeLayer === key ? "active" : ""}`} onClick={() => setActiveLayer(key)}>
-                  <div className="mf-dot" style={{ background:dot }} />
-                  {label}
-                  <span className="mf-cnt">{count}</span>
-                </div>
-              ))}
-              {/* {allRoles.length > 1 && <>
-                <div className="mf-lbl">Partner Role</div>
-                {allRoles.map(role => (
-                  <div key={role} className={`mf-chip ${activeRole === role ? "active" : ""}`} onClick={() => setActiveRole(role)}>{role}</div>
-                ))}
-              </>} */}
-              <div className="mf-lbl">Max Cost</div>
-              <input type="range" min="0" max="100000" value={maxCost} onChange={e => setMaxCost(Number(e.target.value))} className="price-slider" />
-              <div className="price-lbl"><span>₹0</span><span>{maxCost === 100000 ? "Any" : `₹${maxCost.toLocaleString()}`}</span></div>
-            </aside>
-
             <div className="mkt-main">
+
+              {/* ── TOP BAR ── */}
               <div className="mkt-topbar">
+
+                {/* Search */}
                 <div className="mkt-sw">
-                  <span className="mkt-si">🔍</span>
-                  <input className="mkt-si-input" type="text" placeholder="Search services, roles, partners..." value={searchQ} onChange={e => setSearchQ(e.target.value)} />
+                  <svg className="mkt-si-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="8.5" cy="8.5" r="5.25" stroke="currentColor" strokeWidth="1.6"/>
+                    <path d="M13 13l3.2 3.2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+                  </svg>
+                  <input
+                    className="mkt-si-input"
+                    type="text"
+                    placeholder="Search services, roles, partners…"
+                    value={searchQ}
+                    onChange={e => setSearchQ(e.target.value)}
+                  />
+                  {searchQ && (
+                    <button className="mkt-si-clear" onClick={() => setSearchQ("")} aria-label="Clear search">✕</button>
+                  )}
                 </div>
+
                 <div className="mkt-div" />
+
+                {/* Layer filter pills */}
                 <div className="vpills">
-                  {[{key:"all",label:"All"},{key:"macro",label:"🔵 Macro"},{key:"micro",label:"🟢 Micro"},{key:"nano",label:"🟡 Nano"}].map(({ key, label }) => (
-                    <div key={key} className={`vpill ${activeLayer === key ? "active" : ""}`} onClick={() => setActiveLayer(key)}>{label}</div>
+                  {LAYER_PILLS.map(({ key, label, emoji }) => (
+                    <button
+                      key={key}
+                      className={`vpill vpill--${key} ${activeLayer === key ? "active" : ""}`}
+                      onClick={() => setActiveLayer(key)}
+                    >
+                      {emoji && <span className="vpill-emoji">{emoji}</span>}
+                      <span className="vpill-label">{label}</span>
+                      <span className="vpill-cnt">{layerCounts[key]}</span>
+                    </button>
                   ))}
                 </div>
+
                 <div className="mkt-div" />
+
+                {/* Cart CTA */}
                 <button className="cart-top-btn" onClick={() => setShowCart(true)}>
-                  🛒 Cart
+                  <svg className="cart-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
+                    <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/>
+                    <path d="M16 10a4 4 0 01-8 0" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span>Cart</span>
                   {cart.length > 0 && <span className="cart-top-badge">{cart.length}</span>}
                 </button>
+
               </div>
+              {/* ── END TOP BAR ── */}
+
               <div className="services-container">
                 {loading ? (
-                  <div className="mkt-loading"><div className="mkt-spinner" /><p>Loading services...</p></div>
+                  <div className="mkt-loading"><div className="mkt-spinner" /><p>Loading services…</p></div>
                 ) : renderServices()}
               </div>
+
             </div>
           </div>
         </div>
@@ -476,25 +476,17 @@ const UserMarketplace = ({ onStepChange }) => {
       {/* ── CHECKOUT PAGE ── */}
       {page === "checkout" && (
         <div className="mkt-body">
-          <CheckoutPage
-            cart={cart}
-            onConfirm={handleConfirm}
-            onBack={() => setPage("marketplace")}
-          />
+          <CheckoutPage cart={cart} onConfirm={handleConfirm} onBack={() => setPage("marketplace")} />
         </div>
       )}
 
       {/* ── CONFIRMED PAGE ── */}
       {page === "confirmed" && orderInfo && (
         <div className="mkt-body">
-          <ConfirmedPage
-            orderInfo={orderInfo}
-            onBackToJourney={() => onStepChange && onStepChange("myJourney")}
-          />
+          <ConfirmedPage orderInfo={orderInfo} onBackToJourney={() => onStepChange && onStepChange("myJourney")} />
         </div>
       )}
 
-      {/* Cart Drawer */}
       {showCart && (
         <CartDrawer
           cart={cart}

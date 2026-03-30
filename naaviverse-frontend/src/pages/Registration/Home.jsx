@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import logo from "./assets/new/favicon.png";
 import axios from 'axios';
-import "./App.scss"; 
+import "./App.scss";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
 import tickMark from "./tick.svg";
 import tickMarkValid from "./tickMarkValid.svg";
+import { ApplyWelcomeBonus } from "../../views/inner-pages/pages/services/wallet";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const NewHomePage = () => {
   const navigate = useNavigate();
@@ -76,19 +77,19 @@ const NewHomePage = () => {
       axios.post(`${BASE_URL}/api/auth/checkEmailDuplicate`, {
         email: userEmail
       })
-      .then(({ data }) => {
-        if (data.count === 1) {
+        .then(({ data }) => {
+          if (data.count === 1) {
+            setLoading(false);
+            setErrorMessage("This email is already registered.");
+          } else {
+            registerUser();
+          }
+        })
+        .catch(() => {
           setLoading(false);
-          setErrorMessage("This email is already registered.");
-        } else {
-          registerUser();
-        }
-      })
-      .catch(() => {
-        setLoading(false);
-        setErrorMessage("Error checking email.");
-      });
-    } else {   
+          setErrorMessage("Error checking email.");
+        });
+    } else {
       alert("Ensure all password requirements are met.");
     }
   };
@@ -100,16 +101,16 @@ const NewHomePage = () => {
 
     const payload = isUser
       ? {
-          username: userName,
-          email: userEmail,
-          password: userPassword,
-        }
+        username: userName,
+        email: userEmail,
+        password: userPassword,
+      }
       : {
-          username: userName,
-          email: userEmail,
-          password: userPassword,
-          partnerType: partnerType,
-        };
+        username: userName,
+        email: userEmail,
+        password: userPassword,
+        partnerType: partnerType,
+      };
 
     axios.post(signupUrl, payload)
       .then(({ data }) => {
@@ -136,16 +137,24 @@ const NewHomePage = () => {
       username: userName.trim(),
       otp: userOtp.trim(),
     })
-    .then(({ data }) => {
-      if (data.success) {
-        navigate(`/login?role=${signupRole}`);
-      } else {
-        setWrongOtp(true);
-      }
-    })
-    .catch(() => {
-      alert("OTP verification failed.");
-    });
+      .then(({ data }) => {
+        if (data.success) {
+
+          // ✅ Award welcome bonus only for Users, not Partners
+          if (isUser) {
+            ApplyWelcomeBonus(userEmail.trim().toLowerCase())
+              .then(() => console.log("Welcome bonus applied"))
+              .catch((err) => console.error("Welcome bonus failed:", err.message));
+          }
+
+          navigate(`/login?role=${signupRole}`);
+        } else {
+          setWrongOtp(true);
+        }
+      })
+      .catch(() => {
+        alert("OTP verification failed.");
+      });
   };
 
   return (
@@ -247,15 +256,15 @@ const NewHomePage = () => {
               style={{
                 opacity:
                   userEmail &&
-                  userName &&
-                  (isUser || partnerType) &&
-                  userPassword &&
-                  confirmPassword &&
-                  userPassword === confirmPassword &&
-                  validations.capitalLetter &&
-                  validations.specialCharacter &&
-                  validations.tenCharacters &&
-                  validations.oneNumber
+                    userName &&
+                    (isUser || partnerType) &&
+                    userPassword &&
+                    confirmPassword &&
+                    userPassword === confirmPassword &&
+                    validations.capitalLetter &&
+                    validations.specialCharacter &&
+                    validations.tenCharacters &&
+                    validations.oneNumber
                     ? 1
                     : 0.5
               }}

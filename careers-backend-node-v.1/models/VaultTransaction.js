@@ -1,13 +1,15 @@
 const mongoose = require("mongoose");
 
 const VaultTransactionSchema = new mongoose.Schema({
-  partnerEmail: { type: String, required: true },
+  email: { type: String, required: true, index: true },
   type: { type: String, enum: ["credit", "debit"], required: true },
   amount: { type: Number, required: true },
-  coin: { type: String, required: true },
   timestamp: { type: Date, default: Date.now },
-  balanceAfter: { type: Number, required: true },
-  metadata: { type: Object }
+  metadata: {
+    type: { type: String },   // "welcome_bonus" | "top_up" | "path_unlock"
+    description: { type: String },   // label shown in UI
+    source: { type: String },   // "signup" | "manual" | "path" | "session"
+  },
 });
 
 module.exports = mongoose.model("VaultTransaction", VaultTransactionSchema);

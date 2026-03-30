@@ -1,4 +1,5 @@
-const userModel = require('../models/users.model'); // Your User model for saving profil
+const userModel = require('../models/users.model');
+const VaultTransaction = require('../models/VaultTransaction');
 // Controller to add or update profile data
 const addUserProfile = async (req, res) => {
     try {
@@ -10,10 +11,10 @@ const addUserProfile = async (req, res) => {
             let profileUpdated = false;
 
             // Update profile details if not present
-const fieldsToUpdate = [
-  'name', 'country', 'state', 'city',
-  'postalCode', 'profilePicture',
-  'username', 'phoneNumber', 'userType'
+            const fieldsToUpdate = [
+                'name', 'country', 'state', 'city',
+                'postalCode', 'profilePicture',
+                'username', 'phoneNumber', 'userType'
             ];
 
             fieldsToUpdate.forEach(field => {
@@ -23,11 +24,33 @@ const fieldsToUpdate = [
                 }
             });
 
-            // Directly set user level to 1 and profileComplete to true if not already set
             if (!user.profileComplete) {
-                user.user_level = 1; // Set user_level to 1
-                user.profileComplete = true; // Mark profile as complete
+                user.user_level = 1;
+                user.profileComplete = true;
                 profileUpdated = true;
+
+                // ✅ Award welcome bonus when profile is first completed
+                try {
+                    const alreadyGiven = await VaultTransaction.findOne({
+                        email: user.email,
+                        "metadata.type": "welcome_bonus",
+                    });
+                    if (!alreadyGiven) {
+                        await VaultTransaction.create({
+                            email: user.email,
+                            type: "credit",
+                            amount: 50,
+                            metadata: {
+                                type: "welcome_bonus",
+                                description: "Welcome Bonus",
+                                source: "signup",
+                            },
+                        });
+                        console.log("Welcome bonus applied for:", user.email);
+                    }
+                } catch (bonusErr) {
+                    console.error("Welcome bonus failed:", bonusErr.message);
+                }
             }
 
             // Save updated user details if any field was modified
@@ -64,7 +87,32 @@ const fieldsToUpdate = [
             });
 
             await newUser.save();
-            console.log('New user created:', newUser);  // Debugging line
+            console.log('New user created:', newUser);
+
+            // ✅ Award welcome bonus to brand new users
+            try {
+                const alreadyGiven = await VaultTransaction.findOne({
+                    email: newUser.email,
+                    "metadata.type": "welcome_bonus",
+                });
+                if (!alreadyGiven) {
+                    await VaultTransaction.create({
+                        email: newUser.email,
+                        type: "credit",
+                        amount: 50,
+                        metadata: {
+                            type: "welcome_bonus",
+                            description: "Welcome Bonus",
+                            source: "signup",
+                        },
+                    });
+                    console.log("Welcome bonus applied for:", newUser.email);
+                }
+            } catch (bonusErr) {
+                console.error("Welcome bonus failed:", bonusErr.message);
+                // Never block signup if bonus fails
+            }
+
             return res.json({
                 status: true,
                 message: 'User created successfully',
@@ -81,35 +129,35 @@ const fieldsToUpdate = [
 };
 
 const updateUserProfile = async (req, res) => {
-  try {
-    const { profileDataId } = req.params;
+    try {
+        const { profileDataId } = req.params;
 
-    const allowedFields = [
-      'name', 'country', 'state', 'city',
-      'postalCode', 'profilePicture', 'username',
-      'phoneNumber', 'userType'
-    ];
+        const allowedFields = [
+            'name', 'country', 'state', 'city',
+            'postalCode', 'profilePicture', 'username',
+            'phoneNumber', 'userType'
+        ];
 
-    const updateData = {};
-    allowedFields.forEach(field => {
-      if (req.body[field] !== undefined) {
-        updateData[field] = req.body[field];
-      }
-    });
+        const updateData = {};
+        allowedFields.forEach(field => {
+            if (req.body[field] !== undefined) {
+                updateData[field] = req.body[field];
+            }
+        });
 
-    const user = await userModel.findByIdAndUpdate(
-      profileDataId,
-      { $set: updateData },
-      { new: true }
-    );
+        const user = await userModel.findByIdAndUpdate(
+            profileDataId,
+            { $set: updateData },
+            { new: true }
+        );
 
-    if (!user) return res.json({ status: false, message: "User not found" });
+        if (!user) return res.json({ status: false, message: "User not found" });
 
-    return res.json({ status: true, message: "Profile updated", data: user });
-  } catch (err) {
-    console.error("Error in updateUserProfile:", err);
-    return res.status(500).json({ status: false, message: "Update failed" });
-  }
+        return res.json({ status: true, message: "Profile updated", data: user });
+    } catch (err) {
+        console.error("Error in updateUserProfile:", err);
+        return res.status(500).json({ status: false, message: "Update failed" });
+    }
 };
 
 // Controller to fetch user profile details
@@ -153,7 +201,7 @@ const getUserProfile = async (req, res) => {
             message: 'Error in fetching user details',
         });
     }
-};  
+};
 
 const updateLevelTwoProfile = async (req, res) => {
     try {
@@ -229,35 +277,35 @@ const updateLevelTwoProfile = async (req, res) => {
 
 const addPersonality = async (req, res) => {
     const { userId, personality } = req.body; // Get userId and personality from the request body
-  
+
     // Ensure personality is valid
     const validPersonalities = ['realistic', 'investigative', 'artistic', 'social', 'enterprising', 'conventional'];
     if (!validPersonalities.includes(personality)) {
-      return res.status(400).json({ status: false, message: 'Invalid personality type' });
+        return res.status(400).json({ status: false, message: 'Invalid personality type' });
     }
-  
+
     try {
-      // Find the user by userId
-      const user = await userModel.findById(userId);
-  
-      // Check if the user exists
-      if (!user) {
-        return res.status(404).json({ status: false, message: 'User not found' });
-      }
-  
-      // Update the user's personality field
-      user.personality = personality;
-      user.user_level = 3;
-      await user.save(); // Save the updated user data
-  
-      // Respond with success
-      return res.status(200).json({ status: true, message: 'Personality data added successfully' });
+        // Find the user by userId
+        const user = await userModel.findById(userId);
+
+        // Check if the user exists
+        if (!user) {
+            return res.status(404).json({ status: false, message: 'User not found' });
+        }
+
+        // Update the user's personality field
+        user.personality = personality;
+        user.user_level = 3;
+        await user.save(); // Save the updated user data
+
+        // Respond with success
+        return res.status(200).json({ status: true, message: 'Personality data added successfully' });
     } catch (error) {
-      console.error('Error in addPersonality:', error);
-      return res.status(500).json({ status: false, message: 'Server error' });
+        console.error('Error in addPersonality:', error);
+        return res.status(500).json({ status: false, message: 'Server error' });
     }
-  };
-  
+};
+
 
 
 module.exports = {
