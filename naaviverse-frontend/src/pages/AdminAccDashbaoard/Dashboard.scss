@@ -169,7 +169,8 @@
 
 .stat-box {
   border-radius: var(--radius-xl);
-  padding: 14px 16px 12px;
+   padding: 12px 14px 10px;   // ↓ reduced from 14px 16px 12px
+  min-height: 170px; 
   position: relative;
   overflow: hidden;
   cursor: default;
@@ -264,7 +265,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .stat-box-icon {
@@ -296,23 +297,23 @@
   font-weight: 600;
   letter-spacing: 0.4px;
   text-transform: uppercase;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   opacity: 0.88;
 }
 
 .stat-box-value {
   font-family: var(--font-display);
-  font-size: 36px;
+  font-size: 30px;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -1px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .stat-box-subtitle {
   display: flex;
-  gap: 12px;
-  font-size: 12px;
+  gap: 2px;
+  font-size: 11.5px;
   font-weight: 500;
 }
 
@@ -758,7 +759,7 @@ table {
   background: var(--slate-100);
   color: var(--slate-600);
   padding: 4px 10px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);  // change from var(--radius-full) to var(--radius-sm)
   border: 1px solid var(--slate-200);
 }
 
@@ -798,12 +799,11 @@ table {
   p { color: var(--slate-400); font-size: 14px; margin: 0; }
 }
 
-/* ── Back Button ── */
 .back-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: none;
+  background: none !important;
   border: none;
   color: var(--slate-500);
   font-size: 13px;
@@ -814,7 +814,7 @@ table {
   cursor: pointer;
   transition: color .15s;
 
-  &:hover { color: var(--slate-800); }
+  &:hover { color: var(--slate-800) !important; background: none !important; }
 }
 
 /* ── Details Hero ── */
@@ -978,5 +978,253 @@ table {
     border: 1.5px solid var(--slate-200);
     color: var(--slate-600);
     &:hover { background: var(--red-50); border-color: #fecaca; color: var(--red-700); }
+  }
+}
+
+/* ── Tab Button Group ── */
+.tab-btn-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  background: var(--slate-100);
+  padding: 5px;
+  border-radius: var(--radius-full);
+  width: fit-content;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all .2s ease;
+  background: transparent;
+  color: var(--slate-500);
+  position: relative;
+
+  .tab-btn-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.4;
+    transition: opacity .2s;
+  }
+
+  .tab-btn-count {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: var(--radius-full);
+    background: rgba(0,0,0,.08);
+    transition: all .2s;
+  }
+
+  &:hover {
+    color: var(--slate-700);
+    background: rgba(255,255,255,.6);
+  }
+
+  /* PENDING active */
+  &.tab-btn-pending.active {
+    background: white;
+    color: var(--amber-600);
+    box-shadow: 0 2px 8px rgba(217,119,6,.15);
+
+    .tab-btn-dot { opacity: 1; background: var(--amber-500); }
+    .tab-btn-count { background: var(--amber-100); color: var(--amber-600); }
+  }
+
+  /* APPROVED active */
+  &.tab-btn-approved.active {
+    background: white;
+    color: var(--green-700);
+    box-shadow: 0 2px 8px rgba(34,197,94,.15);
+
+    .tab-btn-dot { opacity: 1; background: var(--green-500); }
+    .tab-btn-count { background: var(--green-100); color: var(--green-700); }
+  }
+
+  /* REJECTED active */
+  &.tab-btn-rejected.active {
+    background: white;
+    color: var(--red-700);
+    box-shadow: 0 2px 8px rgba(239,68,68,.15);
+
+    .tab-btn-dot { opacity: 1; background: var(--red-500); }
+    .tab-btn-count { background: var(--red-100); color: var(--red-700); }
+  }
+}
+
+// Add this to your SCSS file in the tab-btn section
+.tab-btn {
+  // ... existing styles
+
+  /* ALL active */
+  &.tab-btn-all.active {
+    background: white;
+    color: var(--slate-700);
+    box-shadow: 0 2px 8px rgba(100, 116, 139, 0.15);
+
+    .tab-btn-dot { opacity: 1; background: var(--slate-500); }
+    .tab-btn-count { background: var(--slate-100); color: var(--slate-600); }
+  }
+
+  /* PENDING active */
+  &.tab-btn-pending.active {
+    background: white;
+    color: var(--amber-600);
+    box-shadow: 0 2px 8px rgba(217,119,6,.15);
+
+    .tab-btn-dot { opacity: 1; background: var(--amber-500); }
+    .tab-btn-count { background: var(--amber-100); color: var(--amber-600); }
+  }
+
+  /* APPROVED active */
+  &.tab-btn-approved.active {
+    background: white;
+    color: var(--green-700);
+    box-shadow: 0 2px 8px rgba(34,197,94,.15);
+
+    .tab-btn-dot { opacity: 1; background: var(--green-500); }
+    .tab-btn-count { background: var(--green-100); color: var(--green-700); }
+  }
+
+  /* REJECTED active */
+  &.tab-btn-rejected.active {
+    background: white;
+    color: var(--red-700);
+    box-shadow: 0 2px 8px rgba(239,68,68,.15);
+
+    .tab-btn-dot { opacity: 1; background: var(--red-500); }
+    .tab-btn-count { background: var(--red-100); color: var(--red-700); }
+  }
+}
+
+/* Add this to your SCSS file in the tab-btn section */
+
+/* ALL active */
+.tab-btn-all.active {
+  background: white;
+  color: var(--slate-700);
+  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.15);
+
+  .tab-btn-dot { opacity: 1; background: var(--slate-500); }
+  .tab-btn-count { background: var(--slate-100); color: var(--slate-600); }
+}
+
+.box-amber .stat-box-btn {
+  margin-top: 8px;   // ↓ from 14px
+  padding: 6px 14px; // smaller button
+}
+
+.stat-box-icon {
+  width: 40px;   // ↓ from 46px
+  height: 40px;
+}
+
+
+// ── Activity Timeline ──────────────────────────────────────────
+.activity-timeline { display: flex; flex-direction: column; }
+
+.activity-tl-item {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 0;
+}
+
+.activity-tl-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 40px;
+  flex-shrink: 0;
+}
+
+.activity-tl-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid white;
+  z-index: 1;
+}
+
+.activity-tl-line {
+  flex: 1;
+  width: 1.5px;
+  background: var(--slate-200);
+  min-height: 24px;
+  margin: 4px 0;
+}
+
+.activity-tl-body {
+  flex: 1;
+  padding-bottom: 24px;
+}
+
+.activity-tl-time  { font-size: 11px; color: var(--slate-400); margin-bottom: 4px; }
+.activity-tl-title { font-size: 14px; font-weight: 600; color: var(--slate-800); margin-bottom: 3px; }
+.activity-tl-desc  { font-size: 12.5px; color: var(--slate-500); line-height: 1.5; }
+
+.activity-chip {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 6px;
+  margin-top: 7px;
+
+  &.activity-chip-login   { background: #f1f5f9; color: #475569; }
+  &.activity-chip-explore { background: #fef3c7; color: #b45309; }
+  &.activity-chip-path    { background: #ede9fe; color: #6d28d9; }
+  &.activity-chip-market  { background: #cffafe; color: #0e7490; }
+}
+
+.path-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 10px;
+}
+
+.path-step-node { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.path-step-circle {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600;
+}
+.path-step-label { font-size: 10px; color: var(--slate-400); text-align: center; max-width: 52px; }
+.path-step-arrow { flex: 1; height: 1.5px; background: #a78bfa; margin: 0 6px 18px; min-width: 16px; }
+
+.box-rose {
+  .stat-box-btn {
+    background: rgba(255,255,255,.95);
+    color: #e11d48; // rose theme color
+    border: none;
+    padding: 8px 18px;
+    border-radius: var(--radius-full);
+    font-size: 12.5px;
+    font-weight: 700;
+    font-family: var(--font);
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all .18s ease;
+    display: inline-block;
+
+    &:hover {
+      background: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    }
   }
 }

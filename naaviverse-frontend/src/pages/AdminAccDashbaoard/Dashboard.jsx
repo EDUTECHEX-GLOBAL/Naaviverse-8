@@ -35,7 +35,7 @@ function PortalDropdown({ anchorRef, isOpen, onClose, children }) {
 }
 
 // ── Stat Box Card ────────────────────────────────────────────────────────────
-function StatBox({ colorClass, icon, title, value, subtitle, badge, badgeLabel, onAction, actionLabel }) {
+function StatBox({ colorClass, icon, title, value, subtitle, badge, onAction, actionLabel }) {
   return (
     <div className={`stat-box ${colorClass}`}>
       <div className="stat-box-top">
@@ -54,25 +54,147 @@ function StatBox({ colorClass, icon, title, value, subtitle, badge, badgeLabel, 
   );
 }
 
+// ── Static Activity Data ─────────────────────────────────────────────────────
+const ACTIVITY_USERS = [
+  {
+    id: 1, name: "Priya K.", email: "priya.k@gmail.com", initials: "PK",
+    color: "#ede9fe", textColor: "#6d28d9", status: "online", joinedDays: "3 days ago",
+    events: [
+      { type: "login",   time: "Today, 9:14 AM",  title: "Logged in",                   desc: "Session from Chrome · Hyderabad, IN",                              chipLabel: "Session start" },
+      { type: "explore", time: "Today, 9:16 AM",  title: "Explored 4 learning paths",   desc: "Browsed: AI Fundamentals, Data Science, Full Stack Dev, UX Design", chipLabel: "Browsing",   pathSteps: ["Login", "Browse", "Explore", "Compare"] },
+      { type: "path",    time: "Today, 9:28 AM",  title: "Selected: AI Fundamentals",   desc: "Enrolled in the 12-week AI Fundamentals track",                     chipLabel: "Enrolled" },
+      { type: "market",  time: "Today, 9:45 AM",  title: "Purchased from Marketplace",  desc: "Bought: \"AI Mentor Session Pack\" · ₹1,200",                       chipLabel: "Purchase" },
+    ],
+  },
+  {
+    id: 2, name: "Arjun M.", email: "arjun.m@outlook.com", initials: "AM",
+    color: "#fef3c7", textColor: "#b45309", status: "online", joinedDays: "1 week ago",
+    events: [
+      { type: "login",   time: "Yesterday, 6:02 PM", title: "Logged in",                  desc: "Session from Mobile · Bangalore, IN",              chipLabel: "Session start" },
+      { type: "explore", time: "Yesterday, 6:05 PM", title: "Explored 2 learning paths",  desc: "Browsed: Full Stack Development, Cloud Architecture", chipLabel: "Browsing", pathSteps: ["Login", "Browse", "Enroll", "Start"] },
+      { type: "path",    time: "Yesterday, 6:18 PM", title: "Selected: Full Stack Dev",   desc: "Enrolled in the 16-week Full Stack Development track", chipLabel: "Enrolled" },
+      { type: "explore", time: "Yesterday, 6:35 PM", title: "Browsed Marketplace",        desc: "Viewed 6 items in Mentors & Institutions section",   chipLabel: "Exploring" },
+    ],
+  },
+  {
+    id: 3, name: "Sneha R.", email: "sneha.r@yahoo.com", initials: "SR",
+    color: "#fce7f3", textColor: "#be185d", status: "idle", joinedDays: "2 days ago",
+    events: [
+      { type: "login",   time: "Today, 11:30 AM", title: "Logged in",                   desc: "Session from Firefox · Mumbai, IN",                               chipLabel: "Session start" },
+      { type: "explore", time: "Today, 11:33 AM", title: "Explored 7 learning paths",   desc: "Spent 18 min comparing paths across Career & Academic categories", chipLabel: "Browsing",  pathSteps: ["Login", "Deep Explore", "Pick Path", "Checkout"] },
+      { type: "path",    time: "Today, 11:51 AM", title: "Selected: Data Science",      desc: "Enrolled in the 20-week Data Science Bootcamp",                   chipLabel: "Enrolled" },
+      { type: "market",  time: "Today, 12:04 PM", title: "Purchased from Marketplace",  desc: "Bought: \"Data Mentor Bundle\" + \"GATE Prep Kit\" · ₹3,800",      chipLabel: "Purchase" },
+    ],
+  },
+  {
+    id: 4, name: "Rahul D.", email: "rahul.d@icloud.com", initials: "RD",
+    color: "#e0f2fe", textColor: "#0369a1", status: "offline", joinedDays: "5 days ago",
+    events: [
+      { type: "login",   time: "2 days ago, 4:12 PM", title: "Logged in",                    desc: "Session from Safari · Delhi, IN",                  chipLabel: "Session start" },
+      { type: "explore", time: "2 days ago, 4:15 PM", title: "Explored 3 learning paths",    desc: "Browsed: Cloud Architecture, DevOps, Cybersecurity", chipLabel: "Browsing", pathSteps: ["Login", "Browse", "Enroll", "Active"] },
+      { type: "path",    time: "2 days ago, 4:29 PM", title: "Selected: Cloud Architecture", desc: "Enrolled in the 10-week Cloud track",               chipLabel: "Enrolled" },
+    ],
+  },
+  {
+    id: 5, name: "Kavya N.", email: "kavya.n@gmail.com", initials: "KN",
+    color: "#dcfce7", textColor: "#15803d", status: "online", joinedDays: "1 day ago",
+    events: [
+      { type: "login",   time: "Today, 8:00 AM", title: "Logged in",                   desc: "Session from Chrome · Pune, IN",                    chipLabel: "Session start" },
+      { type: "explore", time: "Today, 8:04 AM", title: "Explored 5 learning paths",   desc: "Browsed paths in Design, Marketing, and Analytics", chipLabel: "Browsing" },
+      { type: "market",  time: "Today, 8:20 AM", title: "Purchased from Marketplace",  desc: "Bought: \"UX Design Mentor Session\" · ₹900",        chipLabel: "Purchase" },
+      { type: "path",    time: "Today, 8:32 AM", title: "Selected: UX Design",         desc: "Enrolled in the 8-week UX Design track",            chipLabel: "Enrolled",  pathSteps: ["Login", "Market First", "Enroll", "Active"] },
+    ],
+  },
+];
+
+const TYPE_CONFIG = {
+  login:   { bg: "#f1f5f9", color: "#475569", emoji: "🔐", chipClass: "activity-chip-login" },
+  explore: { bg: "#fef3c7", color: "#b45309", emoji: "🔍", chipClass: "activity-chip-explore" },
+  path:    { bg: "#ede9fe", color: "#7c3aed", emoji: "📈", chipClass: "activity-chip-path" },
+  market:  { bg: "#cffafe", color: "#0e7490", emoji: "🛒", chipClass: "activity-chip-market" },
+};
+
+const STATUS_COLORS = { online: "#22c55e", idle: "#f59e0b", offline: "#94a3b8" };
+
 // ── Main Component ───────────────────────────────────────────────────────────
 export default function Dashboard() {
-  // view: "home" | "approvals"
+  // view: "home" | "approvals" | "activity"
   const [view, setView] = useState("home");
 
   // Approvals state
-  const [tab, setTab]                           = useState("pending");
-  const [selected, setSelected]                 = useState(null);
-  const [roleView, setRoleView]                 = useState("partner");
+  const [tab, setTab] = useState("all");
+  const [selected, setSelected] = useState(null);
+  const [roleView, setRoleView] = useState("partner");
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
 
-  const [partnerData, setPartnerData]           = useState([]);
-  const [userData, setUserData]                 = useState([]);
-  const [loadingData, setLoadingData]           = useState(false);
+  const [partnerData, setPartnerData] = useState([]);
+  const [userData, setUserData] = useState([]);
+  const [loadingData, setLoadingData] = useState(false);
 
-  const [fullUserData, setFullUserData]         = useState(null);
+  const [fullUserData, setFullUserData] = useState(null);
   const [loadingUserDetail, setLoadingUserDetail] = useState(false);
 
   const dropdownRef = useRef(null);
+
+  // Activity state
+  const [selectedActivityUser, setSelectedActivityUser] = useState(null);
+
+  const [pathCounts, setPathCounts] = useState({ active: 0, inactive: 0, pending: 0 });
+
+  useEffect(() => {
+    Promise.all([
+      axios.get(`${BASE_URL}/api/paths/get?status=active`),
+      axios.get(`${BASE_URL}/api/paths/get?status=inactive`),
+      axios.get(`${BASE_URL}/api/paths/get?status=waitingforapproval`),
+    ]).then(([a, b, c]) => {
+      setPathCounts({
+        active: a.data?.data?.length || 0,
+        inactive: b.data?.data?.length || 0,
+        pending: c.data?.data?.length || 0,
+      });
+    });
+  }, []);
+
+  const [marketCounts, setMarketCounts] = useState({ total: 0, institution: 0, mentor: 0, distributor: 0, vendor: 0 });
+
+  useEffect(() => {
+    axios.get(`${BASE_URL}/api/marketplace/admin/get-all`)
+      .then(({ data }) => {
+        if (data?.status) {
+          const items = data.data || [];
+          setMarketCounts({
+            total: items.length,
+            institution: items.filter(i => i.role?.toLowerCase() === "institution").length,
+            mentor: items.filter(i => i.role?.toLowerCase() === "mentor").length,
+            distributor: items.filter(i => i.role?.toLowerCase() === "distributor").length,
+            vendor: items.filter(i => i.role?.toLowerCase() === "vendor").length,
+          });
+        }
+      });
+  }, []);
+
+  const [approvalStats, setApprovalStats] = useState({ totalPending: 0, totalApproved: 0, totalRejected: 0 });
+
+  useEffect(() => {
+    const fetchAllApprovals = async () => {
+      try {
+        const [partnerRes, userRes] = await Promise.all([
+          axios.get(`${BASE_URL}/api/approvals/get?role=Partner`),
+          axios.get(`${BASE_URL}/api/approvals/get?role=User`),
+        ]);
+        const partners = partnerRes.data?.data || [];
+        const users    = userRes.data?.data || [];
+        setApprovalStats({
+          totalPending:  [...partners, ...users].filter(a => a.status === "pending").length,
+          totalApproved: [...partners, ...users].filter(a => a.status === "approved").length,
+          totalRejected: [...partners, ...users].filter(a => a.status === "rejected").length,
+        });
+      } catch (err) {
+        console.log("Error fetching approval stats", err);
+      }
+    };
+    fetchAllApprovals();
+  }, []);
 
   // ── Fetch approvals ───────────────────────────────────────────────────────
   const fetchApprovals = (role, setter) => {
@@ -85,15 +207,12 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    if (view === "approvals") {
-      fetchApprovals("Partner", setPartnerData);
-    }
+    if (view === "approvals") fetchApprovals("Partner", setPartnerData);
   }, [view]);
 
   useEffect(() => {
-    if (view === "approvals" && roleView === "user" && userData.length === 0) {
+    if (view === "approvals" && roleView === "user" && userData.length === 0)
       fetchApprovals("User", setUserData);
-    }
   }, [roleView, view]);
 
   // ── Fetch full user profile ───────────────────────────────────────────────
@@ -109,29 +228,30 @@ export default function Dashboard() {
   }, [selected]);
 
   const activeData    = roleView === "partner" ? partnerData : userData;
-  const countByStatus = (s) => activeData.filter(a => a.status === s).length;
-  const filtered      = activeData.filter(a => a.status === tab);
+  const countByStatus = (s) => s === "all" ? activeData.length : activeData.filter(a => a.status === s).length;
+  const pendingCount  = countByStatus("pending");
+  const approvedCount = countByStatus("approved");
+  const rejectedCount = countByStatus("rejected");
+  const filtered      = tab === "all" ? activeData : activeData.filter(a => a.status === tab);
 
   const approve = (id) => {
-    axios.put(`${BASE_URL}/api/approvals/update/${id}`, { status: "approved" })
-      .then(res => {
-        if (res.data.status) {
-          setPartnerData(prev => prev.map(i => i._id === id ? { ...i, status: "approved" } : i));
-          setUserData(prev    => prev.map(i => i._id === id ? { ...i, status: "approved" } : i));
-          if (selected?._id === id) setSelected(p => ({ ...p, status: "approved" }));
-        }
-      });
+    axios.put(`${BASE_URL}/api/approvals/update/${id}`, { status: "approved" }).then(res => {
+      if (res.data.status) {
+        setPartnerData(prev => prev.map(i => i._id === id ? { ...i, status: "approved" } : i));
+        setUserData(prev => prev.map(i => i._id === id ? { ...i, status: "approved" } : i));
+        if (selected?._id === id) setSelected(p => ({ ...p, status: "approved" }));
+      }
+    });
   };
 
   const reject = (id) => {
-    axios.put(`${BASE_URL}/api/approvals/update/${id}`, { status: "rejected" })
-      .then(res => {
-        if (res.data.status) {
-          setPartnerData(prev => prev.map(i => i._id === id ? { ...i, status: "rejected" } : i));
-          setUserData(prev    => prev.map(i => i._id === id ? { ...i, status: "rejected" } : i));
-          if (selected?._id === id) setSelected(p => ({ ...p, status: "rejected" }));
-        }
-      });
+    axios.put(`${BASE_URL}/api/approvals/update/${id}`, { status: "rejected" }).then(res => {
+      if (res.data.status) {
+        setPartnerData(prev => prev.map(i => i._id === id ? { ...i, status: "rejected" } : i));
+        setUserData(prev => prev.map(i => i._id === id ? { ...i, status: "rejected" } : i));
+        if (selected?._id === id) setSelected(p => ({ ...p, status: "rejected" }));
+      }
+    });
   };
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -145,8 +265,6 @@ export default function Dashboard() {
           {/* Header */}
           <div className="home-header">
             <div className="home-header-left">
-              <div className="home-greeting">Welcome back 👋</div>
-              <h1 className="home-title">Dashboard</h1>
               <p className="home-sub">Your AI-powered path engine — all key metrics at a glance</p>
             </div>
             <div className="home-date-badge">
@@ -162,38 +280,43 @@ export default function Dashboard() {
               <div className="stat-box-top">
                 <div className="stat-box-icon">
                   <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                    <path d="M4 17L8 7l4 6 4-4 4 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M4 17L8 7l4 6 4-4 4 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
-                <div className="stat-box-badge">Active</div>
+                <div className="stat-box-badge">Total</div>
               </div>
               <div className="stat-box-title">Learning Paths</div>
-              <div className="stat-box-value">142</div>
-              <div className="stat-box-subtitle">
-                <span>Published: 98</span>
-                <span>Draft: 44</span>
+              <div className="stat-box-value">{pathCounts.active + pathCounts.inactive + pathCounts.pending}</div>
+              <div className="stat-box-subtitle" style={{ flexDirection: "column", gap: "2px" }}>
+                <span>Active: {pathCounts.active}</span>
+                <span>Inactive: {pathCounts.inactive}</span>
+                <span>Pending: {pathCounts.pending}</span>
               </div>
             </div>
 
-            {/* Box 2 — Users */}
+            {/* Box 2 — User Activity (replaces Pending Reviews) */}
             <div className="stat-box box-rose">
               <div className="stat-box-top">
                 <div className="stat-box-icon">
                   <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                    <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
-                    <path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                    <path d="M16 3.13a4 4 0 010 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                    <path d="M21 21v-2a4 4 0 00-3-3.87" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    <path d="M12 8v4l3 3M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                 </div>
-                <div className="stat-box-badge">Registered</div>
+                <div className="stat-box-badge">Live</div>
               </div>
-              <div className="stat-box-title">Total Users</div>
-              <div className="stat-box-value">3,841</div>
-              <div className="stat-box-subtitle">
-                <span>Active: 2,910</span>
-                <span>Pending: 931</span>
+              <div className="stat-box-title">User Activity</div>
+              <div className="stat-box-value">{ACTIVITY_USERS.length}</div>
+              <div className="stat-box-subtitle" style={{ flexDirection: "column", gap: "2px" }}>
+                <span>Online: {ACTIVITY_USERS.filter(u => u.status === "online").length}</span>
+                <span>Idle: {ACTIVITY_USERS.filter(u => u.status === "idle").length}</span>
+                <span>Offline: {ACTIVITY_USERS.filter(u => u.status === "offline").length}</span>
               </div>
+              <button
+                className="stat-box-btn"
+                onClick={() => { setView("activity"); setSelectedActivityUser(null); }}
+              >
+                View All →
+              </button>
             </div>
 
             {/* Box 3 — Marketplace */}
@@ -201,44 +324,43 @@ export default function Dashboard() {
               <div className="stat-box-top">
                 <div className="stat-box-icon">
                   <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                    <path d="M16 10a4 4 0 01-8 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M16 10a4 4 0 01-8 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
-                <div className="stat-box-badge">Live</div>
+                <div className="stat-box-badge">All</div>
               </div>
               <div className="stat-box-title">Marketplace Items</div>
-              <div className="stat-box-value">576</div>
-              <div className="stat-box-subtitle">
-                <span>Courses: 312</span>
-                <span>Resources: 264</span>
+              <div className="stat-box-value">{marketCounts.total}</div>
+              <div className="stat-box-subtitle" style={{ flexDirection: "column", gap: "2px" }}>
+                <span>Institutions: {marketCounts.institution}</span>
+                <span>Mentors: {marketCounts.mentor}</span>
+                <span>Distributors: {marketCounts.distributor}</span>
+                <span>Vendors: {marketCounts.vendor}</span>
               </div>
             </div>
 
-            {/* Box 4 — Approvals (REAL data, click → approvals page) */}
+            {/* Box 4 — Approvals Overview */}
             <div className="stat-box box-amber">
               <div className="stat-box-top">
                 <div className="stat-box-icon">
                   <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                    <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
-                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                    <circle cx="19" cy="5" r="3" fill="currentColor" opacity="0.25"/>
-                    <path d="M17.5 5h3M19 3.5v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                 </div>
-                <div className="stat-box-badge pending-badge">Pending</div>
+                <div className="stat-box-badge">Summary</div>
               </div>
-              <div className="stat-box-title">Pending Approvals</div>
-              <div className="stat-box-value">—</div>
-              <div className="stat-box-subtitle">
-                <span>Partners &amp; Users</span>
-                <span>awaiting review</span>
+              <div className="stat-box-title">Approvals Overview</div>
+              <div className="stat-box-value">{approvalStats.totalApproved + approvalStats.totalPending + approvalStats.totalRejected}</div>
+              <div className="stat-box-subtitle" style={{ flexDirection: "column", gap: "2px" }}>
+                <span>Approved: {approvalStats.totalApproved}</span>
+                <span>Pending: {approvalStats.totalPending}</span>
+                <span>Rejected: {approvalStats.totalRejected}</span>
               </div>
               <button
                 className="stat-box-btn"
-                onClick={() => { setView("approvals"); setSelected(null); setTab("pending"); }}
+                onClick={() => { setView("approvals"); setSelected(null); setTab("all"); }}
               >
                 Review →
               </button>
@@ -258,11 +380,11 @@ export default function Dashboard() {
                 <div className="kpi-card-label">Platform Engagement</div>
                 <div className="kpi-donut-wrap">
                   <svg className="kpi-donut" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="12"/>
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="12" />
                     <circle cx="50" cy="50" r="40" fill="none" stroke="white" strokeWidth="12"
                       strokeDasharray={`${0.87 * 251.2} ${251.2}`}
                       strokeLinecap="round"
-                      transform="rotate(-90 50 50)"/>
+                      transform="rotate(-90 50 50)" />
                     <text x="50" y="55" textAnchor="middle" fill="white" fontSize="18" fontWeight="700">87%</text>
                   </svg>
                 </div>
@@ -301,8 +423,8 @@ export default function Dashboard() {
                   <button className="kpi-action-btn" onClick={() => setView("approvals")}>
                     <span className="kpi-action-icon action-amber">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                        <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M21 12c0 4.97-4.03 9-9 9S3 16.97 3 12 7.03 3 12 3s9 4.03 9 9z" stroke="currentColor" strokeWidth="2"/>
+                        <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M21 12c0 4.97-4.03 9-9 9S3 16.97 3 12 7.03 3 12 3s9 4.03 9 9z" stroke="currentColor" strokeWidth="2" />
                       </svg>
                     </span>
                     Review Approvals
@@ -310,24 +432,23 @@ export default function Dashboard() {
                   <button className="kpi-action-btn">
                     <span className="kpi-action-icon action-violet">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                       </svg>
                     </span>
                     Add New Path
                   </button>
-                  <button className="kpi-action-btn">
+                  <button className="kpi-action-btn" onClick={() => { setView("activity"); setSelectedActivityUser(null); }}>
                     <span className="kpi-action-icon action-rose">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                        <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
+                        <path d="M12 8v4l3 3M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                       </svg>
                     </span>
-                    Manage Users
+                    User Activity
                   </button>
                   <button className="kpi-action-btn">
                     <span className="kpi-action-icon action-cyan">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </span>
                     Export Data
@@ -344,11 +465,192 @@ export default function Dashboard() {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
+  // ACTIVITY — LIST VIEW
+  // ══════════════════════════════════════════════════════════════════════════
+  if (view === "activity" && !selectedActivityUser) {
+    return (
+      <div className="dashboard">
+        <div className="approvals-card">
+
+          <button className="back-btn" onClick={() => setView("home")}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Back to Dashboard
+          </button>
+
+          <div className="card-header">
+            <div className="header-left">
+              <div className="header-icon" style={{ background: "#fce7f3", border: "1px solid #fbcfe8", fontSize: 22 }}>⏱</div>
+              <div>
+                <h2>User Activity</h2>
+                <p className="header-subtitle">Live journey overview — login · paths · marketplace</p>
+              </div>
+            </div>
+            <span style={{ fontSize: 12, fontWeight: 600, background: "#dcfce7", color: "#15803d", padding: "4px 12px", borderRadius: 999, border: "1px solid #bbf7d0" }}>
+              ● Live
+            </span>
+          </div>
+
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Status</th>
+                  <th>Last Event</th>
+                  <th>Journey</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ACTIVITY_USERS.map(u => {
+                  const last = u.events[u.events.length - 1];
+                  const cfg  = TYPE_CONFIG[last.type];
+                  return (
+                    <tr key={u.id} className="table-row">
+                      <td>
+                        <div className="business-info">
+                          <div className="row-avatar" style={{ background: u.color, color: u.textColor }}>{u.initials}</div>
+                          <div>
+                            <div className="business-name">{u.name}</div>
+                            <div style={{ fontSize: 12, color: "var(--slate-400)" }}>{u.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: STATUS_COLORS[u.status], fontWeight: 600 }}>
+                          <span style={{ width: 7, height: 7, borderRadius: "50%", background: STATUS_COLORS[u.status], display: "inline-block" }} />
+                          {u.status.charAt(0).toUpperCase() + u.status.slice(1)}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ background: cfg.bg, padding: "4px 6px", borderRadius: 6, fontSize: 13 }}>{cfg.emoji}</span>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 500 }}>{last.title}</div>
+                            <div style={{ fontSize: 11, color: "var(--slate-400)" }}>{last.time}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+                          {["login", "explore", "path", "market"].map(t => {
+                            const done = u.events.some(e => e.type === t);
+                            return (
+                              <span
+                                key={t}
+                                title={t}
+                                style={{
+                                  width: 9, height: 9, borderRadius: "50%",
+                                  background: done ? TYPE_CONFIG[t].bg : "#e2e8f0",
+                                  border: done ? `1.5px solid ${TYPE_CONFIG[t].color}40` : "none",
+                                  display: "inline-block",
+                                }}
+                              />
+                            );
+                          })}
+                        </div>
+                      </td>
+                      <td>
+                        <button className="view-btn" onClick={() => setSelectedActivityUser(u)}>
+                          View Journey
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // ACTIVITY — DETAIL VIEW
+  // ══════════════════════════════════════════════════════════════════════════
+  if (view === "activity" && selectedActivityUser) {
+    const u = selectedActivityUser;
+    return (
+      <div className="dashboard">
+        <div className="details-card" style={{ maxWidth: 760 }}>
+
+          <button className="back-btn" onClick={() => setSelectedActivityUser(null)}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Back to Activity
+          </button>
+
+          <div className="details-hero">
+            <div className="details-avatar" style={{ background: u.color, color: u.textColor, border: `2px solid ${u.color}` }}>
+              {u.initials}
+            </div>
+            <div className="details-hero-info">
+              <div className="details-hero-top">
+                <h2>{u.name}</h2>
+                <span style={{ fontSize: 12, fontWeight: 600, color: STATUS_COLORS[u.status], display: "flex", alignItems: "center", gap: 5 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: STATUS_COLORS[u.status], display: "inline-block" }} />
+                  {u.status.charAt(0).toUpperCase() + u.status.slice(1)}
+                </span>
+              </div>
+              <div style={{ fontSize: 13, color: "var(--slate-400)" }}>
+                {u.email} · Joined {u.joinedDays}
+              </div>
+            </div>
+          </div>
+
+          <div className="details-section-title" style={{ marginBottom: 20 }}>Journey Timeline</div>
+
+          <div className="activity-timeline">
+            {u.events.map((ev, i) => {
+              const cfg = TYPE_CONFIG[ev.type];
+              return (
+                <div key={i} className="activity-tl-item">
+                  <div className="activity-tl-left">
+                    <div className="activity-tl-icon" style={{ background: cfg.bg }}>
+                      <span style={{ fontSize: 14 }}>{cfg.emoji}</span>
+                    </div>
+                    {i < u.events.length - 1 && <div className="activity-tl-line" />}
+                  </div>
+                  <div className="activity-tl-body">
+                    <div className="activity-tl-time">{ev.time}</div>
+                    <div className="activity-tl-title">{ev.title}</div>
+                    <div className="activity-tl-desc">{ev.desc}</div>
+                    <span className={`activity-chip ${cfg.chipClass}`}>{ev.chipLabel}</span>
+                    {ev.pathSteps && (
+                      <div className="path-track">
+                        {ev.pathSteps.map((s, si) => (
+                          <React.Fragment key={si}>
+                            <div className="path-step-node">
+                              <div className="path-step-circle" style={{ background: u.color, color: u.textColor }}>{si + 1}</div>
+                              <div className="path-step-label">{s}</div>
+                            </div>
+                            {si < ev.pathSteps.length - 1 && <div className="path-step-arrow" />}
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
   // APPROVALS — DETAIL VIEW
   // ══════════════════════════════════════════════════════════════════════════
   if (view === "approvals" && selected) {
     const isPartner = selected.role?.toLowerCase() === "partner";
-    const isPending = selected.status === "pending";
+    const isPending  = selected.status === "pending";
 
     return (
       <div className="dashboard">
@@ -397,12 +699,12 @@ export default function Dashboard() {
             <>
               <SectionTitle>Level 1 — Basic Info</SectionTitle>
               <div className="details-grid">
-                <DetailItem label="Full Name"    value={fullUserData?.name    || selected.businessName} icon="👤" />
-                <DetailItem label="Email"        value={fullUserData?.email   || selected.email} />
+                <DetailItem label="Full Name"    value={fullUserData?.name || selected.businessName} icon="👤" />
+                <DetailItem label="Email"        value={fullUserData?.email || selected.email} />
                 <DetailItem label="Username"     value={fullUserData?.username} />
                 <DetailItem label="Phone"        value={fullUserData?.phoneNumber} />
                 <DetailItem label="Account Type" value={fullUserData?.userType || selected.type} />
-                <DetailItem label="Country"      value={fullUserData?.country  || selected.country} />
+                <DetailItem label="Country"      value={fullUserData?.country || selected.country} />
                 <DetailItem label="State"        value={fullUserData?.state} />
                 <DetailItem label="City"         value={fullUserData?.city} />
                 <DetailItem label="Postal Code"  value={fullUserData?.postalCode} />
@@ -420,7 +722,9 @@ export default function Dashboard() {
               <SectionTitle>Level 3 — Personality</SectionTitle>
               <div className="details-grid">
                 <DetailItem label="Personality Type" icon="🧠"
-                  value={fullUserData?.personality ? fullUserData.personality.charAt(0).toUpperCase() + fullUserData.personality.slice(1) : undefined}
+                  value={fullUserData?.personality
+                    ? fullUserData.personality.charAt(0).toUpperCase() + fullUserData.personality.slice(1)
+                    : undefined}
                 />
               </div>
             </>
@@ -467,16 +771,12 @@ export default function Dashboard() {
   // ══════════════════════════════════════════════════════════════════════════
   // APPROVALS — LIST VIEW
   // ══════════════════════════════════════════════════════════════════════════
-  const pendingCount  = countByStatus("pending");
-  const approvedCount = countByStatus("approved");
-  const rejectedCount = countByStatus("rejected");
   const isPartnerView = roleView === "partner";
 
   return (
     <div className="dashboard">
       <div className="approvals-card">
 
-        {/* Back to home */}
         <button className="back-btn" onClick={() => { setView("home"); setSelected(null); }}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -484,7 +784,6 @@ export default function Dashboard() {
           Back to Dashboard
         </button>
 
-        {/* Header */}
         <div className="card-header">
           <div className="header-left">
             <div className={`header-icon ${isPartnerView ? "partner-icon" : "user-icon"}`}>
@@ -512,11 +811,11 @@ export default function Dashboard() {
             </button>
 
             <PortalDropdown anchorRef={dropdownRef} isOpen={showRoleDropdown} onClose={() => setShowRoleDropdown(false)}>
-              <button className={roleView === "partner" ? "partner-active" : ""} onClick={() => { setRoleView("partner"); setTab("pending"); setShowRoleDropdown(false); }}>
+              <button className={roleView === "partner" ? "partner-active" : ""} onClick={() => { setRoleView("partner"); setTab("all"); setShowRoleDropdown(false); }}>
                 <span className="menu-icon">🤝</span> Partners
                 <span className="menu-count partner-count">{partnerData.length}</span>
               </button>
-              <button className={roleView === "user" ? "user-active" : ""} onClick={() => { setRoleView("user"); setTab("pending"); setShowRoleDropdown(false); }}>
+              <button className={roleView === "user" ? "user-active" : ""} onClick={() => { setRoleView("user"); setTab("all"); setShowRoleDropdown(false); }}>
                 <span className="menu-icon">👤</span> Users
                 <span className="menu-count user-count">{userData.length}</span>
               </button>
@@ -524,39 +823,21 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Stats Strip */}
-        <div className="stats-strip">
-          <div className={`stat-item ${isPartnerView ? "partner-stat" : "user-stat"}`}>
-            <span className="stat-num">{pendingCount}</span>
-            <span className="stat-lbl">Pending</span>
-          </div>
-          <div className="stat-divider" />
-          <div className="stat-item green-stat">
-            <span className="stat-num">{approvedCount}</span>
-            <span className="stat-lbl">Approved</span>
-          </div>
-          <div className="stat-divider" />
-          <div className="stat-item red-stat">
-            <span className="stat-num">{rejectedCount}</span>
-            <span className="stat-lbl">Rejected</span>
-          </div>
-          <div className="stat-divider" />
-          <div className="stat-item total-stat">
-            <span className="stat-num">{activeData.length}</span>
-            <span className="stat-lbl">Total</span>
-          </div>
+        <div className="tab-btn-group">
+          <button className={`tab-btn tab-btn-all ${tab === "all" ? "active" : ""}`} onClick={() => setTab("all")}>
+            <span className="tab-btn-dot" />All<span className="tab-btn-count">{activeData.length}</span>
+          </button>
+          <button className={`tab-btn tab-btn-pending ${tab === "pending" ? "active" : ""}`} onClick={() => setTab("pending")}>
+            <span className="tab-btn-dot" />Pending<span className="tab-btn-count">{pendingCount}</span>
+          </button>
+          <button className={`tab-btn tab-btn-approved ${tab === "approved" ? "active" : ""}`} onClick={() => setTab("approved")}>
+            <span className="tab-btn-dot" />Approved<span className="tab-btn-count">{approvedCount}</span>
+          </button>
+          <button className={`tab-btn tab-btn-rejected ${tab === "rejected" ? "active" : ""}`} onClick={() => setTab("rejected")}>
+            <span className="tab-btn-dot" />Rejected<span className="tab-btn-count">{rejectedCount}</span>
+          </button>
         </div>
 
-        {/* Status Tab Dropdown */}
-        <div className="tab-dropdown-wrapper">
-          <select className="tab-dropdown" value={tab} onChange={(e) => setTab(e.target.value)}>
-            <option value="pending">Pending ({pendingCount})</option>
-            <option value="approved">Approved ({approvedCount})</option>
-            <option value="rejected">Rejected ({rejectedCount})</option>
-          </select>
-        </div>
-
-        {/* Table */}
         <div className="table-wrapper">
           {loadingData ? (
             <div style={{ padding: "40px", textAlign: "center", color: "#9CA3AF" }}>
@@ -598,7 +879,7 @@ export default function Dashboard() {
                     <td colSpan="5" className="no-results">
                       <div className="empty-state">
                         <div className="empty-icon">{isPartnerView ? "🤝" : "👤"}</div>
-                        <p>No {tab} {isPartnerView ? "partner" : "user"} records found</p>
+                        <p>No {tab === "all" ? "" : tab} {isPartnerView ? "partner" : "user"} records found</p>
                       </div>
                     </td>
                   </tr>
