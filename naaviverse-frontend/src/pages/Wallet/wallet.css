@@ -81,23 +81,6 @@
 .wallet-balance-unit { font-size: 16px; font-weight: 400; opacity: 0.65; margin-left: 4px; }
 .wallet-balance-sub { font-size: 12px; opacity: 0.5; margin-top: 8px; }
 
-/* Buttons */
-.wallet-actions-row { display: flex; gap: 10px; margin-bottom: 24px; }
-.wallet-btn {
-  flex: 1;
-  padding: 11px 16px;
-  border-radius: 10px;
-  border: 1.5px solid #ddd0f0;
-  background: #ffffff;
-  font-size: 13px; font-weight: 600; color: #2d1b2e;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 7px;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-  font-family: inherit;
-}
-.wallet-btn:hover { background: #f0eaff; border-color: #9b6ddd; color: #5b3fa0; }
-.wallet-btn-primary { background: #2d1b2e; color: #ffffff; border-color: #2d1b2e; }
-.wallet-btn-primary:hover { background: #5b3fa0; border-color: #5b3fa0; color: #ffffff; }
 
 /* Section / day labels */
 .wallet-section-title {

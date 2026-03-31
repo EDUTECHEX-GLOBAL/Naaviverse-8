@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from "react";
-import realtorwhite from "../../static/images/dashboard/realtorwhite.svg";
 import "./accDashsidebar.scss";
 import { useStore } from "../store/store.ts";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // ✅ add useLocation
 import logo from "../../assets/images/logo/naavi_final_logo2.png";
+
+// ✅ URL map for each section
+const ROUTE_MAP = {
+  Dashboard:   "/admin/dashboard/accountants",
+  CRM:         "/admin/dashboard/crm",
+  Paths:       "/admin/dashboard/paths?tab=active",
+  Steps:       "/admin/dashboard/steps?tab=active",
+  Marketplace: "/admin/dashboard/marketplace",
+};
 
 const sidebarMenu1 = [
   { id: 0, display: "CRM",          title: "CRM",          click: true },
@@ -28,18 +36,48 @@ const AdminAccDashsidebar = ({
   admin,
 }) => {
   const [selectedMenu, setSelectedMenu] = useState([]);
-  const { accsideNav, setaccsideNav, setispopular } = useStore();
+  const { accsideNav, setaccsideNav } = useStore();
   const navigate = useNavigate();
+  const location = useLocation(); // ✅
 
   useEffect(() => {
     const menu = admin ? sidebarMenu2 : sidebarMenu1;
     setSelectedMenu(menu);
 
-    const knownTitles = menu.map((m) => m.title);
-    if (!accsideNav || !knownTitles.includes(accsideNav)) {
-      setaccsideNav(menu[0].title);
+    // ✅ Derive active tab from current URL path on mount/navigation
+    const currentPath = location.pathname;
+    const matched = menu.find(
+      (m) => ROUTE_MAP[m.title]?.split("?")[0] === currentPath
+    );
+    if (matched) {
+      setaccsideNav(matched.title);
+    } else {
+      const knownTitles = menu.map((m) => m.title);
+      if (!accsideNav || !knownTitles.includes(accsideNav)) {
+        setaccsideNav(menu[0].title);
+      }
     }
-  }, [admin]);
+  }, [admin, location.pathname]); // ✅ re-run when URL changes
+
+  // ✅ Highlight based on current URL
+  const isActive = (title) => {
+    const route = ROUTE_MAP[title];
+    if (!route) return accsideNav === title;
+    return location.pathname === route.split("?")[0];
+  };
+
+  const handleNavClick = (each) => {
+    if (!each.click) return;
+    setaccsideNav(each.title);
+    const route = ROUTE_MAP[each.title];
+    if (route) {
+      navigate(route); // ✅ navigate to URL
+    } else if (handleChangeAccDashsidebar) {
+      handleChangeAccDashsidebar();
+    } else if (isNotOnMainPage) {
+      navigate("/dashboard/accountants");
+    }
+  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -49,15 +87,15 @@ const AdminAccDashsidebar = ({
   return (
     <div
       className="dashboard-sidebar"
-      style={{ 
-        overflow: "hidden", 
+      style={{
+        overflow: "hidden",
         padding: "0",
         width: "210px",
         flexShrink: 0,
         position: "relative",
         zIndex: 100,
         background: "#ffffff",
-        boxShadow: "none"
+        boxShadow: "none",
       }}
     >
       {/* ── Logo ─────────────────────────────────────────────────────────── */}
@@ -69,10 +107,12 @@ const AdminAccDashsidebar = ({
           borderBottom: "0.5px solid #e5e5e5",
           display: "flex",
           alignItems: "center",
+          cursor: "pointer",
         }}
         onClick={() => {
-          if (handleChangeAccDashsidebar) handleChangeAccDashsidebar();
-          setaccsideNav(admin ? "Dashboard" : "CRM");
+          const defaultTitle = admin ? "Dashboard" : "CRM";
+          setaccsideNav(defaultTitle);
+          navigate(ROUTE_MAP[defaultTitle]);
         }}
       >
         <img
@@ -98,27 +138,20 @@ const AdminAccDashsidebar = ({
               key={i}
               className="each-sidenav"
               style={{
-                background: "transparent",
-                color: "#64748b",
+                // ✅ Active highlight based on URL
+                background: isActive(each.title) ? "#fef2f2" : "transparent",
+                color: isActive(each.title) ? "#dc2626" : "#64748b",
+                fontWeight: isActive(each.title) ? "600" : "500",
+                borderRadius: isActive(each.title) ? "8px" : "0",
                 paddingLeft: "0",
-                borderRadius: "0",
                 opacity: each.click ? "1" : "0.25",
                 cursor: each.click ? "pointer" : "not-allowed",
                 transition: "all 0.2s ease",
                 padding: "12px 16px",
                 marginBottom: "4px",
                 fontSize: "0.95rem",
-                fontWeight: "500",
               }}
-              onClick={() => {
-                if (!each.click) return;
-                setaccsideNav(each.title);
-                if (handleChangeAccDashsidebar) {
-                  handleChangeAccDashsidebar();
-                } else if (isNotOnMainPage) {
-                  navigate("/dashboard/accountants");
-                }
-              }}
+              onClick={() => handleNavClick(each)}
             >
               {each.display}
             </div>
@@ -143,15 +176,7 @@ const AdminAccDashsidebar = ({
                 fontSize: "0.95rem",
                 fontWeight: "500",
               }}
-              onClick={() => {
-                if (!ele.click) return;
-                setaccsideNav(ele.title);
-                if (handleChangeAccDashsidebar) {
-                  handleChangeAccDashsidebar();
-                } else if (isNotOnMainPage) {
-                  navigate("/dashboard/accountants");
-                }
-              }}
+              onClick={() => handleNavClick(ele)}
             >
               {ele.title}
             </div>
@@ -159,7 +184,7 @@ const AdminAccDashsidebar = ({
         </div>
       </div>
 
-      {/* ── LOGOUT BUTTON - UPDATED WITH BETTER DESIGN ─────────────────────────────────── */}
+      {/* ── Logout ───────────────────────────────────────────────────────── */}
       <div
         style={{
           position: "sticky",
@@ -189,16 +214,19 @@ const AdminAccDashsidebar = ({
             gap: "8px",
           }}
           onMouseEnter={(e) => {
-            e.target.style.background = "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)";
-            e.target.style.borderColor = "#f87171";
-            e.target.style.transform = "translateY(-1px)";
-            e.target.style.boxShadow = "0 2px 8px rgba(220, 38, 38, 0.15)";
+            e.currentTarget.style.background =
+              "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)";
+            e.currentTarget.style.borderColor = "#f87171";
+            e.currentTarget.style.transform = "translateY(-1px)";
+            e.currentTarget.style.boxShadow =
+              "0 2px 8px rgba(220, 38, 38, 0.15)";
           }}
           onMouseLeave={(e) => {
-            e.target.style.background = "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)";
-            e.target.style.borderColor = "#fecaca";
-            e.target.style.transform = "translateY(0)";
-            e.target.style.boxShadow = "none";
+            e.currentTarget.style.background =
+              "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)";
+            e.currentTarget.style.borderColor = "#fecaca";
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.boxShadow = "none";
           }}
         >
           <svg

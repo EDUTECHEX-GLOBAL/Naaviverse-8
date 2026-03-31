@@ -8,12 +8,13 @@ import closepop from "../../static/images/dashboard/closepop.svg";
 import lg1 from "../../static/images/login/lg1.svg";
 import CurrentStep from "../CurrentStep/index.jsx";
 import { useStore } from "../../components/store/store.ts";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { sideNav, setsideNav } = useStore();
   let userDetails = JSON.parse(localStorage.getItem("adminuser"));
   const { setCurrentStepData, setCurrentStepDataLength, mypathsMenu, setMypathsMenu } = useCoinContextData();
@@ -222,7 +223,10 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   useEffect(() => { setShowSelectedPath(null); }, [mypathsMenu]);
 
   useEffect(() => {
-    setMypathsMenu("Paths");
+    const tab = new URLSearchParams(location.search).get("tab");
+    if (tab === "inactive") setMypathsMenu("Inactive Paths");
+    else if (tab === "pending") setMypathsMenu("Pending Paths");
+    else setMypathsMenu("Paths");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -543,20 +547,35 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
         <div className="admin-paths-tabs">
           <button
             className={`paths-tab ${mypathsMenu === "Paths" ? "active" : ""}`}
-            onClick={() => { setMypathsMenu("Paths"); setViewPathEnabled(false); setViewPathData([]); }}>
+            onClick={() => {
+              setMypathsMenu("Paths");
+              setViewPathEnabled(false);
+              setViewPathData([]);
+              navigate("/admin/dashboard/paths?tab=active");
+            }}>
             {admin ? "Active Paths" : "Paths"}
           </button>
           {admin && (
             <button
               className={`paths-tab ${mypathsMenu === "Pending Paths" ? "active" : ""}`}
-              onClick={() => { setMypathsMenu("Pending Paths"); setViewPathEnabled(false); setViewPathData([]); }}>
+              onClick={() => {
+                setMypathsMenu("Pending Paths");
+                setViewPathEnabled(false);
+                setViewPathData([]);
+                navigate("/admin/dashboard/paths?tab=pending");
+              }}>
               Pending Paths
             </button>
           )}
           {admin && (
             <button
               className={`paths-tab ${mypathsMenu === "Inactive Paths" ? "active" : ""}`}
-              onClick={() => { setMypathsMenu("Inactive Paths"); setViewPathEnabled(false); setViewPathData([]); }}>
+              onClick={() => {
+                setMypathsMenu("Inactive Paths");
+                setViewPathEnabled(false);
+                setViewPathData([]);
+                navigate("/admin/dashboard/paths?tab=inactive");
+              }}>
               Inactive Paths
             </button>
           )}
@@ -605,78 +624,78 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
               )}
               <div className="admin-viewpath-goBack-div" onClick={() => setViewPathEnabled(false)}>Go Back</div>
             </div>
-          <div className="admin-viewpath-steps-area">
-  {viewPathLoading
-    ? Array(6).fill("").map((_, i) => (
-        <div className="admin-viewpath-each-j-step" key={i}>...</div>
-      ))
-    : viewPathData?.StepDetails?.map((e, i) => (
-        <div
-          key={i}
-          className="admin-viewpath-each-j-step enhanced-step-card"
-          onClick={() => {
-            setShowSelectedPath(e);
-            setProductKeys(e?.product_ids);
-          }}
-        >
-          {/* STEP HEADER */}
-          <div className="step-top">
-            <div className="step-icon">
-              <img src={e?.icon} alt="" />
-            </div>
-            <div className="step-info">
-              <div className="step-title">{i + 1}. {e?.name}</div>
-              <div className="step-desc">{e?.description}</div>
-            </div>
-          </div>
+            <div className="admin-viewpath-steps-area">
+              {viewPathLoading
+                ? Array(6).fill("").map((_, i) => (
+                  <div className="admin-viewpath-each-j-step" key={i}>...</div>
+                ))
+                : viewPathData?.StepDetails?.map((e, i) => (
+                  <div
+                    key={i}
+                    className="admin-viewpath-each-j-step enhanced-step-card"
+                    onClick={() => {
+                      setShowSelectedPath(e);
+                      setProductKeys(e?.product_ids);
+                    }}
+                  >
+                    {/* STEP HEADER */}
+                    <div className="step-top">
+                      <div className="step-icon">
+                        <img src={e?.icon} alt="" />
+                      </div>
+                      <div className="step-info">
+                        <div className="step-title">{i + 1}. {e?.name}</div>
+                        <div className="step-desc">{e?.description}</div>
+                      </div>
+                    </div>
 
-          {/* 🔥 3 VIEW CARDS */}
-          <div className="step-views">
+                    {/* 🔥 3 VIEW CARDS */}
+                    <div className="step-views">
 
-            {/* MACRO */}
-            <div className="view-card macro">
-              <div className="view-label">Macro</div>
-              <div className="view-name">
-                {e?.macro_name || "Macro View"}
-              </div>
-              <div className="view-desc">
-                {e?.macro_description || "High level overview"}
-              </div>
+                      {/* MACRO */}
+                      <div className="view-card macro">
+                        <div className="view-label">Macro</div>
+                        <div className="view-name">
+                          {e?.macro_name || "Macro View"}
+                        </div>
+                        <div className="view-desc">
+                          {e?.macro_description || "High level overview"}
+                        </div>
+                      </div>
+
+                      {/* MICRO */}
+                      <div className="view-card micro">
+                        <div className="view-label">Micro</div>
+                        <div className="view-name">
+                          {e?.micro_name || "Micro View"}
+                        </div>
+                        <div className="view-desc">
+                          {e?.micro_description || "Mid level details"}
+                        </div>
+                      </div>
+
+                      {/* NANO */}
+                      <div className="view-card nano">
+                        <div className="view-label">Nano</div>
+                        <div className="view-name">
+                          {e?.nano_name || "Nano View"}
+                        </div>
+                        <div className="view-desc">
+                          {e?.nano_description || "Detailed execution"}
+                        </div>
+                      </div>
+
+                    </div>
+
+                    {/* COST (optional) */}
+                    {e?.cost && (
+                      <div className="step-cost">
+                        {e?.cost}
+                      </div>
+                    )}
+                  </div>
+                ))}
             </div>
-
-            {/* MICRO */}
-            <div className="view-card micro">
-              <div className="view-label">Micro</div>
-              <div className="view-name">
-                {e?.micro_name || "Micro View"}
-              </div>
-              <div className="view-desc">
-                {e?.micro_description || "Mid level details"}
-              </div>
-            </div>
-
-            {/* NANO */}
-            <div className="view-card nano">
-              <div className="view-label">Nano</div>
-              <div className="view-name">
-                {e?.nano_name || "Nano View"}
-              </div>
-              <div className="view-desc">
-                {e?.nano_description || "Detailed execution"}
-              </div>
-            </div>
-
-          </div>
-
-          {/* COST (optional) */}
-          {e?.cost && (
-            <div className="step-cost">
-              {e?.cost}
-            </div>
-          )}
-        </div>
-      ))}
-</div>
           </div>
         ) : (
           <div className="paths-table-body">
@@ -718,17 +737,17 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                       </span>
                     )}
                   </div>
-<div className="paths-col-steps">
-  <div className="path-meta-info">
-    <span className="meta-date">
-      {(function () {
-        const date = e?.createdAt ? new Date(e.createdAt) : new Date();
-        return date.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
-      })()}
-    </span>
-  </div>
-  <span className="actions-pill">Actions</span>
-</div>
+                  <div className="paths-col-steps">
+                    <div className="path-meta-info">
+                      <span className="meta-date">
+                        {(function () {
+                          const date = e?.createdAt ? new Date(e.createdAt) : new Date();
+                          return date.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+                        })()}
+                      </span>
+                    </div>
+                    <span className="actions-pill">Actions</span>
+                  </div>
                 </div>
               ))}
           </div>

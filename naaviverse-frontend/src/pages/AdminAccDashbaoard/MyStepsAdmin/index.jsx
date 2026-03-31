@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useCoinContextData } from "../../../context/CoinContext.js";
 import Skeleton from "react-loading-skeleton";
 import "./mypaths.scss";
@@ -14,9 +14,9 @@ const parseDuration = (raw) => {
   try {
     const dur = typeof raw === "string" ? JSON.parse(raw) : raw;
     const parts = [
-      parseInt(dur?.years)  > 0 ? `${dur.years}y`  : "",
+      parseInt(dur?.years) > 0 ? `${dur.years}y` : "",
       parseInt(dur?.months) > 0 ? `${dur.months}m` : "",
-      parseInt(dur?.days)   > 0 ? `${dur.days}d`   : "",
+      parseInt(dur?.days) > 0 ? `${dur.days}d` : "",
     ].filter(Boolean);
     return parts.length ? parts.join(" ") : null;
   } catch { return null; }
@@ -54,9 +54,9 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
   const navigate = useNavigate();
 
   const location = useLocation();
-const queryParams = new URLSearchParams(location.search);
-const pathId = queryParams.get("pathId");
-const stepsFromPath = location.state?.steps || null;
+  const queryParams = new URLSearchParams(location.search);
+  const pathId = queryParams.get("pathId");
+  const stepsFromPath = location.state?.steps || null;
   let userDetails = JSON.parse(localStorage.getItem("adminuser"));
   const { mypathsMenu, setMypathsMenu } = useCoinContextData();
 
@@ -79,6 +79,7 @@ const stepsFromPath = location.state?.steps || null;
 
   // View step layer tab
   const [viewLayerTab, setViewLayerTab] = useState("macro");
+  const [expandedSteps, setExpandedSteps] = useState({});
 
   // ── Marketplace states ────────────────────────────────
   const [marketLayer, setMarketLayer] = useState("");
@@ -151,7 +152,34 @@ const stepsFromPath = location.state?.steps || null;
       });
   };
 
-  useEffect(() => { getAllSteps(); }, [mypathsMenu]);
+  // ✅ REPLACE WITH:
+  const isMounted = useRef(false); // ✅ add this ref
+
+  useEffect(() => {
+    const tab = new URLSearchParams(location.search).get("tab");
+    const correctMenu = tab === "inactive" ? "Inactive Steps" : "Active Steps";
+    setMypathsMenu(correctMenu);
+    setLoading(true);
+    const status = correctMenu === "Active Steps" ? "active" : "inactive";
+    axios.get(`${BASE_URL}/api/steps/get?status=${status}`)
+      .then(({ data }) => {
+        const result = data?.data || [];
+        setPartnerStepsData(result);
+        if (result.length > 0) fetchMarketplaceCounts(result);
+        else setServiceCountMap({});
+        setLoading(false);
+      })
+      .catch(() => { setPartnerStepsData([]); setLoading(false); });
+
+    // Mark mount as done AFTER initial fetch
+    isMounted.current = true;
+  }, []);
+
+  // ✅ Skip the very first run — only fires when user manually clicks a tab
+  useEffect(() => {
+    if (!isMounted.current) return;
+    getAllSteps();
+  }, [mypathsMenu]);
 
   useEffect(() => {
     if (modalOpen) document.body.classList.add("admin-popup-open");
@@ -174,7 +202,7 @@ const stepsFromPath = location.state?.steps || null;
 
     if (screen === "editStep") {
       setEditName(selectedStep?.name || "");
-      setEditDesc(selectedStep?.description || "");
+      setEditDesc(selectedStep?.macro_description || selectedStep?.description || "");
       setEditLength(selectedStep?.length ?? "");
       setEditCost(selectedStep?.cost || "");
     }
@@ -218,14 +246,14 @@ const stepsFromPath = location.state?.steps || null;
 
   const getTitle = () => {
     const titles = {
-      main:                "Step Actions",
-      editStep:            "Edit Step",
-      viewStep:            "View Step",
-      marketplace_layer:   "Marketplace",
-      marketplace_attach:  "Marketplace",
-      marketplace_create:  "Marketplace",
-      deleteConfirm:       "Delete Step",
-      success:             "",
+      main: "Step Actions",
+      editStep: "Edit Step",
+      viewStep: "View Step",
+      marketplace_layer: "Marketplace",
+      marketplace_attach: "Marketplace",
+      marketplace_create: "Marketplace",
+      deleteConfirm: "Delete Step",
+      success: "",
     };
     return titles[modalScreen] || "Step Actions";
   };
@@ -249,7 +277,7 @@ const stepsFromPath = location.state?.steps || null;
     try {
       const payload = {};
       if (editName) payload.name = editName;
-      if (editDesc) payload.description = editDesc;
+      if (editDesc) payload.macro_description = editDesc;
       if (editLength !== "" && editLength !== null && editLength !== undefined) {
         payload.length = Number(editLength);
       }
@@ -334,9 +362,9 @@ const stepsFromPath = location.state?.steps || null;
 
 
 
-const filtered = (stepsFromPath || partnerStepsData)?.filter(e =>
-  e?.name?.toLowerCase()?.includes(search?.toLowerCase() || "")
-);
+  const filtered = (stepsFromPath || partnerStepsData)?.filter(e =>
+    e?.name?.toLowerCase()?.includes(search?.toLowerCase() || "")
+  );
   const currentLayerCfg = selectedStep ? getLayerConfig(selectedStep)[marketLayer] : null;
   const attachedIds = new Set(attachedServices.map(s => s._id?.toString()));
   const availableItems = marketplaceItems.filter(
@@ -358,7 +386,11 @@ const filtered = (stepsFromPath || partnerStepsData)?.filter(e =>
           {["Active Steps", "Inactive Steps"].map(tab => (
             <div key={tab}
               className={`admin-steps-menu-item ${mypathsMenu === tab ? "active-tab" : ""}`}
-              onClick={() => setMypathsMenu(tab)}>
+              onClick={() => {
+                setMypathsMenu(tab);
+                const tabValue = tab === "Inactive Steps" ? "inactive" : "active";
+                navigate(`/admin/dashboard/steps?tab=${tabValue}`); // ✅ updates URL
+              }}>
               {tab}
             </div>
           ))}
@@ -366,7 +398,7 @@ const filtered = (stepsFromPath || partnerStepsData)?.filter(e =>
         <div className="admin-steps-search-row">
           <div className="admin-steps-search-input">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
             <input
               type="text"
@@ -382,58 +414,82 @@ const filtered = (stepsFromPath || partnerStepsData)?.filter(e =>
       <div className="admin-steps-content">
 
         {pathId && (
-  <button
-    className="show-all-btn"
-    onClick={() => navigate("/steps")}
-    style={{ marginBottom: "10px" }}
-  >
-    Show All Steps
-  </button>
-)}
+          <button
+            className="show-all-btn"
+            onClick={() => navigate("/steps")}
+            style={{ marginBottom: "10px" }}
+          >
+            Show All Steps
+          </button>
+        )}
         <div className="admin-steps-list">
           {loading
             ? Array(6).fill("").map((_, i) => (
-                <div className="admin-step-card" key={i}>
-                  <div className="admin-step-name"><Skeleton width={120} height={20} /></div>
-                  <div className="admin-step-desc"><Skeleton width="90%" height={20} /></div>
-                  <div className="admin-step-right"><Skeleton width={80} height={32} borderRadius={50} /></div>
-                </div>
-              ))
+              <div className="admin-step-card" key={i}>
+                <div className="admin-step-name"><Skeleton width={120} height={20} /></div>
+                <div className="admin-step-desc"><Skeleton width="90%" height={20} /></div>
+                <div className="admin-step-right"><Skeleton width={80} height={32} borderRadius={50} /></div>
+              </div>
+            ))
             : filtered?.map(e => {
-                const isFree = !e?.cost || e?.cost?.toLowerCase() === "free";
-                const desc = e?.description && e.description.trim().length > 0
-                  ? (e.description.length > 120 ? e.description.substring(0, 120) + "..." : e.description)
-                  : null;
-                return (
-                  <div className="admin-step-card" key={e._id} onClick={() => openModal(e)}>
-                    <div className="admin-step-name">
-                      <span className="admin-step-name-text">{e?.name || "Untitled"}</span>
-                    </div>
-                    <div className="admin-step-desc" onClick={ev => ev.stopPropagation()}>
-                      {desc
-                        ? <span className="admin-step-desc-text">{desc}</span>
-                        : <span className="admin-step-desc-empty">No description available</span>
-                      }
-                    </div>
-                    <div className="admin-step-right">
-                      <div className="admin-step-meta">
-                        <span className="admin-step-date">
-                          {e?.createdAt
-                            ? new Date(e.createdAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
-                            : "—"}
-                        </span>
-                        <span className="admin-step-mkt-count">🛒 {serviceCountMap[e._id] ?? 0}</span>
-                      </div>
-                      <span
-                        className="admin-step-actions-pill"
-                        onClick={ev => { ev.stopPropagation(); openModal(e); }}
-                      >
-                        Actions
-                      </span>
-                    </div>
+              const isFree = !e?.cost || e?.cost?.toLowerCase() === "free";
+              const rawDesc = e?.macro_description || e?.micro_description || e?.nano_description || "";
+              const isExpanded = expandedSteps[e._id];
+              const isLong = rawDesc.length > 120;
+              const desc = rawDesc.trim().length > 0
+                ? (isExpanded || !isLong ? rawDesc : rawDesc.substring(0, 120))
+                : null;
+              return (
+                <div className="admin-step-card" key={e._id} onClick={() => openModal(e)}>
+                  <div className="admin-step-name">
+                    <span className="admin-step-name-text">{e?.name || "Untitled"}</span>
                   </div>
-                );
-              })}
+                  <div className="admin-step-desc" onClick={ev => ev.stopPropagation()}>
+                    {desc ? (
+                      <span className="admin-step-desc-text">
+                        {desc}
+                        {isLong && (
+                          <span
+                            onClick={ev => {
+                              ev.stopPropagation();
+                              setExpandedSteps(prev => ({ ...prev, [e._id]: !prev[e._id] }));
+                            }}
+                            style={{
+                              color: "#7c3aed",
+                              fontWeight: 600,
+                              cursor: "pointer",
+                              marginLeft: 4,
+                              fontSize: "0.82rem",
+                              whiteSpace: "nowrap"
+                            }}
+                          >
+                            {isExpanded ? " Show Less " : "... See More "}
+                          </span>
+                        )}
+                      </span>
+                    ) : (
+                      <span className="admin-step-desc-empty">No description available</span>
+                    )}
+                  </div>
+                  <div className="admin-step-right">
+                    <div className="admin-step-meta">
+                      <span className="admin-step-date">
+                        {e?.createdAt
+                          ? new Date(e.createdAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                          : "—"}
+                      </span>
+                      <span className="admin-step-mkt-count">🛒 {serviceCountMap[e._id] ?? 0}</span>
+                    </div>
+                    <span
+                      className="admin-step-actions-pill"
+                      onClick={ev => { ev.stopPropagation(); openModal(e); }}
+                    >
+                      Actions
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
         </div>
       </div>
 
@@ -569,7 +625,7 @@ const filtered = (stepsFromPath || partnerStepsData)?.filter(e =>
                     {[
                       { key: "macro", label: "Macro", color: "#7c3aed" },
                       { key: "micro", label: "Micro", color: "#0891b2" },
-                      { key: "nano",  label: "Nano",  color: "#d97706" },
+                      { key: "nano", label: "Nano", color: "#d97706" },
                     ].map(({ key, label, color }) => (
                       <button
                         key={key}
@@ -586,12 +642,12 @@ const filtered = (stepsFromPath || partnerStepsData)?.filter(e =>
                     viewLayerTab === layer && (
                       <div key={layer} className={`sm-layer-card sm-layer-card--${layer}`}>
                         {[
-                          ["Name",         selectedStep?.[`${layer}_name`]],
-                          ["Description",  selectedStep?.[`${layer}_description`]],
-                          ["Length",       selectedStep?.[`${layer}_length`]],
-                          ["Access",       selectedStep?.[`${layer}_access`]],
+                          ["Name", selectedStep?.[`${layer}_name`]],
+                          ["Description", selectedStep?.[`${layer}_description`]],
+                          ["Length", selectedStep?.[`${layer}_length`]],
+                          ["Access", selectedStep?.[`${layer}_access`]],
                           ["Instructions", selectedStep?.[`${layer}_instructions`]],
-                          ["Chances",      selectedStep?.[`${layer}_chances`]],
+                          ["Chances", selectedStep?.[`${layer}_chances`]],
                         ].map(([label, val]) => val ? (
                           <div key={label} className="sm-layer-row">
                             <span className="sm-layer-key">{label}</span>

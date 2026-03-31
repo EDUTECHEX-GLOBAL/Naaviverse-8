@@ -1,7 +1,7 @@
 import React, { useState, useLayoutEffect, useEffect, useRef } from "react";
 import axios from "axios";
 
-import AdminCRM from "./Admincrm.jsx"; 
+import AdminCRM from "./Admincrm.jsx";
 import { useNavigate } from "react-router-dom";
 import "./accDashboard.scss";
 import Dashboard from "./Dashboard";
@@ -62,6 +62,7 @@ import AdminStepDataPage from "./AdminStepDataPage.jsx";
 import MyStepsAdmin from "./MyStepsAdmin/index.jsx";
 import MenuNav from "../../components/MenuNav/index.jsx";
 import EditServiceForm from "./EditServices";
+
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -239,6 +240,13 @@ const AccDashboard = () => {
     countryApiValue,
   } = useCoinContextData();
 
+  const URL_TO_NAV = {
+    "/admin/dashboard/accountants": "Dashboard",
+    "/admin/dashboard/crm": "CRM",
+    "/admin/dashboard/paths": "Paths",
+    "/admin/dashboard/steps": "Steps",
+    "/admin/dashboard/marketplace": "Marketplace",
+  };
   const [profileId, setProfileId] = useState("");
 
   // Get user details safely
@@ -350,6 +358,14 @@ const AccDashboard = () => {
       navigate("/admin/login");
     }
   }, []);
+
+
+  useEffect(() => {
+    const navTitle = URL_TO_NAV[location.pathname];
+    if (navTitle) {
+      setaccsideNav(navTitle);
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     resetpop();
@@ -1194,7 +1210,7 @@ const AccDashboard = () => {
                     <Dashboard />
                   )}
 
-                 {accsideNav === "CRM" && <AdminCRM />}
+                  {accsideNav === "CRM" && <AdminCRM />}
 
                   {/* MARKETPLACE SECTION */}
                   {accsideNav === "Marketplace" && (
@@ -1290,19 +1306,19 @@ const AccDashboard = () => {
                     "Universities",
                     "Steps",
                   ].includes(accsideNav) && (
-                    <div
-                      style={{
-                        height: "calc(100% - 70px)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "1.5rem",
-                        fontWeight: "600",
-                      }}
-                    >
-                      Coming Soon
-                    </div>
-                  )}
+                      <div
+                        style={{
+                          height: "calc(100% - 70px)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "1.5rem",
+                          fontWeight: "600",
+                        }}
+                      >
+                        Coming Soon
+                      </div>
+                    )}
                 </>
               )}
             </div>

@@ -6,113 +6,127 @@ import "./Admincrm.scss";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-/* ─────────────────────────────────────────────────────────────────
-   STATIC ACTIVITY  (popup only — table rows use real API data)
-───────────────────────────────────────────────────────────────── */
-const USER_ACTIVITY = {
-  "lavanyagundapaneni29@gmail.com": {
-    lastSeen: "Today, 09:18 AM",
-    paths:         ["AI Engineer Path", "Generative AI Explorer", "ML Foundations"],
-    subscriptions: ["Premium Annual Plan", "Career Booster"],
-    explored:      ["Computer Vision", "LangChain Workshop"],
-  },
-  "sivasai5211@gmail.com": {
-    lastSeen: "Yesterday",
-    paths:         ["Data Science Bootcamp", "Python Basics"],
-    subscriptions: ["Starter Plan"],
-    explored:      ["NLP Essentials"],
-  },
-  "udaysankar12@gmail.com": {
-    lastSeen: "2 days ago",
-    paths:         ["Cloud Foundations"],
-    subscriptions: [],
-    explored:      ["DevOps Intro", "Docker Basics"],
-  },
-  "lavanya2902@gmail.com": {
-    lastSeen: "Today, 09:18 AM",
-    paths:         ["AI Engineer Path", "Cloud Foundations", "Cyber Security 101"],
-    subscriptions: ["Premium Annual Plan", "Study Pack"],
-    explored:      ["Blockchain Basics", "Web3 Workshop"],
-  },
-  "hgshg@gmail.com": {
-    lastSeen: "3 days ago",
-    paths:         [],
-    subscriptions: [],
-    explored:      ["Career Explorer"],
-  },
-  "anuradhasomisetti1027@gmail.com": {
-    lastSeen: "Today, 09:18 AM",
-    paths:         ["AI Engineer Path", "Data Science Bootcamp", "ML Foundations", "NLP Deep Dive", "Vision AI"],
-    subscriptions: ["Premium Annual Plan", "Research Pack", "Career Booster"],
-    explored:      ["Computer Vision", "LangChain Workshop"],
-  },
-  "somisetti1@gmail.com": {
-    lastSeen: "Yesterday",
-    paths:         ["Python Basics", "Web Dev Essentials"],
-    subscriptions: ["Starter Plan"],
-    explored:      ["React Crash Course", "Node.js Basics"],
-  },
-};
-
-const PARTNER_ACTIVITY = {
-  default: {
-    lastSeen: "Today, 09:18 AM",
-    pathsAdded:    ["Data Science Bootcamp", "Cloud Foundations"],
-    listings:      ["AI Tools Suite", "Analytics Pro", "Dev Accelerator", "Study Hub"],
-    activeDeals:   ["TechCorp Partnership", "EduFin Deal"],
-  },
-};
-
-const DEFAULT_USER = {
-  lastSeen: "Recently",
-  paths: ["Intro to AI"], subscriptions: [], explored: ["Career Explorer"],
-};
-
-const getUserAct    = (email) => USER_ACTIVITY[email]    ?? DEFAULT_USER;
-const getPartnerAct = (email) => PARTNER_ACTIVITY[email] ?? PARTNER_ACTIVITY.default;
-
 /* helpers */
 const initial  = (s) => (s || "?")[0].toUpperCase();
 const lvlLabel = (n) => `Level ${parseInt(n) || 1}`;
 const lvlCls   = (n) => { const v = parseInt(n)||1; return v >= 3 ? "lvl-high" : v === 2 ? "lvl-mid" : "lvl-low"; };
 
+/* ✅ FIXED: Map partnerType values → clean display labels (matches schema enum) */
+const TYPE_LABELS = {
+  distributor:  "Distributor",
+  vendor:       "Vendor",
+  mentor:       "Mentor",
+  institution:  "Institution",
+};
+
+/* Colour classes per partner type */
+const TYPE_COLORS = {
+  distributor: "type-blue",
+  vendor:      "type-green",
+  mentor:      "type-orange",
+  institution: "type-purple",
+};
+
+/* ✅ FIXED: reads p.partnerType now */
+const getTypeLabel = (raw) => {
+  if (!raw) return null;
+  const key = raw.trim().toLowerCase();
+  return TYPE_LABELS[key] || raw; // fall back to raw if unknown
+};
+
+const getTypeColor = (raw) => {
+  if (!raw) return "type-default";
+  const key = raw.trim().toLowerCase();
+  return TYPE_COLORS[key] || "type-default";
+};
+
 /* ─────────────────────────────────────────────────────────────────
    SECTION inside popup
 ───────────────────────────────────────────────────────────────── */
-const Section = ({ title, icon, items, chipCls }) => (
-  <div className="apop-section">
-    <div className="apop-sec-head">
-      <span className="apop-sec-bar" />
-      <span className="apop-sec-icon">{icon}</span>
-      <span className="apop-sec-title">{title}</span>
-      <span className="apop-sec-count">{items.length}</span>
+const Section = ({ title, icon, items = [], chipCls }) => {
+  const safeItems = Array.isArray(items) ? items : [];
+  return (
+    <div className="apop-section">
+      <div className="apop-sec-head">
+        <span className="apop-sec-bar" />
+        <span className="apop-sec-icon">{icon}</span>
+        <span className="apop-sec-title">{title}</span>
+        <span className="apop-sec-count">{safeItems.length}</span>
+      </div>
+      <div className="apop-chips-row">
+        {safeItems.length === 0
+          ? <span className="apop-none">None yet</span>
+          : safeItems.map((item, i) => (
+              <span className={`apop-chip ${chipCls}`} key={i}>{item}</span>
+            ))
+        }
+      </div>
     </div>
-    <div className="apop-chips-row">
-      {items.length === 0
-        ? <span className="apop-none">None yet</span>
-        : items.map((item, i) => (
-            <span className={`apop-chip ${chipCls}`} key={i}>{item}</span>
-          ))
-      }
-    </div>
-  </div>
-);
+  );
+};
 
 /* ─────────────────────────────────────────────────────────────────
    ACTIVITY POPUP
 ───────────────────────────────────────────────────────────────── */
 const ActivityPopup = ({ item, type, onClose }) => {
-  if (!item) return null;
+  const [activity, setActivity] = useState(null);
+  const [loading, setLoading]   = useState(false);
 
+  useEffect(() => {
+    if (!item) return;
+    setActivity(null);
+    setLoading(true);
+
+    if (type === "user") {
+      axios
+        .get(`${BASE_URL}/api/users/activity?email=${encodeURIComponent(item.email)}`)
+        .then((res) => {
+          if (res.data?.status) {
+            const d = res.data.data;
+            setActivity({
+              lastSeen:      d.lastSeen      || "Recently",
+              paths:         (d.selectedPaths || []).map((p) => p?.name || p?.title || p),
+              subscriptions: (d.subscriptions || []).map((s) => s?.name || s?.title || s),
+              explored:      (d.exploredPaths || []).map((e) => e?.name || e?.title || e),
+            });
+          } else {
+            setActivity({ lastSeen: "Recently", paths: [], subscriptions: [], explored: [] });
+          }
+        })
+        .catch(() =>
+          setActivity({ lastSeen: "Recently", paths: [], subscriptions: [], explored: [] })
+        )
+        .finally(() => setLoading(false));
+    } else {
+      axios
+        .get(`${BASE_URL}/api/partner/activity?email=${encodeURIComponent(item.email)}`)
+        .then((res) => {
+          if (res.data?.status) {
+            const d = res.data.data;
+            setActivity({
+              lastSeen:    d.lastSeen    || "Recently",
+              pathsAdded:  (d.pathsAdded  || []).map((p) => p?.name || p?.title || p),
+              listings:    (d.listings    || []).map((l) => l?.name || l?.title || l),
+              activeDeals: (d.activeDeals || []).map((dl) => dl?.name || dl?.title || dl),
+            });
+          } else {
+            setActivity({ lastSeen: "Recently", pathsAdded: [], listings: [], activeDeals: [] });
+          }
+        })
+        .catch(() =>
+          setActivity({ lastSeen: "Recently", pathsAdded: [], listings: [], activeDeals: [] })
+        )
+        .finally(() => setLoading(false));
+    }
+  }, [item, type]);
+
+  if (!item) return null;
   const name = item.name || item.businessName || "—";
-  const act  = type === "user" ? getUserAct(item.email) : getPartnerAct(item.email);
 
   return (
     <>
       <div className="apop-backdrop" onClick={onClose} />
       <div className="apop-box">
-
-        {/* ── Header ── */}
         <div className="apop-header">
           <span className="apop-header-icon">🕐</span>
           <div className="apop-header-text">
@@ -121,34 +135,29 @@ const ActivityPopup = ({ item, type, onClose }) => {
           </div>
           <button className="apop-close" onClick={onClose}>✕</button>
         </div>
-
         <div className="apop-divider" />
-
-        {/* ── Sections ── */}
         <div className="apop-body">
-          {type === "user" ? (
-            <>
-              <Section title="Selected Paths"       icon="🗺️" items={act.paths}         chipCls="chip-blue"   />
-              <Section title="Subscriptions"         icon="⭐" items={act.subscriptions}  chipCls="chip-purple" />
-              <Section title="Explored / Discovered" icon="🌐" items={act.explored}       chipCls="chip-teal"   />
-            </>
-          ) : (
-            <>
-              <Section title="Paths Added"           icon="🗺️" items={act.pathsAdded}   chipCls="chip-blue"   />
-              <Section title="Marketplace Listings"  icon="🛒" items={act.listings}      chipCls="chip-purple" />
-              <Section title="Active Deals"          icon="🤝" items={act.activeDeals}   chipCls="chip-teal"   />
-            </>
-          )}
+          {loading ? (
+            <div className="apop-loading">
+              <Skeleton count={3} height={60} style={{ marginBottom: 12, borderRadius: 10 }} />
+            </div>
+          ) : activity ? (
+            type === "user" ? (
+              <>
+                <Section title="Selected Paths"       icon="🗺️" items={activity.paths}         chipCls="chip-blue"   />
+                <Section title="Subscriptions"         icon="⭐" items={activity.subscriptions}  chipCls="chip-purple" />
+                <Section title="Explored / Discovered" icon="🌐" items={activity.explored}       chipCls="chip-teal"   />
+              </>
+            ) : (
+              <>
+                <Section title="Paths Added"           icon="🗺️" items={activity.pathsAdded}   chipCls="chip-blue"   />
+                <Section title="Marketplace Listings"  icon="🛒" items={activity.listings}      chipCls="chip-purple" />
+                <Section title="Active Deals"          icon="🤝" items={activity.activeDeals}   chipCls="chip-teal"   />
+              </>
+            )
+          ) : null}
         </div>
-
         <div className="apop-divider" />
-
-        {/* ── Footer ── */}
-        <div className="apop-footer">
-          <span>🕐</span>
-          <span>Last active: <strong>{act.lastSeen}</strong></span>
-        </div>
-
       </div>
     </>
   );
@@ -167,7 +176,6 @@ const AdminCRM = () => {
   const [popupItem, setPopupItem]           = useState(null);
   const [popupType, setPopupType]           = useState("user");
 
-  /* real users */
   useEffect(() => {
     setUserLoading(true);
     axios.get(`${BASE_URL}/api/users`)
@@ -181,7 +189,6 @@ const AdminCRM = () => {
       .finally(() => setUserLoading(false));
   }, []);
 
-  /* real partners */
   useEffect(() => {
     setPartnerLoading(true);
     axios.get(`${BASE_URL}/api/partner/getpartners`)
@@ -200,7 +207,8 @@ const AdminCRM = () => {
     [u?.name, u?.email, u?.country].some((f) => (f || "").toLowerCase().includes(q))
   );
   const filteredPartners = partnerData.filter((p) =>
-    [p?.businessName, p?.email, p?.country].some((f) => (f || "").toLowerCase().includes(q))
+    /* ✅ FIXED: search also checks p.partnerType now */
+    [p?.businessName, p?.email, p?.country, p?.partnerType].some((f) => (f || "").toLowerCase().includes(q))
   );
 
   const openPopup = (item, type) => { setPopupItem(item); setPopupType(type); };
@@ -224,7 +232,6 @@ const AdminCRM = () => {
             Partners <span className="tab-pill">{partnerData.length}</span>
           </button>
         </div>
-
         <div className="acrm-search">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.2">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -241,30 +248,34 @@ const AdminCRM = () => {
       {/* ── Table ── */}
       <div className="acrm-table-wrap">
 
-        {/* thead */}
-        {tab === "Users" ? (
+        {/* ── Users thead ── */}
+        {tab === "Users" && (
           <div className="acrm-thead">
             <div style={{ width: "22%" }}>Name</div>
-            <div style={{ width: "28%" }}>Email</div>
+            <div style={{ width: "30%" }}>Email</div>
             <div style={{ width: "14%" }}>Country</div>
             <div style={{ width: "17%" }}>Phone</div>
-            <div style={{ width: "11%" }}>Profile Level</div>
-            <div style={{ width: "8%", textAlign: "right" }}>Activity</div>
+            <div style={{ width: "10%" }}>Profile Level</div>
+            <div style={{ width: "7%", textAlign: "right" }}>Activity</div>
           </div>
-        ) : (
+        )}
+
+        {/* ── Partners thead ── */}
+        {tab === "Partners" && (
           <div className="acrm-thead">
-            <div style={{ width: "26%" }}>Business</div>
-            <div style={{ width: "25%" }}>Email</div>
-            <div style={{ width: "13%" }}>Country</div>
-            <div style={{ width: "12%" }}>Type</div>
+            <div style={{ width: "24%" }}>Business</div>
+            <div style={{ width: "24%" }}>Email</div>
+            <div style={{ width: "11%" }}>Country</div>
+            <div style={{ width: "16%" }}>Partner Type</div>
             <div style={{ width: "16%" }}>POC</div>
-            <div style={{ width: "8%", textAlign: "right" }}>Activity</div>
+            <div style={{ width: "9%", textAlign: "right" }}>Activity</div>
           </div>
         )}
 
         {/* tbody */}
         <div className="acrm-tbody">
 
+          {/* ── Users rows ── */}
           {tab === "Users" && (
             userLoading
               ? Array(8).fill("").map((_, i) => <SkelRow key={i} />)
@@ -276,15 +287,15 @@ const AdminCRM = () => {
                         <div className="row-av">{initial(u.name)}</div>
                         <span className="row-nm">{u.name || "—"}</span>
                       </div>
-                      <div className="cell-mono" style={{ width: "28%" }}>{u.email}</div>
+                      <div className="cell-mono" style={{ width: "30%" }}>{u.email}</div>
                       <div style={{ width: "14%" }}>{u.country || "—"}</div>
                       <div style={{ width: "17%" }}>{u.phoneNumber || "—"}</div>
-                      <div style={{ width: "11%" }}>
+                      <div style={{ width: "10%" }}>
                         <span className={`lvl-badge ${lvlCls(u.user_level)}`}>
                           {lvlLabel(u.user_level)}
                         </span>
                       </div>
-                      <div style={{ width: "8%", textAlign: "right" }}>
+                      <div style={{ width: "7%", textAlign: "right" }}>
                         <button className="act-btn" onClick={() => openPopup(u, "user")}>
                           Activity
                         </button>
@@ -293,6 +304,7 @@ const AdminCRM = () => {
                   ))
           )}
 
+          {/* ── Partners rows ── */}
           {tab === "Partners" && (
             partnerLoading
               ? Array(6).fill("").map((_, i) => <SkelRow key={i} />)
@@ -300,25 +312,49 @@ const AdminCRM = () => {
                 ? <Empty label="No partners found" />
                 : filteredPartners.map((p, i) => (
                     <div className="acrm-row" key={i}>
-                      <div className="cell-name" style={{ width: "26%" }}>
+
+                      {/* Business */}
+                      <div className="cell-name" style={{ width: "24%" }}>
                         {p.logo
                           ? <img src={p.logo} alt="" className="row-logo" />
                           : <div className="row-av partner-av">{initial(p.businessName)}</div>}
                         <span className="row-nm">{p.businessName || "—"}</span>
                       </div>
-                      <div className="cell-mono" style={{ width: "25%" }}>{p.email}</div>
-                      <div style={{ width: "13%" }}>{p.country || "—"}</div>
-                      <div style={{ width: "12%" }}>
-                        {p.type ? <span className="type-tag">{p.type}</span> : "—"}
+
+                      {/* Email */}
+                      <div className="cell-mono" style={{ width: "24%" }}>{p.email}</div>
+
+                      {/* Country */}
+                      <div style={{ width: "11%", fontSize: "13px", color: "#475569" }}>
+                        {p.country || "—"}
                       </div>
+
+                      {/* ✅ FIXED: Partner Type — now reads p.partnerType from schema */}
                       <div style={{ width: "16%" }}>
+                        {p.partnerType ? (
+                          <span
+                            className={`type-tag ${getTypeColor(p.partnerType)}`}
+                            title={p.partnerType}
+                          >
+                            {getTypeLabel(p.partnerType)}
+                          </span>
+                        ) : (
+                          <span className="type-empty">—</span>
+                        )}
+                      </div>
+
+                      {/* POC */}
+                      <div style={{ width: "16%", fontSize: "13px", color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {`${p.firstName || ""} ${p.lastName || ""}`.trim() || "—"}
                       </div>
-                      <div style={{ width: "8%", textAlign: "right" }}>
+
+                      {/* Activity */}
+                      <div style={{ width: "9%", textAlign: "right" }}>
                         <button className="act-btn" onClick={() => openPopup(p, "partner")}>
                           Activity
                         </button>
                       </div>
+
                     </div>
                   ))
           )}

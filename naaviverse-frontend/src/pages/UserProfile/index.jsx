@@ -9,22 +9,22 @@ import { LoadingAnimation1 } from "../../components/LoadingAnimation1";
 import LevelOneModal from "./LevelOneModal";
 import LevelTwoModal from "./LevelTwoModal";
 import LevelThreeModal from "./LevelThreeModal";
-import lg1 from "../../static/images/login/lg1.svg";
+import lg1 from "../login/favicon3.png";
 import "./UserProfile.css";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const ClockIcon = () => (
-  <svg width="52" height="52" viewBox="0 0 24 24" fill="none"
-    stroke="#f59e0b" strokeWidth="1.5">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+    stroke="#d97706" strokeWidth="2">
     <circle cx="12" cy="12" r="10" />
     <path d="M12 6V12L16 14" strokeLinecap="round" />
   </svg>
 );
 
 const XCircleIcon = () => (
-  <svg width="52" height="52" viewBox="0 0 24 24" fill="none"
-    stroke="#ef4444" strokeWidth="1.5">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+    stroke="#dc2626" strokeWidth="2">
     <circle cx="12" cy="12" r="10" />
     <path d="M15 9L9 15M9 9L15 15" strokeLinecap="round" />
   </svg>
@@ -187,7 +187,6 @@ const UserProfile = () => {
     return (
       <div className="dashboard-main">
         <div className="dashboard-body">
-          {/* ✅ isProfileIncomplete=true locks sidebar during loading */}
           <Dashsidebar
             approvalStatus={approvalStatus}
             isProfileIncomplete={true}
@@ -207,7 +206,6 @@ const UserProfile = () => {
     return (
       <div className="dashboard-main">
         <div className="dashboard-body">
-          {/* ✅ isProfileIncomplete=true — sidebar locked, user must complete profile */}
           <Dashsidebar
             approvalStatus={approvalStatus}
             isProfileIncomplete={true}
@@ -224,91 +222,106 @@ const UserProfile = () => {
     );
   }
 
-  // ── Approval overlay ─────────────────────────────────────────────────────
-  const ApprovalOverlay = () => (
-    <div style={{
-      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-      background: "rgba(248,250,252,0.97)", zIndex: 9999,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)",
-    }}>
+  // ── Determine if read-only (pending or rejected) ─────────────────────────
+  const isReadOnly = approvalStatus === "pending" || approvalStatus === "rejected";
+
+  // ── Top review banner (replaces the old fullscreen overlay) ─────────────
+  const ReviewBanner = () => {
+    const isPending  = approvalStatus === "pending";
+    const isRejected = approvalStatus === "rejected";
+
+    return (
       <div style={{
-        background: "#fff", borderRadius: "24px", padding: "52px 56px",
-        maxWidth: "500px", width: "88%", textAlign: "center",
-        boxShadow: "0 24px 64px rgba(0,0,0,0.10), 0 4px 16px rgba(0,0,0,0.06)",
-        border: approvalStatus === "rejected"
-          ? "1.5px solid #fecaca"
-          : "1.5px solid #fde68a",
+        background:   isPending ? "#fffbeb" : "#fef2f2",
+        border:       `1px solid ${isPending ? "#fde68a" : "#fecaca"}`,
+        borderRadius: "12px",
+        padding:      "16px 20px",
+        marginBottom: "24px",
+        display:      "flex",
+        alignItems:   "flex-start",
+        gap:          "14px",
       }}>
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "22px" }}>
-          {approvalStatus === "rejected" ? <XCircleIcon /> : <ClockIcon />}
+        {/* Icon */}
+        <div style={{ flexShrink: 0, marginTop: "2px" }}>
+          {isPending ? <ClockIcon /> : <XCircleIcon />}
         </div>
+
+        {/* Text */}
+        <div style={{ flex: 1 }}>
+          <div style={{
+            fontSize:   "15px",
+            fontWeight: "700",
+            color:      isPending ? "#92400e" : "#991b1b",
+            marginBottom: "4px",
+          }}>
+            {isPending ? "Profile Under Review" : "Application Not Approved"}
+          </div>
+          <div style={{
+            fontSize:   "13px",
+            color:      isPending ? "#b45309" : "#b91c1c",
+            lineHeight: "1.6",
+          }}>
+            {isPending
+              ? "Your profile has been submitted and is awaiting admin approval. All fields are read-only until approved. This usually takes 1–2 business days."
+              : (rejectionReason
+                  ? `Your application was not approved. Reason: ${rejectionReason}`
+                  : "Your application was not approved. Please contact support.")}
+          </div>
+          {/* Support link */}
+          <div style={{ marginTop: "8px", fontSize: "12px", color: "#9ca3af" }}>
+            Need help?{" "}
+            <a href="mailto:support@naavi.com"
+              style={{ color: "#59A2DD", textDecoration: "none", fontWeight: "600" }}>
+              support@naavi.com
+            </a>
+          </div>
+        </div>
+
+        {/* Status pill */}
         <div style={{
-          fontSize: "22px", fontWeight: "700",
-          marginBottom: "14px", letterSpacing: "-0.3px",
-          color: approvalStatus === "rejected" ? "#991b1b" : "#92400e",
+          flexShrink:   0,
+          display:      "inline-flex",
+          alignItems:   "center",
+          gap:          "6px",
+          padding:      "6px 14px",
+          borderRadius: "30px",
+          fontSize:     "12px",
+          fontWeight:   "600",
+          whiteSpace:   "nowrap",
+          background:   isPending ? "#fffbeb" : "#fef2f2",
+          color:        isPending ? "#92400e" : "#991b1b",
+          border:       `1px solid ${isPending ? "#fde68a" : "#fecaca"}`,
         }}>
-          {approvalStatus === "rejected"
-            ? "Application Not Approved"
-            : "Profile Under Review"}
-        </div>
-        <div style={{
-          width: "48px", height: "3px", borderRadius: "4px",
-          margin: "0 auto 20px",
-          background: approvalStatus === "rejected"
-            ? "linear-gradient(90deg,#f87171,#ef4444)"
-            : "linear-gradient(90deg,#fbbf24,#f59e0b)",
-        }} />
-        <div style={{
-          fontSize: "15px", lineHeight: "1.75", marginBottom: "30px",
-          color: approvalStatus === "rejected" ? "#b91c1c" : "#b45309",
-        }}>
-          {approvalStatus === "rejected"
-            ? (rejectionReason
-                ? `Reason: ${rejectionReason}`
-                : "Your application was not approved. Please contact support.")
-            : "Your profile has been submitted and is awaiting admin approval. This usually takes 1–2 business days."}
-        </div>
-        <div style={{
-          display: "inline-flex", alignItems: "center", gap: "6px",
-          padding: "8px 22px", borderRadius: "30px",
-          fontSize: "13px", fontWeight: "600", marginBottom: "24px",
-          background: approvalStatus === "rejected" ? "#fef2f2" : "#fffbeb",
-          color:      approvalStatus === "rejected" ? "#991b1b" : "#92400e",
-          border:     approvalStatus === "rejected"
-            ? "1px solid #fecaca"
-            : "1px solid #fde68a",
-        }}>
-          {approvalStatus === "rejected" ? "Not Approved" : "Pending Approval"}
-        </div>
-        <div style={{ fontSize: "13px", color: "#9ca3af" }}>
-          Need help?{" "}
-          <a href="mailto:support@naavi.com"
-            style={{ color: "#59A2DD", textDecoration: "none", fontWeight: "500" }}>
-            support@naavi.com
-          </a>
+          {isPending ? (
+            <>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2.5">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6V12L16 14" strokeLinecap="round" />
+              </svg>
+              Pending Approval
+            </>
+          ) : "Not Approved"}
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // ── Profile accordion cards ──────────────────────────────────────────────
   return (
     <div className="dashboard-main">
       <div className="dashboard-body">
-        {/* ✅ isProfileIncomplete=false — profile done, approval status controls locking */}
+        {/* ✅ isProfileIncomplete=false — approval status controls sidebar locking */}
         <Dashsidebar
           approvalStatus={approvalStatus}
           isProfileIncomplete={false}
         />
         <div className="dashboard-screens">
-
-          {/* ✅ Approval overlay — blurs content when pending or rejected */}
-          {(approvalStatus === "pending" || approvalStatus === "rejected") && (
-            <ApprovalOverlay />
-          )}
-
           <div className="up-profile-container">
+
+            {/* ✅ NEW: Review banner at top when pending/rejected — no more fullscreen overlay */}
+            {isReadOnly && <ReviewBanner />}
+
             <div className="up-page-header">
               <h1 className="up-page-title">My Profile</h1>
               <p className="up-page-sub">
@@ -345,11 +358,8 @@ const UserProfile = () => {
                         <div className="up-info-grid">
                           <InfoItem label="Profile Picture">
                             {profileData.profilePicture ? (
-                              console.log("Profile picture URL:", profileData.profilePicture),
                               <img src={profileData.profilePicture}
-                              
                                 alt="Profile" className="up-avatar" />
-                                
                             ) : (
                               <div className="up-avatar-placeholder">
                                 {profileData.name?.charAt(0)?.toUpperCase() || "U"}
@@ -366,10 +376,13 @@ const UserProfile = () => {
                           <InfoItem label="City"        value={profileData.city} />
                           <InfoItem label="Postal Code" value={profileData.postalCode} />
                         </div>
-                        <button className="up-edit-btn"
-                          onClick={() => setEditingLevel(1)}>
-                          Edit
-                        </button>
+                        {/* ✅ Hide Edit button when read-only (pending/rejected) */}
+                        {!isReadOnly && (
+                          <button className="up-edit-btn"
+                            onClick={() => setEditingLevel(1)}>
+                            Edit
+                          </button>
+                        )}
                       </>
                     )}
                   </div>
@@ -409,10 +422,13 @@ const UserProfile = () => {
                           <InfoItem label="Financial Situation" value={profileData.financialSituation} />
                           <InfoItem label="LinkedIn"            value={profileData.linkedin} fullWidth />
                         </div>
-                        <button className="up-edit-btn up-edit-btn--2"
-                          onClick={() => setEditingLevel(2)}>
-                          Edit
-                        </button>
+                        {/* ✅ Hide Edit button when read-only (pending/rejected) */}
+                        {!isReadOnly && (
+                          <button className="up-edit-btn up-edit-btn--2"
+                            onClick={() => setEditingLevel(2)}>
+                            Edit
+                          </button>
+                        )}
                       </>
                     )}
                   </div>
@@ -447,10 +463,13 @@ const UserProfile = () => {
                           <InfoItem label="Personality Type"
                             value={profileData.personality} fullWidth />
                         </div>
-                        <button className="up-edit-btn up-edit-btn--3"
-                          onClick={() => setEditingLevel(3)}>
-                          Edit
-                        </button>
+                        {/* ✅ Hide Edit button when read-only (pending/rejected) */}
+                        {!isReadOnly && (
+                          <button className="up-edit-btn up-edit-btn--3"
+                            onClick={() => setEditingLevel(3)}>
+                            Edit
+                          </button>
+                        )}
                       </>
                     )}
                   </div>

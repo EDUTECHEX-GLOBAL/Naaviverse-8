@@ -149,7 +149,12 @@
   text-transform: uppercase;
   flex-shrink: 0;
 
-  > div { flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  > div {
+    flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .acrm-tbody {
@@ -173,7 +178,12 @@
   &:last-child { border-bottom: none; }
   &:hover { background: #fafbff; }
 
-  > div { flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  > div {
+    flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .cell-name {
@@ -229,14 +239,32 @@
 .lvl-mid  { background: #dbeafe; color: #1e40af; }
 .lvl-low  { background: #f1f5f9; color: #475569; }
 
+/* ── Partner Type badge ──────────────────────────────────────── */
+/* Base tag — no overflow clipping so full text is always visible */
 .type-tag {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   font-size: 11.5px;
   font-weight: 600;
-  padding: 3px 10px;
+  padding: 4px 10px;
   border-radius: 99px;
-  background: #ede9fe;
-  color: #6d28d9;
+  white-space: nowrap;
+  max-width: 100%;
+  cursor: default;
+}
+
+/* Per-type colour variants matching registration options */
+.type-blue    { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; } /* Distributor */
+.type-green   { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; } /* Vendor      */
+.type-orange  { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; } /* Mentor      */
+.type-purple  { background: #faf5ff; color: #6d28d9; border: 1px solid #ddd6fe; } /* Institution */
+.type-teal    { background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; } /* Finance     */
+.type-red     { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; } /* IT          */
+.type-default { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; } /* Unknown     */
+
+.type-empty {
+  color: var(--txt3);
+  font-size: 13px;
 }
 
 .act-btn {
@@ -285,21 +313,23 @@
 /* ── Popup box ───────────────────────────────────────────────── */
 .apop-box {
   position: fixed;
-   max-height: 85vh;     /* ← ADD THIS - limits max height to 85% of viewport */
-  overflow-y: auto; 
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 500px;
   max-width: calc(100vw - 40px);
+  max-height: 85vh;
+  overflow-y: auto;
   background: #ffffff;
   border-radius: 20px;
   z-index: 1101;
   box-shadow:
     0 0 0 1px rgba(15,23,42,0.06),
     0 24px 64px rgba(15,23,42,0.18);
-  overflow: hidden;
   animation: popUp 0.22s cubic-bezier(0.34, 1.28, 0.64, 1) both;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
 }
 
 @keyframes popUp {
@@ -315,10 +345,7 @@
   padding: 20px 20px 16px;
 }
 
-.apop-header-icon {
-  font-size: 22px;
-  flex-shrink: 0;
-}
+.apop-header-icon { font-size: 22px; flex-shrink: 0; }
 
 .apop-header-text {
   flex: 1;
@@ -360,24 +387,14 @@
   &:hover { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
 }
 
-.apop-divider {
-  height: 1px;
-  background: #f1f5f9;
-  margin: 0;
-}
+.apop-divider { height: 1px; background: #f1f5f9; margin: 0; }
 
-/* body */
-.apop-body {
-  padding: 6px 20px 14px;
-}
+.apop-body { padding: 6px 20px 14px; }
 
 /* ── each section ────────────────────────────────────────────── */
 .apop-section {
   padding: 12px 0 8px;
-
-  & + & {
-    border-top: 1px solid #f1f5f9;
-  }
+  & + & { border-top: 1px solid #f1f5f9; }
 }
 
 .apop-sec-head {
@@ -395,17 +412,8 @@
   flex-shrink: 0;
 }
 
-.apop-sec-icon {
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-.apop-sec-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: #1a3a2a;
-  flex: 1;
-}
+.apop-sec-icon  { font-size: 14px; flex-shrink: 0; }
+.apop-sec-title { font-size: 13px; font-weight: 700; color: #1a3a2a; flex: 1; }
 
 .apop-sec-count {
   font-size: 11px;
@@ -417,12 +425,7 @@
   flex-shrink: 0;
 }
 
-/* chips row — horizontal wrapping rectangles */
-.apop-chips-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-}
+.apop-chips-row { display: flex; flex-wrap: wrap; gap: 7px; }
 
 .apop-chip {
   display: inline-flex;
@@ -435,32 +438,12 @@
   border: 1px solid transparent;
 }
 
-/* pastel chip colours */
-.chip-blue {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border-color: #bfdbfe;
-}
+.chip-blue   { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.chip-purple { background: #faf5ff; color: #6d28d9; border-color: #ddd6fe; }
+.chip-teal   { background: #f0fdfa; color: #0f766e; border-color: #99f6e4; }
 
-.chip-purple {
-  background: #faf5ff;
-  color: #6d28d9;
-  border-color: #ddd6fe;
-}
+.apop-none { font-size: 12px; color: #94a3b8; font-style: italic; }
 
-.chip-teal {
-  background: #f0fdfa;
-  color: #0f766e;
-  border-color: #99f6e4;
-}
-
-.apop-none {
-  font-size: 12px;
-  color: #94a3b8;
-  font-style: italic;
-}
-
-/* footer */
 .apop-footer {
   display: flex;
   align-items: center;

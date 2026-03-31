@@ -6,7 +6,7 @@ import "aos/dist/aos.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
 import ScrollToTop from "./components/ScrollToTop";
-import MyStepsAdmin from "./pages/AdminAccDashbaoard/MyStepsAdmin"; 
+import MyStepsAdmin from "./pages/AdminAccDashbaoard/MyStepsAdmin";
 /* ================= TEMPLATE ROUTER ================= */
 import AppRouter from "./router/AppRouter";
 
@@ -92,7 +92,7 @@ function App() {
           <Route path="/dashboard/users/my-journey" element={<Dashboard />} />
           <Route path="/dashboard/users/current-step" element={<Dashboard />} />
           <Route path="/dashboard/users/transactions" element={<Dashboard />} />
-          <Route path="/dashboard/users/wallet"       element={<Wallet />} />
+          <Route path="/dashboard/users/wallet" element={<Wallet />} />
 
           {/* ✅ MUST be before /:id wildcard so it doesn't get caught by MallProduct */}
           <Route path="/dashboard/users/Marketplace" element={<Dashboard />} />
@@ -123,9 +123,16 @@ function App() {
           <Route path="/dashboard/accountants/profile" element={<AccProfile />} />
 
           {/* ================= ADMIN ================= */}
+          {/* ================= ADMIN ================= */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard/profile" element={<AdminProfilePage />} />
+
+          {/* ✅ Replace single route with nested sub-routes */}
           <Route path="/admin/dashboard/accountants" element={<AdminAccDashbaoard />} />
+          <Route path="/admin/dashboard/crm" element={<AdminAccDashbaoard />} />
+          <Route path="/admin/dashboard/paths" element={<AdminAccDashbaoard />} />
+          <Route path="/admin/dashboard/steps" element={<AdminAccDashbaoard />} />
+          <Route path="/admin/dashboard/marketplace" element={<AdminAccDashbaoard />} />
 
           {/* ================= SUPER ADMIN ================= */}
           <Route path="/admin-login" element={<SuperAdminLogin />} />
@@ -138,11 +145,11 @@ function App() {
 
           {/* ================= PURCHASE ================= */}
           <Route path="/purchase/success" element={<PurchaseSuccess />} />
-     
+
           {/* ================= FALLBACK ================= */}
           <Route path="/*" element={<AppRouter />} />
           <Route path="*" element={<RoutePage />} />
-          
+
 
         </Routes>
       </BrowserRouter>
