@@ -8,13 +8,12 @@ const addPath = async (req, res) => {
   try {
     const body = req.body;
 
-    // 🔹 1. Duplicate path check (unchanged)
-const existing = await pathModel.findOne({
-  email: body.email,
-  nameOfPath: { $regex: `^${body.nameOfPath}$`, $options: "i" },
-  status: { $in: ["draft", "waitingforapproval"] }
-});
-
+    // 🔹 1. Duplicate path check
+    const existing = await pathModel.findOne({
+      email: body.email,
+      nameOfPath: { $regex: `^${body.nameOfPath}$`, $options: "i" },
+      status: { $in: ["draft", "waitingforapproval"] }
+    });
 
     if (existing) {
       return res.status(400).json({
@@ -23,10 +22,9 @@ const existing = await pathModel.findOne({
       });
     }
 
-    // 🔹 2. STEP VALIDATION — START
+    // 🔹 2. STEP VALIDATION
     const stepIds = body.the_ids?.map(s => s.step_id) || [];
 
-    // 2a. Prevent duplicate steps in same path
     const uniqueStepIds = new Set(stepIds.map(id => id.toString()));
     if (uniqueStepIds.size !== stepIds.length) {
       return res.status(400).json({
@@ -35,7 +33,6 @@ const existing = await pathModel.findOne({
       });
     }
 
-    // 2b. Validate step existence & status
     if (stepIds.length > 0) {
       const steps = await stepModel.find({
         _id: { $in: stepIds },
@@ -49,9 +46,8 @@ const existing = await pathModel.findOne({
         });
       }
     }
-    // 🔹 STEP VALIDATION — END
 
-    // 🔹 3. Create path object (unchanged)
+    // 🔹 3. Create path object
     const newPath = {
       email: body.email,
 
@@ -70,7 +66,7 @@ const existing = await pathModel.findOne({
       destination_degree: body.destination_degree,
 
       length: body.length,
-       total_steps: body.total_steps || 5, 
+      total_steps: body.total_steps || 5,
       city: body.city,
       country: body.country,
 
@@ -91,7 +87,7 @@ const existing = await pathModel.findOne({
         backupPathName: step.backupPathName || "",
         backupPathDescription: step.backupPathDescription || ""
       })) || [],
-       status: "draft"
+      status: "draft"
     };
 
     const saved = await pathModel.create(newPath);
@@ -282,31 +278,27 @@ const updatePathStatus = async (req, res) => {
 };
 
 
+// ✅ FIXED submitForApproval
+// Previously checked path.the_ids.length — which is always 0 for draft paths
+// because steps are saved independently with path_id, NOT inside the_ids.
+// Now we count actual steps in the steps collection by path_id.
 const submitForApproval = async (req, res) => {
   try {
     const { pathId } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(pathId)) {
-      return res.status(400).json({ 
-        status: false, 
-        message: "Invalid pathId" 
+      return res.status(400).json({
+        status: false,
+        message: "Invalid pathId"
       });
     }
 
     const path = await pathModel.findById(pathId);
 
     if (!path) {
-      return res.status(404).json({ 
-        status: false, 
-        message: "Path not found" 
-      });
-    }
-
-    // 🔥 NOW check steps
-    if (!path.the_ids || path.the_ids.length === 0) {
-      return res.status(400).json({
+      return res.status(404).json({
         status: false,
-        message: "Cannot submit empty path. Add at least one step."
+        message: "Path not found"
       });
     }
 
@@ -314,6 +306,27 @@ const submitForApproval = async (req, res) => {
       return res.status(400).json({
         status: false,
         message: "Only draft or rejected paths can be submitted"
+      });
+    }
+
+    // ✅ FIX: Count steps saved in the steps collection by path_id
+    // (draft steps are saved with path_id field, NOT inside path.the_ids)
+    const stepCount = await stepModel.countDocuments({
+      path_id: pathId,
+      status: { $ne: "delete" }
+    });
+
+    const requiredSteps = path.total_steps || 5;
+
+    // ✅ Block submission if steps are incomplete
+    if (stepCount < requiredSteps) {
+      return res.status(400).json({
+        status: false,
+        message: `Please complete all ${requiredSteps} steps before submitting. You have added ${stepCount}/${requiredSteps} steps.`,
+        data: {
+          current: stepCount,
+          required: requiredSteps
+        }
       });
     }
 
@@ -335,22 +348,18 @@ const submitForApproval = async (req, res) => {
 };
 
 
-
 const getPath = async (req, res) => {
   try {
     let filter = {};
 
-    // ✅ STATUS FIX
-if (req.query.status) {
-  if (req.query.status !== "all") {
-    filter.status = req.query.status;
-  }
-} else {
-  filter.status = { $ne: "delete" }; // safer default
-}
+    if (req.query.status) {
+      if (req.query.status !== "all") {
+        filter.status = req.query.status;
+      }
+    } else {
+      filter.status = { $ne: "delete" };
+    }
 
-
-    // ✅ SAFE ObjectId validation
     if (req.query.path_id) {
       if (!mongoose.Types.ObjectId.isValid(req.query.path_id)) {
         return res.status(400).json({
@@ -410,14 +419,12 @@ const getPathSpecific = async (req, res) => {
   try {
     let filter = {};
 
-    // ✅ STATUS FILTER
     if (req.query.status && req.query.status !== "all") {
       filter.status = req.query.status;
     } else {
       filter.status = "active";
     }
 
-    // ✅ PATH ID VALIDATION
     if (req.query.path_id) {
       if (!mongoose.Types.ObjectId.isValid(req.query.path_id)) {
         return res.status(400).json({
@@ -428,7 +435,6 @@ const getPathSpecific = async (req, res) => {
       filter._id = new mongoose.Types.ObjectId(req.query.path_id);
     }
 
-    // ✅ USER FETCH
     if (!req.query.email) {
       return res.status(400).json({
         status: false,
@@ -445,14 +451,9 @@ const getPathSpecific = async (req, res) => {
       });
     }
 
-    // ✅ DYNAMIC FILTERS BASED ON USER PROFILE
     const filterFields = [
-      "curriculum",
-      "grade",
-      "stream",
-      "grade_avg",
-      "financialSituation",
-      "personality"
+      "curriculum", "grade", "stream",
+      "grade_avg", "financialSituation", "personality"
     ];
 
     filterFields.forEach(field => {
@@ -485,72 +486,44 @@ const getPathSpecific = async (req, res) => {
 
 
 const getPathNormal = async (req, res) => {
-    try {
-        const { status, financialSituation, performance, curriculum, grade, stream, personality } = req.body;
+  try {
+    const { status, financialSituation, performance, curriculum, grade, stream, personality } = req.body;
 
-        let filter = {};
+    let filter = {};
 
-        // Set default status if not provided
-       if (status && status !== "all") {
-  filter.status = status;
-} else {
-  filter.status = "active";
-}
-
-
-        // Add _id filter if financialSituation is provided
-        if (financialSituation) {
-            filter.financialSituation = { $in: financialSituation };
-        }
-        // Add performance filter if provided
-if (performance) {
-  filter.grade_avg = { $in: performance };
-}
-
-        // Add curriculum filter if provided
-        if (curriculum) {
-            filter.curriculum = { $in: curriculum };
-        }
-        // Add grade filter if provided
-        if (grade) {
-            filter.grade = { $in: grade };
-        }
-        // Add stream filter if provided
-        if (stream) {
-            filter.stream = { $in: stream };
-        }
-        // Add personality filter if provided
-        if (personality) {
-            filter.personality = { $in: personality };
-        }
-
-
-        const paths = await pathModel.find(filter).lean();
-
-      if (paths.length === 0) {
-    return res.json({
-        status: true,
-        data: [],
-        message: 'No data found'
-    })
-}
-
-
-        return res.status(200).json({
-            status: true,
-            total: paths.length,
-            message: 'Paths data found',
-            data: paths,
-        });
-    } catch (err) {
-        console.log('err=========>', err);
-        res.status(500).json({ 
-            status: false,
-            message: err.message,
-        });
+    if (status && status !== "all") {
+      filter.status = status;
+    } else {
+      filter.status = "active";
     }
-};
 
+    if (financialSituation) filter.financialSituation = { $in: financialSituation };
+    if (performance) filter.grade_avg = { $in: performance };
+    if (curriculum) filter.curriculum = { $in: curriculum };
+    if (grade) filter.grade = { $in: grade };
+    if (stream) filter.stream = { $in: stream };
+    if (personality) filter.personality = { $in: personality };
+
+    const paths = await pathModel.find(filter).lean();
+
+    if (paths.length === 0) {
+      return res.json({ status: true, data: [], message: 'No data found' });
+    }
+
+    return res.status(200).json({
+      status: true,
+      total: paths.length,
+      message: 'Paths data found',
+      data: paths,
+    });
+  } catch (err) {
+    console.log('err=========>', err);
+    res.status(500).json({
+      status: false,
+      message: err.message,
+    });
+  }
+};
 
 
 const deletePath = async (req, res) => {
@@ -581,21 +554,17 @@ const deletePath = async (req, res) => {
       case "waitingforapproval":
         newStatus = "delete";
         break;
-
       case "active":
         newStatus = "inactive";
         break;
-
       case "inactive":
         newStatus = "delete";
         break;
-
       case "delete":
         return res.status(400).json({
           status: false,
           message: "Path is already deleted"
         });
-
       default:
         return res.status(400).json({
           status: false,
@@ -664,59 +633,25 @@ const restorePath = async (req, res) => {
 };
 
 
-
-// YourModel.updateMany({}, { $set: { city: 'Hyderabad' } }, (err, result) => {
-//     if (err) {
-//       console.error(err);
-//     } else {
-//       console.log(`Updated ${result.nModified} documents`);
-//     }
-
-
 const updateFields = async (req, res) => {
-    let updateAll = await pathModel.updateMany({}, { $set: { personality: "realistic" } }, { new: true });
-    if (!updateAll) {
-        return res.json({
-            status: false,
-            message: 'Data not found',
-        })
-    }
-    return res.json({
-        status: true,
-        message: 'Details updated',
-        data: updateAll
-    })
-}
+  let updateAll = await pathModel.updateMany({}, { $set: { personality: "realistic" } }, { new: true });
+  if (!updateAll) {
+    return res.json({ status: false, message: 'Data not found' });
+  }
+  return res.json({ status: true, message: 'Details updated', data: updateAll });
+};
 
 
 const getActivePaths = async (req, res) => {
   try {
     const query = { status: "active" };
 
-    // 🔑 ARRAY FIELDS — MUST USE $in
-    if (req.query.grade) {
-      query.grade = { $in: [req.query.grade] };
-    }
-
-    if (req.query.curriculum) {
-      query.curriculum = { $in: [req.query.curriculum] };
-    }
-
-    if (req.query.stream) {
-      query.stream = { $in: [req.query.stream] };
-    }
-
-    if (req.query.financial) {
-      query.financialSituation = { $in: [req.query.financial] };
-    }
-
-    if (req.query.performance) {
-      query.grade_avg = { $in: [req.query.performance] };
-    }
-
-    if (req.query.personality) {
-      query.personality = req.query.personality;
-    }
+    if (req.query.grade) query.grade = { $in: [req.query.grade] };
+    if (req.query.curriculum) query.curriculum = { $in: [req.query.curriculum] };
+    if (req.query.stream) query.stream = { $in: [req.query.stream] };
+    if (req.query.financial) query.financialSituation = { $in: [req.query.financial] };
+    if (req.query.performance) query.grade_avg = { $in: [req.query.performance] };
+    if (req.query.personality) query.personality = req.query.personality;
 
     console.log("ACTIVE PATH FILTER 👉", query);
 
@@ -797,68 +732,50 @@ const getPathById = async (req, res) => {
 };
 
 const uploadBulkPaths = async (req, res) => {
-    try {
-        const { email, records } = req.body;
+  try {
+    const { email, records } = req.body;
 
-        if (!email) {
-            return res.status(400).json({
-                status: false,
-                message: "Email is required"
-            });
-        }
-
-        if (!Array.isArray(records) || records.length === 0) {
-            return res.status(400).json({
-                status: false,
-                message: "Records array is required"
-            });
-        }
-
-        const formatted = records.map(r => ({
-            ...r,
-            email,
-            status: "active"
-        }));
-
-        const inserted = await pathModel.insertMany(formatted);
-
-        return res.status(200).json({
-            status: true,
-            message: "Bulk paths inserted successfully",
-            count: inserted.length
-        });
-
-    } catch (error) {
-        console.error("Bulk upload error:", error);
-        return res.status(500).json({
-            status: false,
-            message: "Internal server error",
-            error: error.message
-        });
+    if (!email) {
+      return res.status(400).json({ status: false, message: "Email is required" });
     }
+
+    if (!Array.isArray(records) || records.length === 0) {
+      return res.status(400).json({ status: false, message: "Records array is required" });
+    }
+
+    const formatted = records.map(r => ({ ...r, email, status: "active" }));
+    const inserted = await pathModel.insertMany(formatted);
+
+    return res.status(200).json({
+      status: true,
+      message: "Bulk paths inserted successfully",
+      count: inserted.length
+    });
+
+  } catch (error) {
+    console.error("Bulk upload error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+      error: error.message
+    });
+  }
 };
 
 module.exports = {
-    addPath,
-    submitForApproval,
-    getPath,
-    deletePath,
-    restorePath,
-    getPathSpecific,
-    getPathNormal,
-    updateFields,
-    updatePath,
-    getActivePaths,
-    updatePathStatus,
-    reactivatePath,
-    reactivateInactivePath,
-    getPathById,
-    uploadBulkPaths,
-}
-
-
-
-
-
-
-
+  addPath,
+  submitForApproval,
+  getPath,
+  deletePath,
+  restorePath,
+  getPathSpecific,
+  getPathNormal,
+  updateFields,
+  updatePath,
+  getActivePaths,
+  updatePathStatus,
+  reactivatePath,
+  reactivateInactivePath,
+  getPathById,
+  uploadBulkPaths,
+};

@@ -222,6 +222,16 @@ const MyStepsAcc = ({
     const [allServicesToAdd, setAllServicesToAdd] = useState([]);
     const [selectedServices, setSelectedServices] = useState([]);
 
+    // Sync mypathsMenu from URL on mount
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const tab = params.get("tab");
+        if (tab === "inactive") {
+            setMypathsMenu("Inactive Steps");
+        } else {
+            setMypathsMenu("Active Steps");
+        }
+    }, [location.search]);
     // ── API functions ─────────────────────────────────────────────────────────
     const getAllPaths = () => {
         setLoading(true);
@@ -660,6 +670,9 @@ const MyStepsAcc = ({
                                 }}
                                 onClick={() => {
                                     setMypathsMenu(tab);
+                                    navigate(
+                                        `/dashboard/accountants/steps?tab=${tab === "Inactive Steps" ? "inactive" : "active"}`
+                                    );
                                     if (viewPathEnabled) {
                                         setViewPathEnabled(false);
                                         setViewPathData([]);

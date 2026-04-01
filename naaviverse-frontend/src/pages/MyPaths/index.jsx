@@ -12,12 +12,13 @@ import closepop from "../../static/images/dashboard/closepop.svg";
 import lg1 from "../../static/images/login/lg1.svg";
 import CurrentStep from "../CurrentStep";
 import { useStore } from "../../components/store/store.ts";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { sideNav, setsideNav } = useStore();
   let userDetails = JSON.parse(localStorage.getItem("partner"));
   const {
@@ -58,10 +59,49 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
   const [selectedServices, setSelectedServices] = useState([]);
   const [localSearch, setLocalSearch] = useState(search || "");
 
+  // ✅ FIX: stepCounts stores real DB step counts per path _id
+  const [stepCounts, setStepCounts] = useState({});
+
+  // ✅ FIX: fetchStepCounts hits the same endpoint DraftPathView uses
+  const fetchStepCounts = async (paths) => {
+    const counts = {};
+    await Promise.all(
+      paths.map(async (path) => {
+        try {
+          const res = await axios.get(`${BASE_URL}/api/steps/get`, {
+            params: { path_id: path._id },
+          });
+          counts[path._id] = res.data?.data?.length || 0;
+        } catch {
+          counts[path._id] = 0;
+        }
+      })
+    );
+    setStepCounts(counts);
+  };
+
   useEffect(() => {
     setLocalSearch(search || "");
   }, [search]);
+
   const [expandedDesc, setExpandedDesc] = useState({});
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get("tab");
+    const tabMap = {
+      active: "Paths",
+      draft: "Draft",
+      pending: "Pending Approval",
+      inactive: "Inactive Paths",
+    };
+    if (tab && tabMap[tab]) {
+      setMypathsMenu(tabMap[tab]);
+    } else {
+      setMypathsMenu("Paths");
+    }
+  }, [location.search]);
+
   // ============================================
   // API Calls
   // ============================================
@@ -71,6 +111,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
       [pathId]: !prev[pathId]
     }));
   };
+
   const getAllPaths = () => {
     setPartnerPathData([]);
     setLoading(true);
@@ -78,24 +119,15 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
     const email = userDetails?.email;
     let endpoint = "";
 
-    // ADMIN
     if (admin && (mypathsMenu === "Pending Approval" || mypathsMenu === "Pending Paths")) {
       endpoint = `/api/paths/get?status=waitingforapproval`;
-    }
-    // PARTNER Draft
-    else if (!admin && mypathsMenu === "Draft") {
+    } else if (!admin && mypathsMenu === "Draft") {
       endpoint = `/api/paths/get?email=${email}&status=draft`;
-    }
-    // PARTNER Pending
-    else if (!admin && mypathsMenu === "Pending Approval") {
+    } else if (!admin && mypathsMenu === "Pending Approval") {
       endpoint = `/api/paths/get?email=${email}&status=waitingforapproval`;
-    }
-    // Inactive
-    else if (mypathsMenu === "Inactive Paths") {
+    } else if (mypathsMenu === "Inactive Paths") {
       endpoint = `/api/paths/get?email=${email}&status=inactive`;
-    }
-    // Default Active
-    else {
+    } else {
       endpoint = `/api/paths/get?email=${email}&status=active`;
     }
 
@@ -104,7 +136,10 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
     axios
       .get(`${BASE_URL}${endpoint}`)
       .then((response) => {
-        setPartnerPathData(response?.data?.data || []);
+        // ✅ FIX 1: also call fetchStepCounts after loading paths
+        const paths = response?.data?.data || [];
+        setPartnerPathData(paths);
+        fetchStepCounts(paths);
       })
       .catch((error) => {
         console.log("❌ Error fetching partnerPathData:", error);
@@ -138,16 +173,52 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
     getAllServices();
   }, [selectedStepId]);
 
-  // Load paths when menu changes
+  // ✅ FIX 2: URL-based fetch also calls fetchStepCounts after loading
   useEffect(() => {
-    let cancelled = false;
-    const loadPaths = async () => {
-      if (cancelled) return;
-      await getAllPaths();
+    const params = new URLSearchParams(location.search);
+    const tab = params.get("tab");
+
+    const tabToStatus = {
+      active: "active",
+      draft: "draft",
+      pending: "waitingforapproval",
+      inactive: "inactive",
     };
-    loadPaths();
-    return () => (cancelled = true);
-  }, [mypathsMenu]);
+
+    const status = tabToStatus[tab] || "active";
+    const email = userDetails?.email;
+
+    if (!email) return;
+
+    setPartnerPathData([]);
+    setLoading(true);
+
+    let endpoint = "";
+
+    if (status === "draft") {
+      endpoint = `/api/paths/get?email=${email}&status=draft`;
+    } else if (status === "waitingforapproval") {
+      endpoint = `/api/paths/get?email=${email}&status=waitingforapproval`;
+    } else if (status === "inactive") {
+      endpoint = `/api/paths/get?email=${email}&status=inactive`;
+    } else {
+      endpoint = `/api/paths/get?email=${email}&status=active`;
+    }
+
+    axios
+      .get(`${BASE_URL}${endpoint}`)
+      .then((response) => {
+        // ✅ FIX 2: also call fetchStepCounts after loading paths
+        const paths = response?.data?.data || [];
+        setPartnerPathData(paths);
+        fetchStepCounts(paths);
+      })
+      .catch((error) => {
+        console.log("❌ Error fetching partnerPathData:", error);
+      })
+      .finally(() => setLoading(false));
+
+  }, [location.search]);
 
   // Load services for add/remove
   useEffect(() => {
@@ -417,70 +488,6 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
 
   return (
     <div className="mypaths">
-      {/* Top Navigation Menu */}
-
-      {/* <div
-          className="each-mypath-menu"
-          style={{
-            fontWeight: mypathsMenu === "Paths" ? "700" : "",
-            background: mypathsMenu === "Paths" ? "rgba(241, 241, 241, 0.5)" : "",
-          }}
-          onClick={() => {
-            setMypathsMenu("Paths");
-            if (viewPathEnabled) {
-              setViewPathEnabled(false);
-              setViewPathData([]);
-            }
-          }}
-        >
-          {admin ? "Active Paths" : "Paths"}
-        </div> */}
-      {/* <div
-          className="each-mypath-menu"
-          style={{
-            fontWeight: mypathsMenu === "Draft" ? "700" : "",
-            background: mypathsMenu === "Draft" ? "rgba(241, 241, 241, 0.5)" : "",
-          }}
-          onClick={() => {
-            setMypathsMenu("Draft");
-            setViewPathEnabled(false);
-            setViewPathData([]);
-          }}
-        >
-          Draft
-        </div> */}
-      {/* <div
-          className="each-mypath-menu"
-          style={{
-            fontWeight: mypathsMenu === "Pending Approval" ? "700" : "",
-            background: mypathsMenu === "Pending Approval" ? "rgba(241, 241, 241, 0.5)" : "",
-          }}
-          onClick={() => {
-            setMypathsMenu("Pending Approval");
-            if (viewPathEnabled) {
-              setViewPathEnabled(false);
-              setViewPathData([]);
-            }
-          }}
-        >
-          Pending Approval
-        </div>
-        <div
-          className="each-mypath-menu"
-          style={{
-            fontWeight: mypathsMenu === "Inactive Paths" ? "700" : "",
-            background: mypathsMenu === "Inactive Paths" ? "rgba(241, 241, 241, 0.5)" : "",
-          }}
-          onClick={() => {
-            setMypathsMenu("Inactive Paths");
-            if (viewPathEnabled) {
-              setViewPathEnabled(false);
-              setViewPathData([]);
-            }
-          }}
-        >
-          Inactive Paths
-        </div> */}
       {admin && (
         <div
           className="each-mypath-menu"
@@ -500,7 +507,6 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
         </div>
       )}
 
-
       {/* Main Content */}
       <div className="mypaths-content">
         {showSelectedPath ? (
@@ -517,7 +523,6 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
             />
           </div>
         ) : viewPathEnabled ? (
-          /* View Path Details */
           <div className="viewpath-container">
             <div className="viewpath-top-area">
               <div>Your Selected Path:</div>
@@ -572,34 +577,43 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
             </div>
           </div>
         ) : (
-          /* Main Paths List - CARD LAYOUT */
           <>
-
-
             {/* Filter Tabs + Search Row */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
               <div className="filter-tabs">
                 <span
                   className={`filter-tab ${mypathsMenu === 'Paths' ? 'active' : ''}`}
-                  onClick={() => setMypathsMenu('Paths')}
+                  onClick={() => {
+                    setMypathsMenu('Paths');
+                    navigate('/dashboard/accountants/paths?tab=active');
+                  }}
                 >
                   Active Paths
                 </span>
                 <span
                   className={`filter-tab ${mypathsMenu === 'Draft' ? 'active' : ''}`}
-                  onClick={() => setMypathsMenu('Draft')}
+                  onClick={() => {
+                    setMypathsMenu('Draft');
+                    navigate('/dashboard/accountants/paths?tab=draft');
+                  }}
                 >
                   Draft
                 </span>
                 <span
                   className={`filter-tab ${mypathsMenu === 'Pending Approval' ? 'active' : ''}`}
-                  onClick={() => setMypathsMenu('Pending Approval')}
+                  onClick={() => {
+                    setMypathsMenu('Pending Approval');
+                    navigate('/dashboard/accountants/paths?tab=pending');
+                  }}
                 >
                   Pending Approval
                 </span>
                 <span
                   className={`filter-tab ${mypathsMenu === 'Inactive Paths' ? 'active' : ''}`}
-                  onClick={() => setMypathsMenu('Inactive Paths')}
+                  onClick={() => {
+                    setMypathsMenu('Inactive Paths');
+                    navigate('/dashboard/accountants/paths?tab=inactive');
+                  }}
                 >
                   Inactive
                 </span>
@@ -643,7 +657,6 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                   ))}
               </div>
             ) : (
-              /* Paths Grid - Cards */
               <div className="paths-grid">
                 {partnerPathData
                   ?.filter((e) =>
@@ -653,8 +666,6 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                     e?.destination_institution?.toLowerCase().includes(localSearch.toLowerCase())
                   )
                   ?.map((e, i) => {
-                    // Determine status class and text
-
                     const lastUpdated = formatDate(e?.updatedAt);
 
                     return (
@@ -679,12 +690,11 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                             <h3>{e?.nameOfPath || "Untitled Path"}</h3>
                           </div>
                           <div className="path-meta">
-                            {/* Show date for non-draft paths, show arrow for draft paths */}
                             {e?.status === "draft" ? (
                               <button
                                 className="draft-arrow-btn"
                                 onClick={(event) => {
-                                  event.stopPropagation(); // Prevent card click
+                                  event.stopPropagation();
                                   navigate(`/dashboard/accountants/path/${e._id}`);
                                 }}
                                 title="Go to Draft Page"
@@ -694,18 +704,17 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                                 </svg>
                               </button>
                             ) : (
-                              <span className="path-date"> {lastUpdated}</span>
+                              <span className="path-date">{lastUpdated}</span>
                             )}
                           </div>
                         </div>
 
-
-                        {/* Description with Read More - FIXED VERSION */}
+                        {/* Description with Read More */}
                         <div className="path-description">
                           {(() => {
                             const description = e?.description || "No description provided.";
                             const isExpanded = expandedDesc[e?._id];
-                            const maxLength = 120; // Show first 120 characters
+                            const maxLength = 120;
 
                             if (description.length > maxLength) {
                               return (
@@ -716,7 +725,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                                   <span
                                     className="read-more-btn"
                                     onClick={(event) => {
-                                      event.stopPropagation(); // Prevent card click
+                                      event.stopPropagation();
                                       toggleDescription(e?._id);
                                     }}
                                   >
@@ -729,18 +738,24 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                           })()}
                         </div>
 
-                        {/* Stats Row - Match the image style */}
+                        {/* ✅ FIX 3: Stats Row - use stepCounts from DB, fallback to the_ids */}
                         <div className="path-stats-row">
                           <div className="stats-group">
                             <span className="stat-badge">
-                              {e?.the_ids?.length || 0} Steps
+                              {" "}
+                              {stepCounts[e?._id] !== undefined
+                                ? stepCounts[e?._id]
+                                : e?.the_ids?.length || 0}{" "}
+                              Steps
                             </span>
                           </div>
                           <button
                             className="view-steps-btn"
                             onClick={(evt) => {
                               evt.stopPropagation();
-                              navigate(`/dashboard/accountants/steps?pathId=${e?._id}&pathName=${encodeURIComponent(e?.nameOfPath || "")}`);
+                              navigate(
+                                `/dashboard/accountants/steps?pathId=${e?._id}&pathName=${encodeURIComponent(e?.nameOfPath || "")}`
+                              );
                             }}
                           >
                             View Steps
@@ -749,28 +764,6 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
 
                         {/* Action Buttons */}
                         <div className="path-footer" onClick={(e) => e.stopPropagation()}>
-                          {/* <button
-                            className="btn-outline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setViewPathEnabled(true);
-                              setPathActionEnabled(false);
-                              viewPathById(e?._id);
-                            }}
-                          >
-                            View Steps
-                          </button> */}
-                          {/* <button
-                            className="btn-outline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedPathId(e?._id);
-                              setSelectedPath(e);
-                              setPathActionStep(4);
-                            }}
-                          >
-                            Edit Path
-                          </button> */}
                           {e?.status === "waitingforapproval" && admin && (
                             <button
                               className="btn-primary"
@@ -783,44 +776,28 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                               Approve
                             </button>
                           )}
-                          {/* {e?.status !== "draft" && e?.status !== "waitingforapproval" && (
-                            // <button
-                            //   className="btn-primary"
-                            //   onClick={(e) => {
-                            //     e.stopPropagation();
-                            //     setSelectedPathId(e?._id);
-                            //     setPathActionStep(2);
-                            //   }}
-                            // >
-                            //   Delete
-                            // </button>
-                          )} */}
                         </div>
                       </div>
                     );
                   })}
 
-                {/* Show message if no paths */}
+                {/* Empty state */}
                 {partnerPathData?.filter((e) =>
                   !localSearch ||
                   e?.nameOfPath?.toLowerCase().includes(localSearch.toLowerCase()) ||
                   e?.description?.toLowerCase().includes(localSearch.toLowerCase()) ||
                   e?.destination_institution?.toLowerCase().includes(localSearch.toLowerCase())
-
                 ).length === 0 && !loading && (
-                    <div style={{ textAlign: 'center', padding: '3rem', color: '#5e6f7e' }}>
-                      No paths found. Click "Create New Path" to get started.
-                    </div>
-                  )}
+                  <div style={{ textAlign: 'center', padding: '3rem', color: '#5e6f7e' }}>
+                    No paths found. Click "Create New Path" to get started.
+                  </div>
+                )}
               </div>
             )}
-
           </>
         )}
 
-        {/* ============================================
-            Step Action Popup (Keep Existing)
-        ============================================ */}
+        {/* Step Action Popup */}
         {stepActionEnabled && (
           <div className="acc-popular1">
             <div className="acc-popular-top" style={{ display: stepActionStep === 3 ? "none" : "" }}>
@@ -840,9 +817,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
 
             {stepActionStep === 1 && (
               <div style={{ marginTop: "3rem" }}>
-                <div className="acc-step-box" onClick={() => setStepActionStep(4)}>
-                  Edit Services
-                </div>
+                <div className="acc-step-box" onClick={() => setStepActionStep(4)}>Edit Services</div>
                 <div className="acc-step-box">Edit Step</div>
                 <div className="acc-step-box">Delete step</div>
               </div>
@@ -850,12 +825,8 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
 
             {stepActionStep === 2 && (
               <div style={{ marginTop: "3rem" }}>
-                <div className="acc-step-box" onClick={deleteStep}>
-                  Confirm and delete
-                </div>
-                <div className="goBack2" onClick={() => setStepActionStep(1)}>
-                  Go Back
-                </div>
+                <div className="acc-step-box" onClick={deleteStep}>Confirm and delete</div>
+                <div className="goBack2" onClick={() => setStepActionStep(1)}>Go Back</div>
               </div>
             )}
 
@@ -867,30 +838,20 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                 <div className="acc-scroll-div">
                   <div
                     className="acc-step-box4"
-                    style={{
-                      flexDirection: "column",
-                      alignItems: "flex-start",
-                      justifyContent: "center",
-                    }}
+                    style={{ flexDirection: "column", alignItems: "flex-start", justifyContent: "center" }}
                     onClick={() => setStepActionStep(5)}
                   >
                     <div>Add a Service</div>
                   </div>
                   <div
                     className="acc-step-box4"
-                    style={{
-                      flexDirection: "column",
-                      alignItems: "flex-start",
-                      justifyContent: "center",
-                    }}
+                    style={{ flexDirection: "column", alignItems: "flex-start", justifyContent: "center" }}
                     onClick={() => setStepActionStep(6)}
                   >
                     <div>Remove a Service</div>
                   </div>
                 </div>
-                <div className="goBack3" onClick={() => setStepActionStep(1)}>
-                  Go Back
-                </div>
+                <div className="goBack3" onClick={() => setStepActionStep(1)}>Go Back</div>
               </div>
             )}
 
@@ -901,23 +862,13 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                   {allServicesToAdd &&
                     allServicesToAdd?.serviceDetails?.map((item) => (
                       <div
-                        className={
-                          selectedServices.includes(item?._id)
-                            ? "acc-step-box4-selected"
-                            : "acc-step-box4"
-                        }
-                        style={{
-                          flexDirection: "column",
-                          alignItems: "flex-start",
-                          justifyContent: "center",
-                        }}
+                        className={selectedServices.includes(item?._id) ? "acc-step-box4-selected" : "acc-step-box4"}
+                        style={{ flexDirection: "column", alignItems: "flex-start", justifyContent: "center" }}
                         onClick={() => handleSelectServicesForStep(item?._id)}
                         key={item?._id}
                       >
                         <div>{item?.name}</div>
-                        <div style={{ fontSize: "12px", fontWeight: 400, paddingTop: "5px" }}>
-                          {item?._id}
-                        </div>
+                        <div style={{ fontSize: "12px", fontWeight: 400, paddingTop: "5px" }}>{item?._id}</div>
                       </div>
                     ))}
                 </div>
@@ -928,9 +879,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                 >
                   Add Selected Services
                 </div>
-                <div className="goBack3" onClick={() => setStepActionStep(1)}>
-                  Go Back
-                </div>
+                <div className="goBack3" onClick={() => setStepActionStep(1)}>Go Back</div>
               </div>
             )}
 
@@ -941,29 +890,17 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                   {allServicesToRemove &&
                     allServicesToRemove?.serviceDetails?.map((item) => (
                       <div
-                        className={
-                          selectedServices.includes(item?._id)
-                            ? "acc-step-box4-selected"
-                            : "acc-step-box4"
-                        }
-                        style={{
-                          flexDirection: "column",
-                          alignItems: "flex-start",
-                          justifyContent: "center",
-                        }}
+                        className={selectedServices.includes(item?._id) ? "acc-step-box4-selected" : "acc-step-box4"}
+                        style={{ flexDirection: "column", alignItems: "flex-start", justifyContent: "center" }}
                         onClick={() => removeServiceFromStep(item?._id)}
                         key={item?._id}
                       >
                         <div>{item?.name}</div>
-                        <div style={{ fontSize: "12px", fontWeight: 400, paddingTop: "5px" }}>
-                          {item?._id}
-                        </div>
+                        <div style={{ fontSize: "12px", fontWeight: 400, paddingTop: "5px" }}>{item?._id}</div>
                       </div>
                     ))}
                 </div>
-                <div className="goBack3" onClick={() => setStepActionStep(1)}>
-                  Go Back
-                </div>
+                <div className="goBack3" onClick={() => setStepActionStep(1)}>Go Back</div>
               </div>
             )}
 

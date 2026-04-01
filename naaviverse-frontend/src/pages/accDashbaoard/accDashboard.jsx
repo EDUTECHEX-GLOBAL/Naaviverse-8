@@ -163,6 +163,17 @@ const AccDashboard = () => {
   const [viewPathMode, setViewPathMode] = useState(isViewPathRoute);
 
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get("tab");
+    if (location.pathname.includes("/dashboard/accountants/crm")) {
+      if (tab === "purchases") {
+        setcrmMenu("Purchases");
+      } else {
+        setcrmMenu("Clients");
+      }
+    }
+  }, [location.search, location.pathname]);
   // Add this with your other useEffects
   useEffect(() => {
     if (location.state?.openCreatePath) {
@@ -188,6 +199,7 @@ const AccDashboard = () => {
       setaccsideNav("Home");
     } else if (path === '/dashboard/accountants' || path === '/dashboard/accountants/') {
       setaccsideNav("CRM");
+      navigate("/dashboard/accountants/crm?tab=clients");
     }
   }, [location.pathname]);
 
@@ -2006,43 +2018,40 @@ const AccDashboard = () => {
                   />
                   <div className="crm-main" onClick={() => setShowDrop(false)}>
                     <div className="crm-all-menu" style={{ padding: "12px 35px" }}>
+
+                      {/* ── Clients Tab ── */}
                       <div
                         className="crm-each-menu"
                         style={{
-                          display: crmMenu === "Clients" ? "" : "none",
+                          marginLeft: "0px",
                           background: crmMenu === "Clients" ? "rgba(241, 241, 241, 0.5)" : "",
                           fontWeight: crmMenu === "Clients" ? "700" : "",
-                          marginLeft: "0px"
                         }}
-                        onClick={() => { setcrmMenu("Clients"); setSearch(""); }}
+                        onClick={() => {
+                          setcrmMenu("Clients");
+                          setSearch("");
+                          navigate("/dashboard/accountants/crm?tab=clients");
+                        }}
                       >
                         Clients ({crmClientData?.length})
                       </div>
-                      <div
-                        className="crm-each-menu"
-                        style={{ display: crmMenu !== "Clients" ? "" : "none", marginLeft: "0px" }}
-                        onClick={() => { setcrmMenu("Clients"); setSearch(""); }}
-                      >
-                        Clients
-                      </div>
+
+                      {/* ── Purchases Tab ── */}
                       <div
                         className="crm-each-menu"
                         style={{
-                          display: crmMenu === "Purchases" ? "" : "none",
                           background: crmMenu === "Purchases" ? "rgba(241,241,241,0.5)" : "",
                           fontWeight: crmMenu === "Purchases" ? "700" : "",
                         }}
-                        onClick={() => { setcrmMenu("Purchases"); setSearch(""); }}
+                        onClick={() => {
+                          setcrmMenu("Purchases");
+                          setSearch("");
+                          navigate("/dashboard/accountants/crm?tab=purchases");
+                        }}
                       >
-                        Purchases (<span>{crmPurchaseData.length}</span>)
+                        Purchases ({crmPurchaseData.length})
                       </div>
-                      <div
-                        className="crm-each-menu"
-                        style={{ display: crmMenu !== "Purchases" ? "" : "none" }}
-                        onClick={() => { setcrmMenu("Purchases"); setSearch(""); }}
-                      >
-                        Purchases
-                      </div>
+
                     </div>
                     <div className="crm-all-box">
                       {crmMenu === "Followers" ? (

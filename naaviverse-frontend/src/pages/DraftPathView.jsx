@@ -569,11 +569,10 @@ const DraftPathView = () => {
       <div className={`draft-view ${view === "draft" ? "active" : ""}`}>
         <div className="path-header-box">
           <div className="path-header-content">
-
             <button
               className="btn-outline"
               style={{ marginBottom: "12px" }}
-              onClick={() => navigate("/dashboard/accountants")}
+              onClick={() => navigate("/dashboard/accountants/paths?tab=draft")}
             >
               ← Back to Paths
             </button>
@@ -594,7 +593,22 @@ const DraftPathView = () => {
             <div className="path-actions-row">
               <button className="btn-outline" onClick={() => setViewAllOpen(true)}>View All Steps</button>
               <button className="btn-outline" onClick={() => setEditPathOpen(true)}>Edit Path</button>
-              <button className="btn-primary" onClick={handleSubmitForApproval}>Submit for Approval</button>
+              <button
+                className="btn-primary"
+                onClick={handleSubmitForApproval}
+                disabled={steps.length < totalSteps}
+                title={
+                  steps.length < totalSteps
+                    ? `Complete all ${totalSteps} steps first (${steps.length}/${totalSteps} done)`
+                    : "Submit for approval"
+                }
+                style={{
+                  opacity: steps.length < totalSteps ? 0.5 : 1,
+                  cursor: steps.length < totalSteps ? "not-allowed" : "pointer",
+                }}
+              >
+                Submit for Approval
+              </button>
             </div>
           </div>
         </div>
