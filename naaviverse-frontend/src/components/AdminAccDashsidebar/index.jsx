@@ -139,8 +139,8 @@ const AdminAccDashsidebar = ({
               className="each-sidenav"
               style={{
                 // ✅ Active highlight based on URL
-                background: isActive(each.title) ? "#fef2f2" : "transparent",
-                color: isActive(each.title) ? "#dc2626" : "#64748b",
+               background: isActive(each.title) ? "rgba(34, 115, 230, 0.1)" : "transparent",
+color: isActive(each.title) ? "#2273E6" : "#64748b",
                 fontWeight: isActive(each.title) ? "600" : "500",
                 borderRadius: isActive(each.title) ? "8px" : "0",
                 paddingLeft: "0",

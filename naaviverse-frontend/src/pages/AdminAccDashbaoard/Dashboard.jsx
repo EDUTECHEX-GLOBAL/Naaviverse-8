@@ -34,175 +34,98 @@ function PortalDropdown({ anchorRef, isOpen, onClose, children }) {
   );
 }
 
-// ── Stat Box Card ────────────────────────────────────────────────────────────
-function StatBox({ colorClass, icon, title, value, subtitle, badge, onAction, actionLabel }) {
-  return (
-    <div className={`stat-box ${colorClass}`}>
-      <div className="stat-box-top">
-        <div className="stat-box-icon">{icon}</div>
-        <div className="stat-box-badge">{badge}</div>
-      </div>
-      <div className="stat-box-title">{title}</div>
-      <div className="stat-box-value">{value}</div>
-      <div className="stat-box-subtitle">{subtitle}</div>
-      {onAction && (
-        <button className="stat-box-btn" onClick={onAction}>
-          {actionLabel || "Review"}
-        </button>
-      )}
-    </div>
-  );
-}
-
-// ── Static Activity Data ─────────────────────────────────────────────────────
-const ACTIVITY_USERS = [
-  {
-    id: 1, name: "Priya K.", email: "priya.k@gmail.com", initials: "PK",
-    color: "#ede9fe", textColor: "#6d28d9", status: "online", joinedDays: "3 days ago",
-    events: [
-      { type: "login",   time: "Today, 9:14 AM",  title: "Logged in",                   desc: "Session from Chrome · Hyderabad, IN",                              chipLabel: "Session start" },
-      { type: "explore", time: "Today, 9:16 AM",  title: "Explored 4 learning paths",   desc: "Browsed: AI Fundamentals, Data Science, Full Stack Dev, UX Design", chipLabel: "Browsing",   pathSteps: ["Login", "Browse", "Explore", "Compare"] },
-      { type: "path",    time: "Today, 9:28 AM",  title: "Selected: AI Fundamentals",   desc: "Enrolled in the 12-week AI Fundamentals track",                     chipLabel: "Enrolled" },
-      { type: "market",  time: "Today, 9:45 AM",  title: "Purchased from Marketplace",  desc: "Bought: \"AI Mentor Session Pack\" · ₹1,200",                       chipLabel: "Purchase" },
-    ],
-  },
-  {
-    id: 2, name: "Arjun M.", email: "arjun.m@outlook.com", initials: "AM",
-    color: "#fef3c7", textColor: "#b45309", status: "online", joinedDays: "1 week ago",
-    events: [
-      { type: "login",   time: "Yesterday, 6:02 PM", title: "Logged in",                  desc: "Session from Mobile · Bangalore, IN",              chipLabel: "Session start" },
-      { type: "explore", time: "Yesterday, 6:05 PM", title: "Explored 2 learning paths",  desc: "Browsed: Full Stack Development, Cloud Architecture", chipLabel: "Browsing", pathSteps: ["Login", "Browse", "Enroll", "Start"] },
-      { type: "path",    time: "Yesterday, 6:18 PM", title: "Selected: Full Stack Dev",   desc: "Enrolled in the 16-week Full Stack Development track", chipLabel: "Enrolled" },
-      { type: "explore", time: "Yesterday, 6:35 PM", title: "Browsed Marketplace",        desc: "Viewed 6 items in Mentors & Institutions section",   chipLabel: "Exploring" },
-    ],
-  },
-  {
-    id: 3, name: "Sneha R.", email: "sneha.r@yahoo.com", initials: "SR",
-    color: "#fce7f3", textColor: "#be185d", status: "idle", joinedDays: "2 days ago",
-    events: [
-      { type: "login",   time: "Today, 11:30 AM", title: "Logged in",                   desc: "Session from Firefox · Mumbai, IN",                               chipLabel: "Session start" },
-      { type: "explore", time: "Today, 11:33 AM", title: "Explored 7 learning paths",   desc: "Spent 18 min comparing paths across Career & Academic categories", chipLabel: "Browsing",  pathSteps: ["Login", "Deep Explore", "Pick Path", "Checkout"] },
-      { type: "path",    time: "Today, 11:51 AM", title: "Selected: Data Science",      desc: "Enrolled in the 20-week Data Science Bootcamp",                   chipLabel: "Enrolled" },
-      { type: "market",  time: "Today, 12:04 PM", title: "Purchased from Marketplace",  desc: "Bought: \"Data Mentor Bundle\" + \"GATE Prep Kit\" · ₹3,800",      chipLabel: "Purchase" },
-    ],
-  },
-  {
-    id: 4, name: "Rahul D.", email: "rahul.d@icloud.com", initials: "RD",
-    color: "#e0f2fe", textColor: "#0369a1", status: "offline", joinedDays: "5 days ago",
-    events: [
-      { type: "login",   time: "2 days ago, 4:12 PM", title: "Logged in",                    desc: "Session from Safari · Delhi, IN",                  chipLabel: "Session start" },
-      { type: "explore", time: "2 days ago, 4:15 PM", title: "Explored 3 learning paths",    desc: "Browsed: Cloud Architecture, DevOps, Cybersecurity", chipLabel: "Browsing", pathSteps: ["Login", "Browse", "Enroll", "Active"] },
-      { type: "path",    time: "2 days ago, 4:29 PM", title: "Selected: Cloud Architecture", desc: "Enrolled in the 10-week Cloud track",               chipLabel: "Enrolled" },
-    ],
-  },
-  {
-    id: 5, name: "Kavya N.", email: "kavya.n@gmail.com", initials: "KN",
-    color: "#dcfce7", textColor: "#15803d", status: "online", joinedDays: "1 day ago",
-    events: [
-      { type: "login",   time: "Today, 8:00 AM", title: "Logged in",                   desc: "Session from Chrome · Pune, IN",                    chipLabel: "Session start" },
-      { type: "explore", time: "Today, 8:04 AM", title: "Explored 5 learning paths",   desc: "Browsed paths in Design, Marketing, and Analytics", chipLabel: "Browsing" },
-      { type: "market",  time: "Today, 8:20 AM", title: "Purchased from Marketplace",  desc: "Bought: \"UX Design Mentor Session\" · ₹900",        chipLabel: "Purchase" },
-      { type: "path",    time: "Today, 8:32 AM", title: "Selected: UX Design",         desc: "Enrolled in the 8-week UX Design track",            chipLabel: "Enrolled",  pathSteps: ["Login", "Market First", "Enroll", "Active"] },
-    ],
-  },
-];
-
 const TYPE_CONFIG = {
   login:   { bg: "#f1f5f9", color: "#475569", emoji: "🔐", chipClass: "activity-chip-login" },
   explore: { bg: "#fef3c7", color: "#b45309", emoji: "🔍", chipClass: "activity-chip-explore" },
   path:    { bg: "#ede9fe", color: "#7c3aed", emoji: "📈", chipClass: "activity-chip-path" },
   market:  { bg: "#cffafe", color: "#0e7490", emoji: "🛒", chipClass: "activity-chip-market" },
+  step:    { bg: "#dcfce7", color: "#15803d", emoji: "🪜", chipClass: "activity-chip-path" },
 };
 
-const STATUS_COLORS = { online: "#22c55e", idle: "#f59e0b", offline: "#94a3b8" };
+const STATUS_COLORS = {
+  active: "#22c55e",
+  idle: "#f59e0b",
+  offline: "#94a3b8"
+};
+
+// Avatar colour palette — assigned by index so each user gets a consistent colour
+const AVATAR_PALETTE = [
+  { color: "#ede9fe", textColor: "#6d28d9" },
+  { color: "#fef3c7", textColor: "#b45309" },
+  { color: "#fce7f3", textColor: "#be185d" },
+  { color: "#e0f2fe", textColor: "#0369a1" },
+  { color: "#dcfce7", textColor: "#15803d" },
+  { color: "#fff7ed", textColor: "#c2410c" },
+];
 
 // ── Main Component ───────────────────────────────────────────────────────────
 export default function Dashboard() {
-  // view: "home" | "approvals" | "activity"
   const [view, setView] = useState("home");
 
-  // Approvals state
-  const [tab, setTab] = useState("all");
+  // ── Dashboard stats (single API call) ─────────────────────────────────────
+  const [dashStats, setDashStats] = useState({
+    paths:       { total: 0, active: 0, inactive: 0, pending: 0 },
+    marketplace: { total: 0, institution: 0, mentor: 0, distributor: 0, vendor: 0 },
+    approvals:   { total: 0, approved: 0, pending: 0, rejected: 0 },
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    setStatsLoading(true);
+    axios
+      .get(`${BASE_URL}/api/dashboard/stats`)
+      .then(({ data }) => {
+        if (data?.status) setDashStats(data.data);
+      })
+      .catch((err) => console.error("Dashboard stats error:", err))
+      .finally(() => setStatsLoading(false));
+  }, []);
+
+  // ── Activity users (real API) ──────────────────────────────────────────────
+  const [activityUsers, setActivityUsers]   = useState([]);
+  const [activityLoading, setActivityLoading] = useState(false);
+
+  const fetchActivityUsers = () => {
+    setActivityLoading(true);
+    axios
+      .get(`${BASE_URL}/api/activity/users`)
+      .then(({ data }) => {
+        if (data?.status) setActivityUsers(data.data);
+      })
+      .catch((err) => console.error("Activity users error:", err))
+      .finally(() => setActivityLoading(false));
+  };
+
+  useEffect(() => {
+    // Pre-fetch activity so the count is ready on the home card
+    fetchActivityUsers();
+  }, []);
+
+  // ── Approvals state ────────────────────────────────────────────────────────
+  const [tab, setTab]         = useState("all");
   const [selected, setSelected] = useState(null);
   const [roleView, setRoleView] = useState("partner");
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
 
-  const [partnerData, setPartnerData] = useState([]);
-  const [userData, setUserData] = useState([]);
-  const [loadingData, setLoadingData] = useState(false);
+  const [partnerData, setPartnerData]     = useState([]);
+  const [userData, setUserData]           = useState([]);
+  const [loadingData, setLoadingData]     = useState(false);
 
-  const [fullUserData, setFullUserData] = useState(null);
+  const [fullUserData, setFullUserData]         = useState(null);
   const [loadingUserDetail, setLoadingUserDetail] = useState(false);
 
   const dropdownRef = useRef(null);
 
-  // Activity state
+  // ── Activity detail state ──────────────────────────────────────────────────
   const [selectedActivityUser, setSelectedActivityUser] = useState(null);
 
-  const [pathCounts, setPathCounts] = useState({ active: 0, inactive: 0, pending: 0 });
-
-  useEffect(() => {
-    Promise.all([
-      axios.get(`${BASE_URL}/api/paths/get?status=active`),
-      axios.get(`${BASE_URL}/api/paths/get?status=inactive`),
-      axios.get(`${BASE_URL}/api/paths/get?status=waitingforapproval`),
-    ]).then(([a, b, c]) => {
-      setPathCounts({
-        active: a.data?.data?.length || 0,
-        inactive: b.data?.data?.length || 0,
-        pending: c.data?.data?.length || 0,
-      });
-    });
-  }, []);
-
-  const [marketCounts, setMarketCounts] = useState({ total: 0, institution: 0, mentor: 0, distributor: 0, vendor: 0 });
-
-  useEffect(() => {
-    axios.get(`${BASE_URL}/api/marketplace/admin/get-all`)
-      .then(({ data }) => {
-        if (data?.status) {
-          const items = data.data || [];
-          setMarketCounts({
-            total: items.length,
-            institution: items.filter(i => i.role?.toLowerCase() === "institution").length,
-            mentor: items.filter(i => i.role?.toLowerCase() === "mentor").length,
-            distributor: items.filter(i => i.role?.toLowerCase() === "distributor").length,
-            vendor: items.filter(i => i.role?.toLowerCase() === "vendor").length,
-          });
-        }
-      });
-  }, []);
-
-  const [approvalStats, setApprovalStats] = useState({ totalPending: 0, totalApproved: 0, totalRejected: 0 });
-
-  useEffect(() => {
-    const fetchAllApprovals = async () => {
-      try {
-        const [partnerRes, userRes] = await Promise.all([
-          axios.get(`${BASE_URL}/api/approvals/get?role=Partner`),
-          axios.get(`${BASE_URL}/api/approvals/get?role=User`),
-        ]);
-        const partners = partnerRes.data?.data || [];
-        const users    = userRes.data?.data || [];
-        setApprovalStats({
-          totalPending:  [...partners, ...users].filter(a => a.status === "pending").length,
-          totalApproved: [...partners, ...users].filter(a => a.status === "approved").length,
-          totalRejected: [...partners, ...users].filter(a => a.status === "rejected").length,
-        });
-      } catch (err) {
-        console.log("Error fetching approval stats", err);
-      }
-    };
-    fetchAllApprovals();
-  }, []);
-
-  // ── Fetch approvals ───────────────────────────────────────────────────────
+  // ── Fetch approvals ────────────────────────────────────────────────────────
   const fetchApprovals = (role, setter) => {
     setLoadingData(true);
     axios
       .get(`${BASE_URL}/api/approvals/get?role=${role}`)
-      .then(res => { if (res.data.status) setter(res.data.data); })
-      .catch(err => console.log(`Error fetching ${role} approvals`, err))
+      .then((res) => { if (res.data.status) setter(res.data.data); })
+      .catch((err) => console.error(`Error fetching ${role} approvals`, err))
       .finally(() => setLoadingData(false));
   };
 
@@ -215,41 +138,41 @@ export default function Dashboard() {
       fetchApprovals("User", setUserData);
   }, [roleView, view]);
 
-  // ── Fetch full user profile ───────────────────────────────────────────────
+  // ── Fetch full user profile ────────────────────────────────────────────────
   useEffect(() => {
     if (!selected) { setFullUserData(null); return; }
     if (selected.role?.toLowerCase() !== "user") { setFullUserData(null); return; }
     setLoadingUserDetail(true);
     axios
       .get(`${BASE_URL}/api/users/get/${selected.email}`)
-      .then(res => { if (res.data?.status) setFullUserData(res.data.data); })
-      .catch(err => console.log("Error fetching full user data:", err))
+      .then((res) => { if (res.data?.status) setFullUserData(res.data.data); })
+      .catch((err) => console.error("Error fetching full user data:", err))
       .finally(() => setLoadingUserDetail(false));
   }, [selected]);
 
   const activeData    = roleView === "partner" ? partnerData : userData;
-  const countByStatus = (s) => s === "all" ? activeData.length : activeData.filter(a => a.status === s).length;
+  const countByStatus = (s) => s === "all" ? activeData.length : activeData.filter((a) => a.status === s).length;
   const pendingCount  = countByStatus("pending");
   const approvedCount = countByStatus("approved");
   const rejectedCount = countByStatus("rejected");
-  const filtered      = tab === "all" ? activeData : activeData.filter(a => a.status === tab);
+  const filtered      = tab === "all" ? activeData : activeData.filter((a) => a.status === tab);
 
   const approve = (id) => {
-    axios.put(`${BASE_URL}/api/approvals/update/${id}`, { status: "approved" }).then(res => {
+    axios.put(`${BASE_URL}/api/approvals/update/${id}`, { status: "approved" }).then((res) => {
       if (res.data.status) {
-        setPartnerData(prev => prev.map(i => i._id === id ? { ...i, status: "approved" } : i));
-        setUserData(prev => prev.map(i => i._id === id ? { ...i, status: "approved" } : i));
-        if (selected?._id === id) setSelected(p => ({ ...p, status: "approved" }));
+        setPartnerData((prev) => prev.map((i) => i._id === id ? { ...i, status: "approved" } : i));
+        setUserData((prev) => prev.map((i) => i._id === id ? { ...i, status: "approved" } : i));
+        if (selected?._id === id) setSelected((p) => ({ ...p, status: "approved" }));
       }
     });
   };
 
   const reject = (id) => {
-    axios.put(`${BASE_URL}/api/approvals/update/${id}`, { status: "rejected" }).then(res => {
+    axios.put(`${BASE_URL}/api/approvals/update/${id}`, { status: "rejected" }).then((res) => {
       if (res.data.status) {
-        setPartnerData(prev => prev.map(i => i._id === id ? { ...i, status: "rejected" } : i));
-        setUserData(prev => prev.map(i => i._id === id ? { ...i, status: "rejected" } : i));
-        if (selected?._id === id) setSelected(p => ({ ...p, status: "rejected" }));
+        setPartnerData((prev) => prev.map((i) => i._id === id ? { ...i, status: "rejected" } : i));
+        setUserData((prev) => prev.map((i) => i._id === id ? { ...i, status: "rejected" } : i));
+        if (selected?._id === id) setSelected((p) => ({ ...p, status: "rejected" }));
       }
     });
   };
@@ -258,6 +181,8 @@ export default function Dashboard() {
   // HOME VIEW
   // ══════════════════════════════════════════════════════════════════════════
   if (view === "home") {
+    const { paths, marketplace, approvals } = dashStats;
+
     return (
       <div className="dashboard">
         <div className="home-wrapper">
@@ -286,15 +211,15 @@ export default function Dashboard() {
                 <div className="stat-box-badge">Total</div>
               </div>
               <div className="stat-box-title">Learning Paths</div>
-              <div className="stat-box-value">{pathCounts.active + pathCounts.inactive + pathCounts.pending}</div>
+              <div className="stat-box-value">{statsLoading ? "—" : paths.total}</div>
               <div className="stat-box-subtitle" style={{ flexDirection: "column", gap: "2px" }}>
-                <span>Active: {pathCounts.active}</span>
-                <span>Inactive: {pathCounts.inactive}</span>
-                <span>Pending: {pathCounts.pending}</span>
+                <span>Active: {paths.active}</span>
+                <span>Inactive: {paths.inactive}</span>
+                <span>Pending: {paths.pending}</span>
               </div>
             </div>
 
-            {/* Box 2 — User Activity (replaces Pending Reviews) */}
+            {/* Box 2 — User Activity */}
             <div className="stat-box box-rose">
               <div className="stat-box-top">
                 <div className="stat-box-icon">
@@ -305,11 +230,10 @@ export default function Dashboard() {
                 <div className="stat-box-badge">Live</div>
               </div>
               <div className="stat-box-title">User Activity</div>
-              <div className="stat-box-value">{ACTIVITY_USERS.length}</div>
+              <div className="stat-box-value">{activityLoading ? "—" : activityUsers.length}</div>
               <div className="stat-box-subtitle" style={{ flexDirection: "column", gap: "2px" }}>
-                <span>Online: {ACTIVITY_USERS.filter(u => u.status === "online").length}</span>
-                <span>Idle: {ACTIVITY_USERS.filter(u => u.status === "idle").length}</span>
-                <span>Offline: {ACTIVITY_USERS.filter(u => u.status === "offline").length}</span>
+                <span>Active: {activityUsers.filter((u) => u.status === "active").length}</span>
+<span>Idle: {activityUsers.filter((u) => u.status === "idle").length}</span>
               </div>
               <button
                 className="stat-box-btn"
@@ -332,16 +256,16 @@ export default function Dashboard() {
                 <div className="stat-box-badge">All</div>
               </div>
               <div className="stat-box-title">Marketplace Items</div>
-              <div className="stat-box-value">{marketCounts.total}</div>
+              <div className="stat-box-value">{statsLoading ? "—" : marketplace.total}</div>
               <div className="stat-box-subtitle" style={{ flexDirection: "column", gap: "2px" }}>
-                <span>Institutions: {marketCounts.institution}</span>
-                <span>Mentors: {marketCounts.mentor}</span>
-                <span>Distributors: {marketCounts.distributor}</span>
-                <span>Vendors: {marketCounts.vendor}</span>
+                <span>Institutions: {marketplace.institution}</span>
+                <span>Mentors: {marketplace.mentor}</span>
+                <span>Distributors: {marketplace.distributor}</span>
+                <span>Vendors: {marketplace.vendor}</span>
               </div>
             </div>
 
-            {/* Box 4 — Approvals Overview */}
+            {/* Box 4 — Approvals */}
             <div className="stat-box box-amber">
               <div className="stat-box-top">
                 <div className="stat-box-icon">
@@ -352,11 +276,11 @@ export default function Dashboard() {
                 <div className="stat-box-badge">Summary</div>
               </div>
               <div className="stat-box-title">Approvals Overview</div>
-              <div className="stat-box-value">{approvalStats.totalApproved + approvalStats.totalPending + approvalStats.totalRejected}</div>
+              <div className="stat-box-value">{statsLoading ? "—" : approvals.total}</div>
               <div className="stat-box-subtitle" style={{ flexDirection: "column", gap: "2px" }}>
-                <span>Approved: {approvalStats.totalApproved}</span>
-                <span>Pending: {approvalStats.totalPending}</span>
-                <span>Rejected: {approvalStats.totalRejected}</span>
+                <span>Approved: {approvals.approved}</span>
+                <span>Pending: {approvals.pending}</span>
+                <span>Rejected: {approvals.rejected}</span>
               </div>
               <button
                 className="stat-box-btn"
@@ -401,12 +325,12 @@ export default function Dashboard() {
                   </div>
                   <div className="kpi-activity-item">
                     <span className="kpi-dot dot-rose"></span>
-                    <span>User Priya K. registered</span>
+                    <span>User activity logged</span>
                     <span className="kpi-time">14m ago</span>
                   </div>
                   <div className="kpi-activity-item">
                     <span className="kpi-dot dot-amber"></span>
-                    <span>Partner Educo Inc. pending</span>
+                    <span>Partner approval pending</span>
                     <span className="kpi-time">1h ago</span>
                   </div>
                   <div className="kpi-activity-item">
@@ -492,77 +416,90 @@ export default function Dashboard() {
             </span>
           </div>
 
-          <div className="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Status</th>
-                  <th>Last Event</th>
-                  <th>Journey</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ACTIVITY_USERS.map(u => {
-                  const last = u.events[u.events.length - 1];
-                  const cfg  = TYPE_CONFIG[last.type];
-                  return (
-                    <tr key={u.id} className="table-row">
-                      <td>
-                        <div className="business-info">
-                          <div className="row-avatar" style={{ background: u.color, color: u.textColor }}>{u.initials}</div>
-                          <div>
-                            <div className="business-name">{u.name}</div>
-                            <div style={{ fontSize: 12, color: "var(--slate-400)" }}>{u.email}</div>
+          {activityLoading ? (
+            <div style={{ padding: "40px", textAlign: "center", color: "#9CA3AF" }}>Loading activity...</div>
+          ) : activityUsers.length === 0 ? (
+            <div style={{ padding: "48px", textAlign: "center" }}>
+              <div style={{ fontSize: 36, opacity: 0.3 }}>⏱</div>
+              <p style={{ color: "#94a3b8", marginTop: 8 }}>No activity recorded yet</p>
+            </div>
+          ) : (
+            <div className="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Status</th>
+                    <th>Last Event</th>
+                    <th>Journey</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activityUsers.map((u, idx) => {
+                    const palette = AVATAR_PALETTE[idx % AVATAR_PALETTE.length];
+                const last = u.lastEvent || u.events[u.events.length - 1];
+                    const cfg     = TYPE_CONFIG[last?.type] || TYPE_CONFIG.login;
+                    return (
+                      <tr key={u.id} className="table-row">
+                        <td>
+                          <div className="business-info">
+                            <div className="row-avatar" style={{ background: palette.color, color: palette.textColor }}>
+  {u.initials
+    || (u.name?.trim() ? u.name.trim().split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase() : null)
+    || u.email?.slice(0,2).toUpperCase()
+    || "??"}
+</div>
+                            <div>
+                              <div className="business-name">{u.name}</div>
+                              <div style={{ fontSize: 12, color: "var(--slate-400)" }}>{u.email}</div>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td>
-                        <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: STATUS_COLORS[u.status], fontWeight: 600 }}>
-                          <span style={{ width: 7, height: 7, borderRadius: "50%", background: STATUS_COLORS[u.status], display: "inline-block" }} />
-                          {u.status.charAt(0).toUpperCase() + u.status.slice(1)}
-                        </span>
-                      </td>
-                      <td>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <span style={{ background: cfg.bg, padding: "4px 6px", borderRadius: 6, fontSize: 13 }}>{cfg.emoji}</span>
-                          <div>
-                            <div style={{ fontSize: 13, fontWeight: 500 }}>{last.title}</div>
-                            <div style={{ fontSize: 11, color: "var(--slate-400)" }}>{last.time}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-                          {["login", "explore", "path", "market"].map(t => {
-                            const done = u.events.some(e => e.type === t);
-                            return (
-                              <span
-                                key={t}
-                                title={t}
-                                style={{
+                        </td>
+                        <td>
+                          <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: STATUS_COLORS[u.status] || STATUS_COLORS.offline, fontWeight: 600 }}>
+                            <span style={{ width: 7, height: 7, borderRadius: "50%", background: STATUS_COLORS[u.status] || STATUS_COLORS.offline, display: "inline-block" }} />
+                            {u.status.charAt(0).toUpperCase() + u.status.slice(1)}
+                          </span>
+                        </td>
+                        <td>
+                          {last ? (
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <span style={{ background: cfg.bg, padding: "4px 6px", borderRadius: 6, fontSize: 13 }}>{cfg.emoji}</span>
+                              <div>
+                                <div style={{ fontSize: 13, fontWeight: 500 }}>{last.title}</div>
+                                <div style={{ fontSize: 11, color: "var(--slate-400)" }}>{last.time}</div>
+                              </div>
+                            </div>
+                          ) : <span style={{ color: "var(--slate-300)" }}>—</span>}
+                        </td>
+                        <td>
+                          <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+                            {["login", "explore", "path", "market"].map((t) => {
+                              const done = u.events.some((e) => e.type === t);
+                              return (
+                                <span key={t} title={t} style={{
                                   width: 9, height: 9, borderRadius: "50%",
                                   background: done ? TYPE_CONFIG[t].bg : "#e2e8f0",
                                   border: done ? `1.5px solid ${TYPE_CONFIG[t].color}40` : "none",
                                   display: "inline-block",
-                                }}
-                              />
-                            );
-                          })}
-                        </div>
-                      </td>
-                      <td>
-                        <button className="view-btn" onClick={() => setSelectedActivityUser(u)}>
-                          View Journey
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                                }} />
+                              );
+                            })}
+                          </div>
+                        </td>
+                        <td>
+                          <button className="view-btn" onClick={() => setSelectedActivityUser({ ...u, palette })}>
+                            View Journey
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
 
         </div>
       </div>
@@ -573,7 +510,9 @@ export default function Dashboard() {
   // ACTIVITY — DETAIL VIEW
   // ══════════════════════════════════════════════════════════════════════════
   if (view === "activity" && selectedActivityUser) {
-    const u = selectedActivityUser;
+    const u       = selectedActivityUser;
+    const palette = u.palette || AVATAR_PALETTE[0];
+
     return (
       <div className="dashboard">
         <div className="details-card" style={{ maxWidth: 760 }}>
@@ -586,14 +525,17 @@ export default function Dashboard() {
           </button>
 
           <div className="details-hero">
-            <div className="details-avatar" style={{ background: u.color, color: u.textColor, border: `2px solid ${u.color}` }}>
-              {u.initials}
-            </div>
+            <div className="details-avatar" style={{ background: palette.color, color: palette.textColor, border: `2px solid ${palette.color}` }}>
+  {u.initials
+    || (u.name?.trim() ? u.name.trim().split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase() : null)
+    || u.email?.slice(0,2).toUpperCase()
+    || "??"}
+</div>
             <div className="details-hero-info">
               <div className="details-hero-top">
                 <h2>{u.name}</h2>
-                <span style={{ fontSize: 12, fontWeight: 600, color: STATUS_COLORS[u.status], display: "flex", alignItems: "center", gap: 5 }}>
-                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: STATUS_COLORS[u.status], display: "inline-block" }} />
+                <span style={{ fontSize: 12, fontWeight: 600, color:STATUS_COLORS[u.status] || "#94a3b8", display: "flex", alignItems: "center", gap: 5 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: STATUS_COLORS[u.status] || "#94a3b8", display: "inline-block" }} />
                   {u.status.charAt(0).toUpperCase() + u.status.slice(1)}
                 </span>
               </div>
@@ -605,40 +547,51 @@ export default function Dashboard() {
 
           <div className="details-section-title" style={{ marginBottom: 20 }}>Journey Timeline</div>
 
-          <div className="activity-timeline">
-            {u.events.map((ev, i) => {
-              const cfg = TYPE_CONFIG[ev.type];
-              return (
-                <div key={i} className="activity-tl-item">
-                  <div className="activity-tl-left">
-                    <div className="activity-tl-icon" style={{ background: cfg.bg }}>
-                      <span style={{ fontSize: 14 }}>{cfg.emoji}</span>
-                    </div>
-                    {i < u.events.length - 1 && <div className="activity-tl-line" />}
-                  </div>
-                  <div className="activity-tl-body">
-                    <div className="activity-tl-time">{ev.time}</div>
-                    <div className="activity-tl-title">{ev.title}</div>
-                    <div className="activity-tl-desc">{ev.desc}</div>
-                    <span className={`activity-chip ${cfg.chipClass}`}>{ev.chipLabel}</span>
-                    {ev.pathSteps && (
-                      <div className="path-track">
-                        {ev.pathSteps.map((s, si) => (
-                          <React.Fragment key={si}>
-                            <div className="path-step-node">
-                              <div className="path-step-circle" style={{ background: u.color, color: u.textColor }}>{si + 1}</div>
-                              <div className="path-step-label">{s}</div>
-                            </div>
-                            {si < ev.pathSteps.length - 1 && <div className="path-step-arrow" />}
-                          </React.Fragment>
-                        ))}
+          {u.events.length === 0 ? (
+            <div style={{ padding: "32px", textAlign: "center", color: "#94a3b8" }}>No events recorded yet</div>
+          ) : (
+            <div className="activity-timeline">
+              {u.events.map((ev, i) => {
+                const cfg = TYPE_CONFIG[ev.type] || TYPE_CONFIG.login;
+                return (
+                  <div key={i} className="activity-tl-item">
+                    <div className="activity-tl-left">
+                      <div className="activity-tl-icon" style={{ background: cfg.bg }}>
+                        <span style={{ fontSize: 14 }}>{cfg.emoji}</span>
                       </div>
-                    )}
+                      {i < u.events.length - 1 && <div className="activity-tl-line" />}
+                    </div>
+                    <div className="activity-tl-body">
+                      <div className="activity-tl-time">{ev.time}</div>
+                      <div className="activity-tl-title">{ev.title}</div>
+
+                      {/* Path → Step → Micro step hierarchy */}
+                      {ev.type === "step" && ev.pathName && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 2, margin: "4px 0" }}>
+                          <div style={{ fontSize: 12, color: "var(--violet-600)", fontWeight: 600 }}>
+                            📍 {ev.pathName}
+                          </div>
+                          {ev.stepName && (
+                            <div style={{ fontSize: 12, color: "var(--slate-500)" }}>
+                              Step: {ev.stepName}
+                            </div>
+                          )}
+                          {ev.microStep && (
+                            <div style={{ fontSize: 12, color: "var(--slate-400)" }}>
+                              Micro: {ev.microStep}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="activity-tl-desc">{ev.desc}</div>
+                      <span className={`activity-chip ${cfg.chipClass}`}>{ev.chipLabel}</span>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
 
         </div>
       </div>
@@ -801,7 +754,7 @@ export default function Dashboard() {
             <button
               type="button"
               className={`role-toggle-btn ${isPartnerView ? "partner-toggle" : "user-toggle"}`}
-              onClick={() => setShowRoleDropdown(prev => !prev)}
+              onClick={() => setShowRoleDropdown((prev) => !prev)}
             >
               <span className="toggle-dot" />
               {isPartnerView ? "Partners" : "Users"}
@@ -856,7 +809,7 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {filtered.length > 0 ? (
-                  filtered.map(item => (
+                  filtered.map((item) => (
                     <tr key={item._id} className="table-row">
                       <td>
                         <div className="business-info">

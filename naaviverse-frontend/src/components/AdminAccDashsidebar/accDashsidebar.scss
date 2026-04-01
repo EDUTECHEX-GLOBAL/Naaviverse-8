@@ -120,13 +120,17 @@
 }
 
 .each-sidenav {
-  /* Remove hover effects that might highlight */
   &:hover {
-    background: rgba(0, 0, 0, 0.03) !important; /* Very subtle, no highlight */
-    color: #0f172a !important;
+    background: rgba(34, 115, 230, 0.08) !important; // soft blue
+    color: #2273E6 !important;
   }
 }
-
+.each-sidenav.active,
+.each-sidenav.selected {
+  background: rgba(34, 115, 230, 0.12); // slightly stronger than hover
+  color: #2273E6;
+  font-weight: 600;
+}
 /* When popup is open, ensure sidebar doesn't get any blur or overlay */
 body.admin-popup-open .dashboard-sidebar {
   backdrop-filter: none;
