@@ -12,6 +12,8 @@ import { GlobalContex } from "../../globalContext";
 import { useStore } from "../../components/store/store.ts";
 import educationIcon from "../../static/images/mapspage/educationIcon.svg";
 
+import logActivity from "../../utils/activityLogger";
+
 // Styles
 import "./mapspage.scss";
 
@@ -21,7 +23,6 @@ const PathComponent = () => {
   const navigate = useNavigate();
   const { sideNav, setsideNav } = useStore();
 
-  // ✅ Mobile: toggle filters panel visibility
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const {
@@ -35,38 +36,29 @@ const PathComponent = () => {
   } = useCoinContextData();
 
   const {
-    gradeToggle,
-    setGradeToggle,
-    curriculumToggle,
-    setCurriculumToggle,
-    streamToggle,
-    setStreamToggle,
-    performanceToggle,
-    setPerformanceToggle,
-    financialToggle,
-    setFinancialToggle,
-    personalityToggle,
-    setPersonalityToggle,
-    refetchPaths,
-    setRefetchPaths,
+    gradeToggle,      setGradeToggle,
+    curriculumToggle, setCurriculumToggle,
+    streamToggle,     setStreamToggle,
+    performanceToggle, setPerformanceToggle,
+    financialToggle,  setFinancialToggle,
+    personalityToggle, setPersonalityToggle,
+    refetchPaths,     setRefetchPaths,
   } = useContext(GlobalContex);
 
-  const [loading, setLoading] = useState(false);
+  const [loading,        setLoading]        = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
-  const [approvedPaths, setApprovedPaths] = useState([]);
-  const [userProfile, setUserProfile] = useState(null);
+  const [approvedPaths,  setApprovedPaths]  = useState([]);
+  const [userProfile,    setUserProfile]    = useState(null);
+
+  // ── track whether explore has been logged this session ──────────────────
+  const exploreLoggedRef = useRef(false);
 
   const user = (() => {
-    try {
-      return JSON.parse(localStorage.getItem("user") || "{}");
-    } catch {
-      return {};
-    }
+    try { return JSON.parse(localStorage.getItem("user") || "{}"); }
+    catch { return {}; }
   })();
 
-  // --------------------------------------------------------------
-  //  FETCH USER PROFILE
-  // --------------------------------------------------------------
+  // ── FETCH USER PROFILE ────────────────────────────────────────────────────
   const fetchUserProfile = async () => {
     try {
       const email = user?.email;
@@ -85,21 +77,30 @@ const PathComponent = () => {
     fetchUserProfile();
   }, []);
 
-  // --------------------------------------------------------------
-  //  FETCH ADMIN-APPROVED PATHS (WITH TOGGLES)
-  // --------------------------------------------------------------
+  // ── LOG "explore" ONCE when paths page mounts ─────────────────────────────
+  useEffect(() => {
+    if (exploreLoggedRef.current) return;
+    exploreLoggedRef.current = true;
+
+    logActivity({
+      type:  "explore",
+      title: "Browsing learning paths",
+      desc:  "User opened the Explore Paths page",
+    });
+  }, []);
+
+  // ── FETCH APPROVED PATHS (WITH TOGGLES) ───────────────────────────────────
   useEffect(() => {
     const fetchApprovedPaths = async () => {
       try {
         setLoading(true);
-
         const params = {};
-        if (gradeToggle)       params.grade        = userProfile?.grade;
-        if (curriculumToggle)  params.curriculum   = userProfile?.curriculum;
-        if (streamToggle)      params.stream       = userProfile?.stream;
-        if (performanceToggle) params.performance  = userProfile?.performance;
-        if (financialToggle)   params.financial    = userProfile?.financialSituation;
-        if (personalityToggle) params.personality  = userProfile?.personality;
+        if (gradeToggle)       params.grade       = userProfile?.grade;
+        if (curriculumToggle)  params.curriculum  = userProfile?.curriculum;
+        if (streamToggle)      params.stream      = userProfile?.stream;
+        if (performanceToggle) params.performance = userProfile?.performance;
+        if (financialToggle)   params.financial   = userProfile?.financialSituation;
+        if (personalityToggle) params.personality = userProfile?.personality;
 
         const res = await axios.get(`${BASE_URL}/api/paths/active`, { params });
         setApprovedPaths(res.data.data || []);
@@ -119,9 +120,7 @@ const PathComponent = () => {
     userProfile,
   ]);
 
-  // --------------------------------------------------------------
-  //  USER CONFIRMS PATH
-  // --------------------------------------------------------------
+  // ── USER CONFIRMS PATH ────────────────────────────────────────────────────
   const confirmPathSelection = async () => {
     const email  = user?.email;
     const pathId = selectedPathItem?._id;
@@ -138,6 +137,16 @@ const PathComponent = () => {
 
       await axios.post(`${BASE_URL}/api/userpaths/selectpath`, { email, pathId });
 
+      // ✅ Log path selected / enrolled
+      logActivity({
+        type:     "path",
+        title:    `Selected path: ${selectedPathItem?.name}`,
+        desc:     `User enrolled in "${selectedPathItem?.name}"`,
+        pathId:   pathId,
+        pathName: selectedPathItem?.name || "",
+        status:   "completed",
+      });
+
       setPathItemStep(3);
       setTimeout(() => {
         setsideNav("My Journey");
@@ -145,6 +154,17 @@ const PathComponent = () => {
       }, 2000);
     } catch (err) {
       console.error("❌ Select path error:", err.response?.data || err.message);
+
+      // Still log even if API failed (path was set in localStorage)
+      logActivity({
+        type:     "path",
+        title:    `Selected path: ${selectedPathItem?.name}`,
+        desc:     `User enrolled in "${selectedPathItem?.name}"`,
+        pathId:   pathId,
+        pathName: selectedPathItem?.name || "",
+        status:   "completed",
+      });
+
       setPathItemStep(3);
       setTimeout(() => {
         setsideNav("My Journey");
@@ -155,9 +175,7 @@ const PathComponent = () => {
     }
   };
 
-  // --------------------------------------------------------------
-  //  RENDER
-  // --------------------------------------------------------------
+  // ── RENDER ────────────────────────────────────────────────────────────────
   return (
     <div className="mapspage1">
       {showPathDetails ? (
@@ -168,18 +186,14 @@ const PathComponent = () => {
           {/* ── RIGHT: Filters Sidebar ── */}
           <div className={`maps-sidebar1 ${filtersOpen ? "mobile-filters-open" : ""}`}>
 
-            {/* ✅ Mobile toggle bar — only visible on mobile */}
             <div
               className="mobile-filter-toggle"
               onClick={() => setFiltersOpen((v) => !v)}
             >
               <span>🎯 Filters & Coordinates</span>
-              <span className="mobile-filter-chevron">
-                {filtersOpen ? "▲" : "▼"}
-              </span>
+              <span className="mobile-filter-chevron">{filtersOpen ? "▲" : "▼"}</span>
             </div>
 
-            {/* Filter content — hidden on mobile when closed */}
             <div className={`sidebar-filter-content ${filtersOpen ? "open" : ""}`}>
 
               {pathItemSelected && pathItemStep === 1 ? (
@@ -222,9 +236,7 @@ const PathComponent = () => {
                     >
                       {confirmLoading ? "Confirming..." : "Yes, Confirm"}
                     </div>
-                    <div className="reset-btn1" onClick={() => setPathItemStep(1)}>
-                      Go Back
-                    </div>
+                    <div className="reset-btn1" onClick={() => setPathItemStep(1)}>Go Back</div>
                   </div>
                 </div>
 
@@ -242,7 +254,6 @@ const PathComponent = () => {
 
               ) : (
                 <div className="mid-area1">
-                  {/* Education Header */}
                   <div className="education-header">
                     <div className="education-icon">
                       <img src={educationIcon} alt="Education" />
@@ -250,10 +261,8 @@ const PathComponent = () => {
                     <div className="education-title">Education</div>
                   </div>
 
-                  {/* Current Coordinates */}
                   <div className="current-coord-container">
                     <div className="current-text">Current Coordinates</div>
-
                     {!userProfile ? (
                       <p>Loading profile...</p>
                     ) : (
@@ -274,11 +283,7 @@ const PathComponent = () => {
                             >
                               <div
                                 className="toggle"
-                                style={{
-                                  transform: !toggle
-                                    ? "translateX(0)"
-                                    : "translateX(20px)",
-                                }}
+                                style={{ transform: !toggle ? "translateX(0)" : "translateX(20px)" }}
                               />
                             </div>
                             <div className="field-value">{value}</div>
@@ -293,7 +298,7 @@ const PathComponent = () => {
                       className="gs-Btn-maps1"
                       onClick={() => {
                         setRefetchPaths(!refetchPaths);
-                        setFiltersOpen(false); // collapse filters after search on mobile
+                        setFiltersOpen(false);
                       }}
                     >
                       Find Paths
@@ -302,7 +307,7 @@ const PathComponent = () => {
                 </div>
               )}
 
-            </div>{/* end sidebar-filter-content */}
+            </div>
           </div>
 
           {/* ── LEFT: Approved Paths ── */}
@@ -314,7 +319,17 @@ const PathComponent = () => {
                 setSelectedPathItem(path);
                 setPathItemSelected(true);
                 setPathItemStep(1);
-                setFiltersOpen(true); // open filters so user sees action buttons
+                setFiltersOpen(true);
+
+                // ✅ Log that user tapped/viewed a specific path card
+                logActivity({
+                  type:     "explore",
+                  title:    `Viewed path: ${path?.name}`,
+                  desc:     `User tapped on "${path?.name}" to view details`,
+                  pathId:   path?._id,
+                  pathName: path?.name || "",
+                  status:   "viewed",
+                });
               }}
             />
           </div>

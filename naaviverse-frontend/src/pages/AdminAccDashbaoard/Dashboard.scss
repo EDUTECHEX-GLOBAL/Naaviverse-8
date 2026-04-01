@@ -169,8 +169,8 @@
 
 .stat-box {
   border-radius: var(--radius-xl);
-   padding: 12px 14px 10px;   // ↓ reduced from 14px 16px 12px
-  min-height: 170px; 
+   padding: 8px 14px 6px;   // ↓ reduced from 14px 16px 12px
+  min-height: 100px; 
   position: relative;
   overflow: hidden;
   cursor: default;
@@ -243,10 +243,10 @@
     background: rgba(255,255,255,.95);
     color: #d97706;
     border: none;
-    padding: 8px 18px;
+    padding: 6px 16px;
     border-radius: var(--radius-full);
-    font-size: 12.5px;
-    font-weight: 700;
+    font-size: 12px;
+    font-weight: 600;
     font-family: var(--font);
     cursor: pointer;
     margin-top: 14px;

@@ -46,7 +46,8 @@ const adminAuthRoutes = require("./Admin/routes/adminAuthRoutes");
 const adminDashboardRoutes = require("./Admin/routes/adminDashboardRoutes");
 const subscriptionRoutes = require("./Admin/routes/subscriptionRoutes");
 const contactRoutes = require("./Admin/routes/contactRoutes");
-
+const dashboardRouter = require("./routes/dashboardRouter");
+const activityRouter  = require("./routes/activityRouter");
 const stepsRouter = require("./routes/stepsRouter");
 const marketplaceRouter = require("./routes/marketplaceRouter");
 
@@ -135,6 +136,8 @@ app.use("/api/partner", partnerRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/personality", personalityRouter);
 app.use("/api/approvals", approvalRouter);  
+app.use("/api/dashboard", dashboardRouter);
+app.use("/api/activity",  activityRouter);
 app.use("/api/payment", require("./routes/paymentRoutes"));
 
 app.use("/api/admin/auth", adminAuthRoutes);
