@@ -1,36 +1,23 @@
 const express = require("express");
 const router = express.Router();
-const Subscription = require("../models/subscription.model");
 
-// -----------------------------
-//  Check Subscription Status
-// -----------------------------
-router.get("/status", async (req, res) => {
-  try {
-    const { email, productId } = req.query;
+const {
+  createSubscription,
+  checkStatus,
+  getUserSubscriptions,
+  cancelSubscription,
+  renewSubscription,
+  getAllSubscriptions,
+} = require("../controllers/subscription.controller");
 
-    const sub = await Subscription.findOne({ userEmail: email, productId });
+// ── User-facing routes ────────────────────────────────────────────
+router.post("/create", createSubscription);          // Activate a new subscription
+router.get("/status", checkStatus);                  // Check if user is subscribed
+router.get("/user", getUserSubscriptions);           // Get all subs for a user
+router.put("/cancel", cancelSubscription);           // Cancel a subscription
+router.put("/renew", renewSubscription);             // Renew / change billing cycle
 
-    if (!sub) {
-      return res.json({ subscribed: false });
-    }
-
-    // Lifetime = always active
-    if (sub.billingMethod === "lifetime") {
-      return res.json({ subscribed: true, subscription: sub });
-    }
-
-    // Expired?
-    if (sub.endDate < new Date()) {
-      sub.status = "expired";
-      await sub.save();
-      return res.json({ subscribed: false, subscription: sub });
-    }
-
-    return res.json({ subscribed: true, subscription: sub });
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
-  }
-});
+// ── Admin route ───────────────────────────────────────────────────
+router.get("/all", getAllSubscriptions);             // List all subscriptions (paginated)
 
 module.exports = router;

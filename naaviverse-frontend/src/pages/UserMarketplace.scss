@@ -137,14 +137,14 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
     box-shadow: 0 2px 8px rgba(15,31,61,0.08);
   }
 
-  // "All" pill — navy filled when active
-  &--all.active {
-    background: $navy;
-    border-color: $navy;
-    color: #fff;
-    box-shadow: 0 3px 10px rgba(15,31,61,0.22);
-    .vpill-cnt { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.9); }
-  }
+  // // "All" pill — navy filled when active
+  // &--all.active {
+  //   background: $navy;
+  //   border-color: $navy;
+  //   color: #fff;
+  //   box-shadow: 0 3px 10px rgba(15,31,61,0.22);
+  //   // .vpill-cnt { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.9); }
+  // }
 
   // Macro pill — indigo when active
   &--macro.active {
@@ -174,7 +174,6 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   }
 }
 
-.vpill-emoji { font-size: 12px; line-height: 1; }
 .vpill-label { font-weight: 700; letter-spacing: 0.01em; }
 .vpill-cnt {
   background: $gray100;
@@ -263,8 +262,8 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   display: flex; flex-direction: column; overflow: hidden; transition: all 0.2s;
   &:hover { box-shadow: $shadow-lg; transform: translateY(-2px); border-color: $teal; }
 }
-.svc-top { padding: 15px 15px 12px; flex: 1; }
-.svc-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 11px; }
+.svc-top { padding: 10px 12px 8px; flex: 1; }
+.svc-tags { display: flex; gap: 3px; flex-wrap: wrap; margin-bottom: 7px; }
 .svc-tag {
   font-size: 9px; font-weight: 800; text-transform: uppercase;
   letter-spacing: 0.8px; padding: 3px 8px; border-radius: 16px;
@@ -274,17 +273,30 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   &.role-tag    { background: $gray100; color: $gray600; }
   &.st-free     { background: #dcfce7; color: #16a34a; }
 }
-.svc-ico    { font-size: 23px; margin-bottom: 8px; display: block; }
-.svc-name   { font-size: 13px; font-weight: 700; color: $navy; margin-bottom: 4px; line-height: 1.35; }
-.svc-by     { font-size: 11px; color: $gray400; margin-bottom: 8px; }
-.svc-desc   { font-size: 11px; color: $gray600; line-height: 1.65; }
-.svc-details { margin-top: 8px; }
+.svc-ico    { font-size: 18px; margin-bottom: 5px; display: block; }
+.svc-name   { font-size: 13px; font-weight: 700; color: $navy; margin-bottom: 2px; line-height: 1.3; }
+.svc-by     { font-size: 11px; color: $gray400; margin-bottom: 5px; }
+.svc-desc   {
+  font-size: 11px; color: $gray600; line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.svc-details { margin-top: 6px; }
 .svc-detail-row {
-  font-size: 10px; color: $gray600; margin-bottom: 3px; display: flex; gap: 5px;
-  .svc-detail-lbl { font-weight: 700; color: $gray400; min-width: 60px; }
+  font-size: 10px; color: $gray600; margin-bottom: 2px;
+  display: flex; gap: 5px; align-items: flex-start;
+  .svc-detail-lbl { font-weight: 700; color: $gray400; min-width: 60px; flex-shrink: 0; }
+  span:last-child {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
 .svc-bot {
-  padding: 11px 15px; border-top: 1px solid $gray100;
+  padding: 10px 13px; border-top: 1px solid $gray100;
   display: flex; align-items: center; justify-content: space-between;
 }
 .svc-price-wrap { display: flex; flex-direction: column; }
@@ -415,22 +427,35 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   border-bottom: 1px solid $gray200;
 }
 .chk-field {
-  margin-bottom: 10px;
-  &:last-child { margin-bottom: 0; }
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
   label {
-    display: block; font-size: 9px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.5px;
-    color: $gray600; margin-bottom: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: $teal;
   }
-  input[type="text"], input[type="date"], input[type="password"], input[type="email"], input[type="tel"] {
-    width: 100%; padding: 5px 8px;
-    border: 1px solid $gray200; border-radius: 5px;
-    font-family: 'DM Sans', sans-serif; font-size: 11px;
-    color: $navy; background: $gray50; outline: none;
-    transition: border-color 0.15s; box-sizing: border-box;
-    height: 30px; line-height: 1;
-    &:focus { border-color: $teal; background: #fff; }
-    &::placeholder { color: $gray300; font-size: 10px; font-style: italic; }
+
+  input {
+    padding: 10px 14px;
+    border: 1.5px solid $gray200;
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    color: $navy;
+    outline: none;
+    transition: border 0.15s;
+
+    &::placeholder {
+      color: $gray300;    // ← lighter
+      font-size: 12px;    // ← smaller
+      font-weight: 400;
+    }
+
+    &:focus { border-color: $teal; }
   }
 }
 .chk-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }

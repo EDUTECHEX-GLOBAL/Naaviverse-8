@@ -44,8 +44,6 @@ var approvalRouter = require("./routes/approvalRouter");
 var visitorRoutes = require("./Admin/routes/VisitorRoute");
 const adminAuthRoutes = require("./Admin/routes/adminAuthRoutes");
 const adminDashboardRoutes = require("./Admin/routes/adminDashboardRoutes");
-const subscriptionRoutes = require("./Admin/routes/subscriptionRoutes");
-const contactRoutes = require("./Admin/routes/contactRoutes");
 const dashboardRouter = require("./routes/dashboardRouter");
 const activityRouter  = require("./routes/activityRouter");
 const stepsRouter = require("./routes/stepsRouter");
@@ -60,6 +58,13 @@ const countryRoutes = require("./routes/countryRoutes");
 const stateRoutes = require("./routes/stateRoutes");
 const cityRoutes = require("./routes/cityRoutes");
 
+// ── Super Admin — newsletter/landing page email subscriptions ──────────────
+const adminNewsletterRoutes = require("./Admin/routes/subscriptionRoutes");
+const contactRoutes = require("./Admin/routes/contactRoutes");
+
+// ── Platform Admin — paid platform subscriptions (monthly/annual) ──────────
+const platformSubscriptionRoutes = require("./routes/subscriptionRoutes");
+
 /* ------------------- APP SETTINGS ------------------- */
 
 app.set("views", path.join(__dirname, "views"));
@@ -68,12 +73,9 @@ app.set("view engine", "ejs");
 /* ------------------- MIDDLEWARE ------------------- */
 
 app.use(logger("dev"));
-
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
-
 app.use(cookieParser());
-
 app.use(express.static(path.join(__dirname, "public")));
 
 /* ------------------- CORS CONFIG ------------------- */
@@ -94,7 +96,7 @@ const corsOptions = {
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 };
 
@@ -135,16 +137,16 @@ app.use("/api/userAnswers", userPersonalityRouter);
 app.use("/api/partner", partnerRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/personality", personalityRouter);
-app.use("/api/approvals", approvalRouter);  
+app.use("/api/approvals", approvalRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/activity",  activityRouter);
 app.use("/api/payment", require("./routes/paymentRoutes"));
 
+// ── Super Admin routes (newsletter, contacts, visitors, dashboard) ─────────
 app.use("/api/admin/auth", adminAuthRoutes);
 app.use("/api/admin-dashboard", adminDashboardRoutes);
-app.use("/api/admin-subscribe", subscriptionRoutes);
+app.use("/api/admin-subscribe", adminNewsletterRoutes);   // newsletter subscribers
 app.use("/api/admin-contact", contactRoutes);
-
 app.use("/api/admin-visitors", visitorRoutes);
 
 /* ---------- EXTRA ROUTES ---------- */
@@ -158,6 +160,9 @@ app.use("/api/locations", locationRouter);
 app.use("/api/countries", countryRoutes);
 app.use("/api/states", stateRoutes);
 app.use("/api/cities", cityRoutes);
+
+// ── Platform subscription routes (paid plans — monthly/annual) ────────────
+app.use("/api/subscriptions", platformSubscriptionRoutes);
 
 app.use("/api/perplexity", require("./routes/perplexity.route"));
 app.use("/api/regenerate", require("./routes/regenerateAll.route"));

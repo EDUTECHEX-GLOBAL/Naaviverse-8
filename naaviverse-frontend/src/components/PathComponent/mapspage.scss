@@ -84,7 +84,8 @@
     width: 100%;
     height: 100%;
     display: flex;
-    flex-direction: row-reverse; /* sidebar on RIGHT, content on LEFT — desktop */
+    flex-direction: row-reverse;
+    /* sidebar on RIGHT, content on LEFT — desktop */
 
     /* ── LEFT: Path list ── */
     .maps-content-area1 {
@@ -147,6 +148,8 @@
       border-left: 1px solid #e5e5e5;
       overflow-y: auto;
       flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
 
       .top-icons1 {
         display: flex;
@@ -185,6 +188,7 @@
             .border-div1 {
               box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
             }
+
             .icon-name-txt1 {
               transform: scale(1.05);
             }
@@ -272,7 +276,10 @@
             img {
               cursor: pointer;
               transition: all ease 0.2s;
-              &:hover { transform: scale(1.05); }
+
+              &:hover {
+                transform: scale(1.05);
+              }
             }
           }
 
@@ -302,7 +309,10 @@
           gap: 7px;
           cursor: pointer;
           transition: all ease 0.2s;
-          &:hover { transform: scale(1.05); }
+
+          &:hover {
+            transform: scale(1.05);
+          }
         }
 
         .maps-btns-div1 {
@@ -321,7 +331,10 @@
             font-size: 0.8rem;
             cursor: pointer;
             transition: all ease 0.2s;
-            &:hover { transform: scale(1.05); }
+
+            &:hover {
+              transform: scale(1.05);
+            }
           }
 
           .reset-btn1 {
@@ -334,12 +347,16 @@
             border: 1px solid #e5e5e5;
             cursor: pointer;
             transition: all ease 0.2s;
-            &:hover { transform: scale(1.05); }
+
+            &:hover {
+              transform: scale(1.05);
+            }
           }
         }
       }
 
       .congrats-area {
+        flex: 1;
         width: 100%;
         height: 100%;
         display: flex;
@@ -397,7 +414,9 @@
 
 /* On desktop, filter content always visible */
 .sidebar-filter-content {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 /* ═══════════════════════════════════════════════
@@ -429,6 +448,7 @@
   /* ── Filter content: collapsed by default on mobile ── */
   .sidebar-filter-content {
     display: none;
+
     &.open {
       display: block;
     }
@@ -541,6 +561,7 @@
           font-size: 0.75rem;
           padding-left: 10px;
         }
+
         .field-value {
           font-size: 0.7rem;
         }

@@ -39,6 +39,14 @@ const EMPTY_MARKET_FORM = {
   features: "",
 };
 
+// ✅ FIX 1: Filter out unpopulated marketplace refs (items without name/role)
+const normalizeMarketplace = (arr) => {
+  if (!Array.isArray(arr)) return [];
+  return arr.filter(
+    (item) => item && typeof item === "object" && item.name && item.name.trim() !== ""
+  );
+};
+
 const normalizeStep = (raw) => {
   if (!raw) return JSON.parse(JSON.stringify(EMPTY_STEP));
 
@@ -51,9 +59,9 @@ const normalizeStep = (raw) => {
   if (raw.macro && typeof raw.macro === "object") {
     return {
       ...raw,
-      macro: { ...EMPTY_LAYER, ...raw.macro, marketplace: raw.macro.marketplace || [] },
-      micro: { ...EMPTY_LAYER, ...raw.micro, marketplace: raw.micro?.marketplace || [] },
-      nano: { ...EMPTY_LAYER, ...raw.nano, marketplace: raw.nano?.marketplace || [] },
+      macro: { ...EMPTY_LAYER, ...raw.macro, marketplace: normalizeMarketplace(raw.macro.marketplace) },
+      micro: { ...EMPTY_LAYER, ...raw.micro, marketplace: normalizeMarketplace(raw.micro?.marketplace) },
+      nano: { ...EMPTY_LAYER, ...raw.nano, marketplace: normalizeMarketplace(raw.nano?.marketplace) },
     };
   }
 
@@ -67,7 +75,8 @@ const normalizeStep = (raw) => {
       paid: raw.macro_access === "paid",
       free: raw.macro_access === "free",
       instructions: raw.macro_instructions || "",
-      marketplace: raw.macro_marketplace || raw.macro?.marketplace || [],
+      // ✅ FIX 1 applied: normalizeMarketplace strips unpopulated refs
+      marketplace: normalizeMarketplace(raw.macro_marketplace || raw.macro?.marketplace),
     },
     micro: {
       ...EMPTY_LAYER,
@@ -77,7 +86,7 @@ const normalizeStep = (raw) => {
       paid: raw.micro_access === "paid",
       free: raw.micro_access === "free",
       instructions: raw.micro_instructions || "",
-      marketplace: raw.micro_marketplace || raw.micro?.marketplace || [],
+      marketplace: normalizeMarketplace(raw.micro_marketplace || raw.micro?.marketplace),
     },
     nano: {
       ...EMPTY_LAYER,
@@ -87,39 +96,43 @@ const normalizeStep = (raw) => {
       paid: raw.nano_access === "paid",
       free: raw.nano_access === "free",
       instructions: raw.nano_instructions || "",
-      marketplace: raw.nano_marketplace || raw.nano?.marketplace || [],
+      marketplace: normalizeMarketplace(raw.nano_marketplace || raw.nano?.marketplace),
     },
   };
 };
 
 // ─── Small reusable components ────────────────────────────────────────────────
 
-const MarketplaceItemCard = ({ item, compact = false }) => (
-  <div style={{
-    background: "#f4f9fd",
-    borderRadius: compact ? 12 : 16,
-    padding: compact ? "0.8rem" : "1rem",
-    marginBottom: "0.5rem",
-    border: "1px solid #ccdae5",
-    fontSize: compact ? "0.85rem" : "0.9rem",
-  }}>
-    <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600 }}>
-      <span>{item.name || "Unnamed"} ({item.role || "unknown"})</span>
-      <span>{item.cost}</span>
+// ✅ FIX 3: Guard — skip rendering if item has no name (unpopulated ref)
+const MarketplaceItemCard = ({ item, compact = false }) => {
+  if (!item?.name) return null;
+  return (
+    <div style={{
+      background: "#f4f9fd",
+      borderRadius: compact ? 12 : 16,
+      padding: compact ? "0.8rem" : "1rem",
+      marginBottom: "0.5rem",
+      border: "1px solid #ccdae5",
+      fontSize: compact ? "0.85rem" : "0.9rem",
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600 }}>
+        <span>{item.name} ({item.role || "unknown"})</span>
+        <span>{item.cost}</span>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.3rem", color: "#2c3e50" }}>
+        {item.goal && <span><strong>Goal:</strong>       {item.goal}</span>}
+        {item.outcomes && <span><strong>Outcomes:</strong>   {item.outcomes}</span>}
+        {item.access && <span><strong>Access:</strong>     {item.access}</span>}
+        {item.iterations && <span><strong>Iterations:</strong> {item.iterations}</span>}
+        {item.duration && <span><strong>Duration:</strong>   {item.duration}</span>}
+        {item.discount && <span><strong>Discount:</strong>   {item.discount}</span>}
+      </div>
+      {item.features && (
+        <div style={{ marginTop: "0.4rem" }}><strong>Features:</strong> {item.features}</div>
+      )}
     </div>
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.3rem", color: "#2c3e50" }}>
-      {item.goal && <span><strong>Goal:</strong>       {item.goal}</span>}
-      {item.outcomes && <span><strong>Outcomes:</strong>   {item.outcomes}</span>}
-      {item.access && <span><strong>Access:</strong>     {item.access}</span>}
-      {item.iterations && <span><strong>Iterations:</strong> {item.iterations}</span>}
-      {item.duration && <span><strong>Duration:</strong>   {item.duration}</span>}
-      {item.discount && <span><strong>Discount:</strong>   {item.discount}</span>}
-    </div>
-    {item.features && (
-      <div style={{ marginTop: "0.4rem" }}><strong>Features:</strong> {item.features}</div>
-    )}
-  </div>
-);
+  );
+};
 
 const DurationSelect = ({ value, onChange, type }) => {
   const configs = {
@@ -302,23 +315,60 @@ const DraftPathView = () => {
 
   // ─── Data fetching ────────────────────────────────────────────────────────
 
-  const fetchSteps = useCallback(async (pathId) => {
-    try {
-      const res = await axios.get(`${BASE_URL}/api/steps/get`, {
-        params: { path_id: pathId },
-      });
+  // ✅ FIX 2: Fetch populated marketplace items from /api/marketplace/get
+  //           and overlay them onto each step by step_id + layer.
+  //           This ensures Macro items show real names just like Micro/Nano.
+const fetchSteps = useCallback(async (pathId) => {
+  try {
+    const res = await axios.get(`${BASE_URL}/api/steps/get`, {
+      params: { path_id: pathId },
+    });
 
-      const fetched = (res.data.data || [])
-        .map(normalizeStep)
-        .sort((a, b) => (a.step_order || 0) - (b.step_order || 0));
+    const rawSteps = res.data.data || [];
 
-      setSteps(fetched);
-      return fetched;
-    } catch (err) {
-      console.error("Error fetching steps:", err);
-      return [];
-    }
-  }, []);
+    // ✅ FIX: Use the correct endpoint — fetch marketplace per step_id
+    const fetched = await Promise.all(
+      rawSteps.map(async (raw) => {
+        const normalized = normalizeStep(raw);
+        const stepId = raw._id?.toString();
+        if (!stepId) return normalized;
+
+        try {
+          // Fetch all marketplace items for this step (all layers at once)
+          const mpRes = await axios.get(`${BASE_URL}/api/marketplace/step/${stepId}`);
+          const mpItems = mpRes.data?.data || [];
+
+          // Group by layer
+          const grouped = { macro: [], micro: [], nano: [] };
+          mpItems.forEach((item) => {
+            const layer = item.layer?.toLowerCase();
+            if (layer && grouped[layer]) {
+              grouped[layer].push(item);
+            }
+          });
+
+          // Overlay onto normalized step — only replace if API returned items
+          ["macro", "micro", "nano"].forEach((layer) => {
+            if (grouped[layer].length > 0) {
+              normalized[layer].marketplace = grouped[layer];
+            }
+          });
+        } catch (e) {
+          console.warn(`Could not fetch marketplace for step ${stepId}:`, e);
+        }
+
+        return normalized;
+      })
+    );
+
+    const sorted = fetched.sort((a, b) => (a.step_order || 0) - (b.step_order || 0));
+    setSteps(sorted);
+    return sorted;
+  } catch (err) {
+    console.error("Error fetching steps:", err);
+    return [];
+  }
+}, []);
 
   useEffect(() => {
     if (!id) return;
@@ -463,9 +513,6 @@ const DraftPathView = () => {
     setMarketForm(EMPTY_MARKET_FORM);
   };
 
-  // ✅ FIXED: no longer sends null step_id for new (unsaved) steps.
-  // - New step  → add to local state only; saveStep() will persist it.
-  // - Saved step → persist to API immediately, then update local state.
   const addMarketplaceItem = async () => {
     const newItem = {
       role: selectedRole,
@@ -483,7 +530,6 @@ const DraftPathView = () => {
     const stepId = currentStepIndex !== null ? steps[currentStepIndex]?._id : null;
 
     if (stepId) {
-      // Step already exists in DB → persist to marketplace collection immediately
       try {
         const userDetails = JSON.parse(localStorage.getItem("partner")) || {};
         const email = userDetails?.email || userDetails?.user?.email;
@@ -497,14 +543,11 @@ const DraftPathView = () => {
         });
       } catch (err) {
         console.error("Marketplace create error:", err);
-        return; // keep modal open so user can retry
+        return;
       }
     }
-    // If no stepId (new unsaved step), we skip the API call entirely.
-    // The item lives in currentStep state and gets saved when saveStep() runs,
-    // which sends macro/micro/nano_marketplace arrays to /api/steps/add.
 
-    // Always update local state so the card appears immediately in the builder
+    // Always update local state immediately so card appears in the builder
     setCurrentStep((prev) => ({
       ...prev,
       [currentLayer]: {

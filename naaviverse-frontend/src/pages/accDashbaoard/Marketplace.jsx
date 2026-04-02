@@ -53,7 +53,9 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
       const [servicesRes, stepsRes, marketplaceRes] = await Promise.allSettled([
         axios.get(`${BASE_URL}/api/services/getservices`, { params: { productcreatoremail: email } }),
         axios.get(`${BASE_URL}/api/steps/partner`, { params: { email } }),
-        axios.get(`${BASE_URL}/api/marketplace/get`, { params: { email } }),
+        // ✅ FIX: was /api/marketplace/get (404 — doesn't exist)
+        //         correct endpoint is /api/marketplace/admin/get-all
+        axios.get(`${BASE_URL}/api/marketplace/admin/get-all`),
       ]);
 
       // Source A: Services
@@ -81,11 +83,10 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
       const stepItems = [];
       if (stepsRes.status === "fulfilled") {
         const allSteps = stepsRes.value.data?.data || [];
-        
-        // Fetch path details for each step to get path names
-allSteps.forEach(step => {
-  step.path_name = step.name || step.macro_name || "Unknown Path";
-});
+
+        allSteps.forEach((step) => {
+          step.path_name = step.name || step.macro_name || "Unknown Path";
+        });
 
         allSteps.forEach((step, si) => {
           ["macro", "micro", "nano"].forEach((layer) => {
@@ -115,32 +116,37 @@ allSteps.forEach(step => {
         });
       }
 
-      // Source C: marketplace_items collection
+      // Source C: marketplace collection — filtered to this partner's email
       const collectionItems = [];
       if (marketplaceRes.status === "fulfilled") {
-        (marketplaceRes.value.data?.data || []).forEach((item) => {
-          collectionItems.push({
-            _id: item._id,
-            name: item.name || "Unnamed",
-            role: (item.role || "vendor").toLowerCase(),
-            access: item.access || "Free",
-            cost: item.cost || "Free",
-            goal: item.goal || "",
-            outcomes: item.outcomes || "",
-            iterations: item.iterations || "",
-            duration: item.duration || "",
-            discount: item.discount || "",
-            features: item.features || "",
-            sourceType: "marketplace",
-            sourceLabel: "Marketplace Items",
-            pathName: item.path_name,
-            stepName: item.step_name,
-            sourceLayer: item.layer?.toUpperCase(),
+        const allMarketplaceItems = marketplaceRes.value.data?.data || [];
+
+        // ✅ Filter to only show items belonging to this partner
+        allMarketplaceItems
+          .filter((item) => item.partner_email === email)
+          .forEach((item) => {
+            collectionItems.push({
+              _id: item._id,
+              name: item.name || "Unnamed",
+              role: (item.role || "vendor").toLowerCase(),
+              access: item.access || "Free",
+              cost: item.cost || "Free",
+              goal: item.goal || "",
+              outcomes: item.outcomes || "",
+              iterations: item.iterations || "",
+              duration: item.duration || "",
+              discount: item.discount || "",
+              features: item.features || "",
+              sourceType: "marketplace",
+              sourceLabel: "Marketplace Items",
+              pathName: item.path_name,
+              stepName: item.step_name,
+              sourceLayer: item.layer?.toUpperCase(),
+            });
           });
-        });
       }
 
-      // Merge & deduplicate
+      // Merge & deduplicate by name + role
       const seen = new Set();
       const merged = [];
       [...serviceItems, ...collectionItems, ...stepItems].forEach((item) => {
@@ -199,17 +205,17 @@ allSteps.forEach(step => {
 
       {/* Filter Row */}
       <div className="mp-filter-row">
-       <select
-  className="mp-filter-select"
-  value={activeRole}
-  onChange={(e) => handleRoleClick(e.target.value)}
->
-  <option value="all">All Partners</option>
-  <option value="institution">Institutions</option>
-  <option value="mentor">Mentors</option>
-  <option value="distributor">Distributors</option>
-  <option value="vendor">Vendors</option>
-</select>
+        <select
+          className="mp-filter-select"
+          value={activeRole}
+          onChange={(e) => handleRoleClick(e.target.value)}
+        >
+          <option value="all">All Partners</option>
+          <option value="institution">Institutions</option>
+          <option value="mentor">Mentors</option>
+          <option value="distributor">Distributors</option>
+          <option value="vendor">Vendors</option>
+        </select>
         <div className="mp-search-wrapper">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2">
             <circle cx="11" cy="11" r="8" />
@@ -292,14 +298,14 @@ allSteps.forEach(step => {
                     <div className="card-features">{item.features}</div>
                   )}
 
-                 <div className="card-footer">
-  {item.outcomes && (
-    <div className="partner-email">{item.outcomes}</div>
-  )}
-  {item.discount && (
-    <div className="access-badge badge-green">{item.discount}</div>
-  )}
-</div>
+                  <div className="card-footer">
+                    {item.outcomes && (
+                      <div className="partner-email">{item.outcomes}</div>
+                    )}
+                    {item.discount && (
+                      <div className="access-badge badge-green">{item.discount}</div>
+                    )}
+                  </div>
                   <button
                     className="view-btn"
                     onClick={(e) => { e.stopPropagation(); setSelectedItem(item); }}

@@ -1,22 +1,22 @@
-// ── Design Tokens (matching template) ──────────────────────────────────
-$navy:       #0f1f3d;
-$teal:       #0d9488;
+// ── Design Tokens ──────────────────────────────────────────────────────────
+$navy: #0f1f3d;
+$teal: #0d9488;
 $teal-light: #e6f7f6;
-$teal-mid:   #b2e8e5;
-$accent:     #f59e0b;
-$red:        #ef4444;
-$gray50:     #f8fafc;
-$gray100:    #f1f5f9;
-$gray200:    #e2e8f0;
-$gray300:    #cbd5e1;
-$gray400:    #94a3b8;
-$gray600:    #475569;
-$gray800:    #1e293b;
-$radius:     14px;
-$shadow:     0 2px 12px rgba(15,31,61,0.07);
-$shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
+$teal-mid: #b2e8e5;
+$accent: #f59e0b;
+$red: #ef4444;
+$gray50: #f8fafc;
+$gray100: #f1f5f9;
+$gray200: #e2e8f0;
+$gray300: #cbd5e1;
+$gray400: #94a3b8;
+$gray600: #475569;
+$gray800: #1e293b;
+$radius: 12px;
+$shadow: 0 2px 10px rgba(15, 31, 61, 0.07);
+$shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
 
-// ── Base ────────────────────────────────────────────────────────────────
+// ── Base ────────────────────────────────────────────────────────────────────
 .currentstep {
   width: 100%;
   height: 100%;
@@ -28,25 +28,25 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   overflow: hidden;
 }
 
-// ── Step Progress Bar ───────────────────────────────────────────────────
+// ── Step Progress Bar ────────────────────────────────────────────────────────
 .step-bar {
   background: #fff;
   border-bottom: 1px solid $gray200;
   display: flex;
   align-items: center;
-  height: 46px;
+  height: 44px;
   padding: 0 24px;
   gap: 0;
   overflow-x: auto;
-  box-shadow: 0 1px 4px rgba(15,31,61,0.04);
+  box-shadow: 0 1px 4px rgba(15, 31, 61, 0.04);
   flex-shrink: 0;
 
   .sp {
     display: flex;
     align-items: center;
-    gap: 7px;
-    padding: 0 14px;
-    height: 46px;
+    gap: 6px;
+    padding: 0 12px;
+    height: 44px;
     font-size: 12px;
     font-weight: 600;
     color: $gray400;
@@ -56,8 +56,13 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
     white-space: nowrap;
 
     &:hover { color: $navy; }
-    &.active { color: $teal; border-bottom-color: $teal; }
-    &.done   { color: $gray600; }
+
+    &.active {
+      color: $teal;
+      border-bottom-color: $teal;
+    }
+
+    &.done { color: $gray600; }
   }
 
   .sp-n {
@@ -84,32 +89,37 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   }
 }
 
-// ── Page Content ────────────────────────────────────────────────────────
+// ── Page Content ─────────────────────────────────────────────────────────────
 .cs-page-content {
   flex: 1;
-  padding: 26px 28px;
+  padding: 20px 24px;
   overflow-y: auto;
   max-width: 1080px;
   width: 100%;
 }
 
-// ── Page Head ───────────────────────────────────────────────────────────
+// ── Page Head ────────────────────────────────────────────────────────────────
 .page-head {
-  margin-bottom: 22px;
+  margin-bottom: 16px;
 
   h1 {
     font-family: 'Playfair Display', serif;
-    font-size: 26px;
+    font-size: 22px;
     color: $navy;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     line-height: 1.3;
   }
 
   p {
-    font-size: 14px;
+    font-size: 13px;
     color: $gray600;
-    line-height: 1.6;
+    line-height: 1.5;
     margin: 0;
+    // Clamp to 2 lines max
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }
 
@@ -122,17 +132,16 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   display: flex;
   align-items: center;
   gap: 5px;
-  margin-bottom: 7px;
+  margin-bottom: 5px;
 }
 
 .bc-hi { color: $teal; }
 
-.page-meta {
+.page-head-top-row {
   display: flex;
-  gap: 9px;
-  margin-top: 10px;
-  flex-wrap: wrap;
+  justify-content: space-between;
   align-items: center;
+  margin-bottom: 4px;
 }
 
 .meta-pill {
@@ -162,27 +171,12 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   }
 }
 
-// ── Info Tip ────────────────────────────────────────────────────────────
-.info-tip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #fffbeb;
-  border-left: 3px solid $accent;
-  border-radius: 0 8px 8px 0;
-  padding: 10px 15px;
-  font-size: 13px;
-  color: #78350f;
-  margin-bottom: 20px;
-  font-weight: 500;
-}
-
-// ── 3 View Cards Grid ───────────────────────────────────────────────────
+// ── 3 View Cards Grid ─────────────────────────────────────────────────────────
 .views-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-  margin-bottom: 20px;
+  gap: 14px;
+  margin-bottom: 16px;
 }
 
 .view-card {
@@ -193,116 +187,266 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: box-shadow 0.22s, transform 0.22s, border-color 0.22s;
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+  position: relative;
 
   &:hover {
     box-shadow: $shadow-lg;
-    transform: translateY(-3px);
+    transform: translateY(-2px);
   }
 
   &.vMacro:hover { border-color: #a5b4fc; }
   &.vMicro:hover { border-color: $teal; }
   &.vNano:hover  { border-color: $accent; }
+
+  &.view-card--locked {
+    &:hover {
+      transform: none;
+      box-shadow: $shadow;
+    }
+  }
 }
 
-.vc-head {
-  padding: 13px 17px 12px;
+// ── Lock Overlay ──────────────────────────────────────────────────────────────
+.lock-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  border-radius: $radius;
   display: flex;
   align-items: center;
-  gap: 9px;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background: rgba(10, 18, 40, 0.62);
 
-  &.hMacro { background: #f5f3ff; border-bottom: 1px solid #e0e7ff; }
-  &.hMicro { background: $teal-light; border-bottom: 1px solid $teal-mid; }
-  &.hNano  { background: #fffbeb; border-bottom: 1px solid #fde68a; }
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: $radius;
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+  }
+
+  &.lock-overlay--micro { background: rgba(8, 35, 50, 0.65); }
+  &.lock-overlay--nano  { background: rgba(30, 18, 5, 0.65); }
 }
 
+.lock-overlay__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
 
+.lock-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+
+  svg { width: 22px; height: 22px; }
+}
+
+.lock-overlay__text {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.5;
+  max-width: 180px;
+  margin: 0;
+}
+
+.lock-overlay__btn {
+  background: $accent;
+  color: $navy;
+  border: none;
+  border-radius: 30px;
+  padding: 1px 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+
+  &:hover {
+    background: #d97706;
+    transform: scale(1.04);
+  }
+
+  &:active { transform: scale(0.98); }
+}
+
+// ── View Card Head ────────────────────────────────────────────────────────────
+// NOTE: .vc-dot is removed from JSX — these styles are kept for safety but unused
+.vc-head {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &.hMacro {
+    background: #f5f3ff;
+    border-bottom: 1px solid #e0e7ff;
+  }
+
+  &.hMicro {
+    background: $teal-light;
+    border-bottom: 1px solid $teal-mid;
+  }
+
+  &.hNano {
+    background: #fffbeb;
+    border-bottom: 1px solid #fde68a;
+  }
+}
+
+// dot removed from JSX — keeping class stub so nothing breaks if referenced
+.vc-dot { display: none; }
 
 .vc-lbl {
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.1px;
+  flex: 1;
 
   &.lMacro { color: #6366f1; }
   &.lMicro { color: $teal; }
   &.lNano  { color: #d97706; }
 }
 
+// ── Access Badge ─────────────────────────────────────────────────────────────
+.vc-access-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 2px 8px;
+  border-radius: 4px; // ← square, not oval
+  white-space: nowrap;
+
+  &.badge-free   { background: #dcfce7; color: #16a34a; }
+  &.badge-sub    { background: #ede9fe; color: #6366f1; }
+  &.badge-paid   { background: #fef3c7; color: #92680a; }
+  &.badge-locked { background: rgba(148, 163, 184, 0.15); color: $gray400; }
+}
+
+// ── View Card Body & Footer ───────────────────────────────────────────────────
 .vc-body {
-  padding: 18px;
+  padding: 14px 16px 10px;
   flex: 1;
 }
 
-.vc-title {
-  font-size: 15px;
+.vc-step-name {
+  font-size: 13px;
   font-weight: 700;
   color: $navy;
-  margin-bottom: 10px;
+  margin-bottom: 2px;
+  line-height: 1.3;
+  // Clamp to 2 lines
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.vc-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: $gray400;
+  margin: 4px 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
 }
 
 .vc-desc {
-  font-size: 13px;
+  font-size: 12px;
   color: $gray600;
-  line-height: 1.75;
-  overflow-y: auto;
-  max-height: 160px;
+  line-height: 1.6;
+  overflow: hidden;
+  // Clamp description to 3 lines max
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.vc-empty {
+  color: #b0b0b0;
+  font-style: italic;
+  font-size: 12px;
 }
 
 .vc-foot {
-  padding: 0 18px 18px;
+  padding: 0 14px 14px;
 }
 
+// ── View Card Buttons ─────────────────────────────────────────────────────────
 .vc-btn {
   width: 100%;
-  padding: 11px;
-  border-radius: 9px;
+  padding: 9px;
+  border-radius: 8px;
   border: none;
   font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.18s;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
 
   &.bMacro {
     background: #ede9fe;
     color: #5b21b6;
-    &:hover { background: #6366f1; color: #fff; }
+   
   }
 
   &.bMicro {
     background: $teal-light;
     color: $teal;
-    &:hover { background: $teal; color: #fff; }
   }
 
   &.bNano {
     background: #fef3c7;
     color: #d97706;
-    &:hover { background: $accent; color: #fff; }
+  }
+
+  &.bLocked {
+    background: $gray100;
+    color: $gray400;
+    cursor: not-allowed;
+    font-weight: 600;
+    &:hover { background: $gray200; color: $gray600; }
   }
 }
 
-// ── Completion Bar (Redesigned) ──────────────────────────────────────
+// ── Completion Bar ────────────────────────────────────────────────────────────
 .comp-bar {
-  background: #FFFFFF;
-  border-radius: 16px;
-  padding: 16px 22px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 13px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  box-shadow: 0 4px 14px rgba(15,31,61,0.04);
+  box-shadow: 0 2px 10px rgba(15, 31, 61, 0.04);
   border: 1px solid $gray200;
-  margin-top: 10px;
+  margin-top: 8px;
   transition: all 0.2s ease;
 
   &:hover {
-    box-shadow: 0 6px 20px rgba(15,31,61,0.06);
+    box-shadow: 0 4px 16px rgba(15, 31, 61, 0.06);
     border-color: $gray300;
   }
 }
@@ -310,19 +454,11 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
 .cb-left {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-
-.cb-lbl {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: $gray400;
+  gap: 2px;
 }
 
 .cb-q {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: $navy;
 }
@@ -333,74 +469,319 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
 }
 
 .btn-fail {
-  background: #FEF2F2;
-  color: #B91C1C;
-  border: 1px solid #FEE2E2;
-  padding: 8px 20px;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fee2e2;
+  padding: 7px 18px;
   border-radius: 30px;
   font-family: 'DM Sans', sans-serif;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 
   &:hover {
-    background: #FEE2E2;
-    color: #991B1B;
-    border-color: #FECACA;
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
     transform: translateY(-1px);
   }
 
-  &:active {
-    transform: translateY(0);
-  }
+  &:active { transform: translateY(0); }
 }
 
 .btn-yes {
-  background: #F0F9FF;
+  background: #f0f9ff;
   color: #0369a1;
-  border: 1px solid #E0F2FE;
-  padding: 8px 24px;
+  border: 1px solid #e0f2fe;
+  padding: 7px 22px;
   border-radius: 30px;
   font-family: 'DM Sans', sans-serif;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
-  box-shadow: 0 2px 8px rgba(2, 136, 209, 0.08);
+  gap: 5px;
+  box-shadow: 0 2px 6px rgba(2, 136, 209, 0.08);
 
   &:hover {
-    background: #E0F2FE;
+    background: #e0f2fe;
     color: #075985;
-    border-color: #BAE6FD;
+    border-color: #bae6fd;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(2, 136, 209, 0.12);
+    box-shadow: 0 3px 10px rgba(2, 136, 209, 0.12);
   }
 
-  &:active {
-    transform: translateY(0);
+  &:active { transform: translateY(0); }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  SUBSCRIPTION GATE SCREEN
+// ══════════════════════════════════════════════════════════════════════════════
+
+.sub-gate {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 32px 24px 48px;
+  background: $gray50;
+}
+
+.sub-gate__inner {
+  width: 100%;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: gateIn 0.28s ease both;
+}
+
+@keyframes gateIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.sub-gate__back {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: $gray400;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 22px;
+  transition: color 0.15s;
+
+  &:hover { color: $navy; }
+}
+
+.sub-gate__badge {
+  background: #fef3c7;
+  color: #92680a;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 5px 16px;
+  border-radius: 4px; // ← square
+  margin-bottom: 14px;
+}
+
+.sub-gate__title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: $navy;
+  margin: 0 0 10px;
+  line-height: 1.2;
+}
+
+.sub-gate__desc {
+  font-size: 13.5px;
+  color: $gray600;
+  line-height: 1.6;
+  max-width: 460px;
+  margin: 0 0 24px;
+}
+
+// ── Plans grid ───────────────────────────────────────────────────────────────
+.sub-plans {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.sub-plan {
+  background: #fff;
+  border-radius: $radius;
+  border: 2px solid $gray200;
+  padding: 18px 16px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+
+  &:hover { border-color: $teal; box-shadow: $shadow; }
+
+  &.sub-plan--selected {
+    border-color: $teal;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+    background: #f0fdfa;
   }
 }
 
-// Optional: Add subtle icons to buttons (uncomment if you want them)
-// .btn-fail::before {
-//   content: "✕";
-//   font-size: 12px;
-//   opacity: 0.8;
-// }
-// 
-// .btn-yes::after {
-//   content: "✓";
-//   font-size: 14px;
-//   font-weight: 700;
-// }
-// ── Buy Drawer (preserved) ──────────────────────────────────────────────
+.sub-plan__tag {
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: $teal;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: 4px; // ← square tag
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.sub-plan__name {
+  font-size: 14px;
+  font-weight: 700;
+  color: $navy;
+  margin-bottom: 5px;
+}
+
+.sub-plan__price {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: $navy;
+  margin-bottom: 2px;
+  line-height: 1.1;
+
+  span {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: $gray400;
+  }
+}
+
+.sub-plan__save {
+  font-size: 11px;
+  color: $teal;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.sub-plan__feats {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  li {
+    font-size: 12px;
+    color: $gray600;
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    line-height: 1.4;
+
+    &::before {
+      content: '✓';
+      color: $teal;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+  }
+}
+
+.sub-gate__cta {
+  background: $navy;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 13px 44px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+  box-shadow: 0 5px 20px rgba(15, 31, 61, 0.2);
+
+  &:hover {
+    background: $teal;
+    box-shadow: 0 6px 24px rgba(13, 148, 136, 0.28);
+    transform: translateY(-1px);
+  }
+
+  &:active { transform: translateY(0); }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  SKELETON LOADING
+// ══════════════════════════════════════════════════════════════════════════════
+
+@keyframes sk-shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+
+.sk-bar {
+  display: block;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 37%, #f0f0f0 63%);
+  background-size: 600px 100%;
+  animation: sk-shimmer 1.4s ease infinite;
+  flex-shrink: 0;
+}
+
+.sk-text-block {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.sk-page-head {
+  .page-head-top-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+.sk-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+
+  .vc-head { display: flex; align-items: center; }
+  .vc-body { flex: 1; display: flex; flex-direction: column; gap: 0; padding: 14px 0; }
+  .vc-foot { margin-top: auto; }
+
+  &.sk-card--macro .sk-bar {
+    background: linear-gradient(90deg, #ede9f8 25%, #ddd5f2 37%, #ede9f8 63%);
+    background-size: 600px 100%;
+    animation: sk-shimmer 1.4s ease infinite;
+  }
+
+  &.sk-card--micro .sk-bar {
+    background: linear-gradient(90deg, #e6f4ef 25%, #cce9e0 37%, #e6f4ef 63%);
+    background-size: 600px 100%;
+    animation: sk-shimmer 1.4s ease infinite;
+  }
+
+  &.sk-card--nano .sk-bar {
+    background: linear-gradient(90deg, #fdf6e3 25%, #f5e9c0 37%, #fdf6e3 63%);
+    background-size: 600px 100%;
+    animation: sk-shimmer 1.4s ease infinite;
+  }
+}
+
+.sk-comp-bar {
+  pointer-events: none;
+  .cb-btns { display: flex; gap: 12px; align-items: center; }
+}
+
+// ── Buy Drawer ────────────────────────────────────────────────────────────────
 .accept-offer-overlay {
   width: 100%;
   height: 100%;
@@ -415,7 +796,7 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   .right-divv-cs {
     width: 30%;
     height: calc(100% - 70px);
-    background: #ffffff;
+    background: #fff;
     position: absolute;
     top: 70px;
     z-index: 100;
@@ -434,9 +815,21 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
         flex-direction: column;
         justify-content: center;
         align-items: flex-start;
+
         p { margin-bottom: 0; }
-        .amnt-font-cs { font-weight: 600; color: #1f304f; font-size: 25px; }
-        .text-font-cs { font-weight: 700; color: #1f304f; font-size: 1rem; opacity: 0.5; }
+
+        .amnt-font-cs {
+          font-weight: 600;
+          color: #1f304f;
+          font-size: 25px;
+        }
+
+        .text-font-cs {
+          font-weight: 700;
+          color: #1f304f;
+          font-size: 1rem;
+          opacity: 0.5;
+        }
       }
 
       .left-amnt1-cs {
@@ -445,9 +838,21 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
         flex-direction: column;
         justify-content: center;
         align-items: flex-end;
+
         p { margin-bottom: 0; }
-        .amnt-font-cs { font-weight: 600; color: #1f304f; font-size: 25px; }
-        .text-font-cs { font-weight: 700; color: #1f304f; font-size: 1rem; opacity: 0.5; }
+
+        .amnt-font-cs {
+          font-weight: 600;
+          color: #1f304f;
+          font-size: 25px;
+        }
+
+        .text-font-cs {
+          font-weight: 700;
+          color: #1f304f;
+          font-size: 1rem;
+          opacity: 0.5;
+        }
       }
     }
 
@@ -463,7 +868,7 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
       gap: 1rem;
 
       .buy-btn-cs {
-        color: #ffffff;
+        color: #fff;
         font-weight: 500;
         background: #59a2dd;
         border: none;
@@ -474,6 +879,7 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
         padding: 1rem 2rem;
         transition: all ease 0.3s;
         cursor: pointer;
+
         &:hover { scale: 1.1; }
       }
 
@@ -490,6 +896,7 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
         padding: 1.2rem 2rem;
         transition: all ease 0.3s;
         cursor: pointer;
+
         &:hover { scale: 1.1; }
       }
     }
@@ -504,6 +911,7 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
         height: 4rem;
         border: 0.5px solid #e5e5e5;
         border-radius: 35px;
+
         input {
           border: none;
           font-size: 1rem;
@@ -566,13 +974,14 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
         align-items: center;
         transition: all ease 0.3s;
         cursor: pointer;
+
         &:hover { scale: 1.08; }
       }
     }
   }
 }
 
-// ── Popup / Modal (preserved) ───────────────────────────────────────────
+// ── Popup / Modal ─────────────────────────────────────────────────────────────
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -581,27 +990,27 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   bottom: 0;
   width: calc(100% - 260px);
   height: 100%;
-  background: rgba(0, 0, 0, 0.55);     // ← ensure this is there
-  backdrop-filter: blur(3px);           // ← add this blur
-  -webkit-backdrop-filter: blur(3px);   // ← Safari support
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   z-index: 100000;
   display: flex;
   justify-content: center;
   align-items: center;
   transition: all ease 0.3s;
 
-.modal-container {
-  background: white;
-  width: 420px;          // ← fixed width instead of min-width 25%
-  max-width: 90%;        // ← responsive safety
-  padding: 2rem 1.5rem;
-  border-radius: 25px;
-  border: 1px solid #e5e5e5;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;             // ← reduced from 3rem (less vertical spacing)
-  align-items: center;
-  z-index: 8;
+  .modal-container {
+    background: white;
+    width: 420px;
+    max-width: 90%;
+    padding: 2rem 1.5rem;
+    border-radius: 25px;
+    border: 1px solid #e5e5e5;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    align-items: center;
+    z-index: 8;
 
     .popup-text {
       width: 100%;
@@ -628,6 +1037,7 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
         font-weight: 500;
         cursor: pointer;
         transition: all ease 0.2s;
+
         &:hover { transform: scale(1.05); }
       }
 
@@ -641,141 +1051,531 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
         font-weight: 500;
         cursor: pointer;
         transition: all ease 0.2s;
+
         &:hover { transform: scale(1.05); }
       }
     }
   }
 }
 
-.page-head-top-row {
+// ══════════════════════════════════════════════════════════════════════════════
+//  SUBSCRIPTION SUCCESS SCREEN
+// ══════════════════════════════════════════════════════════════════════════════
+
+.sub-success {
+  flex: 1;
+  overflow-y: auto;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px 24px 40px;
+  background: #f9fafb;
+
+  &__inner {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px 28px;
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 4px 28px rgba(0, 0, 0, 0.07);
+    margin: auto 0;
+  }
+
+  &__icon {
+    margin: 0 auto 20px;
+    width: 64px;
+    height: 64px;
+  }
+
+  &__svg { width: 64px; height: 64px; }
+
+  &__circle {
+    stroke: #10b981;
+    stroke-width: 2;
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    animation: strokeCircle 0.6s ease forwards;
+  }
+
+  &__check {
+    stroke: #10b981;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: strokeCheck 0.4s ease 0.55s forwards;
+  }
+
+  @keyframes strokeCircle { to { stroke-dashoffset: 0; } }
+  @keyframes strokeCheck  { to { stroke-dashoffset: 0; } }
+
+  &__badge {
+    display: inline-block;
+    background: #f0fdf4;
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 4px; // ← square
+    margin-bottom: 14px;
+    letter-spacing: 0.02em;
+  }
+
+  &__title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 10px;
+  }
+
+  &__desc {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.6;
+    margin: 0 0 16px;
+  }
+
+  &__plan-pill {
+    display: inline-block;
+    background: #f0f9ff;
+    color: #0369a1;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 16px;
+    border-radius: 6px; // ← slightly square
+    margin-bottom: 22px;
+    border: 1px solid #bae6fd;
+  }
+
+  &__unlocks {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    text-align: left;
+  }
+
+  &__unlock-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #334155;
+    padding: 5px 0;
+
+    & + & { border-top: 1px solid #f1f5f9; }
+  }
+
+  .sul-icon {
+    color: #10b981;
+    font-weight: 800;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  &__cta {
+    width: 100%;
+    padding: 14px;
+    background: #0f172a;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+
+    &:hover {
+      background: #1e293b;
+      transform: translateY(-1px);
+    }
+
+    &:active { transform: translateY(0); }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  MARKETPLACE CARDS (Image 2 fixes)
+//  — compact service cards, square tags, no ovals, tight spacing
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Filter bar tabs (All / Macro / Micro / Nano / Cart)
+.mp-filter-bar {
+  display: flex;
   align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   SKELETON LOADING — add these rules to your currentstep.scss
-   ═══════════════════════════════════════════════════════════════ */
-
-/* ── Shimmer keyframe ─────────────────────────────────────────── */
-@keyframes sk-shimmer {
-  0%   { background-position: -600px 0; }
-  100% { background-position:  600px 0; }
-}
-
-/* ── Base shimmer mixin applied to every skeleton bar ─────────── */
-.sk-bar {
-  display: block;
-  background: linear-gradient(
-    90deg,
-    #f0f0f0 25%,
-    #e0e0e0 37%,
-    #f0f0f0 63%
-  );
-  background-size: 600px 100%;
-  animation: sk-shimmer 1.4s ease infinite;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #fff;
+  border-bottom: 1px solid $gray200;
   flex-shrink: 0;
 }
 
-/* ── Multi-line text block ────────────────────────────────────── */
-.sk-text-block {
+.mp-filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 6px; // ← square, not oval
+  border: 1.5px solid $gray200;
+  font-size: 12px;
+  font-weight: 600;
+  color: $gray600;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: #fff;
+
+  &:hover { border-color: $teal; color: $teal; }
+
+  &.mp-filter-tab--active {
+    background: $teal;
+    border-color: $teal;
+    color: #fff;
+  }
+
+  .mp-tab-count {
+    font-size: 11px;
+    font-weight: 700;
+    opacity: 0.75;
+  }
+}
+
+// Service card grid
+.mp-service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+// Individual service card — compact, no excess vertical space
+.mp-service-card {
+  background: #fff;
+  border: 1.5px solid $gray200;
+  border-radius: $radius;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  width: 100%;
-}
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.18s;
+  box-shadow: $shadow;
 
-/* ── Page head skeleton ───────────────────────────────────────── */
-.sk-page-head {
-  /* inherits .page-head layout; just needs shimmer children */
+  &:hover {
+    border-color: $teal;
+    box-shadow: $shadow-lg;
+    transform: translateY(-2px);
+  }
 
-  .page-head-top-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+  &.mp-service-card--selected {
+    border-color: $teal;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
   }
 }
 
-/* ── View card skeleton ───────────────────────────────────────── */
-.sk-card {
+// Card top row: type + role tags
+.mp-card-tags {
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  pointer-events: none;          /* prevent accidental clicks */
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
 
-  /* Head row */
-  .vc-head {
-    display: flex;
-    align-items: center;
+// Square tag chips (replaces oval pills)
+.mp-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 4px; // ← square
+  border: 1px solid transparent;
+  white-space: nowrap;
+
+  &.mp-tag--micro {
+    background: $teal-light;
+    color: $teal;
+    border-color: $teal-mid;
   }
 
-  /* Body — same spacing as real cards */
-  .vc-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    padding: 16px 0;
+  &.mp-tag--nano {
+    background: #fef3c7;
+    color: #92680a;
+    border-color: #fde68a;
   }
 
-  /* Footer */
-  .vc-foot {
-    margin-top: auto;
+  &.mp-tag--macro {
+    background: #f5f3ff;
+    color: #6366f1;
+    border-color: #e0e7ff;
   }
 
-  /* Accent tints so each card's skeleton matches its colour family */
-  &.sk-card--macro .sk-bar {
-    background: linear-gradient(90deg, #ede9f8 25%, #ddd5f2 37%, #ede9f8 63%);
-    background-size: 600px 100%;
-    animation: sk-shimmer 1.4s ease infinite;
-  }
-
-  &.sk-card--micro .sk-bar {
-    background: linear-gradient(90deg, #e6f4ef 25%, #cce9e0 37%, #e6f4ef 63%);
-    background-size: 600px 100%;
-    animation: sk-shimmer 1.4s ease infinite;
-  }
-
-  &.sk-card--nano .sk-bar {
-    background: linear-gradient(90deg, #fdf6e3 25%, #f5e9c0 37%, #fdf6e3 63%);
-    background-size: 600px 100%;
-    animation: sk-shimmer 1.4s ease infinite;
+  &.mp-tag--distributor,
+  &.mp-tag--vendor,
+  &.mp-tag--partner {
+    background: $gray100;
+    color: $gray600;
+    border-color: $gray200;
   }
 }
 
-/* ── Completion bar skeleton ──────────────────────────────────── */
-.sk-comp-bar {
-  /* inherits .comp-bar layout */
-  pointer-events: none;
+// Card provider icon
+.mp-card-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
 
-  .cb-btns {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-  }
+  img { width: 32px; height: 32px; object-fit: contain; }
 }
 
-/* ── Empty state text (when API returns nothing) ──────────────── */
-.vc-empty {
-  color: #b0b0b0;
-  font-style: italic;
-  font-size: 0.875rem;
-}
-
-.vc-step-name {
+// Card title
+.mp-card-name {
   font-size: 14px;
   font-weight: 700;
   color: $navy;
-  margin-bottom: 2px;
+  margin: 0;
   line-height: 1.3;
 }
 
-.vc-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: $gray400;      
-  margin-top: 0;
-  margin-bottom: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+// Card meta (by email, category)
+.mp-card-by {
+  font-size: 11px;
+  color: $gray400;
+  margin: 0;
 }
+
+// Card details grid — tight, no excess line height
+.mp-card-details {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  margin: 0;
+}
+
+.mp-card-detail-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: $gray400;
+  white-space: nowrap;
+}
+
+.mp-card-detail-value {
+  font-size: 11px;
+  color: $gray600;
+}
+
+// Card divider
+.mp-card-divider {
+  border: none;
+  border-top: 1px solid $gray100;
+  margin: 2px 0;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  TIER TOGGLE  (add to existing currentstep.scss)
+//  — the Micro / Nano switcher inside SubscriptionGate
+// ══════════════════════════════════════════════════════════════════════════════
+
+.sub-tier-toggle {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+  margin-bottom: 20px;
+
+  &__btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 12px 10px;
+    border-radius: $radius;
+    border: 2px solid $gray200;
+    background: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: $gray600;
+    cursor: pointer;
+    transition: all 0.18s;
+
+    &:hover {
+      border-color: $teal;
+      color: $navy;
+    }
+
+    &.active {
+      border-color: $teal;
+      background: #f0fdfa;
+      color: $navy;
+      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+    }
+
+    // Nano active state uses amber accent
+    &.active.nano {
+      border-color: $accent;
+      background: #fffbeb;
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    }
+  }
+
+  &__sub {
+    font-size: 11px;
+    font-weight: 400;
+    color: $gray400;
+  }
+}
+
+// ── Nano variant overrides for plan cards ─────────────────────────────────────
+.sub-plan--nano {
+  &.sub-plan--selected {
+    border-color: $accent;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12);
+    background: #fffbeb;
+  }
+
+  &:hover { border-color: $accent; }
+
+  .sub-plan__tag {
+    background: $accent;
+  }
+}
+
+.sub-plan__price--nano { color: $navy; }
+
+.sub-plan__save--nano { color: $accent; }
+
+// ── Nano CTA variant ──────────────────────────────────────────────────────────
+.sub-gate__cta--nano {
+  background: #92400e;
+
+  &:hover {
+    background: $accent;
+    box-shadow: 0 6px 24px rgba(245, 158, 11, 0.28);
+  }
+}
+
+// ── Hint below CTA ────────────────────────────────────────────────────────────
+.sub-gate__nano-hint {
+  margin-top: 14px;
+  font-size: 12px;
+  color: $gray400;
+  text-align: center;
+}
+
+.sub-gate__nano-hint-link {
+  background: none;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: $accent;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+
+  &:hover { color: #d97706; }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  NANO UPSELL BANNER
+//  — shown above view cards for micro-only subscribers
+// ══════════════════════════════════════════════════════════════════════════════
+
+.nano-upsell-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-left: 4px solid $accent;
+  border-radius: $radius;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  animation: gateIn 0.22s ease both;
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__icon {
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #92400e;
+    margin-bottom: 2px;
+  }
+
+  &__sub {
+    font-size: 12px;
+    color: #b45309;
+    line-height: 1.4;
+  }
+
+  &__btn {
+    background: $accent;
+    color: $navy;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+
+    &:hover {
+      background: #d97706;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+    }
+
+    &:active { transform: translateY(0); }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  NANO UPGRADE BUTTON
+//  — replaces "Subscription Required" on Nano card for micro users
+// ══════════════════════════════════════════════════════════════════════════════
+
+.vc-btn {
+  &.bNanoUpgrade {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    font-weight: 700;
+
+    &:hover {
+      background: $accent;
+      color: #fff;
+      border-color: $accent;
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  SUCCESS SCREEN — upsell item variant (micro success screen)
+// ══════════════════════════════════════════════════════════════════════════════
+
+.sub-success__unlock-item--upsell {
+  background: #fffbeb;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-top: 4px;
+  border: 1px solid #fde68a;
+}
+

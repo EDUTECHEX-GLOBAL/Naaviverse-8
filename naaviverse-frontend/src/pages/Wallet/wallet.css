@@ -41,12 +41,12 @@
 .wallet-welcome-text { font-size: 13px; color: #27500a; line-height: 1.6; margin: 0; }
 .wallet-welcome-text strong { font-weight: 700; }
 
-/* Balance card */
 .wallet-balance-card {
-  background: linear-gradient(135deg, #2d1b2e 0%, #5b3fa0 100%);
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.08) 0%, rgba(8, 145, 178, 0.06) 100%);
+  border: 1.5px solid rgba(13, 148, 136, 0.35);
   border-radius: 16px;
-  padding: 26px 28px;
-  color: #fff;
+  padding: 28px 28px 24px;
+  color: #0f1f3d;
   margin-bottom: 20px;
   position: relative;
   overflow: hidden;
@@ -69,17 +69,29 @@
   background: rgba(255,255,255,0.04);
   pointer-events: none;
 }
-.wallet-balance-skeleton { height: 130px !important; border-radius: 16px !important; margin-bottom: 20px; }
 .wallet-balance-badge {
   position: absolute; top: 20px; right: 20px;
-  background: rgba(255,255,255,0.15);
-  border-radius: 20px; padding: 4px 14px;
-  font-size: 11px; font-weight: 600; letter-spacing: 0.4px;
+  background: rgba(13, 148, 136, 0.12);
+  border-radius: 8px; padding: 5px 16px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.4px; color: #0d9488;
 }
-.wallet-balance-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.65; margin-bottom: 6px; }
-.wallet-balance-amount { font-size: 40px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
-.wallet-balance-unit { font-size: 16px; font-weight: 400; opacity: 0.65; margin-left: 4px; }
-.wallet-balance-sub { font-size: 12px; opacity: 0.5; margin-top: 8px; }
+.wallet-balance-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+  opacity: 1; margin-bottom: 10px; color: #0d9488; font-weight: 700;
+}
+.wallet-balance-amount {
+  font-size: 42px; font-weight: 800; letter-spacing: -1.5px;
+  line-height: 1; color: #0f1f3d;
+}
+.wallet-balance-unit {
+  font-size: 15px; font-weight: 500; opacity: 0.6;
+  margin-left: 6px; color: #0f1f3d;
+}
+.wallet-balance-sub {
+  font-size: 12px; margin-top: 12px; color: #64748b;
+  opacity: 1; letter-spacing: 0.2px;
+}
 
 
 /* Section / day labels */
