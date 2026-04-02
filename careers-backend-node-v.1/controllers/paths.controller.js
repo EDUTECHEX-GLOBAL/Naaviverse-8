@@ -142,9 +142,9 @@ const updatePathStatus = async (req, res) => {
     const path = await pathModel.findById(pathId);
     if (!path) return res.status(404).json({ status: false, message: 'Path not found' });
 
-    if (path.status !== "waitingforapproval") {
-      return res.status(400).json({ status: false, message: "Only paths under review can be approved or rejected" });
-    }
+   if (!["waitingforapproval", "changesrequested"].includes(path.status)) {
+  return res.status(400).json({ status: false, message: "Only paths under review can be approved or rejected" });
+}
 
     path.status = status;
     await path.save();
@@ -171,7 +171,7 @@ const submitForApproval = async (req, res) => {
       return res.status(400).json({ status: false, message: "Cannot submit empty path. Add at least one step." });
     }
 
-    if (!["draft", "rejected"].includes(path.status)) {
+   if (!["draft", "rejected", "changesrequested"].includes(path.status)) {
       return res.status(400).json({ status: false, message: "Only draft or rejected paths can be submitted" });
     }
 
@@ -195,6 +195,15 @@ const submitForApproval = async (req, res) => {
         }
       });
     }
+
+
+// Mark all pending change requests as addressed on resubmit
+if (path.changeRequests && path.changeRequests.length > 0) {
+  path.changeRequests = path.changeRequests.map(cr => ({
+    ...cr.toObject(),
+    status: "addressed"
+  }));
+}
 
     path.status = "waitingforapproval";
     await path.save();
@@ -433,6 +442,54 @@ const uploadBulkPaths = async (req, res) => {
   }
 };
 
+
+const requestChanges = async (req, res) => {
+  try {
+    const pathId = req.params.id;
+    const { issues, adminNote, adminEmail } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(pathId)) {
+      return res.status(400).json({ status: false, message: "Invalid pathId" });
+    }
+
+    if (!adminNote || !adminNote.trim()) {
+      return res.status(400).json({ status: false, message: "Admin note is required" });
+    }
+
+    const path = await pathModel.findById(pathId);
+    if (!path) {
+      return res.status(404).json({ status: false, message: "Path not found" });
+    }
+
+    if (path.status !== "waitingforapproval" && path.status !== "changesrequested") {
+      return res.status(400).json({ status: false, message: "Path must be under review to request changes" });
+    }
+
+    // Push new change request
+    path.changeRequests.push({
+      issues: issues || [],
+      adminNote: adminNote.trim(),
+      adminEmail: adminEmail || "",
+      sentAt: new Date(),
+      status: "pending"
+    });
+
+    // Update status so partner sees it
+    path.status = "changesrequested";
+
+    await path.save();
+
+    return res.status(200).json({
+      status: true,
+      message: "Change request sent to partner",
+      data: path
+    });
+  } catch (error) {
+    console.error("Error in requestChanges:", error);
+    return res.status(500).json({ status: false, message: "Internal server error" });
+  }
+};
+
 module.exports = {
   addPath,
   submitForApproval,
@@ -449,4 +506,5 @@ module.exports = {
   reactivateInactivePath, 
   getPathById, 
   uploadBulkPaths,
+  requestChanges, 
 };

@@ -79,13 +79,27 @@ feature_coordinates: {
     city: { type: String },
     country: { type: String },
 
-    // 🔥 Status
+  status: {
+  type: String,
+  enum: ['draft', 'waitingforapproval', 'changesrequested', 'active', 'rejected', 'inactive', 'delete'],
+  default: 'draft'
+},
+
+
+// ── Change requests from admin ────────────────────────────────
+changeRequests: [
+  {
+    issues: [{ type: String }],
+    adminNote: { type: String },
+    sentAt: { type: Date, default: Date.now },
+    adminEmail: { type: String },
     status: {
       type: String,
-enum: ['draft', 'waitingforapproval', 'active', 'rejected', 'inactive', 'delete'],
-default: 'draft'
-
-    },
+      enum: ["pending", "addressed"],
+      default: "pending"
+    }
+  }
+],
 
     // 🔥 Arrays
     financialSituation: [

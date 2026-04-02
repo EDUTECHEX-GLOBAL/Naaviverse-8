@@ -22,7 +22,7 @@ const EMPTY_LAYER = {
 const EMPTY_STEP = {
   macro: { ...EMPTY_LAYER, duration: { years: "", months: "", days: "" }, marketplace: [] },
   micro: { ...EMPTY_LAYER, duration: { years: "", months: "", days: "" }, marketplace: [] },
-  nano: { ...EMPTY_LAYER, duration: { years: "", months: "", days: "" }, marketplace: [] },
+  nano:  { ...EMPTY_LAYER, duration: { years: "", months: "", days: "" }, marketplace: [] },
 };
 
 const EMPTY_MARKET_FORM = {
@@ -39,7 +39,7 @@ const EMPTY_MARKET_FORM = {
   features: "",
 };
 
-// ✅ FIX 1: Filter out unpopulated marketplace refs (items without name/role)
+// ✅ Filter out unpopulated DB refs (objects missing a name)
 const normalizeMarketplace = (arr) => {
   if (!Array.isArray(arr)) return [];
   return arr.filter(
@@ -61,7 +61,7 @@ const normalizeStep = (raw) => {
       ...raw,
       macro: { ...EMPTY_LAYER, ...raw.macro, marketplace: normalizeMarketplace(raw.macro.marketplace) },
       micro: { ...EMPTY_LAYER, ...raw.micro, marketplace: normalizeMarketplace(raw.micro?.marketplace) },
-      nano: { ...EMPTY_LAYER, ...raw.nano, marketplace: normalizeMarketplace(raw.nano?.marketplace) },
+      nano:  { ...EMPTY_LAYER, ...raw.nano,  marketplace: normalizeMarketplace(raw.nano?.marketplace) },
     };
   }
 
@@ -75,7 +75,6 @@ const normalizeStep = (raw) => {
       paid: raw.macro_access === "paid",
       free: raw.macro_access === "free",
       instructions: raw.macro_instructions || "",
-      // ✅ FIX 1 applied: normalizeMarketplace strips unpopulated refs
       marketplace: normalizeMarketplace(raw.macro_marketplace || raw.macro?.marketplace),
     },
     micro: {
@@ -103,7 +102,7 @@ const normalizeStep = (raw) => {
 
 // ─── Small reusable components ────────────────────────────────────────────────
 
-// ✅ FIX 3: Guard — skip rendering if item has no name (unpopulated ref)
+// ✅ Guard — skip rendering if item has no name
 const MarketplaceItemCard = ({ item, compact = false }) => {
   if (!item?.name) return null;
   return (
@@ -120,12 +119,12 @@ const MarketplaceItemCard = ({ item, compact = false }) => {
         <span>{item.cost}</span>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.3rem", color: "#2c3e50" }}>
-        {item.goal && <span><strong>Goal:</strong>       {item.goal}</span>}
-        {item.outcomes && <span><strong>Outcomes:</strong>   {item.outcomes}</span>}
-        {item.access && <span><strong>Access:</strong>     {item.access}</span>}
+        {item.goal       && <span><strong>Goal:</strong>       {item.goal}</span>}
+        {item.outcomes   && <span><strong>Outcomes:</strong>   {item.outcomes}</span>}
+        {item.access     && <span><strong>Access:</strong>     {item.access}</span>}
         {item.iterations && <span><strong>Iterations:</strong> {item.iterations}</span>}
-        {item.duration && <span><strong>Duration:</strong>   {item.duration}</span>}
-        {item.discount && <span><strong>Discount:</strong>   {item.discount}</span>}
+        {item.duration   && <span><strong>Duration:</strong>   {item.duration}</span>}
+        {item.discount   && <span><strong>Discount:</strong>   {item.discount}</span>}
       </div>
       {item.features && (
         <div style={{ marginTop: "0.4rem" }}><strong>Features:</strong> {item.features}</div>
@@ -136,9 +135,9 @@ const MarketplaceItemCard = ({ item, compact = false }) => {
 
 const DurationSelect = ({ value, onChange, type }) => {
   const configs = {
-    years: { label: "Years", count: 11 },
+    years:  { label: "Years",  count: 11 },
     months: { label: "Months", count: 12 },
-    days: { label: "Days", count: 31 },
+    days:   { label: "Days",   count: 31 },
   };
   const { label, count } = configs[type];
   return (
@@ -192,9 +191,9 @@ const LayerBuilder = ({ layer, layerKey, data, onChange, onAddMarketplace }) => 
       <div className="form-group">
         <label>Duration</label>
         <div className="duration-select-group">
-          <DurationSelect type="years" value={safeData.duration?.years} onChange={(v) => updateDuration("years", v)} />
+          <DurationSelect type="years"  value={safeData.duration?.years}  onChange={(v) => updateDuration("years", v)} />
           <DurationSelect type="months" value={safeData.duration?.months} onChange={(v) => updateDuration("months", v)} />
-          <DurationSelect type="days" value={safeData.duration?.days} onChange={(v) => updateDuration("days", v)} />
+          <DurationSelect type="days"   value={safeData.duration?.days}   onChange={(v) => updateDuration("days", v)} />
         </div>
         <div className="checkbox-group">
           <label className="checkbox-label">
@@ -246,10 +245,10 @@ const LayerDetail = ({ layerKey, data }) => {
 
   const durationText = data.duration
     ? [
-      data.duration.years ? `${data.duration.years} years` : "",
-      data.duration.months ? `${data.duration.months} months` : "",
-      data.duration.days ? `${data.duration.days} days` : "",
-    ].filter(Boolean).join(" ") || "Not set"
+        data.duration.years  ? `${data.duration.years} years`   : "",
+        data.duration.months ? `${data.duration.months} months` : "",
+        data.duration.days   ? `${data.duration.days} days`     : "",
+      ].filter(Boolean).join(" ") || "Not set"
     : "Not set";
 
   return (
@@ -261,9 +260,9 @@ const LayerDetail = ({ layerKey, data }) => {
         {layerKey.toUpperCase()}
       </h3>
       {[
-        { label: "NAME", value: data.name },
-        { label: "DESCRIPTION", value: data.desc },
-        { label: "DURATION", value: durationText },
+        { label: "NAME",         value: data.name },
+        { label: "DESCRIPTION",  value: data.desc },
+        { label: "DURATION",     value: durationText },
         { label: "INSTRUCTIONS", value: data.instructions },
       ].map(({ label, value }) => (
         <div className="detail-row" key={label}>
@@ -293,82 +292,77 @@ const DraftPathView = () => {
     return () => el.removeEventListener("click", stopClick, true);
   }, []);
 
-  const [pathData, setPathData] = useState(null);
-  const [steps, setSteps] = useState([]);
-  const [totalSteps, setTotalSteps] = useState(5);
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState(null);
-
-  const [view, setView] = useState("draft");
-
-  const [viewAllOpen, setViewAllOpen] = useState(false);
-  const [marketplaceOpen, setMarketplaceOpen] = useState(false);
-  const [editPathOpen, setEditPathOpen] = useState(false);
-
-  const [currentStep, setCurrentStep] = useState(null);
+  const [pathData, setPathData]                 = useState(null);
+  const [steps, setSteps]                       = useState([]);
+  const [totalSteps, setTotalSteps]             = useState(5);
+  const [loading, setLoading]                   = useState(false);
+  const [saving, setSaving]                     = useState(false);
+  const [error, setError]                       = useState(null);
+  const [view, setView]                         = useState("draft");
+  const [viewAllOpen, setViewAllOpen]           = useState(false);
+  const [marketplaceOpen, setMarketplaceOpen]   = useState(false);
+  const [editPathOpen, setEditPathOpen]         = useState(false);
+  const [currentStep, setCurrentStep]           = useState(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(null);
-  const [currentLayer, setCurrentLayer] = useState("macro");
-
-  const [selectedRole, setSelectedRole] = useState("");
-  const [marketForm, setMarketForm] = useState(EMPTY_MARKET_FORM);
+  const [currentLayer, setCurrentLayer]         = useState("macro");
+  const [selectedRole, setSelectedRole]         = useState("");
+  const [marketForm, setMarketForm]             = useState(EMPTY_MARKET_FORM);
 
   // ─── Data fetching ────────────────────────────────────────────────────────
 
-  // ✅ FIX 2: Fetch populated marketplace items from /api/marketplace/get
-  //           and overlay them onto each step by step_id + layer.
-  //           This ensures Macro items show real names just like Micro/Nano.
-const fetchSteps = useCallback(async (pathId) => {
-  try {
-    const res = await axios.get(`${BASE_URL}/api/steps/get`, {
-      params: { path_id: pathId },
-    });
+  const fetchSteps = useCallback(async (pathId) => {
+    try {
+      const res = await axios.get(`${BASE_URL}/api/steps/get`, {
+        params: { path_id: pathId },
+      });
 
-    const rawSteps = res.data.data || [];
+      const rawSteps = res.data.data || [];
 
-    // ✅ FIX: Use the correct endpoint — fetch marketplace per step_id
-    const fetched = await Promise.all(
-      rawSteps.map(async (raw) => {
-        const normalized = normalizeStep(raw);
-        const stepId = raw._id?.toString();
-        if (!stepId) return normalized;
+      // ✅ FIX: Use correct endpoint GET /api/marketplace/step/:step_id
+      // Fetches all layers for each step in parallel — no more 404
+      const fetched = await Promise.all(
+        rawSteps.map(async (raw) => {
+          const normalized = normalizeStep(raw);
+          const stepId = raw._id?.toString();
+          if (!stepId) return normalized;
 
-        try {
-          // Fetch all marketplace items for this step (all layers at once)
-          const mpRes = await axios.get(`${BASE_URL}/api/marketplace/step/${stepId}`);
-          const mpItems = mpRes.data?.data || [];
+          try {
+            const mpRes = await axios.get(
+              `${BASE_URL}/api/marketplace/step/${stepId}`
+            );
+            const mpItems = mpRes.data?.data || [];
 
-          // Group by layer
-          const grouped = { macro: [], micro: [], nano: [] };
-          mpItems.forEach((item) => {
-            const layer = item.layer?.toLowerCase();
-            if (layer && grouped[layer]) {
-              grouped[layer].push(item);
-            }
-          });
+            // Group returned items by layer
+            const grouped = { macro: [], micro: [], nano: [] };
+            mpItems.forEach((item) => {
+              const layer = item.layer?.toLowerCase();
+              if (layer && grouped[layer]) {
+                grouped[layer].push(item);
+              }
+            });
 
-          // Overlay onto normalized step — only replace if API returned items
-          ["macro", "micro", "nano"].forEach((layer) => {
-            if (grouped[layer].length > 0) {
-              normalized[layer].marketplace = grouped[layer];
-            }
-          });
-        } catch (e) {
-          console.warn(`Could not fetch marketplace for step ${stepId}:`, e);
-        }
+            // Overlay onto normalized step — only replace if API returned items
+            ["macro", "micro", "nano"].forEach((layer) => {
+              if (grouped[layer].length > 0) {
+                normalized[layer].marketplace = grouped[layer];
+              }
+            });
+          } catch (e) {
+            console.warn(`Could not fetch marketplace for step ${stepId}:`, e);
+          }
 
-        return normalized;
-      })
-    );
+          return normalized;
+        })
+      );
 
-    const sorted = fetched.sort((a, b) => (a.step_order || 0) - (b.step_order || 0));
-    setSteps(sorted);
-    return sorted;
-  } catch (err) {
-    console.error("Error fetching steps:", err);
-    return [];
-  }
-}, []);
+      const sorted = fetched.sort((a, b) => (a.step_order || 0) - (b.step_order || 0));
+      setSteps(sorted);
+      return sorted;
+    } catch (err) {
+      console.error("Error fetching steps:", err);
+      return [];
+    }
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -461,7 +455,7 @@ const fetchSteps = useCallback(async (pathId) => {
           ...(res.data.data || {}),
           macro_marketplace: res.data.data?.macro_marketplace ?? payload.macro_marketplace,
           micro_marketplace: res.data.data?.micro_marketplace ?? payload.micro_marketplace,
-          nano_marketplace: res.data.data?.nano_marketplace ?? payload.nano_marketplace,
+          nano_marketplace:  res.data.data?.nano_marketplace  ?? payload.nano_marketplace,
         };
         const saved = normalizeStep(merged);
         setSteps((prev) => [...prev, saved]);
@@ -475,7 +469,7 @@ const fetchSteps = useCallback(async (pathId) => {
           ...(res.data.data || {}),
           macro_marketplace: res.data.data?.macro_marketplace ?? payload.macro_marketplace,
           micro_marketplace: res.data.data?.micro_marketplace ?? payload.micro_marketplace,
-          nano_marketplace: res.data.data?.nano_marketplace ?? payload.nano_marketplace,
+          nano_marketplace:  res.data.data?.nano_marketplace  ?? payload.nano_marketplace,
         };
         const saved = normalizeStep(merged);
         setSteps((prev) => {
@@ -547,7 +541,7 @@ const fetchSteps = useCallback(async (pathId) => {
       }
     }
 
-    // Always update local state immediately so card appears in the builder
+    // Always update local state so card appears immediately in the builder
     setCurrentStep((prev) => ({
       ...prev,
       [currentLayer]: {

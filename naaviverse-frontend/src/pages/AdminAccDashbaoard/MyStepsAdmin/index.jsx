@@ -11,13 +11,19 @@ import { useLocation } from "react-router-dom";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const parseDuration = (raw) => {
+  if (!raw) return null;
   try {
     const dur = typeof raw === "string" ? JSON.parse(raw) : raw;
-    const parts = [
-      parseInt(dur?.years) > 0 ? `${dur.years}y` : "",
-      parseInt(dur?.months) > 0 ? `${dur.months}m` : "",
-      parseInt(dur?.days) > 0 ? `${dur.days}d` : "",
-    ].filter(Boolean);
+    const parts = [];
+
+    const years = dur?.Years || dur?.years || "";
+    const months = dur?.Months || dur?.months || "";
+    const days = dur?.Days || dur?.days || "";
+
+    if (parseInt(years) > 0) parts.push(`${years} ${years === "1" ? "Year" : "Years"}`);
+    if (parseInt(months) > 0) parts.push(`${months} ${months === "1" ? "Month" : "Months"}`);
+    if (parseInt(days) > 0) parts.push(`${days} ${days === "1" ? "Day" : "Days"}`);
+
     return parts.length ? parts.join(" ") : null;
   } catch { return null; }
 };
@@ -644,7 +650,7 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
                         {[
                           ["Name", selectedStep?.[`${layer}_name`]],
                           ["Description", selectedStep?.[`${layer}_description`]],
-                          ["Length", selectedStep?.[`${layer}_length`]],
+                          ["Length", parseDuration(selectedStep?.length) || parseDuration(selectedStep?.[`${layer}_length`])],
                           ["Access", selectedStep?.[`${layer}_access`]],
                           ["Instructions", selectedStep?.[`${layer}_instructions`]],
                           ["Chances", selectedStep?.[`${layer}_chances`]],
@@ -655,7 +661,9 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
                           </div>
                         ) : null)}
                         {!selectedStep?.[`${layer}_name`] && !selectedStep?.[`${layer}_description`] && (
-                          <p className="sm-layer-empty">No {layer.charAt(0).toUpperCase() + layer.slice(1)} data configured for this step.</p>
+                          <p className="sm-layer-empty">
+                            No {layer.charAt(0).toUpperCase() + layer.slice(1)} data configured for this step.
+                          </p>
                         )}
                       </div>
                     )
@@ -782,13 +790,14 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
                   ) : availableItems.length === 0 ? (
                     <div className="admin-pp-empty">No other {marketLayer} items in marketplace</div>
                   ) : (
+                    // REPLACE the availableItems.map block in marketplace_attach
                     availableItems.map(item => (
                       <div className="admin-pp-market-item" key={item._id}>
                         <div className="admin-pp-market-item-info">
                           <div className="admin-pp-market-emoji">📦</div>
                           <div>
                             <strong>{item.name}</strong>
-                            <span>{item.role}</span>
+                            <span>{item.role}</span>    {/* ← span is already separate, issue is CSS */}
                             {item.step_id && (
                               <span style={{ fontSize: "11px", color: "#f59e0b", display: "block" }}>
                                 ⚠ Already linked to another step
@@ -797,7 +806,7 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
                           </div>
                         </div>
                         <button
-                          className="admin-pp-btn admin-pp-btn--blue"
+                          className="admin-pp-market-attach-btn"
                           disabled={actionLoading}
                           onClick={() => attachMarketService(item)}>
                           {actionLoading ? "..." : "Attach"}
@@ -811,19 +820,24 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
               {/* MARKETPLACE CREATE */}
               {modalScreen === "marketplace_create" && (
                 <div className="admin-pp-selector">
+ // REPLACE the currentLayerCfg block at top of marketplace_attach
                   {currentLayerCfg && (
                     <div style={{
-                      display: "flex", alignItems: "center", gap: 8,
-                      padding: "8px 14px", background: currentLayerCfg.bg,
-                      borderRadius: 10, border: `1.5px solid ${currentLayerCfg.border}`,
-                      fontSize: "0.78rem", color: currentLayerCfg.color,
-                      fontWeight: 500, marginBottom: 16,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      padding: "6px 12px",
+                      background: currentLayerCfg.bg,
+                      borderRadius: 8,
+                      border: `1.5px solid ${currentLayerCfg.border}`,
+                      fontSize: "0.75rem",
+                      color: currentLayerCfg.color,
+                      fontWeight: 600,
+                      marginBottom: 14,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
                     }}>
-                      <span style={{ color: "#64748b" }}>Adding to</span>
-                      <strong style={{ textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                        {currentLayerCfg.label}
-                      </strong>
-                      <span style={{ color: "#64748b" }}>layer</span>
+                      {currentLayerCfg.label} — {currentLayerCfg.viewName}
                     </div>
                   )}
 

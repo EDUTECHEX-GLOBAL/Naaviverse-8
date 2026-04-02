@@ -6,7 +6,7 @@ import logo from "../../assets/images/logo/naavi_final_logo2.png";
 
 // ✅ URL map for each section
 const ROUTE_MAP = {
-  Dashboard:   "/admin/dashboard/accountants",
+  Overview:   "/admin/dashboard/accountants",
   CRM:         "/admin/dashboard/crm",
   Paths:       "/admin/dashboard/paths?tab=active",
   Steps:       "/admin/dashboard/steps?tab=active",
@@ -21,7 +21,7 @@ const sidebarMenu1 = [
 ];
 
 const sidebarMenu2 = [
-  { id: 0, display: "Dashboard",   title: "Dashboard",   click: true },
+  { id: 0, display: "Overview",    title: "Overview",   click: true },
   { id: 1, display: "CRM",         title: "CRM",         click: true },
   { id: 2, display: "Paths",       title: "Paths",       click: true },
   { id: 3, display: "Steps",       title: "Steps",       click: true },
@@ -110,7 +110,7 @@ const AdminAccDashsidebar = ({
           cursor: "pointer",
         }}
         onClick={() => {
-          const defaultTitle = admin ? "Dashboard" : "CRM";
+          const defaultTitle = admin ? "Overview" : "CRM";
           setaccsideNav(defaultTitle);
           navigate(ROUTE_MAP[defaultTitle]);
         }}
