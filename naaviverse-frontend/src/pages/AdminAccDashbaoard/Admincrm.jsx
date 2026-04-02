@@ -223,13 +223,13 @@ const AdminCRM = () => {
             className={tab === "Users" ? "active" : ""}
             onClick={() => { setTab("Users"); setSearch(""); }}
           >
-            Users <span className="tab-pill">{userData.length}</span>
+            Users 
           </button>
           <button
             className={tab === "Partners" ? "active" : ""}
             onClick={() => { setTab("Partners"); setSearch(""); }}
           >
-            Partners <span className="tab-pill">{partnerData.length}</span>
+            Partners 
           </button>
         </div>
         <div className="acrm-search">
@@ -284,7 +284,7 @@ const AdminCRM = () => {
                 : filteredUsers.map((u, i) => (
                     <div className="acrm-row" key={i}>
                       <div className="cell-name" style={{ width: "22%" }}>
-                        <div className="row-av">{initial(u.name)}</div>
+                        {/* <div className="row-av">{initial(u.name)}</div> */}
                         <span className="row-nm">{u.name || "—"}</span>
                       </div>
                       <div className="cell-mono" style={{ width: "30%" }}>{u.email}</div>
@@ -349,7 +349,7 @@ const AdminCRM = () => {
                       </div>
 
                       {/* Activity */}
-                      <div style={{ width: "9%", textAlign: "right" }}>
+                      <div style={{ width: "8%", textAlign: "right" }}>
                         <button className="act-btn" onClick={() => openPopup(p, "partner")}>
                           Activity
                         </button>

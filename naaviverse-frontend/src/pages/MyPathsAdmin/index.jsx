@@ -18,7 +18,8 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const { sideNav, setsideNav } = useStore();
   let userDetails = JSON.parse(localStorage.getItem("adminuser"));
   const { setCurrentStepData, setCurrentStepDataLength, mypathsMenu, setMypathsMenu } = useCoinContextData();
-
+const [pathChangeRequests, setPathChangeRequests] = useState({}); // { [pathId]: [...changeRequests] }
+const [changeRequestsLoading, setChangeRequestsLoading] = useState({});
   const [partnerPathData, setPartnerPathData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [partnerStepsData, setPartnerStepsData] = useState([]);
@@ -48,7 +49,11 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const [allServicesToAdd, setAllServicesToAdd] = useState([]);
   const [allServicesToRemove, setAllServicesToRemove] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
-
+  const [expandedHistoryId, setExpandedHistoryId] = useState(null);
+  const [pendingPopup, setPendingPopup] = useState(null); // { type: 'approve'|'request'|'reject'|'compare', pathId, path }
+  const [rejectChecklist, setRejectChecklist] = useState([]);
+  const [rejectNote, setRejectNote] = useState("");
+  const [rejectNoteError, setRejectNoteError] = useState(false);
   // ── Marketplace states ────────────────────────────────────────
   const [marketLayer, setMarketLayer] = useState("");
   const [marketplaceItems, setMarketplaceItems] = useState([]);       // all items for this layer
@@ -121,14 +126,21 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     }).catch(() => setLoading(false));
   };
 
-  const getNewPath = () => {
-    setLoading(true);
-    axios.get(`${BASE_URL}/api/paths/get?status=waitingforapproval`).then(({ data }) => {
-      setPartnerPathData(data?.data);
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  };
-
+ const getNewPath = () => {
+  setLoading(true);
+  // Fetch both waitingforapproval AND changesrequested paths for Pending Paths tab
+  Promise.all([
+    axios.get(`${BASE_URL}/api/paths/get?status=waitingforapproval`),
+    axios.get(`${BASE_URL}/api/paths/get?status=changesrequested`),
+  ]).then(([res1, res2]) => {
+    const combined = [
+      ...(res1.data?.data || []),
+      ...(res2.data?.data || []),
+    ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    setPartnerPathData(combined);
+    setLoading(false);
+  }).catch(() => setLoading(false));
+};
   const getAllSteps = () => {
     axios.get(`${BASE_URL}/api/steps/get?status=active`).then(({ data }) => {
       setPartnerStepsData(data?.data);
@@ -141,6 +153,23 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
    *  2. ALL items for this layer            (via /marketplace/admin/get-all?layer=X)
    *     The "available" list is derived in the render by filtering out attached ones.
    */
+
+const fetchChangeRequests = (pathId) => {
+  if (pathChangeRequests[pathId]) return; // already loaded
+  setChangeRequestsLoading(prev => ({ ...prev, [pathId]: true }));
+  axios.get(`${BASE_URL}/api/paths/viewpath/${pathId}`)
+    .then(({ data }) => {
+      if (data?.status) {
+        setPathChangeRequests(prev => ({
+          ...prev,
+          [pathId]: data.data?.changeRequests || []
+        }));
+      }
+    })
+    .catch(() => {})
+    .finally(() => setChangeRequestsLoading(prev => ({ ...prev, [pathId]: false })));
+};
+  
   const fetchMarketplaceData = (stepId, layer) => {
     const sid = stepId || marketStepId;
     const lay = layer || marketLayer;
@@ -185,6 +214,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     }).catch(() => setActionLoading(false));
   };
 
+  // ── One-time setup: backup paths, steps, services ──
   useEffect(() => {
     axios.get(`${BASE_URL}/api/paths/get?status=active`).then(({ data }) => {
       if (data.status) setBackupPathData(data?.data);
@@ -196,12 +226,21 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── Read URL tab on mount → set menu + fetch correct data ──
   useEffect(() => {
-    if (mypathsMenu === "Pending Paths") getNewPath();
-    else if (mypathsMenu === "Inactive Paths") getInactivePath();
-    else getAllPaths();
+    const tab = new URLSearchParams(location.search).get("tab");
+    if (tab === "inactive") {
+      setMypathsMenu("Inactive Paths");
+      getInactivePath();
+    } else if (tab === "pending") {
+      setMypathsMenu("Pending Paths");
+      getNewPath();
+    } else {
+      setMypathsMenu("Paths");
+      getAllPaths();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mypathsMenu]);
+  }, []);
 
   useEffect(() => {
     if (selectedStepId) {
@@ -221,14 +260,6 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   }, [productKeys]);
 
   useEffect(() => { setShowSelectedPath(null); }, [mypathsMenu]);
-
-  useEffect(() => {
-    const tab = new URLSearchParams(location.search).get("tab");
-    if (tab === "inactive") setMypathsMenu("Inactive Paths");
-    else if (tab === "pending") setMypathsMenu("Pending Paths");
-    else setMypathsMenu("Paths");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     if (pathActionEnabled || stepActionEnabled) document.body.classList.add("admin-popup-open");
@@ -304,6 +335,93 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
         setPathActionEnabled(false); setActionLoading(false); setPathActionStep(1);
       }
     });
+  };
+
+
+  const REJECT_ISSUES = [
+    "Price needs to be reduced",
+    "Path description is too vague",
+    "Steps are incomplete",
+    "Duration is unrealistic",
+    "Images / media missing",
+    "Target audience not specified",
+    <input
+      type="text"
+      placeholder="Other (type here)"
+      className="popup-note-area"
+      value={rejectNote}
+      onChange={(e) => setRejectNote(e.target.value)}
+    />
+  ];
+
+  const toggleRejectCheck = (issue) => {
+    setRejectChecklist(prev =>
+      prev.includes(issue) ? prev.filter(i => i !== issue) : [...prev, issue]
+    );
+  };
+
+  const closePendingPopup = () => {
+  setPendingPopup(null);
+  setRejectChecklist([]);
+  setRejectNote("");
+  setRejectNoteError(false);
+  // Optionally clear cache so next open re-fetches:
+  // setPathChangeRequests({});
+};
+
+
+
+
+const handleRequestChanges = () => {
+  if (!rejectNote.trim()) { setRejectNoteError(true); return; }
+  setActionLoading(true);
+
+  axios.put(`${BASE_URL}/api/paths/requestchanges/${pendingPopup?.pathId}`, {
+    issues: rejectChecklist,
+    adminNote: rejectNote,
+    adminEmail: userDetails?.email || "",
+  }).then(({ data }) => {
+    if (data.status) {
+      getNewPath();
+      setActionLoading(false);
+      closePendingPopup();
+    }
+  }).catch(() => {
+    setActionLoading(false);
+  });
+};
+
+  const handleFinalReject = () => {
+    if (!rejectNote.trim()) { setRejectNoteError(true); return; }
+    setActionLoading(true);
+    axios.put(`${BASE_URL}/api/paths/updatepath/${pendingPopup?.pathId}`, { status: "draft" }).then(({ data }) => {
+      if (data.status) { getNewPath(); setActionLoading(false); closePendingPopup(); }
+    }).catch(() => setActionLoading(false));
+  };
+
+  const handleApproveConfirm = () => {
+    setActionLoading(true);
+    axios.put(`${BASE_URL}/api/paths/updatepath/${pendingPopup?.pathId}`, { status: "active" }).then(({ data }) => {
+      if (data.status) { getNewPath(); setActionLoading(false); closePendingPopup(); }
+    }).catch(() => setActionLoading(false));
+  };
+
+  const STATIC_HISTORY = [
+    { type: "submitted", label: "Partner submitted path", sub: "8 Mar 2026, 9:00 AM" },
+    { type: "request", label: "Round 1 — Changes requested", sub: "Issues: Price too high, Steps incomplete · 9 Mar 2026" },
+    { type: "resubmit", label: "Round 2 — Partner resubmitted", sub: "10 Mar 2026, 10:49 AM · Under review" },
+  ];
+
+  // Static compare data
+  const STATIC_COMPARE = {
+    old: { price: "₹999", steps: "2 steps", description: "Short intro only, no details about curriculum.", duration: "Not specified" },
+    new: { price: "₹999", steps: "2 steps", description: "Full curriculum breakdown added with subject-wise goals for Grade 11 students.", duration: "6 months" },
+    checklist: [
+      { label: "Price needs to be reduced", fixed: false },
+      { label: "Steps are incomplete", fixed: false },
+      { label: "Path description too vague", fixed: true },
+      { label: "Duration unrealistic", fixed: true },
+    ]
   };
 
   const editMetaData = (field) => {
@@ -551,6 +669,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
               setMypathsMenu("Paths");
               setViewPathEnabled(false);
               setViewPathData([]);
+              getAllPaths();                          // ← add this
               navigate("/admin/dashboard/paths?tab=active");
             }}>
             {admin ? "Active Paths" : "Paths"}
@@ -562,6 +681,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 setMypathsMenu("Pending Paths");
                 setViewPathEnabled(false);
                 setViewPathData([]);
+                getNewPath();                          // ← add this
                 navigate("/admin/dashboard/paths?tab=pending");
               }}>
               Pending Paths
@@ -574,6 +694,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 setMypathsMenu("Inactive Paths");
                 setViewPathEnabled(false);
                 setViewPathData([]);
+                getInactivePath();                     // ← add this
                 navigate("/admin/dashboard/paths?tab=inactive");
               }}>
               Inactive Paths
@@ -707,48 +828,98 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                   <div className="paths-col-steps"><Skeleton width={70} height={28} borderRadius={50} /></div>
                 </div>
               ))
-              : filteredPartnerPathData?.map((e, i) => (
-                <div
-                  className="paths-table-row"
-                  key={i}
-                  onClick={async () => {
-                    setPathActionEnabled(true);
-                    setSelectedPathId(e?._id);
-                    const res = await axios.get(`${BASE_URL}/api/paths/viewpath/${e?._id}`);
-                    if (res.data?.data) setSelectedPath(res.data.data);
-                  }}>
-                  <div className="paths-col-name">
-                    <span className="path-name-text">{e?.nameOfPath}</span>
-                  </div>
-                  <div className="paths-col-desc" onClick={ev => ev.stopPropagation()}>
-                    <span className="path-desc-text">
-                      {expandedRows[e?._id]
-                        ? e?.description
-                        : (e?.description?.length > 120 ? e?.description?.substring(0, 120) + "..." : e?.description)}
-                    </span>
-                    {e?.description?.length > 120 && (
-                      <span
-                        className="path-desc-toggle"
-                        onClick={ev => {
-                          ev.stopPropagation();
-                          setExpandedRows(prev => ({ ...prev, [e._id]: !prev[e._id] }));
-                        }}>
-                        {expandedRows[e?._id] ? " Read Less" : " Read More"}
-                      </span>
-                    )}
-                  </div>
-                  <div className="paths-col-steps">
-                    <div className="path-meta-info">
-                      <span className="meta-date">
-                        {(function () {
-                          const date = e?.createdAt ? new Date(e.createdAt) : new Date();
-                          return date.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
-                        })()}
+              : filteredPartnerPathData?.map((path, i) => (
+                mypathsMenu === "Pending Paths" ? (
+                  <div className="pending-path-card" key={i}>
+                    <div className="pending-card-top">
+                      <div className="pending-card-left">
+                        <span className="pending-path-name">{path?.nameOfPath}</span>
+
+                      </div>
+                      <span className="pending-date">
+                        {path?.createdAt ? new Date(path.createdAt).toLocaleString("en-IN", {
+                          day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
+                        }) : ""}
                       </span>
                     </div>
-                    <span className="actions-pill">Actions</span>
+
+                    <p className="pending-desc">
+                      {expandedRows[path?._id]
+                        ? path?.description
+                        : (path?.description?.length > 160 ? path?.description?.substring(0, 160) + "..." : path?.description)}
+                      {path?.description?.length > 160 && (
+                        <span className="path-desc-toggle"
+                          onClick={() => setExpandedRows(prev => ({ ...prev, [path._id]: !prev[path._id] }))}>
+                          {expandedRows[path?._id] ? " Read Less" : " Read More"}
+                        </span>
+                      )}
+                    </p>
+
+                    <div className="pending-action-row">
+                      <button className="pab pab--review"
+                        onClick={() => { localStorage.setItem("selectedPathId", path?._id); navigate(`/dashboard/path/${path?._id}`); }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                        View steps
+                      </button>
+                      <button className="pab pab--approve"
+                        onClick={() => setPendingPopup({ type: "approve", pathId: path?._id, path: path })}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5" /></svg>
+                        Approve
+                      </button>
+                      <button className="pab pab--request"
+                        onClick={() => { setRejectChecklist([]); setRejectNote(""); setRejectNoteError(false); setPendingPopup({ type: "request", pathId: path?._id, path: path }); }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                        Request Changes
+                      </button>
+                      <button className="pab pab--compare"
+  onClick={() => {
+    fetchChangeRequests(path?._id);
+    setPendingPopup({ type: "compare", pathId: path?._id, path: path });
+  }}>
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="16 3 21 3 21 8" /><line x1="4" y1="20" x2="21" y2="3" /><polyline points="21 16 21 21 16 21" /><line x1="15" y1="15" x2="21" y2="21" /></svg>
+  Review
+</button>
+                      <button className="pab pab--reject"
+                        onClick={() => { setRejectChecklist([]); setRejectNote(""); setRejectNoteError(false); setPendingPopup({ type: "reject", pathId: path?._id, path: path }); }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                        Reject
+                      </button>
+                    </div>
+
                   </div>
-                </div>
+
+                ) : (
+                  <div className="paths-table-row" key={i}
+                    onClick={async () => {
+                      setPathActionEnabled(true);
+                      setSelectedPathId(path?._id);
+                      const res = await axios.get(`${BASE_URL}/api/paths/viewpath/${path?._id}`);
+                      if (res.data?.data) setSelectedPath(res.data.data);
+                    }}>
+                    <div className="paths-col-name"><span className="path-name-text">{path?.nameOfPath}</span></div>
+                    <div className="paths-col-desc" onClick={ev => ev.stopPropagation()}>
+                      <span className="path-desc-text">
+                        {expandedRows[path?._id] ? path?.description : (path?.description?.length > 120 ? path?.description?.substring(0, 120) + "..." : path?.description)}
+                      </span>
+                      {path?.description?.length > 120 && (
+                        <span className="path-desc-toggle" onClick={ev => { ev.stopPropagation(); setExpandedRows(prev => ({ ...prev, [path._id]: !prev[path._id] })); }}>
+                          {expandedRows[path?._id] ? " Read Less" : " Read More"}
+                        </span>
+                      )}
+                    </div>
+                    <div className="paths-col-steps">
+                      <div className="path-meta-info">
+                        <span className="meta-date">
+                          {(function () {
+                            const date = path?.createdAt ? new Date(path.createdAt) : new Date();
+                            return date.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+                          })()}
+                        </span>
+                      </div>
+                      <span className="actions-pill">Actions</span>
+                    </div>
+                  </div>
+                )
               ))}
           </div>
         )}
@@ -1243,7 +1414,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                           </div>
                         </div>
                         <button
-                          className="pp-btn pp-btn--blue"
+                          className="pp-market-attach-btn"
                           disabled={actionLoading}
                           onClick={() => attachMarketService(item)}>
                           {actionLoading ? "..." : "Attach"}
@@ -1424,6 +1595,214 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
         </>
       )}
 
+
+      {/* ══════════════════════════════════════════════════════════
+    PENDING PATH POPUPS
+══════════════════════════════════════════════════════════ */}
+      {pendingPopup && (
+        <>
+          <div className="pp-overlay" onClick={closePendingPopup} />
+          <div className="pending-popup-modal">
+
+            <div className="pending-popup-header">
+              <div>
+                <h3 className="pending-popup-title">
+                  {pendingPopup.type === "approve" && "Approve Path"}
+                  {pendingPopup.type === "request" && "Request Changes"}
+                  {pendingPopup.type === "reject" && "Reject Path"}
+                  {pendingPopup.type === "compare" && "Version Comparison"}
+                </h3>
+                <p className="pending-popup-subtitle">{pendingPopup.path?.nameOfPath}</p>
+              </div>
+              <button className="pp-close-btn" onClick={closePendingPopup}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            {/* APPROVE */}
+            {pendingPopup.type === "approve" && (
+              <div className="pending-popup-body">
+                <h4 className="popup-confirm-heading">Are you sure you want to approve?</h4>
+                <p className="popup-confirm-msg">
+                  This path will become <strong>live and visible</strong> to users.
+                </p>
+
+                <div className="popup-confirm-actions">
+                  <button className="pp-btn pp-btn--green" onClick={handleApproveConfirm}>
+                    Yes, Approve
+                  </button>
+                  <button className="pp-btn pp-btn--ghost" onClick={closePendingPopup}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* REQUEST CHANGES */}
+            {pendingPopup.type === "request" && (
+              <div className="pending-popup-body">
+                <p className="pp-section-label">Flag issues for partner</p>
+                <div className="popup-checklist">
+                  {REJECT_ISSUES.map((issue, idx) => (
+                    <label key={idx} className={`popup-check-item ${rejectChecklist.includes(issue) ? "checked" : ""}`}>
+                      <input type="checkbox" checked={rejectChecklist.includes(issue)} onChange={() => toggleRejectCheck(issue)} />
+                      {issue}
+                    </label>
+                  ))}
+                </div>
+                <p className="pp-section-label" style={{ marginTop: "16px" }}>
+                  Note to partner <span style={{ color: "#ef4444" }}>*</span>
+                </p>
+                <textarea
+                  className={`popup-note-area ${rejectNoteError ? "error" : ""}`}
+                  placeholder="Explain what the partner needs to fix before resubmitting..."
+                  value={rejectNote}
+                  onChange={ev => { setRejectNote(ev.target.value); setRejectNoteError(false); }}
+                />
+                {rejectNoteError && <p className="popup-note-error">Note is required before sending.</p>}
+                <div className="popup-footer">
+                  <button className="pp-btn pp-btn--ghost" onClick={closePendingPopup}>Cancel</button>
+                  <button className="pp-btn pp-btn--amber" onClick={handleRequestChanges}>
+                    {actionLoading ? "Sending..." : "Send Change Request →"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* REJECT */}
+            {pendingPopup.type === "reject" && (
+              <div className="pending-popup-body">
+                <div className="popup-confirm-icon popup-confirm-icon--red">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                </div>
+                <h4 className="popup-confirm-heading">Are you sure you want to reject?</h4>
+                <p className="pp-section-label" style={{ marginTop: "4px" }}>Select rejection reasons</p>
+                <div className="popup-checklist">
+                  {REJECT_ISSUES.map(issue => (
+                    <label key={issue} className={`popup-check-item ${rejectChecklist.includes(issue) ? "checked" : ""}`}>
+                      <input type="checkbox" checked={rejectChecklist.includes(issue)} onChange={() => toggleRejectCheck(issue)} />
+                      {issue}
+                    </label>
+                  ))}
+                </div>
+                <p className="pp-section-label" style={{ marginTop: "16px" }}>
+                  Rejection note <span style={{ color: "#ef4444" }}>*</span> (mandatory)
+                </p>
+                <textarea
+                  className={`popup-note-area ${rejectNoteError ? "error" : ""}`}
+                  placeholder="Explain why this path is being rejected..."
+                  value={rejectNote}
+                  onChange={ev => { setRejectNote(ev.target.value); setRejectNoteError(false); }}
+                />
+                {rejectNoteError && <p className="popup-note-error">Note is required before rejecting.</p>}
+                <div className="popup-footer">
+                  <button className="pp-btn pp-btn--ghost" onClick={closePendingPopup}>Cancel</button>
+                  <button className="pp-btn pp-btn--red" onClick={handleFinalReject}>
+                    {actionLoading ? "Rejecting..." : "Confirm Reject"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+{pendingPopup.type === "compare" && (
+  <div className="pending-popup-body">
+    <p className="pp-section-label" style={{ marginBottom: "14px" }}>
+      Change Request History
+    </p>
+
+    {changeRequestsLoading[pendingPopup?.pathId] ? (
+      <div style={{ padding: "20px", textAlign: "center", color: "#94a3b8", fontSize: "0.82rem" }}>
+        Loading...
+      </div>
+    ) : (pathChangeRequests[pendingPopup?.pathId] || []).length === 0 ? (
+      <div style={{
+        padding: "32px 20px", textAlign: "center",
+        color: "#94a3b8", fontSize: "0.82rem",
+        background: "#f8fafc", borderRadius: "12px",
+        border: "2px dashed #e2e8f0"
+      }}>
+        No change requests sent yet.
+      </div>
+    ) : (
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        {(pathChangeRequests[pendingPopup?.pathId] || []).map((cr, idx) => (
+          <div key={idx} style={{
+            display: "flex", flexDirection: "column",
+            alignItems: "flex-start",  // admin messages on left
+            gap: "4px"
+          }}>
+            {/* Admin avatar + label */}
+            <div style={{
+              display: "flex", alignItems: "center", gap: "6px",
+              marginBottom: "2px"
+            }}>
+              <div style={{
+                width: "24px", height: "24px", borderRadius: "50%",
+                background: "#6366f1", color: "#fff",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "0.65rem", fontWeight: 700, flexShrink: 0
+              }}>A</div>
+              <span style={{ fontSize: "0.7rem", color: "#94a3b8", fontWeight: 600 }}>
+                Admin · {new Date(cr.sentAt).toLocaleString("en-IN", {
+                  day: "2-digit", month: "short", year: "numeric",
+                  hour: "2-digit", minute: "2-digit"
+                })}
+              </span>
+              <span style={{
+                fontSize: "0.62rem", fontWeight: 700, padding: "1px 7px",
+                borderRadius: "50px",
+                background: cr.status === "addressed" ? "#d1fae5" : "#fef3c7",
+                color: cr.status === "addressed" ? "#065f46" : "#92400e"
+              }}>
+                {cr.status === "addressed" ? "✓ Addressed" : "Pending"}
+              </span>
+            </div>
+
+            {/* Message bubble */}
+            <div style={{
+              maxWidth: "85%",
+              background: "#eef2ff",
+              border: "1px solid #c7d2fe",
+              borderRadius: "4px 14px 14px 14px",
+              padding: "10px 14px",
+            }}>
+              {/* Issues tags */}
+              {cr.issues?.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", marginBottom: "8px" }}>
+                  {cr.issues.map((issue, i) => (
+                    <span key={i} style={{
+                      fontSize: "0.68rem", fontWeight: 600,
+                      padding: "2px 8px", borderRadius: "50px",
+                      background: "#e0e7ff", color: "#4338ca"
+                    }}>
+                      {issue}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {/* Admin note */}
+              <p style={{
+                fontSize: "0.81rem", color: "#1e293b",
+                margin: 0, lineHeight: 1.5
+              }}>
+                {cr.adminNote}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+
+    <div className="popup-footer">
+      <button className="pp-btn pp-btn--ghost" onClick={closePendingPopup}>Close</button>
+    </div>
+  </div>
+)}
+          </div>
+        </>
+      )}
       {/* ══════════════════════════════════════════════════════════
           STEP ACTION POPUP
       ══════════════════════════════════════════════════════════ */}
