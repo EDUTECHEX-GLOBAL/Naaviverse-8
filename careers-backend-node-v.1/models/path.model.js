@@ -85,7 +85,7 @@ feature_coordinates: {
   default: 'draft'
 },
 
-
+review_notes: { type: String, default: '' },
 // ── Change requests from admin ────────────────────────────────
 changeRequests: [
   {
@@ -97,7 +97,16 @@ changeRequests: [
       type: String,
       enum: ["pending", "addressed"],
       default: "pending"
-    }
+    },
+    replies: [
+      {
+        from: { type: String, enum: ["partner", "admin"], required: true },
+        message: { type: String, required: true },
+        sentAt: { type: Date, default: Date.now },
+        partnerEmail: { type: String },
+        adminEmail: { type: String },
+      }
+    ]
   }
 ],
 
