@@ -8,9 +8,6 @@ const SubscriptionSchema = new mongoose.Schema(
     productId:   { type: String, required: true },
     productName: { type: String, required: true },
 
-    // ── NEW: tracks which view tier this subscription unlocks ──────────────
-    // "micro" → unlocks Micro View only
-    // "nano"  → unlocks Micro + Nano View (full access)
     tier: {
       type: String,
       enum: ["micro", "nano"],
@@ -30,7 +27,20 @@ const SubscriptionSchema = new mongoose.Schema(
     },
 
     startDate: { type: Date, default: Date.now },
-    endDate:   { type: Date }, // null for lifetime
+    endDate:   { type: Date },
+
+    // ── NEW: credit-based per-step unlocks ────────────────────────────────
+    // Stored directly here — no new collection needed.
+    // Each entry = one permanently unlocked layer for one step.
+    // e.g. [{ step_id: "abc", layer: "micro", credits_spent: 2, unlocked_at: Date }]
+    unlockedSteps: [
+      {
+        step_id:       { type: String, required: true },
+        layer:         { type: String, enum: ["micro", "nano"], required: true },
+        credits_spent: { type: Number, required: true },
+        unlocked_at:   { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import "./currentstep.scss";
 import { useCoinContextData } from "../../context/CoinContext";
 import { useStore } from "../../components/store/store.ts";
@@ -11,6 +11,8 @@ import { useNavigate } from "react-router-dom";
 import logo from "../../static/images/logo.svg";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
+const LAYER_COST = { micro: 2, nano: 4 };
 
 /* ─────────────────────────────────────────
    SKELETON PRIMITIVES
@@ -62,35 +64,102 @@ const SkeletonPageHead = () => (
 );
 
 /* ─────────────────────────────────────────
-   LOCK OVERLAY
+   CREDIT UNLOCK OVERLAY
+   Replaces the old LockOverlay for Micro/Nano
 ───────────────────────────────────────── */
 
-const LockOverlay = ({ type, onSeePlans }) => (
-  <div className={`lock-overlay lock-overlay--${type}`}>
-    <div className="lock-overlay__inner">
-      <div className="lock-icon-wrap">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-          <rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor" opacity="0.15" />
-          <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.8" />
-          <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          <circle cx="12" cy="16" r="1.5" fill="currentColor" />
-        </svg>
+const CreditUnlockOverlay = ({
+  type,           // "micro" | "nano"
+  balance,        // current wallet balance
+  unlocking,      // bool — API in flight
+  onUnlock,       // () => void — trigger unlock
+  onSeePlans,     // () => void — fallback to subscription
+}) => {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const cost = LAYER_COST[type];
+  const canAfford = balance >= cost;
+
+  return (
+    <div className={`lock-overlay lock-overlay--${type}`}>
+      <div className="lock-overlay__inner">
+        {/* Lock icon */}
+        <div className="lock-icon-wrap">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor" opacity="0.15" />
+            <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.8" />
+            <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            <circle cx="12" cy="16" r="1.5" fill="currentColor" />
+          </svg>
+        </div>
+
+        {/* Description */}
+        <p className="lock-overlay__text">
+          {type === "nano"
+            ? "Unlock 1-on-1 expert sessions & premium mentorship"
+            : "Unlock full structured guidance & assessment tools"}
+        </p>
+
+        {/* ── Credit unlock section ── */}
+        {!showConfirm ? (
+          <div className="cuo-actions">
+            {canAfford ? (
+              <button
+                className="cuo-btn cuo-btn--credits"
+                onClick={() => setShowConfirm(true)}
+                disabled={unlocking}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" />
+                </svg>
+                Use {cost} Credits
+              </button>
+            ) : (
+              <div className="cuo-low">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fca5a5" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                Need {cost} credits · you have {balance}
+              </div>
+            )}
+            <button className="lock-overlay__btn" onClick={onSeePlans}>
+              See Plans →
+            </button>
+          </div>
+        ) : (
+          /* ── Confirm step ── */
+          <div className="cuo-confirm">
+            <p className="cuo-confirm-text">
+              Spend <strong>{cost} credits</strong> to permanently unlock?
+              <br />
+              <span className="cuo-confirm-balance">Balance after: {balance - cost} credits</span>
+            </p>
+            <div className="cuo-confirm-btns">
+              <button
+                className="cuo-btn cuo-btn--confirm"
+                onClick={() => { onUnlock(); setShowConfirm(false); }}
+                disabled={unlocking}
+              >
+                {unlocking ? "Unlocking…" : "Yes, Unlock"}
+              </button>
+              <button
+                className="cuo-btn cuo-btn--cancel"
+                onClick={() => setShowConfirm(false)}
+                disabled={unlocking}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-      <p className="lock-overlay__text">
-        {type === "nano"
-          ? "Unlock 1-on-1 expert sessions & premium mentorship"
-          : "Unlock full structured guidance & assessment tools with a Naavi plan"}
-      </p>
-      <button className="lock-overlay__btn" onClick={onSeePlans}>
-        See Plans →
-      </button>
     </div>
-  </div>
-);
+  );
+};
 
 /* ─────────────────────────────────────────
    NANO UPSELL BANNER
-   Shown above the cards when user has micro tier only
 ───────────────────────────────────────── */
 
 const NanoUpsellBanner = ({ onUpgrade }) => (
@@ -112,7 +181,6 @@ const NanoUpsellBanner = ({ onUpgrade }) => (
 
 /* ─────────────────────────────────────────
    SUBSCRIPTION GATE
-   upgradeMode=true → shows only Nano plans
 ───────────────────────────────────────── */
 
 const SubscriptionGate = ({ onBack, onSubscribe, subscribing, upgradeMode = false }) => {
@@ -121,36 +189,22 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, upgradeMode = fals
 
   const microPlans = [
     {
-      billing: "monthly",
-      price: "₹499",
-      period: "/ month",
-      save: null,
+      billing: "monthly", price: "₹499", period: "/ month", save: null,
       feats: ["Full Macro View access", "Micro View per step", "Structured assessments", "Progress tracking", "Cancel anytime"],
     },
     {
-      billing: "annual",
-      price: "₹349",
-      period: "/ month",
-      save: "Billed ₹4,188/year — Save 30%",
-      tag: "Best Value",
+      billing: "annual", price: "₹349", period: "/ month", save: "Billed ₹4,188/year — Save 30%", tag: "Best Value",
       feats: ["Everything in Monthly", "Locked-in pricing", "Priority support"],
     },
   ];
 
   const nanoPlans = [
     {
-      billing: "monthly",
-      price: "₹999",
-      period: "/ month",
-      save: null,
+      billing: "monthly", price: "₹999", period: "/ month", save: null,
       feats: ["Everything in Micro", "Nano View per step", "1-on-1 expert mentor sessions", "Complete Marketplace", "Cancel anytime"],
     },
     {
-      billing: "annual",
-      price: "₹699",
-      period: "/ month",
-      save: "Billed ₹8,388/year — Save 30%",
-      tag: "Most Popular",
+      billing: "annual", price: "₹699", period: "/ month", save: "Billed ₹8,388/year — Save 30%", tag: "Most Popular",
       feats: ["Everything in Monthly Nano", "Priority mentor matching", "Exclusive institution access", "Dedicated success manager", "Locked-in pricing"],
     },
   ];
@@ -160,11 +214,9 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, upgradeMode = fals
   return (
     <div className="sub-gate">
       <div className="sub-gate__inner">
-
         <button className="sub-gate__back" onClick={onBack} disabled={subscribing}>
           ← Back to Current Step
         </button>
-
         <div className="sub-gate__badge">
           {upgradeMode ? "⬆ Upgrade to Nano" : "🔓 Unlock Full Access"}
         </div>
@@ -174,10 +226,8 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, upgradeMode = fals
         <p className="sub-gate__desc">
           {upgradeMode
             ? "Unlock 1-on-1 expert sessions, priority mentor matching, and the full Nano experience."
-            : "Get complete access to Micro & Nano views, structured assessments, expert mentorship, and the full marketplace — all tailored to your journey."}
+            : "Get complete access to Micro & Nano views, structured assessments, expert mentorship, and the full marketplace."}
         </p>
-
-        {/* Tier toggle — hidden in upgrade mode */}
         {!upgradeMode && (
           <div className="sub-tier-toggle">
             <button
@@ -196,8 +246,6 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, upgradeMode = fals
             </button>
           </div>
         )}
-
-        {/* Plan cards */}
         <div className="sub-plans">
           {activePlans.map((plan) => {
             const isSelected = selectedBilling === plan.billing;
@@ -207,22 +255,12 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, upgradeMode = fals
                 className={`sub-plan ${isSelected ? "sub-plan--selected" : ""} ${selectedTier === "nano" ? "sub-plan--nano" : ""}`}
                 onClick={() => setSelectedBilling(plan.billing)}
               >
-                {plan.tag && (
-                  <div className="sub-plan__tag">
-                    {plan.billing === "annual" ? "⭐ " : ""}{plan.tag}
-                  </div>
-                )}
-                <div className="sub-plan__name">
-                  {plan.billing === "monthly" ? "Monthly" : "Annual"}
-                </div>
+                {plan.tag && <div className="sub-plan__tag">{plan.billing === "annual" ? "⭐ " : ""}{plan.tag}</div>}
+                <div className="sub-plan__name">{plan.billing === "monthly" ? "Monthly" : "Annual"}</div>
                 <div className={`sub-plan__price ${selectedTier === "nano" ? "sub-plan__price--nano" : ""}`}>
                   {plan.price} <span>{plan.period}</span>
                 </div>
-                {plan.save && (
-                  <div className={`sub-plan__save ${selectedTier === "nano" ? "sub-plan__save--nano" : ""}`}>
-                    {plan.save}
-                  </div>
-                )}
+                {plan.save && <div className={`sub-plan__save ${selectedTier === "nano" ? "sub-plan__save--nano" : ""}`}>{plan.save}</div>}
                 <ul className="sub-plan__feats">
                   {plan.feats.map((f) => <li key={f}>{f}</li>)}
                 </ul>
@@ -230,7 +268,6 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, upgradeMode = fals
             );
           })}
         </div>
-
         <button
           className={`sub-gate__cta ${selectedTier === "nano" ? "sub-gate__cta--nano" : ""}`}
           onClick={() => onSubscribe({ tier: selectedTier, billing: selectedBilling })}
@@ -239,19 +276,14 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, upgradeMode = fals
         >
           {subscribing ? "Activating..." : `Activate ${selectedTier === "nano" ? "Nano" : "Micro"} Plan →`}
         </button>
-
         {!upgradeMode && selectedTier === "micro" && (
           <p className="sub-gate__nano-hint">
             Need mentor sessions too?{" "}
-            <button
-              className="sub-gate__nano-hint-link"
-              onClick={() => { setSelectedTier("nano"); setSelectedBilling("annual"); }}
-            >
+            <button className="sub-gate__nano-hint-link" onClick={() => { setSelectedTier("nano"); setSelectedBilling("annual"); }}>
               See Nano plans →
             </button>
           </p>
         )}
-
       </div>
     </div>
   );
@@ -273,49 +305,18 @@ const SubscriptionSuccess = ({ plan, tier, onStartLearning }) => {
           </svg>
         </div>
         <div className="sub-success__badge">🎉 Payment Successful</div>
-        <h2 className="sub-success__title">
-          {isNano ? "Welcome to Naavi Nano!" : "Welcome to Naavi Micro!"}
-        </h2>
+        <h2 className="sub-success__title">{isNano ? "Welcome to Naavi Nano!" : "Welcome to Naavi Micro!"}</h2>
         <p className="sub-success__desc">
           {isNano
-            ? <span>You now have full access to <strong>Micro View</strong> and <strong>Nano View</strong> — including structured guidance, assessments, and 1-on-1 expert sessions.</span>
-            : <span>You now have full access to <strong>Micro View</strong> — structured guidance and assessments for every step of your journey.</span>}
+            ? <span>You now have full access to <strong>Micro View</strong> and <strong>Nano View</strong>.</span>
+            : <span>You now have full access to <strong>Micro View</strong>.</span>}
         </p>
         <div className="sub-success__plan-pill">
           {isNano
             ? (plan === "annual" ? "⭐ Nano Annual — ₹699/month" : "Nano Monthly — ₹999/month")
             : (plan === "annual" ? "⭐ Micro Annual — ₹349/month" : "Micro Monthly — ₹499/month")}
         </div>
-        <div className="sub-success__unlocks">
-          <div className="sub-success__unlock-item">
-            <span className="sul-icon">✓</span>
-            <span>Full Micro View — structured step guidance</span>
-          </div>
-          {isNano ? (
-            <>
-              <div className="sub-success__unlock-item">
-                <span className="sul-icon">✓</span>
-                <span>Nano View — 1-on-1 expert sessions</span>
-              </div>
-              <div className="sub-success__unlock-item">
-                <span className="sul-icon">✓</span>
-                <span>Priority mentor matching</span>
-              </div>
-              <div className="sub-success__unlock-item">
-                <span className="sul-icon">✓</span>
-                <span>Complete Marketplace access</span>
-              </div>
-            </>
-          ) : (
-            <div className="sub-success__unlock-item sub-success__unlock-item--upsell">
-              <span className="sul-icon" style={{ color: "#d97706" }}>★</span>
-              <span><strong>Want mentor sessions?</strong> Upgrade to Nano anytime from the step view.</span>
-            </div>
-          )}
-        </div>
-        <button className="sub-success__cta" onClick={onStartLearning}>
-          Start Learning →
-        </button>
+        <button className="sub-success__cta" onClick={onStartLearning}>Start Learning →</button>
       </div>
     </div>
   );
@@ -331,49 +332,49 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     catch { return null; }
   })();
 
-  useEffect(() => {
-    const rawUser = localStorage.getItem("user");
-    if (rawUser) console.log("AUTH CHECK:", JSON.parse(rawUser));
-  }, []);
-
-  const navigate = useNavigate();
-
+  const navigate  = useNavigate();
   const userEmail = userDetails?.user?.email || userDetails?.email || "guest";
-  const SUB_KEY = `naavi_subscribed_${userEmail}`;
-  const SUB_TIER_KEY = `naavi_sub_tier_${userEmail}`;  // ← NEW
 
-  const PRODUCT_ID = "naavi-platform";
+  const SUB_KEY      = `naavi_subscribed_${userEmail}`;
+  const SUB_TIER_KEY = `naavi_sub_tier_${userEmail}`;
+  const PRODUCT_ID   = "naavi-platform";
   const PRODUCT_NAME = "Naavi Platform";
 
   // ── Subscription state ─────────────────────────────────────────────────
-  const [subscribed, setSubscribed] = useState(() => localStorage.getItem(SUB_KEY) === "true");
-  const [subTier, setSubTier] = useState(() => localStorage.getItem(SUB_TIER_KEY) || null);
-  const [showSubGate, setShowSubGate] = useState(false);
-  const [upgradeMode, setUpgradeMode] = useState(false);  // ← NEW
-  const [subscribing, setSubscribing] = useState(false);
-  const [subError, setSubError] = useState("");
+  const [subscribed,    setSubscribed]    = useState(() => localStorage.getItem(SUB_KEY) === "true");
+  const [subTier,       setSubTier]       = useState(() => localStorage.getItem(SUB_TIER_KEY) || null);
+  const [showSubGate,   setShowSubGate]   = useState(false);
+  const [upgradeMode,   setUpgradeMode]   = useState(false);
+  const [subscribing,   setSubscribing]   = useState(false);
+  const [subError,      setSubError]      = useState("");
+  const [showSuccess,   setShowSuccess]   = useState(false);
+  const [subscribedPlan, setSubscribedPlan] = useState("");
+  const [subscribedTier, setSubscribedTier] = useState("");
 
-  // ── View states ─────────────────────────────────────────────────────────
+  // ── NEW: Credit unlock state ───────────────────────────────────────────
+  const [walletBalance,   setWalletBalance]   = useState(0);
+  const [creditUnlocked,  setCreditUnlocked]  = useState({ micro: false, nano: false });
+  const [unlocking,       setUnlocking]       = useState({ micro: false, nano: false });
+  // Toast-style success message after credit unlock
+  const [unlockToast,     setUnlockToast]     = useState(""); // "micro" | "nano" | ""
+
+  // ── View states ────────────────────────────────────────────────────────
   const [macroView, setMacroView] = useState(null);
   const [microView, setMicroView] = useState(null);
-  const [nanoView, setNanoView] = useState(null);
+  const [nanoView,  setNanoView]  = useState(null);
 
-  // ── Loading flags ───────────────────────────────────────────────────────
-  const [stepLoading, setStepLoading] = useState(true);
+  // ── Loading flags ──────────────────────────────────────────────────────
+  const [stepLoading,  setStepLoading]  = useState(true);
   const [viewsLoading, setViewsLoading] = useState(true);
 
-  const [microServices, setMicroServices] = useState([]);
-  const [servicesLoading, setServicesLoading] = useState(false);
-  const [selectedService, setSelectedService] = useState(null);
-  const [showCheckout, setShowCheckout] = useState(false);
-  const [showNanoModal, setShowNanoModal] = useState(false);
+  const [microServices,     setMicroServices]     = useState([]);
+  const [servicesLoading,   setServicesLoading]   = useState(false);
+  const [selectedService,   setSelectedService]   = useState(null);
+  const [showCheckout,      setShowCheckout]      = useState(false);
+  const [showNanoModal,     setShowNanoModal]      = useState(false);
   const [selectedNanoService, setSelectedNanoService] = useState(null);
-  const [showNanoCheckout, setShowNanoCheckout] = useState(false);
-
-  const [totalStepsCount, setTotalStepsCount] = useState(null);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [subscribedPlan, setSubscribedPlan] = useState("");
-  const [subscribedTier, setSubscribedTier] = useState("");  // ← NEW
+  const [showNanoCheckout,  setShowNanoCheckout]  = useState(false);
+  const [totalStepsCount,   setTotalStepsCount]   = useState(null);
 
   const {
     currentStepData, setCurrentStepData,
@@ -389,21 +390,17 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     index, setIndex,
   } = useStore();
 
-  const [showNewDiv, setShowNewDiv] = useState(null);
-  const [position1, setPosition1] = useState();
-  const [position2, setPosition2] = useState();
-  const [position3, setPosition3] = useState();
+  const [showNewDiv,         setShowNewDiv]         = useState(null);
   const [currentStepPageData, setCurrentStepPageData] = useState(null);
-  const [popup, setPopup] = useState(false);
-  const [popupContent, setPopupContent] = useState("default");
-  const [popupDetails, setPopupDetails] = useState("");
+  const [popup,              setPopup]              = useState(false);
+  const [popupContent,       setPopupContent]       = useState("default");
+  const [popupDetails,       setPopupDetails]       = useState("");
   const [currentStepPagePathId, setCurrentStepPagePathId] = useState("");
-  const [selectedCard, setSelectedCard] = useState(0);
-  const [cards, setCards] = useState(productDataArray);
-  const [centerIndex, setCenterIndex] = useState(0);
-  const [acceptOffer, setAcceptOffer] = useState(false);
-  const [userData, setUserData] = useState([]);
-  const [stepView, setStepView] = useState(null);
+  const [selectedCard,       setSelectedCard]       = useState(0);
+  const [cards,              setCards]              = useState(productDataArray);
+  const [centerIndex,        setCenterIndex]        = useState(0);
+  const [acceptOffer,        setAcceptOffer]        = useState(false);
+  const [userData,           setUserData]           = useState([]);
 
   const getMicroText = (mv) => {
     if (!mv) return null;
@@ -411,13 +408,17 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     return joined || null;
   };
 
-  // Derived: hasMicro = any paid tier, hasNano = nano tier specifically
-  const hasMicro = subscribed && (subTier === "micro" || subTier === "nano");
-  const hasNano = subscribed && subTier === "nano";
+  // ── Derived: subscription-based access ────────────────────────────────
+  const hasMicroSub = subscribed && (subTier === "micro" || subTier === "nano");
+  const hasNanoSub  = subscribed && subTier === "nano";
 
-  /* ── Verify subscription + tier from DB on mount ─────────────────────── */
+  // ── NEW: Combined access (subscription OR credit unlock) ───────────────
+  const hasMicro = hasMicroSub || creditUnlocked.micro;
+  const hasNano  = hasNanoSub  || creditUnlocked.nano;
+
+  /* ── Verify subscription from DB ──────────────────────────────────────── */
   useEffect(() => {
-    const verifySubscription = async () => {
+    const verify = async () => {
       if (!userEmail || userEmail === "guest") return;
       try {
         const res = await axios.get(
@@ -429,97 +430,95 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         localStorage.setItem(SUB_TIER_KEY, tier || "");
         setSubscribed(isSubscribed);
         setSubTier(isSubscribed ? tier : null);
-      } catch (err) {
-        console.error("❌ Could not verify subscription from DB:", err);
-        const cachedSub = localStorage.getItem(SUB_KEY) === "true";
+      } catch {
+        const cachedSub  = localStorage.getItem(SUB_KEY) === "true";
         const cachedTier = localStorage.getItem(SUB_TIER_KEY) || null;
         setSubscribed(cachedSub);
         setSubTier(cachedSub ? cachedTier : null);
       }
     };
-    verifySubscription();
+    verify();
   }, [userEmail]);
 
-  /* ── Subscription handlers ───────────────────────────────────────────── */
-  const handleSeePlans = () => {
-    setSubError("");
-    setUpgradeMode(false);
-    setShowSubGate(true);
-  };
+  /* ── NEW: Fetch wallet balance + credit unlocks for current step ───────── */
+  useEffect(() => {
+    const stepId = localStorage.getItem("selectedStepId");
+    if (!userEmail || userEmail === "guest" || !stepId) return;
 
-  const handleUpgradeToNano = () => {
-    setSubError("");
-    setUpgradeMode(true);
-    setShowSubGate(true);
-  };
+    // Fetch balance and unlock status in parallel
+    Promise.all([
+      axios.get(`${BASE_URL}/api/wallet/balance`, { params: { email: userEmail } }),
+      axios.get(`${BASE_URL}/api/subscriptions/step-unlock/check`, { params: { email: userEmail, step_id: stepId } }),
+    ])
+      .then(([balRes, unlockRes]) => {
+        if (balRes.data?.status)    setWalletBalance(balRes.data.balance);
+        if (unlockRes.data?.status) setCreditUnlocked(unlockRes.data.unlocked);
+      })
+      .catch(() => {});
+  }, [userEmail, currentStepPageData?._id]);
+
+  /* ── NEW: handleCreditUnlock — deducts credits + saves unlock permanently */
+  const handleCreditUnlock = useCallback(async (layer) => {
+    const stepId = localStorage.getItem("selectedStepId");
+    if (!stepId || !userEmail || userEmail === "guest") return;
+    if (unlocking[layer]) return;
+
+    setUnlocking((prev) => ({ ...prev, [layer]: true }));
+    try {
+      const { data } = await axios.post(`${BASE_URL}/api/subscriptions/step-unlock/unlock`, {
+        email:   userEmail,
+        step_id: stepId,
+        layer,
+      });
+      if (data?.status) {
+        // Update unlocked state + new balance immediately
+        setCreditUnlocked((prev) => ({ ...prev, [layer]: true }));
+        setWalletBalance(data.remainingBalance);
+        // Show brief success toast
+        setUnlockToast(layer);
+        setTimeout(() => setUnlockToast(""), 3000);
+      }
+    } catch (err) {
+      console.error("❌ Credit unlock failed:", err);
+    } finally {
+      setUnlocking((prev) => ({ ...prev, [layer]: false }));
+    }
+  }, [userEmail, unlocking]);
+
+  /* ── Subscription handlers ─────────────────────────────────────────────── */
+  const handleSeePlans = () => { setSubError(""); setUpgradeMode(false); setShowSubGate(true); };
+  const handleUpgradeToNano = () => { setSubError(""); setUpgradeMode(true); setShowSubGate(true); };
 
   const handleSubscribe = async ({ tier, billing }) => {
-    console.log("🔍 userDetails:", userDetails);  // ← add this
-    console.log("🔍 profileId resolved:", userDetails?.id || userDetails?.user?.id);
-    if (!userEmail || userEmail === "guest") {
-      setSubError("Please log in to subscribe.");
-      return;
-    }
-    setSubscribing(true);
-    setSubError("");
+    if (!userEmail || userEmail === "guest") { setSubError("Please log in to subscribe."); return; }
+    setSubscribing(true); setSubError("");
     try {
       const res = await axios.post(`${BASE_URL}/api/subscriptions/create`, {
         userEmail,
-        profileId: userDetails?.id || userDetails?.user?.id || null,
-        productId: PRODUCT_ID,
-        productName: PRODUCT_NAME,
+        profileId:     userDetails?.id || userDetails?.user?.id || null,
+        productId:     PRODUCT_ID,
+        productName:   PRODUCT_NAME,
         billingMethod: billing,
         tier,
       });
-
       if (res.data?.success) {
         const newTier = res.data?.subscription?.tier || tier;
         localStorage.setItem(SUB_KEY, "true");
         localStorage.setItem(SUB_TIER_KEY, newTier);
-        setSubscribed(true);
-        setSubTier(newTier);
-        setShowSubGate(false);
-        setUpgradeMode(false);
-        setSubscribedPlan(billing);
-        setSubscribedTier(newTier);
+        setSubscribed(true); setSubTier(newTier);
+        setShowSubGate(false); setUpgradeMode(false);
+        setSubscribedPlan(billing); setSubscribedTier(newTier);
         setShowSuccess(true);
       } else {
-        setSubError(res.data?.message || "Subscription could not be activated. Please try again.");
+        setSubError(res.data?.message || "Subscription could not be activated.");
       }
-    } catch (err) {
-      console.error("❌ handleSubscribe error:", err);
-      setSubError("Something went wrong. Please try again.");
-    } finally {
-      setSubscribing(false);
-    }
+    } catch { setSubError("Something went wrong. Please try again."); }
+    finally { setSubscribing(false); }
   };
 
-  const handleBackFromGate = () => {
-    setShowSubGate(false);
-    setUpgradeMode(false);
-    setSubError("");
-  };
+  const handleBackFromGate = () => { setShowSubGate(false); setUpgradeMode(false); setSubError(""); };
 
-  /* ── Error boundary ──────────────────────────────────────────────────── */
-  useEffect(() => {
-    const handleUnhandledError = (error) => console.error("Unhandled error:", error);
-    window.addEventListener("error", handleUnhandledError);
-    window.addEventListener("unhandledrejection", handleUnhandledError);
-    return () => {
-      window.removeEventListener("error", handleUnhandledError);
-      window.removeEventListener("unhandledrejection", handleUnhandledError);
-    };
-  }, []);
-
-  /* ── User data fetch ─────────────────────────────────────────────────── */
-  useEffect(() => {
-    if (!userDetails) return;
-    const email = userDetails?.user?.email || userDetails?.email;
-    if (!email) return;
-    axios.get(`${BASE_URL}/api/users/get/${email}`).catch((err) => console.error(err));
-  }, []);
-
-  /* ── Fetch step data ─────────────────────────────────────────────────── */
+  /* ── Step data fetch ───────────────────────────────────────────────────── */
   useEffect(() => {
     const stepId = localStorage.getItem("selectedStepId");
     const pathId = selectedPathId || localStorage.getItem("selectedPathId");
@@ -538,7 +537,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
       .finally(() => setStepLoading(false));
   }, [selectedPathId]);
 
-  /* ── Fetch AI step views ─────────────────────────────────────────────── */
+  /* ── Fetch AI step views ───────────────────────────────────────────────── */
   useEffect(() => {
     const loadStepViews = async () => {
       const stepId = localStorage.getItem("selectedStepId");
@@ -550,34 +549,36 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         const data = res?.data?.data || {};
         setMacroView(data.macroView || null);
         setMicroView(data.microView || null);
-        setNanoView(data.nanoView || null);
-      } catch (err) {
-        console.error("❌ Error fetching AI step views:", err);
+        setNanoView(data.nanoView  || null);
+      } catch {
         setMacroView(null); setMicroView(null); setNanoView(null);
       } finally { setViewsLoading(false); }
     };
     loadStepViews();
   }, [selectedPathId]);
 
-  /* ── Reload services ─────────────────────────────────────────────────── */
+  /* ── User data ─────────────────────────────────────────────────────────── */
+  useEffect(() => {
+    if (!userDetails) return;
+    const email = userDetails?.user?.email || userDetails?.email;
+    if (!email) return;
+    axios.get(`${BASE_URL}/api/users/get/${email}`).catch(() => {});
+  }, []);
+
   const reloadServices = async () => {
     const stepId = localStorage.getItem("selectedStepId");
     if (!stepId) return;
     try {
       const res = await axios.get(`${BASE_URL}/api/services/by-step?step_id=${stepId}`);
       setStepServices(Array.isArray(res?.data?.data) ? res.data.data : []);
-    } catch (err) {
-      console.error("❌ Service reload failed:", err.message);
-      setStepServices([]);
-    }
+    } catch { setStepServices([]); }
   };
 
   useEffect(() => {
     if (!acceptOffer || !stepServices || stepServices.length === 0) return;
     const svc = pickServiceForDrawer();
     if (!svc) { alert("No services available for this step."); return; }
-    setIndex(svc);
-    setBuy("step1");
+    setIndex(svc); setBuy("step1");
   }, [stepServices]);
 
   const pickServiceForDrawer = () => {
@@ -590,10 +591,9 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     } catch { return null; }
   };
 
-  /* ── Complete / fail step ─────────────────────────────────────────────── */
   const completeStep = async (stepid) => {
     const pathId = selectedPathId || localStorage.getItem("selectedPathId");
-    const email = userDetails?.email || userDetails?.user?.email;
+    const email  = userDetails?.email || userDetails?.user?.email;
     try {
       await axios.put(`${BASE_URL}/api/userpaths/completeStep`, { email, pathId, step_id: stepid });
     } catch { }
@@ -602,7 +602,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
   const failStep = async (stepid) => {
     const pathId = selectedPathId || localStorage.getItem("selectedPathId");
-    const email = userDetails?.email || userDetails?.user?.email;
+    const email  = userDetails?.email || userDetails?.user?.email;
     try {
       await axios.put(`${BASE_URL}/api/userpaths/failedStep`, { email, pathId, step_id: stepid });
     } catch { }
@@ -622,16 +622,16 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     navigate("/dashboard/users/my-journey");
   };
 
-  /* ── Derived values ──────────────────────────────────────────────────── */
-  const stepName = currentStepData?.name || currentStepPageData?.name || null;
-  const stepDesc = currentStepPageData?.macro_description || currentStepPageData?.description || null;
-  const macroDesc = currentStepPageData?.macro_description || macroView?.description || macroView || null;
-  const microDesc = currentStepPageData?.micro_description || getMicroText(microView) || null;
-  const nanoDesc = nanoView?.description || null;
+  /* ── Derived values ────────────────────────────────────────────────────── */
+  const stepName   = currentStepData?.name || currentStepPageData?.name || null;
+  const stepDesc   = currentStepPageData?.macro_description || currentStepPageData?.description || null;
+  const macroDesc  = currentStepPageData?.macro_description || macroView?.description || macroView || null;
+  const microDesc  = currentStepPageData?.micro_description || getMicroText(microView) || null;
+  const nanoDesc   = nanoView?.description || null;
   const isPageLoading = stepLoading;
-  const isViewsLoad = viewsLoading;
-  const stepNumber = currentStepPageData?.step_order || localStorage.getItem("selectedStepNumber") || null;
-  const totalSteps = currentStepDataLength || totalStepsCount || null;
+  const isViewsLoad   = viewsLoading;
+  const stepNumber    = currentStepPageData?.step_order || localStorage.getItem("selectedStepNumber") || null;
+  const totalSteps    = currentStepDataLength || totalStepsCount || null;
 
   /* ═══════════════════════════════════════════════════════
      RENDER
@@ -702,6 +702,23 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
       <div className="cs-page-content">
 
+        {/* NEW: Unlock success toast */}
+        {unlockToast && (
+          <div className="unlock-toast">
+            ✅ {unlockToast === "micro" ? "Micro" : "Nano"} View unlocked! {walletBalance} credits remaining.
+          </div>
+        )}
+
+        {/* NEW: Wallet balance chip — always visible so user knows their balance */}
+        {!isPageLoading && userEmail !== "guest" && (
+          <div className="wallet-chip">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" />
+            </svg>
+            {walletBalance} credits
+          </div>
+        )}
+
         {/* PAGE HEAD */}
         {isPageLoading ? <SkeletonPageHead /> : (
           <div className="page-head">
@@ -719,15 +736,15 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
           </div>
         )}
 
-        {/* ── NANO UPSELL BANNER — only for micro-only subscribers ── */}
-        {hasMicro && !hasNano && !isViewsLoad && (
+        {/* Nano upsell banner — only for micro-only subscribers (not credit unlocks) */}
+        {hasMicroSub && !hasNanoSub && !isViewsLoad && (
           <NanoUpsellBanner onUpgrade={handleUpgradeToNano} />
         )}
 
         {/* VIEW CARDS */}
         <div className="views-grid">
 
-          {/* MACRO */}
+          {/* MACRO — always free */}
           {isViewsLoad ? <SkeletonViewCard accent="macro" /> : (
             <div className="view-card vMacro">
               <div className="vc-head hMacro">
@@ -752,14 +769,26 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
             </div>
           )}
 
-          {/* MICRO — locked if no subscription */}
+          {/* MICRO — locked overlay now includes credit unlock option */}
           {isViewsLoad ? <SkeletonViewCard accent="micro" /> : (
             <div className={`view-card vMicro ${!hasMicro ? "view-card--locked" : ""}`}>
-              {!hasMicro && <LockOverlay type="micro" onSeePlans={handleSeePlans} />}
+              {/* NEW: CreditUnlockOverlay instead of plain LockOverlay */}
+              {!hasMicro && (
+                <CreditUnlockOverlay
+                  type="micro"
+                  balance={walletBalance}
+                  unlocking={unlocking.micro}
+                  onUnlock={() => handleCreditUnlock("micro")}
+                  onSeePlans={handleSeePlans}
+                />
+              )}
               <div className="vc-head hMicro">
                 <span className="vc-lbl lMicro">Micro View</span>
                 <span className={`vc-access-badge ${hasMicro ? "badge-sub" : "badge-locked"}`}>
-                  {hasMicro ? "Micro Plan" : "🔒 Locked"}
+                  {/* NEW: show credit badge if credit-unlocked (not subscription) */}
+                  {hasMicro
+                    ? (hasMicroSub ? "Micro Plan" : "2 Credits ✓")
+                    : "🔒 Locked"}
                 </span>
               </div>
               <div className="vc-body">
@@ -767,33 +796,43 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                 <div className="vc-title">How It's Done</div>
                 {microDesc
                   ? <div className="vc-desc">{microDesc}</div>
-                  : <div className="vc-desc vc-empty">{hasMicro ? "No micro view available yet." : "Subscribe to unlock structured guidance & assessment tools."}</div>}
+                  : <div className="vc-desc vc-empty">
+                    {hasMicro ? "No micro view available yet." : "Unlock with 2 credits or subscribe to access structured guidance."}
+                  </div>}
               </div>
               <div className="vc-foot">
                 {hasMicro ? (
-                  <button className="vc-btn bMicro" onClick={() => { setsideNav("Market Place"); navigate("/dashboard/users/Marketplace", { state: { view: "micro", subscribed, defaultTab: "micro" } }); }}>
+                  <button className="vc-btn bMicro"
+                    onClick={() => { setsideNav("Market Place"); navigate("/dashboard/users/Marketplace", { state: { view: "micro", subscribed, defaultTab: "micro" } }); }}>
                     Browse Resources →
                   </button>
                 ) : (
-                  <button className="vc-btn bLocked" onClick={handleSeePlans}>🔒 Subscription Required</button>
+                  <button className="vc-btn bLocked" onClick={handleSeePlans}>🔒 Unlock Required</button>
                 )}
               </div>
             </div>
           )}
 
-          {/* NANO — locked if no nano tier */}
+          {/* NANO — locked overlay now includes credit unlock option */}
           {isViewsLoad ? <SkeletonViewCard accent="nano" /> : (
             <div className={`view-card vNano ${!hasNano ? "view-card--locked" : ""}`}>
+              {/* NEW: CreditUnlockOverlay instead of plain LockOverlay */}
               {!hasNano && (
-                <LockOverlay
+                <CreditUnlockOverlay
                   type="nano"
+                  balance={walletBalance}
+                  unlocking={unlocking.nano}
+                  onUnlock={() => handleCreditUnlock("nano")}
                   onSeePlans={hasMicro ? handleUpgradeToNano : handleSeePlans}
                 />
               )}
               <div className="vc-head hNano">
                 <span className="vc-lbl lNano">Nano View</span>
                 <span className={`vc-access-badge ${hasNano ? "badge-paid" : "badge-locked"}`}>
-                  {hasNano ? "Nano Plan" : "🔒 Locked"}
+                  {/* NEW: show credit badge if credit-unlocked */}
+                  {hasNano
+                    ? (hasNanoSub ? "Nano Plan" : "4 Credits ✓")
+                    : "🔒 Locked"}
                 </span>
               </div>
               <div className="vc-body">
@@ -802,12 +841,17 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                 {nanoDesc
                   ? <div className="vc-desc">{nanoDesc}</div>
                   : <div className="vc-desc vc-empty">
-                    {hasNano ? "No nano view available yet." : hasMicro ? "Upgrade to Nano to unlock 1-on-1 expert sessions." : "Subscribe to unlock 1-on-1 expert sessions & premium mentorship."}
+                    {hasNano
+                      ? "No nano view available yet."
+                      : hasMicro
+                        ? "Unlock with 4 credits or upgrade to Nano plan."
+                        : "Unlock with 4 credits or subscribe to access expert sessions."}
                   </div>}
               </div>
               <div className="vc-foot">
                 {hasNano ? (
-                  <button className="vc-btn bNano" onClick={() => { setsideNav("Market Place"); navigate("/dashboard/users/Marketplace", { state: { view: "nano", subscribed, defaultTab: "nano" } }); }}>
+                  <button className="vc-btn bNano"
+                    onClick={() => { setsideNav("Market Place"); navigate("/dashboard/users/Marketplace", { state: { view: "nano", subscribed, defaultTab: "nano" } }); }}>
                     Book a Session →
                   </button>
                 ) : hasMicro ? (
@@ -815,7 +859,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                     ⬆ Upgrade to Nano
                   </button>
                 ) : (
-                  <button className="vc-btn bLocked" onClick={handleSeePlans}>🔒 Subscription Required</button>
+                  <button className="vc-btn bLocked" onClick={handleSeePlans}>🔒 Unlock Required</button>
                 )}
               </div>
             </div>
@@ -840,14 +884,14 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
             <div className="cb-left"><span className="cb-q">Did You Complete This Step?</span></div>
             <div className="cb-btns">
               <button className="btn-fail" onClick={() => { setPopup(true); setPopupDetails("no"); }}>✕ Failed</button>
-              <button className="btn-yes" onClick={() => { setPopup(true); setPopupDetails("yes"); }}>✓ Yes, Completed</button>
+              <button className="btn-yes"  onClick={() => { setPopup(true); setPopupDetails("yes"); }}>✓ Yes, Completed</button>
             </div>
           </div>
         )}
 
       </div>
 
-      {/* BUY DRAWER */}
+      {/* BUY DRAWER — unchanged */}
       {acceptOffer && (
         <div className="accept-offer-overlay" onClick={() => { setAcceptOffer(false); setBuy("step1"); setIndex([]); }}>
           <div style={{ right: acceptOffer ? "0" : "-100%" }} className="right-divv-cs" onClick={(e) => e.stopPropagation()}>
@@ -898,12 +942,11 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         </div>
       )}
 
-      {/* POPUP */}
+      {/* POPUP — unchanged */}
       {popup && (
         <div className="popup-overlay" onClick={() => { setPopup(false); setPopupContent("default"); setPopupDetails(""); }}>
           <div className="modal-container" onClick={(e) => e.stopPropagation()}>
             <div><img src={logo} alt="" /></div>
-
             {popupContent === "default" && popupDetails === "yes" && (
               <>
                 <div className="popup-text">Are you sure you have completed this step?</div>
@@ -917,7 +960,6 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                 </div>
               </>
             )}
-
             {popupContent === "default" && popupDetails === "no" && (
               <>
                 <div className="popup-text">Are you sure you have failed this step?</div>
@@ -930,7 +972,6 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                 </div>
               </>
             )}
-
             {popupContent === "success" && (
               <>
                 <div className="popup-text">{popupDetails === "yes" ? "Completed Step Updated!" : "Failed Step Updated!"}</div>
@@ -952,18 +993,29 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                           setCurrentStepPageData(nextStep); setCurrentStepPagePathId(pathId);
                           setCurrentStepData(nextStep); setCurrentStepDataLength(allSteps.length); setCurrentStepDataPathId(pathId);
                           setMacroView(null); setMicroView(null); setNanoView(null);
+                          // NEW: Reset credit unlock state for the new step
+                          setCreditUnlocked({ micro: false, nano: false });
                           setViewsLoading(true); setStepLoading(false);
                           try {
                             const viewRes = await axios.get(`${BASE_URL}/api/stepviews?pathId=${pathId}&stepId=${nextId}`);
                             const viewData = viewRes?.data?.data || {};
                             setMacroView(viewData.macroView || null);
                             setMicroView(viewData.microView || null);
-                            setNanoView(viewData.nanoView || null);
-                          } catch { setMacroView(null); setMicroView(null); setNanoView(null); }
-                          finally { setViewsLoading(false); }
+                            setNanoView(viewData.nanoView  || null);
+                            // NEW: Also fetch unlock status for new step
+                          const unlockRes = await axios.get(`${BASE_URL}/api/subscriptions/step-unlock/check`, {
+                              params: { email: userEmail, step_id: nextId }
+                            });
+                            if (unlockRes.data?.status) setCreditUnlocked(unlockRes.data.unlocked);
+                          } catch {
+                            setMacroView(null); setMicroView(null); setNanoView(null);
+                          } finally { setViewsLoading(false); }
                           setsideNav("Current Step");
-                        } else { setsideNav("My Journey"); navigate("/dashboard/users/my-journey"); }
-                      } catch (err) { console.error("❌ Failed to load next step:", err); setsideNav("My Journey"); navigate("/dashboard/users/my-journey"); }
+                        } else {
+                          setsideNav("My Journey");
+                          navigate("/dashboard/users/my-journey");
+                        }
+                      } catch { setsideNav("My Journey"); navigate("/dashboard/users/my-journey"); }
                     } else {
                       setPopup(false); setPopupContent("default"); setPopupDetails("");
                       setsideNav("My Journey"); navigate("/dashboard/users/my-journey");

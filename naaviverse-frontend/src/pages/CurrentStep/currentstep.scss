@@ -1579,3 +1579,154 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   border: 1px solid #fde68a;
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+//  CREDIT UNLOCK OVERLAY  — append to bottom of currentstep.scss
+//  These are the only new styles needed. Everything else reuses existing classes.
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Wallet balance chip (top-right of page) ───────────────────────────────────
+.wallet-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  color: #0369a1;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  float: right;
+  margin-bottom: 4px;
+
+  svg { flex-shrink: 0; }
+}
+
+// ── Unlock success toast ──────────────────────────────────────────────────────
+.unlock-toast {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  animation: toastIn 0.25s ease both;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Credit unlock overlay actions ─────────────────────────────────────────────
+// The overlay itself reuses .lock-overlay and .lock-overlay__inner from above
+// We only need the new interactive elements inside it.
+
+.cuo-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+}
+
+// Credit & confirm buttons
+.cuo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 18px;
+  border-radius: 30px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  white-space: nowrap;
+
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  // "Use X Credits" — primary purple button
+  &.cuo-btn--credits {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(99, 102, 241, 0.35);
+    width: 100%;
+    max-width: 180px;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 14px rgba(99, 102, 241, 0.45);
+    }
+  }
+
+  // "Yes, Unlock" — green confirm
+  &.cuo-btn--confirm {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+
+    &:hover:not(:disabled) { transform: translateY(-1px); }
+  }
+
+  // "Cancel" — ghost
+  &.cuo-btn--cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+    }
+  }
+}
+
+// Insufficient credits warning
+.cuo-low {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 30px;
+}
+
+// Confirm sub-panel
+.cuo-confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.cuo-confirm-text {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.88);
+  text-align: center;
+  line-height: 1.5;
+  margin: 0;
+
+  strong { color: #fff; }
+}
+
+.cuo-confirm-balance {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.cuo-confirm-btns {
+  display: flex;
+  gap: 7px;
+}
