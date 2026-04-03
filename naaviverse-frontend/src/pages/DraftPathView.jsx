@@ -8,6 +8,7 @@ import EditPathForm from "./MyPaths/paths";
 // ─── Constants ────────────────────────────────────────────────────────────────
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const LAYERS = ["macro", "micro", "nano"];
+
 const EMPTY_LAYER = {
   name: "",
   desc: "",
@@ -21,7 +22,7 @@ const EMPTY_LAYER = {
 const EMPTY_STEP = {
   macro: { ...EMPTY_LAYER, duration: { years: "", months: "", days: "" }, marketplace: [] },
   micro: { ...EMPTY_LAYER, duration: { years: "", months: "", days: "" }, marketplace: [] },
-  nano:  { ...EMPTY_LAYER, duration: { years: "", months: "", days: "" }, marketplace: [] },
+  nano: { ...EMPTY_LAYER, duration: { years: "", months: "", days: "" }, marketplace: [] },
 };
 
 const EMPTY_MARKET_FORM = {
@@ -60,7 +61,7 @@ const normalizeStep = (raw) => {
       ...raw,
       macro: { ...EMPTY_LAYER, ...raw.macro, marketplace: normalizeMarketplace(raw.macro.marketplace) },
       micro: { ...EMPTY_LAYER, ...raw.micro, marketplace: normalizeMarketplace(raw.micro?.marketplace) },
-      nano:  { ...EMPTY_LAYER, ...raw.nano,  marketplace: normalizeMarketplace(raw.nano?.marketplace) },
+      nano: { ...EMPTY_LAYER, ...raw.nano, marketplace: normalizeMarketplace(raw.nano?.marketplace) },
     };
   }
 
@@ -101,7 +102,6 @@ const normalizeStep = (raw) => {
 
 // ─── Small reusable components ────────────────────────────────────────────────
 
-// ✅ Guard — skip rendering if item has no name
 const MarketplaceItemCard = ({ item, compact = false }) => {
   if (!item?.name) return null;
   return (
@@ -118,12 +118,12 @@ const MarketplaceItemCard = ({ item, compact = false }) => {
         <span>{item.cost}</span>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.3rem", color: "#2c3e50" }}>
-        {item.goal       && <span><strong>Goal:</strong>       {item.goal}</span>}
-        {item.outcomes   && <span><strong>Outcomes:</strong>   {item.outcomes}</span>}
-        {item.access     && <span><strong>Access:</strong>     {item.access}</span>}
+        {item.goal && <span><strong>Goal:</strong>       {item.goal}</span>}
+        {item.outcomes && <span><strong>Outcomes:</strong>   {item.outcomes}</span>}
+        {item.access && <span><strong>Access:</strong>     {item.access}</span>}
         {item.iterations && <span><strong>Iterations:</strong> {item.iterations}</span>}
-        {item.duration   && <span><strong>Duration:</strong>   {item.duration}</span>}
-        {item.discount   && <span><strong>Discount:</strong>   {item.discount}</span>}
+        {item.duration && <span><strong>Duration:</strong>   {item.duration}</span>}
+        {item.discount && <span><strong>Discount:</strong>   {item.discount}</span>}
       </div>
       {item.features && (
         <div style={{ marginTop: "0.4rem" }}><strong>Features:</strong> {item.features}</div>
@@ -134,9 +134,9 @@ const MarketplaceItemCard = ({ item, compact = false }) => {
 
 const DurationSelect = ({ value, onChange, type }) => {
   const configs = {
-    years:  { label: "Years",  count: 11 },
+    years: { label: "Years", count: 11 },
     months: { label: "Months", count: 12 },
-    days:   { label: "Days",   count: 31 },
+    days: { label: "Days", count: 31 },
   };
   const { label, count } = configs[type];
   return (
@@ -190,9 +190,9 @@ const LayerBuilder = ({ layer, layerKey, data, onChange, onAddMarketplace }) => 
       <div className="form-group">
         <label>Duration</label>
         <div className="duration-select-group">
-          <DurationSelect type="years"  value={safeData.duration?.years}  onChange={(v) => updateDuration("years", v)} />
+          <DurationSelect type="years" value={safeData.duration?.years} onChange={(v) => updateDuration("years", v)} />
           <DurationSelect type="months" value={safeData.duration?.months} onChange={(v) => updateDuration("months", v)} />
-          <DurationSelect type="days"   value={safeData.duration?.days}   onChange={(v) => updateDuration("days", v)} />
+          <DurationSelect type="days" value={safeData.duration?.days} onChange={(v) => updateDuration("days", v)} />
         </div>
         <div className="checkbox-group">
           <label className="checkbox-label">
@@ -244,10 +244,10 @@ const LayerDetail = ({ layerKey, data }) => {
 
   const durationText = data.duration
     ? [
-        data.duration.years  ? `${data.duration.years} years`   : "",
-        data.duration.months ? `${data.duration.months} months` : "",
-        data.duration.days   ? `${data.duration.days} days`     : "",
-      ].filter(Boolean).join(" ") || "Not set"
+      data.duration.years ? `${data.duration.years} years` : "",
+      data.duration.months ? `${data.duration.months} months` : "",
+      data.duration.days ? `${data.duration.days} days` : "",
+    ].filter(Boolean).join(" ") || "Not set"
     : "Not set";
 
   return (
@@ -259,9 +259,9 @@ const LayerDetail = ({ layerKey, data }) => {
         {layerKey.toUpperCase()}
       </h3>
       {[
-        { label: "NAME",         value: data.name },
-        { label: "DESCRIPTION",  value: data.desc },
-        { label: "DURATION",     value: durationText },
+        { label: "NAME", value: data.name },
+        { label: "DESCRIPTION", value: data.desc },
+        { label: "DURATION", value: durationText },
         { label: "INSTRUCTIONS", value: data.instructions },
       ].map(({ label, value }) => (
         <div className="detail-row" key={label}>
@@ -291,25 +291,30 @@ const DraftPathView = () => {
     return () => el.removeEventListener("click", stopClick, true);
   }, []);
 
-  const [pathData, setPathData]                 = useState(null);
-  const [steps, setSteps]                       = useState([]);
-  const [totalSteps, setTotalSteps]             = useState(5);
-  const [loading, setLoading]                   = useState(false);
-  const [saving, setSaving]                     = useState(false);
-  const [error, setError]                       = useState(null);
-  const [view, setView]                         = useState("draft");
-  const [viewAllOpen, setViewAllOpen]           = useState(false);
-  const [marketplaceOpen, setMarketplaceOpen]   = useState(false);
-  const [editPathOpen, setEditPathOpen]         = useState(false);
-  const [reviewPanelOpen, setReviewPanelOpen]   = useState(false);
+  const [pathData, setPathData] = useState(null);
+  const [steps, setSteps] = useState([]);
+  const [totalSteps, setTotalSteps] = useState(5);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [view, setView] = useState("draft");
+  const [viewAllOpen, setViewAllOpen] = useState(false);
+  const [marketplaceOpen, setMarketplaceOpen] = useState(false);
+  const [editPathOpen, setEditPathOpen] = useState(false);
+  const [reviewPanelOpen, setReviewPanelOpen] = useState(false);
 
-  const [currentStep, setCurrentStep]           = useState(null);
+  const [currentStep, setCurrentStep] = useState(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(null);
-  const [currentLayer, setCurrentLayer]         = useState("macro");
-  const [selectedRole, setSelectedRole]         = useState("");
-  const [marketForm, setMarketForm]             = useState(EMPTY_MARKET_FORM);
-const [replyTexts, setReplyTexts]             = useState({});   // ← ADD HERE
-const [replyLoading, setReplyLoading]         = useState({}); 
+  const [currentLayer, setCurrentLayer] = useState("macro");
+  const [selectedRole, setSelectedRole] = useState("");
+  const [marketForm, setMarketForm] = useState(EMPTY_MARKET_FORM);
+  const [replyTexts, setReplyTexts] = useState({});
+  const [replyLoading, setReplyLoading] = useState({});
+  const [reviewLoading, setReviewLoading] = useState(false);
+
+  // ── NEW: tracks which change request thread is expanded in the modal ──
+  const [expandedCR, setExpandedCR] = useState(null);
+
   // ─── Data fetching ────────────────────────────────────────────────────────
 
   const fetchSteps = useCallback(async (pathId) => {
@@ -453,7 +458,7 @@ const [replyLoading, setReplyLoading]         = useState({});
           ...(res.data.data || {}),
           macro_marketplace: res.data.data?.macro_marketplace ?? payload.macro_marketplace,
           micro_marketplace: res.data.data?.micro_marketplace ?? payload.micro_marketplace,
-          nano_marketplace:  res.data.data?.nano_marketplace  ?? payload.nano_marketplace,
+          nano_marketplace: res.data.data?.nano_marketplace ?? payload.nano_marketplace,
         };
         const saved = normalizeStep(merged);
         setSteps((prev) => [...prev, saved]);
@@ -467,7 +472,7 @@ const [replyLoading, setReplyLoading]         = useState({});
           ...(res.data.data || {}),
           macro_marketplace: res.data.data?.macro_marketplace ?? payload.macro_marketplace,
           micro_marketplace: res.data.data?.micro_marketplace ?? payload.micro_marketplace,
-          nano_marketplace:  res.data.data?.nano_marketplace  ?? payload.nano_marketplace,
+          nano_marketplace: res.data.data?.nano_marketplace ?? payload.nano_marketplace,
         };
         const saved = normalizeStep(merged);
         setSteps((prev) => {
@@ -563,10 +568,28 @@ const [replyLoading, setReplyLoading]         = useState({});
       setError("Failed to submit for approval.");
     }
   };
-const refreshPath = async () => {
-  const updated = await axios.get(`${BASE_URL}/api/paths/viewpath/${id}`);
-  setPathData(updated.data.data);
-};
+
+  const refreshPath = async () => {
+    const updated = await axios.get(`${BASE_URL}/api/paths/viewpath/${id}`);
+    setPathData(updated.data.data);
+  };
+
+  const openReviewPanel = async () => {
+    setReviewLoading(true);
+    try {
+      await refreshPath();
+    } finally {
+      setReviewLoading(false);
+      // ── Auto-expand the latest pending CR when opening ──
+      const pendingCRs = (pathData?.changeRequests || []).filter(cr => cr.status === "pending");
+      if (pendingCRs.length > 0) {
+        const latest = [...pendingCRs].sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt))[0];
+        setExpandedCR(latest._id);
+      }
+      setReviewPanelOpen(true);
+    }
+  };
+
   // ─── Render guards ────────────────────────────────────────────────────────
 
   if (loading) return (
@@ -589,7 +612,7 @@ const refreshPath = async () => {
   return (
     <div ref={containerRef} className="draft-path-container">
 
-      {/* Error Banner - No review panel inside */}
+      {/* Error Banner */}
       {error && (
         <div style={{
           background: "#fff5f5", border: "1px solid #fed7d7", color: "#c53030",
@@ -629,36 +652,79 @@ const refreshPath = async () => {
               <p className="path-description">{pathData.description}</p>
             )}
 
-            {/* Changes requested banner - Only ONE */}
-            {pathData?.review_notes && (
-              <div
-                onClick={() => setReviewPanelOpen(true)}
-                className="rv-inline-banner"
-              >
-                <div className="rv-inline-banner-left">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#be123c" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
-                    <line x1="12" y1="16" x2="12.01" y2="16"/>
-                  </svg>
-                  <div>
-                    <strong>Changes Requested</strong>
-                    <span>{pathData.review_notes}</span>
+            {/* ── CHANGES REQUESTED BANNER ── */}
+            {(pathData?.review_notes || pathData?.status === "changesrequested") && (() => {
+              const latestCR = (pathData?.changeRequests || [])
+                .filter(cr => cr.status === "pending")
+                .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt))[0];
+
+              const issues = latestCR?.issues?.filter(i => i && i.trim()) || [];
+              const adminNote = latestCR?.adminNote || "";
+
+              return (
+                <div
+                  onClick={openReviewPanel}
+                  style={{
+                    background: '#fff1f2',
+                    border: '1px solid #fecaca',
+                    borderRadius: '10px',
+                    padding: '12px 16px',
+                    marginBottom: '16px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {/* Line 1: dot + "Changes Requested:" + issue(s) */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                      <span style={{
+                        width: 7, height: 7, borderRadius: '50%',
+                        background: '#ef4444', display: 'inline-block', flexShrink: 0,
+                      }} />
+                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#be123c' }}>
+                        Changes Requested:
+                      </span>
+                      {issues.length > 0 ? (
+                        issues.map((issue, i) => (
+                          <span key={i} style={{ fontSize: '0.78rem', fontWeight: 600, color: '#be123c' }}>
+                            {issue}{i < issues.length - 1 ? ', ' : ''}
+                          </span>
+                        ))
+                      ) : (
+                        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#be123c' }}>
+                          {pathData.review_notes}
+                        </span>
+                      )}
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: '#be123c', fontWeight: 500, flexShrink: 0, marginLeft: 12 }}>
+                      View Feedback →
+                    </span>
                   </div>
+
+                  {/* Line 2: admin note */}
+                  {adminNote && (
+                    <div style={{
+                      marginTop: '6px',
+                      paddingLeft: '13px',
+                      fontSize: '0.73rem',
+                      color: '#9f1239',
+                    }}>
+                      {adminNote}
+                    </div>
+                  )}
                 </div>
-                <span className="rv-inline-banner-cta">View feedback →</span>
-              </div>
-            )}
+              );
+            })()}
 
             <div className="path-actions-row">
               <button className="btn-outline" onClick={() => setViewAllOpen(true)}>View All Steps</button>
-              
-              {/* Review Status button */}
+
               {pathData?.changeRequests?.length > 0 && (
-                <button className="btn-outline" onClick={() => setReviewPanelOpen(true)}>
-                  💬 View Admin Feedback ({pathData.changeRequests.length})
+                <button className="btn-outline" onClick={openReviewPanel}>
+                  💬 View Admin Feedback (
+                  {(pathData.changeRequests.filter(cr => cr.status === "pending")).length} pending
+                  )
                 </button>
               )}
-              
               <button className="btn-outline" onClick={() => setEditPathOpen(true)}>Edit Path</button>
               <button
                 className="btn-primary"
@@ -972,364 +1038,397 @@ const refreshPath = async () => {
         </div>
       )}
 
-{reviewPanelOpen && (
-  <>
-    <div
-      style={{
-        position: "fixed", inset: 0,
-        background: "rgba(0,0,0,0.45)",
-        zIndex: 1200,
-      }}
-      onClick={() => setReviewPanelOpen(false)}
-    />
-    <div
-      style={{
-        position: "fixed",
-        top: "50%", left: "50%",
-        transform: "translate(-50%, -50%)",
-        width: "min(560px, 95vw)",
-        maxHeight: "80vh",
-        background: "#fff",
-        zIndex: 1201,
-        display: "flex",
-        flexDirection: "column",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
-        borderRadius: 20,
-        overflow: "hidden",
-      }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Header */}
-      <div style={{
-        padding: "18px 20px 14px",
-        borderBottom: "1px solid #e2e8f0",
-        display: "flex",
-        alignItems: "flex-start",
-        justifyContent: "space-between",
-        gap: 12,
-        flexShrink: 0,
-      }}>
-        <div>
-          <p style={{ margin: 0, fontWeight: 600, fontSize: "0.95rem", color: "#0f172a" }}>
-            Admin Feedback
-          </p>
-          <p style={{ margin: "3px 0 0", fontSize: "0.76rem", color: "#94a3b8" }}>
-            {pathData?.nameOfPath}
-          </p>
-        </div>
-        <button
-          onClick={() => setReviewPanelOpen(false)}
-          style={{
-            background: "none", border: "none", cursor: "pointer",
-            color: "#94a3b8", padding: 4, borderRadius: 6,
-            display: "flex", alignItems: "center",
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2.5">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Body */}
-      <div style={{
-        flex: 1, overflowY: "auto",
-        padding: "16px 20px",
-        display: "flex", flexDirection: "column", gap: 24,
-      }}>
-        {(pathData?.changeRequests || []).length === 0 ? (
-          <div style={{
-            marginTop: 40, textAlign: "center", color: "#94a3b8",
-            fontSize: "0.83rem", background: "#f8fafc", borderRadius: 12,
-            border: "2px dashed #e2e8f0", padding: "36px 20px",
-          }}>
-            No change requests yet.
-          </div>
-        ) : (
-          (pathData?.changeRequests || []).map((cr, idx) => (
-            <div key={cr._id || idx} style={{
-              borderRadius: 14, border: "1px solid #e2e8f0", overflow: "hidden",
+      {/* ══ ADMIN FEEDBACK MODAL ════════════════════════════════════════════ */}
+      {reviewPanelOpen && (
+        <>
+          <div
+            style={{
+              position: "fixed", inset: 0,
+              background: "rgba(0,0,0,0.45)",
+              zIndex: 1200,
+            }}
+            onClick={() => setReviewPanelOpen(false)}
+          />
+          <div
+            style={{
+              position: "fixed",
+              top: "50%", left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "min(560px, 95vw)",
+              maxHeight: "80vh",
+              background: "#fff",
+              zIndex: 1201,
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
+              borderRadius: 20,
+              overflow: "hidden",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={{
+              padding: "18px 20px 14px",
+              borderBottom: "1px solid #e2e8f0",
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              gap: 12,
+              flexShrink: 0,
             }}>
-              {/* Thread header */}
-              <div style={{
-                padding: "10px 14px", background: "#f8fafc",
-                borderBottom: "1px solid #e2e8f0",
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-              }}>
-                <span style={{ fontSize: "0.72rem", color: "#94a3b8", fontWeight: 600 }}>
-                  Request {idx + 1} · {new Date(cr.sentAt).toLocaleString("en-IN", {
-                    day: "2-digit", month: "short", year: "numeric",
-                    hour: "2-digit", minute: "2-digit",
-                  })}
-                </span>
-                <span style={{
-                  fontSize: "0.62rem", fontWeight: 700, padding: "2px 8px",
-                  borderRadius: 50,
-                  background: cr.status === "addressed" ? "#d1fae5" : "#fef3c7",
-                  color: cr.status === "addressed" ? "#065f46" : "#92400e",
-                }}>
-                  {cr.status === "addressed" ? "✓ Addressed" : "Pending"}
-                </span>
-              </div>
-
-              {/* Messages */}
-              <div style={{
-                padding: "14px 14px 0",
-                display: "flex", flexDirection: "column", gap: 10,
-              }}>
-                {/* Admin original — RIGHT bubble (admin is on right for partner view) */}
-                <div style={{
-                  display: "flex", flexDirection: "column",
-                  alignItems: "flex-end", gap: 4,
-                }}>
-                  <div style={{
-                    display: "flex", alignItems: "center", gap: 6,
-                    flexDirection: "row-reverse",
-                  }}>
-                    <div style={{
-                      width: 22, height: 22, borderRadius: "50%",
-                      background: "#6366f1", color: "#fff",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: "0.6rem", fontWeight: 700, flexShrink: 0,
-                    }}>A</div>
-                    <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>
-                      Admin
-                    </span>
-                  </div>
-                  <div style={{
-                    maxWidth: "82%", marginRight: 28,
-                    background: "#eef2ff", border: "1px solid #c7d2fe",
-                    borderRadius: "14px 4px 14px 14px",
-                    padding: "10px 14px",
-                  }}>
-                    {cr.issues?.length > 0 && (
-                      <div style={{
-                        display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8,
-                      }}>
-                        {cr.issues.map((issue, i) => (
-                          <span key={i} style={{
-                            fontSize: "0.68rem", fontWeight: 600,
-                            padding: "2px 8px", borderRadius: 50,
-                            background: "#e0e7ff", color: "#4338ca",
-                          }}>{issue}</span>
-                        ))}
-                      </div>
-                    )}
-                    <p style={{
-                      margin: 0, fontSize: "0.81rem",
-                      color: "#1e293b", lineHeight: 1.5,
-                    }}>
-                      {cr.adminNote}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Threaded replies */}
-                {(cr.replies || []).map((reply, rIdx) => {
-                  const isPartner = reply.from === "partner";
-                  return (
-                    <div key={rIdx} style={{
-                      display: "flex", flexDirection: "column",
-                      // partner = left, admin = right (from partner's perspective)
-                      alignItems: isPartner ? "flex-start" : "flex-end",
-                      gap: 3,
-                    }}>
-                      <div style={{
-                        display: "flex", alignItems: "center", gap: 6,
-                        flexDirection: isPartner ? "row" : "row-reverse",
-                      }}>
-                        <div style={{
-                          width: 22, height: 22, borderRadius: "50%",
-                          background: isPartner ? "#0d9488" : "#6366f1",
-                          color: "#fff",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: "0.6rem", fontWeight: 700, flexShrink: 0,
-                        }}>
-                          {isPartner ? "P" : "A"}
-                        </div>
-                        <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>
-                          {isPartner ? "You" : "Admin"} · {new Date(reply.sentAt).toLocaleString("en-IN", {
-                            day: "2-digit", month: "short",
-                            hour: "2-digit", minute: "2-digit",
-                          })}
-                        </span>
-                      </div>
-                      <div style={{
-                        maxWidth: "80%",
-                        marginLeft: isPartner ? 28 : 0,
-                        marginRight: isPartner ? 0 : 28,
-                        background: isPartner ? "#f0fdf4" : "#eef2ff",
-                        border: `1px solid ${isPartner ? "#bbf7d0" : "#c7d2fe"}`,
-                        borderRadius: isPartner
-                          ? "4px 14px 14px 14px"
-                          : "14px 4px 14px 14px",
-                        padding: "9px 13px",
-                      }}>
-                        <p style={{
-                          margin: 0, fontSize: "0.81rem",
-                          color: isPartner ? "#065f46" : "#1e293b",
-                          lineHeight: 1.5,
-                        }}>
-                          {reply.message}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Partner reply input */}
-              <div style={{ padding: "12px 14px 14px" }}>
-                <div style={{
-                  display: "flex", gap: 8, alignItems: "flex-end",
-                  background: "#f8fafc", border: "1px solid #e2e8f0",
-                  borderRadius: 10, padding: "6px 8px 6px 12px",
-                }}>
-                  <textarea
-                    rows={1}
-                    placeholder="Reply to admin..."
-                    value={replyTexts[cr._id] || ""}
-                    onChange={(e) => {
-                      setReplyTexts(prev => ({ ...prev, [cr._id]: e.target.value }));
-                      e.target.style.height = "auto";
-                      e.target.style.height =
-                        Math.min(e.target.scrollHeight, 100) + "px";
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        (async () => {
-                          const msg = (replyTexts[cr._id] || "").trim();
-                          if (!msg) return;
-                          setReplyLoading(prev => ({ ...prev, [cr._id]: true }));
-                          try {
-                            const partnerDetails = JSON.parse(
-                              localStorage.getItem("partner") || "{}"
-                            );
-                            await axios.patch(
-                              `${BASE_URL}/api/paths/reply/${pathData._id}/${cr._id}`,
-                              {
-                                from: "partner",
-                                message: msg,
-                                partnerEmail:
-                                  partnerDetails?.email ||
-                                  partnerDetails?.user?.email || "",
-                              }
-                            );
-                            setReplyTexts(prev => ({ ...prev, [cr._id]: "" }));
-                            await refreshPath();
-                          } catch (err) {
-                            console.error("Reply error:", err);
-                          } finally {
-                            setReplyLoading(prev => ({ ...prev, [cr._id]: false }));
-                          }
-                        })();
-                      }
-                    }}
-                    style={{
-                      flex: 1, border: "none", background: "none",
-                      outline: "none", resize: "none",
-                      fontSize: "0.82rem", color: "#0f172a",
-                      lineHeight: 1.5, overflow: "hidden",
-                      fontFamily: "inherit", minHeight: 22,
-                    }}
-                  />
-                  <button
-                    disabled={
-                      !replyTexts[cr._id]?.trim() || replyLoading[cr._id]
-                    }
-                    onClick={async () => {
-                      const msg = (replyTexts[cr._id] || "").trim();
-                      if (!msg) return;
-                      setReplyLoading(prev => ({ ...prev, [cr._id]: true }));
-                      try {
-                        const partnerDetails = JSON.parse(
-                          localStorage.getItem("partner") || "{}"
-                        );
-                        await axios.patch(
-                          `${BASE_URL}/api/paths/reply/${pathData._id}/${cr._id}`,
-                          {
-                            from: "partner",
-                            message: msg,
-                            partnerEmail:
-                              partnerDetails?.email ||
-                              partnerDetails?.user?.email || "",
-                          }
-                        );
-                        setReplyTexts(prev => ({ ...prev, [cr._id]: "" }));
-                        await refreshPath();
-                      } catch (err) {
-                        console.error("Reply error:", err);
-                      } finally {
-                        setReplyLoading(prev => ({ ...prev, [cr._id]: false }));
-                      }
-                    }}
-                    style={{
-                      flexShrink: 0, width: 30, height: 30,
-                      borderRadius: "50%",
-                      background: replyTexts[cr._id]?.trim()
-                        ? "#0d9488" : "#e2e8f0",
-                      border: "none",
-                      cursor: replyTexts[cr._id]?.trim()
-                        ? "pointer" : "default",
-                      display: "flex", alignItems: "center",
-                      justifyContent: "center",
-                      transition: "background 0.15s",
-                    }}
-                  >
-                    {replyLoading[cr._id] ? (
-                      <span style={{
-                        width: 10, height: 10,
-                        border: "2px solid #fff",
-                        borderTopColor: "transparent",
-                        borderRadius: "50%",
-                        display: "inline-block",
-                        animation: "spin 0.7s linear infinite",
-                      }} />
-                    ) : (
-                      <svg width="14" height="14" viewBox="0 0 24 24"
-                        fill="none" stroke="#fff" strokeWidth="2.5">
-                        <line x1="22" y1="2" x2="11" y2="13" />
-                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-                <p style={{
-                  margin: "4px 0 0 4px",
-                  fontSize: "0.66rem", color: "#94a3b8",
-                }}>
-                  Enter to send · Shift+Enter for new line
+              <div>
+                <p style={{ margin: 0, fontWeight: 600, fontSize: "0.95rem", color: "#0f172a" }}>
+                  Admin Feedback
+                </p>
+                <p style={{ margin: "3px 0 0", fontSize: "0.76rem", color: "#94a3b8" }}>
+                  {pathData?.nameOfPath}
                 </p>
               </div>
+              <button
+                onClick={() => setReviewPanelOpen(false)}
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  color: "#94a3b8", padding: 4, borderRadius: 6,
+                  display: "flex", alignItems: "center",
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
             </div>
-          ))
-        )}
-      </div>
 
-      {/* Footer — close only, no Edit Path */}
-      <div style={{
-        padding: "14px 20px",
-        borderTop: "1px solid #e2e8f0",
-        display: "flex", gap: 10, flexShrink: 0,
-      }}>
-        <button
-          onClick={() => setReviewPanelOpen(false)}
-          style={{
-            flex: 1, padding: "9px 0", borderRadius: 50,
-            background: "none", color: "#94a3b8",
-            border: "1px solid #e2e8f0", cursor: "pointer",
-            fontSize: "0.82rem",
-          }}
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  </>
-)}
+            {/* Body */}
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+              overflowX: "hidden",
+              fontSize: "14px",
+              lineHeight: "1.5",
+              color: "#0f172a",
+            }}>
+              {reviewLoading ? (
+                <div style={{ marginTop: 40, textAlign: "center", color: "#94a3b8", fontSize: "0.83rem" }}>
+                  Loading feedback...
+                </div>
+              ) : (pathData?.changeRequests || []).length === 0 ? (
+                <div style={{
+                  marginTop: 40, textAlign: "center", color: "#94a3b8",
+                  fontSize: "0.83rem", background: "#f8fafc", borderRadius: 12,
+                  border: "2px dashed #e2e8f0", padding: "36px 20px",
+                }}>
+                  No change requests yet.
+                </div>
+              ) : (
+                (pathData?.changeRequests || []).map((cr, idx) => (
+                  <div key={cr._id || idx} style={{
+                    borderRadius: 14, border: "1px solid #e2e8f0", overflow: "visible",
+                  }}>
+
+                    {/* ── Thread header — click to expand/collapse ── */}
+                    <div
+                      onClick={() => setExpandedCR(prev => prev === cr._id ? null : cr._id)}
+                      style={{
+                        padding: "10px 14px",
+                        background: "#f8fafc",
+                        borderBottom: expandedCR === cr._id ? "1px solid #e2e8f0" : "none",
+                        display: "flex", alignItems: "center", justifyContent: "space-between",
+                        cursor: "pointer",
+                        userSelect: "none",
+                      }}
+                    >
+                      <span style={{ fontSize: "0.72rem", color: "#64748b", fontWeight: 600 }}>
+                        Request {idx + 1} · {new Date(cr.sentAt).toLocaleString("en-IN", {
+                          day: "2-digit", month: "short", year: "numeric",
+                          hour: "2-digit", minute: "2-digit",
+                        })}
+                      </span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{
+                          fontSize: "0.62rem", fontWeight: 700, padding: "2px 8px",
+                          borderRadius: 50,
+                          background: cr.status === "addressed" ? "#d1fae5" : "#fef3c7",
+                          color: cr.status === "addressed" ? "#065f46" : "#92400e",
+                        }}>
+                          {cr.status === "addressed" ? "✓ Addressed" : "Pending"}
+                        </span>
+                        {/* Chevron indicator */}
+                        <svg
+                          width="14" height="14" viewBox="0 0 24 24"
+                          fill="none" stroke="#94a3b8" strokeWidth="2"
+                          style={{
+                            transform: expandedCR === cr._id ? "rotate(90deg)" : "rotate(0deg)",
+                            transition: "transform 0.2s",
+                          }}
+                        >
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </div>
+                    </div>
+
+                    {/* ── Expanded content ── */}
+                    {expandedCR === cr._id && (
+                      <>
+                        {/* Messages */}
+                        <div style={{
+                          padding: "14px 14px 0",
+                          display: "flex", flexDirection: "column", gap: 10,
+                        }}>
+                          {/* Admin bubble — RIGHT */}
+                          <div style={{
+                            display: "flex", flexDirection: "column",
+                            alignItems: "flex-end", gap: 4,
+                          }}>
+                            <div style={{
+                              display: "flex", alignItems: "center", gap: 6,
+                              flexDirection: "row-reverse",
+                            }}>
+                              <div style={{
+                                width: 22, height: 22, borderRadius: "50%",
+                                background: "#6366f1", color: "#fff",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                fontSize: "0.6rem", fontWeight: 700, flexShrink: 0,
+                              }}>A</div>
+                              <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>
+                                Admin
+                              </span>
+                            </div>
+                            <div style={{
+                              maxWidth: "82%", marginRight: 28,
+                              background: "#eef2ff", border: "1px solid #c7d2fe",
+                              borderRadius: "14px 4px 14px 14px",
+                              padding: "10px 14px",
+                            }}>
+                              {cr.issues?.filter(i => i?.trim()).length > 0 && (
+                                <div style={{
+                                  display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8,
+                                }}>
+                                  {cr.issues.filter(i => i?.trim()).map((issue, i) => (
+                                    <span key={i} style={{
+                                      fontSize: "0.68rem", fontWeight: 600,
+                                      padding: "2px 8px", borderRadius: 50,
+                                      background: "#e0e7ff", color: "#4338ca",
+                                    }}>{issue}</span>
+                                  ))}
+                                </div>
+                              )}
+                              <p style={{
+                                margin: 0, fontSize: "0.81rem",
+                                color: "#1e293b", lineHeight: 1.5,
+                              }}>
+                                {cr.adminNote || "—"}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Threaded replies */}
+                          {(cr.replies || []).map((reply, rIdx) => {
+                            const isPartner = reply.from === "partner";
+                            return (
+                              <div key={rIdx} style={{
+                                display: "flex", flexDirection: "column",
+                                alignItems: isPartner ? "flex-start" : "flex-end",
+                                gap: 3,
+                              }}>
+                                <div style={{
+                                  display: "flex", alignItems: "center", gap: 6,
+                                  flexDirection: isPartner ? "row" : "row-reverse",
+                                }}>
+                                  <div style={{
+                                    width: 22, height: 22, borderRadius: "50%",
+                                    background: isPartner ? "#0d9488" : "#6366f1",
+                                    color: "#fff",
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                    fontSize: "0.6rem", fontWeight: 700, flexShrink: 0,
+                                  }}>
+                                    {isPartner ? "P" : "A"}
+                                  </div>
+                                  <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>
+                                    {isPartner ? "You" : "Admin"} · {new Date(reply.sentAt).toLocaleString("en-IN", {
+                                      day: "2-digit", month: "short",
+                                      hour: "2-digit", minute: "2-digit",
+                                    })}
+                                  </span>
+                                </div>
+                                <div style={{
+                                  maxWidth: "80%",
+                                  marginLeft: isPartner ? 28 : 0,
+                                  marginRight: isPartner ? 0 : 28,
+                                  background: isPartner ? "#f0fdf4" : "#eef2ff",
+                                  border: `1px solid ${isPartner ? "#bbf7d0" : "#c7d2fe"}`,
+                                  borderRadius: isPartner
+                                    ? "4px 14px 14px 14px"
+                                    : "14px 4px 14px 14px",
+                                  padding: "9px 13px",
+                                }}>
+                                  <p style={{
+                                    margin: 0, fontSize: "0.81rem",
+                                    color: isPartner ? "#065f46" : "#1e293b",
+                                    lineHeight: 1.5,
+                                  }}>
+                                    {reply.message}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Partner reply input */}
+                        <div style={{ padding: "12px 14px 14px" }}>
+                          <div style={{
+                            display: "flex", gap: 8, alignItems: "flex-end",
+                            background: "#f8fafc", border: "1px solid #e2e8f0",
+                            borderRadius: 10, padding: "6px 8px 6px 12px",
+                          }}>
+                            <textarea
+                              rows={1}
+                              placeholder="Reply to admin..."
+                              value={replyTexts[cr._id] || ""}
+                              onChange={(e) => {
+                                setReplyTexts(prev => ({ ...prev, [cr._id]: e.target.value }));
+                                e.target.style.height = "auto";
+                                e.target.style.height =
+                                  Math.min(e.target.scrollHeight, 100) + "px";
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                  e.preventDefault();
+                                  (async () => {
+                                    const msg = (replyTexts[cr._id] || "").trim();
+                                    if (!msg) return;
+                                    setReplyLoading(prev => ({ ...prev, [cr._id]: true }));
+                                    try {
+                                      const partnerDetails = JSON.parse(
+                                        localStorage.getItem("partner") || "{}"
+                                      );
+                                      await axios.patch(
+                                        `${BASE_URL}/api/paths/reply/${pathData._id}/${cr._id}`,
+                                        {
+                                          from: "partner",
+                                          message: msg,
+                                          partnerEmail:
+                                            partnerDetails?.email ||
+                                            partnerDetails?.user?.email || "",
+                                        }
+                                      );
+                                      setReplyTexts(prev => ({ ...prev, [cr._id]: "" }));
+                                      await refreshPath();
+                                    } catch (err) {
+                                      console.error("Reply error:", err);
+                                    } finally {
+                                      setReplyLoading(prev => ({ ...prev, [cr._id]: false }));
+                                    }
+                                  })();
+                                }
+                              }}
+                              style={{
+                                flex: 1, border: "none", background: "none",
+                                outline: "none", resize: "none",
+                                fontSize: "0.82rem", color: "#0f172a",
+                                lineHeight: 1.5, overflow: "hidden",
+                                fontFamily: "inherit", minHeight: 22,
+                              }}
+                            />
+                            <button
+                              disabled={
+                                !replyTexts[cr._id]?.trim() || replyLoading[cr._id]
+                              }
+                              onClick={async () => {
+                                const msg = (replyTexts[cr._id] || "").trim();
+                                if (!msg) return;
+                                setReplyLoading(prev => ({ ...prev, [cr._id]: true }));
+                                try {
+                                  const partnerDetails = JSON.parse(
+                                    localStorage.getItem("partner") || "{}"
+                                  );
+                                  await axios.patch(
+                                    `${BASE_URL}/api/paths/reply/${pathData._id}/${cr._id}`,
+                                    {
+                                      from: "partner",
+                                      message: msg,
+                                      partnerEmail:
+                                        partnerDetails?.email ||
+                                        partnerDetails?.user?.email || "",
+                                    }
+                                  );
+                                  setReplyTexts(prev => ({ ...prev, [cr._id]: "" }));
+                                  await refreshPath();
+                                } catch (err) {
+                                  console.error("Reply error:", err);
+                                } finally {
+                                  setReplyLoading(prev => ({ ...prev, [cr._id]: false }));
+                                }
+                              }}
+                              style={{
+                                flexShrink: 0, width: 30, height: 30,
+                                borderRadius: "50%",
+                                background: replyTexts[cr._id]?.trim()
+                                  ? "#0d9488" : "#e2e8f0",
+                                border: "none",
+                                cursor: replyTexts[cr._id]?.trim()
+                                  ? "pointer" : "default",
+                                display: "flex", alignItems: "center",
+                                justifyContent: "center",
+                                transition: "background 0.15s",
+                              }}
+                            >
+                              {replyLoading[cr._id] ? (
+                                <span style={{
+                                  width: 10, height: 10,
+                                  border: "2px solid #fff",
+                                  borderTopColor: "transparent",
+                                  borderRadius: "50%",
+                                  display: "inline-block",
+                                  animation: "spin 0.7s linear infinite",
+                                }} />
+                              ) : (
+                                <svg width="14" height="14" viewBox="0 0 24 24"
+                                  fill="none" stroke="#fff" strokeWidth="2.5">
+                                  <line x1="22" y1="2" x2="11" y2="13" />
+                                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                                </svg>
+                              )}
+                            </button>
+                          </div>
+                          <p style={{
+                            margin: "4px 0 0 4px",
+                            fontSize: "0.66rem", color: "#94a3b8",
+                          }}>
+                            Enter to send · Shift+Enter for new line
+                          </p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Footer */}
+            <div style={{
+              padding: "14px 20px",
+              borderTop: "1px solid #e2e8f0",
+              display: "flex", gap: 10, flexShrink: 0,
+            }}>
+              <button
+                onClick={() => setReviewPanelOpen(false)}
+                style={{
+                  flex: 1, padding: "9px 0", borderRadius: 50,
+                  background: "none", color: "#94a3b8",
+                  border: "1px solid #e2e8f0", cursor: "pointer",
+                  fontSize: "0.82rem",
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

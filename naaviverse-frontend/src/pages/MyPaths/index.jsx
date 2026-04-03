@@ -120,27 +120,27 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
     let endpoint = "";
 
     if (admin && (mypathsMenu === "Pending Approval" || mypathsMenu === "Pending Paths")) {
-  endpoint = `/api/paths/get?status=waitingforapproval`;
-} else if (!admin && mypathsMenu === "Draft") {
-  Promise.all([
-    axios.get(`${BASE_URL}/api/paths/get?email=${email}&status=draft`),
-    axios.get(`${BASE_URL}/api/paths/get?email=${email}&status=changesrequested`),
-  ]).then(([res1, res2]) => {
-    const combined = [
-      ...(res1.data?.data || []),
-      ...(res2.data?.data || []),
-    ].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-    setPartnerPathData(combined);
-    fetchStepCounts(combined);
-  }).catch(() => {}).finally(() => setLoading(false));
-  return;
-} else if (!admin && mypathsMenu === "Pending Approval") {
-  endpoint = `/api/paths/get?email=${email}&status=waitingforapproval`;
-} else if (mypathsMenu === "Inactive Paths") {
-  endpoint = `/api/paths/get?email=${email}&status=inactive`;
-} else {
-  endpoint = `/api/paths/get?email=${email}&status=active`;
-}
+      endpoint = `/api/paths/get?status=waitingforapproval`;
+    } else if (!admin && mypathsMenu === "Draft") {
+      Promise.all([
+        axios.get(`${BASE_URL}/api/paths/get?email=${email}&status=draft`),
+        axios.get(`${BASE_URL}/api/paths/get?email=${email}&status=changesrequested`),
+      ]).then(([res1, res2]) => {
+        const combined = [
+          ...(res1.data?.data || []),
+          ...(res2.data?.data || []),
+        ].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+        setPartnerPathData(combined);
+        fetchStepCounts(combined);
+      }).catch(() => { }).finally(() => setLoading(false));
+      return;
+    } else if (!admin && mypathsMenu === "Pending Approval") {
+      endpoint = `/api/paths/get?email=${email}&status=waitingforapproval`;
+    } else if (mypathsMenu === "Inactive Paths") {
+      endpoint = `/api/paths/get?email=${email}&status=inactive`;
+    } else {
+      endpoint = `/api/paths/get?email=${email}&status=active`;
+    }
 
     console.log("➡️ FINAL API CALL:", `${BASE_URL}${endpoint}`);
 
@@ -206,26 +206,26 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
 
     let endpoint = "";
 
-   if (status === "draft") {
-  Promise.all([
-    axios.get(`${BASE_URL}/api/paths/get?email=${email}&status=draft`),
-    axios.get(`${BASE_URL}/api/paths/get?email=${email}&status=changesrequested`),
-  ]).then(([res1, res2]) => {
-    const combined = [
-      ...(res1.data?.data || []),
-      ...(res2.data?.data || []),
-    ].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-    setPartnerPathData(combined);
-    fetchStepCounts(combined);
-  }).catch(() => {}).finally(() => setLoading(false));
-  return;
-} else if (status === "waitingforapproval") {
-  endpoint = `/api/paths/get?email=${email}&status=waitingforapproval`;
-} else if (status === "inactive") {
-  endpoint = `/api/paths/get?email=${email}&status=inactive`;
-} else {
-  endpoint = `/api/paths/get?email=${email}&status=active`;
-}
+    if (status === "draft") {
+      Promise.all([
+        axios.get(`${BASE_URL}/api/paths/get?email=${email}&status=draft`),
+        axios.get(`${BASE_URL}/api/paths/get?email=${email}&status=changesrequested`),
+      ]).then(([res1, res2]) => {
+        const combined = [
+          ...(res1.data?.data || []),
+          ...(res2.data?.data || []),
+        ].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+        setPartnerPathData(combined);
+        fetchStepCounts(combined);
+      }).catch(() => { }).finally(() => setLoading(false));
+      return;
+    } else if (status === "waitingforapproval") {
+      endpoint = `/api/paths/get?email=${email}&status=waitingforapproval`;
+    } else if (status === "inactive") {
+      endpoint = `/api/paths/get?email=${email}&status=inactive`;
+    } else {
+      endpoint = `/api/paths/get?email=${email}&status=active`;
+    }
 
     axios
       .get(`${BASE_URL}${endpoint}`)
@@ -613,22 +613,22 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                   Active Paths
                 </span>
                 <span
-  className={`filter-tab ${mypathsMenu === 'Draft' ? 'active' : ''}`}
-  onClick={() => {
-    setMypathsMenu('Draft');
-    navigate('/dashboard/accountants/paths?tab=draft');
-  }}
-  style={{ position: 'relative' }}
->
-  Draft
-  {/* Red dot if any draft paths have review_notes */}
-{partnerPathData.some(p => (p.status === 'draft' || p.status === 'changesrequested') && p.review_notes) && mypathsMenu !== 'Draft' && (    <span style={{
-      position: 'absolute', top: '-4px', right: '-4px',
-      width: '8px', height: '8px', borderRadius: '50%',
-      background: '#ef4444', border: '2px solid white'
-    }} />
-  )}
-</span>
+                  className={`filter-tab ${mypathsMenu === 'Draft' ? 'active' : ''}`}
+                  onClick={() => {
+                    setMypathsMenu('Draft');
+                    navigate('/dashboard/accountants/paths?tab=draft');
+                  }}
+                  style={{ position: 'relative' }}
+                >
+                  Draft
+                  {/* Red dot if any draft paths have review_notes */}
+                  {partnerPathData.some(p => (p.status === 'draft' || p.status === 'changesrequested') && p.review_notes) && mypathsMenu !== 'Draft' && (<span style={{
+                    position: 'absolute', top: '-4px', right: '-4px',
+                    width: '8px', height: '8px', borderRadius: '50%',
+                    background: '#ef4444', border: '2px solid white'
+                  }} />
+                  )}
+                </span>
                 <span
                   className={`filter-tab ${mypathsMenu === 'Pending Approval' ? 'active' : ''}`}
                   onClick={() => {
@@ -665,13 +665,13 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
               </div>
             </div>
 
-           {loading ? (
-  <div className="paths-grid">
-    {Array(3)
-      .fill("")
-      .map((_, i) => (
-        <div className="path-card" key={i}>
-          <div className="path-header">
+            {loading ? (
+              <div className="paths-grid">
+                {Array(3)
+                  .fill("")
+                  .map((_, i) => (
+                    <div className="path-card" key={i}>
+                      <div className="path-header">
                         <div className="path-title">
                           <Skeleton width={200} height={30} />
                         </div>
@@ -701,31 +701,81 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                       <div
                         className="path-card"
                         key={i}
-                     onClick={() => {
-  setSelectedPathId(e?._id);
-  setSelectedPath(e);
-  localStorage.setItem("selectedPathId", e?._id);
+                        onClick={() => {
+                          setSelectedPathId(e?._id);
+                          setSelectedPath(e);
+                          localStorage.setItem("selectedPathId", e?._id);
 
-  if (e?.status === "draft" || e?.status === "changesrequested") {
-    navigate(`/dashboard/accountants/path/${e._id}`);
-  } else {
-    setPathActionEnabled(true);
-  }
-}}
+                          if (e?.status === "draft" || e?.status === "changesrequested") {
+                            navigate(`/dashboard/accountants/path/${e._id}`);
+                          } else {
+                            setPathActionEnabled(true);
+                          }
+                        }}
                       >
+
                         {/* Changes requested banner on card */}
-                        {e?.review_notes && (
-                          <div style={{
-                            background: '#fff1f2', border: '1px solid #fecaca',
-                            borderRadius: '8px', padding: '6px 10px',
-                            marginBottom: '8px', fontSize: '0.75rem',
-                            color: '#be123c', fontWeight: 600,
-                            display: 'flex', alignItems: 'center', gap: '6px'
-                          }}>
-                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />
-                            Changes requested — {e.review_notes}
-                          </div>
-                        )}
+                        {(e?.review_notes || e?.status === "changesrequested") && (() => {
+                          const latestCR = (e?.changeRequests || [])
+                            .filter(cr => cr.status === "pending")
+                            .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt))[0];
+
+                          const issues = latestCR?.issues?.filter(i => i && i.trim()) || [];
+                          const adminNote = latestCR?.adminNote || "";
+
+                          return (
+                            <div
+                              style={{
+                                background: '#fff1f2',
+                                border: '1px solid #fecaca',
+                                borderRadius: '8px',
+                                padding: '10px 12px',
+                                marginBottom: '10px',
+                              }}
+                              onClick={(evt) => evt.stopPropagation()}
+                            >
+                              {/* Line 1: Changes Requested: [issue] */}
+                              <div style={{
+                                display: 'flex', alignItems: 'center',
+                                flexWrap: 'wrap', gap: '5px',
+                              }}>
+                                <span style={{
+                                  width: 6, height: 6, borderRadius: '50%',
+                                  background: '#ef4444', flexShrink: 0, display: 'inline-block'
+                                }} />
+                                <span style={{ fontSize: '0.75rem', color: '#be123c', fontWeight: 700 }}>
+                                  Changes Requested:
+                                </span>
+                                {issues.length > 0 ? (
+                                  issues.map((issue, idx) => (
+                                    <span key={idx} style={{
+                                      fontSize: '0.75rem', fontWeight: 600, color: '#be123c',
+                                    }}>
+                                      {issue}{idx < issues.length - 1 ? ', ' : ''}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span style={{ fontSize: '0.75rem', color: '#be123c', fontWeight: 600 }}>
+                                    {e.review_notes}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Line 2: Admin note */}
+                              {adminNote && (
+                                <div style={{
+                                  marginTop: '5px',
+                                  paddingLeft: '12px',
+                                  fontSize: '0.72rem',
+                                  color: '#9f1239',
+                                  fontWeight: 400,
+                                }}>
+                                  {adminNote}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
 
                         {/* Card Header */}
                         <div className="path-header">
@@ -734,14 +784,14 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                           </div>
                           <div className="path-meta">
                             {(e?.status === "draft" || e?.status === "changesrequested") ? (
-  <button
-    className="draft-arrow-btn"
-    onClick={(event) => {
-      event.stopPropagation();
-      navigate(`/dashboard/accountants/path/${e._id}`);
-    }}
-    title="Go to Draft Page"
-  >
+                              <button
+                                className="draft-arrow-btn"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  navigate(`/dashboard/accountants/path/${e._id}`);
+                                }}
+                                title="Go to Draft Page"
+                              >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                   <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
@@ -831,10 +881,10 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                   e?.description?.toLowerCase().includes(localSearch.toLowerCase()) ||
                   e?.destination_institution?.toLowerCase().includes(localSearch.toLowerCase())
                 ).length === 0 && !loading && (
-                  <div style={{ textAlign: 'center', padding: '3rem', color: '#5e6f7e' }}>
-                    No paths found. Click "Create New Path" to get started.
-                  </div>
-                )}
+                    <div style={{ textAlign: 'center', padding: '3rem', color: '#5e6f7e' }}>
+                      No paths found. Click "Create New Path" to get started.
+                    </div>
+                  )}
               </div>
             )}
           </>

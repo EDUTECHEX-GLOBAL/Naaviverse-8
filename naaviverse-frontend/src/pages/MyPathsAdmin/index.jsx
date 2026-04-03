@@ -18,11 +18,11 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const { sideNav, setsideNav } = useStore();
   let userDetails = JSON.parse(localStorage.getItem("adminuser"));
   const { setCurrentStepData, setCurrentStepDataLength, mypathsMenu, setMypathsMenu } = useCoinContextData();
-const [pathChangeRequests, setPathChangeRequests] = useState({}); // { [pathId]: [...changeRequests] }
-const [changeRequestsLoading, setChangeRequestsLoading] = useState({});
+  const [pathChangeRequests, setPathChangeRequests] = useState({}); // { [pathId]: [...changeRequests] }
+  const [changeRequestsLoading, setChangeRequestsLoading] = useState({});
 
-const [adminReplyTexts, setAdminReplyTexts] = useState({});
-const [adminReplyLoading, setAdminReplyLoading] = useState({});
+  const [adminReplyTexts, setAdminReplyTexts] = useState({});
+  const [adminReplyLoading, setAdminReplyLoading] = useState({});
   const [partnerPathData, setPartnerPathData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [partnerStepsData, setPartnerStepsData] = useState([]);
@@ -75,6 +75,7 @@ const [adminReplyLoading, setAdminReplyLoading] = useState({});
   const [mpDuration, setMpDuration] = useState("");
   const [mpFeatures, setMpFeatures] = useState("");
   const [mpDiscount, setMpDiscount] = useState("");
+  const [otherIssue, setOtherIssue] = useState("");
 
   // ─── layerConfig — reads actual names/descriptions from the step document ───
   const getLayerConfig = (stepData) => ({
@@ -129,21 +130,21 @@ const [adminReplyLoading, setAdminReplyLoading] = useState({});
     }).catch(() => setLoading(false));
   };
 
- const getNewPath = () => {
-  setLoading(true);
-  // Fetch both waitingforapproval AND changesrequested paths for Pending Paths tab
-  Promise.all([
-    axios.get(`${BASE_URL}/api/paths/get?status=waitingforapproval`),
-    axios.get(`${BASE_URL}/api/paths/get?status=changesrequested`),
-  ]).then(([res1, res2]) => {
-    const combined = [
-      ...(res1.data?.data || []),
-      ...(res2.data?.data || []),
-    ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    setPartnerPathData(combined);
-    setLoading(false);
-  }).catch(() => setLoading(false));
-};
+  const getNewPath = () => {
+    setLoading(true);
+    // Fetch both waitingforapproval AND changesrequested paths for Pending Paths tab
+    Promise.all([
+      axios.get(`${BASE_URL}/api/paths/get?status=waitingforapproval`),
+      axios.get(`${BASE_URL}/api/paths/get?status=changesrequested`),
+    ]).then(([res1, res2]) => {
+      const combined = [
+        ...(res1.data?.data || []),
+        ...(res2.data?.data || []),
+      ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setPartnerPathData(combined);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  };
   const getAllSteps = () => {
     axios.get(`${BASE_URL}/api/steps/get?status=active`).then(({ data }) => {
       setPartnerStepsData(data?.data);
@@ -157,47 +158,47 @@ const [adminReplyLoading, setAdminReplyLoading] = useState({});
    *     The "available" list is derived in the render by filtering out attached ones.
    */
 
-const fetchChangeRequests = (pathId) => {
-  if (pathChangeRequests[pathId]) return; // already loaded
-  setChangeRequestsLoading(prev => ({ ...prev, [pathId]: true }));
-  axios.get(`${BASE_URL}/api/paths/viewpath/${pathId}`)
-    .then(({ data }) => {
-      if (data?.status) {
-        setPathChangeRequests(prev => ({
-          ...prev,
-          [pathId]: data.data?.changeRequests || []
-        }));
-      }
-    })
-    .catch(() => {})
-    .finally(() => setChangeRequestsLoading(prev => ({ ...prev, [pathId]: false })));
-};
-  
+  const fetchChangeRequests = (pathId) => {
+    if (pathChangeRequests[pathId]) return; // already loaded
+    setChangeRequestsLoading(prev => ({ ...prev, [pathId]: true }));
+    axios.get(`${BASE_URL}/api/paths/viewpath/${pathId}`)
+      .then(({ data }) => {
+        if (data?.status) {
+          setPathChangeRequests(prev => ({
+            ...prev,
+            [pathId]: data.data?.changeRequests || []
+          }));
+        }
+      })
+      .catch(() => { })
+      .finally(() => setChangeRequestsLoading(prev => ({ ...prev, [pathId]: false })));
+  };
 
-const sendAdminReply = async (pathId, crId) => {
-  const msg = (adminReplyTexts[crId] || "").trim();
-  if (!msg) return;
-  setAdminReplyLoading(prev => ({ ...prev, [crId]: true }));
-  try {
-    await axios.patch(`${BASE_URL}/api/paths/reply/${pathId}/${crId}`, {
-      from: "admin",
-      message: msg,
-      adminEmail: userDetails?.email || "",
-    });
-    setAdminReplyTexts(prev => ({ ...prev, [crId]: "" }));
-    // Invalidate cache so it re-fetches fresh data with the new reply
-    setPathChangeRequests(prev => {
-      const copy = { ...prev };
-      delete copy[pathId];
-      return copy;
-    });
-    fetchChangeRequests(pathId);
-  } catch (err) {
-    console.error("Admin reply error:", err);
-  } finally {
-    setAdminReplyLoading(prev => ({ ...prev, [crId]: false }));
-  }
-};
+
+  const sendAdminReply = async (pathId, crId) => {
+    const msg = (adminReplyTexts[crId] || "").trim();
+    if (!msg) return;
+    setAdminReplyLoading(prev => ({ ...prev, [crId]: true }));
+    try {
+      await axios.patch(`${BASE_URL}/api/paths/reply/${pathId}/${crId}`, {
+        from: "admin",
+        message: msg,
+        adminEmail: userDetails?.email || "",
+      });
+      setAdminReplyTexts(prev => ({ ...prev, [crId]: "" }));
+      // Invalidate cache so it re-fetches fresh data with the new reply
+      setPathChangeRequests(prev => {
+        const copy = { ...prev };
+        delete copy[pathId];
+        return copy;
+      });
+      fetchChangeRequests(pathId);
+    } catch (err) {
+      console.error("Admin reply error:", err);
+    } finally {
+      setAdminReplyLoading(prev => ({ ...prev, [crId]: false }));
+    }
+  };
 
   const fetchMarketplaceData = (stepId, layer) => {
     const sid = stepId || marketStepId;
@@ -378,8 +379,8 @@ const sendAdminReply = async (pathId, crId) => {
       type="text"
       placeholder="Other (type here)"
       className="popup-note-area"
-      value={rejectNote}
-      onChange={(e) => setRejectNote(e.target.value)}
+      value={otherIssue}                          // ← was rejectNote
+      onChange={(e) => setOtherIssue(e.target.value)}  // ← was setRejectNote
     />
   ];
 
@@ -390,13 +391,14 @@ const sendAdminReply = async (pathId, crId) => {
   };
 
   const closePendingPopup = () => {
-  setPendingPopup(null);
-  setRejectChecklist([]);
-  setRejectNote("");
-  setRejectNoteError(false);
-  // Optionally clear cache so next open re-fetches:
-  // setPathChangeRequests({});
-};
+    setPendingPopup(null);
+    setRejectChecklist([]);
+    setRejectNote("");
+    setOtherIssue(""); 
+    setRejectNoteError(false);
+    // Optionally clear cache so next open re-fetches:
+    // setPathChangeRequests({});
+  };
 
 
 
@@ -405,38 +407,41 @@ const handleRequestChanges = () => {
   if (!rejectNote.trim()) { setRejectNoteError(true); return; }
   setActionLoading(true);
 
-  // First save to changeRequests array via requestchanges endpoint
+  const allIssues = [
+    ...rejectChecklist,
+    ...(otherIssue.trim() ? [otherIssue.trim()] : []),
+  ];
+
   axios.put(`${BASE_URL}/api/paths/requestchanges/${pendingPopup?.pathId}`, {
-    issues: rejectChecklist,
+    issues: allIssues,
     adminNote: rejectNote,
     adminEmail: userDetails?.email || "",
-  }).then(({ data }) => {
+  })
+  .then(({ data }) => {
     if (data.status) {
-      // Also save review_notes so partner sees red banner on draft card
-      return axios.put(`${BASE_URL}/api/paths/update/${pendingPopup?.pathId}`, {
-        review_notes: rejectNote.trim(),
-      });
+      getNewPath();
+      closePendingPopup();
     }
-  }).then(() => {
-    getNewPath();
-    setActionLoading(false);
-    closePendingPopup();
-  }).catch(() => {
+  })
+  .catch((err) => {
+    console.error("Request changes error:", err);
+  })
+  .finally(() => {
     setActionLoading(false);
   });
 };
 
 
- const handleFinalReject = () => {
-  if (!rejectNote.trim()) { setRejectNoteError(true); return; }
-  setActionLoading(true);
-  axios.put(`${BASE_URL}/api/paths/updatepath/${pendingPopup?.pathId}`, {
-    status: "draft",
-    review_notes: rejectNote.trim(),
-  }).then(({ data }) => {
-    if (data.status) { getNewPath(); setActionLoading(false); closePendingPopup(); }
-  }).catch(() => setActionLoading(false));
-};
+  const handleFinalReject = () => {
+    if (!rejectNote.trim()) { setRejectNoteError(true); return; }
+    setActionLoading(true);
+    axios.put(`${BASE_URL}/api/paths/updatepath/${pendingPopup?.pathId}`, {
+      status: "draft",
+      review_notes: rejectNote.trim(),
+    }).then(({ data }) => {
+      if (data.status) { getNewPath(); setActionLoading(false); closePendingPopup(); }
+    }).catch(() => setActionLoading(false));
+  };
 
   const handleApproveConfirm = () => {
     setActionLoading(true);
@@ -911,13 +916,13 @@ const handleRequestChanges = () => {
                         Request Changes
                       </button>
                       <button className="pab pab--compare"
-  onClick={() => {
-    fetchChangeRequests(path?._id);
-    setPendingPopup({ type: "compare", pathId: path?._id, path: path });
-  }}>
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="16 3 21 3 21 8" /><line x1="4" y1="20" x2="21" y2="3" /><polyline points="21 16 21 21 16 21" /><line x1="15" y1="15" x2="21" y2="21" /></svg>
-  Review
-</button>
+                        onClick={() => {
+                          fetchChangeRequests(path?._id);
+                          setPendingPopup({ type: "compare", pathId: path?._id, path: path });
+                        }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="16 3 21 3 21 8" /><line x1="4" y1="20" x2="21" y2="3" /><polyline points="21 16 21 21 16 21" /><line x1="15" y1="15" x2="21" y2="21" /></svg>
+                        Review
+                      </button>
                       <button className="pab pab--reject"
                         onClick={() => { setRejectChecklist([]); setRejectNote(""); setRejectNoteError(false); setPendingPopup({ type: "reject", pathId: path?._id, path: path }); }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -1745,248 +1750,248 @@ const handleRequestChanges = () => {
               </div>
             )}
 
-{pendingPopup.type === "compare" && (
-  <div className="pending-popup-body">
-    <p className="pp-section-label" style={{ marginBottom: "14px" }}>
-      Change Request History
-    </p>
+            {pendingPopup.type === "compare" && (
+              <div className="pending-popup-body">
+                <p className="pp-section-label" style={{ marginBottom: "14px" }}>
+                  Change Request History
+                </p>
 
-    {changeRequestsLoading[pendingPopup?.pathId] ? (
-      <div style={{
-        padding: "20px", textAlign: "center",
-        color: "#94a3b8", fontSize: "0.82rem",
-      }}>
-        Loading...
-      </div>
-    ) : (pathChangeRequests[pendingPopup?.pathId] || []).length === 0 ? (
-      <div style={{
-        padding: "32px 20px", textAlign: "center",
-        color: "#94a3b8", fontSize: "0.82rem",
-        background: "#f8fafc", borderRadius: "12px",
-        border: "2px dashed #e2e8f0",
-      }}>
-        No change requests sent yet.
-      </div>
-    ) : (
-      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-        {(pathChangeRequests[pendingPopup?.pathId] || []).map((cr, idx) => (
-          <div key={cr._id || idx} style={{
-            borderRadius: 14, border: "1px solid #e2e8f0", overflow: "hidden",
-          }}>
-            {/* Thread header */}
-            <div style={{
-              padding: "9px 14px", background: "#f8fafc",
-              borderBottom: "1px solid #e2e8f0",
-              display: "flex", alignItems: "center",
-              justifyContent: "space-between",
-            }}>
-              <span style={{ fontSize: "0.7rem", color: "#64748b", fontWeight: 600 }}>
-                Request {idx + 1} · {new Date(cr.sentAt).toLocaleString("en-IN", {
-                  day: "2-digit", month: "short", year: "numeric",
-                  hour: "2-digit", minute: "2-digit",
-                })}
-              </span>
-              <span style={{
-                fontSize: "0.62rem", fontWeight: 700,
-                padding: "2px 7px", borderRadius: "50px",
-                background: cr.status === "addressed" ? "#d1fae5" : "#fef3c7",
-                color: cr.status === "addressed" ? "#065f46" : "#92400e",
-              }}>
-                {cr.status === "addressed" ? "✓ Addressed" : "Pending"}
-              </span>
-            </div>
-
-            {/* Messages */}
-            <div style={{
-              padding: "12px 14px 0",
-              display: "flex", flexDirection: "column", gap: 10,
-            }}>
-              {/* Admin original — LEFT (admin is on left in admin view) */}
-              <div style={{
-                display: "flex", flexDirection: "column",
-                alignItems: "flex-start", gap: 4,
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                {changeRequestsLoading[pendingPopup?.pathId] ? (
                   <div style={{
-                    width: 22, height: 22, borderRadius: "50%",
-                    background: "#6366f1", color: "#fff",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: "0.6rem", fontWeight: 700, flexShrink: 0,
-                  }}>A</div>
-                  <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>
-                    You (Admin)
-                  </span>
-                </div>
-                <div style={{
-                  maxWidth: "82%", marginLeft: 28,
-                  background: "#eef2ff", border: "1px solid #c7d2fe",
-                  borderRadius: "4px 14px 14px 14px",
-                  padding: "10px 14px",
-                }}>
-                  {cr.issues?.length > 0 && (
-                    <div style={{
-                      display: "flex", flexWrap: "wrap",
-                      gap: "5px", marginBottom: "8px",
-                    }}>
-                      {cr.issues.map((issue, i) => (
-                        <span key={i} style={{
-                          fontSize: "0.68rem", fontWeight: 600,
-                          padding: "2px 8px", borderRadius: "50px",
-                          background: "#e0e7ff", color: "#4338ca",
-                        }}>{issue}</span>
-                      ))}
-                    </div>
-                  )}
-                  <p style={{
-                    fontSize: "0.81rem", color: "#1e293b",
-                    margin: 0, lineHeight: 1.5,
+                    padding: "20px", textAlign: "center",
+                    color: "#94a3b8", fontSize: "0.82rem",
                   }}>
-                    {cr.adminNote}
-                  </p>
-                </div>
-              </div>
-
-              {/* Threaded replies */}
-              {(cr.replies || []).map((reply, rIdx) => {
-                const isAdmin = reply.from === "admin";
-                return (
-                  <div key={rIdx} style={{
-                    display: "flex", flexDirection: "column",
-                    // admin = left, partner = right (from admin's perspective)
-                    alignItems: isAdmin ? "flex-start" : "flex-end",
-                    gap: 3,
-                  }}>
-                    <div style={{
-                      display: "flex", alignItems: "center", gap: 6,
-                      flexDirection: isAdmin ? "row" : "row-reverse",
-                    }}>
-                      <div style={{
-                        width: 22, height: 22, borderRadius: "50%",
-                        background: isAdmin ? "#6366f1" : "#0d9488",
-                        color: "#fff",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: "0.6rem", fontWeight: 700, flexShrink: 0,
-                      }}>
-                        {isAdmin ? "A" : "P"}
-                      </div>
-                      <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>
-                        {isAdmin ? "You (Admin)" : "Partner"} · {new Date(reply.sentAt).toLocaleString("en-IN", {
-                          day: "2-digit", month: "short",
-                          hour: "2-digit", minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
-                    <div style={{
-                      maxWidth: "80%",
-                      marginLeft: isAdmin ? 28 : 0,
-                      marginRight: isAdmin ? 0 : 28,
-                      background: isAdmin ? "#eef2ff" : "#f0fdf4",
-                      border: `1px solid ${isAdmin ? "#c7d2fe" : "#bbf7d0"}`,
-                      borderRadius: isAdmin
-                        ? "4px 14px 14px 14px"
-                        : "14px 4px 14px 14px",
-                      padding: "9px 13px",
-                    }}>
-                      <p style={{
-                        margin: 0, fontSize: "0.81rem",
-                        color: isAdmin ? "#1e293b" : "#065f46",
-                        lineHeight: 1.5,
-                      }}>
-                        {reply.message}
-                      </p>
-                    </div>
+                    Loading...
                   </div>
-                );
-              })}
-            </div>
+                ) : (pathChangeRequests[pendingPopup?.pathId] || []).length === 0 ? (
+                  <div style={{
+                    padding: "32px 20px", textAlign: "center",
+                    color: "#94a3b8", fontSize: "0.82rem",
+                    background: "#f8fafc", borderRadius: "12px",
+                    border: "2px dashed #e2e8f0",
+                  }}>
+                    No change requests sent yet.
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                    {(pathChangeRequests[pendingPopup?.pathId] || []).map((cr, idx) => (
+                      <div key={cr._id || idx} style={{
+                        borderRadius: 14, border: "1px solid #e2e8f0", overflow: "hidden",
+                      }}>
+                        {/* Thread header */}
+                        <div style={{
+                          padding: "9px 14px", background: "#f8fafc",
+                          borderBottom: "1px solid #e2e8f0",
+                          display: "flex", alignItems: "center",
+                          justifyContent: "space-between",
+                        }}>
+                          <span style={{ fontSize: "0.7rem", color: "#64748b", fontWeight: 600 }}>
+                            Request {idx + 1} · {new Date(cr.sentAt).toLocaleString("en-IN", {
+                              day: "2-digit", month: "short", year: "numeric",
+                              hour: "2-digit", minute: "2-digit",
+                            })}
+                          </span>
+                          <span style={{
+                            fontSize: "0.62rem", fontWeight: 700,
+                            padding: "2px 7px", borderRadius: "50px",
+                            background: cr.status === "addressed" ? "#d1fae5" : "#fef3c7",
+                            color: cr.status === "addressed" ? "#065f46" : "#92400e",
+                          }}>
+                            {cr.status === "addressed" ? "✓ Addressed" : "Pending"}
+                          </span>
+                        </div>
 
-            {/* Admin reply input */}
-            <div style={{ padding: "10px 14px 14px" }}>
-              <div style={{
-                display: "flex", gap: 8, alignItems: "flex-end",
-                background: "#f8fafc", border: "1px solid #e2e8f0",
-                borderRadius: 10, padding: "6px 8px 6px 12px",
-              }}>
-                <textarea
-                  rows={1}
-                  placeholder="Reply to partner..."
-                  value={adminReplyTexts[cr._id] || ""}
-                  onChange={(e) => {
-                    setAdminReplyTexts(prev => ({
-                      ...prev, [cr._id]: e.target.value,
-                    }));
-                    e.target.style.height = "auto";
-                    e.target.style.height =
-                      Math.min(e.target.scrollHeight, 90) + "px";
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      sendAdminReply(pendingPopup?.pathId, cr._id);
-                    }
-                  }}
-                  style={{
-                    flex: 1, border: "none", background: "none",
-                    outline: "none", resize: "none",
-                    fontSize: "0.82rem", color: "#0f172a",
-                    lineHeight: 1.5, overflow: "hidden",
-                    fontFamily: "inherit", minHeight: 22,
-                  }}
-                />
-                <button
-                  onClick={() => sendAdminReply(pendingPopup?.pathId, cr._id)}
-                  disabled={
-                    !adminReplyTexts[cr._id]?.trim() ||
-                    adminReplyLoading[cr._id]
-                  }
-                  style={{
-                    flexShrink: 0, width: 30, height: 30,
-                    borderRadius: "50%",
-                    background: adminReplyTexts[cr._id]?.trim()
-                      ? "#6366f1" : "#e2e8f0",
-                    border: "none",
-                    cursor: adminReplyTexts[cr._id]?.trim()
-                      ? "pointer" : "default",
-                    display: "flex", alignItems: "center",
-                    justifyContent: "center",
-                    transition: "background 0.15s",
-                  }}
-                >
-                  {adminReplyLoading[cr._id] ? (
-                    <span style={{
-                      width: 10, height: 10,
-                      border: "2px solid #fff",
-                      borderTopColor: "transparent",
-                      borderRadius: "50%",
-                      display: "inline-block",
-                      animation: "spin 0.7s linear infinite",
-                    }} />
-                  ) : (
-                    <svg width="13" height="13" viewBox="0 0 24 24"
-                      fill="none" stroke="#fff" strokeWidth="2.5">
-                      <line x1="22" y1="2" x2="11" y2="13" />
-                      <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                    </svg>
-                  )}
-                </button>
+                        {/* Messages */}
+                        <div style={{
+                          padding: "12px 14px 0",
+                          display: "flex", flexDirection: "column", gap: 10,
+                        }}>
+                          {/* Admin original — LEFT (admin is on left in admin view) */}
+                          <div style={{
+                            display: "flex", flexDirection: "column",
+                            alignItems: "flex-start", gap: 4,
+                          }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <div style={{
+                                width: 22, height: 22, borderRadius: "50%",
+                                background: "#6366f1", color: "#fff",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                fontSize: "0.6rem", fontWeight: 700, flexShrink: 0,
+                              }}>A</div>
+                              <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>
+                                You (Admin)
+                              </span>
+                            </div>
+                            <div style={{
+                              maxWidth: "82%", marginLeft: 28,
+                              background: "#eef2ff", border: "1px solid #c7d2fe",
+                              borderRadius: "4px 14px 14px 14px",
+                              padding: "10px 14px",
+                            }}>
+                              {cr.issues?.length > 0 && (
+                                <div style={{
+                                  display: "flex", flexWrap: "wrap",
+                                  gap: "5px", marginBottom: "8px",
+                                }}>
+                                  {cr.issues.map((issue, i) => (
+                                    <span key={i} style={{
+                                      fontSize: "0.68rem", fontWeight: 600,
+                                      padding: "2px 8px", borderRadius: "50px",
+                                      background: "#e0e7ff", color: "#4338ca",
+                                    }}>{issue}</span>
+                                  ))}
+                                </div>
+                              )}
+                              <p style={{
+                                fontSize: "0.81rem", color: "#1e293b",
+                                margin: 0, lineHeight: 1.5,
+                              }}>
+                                {cr.adminNote}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Threaded replies */}
+                          {(cr.replies || []).map((reply, rIdx) => {
+                            const isAdmin = reply.from === "admin";
+                            return (
+                              <div key={rIdx} style={{
+                                display: "flex", flexDirection: "column",
+                                // admin = left, partner = right (from admin's perspective)
+                                alignItems: isAdmin ? "flex-start" : "flex-end",
+                                gap: 3,
+                              }}>
+                                <div style={{
+                                  display: "flex", alignItems: "center", gap: 6,
+                                  flexDirection: isAdmin ? "row" : "row-reverse",
+                                }}>
+                                  <div style={{
+                                    width: 22, height: 22, borderRadius: "50%",
+                                    background: isAdmin ? "#6366f1" : "#0d9488",
+                                    color: "#fff",
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                    fontSize: "0.6rem", fontWeight: 700, flexShrink: 0,
+                                  }}>
+                                    {isAdmin ? "A" : "P"}
+                                  </div>
+                                  <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>
+                                    {isAdmin ? "You (Admin)" : "Partner"} · {new Date(reply.sentAt).toLocaleString("en-IN", {
+                                      day: "2-digit", month: "short",
+                                      hour: "2-digit", minute: "2-digit",
+                                    })}
+                                  </span>
+                                </div>
+                                <div style={{
+                                  maxWidth: "80%",
+                                  marginLeft: isAdmin ? 28 : 0,
+                                  marginRight: isAdmin ? 0 : 28,
+                                  background: isAdmin ? "#eef2ff" : "#f0fdf4",
+                                  border: `1px solid ${isAdmin ? "#c7d2fe" : "#bbf7d0"}`,
+                                  borderRadius: isAdmin
+                                    ? "4px 14px 14px 14px"
+                                    : "14px 4px 14px 14px",
+                                  padding: "9px 13px",
+                                }}>
+                                  <p style={{
+                                    margin: 0, fontSize: "0.81rem",
+                                    color: isAdmin ? "#1e293b" : "#065f46",
+                                    lineHeight: 1.5,
+                                  }}>
+                                    {reply.message}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Admin reply input */}
+                        <div style={{ padding: "10px 14px 14px" }}>
+                          <div style={{
+                            display: "flex", gap: 8, alignItems: "flex-end",
+                            background: "#f8fafc", border: "1px solid #e2e8f0",
+                            borderRadius: 10, padding: "6px 8px 6px 12px",
+                          }}>
+                            <textarea
+                              rows={1}
+                              placeholder="Reply to partner..."
+                              value={adminReplyTexts[cr._id] || ""}
+                              onChange={(e) => {
+                                setAdminReplyTexts(prev => ({
+                                  ...prev, [cr._id]: e.target.value,
+                                }));
+                                e.target.style.height = "auto";
+                                e.target.style.height =
+                                  Math.min(e.target.scrollHeight, 90) + "px";
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                  e.preventDefault();
+                                  sendAdminReply(pendingPopup?.pathId, cr._id);
+                                }
+                              }}
+                              style={{
+                                flex: 1, border: "none", background: "none",
+                                outline: "none", resize: "none",
+                                fontSize: "0.82rem", color: "#0f172a",
+                                lineHeight: 1.5, overflow: "hidden",
+                                fontFamily: "inherit", minHeight: 22,
+                              }}
+                            />
+                            <button
+                              onClick={() => sendAdminReply(pendingPopup?.pathId, cr._id)}
+                              disabled={
+                                !adminReplyTexts[cr._id]?.trim() ||
+                                adminReplyLoading[cr._id]
+                              }
+                              style={{
+                                flexShrink: 0, width: 30, height: 30,
+                                borderRadius: "50%",
+                                background: adminReplyTexts[cr._id]?.trim()
+                                  ? "#6366f1" : "#e2e8f0",
+                                border: "none",
+                                cursor: adminReplyTexts[cr._id]?.trim()
+                                  ? "pointer" : "default",
+                                display: "flex", alignItems: "center",
+                                justifyContent: "center",
+                                transition: "background 0.15s",
+                              }}
+                            >
+                              {adminReplyLoading[cr._id] ? (
+                                <span style={{
+                                  width: 10, height: 10,
+                                  border: "2px solid #fff",
+                                  borderTopColor: "transparent",
+                                  borderRadius: "50%",
+                                  display: "inline-block",
+                                  animation: "spin 0.7s linear infinite",
+                                }} />
+                              ) : (
+                                <svg width="13" height="13" viewBox="0 0 24 24"
+                                  fill="none" stroke="#fff" strokeWidth="2.5">
+                                  <line x1="22" y1="2" x2="11" y2="13" />
+                                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                                </svg>
+                              )}
+                            </button>
+                          </div>
+                          <p style={{ margin: "4px 0 0 4px", fontSize: "0.64rem", color: "#94a3b8" }}>
+                            Enter to send · Shift+Enter for new line
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Footer — close only, no Edit Path */}
+                <div className="popup-footer">
+                  <button className="pp-btn pp-btn--ghost" onClick={closePendingPopup}>
+                    Close
+                  </button>
+                </div>
               </div>
-              <p style={{ margin: "4px 0 0 4px", fontSize: "0.64rem", color: "#94a3b8" }}>
-                Enter to send · Shift+Enter for new line
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    )}
-
-    {/* Footer — close only, no Edit Path */}
-    <div className="popup-footer">
-      <button className="pp-btn pp-btn--ghost" onClick={closePendingPopup}>
-        Close
-      </button>
-    </div>
-  </div>
-)}
+            )}
           </div>
         </>
       )}
