@@ -43,6 +43,8 @@ router.put("/reactivate/:id", pathController.reactivateInactivePath);
 router.put("/updatepath/:id", pathController.updatePathStatus);
 
 router.put("/requestchanges/:id", pathController.requestChanges);
+
+router.patch("/reply/:pathId/:changeRequestId", pathController.replyToChangeRequest);
 // ⭐ VIEW PATH BY MONGO ID (IMPORTANT for frontend View Page)
 router.get("/viewpath/:path_id", pathController.getPathById);
 

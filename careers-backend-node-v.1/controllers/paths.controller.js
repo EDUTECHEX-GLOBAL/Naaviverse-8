@@ -86,9 +86,9 @@ const updatePath = async (req, res) => {
     const existingPath = await pathModel.findById(pathId);
     if (!existingPath) return res.status(404).json({ status: false, message: "Path not found" });
 
-    if (!["draft", "rejected"].includes(existingPath.status)) {
-      return res.status(400).json({ status: false, message: "Editing not allowed. Path is locked." });
-    }
+    if (!["draft", "rejected", "waitingforapproval", "changesrequested"].includes(existingPath.status)) {
+  return res.status(400).json({ status: false, message: "Editing not allowed. Path is locked." });
+}
 
     delete updateData.status;
 
@@ -132,7 +132,7 @@ const reactivateInactivePath = async (req, res) => {
 
 const updatePathStatus = async (req, res) => {
   const pathId = req.params.id;
-  const { status } = req.body;
+  const { status, review_notes } = req.body;
 
   if (!status || !['active', 'draft'].includes(status)) {
     return res.status(400).json({ status: false, message: 'Invalid status' });
@@ -142,11 +142,28 @@ const updatePathStatus = async (req, res) => {
     const path = await pathModel.findById(pathId);
     if (!path) return res.status(404).json({ status: false, message: 'Path not found' });
 
-   if (!["waitingforapproval", "changesrequested"].includes(path.status)) {
-  return res.status(400).json({ status: false, message: "Only paths under review can be approved or rejected" });
-}
+    if (!["waitingforapproval", "changesrequested"].includes(path.status)) {
+      return res.status(400).json({ status: false, message: "Only paths under review can be approved or rejected" });
+    }
 
     path.status = status;
+
+    // If rejecting back to draft, save review_notes and push to changeRequests
+    if (status === 'draft' && review_notes) {
+      path.review_notes = review_notes;
+      path.changeRequests.push({
+        issues: [],
+        adminNote: review_notes,
+        sentAt: new Date(),
+        status: "pending"
+      });
+    }
+
+    // If approving, clear review_notes
+    if (status === 'active') {
+      path.review_notes = '';
+    }
+
     await path.save();
     return res.status(200).json({ status: true, message: `Path status updated to ${status}`, data: path });
   } catch (error) {
@@ -154,7 +171,6 @@ const updatePathStatus = async (req, res) => {
     return res.status(500).json({ status: false, message: 'Internal server error' });
   }
 };
-
 // ── submitForApproval — with activity logging ─────────────────────────────────
 const submitForApproval = async (req, res) => {
   try {
@@ -205,8 +221,10 @@ if (path.changeRequests && path.changeRequests.length > 0) {
   }));
 }
 
-    path.status = "waitingforapproval";
-    await path.save();
+// Clear review_notes when partner resubmits
+path.review_notes = '';
+path.status = "waitingforapproval";
+await path.save();
 
     // ✅ Log path selection activity — non-blocking
     logActivityInternal({
@@ -490,6 +508,45 @@ const requestChanges = async (req, res) => {
   }
 };
 
+
+const replyToChangeRequest = async (req, res) => {
+  try {
+    const { pathId, changeRequestId } = req.params;
+    const { from, message, partnerEmail, adminEmail } = req.body;
+
+    if (!from || !message?.trim()) {
+      return res.status(400).json({ status: false, message: "from and message are required" });
+    }
+
+    const reply = {
+      from,
+      message: message.trim(),
+      sentAt: new Date(),
+      ...(from === "partner" ? { partnerEmail } : { adminEmail }),
+    };
+
+    const result = await pathModel.findOneAndUpdate(
+      { _id: pathId, "changeRequests._id": changeRequestId },
+      {
+        $push: { "changeRequests.$.replies": reply },
+        ...(from === "partner"
+          ? { $set: { "changeRequests.$.status": "addressed" } }
+          : {}),
+      },
+      { new: true }
+    );
+
+    if (!result) {
+      return res.status(404).json({ status: false, message: "Path or change request not found" });
+    }
+
+    return res.json({ status: true, message: "Reply added", data: reply });
+  } catch (error) {
+    console.error("Reply error:", error);
+    return res.status(500).json({ status: false, message: error.message });
+  }
+};
+
 module.exports = {
   addPath,
   submitForApproval,
@@ -507,4 +564,5 @@ module.exports = {
   getPathById, 
   uploadBulkPaths,
   requestChanges, 
+  replyToChangeRequest, 
 };
