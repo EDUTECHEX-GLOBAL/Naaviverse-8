@@ -76,6 +76,9 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const [mpFeatures, setMpFeatures] = useState("");
   const [mpDiscount, setMpDiscount] = useState("");
   const [otherIssue, setOtherIssue] = useState("");
+  const [vcrActiveTab, setVcrActiveTab] = useState("all");
+  const [vcrOpenThreads, setVcrOpenThreads] = useState({});
+  const [vcrSelectedRequest, setVcrSelectedRequest] = useState(null);
 
   // ─── layerConfig — reads actual names/descriptions from the step document ───
   const getLayerConfig = (stepData) => ({
@@ -179,22 +182,24 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     const msg = (adminReplyTexts[crId] || "").trim();
     if (!msg) return;
     setAdminReplyLoading(prev => ({ ...prev, [crId]: true }));
+    setAdminReplyTexts(prev => ({ ...prev, [crId]: "" })); // clear input immediately
     try {
       await axios.patch(`${BASE_URL}/api/paths/reply/${pathId}/${crId}`, {
         from: "admin",
         message: msg,
         adminEmail: userDetails?.email || "",
       });
-      setAdminReplyTexts(prev => ({ ...prev, [crId]: "" }));
-      // Invalidate cache so it re-fetches fresh data with the new reply
-      setPathChangeRequests(prev => {
-        const copy = { ...prev };
-        delete copy[pathId];
-        return copy;
-      });
-      fetchChangeRequests(pathId);
+      // Always do a fresh fetch — bypass cache entirely
+      const { data } = await axios.get(`${BASE_URL}/api/paths/viewpath/${pathId}`);
+      if (data?.status) {
+        setPathChangeRequests(prev => ({
+          ...prev,
+          [pathId]: data.data?.changeRequests || [],
+        }));
+      }
     } catch (err) {
       console.error("Admin reply error:", err);
+      setAdminReplyTexts(prev => ({ ...prev, [crId]: msg })); // restore on error
     } finally {
       setAdminReplyLoading(prev => ({ ...prev, [crId]: false }));
     }
@@ -394,42 +399,41 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     setPendingPopup(null);
     setRejectChecklist([]);
     setRejectNote("");
-    setOtherIssue(""); 
+    setOtherIssue("");
     setRejectNoteError(false);
-    // Optionally clear cache so next open re-fetches:
-    // setPathChangeRequests({});
+    setVcrSelectedRequest(null); // ← add this
   };
 
 
 
 
-const handleRequestChanges = () => {
-  if (!rejectNote.trim()) { setRejectNoteError(true); return; }
-  setActionLoading(true);
+  const handleRequestChanges = () => {
+    if (!rejectNote.trim()) { setRejectNoteError(true); return; }
+    setActionLoading(true);
 
-  const allIssues = [
-    ...rejectChecklist,
-    ...(otherIssue.trim() ? [otherIssue.trim()] : []),
-  ];
+    const allIssues = [
+      ...rejectChecklist,
+      ...(otherIssue.trim() ? [otherIssue.trim()] : []),
+    ];
 
-  axios.put(`${BASE_URL}/api/paths/requestchanges/${pendingPopup?.pathId}`, {
-    issues: allIssues,
-    adminNote: rejectNote,
-    adminEmail: userDetails?.email || "",
-  })
-  .then(({ data }) => {
-    if (data.status) {
-      getNewPath();
-      closePendingPopup();
-    }
-  })
-  .catch((err) => {
-    console.error("Request changes error:", err);
-  })
-  .finally(() => {
-    setActionLoading(false);
-  });
-};
+    axios.put(`${BASE_URL}/api/paths/requestchanges/${pendingPopup?.pathId}`, {
+      issues: allIssues,
+      adminNote: rejectNote,
+      adminEmail: userDetails?.email || "",
+    })
+      .then(({ data }) => {
+        if (data.status) {
+          getNewPath();
+          closePendingPopup();
+        }
+      })
+      .catch((err) => {
+        console.error("Request changes error:", err);
+      })
+      .finally(() => {
+        setActionLoading(false);
+      });
+  };
 
 
   const handleFinalReject = () => {
@@ -1750,179 +1754,110 @@ const handleRequestChanges = () => {
               </div>
             )}
 
+
             {pendingPopup.type === "compare" && (
-              <div className="pending-popup-body">
-                <p className="pp-section-label" style={{ marginBottom: "14px" }}>
-                  Change Request History
-                </p>
+              <div className="pending-popup-body vcr-body-wrap">
 
                 {changeRequestsLoading[pendingPopup?.pathId] ? (
-                  <div style={{
-                    padding: "20px", textAlign: "center",
-                    color: "#94a3b8", fontSize: "0.82rem",
-                  }}>
-                    Loading...
-                  </div>
-                ) : (pathChangeRequests[pendingPopup?.pathId] || []).length === 0 ? (
-                  <div style={{
-                    padding: "32px 20px", textAlign: "center",
-                    color: "#94a3b8", fontSize: "0.82rem",
-                    background: "#f8fafc", borderRadius: "12px",
-                    border: "2px dashed #e2e8f0",
-                  }}>
-                    No change requests sent yet.
-                  </div>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                    {(pathChangeRequests[pendingPopup?.pathId] || []).map((cr, idx) => (
-                      <div key={cr._id || idx} style={{
-                        borderRadius: 14, border: "1px solid #e2e8f0", overflow: "hidden",
-                      }}>
-                        {/* Thread header */}
-                        <div style={{
-                          padding: "9px 14px", background: "#f8fafc",
-                          borderBottom: "1px solid #e2e8f0",
-                          display: "flex", alignItems: "center",
-                          justifyContent: "space-between",
-                        }}>
-                          <span style={{ fontSize: "0.7rem", color: "#64748b", fontWeight: 600 }}>
-                            Request {idx + 1} · {new Date(cr.sentAt).toLocaleString("en-IN", {
+                  <div className="vcr-loading">Loading…</div>
+
+                ) : vcrSelectedRequest !== null ? (
+                  // ─── DETAIL VIEW: single request thread ───────────────────
+                  (() => {
+                    const cr = (pathChangeRequests[pendingPopup?.pathId] || [])[vcrSelectedRequest];
+                    if (!cr) return null;
+                    return (
+                      <div>
+                        {/* Back button */}
+                        <button
+                          className="vcr-back-btn"
+                          onClick={() => setVcrSelectedRequest(null)}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+                          </svg>
+                          Back to all requests
+                        </button>
+
+                        <div className="vcr-detail-header">
+                          <span className="vcr-thread-num">Request {vcrSelectedRequest + 1}</span>
+                          <span className="vcr-thread-time">
+                            {new Date(cr.sentAt).toLocaleString("en-IN", {
                               day: "2-digit", month: "short", year: "numeric",
                               hour: "2-digit", minute: "2-digit",
                             })}
                           </span>
-                          <span style={{
-                            fontSize: "0.62rem", fontWeight: 700,
-                            padding: "2px 7px", borderRadius: "50px",
-                            background: cr.status === "addressed" ? "#d1fae5" : "#fef3c7",
-                            color: cr.status === "addressed" ? "#065f46" : "#92400e",
-                          }}>
-                            {cr.status === "addressed" ? "✓ Addressed" : "Pending"}
+                          <span className={`vcr-status-badge ${cr.status === "addressed" ? "resolved" : "pending"}`}>
+                            {cr.status === "addressed" ? "Resolved" : "Pending"}
                           </span>
                         </div>
 
-                        {/* Messages */}
-                        <div style={{
-                          padding: "12px 14px 0",
-                          display: "flex", flexDirection: "column", gap: 10,
-                        }}>
-                          {/* Admin original — LEFT (admin is on left in admin view) */}
-                          <div style={{
-                            display: "flex", flexDirection: "column",
-                            alignItems: "flex-start", gap: 4,
-                          }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                              <div style={{
-                                width: 22, height: 22, borderRadius: "50%",
-                                background: "#6366f1", color: "#fff",
-                                display: "flex", alignItems: "center", justifyContent: "center",
-                                fontSize: "0.6rem", fontWeight: 700, flexShrink: 0,
-                              }}>A</div>
-                              <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>
-                                You (Admin)
-                              </span>
+                        <div className="vcr-chat-area">
+                          {/* Admin original message */}
+                          <div className="vcr-msg admin-msg">
+                            <div className="vcr-msg-content">
+                              <span className="vcr-msg-label align-right">You (Admin)</span>
+                              <div className="vcr-bubble admin-bubble">
+                                {(cr.issues || []).filter(i => i?.trim()).length > 0 && (
+                                  <div className="vcr-issue-pills">
+                                    {cr.issues.filter(i => i?.trim()).map((issue, ii) => (
+                                      <span key={ii} className="vcr-issue-pill">{issue}</span>
+                                    ))}
+                                  </div>
+                                )}
+                                {cr.adminNote && (
+                                  <p className="vcr-bubble-text admin-text">{cr.adminNote}</p>
+                                )}
+                              </div>
                             </div>
-                            <div style={{
-                              maxWidth: "82%", marginLeft: 28,
-                              background: "#eef2ff", border: "1px solid #c7d2fe",
-                              borderRadius: "4px 14px 14px 14px",
-                              padding: "10px 14px",
-                            }}>
-                              {cr.issues?.length > 0 && (
-                                <div style={{
-                                  display: "flex", flexWrap: "wrap",
-                                  gap: "5px", marginBottom: "8px",
-                                }}>
-                                  {cr.issues.map((issue, i) => (
-                                    <span key={i} style={{
-                                      fontSize: "0.68rem", fontWeight: 600,
-                                      padding: "2px 8px", borderRadius: "50px",
-                                      background: "#e0e7ff", color: "#4338ca",
-                                    }}>{issue}</span>
-                                  ))}
-                                </div>
-                              )}
-                              <p style={{
-                                fontSize: "0.81rem", color: "#1e293b",
-                                margin: 0, lineHeight: 1.5,
-                              }}>
-                                {cr.adminNote}
-                              </p>
-                            </div>
+                            <div className="vcr-avatar admin-av">AD</div>
                           </div>
 
-                          {/* Threaded replies */}
+                          {/* Replies */}
                           {(cr.replies || []).map((reply, rIdx) => {
                             const isAdmin = reply.from === "admin";
                             return (
-                              <div key={rIdx} style={{
-                                display: "flex", flexDirection: "column",
-                                // admin = left, partner = right (from admin's perspective)
-                                alignItems: isAdmin ? "flex-start" : "flex-end",
-                                gap: 3,
-                              }}>
-                                <div style={{
-                                  display: "flex", alignItems: "center", gap: 6,
-                                  flexDirection: isAdmin ? "row" : "row-reverse",
-                                }}>
-                                  <div style={{
-                                    width: 22, height: 22, borderRadius: "50%",
-                                    background: isAdmin ? "#6366f1" : "#0d9488",
-                                    color: "#fff",
-                                    display: "flex", alignItems: "center", justifyContent: "center",
-                                    fontSize: "0.6rem", fontWeight: 700, flexShrink: 0,
-                                  }}>
-                                    {isAdmin ? "A" : "P"}
-                                  </div>
-                                  <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>
-                                    {isAdmin ? "You (Admin)" : "Partner"} · {new Date(reply.sentAt).toLocaleString("en-IN", {
-                                      day: "2-digit", month: "short",
-                                      hour: "2-digit", minute: "2-digit",
-                                    })}
-                                  </span>
-                                </div>
-                                <div style={{
-                                  maxWidth: "80%",
-                                  marginLeft: isAdmin ? 28 : 0,
-                                  marginRight: isAdmin ? 0 : 28,
-                                  background: isAdmin ? "#eef2ff" : "#f0fdf4",
-                                  border: `1px solid ${isAdmin ? "#c7d2fe" : "#bbf7d0"}`,
-                                  borderRadius: isAdmin
-                                    ? "4px 14px 14px 14px"
-                                    : "14px 4px 14px 14px",
-                                  padding: "9px 13px",
-                                }}>
-                                  <p style={{
-                                    margin: 0, fontSize: "0.81rem",
-                                    color: isAdmin ? "#1e293b" : "#065f46",
-                                    lineHeight: 1.5,
-                                  }}>
-                                    {reply.message}
-                                  </p>
-                                </div>
+                              <div key={rIdx} className={`vcr-msg ${isAdmin ? "admin-msg" : "partner-msg"}`}>
+                                {isAdmin ? (
+                                  <>
+                                    <div className="vcr-msg-content">
+                                      <span className="vcr-msg-label align-right">
+                                        You (Admin) · {new Date(reply.sentAt).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                                      </span>
+                                      <div className="vcr-bubble admin-bubble">
+                                        <p className="vcr-bubble-text admin-text">{reply.message}</p>
+                                      </div>
+                                    </div>
+                                    <div className="vcr-avatar admin-av">AD</div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="vcr-avatar partner-av">P</div>
+                                    <div className="vcr-msg-content">
+                                      <span className="vcr-msg-label">
+                                        Partner · {new Date(reply.sentAt).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                                      </span>
+                                      <div className="vcr-bubble partner-bubble">
+                                        <p className="vcr-bubble-text partner-text">{reply.message}</p>
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
                               </div>
                             );
                           })}
-                        </div>
 
-                        {/* Admin reply input */}
-                        <div style={{ padding: "10px 14px 14px" }}>
-                          <div style={{
-                            display: "flex", gap: 8, alignItems: "flex-end",
-                            background: "#f8fafc", border: "1px solid #e2e8f0",
-                            borderRadius: 10, padding: "6px 8px 6px 12px",
-                          }}>
+                          {/* Reply input */}
+                          <div className="vcr-reply-box">
                             <textarea
+                              className="vcr-reply-input"
                               rows={1}
-                              placeholder="Reply to partner..."
+                              placeholder="Reply to partner…"
                               value={adminReplyTexts[cr._id] || ""}
                               onChange={(e) => {
-                                setAdminReplyTexts(prev => ({
-                                  ...prev, [cr._id]: e.target.value,
-                                }));
+                                setAdminReplyTexts(prev => ({ ...prev, [cr._id]: e.target.value }));
                                 e.target.style.height = "auto";
-                                e.target.style.height =
-                                  Math.min(e.target.scrollHeight, 90) + "px";
+                                e.target.style.height = Math.min(e.target.scrollHeight, 90) + "px";
                               }}
                               onKeyDown={(e) => {
                                 if (e.key === "Enter" && !e.shiftKey) {
@@ -1930,65 +1865,91 @@ const handleRequestChanges = () => {
                                   sendAdminReply(pendingPopup?.pathId, cr._id);
                                 }
                               }}
-                              style={{
-                                flex: 1, border: "none", background: "none",
-                                outline: "none", resize: "none",
-                                fontSize: "0.82rem", color: "#0f172a",
-                                lineHeight: 1.5, overflow: "hidden",
-                                fontFamily: "inherit", minHeight: 22,
-                              }}
                             />
                             <button
+                              className={`vcr-send-btn ${adminReplyTexts[cr._id]?.trim() ? "active" : ""}`}
+                              disabled={!adminReplyTexts[cr._id]?.trim() || adminReplyLoading[cr._id]}
                               onClick={() => sendAdminReply(pendingPopup?.pathId, cr._id)}
-                              disabled={
-                                !adminReplyTexts[cr._id]?.trim() ||
-                                adminReplyLoading[cr._id]
-                              }
-                              style={{
-                                flexShrink: 0, width: 30, height: 30,
-                                borderRadius: "50%",
-                                background: adminReplyTexts[cr._id]?.trim()
-                                  ? "#6366f1" : "#e2e8f0",
-                                border: "none",
-                                cursor: adminReplyTexts[cr._id]?.trim()
-                                  ? "pointer" : "default",
-                                display: "flex", alignItems: "center",
-                                justifyContent: "center",
-                                transition: "background 0.15s",
-                              }}
                             >
                               {adminReplyLoading[cr._id] ? (
-                                <span style={{
-                                  width: 10, height: 10,
-                                  border: "2px solid #fff",
-                                  borderTopColor: "transparent",
-                                  borderRadius: "50%",
-                                  display: "inline-block",
-                                  animation: "spin 0.7s linear infinite",
-                                }} />
+                                <span className="vcr-send-spinner" />
                               ) : (
-                                <svg width="13" height="13" viewBox="0 0 24 24"
-                                  fill="none" stroke="#fff" strokeWidth="2.5">
-                                  <line x1="22" y1="2" x2="11" y2="13" />
-                                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M2 21l21-9L2 3v7l15 2-15 2v7z" />
                                 </svg>
                               )}
                             </button>
+                          
                           </div>
-                          <p style={{ margin: "4px 0 0 4px", fontSize: "0.64rem", color: "#94a3b8" }}>
-                            Enter to send · Shift+Enter for new line
-                          </p>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })()
+
+                ) : (
+                  // ─── LIST VIEW: all requests as clickable cards ────────────
+                  (pathChangeRequests[pendingPopup?.pathId] || []).length === 0 ? (
+                    <div className="vcr-empty-state">No change requests sent yet.</div>
+                  ) : (
+                    <div className="vcr-request-list">
+                      <p className="pp-section-label" style={{ marginBottom: 12 }}>
+                        {(pathChangeRequests[pendingPopup?.pathId] || []).length} change request(s) sent
+                      </p>
+                      {(pathChangeRequests[pendingPopup?.pathId] || []).map((cr, idx) => {
+                        const replyCount = (cr.replies || []).length;
+                        const partnerReplied = (cr.replies || []).some(r => r.from === "partner");
+                        return (
+                          <div
+                            key={cr._id || idx}
+                            className="vcr-request-card"
+                            onClick={() => setVcrSelectedRequest(idx)}
+                          >
+                            <div className="vcr-request-card-left">
+                              <span className="vcr-request-num">Request {idx + 1}</span>
+                              <span className="vcr-request-date">
+                                {new Date(cr.sentAt).toLocaleString("en-IN", {
+                                  day: "2-digit", month: "short", year: "numeric",
+                                  hour: "2-digit", minute: "2-digit",
+                                })}
+                              </span>
+                              {(cr.issues || []).filter(i => i?.trim()).length > 0 && (
+                                <div className="vcr-request-issues">
+                                  {cr.issues.filter(i => i?.trim()).slice(0, 2).map((issue, ii) => (
+                                    <span key={ii} className="vcr-issue-pill">{issue}</span>
+                                  ))}
+                                  {cr.issues.filter(i => i?.trim()).length > 2 && (
+                                    <span className="vcr-issue-pill vcr-issue-more">
+                                      +{cr.issues.filter(i => i?.trim()).length - 2} more
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                              <div className="vcr-request-meta">
+                                <span className="vcr-reply-count">
+                                  💬 {replyCount} {replyCount === 1 ? "reply" : "replies"}
+                                </span>
+                                {partnerReplied && (
+                                  <span className="vcr-partner-replied">Partner replied</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="vcr-request-card-right">
+                              <span className={`vcr-status-badge ${cr.status === "addressed" ? "resolved" : "pending"}`}>
+                                {cr.status === "addressed" ? "Resolved" : "Pending"}
+                              </span>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
+                                <polyline points="9 18 15 12 9 6" />
+                              </svg>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )
                 )}
 
-                {/* Footer — close only, no Edit Path */}
                 <div className="popup-footer">
-                  <button className="pp-btn pp-btn--ghost" onClick={closePendingPopup}>
-                    Close
-                  </button>
+                  <button className="pp-btn pp-btn--ghost" onClick={closePendingPopup}>Close</button>
                 </div>
               </div>
             )}

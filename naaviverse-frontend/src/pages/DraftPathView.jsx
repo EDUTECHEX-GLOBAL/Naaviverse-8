@@ -314,6 +314,7 @@ const DraftPathView = () => {
 
   // ── NEW: tracks which change request thread is expanded in the modal ──
   const [expandedCR, setExpandedCR] = useState(null);
+  const [selectedCR, setSelectedCR] = useState(null);
 
   // ─── Data fetching ────────────────────────────────────────────────────────
 
@@ -1039,23 +1040,19 @@ const DraftPathView = () => {
       )}
 
       {/* ══ ADMIN FEEDBACK MODAL ════════════════════════════════════════════ */}
-      {reviewPanelOpen && (
+  {reviewPanelOpen && (
         <>
           <div
-            style={{
-              position: "fixed", inset: 0,
-              background: "rgba(0,0,0,0.45)",
-              zIndex: 1200,
-            }}
-            onClick={() => setReviewPanelOpen(false)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1200 }}
+            onClick={() => { setReviewPanelOpen(false); setSelectedCR(null); }}
           />
           <div
             style={{
               position: "fixed",
               top: "50%", left: "50%",
               transform: "translate(-50%, -50%)",
-              width: "min(560px, 95vw)",
-              maxHeight: "80vh",
+              width: "min(650px, 95vw)",
+              maxHeight: "88vh",
               background: "#fff",
               zIndex: 1201,
               display: "flex",
@@ -1068,27 +1065,55 @@ const DraftPathView = () => {
           >
             {/* Header */}
             <div style={{
-              padding: "18px 20px 14px",
+              padding: "14px 20px 12px",   // ← tighter padding
               borderBottom: "1px solid #e2e8f0",
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-              gap: 12,
-              flexShrink: 0,
+              display: "flex", alignItems: "center",   // ← center align
+              justifyContent: "space-between", gap: 12, flexShrink: 0,
             }}>
-              <div>
-                <p style={{ margin: 0, fontWeight: 600, fontSize: "0.95rem", color: "#0f172a" }}>
-                  Admin Feedback
-                </p>
-                <p style={{ margin: "3px 0 0", fontSize: "0.76rem", color: "#94a3b8" }}>
-                  {pathData?.nameOfPath}
-                </p>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                {selectedCR !== null && (
+                  <button
+                    onClick={() => setSelectedCR(null)}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 4,
+                      fontSize: "0.75rem", fontWeight: 600, color: "#0d9488",
+                      background: "none", border: "none", cursor: "pointer", padding: 0,
+                    }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" strokeWidth="2.5">
+                      <line x1="19" y1="12" x2="5" y2="12" />
+                      <polyline points="12 19 5 12 12 5" />
+                    </svg>
+                    All requests
+                  </button>
+                )}
+                {selectedCR === null && (
+                  <div>
+                    <p style={{ margin: 0, fontWeight: 700, fontSize: "0.92rem", color: "#0f172a" }}>
+                      Admin Feedback
+                    </p>
+                    <p style={{ margin: "1px 0 0", fontSize: "0.72rem", color: "#94a3b8" }}>
+                      {pathData?.nameOfPath}
+                    </p>
+                  </div>
+                )}
+                {selectedCR !== null && (
+                  <div>
+                    <p style={{ margin: 0, fontWeight: 700, fontSize: "0.92rem", color: "#0f172a" }}>
+                      Admin Feedback
+                    </p>
+                    <p style={{ margin: "1px 0 0", fontSize: "0.72rem", color: "#94a3b8" }}>
+                      {pathData?.nameOfPath}
+                    </p>
+                  </div>
+                )}
               </div>
               <button
-                onClick={() => setReviewPanelOpen(false)}
+                onClick={() => { setReviewPanelOpen(false); setSelectedCR(null); }}
                 style={{
                   background: "none", border: "none", cursor: "pointer",
-                  color: "#94a3b8", padding: 4, borderRadius: 6,
+                  color: "#94a3b8", padding: 4,
                   display: "flex", alignItems: "center",
                 }}
               >
@@ -1101,326 +1126,345 @@ const DraftPathView = () => {
             </div>
 
             {/* Body */}
-            <div style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
-              overflowX: "hidden",
-              fontSize: "14px",
-              lineHeight: "1.5",
-              color: "#0f172a",
-            }}>
+            <div style={{ flex: 1, overflowY: "auto", padding: "12px 20px" }}>
               {reviewLoading ? (
-                <div style={{ marginTop: 40, textAlign: "center", color: "#94a3b8", fontSize: "0.83rem" }}>
+                <div style={{ textAlign: "center", color: "#94a3b8", fontSize: "0.83rem", padding: "40px 0" }}>
                   Loading feedback...
                 </div>
-              ) : (pathData?.changeRequests || []).length === 0 ? (
-                <div style={{
-                  marginTop: 40, textAlign: "center", color: "#94a3b8",
-                  fontSize: "0.83rem", background: "#f8fafc", borderRadius: 12,
-                  border: "2px dashed #e2e8f0", padding: "36px 20px",
-                }}>
-                  No change requests yet.
-                </div>
-              ) : (
-                (pathData?.changeRequests || []).map((cr, idx) => (
-                  <div key={cr._id || idx} style={{
-                    borderRadius: 14, border: "1px solid #e2e8f0", overflow: "visible",
-                  }}>
 
-                    {/* ── Thread header — click to expand/collapse ── */}
-                    <div
-                      onClick={() => setExpandedCR(prev => prev === cr._id ? null : cr._id)}
-                      style={{
-                        padding: "10px 14px",
-                        background: "#f8fafc",
-                        borderBottom: expandedCR === cr._id ? "1px solid #e2e8f0" : "none",
-                        display: "flex", alignItems: "center", justifyContent: "space-between",
-                        cursor: "pointer",
-                        userSelect: "none",
-                      }}
-                    >
-                      <span style={{ fontSize: "0.72rem", color: "#64748b", fontWeight: 600 }}>
-                        Request {idx + 1} · {new Date(cr.sentAt).toLocaleString("en-IN", {
-                          day: "2-digit", month: "short", year: "numeric",
-                          hour: "2-digit", minute: "2-digit",
-                        })}
-                      </span>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              ) : selectedCR !== null ? (
+                // ─── DETAIL VIEW ─────────────────────────────────────────────
+                (() => {
+                  const cr = (pathData?.changeRequests || [])[selectedCR];
+                  if (!cr) return null;
+                  return (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+
+                      {/* Detail header */}
+                      <div style={{
+                        display: "flex", alignItems: "center", gap: 10,
+                        paddingBottom: 12, borderBottom: "1px solid #f1f5f9",
+                      }}>
+                        <span style={{ fontSize: "0.84rem", fontWeight: 700, color: "#0f172a" }}>
+                          Request {selectedCR + 1}
+                        </span>
+                        <span style={{ fontSize: "0.68rem", color: "#94a3b8" }}>
+                          {new Date(cr.sentAt).toLocaleString("en-IN", {
+                            day: "2-digit", month: "short", year: "numeric",
+                            hour: "2-digit", minute: "2-digit",
+                          })}
+                        </span>
                         <span style={{
                           fontSize: "0.62rem", fontWeight: 700, padding: "2px 8px",
-                          borderRadius: 50,
+                          borderRadius: 50, marginLeft: "auto",
                           background: cr.status === "addressed" ? "#d1fae5" : "#fef3c7",
                           color: cr.status === "addressed" ? "#065f46" : "#92400e",
                         }}>
                           {cr.status === "addressed" ? "✓ Addressed" : "Pending"}
                         </span>
-                        {/* Chevron indicator */}
-                        <svg
-                          width="14" height="14" viewBox="0 0 24 24"
-                          fill="none" stroke="#94a3b8" strokeWidth="2"
-                          style={{
-                            transform: expandedCR === cr._id ? "rotate(90deg)" : "rotate(0deg)",
-                            transition: "transform 0.2s",
-                          }}
-                        >
-                          <polyline points="9 18 15 12 9 6" />
-                        </svg>
                       </div>
-                    </div>
 
-                    {/* ── Expanded content ── */}
-                    {expandedCR === cr._id && (
-                      <>
-                        {/* Messages */}
-                        <div style={{
-                          padding: "14px 14px 0",
-                          display: "flex", flexDirection: "column", gap: 10,
-                        }}>
-                          {/* Admin bubble — RIGHT */}
+                      {/* Admin original bubble — RIGHT */}
+                      {/* Admin original bubble — LEFT ✅ */}
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, flexDirection: "row" }}>
                           <div style={{
+                            width: 22, height: 22, borderRadius: "50%",
+                            background: "#6366f1", color: "#fff",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: "0.6rem", fontWeight: 700,
+                          }}>A</div>
+                          <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>Admin</span>
+                        </div>
+                        <div style={{
+                          maxWidth: "82%", marginLeft: 28,  // ✅ indent from LEFT
+                          background: "#eef2ff", border: "1px solid #c7d2fe",
+                          borderRadius: "4px 14px 14px 14px",  // ✅ LEFT bubble shape
+                          padding: "10px 14px",
+                        }}>
+                          {cr.issues?.filter(i => i?.trim()).length > 0 && (
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8 }}>
+                              {cr.issues.filter(i => i?.trim()).map((issue, i) => (
+                                <span key={i} style={{
+                                  fontSize: "0.68rem", fontWeight: 600,
+                                  padding: "2px 8px", borderRadius: 50,
+                                  background: "#e0e7ff", color: "#4338ca",
+                                }}>{issue}</span>
+                              ))}
+                            </div>
+                          )}
+                          <p style={{ margin: 0, fontSize: "0.81rem", color: "#1e293b", lineHeight: 1.5 }}>
+                            {cr.adminNote || "—"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Replies */}
+                      {(cr.replies || []).map((reply, rIdx) => {
+                        const isPartner = reply.from === "partner";
+                        return (
+                          <div key={rIdx} style={{
                             display: "flex", flexDirection: "column",
-                            alignItems: "flex-end", gap: 4,
+                            alignItems: isPartner ? "flex-end" : "flex-start", // ✅ Partner=RIGHT, Admin=LEFT
+                            gap: 3,
                           }}>
                             <div style={{
                               display: "flex", alignItems: "center", gap: 6,
-                              flexDirection: "row-reverse",
+                              flexDirection: isPartner ? "row-reverse" : "row", // ✅ Partner=RIGHT, Admin=LEFT
                             }}>
                               <div style={{
                                 width: 22, height: 22, borderRadius: "50%",
-                                background: "#6366f1", color: "#fff",
-                                display: "flex", alignItems: "center", justifyContent: "center",
-                                fontSize: "0.6rem", fontWeight: 700, flexShrink: 0,
-                              }}>A</div>
+                                background: isPartner ? "#0d9488" : "#6366f1",
+                                color: "#fff", display: "flex", alignItems: "center",
+                                justifyContent: "center", fontSize: "0.6rem", fontWeight: 700,
+                              }}>
+                                {isPartner ? "P" : "A"}
+                              </div>
                               <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>
-                                Admin
+                                {isPartner ? "You" : "Admin"} · {new Date(reply.sentAt).toLocaleString("en-IN", {
+                                  day: "2-digit", month: "short",
+                                  hour: "2-digit", minute: "2-digit",
+                                })}
                               </span>
                             </div>
                             <div style={{
-                              maxWidth: "82%", marginRight: 28,
-                              background: "#eef2ff", border: "1px solid #c7d2fe",
-                              borderRadius: "14px 4px 14px 14px",
-                              padding: "10px 14px",
+                              maxWidth: "80%",
+                              marginRight: isPartner ? 28 : 0, // ✅ Partner indent from right
+                              marginLeft: isPartner ? 0 : 28,  // ✅ Admin indent from left
+                              background: isPartner ? "#f0fdf4" : "#eef2ff",
+                              border: `1px solid ${isPartner ? "#bbf7d0" : "#c7d2fe"}`,
+                              borderRadius: isPartner
+                                ? "14px 4px 14px 14px"  // ✅ Partner = RIGHT bubble shape
+                                : "4px 14px 14px 14px", // ✅ Admin = LEFT bubble shape
+                              padding: "9px 13px",
                             }}>
-                              {cr.issues?.filter(i => i?.trim()).length > 0 && (
-                                <div style={{
-                                  display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8,
-                                }}>
-                                  {cr.issues.filter(i => i?.trim()).map((issue, i) => (
-                                    <span key={i} style={{
-                                      fontSize: "0.68rem", fontWeight: 600,
-                                      padding: "2px 8px", borderRadius: 50,
-                                      background: "#e0e7ff", color: "#4338ca",
-                                    }}>{issue}</span>
-                                  ))}
-                                </div>
-                              )}
                               <p style={{
                                 margin: 0, fontSize: "0.81rem",
-                                color: "#1e293b", lineHeight: 1.5,
+                                color: isPartner ? "#065f46" : "#1e293b", lineHeight: 1.5,
                               }}>
-                                {cr.adminNote || "—"}
+                                {reply.message}
                               </p>
                             </div>
                           </div>
+                        );
+                      })}
 
-                          {/* Threaded replies */}
-                          {(cr.replies || []).map((reply, rIdx) => {
-                            const isPartner = reply.from === "partner";
-                            return (
-                              <div key={rIdx} style={{
-                                display: "flex", flexDirection: "column",
-                                alignItems: isPartner ? "flex-start" : "flex-end",
-                                gap: 3,
-                              }}>
-                                <div style={{
-                                  display: "flex", alignItems: "center", gap: 6,
-                                  flexDirection: isPartner ? "row" : "row-reverse",
-                                }}>
-                                  <div style={{
-                                    width: 22, height: 22, borderRadius: "50%",
-                                    background: isPartner ? "#0d9488" : "#6366f1",
-                                    color: "#fff",
-                                    display: "flex", alignItems: "center", justifyContent: "center",
-                                    fontSize: "0.6rem", fontWeight: 700, flexShrink: 0,
-                                  }}>
-                                    {isPartner ? "P" : "A"}
-                                  </div>
-                                  <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>
-                                    {isPartner ? "You" : "Admin"} · {new Date(reply.sentAt).toLocaleString("en-IN", {
-                                      day: "2-digit", month: "short",
-                                      hour: "2-digit", minute: "2-digit",
-                                    })}
-                                  </span>
-                                </div>
-                                <div style={{
-                                  maxWidth: "80%",
-                                  marginLeft: isPartner ? 28 : 0,
-                                  marginRight: isPartner ? 0 : 28,
-                                  background: isPartner ? "#f0fdf4" : "#eef2ff",
-                                  border: `1px solid ${isPartner ? "#bbf7d0" : "#c7d2fe"}`,
-                                  borderRadius: isPartner
-                                    ? "4px 14px 14px 14px"
-                                    : "14px 4px 14px 14px",
-                                  padding: "9px 13px",
-                                }}>
-                                  <p style={{
-                                    margin: 0, fontSize: "0.81rem",
-                                    color: isPartner ? "#065f46" : "#1e293b",
-                                    lineHeight: 1.5,
-                                  }}>
-                                    {reply.message}
-                                  </p>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        {/* Partner reply input */}
-                        <div style={{ padding: "12px 14px 14px" }}>
-                          <div style={{
-                            display: "flex", gap: 8, alignItems: "flex-end",
-                            background: "#f8fafc", border: "1px solid #e2e8f0",
-                            borderRadius: 10, padding: "6px 8px 6px 12px",
-                          }}>
-                            <textarea
-                              rows={1}
-                              placeholder="Reply to admin..."
-                              value={replyTexts[cr._id] || ""}
-                              onChange={(e) => {
-                                setReplyTexts(prev => ({ ...prev, [cr._id]: e.target.value }));
-                                e.target.style.height = "auto";
-                                e.target.style.height =
-                                  Math.min(e.target.scrollHeight, 100) + "px";
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" && !e.shiftKey) {
-                                  e.preventDefault();
-                                  (async () => {
-                                    const msg = (replyTexts[cr._id] || "").trim();
-                                    if (!msg) return;
-                                    setReplyLoading(prev => ({ ...prev, [cr._id]: true }));
-                                    try {
-                                      const partnerDetails = JSON.parse(
-                                        localStorage.getItem("partner") || "{}"
-                                      );
-                                      await axios.patch(
-                                        `${BASE_URL}/api/paths/reply/${pathData._id}/${cr._id}`,
-                                        {
-                                          from: "partner",
-                                          message: msg,
-                                          partnerEmail:
-                                            partnerDetails?.email ||
-                                            partnerDetails?.user?.email || "",
-                                        }
-                                      );
-                                      setReplyTexts(prev => ({ ...prev, [cr._id]: "" }));
-                                      await refreshPath();
-                                    } catch (err) {
-                                      console.error("Reply error:", err);
-                                    } finally {
-                                      setReplyLoading(prev => ({ ...prev, [cr._id]: false }));
-                                    }
-                                  })();
-                                }
-                              }}
-                              style={{
-                                flex: 1, border: "none", background: "none",
-                                outline: "none", resize: "none",
-                                fontSize: "0.82rem", color: "#0f172a",
-                                lineHeight: 1.5, overflow: "hidden",
-                                fontFamily: "inherit", minHeight: 22,
-                              }}
-                            />
-                            <button
-                              disabled={
-                                !replyTexts[cr._id]?.trim() || replyLoading[cr._id]
-                              }
-                              onClick={async () => {
+                      {/* Reply input */}
+                      <div style={{
+                        display: "flex", gap: 8, alignItems: "flex-end",
+                        background: "#f8fafc", border: "1px solid #e2e8f0",
+                        borderRadius: 10, padding: "6px 8px 6px 12px",
+                        marginTop: 4,
+                      }}>
+                        <textarea
+                          rows={1}
+                          placeholder="Reply to admin..."
+                          value={replyTexts[cr._id] || ""}
+                          onChange={(e) => {
+                            setReplyTexts(prev => ({ ...prev, [cr._id]: e.target.value }));
+                            e.target.style.height = "auto";
+                            e.target.style.height = Math.min(e.target.scrollHeight, 100) + "px";
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault();
+                              (async () => {
                                 const msg = (replyTexts[cr._id] || "").trim();
                                 if (!msg) return;
                                 setReplyLoading(prev => ({ ...prev, [cr._id]: true }));
                                 try {
-                                  const partnerDetails = JSON.parse(
-                                    localStorage.getItem("partner") || "{}"
-                                  );
-                                  await axios.patch(
-                                    `${BASE_URL}/api/paths/reply/${pathData._id}/${cr._id}`,
-                                    {
-                                      from: "partner",
-                                      message: msg,
-                                      partnerEmail:
-                                        partnerDetails?.email ||
-                                        partnerDetails?.user?.email || "",
-                                    }
-                                  );
+                                  const pd = JSON.parse(localStorage.getItem("partner") || "{}");
+                                  await axios.patch(`${BASE_URL}/api/paths/reply/${pathData._id}/${cr._id}`, {
+                                    from: "partner", message: msg,
+                                    partnerEmail: pd?.email || pd?.user?.email || "",
+                                  });
                                   setReplyTexts(prev => ({ ...prev, [cr._id]: "" }));
                                   await refreshPath();
-                                } catch (err) {
-                                  console.error("Reply error:", err);
-                                } finally {
-                                  setReplyLoading(prev => ({ ...prev, [cr._id]: false }));
-                                }
-                              }}
-                              style={{
-                                flexShrink: 0, width: 30, height: 30,
-                                borderRadius: "50%",
-                                background: replyTexts[cr._id]?.trim()
-                                  ? "#0d9488" : "#e2e8f0",
-                                border: "none",
-                                cursor: replyTexts[cr._id]?.trim()
-                                  ? "pointer" : "default",
-                                display: "flex", alignItems: "center",
-                                justifyContent: "center",
-                                transition: "background 0.15s",
-                              }}
-                            >
-                              {replyLoading[cr._id] ? (
-                                <span style={{
-                                  width: 10, height: 10,
-                                  border: "2px solid #fff",
-                                  borderTopColor: "transparent",
-                                  borderRadius: "50%",
-                                  display: "inline-block",
-                                  animation: "spin 0.7s linear infinite",
-                                }} />
-                              ) : (
-                                <svg width="14" height="14" viewBox="0 0 24 24"
-                                  fill="none" stroke="#fff" strokeWidth="2.5">
-                                  <line x1="22" y1="2" x2="11" y2="13" />
-                                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                                </svg>
-                              )}
-                            </button>
-                          </div>
-                          <p style={{
-                            margin: "4px 0 0 4px",
-                            fontSize: "0.66rem", color: "#94a3b8",
-                          }}>
-                            Enter to send · Shift+Enter for new line
-                          </p>
-                        </div>
-                      </>
-                    )}
+                                } catch (err) { console.error(err); }
+                                finally { setReplyLoading(prev => ({ ...prev, [cr._id]: false })); }
+                              })();
+                            }
+                          }}
+                          style={{
+                            flex: 1, border: "none", background: "none", outline: "none",
+                            resize: "none", fontSize: "0.82rem", color: "#0f172a",
+                            lineHeight: 1.5, overflow: "hidden", fontFamily: "inherit", minHeight: 22,
+                          }}
+                        />
+                        <button
+                          disabled={!replyTexts[cr._id]?.trim() || replyLoading[cr._id]}
+                          onClick={async () => {
+                            const msg = (replyTexts[cr._id] || "").trim();
+                            if (!msg) return;
+                            setReplyLoading(prev => ({ ...prev, [cr._id]: true }));
+                            try {
+                              const pd = JSON.parse(localStorage.getItem("partner") || "{}");
+                              await axios.patch(`${BASE_URL}/api/paths/reply/${pathData._id}/${cr._id}`, {
+                                from: "partner", message: msg,
+                                partnerEmail: pd?.email || pd?.user?.email || "",
+                              });
+                              setReplyTexts(prev => ({ ...prev, [cr._id]: "" }));
+                              await refreshPath();
+                            } catch (err) { console.error(err); }
+                            finally { setReplyLoading(prev => ({ ...prev, [cr._id]: false })); }
+                          }}
+                          style={{
+                            flexShrink: 0, width: 30, height: 30, borderRadius: "50%",
+                            background: replyTexts[cr._id]?.trim() ? "#0d9488" : "#e2e8f0",
+                            border: "none",
+                            cursor: replyTexts[cr._id]?.trim() ? "pointer" : "default",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            transition: "background 0.15s",
+                          }}
+                        >
+                          {replyLoading[cr._id] ? (
+                            <span style={{
+                              width: 10, height: 10, border: "2px solid #fff",
+                              borderTopColor: "transparent", borderRadius: "50%",
+                              display: "inline-block", animation: "spin 0.7s linear infinite",
+                            }} />
+                          ) : (
+                            <svg width="14" height="14" viewBox="0 0 24 24"
+                              fill="none" stroke="#fff" strokeWidth="2.5">
+                              <line x1="22" y1="2" x2="11" y2="13" />
+                              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+
+
+                    </div>
+                  );
+                })()
+
+              ) : (
+                // ─── LIST VIEW ───────────────────────────────────────────────
+                (pathData?.changeRequests || []).length === 0 ? (
+                  <div style={{
+                    textAlign: "center", color: "#94a3b8", fontSize: "0.83rem",
+                    background: "#f8fafc", borderRadius: 12,
+                    border: "2px dashed #e2e8f0", padding: "36px 20px",
+                  }}>
+                    No change requests yet.
                   </div>
-                ))
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {(pathData?.changeRequests || []).map((cr, idx) => {
+                      const replyCount = (cr.replies || []).length;
+                      const partnerReplied = (cr.replies || []).some(r => r.from === "partner");
+                      const pendingReply = cr.status !== "addressed" && !partnerReplied;
+
+                      return (
+                        <div
+                          key={cr._id || idx}
+                          onClick={() => setSelectedCR(idx)}
+                          style={{
+                            display: "flex", alignItems: "center", justifyContent: "space-between",
+                            gap: 8, padding: "10px 14px",
+                            border: `1.5px solid ${pendingReply ? "#fecaca" : "#e8edf3"}`,
+                            borderRadius: 12,
+                            background: pendingReply ? "#fff8f7" : "#fff",
+                            cursor: "pointer",
+                            transition: "all 0.14s ease",
+                          }}
+                          onMouseEnter={e => {
+                            e.currentTarget.style.borderColor = "#a5b4fc";
+                            e.currentTarget.style.background = "#f5f3ff";
+                            e.currentTarget.style.transform = "translateX(2px)";
+                          }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.borderColor = pendingReply ? "#fecaca" : "#e8edf3";
+                            e.currentTarget.style.background = pendingReply ? "#fff8f7" : "#fff";
+                            e.currentTarget.style.transform = "translateX(0)";
+                          }}
+                        >
+                          <div style={{ display: "flex", flexDirection: "column", gap: 3, flex: 1, minWidth: 0 }}>
+                            <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#0f172a" }}>
+                              Request {idx + 1}
+                            </span>
+                            <span style={{ fontSize: "0.68rem", color: "#94a3b8" }}>
+                              {new Date(cr.sentAt).toLocaleString("en-IN", {
+                                day: "2-digit", month: "short", year: "numeric",
+                                hour: "2-digit", minute: "2-digit",
+                              })}
+                            </span>
+                            {(cr.issues || []).filter(i => i?.trim()).length > 0 && (
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 2 }}>
+                                {cr.issues.filter(i => i?.trim()).slice(0, 2).map((issue, ii) => (
+                                  <span key={ii} style={{
+                                    fontSize: "0.65rem", fontWeight: 600,
+                                    padding: "2px 8px", borderRadius: 50,
+                                    background: "#e0e7ff", color: "#4338ca",
+                                  }}>{issue}</span>
+                                ))}
+                                {cr.issues.filter(i => i?.trim()).length > 2 && (
+                                  <span style={{
+                                    fontSize: "0.65rem", fontWeight: 600,
+                                    padding: "2px 8px", borderRadius: 50,
+                                    background: "#f1f5f9", color: "#64748b",
+                                  }}>
+                                    +{cr.issues.filter(i => i?.trim()).length - 2} more
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
+                              <span style={{ fontSize: "0.65rem", color: "#64748b" }}>
+                                💬 {replyCount} {replyCount === 1 ? "reply" : "replies"}
+                              </span>
+                              {pendingReply && (
+                                <span style={{
+                                  fontSize: "0.65rem", fontWeight: 700,
+                                  background: "#fee2e2", color: "#be123c",
+                                  padding: "2px 7px", borderRadius: 999,
+                                }}>
+                                  Needs your reply
+                                </span>
+                              )}
+                              {partnerReplied && cr.status !== "addressed" && (
+                                <span style={{
+                                  fontSize: "0.65rem", fontWeight: 700,
+                                  background: "#fef3c7", color: "#92400e",
+                                  padding: "2px 7px", borderRadius: 999,
+                                }}>
+                                  Awaiting admin
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                            <span style={{
+                              fontSize: "0.62rem", fontWeight: 700, padding: "2px 8px", borderRadius: 50,
+                              background: cr.status === "addressed" ? "#d1fae5" : "#fef3c7",
+                              color: cr.status === "addressed" ? "#065f46" : "#92400e",
+                            }}>
+                              {cr.status === "addressed" ? "✓ Addressed" : "Pending"}
+                            </span>
+                            <svg width="14" height="14" viewBox="0 0 24 24"
+                              fill="none" stroke="#94a3b8" strokeWidth="2">
+                              <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )
               )}
             </div>
 
             {/* Footer */}
             <div style={{
-              padding: "14px 20px",
-              borderTop: "1px solid #e2e8f0",
+              padding: "14px 20px", borderTop: "1px solid #e2e8f0",
               display: "flex", gap: 10, flexShrink: 0,
             }}>
               <button
-                onClick={() => setReviewPanelOpen(false)}
+                onClick={() => { setReviewPanelOpen(false); setSelectedCR(null); }}
                 style={{
                   flex: 1, padding: "9px 0", borderRadius: 50,
                   background: "none", color: "#94a3b8",
-                  border: "1px solid #e2e8f0", cursor: "pointer",
-                  fontSize: "0.82rem",
+                  border: "1px solid #e2e8f0", cursor: "pointer", fontSize: "0.82rem",
                 }}
               >
                 Close
