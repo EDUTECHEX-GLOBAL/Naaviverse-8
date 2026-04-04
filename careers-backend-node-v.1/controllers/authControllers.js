@@ -8,7 +8,7 @@ const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const { generateOTP, sendOTP, sendNotificationMail } = require("../middlewares/verifySignUp");
 
 // ── Activity logger (non-blocking — never breaks login if it fails) ───────────
-const { logActivityInternal } = require("./activity.controller");
+const { logActivityInternal } = require("./Activity.controller");
 
 const signUp = async (req, res) => {
   try {

@@ -1,162 +1,143 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./accDashsidebar.scss";
 import { useStore } from "../store/store.ts";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../../assets/images/logo/naavi_final_logo2.png";
 
-// ─── Icons ────────────────────────────────────────────────────────────────────
+// URL map for navigation
+const ROUTE_MAP = {
+  Home: "/dashboard/accountants/home",
+  CRM: "/dashboard/accountants",
+  Paths: "/dashboard/accountants/paths",
+  Steps: "/dashboard/accountants/steps",
+  Marketplace: "/dashboard/accountants/marketplace",
+  Profile: "/dashboard/accountants/profile",
+  
+};
 
-const HomeIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "12px" }}>
-    <path d="M12 3L4 9V21H9V15H15V21H20V9L12 3Z" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-    <path d="M12 8V11" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
+// ─── SVG Icons (Grey by default, blue on hover/active) ───────────────────────
 
-const CRMIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "12px" }}>
-    <circle cx="12" cy="8" r="4" stroke="#3B82F6" strokeWidth="1.5" />
-    <path d="M5 18V16C5 13.7909 6.79086 12 9 12H15C17.2091 12 19 13.7909 19 16V18" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
+const NavIcon = ({ type, isActive }) => {
+  const iconProps = {
+    className: "nav-icon",
+    width: "20",
+    height: "20",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: isActive ? "#2273E6" : "#6B7280",
+    strokeWidth: "1.7",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+  };
 
-const PathsIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "12px" }}>
-    <path d="M12 4V20M4 12H20" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" />
-    <circle cx="12" cy="12" r="8" stroke="#3B82F6" strokeWidth="1.5" />
-  </svg>
-);
+  switch (type) {
+    case "home":
+      return (
+        <svg {...iconProps}>
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+      );
+    case "crm":
+      return (
+        <svg {...iconProps}>
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+          <path d="M17 3.5a4 4 0 0 1 0 7" />
+          <path d="M21 7.5a4 4 0 0 0-4-4" />
+        </svg>
+      );
+    case "paths":
+      return (
+        <svg {...iconProps}>
+          <polygon points="12 2 22 7 22 17 12 22 2 17 2 7 12 2" />
+          <line x1="12" y1="22" x2="12" y2="12" />
+          <line x1="22" y1="7" x2="12" y2="12" />
+          <line x1="2" y1="7" x2="12" y2="12" />
+          <line x1="7" y1="2" x2="7" y2="17" />
+          <line x1="17" y1="2" x2="17" y2="17" />
+        </svg>
+      );
+    case "steps":
+      return (
+        <svg {...iconProps}>
+          <path d="M8 6h13" />
+          <path d="M8 12h13" />
+          <path d="M8 18h13" />
+          <circle cx="4" cy="6" r="2" />
+          <circle cx="4" cy="12" r="2" />
+          <circle cx="4" cy="18" r="2" />
+        </svg>
+      );
+    case "marketplace":
+      return (
+        <svg {...iconProps}>
+          <circle cx="12" cy="12" r="10" />
+          <path d="M8 12h8" />
+          <path d="M12 8v8" />
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+        </svg>
+      );
+    case "profile":
+      return (
+        <svg {...iconProps}>
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+      );
+    default:
+      return <svg {...iconProps}><circle cx="12" cy="12" r="10" /></svg>;
+  }
+};
 
-const StepsIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "12px" }}>
-    <path d="M6 9L12 4L18 9L12 14L6 9Z" stroke="#3B82F6" strokeWidth="1.5" strokeLinejoin="round" />
-    <path d="M6 15L12 20L18 15" stroke="#3B82F6" strokeWidth="1.5" strokeLinejoin="round" />
-  </svg>
-);
-
-const MarketplaceIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "12px" }}>
-    <path d="M4 8H20L18 15H6L4 8Z" stroke="#3B82F6" strokeWidth="1.5" strokeLinejoin="round" />
-    <circle cx="8" cy="19" r="2" stroke="#3B82F6" strokeWidth="1.5" />
-    <circle cx="16" cy="19" r="2" stroke="#3B82F6" strokeWidth="1.5" />
-    <path d="M20 12H22" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
-
-const LockIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginLeft: "auto", opacity: 0.4 }}>
-    <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
-    <path d="M7 11V7C7 4.2 9.2 2 12 2C14.8 2 17 4.2 17 7V11" stroke="currentColor" strokeWidth="1.5" />
-  </svg>
-);
-
-const SettingsIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" />
-    <path d="M19.4 15C18.9 16 18.1 16.7 17.2 17.2L19 20.6L15.8 19.5C14.8 20 13.7 20.3 12.5 20.3C11.3 20.3 10.2 20 9.2 19.5L6 20.6L7.8 17.2C6.9 16.7 6.1 16 5.6 15L2 16L4.4 12.5C4.3 12.2 4.2 11.8 4.2 11.5C4.2 11.2 4.3 10.8 4.4 10.5L2 7L5.6 8C6.1 7 6.9 6.3 7.8 5.8L6 2.4L9.2 3.5C10.2 3 11.3 2.7 12.5 2.7C13.7 2.7 14.8 3 15.8 3.5L19 2.4L17.2 5.8C18.1 6.3 18.9 7 19.4 8L23 7L20.6 10.5C20.7 10.8 20.8 11.2 20.8 11.5C20.8 11.8 20.7 12.2 20.6 12.5L23 16L19.4 15Z" stroke="currentColor" strokeWidth="1.5" />
-  </svg>
-);
-
-const HelpIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-    <path d="M12 16V12M12 8H12.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
-
-const LogoutIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M15 4H18C19.1046 4 20 4.89543 20 6V18C20 19.1046 19.1046 20 18 20H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M8 8L12 12M12 12L8 16M12 12H4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
-
-const ThreeDotsIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="12" r="2" fill="#718096" />
-    <circle cx="20" cy="12" r="2" fill="#718096" />
-    <circle cx="4" cy="12" r="2" fill="#718096" />
-  </svg>
-);
-
-// ─── Menu definitions ─────────────────────────────────────────────────────────
-
-const sidebarMenu1 = [
-  {
-    id: 0,
-    display: "Home",
-    title: "Home",
-    icon: HomeIcon,
-    click: true,
-    path: "/dashboard/accountants/home",
-  },
-  {
-    id: 1,
-    display: "CRM",
-    title: "CRM",
-    icon: CRMIcon,
-    click: true,
-    path: "/dashboard/accountants",
-  },
-  {
-    id: 2,
-    display: "My Paths",
-    title: "Paths",
-    icon: PathsIcon,
-    click: true,
-    path: "/dashboard/accountants/paths",
-  },
-  {
-    id: 3,
-    display: "My Steps",
-    title: "Steps",
-    icon: StepsIcon,
-    click: true,
-    path: "/dashboard/accountants/steps",
-  },
-  {
-    id: 4,
-    display: "Marketplace",
-    title: "Marketplace",
-    icon: MarketplaceIcon,
-    click: true,
-    path: "/dashboard/accountants/marketplace",
-  },
+// Menu definitions with icons
+const sidebarMenu = [
+  { id: 0, display: "Home", title: "Home", icon: "home", click: true, path: "/dashboard/accountants/home" },
+  { id: 1, display: "CRM", title: "CRM", icon: "crm", click: true, path: "/dashboard/accountants" },
+  { id: 2, display: "My Paths", title: "Paths", icon: "paths", click: true, path: "/dashboard/accountants/paths" },
+  { id: 3, display: "My Steps", title: "Steps", icon: "steps", click: true, path: "/dashboard/accountants/steps" },
+  { id: 4, display: "Marketplace", title: "Marketplace", icon: "marketplace", click: true, path: "/dashboard/accountants/marketplace" },
 ];
-
-const sidebarMenu2 = [
-  { id: 0, display: "CRM", title: "CRM", click: true },
-  { id: 1, display: "Paths", title: "Paths", click: true },
-];
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, accStatus, isOpen, onClose }) => {
-  const selectedMenu = admin ? sidebarMenu2 : sidebarMenu1;
   const { accsideNav, setaccsideNav, setispopular } = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
-  // ── Read partner from localStorage ──────────────────────────────────────────
+  // Get partner details from localStorage
   const userDetails = JSON.parse(localStorage.getItem("partner") || "{}");
-  const fullName = userDetails?.businessName || "Partner";
+  const fullName = userDetails?.businessName || userDetails?.fullName || "Partner";
   const userInitial = fullName.charAt(0).toUpperCase();
+  const userEmail = userDetails?.email || "";
 
-  // ── 🔒 LOCK FLAG ─────────────────────────────────────────────────────────────
-  // Sidebar tabs are disabled unless the account is approved.
-  // profileCreated=false  → profile not yet submitted
-  // status !== "approved" → pending or rejected
+  // Lock state for unapproved accounts
   const partnerStatus = accStatus || userDetails?.approvalStatus;
   const isLocked = partnerStatus !== "approved";
-  // ── Logout ───────────────────────────────────────────────────────────────────
+
+  // Check if a nav item is active based on current URL
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
+  // Handle navigation
+  const handleNavClick = (each) => {
+    if (!each.click || isLocked) return;
+    setaccsideNav(each.title);
+    if (each.path) navigate(each.path);
+    if (handleChangeAccDashsidebar) handleChangeAccDashsidebar();
+    if (onClose) onClose();
+  };
+
+  // Handle logout
   const handleLogout = () => {
     localStorage.removeItem("partner");
     localStorage.removeItem("loginEmail");
     navigate("/login");
   };
 
-  // ── Close dropdown on outside click ─────────────────────────────────────────
+  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -167,264 +148,239 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const getActiveBackground = (title) =>
-    accsideNav === title ? "#E6F0FF" : "transparent";
-
-  // ─── Render ──────────────────────────────────────────────────────────────────
   return (
     <div
-      className={`dashboard-sidebar${isOpen ? " open" : ""}`}
+      className={`dashboard-sidebar ${isOpen ? "open" : ""}`}
       style={{
-        overflow: "visible",
-        padding: "24px 16px 16px",
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-        backgroundColor: "#FFFFFF",
-        borderRight: "1px solid #EDF2F7",
+        overflow: "hidden",
+        padding: "0",
+        width: "240px",
+        flexShrink: 0,
+        position: "relative",
+        zIndex: 100,
+        background: "#ffffff",
+        boxShadow: "none",
       }}
     >
-      {/* Logo */}
-      <div style={{ padding: "0 8px", marginBottom: "24px" }}>
+      {/* Logo Section */}
+      <div
+        className="dashboard-left"
+        style={{
+          padding: "0 20px",
+          height: "70px",
+          borderBottom: "0.5px solid #eef2f6",
+          display: "flex",
+          alignItems: "center",
+          cursor: "pointer",
+        }}
+        onClick={() => {
+          if (!isLocked) {
+            setaccsideNav("Home");
+            navigate("/dashboard/accountants/home");
+          }
+        }}
+      >
         <img
           className="dashboard-logo"
           src={logo}
           alt="Naavi"
-          style={{ width: "160px", objectFit: "contain", marginBottom: "6px" }}
+          style={{ width: "60%" }}
         />
       </div>
 
-      {/* ── Main Navigation ────────────────────────────────────────────────── */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "0 4px", minHeight: 0 }}>
-        {selectedMenu?.map((each, i) => {
-          const isActive = accsideNav === each.title;
-          // 🔒 Each nav item is clickable only when account is approved
+      {/* Navigation Items */}
+      <div
+        className="sidebar-menu-scrollable"
+        style={{
+          overflowY: "auto",
+          flex: 1,
+          marginTop: "20px",
+          padding: "0 12px",
+        }}
+      >
+        {sidebarMenu.map((each, i) => {
+          const active = isActive(each.path);
           const itemClickable = each.click && !isLocked;
 
           return (
             <div
               key={i}
-              className="each-sidenav"
-              title={isLocked ? "Your account is pending admin approval" : ""}
+              className={`each-sidenav ${active ? "active" : ""}`}
               style={{
-                background: getActiveBackground(each.title),
-                color: isActive ? "#1A1F36" : "#4A5568",
-                padding: "0 16px",
+                background: active ? "rgba(34, 115, 230, 0.08)" : "transparent",
+                color: active ? "#2273E6" : "#334155",
+                fontWeight: active ? "600" : "500",
                 borderRadius: "10px",
-                height: "42px",
+                padding: "10px 14px",
+                marginBottom: "6px",
+                fontSize: "0.9rem",
+                opacity: itemClickable || active ? "1" : "0.5",
+                cursor: itemClickable ? "pointer" : "not-allowed",
+                transition: "all 0.2s ease",
                 display: "flex",
                 alignItems: "center",
-                fontWeight: isActive ? "600" : "500",
-                fontSize: "14px",
-                // 🔒 visual cue: greyed-out + not-allowed when locked
-                cursor: itemClickable ? "pointer" : "not-allowed",
-                opacity: itemClickable || isActive ? "1" : "0.4",
-                marginBottom: "2px",
-                transition: "all 0.15s ease",
+                gap: "12px",
               }}
-              onClick={() => {
-                if (!itemClickable) return;
-                setaccsideNav(each.title);
-                if (each.path) navigate(each.path); // ← Navigate first
-                if (handleChangeAccDashsidebar) handleChangeAccDashsidebar();
-                if (onClose) onClose();
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive && itemClickable)
-                  e.currentTarget.style.backgroundColor = "#F7F9FC";
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive)
-                  e.currentTarget.style.backgroundColor = "transparent";
-              }}
+              title={isLocked ? "Your account is pending admin approval" : ""}
+              onClick={() => handleNavClick(each)}
             >
-              {each.icon && <each.icon />}
+              <NavIcon type={each.icon} isActive={active} />
               <span>{each.display}</span>
-              {/* 🔒 Show lock icon on every restricted tab */}
-              {isLocked && <LockIcon />}
             </div>
           );
         })}
       </div>
 
-      {/* ── Bottom Section ─────────────────────────────────────────────────── */}
+      {/* Bottom Section - Add Button + Profile */}
+      <div
+        style={{
+          padding: "16px 20px",
+          borderTop: "1px solid #eef2f6",
+          background: "#ffffff",
+          marginTop: "auto",
+        }}
+      >
+        {/* Add New Button */}
+        <div
+          title={isLocked ? "Your account is pending admin approval" : ""}
+          style={{
+            background: "#f8fafc",
+            borderRadius: "10px",
+            padding: "10px 14px",
+            textAlign: "center",
+            cursor: isLocked ? "not-allowed" : "pointer",
+            opacity: isLocked ? "0.5" : "1",
+            marginBottom: "16px",
+            fontSize: "0.85rem",
+            fontWeight: "500",
+            color: "#2273E6",
+            border: "1px solid #e2e8f0",
+            transition: "all 0.2s ease",
+          }}
+          onClick={() => {
+            if (isLocked) return;
+            if (onClose) onClose();
+            setTimeout(() => setispopular(true), 300);
+          }}
+          onMouseEnter={(e) => {
+            if (!isLocked) {
+              e.currentTarget.style.background = "#eff6ff";
+              e.currentTarget.style.borderColor = "#bfdbfe";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isLocked) {
+              e.currentTarget.style.background = "#f8fafc";
+              e.currentTarget.style.borderColor = "#e2e8f0";
+            }
+          }}
+        >
+          + Add New
+        </div>
 
-      <div style={{
-        padding: "12px 4px 12px",   /* ✅ reduced padding */
-        borderTop: "1px solid #EDF2F7",
-        flexShrink: 0,              /* ✅ ADD THIS — prevents bottom from shrinking */
-        display: "flex",
-        flexDirection: "column",
-        gap: "0px",
-        backgroundColor: "#FFFFFF", /* ✅ solid background so it never overlaps */
-      }}>
-        {/* Add Path Button — also locked when pending/rejected */}
-        {!admin && (
-          <div
-            title={isLocked ? "Your account is pending admin approval" : ""}
-            style={{
-              background: "#F9FAFB", // Very light background
-              borderRadius: "24px",
-              padding: "4px 14px", // Reduced padding for smaller box
-              color: "#2D3748",
-              width: "fit-content",
-              cursor: isLocked ? "not-allowed" : "pointer",
-              opacity: isLocked ? "0.5" : "1",
-              marginBottom: "24px", // Reduced margin
-              fontSize: "12px", // Slightly smaller font
-              fontWeight: "500",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "4px",
-              transition: "all 0.2s ease",
-              border: "1.5px solid transparent",
-              backgroundImage: "linear-gradient(#F9FAFB, #F9FAFB), linear-gradient(135deg, #FFD1DC 0%, #B5EAD7 50%, #C7CEEA 100%)",
-              backgroundOrigin: "border-box",
-              backgroundClip: "padding-box, border-box",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
-              letterSpacing: "0.3px",
-            }}
-            onClick={() => {
-              if (isLocked) return;
-              if (onClose) onClose();          
-              setTimeout(() => {
-                setispopular(true);            
-              }, 300);                         
-            }}
-            onMouseEnter={(e) => {
-              if (isLocked) return;
-              e.currentTarget.style.backgroundImage = "linear-gradient(#F3F4F6, #F3F4F6), linear-gradient(135deg, #FFC0CB 0%, #A8E6CF 50%, #B4D0FF 100%)";
-              e.currentTarget.style.boxShadow = "0 2px 6px rgba(0,0,0,0.04)";
-            }}
-            onMouseLeave={(e) => {
-              if (isLocked) return;
-              e.currentTarget.style.backgroundImage = "linear-gradient(#F9FAFB, #F9FAFB), linear-gradient(135deg, #FFD1DC 0%, #B5EAD7 50%, #C7CEEA 100%)";
-              e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.02)";
-            }}
-          >
-            <span>Add New</span>
-          </div>
-        )}
-
-        {/* Partner Profile Row with Three Dots */}
-        <div style={{ position: "relative", minHeight: "48px" }} ref={dropdownRef}>
+        {/* Profile Section with Dropdown */}
+        <div style={{ position: "relative" }} ref={dropdownRef}>
           <div
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "8px 10px",
+              padding: "10px 12px",
               borderRadius: "10px",
               cursor: "pointer",
               backgroundColor: "transparent",
-              border: "1px solid #EDF2F7",
-              transition: "all 0.15s ease",
-              minHeight: "48px",
+              border: "1px solid #eef2f6",
+              transition: "all 0.2s ease",
             }}
             onClick={() => {
-              navigate("/dashboard/accountants/profile");
-              setaccsideNav("Profile");
+              if (!isLocked) {
+                navigate("/dashboard/accountants/profile");
+                setaccsideNav("Profile");
+              }
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#F7F9FC";
+              e.currentTarget.style.backgroundColor = "#f8fafc";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = "transparent";
             }}
           >
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              overflow: "hidden",
-              flex: 1,
-              minWidth: 0,
-            }}>
-
+            <div style={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}>
               {/* Avatar */}
               <div
                 style={{
-                  width: "28px",
-                  height: "28px",
-                  borderRadius: "7px",
-                  background: "linear-gradient(135deg, #1f304f 0%, #0d6b6e 100%)",
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "8px",
+                  background: "linear-gradient(135deg, #2273E6 0%, #1a5bc4 100%)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   color: "#FFFFFF",
                   fontWeight: "600",
                   fontSize: "14px",
-                  marginRight: "8px",
+                  marginRight: "10px",
                   flexShrink: 0,
                 }}
               >
                 {userInitial}
               </div>
 
-              {/* Full Name + pending badge */}
-              <div style={{
-                overflow: "hidden",
-                flex: 1,
-                minWidth: 0,
-              }}>
+              {/* User Info */}
+              <div style={{ overflow: "hidden", flex: 1 }}>
                 <div
                   style={{
                     fontWeight: "600",
-                    fontSize: "12px",
-                    color: "#1A1F36",
+                    fontSize: "13px",
+                    color: "#1e293b",
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
-                    maxWidth: "120px",
                   }}
                 >
                   {fullName}
                 </div>
-                {/* 🔒 Status badge shown when not approved */}
                 {isLocked && (
                   <div
                     style={{
                       fontSize: "10px",
-                      fontWeight: "600",
-                      color: partnerStatus === "rejected" ? "#EF4444" : "#D97706",
-                      marginTop: "1px",
+                      fontWeight: "500",
+                      color: partnerStatus === "rejected" ? "#ef4444" : "#f59e0b",
+                      marginTop: "2px",
                     }}
                   >
                     {partnerStatus === "rejected"
-                      ? "● Rejected"
+                      ? "Rejected"
                       : partnerStatus === "pending"
-                        ? "● Pending Approval"
-                        : "● Profile Required"}
+                      ? "Pending Approval"
+                      : "Profile Required"}
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Three Dots */}
+            {/* Three Dots Menu Trigger */}
             <div
               onClick={(e) => {
                 e.stopPropagation();
                 setShowDropdown(!showDropdown);
               }}
               style={{
-                padding: "4px",
+                padding: "6px",
                 borderRadius: "6px",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                transition: "all 0.15s ease",
-                backgroundColor: showDropdown ? "#F1F5F9" : "transparent",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#F1F5F9";
-              }}
-              onMouseLeave={(e) => {
-                if (!showDropdown)
-                  e.currentTarget.style.backgroundColor = "transparent";
+                transition: "all 0.2s ease",
+                backgroundColor: showDropdown ? "#f1f5f9" : "transparent",
               }}
             >
-              <ThreeDotsIcon />
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="2" fill="#64748b" />
+                <circle cx="20" cy="12" r="2" fill="#64748b" />
+                <circle cx="4" cy="12" r="2" fill="#64748b" />
+              </svg>
             </div>
           </div>
 
@@ -433,41 +389,52 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
             <div
               style={{
                 position: "absolute",
-                bottom: "calc(100% + 4px)",
+                bottom: "calc(100% + 8px)",
                 left: "0",
                 right: "0",
-                backgroundColor: "#FFFFFF",
+                backgroundColor: "#ffffff",
                 borderRadius: "10px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                padding: "4px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                padding: "6px",
                 zIndex: 1000,
-                border: "1px solid #EDF2F7",
+                border: "1px solid #eef2f6",
               }}
             >
+            
 
-              {/* Edit Profile */}
-              <div
-                style={{ display: "flex", alignItems: "center", padding: "8px 10px", borderRadius: "6px", cursor: "pointer", color: "#4A5568", fontSize: "13px", fontWeight: "500", gap: "10px", transition: "all 0.15s ease" }}
-                onClick={() => { setShowDropdown(false); navigate("/dashboard/accountants/profile/edit"); }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#F1F5F9"; e.currentTarget.style.color = "#3B82F6"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#4A5568"; }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M17 3L21 7L7 21H3V17L17 3Z" strokeLinejoin="round" />
-                </svg>
-                <span>Edit Profile</span>
-              </div>
-              <div style={{ height: "1px", backgroundColor: "#EDF2F7", margin: "4px 0" }} />
+              <div style={{ height: "1px", backgroundColor: "#eef2f6", margin: "4px 0" }} />
 
               {/* Logout */}
               <div
-                style={{ display: "flex", alignItems: "center", padding: "8px 10px", borderRadius: "6px", cursor: "pointer", color: "#EF4444", fontSize: "13px", fontWeight: "500", gap: "10px", transition: "all 0.15s ease" }}
-                onClick={() => { setShowDropdown(false); handleLogout(); }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#FEF2F2"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "10px 12px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  color: "#ef4444",
+                  fontSize: "13px",
+                  fontWeight: "500",
+                  gap: "10px",
+                  transition: "all 0.15s ease",
+                }}
+                onClick={() => {
+                  setShowDropdown(false);
+                  handleLogout();
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#fef2f2";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }}
               >
-                <LogoutIcon />
-                <span>Log out</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                <span>Logout</span>
               </div>
             </div>
           )}
