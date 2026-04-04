@@ -1049,116 +1049,20 @@ table {
   color: var(--slate-500);
   position: relative;
 
-  .tab-btn-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.4;
-    transition: opacity .2s;
-  }
-
-  .tab-btn-count {
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 7px;
-    border-radius: var(--radius-full);
-    background: rgba(0,0,0,.08);
-    transition: all .2s;
-  }
-
+  /* Hover state - same for all buttons */
   &:hover {
+    background: rgba(255, 255, 255, 0.8);
     color: var(--slate-700);
-    background: rgba(255,255,255,.6);
   }
 
-  /* PENDING active */
-  &.tab-btn-pending.active {
-    background: white;
-    color: var(--amber-600);
-    box-shadow: 0 2px 8px rgba(217,119,6,.15);
-
-    .tab-btn-dot { opacity: 1; background: var(--amber-500); }
-    .tab-btn-count { background: var(--amber-100); color: var(--amber-600); }
-  }
-
-  /* APPROVED active */
-  &.tab-btn-approved.active {
-    background: white;
-    color: var(--green-700);
-    box-shadow: 0 2px 8px rgba(34,197,94,.15);
-
-    .tab-btn-dot { opacity: 1; background: var(--green-500); }
-    .tab-btn-count { background: var(--green-100); color: var(--green-700); }
-  }
-
-  /* REJECTED active */
-  &.tab-btn-rejected.active {
-    background: white;
-    color: var(--red-700);
-    box-shadow: 0 2px 8px rgba(239,68,68,.15);
-
-    .tab-btn-dot { opacity: 1; background: var(--red-500); }
-    .tab-btn-count { background: var(--red-100); color: var(--red-700); }
-  }
-}
-
-// Add this to your SCSS file in the tab-btn section
-.tab-btn {
-  // ... existing styles
-
-  /* ALL active */
-  &.tab-btn-all.active {
+  /* Active state - same for all buttons (NO COLORS) */
+  &.active {
     background: white;
     color: var(--slate-700);
-    box-shadow: 0 2px 8px rgba(100, 116, 139, 0.15);
-
-    .tab-btn-dot { opacity: 1; background: var(--slate-500); }
-    .tab-btn-count { background: var(--slate-100); color: var(--slate-600); }
-  }
-
-  /* PENDING active */
-  &.tab-btn-pending.active {
-    background: white;
-    color: var(--amber-600);
-    box-shadow: 0 2px 8px rgba(217,119,6,.15);
-
-    .tab-btn-dot { opacity: 1; background: var(--amber-500); }
-    .tab-btn-count { background: var(--amber-100); color: var(--amber-600); }
-  }
-
-  /* APPROVED active */
-  &.tab-btn-approved.active {
-    background: white;
-    color: var(--green-700);
-    box-shadow: 0 2px 8px rgba(34,197,94,.15);
-
-    .tab-btn-dot { opacity: 1; background: var(--green-500); }
-    .tab-btn-count { background: var(--green-100); color: var(--green-700); }
-  }
-
-  /* REJECTED active */
-  &.tab-btn-rejected.active {
-    background: white;
-    color: var(--red-700);
-    box-shadow: 0 2px 8px rgba(239,68,68,.15);
-
-    .tab-btn-dot { opacity: 1; background: var(--red-500); }
-    .tab-btn-count { background: var(--red-100); color: var(--red-700); }
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   }
 }
 
-/* Add this to your SCSS file in the tab-btn section */
-
-/* ALL active */
-.tab-btn-all.active {
-  background: white;
-  color: var(--slate-700);
-  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.15);
-
-  .tab-btn-dot { opacity: 1; background: var(--slate-500); }
-  .tab-btn-count { background: var(--slate-100); color: var(--slate-600); }
-}
 
 .box-amber .stat-box-btn {
   margin-top: 8px;   // ↓ from 14px

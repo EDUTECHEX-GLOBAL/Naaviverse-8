@@ -1022,22 +1022,18 @@ const DraftPathView = () => {
         </div>
       )}
 
-      {/* ══ EDIT PATH DRAWER ════════════════════════════════════════════════ */}
-      {editPathOpen && (
-        <div className="global-drawer-overlay" onClick={() => setEditPathOpen(false)}>
-          <div className="global-drawer-panel" onClick={(e) => e.stopPropagation()}>
-            <EditPathForm
-              selectedPath={pathData}
-              onSave={async () => {
-                const updated = await axios.get(`${BASE_URL}/api/paths/viewpath/${id}`);
-                setPathData(updated.data.data);
-                setEditPathOpen(false);
-              }}
-              onCancel={() => setEditPathOpen(false)}
-            />
-          </div>
-        </div>
-      )}
+      {/* ══ EDIT PATH MODAL ═════════════════════════════════════════════════ */}
+{editPathOpen && (
+  <EditPathForm
+    selectedPath={pathData}
+    onSave={async () => {
+      const updated = await axios.get(`${BASE_URL}/api/paths/viewpath/${id}`);
+      setPathData(updated.data.data);
+      setEditPathOpen(false);
+    }}
+    onCancel={() => setEditPathOpen(false)}
+  />
+)}
 
       {/* ══ ADMIN FEEDBACK MODAL ════════════════════════════════════════════ */}
   {reviewPanelOpen && (

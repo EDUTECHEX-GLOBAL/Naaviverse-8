@@ -4,7 +4,7 @@ const userModel = require('../models/users.model');
 const mongoose = require('mongoose');
 
 // ── Activity logger ───────────────────────────────────────────────────────────
-const { logActivityInternal } = require('./activity.controller');
+const { logActivityInternal } = require('./Activity.controller');
 
 const addPath = async (req, res) => {
   try {

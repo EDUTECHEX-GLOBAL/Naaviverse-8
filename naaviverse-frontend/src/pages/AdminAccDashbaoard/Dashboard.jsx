@@ -1058,7 +1058,7 @@ export default function Dashboard() {
               className={`role-toggle-btn ${isPartnerView ? "partner-toggle" : "user-toggle"}`}
               onClick={() => setShowRoleDropdown((prev) => !prev)}
             >
-              <span className="toggle-dot" />
+              
               {isPartnerView ? "Partners" : "Users"}
               <svg className={`arrow ${showRoleDropdown ? "open" : ""}`} width="12" height="12" viewBox="0 0 12 12" fill="none">
                 <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -1080,16 +1080,16 @@ export default function Dashboard() {
 
         <div className="tab-btn-group">
           <button className={`tab-btn tab-btn-all ${tab === "all" ? "active" : ""}`} onClick={() => setTab("all")}>
-            <span className="tab-btn-dot" />All<span className="tab-btn-count">{activeData.length}</span>
+            All
           </button>
           <button className={`tab-btn tab-btn-pending ${tab === "pending" ? "active" : ""}`} onClick={() => setTab("pending")}>
-            <span className="tab-btn-dot" />Pending<span className="tab-btn-count">{pendingCount}</span>
+            Pending
           </button>
           <button className={`tab-btn tab-btn-approved ${tab === "approved" ? "active" : ""}`} onClick={() => setTab("approved")}>
-            <span className="tab-btn-dot" />Approved<span className="tab-btn-count">{approvedCount}</span>
+            Approved
           </button>
           <button className={`tab-btn tab-btn-rejected ${tab === "rejected" ? "active" : ""}`} onClick={() => setTab("rejected")}>
-            <span className="tab-btn-dot" />Rejected<span className="tab-btn-count">{rejectedCount}</span>
+            Rejected
           </button>
         </div>
 

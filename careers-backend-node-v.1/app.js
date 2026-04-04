@@ -44,7 +44,7 @@ var approvalRouter = require("./routes/approvalRouter");
 var visitorRoutes = require("./Admin/routes/VisitorRoute");
 const adminAuthRoutes = require("./Admin/routes/adminAuthRoutes");
 const adminDashboardRoutes = require("./Admin/routes/adminDashboardRoutes");
-const dashboardRouter = require("./routes/dashboardRouter");
+const dashboardRouter = require("./routes/Dashboardrouter");
 const activityRouter  = require("./routes/activityRouter");
 const stepsRouter = require("./routes/stepsRouter");
 const marketplaceRouter = require("./routes/marketplaceRouter");
@@ -83,7 +83,8 @@ app.use(express.static(path.join(__dirname, "public")));
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:4545",
-  "https://naaviverse-vercel-frontend-sigma.vercel.app"
+  "https://naaviverse-vercel-frontend-sigma.vercel.app",
+  "https://naaviverse-frontend-sepia.vercel.app"
 ];
 
 const corsOptions = {
