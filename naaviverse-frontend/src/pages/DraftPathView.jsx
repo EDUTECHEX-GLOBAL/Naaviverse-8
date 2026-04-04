@@ -1023,20 +1023,20 @@ const DraftPathView = () => {
       )}
 
       {/* ══ EDIT PATH MODAL ═════════════════════════════════════════════════ */}
-{editPathOpen && (
-  <EditPathForm
-    selectedPath={pathData}
-    onSave={async () => {
-      const updated = await axios.get(`${BASE_URL}/api/paths/viewpath/${id}`);
-      setPathData(updated.data.data);
-      setEditPathOpen(false);
-    }}
-    onCancel={() => setEditPathOpen(false)}
-  />
-)}
+      {editPathOpen && (
+        <EditPathForm
+          selectedPath={pathData}
+          onSave={async () => {
+            const updated = await axios.get(`${BASE_URL}/api/paths/viewpath/${id}`);
+            setPathData(updated.data.data);
+            setEditPathOpen(false);
+          }}
+          onCancel={() => setEditPathOpen(false)}
+        />
+      )}
 
       {/* ══ ADMIN FEEDBACK MODAL ════════════════════════════════════════════ */}
-  {reviewPanelOpen && (
+      {reviewPanelOpen && (
         <>
           <div
             style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1200 }}
@@ -1061,21 +1061,23 @@ const DraftPathView = () => {
           >
             {/* Header */}
             <div style={{
-              padding: "14px 20px 12px",   // ← tighter padding
+              padding: "12px 20px",
               borderBottom: "1px solid #e2e8f0",
-              display: "flex", alignItems: "center",   // ← center align
-              justifyContent: "space-between", gap: 12, flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+              flexShrink: 0,
             }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              {/* LEFT: back btn (if detail) + title inline */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                 {selectedCR !== null && (
-                  <button
-                    onClick={() => setSelectedCR(null)}
-                    style={{
-                      display: "inline-flex", alignItems: "center", gap: 4,
-                      fontSize: "0.75rem", fontWeight: 600, color: "#0d9488",
-                      background: "none", border: "none", cursor: "pointer", padding: 0,
-                    }}
-                  >
+                  <button onClick={() => setSelectedCR(null)} style={{
+                    display: "inline-flex", alignItems: "center", gap: 4,
+                    fontSize: "0.75rem", fontWeight: 600, color: "#0d9488",
+                    background: "none", border: "none", cursor: "pointer",
+                    padding: 0, flexShrink: 0,
+                  }}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                       stroke="currentColor" strokeWidth="2.5">
                       <line x1="19" y1="12" x2="5" y2="12" />
@@ -1084,32 +1086,26 @@ const DraftPathView = () => {
                     All requests
                   </button>
                 )}
-                {selectedCR === null && (
-                  <div>
-                    <p style={{ margin: 0, fontWeight: 700, fontSize: "0.92rem", color: "#0f172a" }}>
-                      Admin Feedback
-                    </p>
-                    <p style={{ margin: "1px 0 0", fontSize: "0.72rem", color: "#94a3b8" }}>
-                      {pathData?.nameOfPath}
-                    </p>
-                  </div>
-                )}
-                {selectedCR !== null && (
-                  <div>
-                    <p style={{ margin: 0, fontWeight: 700, fontSize: "0.92rem", color: "#0f172a" }}>
-                      Admin Feedback
-                    </p>
-                    <p style={{ margin: "1px 0 0", fontSize: "0.72rem", color: "#94a3b8" }}>
-                      {pathData?.nameOfPath}
-                    </p>
-                  </div>
-                )}
+                {/* Title + subtitle stacked, but compact */}
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ margin: 0, fontWeight: 700, fontSize: "0.9rem", color: "#0f172a", lineHeight: 1.2 }}>
+                    Admin Feedback
+                  </p>
+                  <p style={{
+                    margin: 0, fontSize: "0.7rem", color: "#94a3b8",
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>
+                    {pathData?.nameOfPath}
+                  </p>
+                </div>
               </div>
+
+              {/* RIGHT: close button */}
               <button
                 onClick={() => { setReviewPanelOpen(false); setSelectedCR(null); }}
                 style={{
                   background: "none", border: "none", cursor: "pointer",
-                  color: "#94a3b8", padding: 4,
+                  color: "#94a3b8", padding: 4, flexShrink: 0,
                   display: "flex", alignItems: "center",
                 }}
               >
@@ -1160,38 +1156,53 @@ const DraftPathView = () => {
                         </span>
                       </div>
 
-                      {/* Admin original bubble — RIGHT */}
-                      {/* Admin original bubble — LEFT ✅ */}
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, flexDirection: "row" }}>
-                          <div style={{
-                            width: 22, height: 22, borderRadius: "50%",
-                            background: "#6366f1", color: "#fff",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: "0.6rem", fontWeight: 700,
-                          }}>A</div>
-                          <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>Admin</span>
-                        </div>
+
+                      {/* Admin original bubble */}
+                      <div style={{
+                        display: "flex",
+                        flexDirection: "row",       // ← ROW layout
+                        alignItems: "flex-end",
+                        gap: 6,
+                      }}>
+                        {/* Avatar */}
                         <div style={{
-                          maxWidth: "82%", marginLeft: 28,  // ✅ indent from LEFT
-                          background: "#eef2ff", border: "1px solid #c7d2fe",
-                          borderRadius: "4px 14px 14px 14px",  // ✅ LEFT bubble shape
-                          padding: "10px 14px",
+                          width: 22, height: 22, borderRadius: "50%",
+                          background: "#6366f1", color: "#fff",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: "0.6rem", fontWeight: 700, flexShrink: 0,
+                        }}>A</div>
+
+                        {/* Label + bubble */}
+                        <div style={{
+                          display: "flex", flexDirection: "column",
+                          alignItems: "flex-start", gap: 3,
+                          maxWidth: "65%",            // ← key constraint
                         }}>
-                          {cr.issues?.filter(i => i?.trim()).length > 0 && (
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8 }}>
-                              {cr.issues.filter(i => i?.trim()).map((issue, i) => (
-                                <span key={i} style={{
-                                  fontSize: "0.68rem", fontWeight: 600,
-                                  padding: "2px 8px", borderRadius: 50,
-                                  background: "#e0e7ff", color: "#4338ca",
-                                }}>{issue}</span>
-                              ))}
-                            </div>
-                          )}
-                          <p style={{ margin: 0, fontSize: "0.81rem", color: "#1e293b", lineHeight: 1.5 }}>
-                            {cr.adminNote || "—"}
-                          </p>
+                          <span style={{ fontSize: "0.65rem", color: "#94a3b8", fontWeight: 600 }}>
+                            Admin
+                          </span>
+                          <div style={{
+                            background: "#eef2ff",
+                            border: "1px solid #c7d2fe",
+                            borderRadius: "4px 14px 14px 14px",
+                            padding: "10px 14px",
+                          }}>
+                            {cr.issues?.filter(i => i?.trim()).length > 0 && (
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 6 }}>
+                                {cr.issues.filter(i => i?.trim()).map((issue, i) => (
+                                  <span key={i} style={{
+                                    fontSize: "0.68rem", fontWeight: 600,
+                                    padding: "2px 8px", borderRadius: 50,
+                                    background: "#e0e7ff", color: "#4338ca",
+                                    whiteSpace: "nowrap",
+                                  }}>{issue}</span>
+                                ))}
+                              </div>
+                            )}
+                            <p style={{ margin: 0, fontSize: "0.81rem", color: "#1e293b", lineHeight: 1.5 }}>
+                              {cr.adminNote || "—"}
+                            </p>
+                          </div>
                         </div>
                       </div>
 
@@ -1200,46 +1211,56 @@ const DraftPathView = () => {
                         const isPartner = reply.from === "partner";
                         return (
                           <div key={rIdx} style={{
-                            display: "flex", flexDirection: "column",
-                            alignItems: isPartner ? "flex-end" : "flex-start", // ✅ Partner=RIGHT, Admin=LEFT
-                            gap: 3,
+                            display: "flex",
+                            flexDirection: isPartner ? "row-reverse" : "row",  // ← ROW not column
+                            alignItems: "flex-end",
+                            gap: 6,
                           }}>
+                            {/* Avatar */}
                             <div style={{
-                              display: "flex", alignItems: "center", gap: 6,
-                              flexDirection: isPartner ? "row-reverse" : "row", // ✅ Partner=RIGHT, Admin=LEFT
+                              width: 22, height: 22, borderRadius: "50%",
+                              background: isPartner ? "#0d9488" : "#6366f1",
+                              color: "#fff", display: "flex", alignItems: "center",
+                              justifyContent: "center", fontSize: "0.6rem", fontWeight: 700,
+                              flexShrink: 0,
                             }}>
-                              <div style={{
-                                width: 22, height: 22, borderRadius: "50%",
-                                background: isPartner ? "#0d9488" : "#6366f1",
-                                color: "#fff", display: "flex", alignItems: "center",
-                                justifyContent: "center", fontSize: "0.6rem", fontWeight: 700,
+                              {isPartner ? "P" : "A"}
+                            </div>
+
+                            {/* Content: label + bubble stacked */}
+                            <div style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: isPartner ? "flex-end" : "flex-start",
+                              gap: 3,
+                              maxWidth: "65%",          // ← constrains the whole message column
+                            }}>
+                              <span style={{
+                                fontSize: "0.65rem", color: "#94a3b8", fontWeight: 600,
                               }}>
-                                {isPartner ? "P" : "A"}
-                              </div>
-                              <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>
                                 {isPartner ? "You" : "Admin"} · {new Date(reply.sentAt).toLocaleString("en-IN", {
                                   day: "2-digit", month: "short",
                                   hour: "2-digit", minute: "2-digit",
                                 })}
                               </span>
-                            </div>
-                            <div style={{
-                              maxWidth: "80%",
-                              marginRight: isPartner ? 28 : 0, // ✅ Partner indent from right
-                              marginLeft: isPartner ? 0 : 28,  // ✅ Admin indent from left
-                              background: isPartner ? "#f0fdf4" : "#eef2ff",
-                              border: `1px solid ${isPartner ? "#bbf7d0" : "#c7d2fe"}`,
-                              borderRadius: isPartner
-                                ? "14px 4px 14px 14px"  // ✅ Partner = RIGHT bubble shape
-                                : "4px 14px 14px 14px", // ✅ Admin = LEFT bubble shape
-                              padding: "9px 13px",
-                            }}>
-                              <p style={{
-                                margin: 0, fontSize: "0.81rem",
-                                color: isPartner ? "#065f46" : "#1e293b", lineHeight: 1.5,
+
+                              {/* Bubble */}
+                              <div style={{
+                                background: isPartner ? "#f0fdf4" : "#eef2ff",
+                                border: `1px solid ${isPartner ? "#bbf7d0" : "#c7d2fe"}`,
+                                borderRadius: isPartner ? "14px 4px 14px 14px" : "4px 14px 14px 14px",
+                                padding: "8px 12px",
                               }}>
-                                {reply.message}
-                              </p>
+                                <p style={{
+                                  margin: 0,
+                                  fontSize: "0.81rem",
+                                  color: isPartner ? "#065f46" : "#1e293b",
+                                  lineHeight: 1.45,
+                                  wordBreak: "break-word",
+                                }}>
+                                  {reply.message}
+                                </p>
+                              </div>
                             </div>
                           </div>
                         );

@@ -2394,7 +2394,7 @@ body.admin-popup-open {
 // ── Message row ─────────────────────────────────────────────────
 .vcr-msg {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-end !important;
   gap: 8px;
 
   // Admin → right
@@ -2418,16 +2418,17 @@ body.admin-popup-open {
 
 // ── Avatar ──────────────────────────────────────────────────────
 .vcr-avatar {
-  width: 28px;
-  height: 28px;
+   width: 28px !important;
+  height: 28px !important;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.6rem;
+  font-size: 0.6rem !important;
   font-weight: 700;
-  flex-shrink: 0;
+  flex-shrink: 0 !important;
   letter-spacing: 0.02em;
+  align-self: flex-end !important;
 
   &.admin-av {
     background: #eef2ff;
@@ -2462,22 +2463,22 @@ body.admin-popup-open {
 
 // ── Bubbles ─────────────────────────────────────────────────────
 .vcr-bubble {
-  padding: 10px 13px;
-  font-size: 0.81rem;
-  line-height: 1.55;
+  padding: 10px 14px !important;
+  min-width: 60px !important; // ← prevents tiny square for short messages
+  width: fit-content !important;
+  max-width: 100% !important;
 
-  // Admin bubble → right, indigo tint
   &.admin-bubble {
-    background: #eef2ff;
-    border: 1px solid #c7d2fe;
-    border-radius: 14px 4px 14px 14px;
+    border-radius: 16px 4px 16px 16px !important;
+    background: #eef2ff !important;
+    border: 1px solid #c7d2fe !important;
   }
 
-  // Partner bubble → left, green tint
   &.partner-bubble {
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    border-radius: 4px 14px 14px 14px;
+    border-radius: 4px 16px 16px 16px !important;
+    background: #f0fdf4 !important;
+    border: 1px solid #bbf7d0 !important;
+
 
     &.empty-bubble {
       background: #f8fafc;
@@ -2487,9 +2488,11 @@ body.admin-popup-open {
 }
 
 .vcr-bubble-text {
-  margin: 0;
-  font-size: 0.81rem;
-  line-height: 1.55;
+  font-size: 0.82rem !important;
+  line-height: 1.55 !important;
+  margin: 0 !important;
+  white-space: pre-wrap !important; 
+  word-break: break-word !important;
 
   &.admin-text {
     color: #1e293b;
@@ -2731,6 +2734,7 @@ body.admin-popup-open {
   padding-bottom: 12px;
   border-bottom: 1px solid #f1f5f9;
 }
+
 // ─── FIX: Remove top whitespace in VCR modal ────────────────────
 .pending-popup-body.vcr-body-wrap {
   padding-top: 4px !important;
@@ -2857,8 +2861,13 @@ body.admin-popup-open {
   padding: 0 !important;
   border-radius: 0 !important;
 
-  &::after { content: ", "; }
-  &:last-child::after { content: ""; }
+  &::after {
+    content: ", ";
+  }
+
+  &:last-child::after {
+    content: "";
+  }
 }
 
 .vcr-issue-pills {
@@ -2941,7 +2950,11 @@ body.admin-popup-open {
   border-radius: 4px !important;
   letter-spacing: 0 !important;
 
-  &::after { content: "" !important; } // remove comma
+  &::after {
+    content: "" !important;
+  }
+
+  // remove comma
 }
 
 // ─── VCR DETAIL: Message row tighter ─────────────────────────────
@@ -2950,8 +2963,9 @@ body.admin-popup-open {
 }
 
 .vcr-msg-content {
-  max-width: 68% !important;
-  gap: 2px !important;
+  max-width: 72% !important;
+  min-width: 0 !important;
+  gap: 3px !important;
 }
 
 .vcr-msg-label {
