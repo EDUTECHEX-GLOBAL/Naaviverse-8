@@ -1158,48 +1158,34 @@ const DraftPathView = () => {
 
 
                       {/* Admin original bubble */}
-                      <div style={{
-                        display: "flex",
-                        flexDirection: "row",       // ← ROW layout
-                        alignItems: "flex-end",
-                        gap: 6,
-                      }}>
-                        {/* Avatar */}
+                      {/* Admin original bubble */}
+                      <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
                         <div style={{
-                          width: 22, height: 22, borderRadius: "50%",
-                          background: "#6366f1", color: "#fff",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: "0.6rem", fontWeight: 700, flexShrink: 0,
+                          width: 28, height: 28, borderRadius: "50%", background: "#6366f1",
+                          color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: "0.65rem", fontWeight: 700, flexShrink: 0, marginTop: 2,
                         }}>A</div>
-
-                        {/* Label + bubble */}
-                        <div style={{
-                          display: "flex", flexDirection: "column",
-                          alignItems: "flex-start", gap: 3,
-                          maxWidth: "65%",            // ← key constraint
-                        }}>
-                          <span style={{ fontSize: "0.65rem", color: "#94a3b8", fontWeight: 600 }}>
-                            Admin
-                          </span>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 2, alignItems: "flex-start" }}>
+                          <span style={{ fontSize: "0.65rem", color: "#94a3b8", fontWeight: 600 }}>Admin</span>
                           <div style={{
+                            width: "fit-content",
+                            maxWidth: 320,
                             background: "#eef2ff",
                             border: "1px solid #c7d2fe",
                             borderRadius: "4px 14px 14px 14px",
-                            padding: "10px 14px",
+                            padding: "8px 12px",
                           }}>
                             {cr.issues?.filter(i => i?.trim()).length > 0 && (
-                              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 6 }}>
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 5 }}>
                                 {cr.issues.filter(i => i?.trim()).map((issue, i) => (
                                   <span key={i} style={{
-                                    fontSize: "0.68rem", fontWeight: 600,
-                                    padding: "2px 8px", borderRadius: 50,
-                                    background: "#e0e7ff", color: "#4338ca",
-                                    whiteSpace: "nowrap",
+                                    fontSize: "0.68rem", fontWeight: 600, padding: "2px 8px",
+                                    borderRadius: 50, background: "#e0e7ff", color: "#4338ca", whiteSpace: "nowrap",
                                   }}>{issue}</span>
                                 ))}
                               </div>
                             )}
-                            <p style={{ margin: 0, fontSize: "0.81rem", color: "#1e293b", lineHeight: 1.5 }}>
+                            <p style={{ margin: 0, fontSize: "0.81rem", color: "#1e293b", lineHeight: 1.4, wordBreak: "break-word" }}>
                               {cr.adminNote || "—"}
                             </p>
                           </div>
@@ -1212,51 +1198,46 @@ const DraftPathView = () => {
                         return (
                           <div key={rIdx} style={{
                             display: "flex",
-                            flexDirection: isPartner ? "row-reverse" : "row",  // ← ROW not column
-                            alignItems: "flex-end",
-                            gap: 6,
+                            flexDirection: isPartner ? "row-reverse" : "row",
+                            alignItems: "flex-start",
+                            gap: 8,
                           }}>
                             {/* Avatar */}
                             <div style={{
-                              width: 22, height: 22, borderRadius: "50%",
+                              width: 28, height: 28, borderRadius: "50%",
                               background: isPartner ? "#0d9488" : "#6366f1",
                               color: "#fff", display: "flex", alignItems: "center",
-                              justifyContent: "center", fontSize: "0.6rem", fontWeight: 700,
-                              flexShrink: 0,
+                              justifyContent: "center", fontSize: "0.65rem", fontWeight: 700,
+                              flexShrink: 0, marginTop: 2,
                             }}>
                               {isPartner ? "P" : "A"}
                             </div>
 
-                            {/* Content: label + bubble stacked */}
+                            {/* Label + bubble */}
                             <div style={{
-                              display: "flex",
-                              flexDirection: "column",
+                              display: "flex", flexDirection: "column",
                               alignItems: isPartner ? "flex-end" : "flex-start",
-                              gap: 3,
-                              maxWidth: "65%",          // ← constrains the whole message column
+                              gap: 2,
                             }}>
-                              <span style={{
-                                fontSize: "0.65rem", color: "#94a3b8", fontWeight: 600,
-                              }}>
+                              <span style={{ fontSize: "0.65rem", color: "#94a3b8", fontWeight: 600 }}>
                                 {isPartner ? "You" : "Admin"} · {new Date(reply.sentAt).toLocaleString("en-IN", {
-                                  day: "2-digit", month: "short",
-                                  hour: "2-digit", minute: "2-digit",
+                                  day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
                                 })}
                               </span>
 
-                              {/* Bubble */}
+                              {/* ← THE FIX: width fit-content + maxWidth */}
                               <div style={{
+                                maxWidth: 320,
                                 background: isPartner ? "#f0fdf4" : "#eef2ff",
                                 border: `1px solid ${isPartner ? "#bbf7d0" : "#c7d2fe"}`,
                                 borderRadius: isPartner ? "14px 4px 14px 14px" : "4px 14px 14px 14px",
                                 padding: "8px 12px",
+                                wordBreak: "break-word",
                               }}>
                                 <p style={{
-                                  margin: 0,
-                                  fontSize: "0.81rem",
+                                  margin: 0, fontSize: "0.81rem",
                                   color: isPartner ? "#065f46" : "#1e293b",
-                                  lineHeight: 1.45,
-                                  wordBreak: "break-word",
+                                  lineHeight: 1.4, wordBreak: "break-word",
                                 }}>
                                   {reply.message}
                                 </p>

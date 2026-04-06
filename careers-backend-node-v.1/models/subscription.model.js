@@ -2,10 +2,10 @@ const mongoose = require("mongoose");
 
 const SubscriptionSchema = new mongoose.Schema(
   {
-    userEmail:   { type: String, required: true },
-    profileId:   { type: String },
+    userEmail: { type: String, required: true },
+    profileId: { type: String },
 
-    productId:   { type: String, required: true },
+    productId: { type: String, required: true },
     productName: { type: String, required: true },
 
     tier: {
@@ -16,7 +16,7 @@ const SubscriptionSchema = new mongoose.Schema(
 
     billingMethod: {
       type: String,
-      enum: ["monthly", "annual", "lifetime"],
+      enum: ["monthly", "annual", "lifetime", "credit_only"],
       required: true,
     },
 
@@ -27,7 +27,7 @@ const SubscriptionSchema = new mongoose.Schema(
     },
 
     startDate: { type: Date, default: Date.now },
-    endDate:   { type: Date },
+    endDate: { type: Date },
 
     // ── NEW: credit-based per-step unlocks ────────────────────────────────
     // Stored directly here — no new collection needed.
@@ -35,10 +35,10 @@ const SubscriptionSchema = new mongoose.Schema(
     // e.g. [{ step_id: "abc", layer: "micro", credits_spent: 2, unlocked_at: Date }]
     unlockedSteps: [
       {
-        step_id:       { type: String, required: true },
-        layer:         { type: String, enum: ["micro", "nano"], required: true },
+        step_id: { type: String, required: true },
+        layer: { type: String, enum: ["micro", "nano"], required: true },
         credits_spent: { type: Number, required: true },
-        unlocked_at:   { type: Date, default: Date.now },
+        unlocked_at: { type: Date, default: Date.now },
       },
     ],
   },

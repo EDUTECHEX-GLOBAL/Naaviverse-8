@@ -1,3 +1,4 @@
+// models/VaultTransaction.js — add expiresAt field
 const mongoose = require("mongoose");
 
 const VaultTransactionSchema = new mongoose.Schema({
@@ -5,10 +6,11 @@ const VaultTransactionSchema = new mongoose.Schema({
   type: { type: String, enum: ["credit", "debit"], required: true },
   amount: { type: Number, required: true },
   timestamp: { type: Date, default: Date.now },
+  expiresAt: { type: Date, default: null },   // ← ADD THIS — null means never expires
   metadata: {
-    type: { type: String },   // "welcome_bonus" | "top_up" | "path_unlock"
-    description: { type: String },   // label shown in UI
-    source: { type: String },   // "signup" | "manual" | "path" | "session"
+    type: { type: String },
+    description: { type: String },
+    source: { type: String },
   },
 });
 

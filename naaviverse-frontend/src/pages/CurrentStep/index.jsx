@@ -5,6 +5,7 @@ import { useStore } from "../../components/store/store.ts";
 import axios from "axios";
 import Step4 from "../dashboard/MallProduct/Step4.jsx";
 import CoinComponent from "../dashboard/MallProduct/CoinComponent.jsx";
+import { useRazorpayPayment } from "../../app/useRazorpayPayment";
 import { useNavigate } from "react-router-dom";
 
 // images
@@ -332,49 +333,49 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     catch { return null; }
   })();
 
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
   const userEmail = userDetails?.user?.email || userDetails?.email || "guest";
 
-  const SUB_KEY      = `naavi_subscribed_${userEmail}`;
+  const SUB_KEY = `naavi_subscribed_${userEmail}`;
   const SUB_TIER_KEY = `naavi_sub_tier_${userEmail}`;
-  const PRODUCT_ID   = "naavi-platform";
+  const PRODUCT_ID = "naavi-platform";
   const PRODUCT_NAME = "Naavi Platform";
 
   // ── Subscription state ─────────────────────────────────────────────────
-  const [subscribed,    setSubscribed]    = useState(() => localStorage.getItem(SUB_KEY) === "true");
-  const [subTier,       setSubTier]       = useState(() => localStorage.getItem(SUB_TIER_KEY) || null);
-  const [showSubGate,   setShowSubGate]   = useState(false);
-  const [upgradeMode,   setUpgradeMode]   = useState(false);
-  const [subscribing,   setSubscribing]   = useState(false);
-  const [subError,      setSubError]      = useState("");
-  const [showSuccess,   setShowSuccess]   = useState(false);
+  const [subscribed, setSubscribed] = useState(() => localStorage.getItem(SUB_KEY) === "true");
+  const [subTier, setSubTier] = useState(() => localStorage.getItem(SUB_TIER_KEY) || null);
+  const [showSubGate, setShowSubGate] = useState(false);
+  const [upgradeMode, setUpgradeMode] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
+  const [subError, setSubError] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
   const [subscribedPlan, setSubscribedPlan] = useState("");
   const [subscribedTier, setSubscribedTier] = useState("");
 
   // ── NEW: Credit unlock state ───────────────────────────────────────────
-  const [walletBalance,   setWalletBalance]   = useState(0);
-  const [creditUnlocked,  setCreditUnlocked]  = useState({ micro: false, nano: false });
-  const [unlocking,       setUnlocking]       = useState({ micro: false, nano: false });
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [creditUnlocked, setCreditUnlocked] = useState({ micro: false, nano: false });
+  const [unlocking, setUnlocking] = useState({ micro: false, nano: false });
   // Toast-style success message after credit unlock
-  const [unlockToast,     setUnlockToast]     = useState(""); // "micro" | "nano" | ""
+  const [unlockToast, setUnlockToast] = useState(""); // "micro" | "nano" | ""
 
   // ── View states ────────────────────────────────────────────────────────
   const [macroView, setMacroView] = useState(null);
   const [microView, setMicroView] = useState(null);
-  const [nanoView,  setNanoView]  = useState(null);
+  const [nanoView, setNanoView] = useState(null);
 
   // ── Loading flags ──────────────────────────────────────────────────────
-  const [stepLoading,  setStepLoading]  = useState(true);
+  const [stepLoading, setStepLoading] = useState(true);
   const [viewsLoading, setViewsLoading] = useState(true);
 
-  const [microServices,     setMicroServices]     = useState([]);
-  const [servicesLoading,   setServicesLoading]   = useState(false);
-  const [selectedService,   setSelectedService]   = useState(null);
-  const [showCheckout,      setShowCheckout]      = useState(false);
-  const [showNanoModal,     setShowNanoModal]      = useState(false);
+  const [microServices, setMicroServices] = useState([]);
+  const [servicesLoading, setServicesLoading] = useState(false);
+  const [selectedService, setSelectedService] = useState(null);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [showNanoModal, setShowNanoModal] = useState(false);
   const [selectedNanoService, setSelectedNanoService] = useState(null);
-  const [showNanoCheckout,  setShowNanoCheckout]  = useState(false);
-  const [totalStepsCount,   setTotalStepsCount]   = useState(null);
+  const [showNanoCheckout, setShowNanoCheckout] = useState(false);
+  const [totalStepsCount, setTotalStepsCount] = useState(null);
 
   const {
     currentStepData, setCurrentStepData,
@@ -390,17 +391,17 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     index, setIndex,
   } = useStore();
 
-  const [showNewDiv,         setShowNewDiv]         = useState(null);
+  const [showNewDiv, setShowNewDiv] = useState(null);
   const [currentStepPageData, setCurrentStepPageData] = useState(null);
-  const [popup,              setPopup]              = useState(false);
-  const [popupContent,       setPopupContent]       = useState("default");
-  const [popupDetails,       setPopupDetails]       = useState("");
+  const [popup, setPopup] = useState(false);
+  const [popupContent, setPopupContent] = useState("default");
+  const [popupDetails, setPopupDetails] = useState("");
   const [currentStepPagePathId, setCurrentStepPagePathId] = useState("");
-  const [selectedCard,       setSelectedCard]       = useState(0);
-  const [cards,              setCards]              = useState(productDataArray);
-  const [centerIndex,        setCenterIndex]        = useState(0);
-  const [acceptOffer,        setAcceptOffer]        = useState(false);
-  const [userData,           setUserData]           = useState([]);
+  const [selectedCard, setSelectedCard] = useState(0);
+  const [cards, setCards] = useState(productDataArray);
+  const [centerIndex, setCenterIndex] = useState(0);
+  const [acceptOffer, setAcceptOffer] = useState(false);
+  const [userData, setUserData] = useState([]);
 
   const getMicroText = (mv) => {
     if (!mv) return null;
@@ -410,12 +411,37 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
   // ── Derived: subscription-based access ────────────────────────────────
   const hasMicroSub = subscribed && (subTier === "micro" || subTier === "nano");
-  const hasNanoSub  = subscribed && subTier === "nano";
+  const hasNanoSub = subscribed && subTier === "nano";
 
   // ── NEW: Combined access (subscription OR credit unlock) ───────────────
   const hasMicro = hasMicroSub || creditUnlocked.micro;
-  const hasNano  = hasNanoSub  || creditUnlocked.nano;
+  const hasNano = hasNanoSub || creditUnlocked.nano;
 
+
+
+  const { initiatePayment } = useRazorpayPayment({
+    userEmail,
+    userDetails,
+
+    onSuccess: ({ tier, billing }) => {
+      localStorage.setItem(SUB_KEY, "true");
+      localStorage.setItem(SUB_TIER_KEY, tier);
+      setSubscribed(true);
+      setSubTier(tier);
+      setShowSubGate(false);
+      setUpgradeMode(false);
+      setSubscribedPlan(billing);
+      setSubscribedTier(tier);
+      setSubscribing(false);
+      setSubError("");
+      setShowSuccess(true);         // → shows SubscriptionSuccess screen 🎉
+    },
+
+    onError: (msg) => {
+      setSubscribing(false);
+      if (msg) setSubError(msg);    // empty string = user closed modal, no error shown
+    },
+  });
   /* ── Verify subscription from DB ──────────────────────────────────────── */
   useEffect(() => {
     const verify = async () => {
@@ -431,7 +457,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         setSubscribed(isSubscribed);
         setSubTier(isSubscribed ? tier : null);
       } catch {
-        const cachedSub  = localStorage.getItem(SUB_KEY) === "true";
+        const cachedSub = localStorage.getItem(SUB_KEY) === "true";
         const cachedTier = localStorage.getItem(SUB_TIER_KEY) || null;
         setSubscribed(cachedSub);
         setSubTier(cachedSub ? cachedTier : null);
@@ -451,10 +477,10 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
       axios.get(`${BASE_URL}/api/subscriptions/step-unlock/check`, { params: { email: userEmail, step_id: stepId } }),
     ])
       .then(([balRes, unlockRes]) => {
-        if (balRes.data?.status)    setWalletBalance(balRes.data.balance);
+        if (balRes.data?.status) setWalletBalance(balRes.data.balance);
         if (unlockRes.data?.status) setCreditUnlocked(unlockRes.data.unlocked);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [userEmail, currentStepPageData?._id]);
 
   /* ── NEW: handleCreditUnlock — deducts credits + saves unlock permanently */
@@ -466,7 +492,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     setUnlocking((prev) => ({ ...prev, [layer]: true }));
     try {
       const { data } = await axios.post(`${BASE_URL}/api/subscriptions/step-unlock/unlock`, {
-        email:   userEmail,
+        email: userEmail,
         step_id: stepId,
         layer,
       });
@@ -489,32 +515,15 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   const handleSeePlans = () => { setSubError(""); setUpgradeMode(false); setShowSubGate(true); };
   const handleUpgradeToNano = () => { setSubError(""); setUpgradeMode(true); setShowSubGate(true); };
 
-  const handleSubscribe = async ({ tier, billing }) => {
-    if (!userEmail || userEmail === "guest") { setSubError("Please log in to subscribe."); return; }
-    setSubscribing(true); setSubError("");
-    try {
-      const res = await axios.post(`${BASE_URL}/api/subscriptions/create`, {
-        userEmail,
-        profileId:     userDetails?.id || userDetails?.user?.id || null,
-        productId:     PRODUCT_ID,
-        productName:   PRODUCT_NAME,
-        billingMethod: billing,
-        tier,
-      });
-      if (res.data?.success) {
-        const newTier = res.data?.subscription?.tier || tier;
-        localStorage.setItem(SUB_KEY, "true");
-        localStorage.setItem(SUB_TIER_KEY, newTier);
-        setSubscribed(true); setSubTier(newTier);
-        setShowSubGate(false); setUpgradeMode(false);
-        setSubscribedPlan(billing); setSubscribedTier(newTier);
-        setShowSuccess(true);
-      } else {
-        setSubError(res.data?.message || "Subscription could not be activated.");
-      }
-    } catch { setSubError("Something went wrong. Please try again."); }
-    finally { setSubscribing(false); }
-  };
+const handleSubscribe = async ({ tier, billing }) => {
+  if (!userEmail || userEmail === "guest") {
+    setSubError("Please log in to subscribe.");
+    return;
+  }
+  setSubscribing(true);
+  setSubError("");
+  await initiatePayment({ tier, billing });
+};
 
   const handleBackFromGate = () => { setShowSubGate(false); setUpgradeMode(false); setSubError(""); };
 
@@ -549,7 +558,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         const data = res?.data?.data || {};
         setMacroView(data.macroView || null);
         setMicroView(data.microView || null);
-        setNanoView(data.nanoView  || null);
+        setNanoView(data.nanoView || null);
       } catch {
         setMacroView(null); setMicroView(null); setNanoView(null);
       } finally { setViewsLoading(false); }
@@ -562,7 +571,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     if (!userDetails) return;
     const email = userDetails?.user?.email || userDetails?.email;
     if (!email) return;
-    axios.get(`${BASE_URL}/api/users/get/${email}`).catch(() => {});
+    axios.get(`${BASE_URL}/api/users/get/${email}`).catch(() => { });
   }, []);
 
   const reloadServices = async () => {
@@ -593,7 +602,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
   const completeStep = async (stepid) => {
     const pathId = selectedPathId || localStorage.getItem("selectedPathId");
-    const email  = userDetails?.email || userDetails?.user?.email;
+    const email = userDetails?.email || userDetails?.user?.email;
     try {
       await axios.put(`${BASE_URL}/api/userpaths/completeStep`, { email, pathId, step_id: stepid });
     } catch { }
@@ -602,7 +611,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
   const failStep = async (stepid) => {
     const pathId = selectedPathId || localStorage.getItem("selectedPathId");
-    const email  = userDetails?.email || userDetails?.user?.email;
+    const email = userDetails?.email || userDetails?.user?.email;
     try {
       await axios.put(`${BASE_URL}/api/userpaths/failedStep`, { email, pathId, step_id: stepid });
     } catch { }
@@ -623,15 +632,15 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   };
 
   /* ── Derived values ────────────────────────────────────────────────────── */
-  const stepName   = currentStepData?.name || currentStepPageData?.name || null;
-  const stepDesc   = currentStepPageData?.macro_description || currentStepPageData?.description || null;
-  const macroDesc  = currentStepPageData?.macro_description || macroView?.description || macroView || null;
-  const microDesc  = currentStepPageData?.micro_description || getMicroText(microView) || null;
-  const nanoDesc   = nanoView?.description || null;
+  const stepName = currentStepData?.name || currentStepPageData?.name || null;
+  const stepDesc = currentStepPageData?.macro_description || currentStepPageData?.description || null;
+  const macroDesc = currentStepPageData?.macro_description || macroView?.description || macroView || null;
+  const microDesc = currentStepPageData?.micro_description || getMicroText(microView) || null;
+  const nanoDesc = nanoView?.description || null;
   const isPageLoading = stepLoading;
-  const isViewsLoad   = viewsLoading;
-  const stepNumber    = currentStepPageData?.step_order || localStorage.getItem("selectedStepNumber") || null;
-  const totalSteps    = currentStepDataLength || totalStepsCount || null;
+  const isViewsLoad = viewsLoading;
+  const stepNumber = currentStepPageData?.step_order || localStorage.getItem("selectedStepNumber") || null;
+  const totalSteps = currentStepDataLength || totalStepsCount || null;
 
   /* ═══════════════════════════════════════════════════════
      RENDER
@@ -761,8 +770,17 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
               <div className="vc-foot">
                 <button
                   className="vc-btn bMacro"
-                  onClick={() => { setsideNav("Market Place"); navigate("/dashboard/users/Marketplace", { state: { view: "Macro", subscribed } }); }}
-                >
+                  onClick={() => {
+                    setsideNav("Market Place");
+                    navigate("/dashboard/users/Marketplace", {
+                      state: {
+                        view: "Macro",
+                        subscribed,
+                        creditUnlocked,        // ← ADD THIS
+                        subTier,               // ← ADD THIS
+                      }
+                    });
+                  }}>
                   Discover Resources →
                 </button>
               </div>
@@ -803,7 +821,18 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
               <div className="vc-foot">
                 {hasMicro ? (
                   <button className="vc-btn bMicro"
-                    onClick={() => { setsideNav("Market Place"); navigate("/dashboard/users/Marketplace", { state: { view: "micro", subscribed, defaultTab: "micro" } }); }}>
+                    onClick={() => {
+                      setsideNav("Market Place");
+                      navigate("/dashboard/users/Marketplace", {
+                        state: {
+                          view: "micro",
+                          subscribed,
+                          defaultTab: "micro",
+                          creditUnlocked,        // ← ADD THIS
+                          subTier,               // ← ADD THIS (so Marketplace knows the tier)
+                        }
+                      });
+                    }}>
                     Browse Resources →
                   </button>
                 ) : (
@@ -851,7 +880,18 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
               <div className="vc-foot">
                 {hasNano ? (
                   <button className="vc-btn bNano"
-                    onClick={() => { setsideNav("Market Place"); navigate("/dashboard/users/Marketplace", { state: { view: "nano", subscribed, defaultTab: "nano" } }); }}>
+                    onClick={() => {
+                      setsideNav("Market Place");
+                      navigate("/dashboard/users/Marketplace", {
+                        state: {
+                          view: "nano",
+                          subscribed,
+                          defaultTab: "nano",
+                          creditUnlocked,        // ← ADD THIS
+                          subTier,               // ← ADD THIS
+                        }
+                      });
+                    }}>
                     Book a Session →
                   </button>
                 ) : hasMicro ? (
@@ -884,7 +924,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
             <div className="cb-left"><span className="cb-q">Did You Complete This Step?</span></div>
             <div className="cb-btns">
               <button className="btn-fail" onClick={() => { setPopup(true); setPopupDetails("no"); }}>✕ Failed</button>
-              <button className="btn-yes"  onClick={() => { setPopup(true); setPopupDetails("yes"); }}>✓ Yes, Completed</button>
+              <button className="btn-yes" onClick={() => { setPopup(true); setPopupDetails("yes"); }}>✓ Yes, Completed</button>
             </div>
           </div>
         )}
@@ -1001,9 +1041,9 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                             const viewData = viewRes?.data?.data || {};
                             setMacroView(viewData.macroView || null);
                             setMicroView(viewData.microView || null);
-                            setNanoView(viewData.nanoView  || null);
+                            setNanoView(viewData.nanoView || null);
                             // NEW: Also fetch unlock status for new step
-                          const unlockRes = await axios.get(`${BASE_URL}/api/subscriptions/step-unlock/check`, {
+                            const unlockRes = await axios.get(`${BASE_URL}/api/subscriptions/step-unlock/check`, {
                               params: { email: userEmail, step_id: nextId }
                             });
                             if (unlockRes.data?.status) setCreditUnlocked(unlockRes.data.unlocked);

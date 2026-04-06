@@ -4,72 +4,74 @@ const crypto = require("crypto");
 const Razorpay = require("razorpay");
 
 const Payment = require("../models/payment.model");
-const Subscription = require('../Admin/models/Subscription');
+const Subscription = require('../models/subscription.model');
 
-// -----------------------------
-//  Razorpay Init
-// -----------------------------
+// ── Debug: print keys on startup (remove after confirming it works) ──────────
+console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+console.log("🔑 KEY_ID :", process.env.RAZORPAY_KEY_ID);
+console.log("🔑 SECRET :", process.env.RAZORPAY_SECRET_KEY ? "✅ EXISTS" : "❌ MISSING");
+console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+// ── Razorpay Init ─────────────────────────────────────────────────────────────
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_SECRET,
+  key_secret: process.env.RAZORPAY_SECRET_KEY,   // ✅ fixed — was RAZORPAY_SECRET
 });
 
-// ===============================
-//    CREATE ORDER
-// ===============================
+// ═════════════════════════════════════════
+//   CREATE ORDER
+// ═════════════════════════════════════════
 router.post("/create-order", async (req, res) => {
   try {
-    const {
-      userEmail,
-      productId,
-      productName,
-      billingMethod,
-      profileId,
-      amount,
-      currency = "INR",
-    } = req.body;
+    console.log("📦 Body received:", req.body);
+    console.log("🔑 Keys loaded:", !!process.env.RAZORPAY_KEY_ID, !!process.env.RAZORPAY_SECRET_KEY);
 
-    // Store pending payment
+    const { userEmail, productId, productName, billingMethod, profileId, amount, currency = "INR" } = req.body;
+
+    // Step A: Test Mongo first
+    console.log("💾 Creating payment record...");
     const payment = await Payment.create({
-      userEmail,
-      productId,
-      productName,
-      billingMethod,
-      profileId,
-      amount,
-      currency,
-      status: "pending",
+      userEmail, productId, productName, billingMethod, profileId, amount, currency, status: "pending",
     });
+    console.log("✅ Payment record created:", payment._id);
 
-    // Create Razorpay order
+    // Step B: Test Razorpay
+    console.log("💳 Creating Razorpay order, amount in paise:", amount * 100);
     const order = await razorpay.orders.create({
-      amount: amount * 100, // paise
+      amount: amount * 100,
       currency,
       receipt: "receipt_" + payment._id,
     });
+    console.log("✅ Razorpay order created:", order.id);
 
     payment.razorpayOrderId = order.id;
     await payment.save();
 
     return res.json({ success: true, order });
+
   } catch (err) {
-    console.error("Create Order Error:", err);
+    console.error("❌ Create Order Error:", err.message);
+    console.error("❌ Full error:", err); // ← shows exactly where it died
     return res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// ===============================
-//    VERIFY PAYMENT & ACTIVATE SUBSCRIPTION
-// ===============================
+// ═════════════════════════════════════════
+//   VERIFY PAYMENT & ACTIVATE SUBSCRIPTION
+// ═════════════════════════════════════════
 router.post("/verify", async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-      req.body;
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+    } = req.body;
 
+    // ── 1. Verify signature ───────────────────────────────────────────────────
     const sign = razorpay_order_id + "|" + razorpay_payment_id;
 
     const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_SECRET)
+      .createHmac("sha256", process.env.RAZORPAY_SECRET_KEY)  // ✅ fixed — was RAZORPAY_SECRET
       .update(sign)
       .digest("hex");
 
@@ -81,7 +83,7 @@ router.post("/verify", async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid signature" });
     }
 
-    // Update payment as paid
+    // ── 2. Mark payment as paid ───────────────────────────────────────────────
     const payment = await Payment.findOneAndUpdate(
       { razorpayOrderId: razorpay_order_id },
       {
@@ -92,21 +94,16 @@ router.post("/verify", async (req, res) => {
       { new: true }
     );
 
-    // -----------------------------
-    // Create/Update Subscription
-    // -----------------------------
+    // ── 3. Calculate subscription end date ───────────────────────────────────
     let endDate = null;
-
     if (payment.billingMethod === "monthly") {
       endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    }
-    if (payment.billingMethod === "annual") {
+    } else if (payment.billingMethod === "annual") {
       endDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
     }
-    if (payment.billingMethod === "lifetime") {
-      endDate = null; // never expires
-    }
+    // lifetime → endDate stays null (never expires)
 
+    // ── 4. Upsert subscription record ────────────────────────────────────────
     await Subscription.findOneAndUpdate(
       { userEmail: payment.userEmail, productId: payment.productId },
       {
@@ -126,9 +123,28 @@ router.post("/verify", async (req, res) => {
       success: true,
       message: "Payment verified & subscription activated",
     });
+
   } catch (err) {
-    console.error("Verify Error:", err);
+    console.error("❌ Verify Error:", err);
     return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.get("/transactions", async (req, res) => {
+  try {
+    const { email } = req.query;
+
+    const payments = await Payment.find({ userEmail: email })
+      .sort({ createdAt: -1 });
+
+    return res.json({
+      success: true,
+      data: payments,
+    });
+
+  } catch (err) {
+    console.error("❌ Fetch transactions error:", err);
+    res.status(500).json({ success: false });
   }
 });
 
