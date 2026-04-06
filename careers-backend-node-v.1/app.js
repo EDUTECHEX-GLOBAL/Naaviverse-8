@@ -78,7 +78,7 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-/* ------------------- CORS CONFIG ------------------- */
+/* -------------------------------- CORS CONFIG ---------------------------------- */
 
 const allowedOrigins = [
   "http://localhost:3000",

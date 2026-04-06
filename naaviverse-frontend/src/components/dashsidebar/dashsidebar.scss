@@ -17,7 +17,6 @@
     width: 100%;
   }
 
-  /* Navigation items */
   .each-sidenav {
     border-radius: 10px;
     height: auto;
@@ -55,7 +54,6 @@
     }
   }
 
-  /* Icon styling */
   .nav-icon {
     width: 20px;
     height: 20px;
@@ -67,6 +65,13 @@
     transition: all 0.2s ease;
     flex-shrink: 0;
   }
+}
+
+/* Section divider between menu groups */
+.sidebar-section-divider {
+  height: 1px;
+  background: #eef2f6;
+  margin: 8px 4px 12px;
 }
 
 /* Scrollbar */
