@@ -1489,3 +1489,147 @@ table {
 
   &:hover { background: var(--violet-100); transform: translateY(-1px); }
 }
+
+// ── Shared stat-box-btn base (applies to ALL boxes) ──────────
+.stat-box .stat-box-btn {
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.18s ease;
+  display: inline-block;
+
+  &:hover {
+    background: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.box-violet .stat-box-btn {
+  color: #7c3aed;
+}
+
+.box-cyan .stat-box-btn {
+  color: #0891b2;
+}
+
+.box-emerald .stat-box-btn {
+  color: #059669;
+}
+
+.box-indigo .stat-box-btn {
+  color: #4f46e5;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STAT BOXES — 6-column scrollable row
+// ═══════════════════════════════════════════════════════════════
+.stat-boxes-scroll {
+  overflow-x: auto;
+  margin-bottom: 28px;
+  padding-bottom: 6px;
+
+  &::-webkit-scrollbar { height: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: var(--slate-300); border-radius: var(--radius-full); }
+}
+
+.stat-boxes-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(200px, 1fr));
+  gap: 14px;
+  min-width: 1220px; // forces scroll on smaller screens
+  margin-bottom: 0;  // override the old margin since scroll wrapper handles it
+}
+
+// ── Two new box color themes ───────────────────────────────────
+.box-emerald {
+  background: linear-gradient(135deg, rgba(5,150,105,0.82) 0%, rgba(16,185,129,0.72) 100%);
+  box-shadow: 0 8px 24px rgba(5,150,105,.22);
+  &::after { background: white; }
+
+  .stat-box-icon  { background: rgba(255,255,255,.2); color: white; }
+  .stat-box-badge { background: rgba(255,255,255,.22); color: white; }
+  .stat-box-title, .stat-box-value, .stat-box-subtitle span { color: white; }
+  .stat-box-subtitle { opacity: 0.82; }
+  .stat-box-btn { color: #059669; }
+}
+
+.box-indigo {
+  background: linear-gradient(135deg, rgba(79,70,229,0.84) 0%, rgba(99,102,241,0.72) 100%);
+  box-shadow: 0 8px 24px rgba(79,70,229,.22);
+  &::after { background: white; }
+
+  .stat-box-icon  { background: rgba(255,255,255,.2); color: white; }
+  .stat-box-badge { background: rgba(255,255,255,.22); color: white; }
+  .stat-box-title, .stat-box-value, .stat-box-subtitle span { color: white; }
+  .stat-box-subtitle { opacity: 0.82; }
+  .stat-box-btn { color: #4f46e5; }
+}
+
+// ── Plan badges (purchase list) ────────────────────────────────
+.plan-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+
+  &.plan-micro   { background: #e0e7ff; color: #4338ca; }
+  &.plan-nano    { background: #d1fae5; color: #047857; }
+  &.plan-bundle  { background: #fef3c7; color: #b45309; }
+  &.plan-premium { background: #fce7f3; color: #be185d; }
+}
+
+// ── Purchase detail summary cards ─────────────────────────────
+.purchase-summary-card {
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.purchase-summary-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.purchase-summary-value {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.purchase-summary-sub {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.purchase-summary-indigo {
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+
+  .purchase-summary-label { color: #4338ca; }
+  .purchase-summary-value { color: #4338ca; }
+  .purchase-summary-sub   { color: #6366f1; }
+}
+
+.purchase-summary-emerald {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+
+  .purchase-summary-label { color: #047857; }
+  .purchase-summary-value { color: #047857; }
+  .purchase-summary-sub   { color: #059669; }
+}

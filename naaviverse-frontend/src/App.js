@@ -21,7 +21,6 @@ import UserProfile from "./pages/UserProfile";
 import Wallet from "./pages/Wallet";
 import StepPage from "./pages/CurrentStep/StepPage";
 import MallProduct from "./pages/dashboard/MallProduct/MallProduct";
-
 /* ================= ACCOUNTANT ================= */
 import AccDashboard from "./pages/accDashbaoard/accDashboard";
 import AccProfile from "./pages/accProfile/AccProfile";
@@ -85,14 +84,13 @@ function App() {
           <Route path="/register" element={<NewHomePage />} />
           <Route path="/maps" element={<MapsPage />} />
 
-          {/* ================= USER DASHBOARD ================= */}
-          <Route path="/dashboard/users" element={<Dashboard />} />
-          <Route path="/dashboard/users/profile" element={<UserProfile />} />
-          <Route path="/dashboard/users/paths" element={<Dashboard />} />
-          <Route path="/dashboard/users/my-journey" element={<Dashboard />} />
-          <Route path="/dashboard/users/current-step" element={<Dashboard />} />
-          <Route path="/dashboard/users/transactions" element={<Dashboard />} />
-          <Route path="/dashboard/users/wallet" element={<Wallet />} />
+       <Route path="/dashboard/users" element={<Dashboard />} />
+<Route path="/dashboard/users/home" element={<Dashboard />} />
+<Route path="/dashboard/users/paths" element={<Dashboard />} />
+<Route path="/dashboard/users/my-journey" element={<Dashboard />} />
+<Route path="/dashboard/users/current-step" element={<Dashboard />} />
+<Route path="/dashboard/users/transactions" element={<Dashboard />} />
+<Route path="/dashboard/users/marketplace" element={<Dashboard />} />
 
           {/* ✅ MUST be before /:id wildcard so it doesn't get caught by MallProduct */}
           <Route path="/dashboard/users/Marketplace" element={<Dashboard />} />

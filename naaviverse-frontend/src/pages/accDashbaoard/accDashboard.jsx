@@ -34,10 +34,12 @@ import logo from "../../assets/images/logo/naavi_final_logo2.png";
 import CreateNewPath from './CreateNewPath';
 import CreateNewService from './CreateNewService';
 import "./CreateNewPath.scss";
+import PartnerHome from "./partnerHome";
+import MenuNav from "../../components/MenuNav/index.jsx";
 import {
   GetFollowersPerAccount,
   GetCategoriesAcc,
-  GetAllCustomerLicenses,
+  etAllCustomerLicenses,
   GetLogServices,
   GetAllCurrencies,
   CreatePopularService,
@@ -61,7 +63,7 @@ import VaultTransactions from "../VaultTransactions/index.jsx";
 import { Country, State, City } from 'country-state-city';
 import TransactionPage from "../dashboard/TransactionPage/index.jsx";
 import PurchasePage from "./PurchasePage/index.jsx";
-import MenuNav from "../../components/MenuNav/index.jsx";
+import MenGuNav from "../../components/MenuNav/index.jsx";
 import MyStepsAcc from "./MyStepsAcc/index.jsx";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
@@ -2181,23 +2183,10 @@ const AccDashboard = () => {
                     </div>
                   </div>
                 </>
-              ) : accsideNav === "Home" ? (
-                <>
-                  <MenuNav
-                    showDrop={showDrop}
-                    setShowDrop={setShowDrop}
-                    searchTerm={search}
-                    setSearchterm={setSearch}
-                    searchPlaceholder="Search..."
-                  />
-                  <div className="services-main" onClick={() => setShowDrop(false)}>
-                    <div style={{ padding: "35px" }}>
-                      <p style={{ color: "#617388", marginTop: "8px" }}>
-                        Welcome back, {getPartner()?.businessName || "Partner"}
-                      </p>
-                    </div>
-                  </div>
-                </>
+             ) : accsideNav === "Home" ? (
+  <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+    <PartnerHome />
+  </div>
               ) : accsideNav === "Marketplace" ? (
                 <>
                   <MenuNav

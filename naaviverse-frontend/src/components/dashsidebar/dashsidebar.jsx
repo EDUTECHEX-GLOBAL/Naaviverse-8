@@ -21,6 +21,13 @@ const NavIcon = ({ type, isActive }) => {
   };
 
   switch (type) {
+    case "home":
+      return (
+        <svg {...iconProps}>
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+      );
     case "paths":
       return (
         <svg {...iconProps}>
@@ -69,7 +76,8 @@ const NavIcon = ({ type, isActive }) => {
 };
 
 const sidebarMenu1 = [
-  { id: 0, title: "Paths", display: "Paths", icon: "paths", path: "/dashboard/users/paths" },
+  { id: 0, title: "Home", display: "Home", icon: "home", path: "/dashboard/users/home" },
+  { id: 1, title: "Paths", display: "Paths", icon: "paths", path: "/dashboard/users/paths" },
 ];
 
 const sidebarMenu2 = [
@@ -147,7 +155,6 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
     setMobileOpen(false);
   };
 
-  // Close logout menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (logoutMenuRef.current && !logoutMenuRef.current.contains(event.target)) {
@@ -227,38 +234,29 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
           }}
           onClick={() => {
             if (!isLocked) {
-              setsideNav("Paths");
-              navigate("/dashboard/users/paths");
+              setsideNav("Home");
+              navigate("/dashboard/users/home");
               setMobileOpen(false);
             }
           }}
         >
-          <img 
-            className="dashboard-logo" 
-            src={logo} 
-            alt="Naavi" 
-            style={{ 
-              width: "140px",
-              objectFit: "contain" 
-            }} 
+          <img
+            className="dashboard-logo"
+            src={logo}
+            alt="Naavi"
+            style={{ width: "140px", objectFit: "contain" }}
           />
         </div>
 
         {/* Navigation Items */}
         <div
           className="sidebar-menu-scrollable"
-          style={{
-            overflowY: "auto",
-            flex: 1,
-            marginTop: "20px",
-            padding: "0 12px",
-          }}
+          style={{ overflowY: "auto", flex: 1, marginTop: "20px", padding: "0 12px" }}
         >
-          {/* Menu Section 1 */}
+          {/* Menu Section 1 — Home + Paths */}
           {sidebarMenu1.map((each) => {
             const active = isActive(each.path);
             const itemClickable = !isLocked;
-
             return (
               <div
                 key={each.id}
@@ -286,11 +284,13 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
             );
           })}
 
+          {/* Divider between sections */}
+          <div className="sidebar-section-divider" />
+
           {/* Menu Section 2 */}
           {sidebarMenu2.map((ele) => {
             const active = isActive(ele.path);
             const itemClickable = !isLocked;
-
             return (
               <div
                 key={ele.id}
@@ -369,158 +369,83 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
                 border: "1px solid #eef2f6",
                 transition: "all 0.2s ease",
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#f8fafc";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-              }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f8fafc"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
             >
-              {/* Click on avatar/name goes to profile */}
-              <div 
-                style={{ 
-                  display: "flex", 
-                  alignItems: "center", 
-                  flex: 1, 
-                  minWidth: 0,
+              <div
+                style={{
+                  display: "flex", alignItems: "center", flex: 1, minWidth: 0,
                   cursor: !isLocked ? "pointer" : "default",
                 }}
                 onClick={handleProfileClick}
               >
-                {/* Avatar */}
                 {profilePic && !imgError ? (
                   <img
                     src={profilePic}
                     alt={firstName}
                     onError={() => setImgError(true)}
                     style={{
-                      width: "32px",
-                      height: "32px",
-                      borderRadius: "8px",
-                      objectFit: "cover",
-                      marginRight: "10px",
-                      flexShrink: 0,
+                      width: "32px", height: "32px", borderRadius: "8px",
+                      objectFit: "cover", marginRight: "10px", flexShrink: 0,
                       border: "1px solid #e2e8f0",
                     }}
                   />
                 ) : (
                   <div
                     style={{
-                      width: "32px",
-                      height: "32px",
-                      borderRadius: "8px",
+                      width: "32px", height: "32px", borderRadius: "8px",
                       background: "linear-gradient(135deg, #2273E6 0%, #1a5bc4 100%)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#ffffff",
-                      fontWeight: "600",
-                      fontSize: "14px",
-                      marginRight: "10px",
-                      flexShrink: 0,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      color: "#ffffff", fontWeight: "600", fontSize: "14px",
+                      marginRight: "10px", flexShrink: 0,
                     }}
                   >
                     {userInitial}
                   </div>
                 )}
-
-                {/* User Info */}
                 <div style={{ overflow: "hidden", flex: 1 }}>
-                  <div
-                    style={{
-                      fontWeight: "600",
-                      fontSize: "13px",
-                      color: "#1e293b",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
+                  <div style={{ fontWeight: "600", fontSize: "13px", color: "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {firstName}
                   </div>
                   {isLocked && (
-                    <div
-                      style={{
-                        fontSize: "10px",
-                        fontWeight: "500",
-                        color: approvalStatus === "rejected" ? "#ef4444" : "#f59e0b",
-                        marginTop: "2px",
-                      }}
-                    >
-                      {approvalStatus === "rejected"
-                        ? "Rejected"
-                        : approvalStatus === "pending"
-                        ? "Pending Approval"
-                        : "Profile Required"}
+                    <div style={{ fontSize: "10px", fontWeight: "500", color: approvalStatus === "rejected" ? "#ef4444" : "#f59e0b", marginTop: "2px" }}>
+                      {approvalStatus === "rejected" ? "Rejected" : approvalStatus === "pending" ? "Pending Approval" : "Profile Required"}
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Three Dots - ONLY for logout */}
               <div
                 style={{
-                  fontSize: "16px",
-                  letterSpacing: "2px",
-                  color: "#94a3b8",
-                  padding: "4px 6px",
-                  cursor: "pointer",
-                  borderRadius: "6px",
-                  transition: "all 0.2s ease",
+                  fontSize: "16px", letterSpacing: "2px", color: "#94a3b8",
+                  padding: "4px 6px", cursor: "pointer", borderRadius: "6px", transition: "all 0.2s ease",
                 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowLogoutMenu(!showLogoutMenu);
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#f1f5f9";
-                  e.currentTarget.style.color = "#2273E6";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                  e.currentTarget.style.color = "#94a3b8";
-                }}
+                onClick={(e) => { e.stopPropagation(); setShowLogoutMenu(!showLogoutMenu); }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f1f5f9"; e.currentTarget.style.color = "#2273E6"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#94a3b8"; }}
               >
                 •••
               </div>
             </div>
 
-            {/* Logout Menu - ONLY logout option */}
             {showLogoutMenu && (
               <div
                 style={{
-                  position: "absolute",
-                  bottom: "calc(100% + 8px)",
-                  right: "0",
-                  backgroundColor: "#ffffff",
-                  borderRadius: "10px",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                  padding: "6px",
-                  zIndex: 1000,
-                  border: "1px solid #eef2f6",
-                  minWidth: "140px",
+                  position: "absolute", bottom: "calc(100% + 8px)", right: "0",
+                  backgroundColor: "#ffffff", borderRadius: "10px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "6px",
+                  zIndex: 1000, border: "1px solid #eef2f6", minWidth: "140px",
                 }}
               >
                 <div
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "10px 12px",
-                    borderRadius: "8px",
-                    cursor: "pointer",
-                    color: "#ef4444",
-                    fontSize: "13px",
-                    fontWeight: "500",
-                    transition: "all 0.15s ease",
+                    display: "flex", alignItems: "center", gap: "10px",
+                    padding: "10px 12px", borderRadius: "8px", cursor: "pointer",
+                    color: "#ef4444", fontSize: "13px", fontWeight: "500", transition: "all 0.15s ease",
                   }}
                   onClick={handleLogout}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#fef2f2";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#fef2f2"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
