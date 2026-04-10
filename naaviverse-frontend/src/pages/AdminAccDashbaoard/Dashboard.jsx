@@ -138,7 +138,6 @@ const AVATAR_PALETTE = [
   { color: "#fff7ed", textColor: "#c2410c" },
 ];
 
-
 const PARTNER_ACTIVITY_USERS = [
   {
     id: "p1", name: "SkillBridge Institute", email: "admin@skillbridge.in",
@@ -214,11 +213,14 @@ const PURCHASE_AVATAR_PALETTE = [
 ];
 const PLAN_BADGE_CLASS = { Micro: "plan-micro", Nano: "plan-nano", Bundle: "plan-bundle", Premium: "plan-premium" };
 
-
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const [view, setView] = useState("home");
-const navigate = useNavigate();
+  const navigate = useNavigate();
+  
+  // ── Carousel state ──────────────────────────────────────────────────────────
+  const [carouselPage, setCarouselPage] = useState(0);
+  
   // ── Notification state ────────────────────────────────────────────────────
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [notifications, setNotifications] = useState([
@@ -235,11 +237,11 @@ const navigate = useNavigate();
   const notifDropdownRef = useRef(null);
   const unreadCount = notifications.filter((n) => n.unread).length;
 
+  const [selectedPartnerUser, setSelectedPartnerUser] = useState(null);
+  const [selectedPurchase, setSelectedPurchase]       = useState(null);
+  const [partnerActivityTab, setPartnerActivityTab]   = useState("all");
+  const [purchaseTab, setPurchaseTab]                 = useState("all");
   
-const [selectedPartnerUser, setSelectedPartnerUser] = useState(null);
-const [selectedPurchase, setSelectedPurchase]       = useState(null);
-const [partnerActivityTab, setPartnerActivityTab]   = useState("all");
-const [purchaseTab, setPurchaseTab]                 = useState("all");
   const markAllRead = () => setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
   const markOneRead = (id) => setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, unread: false } : n)));
 
@@ -351,12 +353,133 @@ const [purchaseTab, setPurchaseTab]                 = useState("all");
     });
   };
 
+  // ── ALL_STAT_CARDS Definition ──────────────────────────────────────────────
+  const ALL_STAT_CARDS = [
+    // PAGE 0 ─ 4 cards
+    {
+      colorClass: "box-violet",
+      iconSvg: (
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <path d="M4 17L8 7l4 6 4-4 4 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
+      badge: "Total",
+      title: "Learning Paths",
+      value: statsLoading ? "—" : dashStats.paths.total,
+      subtitleLines: [
+        `Active: ${dashStats.paths.active}`,
+        `Inactive: ${dashStats.paths.inactive}`,
+        `Pending: ${dashStats.paths.pending}`,
+      ],
+      btnLabel: "View All →",
+      onBtn: () => navigate("/admin/dashboard/paths?tab=active"),
+    },
+    {
+      colorClass: "box-rose",
+      iconSvg: (
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <path d="M12 8v4l3 3M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      ),
+      badge: "Live",
+      title: "User Activity",
+      value: activityLoading ? "—" : activityUsers.length,
+      subtitleLines: [
+        `Active: ${activityUsers.filter((u) => u.status === "active").length}`,
+        `Idle: ${activityUsers.filter((u) => u.status === "idle").length}`,
+      ],
+      btnLabel: "View All →",
+      onBtn: () => { setView("activity"); setSelectedActivityUser(null); },
+    },
+    {
+      colorClass: "box-cyan",
+      iconSvg: (
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M16 10a4 4 0 01-8 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
+      badge: "All",
+      title: "Marketplace Items",
+      value: statsLoading ? "—" : dashStats.marketplace.total,
+      subtitleLines: [
+        `Institutions: ${dashStats.marketplace.institution}`,
+        `Mentors: ${dashStats.marketplace.mentor}`,
+        `Distributors: ${dashStats.marketplace.distributor}`,
+        `Vendors: ${dashStats.marketplace.vendor}`,
+      ],
+      btnLabel: "View All →",
+      onBtn: () => navigate("/admin/dashboard/marketplace"),
+    },
+    {
+      colorClass: "box-amber",
+      iconSvg: (
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      ),
+      badge: "Summary",
+      title: "Approvals Overview",
+      value: statsLoading ? "—" : dashStats.approvals.total,
+      subtitleLines: [
+        `Approved: ${dashStats.approvals.approved}`,
+        `Pending: ${dashStats.approvals.pending}`,
+        `Rejected: ${dashStats.approvals.rejected}`,
+      ],
+      btnLabel: "Review →",
+      onBtn: () => { setView("approvals"); setSelected(null); setTab("all"); },
+    },
+    // PAGE 1 ─ 2 cards
+    {
+      colorClass: "box-emerald",
+      iconSvg: (
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" />
+          <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
+      badge: "Live",
+      title: "Partner Activity",
+      value: PARTNER_ACTIVITY_USERS.length,
+      subtitleLines: [
+        `Active: ${PARTNER_ACTIVITY_USERS.filter((u) => u.status === "active").length}`,
+        `Idle: ${PARTNER_ACTIVITY_USERS.filter((u) => u.status === "idle").length}`,
+        `Offline: ${PARTNER_ACTIVITY_USERS.filter((u) => u.status === "offline").length}`,
+      ],
+      btnLabel: "View All →",
+      onBtn: () => { setView("partnerActivity"); setSelectedPartnerUser(null); },
+    },
+    {
+      colorClass: "box-indigo",
+      iconSvg: (
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-10 2a2 2 0 100 4 2 2 0 000-4z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
+      badge: "All Time",
+      title: "Marketplace Purchases",
+      value: PURCHASE_HISTORY.length,
+      subtitleLines: [
+        `Today: ${PURCHASE_HISTORY.filter((p) => p.date.startsWith("Today")).length}`,
+        `Pending: ${PURCHASE_HISTORY.filter((p) => p.status === "pending").length}`,
+        `Revenue: ₹${PURCHASE_HISTORY.filter((p) => p.status === "completed").reduce((s, p) => s + parseInt(p.amount.replace(/[₹,]/g, "")), 0).toLocaleString("en-IN")}`,
+      ],
+      btnLabel: "View All →",
+      onBtn: () => { setView("purchaseActivity"); setSelectedPurchase(null); },
+    },
+  ];
+
+  const CARDS_PER_PAGE = 4;
+  const totalPages = Math.ceil(ALL_STAT_CARDS.length / CARDS_PER_PAGE);
+  const trackOffset = carouselPage * CARDS_PER_PAGE;
+  const translateX = `calc(${trackOffset} * (25% - 10.5px + 14px) * -1)`;
+
   // ══════════════════════════════════════════════════════════════════════════
   // HOME VIEW
   // ══════════════════════════════════════════════════════════════════════════
   if (view === "home") {
-    const { paths, marketplace, approvals } = dashStats;
-
     return (
       <div className="dashboard">
         <div className="home-wrapper">
@@ -431,153 +554,45 @@ const [purchaseTab, setPurchaseTab]                 = useState("all");
             </div>
           </div>
 
-          {/* ── 4 Stat Boxes ── */}
-          <div className="stat-boxes-grid">
-
-            <div className="stat-box box-violet">
-              <div className="stat-box-top">
-                <div className="stat-box-icon">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                    <path d="M4 17L8 7l4 6 4-4 4 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <div className="stat-box-badge">Total</div>
+          {/* ── Stat Boxes Carousel ── */}
+          <div className="stat-boxes-carousel">
+            <div className="stat-boxes-track-wrap">
+              <div
+                className="stat-boxes-track"
+                style={{ transform: `translateX(${translateX})` }}
+              >
+                {ALL_STAT_CARDS.map((card, idx) => (
+                  <div key={idx} className={`stat-box ${card.colorClass}`}>
+                    <div className="stat-box-top">
+                      <div className="stat-box-icon">{card.iconSvg}</div>
+                      <div className="stat-box-badge">{card.badge}</div>
+                    </div>
+                    <div className="stat-box-title">{card.title}</div>
+                    <div className="stat-box-value">{card.value}</div>
+                    <div className="stat-box-subtitle">
+                      {card.subtitleLines.map((line, i) => (
+                        <span key={i}>{line}</span>
+                      ))}
+                    </div>
+                    <button className="stat-box-btn" onClick={card.onBtn}>
+                      {card.btnLabel}
+                    </button>
+                  </div>
+                ))}
               </div>
-              <div className="stat-box-title">Learning Paths</div>
-              <div className="stat-box-value">{statsLoading ? "—" : paths.total}</div>
-              <div className="stat-box-subtitle" style={{ flexDirection: "column", gap: "2px" }}>
-                <span>Active: {paths.active}</span>
-                <span>Inactive: {paths.inactive}</span>
-                <span>Pending: {paths.pending}</span>
-              </div>
-
- <button
-  className="stat-box-btn"
-  onClick={() => navigate("/admin/dashboard/paths?tab=active")}
->
-  View All →
-</button>
             </div>
 
-            <div className="stat-box box-rose">
-              <div className="stat-box-top">
-                <div className="stat-box-icon">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 8v4l3 3M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                </div>
-                <div className="stat-box-badge">Live</div>
-              </div>
-              <div className="stat-box-title">User Activity</div>
-              <div className="stat-box-value">{activityLoading ? "—" : activityUsers.length}</div>
-              <div className="stat-box-subtitle" style={{ flexDirection: "column", gap: "2px" }}>
-                <span>Active: {activityUsers.filter((u) => u.status === "active").length}</span>
-                <span>Idle: {activityUsers.filter((u) => u.status === "idle").length}</span>
-              </div>
-              <button className="stat-box-btn" onClick={() => { setView("activity"); setSelectedActivityUser(null); }}>
-                View All →
-              </button>
+            {/* Pagination dots */}
+            <div className="stat-boxes-dots">
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i}
+                  className={`stat-dot ${carouselPage === i ? "active" : ""}`}
+                  onClick={() => setCarouselPage(i)}
+                />
+              ))}
             </div>
-
-            <div className="stat-box box-cyan">
-              <div className="stat-box-top">
-                <div className="stat-box-icon">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M16 10a4 4 0 01-8 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <div className="stat-box-badge">All</div>
-              </div>
-              <div className="stat-box-title">Marketplace Items</div>
-              <div className="stat-box-value">{statsLoading ? "—" : marketplace.total}</div>
-              <div className="stat-box-subtitle" style={{ flexDirection: "column", gap: "2px" }}>
-                <span>Institutions: {marketplace.institution}</span>
-                <span>Mentors: {marketplace.mentor}</span>
-                <span>Distributors: {marketplace.distributor}</span>
-                <span>Vendors: {marketplace.vendor}</span>
-              </div>
-
-   <button
-  className="stat-box-btn"
-  onClick={() => navigate("/admin/dashboard/marketplace")}
->
-  View All →
-</button>
-            </div>
-
-            <div className="stat-box box-amber">
-              <div className="stat-box-top">
-                <div className="stat-box-icon">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                </div>
-                <div className="stat-box-badge">Summary</div>
-              </div>
-              <div className="stat-box-title">Approvals Overview</div>
-              <div className="stat-box-value">{statsLoading ? "—" : approvals.total}</div>
-              <div className="stat-box-subtitle" style={{ flexDirection: "column", gap: "2px" }}>
-                <span>Approved: {approvals.approved}</span>
-                <span>Pending: {approvals.pending}</span>
-                <span>Rejected: {approvals.rejected}</span>
-              </div>
-              <button className="stat-box-btn" onClick={() => { setView("approvals"); setSelected(null); setTab("all"); }}>
-                Review →
-              </button>
-            </div>
-
-
-
-{/* ── NEW: Partner Activity ── */}
-    <div className="stat-box box-emerald">
-      <div className="stat-box-top">
-        <div className="stat-box-icon">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" />
-            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-        <div className="stat-box-badge">Live</div>
-      </div>
-      <div className="stat-box-title">Partner Activity</div>
-      <div className="stat-box-value">{PARTNER_ACTIVITY_USERS.length}</div>
-      <div className="stat-box-subtitle" style={{ flexDirection: "column", gap: "2px" }}>
-        <span>Active: {PARTNER_ACTIVITY_USERS.filter((u) => u.status === "active").length}</span>
-        <span>Idle: {PARTNER_ACTIVITY_USERS.filter((u) => u.status === "idle").length}</span>
-        <span>Offline: {PARTNER_ACTIVITY_USERS.filter((u) => u.status === "offline").length}</span>
-      </div>
-      <button className="stat-box-btn" onClick={() => { setView("partnerActivity"); setSelectedPartnerUser(null); }}>
-        View All →
-      </button>
-    </div>
-
-    {/* ── NEW: Marketplace Purchases ── */}
-    <div className="stat-box box-indigo">
-      <div className="stat-box-top">
-        <div className="stat-box-icon">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-            <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-10 2a2 2 0 100 4 2 2 0 000-4z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-        <div className="stat-box-badge">All Time</div>
-      </div>
-      <div className="stat-box-title">Marketplace Purchases</div>
-      <div className="stat-box-value">{PURCHASE_HISTORY.length}</div>
-      <div className="stat-box-subtitle" style={{ flexDirection: "column", gap: "2px" }}>
-        <span>Today: {PURCHASE_HISTORY.filter((p) => p.date.startsWith("Today")).length}</span>
-        <span>Pending: {PURCHASE_HISTORY.filter((p) => p.status === "pending").length}</span>
-        <span>Revenue: ₹{PURCHASE_HISTORY.filter((p) => p.status === "completed").reduce((s, p) => s + parseInt(p.amount.replace(/[₹,]/g, "")), 0).toLocaleString("en-IN")}</span>
-      </div>
-      <button className="stat-box-btn" onClick={() => { setView("purchaseActivity"); setSelectedPurchase(null); }}>
-        View All →
-      </button>
-    </div>
-
-  </div>
-         
+          </div>
 
           {/* ── KPI Section — 2 cards only: Engagement (wider) + Quick Actions ── */}
           <div className="kpi-section">
@@ -1046,380 +1061,379 @@ const [purchaseTab, setPurchaseTab]                 = useState("all");
     );
   }
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // PARTNER ACTIVITY — LIST VIEW
+  // ══════════════════════════════════════════════════════════════════════════
+  if (view === "partnerActivity" && !selectedPartnerUser) {
+    const filteredPartners = partnerActivityTab === "all"
+      ? PARTNER_ACTIVITY_USERS
+      : PARTNER_ACTIVITY_USERS.filter((u) => u.status === partnerActivityTab);
 
-// ══════════════════════════════════════════════════════════════════════════
-// PARTNER ACTIVITY — LIST VIEW
-// ══════════════════════════════════════════════════════════════════════════
-if (view === "partnerActivity" && !selectedPartnerUser) {
-  const filteredPartners = partnerActivityTab === "all"
-    ? PARTNER_ACTIVITY_USERS
-    : PARTNER_ACTIVITY_USERS.filter((u) => u.status === partnerActivityTab);
+    return (
+      <div className="dashboard">
+        <div className="approvals-card">
+          <button className="back-btn" onClick={() => setView("home")}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Back to Dashboard
+          </button>
 
-  return (
-    <div className="dashboard">
-      <div className="approvals-card">
-        <button className="back-btn" onClick={() => setView("home")}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Back to Dashboard
-        </button>
-
-        <div className="card-header">
-          <div className="header-left">
-            <div className="header-icon" style={{ background: "#d1fae5", border: "1px solid #a7f3d0", fontSize: 22 }}>🤝</div>
-            <div>
-              <h2>Partner Activity</h2>
-              <p className="header-subtitle">Live portal activity — logins · listings · content · messages</p>
+          <div className="card-header">
+            <div className="header-left">
+              <div className="header-icon" style={{ background: "#d1fae5", border: "1px solid #a7f3d0", fontSize: 22 }}>🤝</div>
+              <div>
+                <h2>Partner Activity</h2>
+                <p className="header-subtitle">Live portal activity — logins · listings · content · messages</p>
+              </div>
             </div>
+            <span style={{ fontSize: 12, fontWeight: 600, background: "#dcfce7", color: "#15803d", padding: "4px 12px", borderRadius: 999, border: "1px solid #bbf7d0" }}>
+              ● Live
+            </span>
           </div>
-          <span style={{ fontSize: 12, fontWeight: 600, background: "#dcfce7", color: "#15803d", padding: "4px 12px", borderRadius: 999, border: "1px solid #bbf7d0" }}>
-            ● Live
-          </span>
-        </div>
 
-        <div className="tab-btn-group">
-          {["all", "active", "idle", "offline"].map((t) => (
-            <button
-              key={t}
-              className={`tab-btn ${partnerActivityTab === t ? "active" : ""}`}
-              onClick={() => setPartnerActivityTab(t)}
-            >
-              {t.charAt(0).toUpperCase() + t.slice(1)}
-            </button>
-          ))}
-        </div>
+          <div className="tab-btn-group">
+            {["all", "active", "idle", "offline"].map((t) => (
+              <button
+                key={t}
+                className={`tab-btn ${partnerActivityTab === t ? "active" : ""}`}
+                onClick={() => setPartnerActivityTab(t)}
+              >
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </button>
+            ))}
+          </div>
 
-        <div className="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Partner</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Last Event</th>
-                <th>Journey</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPartners.map((u, idx) => {
-                const pal  = PARTNER_AVATAR_PALETTE[idx % PARTNER_AVATAR_PALETTE.length];
-                const last = u.events[u.events.length - 1];
-                return (
-                  <tr key={u.id} className="table-row">
-                    <td>
-                      <div className="business-info">
-                        <div className="row-avatar" style={{ background: pal.color, color: pal.textColor }}>
-                          {u.initials}
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Partner</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Last Event</th>
+                  <th>Journey</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredPartners.map((u, idx) => {
+                  const pal  = PARTNER_AVATAR_PALETTE[idx % PARTNER_AVATAR_PALETTE.length];
+                  const last = u.events[u.events.length - 1];
+                  return (
+                    <tr key={u.id} className="table-row">
+                      <td>
+                        <div className="business-info">
+                          <div className="row-avatar" style={{ background: pal.color, color: pal.textColor }}>
+                            {u.initials}
+                          </div>
+                          <div>
+                            <div className="business-name">{u.name}</div>
+                            <div style={{ fontSize: 12, color: "var(--slate-400)" }}>{u.email}</div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="business-name">{u.name}</div>
-                          <div style={{ fontSize: 12, color: "var(--slate-400)" }}>{u.email}</div>
+                      </td>
+                      <td><span className="type-badge">{u.type}</span></td>
+                      <td>
+                        <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: PARTNER_STATUS_COLORS[u.status] || "#94a3b8" }}>
+                          <span style={{ width: 7, height: 7, borderRadius: "50%", background: PARTNER_STATUS_COLORS[u.status] || "#94a3b8", display: "inline-block" }} />
+                          {u.status.charAt(0).toUpperCase() + u.status.slice(1)}
+                        </span>
+                      </td>
+                      <td>
+                        {last ? (
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 500 }}>{last.title}</div>
+                            <div style={{ fontSize: 11, color: "var(--slate-400)" }}>{last.time}</div>
+                          </div>
+                        ) : <span style={{ color: "var(--slate-300)" }}>—</span>}
+                      </td>
+                      <td>
+                        <div style={{ display: "flex", gap: 5 }}>
+                          {["login", "publish", "listing", "approval", "invite", "message"].map((t) => {
+                            const done = u.events.some((e) => e.type === t);
+                            return (
+                              <span key={t} title={t} style={{
+                                width: 9, height: 9, borderRadius: "50%",
+                                background: done ? "#10b981" : "#e2e8f0",
+                                border: done ? "1.5px solid #05966940" : "none",
+                                display: "inline-block",
+                              }} />
+                            );
+                          })}
                         </div>
-                      </div>
-                    </td>
-                    <td><span className="type-badge">{u.type}</span></td>
-                    <td>
-                      <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: PARTNER_STATUS_COLORS[u.status] || "#94a3b8" }}>
-                        <span style={{ width: 7, height: 7, borderRadius: "50%", background: PARTNER_STATUS_COLORS[u.status] || "#94a3b8", display: "inline-block" }} />
-                        {u.status.charAt(0).toUpperCase() + u.status.slice(1)}
-                      </span>
-                    </td>
-                    <td>
-                      {last ? (
-                        <div>
-                          <div style={{ fontSize: 13, fontWeight: 500 }}>{last.title}</div>
-                          <div style={{ fontSize: 11, color: "var(--slate-400)" }}>{last.time}</div>
-                        </div>
-                      ) : <span style={{ color: "var(--slate-300)" }}>—</span>}
-                    </td>
-                    <td>
-                      <div style={{ display: "flex", gap: 5 }}>
-                        {["login", "publish", "listing", "approval", "invite", "message"].map((t) => {
-                          const done = u.events.some((e) => e.type === t);
-                          return (
-                            <span key={t} title={t} style={{
-                              width: 9, height: 9, borderRadius: "50%",
-                              background: done ? "#10b981" : "#e2e8f0",
-                              border: done ? "1.5px solid #05966940" : "none",
-                              display: "inline-block",
-                            }} />
-                          );
-                        })}
-                      </div>
-                    </td>
-                    <td>
-                      <button className="view-btn" onClick={() => setSelectedPartnerUser({ ...u, palette: pal })}>
-                        View Journey
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td>
+                        <button className="view-btn" onClick={() => setSelectedPartnerUser({ ...u, palette: pal })}>
+                          View Journey
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-// ══════════════════════════════════════════════════════════════════════════
-// PARTNER ACTIVITY — DETAIL / JOURNEY VIEW
-// ══════════════════════════════════════════════════════════════════════════
-if (view === "partnerActivity" && selectedPartnerUser) {
-  const u   = selectedPartnerUser;
-  const pal = u.palette || PARTNER_AVATAR_PALETTE[0];
+  // ══════════════════════════════════════════════════════════════════════════
+  // PARTNER ACTIVITY — DETAIL / JOURNEY VIEW
+  // ══════════════════════════════════════════════════════════════════════════
+  if (view === "partnerActivity" && selectedPartnerUser) {
+    const u   = selectedPartnerUser;
+    const pal = u.palette || PARTNER_AVATAR_PALETTE[0];
 
-  const PARTNER_TYPE_ICONS = {
-    login:    { bg: "#f1f5f9", emoji: "🔐" },
-    publish:  { bg: "#dcfce7", emoji: "📢" },
-    listing:  { bg: "#d1fae5", emoji: "🏪" },
-    approval: { bg: "#fef3c7", emoji: "✅" },
-    invite:   { bg: "#cffafe", emoji: "✉️" },
-    message:  { bg: "#e0e7ff", emoji: "💬" },
-  };
+    const PARTNER_TYPE_ICONS = {
+      login:    { bg: "#f1f5f9", emoji: "🔐" },
+      publish:  { bg: "#dcfce7", emoji: "📢" },
+      listing:  { bg: "#d1fae5", emoji: "🏪" },
+      approval: { bg: "#fef3c7", emoji: "✅" },
+      invite:   { bg: "#cffafe", emoji: "✉️" },
+      message:  { bg: "#e0e7ff", emoji: "💬" },
+    };
 
-  return (
-    <div className="dashboard">
-      <div className="details-card" style={{ maxWidth: 760 }}>
-        <button className="back-btn" onClick={() => setSelectedPartnerUser(null)}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Back to Partner Activity
-        </button>
+    return (
+      <div className="dashboard">
+        <div className="details-card" style={{ maxWidth: 760 }}>
+          <button className="back-btn" onClick={() => setSelectedPartnerUser(null)}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Back to Partner Activity
+          </button>
 
-        <div className="details-hero">
-          <div className="details-avatar" style={{ background: pal.color, color: pal.textColor, border: `2px solid ${pal.color}` }}>
-            {u.initials}
-          </div>
-          <div className="details-hero-info">
-            <div className="details-hero-top">
-              <h2>{u.name}</h2>
-              <span style={{ fontSize: 12, fontWeight: 600, color: PARTNER_STATUS_COLORS[u.status] || "#94a3b8", display: "flex", alignItems: "center", gap: 5 }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: PARTNER_STATUS_COLORS[u.status] || "#94a3b8", display: "inline-block" }} />
-                {u.status.charAt(0).toUpperCase() + u.status.slice(1)}
-              </span>
+          <div className="details-hero">
+            <div className="details-avatar" style={{ background: pal.color, color: pal.textColor, border: `2px solid ${pal.color}` }}>
+              {u.initials}
             </div>
-            <div style={{ fontSize: 13, color: "var(--slate-400)" }}>
-              {u.email} · Joined {u.joinedDays} · <span style={{ color: "var(--slate-600)", fontWeight: 600 }}>{u.type}</span>
+            <div className="details-hero-info">
+              <div className="details-hero-top">
+                <h2>{u.name}</h2>
+                <span style={{ fontSize: 12, fontWeight: 600, color: PARTNER_STATUS_COLORS[u.status] || "#94a3b8", display: "flex", alignItems: "center", gap: 5 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: PARTNER_STATUS_COLORS[u.status] || "#94a3b8", display: "inline-block" }} />
+                  {u.status.charAt(0).toUpperCase() + u.status.slice(1)}
+                </span>
+              </div>
+              <div style={{ fontSize: 13, color: "var(--slate-400)" }}>
+                {u.email} · Joined {u.joinedDays} · <span style={{ color: "var(--slate-600)", fontWeight: 600 }}>{u.type}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="details-section-title" style={{ marginBottom: 20 }}>Journey Timeline</div>
+          <div className="details-section-title" style={{ marginBottom: 20 }}>Journey Timeline</div>
 
-        {u.events.length === 0 ? (
-          <div style={{ padding: "32px", textAlign: "center", color: "#94a3b8" }}>No events recorded yet</div>
-        ) : (
-          <div className="activity-timeline">
-            {u.events.map((ev, i) => {
-              const cfg = PARTNER_TYPE_ICONS[ev.type] || PARTNER_TYPE_ICONS.login;
-              return (
-                <div key={i} className="activity-tl-item">
-                  <div className="activity-tl-left">
-                    <div className="activity-tl-icon" style={{ background: cfg.bg }}>
-                      <span style={{ fontSize: 14 }}>{cfg.emoji}</span>
+          {u.events.length === 0 ? (
+            <div style={{ padding: "32px", textAlign: "center", color: "#94a3b8" }}>No events recorded yet</div>
+          ) : (
+            <div className="activity-timeline">
+              {u.events.map((ev, i) => {
+                const cfg = PARTNER_TYPE_ICONS[ev.type] || PARTNER_TYPE_ICONS.login;
+                return (
+                  <div key={i} className="activity-tl-item">
+                    <div className="activity-tl-left">
+                      <div className="activity-tl-icon" style={{ background: cfg.bg }}>
+                        <span style={{ fontSize: 14 }}>{cfg.emoji}</span>
+                      </div>
+                      {i < u.events.length - 1 && <div className="activity-tl-line" />}
                     </div>
-                    {i < u.events.length - 1 && <div className="activity-tl-line" />}
+                    <div className="activity-tl-body">
+                      <div className="activity-tl-time">{ev.time}</div>
+                      <div className="activity-tl-title">{ev.title}</div>
+                      <div className="activity-tl-desc">{ev.desc}</div>
+                      <span className={`activity-chip ${ev.chipClass}`}>{ev.chipLabel}</span>
+                    </div>
                   </div>
-                  <div className="activity-tl-body">
-                    <div className="activity-tl-time">{ev.time}</div>
-                    <div className="activity-tl-title">{ev.title}</div>
-                    <div className="activity-tl-desc">{ev.desc}</div>
-                    <span className={`activity-chip ${ev.chipClass}`}>{ev.chipLabel}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════════════
-// PURCHASE ACTIVITY — LIST VIEW
-// ══════════════════════════════════════════════════════════════════════════
-if (view === "purchaseActivity" && !selectedPurchase) {
-  const filteredPurchases = purchaseTab === "all" ? PURCHASE_HISTORY
-    : purchaseTab === "today"     ? PURCHASE_HISTORY.filter((p) => p.date.startsWith("Today"))
-    : purchaseTab === "pending"   ? PURCHASE_HISTORY.filter((p) => p.status === "pending")
-    : PURCHASE_HISTORY.filter((p) => p.status === "completed");
-
-  const totalRevenue = PURCHASE_HISTORY
-    .filter((p) => p.status === "completed")
-    .reduce((s, p) => s + parseInt(p.amount.replace(/[₹,]/g, "")), 0);
-
-  return (
-    <div className="dashboard">
-      <div className="approvals-card">
-        <button className="back-btn" onClick={() => setView("home")}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Back to Dashboard
-        </button>
-
-        <div className="card-header">
-          <div className="header-left">
-            <div className="header-icon" style={{ background: "#e0e7ff", border: "1px solid #c7d2fe", fontSize: 22 }}>🛒</div>
-            <div>
-              <h2>Marketplace Purchases</h2>
-              <p className="header-subtitle">All user purchases — micro · nano · bundle · premium plans</p>
-            </div>
-          </div>
-          <div style={{ fontSize: 13, fontWeight: 700, background: "#e0e7ff", color: "#4338ca", padding: "6px 16px", borderRadius: 999, border: "1px solid #c7d2fe" }}>
-            Revenue: ₹{totalRevenue.toLocaleString("en-IN")}
-          </div>
-        </div>
-
-        <div className="tab-btn-group">
-          {[
-            { key: "all",       label: `All (${PURCHASE_HISTORY.length})` },
-            { key: "today",     label: "Today" },
-            { key: "completed", label: "Completed" },
-            { key: "pending",   label: "Pending" },
-          ].map(({ key, label }) => (
-            <button
-              key={key}
-              className={`tab-btn ${purchaseTab === key ? "active" : ""}`}
-              onClick={() => setPurchaseTab(key)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        <div className="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Item</th>
-                <th>Plan</th>
-                <th>Marketplace</th>
-                <th>Amount</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPurchases.map((p, idx) => {
-                const pal = PURCHASE_AVATAR_PALETTE[idx % PURCHASE_AVATAR_PALETTE.length];
-                return (
-                  <tr key={p.id} className="table-row">
-                    <td>
-                      <div className="business-info">
-                        <div className="row-avatar" style={{ background: pal.color, color: pal.textColor }}>
-                          {p.initials}
-                        </div>
-                        <div>
-                          <div className="business-name">{p.user}</div>
-                          <div style={{ fontSize: 11, color: "var(--slate-400)" }}>{p.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "var(--slate-800)" }}>{p.item}</div>
-                      <div style={{ fontSize: 11, color: "var(--slate-400)" }}>{p.type}</div>
-                    </td>
-                    <td><span className={`plan-badge ${PLAN_BADGE_CLASS[p.plan]}`}>{p.plan}</span></td>
-                    <td style={{ fontSize: 12.5, color: "var(--slate-600)" }}>{p.marketplace}</td>
-                    <td style={{ fontSize: 14, fontWeight: 700, color: "#4f46e5" }}>{p.amount}</td>
-                    <td className="date-cell">{p.date}</td>
-                    <td>
-                      <span className={`status-pill ${p.status === "completed" ? "approved" : "pending"}`}>
-                        {p.status === "completed" ? "✓ Done" : "⏳ Pending"}
-                      </span>
-                    </td>
-                    <td>
-                      <button className="view-btn" onClick={() => setSelectedPurchase(p)}>
-                        Details
-                      </button>
-                    </td>
-                  </tr>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════════════
-// PURCHASE ACTIVITY — DETAIL VIEW
-// ══════════════════════════════════════════════════════════════════════════
-if (view === "purchaseActivity" && selectedPurchase) {
-  const p = selectedPurchase;
-
-  return (
-    <div className="dashboard">
-      <div className="details-card" style={{ maxWidth: 760 }}>
-        <button className="back-btn" onClick={() => setSelectedPurchase(null)}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Back to Purchases
-        </button>
-
-        <div className="details-hero">
-          <div className="details-avatar" style={{ background: "#e0e7ff", color: "#4338ca", border: "2px solid #c7d2fe" }}>
-            {p.initials}
-          </div>
-          <div className="details-hero-info">
-            <div className="details-hero-top">
-              <h2>{p.user}</h2>
-              <span className={`status-pill ${p.status === "completed" ? "approved" : "pending"}`}>
-                {p.status === "completed" ? "✓ Completed" : "⏳ Pending"}
-              </span>
             </div>
-            <div style={{ fontSize: 13, color: "var(--slate-400)" }}>{p.email}</div>
-          </div>
-        </div>
-
-        {/* Summary cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 24 }}>
-          <div className="purchase-summary-card purchase-summary-indigo">
-            <div className="purchase-summary-label">Amount Paid</div>
-            <div className="purchase-summary-value">{p.amount}</div>
-            <div className="purchase-summary-sub">{p.plan} Plan · {p.type}</div>
-          </div>
-          <div className="purchase-summary-card purchase-summary-emerald">
-            <div className="purchase-summary-label">Content Access</div>
-            <div className="purchase-summary-value">{p.microLessons}</div>
-            <div className="purchase-summary-sub">{p.steps} Steps · {p.duration}</div>
-          </div>
-        </div>
-
-        <div className="details-section-title">Item Details</div>
-        <div className="details-grid">
-          <DetailItem label="Item Name"         value={p.item} icon="📦" />
-          <DetailItem label="Item Type"         value={p.type} />
-          <DetailItem label="Subscription Plan" value={p.plan} />
-          <DetailItem label="Marketplace"       value={p.marketplace} icon="🏪" />
-          <DetailItem label="Duration"          value={p.duration} />
-          <DetailItem label="Total Steps"       value={`${p.steps} steps`} />
-          <DetailItem label="Micro Lessons"     value={`${p.microLessons} lessons`} />
-          <DetailItem label="Purchase Date"     value={p.date} />
-          <DetailItem label="Status"            value={p.status === "completed" ? "✓ Completed" : "⏳ Pending"} />
-        </div>
-
-        <div className="details-section-title">Buyer Details</div>
-        <div className="details-grid">
-          <DetailItem label="Full Name" value={p.user} icon="👤" />
-          <DetailItem label="Email"     value={p.email} />
+          )}
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // PURCHASE ACTIVITY — LIST VIEW
+  // ══════════════════════════════════════════════════════════════════════════
+  if (view === "purchaseActivity" && !selectedPurchase) {
+    const filteredPurchases = purchaseTab === "all" ? PURCHASE_HISTORY
+      : purchaseTab === "today"     ? PURCHASE_HISTORY.filter((p) => p.date.startsWith("Today"))
+      : purchaseTab === "pending"   ? PURCHASE_HISTORY.filter((p) => p.status === "pending")
+      : PURCHASE_HISTORY.filter((p) => p.status === "completed");
+
+    const totalRevenue = PURCHASE_HISTORY
+      .filter((p) => p.status === "completed")
+      .reduce((s, p) => s + parseInt(p.amount.replace(/[₹,]/g, "")), 0);
+
+    return (
+      <div className="dashboard">
+        <div className="approvals-card">
+          <button className="back-btn" onClick={() => setView("home")}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Back to Dashboard
+          </button>
+
+          <div className="card-header">
+            <div className="header-left">
+              <div className="header-icon" style={{ background: "#e0e7ff", border: "1px solid #c7d2fe", fontSize: 22 }}>🛒</div>
+              <div>
+                <h2>Marketplace Purchases</h2>
+                <p className="header-subtitle">All user purchases — micro · nano · bundle · premium plans</p>
+              </div>
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 700, background: "#e0e7ff", color: "#4338ca", padding: "6px 16px", borderRadius: 999, border: "1px solid #c7d2fe" }}>
+              Revenue: ₹{totalRevenue.toLocaleString("en-IN")}
+            </div>
+          </div>
+
+          <div className="tab-btn-group">
+            {[
+              { key: "all",       label: `All (${PURCHASE_HISTORY.length})` },
+              { key: "today",     label: "Today" },
+              { key: "completed", label: "Completed" },
+              { key: "pending",   label: "Pending" },
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                className={`tab-btn ${purchaseTab === key ? "active" : ""}`}
+                onClick={() => setPurchaseTab(key)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Item</th>
+                  <th>Plan</th>
+                  <th>Marketplace</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredPurchases.map((p, idx) => {
+                  const pal = PURCHASE_AVATAR_PALETTE[idx % PURCHASE_AVATAR_PALETTE.length];
+                  return (
+                    <tr key={p.id} className="table-row">
+                      <td>
+                        <div className="business-info">
+                          <div className="row-avatar" style={{ background: pal.color, color: pal.textColor }}>
+                            {p.initials}
+                          </div>
+                          <div>
+                            <div className="business-name">{p.user}</div>
+                            <div style={{ fontSize: 11, color: "var(--slate-400)" }}>{p.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--slate-800)" }}>{p.item}</div>
+                        <div style={{ fontSize: 11, color: "var(--slate-400)" }}>{p.type}</div>
+                      </td>
+                      <td><span className={`plan-badge ${PLAN_BADGE_CLASS[p.plan]}`}>{p.plan}</span></td>
+                      <td style={{ fontSize: 12.5, color: "var(--slate-600)" }}>{p.marketplace}</td>
+                      <td style={{ fontSize: 14, fontWeight: 700, color: "#4f46e5" }}>{p.amount}</td>
+                      <td className="date-cell">{p.date}</td>
+                      <td>
+                        <span className={`status-pill ${p.status === "completed" ? "approved" : "pending"}`}>
+                          {p.status === "completed" ? "✓ Done" : "⏳ Pending"}
+                        </span>
+                      </td>
+                      <td>
+                        <button className="view-btn" onClick={() => setSelectedPurchase(p)}>
+                          Details
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // PURCHASE ACTIVITY — DETAIL VIEW
+  // ══════════════════════════════════════════════════════════════════════════
+  if (view === "purchaseActivity" && selectedPurchase) {
+    const p = selectedPurchase;
+
+    return (
+      <div className="dashboard">
+        <div className="details-card" style={{ maxWidth: 760 }}>
+          <button className="back-btn" onClick={() => setSelectedPurchase(null)}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Back to Purchases
+          </button>
+
+          <div className="details-hero">
+            <div className="details-avatar" style={{ background: "#e0e7ff", color: "#4338ca", border: "2px solid #c7d2fe" }}>
+              {p.initials}
+            </div>
+            <div className="details-hero-info">
+              <div className="details-hero-top">
+                <h2>{p.user}</h2>
+                <span className={`status-pill ${p.status === "completed" ? "approved" : "pending"}`}>
+                  {p.status === "completed" ? "✓ Completed" : "⏳ Pending"}
+                </span>
+              </div>
+              <div style={{ fontSize: 13, color: "var(--slate-400)" }}>{p.email}</div>
+            </div>
+          </div>
+
+          {/* Summary cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 24 }}>
+            <div className="purchase-summary-card purchase-summary-indigo">
+              <div className="purchase-summary-label">Amount Paid</div>
+              <div className="purchase-summary-value">{p.amount}</div>
+              <div className="purchase-summary-sub">{p.plan} Plan · {p.type}</div>
+            </div>
+            <div className="purchase-summary-card purchase-summary-emerald">
+              <div className="purchase-summary-label">Content Access</div>
+              <div className="purchase-summary-value">{p.microLessons}</div>
+              <div className="purchase-summary-sub">{p.steps} Steps · {p.duration}</div>
+            </div>
+          </div>
+
+          <div className="details-section-title">Item Details</div>
+          <div className="details-grid">
+            <DetailItem label="Item Name"         value={p.item} icon="📦" />
+            <DetailItem label="Item Type"         value={p.type} />
+            <DetailItem label="Subscription Plan" value={p.plan} />
+            <DetailItem label="Marketplace"       value={p.marketplace} icon="🏪" />
+            <DetailItem label="Duration"          value={p.duration} />
+            <DetailItem label="Total Steps"       value={`${p.steps} steps`} />
+            <DetailItem label="Micro Lessons"     value={`${p.microLessons} lessons`} />
+            <DetailItem label="Purchase Date"     value={p.date} />
+            <DetailItem label="Status"            value={p.status === "completed" ? "✓ Completed" : "⏳ Pending"} />
+          </div>
+
+          <div className="details-section-title">Buyer Details</div>
+          <div className="details-grid">
+            <DetailItem label="Full Name" value={p.user} icon="👤" />
+            <DetailItem label="Email"     value={p.email} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ══════════════════════════════════════════════════════════════════════════
   // APPROVALS — DETAIL VIEW
@@ -1579,7 +1593,6 @@ if (view === "purchaseActivity" && selectedPurchase) {
               className={`role-toggle-btn ${isPartnerView ? "partner-toggle" : "user-toggle"}`}
               onClick={() => setShowRoleDropdown((prev) => !prev)}
             >
-              
               {isPartnerView ? "Partners" : "Users"}
               <svg className={`arrow ${showRoleDropdown ? "open" : ""}`} width="12" height="12" viewBox="0 0 12 12" fill="none">
                 <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

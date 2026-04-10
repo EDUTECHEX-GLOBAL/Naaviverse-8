@@ -2,28 +2,36 @@ import React, { useState, useRef, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-// Components
 import Pathview from "../Pathview";
 import JourneyPage from "../Pathview/JourneyPage";
 
-// Contexts
 import { useCoinContextData } from "../../context/CoinContext";
 import { GlobalContex } from "../../globalContext";
 import { useStore } from "../../components/store/store.ts";
-import educationIcon from "../../static/images/mapspage/educationIcon.svg";
-
 import logActivity from "../../utils/activityLogger";
 
-// Styles
 import "./mapspage.scss";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
+// ─── Modal Step Enum ───────────────────────────────────────────
+// null        → no modal
+// "view"      → view path details (name, desc, Explore / Select / Back)
+// "explore"   → show steps inside same modal
+// "confirm"   → are you sure?
+// "success"   → congratulations
 
 const PathComponent = () => {
   const navigate = useNavigate();
   const { sideNav, setsideNav } = useStore();
 
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [coordsOpen, setCoordsOpen] = useState(false);
+
+  // Modal state
+  const [modalPath, setModalPath]   = useState(null);   // path object
+  const [modalStep, setModalStep]   = useState(null);   // "view" | "explore" | "confirm" | "success"
+  const [pathSteps, setPathSteps]   = useState([]);
+  const [stepsLoading, setStepsLoading] = useState(false);
 
   const {
     pathItemSelected,
@@ -36,21 +44,26 @@ const PathComponent = () => {
   } = useCoinContextData();
 
   const {
-    gradeToggle,      setGradeToggle,
-    curriculumToggle, setCurriculumToggle,
-    streamToggle,     setStreamToggle,
+    gradeToggle,       setGradeToggle,
+    curriculumToggle,  setCurriculumToggle,
+    streamToggle,      setStreamToggle,
     performanceToggle, setPerformanceToggle,
-    financialToggle,  setFinancialToggle,
+    financialToggle,   setFinancialToggle,
     personalityToggle, setPersonalityToggle,
-    refetchPaths,     setRefetchPaths,
+    refetchPaths,      setRefetchPaths,
   } = useContext(GlobalContex);
 
   const [loading,        setLoading]        = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [approvedPaths,  setApprovedPaths]  = useState([]);
-  const [userProfile,    setUserProfile]    = useState(null);
 
-  // ── track whether explore has been logged this session ──────────────────
+  const [userProfile, setUserProfile] = useState(() => {
+    try {
+      const cached = localStorage.getItem("userProfile");
+      return cached ? JSON.parse(cached) : null;
+    } catch { return null; }
+  });
+
   const exploreLoggedRef = useRef(false);
 
   const user = (() => {
@@ -58,30 +71,26 @@ const PathComponent = () => {
     catch { return {}; }
   })();
 
-  // ── FETCH USER PROFILE ────────────────────────────────────────────────────
-  const fetchUserProfile = async () => {
-    try {
-      const email = user?.email;
-      if (!email) return;
-      const res = await axios.get(`${BASE_URL}/api/users/get/${email}`);
-      if (res.data.status) {
-        setUserProfile(res.data.data);
-        localStorage.setItem("userProfile", JSON.stringify(res.data.data));
-      }
-    } catch (err) {
-      console.error("Failed to load user profile:", err);
-    }
-  };
-
   useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const email = user?.email;
+        if (!email) return;
+        const res = await axios.get(`${BASE_URL}/api/users/get/${email}`);
+        if (res.data.status) {
+          setUserProfile(res.data.data);
+          localStorage.setItem("userProfile", JSON.stringify(res.data.data));
+        }
+      } catch (err) {
+        console.error("Failed to load user profile:", err);
+      }
+    };
     fetchUserProfile();
   }, []);
 
-  // ── LOG "explore" ONCE when paths page mounts ─────────────────────────────
   useEffect(() => {
     if (exploreLoggedRef.current) return;
     exploreLoggedRef.current = true;
-
     logActivity({
       type:  "explore",
       title: "Browsing learning paths",
@@ -89,18 +98,17 @@ const PathComponent = () => {
     });
   }, []);
 
-  // ── FETCH APPROVED PATHS (WITH TOGGLES) ───────────────────────────────────
   useEffect(() => {
     const fetchApprovedPaths = async () => {
       try {
         setLoading(true);
         const params = {};
-        if (gradeToggle)       params.grade       = userProfile?.grade;
-        if (curriculumToggle)  params.curriculum  = userProfile?.curriculum;
-        if (streamToggle)      params.stream      = userProfile?.stream;
-        if (performanceToggle) params.performance = userProfile?.performance;
-        if (financialToggle)   params.financial   = userProfile?.financialSituation;
-        if (personalityToggle) params.personality = userProfile?.personality;
+        if (gradeToggle       && userProfile?.grade)              params.grade       = userProfile.grade;
+        if (curriculumToggle  && userProfile?.curriculum)         params.curriculum  = userProfile.curriculum;
+        if (streamToggle      && userProfile?.stream)             params.stream      = userProfile.stream;
+        if (performanceToggle && userProfile?.performance)        params.performance = userProfile.performance;
+        if (financialToggle   && userProfile?.financialSituation) params.financial   = userProfile.financialSituation;
+        if (personalityToggle && userProfile?.personality)        params.personality = userProfile.personality;
 
         const res = await axios.get(`${BASE_URL}/api/paths/active`, { params });
         setApprovedPaths(res.data.data || []);
@@ -111,8 +119,7 @@ const PathComponent = () => {
         setLoading(false);
       }
     };
-
-    if (userProfile) fetchApprovedPaths();
+    fetchApprovedPaths();
   }, [
     refetchPaths,
     gradeToggle, curriculumToggle, streamToggle,
@@ -120,222 +127,301 @@ const PathComponent = () => {
     userProfile,
   ]);
 
-  // ── USER CONFIRMS PATH ────────────────────────────────────────────────────
-  const confirmPathSelection = async () => {
-    const email  = user?.email;
-    const pathId = selectedPathItem?._id;
+  // ── Open "View Path" modal ────────────────────────────────────
+  const handleViewPath = (path) => {
+    setModalPath(path);
+    setModalStep("view");
+    setPathSteps([]);
+  };
 
-    if (!email || !pathId) {
-      alert("Something went wrong. Please try again.");
-      return;
+  // ── Close all modals & reset state ───────────────────────────
+  const closeModal = () => {
+    setModalStep(null);
+    setModalPath(null);
+    setPathSteps([]);
+    // Also reset legacy pathItemSelected state so returning to paths is clean
+    setPathItemSelected(false);
+    setSelectedPathItem(null);
+  };
+
+  // ── Explore Path: fetch steps & show inside modal ─────────────
+  const handleExplore = async () => {
+    if (!modalPath?._id) return;
+    setModalStep("explore");
+    setStepsLoading(true);
+    try {
+      const res = await axios.get(`${BASE_URL}/api/steps/get`, {
+        params: { path_id: modalPath._id },
+      });
+      const sorted = (res?.data?.data || []).sort(
+        (a, b) => (a.step_order || 0) - (b.step_order || 0)
+      );
+      setPathSteps(sorted);
+    } catch {
+      setPathSteps([]);
+    } finally {
+      setStepsLoading(false);
     }
+  };
+
+  // ── Confirm selection ─────────────────────────────────────────
+  const handleConfirmSelect = async () => {
+    const email  = user?.email;
+    const pathId = modalPath?._id;
+    if (!email || !pathId) return;
 
     try {
       setConfirmLoading(true);
       localStorage.setItem("selectedPathId", pathId);
       localStorage.removeItem("selectedStepId");
-
       await axios.post(`${BASE_URL}/api/userpaths/selectpath`, { email, pathId });
-
-      // ✅ Log path selected / enrolled
-      logActivity({
-        type:     "path",
-        title:    `Selected path: ${selectedPathItem?.name}`,
-        desc:     `User enrolled in "${selectedPathItem?.name}"`,
-        pathId:   pathId,
-        pathName: selectedPathItem?.name || "",
-        status:   "completed",
-      });
-
-      setPathItemStep(3);
-      setTimeout(() => {
-        setsideNav("My Journey");
-        navigate("/dashboard/users/my-journey");
-      }, 2000);
     } catch (err) {
-      console.error("❌ Select path error:", err.response?.data || err.message);
-
-      // Still log even if API failed (path was set in localStorage)
-      logActivity({
-        type:     "path",
-        title:    `Selected path: ${selectedPathItem?.name}`,
-        desc:     `User enrolled in "${selectedPathItem?.name}"`,
-        pathId:   pathId,
-        pathName: selectedPathItem?.name || "",
-        status:   "completed",
-      });
-
-      setPathItemStep(3);
-      setTimeout(() => {
-        setsideNav("My Journey");
-        navigate("/dashboard/users/my-journey");
-      }, 2000);
+      console.error("Select path error:", err.response?.data || err.message);
     } finally {
       setConfirmLoading(false);
+      logActivity({
+        type:     "path",
+        title:    `Selected path: ${modalPath?.nameOfPath}`,
+        desc:     `User enrolled in "${modalPath?.nameOfPath}"`,
+        pathId:   pathId,
+        pathName: modalPath?.nameOfPath || "",
+        status:   "completed",
+      });
+      setModalStep("success");
+      // Auto-navigate after 2.2 s
+      setTimeout(() => {
+        closeModal();
+        setsideNav("My Journey");
+        navigate("/dashboard/users/my-journey");
+      }, 2200);
     }
   };
 
-  // ── RENDER ────────────────────────────────────────────────────────────────
+  const parseDuration = (raw) => {
+    try {
+      const l = JSON.parse(raw);
+      const parts = [];
+      if (parseInt(l.years)  > 0) parts.push(`${l.years}y`);
+      if (parseInt(l.months) > 0) parts.push(`${l.months}m`);
+      if (parseInt(l.days)   > 0) parts.push(`${l.days}d`);
+      return parts.length > 0 ? parts.join(" ") : null;
+    } catch { return null; }
+  };
+
+  const coordinates = [
+    { label: "Grade",       value: userProfile?.grade,              toggle: gradeToggle,       setToggle: setGradeToggle },
+    { label: "Curriculum",  value: userProfile?.curriculum,         toggle: curriculumToggle,  setToggle: setCurriculumToggle },
+    { label: "Stream",      value: userProfile?.stream,             toggle: streamToggle,      setToggle: setStreamToggle },
+    { label: "Performance", value: userProfile?.performance,        toggle: performanceToggle, setToggle: setPerformanceToggle },
+    { label: "Financial",   value: userProfile?.financialSituation, toggle: financialToggle,   setToggle: setFinancialToggle },
+    { label: "Personality", value: userProfile?.personality,        toggle: personalityToggle, setToggle: setPersonalityToggle },
+  ];
+
+  const isModalOpen = !!modalStep;
+
   return (
-    <div className="mapspage1">
+    <div className="mapspage-modern">
       {showPathDetails ? (
         <JourneyPage />
       ) : (
-        <div className="maps-container1">
-
-          {/* ── RIGHT: Filters Sidebar ── */}
-          <div className={`maps-sidebar1 ${filtersOpen ? "mobile-filters-open" : ""}`}>
-
-            <div
-              className="mobile-filter-toggle"
-              onClick={() => setFiltersOpen((v) => !v)}
-            >
-              <span>🎯 Filters & Coordinates</span>
-              <span className="mobile-filter-chevron">{filtersOpen ? "▲" : "▼"}</span>
-            </div>
-
-            <div className={`sidebar-filter-content ${filtersOpen ? "open" : ""}`}>
-
-              {pathItemSelected && pathItemStep === 1 ? (
-                <div className="mid-area1" style={{ borderBottom: "none" }}>
-                  <div style={{ margin: "0.5rem 0" }}>What do you want to do?</div>
-                  <div className="maps-btns-div1">
-                    <div
-                      className="reset-btn1"
-                      onClick={() => navigate(`/dashboard/path/${selectedPathItem?._id}`)}
-                    >
-                      Explore Path
-                    </div>
-                    <div className="reset-btn1" onClick={() => setPathItemStep(2)}>
-                      Select Path
-                    </div>
-                    <div
-                      className="reset-btn1"
-                      onClick={() => { setPathItemSelected(false); setSelectedPathItem(null); }}
-                    >
-                      Go Back
-                    </div>
-                  </div>
-                </div>
-
-              ) : pathItemSelected && pathItemStep === 2 ? (
-                <div className="mid-area1" style={{ borderBottom: "none" }}>
-                  <div style={{ margin: "0.5rem 0" }}>
-                    Are you sure you want to select{" "}
-                    <strong>{selectedPathItem?.name}</strong>?
-                  </div>
-                  <div className="maps-btns-div1">
-                    <div
-                      className="reset-btn1"
-                      onClick={confirmPathSelection}
-                      style={{
-                        opacity: confirmLoading ? 0.6 : 1,
-                        pointerEvents: confirmLoading ? "none" : "auto",
-                        cursor: confirmLoading ? "not-allowed" : "pointer",
-                      }}
-                    >
-                      {confirmLoading ? "Confirming..." : "Yes, Confirm"}
-                    </div>
-                    <div className="reset-btn1" onClick={() => setPathItemStep(1)}>Go Back</div>
-                  </div>
-                </div>
-
-              ) : pathItemSelected && pathItemStep === 3 ? (
-                <div className="congrats-area">
-                  <div className="congrats-textt">🎉 Congratulations!</div>
-                  <div className="congrats-textt1">You have selected:</div>
-                  <div className="congrats-textt1" style={{ fontWeight: 700 }}>
-                    {selectedPathItem?.name}
-                  </div>
-                  <div style={{ fontSize: "13px", color: "#9ca3af", marginTop: "8px" }}>
-                    Redirecting to My Journey...
-                  </div>
-                </div>
-
-              ) : (
-                <div className="mid-area1">
-                  <div className="education-header">
-                    <div className="education-icon">
-                      <img src={educationIcon} alt="Education" />
-                    </div>
-                    <div className="education-title">Education</div>
-                  </div>
-
-                  <div className="current-coord-container">
-                    <div className="current-text">Current Coordinates</div>
-                    {!userProfile ? (
-                      <p>Loading profile...</p>
-                    ) : (
-                      <>
-                        {[
-                          { label: "Grade",       value: userProfile.grade,              toggle: gradeToggle,       setToggle: setGradeToggle },
-                          { label: "Curriculum",  value: userProfile.curriculum,         toggle: curriculumToggle,  setToggle: setCurriculumToggle },
-                          { label: "Stream",      value: userProfile.stream,             toggle: streamToggle,      setToggle: setStreamToggle },
-                          { label: "Performance", value: userProfile.performance,        toggle: performanceToggle, setToggle: setPerformanceToggle },
-                          { label: "Financial",   value: userProfile.financialSituation, toggle: financialToggle,   setToggle: setFinancialToggle },
-                          { label: "Personality", value: userProfile.personality,        toggle: personalityToggle, setToggle: setPersonalityToggle },
-                        ].map(({ label, value, toggle, setToggle }) => (
-                          <div className="each-coo-field" key={label}>
-                            <div className="field-name">{label}</div>
-                            <div
-                              className="toggleContainer"
-                              onClick={() => setToggle(!toggle)}
-                            >
-                              <div
-                                className="toggle"
-                                style={{ transform: !toggle ? "translateX(0)" : "translateX(20px)" }}
-                              />
-                            </div>
-                            <div className="field-value">{value}</div>
-                          </div>
-                        ))}
-                      </>
-                    )}
-                  </div>
-
-                  <div className="maps-btns-div1">
-                    <div
-                      className="gs-Btn-maps1"
-                      onClick={() => {
-                        setRefetchPaths(!refetchPaths);
-                        setFiltersOpen(false);
-                      }}
-                    >
-                      Find Paths
-                    </div>
-                  </div>
-                </div>
-              )}
-
-            </div>
-          </div>
-
-          {/* ── LEFT: Approved Paths ── */}
-          <div className="maps-content-area1">
+        <div className="maps-main-container">
+          <div className="maps-paths-area">
             <Pathview
               paths={approvedPaths}
               loading={loading}
-              onConfirmPath={(path) => {
-                setSelectedPathItem(path);
-                setPathItemSelected(true);
-                setPathItemStep(1);
-                setFiltersOpen(true);
-
-                // ✅ Log that user tapped/viewed a specific path card
-                logActivity({
-                  type:     "explore",
-                  title:    `Viewed path: ${path?.name}`,
-                  desc:     `User tapped on "${path?.name}" to view details`,
-                  pathId:   path?._id,
-                  pathName: path?.name || "",
-                  status:   "viewed",
-                });
-              }}
+              onAdjustCoordinates={() => setCoordsOpen(true)}
+              onViewPath={handleViewPath}
             />
           </div>
-
         </div>
       )}
+
+      {/* ══════════════════════════════════════════════════
+          MODAL SYSTEM — backdrop only covers main content
+      ══════════════════════════════════════════════════ */}
+      {isModalOpen && (
+        <div
+          className="content-modal-backdrop"
+          onClick={closeModal}
+        />
+      )}
+
+      {/* ── VIEW PATH MODAL ── */}
+      {modalStep === "view" && modalPath && (
+        <div className="path-flow-modal">
+          <button className="pfm-close" onClick={closeModal}>✕</button>
+
+          <div className="pfm-icon">
+            {(modalPath.nameOfPath || "P").charAt(0).toUpperCase()}
+          </div>
+          <h3 className="pfm-title">{modalPath.nameOfPath || modalPath.name}</h3>
+
+          {modalPath.program && modalPath.program !== "-" && (
+            <span className="pfm-tag">{modalPath.program}</span>
+          )}
+
+          {modalPath.description && modalPath.description !== "-" && (
+            <p className="pfm-desc">{modalPath.description}</p>
+          )}
+
+          <div className="pfm-btns">
+            <button className="pfm-btn pfm-btn--outline" onClick={handleExplore}>
+              Explore Path
+            </button>
+            <button className="pfm-btn pfm-btn--primary" onClick={() => setModalStep("confirm")}>
+              Select This Path
+            </button>
+            <button className="pfm-btn pfm-btn--ghost" onClick={closeModal}>
+              ← Back
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── EXPLORE STEPS MODAL ── */}
+      {modalStep === "explore" && modalPath && (
+        <div className="path-flow-modal path-flow-modal--wide">
+          <button className="pfm-close" onClick={closeModal}>✕</button>
+          <button className="pfm-back-btn" onClick={() => setModalStep("view")}>← Back</button>
+
+          <div className="pfm-explore-header">
+            <div className="pfm-icon pfm-icon--sm">
+              {(modalPath.nameOfPath || "P").charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h3 className="pfm-title pfm-title--left">{modalPath.nameOfPath}</h3>
+              <span className="pfm-tag">{modalPath.program}</span>
+            </div>
+          </div>
+
+          <div className="pfm-steps-scroll">
+            {stepsLoading ? (
+              <div className="pfm-steps-loading">
+                <div className="pfm-spinner" />
+                <span>Loading steps…</span>
+              </div>
+            ) : pathSteps.length === 0 ? (
+              <p className="pfm-no-steps">No steps found for this path.</p>
+            ) : (
+              <div className="pfm-steps-list">
+                {pathSteps.map((step, idx) => {
+                  const dur = parseDuration(step.macro_length);
+                  return (
+                    <div className="pfm-step-card" key={step._id}>
+                      <div className="pfm-step-num">{step.step_order || idx + 1}</div>
+                      <div className="pfm-step-body">
+                        <div className="pfm-step-name">{step.macro_name}</div>
+                        {step.macro_description && (
+                          <div className="pfm-step-desc">{step.macro_description}</div>
+                        )}
+                        {dur && <div className="pfm-step-dur">⏱ {dur}</div>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div className="pfm-btns pfm-btns--bottom">
+            <button
+              className="pfm-btn pfm-btn--primary"
+              onClick={() => setModalStep("confirm")}
+            >
+              Select This Path
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── CONFIRM MODAL ── */}
+      {modalStep === "confirm" && modalPath && (
+        <div className="path-flow-modal">
+          <button className="pfm-close" onClick={closeModal}>✕</button>
+
+          <div className="pfm-icon pfm-icon--confirm">🎓</div>
+          <h3 className="pfm-title">Confirm Selection</h3>
+          <p className="pfm-sub">Are you sure you want to select this path?</p>
+          <span className="pfm-tag pfm-tag--lg">
+            {modalPath.nameOfPath || modalPath.name}
+          </span>
+
+          <div className="pfm-btns">
+            <button
+              className="pfm-btn pfm-btn--primary"
+              onClick={handleConfirmSelect}
+              disabled={confirmLoading}
+            >
+              {confirmLoading ? "Confirming…" : "Yes, Select"}
+            </button>
+            <button
+              className="pfm-btn pfm-btn--ghost"
+              onClick={() => setModalStep(pathSteps.length ? "explore" : "view")}
+            >
+              ← Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── SUCCESS MODAL ── */}
+      {modalStep === "success" && modalPath && (
+        <div className="path-flow-modal">
+          <button className="pfm-close" onClick={closeModal}>✕</button>
+
+          <div className="pfm-icon pfm-icon--success">🎉</div>
+          <h3 className="pfm-title pfm-title--success">Congratulations!</h3>
+          <p className="pfm-sub">You've successfully enrolled in:</p>
+          <span className="pfm-tag pfm-tag--lg">
+            {modalPath.nameOfPath || modalPath.name}
+          </span>
+          <small className="pfm-redirect">Redirecting to My Journey…</small>
+        </div>
+      )}
+
+      {/* ─── COORDINATES RIGHT SIDEBAR ─── */}
+      {coordsOpen && (
+        <div className="coords-overlay" onClick={() => setCoordsOpen(false)} />
+      )}
+      <div className={`coords-sidebar ${coordsOpen ? "coords-sidebar--open" : ""}`}>
+        <div className="coords-sidebar__header">
+          <div>
+            <p className="coords-sidebar__label">Education</p>
+            <h3 className="coords-sidebar__title">My Coordinates</h3>
+          </div>
+          <button className="coords-sidebar__close" onClick={() => setCoordsOpen(false)}>✕</button>
+        </div>
+
+        <p className="coords-sidebar__hint">Toggle filters to personalise your path recommendations.</p>
+
+        <div className="coords-list">
+          {coordinates.map(({ label, value, toggle, setToggle }) => (
+            <div className="coord-row" key={label}>
+              <div className="coord-row__left">
+                <span className="coord-row__label">{label}</span>
+                <span className="coord-row__value">{value || "Not set"}</span>
+              </div>
+              <button
+                className={`toggle-pill ${toggle ? "toggle-pill--on" : ""}`}
+                onClick={() => setToggle(!toggle)}
+                aria-pressed={toggle}
+              >
+                <span className="toggle-pill__knob" />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <button
+          className="btn-primary coords-sidebar__apply"
+          onClick={() => {
+            setRefetchPaths(!refetchPaths);
+            setCoordsOpen(false);
+          }}
+        >
+          Apply & Find Paths
+        </button>
+      </div>
     </div>
   );
 };

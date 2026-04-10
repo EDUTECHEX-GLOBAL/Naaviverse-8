@@ -55,14 +55,18 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     transition: all 0.16s;
     white-space: nowrap;
 
-    &:hover { color: $navy; }
+    &:hover {
+      color: $navy;
+    }
 
     &.active {
       color: $teal;
       border-bottom-color: $teal;
     }
 
-    &.done { color: $gray600; }
+    &.done {
+      color: $gray600;
+    }
   }
 
   .sp-n {
@@ -79,8 +83,15 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     flex-shrink: 0;
     transition: all 0.16s;
 
-    .sp.active & { background: $teal; color: #fff; }
-    .sp.done &   { background: #16a34a; color: #fff; }
+    .sp.active & {
+      background: $teal;
+      color: #fff;
+    }
+
+    .sp.done & {
+      background: #16a34a;
+      color: #fff;
+    }
   }
 
   .sp-arr {
@@ -135,7 +146,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   margin-bottom: 5px;
 }
 
-.bc-hi { color: $teal; }
+.bc-hi {
+  color: $teal;
+}
 
 .page-head-top-row {
   display: flex;
@@ -167,7 +180,10 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   &.back-link {
     cursor: pointer;
     transition: background 0.15s;
-    &:hover { background: $gray200; }
+
+    &:hover {
+      background: $gray200;
+    }
   }
 }
 
@@ -195,9 +211,17 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     transform: translateY(-2px);
   }
 
-  &.vMacro:hover { border-color: #a5b4fc; }
-  &.vMicro:hover { border-color: $teal; }
-  &.vNano:hover  { border-color: $accent; }
+  &.vMacro:hover {
+    border-color: #a5b4fc;
+  }
+
+  &.vMicro:hover {
+    border-color: $teal;
+  }
+
+  &.vNano:hover {
+    border-color: $accent;
+  }
 
   &.view-card--locked {
     &:hover {
@@ -230,8 +254,13 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     pointer-events: none;
   }
 
-  &.lock-overlay--micro { background: rgba(8, 35, 50, 0.65); }
-  &.lock-overlay--nano  { background: rgba(30, 18, 5, 0.65); }
+  &.lock-overlay--micro {
+    background: rgba(8, 35, 50, 0.65);
+  }
+
+  &.lock-overlay--nano {
+    background: rgba(30, 18, 5, 0.65);
+  }
 }
 
 .lock-overlay__inner {
@@ -253,7 +282,10 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   justify-content: center;
   color: #fff;
 
-  svg { width: 22px; height: 22px; }
+  svg {
+    width: 22px;
+    height: 22px;
+  }
 }
 
 .lock-overlay__text {
@@ -283,7 +315,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     transform: scale(1.04);
   }
 
-  &:active { transform: scale(0.98); }
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 // ── View Card Head ────────────────────────────────────────────────────────────
@@ -311,7 +345,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
 }
 
 // dot removed from JSX — keeping class stub so nothing breaks if referenced
-.vc-dot { display: none; }
+.vc-dot {
+  display: none;
+}
 
 .vc-lbl {
   font-size: 11px;
@@ -320,9 +356,17 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   letter-spacing: 1.1px;
   flex: 1;
 
-  &.lMacro { color: #6366f1; }
-  &.lMicro { color: $teal; }
-  &.lNano  { color: #d97706; }
+  &.lMacro {
+    color: #6366f1;
+  }
+
+  &.lMicro {
+    color: $teal;
+  }
+
+  &.lNano {
+    color: #d97706;
+  }
 }
 
 // ── Access Badge ─────────────────────────────────────────────────────────────
@@ -335,10 +379,25 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   border-radius: 4px; // ← square, not oval
   white-space: nowrap;
 
-  &.badge-free   { background: #dcfce7; color: #16a34a; }
-  &.badge-sub    { background: #ede9fe; color: #6366f1; }
-  &.badge-paid   { background: #fef3c7; color: #92680a; }
-  &.badge-locked { background: rgba(148, 163, 184, 0.15); color: $gray400; }
+  &.badge-free {
+    background: #dcfce7;
+    color: #16a34a;
+  }
+
+  &.badge-sub {
+    background: #ede9fe;
+    color: #6366f1;
+  }
+
+  &.badge-paid {
+    background: #fef3c7;
+    color: #92680a;
+  }
+
+  &.badge-locked {
+    background: rgba(148, 163, 184, 0.15);
+    color: $gray400;
+  }
 }
 
 // ── View Card Body & Footer ───────────────────────────────────────────────────
@@ -409,7 +468,7 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   &.bMacro {
     background: #ede9fe;
     color: #5b21b6;
-   
+
   }
 
   &.bMicro {
@@ -427,7 +486,11 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     color: $gray400;
     cursor: not-allowed;
     font-weight: 600;
-    &:hover { background: $gray200; color: $gray600; }
+
+    &:hover {
+      background: $gray200;
+      color: $gray600;
+    }
   }
 }
 
@@ -490,7 +553,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     transform: translateY(-1px);
   }
 
-  &:active { transform: translateY(0); }
+  &:active {
+    transform: translateY(0);
+  }
 }
 
 .btn-yes {
@@ -517,7 +582,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     box-shadow: 0 3px 10px rgba(2, 136, 209, 0.12);
   }
 
-  &:active { transform: translateY(0); }
+  &:active {
+    transform: translateY(0);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -545,8 +612,15 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
 }
 
 @keyframes gateIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .sub-gate__back {
@@ -562,7 +636,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   margin-bottom: 22px;
   transition: color 0.15s;
 
-  &:hover { color: $navy; }
+  &:hover {
+    color: $navy;
+  }
 }
 
 .sub-gate__badge {
@@ -579,10 +655,10 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
 
 .sub-gate__title {
   font-family: 'Playfair Display', serif;
-  font-size: 26px;
+  font-size: 24px;         // ← slightly smaller
   font-weight: 700;
   color: $navy;
-  margin: 0 0 10px;
+  margin: 0 0 20px;        // ← was 0 0 10px, now more breathing room below
   line-height: 1.2;
 }
 
@@ -613,7 +689,10 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   transition: all 0.2s;
   position: relative;
 
-  &:hover { border-color: $teal; box-shadow: $shadow; }
+  &:hover {
+    border-color: $teal;
+    box-shadow: $shadow;
+  }
 
   &.sub-plan--selected {
     border-color: $teal;
@@ -713,7 +792,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     transform: translateY(-1px);
   }
 
-  &:active { transform: translateY(0); }
+  &:active {
+    transform: translateY(0);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -721,8 +802,13 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
 // ══════════════════════════════════════════════════════════════════════════════
 
 @keyframes sk-shimmer {
-  0%   { background-position: -600px 0; }
-  100% { background-position:  600px 0; }
+  0% {
+    background-position: -600px 0;
+  }
+
+  100% {
+    background-position: 600px 0;
+  }
 }
 
 .sk-bar {
@@ -753,9 +839,22 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   justify-content: space-between;
   pointer-events: none;
 
-  .vc-head { display: flex; align-items: center; }
-  .vc-body { flex: 1; display: flex; flex-direction: column; gap: 0; padding: 14px 0; }
-  .vc-foot { margin-top: auto; }
+  .vc-head {
+    display: flex;
+    align-items: center;
+  }
+
+  .vc-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 14px 0;
+  }
+
+  .vc-foot {
+    margin-top: auto;
+  }
 
   &.sk-card--macro .sk-bar {
     background: linear-gradient(90deg, #ede9f8 25%, #ddd5f2 37%, #ede9f8 63%);
@@ -778,7 +877,12 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
 
 .sk-comp-bar {
   pointer-events: none;
-  .cb-btns { display: flex; gap: 12px; align-items: center; }
+
+  .cb-btns {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
 }
 
 // ── Buy Drawer ────────────────────────────────────────────────────────────────
@@ -816,7 +920,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
         justify-content: center;
         align-items: flex-start;
 
-        p { margin-bottom: 0; }
+        p {
+          margin-bottom: 0;
+        }
 
         .amnt-font-cs {
           font-weight: 600;
@@ -839,7 +945,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
         justify-content: center;
         align-items: flex-end;
 
-        p { margin-bottom: 0; }
+        p {
+          margin-bottom: 0;
+        }
 
         .amnt-font-cs {
           font-weight: 600;
@@ -880,7 +988,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
         transition: all ease 0.3s;
         cursor: pointer;
 
-        &:hover { scale: 1.1; }
+        &:hover {
+          scale: 1.1;
+        }
       }
 
       .share-btn-cs {
@@ -897,7 +1007,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
         transition: all ease 0.3s;
         cursor: pointer;
 
-        &:hover { scale: 1.1; }
+        &:hover {
+          scale: 1.1;
+        }
       }
     }
 
@@ -975,7 +1087,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
         transition: all ease 0.3s;
         cursor: pointer;
 
-        &:hover { scale: 1.08; }
+        &:hover {
+          scale: 1.08;
+        }
       }
     }
   }
@@ -1038,7 +1152,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
         cursor: pointer;
         transition: all ease 0.2s;
 
-        &:hover { transform: scale(1.05); }
+        &:hover {
+          transform: scale(1.05);
+        }
       }
 
       .no-btn {
@@ -1052,7 +1168,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
         cursor: pointer;
         transition: all ease 0.2s;
 
-        &:hover { transform: scale(1.05); }
+        &:hover {
+          transform: scale(1.05);
+        }
       }
     }
   }
@@ -1088,7 +1206,10 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     height: 64px;
   }
 
-  &__svg { width: 64px; height: 64px; }
+  &__svg {
+    width: 64px;
+    height: 64px;
+  }
 
   &__circle {
     stroke: #10b981;
@@ -1108,8 +1229,17 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     animation: strokeCheck 0.4s ease 0.55s forwards;
   }
 
-  @keyframes strokeCircle { to { stroke-dashoffset: 0; } }
-  @keyframes strokeCheck  { to { stroke-dashoffset: 0; } }
+  @keyframes strokeCircle {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes strokeCheck {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
 
   &__badge {
     display: inline-block;
@@ -1165,7 +1295,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     color: #334155;
     padding: 5px 0;
 
-    & + & { border-top: 1px solid #f1f5f9; }
+    &+& {
+      border-top: 1px solid #f1f5f9;
+    }
   }
 
   .sul-icon {
@@ -1192,7 +1324,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
       transform: translateY(-1px);
     }
 
-    &:active { transform: translateY(0); }
+    &:active {
+      transform: translateY(0);
+    }
   }
 }
 
@@ -1226,7 +1360,10 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   transition: all 0.15s;
   background: #fff;
 
-  &:hover { border-color: $teal; color: $teal; }
+  &:hover {
+    border-color: $teal;
+    color: $teal;
+  }
 
   &.mp-filter-tab--active {
     background: $teal;
@@ -1326,7 +1463,11 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   height: 32px;
   flex-shrink: 0;
 
-  img { width: 32px; height: 32px; object-fit: contain; }
+  img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+  }
 }
 
 // Card title
@@ -1435,16 +1576,22 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     background: #fffbeb;
   }
 
-  &:hover { border-color: $accent; }
+  &:hover {
+    border-color: $accent;
+  }
 
   .sub-plan__tag {
     background: $accent;
   }
 }
 
-.sub-plan__price--nano { color: $navy; }
+.sub-plan__price--nano {
+  color: $navy;
+}
 
-.sub-plan__save--nano { color: $accent; }
+.sub-plan__save--nano {
+  color: $accent;
+}
 
 // ── Nano CTA variant ──────────────────────────────────────────────────────────
 .sub-gate__cta--nano {
@@ -1475,7 +1622,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   padding: 0;
   text-decoration: underline;
 
-  &:hover { color: #d97706; }
+  &:hover {
+    color: #d97706;
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1543,7 +1692,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
       box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
     }
 
-    &:active { transform: translateY(0); }
+    &:active {
+      transform: translateY(0);
+    }
   }
 }
 
@@ -1599,7 +1750,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   float: right;
   margin-bottom: 4px;
 
-  svg { flex-shrink: 0; }
+  svg {
+    flex-shrink: 0;
+  }
 }
 
 // ── Unlock success toast ──────────────────────────────────────────────────────
@@ -1616,8 +1769,15 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
 }
 
 @keyframes toastIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 // ── Credit unlock overlay actions ─────────────────────────────────────────────
@@ -1648,7 +1808,10 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   transition: all 0.15s;
   white-space: nowrap;
 
-  &:disabled { opacity: 0.55; cursor: not-allowed; }
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
 
   // "Use X Credits" — primary purple button
   &.cuo-btn--credits {
@@ -1670,7 +1833,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     color: #fff;
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 
-    &:hover:not(:disabled) { transform: translateY(-1px); }
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
   }
 
   // "Cancel" — ghost
@@ -1716,7 +1881,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   line-height: 1.5;
   margin: 0;
 
-  strong { color: #fff; }
+  strong {
+    color: #fff;
+  }
 }
 
 .cuo-confirm-balance {
@@ -1732,44 +1899,113 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
 }
 
 .sub-tier-toggle--3 {
-  display: flex; gap: 10px; margin-bottom: 16px;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+
   .sub-tier-toggle__btn {
-    flex: 1; border: 2px solid #e2e8f0; border-radius: 12px;
-    padding: 12px 8px; background: #fff; cursor: pointer;
-    font-size: 13px; font-weight: 600; transition: all 0.2s;
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    .sub-tier-toggle__sub { font-size: 11px; font-weight: 400; color: #666; }
-  }
-}
-.sub-billing-toggle {
-  display: flex; gap: 8px; justify-content: center; margin-bottom: 20px;
-  .sbt-btn {
-    padding: 8px 24px; border: 2px solid #e2e8f0; border-radius: 20px;
-    background: #fff; font-size: 13px; font-weight: 500; cursor: pointer;
-    display: flex; align-items: center; gap: 6px; transition: all 0.2s;
-    .sbt-save-tag {
-      background: #22c55e; color: #fff; font-size: 10px;
-      padding: 2px 6px; border-radius: 10px; font-weight: 700;
+    flex: 1;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 8px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+
+    .sub-tier-toggle__sub {
+      font-size: 11px;
+      font-weight: 400;
+      color: #666;
     }
   }
 }
-.sub-plan--single { max-width: 480px; margin: 0 auto 24px; border-width: 2px !important;
+
+.sub-billing-toggle {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 20px;
+
+  .sbt-btn {
+    padding: 8px 24px;
+    border: 2px solid #e2e8f0;
+    border-radius: 20px;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+
+    .sbt-save-tag {
+      background: #22c55e;
+      color: #fff;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+  }
+}
+
+.sub-plan--single {
+  max-width: 480px;
+  margin: 0 auto 24px;
+  border-width: 2px !important;
+
   .sub-plan__credits-badge {
-    display: inline-block; background: #fef9c3; color: #854d0e;
-    font-size: 13px; font-weight: 600; padding: 4px 12px;
-    border-radius: 20px; margin-bottom: 14px;
+    display: inline-block;
+    background: #fef9c3;
+    color: #854d0e;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
   }
 }
+
 .sub-gate__credit-info {
-  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
-  padding: 12px 16px; margin-bottom: 20px; font-size: 13px;
-  .sci-row { display: flex; align-items: center; gap: 10px; padding: 4px 0;
-    .sci-label { font-weight: 600; min-width: 95px; }
-    .sci-val { color: #475569; }
-    &--sub .sci-label { color: #7c3aed; }
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 13px;
+
+  .sci-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+
+    .sci-label {
+      font-weight: 600;
+      min-width: 95px;
+    }
+
+    .sci-val {
+      color: #475569;
+    }
+
+    &--sub .sci-label {
+      color: #7c3aed;
+    }
   }
 }
-.wallet-chip__tier { font-size: 12px; font-weight: 600; }
+
+.wallet-chip__tier {
+  font-size: 12px;
+  font-weight: 600;
+}
 
 // ── 3-column plan grid ─────────────────────────────────────────
 .sub-plans-grid {
@@ -1801,7 +2037,7 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
 
   &:hover:not(.sub-plan-card--active) {
     border-color: #cbd5e1;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   }
 
   .spc-tag {
@@ -1825,12 +2061,18 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     margin-bottom: 12px;
     margin-top: 10px;
 
-    .spc-emoji { font-size: 22px; }
-    .spc-label { font-size: 17px; font-weight: 700; }
+    .spc-emoji {
+      font-size: 22px;
+    }
+
+    .spc-label {
+      font-size: 17px;
+      font-weight: 700;
+    }
   }
 
   .spc-price {
-    font-size: 28px;
+    font-size: 22px;
     font-weight: 800;
     margin-bottom: 2px;
     line-height: 1.1;
@@ -1935,8 +2177,262 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     gap: 12px;
     padding: 5px 0;
 
-    .sci-label { font-weight: 700; min-width: 100px; }
-    .sci-val   { color: #475569; }
-    &--sub .sci-label { color: #7c3aed; }
+    .sci-label {
+      font-weight: 700;
+      min-width: 100px;
+    }
+
+    .sci-val {
+      color: #475569;
+    }
+
+    &--sub .sci-label {
+      color: #7c3aed;
+    }
   }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  PLAN CARDS SCSS — Paste at the END of currentstep.scss
+//  (Delete all old sub-gate / sub-plan-card / sub-billing-toggle
+//   blocks first, then paste this)
+// ══════════════════════════════════════════════════════════════════
+
+.sub-gate {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 32px 48px;
+  background: #f5f7fa;
+}
+
+.sub-gate__inner {
+  width: 100%;
+  max-width: 980px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sub-gate__back {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 16px;
+  transition: color 0.15s;
+  &:hover { color: #0f1f3d; }
+  &:disabled { opacity: 0.5; }
+}
+
+.sub-gate__title {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f1f3d;
+  margin: 0 0 16px;
+  text-align: center;
+}
+
+// ── Billing toggle ─────────────────────────────────────────────────
+.sub-billing-toggle {
+  display: flex;
+  gap: 0;
+  justify-content: center;
+  margin-bottom: 28px;
+  background: #e8edf3;
+  padding: 4px;
+  border-radius: 10px;
+  width: fit-content;
+
+  .sbt-btn {
+    padding: 8px 26px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: #64748b;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.18s;
+    white-space: nowrap;
+
+    &--active {
+      background: #0f1f3d;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(15, 31, 61, 0.25);
+    }
+
+    .sbt-save-tag {
+      background: #22c55e;
+      color: #fff;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+  }
+}
+
+// ── 3-column grid — EQUAL HEIGHT cards ────────────────────────────
+.sub-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 24px;
+  align-items: stretch; // ← KEY: all cards same height
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+  }
+}
+
+// ── Card ──────────────────────────────────────────────────────────
+.sub-plan-card {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 28px 22px 24px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+
+  &:hover:not(.sub-plan-card--active) {
+    border-color: #cbd5e1;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+
+  &--active {
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.10);
+    transform: translateY(-3px);
+  }
+
+  // Badge above card
+  .spc-tag {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 16px;
+    border-radius: 6px;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+  }
+
+  // Plan name
+  .spc-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    margin-top: 10px;
+
+    .spc-emoji { font-size: 20px; }
+    .spc-label { font-size: 17px; font-weight: 700; color: #0f1f3d; }
+  }
+
+  // Big price
+  .spc-price {
+    font-size: 48px;
+    font-weight: 800;
+    color: #0f1f3d;
+    line-height: 1;
+    margin-bottom: 6px;
+    font-family: 'DM Sans', sans-serif;
+
+    .spc-period {
+      font-size: 13px;
+      font-weight: 400;
+      color: #94a3b8;
+      margin-left: 2px;
+    }
+  }
+
+  // Subtitle (e.g. "2 months free" or blank)
+  .spc-save {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    min-height: 18px; // ← keeps spacing even when empty
+  }
+
+  // Subscribe button
+  .spc-subscribe-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 18px;
+    transition: all 0.18s;
+    letter-spacing: 0.2px;
+
+    &:hover:not(:disabled) {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+    &:active { transform: translateY(0); }
+    &:disabled { opacity: 0.65; cursor: not-allowed; }
+  }
+
+  // Divider
+  .spc-divider {
+    border: none;
+    border-top: 1px solid #f1f5f9;
+    margin: 0 0 14px;
+  }
+
+  // Feature list — grows to fill card height equally
+  .spc-feats {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1; // ← pushes all cards to same height
+
+    li {
+      font-size: 13px;
+      color: #475569;
+      padding: 8px 0;
+      line-height: 1.4;
+      border-bottom: 1px solid #f8fafc;
+      text-align: center;
+
+      &:last-child { border-bottom: none; }
+    }
+  }
+}
+
+// ── Bottom hint ────────────────────────────────────────────────────
+.sub-gate__cta { display: none; } // hidden — each card has its own button
+
+.sub-gate__nano-hint {
+  font-size: 12px;
+  color: #94a3b8;
+  text-align: center;
+  line-height: 1.6;
+  margin-top: 4px;
 }

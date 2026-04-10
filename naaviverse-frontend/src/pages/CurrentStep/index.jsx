@@ -11,13 +11,13 @@ import logo from "../../static/images/logo.svg";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const LAYER_COST_FREEMIUM   = { micro: 2,  nano: 4  };
-const LAYER_COST_SUBSCRIBER = { micro: 5,  nano: 10 };
+const LAYER_COST_FREEMIUM = { micro: 2, nano: 4 };
+const LAYER_COST_SUBSCRIBER = { micro: 5, nano: 10 };
 
 const PLAN_META = {
-  gold:     { emoji: "🥇", label: "Gold",     credits: 100,  monthlyPrice: "₹830",   annualPrice: "₹9,960",  monthlyAmt: 830,  annualAmt: 9960  },
-  silver:   { emoji: "🥈", label: "Silver",   credits: 500,  monthlyPrice: "₹4,150", annualPrice: "₹49,800", monthlyAmt: 4150, annualAmt: 49800, tag: "Most Popular" },
-  platinum: { emoji: "💎", label: "Platinum", credits: 1000, monthlyPrice: "₹8,300", annualPrice: "₹99,600", monthlyAmt: 8300, annualAmt: 99600, tag: "Best Value"   },
+  gold: { emoji: "🥇", label: "Gold", credits: 100, monthlyPrice: "₹830", annualPrice: "₹9,960", monthlyAmt: 830, annualAmt: 9960 },
+  silver: { emoji: "🥈", label: "Silver", credits: 500, monthlyPrice: "₹4,150", annualPrice: "₹49,800", monthlyAmt: 4150, annualAmt: 49800, tag: "Most Popular" },
+  platinum: { emoji: "💎", label: "Platinum", credits: 1000, monthlyPrice: "₹8,300", annualPrice: "₹99,600", monthlyAmt: 8300, annualAmt: 99600, tag: "Best Value" },
 };
 
 const PLAN_COLORS = { gold: "#b7791f", silver: "#718096", platinum: "#553c9a" };
@@ -94,7 +94,7 @@ const SkeletonPageHead = () => (
 /* ─── Credit Unlock Overlay ─────────────────────────────────────── */
 const CreditUnlockOverlay = ({ type, balance, unlocking, onUnlock, onSeePlans, isSubscriber }) => {
   const [showConfirm, setShowConfirm] = useState(false);
-  const cost     = isSubscriber ? LAYER_COST_SUBSCRIBER[type] : LAYER_COST_FREEMIUM[type];
+  const cost = isSubscriber ? LAYER_COST_SUBSCRIBER[type] : LAYER_COST_FREEMIUM[type];
   const canAfford = balance >= cost;
 
   return (
@@ -159,72 +159,163 @@ const CreditUnlockOverlay = ({ type, balance, unlocking, onUnlock, onSeePlans, i
 };
 
 /* ─── Subscription Gate ─────────────────────────────────────────── */
+// Replace your entire SubscriptionGate component with this in index.jsx
+
 const SubscriptionGate = ({ onBack, onSubscribe, subscribing, initialTier = null }) => {
   const [selectedTier,    setSelectedTier]    = useState(initialTier || "gold");
-  const [selectedBilling, setSelectedBilling] = useState("annual");
+  const [selectedBilling, setSelectedBilling] = useState("monthly");
+
+  // ── Annual price = monthly price × 10 (2 months free) ──────────
+  const getPrice = (p) => {
+    const pm = PLAN_META[p];
+    return selectedBilling === "annual" ? pm.annualPrice : pm.monthlyPrice;
+  };
+
+  // ── Feature list WITHOUT credits (credits shown in badge already) ─
+  const PLAN_FEATS_CLEAN = {
+    gold: [
+      "Macro View — always free",
+      "Micro View — 5 credits/step",
+      "Nano View — 10 credits/step",
+      "Full Marketplace access",
+      "Cancel anytime",
+    ],
+    silver: [
+      "Macro View — always free",
+      "Micro View — 5 credits/step",
+      "Nano View — 10 credits/step",
+      "Priority Marketplace access",
+      "Progress tracking",
+      "Cancel anytime",
+    ],
+    platinum: [
+      "Macro View — always free",
+      "Micro View — 5 credits/step",
+      "Nano View — 10 credits/step",
+      "Full Marketplace + exclusive content",
+      "Priority mentor matching",
+      "Dedicated success manager",
+      "Locked-in pricing",
+    ],
+  };
 
   return (
     <div className="sub-gate">
       <div className="sub-gate__inner">
+
         <button className="sub-gate__back" onClick={onBack} disabled={subscribing}>
           ← Back to Current Step
         </button>
-        <div className="sub-gate__badge">🔓 Unlock Full Access</div>
-        <h2 className="sub-gate__title">Choose Your Naavi Plan</h2>
-        <p className="sub-gate__desc">
-          Buy credits to unlock Micro &amp; Nano views per step. Macro view is always free.
-        </p>
 
+        <h2 className="sub-gate__title">Choose Your Naavi Plan</h2>
+
+        {/* ── Billing toggle ──────────────────────────────────── */}
         <div className="sub-billing-toggle">
-          <button className={`sbt-btn ${selectedBilling === "monthly" ? "sbt-btn--active" : ""}`}
-            onClick={() => setSelectedBilling("monthly")}>Monthly</button>
-          <button className={`sbt-btn ${selectedBilling === "annual" ? "sbt-btn--active" : ""}`}
-            onClick={() => setSelectedBilling("annual")}>
-            Annual<span className="sbt-save-tag">2 months free</span>
+          <button
+            className={`sbt-btn ${selectedBilling === "monthly" ? "sbt-btn--active" : ""}`}
+            onClick={() => setSelectedBilling("monthly")}
+          >
+            Monthly
+          </button>
+          <button
+            className={`sbt-btn ${selectedBilling === "annual" ? "sbt-btn--active" : ""}`}
+            onClick={() => setSelectedBilling("annual")}
+          >
+            Annual 
           </button>
         </div>
 
+        {/* ── Plan cards ──────────────────────────────────────── */}
         <div className="sub-plans-grid">
           {["gold", "silver", "platinum"].map((p) => {
             const pm     = PLAN_META[p];
             const pc     = PLAN_COLORS[p];
             const active = selectedTier === p;
+
             return (
-              <div key={p}
+              <div
+                key={p}
                 className={`sub-plan-card ${active ? "sub-plan-card--active" : ""}`}
                 style={{ borderColor: active ? pc : "#e2e8f0" }}
-                onClick={() => setSelectedTier(p)}>
-                {pm.tag && <div className="spc-tag" style={{ background: pc }}>⭐ {pm.tag}</div>}
+                onClick={() => setSelectedTier(p)}
+              >
+                {/* Badge */}
+                {pm.tag && (
+                  <div className="spc-tag" style={{ background: pc }}>
+                    ⭐ {pm.tag}
+                  </div>
+                )}
+
+                {/* Plan name */}
                 <div className="spc-header" style={{ color: pc }}>
                   <span className="spc-emoji">{pm.emoji}</span>
                   <span className="spc-label">{pm.label}</span>
                 </div>
-                <div className="spc-price" style={{ color: active ? pc : "#1a1a2e" }}>
-                  {selectedBilling === "annual" ? pm.annualPrice : pm.monthlyPrice}
-                  <span className="spc-period">/{selectedBilling === "annual" ? "yr" : "mo"}</span>
+
+                {/* Price */}
+                <div className="spc-price" style={{ color: active ? pc : "#0f1f3d" }}>
+                  {getPrice(p)}
+                  <span className="spc-period">
+                    /{selectedBilling === "annual" ? "yr" : "mo"}
+                  </span>
                 </div>
-                {selectedBilling === "annual" && (
-                  <div className="spc-save" style={{ color: pc }}>2 months free</div>
-                )}
-                <div className="spc-credits" style={{ background: active ? pc + "18" : "#f8fafc", color: pc }}>
+
+                {/* "2 months free" shown only on annual, empty space on monthly */}
+                <div className="spc-save" style={{ color: pc }}>
+                  {selectedBilling === "annual" ? "2 months free" : ""}
+                </div>
+
+                {/* Credits badge — single source of truth */}
+                <div
+                  className="spc-credits"
+                  style={{
+                    background: active ? pc + "18" : "#f8fafc",
+                    color: pc,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "5px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    padding: "5px 14px",
+                    borderRadius: "20px",
+                    margin: "0 auto 16px",
+                    width: "fit-content",
+                  }}
+                >
                   🪙 {pm.credits} credits/mo
                 </div>
+
+                {/* Subscribe now button */}
+                <button
+                  className="spc-subscribe-btn"
+                  style={{
+                    background: active ? pc : "#edf0f4",
+                    color:      active ? "#fff" : "#64748b",
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedTier(p);
+                    onSubscribe({ tier: p, billing: selectedBilling });
+                  }}
+                  disabled={subscribing}
+                >
+                  {subscribing && selectedTier === p ? "Activating…" : "Subscribe now"}
+                </button>
+
+                {/* Divider */}
+                <hr className="spc-divider" />
+
+                {/* Features — NO credits here (already shown above) */}
                 <ul className="spc-feats">
-                  {PLAN_FEATS[p].map((f) => (
-                    <li key={f}><span className="spc-check" style={{ color: pc }}>✓</span> {f}</li>
+                  {PLAN_FEATS_CLEAN[p].map((f) => (
+                    <li key={f}>{f}</li>
                   ))}
                 </ul>
               </div>
             );
           })}
         </div>
-
-        <button className="sub-gate__cta"
-          style={{ background: PLAN_COLORS[selectedTier], opacity: subscribing ? 0.7 : 1, cursor: subscribing ? "not-allowed" : "pointer" }}
-          onClick={() => onSubscribe({ tier: selectedTier, billing: selectedBilling })}
-          disabled={subscribing}>
-          {subscribing ? "Activating..." : `Activate ${PLAN_META[selectedTier].emoji} ${PLAN_META[selectedTier].label} Plan →`}
-        </button>
 
         <p className="sub-gate__nano-hint">
           Macro View is always free — no credits needed.
@@ -237,7 +328,7 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, initialTier = null
 
 /* ─── Subscription Success ──────────────────────────────────────── */
 const SubscriptionSuccess = ({ plan, planTier, onStartLearning }) => {
-  const meta  = PLAN_META[planTier] || PLAN_META.gold;
+  const meta = PLAN_META[planTier] || PLAN_META.gold;
   const color = PLAN_COLORS[planTier] || "#b7791f";
   return (
     <div className="sub-success">
@@ -274,49 +365,49 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     catch { return null; }
   })();
 
-  const navigate   = useNavigate();
-  const userEmail  = userDetails?.user?.email || userDetails?.email || "guest";
+  const navigate = useNavigate();
+  const userEmail = userDetails?.user?.email || userDetails?.email || "guest";
 
-  const SUB_KEY          = `naavi_subscribed_${userEmail}`;
-  const SUB_TIER_KEY     = `naavi_sub_tier_${userEmail}`;       // stores "micro" | "nano"
+  const SUB_KEY = `naavi_subscribed_${userEmail}`;
+  const SUB_TIER_KEY = `naavi_sub_tier_${userEmail}`;       // stores "micro" | "nano"
   const SUB_PLANTIER_KEY = `naavi_sub_plantier_${userEmail}`;   // stores "gold" | "silver" | "platinum"
-  const PRODUCT_ID       = "naavi-platform";
+  const PRODUCT_ID = "naavi-platform";
 
   /* ── Subscription state ──────────────────────────────────────── */
-  const [subscribed,       setSubscribed]       = useState(() => localStorage.getItem(SUB_KEY) === "true");
-  const [subTier,          setSubTier]          = useState(() => localStorage.getItem(SUB_TIER_KEY) || null);      // "micro" | "nano"
-  const [subPlanTier,      setSubPlanTier]      = useState(() => localStorage.getItem(SUB_PLANTIER_KEY) || null); // "gold" | "silver" | "platinum"
-  const [showSubGate,      setShowSubGate]      = useState(false);
-  const [subscribing,      setSubscribing]      = useState(false);
-  const [subError,         setSubError]         = useState("");
-  const [showSuccess,      setShowSuccess]      = useState(false);
-  const [subscribedPlan,   setSubscribedPlan]   = useState("");
+  const [subscribed, setSubscribed] = useState(() => localStorage.getItem(SUB_KEY) === "true");
+  const [subTier, setSubTier] = useState(() => localStorage.getItem(SUB_TIER_KEY) || null);      // "micro" | "nano"
+  const [subPlanTier, setSubPlanTier] = useState(() => localStorage.getItem(SUB_PLANTIER_KEY) || null); // "gold" | "silver" | "platinum"
+  const [showSubGate, setShowSubGate] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
+  const [subError, setSubError] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [subscribedPlan, setSubscribedPlan] = useState("");
   const [subscribedPlanTier, setSubscribedPlanTier] = useState("");
   const [subGateInitialTier, setSubGateInitialTier] = useState(null);
 
   /* ── Credit / wallet state ───────────────────────────────────── */
-  const [walletBalance,  setWalletBalance]  = useState(0);
+  const [walletBalance, setWalletBalance] = useState(0);
   const [creditUnlocked, setCreditUnlocked] = useState({ micro: false, nano: false });
-  const [unlocking,      setUnlocking]      = useState({ micro: false, nano: false });
-  const [unlockToast,    setUnlockToast]    = useState("");
+  const [unlocking, setUnlocking] = useState({ micro: false, nano: false });
+  const [unlockToast, setUnlockToast] = useState("");
 
   /* ── View states ─────────────────────────────────────────────── */
   const [macroView, setMacroView] = useState(null);
   const [microView, setMicroView] = useState(null);
-  const [nanoView,  setNanoView]  = useState(null);
+  const [nanoView, setNanoView] = useState(null);
 
   /* ── Loading flags ───────────────────────────────────────────── */
-  const [stepLoading,  setStepLoading]  = useState(true);
+  const [stepLoading, setStepLoading] = useState(true);
   const [viewsLoading, setViewsLoading] = useState(true);
 
-  const [totalStepsCount,      setTotalStepsCount]      = useState(null);
-  const [currentStepPageData,  setCurrentStepPageData]  = useState(null);
-  const [currentStepPagePathId,setCurrentStepPagePathId]= useState("");
-  const [popup,        setPopup]        = useState(false);
+  const [totalStepsCount, setTotalStepsCount] = useState(null);
+  const [currentStepPageData, setCurrentStepPageData] = useState(null);
+  const [currentStepPagePathId, setCurrentStepPagePathId] = useState("");
+  const [popup, setPopup] = useState(false);
   const [popupContent, setPopupContent] = useState("default");
   const [popupDetails, setPopupDetails] = useState("");
   const [selectedCard, setSelectedCard] = useState(0);
-  const [acceptOffer,  setAcceptOffer]  = useState(false);
+  const [acceptOffer, setAcceptOffer] = useState(false);
 
   const {
     currentStepData, setCurrentStepData,
@@ -345,7 +436,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   ─────────────────────────────────────────────────────────────────*/
   const isSubscriber = subscribed && ["gold", "silver", "platinum"].includes(subPlanTier);
   const hasMicro = (subscribed && subTier === "micro") || creditUnlocked.micro;
-  const hasNano  = (subscribed && subTier === "nano")  || creditUnlocked.nano;
+  const hasNano = (subscribed && subTier === "nano") || creditUnlocked.nano;
 
   /* ── Razorpay ────────────────────────────────────────────────── */
   const { initiatePayment } = useRazorpayPayment({
@@ -354,8 +445,8 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     onSuccess: ({ tier, billing }) => {
       // tier from SubscriptionGate = planTier (gold/silver/platinum)
       // view layer defaults to "micro" for all new subscriptions
-      localStorage.setItem(SUB_KEY,          "true");
-      localStorage.setItem(SUB_TIER_KEY,     "micro");  // layer
+      localStorage.setItem(SUB_KEY, "true");
+      localStorage.setItem(SUB_TIER_KEY, "micro");  // layer
       localStorage.setItem(SUB_PLANTIER_KEY, tier);     // plan (gold/silver/platinum)
       setSubscribed(true);
       setSubTier("micro");
@@ -382,22 +473,22 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
           `${BASE_URL}/api/subscriptions/status?email=${userEmail}&productId=${PRODUCT_ID}`
         );
         const isSubscribed = res.data?.subscribed === true;
-        const tier     = res.data?.tier     || null;  // "micro" | "nano"
+        const tier = res.data?.tier || null;  // "micro" | "nano"
         const planTier = res.data?.planTier || null;  // "gold" | "silver" | "platinum"
 
-        localStorage.setItem(SUB_KEY,          String(isSubscribed));
-        localStorage.setItem(SUB_TIER_KEY,     tier     || "");
+        localStorage.setItem(SUB_KEY, String(isSubscribed));
+        localStorage.setItem(SUB_TIER_KEY, tier || "");
         localStorage.setItem(SUB_PLANTIER_KEY, planTier || "");
 
         setSubscribed(isSubscribed);
-        setSubTier(isSubscribed     ? tier     : null);
+        setSubTier(isSubscribed ? tier : null);
         setSubPlanTier(isSubscribed ? planTier : null);
       } catch {
-        const cachedSub      = localStorage.getItem(SUB_KEY) === "true";
-        const cachedTier     = localStorage.getItem(SUB_TIER_KEY)     || null;
+        const cachedSub = localStorage.getItem(SUB_KEY) === "true";
+        const cachedTier = localStorage.getItem(SUB_TIER_KEY) || null;
         const cachedPlanTier = localStorage.getItem(SUB_PLANTIER_KEY) || null;
         setSubscribed(cachedSub);
-        setSubTier(cachedSub     ? cachedTier     : null);
+        setSubTier(cachedSub ? cachedTier : null);
         setSubPlanTier(cachedSub ? cachedPlanTier : null);
       }
     };
@@ -413,10 +504,10 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
       axios.get(`${BASE_URL}/api/subscriptions/step-unlock/check`, { params: { email: userEmail, step_id: stepId } }),
     ])
       .then(([balRes, unlockRes]) => {
-        if (balRes.data?.status)    setWalletBalance(balRes.data.balance);
+        if (balRes.data?.status) setWalletBalance(balRes.data.balance);
         if (unlockRes.data?.status) setCreditUnlocked(unlockRes.data.unlocked);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [userEmail, currentStepPageData?._id]);
 
   /* ── Credit unlock handler ───────────────────────────────────── */
@@ -444,8 +535,8 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   }, [userEmail, unlocking]);
 
   /* ── Subscription handlers ───────────────────────────────────── */
-  const handleSeePlans    = (tier = null) => { setSubError(""); setSubGateInitialTier(tier); setShowSubGate(true); };
-  const handleSubscribe   = async ({ tier, billing }) => {
+  const handleSeePlans = (tier = null) => { setSubError(""); setSubGateInitialTier(tier); setShowSubGate(true); };
+  const handleSubscribe = async ({ tier, billing }) => {
     if (!userEmail || userEmail === "guest") { setSubError("Please log in to subscribe."); return; }
     setSubscribing(true); setSubError("");
     await initiatePayment({ tier, billing });
@@ -478,11 +569,11 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
       if (!stepId || !pathId) { setViewsLoading(false); return; }
       setViewsLoading(true);
       try {
-        const res  = await axios.get(`${BASE_URL}/api/stepviews?pathId=${pathId}&stepId=${stepId}`);
+        const res = await axios.get(`${BASE_URL}/api/stepviews?pathId=${pathId}&stepId=${stepId}`);
         const data = res?.data?.data || {};
         setMacroView(data.macroView || null);
         setMicroView(data.microView || null);
-        setNanoView(data.nanoView  || null);
+        setNanoView(data.nanoView || null);
       } catch {
         setMacroView(null); setMicroView(null); setNanoView(null);
       } finally { setViewsLoading(false); }
@@ -495,7 +586,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     if (!userDetails) return;
     const email = userDetails?.user?.email || userDetails?.email;
     if (!email) return;
-    axios.get(`${BASE_URL}/api/users/get/${email}`).catch(() => {});
+    axios.get(`${BASE_URL}/api/users/get/${email}`).catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -517,15 +608,15 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
   const completeStep = async (stepid) => {
     const pathId = selectedPathId || localStorage.getItem("selectedPathId");
-    const email  = userDetails?.email || userDetails?.user?.email;
-    try { await axios.put(`${BASE_URL}/api/userpaths/completeStep`, { email, pathId, step_id: stepid }); } catch {}
+    const email = userDetails?.email || userDetails?.user?.email;
+    try { await axios.put(`${BASE_URL}/api/userpaths/completeStep`, { email, pathId, step_id: stepid }); } catch { }
     setPopupContent("success"); setPopupDetails("yes");
   };
 
   const failStep = async (stepid) => {
     const pathId = selectedPathId || localStorage.getItem("selectedPathId");
-    const email  = userDetails?.email || userDetails?.user?.email;
-    try { await axios.put(`${BASE_URL}/api/userpaths/failedStep`, { email, pathId, step_id: stepid }); } catch {}
+    const email = userDetails?.email || userDetails?.user?.email;
+    try { await axios.put(`${BASE_URL}/api/userpaths/failedStep`, { email, pathId, step_id: stepid }); } catch { }
     setPopupContent("success"); setPopupDetails("no");
   };
 
@@ -543,14 +634,14 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   };
 
   /* ── Derived values ──────────────────────────────────────────── */
-  const stepName   = currentStepData?.name || currentStepPageData?.name || null;
-  const stepDesc   = currentStepPageData?.macro_description || currentStepPageData?.description || null;
-  const macroDesc  = currentStepPageData?.macro_description || macroView?.description || macroView || null;
-  const microDesc  = currentStepPageData?.micro_description || getMicroText(microView) || null;
-  const nanoDesc   = nanoView?.description || null;
+  const stepName = currentStepData?.name || currentStepPageData?.name || null;
+  const stepDesc = currentStepPageData?.macro_description || currentStepPageData?.description || null;
+  const macroDesc = currentStepPageData?.macro_description || macroView?.description || macroView || null;
+  const microDesc = currentStepPageData?.micro_description || getMicroText(microView) || null;
+  const nanoDesc = nanoView?.description || null;
   const isPageLoading = stepLoading;
-  const isViewsLoad   = viewsLoading;
-  const stepNumber    = currentStepPageData?.step_order || localStorage.getItem("selectedStepNumber") || null;
+  const isViewsLoad = viewsLoading;
+  const stepNumber = currentStepPageData?.step_order || localStorage.getItem("selectedStepNumber") || null;
 
   /* ── Render: Success screen ──────────────────────────────────── */
   if (showSuccess) {
@@ -713,8 +804,8 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                 <span className={`vc-access-badge ${hasMicro ? "badge-sub" : "badge-locked"}`}>
                   {hasMicro
                     ? (isSubscriber && subPlanTier
-                        ? `${PLAN_META[subPlanTier]?.emoji} ${PLAN_META[subPlanTier]?.label}`
-                        : "2 Credits ✓")
+                      ? `${PLAN_META[subPlanTier]?.emoji} ${PLAN_META[subPlanTier]?.label}`
+                      : "2 Credits ✓")
                     : "🔒 Locked"}
                 </span>
               </div>
@@ -724,10 +815,10 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                 {microDesc
                   ? <div className="vc-desc">{microDesc}</div>
                   : <div className="vc-desc vc-empty">
-                      {hasMicro
-                        ? "No micro view available yet."
-                        : "Unlock with 2 credits or subscribe to access structured guidance."}
-                    </div>}
+                    {hasMicro
+                      ? "No micro view available yet."
+                      : "Unlock with 2 credits or subscribe to access structured guidance."}
+                  </div>}
               </div>
               <div className="vc-foot">
                 {hasMicro ? (
@@ -762,8 +853,8 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                 <span className={`vc-access-badge ${hasNano ? "badge-paid" : "badge-locked"}`}>
                   {hasNano
                     ? (isSubscriber && subPlanTier
-                        ? `${PLAN_META[subPlanTier]?.emoji} ${PLAN_META[subPlanTier]?.label}`
-                        : "4 Credits ✓")
+                      ? `${PLAN_META[subPlanTier]?.emoji} ${PLAN_META[subPlanTier]?.label}`
+                      : "4 Credits ✓")
                     : "🔒 Locked"}
                 </span>
               </div>
@@ -773,10 +864,10 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                 {nanoDesc
                   ? <div className="vc-desc">{nanoDesc}</div>
                   : <div className="vc-desc vc-empty">
-                      {hasNano
-                        ? "No nano view available yet."
-                        : "Unlock with 4 credits or subscribe to access expert sessions."}
-                    </div>}
+                    {hasNano
+                      ? "No nano view available yet."
+                      : "Unlock with 4 credits or subscribe to access expert sessions."}
+                  </div>}
               </div>
               <div className="vc-foot">
                 {hasNano ? (
@@ -812,7 +903,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
             <div className="cb-left"><span className="cb-q">Did You Complete This Step?</span></div>
             <div className="cb-btns">
               <button className="btn-fail" onClick={() => { setPopup(true); setPopupDetails("no"); }}>✕ Failed</button>
-              <button className="btn-yes"  onClick={() => { setPopup(true); setPopupDetails("yes"); }}>✓ Yes, Completed</button>
+              <button className="btn-yes" onClick={() => { setPopup(true); setPopupDetails("yes"); }}>✓ Yes, Completed</button>
             </div>
           </div>
         )}
@@ -911,11 +1002,11 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                         const currentNumber = parseInt(stepNumber) || 1;
                         const res = await axios.get(`${BASE_URL}/api/userpaths/steps?pathId=${pathId}`);
                         const allSteps = res?.data?.data?.steps || [];
-                        const sorted   = [...allSteps].sort((a, b) => a.step_order - b.step_order);
+                        const sorted = [...allSteps].sort((a, b) => a.step_order - b.step_order);
                         const nextStep = sorted.find((s) => s.step_order === currentNumber + 1);
                         if (nextStep) {
                           const nextId = nextStep._id || nextStep.step_id;
-                          localStorage.setItem("selectedStepId",     nextId);
+                          localStorage.setItem("selectedStepId", nextId);
                           localStorage.setItem("selectedStepNumber", String(nextStep.step_order));
                           setCurrentStepPageData(nextStep);
                           setCurrentStepPagePathId(pathId);
@@ -926,11 +1017,11 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                           setCreditUnlocked({ micro: false, nano: false });
                           setViewsLoading(true); setStepLoading(false);
                           try {
-                            const viewRes  = await axios.get(`${BASE_URL}/api/stepviews?pathId=${pathId}&stepId=${nextId}`);
+                            const viewRes = await axios.get(`${BASE_URL}/api/stepviews?pathId=${pathId}&stepId=${nextId}`);
                             const viewData = viewRes?.data?.data || {};
                             setMacroView(viewData.macroView || null);
                             setMicroView(viewData.microView || null);
-                            setNanoView(viewData.nanoView  || null);
+                            setNanoView(viewData.nanoView || null);
                             const unlockRes = await axios.get(`${BASE_URL}/api/subscriptions/step-unlock/check`,
                               { params: { email: userEmail, step_id: nextId } });
                             if (unlockRes.data?.status) setCreditUnlocked(unlockRes.data.unlocked);

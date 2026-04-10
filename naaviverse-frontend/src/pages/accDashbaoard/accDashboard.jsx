@@ -35,6 +35,7 @@ import CreateNewPath from './CreateNewPath';
 import CreateNewService from './CreateNewService';
 import "./CreateNewPath.scss";
 import PartnerHome from "./partnerHome";
+import CRMPage from './partnercrm';
 import MenuNav from "../../components/MenuNav/index.jsx";
 import {
   GetFollowersPerAccount,
@@ -2003,186 +2004,29 @@ const AccDashboard = () => {
                     />
                   </div>
                 </div>
-              ) : accsideNav === "CRM" ? (
-                <>
-                  <MenuNav
-                    showDrop={showDrop}
-                    setShowDrop={setShowDrop}
-                    searchTerm={search}
-                    setSearchterm={setSearch}
-                    searchPlaceholder={crmMenu === "Followers"
-                      ? "Search Followers.."
-                      : crmMenu === "Purchases"
-                        ? "Search Purchases.."
-                        : crmMenu === "Users"
-                          ? "Search Users.."
-                          : "Search Clients..."}
-                  />
-                  <div className="crm-main" onClick={() => setShowDrop(false)}>
-                    <div className="crm-all-menu" style={{ padding: "12px 35px" }}>
-
-                      {/* ── Clients Tab ── */}
-                      <div
-                        className="crm-each-menu"
-                        style={{
-                          marginLeft: "0px",
-                          background: crmMenu === "Clients" ? "rgba(241, 241, 241, 0.5)" : "",
-                          fontWeight: crmMenu === "Clients" ? "700" : "",
-                        }}
-                        onClick={() => {
-                          setcrmMenu("Clients");
-                          setSearch("");
-                          navigate("/dashboard/accountants/crm?tab=clients");
-                        }}
-                      >
-                        Clients ({crmClientData?.length})
-                      </div>
-
-                      {/* ── Purchases Tab ── */}
-                      <div
-                        className="crm-each-menu"
-                        style={{
-                          background: crmMenu === "Purchases" ? "rgba(241,241,241,0.5)" : "",
-                          fontWeight: crmMenu === "Purchases" ? "700" : "",
-                        }}
-                        onClick={() => {
-                          setcrmMenu("Purchases");
-                          setSearch("");
-                          navigate("/dashboard/accountants/crm?tab=purchases");
-                        }}
-                      >
-                        Purchases ({crmPurchaseData.length})
-                      </div>
-
-                    </div>
-                    <div className="crm-all-box">
-                      {crmMenu === "Followers" ? (
-                        <>
-                          <div className="crm-follow-tab" style={{ padding: "10px 35px" }}>
-                            <div className="crm-follow-col1">Name</div>
-                            <div className="crm-follow-col2">Following Since</div>
-                          </div>
-                          <>
-                            {followData.length > 0 && !isLoading ? (
-                              <div className="follow-data-main">
-                                {followData
-                                  .filter((element) => element.userEmail.toLowerCase().startsWith(search.toLowerCase()))
-                                  .map((each, i) => (
-                                    <div
-                                      className="follower-box"
-                                      style={{
-                                        background: selectedFollower === each ? "rgba(241, 241, 241, 0.5)" : "",
-                                        padding: "22px 35px",
-                                        width: "100%",
-                                      }}
-                                      onClick={() => setSelectedFollower(each)}
-                                    >
-                                      <div className="follower-details">
-                                        <div><img className="user-icon" src={each.profile_img} alt="" /></div>
-                                        <div>
-                                          <div className="follower-mail">{each.username}</div>
-                                          <div className="follower-name" style={{ textTransform: "lowercase" }}>{each.userEmail}</div>
-                                        </div>
-                                      </div>
-                                      <div className="follow-time">{formatDate(each.timeStamp)}</div>
-                                    </div>
-                                  ))}
-                              </div>
-                            ) : isLoading ? (
-                              <div className="follow-data-main">
-                                {[1, 2, 3, 4, 5, 6].map((each, index) => (
-                                  <div key={index} className="follower-box">
-                                    <div className="follower-details">
-                                      <div><Skeleton className="user-icon" /></div>
-                                      <Skeleton className="follower-mail" style={{ width: "200px" }} />
-                                    </div>
-                                    <Skeleton className="follow-time" style={{ width: "150px" }} />
-                                  </div>
-                                ))}
-                              </div>
-                            ) : ""}
-                          </>
-                        </>
-                      ) : crmMenu === "Purchases" ? (
-                        <PurchasePage purchaseData={crmPurchaseData} search={search} />
-                      ) : crmMenu === "Clients" ? (
-                        <>
-                          <div className="crm-tab" style={{ padding: "10px 35px" }}>
-                            <div className="crm-each-col" style={{ margin: "0", width: "25%" }}>Name</div>
-                            <div className="crm-each-col" style={{ margin: "0", width: "30%", paddingLeft: "1rem" }}>Email</div>
-                            <div className="crm-each-col" style={{ margin: "0", width: "20%", paddingLeft: "1rem" }}>Phone</div>
-                            <div className="crm-each-col" style={{ margin: "0", width: "15%", paddingLeft: "1rem" }}>Country</div>
-                            <div className="crm-each-col" style={{ margin: "0", width: "10%", paddingLeft: "1rem" }}>Purchases</div>
-                          </div>
-                          <div className="clients-alldata">
-                            {isClientLoading
-                              ? Array(10).fill("").map((e, i) => (
-                                <div className="each-clientData" key={i}>
-                                  <div className="each-client-name"><Skeleton width={125} height={30} /></div>
-                                  <div className="each-client-email"><Skeleton width={150} height={30} /></div>
-                                  <div className="each-client-email"><Skeleton width={100} height={30} /></div>
-                                  <div className="each-client-email"><Skeleton width={75} height={30} /></div>
-                                  <div className="each-client-email"><Skeleton width={50} height={30} /></div>
-                                </div>
-                              ))
-                              : crmClientData
-                                ?.filter((item) =>
-                                  item.name.toLowerCase().startsWith(search.toLowerCase()) ||
-                                  item.email.toLowerCase().startsWith(search.toLowerCase())
-                                )
-                                ?.map((e, i) => (
-                                  <div className="each-clientData" key={i}>
-                                    <div className="each-client-name" style={{ width: "25%" }}>{e?.name}</div>
-                                    <div className="each-client-email" style={{ width: "30%" }}>{e?.email}</div>
-                                    <div className="each-client-email" style={{ width: "20%" }}>{e?.phoneNumber}</div>
-                                    <div className="each-client-email" style={{ width: "15%" }}>{e?.country}</div>
-                                    <div className="each-client-email" style={{ width: "10%" }}>{e?.purchaseDetails?.length}</div>
-                                  </div>
-                                ))}
-                          </div>
-                        </>
-                      ) : crmMenu === "Users" ? (
-                        <>
-                          <div className="crm-tab" style={{ padding: "10px 35px" }}>
-                            <div className="crm-each-col" style={{ textAlign: "left", margin: "0", width: "15%" }}>Name</div>
-                            <div className="crm-each-col" style={{ textAlign: "left", margin: "0", width: "20%", paddingLeft: "1rem" }}>Email</div>
-                            <div className="crm-each-col" style={{ textAlign: "left", margin: "0", width: "15%", paddingLeft: "1rem" }}>User Since</div>
-                            <div className="crm-each-col" style={{ textAlign: "left", margin: "0", width: "25%", paddingLeft: "1rem" }}>Affiliate</div>
-                            <div className="crm-each-col" style={{ textAlign: "left", margin: "0", width: "25%", paddingLeft: "1rem" }}>Profile ID</div>
-                          </div>
-                          <div className="users-alldata">
-                            {isUserLoading
-                              ? Array(10).fill("").map((e, i) => (
-                                <div className="each-userData" key={i}>
-                                  <div className="each-user-email" style={{ width: "15%" }}><Skeleton width={100} height={25} /></div>
-                                  <div className="each-user-email"><Skeleton width={100} height={25} /></div>
-                                  <div className="each-user-email" style={{ width: "15%" }}><Skeleton width={100} height={25} /></div>
-                                  <div className="each-user-email" style={{ width: "25%" }}><Skeleton width={100} height={25} /></div>
-                                  <div className="each-user-email" style={{ width: "25%" }}><Skeleton width={200} height={25} /></div>
-                                </div>
-                              ))
-                              : crmUserData
-                                ?.filter((item) =>
-                                  item.name.toLowerCase().startsWith(search.toLowerCase()) ||
-                                  item.email.toLowerCase().startsWith(search.toLowerCase())
-                                )
-                                .map((e, i) => (
-                                  <div className="each-userData" key={i}>
-                                    <div className="each-user-email" style={{ width: "15%" }}>{e?.name}</div>
-                                    <div className="each-user-email" style={{ textTransform: "none", paddingLeft: "1rem" }}>{e?.email}</div>
-                                    <div className="each-user-email" style={{ width: "15%", paddingLeft: "1rem" }}>
-                                      {e?.naavi_timestamp ? customDateFormat(new Date(e.naavi_timestamp)) : ""}
-                                    </div>
-                                    <div className="each-user-email" style={{ width: "25%", textTransform: "none", paddingLeft: "1rem" }}>{e?.ref_affiliate}</div>
-                                    <div className="each-user-email" style={{ width: "25%", textTransform: "none", paddingLeft: "1rem" }}>{e?.naavi_profile_id}</div>
-                                  </div>
-                                ))}
-                          </div>
-                        </>
-                      ) : ""}
-                    </div>
-                  </div>
-                </>
+           ) : accsideNav === "CRM" ? (
+  <>
+    <MenuNav
+      showDrop={showDrop}
+      setShowDrop={setShowDrop}
+      searchTerm={search}
+      setSearchterm={setSearch}
+      searchPlaceholder={
+        crmMenu === "Purchases" ? "Search purchases..." : "Search clients..."
+      }
+    />
+    <CRMPage
+      showDrop={showDrop}
+      setShowDrop={setShowDrop}
+      search={search}
+      crmMenu={crmMenu}
+      setcrmMenu={setcrmMenu}
+      crmClientData={crmClientData}
+      crmPurchaseData={crmPurchaseData}
+      isClientLoading={isClientLoading}
+      isPurchaseLoading={isPurchaseLoading}
+    />
+  </>
              ) : accsideNav === "Home" ? (
   <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
     <PartnerHome />

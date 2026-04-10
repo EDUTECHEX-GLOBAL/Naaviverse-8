@@ -530,7 +530,7 @@ export default function PartnerHome() {
         </div>
       </div>
 
-      {/* BOTTOM ROW */}
+      {/* BOTTOM ROW
       <div className="ph-bottom-row">
 
         <div className="ph-card">
@@ -571,7 +571,7 @@ export default function PartnerHome() {
           </div>
         </div>
 
-      </div>
+      </div> */}
     </div>
   );
-}
+} 
