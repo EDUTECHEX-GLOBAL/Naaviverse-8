@@ -39,7 +39,7 @@ import UserMarketplace from "../UserMarketplace.jsx";
 
 const URL_TO_SIDENAV = {
   "/dashboard/users/home": "Home",
-  "/dashboard/users/marketplace": "Market Place",
+  "/dashboard/users/Marketplace": "Market Place",
   "/dashboard/users/current-step": "Current Step",
   "/dashboard/users/my-journey": "My Journey",
   "/dashboard/users/transactions": "Transactions",

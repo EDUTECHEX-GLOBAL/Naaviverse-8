@@ -181,9 +181,15 @@
   width: 100%;
   height: auto;              /* ← KEY CHANGE: let content define height */
   min-height: 100%;          /* ← fills viewport when content is short */
-  background-color: #ffffff;
+   background-color: transparent;
   overflow-y: visible;       /* ← let dashboard-screens handle scroll */
   overflow-x: hidden;
+
+  .accsideNav-CREATE_PATH {
+  .services-main {
+    background: transparent;  // ← CHANGE from #ffffff to transparent
+  }
+}
 }
 
 .services-all-menu {

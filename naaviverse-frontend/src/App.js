@@ -84,13 +84,15 @@ function App() {
           <Route path="/register" element={<NewHomePage />} />
           <Route path="/maps" element={<MapsPage />} />
 
-       <Route path="/dashboard/users" element={<Dashboard />} />
-<Route path="/dashboard/users/home" element={<Dashboard />} />
-<Route path="/dashboard/users/paths" element={<Dashboard />} />
-<Route path="/dashboard/users/my-journey" element={<Dashboard />} />
-<Route path="/dashboard/users/current-step" element={<Dashboard />} />
-<Route path="/dashboard/users/transactions" element={<Dashboard />} />
-<Route path="/dashboard/users/marketplace" element={<Dashboard />} />
+          {/* ================= USER DASHBOARD ================= */}
+          <Route path="/dashboard/users" element={<Dashboard />} />
+          <Route path="/dashboard/users/profile" element={<UserProfile />} />
+          <Route path="/dashboard/users/paths" element={<Dashboard />} />
+          <Route path="/dashboard/users/my-journey" element={<Dashboard />} />
+          <Route path="/dashboard/users/current-step" element={<Dashboard />} />
+          <Route path="/dashboard/users/transactions" element={<Dashboard />} />
+          <Route path="/dashboard/users/wallet" element={<Wallet />} />
+          <Route path="/dashboard/users/home" element={<Dashboard />} />
 
           {/* ✅ MUST be before /:id wildcard so it doesn't get caught by MallProduct */}
           <Route path="/dashboard/users/Marketplace" element={<Dashboard />} />

@@ -2055,10 +2055,11 @@ select {
   z-index: 1;
 }
 
+// TO THIS:
 .dashboard-sidebar {
   position: relative;
-  z-index: 1001;
-  background: transparent;
+  z-index: 500;
+  background: #ffffff;  /* White background, not transparent */
 }
 
 // Fix for CreateNewPath layout
@@ -3343,19 +3344,23 @@ body:has(.step-popup-overlay) {
 // ============================================
 // DESKTOP — enforce sidebar width
 // ============================================
+// And change the media query from width: 260px to 220px:
 @media (min-width: 769px) {
   .dashboard-sidebar {
     position: relative !important;
     left: 0 !important;
-    width: 260px !important;
+    width: 240px !important; /* Changed from 260px to 220px */
     flex-shrink: 0 !important;
     box-shadow: none !important;
+    background: #ffffff !important;  /* Force white background */
+    border-right: 1px solid #eef2f6 !important;  /* Add back the border */
   }
 
   .dashboard-screens {
-    width: calc(100vw - 260px) !important;
+   width: calc(100vw - 240px) !important; /* Match the 220px width */
     flex: 1 !important;
   }
+
 
   .mobile-topbar {
     display: none !important;
