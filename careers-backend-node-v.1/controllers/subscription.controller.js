@@ -1,12 +1,10 @@
 const Subscription = require("../models/subscription.model");
-const VaultTransaction = require("../models/VaultTransaction"); // your existing wallet model
+const VaultTransaction = require("../models/VaultTransaction");
+const Payment = require("../models/payment.model");
 
 const LAYER_COST = { micro: 2, nano: 4 };
-const PRODUCT_ID = "naavi-platform"; // same productId used everywhere
+const PRODUCT_ID = "naavi-platform";
 
-/* ─────────────────────────────────────────────────────────────────
-   HELPER — compute endDate from billingMethod
-───────────────────────────────────────────────────────────────────*/
 const computeEndDate = (billingMethod) => {
   if (billingMethod === "lifetime") return null;
   const now = new Date();
@@ -15,9 +13,6 @@ const computeEndDate = (billingMethod) => {
   return null;
 };
 
-/* ─────────────────────────────────────────────────────────────────
-   HELPER — check if a subscription record is currently active
-───────────────────────────────────────────────────────────────────*/
 const isActive = (sub) => {
   if (!sub) return false;
   if (sub.status === "expired") return false;
@@ -25,16 +20,12 @@ const isActive = (sub) => {
   return sub.endDate && sub.endDate > new Date();
 };
 
-/* ─────────────────────────────────────────────────────────────────
-   HELPER — get wallet balance from VaultTransaction
-───────────────────────────────────────────────────────────────────*/
 const getWalletBalance = async (email) => {
   const now = new Date();
   const txns = await VaultTransaction.find({ email });
-
   return txns.reduce((acc, t) => {
     if (t.type === "credit") {
-      if (t.expiresAt && t.expiresAt < now) return acc;  // expired — skip
+      if (t.expiresAt && t.expiresAt < now) return acc;
       return acc + t.amount;
     }
     return acc - t.amount;
@@ -42,11 +33,11 @@ const getWalletBalance = async (email) => {
 };
 
 /* =================================================================
-   1. CREATE / ACTIVATE SUBSCRIPTION  (unchanged)
+   1. CREATE / ACTIVATE SUBSCRIPTION
 ================================================================= */
 const createSubscription = async (req, res) => {
   try {
-    const { userEmail, profileId, productId, productName, billingMethod, tier } = req.body;
+    const { userEmail, profileId, productId, productName, billingMethod, tier, planTier } = req.body;
 
     if (!userEmail || !productId || !productName || !billingMethod) {
       return res.status(400).json({
@@ -64,21 +55,33 @@ const createSubscription = async (req, res) => {
     }
 
     const validTiers = ["micro", "nano"];
+    const validPlanTiers = ["gold", "silver", "platinum"];
     const resolvedTier = validTiers.includes(tier) ? tier : "micro";
+    const resolvedPlanTier = validPlanTiers.includes(planTier) ? planTier : "gold";
+
     const existing = await Subscription.findOne({ userEmail, productId });
 
-    // UPGRADE micro → nano
     if (existing && isActive(existing)) {
+      // UPGRADE micro → nano
       if (existing.tier === "micro" && resolvedTier === "nano") {
         existing.tier = "nano";
+        existing.planTier = resolvedPlanTier;
         existing.billingMethod = billingMethod;
         existing.startDate = new Date();
         existing.endDate = computeEndDate(billingMethod);
         if (profileId) existing.profileId = profileId;
         await existing.save();
-        return res.status(200).json({ success: true, message: "Subscription upgraded to Nano successfully.", subscription: existing });
+        return res.status(200).json({
+          success: true,
+          message: "Subscription upgraded to Nano successfully.",
+          subscription: existing,
+        });
       }
-      return res.status(409).json({ success: false, message: "User already has an active subscription for this product.", subscription: existing });
+      return res.status(409).json({
+        success: false,
+        message: "User already has an active subscription for this product.",
+        subscription: existing,
+      });
     }
 
     const endDate = computeEndDate(billingMethod);
@@ -86,13 +89,18 @@ const createSubscription = async (req, res) => {
     // REACTIVATE expired
     if (existing) {
       existing.tier = resolvedTier;
+      existing.planTier = resolvedPlanTier;
       existing.billingMethod = billingMethod;
       existing.status = "active";
       existing.startDate = new Date();
       existing.endDate = endDate;
       if (profileId) existing.profileId = profileId;
       await existing.save();
-      return res.status(200).json({ success: true, message: "Subscription reactivated successfully.", subscription: existing });
+      return res.status(200).json({
+        success: true,
+        message: "Subscription reactivated successfully.",
+        subscription: existing,
+      });
     }
 
     // CREATE fresh
@@ -102,13 +110,18 @@ const createSubscription = async (req, res) => {
       productId,
       productName,
       tier: resolvedTier,
+      planTier: resolvedPlanTier,
       billingMethod,
       status: "active",
       startDate: new Date(),
       endDate,
     });
 
-    return res.status(201).json({ success: true, message: "Subscription created successfully.", subscription });
+    return res.status(201).json({
+      success: true,
+      message: "Subscription created successfully.",
+      subscription,
+    });
   } catch (err) {
     console.error("❌ createSubscription error:", err);
     return res.status(500).json({ success: false, error: err.message });
@@ -116,31 +129,85 @@ const createSubscription = async (req, res) => {
 };
 
 /* =================================================================
-   2. CHECK SUBSCRIPTION STATUS  (unchanged)
+   2. CHECK SUBSCRIPTION STATUS
 ================================================================= */
 const checkStatus = async (req, res) => {
   try {
     const { email, productId } = req.query;
     if (!email || !productId) {
-      return res.status(400).json({ success: false, message: "email and productId query params are required." });
+      return res.status(400).json({
+        success: false,
+        message: "email and productId query params are required.",
+      });
     }
 
+    // ── 1. Check Subscription collection first ────────────────────
     const sub = await Subscription.findOne({ userEmail: email, productId });
-    if (!sub) return res.json({ success: true, subscribed: false, tier: null });
 
-    if (sub.billingMethod !== "lifetime" && sub.endDate < new Date()) {
-      sub.status = "expired";
-      await sub.save();
-      return res.json({ success: true, subscribed: false, tier: null, subscription: sub });
+    if (sub) {
+      if (sub.billingMethod !== "lifetime" && sub.endDate && sub.endDate < new Date()) {
+        sub.status = "expired";
+        await sub.save();
+        return res.json({
+          success: true,
+          subscribed: false,
+          tier: null,
+          planTier: null,
+          subscription: sub,
+        });
+      }
+      const active = sub.status === "active";
+      return res.json({
+        success: true,
+        subscribed: active,
+        tier: active ? (sub.tier || "micro") : null,
+        planTier: active ? (sub.planTier || "gold") : null,
+        subscription: sub,
+      });
     }
 
-    const active = sub.status === "active";
+    // ── 2. Fallback: check Payment collection ─────────────────────
+    const payment = await Payment.findOne({ userEmail: email, productId, status: "paid" });
+
+    if (!payment) {
+      return res.json({ success: true, subscribed: false, tier: null, planTier: null });
+    }
+
+    // Derive planTier from productName
+    let planTier = payment.planTier || null;
+    if (!planTier && payment.productName) {
+      const name = payment.productName.toLowerCase();
+      planTier = name.includes("platinum") ? "platinum"
+        : name.includes("silver") ? "silver"
+        : "gold";
+    }
+
+    // Derive tier (view layer) from productName
+    const tier = (payment.productName || "").toLowerCase().includes("nano") ? "nano" : "micro";
+
+    // ── 3. Auto-create missing Subscription record ────────────────
+    const endDate = computeEndDate(payment.billingMethod);
+    await Subscription.create({
+      userEmail: email,
+      profileId: payment.profileId || null,
+      productId,
+      productName: payment.productName,
+      tier,
+      planTier: planTier || "gold",
+      billingMethod: payment.billingMethod,
+      status: "active",
+      startDate: payment.createdAt || new Date(),
+      endDate,
+      unlockedSteps: [],
+    });
+
     return res.json({
       success: true,
-      subscribed: active,
-      tier: active ? (sub.tier || "micro") : null,
-      subscription: sub,
+      subscribed: true,
+      tier,
+      planTier,
     });
+
   } catch (err) {
     console.error("❌ checkStatus error:", err);
     return res.status(500).json({ success: false, error: err.message });
@@ -148,7 +215,7 @@ const checkStatus = async (req, res) => {
 };
 
 /* =================================================================
-   3. GET ALL SUBSCRIPTIONS FOR A USER  (unchanged)
+   3. GET ALL SUBSCRIPTIONS FOR A USER
 ================================================================= */
 const getUserSubscriptions = async (req, res) => {
   try {
@@ -170,7 +237,7 @@ const getUserSubscriptions = async (req, res) => {
 };
 
 /* =================================================================
-   4. CANCEL SUBSCRIPTION  (unchanged)
+   4. CANCEL SUBSCRIPTION
 ================================================================= */
 const cancelSubscription = async (req, res) => {
   try {
@@ -191,11 +258,11 @@ const cancelSubscription = async (req, res) => {
 };
 
 /* =================================================================
-   5. RENEW SUBSCRIPTION  (unchanged)
+   5. RENEW SUBSCRIPTION
 ================================================================= */
 const renewSubscription = async (req, res) => {
   try {
-    const { email, productId, billingMethod, tier } = req.body;
+    const { email, productId, billingMethod, tier, planTier } = req.body;
     if (!email || !productId) return res.status(400).json({ success: false, message: "email and productId are required." });
 
     const sub = await Subscription.findOne({ userEmail: email, productId });
@@ -203,12 +270,19 @@ const renewSubscription = async (req, res) => {
 
     if (billingMethod) {
       const validMethods = ["monthly", "annual", "lifetime"];
-      if (!validMethods.includes(billingMethod)) return res.status(400).json({ success: false, message: `billingMethod must be one of: ${validMethods.join(", ")}` });
+      if (!validMethods.includes(billingMethod)) {
+        return res.status(400).json({
+          success: false,
+          message: `billingMethod must be one of: ${validMethods.join(", ")}`,
+        });
+      }
       sub.billingMethod = billingMethod;
     }
 
     const validTiers = ["micro", "nano"];
+    const validPlanTiers = ["gold", "silver", "platinum"];
     if (tier && validTiers.includes(tier)) sub.tier = tier;
+    if (planTier && validPlanTiers.includes(planTier)) sub.planTier = planTier;
 
     sub.status = "active";
     sub.startDate = new Date();
@@ -222,15 +296,16 @@ const renewSubscription = async (req, res) => {
 };
 
 /* =================================================================
-   6. ADMIN — GET ALL SUBSCRIPTIONS  (unchanged)
+   6. ADMIN — GET ALL SUBSCRIPTIONS
 ================================================================= */
 const getAllSubscriptions = async (req, res) => {
   try {
-    const { status, billingMethod, tier, page = 1, limit = 20 } = req.query;
+    const { status, billingMethod, tier, planTier, page = 1, limit = 20 } = req.query;
     const filter = {};
     if (status) filter.status = status;
     if (billingMethod) filter.billingMethod = billingMethod;
     if (tier) filter.tier = tier;
+    if (planTier) filter.planTier = planTier;
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const [subscriptions, total] = await Promise.all([
@@ -238,7 +313,13 @@ const getAllSubscriptions = async (req, res) => {
       Subscription.countDocuments(filter),
     ]);
 
-    return res.json({ success: true, total, page: parseInt(page), totalPages: Math.ceil(total / parseInt(limit)), subscriptions });
+    return res.json({
+      success: true,
+      total,
+      page: parseInt(page),
+      totalPages: Math.ceil(total / parseInt(limit)),
+      subscriptions,
+    });
   } catch (err) {
     console.error("❌ getAllSubscriptions error:", err);
     return res.status(500).json({ success: false, error: err.message });
@@ -246,13 +327,7 @@ const getAllSubscriptions = async (req, res) => {
 };
 
 /* =================================================================
-   7. NEW — CHECK STEP UNLOCKS
-   GET /api/subscriptions/step-unlock/check?email=...&step_id=...
-
-   Looks inside the user's existing subscription document's
-   unlockedSteps array — no separate collection needed.
-
-   Returns: { status: true, unlocked: { micro: bool, nano: bool } }
+   7. CHECK STEP UNLOCKS
 ================================================================= */
 const checkStepUnlock = async (req, res) => {
   try {
@@ -261,10 +336,8 @@ const checkStepUnlock = async (req, res) => {
       return res.status(400).json({ status: false, message: "email and step_id are required" });
     }
 
-    // Find the user's subscription for this platform
     const sub = await Subscription.findOne({ userEmail: email, productId: PRODUCT_ID });
 
-    // No subscription at all → no credit unlocks either
     if (!sub || !Array.isArray(sub.unlockedSteps)) {
       return res.json({ status: true, unlocked: { micro: false, nano: false } });
     }
@@ -286,24 +359,12 @@ const checkStepUnlock = async (req, res) => {
 };
 
 /* =================================================================
-   8. NEW — UNLOCK A STEP LAYER WITH CREDITS
-   POST /api/subscriptions/step-unlock/unlock
-   Body: { email, step_id, layer }   layer = "micro" | "nano"
-
-   Flow:
-     1. Validate inputs
-     2. Find or create subscription record for this user
-     3. Check not already unlocked
-     4. Check sufficient wallet balance
-     5. Deduct from VaultTransaction (your existing wallet)
-     6. Push to sub.unlockedSteps and save
-     7. Return remainingBalance
+   8. UNLOCK A STEP LAYER WITH CREDITS
 ================================================================= */
 const unlockStep = async (req, res) => {
   try {
     const { email, step_id, layer } = req.body;
 
-    // ── Validate ──────────────────────────────────────────────────
     if (!email || !step_id || !layer) {
       return res.status(400).json({ status: false, message: "email, step_id and layer are required" });
     }
@@ -313,11 +374,6 @@ const unlockStep = async (req, res) => {
 
     const cost = LAYER_COST[layer];
 
-    // ── Find subscription record ──────────────────────────────────
-    // We need a subscription record to store the unlock on.
-    // Users who haven't subscribed yet can still credit-unlock.
-    // In that case we find any existing sub record (even expired),
-    // or create a minimal placeholder record.
     let sub = await Subscription.findOne({ userEmail: email, productId: PRODUCT_ID });
 
     if (!sub) {
@@ -325,22 +381,24 @@ const unlockStep = async (req, res) => {
         userEmail: email,
         productId: PRODUCT_ID,
         productName: "Naavi Platform",
-        billingMethod: "credit_only",  // ← was "lifetime"
+        billingMethod: "credit_only",
         status: "expired",
-        tier: "micro",
+        tier: "credit_only",
+        planTier: "gold",
         unlockedSteps: [],
       });
     }
 
-    // ── Check already unlocked ────────────────────────────────────
     const alreadyUnlocked = sub.unlockedSteps?.some(
       (u) => u.step_id === step_id && u.layer === layer
     );
     if (alreadyUnlocked) {
-      return res.status(409).json({ status: false, message: `${layer} is already unlocked for this step` });
+      return res.status(409).json({
+        status: false,
+        message: `${layer} is already unlocked for this step`,
+      });
     }
 
-    // ── Check wallet balance ──────────────────────────────────────
     const balance = await getWalletBalance(email);
     if (balance < cost) {
       return res.status(400).json({
@@ -350,7 +408,6 @@ const unlockStep = async (req, res) => {
       });
     }
 
-    // ── Deduct from wallet (VaultTransaction) ─────────────────────
     await VaultTransaction.create({
       email,
       type: "debit",
@@ -364,7 +421,6 @@ const unlockStep = async (req, res) => {
       },
     });
 
-    // ── Push unlock into subscription's unlockedSteps array ───────
     sub.unlockedSteps.push({
       step_id,
       layer,
@@ -394,7 +450,6 @@ module.exports = {
   cancelSubscription,
   renewSubscription,
   getAllSubscriptions,
-  // ── NEW ──
   checkStepUnlock,
   unlockStep,
 };

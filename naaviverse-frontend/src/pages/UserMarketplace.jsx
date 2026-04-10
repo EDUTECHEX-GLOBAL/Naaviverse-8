@@ -10,15 +10,15 @@ const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const LAYER_META = {
   macro: { label: "MACRO VIEW — FREE TOOLS", sub: "Free tools to get started.", badgeCls: "vsh-macro", cardCls: "vMacro" },
   micro: { label: "MICRO VIEW — SUBSCRIPTIONS", sub: "Structured progress tracking.", badgeCls: "vsh-micro", cardCls: "vMicro" },
-  nano:  { label: "NANO VIEW — 1-ON-1 SESSIONS", sub: "Book a personalised expert session.", badgeCls: "vsh-nano", cardCls: "vNano" },
+  nano: { label: "NANO VIEW — 1-ON-1 SESSIONS", sub: "Book a personalised expert session.", badgeCls: "vsh-nano", cardCls: "vNano" },
 };
-const LAYER_ICON  = { macro: "📊", micro: "📚", nano: "🎓" };
-const TIME_SLOTS  = ["10:00 AM", "12:00 PM", "2:00 PM", "4:00 PM", "6:00 PM", "8:00 PM"];
+const LAYER_ICON = { macro: "📊", micro: "📚", nano: "🎓" };
+const TIME_SLOTS = ["10:00 AM", "12:00 PM", "2:00 PM", "4:00 PM", "6:00 PM", "8:00 PM"];
 const LAYER_PILLS = [
-  { key: "all",   label: "All"   },
+  { key: "all", label: "All" },
   { key: "macro", label: "Macro" },
   { key: "micro", label: "Micro" },
-  { key: "nano",  label: "Nano"  },
+  { key: "nano", label: "Nano" },
 ];
 
 const isFreeItem = (s) => {
@@ -29,7 +29,7 @@ const isFreeItem = (s) => {
 
 const itemPrice = (s) => {
   if (isFreeItem(s)) return 0;
-  const raw   = String(s.cost).trim();
+  const raw = String(s.cost).trim();
   const match = raw.match(/[\d,]+\.?\d*/);
   if (!match) return 0;
   return parseFloat(match[0].replace(/,/g, "")) || 0;
@@ -43,15 +43,15 @@ const getCostDisplay = (s) => {
   return isNaN(num) ? raw : `₹${num.toLocaleString("en-IN")}`;
 };
 
-const fmtPrice  = (n) => n === 0 ? "Free" : `₹${n.toLocaleString()}`;
+const fmtPrice = (n) => n === 0 ? "Free" : `₹${n.toLocaleString()}`;
 const genOrderId = () => `#NV-${Math.floor(100000 + Math.random() * 900000)}`;
-const fmtDate   = (d) => d.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+const fmtDate = (d) => d.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 
 // ─── Service Card ─────────────────────────────────────────────────────────────
 const ServiceCard = ({ item, inCart, onToggleCart, onCardView }) => {
   const layer = item.layer?.toLowerCase() || "macro";
-  const meta  = LAYER_META[layer] || LAYER_META.macro;
-  const free  = isFreeItem(item);
+  const meta = LAYER_META[layer] || LAYER_META.macro;
+  const free = isFreeItem(item);
   return (
     <div className={`svc-card ${meta.cardCls}`} onClick={() => onCardView && onCardView(item)}>
       <div className="svc-top">
@@ -63,11 +63,11 @@ const ServiceCard = ({ item, inCart, onToggleCart, onCardView }) => {
         <div className="svc-by">by {item.partner_email || ""}</div>
         {item.goal && <div className="svc-desc">{item.goal}</div>}
         <div className="svc-details">
-          {item.outcomes   && <div className="svc-detail-row"><span className="svc-detail-lbl">Outcomes:</span><span>{item.outcomes}</span></div>}
-          {item.duration   && <div className="svc-detail-row"><span className="svc-detail-lbl">Duration:</span><span>{item.duration}</span></div>}
+          {item.outcomes && <div className="svc-detail-row"><span className="svc-detail-lbl">Outcomes:</span><span>{item.outcomes}</span></div>}
+          {item.duration && <div className="svc-detail-row"><span className="svc-detail-lbl">Duration:</span><span>{item.duration}</span></div>}
           {item.iterations && <div className="svc-detail-row"><span className="svc-detail-lbl">Sessions:</span><span>{item.iterations}</span></div>}
-          {item.discount   && <div className="svc-detail-row"><span className="svc-detail-lbl">Discount:</span><span>{item.discount}</span></div>}
-          {item.features   && <div className="svc-detail-row"><span className="svc-detail-lbl">Features:</span><span>{item.features}</span></div>}
+          {item.discount && <div className="svc-detail-row"><span className="svc-detail-lbl">Discount:</span><span>{item.discount}</span></div>}
+          {item.features && <div className="svc-detail-row"><span className="svc-detail-lbl">Features:</span><span>{item.features}</span></div>}
         </div>
       </div>
       <div className="svc-bot">
@@ -89,8 +89,8 @@ const ServiceCard = ({ item, inCart, onToggleCart, onCardView }) => {
 // ─── Cart Drawer ──────────────────────────────────────────────────────────────
 const CartDrawer = ({ cart, onRemove, onClose, onCheckout }) => {
   const subtotal = cart.reduce((a, s) => a + itemPrice(s), 0);
-  const tax      = Math.round(subtotal * 0.18);
-  const total    = subtotal + tax;
+  const tax = Math.round(subtotal * 0.18);
+  const total = subtotal + tax;
   return (
     <div className="cart-drawer-overlay" onClick={onClose}>
       <div className="cart-drawer" onClick={(e) => e.stopPropagation()}>
@@ -143,17 +143,17 @@ const CartDrawer = ({ cart, onRemove, onClose, onCheckout }) => {
 const StepBar = ({ currentPage, onStepChange }) => {
   const steps = [
     { key: "currentStep", label: "Current Step", n: 1 },
-    { key: "marketplace", label: "Marketplace",  n: 2 },
-    { key: "cart",        label: "Cart",          n: 3 },
-    { key: "checkout",    label: "Checkout",      n: 4 },
-    { key: "confirmed",   label: "Confirmed",     n: 5 },
+    { key: "marketplace", label: "Marketplace", n: 2 },
+    { key: "cart", label: "Cart", n: 3 },
+    { key: "checkout", label: "Checkout", n: 4 },
+    { key: "confirmed", label: "Confirmed", n: 5 },
   ];
   const order = steps.map(s => s.key);
-  const ci    = order.indexOf(currentPage);
+  const ci = order.indexOf(currentPage);
   return (
     <div className="step-bar">
       {steps.map((s, i) => {
-        const done   = i < ci;
+        const done = i < ci;
         const active = i === ci;
         return (
           <React.Fragment key={s.key}>
@@ -175,44 +175,44 @@ const StepBar = ({ currentPage, onStepChange }) => {
 
 // ─── Checkout Page ────────────────────────────────────────────────────────────
 const CheckoutPage = ({ cart, onConfirm, onBack }) => {
-  const userRaw  = (() => { try { return JSON.parse(localStorage.getItem("user")); } catch { return null; } })();
-  const userEmail = userRaw?.user?.email    || userRaw?.email       || "";
-  const userName  = userRaw?.user?.displayName || userRaw?.displayName || "";
+  const userRaw = (() => { try { return JSON.parse(localStorage.getItem("user")); } catch { return null; } })();
+  const userEmail = userRaw?.user?.email || userRaw?.email || "";
+  const userName = userRaw?.user?.displayName || userRaw?.displayName || "";
 
-  const [fullName,   setFullName]   = useState(userName);
-  const [email,      setEmail]      = useState(userEmail);
-  const [phone,      setPhone]      = useState("");
-  const [prefDate,   setPrefDate]   = useState("");
-  const [timeSlot,   setTimeSlot]   = useState("10:00 AM");
-  const [payMethod,  setPayMethod]  = useState("Card");
-  const [cardNum,    setCardNum]    = useState("");
-  const [expiry,     setExpiry]     = useState("");
-  const [cvv,        setCvv]        = useState("");
-  const [upiId,      setUpiId]      = useState("");
+  const [fullName, setFullName] = useState(userName);
+  const [email, setEmail] = useState(userEmail);
+  const [phone, setPhone] = useState("");
+  const [prefDate, setPrefDate] = useState("");
+  const [timeSlot, setTimeSlot] = useState("10:00 AM");
+  const [payMethod, setPayMethod] = useState("Card");
+  const [cardNum, setCardNum] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [upiId, setUpiId] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const subtotal = cart.reduce((a, s) => a + itemPrice(s), 0);
-  const tax      = Math.round(subtotal * 0.18);
-  const total    = subtotal + tax;
+  const tax = Math.round(subtotal * 0.18);
+  const total = subtotal + tax;
 
   const handlePay = async () => {
     setSubmitting(true);
     await new Promise(r => setTimeout(r, 1000));
-    const orderId  = genOrderId();
-    const stepId   = localStorage.getItem("selectedStepId")   || "";
+    const orderId = genOrderId();
+    const stepId = localStorage.getItem("selectedStepId") || "";
     const stepName = localStorage.getItem("selectedStepName") || "";
-    const pathId   = localStorage.getItem("selectedPathId")   || "";
+    const pathId = localStorage.getItem("selectedPathId") || "";
     const pathName = localStorage.getItem("selectedPathName") || "";
 
     cart.forEach((item) => {
       logActivity({
-        type:     "market",
-        title:    `Purchased: ${item.name}`,
-        desc:     `Bought "${item.name}" · Order ${orderId}`,
+        type: "market",
+        title: `Purchased: ${item.name}`,
+        desc: `Bought "${item.name}" · Order ${orderId}`,
         pathId, pathName, stepId, stepName,
         itemName: item.name || "",
         itemCost: isFreeItem(item) ? "Free" : `₹${Number(item.cost).toLocaleString()}`,
-        status:   "completed",
+        status: "completed",
       });
     });
 
@@ -312,41 +312,34 @@ const UserMarketplace = ({ onStepChange }) => {
   const location = useLocation();
 
   // ── Access flags ───────────────────────────────────────────────────────────
-  const isSubscribed   = location.state?.subscribed    ?? false;
+  const isSubscribed = location.state?.subscribed ?? false;
   const creditUnlocked = location.state?.creditUnlocked || { micro: false, nano: false };
-  const subTier        = location.state?.subTier        || null;
+  const subTier = location.state?.subTier || null;
 
   // A user can see micro if:
   //   • they have an active micro or nano subscription, OR
   //   • they credit-unlocked micro on this step, OR
   //   • they credit-unlocked nano (nano unlock implies micro access)
-  const hasMicro =
-    (isSubscribed && (subTier === "micro" || subTier === "nano")) ||
-    creditUnlocked.micro ||
-    creditUnlocked.nano;
-
-  // A user can see nano if:
-  //   • they have an active nano subscription, OR
-  //   • they credit-unlocked nano on this step
-  const hasNano =
-    (isSubscribed && subTier === "nano") ||
-    creditUnlocked.nano;
+  // FIXED — isSubscribed alone doesn't grant access; only credit unlocks do
+  // ✅ FIXED — subscription also grants access
+  const hasMicro = creditUnlocked.micro || isSubscribed;
+  const hasNano = creditUnlocked.nano || (isSubscribed && (subTier === "nano" || subTier === "platinum"));
 
   // ── Component state ────────────────────────────────────────────────────────
-  const [page,        setPage]        = useState("marketplace");
+  const [page, setPage] = useState("marketplace");
   const [activeLayer, setActiveLayer] = useState(
     location.state?.defaultTab?.toLowerCase() ||
-    location.state?.view?.toLowerCase()       ||
+    location.state?.view?.toLowerCase() ||
     "all"
   );
   const [activeRole, setActiveRole] = useState("All");
-  const [searchQ,    setSearchQ]    = useState("");
-  const [cart,       setCart]       = useState([]);
-  const [showCart,   setShowCart]   = useState(false);
-  const [items,      setItems]      = useState([]);
-  const [loading,    setLoading]    = useState(true);
-  const [error,      setError]      = useState("");
-  const [orderInfo,  setOrderInfo]  = useState(null);
+  const [searchQ, setSearchQ] = useState("");
+  const [cart, setCart] = useState([]);
+  const [showCart, setShowCart] = useState(false);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [orderInfo, setOrderInfo] = useState(null);
 
   const marketLoggedRef = useRef(false);
 
@@ -371,11 +364,11 @@ const UserMarketplace = ({ onStepChange }) => {
             marketLoggedRef.current = true;
             const stepName = localStorage.getItem("selectedStepName") || "";
             const pathName = localStorage.getItem("selectedPathName") || "";
-            const pathId   = localStorage.getItem("selectedPathId")   || "";
+            const pathId = localStorage.getItem("selectedPathId") || "";
             logActivity({
-              type:   "market",
-              title:  "Browsing marketplace",
-              desc:   `User opened Marketplace${stepName ? ` for step "${stepName}"` : ""}`,
+              type: "market",
+              title: "Browsing marketplace",
+              desc: `User opened Marketplace${stepName ? ` for step "${stepName}"` : ""}`,
               pathId, pathName, stepId, stepName,
               status: "viewed",
             });
@@ -395,10 +388,10 @@ const UserMarketplace = ({ onStepChange }) => {
 
   // Layer item counts (for reference / future UI use)
   const layerCounts = useMemo(() => ({
-    all:   items.length,
+    all: items.length,
     macro: items.filter(s => s.layer === "macro").length,
     micro: items.filter(s => s.layer === "micro").length,
-    nano:  items.filter(s => s.layer === "nano").length,
+    nano: items.filter(s => s.layer === "nano").length,
   }), [items]);
 
   // ── FIX 1: filter respects credit unlocks, not just subscription ───────────
@@ -407,17 +400,17 @@ const UserMarketplace = ({ onStepChange }) => {
     return items.filter(s => {
       // Gate each layer individually
       const layerAllowed =
-        s.layer === "macro" ? true      :   // macro always free
-        s.layer === "micro" ? hasMicro  :   // micro: sub OR credit unlock
-        s.layer === "nano"  ? hasNano   :   // nano:  sub OR credit unlock
-        true;                               // unknown layers: show
+        s.layer === "macro" ? true :   // macro always free
+          s.layer === "micro" ? hasMicro :   // micro: sub OR credit unlock
+            s.layer === "nano" ? hasNano :   // nano:  sub OR credit unlock
+              true;                               // unknown layers: show
 
       return (
         layerAllowed &&
         (activeLayer === "all" || s.layer === activeLayer) &&
-        (activeRole  === "All" || s.role  === activeRole)  &&
+        (activeRole === "All" || s.role === activeRole) &&
         (!q ||
-          s.name?.toLowerCase().includes(q)         ||
+          s.name?.toLowerCase().includes(q) ||
           s.partner_email?.toLowerCase().includes(q) ||
           s.goal?.toLowerCase().includes(q))
       );
@@ -431,46 +424,46 @@ const UserMarketplace = ({ onStepChange }) => {
     if (!alreadyIn) {
       const layerLabel =
         item.layer === "macro" ? "Macro" :
-        item.layer === "micro" ? "Micro" :
-        item.layer === "nano"  ? "Nano"  : "";
+          item.layer === "micro" ? "Micro" :
+            item.layer === "nano" ? "Nano" : "";
       logActivity({
-        type:   "market",
-        title:  `Added to cart: ${item.name} (${layerLabel})`,
-        desc:   `User added "${item.name}" from ${layerLabel} view to cart`,
-        pathId:   localStorage.getItem("selectedPathId")   || "",
+        type: "market",
+        title: `Added to cart: ${item.name} (${layerLabel})`,
+        desc: `User added "${item.name}" from ${layerLabel} view to cart`,
+        pathId: localStorage.getItem("selectedPathId") || "",
         pathName: localStorage.getItem("selectedPathName") || "",
-        stepId:   localStorage.getItem("selectedStepId")   || "",
+        stepId: localStorage.getItem("selectedStepId") || "",
         stepName: localStorage.getItem("selectedStepName") || "",
         itemName: item.name || "",
         itemCost: isFreeItem(item) ? "Free" : `₹${Number(item.cost).toLocaleString()}`,
-        status:   "in_progress",
+        status: "in_progress",
       });
     }
   };
 
   const handleCardView = (item) => {
     const layerLabel =
-      item.layer === "macro" ? "Macro (Free Tools)"      :
-      item.layer === "micro" ? "Micro (Subscriptions)"   :
-      item.layer === "nano"  ? "Nano (1-on-1 Sessions)"  :
-      item.layer || "";
+      item.layer === "macro" ? "Macro (Free Tools)" :
+        item.layer === "micro" ? "Micro (Subscriptions)" :
+          item.layer === "nano" ? "Nano (1-on-1 Sessions)" :
+            item.layer || "";
     logActivity({
-      type:   "market",
-      title:  `Browsed ${layerLabel}: ${item.name}`,
-      desc:   `User viewed "${item.name}" in ${layerLabel} view`,
-      pathId:   localStorage.getItem("selectedPathId")   || "",
+      type: "market",
+      title: `Browsed ${layerLabel}: ${item.name}`,
+      desc: `User viewed "${item.name}" in ${layerLabel} view`,
+      pathId: localStorage.getItem("selectedPathId") || "",
       pathName: localStorage.getItem("selectedPathName") || "",
-      stepId:   localStorage.getItem("selectedStepId")   || "",
+      stepId: localStorage.getItem("selectedStepId") || "",
       stepName: localStorage.getItem("selectedStepName") || "",
       itemName: item.name || "",
       itemCost: isFreeItem(item) ? "Free" : `₹${Number(item.cost).toLocaleString()}`,
-      status:   "viewed",
+      status: "viewed",
     });
   };
 
   const removeFromCart = (id) => setCart(prev => prev.filter(s => s._id !== id));
-  const inCart         = (id) => cart.some(s => s._id === id);
-  const handleConfirm  = (info) => { setOrderInfo(info); setPage("confirmed"); setShowCart(false); };
+  const inCart = (id) => cart.some(s => s._id === id);
+  const handleConfirm = (info) => { setOrderInfo(info); setPage("confirmed"); setShowCart(false); };
   const currentPageKey = page === "marketplace" ? "marketplace" : page === "checkout" ? "checkout" : "confirmed";
 
   // ── FIX 2: renderServices uses hasMicro/hasNano, not isSubscribed ──────────
@@ -519,7 +512,7 @@ const UserMarketplace = ({ onStepChange }) => {
     // macro is always shown; micro/nano depend on subscription or credit unlock
     const visibleLayers = ["macro"];
     if (hasMicro) visibleLayers.push("micro");
-    if (hasNano)  visibleLayers.push("nano");
+    if (hasNano) visibleLayers.push("nano");
 
     return visibleLayers.map(layer => {
       const group = filtered.filter(s => s.layer === layer);
@@ -587,10 +580,10 @@ const UserMarketplace = ({ onStepChange }) => {
                 {/* ── FIX 3: Layer pills — show all accessible layers, not just the active one */}
                 <div className="vpills">
                   {LAYER_PILLS.filter(({ key }) => {
-                    if (key === "all")   return true;          // always show "All"
+                    if (key === "all") return true;          // always show "All"
                     if (key === "macro") return true;          // macro always free
                     if (key === "micro") return hasMicro;      // micro: sub or credit unlock
-                    if (key === "nano")  return hasNano;       // nano:  sub or credit unlock
+                    if (key === "nano") return hasNano;       // nano:  sub or credit unlock
                     return false;
                   }).map(({ key, label }) => (
                     <button

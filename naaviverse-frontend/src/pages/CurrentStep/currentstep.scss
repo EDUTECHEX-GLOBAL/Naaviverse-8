@@ -1730,3 +1730,213 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   display: flex;
   gap: 7px;
 }
+
+.sub-tier-toggle--3 {
+  display: flex; gap: 10px; margin-bottom: 16px;
+  .sub-tier-toggle__btn {
+    flex: 1; border: 2px solid #e2e8f0; border-radius: 12px;
+    padding: 12px 8px; background: #fff; cursor: pointer;
+    font-size: 13px; font-weight: 600; transition: all 0.2s;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    .sub-tier-toggle__sub { font-size: 11px; font-weight: 400; color: #666; }
+  }
+}
+.sub-billing-toggle {
+  display: flex; gap: 8px; justify-content: center; margin-bottom: 20px;
+  .sbt-btn {
+    padding: 8px 24px; border: 2px solid #e2e8f0; border-radius: 20px;
+    background: #fff; font-size: 13px; font-weight: 500; cursor: pointer;
+    display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+    .sbt-save-tag {
+      background: #22c55e; color: #fff; font-size: 10px;
+      padding: 2px 6px; border-radius: 10px; font-weight: 700;
+    }
+  }
+}
+.sub-plan--single { max-width: 480px; margin: 0 auto 24px; border-width: 2px !important;
+  .sub-plan__credits-badge {
+    display: inline-block; background: #fef9c3; color: #854d0e;
+    font-size: 13px; font-weight: 600; padding: 4px 12px;
+    border-radius: 20px; margin-bottom: 14px;
+  }
+}
+.sub-gate__credit-info {
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+  padding: 12px 16px; margin-bottom: 20px; font-size: 13px;
+  .sci-row { display: flex; align-items: center; gap: 10px; padding: 4px 0;
+    .sci-label { font-weight: 600; min-width: 95px; }
+    .sci-val { color: #475569; }
+    &--sub .sci-label { color: #7c3aed; }
+  }
+}
+.wallet-chip__tier { font-size: 12px; font-weight: 600; }
+
+// ── 3-column plan grid ─────────────────────────────────────────
+.sub-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+  width: 100%;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sub-plan-card {
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px 18px 20px;
+  background: #fff;
+  position: relative;
+  transition: all 0.2s;
+  cursor: pointer;
+
+  &--active {
+    background: #fafffe;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.10);
+    transform: translateY(-3px);
+  }
+
+  &:hover:not(.sub-plan-card--active) {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+
+  .spc-tag {
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+  }
+
+  .spc-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    margin-top: 10px;
+
+    .spc-emoji { font-size: 22px; }
+    .spc-label { font-size: 17px; font-weight: 700; }
+  }
+
+  .spc-price {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 2px;
+    line-height: 1.1;
+
+    .spc-period {
+      font-size: 13px;
+      font-weight: 400;
+      color: #888;
+      margin-left: 2px;
+    }
+  }
+
+  .spc-save {
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    margin-top: 2px;
+  }
+
+  .spc-credits {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  .spc-feats {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 12px;
+    color: #475569;
+
+    li {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      margin-bottom: 7px;
+      line-height: 1.4;
+
+      .spc-check {
+        font-weight: 800;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+    }
+  }
+}
+
+// ── Billing toggle ─────────────────────────────────────────────
+.sub-billing-toggle {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 20px;
+
+  .sbt-btn {
+    padding: 9px 28px;
+    border: 2px solid #e2e8f0;
+    border-radius: 24px;
+    background: #fff;
+    color: #333;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+
+    &--active {
+      background: #1a1a2e;
+      border-color: #1a1a2e;
+      color: #fff;
+    }
+
+    .sbt-save-tag {
+      background: #22c55e;
+      color: #fff;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+  }
+}
+
+// ── Credit info box ────────────────────────────────────────────
+.sub-gate__credit-info {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  font-size: 13px;
+
+  .sci-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 5px 0;
+
+    .sci-label { font-weight: 700; min-width: 100px; }
+    .sci-val   { color: #475569; }
+    &--sub .sci-label { color: #7c3aed; }
+  }
+}

@@ -273,3 +273,50 @@
   text-align: right;
   margin-top: 2px;
 }
+
+/* ── Credit breakdown chips ──────────────────────────── */
+.wallet-credit-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.wallet-credit-row {
+  display: flex;
+  align-items: center;
+}
+
+.wallet-credit-chip {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.wallet-credit-chip--permanent {
+  background: #eaf3de;
+  color: #3B6D11;
+}
+
+.wallet-credit-chip--bonus {
+  background: #e8eeff;
+  color: #185FA5;
+}
+
+.wallet-credit-chip--bonus.warn {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.wallet-credit-chip--expired {
+  background: #f8d7da;
+  color: #842029;
+}
+
+/* ── Never expires badge on txn rows ─────────────────── */
+.wallet-tx-expiry-pill.permanent {
+  background: #eaf3de;
+  color: #3B6D11;
+  border: none;
+}

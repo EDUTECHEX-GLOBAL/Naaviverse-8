@@ -33,20 +33,18 @@ import axios from "axios";
 import VaultTransactions from "../VaultTransactions/index.jsx";
 import TransactionPage from "./TransactionPage/index.jsx";
 // REMOVED: import MenuNav from "../../components/MenuNav/index.jsx";
-import UserHome from "./userHome.jsx"; 
+
 // ✅ NEW: Import the new Marketplace component
 import UserMarketplace from "../UserMarketplace.jsx";
 
+// ✅ URL → sideNav mapping (longest paths first to avoid prefix collisions)
 const URL_TO_SIDENAV = {
-  "/dashboard/users/home": "Home",
-  "/dashboard/users/marketplace": "Market Place",
+  "/dashboard/users/Marketplace": "Market Place",
   "/dashboard/users/current-step": "Current Step",
   "/dashboard/users/my-journey": "My Journey",
   "/dashboard/users/transactions": "Transactions",
   "/dashboard/users/paths": "Paths",
-
-  // default fallback
-  "/dashboard/users": "Home",
+  "/dashboard/users": "Paths",
 };
 
 const Dashboard = () => {
@@ -236,194 +234,116 @@ const Dashboard = () => {
     <div>
       <div className="dashboard-main">
         <div className="dashboard-body">
-          <div onClick={() => setShowDrop(false)}>
-            <Dashsidebar />
-          </div>
+          <Dashsidebar />
 
           <div className="dashboard-screens">
             <div style={{ height: "100%" }}>
 
-{activePage === "Home" ? (
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
-    <UserHome />
-  </div>
+              {/* ✅ Market Place — full height, no navigation */}
+              {activePage === "Market Place" ? (
+                <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+                  <UserMarketplace
+                    onStepChange={(view) => {
+                      if (view === "currentStep") { setsideNav("Current Step"); navigate("/dashboard/users/current-step"); }
+                      else if (view === "myJourney") { setsideNav("My Journey"); navigate("/dashboard/users/my-journey"); }
+                    }}
+                  />
+                </div>
 
-) : activePage === "Market Place" ? (
+              ) : activePage === "Paths" ? (
+                // REMOVED: <MenuNav /> component
+                <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+                  <PathComponent />
+                </div>
 
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
-    <UserMarketplace
-      onStepChange={(view) => {
-        if (view === "currentStep") {
-          setsideNav("Current Step");
-          navigate("/dashboard/users/current-step");
-        } else if (view === "myJourney") {
-          setsideNav("My Journey");
-          navigate("/dashboard/users/my-journey");
-        }
-      }}
-    />
-  </div>
+              ) : activePage === "My Journey" ? (
+                // REMOVED: <MenuNav /> component
+                <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+                  <JourneyPage />
+                </div>
 
-) : activePage === "Paths" ? (
+              ) : activePage === "Current Step" ? (
+                // REMOVED: <MenuNav /> component
+                <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+                  <CurrentStep productDataArray={productDataArray} />
+                </div>
 
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
-    <PathComponent />
-  </div>
+              ) : activePage === "Transactions" ? (
+                <TransactionPage
+                  showDrop={showDrop}
+                  setShowDrop={setShowDrop}
+                  search={search}
+                  setSearch={setSearch}
+                  searchic={searchic}
+                  profile={profile}
+                  downarrow={downarrow}
+                />
 
-) : activePage === "My Journey" ? (
+              ) : activePage === "Partners" ? (
+                // REMOVED: <MenuNav /> component
+                <div className="account-container" onClick={() => setShowDrop(false)}>
+                  <div className="account-left" style={{ paddingBottom: "0" }}>
+                    <div className="all-account">
+                      {accountantsList?.data
+                        ?.filter((e) => e.displayName.toLowerCase().startsWith(search.toLowerCase()))
+                        ?.map((each, i) => (
+                          <div className="each-account" key={i}>
+                            <div className="account-img-box"><img className="account-img" src={each?.profilePicURL} alt="" /></div>
+                            <div className="account-name">{each?.displayName}</div>
+                            <div className="account-work">{each?.description}</div>
+                            <div className="account-see-more" onClick={() => { if (!each?.userFollow) { handleFollowBrand(each); setChoice("Follow"); } else { handleUnFollowBrand(each); setChoice("Unfollow"); } }} style={{ background: each?.userFollow ? "#FE2C55" : "#59A2DD" }}>
+                              {each?.userFollow ? "Unfollow" : "Follow"}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </div>
 
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
-    <JourneyPage />
-  </div>
+              ) : activePage === "Calendar" ? (
+                // REMOVED: <MenuNav /> component
+                <div onClick={() => setShowDrop(false)}><EarningCalendar /></div>
 
-) : activePage === "Current Step" ? (
+              ) : activePage === "Wallet" ? (
+                transactionSelected ? (
+                  // REMOVED: <MenuNav /> component
+                  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+                    <div className="services-all-menu" style={{ borderBottom: "0.5px solid #E5E5E5" }}>
+                      <div style={{ display: "flex", width: "calc(100% - 110px)" }}>
+                        <div className="services-each-menu" style={{ background: coinType === "fiat" ? "rgba(241,241,241,0.5)" : "", fontWeight: coinType === "fiat" ? "700" : "" }} onClick={() => { setCoinType("fiat"); setSearch(""); }}>Forex</div>
+                      </div>
+                      <div style={{ fontWeight: "600", textDecorationLine: "underline", cursor: "pointer", fontSize: "0.9rem" }} onClick={() => { setTransactionSelected(false); setTransactionData([]); setSelectedCoin({}); }}>Back</div>
+                    </div>
+                    <VaultTransactions />
+                  </div>
+                ) : (
+                  // REMOVED: <MenuNav /> component
+                  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+                    <div className="services-all-menu" style={{ borderBottom: "0.5px solid #E5E5E5" }}>
+                      <div style={{ display: "flex", width: "83%" }}>
+                        <div className="services-each-menu" style={{ background: coinType === "fiat" ? "rgba(241,241,241,0.5)" : "", fontWeight: coinType === "fiat" ? "700" : "" }} onClick={() => { setCoinType("fiat"); setSearch(""); }}>Forex</div>
+                      </div>
+                      <div style={{ display: "flex" }}><Toggle toggle={balanceToggle} setToggle={setBalanceToggle} coinType={coinType} /></div>
+                    </div>
+                    <Vaults searchedValue={searchVault} />
+                  </div>
+                )
 
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
-    <CurrentStep productDataArray={productDataArray} />
-  </div>
+              ) : activePage === "Task Manager" ? (
+                // REMOVED: <MenuNav /> component
+                <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}><Tasks /></div>
 
-) : activePage === "Transactions" ? (
+              ) : activePage === "Scanner" ? (
+                // REMOVED: <MenuNav /> component
+                <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}><WalletScan /></div>
 
-  <TransactionPage
-    showDrop={showDrop}
-    setShowDrop={setShowDrop}
-    search={search}
-    setSearch={setSearch}
-    searchic={searchic}
-    profile={profile}
-    downarrow={downarrow}
-  />
+              ) : activePage === "Universities" ? (
+                // REMOVED: <MenuNav /> component
+                <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}><Directory /></div>
 
-) : activePage === "Partners" ? (
-
-  <div className="account-container" onClick={() => setShowDrop(false)}>
-    <div className="account-left" style={{ paddingBottom: "0" }}>
-      <div className="all-account">
-        {accountantsList?.data
-          ?.filter((e) =>
-            e.displayName.toLowerCase().startsWith(search.toLowerCase())
-          )
-          ?.map((each, i) => (
-            <div className="each-account" key={i}>
-              <div className="account-img-box">
-                <img className="account-img" src={each?.profilePicURL} alt="" />
-              </div>
-              <div className="account-name">{each?.displayName}</div>
-              <div className="account-work">{each?.description}</div>
-              <div
-                className="account-see-more"
-                onClick={() => {
-                  if (!each?.userFollow) {
-                    handleFollowBrand(each);
-                    setChoice("Follow");
-                  } else {
-                    handleUnFollowBrand(each);
-                    setChoice("Unfollow");
-                  }
-                }}
-                style={{
-                  background: each?.userFollow ? "#FE2C55" : "#59A2DD",
-                }}
-              >
-                {each?.userFollow ? "Unfollow" : "Follow"}
-              </div>
-            </div>
-          ))}
-      </div>
-    </div>
-  </div>
-
-) : activePage === "Calendar" ? (
-
-  <div onClick={() => setShowDrop(false)}>
-    <EarningCalendar />
-  </div>
-
-) : activePage === "Wallet" ? (
-
-  transactionSelected ? (
-    <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
-      <div className="services-all-menu" style={{ borderBottom: "0.5px solid #E5E5E5" }}>
-        <div style={{ display: "flex", width: "calc(100% - 110px)" }}>
-          <div
-            className="services-each-menu"
-            style={{
-              background: coinType === "fiat" ? "rgba(241,241,241,0.5)" : "",
-              fontWeight: coinType === "fiat" ? "700" : "",
-            }}
-            onClick={() => {
-              setCoinType("fiat");
-              setSearch("");
-            }}
-          >
-            Forex
-          </div>
-        </div>
-        <div
-          style={{
-            fontWeight: "600",
-            textDecorationLine: "underline",
-            cursor: "pointer",
-            fontSize: "0.9rem",
-          }}
-          onClick={() => {
-            setTransactionSelected(false);
-            setTransactionData([]);
-            setSelectedCoin({});
-          }}
-        >
-          Back
-        </div>
-      </div>
-      <VaultTransactions />
-    </div>
-  ) : (
-    <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
-      <div className="services-all-menu" style={{ borderBottom: "0.5px solid #E5E5E5" }}>
-        <div style={{ display: "flex", width: "83%" }}>
-          <div
-            className="services-each-menu"
-            style={{
-              background: coinType === "fiat" ? "rgba(241,241,241,0.5)" : "",
-              fontWeight: coinType === "fiat" ? "700" : "",
-            }}
-            onClick={() => {
-              setCoinType("fiat");
-              setSearch("");
-            }}
-          >
-            Forex
-          </div>
-        </div>
-        <div style={{ display: "flex" }}>
-          <Toggle toggle={balanceToggle} setToggle={setBalanceToggle} coinType={coinType} />
-        </div>
-      </div>
-      <Vaults searchedValue={searchVault} />
-    </div>
-  )
-
-) : activePage === "Task Manager" ? (
-
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
-    <Tasks />
-  </div>
-
-) : activePage === "Scanner" ? (
-
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
-    <WalletScan />
-  </div>
-
-) : activePage === "Universities" ? (
-
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
-    <Directory />
-  </div>
-
-) : (
-  ""
-)}
+              ) : (
+                ""
+              )}
 
             </div>
           </div>

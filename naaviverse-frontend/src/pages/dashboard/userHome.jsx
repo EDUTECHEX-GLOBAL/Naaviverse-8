@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from "react";
 import "./userHome.scss";
-import { useNavigate } from "react-router-dom";
-import { useCoinContextData } from "../../context/CoinContext";
-import axios from "axios";
 
 // ── Static / mock data helpers (replace with real API calls) ─────────────────
 const getUserFromStorage = () => {
@@ -45,7 +42,6 @@ const Bar = ({ pct, color = "#0d9488", bg = "#e2e8f0", h = 6 }) => (
 
 // ════════════════════════════════════════════════════════════════════════════
 export default function UserHome() {
-  const navigate = useNavigate();
   const user = getUserFromStorage();
   const rawName = user?.name || user?.fullName || localStorage.getItem("userName") || "";
   const firstName = rawName.split(" ")[0] || (user?.email || "there").split("@")[0];
@@ -124,7 +120,7 @@ export default function UserHome() {
       <div className="uh-top-stats">
 
         {/* Credits */}
-        <div className="uh-stat uh-stat-teal" onClick={() => navigate("/dashboard/users/wallet")}>
+        <div className="uh-stat uh-stat-teal">
           <div className="uh-stat-top">
             <div className="uh-stat-icon"><Icon type="credits" size={20} color="white" /></div>
             <span className="uh-stat-badge">{creditPct}% left</span>
@@ -146,11 +142,11 @@ export default function UserHome() {
           <div className="uh-stat-label">PROFILE COMPLETE</div>
           <Bar pct={profileComplete.pct} color="rgba(255,255,255,.9)" bg="rgba(255,255,255,.25)" />
           <div className="uh-stat-sub">All levels done · profile ready</div>
-          <button className="uh-stat-btn" onClick={(e) => { e.stopPropagation(); navigate("/dashboard/users/profile"); }}>View Profile →</button>
+          <button className="uh-stat-btn">View Profile →</button>
         </div>
 
         {/* Step progress */}
-        <div className="uh-stat uh-stat-violet" onClick={() => navigate("/dashboard/users/current-step")}>
+        <div className="uh-stat uh-stat-violet">
           <div className="uh-stat-top">
             <div className="uh-stat-icon"><Icon type="step" size={20} color="white" /></div>
             <span className="uh-stat-badge">{myPath.overallPct}% done</span>
@@ -163,7 +159,7 @@ export default function UserHome() {
         </div>
 
         {/* Transactions */}
-        <div className="uh-stat uh-stat-amber" onClick={() => navigate("/dashboard/users/transactions")}>
+        <div className="uh-stat uh-stat-amber">
           <div className="uh-stat-top">
             <div className="uh-stat-icon"><Icon type="market" size={20} color="white" /></div>
             <span className="uh-stat-badge">{marketPurchases.length} items</span>
@@ -187,7 +183,7 @@ export default function UserHome() {
               <Icon type="path" size={16} color="#0d9488" />
               <span className="uh-card-title">My Progress</span>
             </div>
-            <button className="uh-link-btn" onClick={() => navigate("/dashboard/users/my-journey")}>Know more →</button>
+            <button className="uh-link-btn">Know more →</button>
           </div>
 
           {/* Profile items */}
@@ -224,7 +220,7 @@ export default function UserHome() {
               <Icon type="step" size={16} color="#2563eb" />
               <span className="uh-card-title">Ongoing</span>
             </div>
-            <button className="uh-link-btn" onClick={() => navigate("/dashboard/users/current-step")}>View step →</button>
+            <button className="uh-link-btn">View step →</button>
           </div>
 
           <div className="uh-step-badge">{currentStep.number}</div>
@@ -237,7 +233,7 @@ export default function UserHome() {
             <span className="uh-tag uh-tag-amber">Premium — {currentStep.premiumCredits} credits</span>
           </div>
 
-          <button className="uh-continue-btn" onClick={() => navigate("/dashboard/users/current-step")}>
+          <button className="uh-continue-btn">
             Continue step →
           </button>
         </div>
@@ -249,7 +245,7 @@ export default function UserHome() {
               <Icon type="clock" size={16} color="#7c3aed" />
               <span className="uh-card-title">Coming Up Next</span>
             </div>
-            <button className="uh-link-btn" onClick={() => navigate("/dashboard/users/my-journey")}>View all →</button>
+            <button className="uh-link-btn">View all →</button>
           </div>
 
           <div className="uh-next-list">
@@ -261,7 +257,7 @@ export default function UserHome() {
                 <div>
                   <div className="uh-next-title">{s.title}</div>
                   <div className="uh-next-sub">{s.sub}</div>
-                  <button className="uh-small-link" onClick={() => navigate(i === 0 ? "/dashboard/users/current-step" : "/dashboard/users/Marketplace")}>
+                  <button className="uh-small-link">
                     {i === 0 ? "Start when ready" : "Explore"} →
                   </button>
                 </div>
@@ -273,7 +269,7 @@ export default function UserHome() {
               <div>
                 <div className="uh-next-title">Top up credits</div>
                 <div className="uh-next-sub">{credits.available} left · expires {credits.expiry}</div>
-                <button className="uh-small-link" onClick={() => navigate("/dashboard/users/wallet")}>See plans →</button>
+                <button className="uh-small-link">See plans →</button>
               </div>
             </div>
           </div>
@@ -291,7 +287,7 @@ export default function UserHome() {
               <Icon type="path" size={15} color="#0d9488" />
               <span className="uh-card-title">My Path</span>
             </div>
-            <button className="uh-link-btn" onClick={() => navigate("/dashboard/users/my-journey")}>View journey →</button>
+            <button className="uh-link-btn">View journey →</button>
           </div>
 
           <div className="uh-path-name">{myPath.name}</div>
@@ -342,7 +338,7 @@ export default function UserHome() {
                 <Icon type="wallet" size={15} color="#7c3aed" />
                 <span className="uh-card-title">My Wallet</span>
               </div>
-              <button className="uh-link-btn" onClick={() => navigate("/dashboard/users/wallet")}>View details →</button>
+              <button className="uh-link-btn">View details →</button>
             </div>
 
             <div className="uh-wallet-big">
@@ -393,7 +389,7 @@ export default function UserHome() {
               <Icon type="explore" size={15} color="#2563eb" />
               <span className="uh-card-title">Paths Explored</span>
             </div>
-            <button className="uh-link-btn" onClick={() => navigate("/dashboard/users/paths")}>Browse all →</button>
+            <button className="uh-link-btn">Browse all →</button>
           </div>
           <div className="uh-explored-list">
             {exploredPaths.map((p, i) => (
@@ -403,7 +399,7 @@ export default function UserHome() {
                   <div className="uh-explored-name">{p.name}</div>
                   <div className="uh-explored-sub">{p.category} · viewed {p.viewed}</div>
                 </div>
-                <button className="uh-icon-btn" onClick={() => navigate("/dashboard/users/paths")}>
+                <button className="uh-icon-btn">
                   <Icon type="arrow-r" size={14} color="#0d9488" />
                 </button>
               </div>
@@ -418,13 +414,13 @@ export default function UserHome() {
               <Icon type="market" size={15} color="#7c3aed" />
               <span className="uh-card-title">Marketplace Purchases</span>
             </div>
-            <button className="uh-link-btn" onClick={() => navigate("/dashboard/users/Marketplace")}>View all →</button>
+            <button className="uh-link-btn">View all →</button>
           </div>
           {marketPurchases.length === 0 ? (
             <div className="uh-empty-state">
               <div className="uh-empty-icon">🛒</div>
               <div className="uh-empty-text">No purchases yet</div>
-              <button className="uh-empty-btn" onClick={() => navigate("/dashboard/users/Marketplace")}>Browse Marketplace →</button>
+              <button className="uh-empty-btn">Browse Marketplace →</button>
             </div>
           ) : (
             <div className="uh-market-list">
@@ -452,13 +448,13 @@ export default function UserHome() {
               <Icon type="mentor" size={15} color="#0d9488" />
               <span className="uh-card-title">Mentor Sessions</span>
             </div>
-            <button className="uh-link-btn" onClick={() => navigate("/dashboard/users/Marketplace")}>Find mentors →</button>
+            <button className="uh-link-btn">Find mentors →</button>
           </div>
           {mentorSessions.length === 0 ? (
             <div className="uh-empty-state">
               <div className="uh-empty-icon">👨‍🏫</div>
               <div className="uh-empty-text">No sessions scheduled</div>
-              <button className="uh-empty-btn" onClick={() => navigate("/dashboard/users/Marketplace")}>Book a mentor →</button>
+              <button className="uh-empty-btn">Book a mentor →</button>
             </div>
           ) : (
             <div className="uh-mentor-list">

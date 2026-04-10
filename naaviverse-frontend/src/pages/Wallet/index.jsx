@@ -25,6 +25,10 @@ const Wallet = () => {
   const [isNewUser, setIsNewUser]             = useState(false);
   const [creditExpiresAt, setCreditExpiresAt] = useState(null);
 
+  // ── NEW: track bonus vs subscription credits separately ─────────────────────
+  const [bonusCredits, setBonusCredits]               = useState(0);
+  const [subscriptionCredits, setSubscriptionCredits] = useState(0);
+
   const getUserFromStorage = () => {
     try {
       const raw = localStorage.getItem("user");
@@ -38,37 +42,55 @@ const Wallet = () => {
   const email       = userDetails?.email || "";
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // KEY FIX: computeExpiresAt works for BOTH new and old DB records
-  //
-  // Priority order:
-  //  1. txn.expiresAt        — new records (have expiresAt stored in DB)
-  //  2. txn.timestamp +14d   — old bonus records (no expiresAt in DB yet)
-  //  3. userDetails.createdAt+14d — absolute last fallback
+  // computeExpiresAt — works for BOTH new and old DB records
+  // Priority:
+  //  1. txn.expiresAt        — new records (expiresAt stored in DB)
+  //  2. txn.timestamp +14d   — old bonus records (no expiresAt in DB)
+  //  3. userDetails.createdAt+14d — last fallback
   // ─────────────────────────────────────────────────────────────────────────────
   const computeExpiresAt = (fetchedTxns) => {
     const bonus = fetchedTxns.find((t) => t.metadata?.type === "welcome_bonus");
-
     if (bonus) {
-      // Case 1: new record with expiresAt already in DB
       if (bonus.expiresAt) return new Date(bonus.expiresAt);
-
-      // Case 2: old record — compute from the bonus creation timestamp
       if (bonus.timestamp) {
         const d = new Date(bonus.timestamp);
         d.setDate(d.getDate() + 14);
         return d;
       }
     }
-
-    // Case 3: no bonus txn at all — use account createdAt
     const createdAt = userDetails?.createdAt;
     if (createdAt) {
       const d = new Date(createdAt);
       d.setDate(d.getDate() + 14);
       return d;
     }
-
     return null;
+  };
+
+  // ── NEW: compute bonus vs subscription credit amounts from transactions ──────
+  const computeCreditBreakdown = (fetchedTxns, totalBalance) => {
+    // Sum all non-expired welcome bonus credit txns
+    const bonusTotal = fetchedTxns
+      .filter((t) => t.metadata?.type === "welcome_bonus" && t.type === "credit" && !t.isExpired)
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+    // Sum all subscription/plan credit txns
+    const subTotal = fetchedTxns
+      .filter((t) => t.metadata?.type !== "welcome_bonus" && t.type === "credit")
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+    // Debit txns (credits spent)
+    const debits = fetchedTxns
+      .filter((t) => t.type === "debit")
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+    // Remaining bonus (can't exceed actual balance)
+    const remainingBonus = Math.max(0, Math.min(bonusTotal, totalBalance));
+    // Remaining subscription credits = rest
+    const remainingSub   = Math.max(0, totalBalance - remainingBonus);
+
+    setBonusCredits(remainingBonus);
+    setSubscriptionCredits(remainingSub);
   };
 
   useEffect(() => {
@@ -101,9 +123,10 @@ const Wallet = () => {
         if (res.data.status) {
           const fetchedTxns = res.data.txns;
           setTxns(fetchedTxns);
-          // This now works for old records too — no migration needed
           const expiry = computeExpiresAt(fetchedTxns);
           if (expiry) setCreditExpiresAt(expiry);
+          // ── NEW: compute split after txns are available ──────────────────
+          computeCreditBreakdown(fetchedTxns, res.data.balance || 0);
         }
         setTxnsLoading(false);
       })
@@ -115,28 +138,21 @@ const Wallet = () => {
       });
   };
 
-  // ── Derived expiry values (recomputed on every render — always fresh) ────────
+  // ── Derived expiry values ────────────────────────────────────────────────────
   const now             = new Date();
   const isCreditExpired = creditExpiresAt ? creditExpiresAt < now : false;
   const msLeft          = creditExpiresAt ? Math.max(0, creditExpiresAt - now) : 0;
   const daysLeft        = msLeft ? Math.ceil(msLeft / (1000 * 60 * 60 * 24)) : 0;
 
+  // ── UPDATED: subtext only refers to bonus credits, never total balance ───────
   const getExpirySubText = () => {
-    if (!creditExpiresAt)  return "Credits earned on signup & purchases";
-    if (isCreditExpired)   return "⏰ Welcome credits have expired";
-    if (daysLeft <= 1)     return "⚠ Welcome credits expire today — use them now!";
-    if (daysLeft <= 3)     return `⚠ Welcome credits expire in ${daysLeft} days — use them soon!`;
-    return `⚠ Welcome credits expire in ${daysLeft} days · ${moment(creditExpiresAt).format("MMM D, YYYY")}`;
+    if (subscriptionCredits > 0 && bonusCredits === 0) return "Subscription credits never expire";
+    if (!creditExpiresAt)   return "Credits earned on signup & purchases";
+    if (isCreditExpired)    return "Welcome bonus expired · Subscription credits are permanent";
+    if (daysLeft <= 1)      return `⚠ ${bonusCredits} welcome credits expire today`;
+    if (daysLeft <= 3)      return `⚠ ${bonusCredits} welcome credits expire in ${daysLeft} days`;
+    return `Welcome bonus: ${bonusCredits} credits · Expires ${moment(creditExpiresAt).format("MMM D, YYYY")}`;
   };
-
-  const getBannerLine = () => {
-    if (!creditExpiresAt || isCreditExpired) return null;
-    if (daysLeft <= 1) return "⚠ These credits expire today — use them now!";
-    if (daysLeft <= 3) return `⚠ Expires in ${daysLeft} days — use them before they're gone!`;
-    return `Valid for ${daysLeft} more days · expires ${moment(creditExpiresAt).format("MMM D, YYYY")}`;
-  };
-
-  const bannerLine = getBannerLine();
 
   // ── Group transactions by day ────────────────────────────────────────────────
   const groupedTxns = txns.reduce((acc, txn) => {
@@ -178,10 +194,10 @@ const Wallet = () => {
 
               <div className="wallet-container">
 
-                {/* Welcome banner — shows whenever credits are still active */}
-                {creditExpiresAt && !isCreditExpired && (
+                {/* Welcome banner — shows when bonus is still active */}
+                {creditExpiresAt && !isCreditExpired && bonusCredits > 0 && (
                   <div className="wallet-welcome-banner">
-                    <span className="wallet-welcome-icon"></span>
+                    <span className="wallet-welcome-icon">⭐</span>
                     <div style={{ flex: 1 }}>
                       <p className="wallet-welcome-text">
                         <strong>Welcome bonus applied!</strong> You received{" "}
@@ -191,19 +207,21 @@ const Wallet = () => {
                   </div>
                 )}
 
-                {/* Expired banner */}
+                {/* Expired banner — only for bonus, not subscription credits */}
                 {isCreditExpired && (
                   <div className="wallet-expired-banner">
                     <span>⏰</span>
                     <p>
                       Your 50 welcome credits expired on{" "}
                       {moment(creditExpiresAt).format("MMM D, YYYY")}.
-                      Subscribe to unlock full access.
+                      {subscriptionCredits > 0
+                        ? " Your subscription credits are still active."
+                        : " Subscribe to unlock full access."}
                     </p>
                   </div>
                 )}
 
-                {/* Balance card */}
+                {/* ── Balance card ─────────────────────────────────────────── */}
                 {balanceLoading ? (
                   <Skeleton className="wallet-balance-skeleton" height={160} />
                 ) : (
@@ -213,12 +231,45 @@ const Wallet = () => {
                     <div className="wallet-balance-amount">
                       {balance}<span className="wallet-balance-unit"> credits</span>
                     </div>
-                    <div className={`wallet-balance-sub${
-                      !isCreditExpired && daysLeft > 0 && daysLeft <= 3
-                        ? " wallet-balance-sub--warning" : ""
-                    }`}>
-                      {getExpirySubText()}
+
+                    {/* ── NEW: credit breakdown — bonus vs subscription ──── */}
+                    <div className="wallet-credit-breakdown">
+                      {subscriptionCredits > 0 && (
+                        <div className="wallet-credit-row">
+                          <span className="wallet-credit-chip wallet-credit-chip--permanent">
+                            🎁 {subscriptionCredits} Subscription Credits · Never Expire
+                          </span>
+                        </div>
+                      )}
+                      {bonusCredits > 0 && !isCreditExpired && (
+                        <div className="wallet-credit-row">
+                          <span className={`wallet-credit-chip wallet-credit-chip--bonus${daysLeft <= 3 ? " warn" : ""}`}>
+                            ⭐ {bonusCredits} Welcome Bonus · Expires {moment(creditExpiresAt).format("MMM D, YYYY")}
+                          </span>
+                        </div>
+                      )}
+                      {isCreditExpired && bonusCredits === 0 && subscriptionCredits === 0 && (
+                        <div className="wallet-credit-row">
+                          <span className="wallet-credit-chip wallet-credit-chip--expired">
+                            Welcome bonus expired
+                          </span>
+                        </div>
+                      )}
                     </div>
+
+                    {/* ── Expiry warning ONLY when bonus is close to expiring ── */}
+                    {!isCreditExpired && daysLeft > 0 && daysLeft <= 4 && bonusCredits > 0 && (
+                      <div className="wallet-balance-sub wallet-balance-sub--warning">
+                        ⚠ Your {bonusCredits} welcome credits expire in {daysLeft} day{daysLeft !== 1 ? "s" : ""} — use them first!
+                      </div>
+                    )}
+
+                    {/* No warning shown when only subscription credits remain */}
+                    {(bonusCredits === 0 || isCreditExpired) && subscriptionCredits > 0 && (
+                      <div className="wallet-balance-sub">
+                        Subscription credits never expire
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -265,8 +316,9 @@ const Wallet = () => {
                     <path d="M7 6v4M7 4.5v.01" stroke="#5b3fa0" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
                   Credits are used to unlock paths, premium counselling sessions, and exclusive Naavi features.
-                  {creditExpiresAt && !isCreditExpired && (
-                    <> Welcome credits expire {moment(creditExpiresAt).fromNow()}.</>
+                  {" "}Subscription credits are permanent and never expire.
+                  {creditExpiresAt && !isCreditExpired && bonusCredits > 0 && (
+                    <> Welcome bonus credits expire {moment(creditExpiresAt).fromNow()}.</>
                   )}
                 </div>
 
@@ -281,21 +333,16 @@ const Wallet = () => {
 };
 
 // ─── WalletTxnRow ─────────────────────────────────────────────────────────────
-// bonusExpiresAt — passed down from parent; used as fallback when
-// txn.expiresAt is null (old bonus records created before schema change)
 const WalletTxnRow = ({ txn, bonusExpiresAt }) => {
   const isCredit  = txn.type === "credit";
   const isBonus   = txn.metadata?.type === "welcome_bonus";
   const isExpired = txn.isExpired;
 
-  // Resolve expiry for this row:
-  //   bonus row + new record  → txn.expiresAt
-  //   bonus row + old record  → bonusExpiresAt (computed by parent)
-  //   any debit row           → null (never show expiry on debits)
+  // Expiry only applies to welcome bonus rows, never to subscription credits
   const resolvedExpiry = (() => {
     if (!isBonus) return null;
-    if (txn.expiresAt)   return new Date(txn.expiresAt);
-    if (bonusExpiresAt)  return bonusExpiresAt;
+    if (txn.expiresAt)  return new Date(txn.expiresAt);
+    if (bonusExpiresAt) return bonusExpiresAt;
     return null;
   })();
 
@@ -304,7 +351,7 @@ const WalletTxnRow = ({ txn, bonusExpiresAt }) => {
     const now  = new Date();
     if (resolvedExpiry < now) return { text: "Expired", warn: true, gone: true };
     const days = Math.ceil((resolvedExpiry - now) / (1000 * 60 * 60 * 24));
-    if (days <= 1) return { text: "Expires today", warn: true,  gone: false };
+    if (days <= 1) return { text: "Expires today",       warn: true,  gone: false };
     if (days <= 3) return { text: `Expires in ${days}d`, warn: true,  gone: false };
     return           { text: `Expires ${moment(resolvedExpiry).format("MMM D")}`, warn: false, gone: false };
   })();
@@ -325,10 +372,15 @@ const WalletTxnRow = ({ txn, bonusExpiresAt }) => {
       <div className="wallet-tx-info">
         <div className="wallet-tx-name" style={{ opacity: isExpired ? 0.5 : 1 }}>
           {txn.metadata?.description || (isCredit ? "Credits added" : "Credits used")}
+          {/* Expiry pill only on bonus rows */}
           {expiryLabel && (
             <span className={`wallet-tx-expiry-pill${expiryLabel.warn ? " warn" : ""}${expiryLabel.gone ? " expired" : ""}`}>
               {expiryLabel.text}
             </span>
+          )}
+          {/* Permanent badge on non-bonus credit rows */}
+          {isCredit && !isBonus && (
+            <span className="wallet-tx-expiry-pill permanent">Never Expires</span>
           )}
         </div>
         <div className="wallet-tx-date">

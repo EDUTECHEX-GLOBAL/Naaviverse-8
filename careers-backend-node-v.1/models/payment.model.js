@@ -13,7 +13,17 @@ const PaymentSchema = new mongoose.Schema(
       enum: ["monthly", "annual", "lifetime"],
       required: true,
     },
+    tier: {
+      type: String,
+      enum: ["micro", "nano"],
+      default: null
+    },
 
+    planTier: {
+      type: String,
+      enum: ["gold", "silver", "platinum"],
+      default: null
+    },
     amount: { type: Number, required: true },
     currency: { type: String, default: "INR" },
 
