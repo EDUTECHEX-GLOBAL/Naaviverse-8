@@ -40,8 +40,8 @@ router.post("/create-order", async (req, res) => {
     const payment = await Payment.create({
       userEmail, productId, productName,
       billingMethod, profileId, amount, currency,
-      tier,      // ✅ required enum field
-      planTier,  // ✅ required enum field
+      tier,      
+      planTier,  
       status: "pending",
     });
     console.log("✅ Payment record created:", payment._id);

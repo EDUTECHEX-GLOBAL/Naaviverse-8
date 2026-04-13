@@ -162,7 +162,7 @@ const CreditUnlockOverlay = ({ type, balance, unlocking, onUnlock, onSeePlans, i
 // Replace your entire SubscriptionGate component with this in index.jsx
 
 const SubscriptionGate = ({ onBack, onSubscribe, subscribing, initialTier = null }) => {
-  const [selectedTier,    setSelectedTier]    = useState(initialTier || "gold");
+  const [selectedTier, setSelectedTier] = useState(initialTier || "gold");
   const [selectedBilling, setSelectedBilling] = useState("monthly");
 
   // ── Annual price = monthly price × 10 (2 months free) ──────────
@@ -221,15 +221,15 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, initialTier = null
             className={`sbt-btn ${selectedBilling === "annual" ? "sbt-btn--active" : ""}`}
             onClick={() => setSelectedBilling("annual")}
           >
-            Annual 
+            Annual
           </button>
         </div>
 
         {/* ── Plan cards ──────────────────────────────────────── */}
         <div className="sub-plans-grid">
           {["gold", "silver", "platinum"].map((p) => {
-            const pm     = PLAN_META[p];
-            const pc     = PLAN_COLORS[p];
+            const pm = PLAN_META[p];
+            const pc = PLAN_COLORS[p];
             const active = selectedTier === p;
 
             return (
@@ -291,7 +291,7 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, initialTier = null
                   className="spc-subscribe-btn"
                   style={{
                     background: active ? pc : "#edf0f4",
-                    color:      active ? "#fff" : "#64748b",
+                    color: active ? "#fff" : "#64748b",
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -519,7 +519,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     setUnlocking((prev) => ({ ...prev, [layer]: true }));
     try {
       const { data } = await axios.post(`${BASE_URL}/api/subscriptions/step-unlock/unlock`, {
-        email: userEmail, step_id: stepId, layer,
+        email: userEmail, step_id: stepId, layer, isSubscriber,
       });
       if (data?.status) {
         setCreditUnlocked((prev) => ({ ...prev, [layer]: true }));
@@ -803,9 +803,11 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                 <span className="vc-lbl lMicro">Micro View</span>
                 <span className={`vc-access-badge ${hasMicro ? "badge-sub" : "badge-locked"}`}>
                   {hasMicro
-                    ? (isSubscriber && subPlanTier
-                      ? `${PLAN_META[subPlanTier]?.emoji} ${PLAN_META[subPlanTier]?.label}`
-                      : "2 Credits ✓")
+                    ? (creditUnlocked.micro
+                      ? "2 Credits ✓"
+                      : (isSubscriber && subPlanTier
+                        ? `${PLAN_META[subPlanTier]?.emoji} ${PLAN_META[subPlanTier]?.label}`
+                        : "2 Credits ✓"))
                     : "🔒 Locked"}
                 </span>
               </div>
@@ -852,9 +854,11 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                 <span className="vc-lbl lNano">Nano View</span>
                 <span className={`vc-access-badge ${hasNano ? "badge-paid" : "badge-locked"}`}>
                   {hasNano
-                    ? (isSubscriber && subPlanTier
-                      ? `${PLAN_META[subPlanTier]?.emoji} ${PLAN_META[subPlanTier]?.label}`
-                      : "4 Credits ✓")
+                    ? (creditUnlocked.nano
+                      ? "10 Credits ✓"
+                      : (isSubscriber && subPlanTier
+                        ? `${PLAN_META[subPlanTier]?.emoji} ${PLAN_META[subPlanTier]?.label}`
+                        : "10 Credits ✓"))
                     : "🔒 Locked"}
                 </span>
               </div>

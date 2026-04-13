@@ -4,6 +4,7 @@ import axios from "axios";
 
 import Pathview from "../Pathview";
 import JourneyPage from "../Pathview/JourneyPage";
+import educationIcon from "../../static/images/mapspage/educationIcon.svg";
 
 import { useCoinContextData } from "../../context/CoinContext";
 import { GlobalContex } from "../../globalContext";
@@ -28,9 +29,9 @@ const PathComponent = () => {
   const [coordsOpen, setCoordsOpen] = useState(false);
 
   // Modal state
-  const [modalPath, setModalPath]   = useState(null);   // path object
-  const [modalStep, setModalStep]   = useState(null);   // "view" | "explore" | "confirm" | "success"
-  const [pathSteps, setPathSteps]   = useState([]);
+  const [modalPath, setModalPath] = useState(null);   // path object
+  const [modalStep, setModalStep] = useState(null);   // "view" | "explore" | "confirm" | "success"
+  const [pathSteps, setPathSteps] = useState([]);
   const [stepsLoading, setStepsLoading] = useState(false);
 
   const {
@@ -44,18 +45,18 @@ const PathComponent = () => {
   } = useCoinContextData();
 
   const {
-    gradeToggle,       setGradeToggle,
-    curriculumToggle,  setCurriculumToggle,
-    streamToggle,      setStreamToggle,
+    gradeToggle, setGradeToggle,
+    curriculumToggle, setCurriculumToggle,
+    streamToggle, setStreamToggle,
     performanceToggle, setPerformanceToggle,
-    financialToggle,   setFinancialToggle,
+    financialToggle, setFinancialToggle,
     personalityToggle, setPersonalityToggle,
-    refetchPaths,      setRefetchPaths,
+    refetchPaths, setRefetchPaths,
   } = useContext(GlobalContex);
 
-  const [loading,        setLoading]        = useState(false);
+  const [loading, setLoading] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
-  const [approvedPaths,  setApprovedPaths]  = useState([]);
+  const [approvedPaths, setApprovedPaths] = useState([]);
 
   const [userProfile, setUserProfile] = useState(() => {
     try {
@@ -92,9 +93,9 @@ const PathComponent = () => {
     if (exploreLoggedRef.current) return;
     exploreLoggedRef.current = true;
     logActivity({
-      type:  "explore",
+      type: "explore",
       title: "Browsing learning paths",
-      desc:  "User opened the Explore Paths page",
+      desc: "User opened the Explore Paths page",
     });
   }, []);
 
@@ -103,12 +104,12 @@ const PathComponent = () => {
       try {
         setLoading(true);
         const params = {};
-        if (gradeToggle       && userProfile?.grade)              params.grade       = userProfile.grade;
-        if (curriculumToggle  && userProfile?.curriculum)         params.curriculum  = userProfile.curriculum;
-        if (streamToggle      && userProfile?.stream)             params.stream      = userProfile.stream;
-        if (performanceToggle && userProfile?.performance)        params.performance = userProfile.performance;
-        if (financialToggle   && userProfile?.financialSituation) params.financial   = userProfile.financialSituation;
-        if (personalityToggle && userProfile?.personality)        params.personality = userProfile.personality;
+        if (gradeToggle && userProfile?.grade) params.grade = userProfile.grade;
+        if (curriculumToggle && userProfile?.curriculum) params.curriculum = userProfile.curriculum;
+        if (streamToggle && userProfile?.stream) params.stream = userProfile.stream;
+        if (performanceToggle && userProfile?.performance) params.performance = userProfile.performance;
+        if (financialToggle && userProfile?.financialSituation) params.financial = userProfile.financialSituation;
+        if (personalityToggle && userProfile?.personality) params.personality = userProfile.personality;
 
         const res = await axios.get(`${BASE_URL}/api/paths/active`, { params });
         setApprovedPaths(res.data.data || []);
@@ -166,7 +167,7 @@ const PathComponent = () => {
 
   // ── Confirm selection ─────────────────────────────────────────
   const handleConfirmSelect = async () => {
-    const email  = user?.email;
+    const email = user?.email;
     const pathId = modalPath?._id;
     if (!email || !pathId) return;
 
@@ -180,12 +181,12 @@ const PathComponent = () => {
     } finally {
       setConfirmLoading(false);
       logActivity({
-        type:     "path",
-        title:    `Selected path: ${modalPath?.nameOfPath}`,
-        desc:     `User enrolled in "${modalPath?.nameOfPath}"`,
-        pathId:   pathId,
+        type: "path",
+        title: `Selected path: ${modalPath?.nameOfPath}`,
+        desc: `User enrolled in "${modalPath?.nameOfPath}"`,
+        pathId: pathId,
         pathName: modalPath?.nameOfPath || "",
-        status:   "completed",
+        status: "completed",
       });
       setModalStep("success");
       // Auto-navigate after 2.2 s
@@ -201,20 +202,20 @@ const PathComponent = () => {
     try {
       const l = JSON.parse(raw);
       const parts = [];
-      if (parseInt(l.years)  > 0) parts.push(`${l.years}y`);
+      if (parseInt(l.years) > 0) parts.push(`${l.years}y`);
       if (parseInt(l.months) > 0) parts.push(`${l.months}m`);
-      if (parseInt(l.days)   > 0) parts.push(`${l.days}d`);
+      if (parseInt(l.days) > 0) parts.push(`${l.days}d`);
       return parts.length > 0 ? parts.join(" ") : null;
     } catch { return null; }
   };
 
   const coordinates = [
-    { label: "Grade",       value: userProfile?.grade,              toggle: gradeToggle,       setToggle: setGradeToggle },
-    { label: "Curriculum",  value: userProfile?.curriculum,         toggle: curriculumToggle,  setToggle: setCurriculumToggle },
-    { label: "Stream",      value: userProfile?.stream,             toggle: streamToggle,      setToggle: setStreamToggle },
-    { label: "Performance", value: userProfile?.performance,        toggle: performanceToggle, setToggle: setPerformanceToggle },
-    { label: "Financial",   value: userProfile?.financialSituation, toggle: financialToggle,   setToggle: setFinancialToggle },
-    { label: "Personality", value: userProfile?.personality,        toggle: personalityToggle, setToggle: setPersonalityToggle },
+    { label: "Grade", value: userProfile?.grade, toggle: gradeToggle, setToggle: setGradeToggle },
+    { label: "Curriculum", value: userProfile?.curriculum, toggle: curriculumToggle, setToggle: setCurriculumToggle },
+    { label: "Stream", value: userProfile?.stream, toggle: streamToggle, setToggle: setStreamToggle },
+    { label: "Performance", value: userProfile?.performance, toggle: performanceToggle, setToggle: setPerformanceToggle },
+    { label: "Financial", value: userProfile?.financialSituation, toggle: financialToggle, setToggle: setFinancialToggle },
+    { label: "Personality", value: userProfile?.personality, toggle: personalityToggle, setToggle: setPersonalityToggle },
   ];
 
   const isModalOpen = !!modalStep;
@@ -385,14 +386,27 @@ const PathComponent = () => {
       )}
       <div className={`coords-sidebar ${coordsOpen ? "coords-sidebar--open" : ""}`}>
         <div className="coords-sidebar__header">
-          <div>
-            <p className="coords-sidebar__label">Education</p>
-            <h3 className="coords-sidebar__title">My Coordinates</h3>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            {/* ── Education icon ── */}
+            <div className="coords-sidebar__icon">
+              <img
+                src={educationIcon}
+                alt="Education"
+                width="32"
+                height="32"
+              />
+            </div>
+            <div>
+              <p className="coords-sidebar__label">Education</p>
+              <h3 className="coords-sidebar__title">My Coordinates</h3>
+            </div>
           </div>
           <button className="coords-sidebar__close" onClick={() => setCoordsOpen(false)}>✕</button>
         </div>
 
-        <p className="coords-sidebar__hint">Toggle filters to personalise your path recommendations.</p>
+        <span className="coords-sidebar__hint" style={{ display: 'block' }}>
+          Toggle filters to personalise your path recommendations.
+        </span>
 
         <div className="coords-list">
           {coordinates.map(({ label, value, toggle, setToggle }) => (

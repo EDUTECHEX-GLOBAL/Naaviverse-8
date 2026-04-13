@@ -2,7 +2,8 @@ const Subscription = require("../models/subscription.model");
 const VaultTransaction = require("../models/VaultTransaction");
 const Payment = require("../models/payment.model");
 
-const LAYER_COST = { micro: 2, nano: 4 };
+const LAYER_COST_FREEMIUM   = { micro: 2, nano: 4  };
+const LAYER_COST_SUBSCRIBER = { micro: 5, nano: 10 };
 const PRODUCT_ID = "naavi-platform";
 
 const computeEndDate = (billingMethod) => {
@@ -363,7 +364,7 @@ const checkStepUnlock = async (req, res) => {
 ================================================================= */
 const unlockStep = async (req, res) => {
   try {
-    const { email, step_id, layer } = req.body;
+    const { email, step_id, layer, isSubscriber } = req.body;
 
     if (!email || !step_id || !layer) {
       return res.status(400).json({ status: false, message: "email, step_id and layer are required" });
@@ -372,7 +373,10 @@ const unlockStep = async (req, res) => {
       return res.status(400).json({ status: false, message: "layer must be 'micro' or 'nano'" });
     }
 
-    const cost = LAYER_COST[layer];
+    // ── Pick correct cost based on subscriber status ──────────
+    const cost = isSubscriber
+      ? LAYER_COST_SUBSCRIBER[layer]
+      : LAYER_COST_FREEMIUM[layer];
 
     let sub = await Subscription.findOne({ userEmail: email, productId: PRODUCT_ID });
 
@@ -418,6 +422,7 @@ const unlockStep = async (req, res) => {
         source: "step_unlock",
         step_id,
         layer,
+        isSubscriber: !!isSubscriber,
       },
     });
 

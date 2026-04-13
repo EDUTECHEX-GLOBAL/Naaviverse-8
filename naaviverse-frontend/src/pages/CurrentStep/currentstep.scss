@@ -126,11 +126,6 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     color: $gray600;
     line-height: 1.5;
     margin: 0;
-    // Clamp to 2 lines max
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
   }
 }
 
@@ -412,11 +407,6 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   color: $navy;
   margin-bottom: 2px;
   line-height: 1.3;
-  // Clamp to 2 lines
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .vc-title {
@@ -432,11 +422,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   font-size: 12px;
   color: $gray600;
   line-height: 1.6;
-  overflow: hidden;
-  // Clamp description to 3 lines max
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+  overflow-y: auto;
+  max-height: 180px;
+  white-space: pre-wrap;
 }
 
 .vc-empty {
@@ -655,10 +643,10 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
 
 .sub-gate__title {
   font-family: 'Playfair Display', serif;
-  font-size: 24px;         // ← slightly smaller
+  font-size: 24px; // ← slightly smaller
   font-weight: 700;
   color: $navy;
-  margin: 0 0 20px;        // ← was 0 0 10px, now more breathing room below
+  margin: 0 0 20px; // ← was 0 0 10px, now more breathing room below
   line-height: 1.2;
 }
 
@@ -2228,8 +2216,14 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   padding: 0;
   margin-bottom: 16px;
   transition: color 0.15s;
-  &:hover { color: #0f1f3d; }
-  &:disabled { opacity: 0.5; }
+
+  &:hover {
+    color: #0f1f3d;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
 }
 
 .sub-gate__title {
@@ -2348,8 +2342,15 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     margin-bottom: 12px;
     margin-top: 10px;
 
-    .spc-emoji { font-size: 20px; }
-    .spc-label { font-size: 17px; font-weight: 700; color: #0f1f3d; }
+    .spc-emoji {
+      font-size: 20px;
+    }
+
+    .spc-label {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0f1f3d;
+    }
   }
 
   // Big price
@@ -2395,8 +2396,15 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
       filter: brightness(1.08);
       transform: translateY(-1px);
     }
-    &:active { transform: translateY(0); }
-    &:disabled { opacity: 0.65; cursor: not-allowed; }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
   }
 
   // Divider
@@ -2421,13 +2429,19 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
       border-bottom: 1px solid #f8fafc;
       text-align: center;
 
-      &:last-child { border-bottom: none; }
+      &:last-child {
+        border-bottom: none;
+      }
     }
   }
 }
 
 // ── Bottom hint ────────────────────────────────────────────────────
-.sub-gate__cta { display: none; } // hidden — each card has its own button
+.sub-gate__cta {
+  display: none;
+}
+
+// hidden — each card has its own button
 
 .sub-gate__nano-hint {
   font-size: 12px;
