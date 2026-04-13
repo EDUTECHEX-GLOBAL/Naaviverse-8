@@ -13,21 +13,18 @@ const TransactionPage = ({
   setSearch,
 }) => {
 
-  const [isTxnLoading, setIsTxnLoading] = useState(false);
-  const [txnData, setTxnData] = useState([]);
-  const [activeTab, setActiveTab] = useState('All');
+  const [isTxnLoading, setIsTxnLoading]   = useState(false);
+  const [txnData, setTxnData]             = useState([]);
+  const [activeTab, setActiveTab]         = useState('All');
+  const [downloadingId, setDownloadingId] = useState(null); // ← tracks which row is downloading
 
   const dateFormat = (dateString) => {
     const date = new Date(dateString);
     const datePart = new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
+      month: 'short', day: 'numeric', year: 'numeric',
     }).format(date);
     const timePart = new Intl.DateTimeFormat('en-US', {
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true,
+      hour: 'numeric', minute: 'numeric', hour12: true,
     }).format(date);
     return { datePart, timePart };
   };
@@ -37,19 +34,36 @@ const TransactionPage = ({
     const userDetails = JSON.parse(localStorage.getItem("user"));
     const email = userDetails?.user?.email || userDetails?.email;
 
-    axios.get(`${BASE_URL}/api/payment/transactions`, {
-      params: { email }
-    })
-      .then(({ data }) => {
-        if (data?.success) {
-          setTxnData(data.data);
-        }
-      })
-      .catch((err) => {
-        console.error("❌ Transaction fetch error:", err);
-      })
+    axios.get(`${BASE_URL}/api/payment/transactions`, { params: { email } })
+      .then(({ data }) => { if (data?.success) setTxnData(data.data); })
+      .catch(err => console.error("❌ Transaction fetch error:", err))
       .finally(() => setIsTxnLoading(false));
   }, []);
+
+  // ── Download invoice PDF ──────────────────────────────────────
+  const handleDownloadInvoice = async (razorpayPaymentId) => {
+    if (!razorpayPaymentId) return;
+    setDownloadingId(razorpayPaymentId);
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/api/payment/invoice/${razorpayPaymentId}`,
+        { responseType: 'blob' }
+      );
+      const url      = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link     = document.createElement('a');
+      link.href      = url;
+      link.setAttribute('download', `Naavi_Invoice_${razorpayPaymentId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("❌ Invoice download error:", err);
+      alert("Failed to download invoice. Please try again.");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   const tabs = ['All', 'Paid', 'Pending', 'Failed'];
 
@@ -61,27 +75,23 @@ const TransactionPage = ({
     .filter(t => t.status?.toLowerCase() === 'paid')
     .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
-  const activePlans = txnData.filter(t => t.status?.toLowerCase() === 'paid').length;
-
-  const lastPayment = txnData.length > 0
-    ? dateFormat(txnData[0].createdAt).datePart
-    : '—';
+  const activePlans  = txnData.filter(t => t.status?.toLowerCase() === 'paid').length;
+  const lastPayment  = txnData.length > 0 ? dateFormat(txnData[0].createdAt).datePart : '—';
 
   const getStatusClass = (status) => {
     switch (status?.toLowerCase()) {
-      case 'paid': return 'status-paid';
+      case 'paid':    return 'status-paid';
       case 'pending': return 'status-pending';
-      case 'failed': return 'status-failed';
-      default: return 'status-default';
+      case 'failed':  return 'status-failed';
+      default:        return 'status-default';
     }
   };
 
-  const getBillingClass = (billing) => {
-    return billing?.toLowerCase() === 'monthly' ? 'billing-pill monthly' : 'billing-pill';
-  };
+  const getBillingClass = (billing) =>
+    billing?.toLowerCase() === 'monthly' ? 'billing-pill monthly' : 'billing-pill';
 
   return (
-    <div style={{ height: '100%', background: '#f0f3fa' }}> 
+    <div style={{ height: '100%', background: '#f0f3fa' }}>
       <MenuNav
         showDrop={showDrop}
         setShowDrop={setShowDrop}
@@ -92,7 +102,7 @@ const TransactionPage = ({
 
       <div className="txn-page" onClick={() => setShowDrop(false)}>
 
-        {/* SUMMARY CARDS */}
+        {/* ── SUMMARY CARDS ───────────────────────────────────── */}
         <div className="txn-summary-strip">
           <div className="summary-card blue">
             <div className="s-label">Total Spent</div>
@@ -111,7 +121,7 @@ const TransactionPage = ({
           </div>
         </div>
 
-        {/* TABS */}
+        {/* ── TABS ────────────────────────────────────────────── */}
         <div className="txn-tabs">
           {tabs.map(tab => {
             const count = tab === 'All'
@@ -129,10 +139,10 @@ const TransactionPage = ({
           })}
         </div>
 
-        {/* TABLE */}
+        {/* ── TABLE ───────────────────────────────────────────── */}
         <div className="txn-table-wrap">
 
-          {/* HEADER */}
+          {/* Header — 7 columns now (added Invoice) */}
           <div className="txn-header-row">
             <span>Date</span>
             <span>Partner</span>
@@ -140,24 +150,24 @@ const TransactionPage = ({
             <span>Amount</span>
             <span>Billing</span>
             <span>Status</span>
+            <span>Invoice</span>
           </div>
 
-          {/* ROWS */}
           <div className="txn-body">
             {isTxnLoading ? (
               [1, 2, 3, 4, 5].map((_, i) => (
                 <div className="txn-skeleton-row" key={i}>
-                  <Skeleton height={20} borderRadius={8} />
-                  <Skeleton height={20} borderRadius={8} />
-                  <Skeleton height={20} borderRadius={8} />
-                  <Skeleton height={20} borderRadius={8} />
-                  <Skeleton height={20} borderRadius={8} />
-                  <Skeleton height={20} borderRadius={8} />
+                  {[...Array(7)].map((__, j) => (
+                    <Skeleton key={j} height={20} borderRadius={8} />
+                  ))}
                 </div>
               ))
             ) : filteredData.length > 0 ? (
               filteredData.map((each, i) => {
                 const { datePart, timePart } = dateFormat(each.createdAt);
+                const isPaid       = each.status?.toLowerCase() === 'paid';
+                const isDownloading = downloadingId === each.razorpayPaymentId;
+
                 return (
                   <div className="txn-row" key={i}>
 
@@ -194,6 +204,36 @@ const TransactionPage = ({
                       </span>
                     </div>
 
+                    {/* ── Download button ── */}
+                    <div>
+                      {isPaid ? (
+                        <button
+                          className={`invoice-btn ${isDownloading ? 'invoice-btn--loading' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownloadInvoice(each.razorpayPaymentId);
+                          }}
+                          disabled={isDownloading}
+                          title="Download PDF invoice"
+                        >
+                          {isDownloading ? (
+                            <span className="invoice-btn__spinner" />
+                          ) : (
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                              stroke="currentColor" strokeWidth="2.2"
+                              strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                              <polyline points="7 10 12 15 17 10"/>
+                              <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                          )}
+                          <span>{isDownloading ? 'Preparing…' : 'PDF'}</span>
+                        </button>
+                      ) : (
+                        <span className="invoice-na">—</span>
+                      )}
+                    </div>
+
                   </div>
                 );
               })
@@ -205,10 +245,9 @@ const TransactionPage = ({
               </div>
             )}
           </div>
-
         </div>
       </div>
-   </div> 
+    </div>
   );
 };
 

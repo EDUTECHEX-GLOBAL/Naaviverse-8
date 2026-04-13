@@ -5,6 +5,7 @@ const Razorpay = require("razorpay");
 
 const Payment = require("../models/payment.model");
 const Subscription = require("../models/subscription.model");
+const { sendInvoiceEmail } = require("../utils/sendInvoiceEmail"); // ← NEW
 
 console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 console.log("🔑 KEY_ID :", process.env.RAZORPAY_KEY_ID);
@@ -30,7 +31,6 @@ router.post("/create-order", async (req, res) => {
 
     console.log("📦 productName received:", productName);
 
-    // ✅ Derive tier fields to satisfy Payment schema enum validation
     const name = (productName || "").toLowerCase();
     const planTier = name.includes("platinum") ? "platinum"
       : name.includes("silver") ? "silver"
@@ -40,8 +40,8 @@ router.post("/create-order", async (req, res) => {
     const payment = await Payment.create({
       userEmail, productId, productName,
       billingMethod, profileId, amount, currency,
-      tier,      
-      planTier,  
+      tier,
+      planTier,
       status: "pending",
     });
     console.log("✅ Payment record created:", payment._id);
@@ -60,7 +60,6 @@ router.post("/create-order", async (req, res) => {
 
   } catch (err) {
     console.error("❌ Create Order Error:", err.message);
-    console.error("❌ Full error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -88,7 +87,6 @@ router.post("/verify", async (req, res) => {
     }
 
     // ── 2. Mark payment as paid ───────────────────────────────────
-    // ── 2. Mark payment as paid ───────────────────────────────────────
     const payment = await Payment.findOneAndUpdate(
       { razorpayOrderId: razorpay_order_id },
       {
@@ -103,7 +101,7 @@ router.post("/verify", async (req, res) => {
       return res.status(404).json({ success: false, message: "Payment record not found." });
     }
 
-    // ── 3. Calculate end date ─────────────────────────────────────────
+    // ── 3. Calculate end date ─────────────────────────────────────
     let endDate = null;
     if (payment.billingMethod === "monthly") {
       endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
@@ -111,19 +109,16 @@ router.post("/verify", async (req, res) => {
       endDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
     }
 
-    // ── 4. Derive BOTH tier dimensions ───────────────────────────────
-    // Use productName if available, fall back to safe defaults
+    // ── 4. Derive tier fields ─────────────────────────────────────
     const name = (payment.productName || "").toLowerCase();
-
     const planTier = name.includes("platinum") ? "platinum"
       : name.includes("silver") ? "silver"
-        : "gold";   // ← safe default, never null
+        : "gold";
+    const tier = name.includes("nano") ? "nano" : "micro";
 
-    const tier = name.includes("nano") ? "nano" : "micro";  // ← safe default, never null
+    console.log(`✅ Derived: tier=${tier}, planTier=${planTier}`);
 
-    console.log(`✅ Derived: tier=${tier}, planTier=${planTier}, productName=${payment.productName}`);
-
-    // ── 5. Upsert subscription ────────────────────────────────────────
+    // ── 5. Upsert subscription ────────────────────────────────────
     await Subscription.findOneAndUpdate(
       { userEmail: payment.userEmail, productId: payment.productId },
       {
@@ -133,8 +128,8 @@ router.post("/verify", async (req, res) => {
           productName: payment.productName || "Naavi Platform",
           billingMethod: payment.billingMethod || "monthly",
           profileId: payment.profileId || null,
-          tier,        // always "micro" or "nano" — never null
-          planTier,    // always "gold"/"silver"/"platinum" — never null
+          tier,
+          planTier,
           startDate: new Date(),
           endDate,
           status: "active",
@@ -143,7 +138,19 @@ router.post("/verify", async (req, res) => {
       { upsert: true, new: true }
     );
 
-    console.log(`✅ Subscription upserted: tier=${tier}, planTier=${planTier}`);
+    console.log(`✅ Subscription upserted`);
+
+    // ── 6. Send invoice email (non-blocking) ──────────────────────
+    sendInvoiceEmail({
+      userEmail:       payment.userEmail,
+      productName:     payment.productName,
+      planTier,
+      billingMethod:   payment.billingMethod,
+      amount:          payment.amount,
+      razorpayPaymentId: razorpay_payment_id,
+      razorpayOrderId:   razorpay_order_id,
+      createdAt:       payment.createdAt || new Date(),
+    }).catch(err => console.error("❌ Invoice email failed (non-blocking):", err.message));
 
     return res.json({
       success: true,
@@ -167,6 +174,37 @@ router.get("/transactions", async (req, res) => {
   } catch (err) {
     console.error("❌ Fetch transactions error:", err);
     res.status(500).json({ success: false });
+  }
+});
+
+// ═════════════════════════════════════════
+//   DOWNLOAD INVOICE PDF  (per transaction)
+// ═════════════════════════════════════════
+router.get("/invoice/:paymentId", async (req, res) => {
+  try {
+    const payment = await Payment.findOne({
+      razorpayPaymentId: req.params.paymentId,
+    });
+
+    if (!payment) {
+      return res.status(404).json({ success: false, message: "Transaction not found" });
+    }
+
+    const { generateInvoicePDF } = require("../utils/generateInvoicePDF");
+    const pdfBuffer = await generateInvoicePDF(payment);
+
+    const invoiceNo = "INV-" + payment.createdAt.toISOString().slice(0, 10).replace(/-/g, "") + "-" + payment.razorpayPaymentId.slice(-4).toUpperCase();
+
+    res.set({
+      "Content-Type":        "application/pdf",
+      "Content-Disposition": `attachment; filename="Naavi_Invoice_${invoiceNo}.pdf"`,
+      "Content-Length":      pdfBuffer.length,
+    });
+    return res.send(pdfBuffer);
+
+  } catch (err) {
+    console.error("❌ Invoice download error:", err);
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 
