@@ -1,5 +1,18 @@
 const nodemailer = require("nodemailer");
 const { generateInvoicePDF } = require("./generateInvoicePDF");
+const fs = require("fs");
+const path = require("path");
+
+// ── Read logo as base64 ───────────────────────────────────────
+const LOGO_PATH = path.join(__dirname, "naavi_final_logo2.png");
+let LOGO_BASE64 = "";
+try {
+  const logoBuffer = fs.readFileSync(LOGO_PATH);
+  LOGO_BASE64 = `data:image/png;base64,${logoBuffer.toString("base64")}`;
+  console.log("✅ Naavi logo loaded successfully");
+} catch (err) {
+  console.warn("⚠ Logo not found:", err.message);
+}
 
 // ── Transporter ───────────────────────────────────────────────
 const transporter = nodemailer.createTransport({
@@ -37,8 +50,8 @@ function creditsForPlan(planTier) {
 
 function planColor(planTier) {
   const map = {
-    silver:   "#534AB7",
-    gold:     "#B7860F",
+    silver: "#534AB7",
+    gold: "#B7860F",
     platinum: "#0F6E56",
   };
   return map[(planTier || "").toLowerCase()] || "#B7860F";
@@ -46,10 +59,10 @@ function planColor(planTier) {
 
 // ── HTML Template ─────────────────────────────────────────────
 function buildHtml(payment, invNo) {
-  const credits    = creditsForPlan(payment.planTier);
+  const credits = creditsForPlan(payment.planTier);
   const badgeColor = planColor(payment.planTier);
-  const baseAmt    = Math.round(payment.amount / 1.18);
-  const gstAmt     = payment.amount - baseAmt;
+  const baseAmt = Math.round(payment.amount / 1.18);
+  const gstAmt = payment.amount - baseAmt;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -69,10 +82,15 @@ function buildHtml(payment, invNo) {
     <td style="background:#1A1A2E;padding:28px 36px 20px;">
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
-          <td>
-            <div style="font-size:24px;font-weight:800;color:#fff;">naavi</div>
-            <div style="font-size:10px;color:#9CA3AF;margin-top:2px;">AI Powered Path Engine</div>
-          </td>
+<td>
+  ${LOGO_BASE64
+      ? `<img src="${LOGO_BASE64}" alt="Naavi"
+            height="44"
+            style="display:block;max-width:180px;object-fit:contain;"/>`
+      : `<div style="font-size:24px;font-weight:800;color:#fff;">naavi</div>
+       <div style="font-size:10px;color:#9CA3AF;margin-top:2px;">AI Powered Path Engine</div>`
+    }
+</td>
           <td align="right" style="vertical-align:top;">
             <div style="font-size:11px;font-weight:700;color:#9CA3AF;letter-spacing:0.08em;">INVOICE</div>
             <div style="font-size:13px;font-weight:700;color:#fff;margin-top:2px;">${invNo}</div>
@@ -236,19 +254,19 @@ function buildHtml(payment, invNo) {
 
 // ── Main export ───────────────────────────────────────────────
 async function sendInvoiceEmail(payment) {
-  const invNo     = invoiceNo(payment);
+  const invNo = invoiceNo(payment);
   const pdfBuffer = await generateInvoicePDF(payment);
-  const html      = buildHtml(payment, invNo);
+  const html = buildHtml(payment, invNo);
 
   const mailOptions = {
-    from:    `"Naavi" <${process.env.EMAIL_SERVICE_USER}>`,
-    to:      payment.userEmail,
+    from: `"Naavi" <${process.env.EMAIL_SERVICE_USER}>`,
+    to: payment.userEmail,
     subject: `Your Naavi Invoice ${invNo} — Payment Confirmed`,
     html,
     attachments: [
       {
-        filename:    `Naavi_Invoice_${invNo}.pdf`,
-        content:     pdfBuffer,
+        filename: `Naavi_Invoice_${invNo}.pdf`,
+        content: pdfBuffer,
         contentType: "application/pdf",
       },
     ],

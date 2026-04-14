@@ -7,21 +7,26 @@
  * Returns a Buffer — usable as email attachment or HTTP response.
  */
 
+const path = require("path");
+const fs = require("fs");
+
+const LOGO_PATH = path.join(__dirname, "naavi_final_logo2.png");
+
 const PDFDocument = require("pdfkit");
 
 // ── Brand colours ─────────────────────────────────────────────
 const C = {
-  dark:        "#1A1A2E",
-  tealDark:    "#0F6E56",
-  tealMid:     "#1D9E75",
-  tealLight:   "#E1F5EE",
-  purple:      "#534AB7",
+  dark: "#1A1A2E",
+  tealDark: "#0F6E56",
+  tealMid: "#1D9E75",
+  tealLight: "#E1F5EE",
+  purple: "#534AB7",
   purpleLight: "#EEEDFE",
-  gray:        "#6B7280",
-  grayLight:   "#F3F4F6",
-  border:      "#E5E7EB",
-  white:       "#FFFFFF",
-  amber:       "#E07A10",
+  gray: "#6B7280",
+  grayLight: "#F3F4F6",
+  border: "#E5E7EB",
+  white: "#FFFFFF",
+  amber: "#E07A10",
 };
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -51,8 +56,8 @@ function generateInvoicePDF(payment) {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: "A4", margin: 0 });
     const chunks = [];
-    doc.on("data",  c => chunks.push(c));
-    doc.on("end",   () => resolve(Buffer.concat(chunks)));
+    doc.on("data", c => chunks.push(c));
+    doc.on("end", () => resolve(Buffer.concat(chunks)));
     doc.on("error", reject);
 
     const W = doc.page.width;   // 595
@@ -67,11 +72,15 @@ function generateInvoicePDF(payment) {
     // Teal accent strip
     doc.rect(0, 128, W, 3).fill(C.tealMid);
 
-    // Brand name
-    doc.fillColor(C.white).font("Helvetica-Bold").fontSize(22)
-      .text("naavi", M, 30);
-    doc.fillColor("#9CA3AF").font("Helvetica").fontSize(9)
-      .text("AI Powered Path Engine", M, 57);
+    // ── Naavi Logo ────────────────────────────────────────────────
+    try {
+      doc.image(LOGO_PATH, M, 18, { height: 50, fit: [170, 50] });
+    } catch {
+      doc.fillColor(C.white).font("Helvetica-Bold").fontSize(22)
+        .text("naavi", M, 30);
+      doc.fillColor("#9CA3AF").font("Helvetica").fontSize(9)
+        .text("AI Powered Path Engine", M, 57);
+    }
 
     // INVOICE label (right)
     doc.fillColor(C.white).font("Helvetica-Bold").fontSize(28)
@@ -80,15 +89,15 @@ function generateInvoicePDF(payment) {
     // ── Meta strip ────────────────────────────────────
     doc.rect(0, 131, W, 52).fill(C.grayLight);
 
-    const invNo   = invoiceNo(payment);
-    const metaY   = 142;
-    const colW    = CW / 4;
+    const invNo = invoiceNo(payment);
+    const metaY = 142;
+    const colW = CW / 4;
 
     const metaFields = [
-      ["Invoice No.",   invNo],
-      ["Date",          formatDate(payment.createdAt)],
-      ["Payment ID",    payment.razorpayPaymentId || "—"],
-      ["Status",        "PAID"],
+      ["Invoice No.", invNo],
+      ["Date", formatDate(payment.createdAt)],
+      ["Payment ID", payment.razorpayPaymentId || "—"],
+      ["Status", "PAID"],
     ];
 
     metaFields.forEach(([label, val], i) => {
@@ -168,11 +177,11 @@ function generateInvoicePDF(payment) {
     doc.rect(M, y, CW, 26).fill(C.tealDark);
     doc.fillColor(C.white).font("Helvetica-Bold").fontSize(8.5);
     const cols = [
-      { label: "Description",   x: M + 8,         w: CW * 0.40 },
-      { label: "HSN",           x: M + CW * 0.42,  w: CW * 0.13 },
-      { label: "Qty",           x: M + CW * 0.56,  w: CW * 0.08 },
-      { label: "Unit Price",    x: M + CW * 0.65,  w: CW * 0.17 },
-      { label: "Amount",        x: M + CW * 0.83,  w: CW * 0.17 },
+      { label: "Description", x: M + 8, w: CW * 0.40 },
+      { label: "HSN", x: M + CW * 0.42, w: CW * 0.13 },
+      { label: "Qty", x: M + CW * 0.56, w: CW * 0.08 },
+      { label: "Unit Price", x: M + CW * 0.65, w: CW * 0.17 },
+      { label: "Amount", x: M + CW * 0.83, w: CW * 0.17 },
     ];
     cols.forEach(col => {
       doc.text(col.label, col.x, y + 9, { width: col.w });
@@ -180,12 +189,12 @@ function generateInvoicePDF(payment) {
 
     // Row 1 — plan
     y += 26;
-    const baseAmt  = Math.round(payment.amount / 1.18);
-    const gstAmt   = payment.amount - baseAmt;
+    const baseAmt = Math.round(payment.amount / 1.18);
+    const gstAmt = payment.amount - baseAmt;
 
     const rows = [
       ["Silver Plan (Monthly)", "998431", "1", formatAmount(baseAmt), formatAmount(baseAmt)],
-      ["GST @ 18%",            "",        "",  "",                    formatAmount(gstAmt)],
+      ["GST @ 18%", "", "", "", formatAmount(gstAmt)],
     ];
 
     rows.forEach((row, ri) => {
@@ -211,8 +220,8 @@ function generateInvoicePDF(payment) {
       .fillAndStroke(C.grayLight, C.border);
 
     const tRows = [
-      ["Subtotal",   formatAmount(baseAmt), false],
-      ["GST (18%)",  formatAmount(gstAmt),  false],
+      ["Subtotal", formatAmount(baseAmt), false],
+      ["GST (18%)", formatAmount(gstAmt), false],
       ["Total Paid", formatAmount(payment.amount), true],
     ];
 
