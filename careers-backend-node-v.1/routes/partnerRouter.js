@@ -1,4 +1,11 @@
+// routes/partnerRouter.js
+// ─────────────────────────────────────────────────────────────────────────────
+// Activity routes are NO LONGER here.
+// They live in routes/activityRouter.js mounted at /api/activity
+// ─────────────────────────────────────────────────────────────────────────────
+
 const router = require("express").Router();
+
 const {
   login,
   signUp,
@@ -7,28 +14,34 @@ const {
   sendResetPasswordEmail,
   resetPassword,
   logout,
-  verifyOTP,
   updatePassword,
   getAllPartners,
   updatePartnerProfile,
   getPartnerByEmail,
   getPartnerProfilePic,
   verifyOtp,
-
 } = require("../controllers/partners.controller");
 
+// ── Authentication ────────────────────────────────────────────────────────
+router.post("/signup",              signUp);
+router.post("/login",               login);
+router.get("/logout",               logout);
 
-
-router.post("/signup", signUp);
-router.get("/logout", logout);
-router.post("/verifyotp", verifyOtp);
-router.post("/forgotPassword", forgotPassword);
-router.post("/updatepassword", updatePassword);
+// ── OTP & Verification ────────────────────────────────────────────────────
+router.post("/verifyotp",           verifyOtp);
+router.post("/forgotPassword",      forgotPassword);
+router.post("/updatepassword",      updatePassword);
 router.post("/resetPassword/:token", resetPassword);
-router.post("/confirmation", sendConfirmationEmail);
-router.post("/login", login);
-router.get("/getpartners", getAllPartners);
-router.put('/add', updatePartnerProfile);
-router.get('/get', getPartnerByEmail);
-router.get('/get-profile-pic', getPartnerProfilePic);
+router.post("/confirmation",        sendConfirmationEmail);
+
+// ── Partner Management ────────────────────────────────────────────────────
+router.get("/getpartners",          getAllPartners);
+router.put("/add",                  updatePartnerProfile);
+router.get("/get",                  getPartnerByEmail);
+router.get("/get-profile-pic",      getPartnerProfilePic);
+
+// ── NOTE ──────────────────────────────────────────────────────────────────
+// Activity routes previously here have been removed.
+// Use /api/activity/partners and /api/activity/partners/log instead.
+
 module.exports = router;
