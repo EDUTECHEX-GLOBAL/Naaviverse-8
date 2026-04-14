@@ -3,9 +3,29 @@ const stepModel = require('../models/steps.model');
 const userModel = require('../models/users.model');
 const mongoose = require('mongoose');
 
-// ── Activity logger ───────────────────────────────────────────────────────────
-const { logActivityInternal } = require('./Activity.controller');
+// ✅ FIXED: import logEvent (for partners) instead of logActivityInternal (users only)
+const { logEvent } = require('./Activity.controller');
 
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPER — fetch partner display info from email
+// ─────────────────────────────────────────────────────────────────────────────
+async function getPartnerInfo(email) {
+  try {
+    if (!email) return { displayName: "Partner", partnerType: "" };
+    const Partner = require('../models/partner.model');
+    const partner = await Partner.findOne({ email }).select('businessName username partnerType').lean();
+    return {
+      displayName: partner?.businessName || partner?.username || email,
+      partnerType: partner?.partnerType || "",
+    };
+  } catch (_) {
+    return { displayName: email, partnerType: "" };
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ADD PATH — logs "publish" event (path created as draft)
+// ─────────────────────────────────────────────────────────────────────────────
 const addPath = async (req, res) => {
   try {
     const body = req.body;
@@ -67,6 +87,21 @@ const addPath = async (req, res) => {
     };
 
     const saved = await pathModel.create(newPath);
+
+    // ✅ Log path created (draft) activity
+    if (body.email) {
+      const { displayName, partnerType } = await getPartnerInfo(body.email);
+      logEvent({
+        role:        "partner",
+        email:       body.email,
+        displayName,
+        partnerType,
+        eventType:   "publish",
+        title:       `Path Created: ${body.nameOfPath || "New Path"}`,
+        desc:        `Draft path "${body.nameOfPath || "New Path"}" created`,
+      }).catch(err => console.error("logEvent addPath error:", err));
+    }
+
     return res.status(200).json({ status: true, message: "Path created successfully", data: saved });
   } catch (error) {
     console.error("Add Path Error:", error);
@@ -74,6 +109,9 @@ const addPath = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// UPDATE PATH — logs "publish" event
+// ─────────────────────────────────────────────────────────────────────────────
 const updatePath = async (req, res) => {
   try {
     const pathId = req.params.id;
@@ -87,12 +125,27 @@ const updatePath = async (req, res) => {
     if (!existingPath) return res.status(404).json({ status: false, message: "Path not found" });
 
     if (!["draft", "rejected", "waitingforapproval", "changesrequested"].includes(existingPath.status)) {
-  return res.status(400).json({ status: false, message: "Editing not allowed. Path is locked." });
-}
+      return res.status(400).json({ status: false, message: "Editing not allowed. Path is locked." });
+    }
 
     delete updateData.status;
 
     const updatedPath = await pathModel.findByIdAndUpdate(pathId, { $set: updateData }, { new: true, runValidators: true });
+
+    // ✅ Log path updated activity
+    if (existingPath.email) {
+      const { displayName, partnerType } = await getPartnerInfo(existingPath.email);
+      logEvent({
+        role:        "partner",
+        email:       existingPath.email,
+        displayName,
+        partnerType,
+        eventType:   "publish",
+        title:       `Path Updated: ${existingPath.nameOfPath || "Path"}`,
+        desc:        `Updated draft path "${existingPath.nameOfPath || "Path"}"`,
+      }).catch(err => console.error("logEvent updatePath error:", err));
+    }
+
     return res.status(200).json({ status: true, message: "Path updated successfully", data: updatedPath });
   } catch (error) {
     console.error("Error updating path:", error);
@@ -100,6 +153,157 @@ const updatePath = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// SUBMIT FOR APPROVAL — logs "approval" event (the key one!)
+// ─────────────────────────────────────────────────────────────────────────────
+const submitForApproval = async (req, res) => {
+  try {
+    const { pathId } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(pathId)) {
+      return res.status(400).json({ status: false, message: "Invalid pathId" });
+    }
+
+    const path = await pathModel.findById(pathId);
+    if (!path) return res.status(404).json({ status: false, message: "Path not found" });
+
+    if (!path.the_ids || path.the_ids.length === 0) {
+      return res.status(400).json({ status: false, message: "Cannot submit empty path. Add at least one step." });
+    }
+
+    if (!["draft", "rejected", "changesrequested"].includes(path.status)) {
+      return res.status(400).json({ status: false, message: "Only draft or rejected paths can be submitted" });
+    }
+
+    // Count steps saved in the steps collection by path_id
+    const stepCount = await stepModel.countDocuments({
+      path_id: pathId,
+      status: { $ne: "delete" }
+    });
+
+    const requiredSteps = path.total_steps || 5;
+
+    if (stepCount < requiredSteps) {
+      return res.status(400).json({
+        status: false,
+        message: `Please complete all ${requiredSteps} steps before submitting. You have added ${stepCount}/${requiredSteps} steps.`,
+        data: { current: stepCount, required: requiredSteps }
+      });
+    }
+
+    // Mark all pending change requests as addressed on resubmit
+    if (path.changeRequests && path.changeRequests.length > 0) {
+      path.changeRequests = path.changeRequests.map(cr => ({
+        ...cr.toObject(),
+        status: "addressed"
+      }));
+    }
+
+    path.review_notes = '';
+    path.status = "waitingforapproval";
+    await path.save();
+
+    // ✅ FIXED: Log as PARTNER "approval" event (not user logActivityInternal)
+    if (path.email) {
+      const { displayName, partnerType } = await getPartnerInfo(path.email);
+      logEvent({
+        role:        "partner",
+        email:       path.email,
+        displayName,
+        partnerType,
+        eventType:   "approval",
+        title:       `Path Submitted for Approval: ${path.nameOfPath || "Path"}`,
+        desc:        `"${path.nameOfPath || "Path"}" submitted for admin review with ${stepCount} step(s)`,
+      }).catch(err => console.error("logEvent submitForApproval error:", err));
+    }
+
+    return res.json({ status: true, message: "Path submitted for approval", data: path });
+  } catch (error) {
+    return res.status(500).json({ status: false, message: error.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DELETE PATH — logs "publish" event
+// ─────────────────────────────────────────────────────────────────────────────
+const deletePath = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ status: false, message: "Invalid path ID" });
+
+    const path = await pathModel.findById(id);
+    if (!path) return res.status(404).json({ status: false, message: "Path not found" });
+
+    let newStatus;
+    switch (path.status) {
+      case "draft": case "rejected": case "waitingforapproval": newStatus = "delete"; break;
+      case "active": newStatus = "inactive"; break;
+      case "inactive": newStatus = "delete"; break;
+      case "delete": return res.status(400).json({ status: false, message: "Path is already deleted" });
+      default: return res.status(400).json({ status: false, message: "Invalid path status" });
+    }
+
+    const updatedPath = await pathModel.findByIdAndUpdate(id, { status: newStatus }, { new: true });
+
+    // ✅ Log path deleted/deactivated
+    if (path.email) {
+      const { displayName, partnerType } = await getPartnerInfo(path.email);
+      logEvent({
+        role:        "partner",
+        email:       path.email,
+        displayName,
+        partnerType,
+        eventType:   "publish",
+        title:       `Path ${newStatus === "delete" ? "Deleted" : "Deactivated"}: ${path.nameOfPath || "Path"}`,
+        desc:        `Path "${path.nameOfPath || "Path"}" moved to ${newStatus}`,
+      }).catch(err => console.error("logEvent deletePath error:", err));
+    }
+
+    return res.status(200).json({ status: true, message: `Path moved to ${newStatus}`, data: updatedPath });
+  } catch (error) {
+    console.error("Error in deletePath:", error);
+    return res.status(500).json({ status: false, message: "Internal server error" });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RESTORE PATH — logs "publish" event
+// ─────────────────────────────────────────────────────────────────────────────
+const restorePath = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ status: false, message: "Invalid path ID" });
+
+    const restored = await pathModel.findOneAndUpdate(
+      { _id: id, status: "delete" },
+      { status: "inactive" },
+      { new: true }
+    );
+    if (!restored) return res.status(404).json({ status: false, message: "Path not found or not deleted" });
+
+    // ✅ Log path restored
+    if (restored.email) {
+      const { displayName, partnerType } = await getPartnerInfo(restored.email);
+      logEvent({
+        role:        "partner",
+        email:       restored.email,
+        displayName,
+        partnerType,
+        eventType:   "publish",
+        title:       `Path Restored: ${restored.nameOfPath || "Path"}`,
+        desc:        `Path "${restored.nameOfPath || "Path"}" restored to inactive`,
+      }).catch(err => console.error("logEvent restorePath error:", err));
+    }
+
+    return res.status(200).json({ status: true, message: "Path restored to inactive", data: restored });
+  } catch (error) {
+    return res.status(500).json({ status: false, message: "Internal server error" });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REACTIVATE PATH — logs "publish" event
+// ─────────────────────────────────────────────────────────────────────────────
 const reactivatePath = async (req, res) => {
   try {
     const { id } = req.params;
@@ -109,6 +313,21 @@ const reactivatePath = async (req, res) => {
 
     path.status = "active";
     await path.save();
+
+    // ✅ Log path reactivated
+    if (path.email) {
+      const { displayName, partnerType } = await getPartnerInfo(path.email);
+      logEvent({
+        role:        "partner",
+        email:       path.email,
+        displayName,
+        partnerType,
+        eventType:   "publish",
+        title:       `Path Reactivated: ${path.nameOfPath || "Path"}`,
+        desc:        `Path "${path.nameOfPath || "Path"}" is now active`,
+      }).catch(err => console.error("logEvent reactivatePath error:", err));
+    }
+
     return res.status(200).json({ status: true, message: "Path reactivated successfully", data: path });
   } catch (error) {
     return res.status(500).json({ status: false, message: "Internal server error" });
@@ -124,12 +343,116 @@ const reactivateInactivePath = async (req, res) => {
 
     path.status = "active";
     await path.save();
+
+    // ✅ Log reactivate
+    if (path.email) {
+      const { displayName, partnerType } = await getPartnerInfo(path.email);
+      logEvent({
+        role:        "partner",
+        email:       path.email,
+        displayName,
+        partnerType,
+        eventType:   "publish",
+        title:       `Path Reactivated: ${path.nameOfPath || "Path"}`,
+        desc:        `Path "${path.nameOfPath || "Path"}" is now active`,
+      }).catch(err => console.error("logEvent reactivateInactivePath error:", err));
+    }
+
     return res.json({ status: true, message: "Path reactivated successfully" });
   } catch (error) {
     return res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// BULK UPLOAD PATHS — logs "publish" event
+// ─────────────────────────────────────────────────────────────────────────────
+const uploadBulkPaths = async (req, res) => {
+  try {
+    const { email, records } = req.body;
+    if (!email) return res.status(400).json({ status: false, message: "Email is required" });
+    if (!Array.isArray(records) || records.length === 0) return res.status(400).json({ status: false, message: "Records array is required" });
+
+    const formatted = records.map(r => ({ ...r, email, status: "active" }));
+    const inserted = await pathModel.insertMany(formatted);
+
+    // ✅ Log bulk upload
+    const { displayName, partnerType } = await getPartnerInfo(email);
+    logEvent({
+      role:        "partner",
+      email,
+      displayName,
+      partnerType,
+      eventType:   "publish",
+      title:       `Bulk Upload: ${inserted.length} Paths`,
+      desc:        `Uploaded ${inserted.length} paths in bulk`,
+    }).catch(err => console.error("logEvent uploadBulkPaths error:", err));
+
+    return res.status(200).json({ status: true, message: "Bulk paths inserted successfully", count: inserted.length });
+  } catch (error) {
+    console.error("Bulk upload error:", error);
+    return res.status(500).json({ status: false, message: "Internal server error", error: error.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REQUEST CHANGES (admin → partner) — logs "approval" event on partner side
+// ─────────────────────────────────────────────────────────────────────────────
+const requestChanges = async (req, res) => {
+  try {
+    const pathId = req.params.id;
+    const { issues, adminNote, adminEmail } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(pathId)) {
+      return res.status(400).json({ status: false, message: "Invalid pathId" });
+    }
+
+    if (!adminNote || !adminNote.trim()) {
+      return res.status(400).json({ status: false, message: "Admin note is required" });
+    }
+
+    const path = await pathModel.findById(pathId);
+    if (!path) return res.status(404).json({ status: false, message: "Path not found" });
+
+    if (path.status !== "waitingforapproval" && path.status !== "changesrequested") {
+      return res.status(400).json({ status: false, message: "Path must be under review to request changes" });
+    }
+
+    path.changeRequests.push({
+      issues: issues || [],
+      adminNote: adminNote.trim(),
+      adminEmail: adminEmail || "",
+      sentAt: new Date(),
+      status: "pending"
+    });
+
+    path.status = "changesrequested";
+    await path.save();
+
+    // ✅ Log changes requested — partner needs to act on this
+    if (path.email) {
+      const { displayName, partnerType } = await getPartnerInfo(path.email);
+      logEvent({
+        role:        "partner",
+        email:       path.email,
+        displayName,
+        partnerType,
+        eventType:   "approval",
+        title:       `Changes Requested: ${path.nameOfPath || "Path"}`,
+        desc:        `Admin requested changes on "${path.nameOfPath || "Path"}": ${adminNote.trim().slice(0, 80)}`,
+      }).catch(err => console.error("logEvent requestChanges error:", err));
+    }
+
+    return res.status(200).json({ status: true, message: "Change request sent to partner", data: path });
+  } catch (error) {
+    console.error("Error in requestChanges:", error);
+    return res.status(500).json({ status: false, message: "Internal server error" });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UPDATE PATH STATUS (admin approves/rejects) — no partner activity log needed
+// ─────────────────────────────────────────────────────────────────────────────
 const updatePathStatus = async (req, res) => {
   const pathId = req.params.id;
   const { status, review_notes } = req.body;
@@ -148,7 +471,6 @@ const updatePathStatus = async (req, res) => {
 
     path.status = status;
 
-    // If rejecting back to draft, save review_notes and push to changeRequests
     if (status === 'draft' && review_notes) {
       path.review_notes = review_notes;
       path.changeRequests.push({
@@ -159,7 +481,6 @@ const updatePathStatus = async (req, res) => {
       });
     }
 
-    // If approving, clear review_notes
     if (status === 'active') {
       path.review_notes = '';
     }
@@ -171,78 +492,63 @@ const updatePathStatus = async (req, res) => {
     return res.status(500).json({ status: false, message: 'Internal server error' });
   }
 };
-// ── submitForApproval — with activity logging ─────────────────────────────────
-const submitForApproval = async (req, res) => {
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REPLY TO CHANGE REQUEST — logs "message" event for partner
+// ─────────────────────────────────────────────────────────────────────────────
+const replyToChangeRequest = async (req, res) => {
   try {
-    const { pathId } = req.body;
+    const { pathId, changeRequestId } = req.params;
+    const { from, message, partnerEmail, adminEmail } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(pathId)) {
-      return res.status(400).json({ status: false, message: "Invalid pathId" });
+    if (!from || !message?.trim()) {
+      return res.status(400).json({ status: false, message: "from and message are required" });
     }
 
-    const path = await pathModel.findById(pathId);
-    if (!path) return res.status(404).json({ status: false, message: "Path not found" });
+    const reply = {
+      from,
+      message: message.trim(),
+      sentAt: new Date(),
+      ...(from === "partner" ? { partnerEmail } : { adminEmail }),
+    };
 
-    if (!path.the_ids || path.the_ids.length === 0) {
-      return res.status(400).json({ status: false, message: "Cannot submit empty path. Add at least one step." });
+    const result = await pathModel.findOneAndUpdate(
+      { _id: pathId, "changeRequests._id": changeRequestId },
+      {
+        $push: { "changeRequests.$.replies": reply },
+        ...(from === "partner" ? { $set: { "changeRequests.$.status": "addressed" } } : {}),
+      },
+      { new: true }
+    );
+
+    if (!result) {
+      return res.status(404).json({ status: false, message: "Path or change request not found" });
     }
 
-   if (!["draft", "rejected", "changesrequested"].includes(path.status)) {
-      return res.status(400).json({ status: false, message: "Only draft or rejected paths can be submitted" });
+    // ✅ Log partner reply as a "message" event
+    if (from === "partner" && partnerEmail) {
+      const { displayName, partnerType } = await getPartnerInfo(partnerEmail);
+      logEvent({
+        role:        "partner",
+        email:       partnerEmail,
+        displayName,
+        partnerType,
+        eventType:   "message",
+        title:       `Replied to Change Request: ${result.nameOfPath || "Path"}`,
+        desc:        `Partner replied on "${result.nameOfPath || "Path"}": ${message.trim().slice(0, 80)}`,
+      }).catch(err => console.error("logEvent replyToChangeRequest error:", err));
     }
 
-    // ✅ FIX: Count steps saved in the steps collection by path_id
-    // (draft steps are saved with path_id field, NOT inside path.the_ids)
-    const stepCount = await stepModel.countDocuments({
-      path_id: pathId,
-      status: { $ne: "delete" }
-    });
-
-    const requiredSteps = path.total_steps || 5;
-
-    // ✅ Block submission if steps are incomplete
-    if (stepCount < requiredSteps) {
-      return res.status(400).json({
-        status: false,
-        message: `Please complete all ${requiredSteps} steps before submitting. You have added ${stepCount}/${requiredSteps} steps.`,
-        data: {
-          current: stepCount,
-          required: requiredSteps
-        }
-      });
-    }
-
-
-// Mark all pending change requests as addressed on resubmit
-if (path.changeRequests && path.changeRequests.length > 0) {
-  path.changeRequests = path.changeRequests.map(cr => ({
-    ...cr.toObject(),
-    status: "addressed"
-  }));
-}
-
-// Clear review_notes when partner resubmits
-path.review_notes = '';
-path.status = "waitingforapproval";
-await path.save();
-
-    // ✅ Log path selection activity — non-blocking
-    logActivityInternal({
-      email: path.email,
-      type: "path",
-      pathId: path._id.toString(),
-      pathName: path.nameOfPath,
-      title: `Selected: ${path.nameOfPath}`,
-      desc: `Submitted path for approval — ${path.the_ids.length} step(s)`,
-      status: "completed",
-    }).catch(() => { });
-
-    return res.json({ status: true, message: "Path submitted for approval", data: path });
+    return res.json({ status: true, message: "Reply added", data: reply });
   } catch (error) {
+    console.error("Reply error:", error);
     return res.status(500).json({ status: false, message: error.message });
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// READ-ONLY endpoints — no activity logging needed
+// ─────────────────────────────────────────────────────────────────────────────
 const getPath = async (req, res) => {
   try {
     let filter = {};
@@ -344,51 +650,10 @@ const getPathNormal = async (req, res) => {
     if (personality) filter.personality = { $in: personality };
 
     const paths = await pathModel.find(filter).lean();
-
     if (paths.length === 0) return res.json({ status: true, data: [], message: 'No data found' });
-
     return res.status(200).json({ status: true, total: paths.length, message: 'Paths data found', data: paths });
   } catch (err) {
     return res.status(500).json({ status: false, message: err.message });
-  }
-};
-
-const deletePath = async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ status: false, message: "Invalid path ID" });
-
-    const path = await pathModel.findById(id);
-    if (!path) return res.status(404).json({ status: false, message: "Path not found" });
-
-    let newStatus;
-    switch (path.status) {
-      case "draft": case "rejected": case "waitingforapproval": newStatus = "delete"; break;
-      case "active": newStatus = "inactive"; break;
-      case "inactive": newStatus = "delete"; break;
-      case "delete": return res.status(400).json({ status: false, message: "Path is already deleted" });
-      default: return res.status(400).json({ status: false, message: "Invalid path status" });
-    }
-
-    const updatedPath = await pathModel.findByIdAndUpdate(id, { status: newStatus }, { new: true });
-    return res.status(200).json({ status: true, message: `Path moved to ${newStatus}`, data: updatedPath });
-  } catch (error) {
-    console.error("Error in deletePath:", error);
-    return res.status(500).json({ status: false, message: "Internal server error" });
-  }
-};
-
-const restorePath = async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ status: false, message: "Invalid path ID" });
-
-    const restored = await pathModel.findOneAndUpdate({ _id: id, status: "delete" }, { status: "inactive" }, { new: true });
-    if (!restored) return res.status(404).json({ status: false, message: "Path not found or not deleted" });
-
-    return res.status(200).json({ status: true, message: "Path restored to inactive", data: restored });
-  } catch (error) {
-    return res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
 
@@ -444,125 +709,22 @@ const getPathById = async (req, res) => {
   }
 };
 
-const uploadBulkPaths = async (req, res) => {
-  try {
-    const { email, records } = req.body;
-    if (!email) return res.status(400).json({ status: false, message: "Email is required" });
-    if (!Array.isArray(records) || records.length === 0) return res.status(400).json({ status: false, message: "Records array is required" });
-
-    const formatted = records.map(r => ({ ...r, email, status: "active" }));
-    const inserted = await pathModel.insertMany(formatted);
-
-    return res.status(200).json({ status: true, message: "Bulk paths inserted successfully", count: inserted.length });
-  } catch (error) {
-    console.error("Bulk upload error:", error);
-    return res.status(500).json({ status: false, message: "Internal server error", error: error.message });
-  }
-};
-
-
-const requestChanges = async (req, res) => {
-  try {
-    const pathId = req.params.id;
-    const { issues, adminNote, adminEmail } = req.body;
-
-    if (!mongoose.Types.ObjectId.isValid(pathId)) {
-      return res.status(400).json({ status: false, message: "Invalid pathId" });
-    }
-
-    if (!adminNote || !adminNote.trim()) {
-      return res.status(400).json({ status: false, message: "Admin note is required" });
-    }
-
-    const path = await pathModel.findById(pathId);
-    if (!path) {
-      return res.status(404).json({ status: false, message: "Path not found" });
-    }
-
-    if (path.status !== "waitingforapproval" && path.status !== "changesrequested") {
-      return res.status(400).json({ status: false, message: "Path must be under review to request changes" });
-    }
-
-    // Push new change request
-    path.changeRequests.push({
-      issues: issues || [],
-      adminNote: adminNote.trim(),
-      adminEmail: adminEmail || "",
-      sentAt: new Date(),
-      status: "pending"
-    });
-
-    // Update status so partner sees it
-    path.status = "changesrequested";
-
-    await path.save();
-
-    return res.status(200).json({
-      status: true,
-      message: "Change request sent to partner",
-      data: path
-    });
-  } catch (error) {
-    console.error("Error in requestChanges:", error);
-    return res.status(500).json({ status: false, message: "Internal server error" });
-  }
-};
-
-
-const replyToChangeRequest = async (req, res) => {
-  try {
-    const { pathId, changeRequestId } = req.params;
-    const { from, message, partnerEmail, adminEmail } = req.body;
-
-    if (!from || !message?.trim()) {
-      return res.status(400).json({ status: false, message: "from and message are required" });
-    }
-
-    const reply = {
-      from,
-      message: message.trim(),
-      sentAt: new Date(),
-      ...(from === "partner" ? { partnerEmail } : { adminEmail }),
-    };
-
-    const result = await pathModel.findOneAndUpdate(
-      { _id: pathId, "changeRequests._id": changeRequestId },
-      {
-        $push: { "changeRequests.$.replies": reply },
-        ...(from === "partner"
-          ? { $set: { "changeRequests.$.status": "addressed" } }
-          : {}),
-      },
-      { new: true }
-    );
-
-    if (!result) {
-      return res.status(404).json({ status: false, message: "Path or change request not found" });
-    }
-
-    return res.json({ status: true, message: "Reply added", data: reply });
-  } catch (error) {
-    console.error("Reply error:", error);
-    return res.status(500).json({ status: false, message: error.message });
-  }
-};
-
 module.exports = {
   addPath,
   submitForApproval,
   getPath,
-  deletePath, 
+  deletePath,
   restorePath,
-  getPathSpecific, 
-  getPathNormal, 
-  updateFields, 
+  getPathSpecific,
+  getPathNormal,
+  updateFields,
   updatePath,
-  getActivePaths, 
-  updatePathStatus, 
+  getActivePaths,
+  updatePathStatus,
   reactivatePath,
-  reactivateInactivePath, 
-  getPathById, 
+  reactivateInactivePath,
+  getPathById,
   uploadBulkPaths,
-  requestChanges, 
-  replyToChangeRequest, 
+  requestChanges,
+  replyToChangeRequest,
 };

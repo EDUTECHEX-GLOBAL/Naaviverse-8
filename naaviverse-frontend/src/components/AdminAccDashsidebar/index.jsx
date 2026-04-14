@@ -1,18 +1,94 @@
 import React, { useState, useEffect } from "react";
 import "./accDashsidebar.scss";
 import { useStore } from "../store/store.ts";
-import { useNavigate, useLocation } from "react-router-dom"; // ✅ add useLocation
+import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../../assets/images/logo/naavi_final_logo2.png";
 
 // ✅ URL map for each section
 const ROUTE_MAP = {
-  Overview:   "/admin/dashboard/accountants",
+  Overview:    "/admin/dashboard/accountants",
   CRM:         "/admin/dashboard/crm",
   Paths:       "/admin/dashboard/paths?tab=active",
   Steps:       "/admin/dashboard/steps?tab=active",
   Marketplace: "/admin/dashboard/marketplace",
 };
 
+// ── Icons ──────────────────────────────────────────────────────────────────
+const Icons = {
+  Overview: ({ color }) => (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </svg>
+  ),
+  CRM: ({ color }) => (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  ),
+ Paths: ({ color }) => (
+  <svg
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    {/* Start circle */}
+    <circle cx="5" cy="18" r="1.8" />
+
+    {/* End circle */}
+    <circle cx="19" cy="6" r="1.8" />
+
+    {/* Curved dashed path */}
+    <path d="M7 16 C10 12, 14 10, 17 8" strokeDasharray="3 3" />
+  </svg>
+),
+  Steps: ({ color }) => (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="8" y1="6" x2="21" y2="6" />
+      <line x1="8" y1="12" x2="21" y2="12" />
+      <line x1="8" y1="18" x2="21" y2="18" />
+      <line x1="3" y1="6" x2="3.01" y2="6" />
+      <line x1="3" y1="12" x2="3.01" y2="12" />
+      <line x1="3" y1="18" x2="3.01" y2="18" />
+    </svg>
+  ),
+  Marketplace: ({ color }) => (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <path d="M16 10a4 4 0 0 1-8 0" />
+    </svg>
+  ),
+  // Non-admin icons
+  "My Services": ({ color }) => (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+    </svg>
+  ),
+  Universities: ({ color }) => (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+      <path d="M6 12v5c3 3 9 3 12 0v-5" />
+    </svg>
+  ),
+};
+
+const getIcon = (title, color) => {
+  const IconComp = Icons[title];
+  return IconComp ? <IconComp color={color} /> : null;
+};
+
+// ── Menu definitions ────────────────────────────────────────────────────────
 const sidebarMenu1 = [
   { id: 0, display: "CRM",          title: "CRM",          click: true },
   { id: 1, display: "My Services",  title: "My Services",  click: true },
@@ -21,7 +97,7 @@ const sidebarMenu1 = [
 ];
 
 const sidebarMenu2 = [
-  { id: 0, display: "Overview",    title: "Overview",   click: true },
+  { id: 0, display: "Overview",    title: "Overview",    click: true },
   { id: 1, display: "CRM",         title: "CRM",         click: true },
   { id: 2, display: "Paths",       title: "Paths",       click: true },
   { id: 3, display: "Steps",       title: "Steps",       click: true },
@@ -30,6 +106,7 @@ const sidebarMenu2 = [
 
 const sidebarMenu3 = [];
 
+// ── Component ───────────────────────────────────────────────────────────────
 const AdminAccDashsidebar = ({
   isNotOnMainPage,
   handleChangeAccDashsidebar,
@@ -37,14 +114,13 @@ const AdminAccDashsidebar = ({
 }) => {
   const [selectedMenu, setSelectedMenu] = useState([]);
   const { accsideNav, setaccsideNav } = useStore();
-  const navigate = useNavigate();
-  const location = useLocation(); // ✅
+  const navigate  = useNavigate();
+  const location  = useLocation();
 
   useEffect(() => {
     const menu = admin ? sidebarMenu2 : sidebarMenu1;
     setSelectedMenu(menu);
 
-    // ✅ Derive active tab from current URL path on mount/navigation
     const currentPath = location.pathname;
     const matched = menu.find(
       (m) => ROUTE_MAP[m.title]?.split("?")[0] === currentPath
@@ -57,9 +133,8 @@ const AdminAccDashsidebar = ({
         setaccsideNav(menu[0].title);
       }
     }
-  }, [admin, location.pathname]); // ✅ re-run when URL changes
+  }, [admin, location.pathname]);
 
-  // ✅ Highlight based on current URL
   const isActive = (title) => {
     const route = ROUTE_MAP[title];
     if (!route) return accsideNav === title;
@@ -71,7 +146,7 @@ const AdminAccDashsidebar = ({
     setaccsideNav(each.title);
     const route = ROUTE_MAP[each.title];
     if (route) {
-      navigate(route); // ✅ navigate to URL
+      navigate(route);
     } else if (handleChangeAccDashsidebar) {
       handleChangeAccDashsidebar();
     } else if (isNotOnMainPage) {
@@ -98,7 +173,7 @@ const AdminAccDashsidebar = ({
         boxShadow: "none",
       }}
     >
-      {/* ── Logo ─────────────────────────────────────────────────────────── */}
+      {/* ── Logo ──────────────────────────────────────────────────────────── */}
       <div
         className="dashboard-left"
         style={{
@@ -123,7 +198,7 @@ const AdminAccDashsidebar = ({
         />
       </div>
 
-      {/* ── Nav items ────────────────────────────────────────────────────── */}
+      {/* ── Nav items ─────────────────────────────────────────────────────── */}
       <div
         style={{
           overflowY: "scroll",
@@ -133,29 +208,36 @@ const AdminAccDashsidebar = ({
         }}
       >
         <div>
-          {selectedMenu?.map((each, i) => (
-            <div
-              key={i}
-              className="each-sidenav"
-              style={{
-                // ✅ Active highlight based on URL
-               background: isActive(each.title) ? "rgba(34, 115, 230, 0.1)" : "transparent",
-color: isActive(each.title) ? "#2273E6" : "#64748b",
-                fontWeight: isActive(each.title) ? "600" : "500",
-                borderRadius: isActive(each.title) ? "8px" : "0",
-                paddingLeft: "0",
-                opacity: each.click ? "1" : "0.25",
-                cursor: each.click ? "pointer" : "not-allowed",
-                transition: "all 0.2s ease",
-                padding: "12px 16px",
-                marginBottom: "4px",
-                fontSize: "0.95rem",
-              }}
-              onClick={() => handleNavClick(each)}
-            >
-              {each.display}
-            </div>
-          ))}
+          {selectedMenu?.map((each, i) => {
+            const active = isActive(each.title);
+            const color  = active ? "#2273E6" : "#64748b";
+
+            return (
+              <div
+                key={i}
+                className="each-sidenav"
+                style={{
+                  background:    active ? "rgba(34, 115, 230, 0.1)" : "transparent",
+                  color,
+                  fontWeight:    active ? "600" : "500",
+                  borderRadius:  active ? "8px" : "0",
+                  opacity:       each.click ? "1" : "0.25",
+                  cursor:        each.click ? "pointer" : "not-allowed",
+                  transition:    "all 0.2s ease",
+                  padding:       "12px 16px",
+                  marginBottom:  "4px",
+                  fontSize:      "0.95rem",
+                  display:       "flex",
+                  alignItems:    "center",
+                  gap:           "10px",
+                }}
+                onClick={() => handleNavClick(each)}
+              >
+                {getIcon(each.title, color)}
+                {each.display}
+              </div>
+            );
+          })}
         </div>
 
         <div>
@@ -164,80 +246,74 @@ color: isActive(each.title) ? "#2273E6" : "#64748b",
               key={j}
               className="each-sidenav"
               style={{
-                background: "transparent",
-                color: "#64748b",
-                paddingLeft: "0",
-                borderRadius: "0",
-                opacity: ele.click ? "1" : "0.25",
-                cursor: ele.click ? "pointer" : "not-allowed",
-                transition: "all 0.2s ease",
-                padding: "12px 16px",
+                background:   "transparent",
+                color:        "#64748b",
+                opacity:      ele.click ? "1" : "0.25",
+                cursor:       ele.click ? "pointer" : "not-allowed",
+                transition:   "all 0.2s ease",
+                padding:      "12px 16px",
                 marginBottom: "4px",
-                fontSize: "0.95rem",
-                fontWeight: "500",
+                fontSize:     "0.95rem",
+                fontWeight:   "500",
+                display:      "flex",
+                alignItems:   "center",
+                gap:          "10px",
               }}
               onClick={() => handleNavClick(ele)}
             >
+              {getIcon(ele.title, "#64748b")}
               {ele.title}
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── Logout ───────────────────────────────────────────────────────── */}
+      {/* ── Logout ────────────────────────────────────────────────────────── */}
       <div
         style={{
-          position: "sticky",
-          bottom: 0,
-          padding: "10px 14px",
-          borderTop: "1px solid #e5e5e5",
-          background: "#ffffff",
-          marginTop: "auto",
+          position:    "sticky",
+          bottom:      0,
+          padding:     "10px 14px",
+          borderTop:   "1px solid #e5e5e5",
+          background:  "#ffffff",
+          marginTop:   "auto",
         }}
       >
         <button
           onClick={handleLogout}
           style={{
-            width: "100%",
-            padding: "8px 12px",
-            background: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
-            color: "#dc2626",
-            border: "1px solid #fecaca",
-            borderRadius: "8px",
-            fontSize: "0.85rem",
-            fontWeight: "500",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
+            width:           "100%",
+            padding:         "8px 12px",
+            background:      "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
+            color:           "#dc2626",
+            border:          "1px solid #fecaca",
+            borderRadius:    "8px",
+            fontSize:        "0.85rem",
+            fontWeight:      "500",
+            cursor:          "pointer",
+            transition:      "all 0.2s ease",
+            display:         "flex",
+            alignItems:      "center",
+            justifyContent:  "center",
+            gap:             "8px",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background =
-              "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)";
+            e.currentTarget.style.background  = "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)";
             e.currentTarget.style.borderColor = "#f87171";
-            e.currentTarget.style.transform = "translateY(-1px)";
-            e.currentTarget.style.boxShadow =
-              "0 2px 8px rgba(220, 38, 38, 0.15)";
+            e.currentTarget.style.transform   = "translateY(-1px)";
+            e.currentTarget.style.boxShadow   = "0 2px 8px rgba(220, 38, 38, 0.15)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background =
-              "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)";
+            e.currentTarget.style.background  = "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)";
             e.currentTarget.style.borderColor = "#fecaca";
-            e.currentTarget.style.transform = "translateY(0)";
-            e.currentTarget.style.boxShadow = "none";
+            e.currentTarget.style.transform   = "translateY(0)";
+            e.currentTarget.style.boxShadow   = "none";
           }}
         >
           <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor"
+            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
           >
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <polyline points="16 17 21 12 16 7" />

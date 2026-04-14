@@ -1,11 +1,31 @@
 const marketplaceModel = require("../models/marketplace.model");
 const stepModel = require("../models/steps.model");
 
-/**
- * POST /api/marketplace/add
- * Creates a new marketplace item AND pushes its _id into the step's
- * [layer]_marketplace array. The item is immediately "attached" to the step.
- */
+// ✅ Activity logging
+const { logEvent } = require("./Activity.controller");
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPER — fetch partner display info from email
+// ─────────────────────────────────────────────────────────────────────────────
+async function getPartnerInfo(email) {
+  try {
+    if (!email) return { displayName: "Partner", partnerType: "" };
+    const Partner = require('../models/partner.model');
+    const partner = await Partner.findOne({ email }).select('businessName username partnerType').lean();
+    return {
+      displayName: partner?.businessName || partner?.username || email,
+      partnerType: partner?.partnerType || "",
+    };
+  } catch (_) {
+    return { displayName: email, partnerType: "" };
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/marketplace/add
+// Creates a new marketplace item AND pushes its _id into the step's
+// [layer]_marketplace array. Logs "listing" event.
+// ─────────────────────────────────────────────────────────────────────────────
 const addMarketplaceItem = async (req, res) => {
   try {
     const {
@@ -29,6 +49,20 @@ const addMarketplaceItem = async (req, res) => {
       { $push: { [`${layer}_marketplace`]: item._id } }
     );
 
+    // ✅ Log marketplace listing created
+    if (partner_email) {
+      const { displayName, partnerType } = await getPartnerInfo(partner_email);
+      logEvent({
+        role:        "partner",
+        email:       partner_email,
+        displayName,
+        partnerType,
+        eventType:   "listing",
+        title:       `Marketplace Listing Added: ${name || "New Item"}`,
+        desc:        `Added "${name || "New Item"}" (${layer} · ${access || "free"}) to marketplace`,
+      }).catch(err => console.error("logEvent addMarketplaceItem error:", err));
+    }
+
     return res.json({ status: true, data: item });
   } catch (error) {
     console.error("addMarketplaceItem error:", error);
@@ -36,19 +70,15 @@ const addMarketplaceItem = async (req, res) => {
   }
 };
 
-/**
- * GET /api/marketplace/step/:step_id?layer=macro|micro|nano
- * Returns all marketplace items attached to a specific step (and optionally layer).
- * Used to populate the "ATTACHED" section in the admin panel.
- */
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/marketplace/step/:step_id?layer=macro|micro|nano
+// ─────────────────────────────────────────────────────────────────────────────
 const getMarketplaceItemsByStep = async (req, res) => {
   try {
     const { step_id } = req.params;
     const { layer } = req.query;
-
     const filter = { step_id, status: "active" };
     if (layer) filter.layer = layer;
-
     const items = await marketplaceModel.find(filter);
     res.json({ status: true, data: items });
   } catch (err) {
@@ -57,16 +87,13 @@ const getMarketplaceItemsByStep = async (req, res) => {
   }
 };
 
-/**
- * GET /api/marketplace/admin/get-all?layer=macro|micro|nano
- * Returns ALL active marketplace items for a given layer (no unattached filter).
- * The frontend computes "available" by subtracting already-attached items.
- */
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/marketplace/admin/get-all?layer=macro|micro|nano
+// ─────────────────────────────────────────────────────────────────────────────
 const getAllMarketplaceItems = async (req, res) => {
   try {
     const filter = { status: "active" };
     if (req.query.layer) filter.layer = req.query.layer;
-
     const items = await marketplaceModel.find(filter).sort({ createdAt: -1 });
     res.json({ status: true, data: items });
   } catch (err) {
@@ -75,14 +102,10 @@ const getAllMarketplaceItems = async (req, res) => {
   }
 };
 
-/**
- * PATCH /api/marketplace/link-step
- * Body: { item_id, step_id }   (step_id can be null to detach)
- *
- * Updates the marketplace item's step_id field.
- * The step's [layer]_marketplace array is managed separately via
- * PUT /api/steps/update/:id from the frontend.
- */
+// ─────────────────────────────────────────────────────────────────────────────
+// PATCH /api/marketplace/link-step
+// Links/unlinks a marketplace item to/from a step. Logs "listing" event.
+// ─────────────────────────────────────────────────────────────────────────────
 const linkMarketplaceToStep = async (req, res) => {
   try {
     const { item_id, step_id } = req.body;
@@ -96,6 +119,21 @@ const linkMarketplaceToStep = async (req, res) => {
       { step_id: step_id || null },
       { new: true }
     );
+
+    // ✅ Log listing linked/unlinked activity
+    if (updated?.partner_email) {
+      const { displayName, partnerType } = await getPartnerInfo(updated.partner_email);
+      const action = step_id ? "Linked to Step" : "Unlinked from Step";
+      logEvent({
+        role:        "partner",
+        email:       updated.partner_email,
+        displayName,
+        partnerType,
+        eventType:   "listing",
+        title:       `Marketplace Item ${action}: ${updated.name || "Item"}`,
+        desc:        `"${updated.name || "Item"}" ${step_id ? "linked to a step" : "unlinked from step"}`,
+      }).catch(err => console.error("logEvent linkMarketplaceToStep error:", err));
+    }
 
     return res.json({ status: true, data: updated });
   } catch (error) {

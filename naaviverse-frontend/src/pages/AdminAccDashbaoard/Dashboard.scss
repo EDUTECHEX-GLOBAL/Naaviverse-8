@@ -164,6 +164,7 @@
 .stat-boxes-track-wrap {
   overflow: hidden;
   width: 100%;
+    min-width: 0; /* ← ADD THIS to prevent flex blowout */
 }
 
 /* Sliding track */
@@ -172,12 +173,13 @@
   gap: 14px;
   transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
+   min-width: max-content; /* ← ADD THIS */
 }
 
 /* ── SQUARE stat box ── */
 .stat-box {
   /* 4 cards per page with 3 gaps of 14px each = (100% - 42px) / 4 */
-  flex: 0 0 calc(25% - 10.5px);
+  flex: 0 0 calc((100% - 3 * 14px) / 4);
   aspect-ratio: 1 / 1;
   border-radius: var(--radius-xl);
   padding: 14px 14px 12px;
