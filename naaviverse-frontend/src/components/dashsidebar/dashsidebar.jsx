@@ -30,30 +30,36 @@ const NavIcon = ({ type, isActive }) => {
     case "paths":
       return (
         <svg {...iconProps}>
-          <polygon points="12 2 22 7 22 17 12 22 2 17 2 7 12 2" />
-          <line x1="12" y1="22" x2="12" y2="12" />
-          <line x1="22" y1="7" x2="12" y2="12" />
-          <line x1="2" y1="7" x2="12" y2="12" />
+          <circle cx="5" cy="18" r="2" />
+          <circle cx="19" cy="6" r="2" />
+          <path d="M5 16 C5 8, 19 16, 19 8" />
         </svg>
       );
     case "journey":
+      // Map pin / route — suits "My Journey"
       return (
         <svg {...iconProps}>
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 8v8M8 12h8" />
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+          <circle cx="12" cy="9" r="2.5" />
         </svg>
       );
     case "current-step":
+      // Footsteps / play-next — suits "Current Step"
       return (
         <svg {...iconProps}>
-          <circle cx="12" cy="12" r="10" />
-          <polyline points="12 6 12 12 16 14" />
+          <polyline points="5 12 12 5 19 12" />
+          <path d="M12 5v14" />
+          <line x1="8" y1="19" x2="16" y2="19" />
         </svg>
       );
     case "transactions":
+      // Two arrows up/down — suits "Transactions"
       return (
         <svg {...iconProps}>
-          <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9h-4m-7 9A9 9 0 0 1 3 12m9 9v-4M3 12a9 9 0 0 1 9-9m-9 9h4" />
+          <polyline points="17 1 21 5 17 9" />
+          <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+          <polyline points="7 23 3 19 7 15" />
+          <path d="M21 13v2a4 4 0 0 1-4 4H3" />
         </svg>
       );
     case "wallet":
@@ -206,34 +212,19 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
         </div>
 
         {/* Nav */}
-        <div className="sidebar-menu-scrollable">
+        <div className="sidebar-menu-scrollable" style={{ padding: "0 12px" }}>
 
-          {sidebarMenu1.map((each) => {
+          {/* Menu group 1 + 2 combined — no divider, no extra gap */}
+          {[...sidebarMenu1, ...sidebarMenu2].map((each) => {
             const active = isActive(each.path);
             return (
               <div
-                key={each.id}
+                key={each.id + each.title}
                 className={`each-sidenav ${active ? "active" : ""} ${isLocked ? "locked" : ""}`}
                 onClick={() => handleNavigation(each.title, each.path)}
               >
                 <NavIcon type={each.icon} isActive={active} />
                 <span>{each.display}</span>
-              </div>
-            );
-          })}
-
-          <div className="sidebar-section-divider" />
-
-          {sidebarMenu2.map((ele) => {
-            const active = isActive(ele.path);
-            return (
-              <div
-                key={ele.id}
-                className={`each-sidenav ${active ? "active" : ""} ${isLocked ? "locked" : ""}`}
-                onClick={() => handleNavigation(ele.title, ele.path)}
-              >
-                <NavIcon type={ele.icon} isActive={active} />
-                <span>{ele.display}</span>
               </div>
             );
           })}
@@ -262,13 +253,11 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
           )}
         </div>
 
-        {/* ── Profile (same style as admin logout row) ── */}
+        {/* ── Profile ── */}
         <div className="sidebar-profile-section">
           <div style={{ position: "relative" }} ref={logoutMenuRef}>
 
-            {/* NO inline style on this row — CSS handles everything */}
             <div className="sidebar-profile-row">
-
               <div
                 className="sidebar-profile-info"
                 style={{ cursor: isLocked ? "default" : "pointer" }}
@@ -326,4 +315,3 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
 };
 
 export default Dashsidebar;
-

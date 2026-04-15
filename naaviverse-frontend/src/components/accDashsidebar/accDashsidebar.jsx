@@ -38,46 +38,46 @@ const NavIcon = ({ type, isActive }) => {
           <polyline points="9 22 9 12 15 12 15 22" />
         </svg>
       );
-    case "crm":
-      return (
-        <svg {...iconProps}>
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-          <path d="M17 3.5a4 4 0 0 1 0 7" />
-          <path d="M21 7.5a4 4 0 0 0-4-4" />
-        </svg>
-      );
-    case "paths":
-      return (
-        <svg {...iconProps}>
-          <polygon points="12 2 22 7 22 17 12 22 2 17 2 7 12 2" />
-          <line x1="12" y1="22" x2="12" y2="12" />
-          <line x1="22" y1="7" x2="12" y2="12" />
-          <line x1="2" y1="7" x2="12" y2="12" />
-          <line x1="7" y1="2" x2="7" y2="17" />
-          <line x1="17" y1="2" x2="17" y2="17" />
-        </svg>
-      );
-    case "steps":
-      return (
-        <svg {...iconProps}>
-          <path d="M8 6h13" />
-          <path d="M8 12h13" />
-          <path d="M8 18h13" />
-          <circle cx="4" cy="6" r="2" />
-          <circle cx="4" cy="12" r="2" />
-          <circle cx="4" cy="18" r="2" />
-        </svg>
-      );
-    case "marketplace":
-      return (
-        <svg {...iconProps}>
-          <circle cx="12" cy="12" r="10" />
-          <path d="M8 12h8" />
-          <path d="M12 8v8" />
-          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-        </svg>
-      );
+  case "crm":
+  return (
+    <svg {...iconProps}>
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+
+case "paths":
+  return (
+    <svg {...iconProps}>
+      <circle cx="5" cy="18" r="2" />
+      <circle cx="19" cy="6" r="2" />
+      <path d="M5 16 C5 8, 19 16, 19 8" />
+    </svg>
+  );
+
+case "steps":
+  return (
+    <svg {...iconProps}>
+      <line x1="8" y1="6" x2="21" y2="6" />
+      <line x1="8" y1="12" x2="21" y2="12" />
+      <line x1="8" y1="18" x2="21" y2="18" />
+      <line x1="3" y1="6" x2="3.01" y2="6" />
+      <line x1="3" y1="12" x2="3.01" y2="12" />
+      <line x1="3" y1="18" x2="3.01" y2="18" />
+    </svg>
+  );
+
+case "marketplace":
+  return (
+    <svg {...iconProps}>
+      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <path d="M16 10a4 4 0 0 1-8 0" />
+    </svg>
+  );
+
     case "profile":
       return (
         <svg {...iconProps}>

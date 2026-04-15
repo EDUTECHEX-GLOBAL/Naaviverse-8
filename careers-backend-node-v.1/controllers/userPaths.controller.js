@@ -1,72 +1,89 @@
-const pathModel = require('../models/path.model');
+// controllers/userPaths.controller.js
+// ─────────────────────────────────────────────────────────────────────────────
+// UPDATED: addUserPath now allows multiple active paths per user.
+// Only blocks if the exact same path is already active (duplicate guard).
+// ─────────────────────────────────────────────────────────────────────────────
+
+const pathModel     = require('../models/path.model');
 const userPathModel = require('../models/userpaths.model');
-let mongoose = require("mongoose")
+const userModel     = require('../models/users.model');
+const mongoose      = require('mongoose');
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ADD / SELECT A PATH
+// ─────────────────────────────────────────────────────────────────────────────
 const addUserPath = async (req, res) => {
-    let existingUserPath = await userPathModel.findOne({ email: req.body.email, status: "active" });
-    if(existingUserPath?.pathId == req.body.pathId){
+
+    // ── Block exact duplicate only ────────────────────────────────────────
+    const duplicateCheck = await userPathModel.findOne({
+        email:  req.body.email,
+        pathId: req.body.pathId,
+        status: "active",
+    });
+
+    if (duplicateCheck) {
         return res.json({
-            status:false,
-            message:"This is the path currently selected"
-        })
-    }
-    if (existingUserPath) {
-        let updateUserPath = await userPathModel.findOneAndUpdate({ email: req.body.email, status: "active" }, { pathId: req.body.pathId,completedSteps:[],currentStep:"" }, { new: true });
-        return res.json({
-            status: true,
-            message: 'Path succesfully updated',
-            data: updateUserPath
-        })
+            status:  false,
+            message: "You have already selected this path",
+        });
     }
 
-    let existingPath = await pathModel.findOne({ _id: req.body.pathId, status: "active" });
+    // ── Verify path exists and is active ─────────────────────────────────
+    const existingPath = await pathModel.findOne({
+        _id:    req.body.pathId,
+        status: "active",
+    });
+
     if (!existingPath) {
         return res.json({
-            status: false,
-            message: 'Path not found',
-        })
+            status:  false,
+            message: "Path not found or not active",
+        });
     }
 
-    let createPath = {
-        email: req.body.email,
-        pathId: req.body.pathId
-    }
-    let path = await userPathModel.create(createPath);
+    // ── Create a new userPath doc (allows multiple active paths) ──────────
+    const path = await userPathModel.create({
+        email:          req.body.email,
+        pathId:         req.body.pathId,
+        status:         "active",
+        completedSteps: [],
+        currentStep:    "",
+    });
+
     if (!path) {
         return res.json({
-            status: false,
-            message: 'Error in creating path',
-        })
+            status:  false,
+            message: "Error creating user path",
+        });
     }
-    return res.json({
-        status: true,
-        message: 'User Path created',
-        data: path
-    })
-}
 
+    return res.json({
+        status:  true,
+        message: "Path selected successfully",
+        data:    path,
+    });
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET USER PATHS (all active paths for a user, or filtered)
+// ─────────────────────────────────────────────────────────────────────────────
 const getUserPath = async (req, res) => {
-    let filter = {}
+    let filter = {};
     if (req.query.status) {
         filter.status = req.query.status;
-        if (req.query.status == "all")
-            filter = {};
+        if (req.query.status === "all") filter = {};
     } else {
         filter.status = "active";
     }
     if (req.query.email) filter.email = req.query.email;
 
     userPathModel.aggregate([
-        {
-            $match: filter
-        },
-        {
-            $sort: { "createdAt": -1 }
-        },
+        { $match: filter },
+        { $sort: { createdAt: -1 } },
         {
             $lookup: {
                 from: "paths",
-                let: { "pathId": "$pathId" },
+                let: { pathId: "$pathId" },
                 pipeline: [
                     {
                         $match: {
@@ -75,13 +92,13 @@ const getUserPath = async (req, res) => {
                                     { $eq: ["$$pathId", "$_id"] },
                                     { $eq: ["$status", "active"] },
                                 ],
-                            }
-                        }
+                            },
+                        },
                     },
                     {
                         $lookup: {
                             from: "career_steps",
-                            let: { "the_ids": "$the_ids.step_id" },
+                            let: { the_ids: "$the_ids.step_id" },
                             pipeline: [
                                 {
                                     $match: {
@@ -90,72 +107,77 @@ const getUserPath = async (req, res) => {
                                                 { $in: ["$_id", "$$the_ids"] },
                                                 { $eq: ["$status", "active"] },
                                             ],
-                                        }
-                                    }
+                                        },
+                                    },
                                 },
                             ],
-                            as: "StepDetails"
-                        }
+                            as: "StepDetails",
+                        },
                     },
                 ],
-                as: "PathDetails"
-            }
+                as: "PathDetails",
+            },
         },
     ])
         .then(userpaths => {
             if (userpaths.length === 0) {
-                return res.json({
-                    status: false,
-                    message: 'No data found',
-                })
+                return res.json({ status: false, message: "No data found" });
             }
             return res.json({
-                status: true,
-                total: userpaths.length,
-                message: 'User Paths data found',
-                data: userpaths
-            })
-        }).catch(err => {
-            console.log('err=========>', err);
-            res.json({
-                status: false,
-                message: err.message
+                status:  true,
+                total:   userpaths.length,
+                message: "User Paths data found",
+                data:    userpaths,
             });
+        })
+        .catch(err => {
+            console.error("getUserPath error:", err);
+            res.json({ status: false, message: err.message });
         });
-}
+};
 
-
+// ─────────────────────────────────────────────────────────────────────────────
+// GET CURRENT USER PATH (active, with current step resolved)
+// ─────────────────────────────────────────────────────────────────────────────
 const getCurrentUserPath = async (req, res) => {
-    let filter = {}
+    let filter = {};
     if (req.query.status) {
         filter.status = req.query.status;
-        if (req.query.status == "all")
-            filter = {};
+        if (req.query.status === "all") filter = {};
     } else {
         filter.status = "active";
     }
     if (req.query.email) filter.email = req.query.email;
+
+    // If a specific pathId is given, filter to that path
+    if (req.query.pathId) filter.pathId = new mongoose.Types.ObjectId(req.query.pathId);
+
     if (req.query.email) {
-        let fetchCurrentStep = await userPathModel.findOne(filter)
+        const fetchCurrentStep = await userPathModel.findOne(filter);
+        if (!fetchCurrentStep) {
+            return res.json({ status: false, message: "No active path found" });
+        }
         if (fetchCurrentStep.currentStep === "completed") {
-            return res.json({
-                status: false,
-                message: "All the steps have been completed by the user"
-            })
+            return res.json({ status: false, message: "All steps completed" });
         }
         if (!fetchCurrentStep.currentStep) {
-            let fetchPathData = await pathModel.findOne({ _id: fetchCurrentStep.pathId, status: "active" })
-            let updateCurrentStep = await userPathModel.findOneAndUpdate(filter, { currentStep: fetchPathData.the_ids[0].step_id }, { new: true })
+            const fetchPathData = await pathModel.findOne({
+                _id:    fetchCurrentStep.pathId,
+                status: "active",
+            });
+            if (fetchPathData?.the_ids?.length) {
+                await userPathModel.findOneAndUpdate(
+                    filter,
+                    { currentStep: fetchPathData.the_ids[0].step_id },
+                    { new: true }
+                );
+            }
         }
     }
 
     userPathModel.aggregate([
-        {
-            $match: filter
-        },
-        {
-            $sort: { "createdAt": -1 }
-        },
+        { $match: filter },
+        { $sort: { createdAt: -1 } },
         {
             $lookup: {
                 from: "career_steps",
@@ -168,138 +190,148 @@ const getCurrentUserPath = async (req, res) => {
                                     { $eq: ["$_id", "$$currentStepObjectId"] },
                                     { $eq: ["$status", "active"] },
                                 ],
-                            }
-                        }
+                            },
+                        },
                     },
                 ],
-                as: "StepDetails"
-            }
-        }
+                as: "StepDetails",
+            },
+        },
     ])
         .then(userpaths => {
             if (userpaths.length === 0) {
-                return res.json({
-                    status: false,
-                    message: 'No data found',
-                })
+                return res.json({ status: false, message: "No data found" });
             }
             return res.json({
-                status: true,
-                total: userpaths.length,
-                message: 'User Paths data found',
-                data: userpaths
-            })
-        }).catch(err => {
-            console.log('err=========>', err);
-            res.json({
-                status: false,
-                message: err.message
+                status:  true,
+                total:   userpaths.length,
+                message: "User Paths data found",
+                data:    userpaths,
             });
+        })
+        .catch(err => {
+            console.error("getCurrentUserPath error:", err);
+            res.json({ status: false, message: err.message });
         });
-}
+};
 
-
+// ─────────────────────────────────────────────────────────────────────────────
+// COMPLETE A STEP
+// ─────────────────────────────────────────────────────────────────────────────
 const completeStep = async (req, res) => {
-    let updateData = {}
+    let updateData = {};
     try {
-        const currentStep = await pathModel.findOne({ pathId: req.body._id, 'the_ids.step_id': req.body.step_id, status: "active" });
+        // Find the path doc matching this pathId
+        const currentPath = await pathModel.findOne({
+            _id:    req.body.pathId,
+            status: "active",
+        });
 
-        if (currentStep) {
-            const currentIndex = currentStep.the_ids.findIndex((item) => item.step_id == req.body.step_id);
-            if (currentIndex !== -1 && currentIndex < currentStep.the_ids.length - 1) {
-                const nextStepId = currentStep.the_ids[currentIndex + 1].step_id;
-                console.log(nextStepId, "nextStep")
-                updateData.currentStep = nextStepId
+        if (currentPath) {
+            const currentIndex = currentPath.the_ids.findIndex(
+                item => item.step_id.toString() === req.body.step_id.toString()
+            );
+            if (currentIndex !== -1 && currentIndex < currentPath.the_ids.length - 1) {
+                updateData.currentStep = currentPath.the_ids[currentIndex + 1].step_id;
             }
-            if (currentIndex === currentStep.the_ids.length - 1) {
-                updateData.currentStep = "completed"
+            if (currentIndex === currentPath.the_ids.length - 1) {
+                updateData.currentStep = "completed";
             }
         } else {
-            res.json({
-                status: false,
-                message: "Step id not found / does not belong to the selected user path"
-            })
+            return res.json({
+                status:  false,
+                message: "Step id not found / does not belong to the selected user path",
+            });
         }
     } catch (error) {
         console.error(error);
-        throw new Error('Error finding the next step ID');
+        return res.json({ status: false, message: "Error finding next step" });
     }
+
     updateData = {
         ...updateData,
-        $addToSet: { completedSteps: req.body.step_id }
-    }
-    let updateCompletedStep = await userPathModel.findOneAndUpdate({ email: req.body.email, status: "active" }, updateData, { new: true })
-    if (!updateCompletedStep) {
-        return res.json({
-            status: false,
-            message: 'Data not found',
-        })
-    }
-    return res.json({
-        status: true,
-        message: 'Completed Step updated',
-        data: updateCompletedStep
-    })
-}
+        $addToSet: { completedSteps: req.body.step_id },
+    };
 
+    // Update the specific path doc for this user
+    const filter = { email: req.body.email, pathId: req.body.pathId, status: "active" };
+    const updated = await userPathModel.findOneAndUpdate(filter, updateData, { new: true });
+
+    if (!updated) {
+        return res.json({ status: false, message: "User path not found" });
+    }
+    return res.json({ status: true, message: "Step completed", data: updated });
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FAIL A STEP (redirects to backup path)
+// ─────────────────────────────────────────────────────────────────────────────
 const failedStep = async (req, res) => {
-    const checkStep = await userPathModel.findOne({ email: req.body.email, status: "active" })
-    if (checkStep) {
-        if (checkStep.completedSteps.includes(req.body.step_id)) {
-            return res.json({
-                status: false,
-                message: "This step has already been completed by the user"
-            })
-        }
-    } else {
-        return res.json({
-            status: false,
-            message: "user not found"
-        })
+    const checkStep = await userPathModel.findOne({
+        email:  req.body.email,
+        pathId: req.body.pathId,
+        status: "active",
+    });
+
+    if (!checkStep) {
+        return res.json({ status: false, message: "User path not found" });
+    }
+    if (checkStep.completedSteps.includes(req.body.step_id)) {
+        return res.json({ status: false, message: "This step is already completed" });
     }
 
-    const pathDetail = await pathModel.findOne({ pathId: req.body._id,'the_ids.step_id': req.body.step_id, status: "active" });
-    if (pathDetail) {
-        let selectedStepData = pathDetail.the_ids.filter((item) => item.step_id == req.body.step_id)
-        let updateData = { pathId: selectedStepData[0].backup_pathId, completedSteps: [], currentStep: "" }
-        let updatePath = await userPathModel.findOneAndUpdate({ email: req.body.email, status: "active" }, updateData, { new: true })
-        if (updatePath) {
-            return res.json({
-                success: true,
-                message: "user path updated",
-                data: updatePath
-            })
-        }
-    } else {
-        return res.json({
-            status: false,
-            message: "step id not found / does not belong to the selected path"
-        })
-    }
-}
+    const pathDetail = await pathModel.findOne({
+        _id:              req.body.pathId,
+        'the_ids.step_id': req.body.step_id,
+        status:           "active",
+    });
 
+    if (!pathDetail) {
+        return res.json({ status: false, message: "Step not found in path" });
+    }
+
+    const selectedStep = pathDetail.the_ids.find(
+        item => item.step_id.toString() === req.body.step_id.toString()
+    );
+
+    const updateData = {
+        pathId:         selectedStep.backup_pathId,
+        completedSteps: [],
+        currentStep:    "",
+    };
+
+    const updated = await userPathModel.findOneAndUpdate(
+        { email: req.body.email, pathId: req.body.pathId, status: "active" },
+        updateData,
+        { new: true }
+    );
+
+    if (!updated) {
+        return res.json({ status: false, message: "Failed to update path" });
+    }
+    return res.json({ status: true, message: "Path updated to backup", data: updated });
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET USER PATHS BY PARTNER (for partner to see who enrolled in their paths)
+// ─────────────────────────────────────────────────────────────────────────────
 const getUserPathbyPartner = async (req, res) => {
-    let filter = {}
+    let filter = {};
     if (req.body.status) {
         filter.status = req.body.status;
-        if (req.body.status == "all")
-            filter = {};
+        if (req.body.status === "all") filter = {};
     } else {
         filter.status = "active";
     }
     if (req.body.email) filter.email = req.body.email;
 
     pathModel.aggregate([
-        {
-            $match: filter
-        },
-        {
-            $sort: { "createdAt": -1 }
-        },
+        { $match: filter },
+        { $sort: { createdAt: -1 } },
         {
             $lookup: {
                 from: "userpaths",
-                let: { "pathId": "$_id" },
+                let: { pathId: "$_id" },
                 pipeline: [
                     {
                         $match: {
@@ -308,80 +340,73 @@ const getUserPathbyPartner = async (req, res) => {
                                     { $eq: ["$$pathId", "$pathId"] },
                                     { $eq: ["$status", "active"] },
                                 ],
-                            }
-                        }
+                            },
+                        },
                     },
                     {
                         $lookup: {
                             from: "naavi_users",
-                            let: { "the_ids": "$email" },
+                            let: { email: "$email" },
                             pipeline: [
                                 {
                                     $match: {
                                         $expr: {
                                             $and: [
-                                                { $eq: ["$email", "$$the_ids"] },
+                                                { $eq: ["$email", "$$email"] },
                                                 { $eq: ["$status", "active"] },
                                             ],
-                                        }
-                                    }
+                                        },
+                                    },
                                 },
                             ],
-                            as: "UseDetails"
-                        }
+                            as: "UseDetails",
+                        },
                     },
                 ],
-                as: "PathDetails"
-            }
+                as: "PathDetails",
+            },
         },
         {
-            "$project": {
-              "_id": 1,
-              "nameOfPath": 1,
-              "PathDetails._id": 1,
-              "PathDetails.UseDetails._id": 1,
-              "PathDetails.UseDetails.email": 1,
-              "PathDetails.UseDetails.username": 1,
-              "PathDetails.createdAt": 1
-            }
-          }
+            $project: {
+                _id:                           1,
+                nameOfPath:                    1,
+                "PathDetails._id":             1,
+                "PathDetails.UseDetails._id":  1,
+                "PathDetails.UseDetails.email":    1,
+                "PathDetails.UseDetails.username": 1,
+                "PathDetails.createdAt":       1,
+            },
+        },
     ])
         .then(userpaths => {
             if (userpaths.length === 0) {
-                return res.json({
-                    status: false,
-                    message: 'No data found',
-                })
+                return res.json({ status: false, message: "No data found" });
             }
-            var userdetials=[];
-            for(var i=0; i<userpaths.length;i++){
-                var userpath= userpaths[i]["PathDetails"];
-                for(var j=0;j<userpath.length;j++){
-                    var data = {
-                        createdAt: userpath[j]["createdAt"],
-                        username: userpath[j]["UseDetails"][0]["username"],
-                        email: userpath[j]["UseDetails"][0]["email"],
-                        nameOfPath: userpaths[i]["nameOfPath"]
-                    };
-                    userdetials.push(data);    
+            const userdetails = [];
+            for (const up of userpaths) {
+                for (const pd of up.PathDetails) {
+                    if (pd.UseDetails?.[0]) {
+                        userdetails.push({
+                            createdAt:  pd.createdAt,
+                            username:   pd.UseDetails[0].username,
+                            email:      pd.UseDetails[0].email,
+                            nameOfPath: up.nameOfPath,
+                        });
+                    }
                 }
             }
             return res.json({
-                status: true,
-                total: userdetials.length,
-                message: 'User Paths data found',
-                data: userdetials
-            })
-        }).catch(err => {
-            console.log('err=========>', err);
-            res.json({
-                status: false,
-                message: err.message
+                status:  true,
+                total:   userdetails.length,
+                message: "User Paths data found",
+                data:    userdetails,
             });
-        });    
-}
-
-
+        })
+        .catch(err => {
+            console.error("getUserPathbyPartner error:", err);
+            res.json({ status: false, message: err.message });
+        });
+};
 
 module.exports = {
     addUserPath,
@@ -389,5 +414,5 @@ module.exports = {
     getCurrentUserPath,
     completeStep,
     failedStep,
-    getUserPathbyPartner
-}
+    getUserPathbyPartner,
+};

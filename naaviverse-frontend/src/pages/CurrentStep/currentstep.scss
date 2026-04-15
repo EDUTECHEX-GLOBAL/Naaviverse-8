@@ -16,6 +16,19 @@ $radius: 12px;
 $shadow: 0 2px 10px rgba(15, 31, 61, 0.07);
 $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
 
+// Plan pastel palette
+$standard-accent: #3b82f6;
+$standard-bg: #eff6ff;
+$standard-border: #bfdbfe;
+
+$pro-accent: #16a34a;
+$pro-bg: #f0fdf4;
+$pro-border: #bbf7d0;
+
+$proplus-accent: #d97706;
+$proplus-bg: #fffbeb;
+$proplus-border: #fde68a;
+
 // ── Base ────────────────────────────────────────────────────────────────────
 .currentstep {
   width: 100%;
@@ -55,18 +68,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     transition: all 0.16s;
     white-space: nowrap;
 
-    &:hover {
-      color: $navy;
-    }
-
-    &.active {
-      color: $teal;
-      border-bottom-color: $teal;
-    }
-
-    &.done {
-      color: $gray600;
-    }
+    &:hover { color: $navy; }
+    &.active { color: $teal; border-bottom-color: $teal; }
+    &.done { color: $gray600; }
   }
 
   .sp-n {
@@ -83,21 +87,11 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     flex-shrink: 0;
     transition: all 0.16s;
 
-    .sp.active & {
-      background: $teal;
-      color: #fff;
-    }
-
-    .sp.done & {
-      background: #16a34a;
-      color: #fff;
-    }
+    .sp.active & { background: $teal; color: #fff; }
+    .sp.done & { background: #16a34a; color: #fff; }
   }
 
-  .sp-arr {
-    color: $gray300;
-    font-size: 12px;
-  }
+  .sp-arr { color: $gray300; font-size: 12px; }
 }
 
 // ── Page Content ─────────────────────────────────────────────────────────────
@@ -141,9 +135,7 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   margin-bottom: 5px;
 }
 
-.bc-hi {
-  color: $teal;
-}
+.bc-hi { color: $teal; }
 
 .page-head-top-row {
   display: flex;
@@ -175,10 +167,7 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   &.back-link {
     cursor: pointer;
     transition: background 0.15s;
-
-    &:hover {
-      background: $gray200;
-    }
+    &:hover { background: $gray200; }
   }
 }
 
@@ -206,23 +195,12 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     transform: translateY(-2px);
   }
 
-  &.vMacro:hover {
-    border-color: #a5b4fc;
-  }
-
-  &.vMicro:hover {
-    border-color: $teal;
-  }
-
-  &.vNano:hover {
-    border-color: $accent;
-  }
+  &.vMacro:hover { border-color: #a5b4fc; }
+  &.vMicro:hover { border-color: $teal; }
+  &.vNano:hover { border-color: $accent; }
 
   &.view-card--locked {
-    &:hover {
-      transform: none;
-      box-shadow: $shadow;
-    }
+    &:hover { transform: none; box-shadow: $shadow; }
   }
 }
 
@@ -249,13 +227,8 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     pointer-events: none;
   }
 
-  &.lock-overlay--micro {
-    background: rgba(8, 35, 50, 0.65);
-  }
-
-  &.lock-overlay--nano {
-    background: rgba(30, 18, 5, 0.65);
-  }
+  &.lock-overlay--micro { background: rgba(8, 35, 50, 0.65); }
+  &.lock-overlay--nano { background: rgba(30, 18, 5, 0.65); }
 }
 
 .lock-overlay__inner {
@@ -277,10 +250,7 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   justify-content: center;
   color: #fff;
 
-  svg {
-    width: 22px;
-    height: 22px;
-  }
+  svg { width: 22px; height: 22px; }
 }
 
 .lock-overlay__text {
@@ -305,44 +275,23 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   transition: all 0.18s;
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
 
-  &:hover {
-    background: #d97706;
-    transform: scale(1.04);
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
+  &:hover { background: #d97706; transform: scale(1.04); }
+  &:active { transform: scale(0.98); }
 }
 
 // ── View Card Head ────────────────────────────────────────────────────────────
-// NOTE: .vc-dot is removed from JSX — these styles are kept for safety but unused
 .vc-head {
   padding: 10px 14px;
   display: flex;
   align-items: center;
   gap: 8px;
 
-  &.hMacro {
-    background: #f5f3ff;
-    border-bottom: 1px solid #e0e7ff;
-  }
-
-  &.hMicro {
-    background: $teal-light;
-    border-bottom: 1px solid $teal-mid;
-  }
-
-  &.hNano {
-    background: #fffbeb;
-    border-bottom: 1px solid #fde68a;
-  }
+  &.hMacro { background: #f5f3ff; border-bottom: 1px solid #e0e7ff; }
+  &.hMicro { background: $teal-light; border-bottom: 1px solid $teal-mid; }
+  &.hNano { background: #fffbeb; border-bottom: 1px solid #fde68a; }
 }
 
-// dot removed from JSX — keeping class stub so nothing breaks if referenced
-.vc-dot {
-  display: none;
-}
+.vc-dot { display: none; }
 
 .vc-lbl {
   font-size: 11px;
@@ -351,17 +300,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   letter-spacing: 1.1px;
   flex: 1;
 
-  &.lMacro {
-    color: #6366f1;
-  }
-
-  &.lMicro {
-    color: $teal;
-  }
-
-  &.lNano {
-    color: #d97706;
-  }
+  &.lMacro { color: #6366f1; }
+  &.lMicro { color: $teal; }
+  &.lNano { color: #d97706; }
 }
 
 // ── Access Badge ─────────────────────────────────────────────────────────────
@@ -371,28 +312,13 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   text-transform: uppercase;
   letter-spacing: 0.6px;
   padding: 2px 8px;
-  border-radius: 4px; // ← square, not oval
+  border-radius: 4px;
   white-space: nowrap;
 
-  &.badge-free {
-    background: #dcfce7;
-    color: #16a34a;
-  }
-
-  &.badge-sub {
-    background: #ede9fe;
-    color: #6366f1;
-  }
-
-  &.badge-paid {
-    background: #fef3c7;
-    color: #92680a;
-  }
-
-  &.badge-locked {
-    background: rgba(148, 163, 184, 0.15);
-    color: $gray400;
-  }
+  &.badge-free { background: #dcfce7; color: #16a34a; }
+  &.badge-sub { background: #ede9fe; color: #6366f1; }
+  &.badge-paid { background: #fef3c7; color: #92680a; }
+  &.badge-locked { background: rgba(148, 163, 184, 0.15); color: $gray400; }
 }
 
 // ── View Card Body & Footer ───────────────────────────────────────────────────
@@ -453,32 +379,23 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   justify-content: center;
   gap: 6px;
 
-  &.bMacro {
-    background: #ede9fe;
-    color: #5b21b6;
-
-  }
-
-  &.bMicro {
-    background: $teal-light;
-    color: $teal;
-  }
-
-  &.bNano {
+  &.bMacro { background: #ede9fe; color: #5b21b6; }
+  &.bMicro { background: $teal-light; color: $teal; }
+  &.bNano { background: #fef3c7; color: #d97706; }
+  &.bNanoUpgrade {
     background: #fef3c7;
-    color: #d97706;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    font-weight: 700;
+    &:hover { background: $accent; color: #fff; border-color: $accent; }
   }
 
   &.bLocked {
     background: $gray100;
     color: $gray400;
-    cursor: not-allowed;
+    cursor: pointer;
     font-weight: 600;
-
-    &:hover {
-      background: $gray200;
-      color: $gray600;
-    }
+    &:hover { background: $gray200; color: $gray600; }
   }
 }
 
@@ -502,22 +419,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   }
 }
 
-.cb-left {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.cb-q {
-  font-size: 14px;
-  font-weight: 600;
-  color: $navy;
-}
-
-.cb-btns {
-  display: flex;
-  gap: 10px;
-}
+.cb-left { display: flex; flex-direction: column; gap: 2px; }
+.cb-q { font-size: 14px; font-weight: 600; color: $navy; }
+.cb-btns { display: flex; gap: 10px; }
 
 .btn-fail {
   background: #fef2f2;
@@ -534,16 +438,8 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   align-items: center;
   gap: 5px;
 
-  &:hover {
-    background: #fee2e2;
-    color: #991b1b;
-    border-color: #fecaca;
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
+  &:hover { background: #fee2e2; color: #991b1b; border-color: #fecaca; transform: translateY(-1px); }
+  &:active { transform: translateY(0); }
 }
 
 .btn-yes {
@@ -562,21 +458,12 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   gap: 5px;
   box-shadow: 0 2px 6px rgba(2, 136, 209, 0.08);
 
-  &:hover {
-    background: #e0f2fe;
-    color: #075985;
-    border-color: #bae6fd;
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(2, 136, 209, 0.12);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
+  &:hover { background: #e0f2fe; color: #075985; border-color: #bae6fd; transform: translateY(-1px); box-shadow: 0 3px 10px rgba(2, 136, 209, 0.12); }
+  &:active { transform: translateY(0); }
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-//  SUBSCRIPTION GATE SCREEN
+//  SUBSCRIPTION GATE — Compact, pastel, all 3 cards visible without scroll
 // ══════════════════════════════════════════════════════════════════════════════
 
 .sub-gate {
@@ -585,30 +472,22 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 32px 24px 48px;
-  background: $gray50;
+  padding: 20px 24px 28px;
+  background: #f5f7fa;
 }
 
 .sub-gate__inner {
   width: 100%;
-  max-width: 620px;
+  max-width: 960px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
   animation: gateIn 0.28s ease both;
 }
 
 @keyframes gateIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .sub-gate__back {
@@ -621,167 +500,346 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   color: $gray400;
   cursor: pointer;
   padding: 0;
-  margin-bottom: 22px;
+  margin-bottom: 14px;
   transition: color 0.15s;
 
-  &:hover {
-    color: $navy;
-  }
-}
-
-.sub-gate__badge {
-  background: #fef3c7;
-  color: #92680a;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  padding: 5px 16px;
-  border-radius: 4px; // ← square
-  margin-bottom: 14px;
+  &:hover { color: $navy; }
+  &:disabled { opacity: 0.5; }
 }
 
 .sub-gate__title {
   font-family: 'Playfair Display', serif;
-  font-size: 24px; // ← slightly smaller
+  font-size: 22px;
   font-weight: 700;
   color: $navy;
-  margin: 0 0 20px; // ← was 0 0 10px, now more breathing room below
-  line-height: 1.2;
+  margin: 0 0 14px;
+  text-align: center;
 }
 
-.sub-gate__desc {
-  font-size: 13.5px;
-  color: $gray600;
-  line-height: 1.6;
-  max-width: 460px;
-  margin: 0 0 24px;
-}
+// ── Billing toggle ─────────────────────────────────────────────────────────
+.sub-billing-toggle {
+  display: flex;
+  gap: 0;
+  justify-content: center;
+  margin-bottom: 20px;
+  background: #e2e8f0;
+  padding: 3px;
+  border-radius: 8px;
+  width: fit-content;
 
-// ── Plans grid ───────────────────────────────────────────────────────────────
-.sub-plans {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  width: 100%;
-  margin-bottom: 24px;
-}
-
-.sub-plan {
-  background: #fff;
-  border-radius: $radius;
-  border: 2px solid $gray200;
-  padding: 18px 16px;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-
-  &:hover {
-    border-color: $teal;
-    box-shadow: $shadow;
-  }
-
-  &.sub-plan--selected {
-    border-color: $teal;
-    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
-    background: #f0fdfa;
-  }
-}
-
-.sub-plan__tag {
-  position: absolute;
-  top: -11px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: $teal;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 3px 12px;
-  border-radius: 4px; // ← square tag
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  white-space: nowrap;
-}
-
-.sub-plan__name {
-  font-size: 14px;
-  font-weight: 700;
-  color: $navy;
-  margin-bottom: 5px;
-}
-
-.sub-plan__price {
-  font-family: 'Playfair Display', serif;
-  font-size: 26px;
-  font-weight: 700;
-  color: $navy;
-  margin-bottom: 2px;
-  line-height: 1.1;
-
-  span {
+  .sbt-btn {
+    padding: 6px 22px;
+    border: none;
+    border-radius: 5px;
+    background: transparent;
+    color: $gray600;
     font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 400;
-    color: $gray400;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s;
+    white-space: nowrap;
+
+    &--active {
+      background: $navy;
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(15, 31, 61, 0.2);
+    }
   }
 }
 
-.sub-plan__save {
-  font-size: 11px;
-  color: $teal;
-  font-weight: 600;
-  margin-bottom: 12px;
+// ── 3-column plan grid ─────────────────────────────────────────────────────
+.sub-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 16px;
+  align-items: stretch;
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+  }
 }
 
-.sub-plan__feats {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+// ── Plan card base ──────────────────────────────────────────────────────────
+.sub-plan-card {
+  background: #fff;
+  border: 1.5px solid $gray200;
+  border-radius: 14px;
+  padding: 20px 18px 16px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  text-align: left;
 
-  li {
-    font-size: 12px;
-    color: $gray600;
+  &:hover:not(.sub-plan-card--active) {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+    transform: translateY(-2px);
+  }
+
+  &--active {
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.09);
+    transform: translateY(-3px);
+  }
+
+  // ── Standard (blue) ───────────────────────────────────
+  &--standard {
+    &.sub-plan-card--active {
+      background: #fafcff;
+      border-color: $standard-border;
+      box-shadow: 0 8px 28px rgba(59, 130, 246, 0.12);
+    }
+    &:hover:not(.sub-plan-card--active) { border-color: $standard-border; }
+  }
+
+  // ── Pro (green) ────────────────────────────────────────
+  &--pro {
+    &.sub-plan-card--active {
+      background: #f9fffc;
+      border-color: $pro-border;
+      box-shadow: 0 8px 28px rgba(22, 163, 74, 0.12);
+    }
+    &:hover:not(.sub-plan-card--active) { border-color: $pro-border; }
+  }
+
+  // ── Pro Plus (amber) ──────────────────────────────────
+  &--proplus {
+    &.sub-plan-card--active {
+      background: #fffef9;
+      border-color: $proplus-border;
+      box-shadow: 0 8px 28px rgba(217, 119, 6, 0.12);
+    }
+    &:hover:not(.sub-plan-card--active) { border-color: $proplus-border; }
+  }
+
+  // ── "Most Popular" / "Best Value" badge ───────────────
+  .spc-tag {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+    letter-spacing: 0.4px;
+  }
+
+  // ── Plan name ─────────────────────────────────────────
+  .spc-header {
     display: flex;
-    align-items: flex-start;
-    gap: 7px;
-    line-height: 1.4;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    margin-top: 6px;
+  }
 
-    &::before {
-      content: '✓';
-      color: $teal;
-      font-weight: 700;
+  .spc-label {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+
+  // ── Price ─────────────────────────────────────────────
+  .spc-price {
+    font-size: 32px;
+    font-weight: 800;
+    color: $navy;
+    line-height: 1;
+    margin-bottom: 3px;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: -1px;
+
+    .spc-period {
+      font-size: 13px;
+      font-weight: 400;
+      color: $gray400;
+      margin-left: 2px;
+      letter-spacing: 0;
+    }
+  }
+
+  // ── "2 months free" or spacer ─────────────────────────
+  .spc-save {
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    min-height: 16px;
+  }
+
+  // ── Credits pill ──────────────────────────────────────
+  .spc-credits {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    width: fit-content;
+    letter-spacing: 0.2px;
+  }
+
+  // ── Subscribe button ──────────────────────────────────
+  .spc-subscribe-btn {
+    width: 100%;
+    padding: 9px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 14px;
+    transition: all 0.18s;
+    letter-spacing: 0.2px;
+
+    &:hover:not(:disabled) { filter: brightness(1.07); transform: translateY(-1px); }
+    &:active { transform: translateY(0); }
+    &:disabled { opacity: 0.65; cursor: not-allowed; }
+  }
+
+  // ── Divider ───────────────────────────────────────────
+  .spc-divider {
+    border: none;
+    border-top: 1px solid #f1f5f9;
+    margin: 0 0 12px;
+  }
+
+  // ── Feature list ──────────────────────────────────────
+  .spc-feats {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;
+
+    li {
+      font-size: 12px;
+      color: $gray600;
+      padding: 5px 0;
+      line-height: 1.4;
+      border-bottom: 1px solid #f8fafc;
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+
+      &:last-child { border-bottom: none; }
+    }
+
+    .spc-check {
+      font-weight: 800;
+      font-size: 11px;
       flex-shrink: 0;
       margin-top: 1px;
     }
   }
 }
 
-.sub-gate__cta {
-  background: $navy;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 13px 44px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.18s;
-  box-shadow: 0 5px 20px rgba(15, 31, 61, 0.2);
+// ── Hint below cards ───────────────────────────────────────────────────────
+.sub-gate__nano-hint {
+  font-size: 12px;
+  color: $gray400;
+  text-align: center;
+  line-height: 1.6;
+  margin-top: 4px;
+}
 
-  &:hover {
-    background: $teal;
-    box-shadow: 0 6px 24px rgba(13, 148, 136, 0.28);
-    transform: translateY(-1px);
+// ── Hide old CTA (each card has its own button) ─────────────────────────────
+.sub-gate__cta { display: none; }
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  SUBSCRIPTION SUCCESS SCREEN
+// ══════════════════════════════════════════════════════════════════════════════
+
+.sub-success {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px 24px 40px;
+  background: #f9fafb;
+
+  &__inner {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px 28px;
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 4px 28px rgba(0, 0, 0, 0.07);
+    margin: auto 0;
   }
 
-  &:active {
-    transform: translateY(0);
+  &__icon { margin: 0 auto 20px; width: 64px; height: 64px; }
+  &__svg { width: 64px; height: 64px; }
+
+  &__circle {
+    stroke: #10b981;
+    stroke-width: 2;
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    animation: strokeCircle 0.6s ease forwards;
+  }
+
+  &__check {
+    stroke: #10b981;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: strokeCheck 0.4s ease 0.55s forwards;
+  }
+
+  @keyframes strokeCircle { to { stroke-dashoffset: 0; } }
+  @keyframes strokeCheck  { to { stroke-dashoffset: 0; } }
+
+  &__badge {
+    display: inline-block;
+    background: #f0fdf4;
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+    letter-spacing: 0.02em;
+  }
+
+  &__title { font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 10px; }
+  &__desc { font-size: 14px; color: #475569; line-height: 1.6; margin: 0 0 16px; }
+
+  &__plan-pill {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 16px;
+    border-radius: 6px;
+    margin-bottom: 22px;
+  }
+
+  &__cta {
+    width: 100%;
+    padding: 14px;
+    background: $navy;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+
+    &:hover { background: #1e293b; transform: translateY(-1px); }
+    &:active { transform: translateY(0); }
   }
 }
 
@@ -790,13 +848,8 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
 // ══════════════════════════════════════════════════════════════════════════════
 
 @keyframes sk-shimmer {
-  0% {
-    background-position: -600px 0;
-  }
-
-  100% {
-    background-position: 600px 0;
-  }
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
 }
 
 .sk-bar {
@@ -807,19 +860,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   flex-shrink: 0;
 }
 
-.sk-text-block {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
+.sk-text-block { display: flex; flex-direction: column; width: 100%; }
 
-.sk-page-head {
-  .page-head-top-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-}
+.sk-page-head .page-head-top-row { display: flex; align-items: center; gap: 12px; }
 
 .sk-card {
   display: flex;
@@ -827,22 +870,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   justify-content: space-between;
   pointer-events: none;
 
-  .vc-head {
-    display: flex;
-    align-items: center;
-  }
-
-  .vc-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    padding: 14px 0;
-  }
-
-  .vc-foot {
-    margin-top: auto;
-  }
+  .vc-head { display: flex; align-items: center; }
+  .vc-body { flex: 1; display: flex; flex-direction: column; gap: 0; padding: 14px 0; }
+  .vc-foot { margin-top: auto; }
 
   &.sk-card--macro .sk-bar {
     background: linear-gradient(90deg, #ede9f8 25%, #ddd5f2 37%, #ede9f8 63%);
@@ -865,13 +895,118 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
 
 .sk-comp-bar {
   pointer-events: none;
+  .cb-btns { display: flex; gap: 12px; align-items: center; }
+}
 
-  .cb-btns {
-    display: flex;
-    gap: 12px;
-    align-items: center;
+// ── Wallet balance chip ────────────────────────────────────────────────────────
+.wallet-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  color: #0369a1;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  float: right;
+  margin-bottom: 4px;
+
+  svg { flex-shrink: 0; }
+}
+
+.wallet-chip__tier { font-size: 12px; font-weight: 600; }
+
+// ── Unlock toast ────────────────────────────────────────────────────────────
+.unlock-toast {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  animation: toastIn 0.25s ease both;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Credit unlock overlay actions ─────────────────────────────────────────────
+.cuo-actions { display: flex; flex-direction: column; align-items: center; gap: 7px; width: 100%; }
+
+.cuo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 18px;
+  border-radius: 30px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  white-space: nowrap;
+
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  &.cuo-btn--credits {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(99, 102, 241, 0.35);
+    width: 100%;
+    max-width: 180px;
+    &:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(99, 102, 241, 0.45); }
+  }
+
+  &.cuo-btn--confirm {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    &:hover:not(:disabled) { transform: translateY(-1px); }
+  }
+
+  &.cuo-btn--cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    &:hover:not(:disabled) { background: rgba(255, 255, 255, 0.18); color: #fff; }
   }
 }
+
+.cuo-low {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 30px;
+}
+
+.cuo-confirm { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+
+.cuo-confirm-text {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.88);
+  text-align: center;
+  line-height: 1.5;
+  margin: 0;
+
+  strong { color: #fff; }
+}
+
+.cuo-confirm-balance { display: block; margin-top: 3px; font-size: 10px; color: rgba(255, 255, 255, 0.45); }
+.cuo-confirm-btns { display: flex; gap: 7px; }
 
 // ── Buy Drawer ────────────────────────────────────────────────────────────────
 .accept-offer-overlay {
@@ -908,22 +1043,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
         justify-content: center;
         align-items: flex-start;
 
-        p {
-          margin-bottom: 0;
-        }
-
-        .amnt-font-cs {
-          font-weight: 600;
-          color: #1f304f;
-          font-size: 25px;
-        }
-
-        .text-font-cs {
-          font-weight: 700;
-          color: #1f304f;
-          font-size: 1rem;
-          opacity: 0.5;
-        }
+        p { margin-bottom: 0; }
+        .amnt-font-cs { font-weight: 600; color: #1f304f; font-size: 25px; }
+        .text-font-cs { font-weight: 700; color: #1f304f; font-size: 1rem; opacity: 0.5; }
       }
 
       .left-amnt1-cs {
@@ -933,22 +1055,9 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
         justify-content: center;
         align-items: flex-end;
 
-        p {
-          margin-bottom: 0;
-        }
-
-        .amnt-font-cs {
-          font-weight: 600;
-          color: #1f304f;
-          font-size: 25px;
-        }
-
-        .text-font-cs {
-          font-weight: 700;
-          color: #1f304f;
-          font-size: 1rem;
-          opacity: 0.5;
-        }
+        p { margin-bottom: 0; }
+        .amnt-font-cs { font-weight: 600; color: #1f304f; font-size: 25px; }
+        .text-font-cs { font-weight: 700; color: #1f304f; font-size: 1rem; opacity: 0.5; }
       }
     }
 
@@ -975,10 +1084,7 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
         padding: 1rem 2rem;
         transition: all ease 0.3s;
         cursor: pointer;
-
-        &:hover {
-          scale: 1.1;
-        }
+        &:hover { scale: 1.1; }
       }
 
       .share-btn-cs {
@@ -994,10 +1100,7 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
         padding: 1.2rem 2rem;
         transition: all ease 0.3s;
         cursor: pointer;
-
-        &:hover {
-          scale: 1.1;
-        }
+        &:hover { scale: 1.1; }
       }
     }
 
@@ -1041,22 +1144,8 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
           align-items: center;
           cursor: pointer;
 
-          .coinnamee {
-            width: 50%;
-            padding-left: 10px;
-            font-size: 1rem;
-            color: #1f304f;
-            font-weight: 500;
-          }
-
-          .coinvaluee {
-            width: 44%;
-            display: flex;
-            justify-content: flex-end;
-            font-size: 1rem;
-            color: #1f304f;
-            font-weight: 500;
-          }
+          .coinnamee { width: 50%; padding-left: 10px; font-size: 1rem; color: #1f304f; font-weight: 500; }
+          .coinvaluee { width: 44%; display: flex; justify-content: flex-end; font-size: 1rem; color: #1f304f; font-weight: 500; }
         }
       }
 
@@ -1074,10 +1163,7 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
         align-items: center;
         transition: all ease 0.3s;
         cursor: pointer;
-
-        &:hover {
-          scale: 1.08;
-        }
+        &:hover { scale: 1.08; }
       }
     }
   }
@@ -1114,13 +1200,7 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     align-items: center;
     z-index: 8;
 
-    .popup-text {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      font-size: 0.9rem;
-      font-weight: 400;
-    }
+    .popup-text { width: 100%; display: flex; justify-content: center; font-size: 0.9rem; font-weight: 400; }
 
     .popup-btns {
       width: 100%;
@@ -1139,10 +1219,7 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
         font-weight: 500;
         cursor: pointer;
         transition: all ease 0.2s;
-
-        &:hover {
-          transform: scale(1.05);
-        }
+        &:hover { transform: scale(1.05); }
       }
 
       .no-btn {
@@ -1155,175 +1232,13 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
         font-weight: 500;
         cursor: pointer;
         transition: all ease 0.2s;
-
-        &:hover {
-          transform: scale(1.05);
-        }
+        &:hover { transform: scale(1.05); }
       }
     }
   }
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  SUBSCRIPTION SUCCESS SCREEN
-// ══════════════════════════════════════════════════════════════════════════════
-
-.sub-success {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 20px 24px 40px;
-  background: #f9fafb;
-
-  &__inner {
-    background: #fff;
-    border-radius: 16px;
-    padding: 32px 28px;
-    max-width: 500px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0 4px 28px rgba(0, 0, 0, 0.07);
-    margin: auto 0;
-  }
-
-  &__icon {
-    margin: 0 auto 20px;
-    width: 64px;
-    height: 64px;
-  }
-
-  &__svg {
-    width: 64px;
-    height: 64px;
-  }
-
-  &__circle {
-    stroke: #10b981;
-    stroke-width: 2;
-    stroke-dasharray: 166;
-    stroke-dashoffset: 166;
-    animation: strokeCircle 0.6s ease forwards;
-  }
-
-  &__check {
-    stroke: #10b981;
-    stroke-width: 3;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-dasharray: 48;
-    stroke-dashoffset: 48;
-    animation: strokeCheck 0.4s ease 0.55s forwards;
-  }
-
-  @keyframes strokeCircle {
-    to {
-      stroke-dashoffset: 0;
-    }
-  }
-
-  @keyframes strokeCheck {
-    to {
-      stroke-dashoffset: 0;
-    }
-  }
-
-  &__badge {
-    display: inline-block;
-    background: #f0fdf4;
-    color: #16a34a;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 5px 14px;
-    border-radius: 4px; // ← square
-    margin-bottom: 14px;
-    letter-spacing: 0.02em;
-  }
-
-  &__title {
-    font-size: 24px;
-    font-weight: 800;
-    color: #0f172a;
-    margin: 0 0 10px;
-  }
-
-  &__desc {
-    font-size: 14px;
-    color: #475569;
-    line-height: 1.6;
-    margin: 0 0 16px;
-  }
-
-  &__plan-pill {
-    display: inline-block;
-    background: #f0f9ff;
-    color: #0369a1;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 6px 16px;
-    border-radius: 6px; // ← slightly square
-    margin-bottom: 22px;
-    border: 1px solid #bae6fd;
-  }
-
-  &__unlocks {
-    background: #f8fafc;
-    border-radius: 10px;
-    padding: 16px 20px;
-    margin-bottom: 24px;
-    text-align: left;
-  }
-
-  &__unlock-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    color: #334155;
-    padding: 5px 0;
-
-    &+& {
-      border-top: 1px solid #f1f5f9;
-    }
-  }
-
-  .sul-icon {
-    color: #10b981;
-    font-weight: 800;
-    font-size: 14px;
-    flex-shrink: 0;
-  }
-
-  &__cta {
-    width: 100%;
-    padding: 14px;
-    background: #0f172a;
-    color: #fff;
-    font-size: 15px;
-    font-weight: 700;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.1s ease;
-
-    &:hover {
-      background: #1e293b;
-      transform: translateY(-1px);
-    }
-
-    &:active {
-      transform: translateY(0);
-    }
-  }
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-//  MARKETPLACE CARDS (Image 2 fixes)
-//  — compact service cards, square tags, no ovals, tight spacing
-// ══════════════════════════════════════════════════════════════════════════════
-
-// Filter bar tabs (All / Macro / Micro / Nano / Cart)
+// ── Marketplace filter / card styles ──────────────────────────────────────────
 .mp-filter-bar {
   display: flex;
   align-items: center;
@@ -1339,7 +1254,7 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
-  border-radius: 6px; // ← square, not oval
+  border-radius: 6px;
   border: 1.5px solid $gray200;
   font-size: 12px;
   font-weight: 600;
@@ -1348,25 +1263,11 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   transition: all 0.15s;
   background: #fff;
 
-  &:hover {
-    border-color: $teal;
-    color: $teal;
-  }
-
-  &.mp-filter-tab--active {
-    background: $teal;
-    border-color: $teal;
-    color: #fff;
-  }
-
-  .mp-tab-count {
-    font-size: 11px;
-    font-weight: 700;
-    opacity: 0.75;
-  }
+  &:hover { border-color: $teal; color: $teal; }
+  &.mp-filter-tab--active { background: $teal; border-color: $teal; color: #fff; }
+  .mp-tab-count { font-size: 11px; font-weight: 700; opacity: 0.75; }
 }
 
-// Service card grid
 .mp-service-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1374,7 +1275,6 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   padding: 16px 20px;
 }
 
-// Individual service card — compact, no excess vertical space
 .mp-service-card {
   background: #fff;
   border: 1.5px solid $gray200;
@@ -1387,239 +1287,38 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   transition: all 0.18s;
   box-shadow: $shadow;
 
-  &:hover {
-    border-color: $teal;
-    box-shadow: $shadow-lg;
-    transform: translateY(-2px);
-  }
-
-  &.mp-service-card--selected {
-    border-color: $teal;
-    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
-  }
+  &:hover { border-color: $teal; box-shadow: $shadow-lg; transform: translateY(-2px); }
+  &.mp-service-card--selected { border-color: $teal; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12); }
 }
 
-// Card top row: type + role tags
-.mp-card-tags {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
+.mp-card-tags { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 
-// Square tag chips (replaces oval pills)
 .mp-tag {
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: 3px 8px;
-  border-radius: 4px; // ← square
+  border-radius: 4px;
   border: 1px solid transparent;
   white-space: nowrap;
 
-  &.mp-tag--micro {
-    background: $teal-light;
-    color: $teal;
-    border-color: $teal-mid;
-  }
-
-  &.mp-tag--nano {
-    background: #fef3c7;
-    color: #92680a;
-    border-color: #fde68a;
-  }
-
-  &.mp-tag--macro {
-    background: #f5f3ff;
-    color: #6366f1;
-    border-color: #e0e7ff;
-  }
-
-  &.mp-tag--distributor,
-  &.mp-tag--vendor,
-  &.mp-tag--partner {
-    background: $gray100;
-    color: $gray600;
-    border-color: $gray200;
-  }
+  &.mp-tag--micro { background: $teal-light; color: $teal; border-color: $teal-mid; }
+  &.mp-tag--nano { background: #fef3c7; color: #92680a; border-color: #fde68a; }
+  &.mp-tag--macro { background: #f5f3ff; color: #6366f1; border-color: #e0e7ff; }
+  &.mp-tag--distributor, &.mp-tag--vendor, &.mp-tag--partner { background: $gray100; color: $gray600; border-color: $gray200; }
 }
 
-// Card provider icon
-.mp-card-icon {
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0;
+.mp-card-icon { width: 32px; height: 32px; flex-shrink: 0; img { width: 32px; height: 32px; object-fit: contain; } }
+.mp-card-name { font-size: 14px; font-weight: 700; color: $navy; margin: 0; line-height: 1.3; }
+.mp-card-by { font-size: 11px; color: $gray400; margin: 0; }
 
-  img {
-    width: 32px;
-    height: 32px;
-    object-fit: contain;
-  }
-}
+.mp-card-details { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 0; }
+.mp-card-detail-label { font-size: 11px; font-weight: 600; color: $gray400; white-space: nowrap; }
+.mp-card-detail-value { font-size: 11px; color: $gray600; }
+.mp-card-divider { border: none; border-top: 1px solid $gray100; margin: 2px 0; }
 
-// Card title
-.mp-card-name {
-  font-size: 14px;
-  font-weight: 700;
-  color: $navy;
-  margin: 0;
-  line-height: 1.3;
-}
-
-// Card meta (by email, category)
-.mp-card-by {
-  font-size: 11px;
-  color: $gray400;
-  margin: 0;
-}
-
-// Card details grid — tight, no excess line height
-.mp-card-details {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 2px 10px;
-  margin: 0;
-}
-
-.mp-card-detail-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: $gray400;
-  white-space: nowrap;
-}
-
-.mp-card-detail-value {
-  font-size: 11px;
-  color: $gray600;
-}
-
-// Card divider
-.mp-card-divider {
-  border: none;
-  border-top: 1px solid $gray100;
-  margin: 2px 0;
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-//  TIER TOGGLE  (add to existing currentstep.scss)
-//  — the Micro / Nano switcher inside SubscriptionGate
-// ══════════════════════════════════════════════════════════════════════════════
-
-.sub-tier-toggle {
-  display: flex;
-  width: 100%;
-  gap: 10px;
-  margin-bottom: 20px;
-
-  &__btn {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    padding: 12px 10px;
-    border-radius: $radius;
-    border: 2px solid $gray200;
-    background: #fff;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    color: $gray600;
-    cursor: pointer;
-    transition: all 0.18s;
-
-    &:hover {
-      border-color: $teal;
-      color: $navy;
-    }
-
-    &.active {
-      border-color: $teal;
-      background: #f0fdfa;
-      color: $navy;
-      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
-    }
-
-    // Nano active state uses amber accent
-    &.active.nano {
-      border-color: $accent;
-      background: #fffbeb;
-      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
-    }
-  }
-
-  &__sub {
-    font-size: 11px;
-    font-weight: 400;
-    color: $gray400;
-  }
-}
-
-// ── Nano variant overrides for plan cards ─────────────────────────────────────
-.sub-plan--nano {
-  &.sub-plan--selected {
-    border-color: $accent;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12);
-    background: #fffbeb;
-  }
-
-  &:hover {
-    border-color: $accent;
-  }
-
-  .sub-plan__tag {
-    background: $accent;
-  }
-}
-
-.sub-plan__price--nano {
-  color: $navy;
-}
-
-.sub-plan__save--nano {
-  color: $accent;
-}
-
-// ── Nano CTA variant ──────────────────────────────────────────────────────────
-.sub-gate__cta--nano {
-  background: #92400e;
-
-  &:hover {
-    background: $accent;
-    box-shadow: 0 6px 24px rgba(245, 158, 11, 0.28);
-  }
-}
-
-// ── Hint below CTA ────────────────────────────────────────────────────────────
-.sub-gate__nano-hint {
-  margin-top: 14px;
-  font-size: 12px;
-  color: $gray400;
-  text-align: center;
-}
-
-.sub-gate__nano-hint-link {
-  background: none;
-  border: none;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  color: $accent;
-  cursor: pointer;
-  padding: 0;
-  text-decoration: underline;
-
-  &:hover {
-    color: #d97706;
-  }
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-//  NANO UPSELL BANNER
-//  — shown above view cards for micro-only subscribers
-// ══════════════════════════════════════════════════════════════════════════════
-
+// ── Nano upsell banner ────────────────────────────────────────────────────────
 .nano-upsell-banner {
   display: flex;
   align-items: center;
@@ -1633,31 +1332,10 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
   margin-bottom: 14px;
   animation: gateIn 0.22s ease both;
 
-  &__left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1;
-    min-width: 0;
-  }
-
-  &__icon {
-    font-size: 18px;
-    flex-shrink: 0;
-  }
-
-  &__title {
-    font-size: 13px;
-    font-weight: 700;
-    color: #92400e;
-    margin-bottom: 2px;
-  }
-
-  &__sub {
-    font-size: 12px;
-    color: #b45309;
-    line-height: 1.4;
-  }
+  &__left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+  &__icon { font-size: 18px; flex-shrink: 0; }
+  &__title { font-size: 13px; font-weight: 700; color: #92400e; margin-bottom: 2px; }
+  &__sub { font-size: 12px; color: #b45309; line-height: 1.4; }
 
   &__btn {
     background: $accent;
@@ -1674,779 +1352,7 @@ $shadow-lg: 0 6px 24px rgba(15, 31, 61, 0.12);
     flex-shrink: 0;
     box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
 
-    &:hover {
-      background: #d97706;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
-    }
-
-    &:active {
-      transform: translateY(0);
-    }
+    &:hover { background: #d97706; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35); }
+    &:active { transform: translateY(0); }
   }
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-//  NANO UPGRADE BUTTON
-//  — replaces "Subscription Required" on Nano card for micro users
-// ══════════════════════════════════════════════════════════════════════════════
-
-.vc-btn {
-  &.bNanoUpgrade {
-    background: #fef3c7;
-    color: #92400e;
-    border: 1px solid #fde68a;
-    font-weight: 700;
-
-    &:hover {
-      background: $accent;
-      color: #fff;
-      border-color: $accent;
-    }
-  }
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-//  SUCCESS SCREEN — upsell item variant (micro success screen)
-// ══════════════════════════════════════════════════════════════════════════════
-
-.sub-success__unlock-item--upsell {
-  background: #fffbeb;
-  border-radius: 8px;
-  padding: 8px 10px;
-  margin-top: 4px;
-  border: 1px solid #fde68a;
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-//  CREDIT UNLOCK OVERLAY  — append to bottom of currentstep.scss
-//  These are the only new styles needed. Everything else reuses existing classes.
-// ══════════════════════════════════════════════════════════════════════════════
-
-// ── Wallet balance chip (top-right of page) ───────────────────────────────────
-.wallet-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: #f0f9ff;
-  border: 1px solid #bae6fd;
-  color: #0369a1;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 20px;
-  float: right;
-  margin-bottom: 4px;
-
-  svg {
-    flex-shrink: 0;
-  }
-}
-
-// ── Unlock success toast ──────────────────────────────────────────────────────
-.unlock-toast {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #166534;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 9px 16px;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  animation: toastIn 0.25s ease both;
-}
-
-@keyframes toastIn {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-// ── Credit unlock overlay actions ─────────────────────────────────────────────
-// The overlay itself reuses .lock-overlay and .lock-overlay__inner from above
-// We only need the new interactive elements inside it.
-
-.cuo-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 7px;
-  width: 100%;
-}
-
-// Credit & confirm buttons
-.cuo-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 7px 18px;
-  border-radius: 30px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  border: none;
-  transition: all 0.15s;
-  white-space: nowrap;
-
-  &:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
-
-  // "Use X Credits" — primary purple button
-  &.cuo-btn--credits {
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    color: #fff;
-    box-shadow: 0 3px 10px rgba(99, 102, 241, 0.35);
-    width: 100%;
-    max-width: 180px;
-
-    &:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 5px 14px rgba(99, 102, 241, 0.45);
-    }
-  }
-
-  // "Yes, Unlock" — green confirm
-  &.cuo-btn--confirm {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: #fff;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-
-    &:hover:not(:disabled) {
-      transform: translateY(-1px);
-    }
-  }
-
-  // "Cancel" — ghost
-  &.cuo-btn--cancel {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.65);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-
-    &:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.18);
-      color: #fff;
-    }
-  }
-}
-
-// Insufficient credits warning
-.cuo-low {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: rgba(239, 68, 68, 0.14);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 5px 12px;
-  border-radius: 30px;
-}
-
-// Confirm sub-panel
-.cuo-confirm {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-}
-
-.cuo-confirm-text {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.88);
-  text-align: center;
-  line-height: 1.5;
-  margin: 0;
-
-  strong {
-    color: #fff;
-  }
-}
-
-.cuo-confirm-balance {
-  display: block;
-  margin-top: 3px;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.45);
-}
-
-.cuo-confirm-btns {
-  display: flex;
-  gap: 7px;
-}
-
-.sub-tier-toggle--3 {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
-
-  .sub-tier-toggle__btn {
-    flex: 1;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 12px 8px;
-    background: #fff;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    transition: all 0.2s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-
-    .sub-tier-toggle__sub {
-      font-size: 11px;
-      font-weight: 400;
-      color: #666;
-    }
-  }
-}
-
-.sub-billing-toggle {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-bottom: 20px;
-
-  .sbt-btn {
-    padding: 8px 24px;
-    border: 2px solid #e2e8f0;
-    border-radius: 20px;
-    background: #fff;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s;
-
-    .sbt-save-tag {
-      background: #22c55e;
-      color: #fff;
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 10px;
-      font-weight: 700;
-    }
-  }
-}
-
-.sub-plan--single {
-  max-width: 480px;
-  margin: 0 auto 24px;
-  border-width: 2px !important;
-
-  .sub-plan__credits-badge {
-    display: inline-block;
-    background: #fef9c3;
-    color: #854d0e;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 20px;
-    margin-bottom: 14px;
-  }
-}
-
-.sub-gate__credit-info {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 12px 16px;
-  margin-bottom: 20px;
-  font-size: 13px;
-
-  .sci-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 4px 0;
-
-    .sci-label {
-      font-weight: 600;
-      min-width: 95px;
-    }
-
-    .sci-val {
-      color: #475569;
-    }
-
-    &--sub .sci-label {
-      color: #7c3aed;
-    }
-  }
-}
-
-.wallet-chip__tier {
-  font-size: 12px;
-  font-weight: 600;
-}
-
-// ── 3-column plan grid ─────────────────────────────────────────
-.sub-plans-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
-  width: 100%;
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.sub-plan-card {
-  border: 2px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 24px 18px 20px;
-  background: #fff;
-  position: relative;
-  transition: all 0.2s;
-  cursor: pointer;
-
-  &--active {
-    background: #fafffe;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.10);
-    transform: translateY(-3px);
-  }
-
-  &:hover:not(.sub-plan-card--active) {
-    border-color: #cbd5e1;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  }
-
-  .spc-tag {
-    position: absolute;
-    top: -13px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 4px 14px;
-    border-radius: 20px;
-    white-space: nowrap;
-    letter-spacing: 0.3px;
-  }
-
-  .spc-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
-    margin-top: 10px;
-
-    .spc-emoji {
-      font-size: 22px;
-    }
-
-    .spc-label {
-      font-size: 17px;
-      font-weight: 700;
-    }
-  }
-
-  .spc-price {
-    font-size: 22px;
-    font-weight: 800;
-    margin-bottom: 2px;
-    line-height: 1.1;
-
-    .spc-period {
-      font-size: 13px;
-      font-weight: 400;
-      color: #888;
-      margin-left: 2px;
-    }
-  }
-
-  .spc-save {
-    font-size: 11px;
-    font-weight: 600;
-    margin-bottom: 12px;
-    margin-top: 2px;
-  }
-
-  .spc-credits {
-    display: inline-block;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 5px 12px;
-    border-radius: 20px;
-    margin-bottom: 16px;
-  }
-
-  .spc-feats {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    font-size: 12px;
-    color: #475569;
-
-    li {
-      display: flex;
-      align-items: flex-start;
-      gap: 6px;
-      margin-bottom: 7px;
-      line-height: 1.4;
-
-      .spc-check {
-        font-weight: 800;
-        flex-shrink: 0;
-        margin-top: 1px;
-      }
-    }
-  }
-}
-
-// ── Billing toggle ─────────────────────────────────────────────
-.sub-billing-toggle {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-bottom: 20px;
-
-  .sbt-btn {
-    padding: 9px 28px;
-    border: 2px solid #e2e8f0;
-    border-radius: 24px;
-    background: #fff;
-    color: #333;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s;
-
-    &--active {
-      background: #1a1a2e;
-      border-color: #1a1a2e;
-      color: #fff;
-    }
-
-    .sbt-save-tag {
-      background: #22c55e;
-      color: #fff;
-      font-size: 10px;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-weight: 700;
-    }
-  }
-}
-
-// ── Credit info box ────────────────────────────────────────────
-.sub-gate__credit-info {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 12px 18px;
-  margin-bottom: 20px;
-  font-size: 13px;
-
-  .sci-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 5px 0;
-
-    .sci-label {
-      font-weight: 700;
-      min-width: 100px;
-    }
-
-    .sci-val {
-      color: #475569;
-    }
-
-    &--sub .sci-label {
-      color: #7c3aed;
-    }
-  }
-}
-
-// ══════════════════════════════════════════════════════════════════
-//  PLAN CARDS SCSS — Paste at the END of currentstep.scss
-//  (Delete all old sub-gate / sub-plan-card / sub-billing-toggle
-//   blocks first, then paste this)
-// ══════════════════════════════════════════════════════════════════
-
-.sub-gate {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 24px 32px 48px;
-  background: #f5f7fa;
-}
-
-.sub-gate__inner {
-  width: 100%;
-  max-width: 980px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.sub-gate__back {
-  align-self: flex-start;
-  background: none;
-  border: none;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: #94a3b8;
-  cursor: pointer;
-  padding: 0;
-  margin-bottom: 16px;
-  transition: color 0.15s;
-
-  &:hover {
-    color: #0f1f3d;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-  }
-}
-
-.sub-gate__title {
-  font-family: 'Playfair Display', serif;
-  font-size: 24px;
-  font-weight: 700;
-  color: #0f1f3d;
-  margin: 0 0 16px;
-  text-align: center;
-}
-
-// ── Billing toggle ─────────────────────────────────────────────────
-.sub-billing-toggle {
-  display: flex;
-  gap: 0;
-  justify-content: center;
-  margin-bottom: 28px;
-  background: #e8edf3;
-  padding: 4px;
-  border-radius: 10px;
-  width: fit-content;
-
-  .sbt-btn {
-    padding: 8px 26px;
-    border: none;
-    border-radius: 7px;
-    background: transparent;
-    color: #64748b;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.18s;
-    white-space: nowrap;
-
-    &--active {
-      background: #0f1f3d;
-      color: #fff;
-      box-shadow: 0 2px 8px rgba(15, 31, 61, 0.25);
-    }
-
-    .sbt-save-tag {
-      background: #22c55e;
-      color: #fff;
-      font-size: 10px;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-weight: 700;
-    }
-  }
-}
-
-// ── 3-column grid — EQUAL HEIGHT cards ────────────────────────────
-.sub-plans-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  width: 100%;
-  margin-bottom: 24px;
-  align-items: stretch; // ← KEY: all cards same height
-
-  @media (max-width: 800px) {
-    grid-template-columns: 1fr;
-    max-width: 420px;
-  }
-}
-
-// ── Card ──────────────────────────────────────────────────────────
-.sub-plan-card {
-  background: #fff;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 28px 22px 24px;
-  position: relative;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-
-  &:hover:not(.sub-plan-card--active) {
-    border-color: #cbd5e1;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-    transform: translateY(-2px);
-  }
-
-  &--active {
-    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.10);
-    transform: translateY(-3px);
-  }
-
-  // Badge above card
-  .spc-tag {
-    position: absolute;
-    top: -14px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 4px 16px;
-    border-radius: 6px;
-    white-space: nowrap;
-    letter-spacing: 0.3px;
-  }
-
-  // Plan name
-  .spc-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 12px;
-    margin-top: 10px;
-
-    .spc-emoji {
-      font-size: 20px;
-    }
-
-    .spc-label {
-      font-size: 17px;
-      font-weight: 700;
-      color: #0f1f3d;
-    }
-  }
-
-  // Big price
-  .spc-price {
-    font-size: 48px;
-    font-weight: 800;
-    color: #0f1f3d;
-    line-height: 1;
-    margin-bottom: 6px;
-    font-family: 'DM Sans', sans-serif;
-
-    .spc-period {
-      font-size: 13px;
-      font-weight: 400;
-      color: #94a3b8;
-      margin-left: 2px;
-    }
-  }
-
-  // Subtitle (e.g. "2 months free" or blank)
-  .spc-save {
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 12px;
-    min-height: 18px; // ← keeps spacing even when empty
-  }
-
-  // Subscribe button
-  .spc-subscribe-btn {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    margin-bottom: 18px;
-    transition: all 0.18s;
-    letter-spacing: 0.2px;
-
-    &:hover:not(:disabled) {
-      filter: brightness(1.08);
-      transform: translateY(-1px);
-    }
-
-    &:active {
-      transform: translateY(0);
-    }
-
-    &:disabled {
-      opacity: 0.65;
-      cursor: not-allowed;
-    }
-  }
-
-  // Divider
-  .spc-divider {
-    border: none;
-    border-top: 1px solid #f1f5f9;
-    margin: 0 0 14px;
-  }
-
-  // Feature list — grows to fill card height equally
-  .spc-feats {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    flex: 1; // ← pushes all cards to same height
-
-    li {
-      font-size: 13px;
-      color: #475569;
-      padding: 8px 0;
-      line-height: 1.4;
-      border-bottom: 1px solid #f8fafc;
-      text-align: center;
-
-      &:last-child {
-        border-bottom: none;
-      }
-    }
-  }
-}
-
-// ── Bottom hint ────────────────────────────────────────────────────
-.sub-gate__cta {
-  display: none;
-}
-
-// hidden — each card has its own button
-
-.sub-gate__nano-hint {
-  font-size: 12px;
-  color: #94a3b8;
-  text-align: center;
-  line-height: 1.6;
-  margin-top: 4px;
 }

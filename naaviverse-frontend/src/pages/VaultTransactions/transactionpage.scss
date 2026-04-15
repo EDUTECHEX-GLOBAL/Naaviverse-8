@@ -3,8 +3,8 @@
 .txn-page {
   width: 100%;
   min-height: calc(100% - 63px);
-  height: auto;
-  overflow-y: auto;
+ height: calc(100vh - 63px);   // 🔥 FIXED HEIGHT
+  overflow-y: auto; 
   overflow-x: hidden;
   color: #1e2a45;
   font-family: 'DM Sans', 'Inter', sans-serif;
@@ -204,38 +204,34 @@
   .status-failed  { @extend %status-base; color: #d63d3d; &::before { background: #e86060; box-shadow: 0 0 0 2px rgba(232, 96, 96, 0.16); } }
   .status-default { @extend %status-base; color: #8895b3; &::before { background: #b0bdd4; } }
 
-  // ─── INVOICE DOWNLOAD BUTTON ─────────────────────────────────
-  .invoice-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
-    border-radius: 8px;
-    border: 1.5px solid #0F6E56;
-    background: transparent;
-    color: #0F6E56;
-    font-size: 10px;
-    font-weight: 700;
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer;
-    transition: all 0.16s ease;
-    white-space: nowrap;
+ .invoice-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;                // 🔥 smaller
+  border-radius: 6px;              // 🔥 small rectangle
+  border: 1px solid rgba(108, 99, 255, 0.25);
 
-    svg { flex-shrink: 0; transition: transform 0.16s ease; }
+  background: linear-gradient(
+    135deg,
+    rgba(108, 99, 255, 0.08),
+    rgba(108, 99, 255, 0.02)
+  );                                // 🔥 light gradient
 
-    &:hover {
-      background: #0F6E56;
-      color: #ffffff;
-      svg { stroke: #ffffff; transform: translateY(1px); }
-    }
+  color: #6c63ff;
+  font-size: 9.5px;                 // 🔥 smaller text
+  font-weight: 600;
+  cursor: pointer;
 
-    &:active { transform: scale(0.97); }
+  transition: all 0.15s ease;
+  white-space: nowrap;
 
-    &:disabled {
-      opacity: 0.65;
-      cursor: not-allowed;
-      &:hover { background: transparent; color: #0F6E56; svg { stroke: #0F6E56; transform: none; } }
-    }
+  svg {
+    width: 12px;
+    height: 12px;
+    stroke: #6c63ff;
+  }
+
 
     // Loading state
     &--loading {

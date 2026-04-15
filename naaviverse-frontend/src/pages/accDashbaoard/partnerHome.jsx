@@ -1,20 +1,25 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import axios from "axios";
 import "./partnerHome.scss";
 
-// ── Static Data ───────────────────────────────────────────────────────────────
+// ── Constants ──────────────────────────────────────────────────────────────────
 const PARTNER_NAME = "SkillBridge AI";
+const BASE_URL     = process.env.REACT_APP_API_BASE_URL || "";
 
-const MY_PATHS = [
-  { id: "p1", name: "Yale — Bachelor's Economics",  category: "Economics",    usersEnrolled: 342, completion: 82, status: "active",   steps: 12, microLessons: 48, revenue: 45600 },
-  { id: "p2", name: "MIT Computer Science",          category: "Technology",   usersEnrolled: 218, completion: 65, status: "active",   steps: 10, microLessons: 40, revenue: 32700 },
-  { id: "p3", name: "Aerospace Engg · Caltech",      category: "Engineering",  usersEnrolled: 196, completion: 58, status: "active",   steps: 14, microLessons: 56, revenue: 28400 },
-  { id: "p4", name: "Pre-Med · Johns Hopkins",       category: "Medical",      usersEnrolled: 164, completion: 49, status: "active",   steps: 8,  microLessons: 32, revenue: 18150 },
-  { id: "p5", name: "AI for Finance",                category: "Finance",      usersEnrolled: 284, completion: 73, status: "active",   steps: 9,  microLessons: 36, revenue: 22800 },
-  { id: "p6", name: "Blockchain Fundamentals",       category: "Technology",   usersEnrolled: 0,   completion: 0,  status: "pending",  steps: 6,  microLessons: 24, revenue: 0     },
-  { id: "p7", name: "Career Readiness Track",        category: "Career",       usersEnrolled: 0,   completion: 0,  status: "inactive", steps: 5,  microLessons: 20, revenue: 0     },
-  { id: "p8", name: "Data Analytics Pack",           category: "Data Science", usersEnrolled: 0,   completion: 0,  status: "inactive", steps: 8,  microLessons: 32, revenue: 0     },
-];
+// ── Helper: get partner email from localStorage ───────────────────────────────
+function getPartnerEmail() {
+  try {
+    const raw = localStorage.getItem("partnerData") || localStorage.getItem("partner");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.email || null;
+  } catch {
+    return null;
+  }
+}
 
+// ── Static data (activity, marketplace, notifications, retention) ─────────────
+// These remain static until you build those backends too.
 const LIVE_ACTIVITY = [
   { id: "a1", name: "Anisha R.", initials: "A", color: "#0d9488", action: "Selected Yale Economics path",            time: "2m ago",  type: "path",      typeBg: "rgba(13,148,136,.18)",  typeColor: "#0d9488" },
   { id: "a2", name: "Ravi K.",   initials: "R", color: "#f4845f", action: "Purchased Expert 1:1 Session (₹4,999)",  time: "8m ago",  type: "purchase",  typeBg: "rgba(244,132,95,.18)",  typeColor: "#e55a2b" },
@@ -72,6 +77,18 @@ const PLAN_BADGE = {
   Premium: { bg: "#fce7f3", color: "#be185d" },
 };
 
+// ── Skeleton loader component ─────────────────────────────────────────────────
+const Skeleton = ({ width = "100%", height = 16, radius = 6, style = {} }) => (
+  <div style={{
+    width, height,
+    borderRadius: radius,
+    background: "linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%)",
+    backgroundSize: "200% 100%",
+    animation: "ph-shimmer 1.4s infinite",
+    ...style,
+  }} />
+);
+
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function PartnerHome() {
   const [view,            setView]            = useState("home");
@@ -83,19 +100,104 @@ export default function PartnerHome() {
   const [notifFilter,     setNotifFilter]     = useState("all");
   const [notifications,   setNotifications]   = useState(NOTIFICATIONS);
   const [showAllActivity, setShowAllActivity] = useState(false);
+
+  // ── NEW: real API state ────────────────────────────────────────────────────
+  const [dashStats,       setDashStats]       = useState(null);   // { totalSelected, thisWeek, percentChange, paths[] }
+  const [statsLoading,    setStatsLoading]    = useState(true);
+  const [statsError,      setStatsError]      = useState(null);
+
+  // Enrolled users for path detail view (loaded on demand)
+  const [pathUsers,       setPathUsers]       = useState([]);
+  const [pathUsersLoading, setPathUsersLoading] = useState(false);
+
   const notifRef = useRef(null);
 
-  const unread     = notifications.filter(n => n.unread).length;
+  const unread      = notifications.filter(n => n.unread).length;
   const markAllRead = () => setNotifications(p => p.map(n => ({ ...n, unread: false })));
   const markRead    = id => setNotifications(p => p.map(n => n.id === id ? { ...n, unread: false } : n));
 
+  // ── Close notif dropdown on outside click ────────────────────────────────
   useEffect(() => {
     const h = e => { if (notifRef.current && !notifRef.current.contains(e.target)) setShowNotif(false); };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
-  // ── NOTIFICATIONS FULL PAGE ─────────────────────────────────────────────────
+  // ── Fetch dashboard stats from real API ──────────────────────────────────
+  const fetchStats = useCallback(async () => {
+    const email = getPartnerEmail();
+    if (!email) {
+      setStatsError("Partner email not found. Please log in again.");
+      setStatsLoading(false);
+      return;
+    }
+    try {
+      setStatsLoading(true);
+      setStatsError(null);
+      const res = await axios.get(`${BASE_URL}/api/partner-dashboard/stats`, {
+        params: { email },
+      });
+      if (res.data?.status) {
+        setDashStats(res.data.data);
+      } else {
+        setStatsError(res.data?.message || "Failed to load stats");
+      }
+    } catch (err) {
+      console.error("Dashboard stats fetch error:", err);
+      setStatsError("Could not load dashboard data. Please try again.");
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  // ── Fetch enrolled users when opening path detail ────────────────────────
+  const fetchPathUsers = useCallback(async (pathId) => {
+    const partnerEmail = getPartnerEmail();
+    if (!pathId || !partnerEmail) return;
+    try {
+      setPathUsersLoading(true);
+      const res = await axios.get(`${BASE_URL}/api/partner-dashboard/path-users`, {
+        params: { pathId, partnerEmail },
+      });
+      if (res.data?.status) {
+        setPathUsers(res.data.data || []);
+      } else {
+        setPathUsers([]);
+      }
+    } catch (err) {
+      console.error("Path users fetch error:", err);
+      setPathUsers([]);
+    } finally {
+      setPathUsersLoading(false);
+    }
+  }, []);
+
+  // ── Derived: MY_PATHS from real API data, falls back to [] ───────────────
+  // paths[] from API already have: _id, nameOfPath, category, usersEnrolled,
+  //   completion, steps, status, thisWeek, stepsCompleted
+  const MY_PATHS = dashStats?.paths || [];
+
+  // For the paths list page we also show inactive/pending paths —
+  // those still come from the path API via a separate call when needed.
+  // For now the dashboard only shows active paths from the stats endpoint.
+
+  // ── Stat card computed values ─────────────────────────────────────────────
+  const totalSelected  = dashStats?.totalSelected  ?? 0;
+  const thisWeek       = dashStats?.thisWeek       ?? 0;
+  const percentChange  = dashStats?.percentChange  ?? 0;
+
+  // Total completed steps across all paths
+  const totalStepsCompleted = MY_PATHS.reduce((s, p) => s + (p.stepsCompleted || 0), 0);
+  const totalEnrolled       = totalSelected; // same thing
+  const avgStepsPerUser     = totalEnrolled > 0
+    ? (totalStepsCompleted / totalEnrolled).toFixed(1)
+    : "0.0";
+
+  // ── NOTIFICATIONS FULL PAGE ───────────────────────────────────────────────
   if (view === "notifications") {
     const FILTERS = [
       { key: "all",       label: "All",           dot: "#0d9488" },
@@ -120,7 +222,6 @@ export default function PartnerHome() {
               <button className="ph-clear-btn" onClick={() => setNotifications([])}>Clear all</button>
             </div>
           </div>
-
           <div className="ph-notif-body">
             <div className="ph-notif-sidebar">
               <div className="ph-notif-sidebar-label">Filter</div>
@@ -135,7 +236,6 @@ export default function PartnerHome() {
                 );
               })}
             </div>
-
             <div className="ph-notif-list-full">
               {filtered.length === 0 ? (
                 <div className="ph-notif-empty">🔔 No notifications</div>
@@ -163,9 +263,14 @@ export default function PartnerHome() {
     );
   }
 
-  // ── PATHS LIST ──────────────────────────────────────────────────────────────
+  // ── PATHS LIST ────────────────────────────────────────────────────────────
   if (view === "paths" && !selectedPath) {
-    const filtered = pathTab === "all" ? MY_PATHS : MY_PATHS.filter(p => p.status === pathTab);
+    // For the full paths list we show what the API returned (active only from stats)
+    // You can extend this later to also fetch inactive/draft paths
+    const filtered = pathTab === "all"
+      ? MY_PATHS
+      : MY_PATHS.filter(p => (p.status || "active") === pathTab);
+
     return (
       <div className="ph-root">
         <div className="ph-page-card">
@@ -176,82 +281,270 @@ export default function PartnerHome() {
             </button>
             <div className="ph-page-header">
               <div className="ph-page-icon" style={{ background: "linear-gradient(135deg,#0d9488,#14b8a6)" }}>📈</div>
-              <div><h2>My Learning Paths</h2><p>Manage paths · track enrollments · monitor completion</p></div>
+              <div>
+                <h2>My Learning Paths</h2>
+                <p>Manage paths · track enrollments · monitor completion</p>
+              </div>
             </div>
+            {/* Refresh button */}
+            <button
+              className="ph-mark-all-btn"
+              onClick={fetchStats}
+              disabled={statsLoading}
+              style={{ marginLeft: "auto" }}
+            >
+              {statsLoading ? "Refreshing…" : "↻ Refresh"}
+            </button>
           </div>
+
           <div className="ph-tab-group">
             {["all","active","inactive","pending"].map(t => (
               <button key={t} className={`ph-tab-btn ${pathTab === t ? "active" : ""}`} onClick={() => setPathTab(t)}>
                 {t.charAt(0).toUpperCase()+t.slice(1)}
-                <span className="ph-tab-count">{t==="all"?MY_PATHS.length:MY_PATHS.filter(p=>p.status===t).length}</span>
+                {/* <span className="ph-tab-count">
+                  {t === "all" ? MY_PATHS.length : MY_PATHS.filter(p => (p.status || "active") === t).length}
+                </span> */}
               </button>
             ))}
           </div>
-          <div className="ph-table-wrap">
-            <table>
-              <thead><tr><th>Path</th><th>Category</th><th>Enrolled</th><th>Completion</th><th>Steps</th><th>Status</th><th></th></tr></thead>
-              <tbody>
-                {filtered.map(path => (
-                  <tr key={path.id} className="ph-table-row">
-                    <td><div className="ph-cell-name">{path.name}</div></td>
-                    <td><span className="ph-type-chip">{path.category}</span></td>
-                    <td><span style={{ fontWeight:700, color:"#1e293b" }}>{path.usersEnrolled}</span></td>
-                    <td>
-                      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                        <div className="ph-mini-bar"><div className="ph-mini-fill" style={{ width:`${path.completion}%`, background: path.completion>70?"#0d9488":path.completion>40?"#14b8a6":"#94a3b8" }}/></div>
-                        <span style={{ fontSize:12, fontWeight:600, color:"#0d9488" }}>{path.completion}%</span>
-                      </div>
-                    </td>
-                    <td style={{ fontSize:13, color:"#64748b" }}>{path.steps} steps</td>
-                    <td><span className={`ph-status-pill ph-status-${path.status}`}>{path.status==="active"?"● Active":path.status==="pending"?"⏳ Pending":"○ Inactive"}</span></td>
-                    <td><button className="ph-view-btn" onClick={() => { setSelectedPath(path); setView("pathDetail"); }}>Details</button></td>
+
+          {statsLoading ? (
+            <div style={{ padding: "24px 0" }}>
+              {[1,2,3].map(i => (
+                <div key={i} style={{ display:"flex", gap:16, padding:"12px 0", borderBottom:"1px solid #f1f5f9" }}>
+                  <Skeleton width={200} height={14} />
+                  <Skeleton width={80} height={14} />
+                  <Skeleton width={50} height={14} />
+                  <Skeleton width={100} height={14} />
+                </div>
+              ))}
+            </div>
+          ) : statsError ? (
+            <div style={{ padding:24, textAlign:"center", color:"#e55a2b" }}>
+              {statsError}
+              <button className="ph-mark-all-btn" onClick={fetchStats} style={{ marginLeft:12 }}>Retry</button>
+            </div>
+          ) : (
+            <div className="ph-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Path</th>
+                    <th>Category</th>
+                    <th>Enrolled</th>
+                    <th>This Week</th>
+                    <th>Completion</th>
+                    <th>Steps</th>
+                    <th>Status</th>
+                    <th></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} style={{ textAlign:"center", color:"#94a3b8", padding:32 }}>
+                        No paths found.
+                      </td>
+                    </tr>
+                  ) : filtered.map(path => (
+                    <tr key={path._id} className="ph-table-row">
+                      <td><div className="ph-cell-name">{path.nameOfPath}</div></td>
+                      <td><span className="ph-type-chip">{path.category}</span></td>
+                      <td><span style={{ fontWeight:700, color:"#1e293b" }}>{path.usersEnrolled}</span></td>
+                      <td>
+                        <span style={{ fontSize:11, fontWeight:600, color: path.thisWeek > 0 ? "#0d9488" : "#94a3b8" }}>
+                          {path.thisWeek > 0 ? `+${path.thisWeek}` : "—"}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                          <div className="ph-mini-bar">
+                            <div className="ph-mini-fill" style={{
+                              width: `${path.completion}%`,
+                              background: path.completion > 70 ? "#0d9488" : path.completion > 40 ? "#14b8a6" : "#94a3b8"
+                            }}/>
+                          </div>
+                          <span style={{ fontSize:12, fontWeight:600, color:"#0d9488" }}>{path.completion}%</span>
+                        </div>
+                      </td>
+                      <td style={{ fontSize:13, color:"#64748b" }}>{path.steps} steps</td>
+                      <td>
+                        <span className="ph-status-pill ph-status-active">Active</span>
+                      </td>
+                      <td>
+                        <button
+                          className="ph-view-btn"
+                          onClick={() => {
+                            setSelectedPath(path);
+                            fetchPathUsers(path._id);
+                            setView("pathDetail");
+                          }}
+                        >
+                          Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
-  // ── PATH DETAIL ─────────────────────────────────────────────────────────────
+  // ── PATH DETAIL ───────────────────────────────────────────────────────────
   if (view === "pathDetail" && selectedPath) {
     const p = selectedPath;
     return (
       <div className="ph-root">
         <div className="ph-page-card">
-          <button className="ph-back-btn" onClick={() => { setSelectedPath(null); setView("paths"); }}>
+          <button className="ph-back-btn" onClick={() => { setSelectedPath(null); setPathUsers([]); setView("paths"); }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
             Back to Paths
           </button>
+
           <div className="ph-detail-hero">
             <div className="ph-detail-avatar">📈</div>
             <div>
               <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:6 }}>
-                <h2 style={{ fontFamily:"var(--ph-display)", fontSize:22, fontWeight:700, color:"#1e293b", margin:0 }}>{p.name}</h2>
-                <span className={`ph-status-pill ph-status-${p.status}`}>{p.status==="active"?"● Active":p.status==="pending"?"⏳ Pending":"○ Inactive"}</span>
+                <h2 style={{ fontFamily:"var(--ph-display)", fontSize:22, fontWeight:700, color:"#1e293b", margin:0 }}>
+                  {p.nameOfPath}
+                </h2>
+                <span className="ph-status-pill ph-status-active">● Active</span>
               </div>
               <div style={{ fontSize:13, color:"#94a3b8" }}>{p.category}</div>
             </div>
           </div>
+
+          {/* ── Stats row ── */}
           <div className="ph-detail-stats">
-            <div className="ph-dsc ph-dsc-teal"><div className="ph-dsc-label">Enrolled</div><div className="ph-dsc-val">{p.usersEnrolled}</div></div>
-            <div className="ph-dsc ph-dsc-blue"><div className="ph-dsc-label">Completion</div><div className="ph-dsc-val">{p.completion}%</div></div>
-            <div className="ph-dsc ph-dsc-violet"><div className="ph-dsc-label">Steps</div><div className="ph-dsc-val">{p.steps}</div></div>
-            <div className="ph-dsc ph-dsc-emerald"><div className="ph-dsc-label">Revenue</div><div className="ph-dsc-val">₹{p.revenue.toLocaleString("en-IN")}</div></div>
+            <div className="ph-dsc ph-dsc-teal">
+              <div className="ph-dsc-label">Enrolled</div>
+              <div className="ph-dsc-val">{p.usersEnrolled}</div>
+            </div>
+            <div className="ph-dsc ph-dsc-blue">
+              <div className="ph-dsc-label">Completion</div>
+              <div className="ph-dsc-val">{p.completion}%</div>
+            </div>
+            <div className="ph-dsc ph-dsc-violet">
+              <div className="ph-dsc-label">Steps</div>
+              <div className="ph-dsc-val">{p.steps}</div>
+            </div>
+            <div className="ph-dsc ph-dsc-emerald">
+              <div className="ph-dsc-label">This Week</div>
+              <div className="ph-dsc-val">{p.thisWeek > 0 ? `+${p.thisWeek}` : "0"}</div>
+            </div>
           </div>
+
+          {/* ── Info grid ── */}
           <div className="ph-detail-grid">
-            {[["Path Name",p.name],["Category",p.category],["Steps",`${p.steps} steps`],["Micro Lessons",`${p.microLessons} lessons`],["Enrolled",p.usersEnrolled],["Revenue",`₹${p.revenue.toLocaleString("en-IN")}`]].map(([l,v])=>(
-              <div key={l} className="ph-detail-row"><div className="ph-detail-label">{l}</div><div className="ph-detail-value">{v}</div></div>
+            {[
+              ["Path Name",    p.nameOfPath],
+              ["Category",     p.category],
+              ["Steps",        `${p.steps} steps`],
+              ["Micro Lessons",`${p.microLessons || p.steps * 4} lessons`],
+              ["Enrolled",     p.usersEnrolled],
+              ["This Week",    p.thisWeek > 0 ? `+${p.thisWeek} new` : "No new this week"],
+            ].map(([l,v]) => (
+              <div key={l} className="ph-detail-row">
+                <div className="ph-detail-label">{l}</div>
+                <div className="ph-detail-value">{v}</div>
+              </div>
             ))}
+          </div>
+
+          {/* ── Enrolled users table ── */}
+          <div style={{ marginTop:24 }}>
+            <div style={{ fontSize:13, fontWeight:700, color:"#1e293b", fontFamily:"var(--ph-display)", marginBottom:12 }}>
+              Enrolled Users
+              {!pathUsersLoading && (
+                <span style={{ fontSize:11, fontWeight:500, color:"#94a3b8", marginLeft:8 }}>
+                  ({pathUsers.length} total)
+                </span>
+              )}
+            </div>
+
+            {pathUsersLoading ? (
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                {[1,2,3].map(i => <Skeleton key={i} height={40} radius={8} />)}
+              </div>
+            ) : pathUsers.length === 0 ? (
+              <div style={{ padding:"24px 0", textAlign:"center", color:"#94a3b8", fontSize:13 }}>
+                No users enrolled in this path yet.
+              </div>
+            ) : (
+              <div className="ph-table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Email</th>
+                      <th>Enrolled</th>
+                      <th>Progress</th>
+                      <th>Steps Done</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pathUsers.map((u, i) => (
+                      <tr key={u.email + i} className="ph-table-row">
+                        <td>
+                          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                            <div style={{
+                              width:28, height:28, borderRadius:8,
+                              background: "#0d9488",
+                              display:"flex", alignItems:"center", justifyContent:"center",
+                              color:"white", fontSize:11, fontWeight:700, flexShrink:0,
+                            }}>
+                              {(u.name || u.email || "U").charAt(0).toUpperCase()}
+                            </div>
+                            <span className="ph-cell-name">{u.name || "—"}</span>
+                          </div>
+                        </td>
+                        <td style={{ fontSize:12, color:"#64748b" }}>{u.email}</td>
+                        <td style={{ fontSize:11, color:"#94a3b8" }}>
+                          {u.enrolledAt ? new Date(u.enrolledAt).toLocaleDateString("en-IN", { day:"numeric", month:"short" }) : "—"}
+                        </td>
+                        <td>
+                          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                            <div className="ph-mini-bar" style={{ width:70 }}>
+                              <div className="ph-mini-fill" style={{
+                                width: `${u.completion}%`,
+                                background: u.completion >= 100 ? "#0d9488" : u.completion > 40 ? "#14b8a6" : "#94a3b8"
+                              }}/>
+                            </div>
+                            <span style={{ fontSize:11, fontWeight:600, color:"#0d9488" }}>{u.completion}%</span>
+                          </div>
+                        </td>
+                        <td style={{ fontSize:12, color:"#64748b" }}>
+                          {u.completedSteps}/{u.totalSteps}
+                        </td>
+                        <td>
+                          <span className={`ph-status-pill ${
+                            u.status === "completed"   ? "ph-status-active" :
+                            u.status === "in-progress" ? "ph-status-pending" :
+                            "ph-status-inactive"
+                          }`}>
+                            {u.status === "completed"   ? "● Done"    :
+                             u.status === "in-progress" ? "⏳ Active" :
+                             "○ Not Started"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       </div>
     );
   }
 
-  // ── MARKETPLACE LIST ────────────────────────────────────────────────────────
+  // ── MARKETPLACE LIST ──────────────────────────────────────────────────────
   if (view === "marketplace" && !selectedItem) {
     const totalRev = MARKETPLACE_ITEMS.reduce((s,m) => s+m.revenue, 0);
     return (
@@ -291,7 +584,7 @@ export default function PartnerHome() {
     );
   }
 
-  // ── MARKETPLACE DETAIL ──────────────────────────────────────────────────────
+  // ── MARKETPLACE DETAIL ────────────────────────────────────────────────────
   if (view === "marketDetail" && selectedItem) {
     const item = selectedItem;
     return (
@@ -325,12 +618,20 @@ export default function PartnerHome() {
     );
   }
 
-  // ── HOME ────────────────────────────────────────────────────────────────────
+  // ── HOME ──────────────────────────────────────────────────────────────────
   const actFiltered       = activityTab === "All" ? LIVE_ACTIVITY : LIVE_ACTIVITY.filter(a => a.type === activityTab.toLowerCase());
   const displayedActivity = showAllActivity ? actFiltered : actFiltered.slice(0, 4);
 
   return (
     <div className="ph-root">
+
+      {/* Shimmer keyframe injected inline so it works without extra CSS */}
+      <style>{`
+        @keyframes ph-shimmer {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
 
       {/* HEADER */}
       <div className="ph-header">
@@ -395,38 +696,79 @@ export default function PartnerHome() {
       </div>
 
       {/* SECTION LABEL */}
-      <div className="ph-section-label">OVERVIEW · LAST 30 DAYS <span className="ph-export-link">Export ↗</span></div>
+      <div className="ph-section-label">
+        OVERVIEW · LAST 30 DAYS
+        <span className="ph-export-link" onClick={fetchStats} style={{ cursor:"pointer" }}>
+          {statsLoading ? "Loading…" : "↻ Refresh"}
+        </span>
+      </div>
 
       {/* 3 STAT CARDS */}
       <div className="ph-top-stats">
+
+        {/* ── Card 1: Paths Selected by Users (LIVE from API) ── */}
         <div className="ph-stat-card ph-stat-teal">
           <div className="ph-stat-top">
             <div className="ph-stat-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 17L8 7l4 6 4-4 4 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </div>
-            <span className="ph-stat-badge">↑ 24%</span>
+            <span className="ph-stat-badge">
+              {statsLoading ? "…" : `${percentChange >= 0 ? "↑" : "↓"} ${Math.abs(percentChange)}%`}
+            </span>
           </div>
-          <div className="ph-stat-val">1,204</div>
-          <div className="ph-stat-label">Paths Selected by Users</div>
-          {/* <div className="ph-stat-bar"><div className="ph-stat-bar-fill" style={{ width:"72%" }}/></div> */}
-          <div className="ph-stat-sub">1,204 total · 342 this week</div>
+          {statsLoading ? (
+            <>
+              <Skeleton height={28} width={100} style={{ marginBottom:6 }} />
+              <Skeleton height={12} width={180} style={{ marginBottom:8 }} />
+              <Skeleton height={10} width={140} />
+            </>
+          ) : statsError ? (
+            <div style={{ color:"rgba(255,255,255,.8)", fontSize:12 }}>
+              <div style={{ fontSize:18, fontWeight:700, marginBottom:4 }}>—</div>
+              <div style={{ fontSize:10, marginBottom:4 }}>PATHS SELECTED BY USERS</div>
+              <div style={{ fontSize:10, opacity:.8 }}>{statsError}</div>
+            </div>
+          ) : (
+            <>
+              <div className="ph-stat-val">{totalSelected.toLocaleString("en-IN")}</div>
+              <div className="ph-stat-label">Paths Selected by Users</div>
+              <div className="ph-stat-sub">
+                {totalSelected.toLocaleString("en-IN")} total · {thisWeek} this week
+              </div>
+            </>
+          )}
           <button className="ph-stat-btn" onClick={() => setView("paths")}>View All →</button>
         </div>
 
+        {/* ── Card 2: Steps Completed (LIVE from API) ── */}
         <div className="ph-stat-card ph-stat-blue">
           <div className="ph-stat-top">
             <div className="ph-stat-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </div>
-            <span className="ph-stat-badge">↑ 11%</span>
+            <span className="ph-stat-badge">
+              {statsLoading ? "…" : "↑ Live"}
+            </span>
           </div>
-          <div className="ph-stat-val">7,382</div>
-          <div className="ph-stat-label">Steps Completed</div>
-          {/* <div className="ph-stat-bar"><div className="ph-stat-bar-fill" style={{ width:"58%" }}/></div> */}
-          <div className="ph-stat-sub">Across all paths · Avg 6.1 per user</div>
-          <button className="ph-stat-btn">View Steps →</button>
+          {statsLoading ? (
+            <>
+              <Skeleton height={28} width={100} style={{ marginBottom:6 }} />
+              <Skeleton height={12} width={180} style={{ marginBottom:8 }} />
+              <Skeleton height={10} width={140} />
+            </>
+          ) : (
+            <>
+              <div className="ph-stat-val">{totalStepsCompleted.toLocaleString("en-IN")}</div>
+              <div className="ph-stat-label">Steps Completed</div>
+              <div className="ph-stat-sub">
+                Across all paths · Avg {avgStepsPerUser} per user
+              </div>
+            </>
+          )}
+          <button className="ph-stat-btn" onClick={() => setView("paths")}>View Steps →</button>
         </div>
 
+        {/* ── Card 3: Subscriptions & Purchases (still static) ── */}
         <div className="ph-stat-card ph-stat-violet">
           <div className="ph-stat-top">
             <div className="ph-stat-icon">
@@ -436,7 +778,6 @@ export default function PartnerHome() {
           </div>
           <div className="ph-stat-val">698</div>
           <div className="ph-stat-label">Subscriptions &amp; Purchases</div>
-          {/* <div className="ph-stat-bar"><div className="ph-stat-bar-fill" style={{ width:"85%" }}/></div> */}
           <div className="ph-stat-sub">386 subs · 218 purchases · 94 bundles</div>
           <button className="ph-stat-btn" onClick={() => setView("marketplace")}>View Market →</button>
         </div>
@@ -480,21 +821,38 @@ export default function PartnerHome() {
         {/* Right col */}
         <div className="ph-right-col">
 
-          {/* Top Paths */}
+          {/* Top Paths — LIVE from API */}
           <div className="ph-card">
             <div className="ph-card-header">
               <span className="ph-card-title">Top Paths This Week</span>
             </div>
             <div className="ph-top-paths-list">
-              {MY_PATHS.filter(p => p.status==="active").slice(0,4).map((path,i) => (
-                <div key={path.id} className="ph-top-path-row">
+              {statsLoading ? (
+                [1,2,3,4].map(i => (
+                  <div key={i} style={{ display:"flex", gap:10, padding:"8px 0" }}>
+                    <Skeleton width={20} height={20} radius={5} />
+                    <div style={{ flex:1 }}>
+                      <Skeleton height={12} width="70%" style={{ marginBottom:4 }} />
+                      <Skeleton height={10} width="40%" />
+                    </div>
+                    <Skeleton width={80} height={12} />
+                  </div>
+                ))
+              ) : MY_PATHS.length === 0 ? (
+                <div style={{ padding:"16px 0", textAlign:"center", color:"#94a3b8", fontSize:12 }}>
+                  No active paths yet.
+                </div>
+              ) : MY_PATHS.slice(0, 4).map((path, i) => (
+                <div key={path._id} className="ph-top-path-row">
                   <span className="ph-path-rank">{i+1}</span>
                   <div className="ph-path-info">
-                    <div className="ph-path-name">{path.name}</div>
+                    <div className="ph-path-name">{path.nameOfPath}</div>
                     <div className="ph-path-enrolled">{path.usersEnrolled} users</div>
                   </div>
                   <div className="ph-path-bar-wrap">
-                    <div className="ph-path-bar"><div className="ph-path-bar-fill" style={{ width:`${path.completion}%` }}/></div>
+                    <div className="ph-path-bar">
+                      <div className="ph-path-bar-fill" style={{ width:`${path.completion}%` }}/>
+                    </div>
                     <span className="ph-path-pct">{path.completion}%</span>
                   </div>
                 </div>
@@ -502,7 +860,7 @@ export default function PartnerHome() {
             </div>
           </div>
 
-          {/* Weekly Retention — vertical bar chart */}
+          {/* Weekly Retention */}
           <div className="ph-card">
             <div className="ph-card-header">
               <span className="ph-card-title">Weekly Retention</span>
@@ -529,49 +887,6 @@ export default function PartnerHome() {
 
         </div>
       </div>
-
-      {/* BOTTOM ROW
-      <div className="ph-bottom-row">
-
-        <div className="ph-card">
-          <div className="ph-card-header">
-            <span className="ph-card-title">My Paths</span>
-            <button className="ph-link-btn" onClick={() => setView("paths")}>View all →</button>
-          </div>
-          <div className="ph-bottom-list">
-            {MY_PATHS.filter(p => p.status==="active").map((path,i) => (
-              <div key={path.id} className="ph-bottom-item" onClick={() => { setSelectedPath(path); setView("pathDetail"); }}>
-                <span className="ph-bottom-num">{i+1}</span>
-                <div className="ph-bottom-info">
-                  <div className="ph-bottom-name">{path.name}</div>
-                  <div className="ph-bottom-sub">{path.usersEnrolled} users enrolled</div>
-                </div>
-                <span className="ph-bottom-pct">{path.completion}%</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="ph-card">
-          <div className="ph-card-header">
-            <span className="ph-card-title">My Marketplace</span>
-            <button className="ph-link-btn" onClick={() => setView("marketplace")}>View all →</button>
-          </div>
-          <div className="ph-bottom-list">
-            {MARKETPLACE_ITEMS.map((item,i) => (
-              <div key={item.id} className="ph-bottom-item" onClick={() => { setSelectedItem(item); setView("marketDetail"); }}>
-                <div className={`ph-market-icon ph-market-icon-${i%4}`}>{["🛒","📦","🎯","☁️","👤","⛓️"][i]}</div>
-                <div className="ph-bottom-info">
-                  <div className="ph-bottom-name">{item.name}</div>
-                  <div className="ph-bottom-sub">{item.purchases} purchases</div>
-                </div>
-                <span className="ph-plan-badge" style={{ background:PLAN_BADGE[item.plan]?.bg, color:PLAN_BADGE[item.plan]?.color }}>{item.plan}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-      </div> */}
     </div>
   );
-} 
+}

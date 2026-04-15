@@ -31,27 +31,14 @@ const Icons = {
       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   ),
- Paths: ({ color }) => (
-  <svg
-    width="17"
-    height="17"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke={color}
-    strokeWidth="1.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    {/* Start circle */}
-    <circle cx="5" cy="18" r="1.8" />
-
-    {/* End circle */}
-    <circle cx="19" cy="6" r="1.8" />
-
-    {/* Curved dashed path */}
-    <path d="M7 16 C10 12, 14 10, 17 8" strokeDasharray="3 3" />
+Paths: ({ color }) => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="5" cy="18" r="2" />
+    <circle cx="19" cy="6" r="2" />
+    <path d="M5 16 C5 8, 19 16, 19 8" />
   </svg>
 ),
+
   Steps: ({ color }) => (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="8" y1="6" x2="21" y2="6" />

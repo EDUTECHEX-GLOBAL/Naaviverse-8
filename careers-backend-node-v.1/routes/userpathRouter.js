@@ -1,14 +1,26 @@
-const express = require("express");
-const router = express.Router();
+// routes/userpathRouter.js
+// ─────────────────────────────────────────────────────────────────────────────
+// Users can select MULTIPLE paths simultaneously.
+// Each selection creates a new doc in userPaths collection.
+// Only blocked if the user has already selected that EXACT path (duplicate guard).
+// ─────────────────────────────────────────────────────────────────────────────
 
-const User = require("../models/users.model");
-const Path = require("../models/path.model");
-const Step = require("../models/steps.model");
+const express  = require("express");
+const router   = express.Router();
+const mongoose = require("mongoose");
+
+const User     = require("../models/users.model");
+const Path     = require("../models/path.model");
+const Step     = require("../models/steps.model");
+const UserPath = require("../models/userpaths.model");   // ← THE SOURCE OF TRUTH
 
 
-// ------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 // SELECT A PATH FOR THE USER
-// ------------------------------------------------------
+// POST /api/userpaths/selectpath
+// Users can select MULTIPLE paths. Each path creates a separate active doc.
+// Only blocks if this exact path is already active for this user (no duplicates).
+// ─────────────────────────────────────────────────────────────────────────────
 router.post("/selectpath", async (req, res) => {
   try {
     const { email, pathId } = req.body;
@@ -20,121 +32,138 @@ router.post("/selectpath", async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({
+    if (!mongoose.Types.ObjectId.isValid(pathId)) {
+      return res.status(400).json({
         status: false,
-        message: "User not found",
+        message: "Invalid pathId",
       });
     }
 
+    // ── 1. Verify user exists ─────────────────────────────────────────────
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ status: false, message: "User not found" });
+    }
+
+    // ── 2. Verify path is active ──────────────────────────────────────────
+    const path = await Path.findOne({
+      _id:    new mongoose.Types.ObjectId(pathId),
+      status: "active",
+    }).lean();
+
+    if (!path) {
+      return res.status(404).json({ status: false, message: "Path not found or not active" });
+    }
+
+    // ── 3. Block exact duplicate — same path already active for this user ─
+    const alreadySelected = await UserPath.findOne({
+      email,
+      pathId: new mongoose.Types.ObjectId(pathId),
+      status: "active",
+    });
+
+    if (alreadySelected) {
+      return res.status(200).json({
+        status:  false,
+        message: "You have already selected this path",
+        pathId,
+      });
+    }
+
+    // ── 4. Create a new userPath doc for this path ────────────────────────
+    //    No existing docs are touched — user keeps all previously selected paths.
+    const newUserPath = await UserPath.create({
+      email,
+      pathId:         new mongoose.Types.ObjectId(pathId),
+      status:         "active",
+      completedSteps: [],
+      currentStep:    "",
+    });
+
+    // ── 5. Keep naavi_users.selectedPath pointing to latest selection ─────
     user.selectedPath = pathId;
     await user.save();
 
     return res.status(200).json({
-      status: true,
+      status:  true,
       message: "Path selected successfully",
       pathId,
+      data:    newUserPath,
     });
   } catch (error) {
     console.error("Select Path Error:", error);
-    res.status(500).json({
-      status: false,
-      message: error.message,
-    });
+    return res.status(500).json({ status: false, message: error.message });
   }
 });
 
 
-
-// ------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 // GET THE STEPS FOR THE SELECTED PATH
-// ------------------------------------------------------
+// GET /api/userpaths/steps?pathId=xxx
+// ─────────────────────────────────────────────────────────────────────────────
 router.get("/steps", async (req, res) => {
   try {
     const { pathId } = req.query;
 
     if (!pathId) {
-      return res.status(400).json({
-        status: false,
-        message: "pathId is required",
-      });
+      return res.status(400).json({ status: false, message: "pathId is required" });
     }
 
     const path = await Path.findById(pathId).lean();
-
     if (!path) {
-      return res.status(404).json({
-        status: false,
-        message: "Path not found",
-      });
+      return res.status(404).json({ status: false, message: "Path not found" });
     }
 
-    const stepIds = path.the_ids.map((s) => s.step_id);
-
-    // Fetch full step documents
-    const steps = await Step.find({ _id: { $in: stepIds } }).lean();
+    const stepIds = path.the_ids.map(s => s.step_id);
+    const steps   = await Step.find({ _id: { $in: stepIds } }).lean();
 
     return res.status(200).json({
       status: true,
       data: {
-        name: path.nameOfPath,
+        name:        path.nameOfPath,
         description: path.description,
         steps,
       },
     });
-
   } catch (error) {
     console.error("Get Path Steps Error:", error);
-    res.status(500).json({
-      status: false,
-      message: error.message,
-    });
+    return res.status(500).json({ status: false, message: error.message });
   }
 });
 
 
-// ------------------------------------------------------
-// GET USER SELECTED PATH ID
-// ------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
+// GET USER'S SELECTED PATH ID
+// GET /api/userpaths/selected?email=xxx
+// ─────────────────────────────────────────────────────────────────────────────
 router.get("/selected", async (req, res) => {
   try {
     const { email } = req.query;
 
     if (!email) {
-      return res.status(400).json({
-        status: false,
-        message: "Email is required",
-      });
+      return res.status(400).json({ status: false, message: "Email is required" });
     }
 
     const user = await User.findOne({ email });
-
     if (!user) {
-      return res.status(404).json({
-        status: false,
-        message: "User not found",
-      });
+      return res.status(404).json({ status: false, message: "User not found" });
     }
 
     return res.status(200).json({
       status: true,
       pathId: user.selectedPath || null,
     });
-
   } catch (error) {
     console.error("Get Selected Path Error:", error);
-    res.status(500).json({
-      status: false,
-      message: error.message,
-    });
+    return res.status(500).json({ status: false, message: error.message });
   }
 });
 
 
-// ------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 // MARK STEP AS COMPLETED
-// ------------------------------------------------------
+// PUT /api/userpaths/completeStep
+// ─────────────────────────────────────────────────────────────────────────────
 router.put("/completeStep", async (req, res) => {
   try {
     const { email, pathId, step_id } = req.body;
@@ -147,34 +176,36 @@ router.put("/completeStep", async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-    if (!user)
+    if (!user) {
       return res.status(404).json({ status: false, message: "User not found" });
+    }
 
+    // Update naavi_users
     user.completedSteps = user.completedSteps || [];
     if (!user.completedSteps.includes(step_id)) {
       user.completedSteps.push(step_id);
     }
-
     await user.save();
 
-    res.status(200).json({
-      status: true,
-      message: "Step marked as completed",
-    });
+    // Also update userPaths collection so dashboard completion% is accurate
+    await UserPath.findOneAndUpdate(
+      { email, status: "active" },
+      { $addToSet: { completedSteps: new mongoose.Types.ObjectId(step_id) } },
+      { new: true }
+    );
 
+    return res.status(200).json({ status: true, message: "Step marked as completed" });
   } catch (error) {
     console.error("Complete Step Error:", error);
-    res.status(500).json({
-      status: false,
-      message: error.message,
-    });
+    return res.status(500).json({ status: false, message: error.message });
   }
 });
 
 
-// ------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 // MARK STEP AS FAILED
-// ------------------------------------------------------
+// PUT /api/userpaths/failedStep
+// ─────────────────────────────────────────────────────────────────────────────
 router.put("/failedStep", async (req, res) => {
   try {
     const { email, pathId, step_id } = req.body;
@@ -187,27 +218,20 @@ router.put("/failedStep", async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-    if (!user)
+    if (!user) {
       return res.status(404).json({ status: false, message: "User not found" });
+    }
 
     user.failedSteps = user.failedSteps || [];
     if (!user.failedSteps.includes(step_id)) {
       user.failedSteps.push(step_id);
     }
-
     await user.save();
 
-    res.status(200).json({
-      status: true,
-      message: "Step marked as failed",
-    });
-
+    return res.status(200).json({ status: true, message: "Step marked as failed" });
   } catch (error) {
     console.error("Failed Step Error:", error);
-    res.status(500).json({
-      status: false,
-      message: error.message,
-    });
+    return res.status(500).json({ status: false, message: error.message });
   }
 });
 

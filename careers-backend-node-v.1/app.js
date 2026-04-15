@@ -48,7 +48,7 @@ const dashboardRouter = require("./routes/Dashboardrouter");
 const activityRouter  = require("./routes/activityRouter");
 const stepsRouter = require("./routes/stepsRouter");
 const marketplaceRouter = require("./routes/marketplaceRouter");
-
+ const partnerDashboardRouter = require("./routes/Partnerdashboardrouter");
 const programNameRouter = require("./routes/programName.router");
 const universityProgramRouter = require("./routes/Universityprogram.router");
 const locationRouter = require("./routes/Location.router");
@@ -142,7 +142,7 @@ app.use("/api/approvals", approvalRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/activity",  activityRouter);
 app.use("/api/payment", require("./routes/paymentRoutes"));
-
+app.use("/api/partner-dashboard", partnerDashboardRouter);
 // ── Super Admin routes (newsletter, contacts, visitors, dashboard) ─────────
 app.use("/api/admin/auth", adminAuthRoutes);
 app.use("/api/admin-dashboard", adminDashboardRoutes);
