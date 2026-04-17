@@ -13,6 +13,7 @@ const User     = require("../models/users.model");
 const Path     = require("../models/path.model");
 const Step     = require("../models/steps.model");
 const UserPath = require("../models/userpaths.model");   // ← THE SOURCE OF TRUTH
+const Purchase = require("../models/purchase.model");    // ← For CRM clients
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -231,6 +232,88 @@ router.put("/failedStep", async (req, res) => {
     return res.status(200).json({ status: true, message: "Step marked as failed" });
   } catch (error) {
     console.error("Failed Step Error:", error);
+    return res.status(500).json({ status: false, message: error.message });
+  }
+});
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET CRM CLIENTS FOR A PARTNER
+// GET /api/userpaths/crm-clients?partnerEmail=xxx
+// Returns all users who selected any path belonging to this partner,
+// along with their purchase count and basic info.
+// ─────────────────────────────────────────────────────────────────────────────
+router.get("/crm-clients", async (req, res) => {
+  try {
+    const { partnerEmail } = req.query;
+
+    if (!partnerEmail) {
+      return res.status(400).json({ status: false, message: "partnerEmail is required" });
+    }
+
+    // ── 1. Find all active paths belonging to this partner ────────────────
+    const partnerPaths = await Path.find({
+      email: partnerEmail,   // Using 'email' field to match partner's email
+      status: "active",
+    }).lean();
+
+    if (!partnerPaths.length) {
+      return res.status(200).json({ status: true, total: 0, data: [] });
+    }
+
+    const partnerPathIds = partnerPaths.map(p => p._id);
+
+    // ── 2. Find all userPaths where pathId is one of this partner's paths ─
+    const userPaths = await UserPath.find({
+      pathId: { $in: partnerPathIds },
+      status: "active",
+    }).lean();
+
+    if (!userPaths.length) {
+      return res.status(200).json({ status: true, total: 0, data: [] });
+    }
+
+    // ── 3. Get unique user emails ─────────────────────────────────────────
+    const uniqueEmails = [...new Set(userPaths.map(up => up.email))];
+
+    // ── 4. Fetch full user details ────────────────────────────────────────
+    const users = await User.find({ email: { $in: uniqueEmails } }).lean();
+
+    // ── 5. Fetch purchases for these users (adjust model/field as needed) ─
+    let purchaseMap = {};
+    try {
+      const purchases = await Purchase.find({
+        email: { $in: uniqueEmails },
+      }).lean();
+
+      for (const pu of purchases) {
+        if (!purchaseMap[pu.email]) purchaseMap[pu.email] = [];
+        purchaseMap[pu.email].push(pu);
+      }
+    } catch (_) {
+      // Purchase model may not exist yet — gracefully skip
+      console.log("Purchase model not available or error fetching purchases");
+    }
+
+    // ── 6. Shape the response ─────────────────────────────────────────────
+    const clients = users.map(u => ({
+      name:         u.username || u.name || u.email,
+      email:        u.email,
+      phone:        u.phone || u.phoneNumber || "—",
+      country:      u.country || "—",
+      joinedAt:     u.createdAt,
+      avatar:       (u.username || u.name || u.email).slice(0, 2).toUpperCase(),
+      purchases:    (purchaseMap[u.email] || []).length,
+      purchaseList: purchaseMap[u.email] || [],
+    }));
+
+    return res.status(200).json({
+      status: true,
+      total:  clients.length,
+      data:   clients,
+    });
+  } catch (error) {
+    console.error("CRM Clients Error:", error);
     return res.status(500).json({ status: false, message: error.message });
   }
 });

@@ -142,9 +142,69 @@ const linkMarketplaceToStep = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// PUT /api/marketplace/admin/update/:id
+// Updates an existing marketplace item. Logs "listing" event.
+// ─────────────────────────────────────────────────────────────────────────────
+const updateMarketplaceItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+    
+    // Remove fields that shouldn't be updated
+    delete updateData._id;
+    delete updateData.createdAt;
+    delete updateData.updatedAt;
+    delete updateData.__v;
+    
+    // Find the original item before update for logging
+    const originalItem = await marketplaceModel.findById(id);
+    if (!originalItem) {
+      return res.status(404).json({ 
+        status: false, 
+        message: "Marketplace item not found" 
+      });
+    }
+    
+    // Update the item
+    const updatedItem = await marketplaceModel.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
+    
+    // ✅ Log marketplace listing updated
+    if (updatedItem?.partner_email) {
+      const { displayName, partnerType } = await getPartnerInfo(updatedItem.partner_email);
+      logEvent({
+        role:        "partner",
+        email:       updatedItem.partner_email,
+        displayName,
+        partnerType,
+        eventType:   "listing",
+        title:       `Marketplace Listing Updated: ${updatedItem.name || "Item"}`,
+        desc:        `Updated "${updatedItem.name || "Item"}" (${updatedItem.layer} · ${updatedItem.access || "free"}) in marketplace`,
+      }).catch(err => console.error("logEvent updateMarketplaceItem error:", err));
+    }
+    
+    return res.json({ 
+      status: true, 
+      message: "Item updated successfully",
+      data: updatedItem 
+    });
+  } catch (error) {
+    console.error("updateMarketplaceItem error:", error);
+    res.status(500).json({ 
+      status: false, 
+      message: error.message 
+    });
+  }
+};
+
 module.exports = {
   addMarketplaceItem,
   getMarketplaceItemsByStep,
   getAllMarketplaceItems,
   linkMarketplaceToStep,
+  updateMarketplaceItem, // ✅ Export the new function
 };

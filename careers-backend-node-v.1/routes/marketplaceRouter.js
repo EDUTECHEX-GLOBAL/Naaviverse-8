@@ -11,5 +11,5 @@ router.get("/admin/get-all", marketplaceController.getAllMarketplaceItems);
 
 // Single route for linking/unlinking a marketplace item to/from a step
 router.patch("/link-step", marketplaceController.linkMarketplaceToStep);
-
+router.put("/admin/update/:id", marketplaceController.updateMarketplaceItem);
 module.exports = router;
