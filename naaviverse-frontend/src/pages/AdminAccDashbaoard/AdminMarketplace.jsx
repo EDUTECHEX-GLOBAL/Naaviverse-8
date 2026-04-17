@@ -7,14 +7,14 @@ import { toast } from "react-toastify";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const roleConfig = {
-  institution: { color: "#7c3aed", bg: "#ede9fe", emoji: "🏛" },
-  mentor:       { color: "#0891b2", bg: "#cffafe", emoji: "👤" },
-  distributor:  { color: "#d97706", bg: "#fef3c7", emoji: "📦" },
-  vendor:       { color: "#dc2626", bg: "#fee2e2", emoji: "🛍" },
+  institution: { color: "#7c3aed", bg: "linear-gradient(135deg, rgba(124,58,237,0.08), rgba(124,58,237,0.02))", emoji: "🏛" },
+  mentor: { color: "#0891b2", bg: "linear-gradient(135deg, rgba(8,145,178,0.08), rgba(8,145,178,0.02))", emoji: "👤" },
+  distributor: { color: "#d97706", bg: "linear-gradient(135deg, rgba(217,119,6,0.08), rgba(217,119,6,0.02))", emoji: "📦" },
+  vendor: { color: "#dc2626", bg: "linear-gradient(135deg, rgba(220,38,38,0.08), rgba(220,38,38,0.02))", emoji: "🛍" },
 };
 
 const getRoleConf = (role) =>
-  roleConfig[role?.toLowerCase()] || { color: "#64748b", bg: "#f1f5f9", emoji: "❓" };
+  roleConfig[role?.toLowerCase()] || { color: "#64748b", bg: "linear-gradient(135deg, rgba(100,116,139,0.08), rgba(100,116,139,0.02))", emoji: "❓" };
 
 const formatPrice = (cost) => {
   if (!cost) return "Price not set";
@@ -33,6 +33,20 @@ const AdminMarketplace = () => {
   const [emailSearch, setEmailSearch] = useState("");
   const [titleSearch, setTitleSearch] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    access: "",
+    cost: "",
+    discount: "",
+    layer: "",
+    duration: "",
+    goal: "",
+    features: "",
+    outcomes: "",
+    iterations: "",
+    partner_email: ""
+  });
 
   useEffect(() => {
     fetchMarketplaceItems();
@@ -58,6 +72,70 @@ const AdminMarketplace = () => {
     }
   };
 
+  const handleEditClick = (item) => {
+    setIsEditing(true);
+    setEditFormData({
+      name: item.name || "",
+      access: item.access || "",
+      cost: item.cost || "",
+      discount: item.discount || "",
+      layer: item.layer || "",
+      duration: item.duration || "",
+      goal: item.goal || "",
+      features: item.features || "",
+      outcomes: item.outcomes || "",
+      iterations: item.iterations || "",
+      partner_email: item.partner_email || ""
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSave = async () => {
+    try {
+      const response = await axios.put(
+        `${BASE_URL}/api/marketplace/admin/update/${selectedItem._id}`,
+        editFormData
+      );
+      
+      if (response.data?.status) {
+        toast.success("Item updated successfully!");
+        const updatedItem = response.data.data;
+        setItems(prevItems => 
+          prevItems.map(item => 
+            item._id === selectedItem._id 
+              ? updatedItem
+              : item
+          )
+        );
+        setSelectedItem(updatedItem);
+        setIsEditing(false);
+      } else {
+        toast.error(response.data?.message || "Failed to update item");
+      }
+    } catch (error) {
+      console.error("Error updating item:", error);
+      if (error.response?.status === 404) {
+        toast.error("Update endpoint not found. Please check server configuration.");
+      } else if (error.response?.status === 400) {
+        toast.error(error.response.data?.message || "Invalid data provided");
+      } else {
+        toast.error(error.response?.data?.message || "Error updating item. Please try again.");
+      }
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditFormData({});
+  };
+
   const filteredItems = items.filter((item) => {
     const roleMatch =
       partnerType === "all" ||
@@ -71,13 +149,8 @@ const AdminMarketplace = () => {
     return roleMatch && emailMatch && titleMatch;
   });
 
-  const isSubscriptionPrice = (cost) =>
-    cost?.toLowerCase().includes("subscription") ||
-    cost?.toLowerCase().includes("covered");
-
   return (
     <div className="admin-marketplace">
-      {/* Header */}
       <div className="mp-header">
         <h1>Marketplace</h1>
         {!loading && (
@@ -87,7 +160,6 @@ const AdminMarketplace = () => {
         )}
       </div>
 
-      {/* Filters */}
       <div className="mp-filters">
         <div className="filter-group">
           <label>Partner Type</label>
@@ -119,7 +191,6 @@ const AdminMarketplace = () => {
         </div>
       </div>
 
-      {/* Grid */}
       {loading ? (
         <div className="mp-grid">
           {Array(6).fill(0).map((_, i) => (
@@ -140,10 +211,8 @@ const AdminMarketplace = () => {
           {filteredItems.length > 0 ? (
             filteredItems.map((item) => {
               const rc = getRoleConf(item.role);
-              const isSub = isSubscriptionPrice(item.cost);
               return (
                 <div className="mp-card" key={item._id} onClick={() => setSelectedItem(item)}>
-                  {/* Card Top */}
                   <div className="card-top">
                     <div className="card-top-left">
                       <div className="avatar" style={{ background: rc.bg }}>
@@ -151,16 +220,15 @@ const AdminMarketplace = () => {
                       </div>
                       <div className="card-name">{item.name || "Untitled"}</div>
                     </div>
-                   {item.duration && (
-  <div className="price-badge price-yellow">
-    {item.duration}
-  </div>
-)}
+                    {item.duration && (
+                      <div className="price-badge price-yellow">
+                        {item.duration}
+                      </div>
+                    )}
                   </div>
 
                   <div className="card-divider" />
 
-                  {/* Card Body */}
                   <div className="card-body">
                     <div className="role-row">
                       <div className="role-dot" style={{ background: rc.color }} />
@@ -185,7 +253,6 @@ const AdminMarketplace = () => {
                       <div className="partner-email" title={item.partner_email}>
                         {item.partner_email || "—"}
                       </div>
-                      
                     </div>
 
                     <button
@@ -212,7 +279,10 @@ const AdminMarketplace = () => {
 
       {/* Details Modal */}
       {selectedItem && (
-        <div className="modal-overlay" onClick={() => setSelectedItem(null)}>
+        <div className="modal-overlay" onClick={() => {
+          setSelectedItem(null);
+          setIsEditing(false);
+        }}>
           <div className="modal-container" onClick={(e) => e.stopPropagation()}>
             {(() => {
               const rc = getRoleConf(selectedItem.role);
@@ -223,17 +293,30 @@ const AdminMarketplace = () => {
                       <div className="modal-avatar" style={{ background: rc.bg }}>
                         {rc.emoji}
                       </div>
-                      <div>
-                        <h2>{selectedItem.name || "Item Details"}</h2>
+                      <div className="modal-title-wrapper">
+                        {!isEditing ? (
+                          <h2>{selectedItem.name || "Item Details"}</h2>
+                        ) : (
+                          <input
+                            type="text"
+                            name="name"
+                            value={editFormData.name}
+                            onChange={handleInputChange}
+                            className="edit-input-title"
+                            placeholder="Item Name"
+                          />
+                        )}
                       </div>
                     </div>
-                    <button className="modal-close" onClick={() => setSelectedItem(null)}>
+                    <button className="modal-close" onClick={() => {
+                      setSelectedItem(null);
+                      setIsEditing(false);
+                    }}>
                       ×
                     </button>
                   </div>
 
                   <div className="modal-body">
-                    {/* Access & Pricing */}
                     <div className="section-title">Access &amp; Pricing</div>
                     <table className="access-table">
                       <thead>
@@ -245,34 +328,104 @@ const AdminMarketplace = () => {
                       </thead>
                       <tbody>
                         <tr>
-                          <td className="highlight">{selectedItem.access || "—"}</td>
-                          <td className="highlight">{formatPrice(selectedItem.cost)}</td>
+                          <td className="highlight">
+                            {!isEditing ? (
+                              selectedItem.access || "—"
+                            ) : (
+                              <input
+                                type="text"
+                                name="access"
+                                value={editFormData.access}
+                                onChange={handleInputChange}
+                                className="edit-input"
+                              />
+                            )}
+                          </td>
+                          <td className="highlight">
+                            {!isEditing ? (
+                              formatPrice(selectedItem.cost)
+                            ) : (
+                              <input
+                                type="text"
+                                name="cost"
+                                value={editFormData.cost}
+                                onChange={handleInputChange}
+                                className="edit-input"
+                              />
+                            )}
+                          </td>
                           {selectedItem.discount && (
-                            <td className="discount-val">{selectedItem.discount}</td>
+                            <td className="discount-val">
+                              {!isEditing ? (
+                                selectedItem.discount
+                              ) : (
+                                <input
+                                  type="text"
+                                  name="discount"
+                                  value={editFormData.discount}
+                                  onChange={handleInputChange}
+                                  className="edit-input"
+                                />
+                              )}
+                             </td>
                           )}
                         </tr>
                       </tbody>
                     </table>
 
-                    {/* Source */}
                     <div className="section-title">Source</div>
                     <div className="detail-grid" style={{ marginBottom: 20 }}>
                       <div className="d-item">
                         <div className="d-label">Layer</div>
-                        <div className="d-val">{selectedItem.layer || "Not specified"}</div>
+                        <div className="d-val">
+                          {!isEditing ? (
+                            selectedItem.layer || "Not specified"
+                          ) : (
+                            <input
+                              type="text"
+                              name="layer"
+                              value={editFormData.layer}
+                              onChange={handleInputChange}
+                              className="edit-input"
+                            />
+                          )}
+                        </div>
                       </div>
                       <div className="d-item">
                         <div className="d-label">Duration</div>
-                        <div className="d-val">{selectedItem.duration || "—"}</div>
+                        <div className="d-val">
+                          {!isEditing ? (
+                            selectedItem.duration || "—"
+                          ) : (
+                            <input
+                              type="text"
+                              name="duration"
+                              value={editFormData.duration}
+                              onChange={handleInputChange}
+                              className="edit-input"
+                            />
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Details */}
                     <div className="section-title">Details</div>
                     <div className="detail-grid">
                       <div className="d-item">
                         <div className="d-label">Goal</div>
-                        <div className="d-val">{selectedItem.goal || "—"}</div>
+                        <div className="d-val">
+                          {!isEditing ? (
+                            selectedItem.goal || "—"
+                          ) : (
+                            <input
+                              type="text"
+                              name="goal"
+                              value={editFormData.goal}
+                              onChange={handleInputChange}
+                              className="edit-input"
+                            />
+                          )}
+                        </div>
                       </div>
                       <div className="d-item">
                         <div className="d-label">Created</div>
@@ -282,33 +435,88 @@ const AdminMarketplace = () => {
                           })}
                         </div>
                       </div>
-                      {selectedItem.iterations && (
-                        <div className="d-item">
-                          <div className="d-label">Iterations</div>
-                          <div className="d-val">{selectedItem.iterations}</div>
+                      <div className="d-item">
+                        <div className="d-label">Iterations</div>
+                        <div className="d-val">
+                          {!isEditing ? (
+                            selectedItem.iterations || "—"
+                          ) : (
+                            <input
+                              type="text"
+                              name="iterations"
+                              value={editFormData.iterations}
+                              onChange={handleInputChange}
+                              className="edit-input"
+                            />
+                          )}
                         </div>
-                      )}
-                      {selectedItem.outcomes && (
-                        <div className="d-item wide">
-                          <div className="d-label">Outcomes</div>
-                          <div className="d-val">{selectedItem.outcomes}</div>
+                      </div>
+                      <div className="d-item wide">
+                        <div className="d-label">Outcomes</div>
+                        <div className="d-val">
+                          {!isEditing ? (
+                            selectedItem.outcomes || "—"
+                          ) : (
+                            <textarea
+                              name="outcomes"
+                              value={editFormData.outcomes}
+                              onChange={handleInputChange}
+                              className="edit-textarea"
+                              rows="2"
+                            />
+                          )}
                         </div>
-                      )}
-                      {selectedItem.features && (
-                        <div className="d-item wide">
-                          <div className="d-label">Features</div>
-                          <div className="d-val">{selectedItem.features}</div>
+                      </div>
+                      <div className="d-item wide">
+                        <div className="d-label">Features</div>
+                        <div className="d-val">
+                          {!isEditing ? (
+                            selectedItem.features || "—"
+                          ) : (
+                            <textarea
+                              name="features"
+                              value={editFormData.features}
+                              onChange={handleInputChange}
+                              className="edit-textarea"
+                              rows="2"
+                            />
+                          )}
                         </div>
-                      )}
+                      </div>
                       <div className="d-item wide">
                         <div className="d-label">Partner Email</div>
-                        <div className="d-val email">{selectedItem.partner_email || "Unknown"}</div>
+                        <div className="d-val email">
+                          {!isEditing ? (
+                            selectedItem.partner_email || "Unknown"
+                          ) : (
+                            <input
+                              type="email"
+                              name="partner_email"
+                              value={editFormData.partner_email}
+                              onChange={handleInputChange}
+                              className="edit-input"
+                            />
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   <div className="modal-foot">
-                    <button onClick={() => setSelectedItem(null)}>Close</button>
+                    {!isEditing ? (
+                      <button className="edit-btn" onClick={() => handleEditClick(selectedItem)}>
+                        Edit
+                      </button>
+                    ) : (
+                      <>
+                        <button className="cancel-btn" onClick={handleCancel}>
+                          Cancel
+                        </button>
+                        <button className="save-btn" onClick={handleSave}>
+                          Save Changes
+                        </button>
+                      </>
+                    )}
                   </div>
                 </>
               );

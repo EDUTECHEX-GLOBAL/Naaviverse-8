@@ -78,21 +78,49 @@ const getDashboardStats = async (req, res) => {
 
     const pathIds = partnerPaths.map(p => p._id);
 
-    // ── 2. All-time enrollments per path (active userPath docs) ───────────
+    // ── 2. All-time enrollments per path from userPaths collection ────────
     const allTimeAgg = await UserPath.aggregate([
-      {
-        $match: {
-          pathId: { $in: pathIds },
-          status: "active",
-        },
-      },
-      {
-        $group: {
-          _id:   "$pathId",
-          count: { $sum: 1 },
-        },
-      },
+      { $match: { pathId: { $in: pathIds }, status: "active" } },
+      { $group: { _id: "$pathId", count: { $sum: 1 } } },
     ]);
+
+    // ── 2b. Legacy fallback: naavi_users.selectedPath ─────────────────────
+    // Count users whose selectedPath is one of our paths but have NO userPaths doc
+    const User = getUserModel();
+    const pathIdStrings = pathIds.map(id => id.toString());
+
+    // Get all emails already in userPaths for these paths
+    const coveredEmailsByPath = await UserPath.aggregate([
+      { $match: { pathId: { $in: pathIds }, status: "active" } },
+      { $group: { _id: "$pathId", emails: { $addToSet: "$email" } } },
+    ]);
+    const coveredMap = Object.fromEntries(
+      coveredEmailsByPath.map(x => [x._id.toString(), new Set(x.emails)])
+    );
+
+    // Find legacy users per path
+    const legacyCountMap = {};
+    for (const pathId of pathIds) {
+      const pid = pathId.toString();
+      const covered = coveredMap[pid] || new Set();
+      const legacyUsers = await User.find({
+        selectedPath: pid,
+        email: { $nin: [...covered] },
+      }).select("email").lean();
+      legacyCountMap[pid] = legacyUsers.length;
+
+      // Backfill silently
+      if (legacyUsers.length > 0) {
+        const docs = legacyUsers.map(u => ({
+          email:          u.email,
+          pathId:         pathId,
+          status:         "active",
+          completedSteps: [],
+          currentStep:    "",
+        }));
+        await UserPath.insertMany(docs, { ordered: false }).catch(() => {});
+      }
+    }
 
     // ── 3. This-week enrollments per path ────────────────────────────────
     const weekAgg = await UserPath.aggregate([
@@ -144,6 +172,11 @@ const getDashboardStats = async (req, res) => {
 
     // ── 6. Grand totals ───────────────────────────────────────────────────
     const allTimeMap  = Object.fromEntries(allTimeAgg.map(x => [x._id.toString(), x.count]));
+
+    // Merge legacy counts into allTimeMap
+    for (const [pid, legacyCount] of Object.entries(legacyCountMap)) {
+      allTimeMap[pid] = (allTimeMap[pid] || 0) + legacyCount;
+    }
     const weekMap     = Object.fromEntries(weekAgg.map(x => [x._id.toString(), x.count]));
     const stepsMap    = Object.fromEntries(stepsAgg.map(x => [x._id.toString(), x.totalCompleted]));
 
@@ -249,13 +282,89 @@ const getPathEnrolledUsers = async (req, res) => {
     const UserPath = getUserPathModel();
     const User     = getUserModel();
 
-    // Fetch all active userPath docs for this path
-    const userPaths = await UserPath.find({
-      pathId: new mongoose.Types.ObjectId(pathId),
+    const pathObjectId = new mongoose.Types.ObjectId(pathId);
+    const totalSteps   = path.total_steps || path.the_ids?.length || 1;
+
+    // ── SOURCE 1: userPaths collection (new flow) ─────────────────────────
+    const userPathDocs = await UserPath.find({
+      pathId: pathObjectId,
       status: "active",
     }).lean();
 
-    if (!userPaths.length) {
+    // ── SOURCE 2: naavi_users.selectedPath (old flow fallback) ───────────
+    // Find users whose selectedPath matches this pathId but have NO userPaths doc
+    const alreadyCoveredEmails = new Set(userPathDocs.map(u => u.email));
+
+    const legacyUsers = await User.find({
+      selectedPath: pathId.toString(),
+    }).select("email name username profilePicture selectedPath createdAt").lean();
+
+    // Filter to only legacy users NOT already in userPaths collection
+    const legacyOnly = legacyUsers.filter(u => !alreadyCoveredEmails.has(u.email));
+
+    // ── Backfill: create missing userPaths docs for legacy users ──────────
+    // This silently fixes them so next call they appear via Source 1
+    if (legacyOnly.length > 0) {
+      const backfillDocs = legacyOnly.map(u => ({
+        email:          u.email,
+        pathId:         pathObjectId,
+        status:         "active",
+        completedSteps: [],
+        currentStep:    "",
+        createdAt:      u.createdAt || new Date(),
+      }));
+      await UserPath.insertMany(backfillDocs, { ordered: false }).catch(err =>
+        console.warn("Backfill insertMany partial error (safe to ignore):", err.message)
+      );
+    }
+
+    // ── Merge both sources ────────────────────────────────────────────────
+    // Fetch user details for all emails
+    const allEmails  = [
+      ...userPathDocs.map(u => u.email),
+      ...legacyOnly.map(u => u.email),
+    ];
+    const users   = await User.find({ email: { $in: allEmails } })
+      .select("email name username profilePicture").lean();
+    const userMap = Object.fromEntries(users.map(u => [u.email, u]));
+
+    // Build unified list from userPaths docs
+    const fromUserPaths = userPathDocs.map(up => {
+      const u          = userMap[up.email] || {};
+      const doneSteps  = up.completedSteps?.length || 0;
+      const completion = Math.min(100, Math.round((doneSteps / totalSteps) * 100));
+      const isCompleted = up.currentStep === "completed";
+      return {
+        email:          up.email,
+        name:           u.name || u.username || up.email,
+        profilePic:     u.profilePicture || null,
+        enrolledAt:     up.createdAt,
+        completedSteps: doneSteps,
+        totalSteps,
+        completion,
+        currentStep:    up.currentStep || null,
+        isCompleted,
+        status: isCompleted ? "completed" : doneSteps > 0 ? "in-progress" : "not-started",
+      };
+    });
+
+    // Build from legacy users (0 progress since no userPaths doc existed)
+    const fromLegacy = legacyOnly.map(u => ({
+      email:          u.email,
+      name:           u.name || u.username || u.email,
+      profilePic:     u.profilePicture || null,
+      enrolledAt:     u.createdAt,
+      completedSteps: 0,
+      totalSteps,
+      completion:     0,
+      currentStep:    null,
+      isCompleted:    false,
+      status:         "not-started",
+    }));
+
+    const data = [...fromUserPaths, ...fromLegacy];
+
+    if (!data.length) {
       return res.status(200).json({
         status: true,
         total:  0,
@@ -263,39 +372,12 @@ const getPathEnrolledUsers = async (req, res) => {
         path: {
           _id:        path._id,
           nameOfPath: path.nameOfPath,
-          totalSteps: path.total_steps || path.the_ids?.length || 0,
+          totalSteps,
         },
       });
     }
 
-    // Fetch user details
-    const emails   = userPaths.map(up => up.email);
-    const users    = await User.find({ email: { $in: emails } }).select("email name username profilePicture").lean();
-    const userMap  = Object.fromEntries(users.map(u => [u.email, u]));
-
-    const totalSteps = path.total_steps || path.the_ids?.length || 1;
-
-    const data = userPaths.map(up => {
-      const u           = userMap[up.email] || {};
-      const doneSteps   = up.completedSteps?.length || 0;
-      const completion  = Math.min(100, Math.round((doneSteps / totalSteps) * 100));
-      const isCompleted = up.currentStep === "completed";
-
-      return {
-        email:        up.email,
-        name:         u.name || u.username || up.email,
-        profilePic:   u.profilePicture || null,
-        enrolledAt:   up.createdAt,
-        completedSteps: doneSteps,
-        totalSteps,
-        completion,
-        currentStep:  up.currentStep || null,
-        isCompleted,
-        status:       isCompleted ? "completed" : doneSteps > 0 ? "in-progress" : "not-started",
-      };
-    });
-
-    // Sort: completed first, then by completion% desc
+    // Sort: highest completion first
     data.sort((a, b) => b.completion - a.completion);
 
     return res.status(200).json({
