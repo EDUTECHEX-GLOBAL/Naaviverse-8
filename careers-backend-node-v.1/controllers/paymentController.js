@@ -1,107 +1,126 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- *  NAAVI — payment.controller.js  (COMPLETE FIXED FILE)
- *
- *  WHAT CHANGED from your original:
- *  1. createOrder now reads `tier` from req.body
- *  2. Price is looked up by tier + billing_method
- *  3. verifyPayment now also calls /api/subscriptions/create
- *     internally after verification — so the frontend call
- *     to subscriptions/create is no longer needed
+ *  NAAVI — paymentController.js
+ *  NOTE: This project uses paymentRoutes.js as the main handler.
+ *  This controller is kept as a clean reference / fallback.
+ *  If your routes call these exports, they are fully aligned
+ *  with the same planTier logic.
  * ═══════════════════════════════════════════════════════════════
  */
 
-const Payment = require("../models/payment.model");
-const Razorpay = require("razorpay");
-const crypto = require("crypto");
+const Payment      = require("../models/payment.model");
+const Subscription = require("../models/subscription.model");
+const Razorpay     = require("razorpay");
+const crypto       = require("crypto");
 
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_SECRET_KEY, // ✅ FIXED
+  key_id:     process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_SECRET_KEY,
 });
 
-/* ──────────────────────────────────────────────────────────────
-   PRICE TABLE  (in ₹, converted to paise when creating order)
-   Micro Monthly  → ₹499    Micro Annual  → ₹4,188
-   Nano  Monthly  → ₹999    Nano  Annual  → ₹8,388
-────────────────────────────────────────────────────────────── */
+// ── Price table — matches frontend PLAN_META exactly ─────────────────────────
 const PRICES = {
-  micro: { monthly: 499,  annual: 4188 },
-  nano:  { monthly: 999,  annual: 8388 },
+  standard: { monthly: 830,  annual: 9960  },
+  pro:      { monthly: 4150, annual: 49800 },
+  proplus:  { monthly: 8300, annual: 99600 },
 };
 
-/* ============================================================
-   CREATE ORDER + SAVE "pending" PAYMENT RECORD
-   ============================================================ */
+const PLAN_CREDITS = {
+  standard: 100,
+  pro:      500,
+  proplus:  1000,
+};
+
+const PLAN_LABELS = {
+  standard: "Standard",
+  pro:      "Pro",
+  proplus:  "Pro Plus",
+};
+
+// ── Helper ────────────────────────────────────────────────────────────────────
+function derivePlanFields(productName = "", planTierOverride = null) {
+  if (planTierOverride && ["standard", "pro", "proplus"].includes(planTierOverride)) {
+    return { planTier: planTierOverride, tier: "micro" };
+  }
+  const name = productName.toLowerCase();
+  const planTier = name.includes("proplus") || name.includes("pro plus")
+    ? "proplus"
+    : name.includes("pro")
+    ? "pro"
+    : name.includes("standard")
+    ? "standard"
+    : null;
+  return { planTier, tier: "micro" };
+}
+
+// ═════════════════════════════════════════
+//   CREATE ORDER
+// ═════════════════════════════════════════
 exports.createOrder = async (req, res) => {
   try {
     const {
-      product_id,
-      product_name,
-      email,
-      billing_method,   // "monthly" | "annual"
-      currency,
-      profile_id,
-      tier,             // "micro" | "nano"  ← NEW
+      userEmail,
+      productId,
+      productName,
+      billingMethod,
+      profileId,
+      currency = "INR",
+      planTier: planTierFromBody,
     } = req.body;
 
-    // ── Validate tier + billing_method ───────────────────────
-    if (!tier || !PRICES[tier]) {
+    const { planTier, tier } = derivePlanFields(productName, planTierFromBody);
+
+    if (!planTier) {
       return res.status(400).json({
         success: false,
-        error: `Invalid tier "${tier}". Must be "micro" or "nano".`,
+        error: `Invalid plan. productName="${productName}", planTier="${planTierFromBody}"`,
       });
     }
 
-    if (!billing_method || !PRICES[tier][billing_method]) {
+    if (!billingMethod || !["monthly", "annual"].includes(billingMethod)) {
       return res.status(400).json({
         success: false,
-        error: `Invalid billing_method "${billing_method}". Must be "monthly" or "annual".`,
+        error: `Invalid billingMethod "${billingMethod}".`,
       });
     }
 
-    const price = PRICES[tier][billing_method];   // ← tier-aware price ✅
+    const amount = PRICES[planTier][billingMethod];
 
-    const options = {
-      amount: price * 100,   // paise
-      currency: currency || "INR",
-      receipt: "naavi_" + tier + "_" + billing_method + "_" + Date.now(),
-      notes: {
-        userEmail: email,
-        productId: product_id,
-        productName: product_name,
-        billing_method,
-        tier,
-        profile_id,
-      },
-    };
-
-    const order = await razorpay.orders.create(options);
-
-    // ── Save pending payment record ──────────────────────────
-    await Payment.create({
-      userEmail:      email,
-      profileId:      profile_id,
-      productId:      product_id,
-      productName:    product_name,
-      billingMethod:  billing_method,
-      currency:       currency || "INR",
-      amount:         price,
-      razorpayOrderId: order.id,
-      status:         "pending",
+    const payment = await Payment.create({
+      userEmail,
+      productId,
+      productName:   productName || `Naavi ${PLAN_LABELS[planTier]} Plan`,
+      billingMethod,
+      profileId:     profileId || null,
+      amount,
+      currency,
+      tier,
+      planTier,
+      status: "pending",
     });
 
+    const order = await razorpay.orders.create({
+      amount:   amount * 100,
+      currency,
+      receipt:  "receipt_" + payment._id,
+      notes: { userEmail, productId, planTier, tier, billingMethod },
+    });
+
+    payment.razorpayOrderId = order.id;
+    await payment.save();
+
+    console.log(`✅ Order created: ${order.id} | ${planTier}/${billingMethod} | ₹${amount}`);
     return res.json({ success: true, order });
 
   } catch (err) {
-    console.error("❌ Create Order Error:", err);
+    console.error("❌ Create Order Error:", err.message);
     return res.status(500).json({ success: false, error: err.message });
   }
 };
 
-/* ============================================================
-   VERIFY PAYMENT + UPDATE PAYMENT RECORD + ACTIVATE SUBSCRIPTION
-   ============================================================ */
+// ═════════════════════════════════════════
+//   VERIFY PAYMENT
+// ═════════════════════════════════════════
 exports.verifyPayment = async (req, res) => {
   try {
     const {
@@ -110,75 +129,74 @@ exports.verifyPayment = async (req, res) => {
       razorpay_signature,
     } = req.body;
 
-    // ── 1. Verify Razorpay signature ─────────────────────────
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
-
+    // ── 1. Verify signature ───────────────────────────────────────
+    const sign = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_SECRET)
-      .update(body)
+      .createHmac("sha256", process.env.RAZORPAY_SECRET_KEY)
+      .update(sign)
       .digest("hex");
 
     if (expectedSignature !== razorpay_signature) {
       await Payment.findOneAndUpdate(
         { razorpayOrderId: razorpay_order_id },
-        { status: "failed", razorpayPaymentId: null, razorpaySignature: null }
+        { status: "failed" }
       );
       return res.status(400).json({ success: false, message: "Invalid signature" });
     }
 
-    // ── 2. Update payment record to "paid" ───────────────────
+    // ── 2. Mark payment paid ──────────────────────────────────────
     const payment = await Payment.findOneAndUpdate(
       { razorpayOrderId: razorpay_order_id },
       {
-        status:              "paid",
-        razorpayPaymentId:   razorpay_payment_id,
-        razorpaySignature:   razorpay_signature,
+        status:            "paid",
+        razorpayPaymentId: razorpay_payment_id,
+        razorpaySignature: razorpay_signature,
       },
-      { new: true }   // return updated doc so we can read tier/billing from it
+      { new: true }
     );
 
-    // ── 3. Activate subscription record ─────────────────────
-    //    Import your Subscription model at the top of this file:
-    //    const Subscription = require("../models/subscription.model");
-    //
-    //    Then uncomment this block:
-    //
-    // if (payment) {
-    //   const existing = await Subscription.findOne({
-    //     userEmail: payment.userEmail,
-    //     productId: payment.productId,
-    //   });
-    //
-    //   const tier    = payment.notes?.tier    || req.body.tier;
-    //   const billing = payment.billingMethod;
-    //
-    //   if (existing) {
-    //     existing.tier        = tier;
-    //     existing.billing     = billing;
-    //     existing.paymentId   = razorpay_payment_id;
-    //     existing.orderId     = razorpay_order_id;
-    //     existing.status      = "active";
-    //     existing.activatedAt = new Date();
-    //     await existing.save();
-    //   } else {
-    //     await Subscription.create({
-    //       userEmail:   payment.userEmail,
-    //       profileId:   payment.profileId,
-    //       productId:   payment.productId,
-    //       productName: payment.productName,
-    //       tier,
-    //       billing,
-    //       paymentId:   razorpay_payment_id,
-    //       orderId:     razorpay_order_id,
-    //       status:      "active",
-    //       activatedAt: new Date(),
-    //     });
-    //   }
-    // }
+    if (!payment) {
+      return res.status(404).json({ success: false, message: "Payment record not found." });
+    }
+
+    // ── 3. End date ───────────────────────────────────────────────
+    let endDate = null;
+    if (payment.billingMethod === "monthly") {
+      endDate = new Date(Date.now() + 30  * 24 * 60 * 60 * 1000);
+    } else if (payment.billingMethod === "annual") {
+      endDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+    }
+
+    // ── 4. Resolve plan fields ────────────────────────────────────
+    const { planTier: derivedPlanTier, tier: derivedTier } = derivePlanFields(payment.productName);
+    const resolvedPlanTier = payment.planTier || derivedPlanTier || "standard";
+    const resolvedTier     = payment.tier     || derivedTier     || "micro";
+
+    // ── 5. Upsert subscription ────────────────────────────────────
+    await Subscription.findOneAndUpdate(
+      { userEmail: payment.userEmail, productId: payment.productId },
+      {
+        $set: {
+          userEmail:     payment.userEmail,
+          productId:     payment.productId,
+          productName:   payment.productName || "Naavi Platform",
+          billingMethod: payment.billingMethod,
+          profileId:     payment.profileId || null,
+          tier:          resolvedTier,
+          planTier:      resolvedPlanTier,
+          startDate:     new Date(),
+          endDate,
+          status:        "active",
+        },
+      },
+      { upsert: true, new: true }
+    );
+
+    console.log(`✅ Subscription active: ${payment.userEmail} — ${resolvedPlanTier}/${resolvedTier}`);
 
     return res.json({
       success: true,
-      message: "Payment verified & stored successfully",
+      message: "Payment verified & subscription activated",
     });
 
   } catch (err) {

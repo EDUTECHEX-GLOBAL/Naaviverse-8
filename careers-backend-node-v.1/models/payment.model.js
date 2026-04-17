@@ -2,10 +2,9 @@ const mongoose = require("mongoose");
 
 const PaymentSchema = new mongoose.Schema(
   {
-    userEmail: { type: String, required: true },
-    profileId: { type: String },
-
-    productId: { type: String, required: true },
+    userEmail:   { type: String, required: true },
+    profileId:   { type: String },
+    productId:   { type: String, required: true },
     productName: { type: String, required: true },
 
     billingMethod: {
@@ -13,18 +12,23 @@ const PaymentSchema = new mongoose.Schema(
       enum: ["monthly", "annual", "lifetime"],
       required: true,
     },
+
+    // tier: always "micro" for subscriptions
+    // nano is a per-step credit unlock, not a subscription tier
     tier: {
       type: String,
       enum: ["micro", "nano"],
-      default: null
+      default: "micro",
     },
 
+    // planTier: matches frontend plan keys exactly
     planTier: {
       type: String,
-      enum: ["gold", "silver", "platinum"],
-      default: null
+      enum: ["standard", "pro", "proplus"],
+      default: null,
     },
-    amount: { type: Number, required: true },
+
+    amount:   { type: Number, required: true },
     currency: { type: String, default: "INR" },
 
     status: {
@@ -33,7 +37,7 @@ const PaymentSchema = new mongoose.Schema(
       default: "pending",
     },
 
-    razorpayOrderId: { type: String },
+    razorpayOrderId:   { type: String },
     razorpayPaymentId: { type: String },
     razorpaySignature: { type: String },
   },

@@ -22,13 +22,13 @@ const loadRazorpayScript = () =>
 
 // ── Gold/Silver/Platinum price table ─────────────────────────────
 const PRICES = {
-  gold:     { monthly: 830,   annual: 9960  },
-  silver:   { monthly: 4150,  annual: 49800 },
-  platinum: { monthly: 8300,  annual: 99600 },
+  standard:     { monthly: 830,   annual: 9960  },
+  pro:   { monthly: 4150,  annual: 49800 },
+  proplus: { monthly: 8300,  annual: 99600 },
 };
 
 const PLAN_LABELS = {
-  gold: "Gold", silver: "Silver", platinum: "Platinum",
+  standard: "Standard", pro: "Pro", proplus: "Proplus",
 };
 
 export const useRazorpayPayment = ({ userEmail, userDetails, onSuccess, onError }) => {
