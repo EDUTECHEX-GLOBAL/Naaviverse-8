@@ -30,10 +30,33 @@ const LevelOneModal = ({
     userType:       existingData?.userType       || "student",
   });
 
-  const [countries,        setCountries]        = useState([]);
-  const [states,           setStates]           = useState([]);
-  const [userNameAvailable,setUserNameAvailable]= useState(null);
-  const [checkingUsername, setCheckingUsername] = useState(false);
+  const [countries,         setCountries]         = useState([]);
+  const [states,            setStates]            = useState([]);
+  const [userNameAvailable, setUserNameAvailable] = useState(null);
+  const [checkingUsername,  setCheckingUsername]  = useState(false);
+
+  // ── Track original username to skip re-check when unchanged ──────────────
+  const originalUsername = existingData?.username || "";
+  const isUsernameUnchanged = formData.username === originalUsername;
+
+  // ── Sync formData when parent passes fresh existingData after save + re-fetch ──
+  useEffect(() => {
+    if (!existingData) return;
+    setFormData({
+      name:           existingData.name           || "",
+      username:       existingData.username       || "",
+      phoneNumber:    existingData.phoneNumber    || "",
+      country:        existingData.country        || "",
+      state:          existingData.state          || "",
+      city:           existingData.city           || "",
+      postalCode:     existingData.postalCode     || "",
+      profilePicture: existingData.profilePicture || "",
+      email:          existingData.email          || userDetails?.email || "",
+      userType:       existingData.userType       || "student",
+    });
+    setPreviewUrl(existingData.profilePicture || "");
+    setUserNameAvailable(null);
+  }, [existingData]);
 
   useEffect(() => {
     axios.get(`${BASE_URL}/api/countries`)
@@ -56,8 +79,15 @@ const LevelOneModal = ({
     if (name === "username") setUserNameAvailable(null);
   };
 
+  // ── Username check — skip API call if username hasn't changed ─────────────
   const handleCheckUsername = async () => {
     if (!formData.username) return;
+
+    if (isUsernameUnchanged) {
+      setUserNameAvailable(true);
+      return;
+    }
+
     setCheckingUsername(true);
     try {
       const res = await axios.get(
@@ -70,6 +100,18 @@ const LevelOneModal = ({
       setCheckingUsername(false);
     }
   };
+
+  // ── Form validation — unchanged username is implicitly valid ──────────────
+  const isFormValid = () =>
+    formData.name &&
+    formData.username &&
+    formData.phoneNumber &&
+    formData.country &&
+    formData.state &&
+    formData.city &&
+    formData.postalCode &&
+    userNameAvailable !== false &&
+    (isUsernameUnchanged || userNameAvailable === true);
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -117,17 +159,7 @@ const LevelOneModal = ({
     setPreviewUrl("");
   };
 
-  const isFormValid = () =>
-    formData.name &&
-    formData.username &&
-    formData.phoneNumber &&
-    formData.country &&
-    formData.state &&
-    formData.city &&
-    formData.postalCode &&
-    userNameAvailable !== false;
-
-  // ── Submit ─────────────────────────────────────────────────────────────
+  // ── Submit ─────────────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -138,8 +170,15 @@ const LevelOneModal = ({
         return;
       }
     }
+
     if (userNameAvailable === false) {
       toast.error("That username is already taken — please choose another");
+      return;
+    }
+
+    // If username was changed but availability wasn't checked yet, force a check
+    if (!isUsernameUnchanged && userNameAvailable === null) {
+      toast.error("Please check username availability before saving");
       return;
     }
 
@@ -155,35 +194,32 @@ const LevelOneModal = ({
       };
 
       let response;
-
       const editId = existingData?._id || existingDocId;
+
       if (editId && !creation) {
-        // Edit mode
+        // ── Edit mode: PUT /api/users/update/:id ────────────────────────────
         response = await axios.put(`${BASE_URL}/api/users/update/${editId}`, body);
       } else {
-        // Creation mode
+        // ── Creation mode: POST /api/users/add ─────────────────────────────
         response = await axios.post(`${BASE_URL}/api/users/add`, body);
       }
 
       if (response.data?.status) {
         const savedId = response.data?.data?._id || editId;
 
-        // ✅ Save profile pic + name to localStorage
-        // so sidebar shows correct pic and name immediately
+        // ── Persist pic + name to localStorage so sidebar updates instantly ─
         if (formData.profilePicture) {
           localStorage.setItem("userProfilePic", formData.profilePicture);
         }
 
-        // ✅ Also update the name in localStorage user object
-        // so sidebar shows first name correctly without re-login
         try {
-          const raw     = localStorage.getItem("user");
-          const parsed  = raw ? JSON.parse(raw) : {};
-          const updated = {
-            ...(parsed?.user ? { ...parsed, user: { ...parsed.user, name: formData.name } } : { ...parsed, name: formData.name }),
-          };
+          const raw    = localStorage.getItem("user");
+          const parsed = raw ? JSON.parse(raw) : {};
+          const updated = parsed?.user
+            ? { ...parsed, user: { ...parsed.user, name: formData.name } }
+            : { ...parsed, name: formData.name };
           localStorage.setItem("user", JSON.stringify(updated));
-           localStorage.setItem("userName", formData.name); 
+          localStorage.setItem("userName", formData.name);
         } catch {}
 
         if (typeof onComplete === "function") onComplete(savedId);
@@ -192,7 +228,14 @@ const LevelOneModal = ({
       }
     } catch (err) {
       console.error("Submit error:", err.response?.data || err.message);
-      toast.error(err.response?.data?.message || "An error occurred. Please try again.");
+      // Surface username-taken error from backend
+      const msg = err.response?.data?.message || "";
+      if (msg.toLowerCase().includes("username")) {
+        toast.error("That username is already taken — please choose another");
+        setUserNameAvailable(false);
+      } else {
+        toast.error(msg || "An error occurred. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -210,7 +253,7 @@ const LevelOneModal = ({
             : "Update your personal & contact details."}
         </div>
 
-        {/* Profile Picture */}
+        {/* ── Profile Picture ─────────────────────────────────────────────── */}
         <div className="up-form-group">
           <label className="up-form-label">Profile Picture (optional)</label>
           <div className="up-pic-wrap">
@@ -249,7 +292,7 @@ const LevelOneModal = ({
           </div>
         </div>
 
-        {/* Name + Username */}
+        {/* ── Name + Username ─────────────────────────────────────────────── */}
         <div className="up-form-row">
           <div className="up-form-group">
             <label className="up-form-label">Full Name *</label>
@@ -285,12 +328,28 @@ const LevelOneModal = ({
                 {checkingUsername ? "…" : "Check"}
               </button>
             </div>
-            {userNameAvailable === true  && <div className="up-username-ok">✓ Username available</div>}
-            {userNameAvailable === false && <div className="up-username-err">✗ Username already taken</div>}
+
+            {/* ── Availability feedback ────────────────────────────────────── */}
+            {userNameAvailable === true && (
+              <div className="up-username-ok">✓ Username available</div>
+            )}
+            {userNameAvailable === false && (
+              <div className="up-username-err">✗ Username already taken</div>
+            )}
+            {userNameAvailable === null && isUsernameUnchanged && formData.username && (
+              <div className="up-username-ok" style={{ opacity: 0.6 }}>
+                ✓ Current username
+              </div>
+            )}
+            {userNameAvailable === null && !isUsernameUnchanged && formData.username && (
+              <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "4px" }}>
+                Click "Check" to verify availability
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Phone */}
+        {/* ── Phone ───────────────────────────────────────────────────────── */}
         <div className="up-form-group">
           <label className="up-form-label">Phone Number *</label>
           <input
@@ -304,7 +363,7 @@ const LevelOneModal = ({
           />
         </div>
 
-        {/* Country + State */}
+        {/* ── Country + State ─────────────────────────────────────────────── */}
         <div className="up-form-row">
           <div className="up-form-group">
             <label className="up-form-label">Country *</label>
@@ -343,7 +402,7 @@ const LevelOneModal = ({
           </div>
         </div>
 
-        {/* City + Postal */}
+        {/* ── City + Postal ────────────────────────────────────────────────── */}
         <div className="up-form-row">
           <div className="up-form-group">
             <label className="up-form-label">City *</label>
@@ -372,7 +431,7 @@ const LevelOneModal = ({
           </div>
         </div>
 
-        {/* Footer */}
+        {/* ── Footer ──────────────────────────────────────────────────────── */}
         <div className="up-form-footer">
           {onClose && !creation && (
             <button type="button" className="up-btn-cancel" onClick={onClose}>

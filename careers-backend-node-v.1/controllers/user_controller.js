@@ -138,28 +138,40 @@ const updateUserProfile = async (req, res) => {
             'phoneNumber', 'userType'
         ];
 
-        const updateData = {};
+        // ✅ Use find + save so pre("save") hook fires and usernameLower gets updated
+        const user = await userModel.findById(profileDataId);
+        if (!user) return res.json({ status: false, message: "User not found" });
+
+        // ✅ Check for username conflict BEFORE saving
+        if (req.body.username && req.body.username !== user.username) {
+            const newUsernameLower = req.body.username.trim().toLowerCase();
+            const conflict = await userModel.findOne({
+                usernameLower: newUsernameLower,
+                _id: { $ne: user._id },
+            });
+            if (conflict) {
+                return res.json({ status: false, message: "Username already taken" });
+            }
+        }
+
+        // ✅ Assign fields directly so Mongoose tracks changes
         allowedFields.forEach(field => {
             if (req.body[field] !== undefined) {
-                updateData[field] = req.body[field];
+                user[field] = req.body[field];
             }
         });
 
-        const user = await userModel.findByIdAndUpdate(
-            profileDataId,
-            { $set: updateData },
-            { new: true }
-        );
-
-        if (!user) return res.json({ status: false, message: "User not found" });
+        await user.save(); // ✅ Triggers pre("save") → usernameLower synced
 
         return res.json({ status: true, message: "Profile updated", data: user });
     } catch (err) {
         console.error("Error in updateUserProfile:", err);
+        if (err.code === 11000 && err.keyPattern?.usernameLower) {
+            return res.json({ status: false, message: "Username already taken" });
+        }
         return res.status(500).json({ status: false, message: "Update failed" });
     }
 };
-
 // Controller to fetch user profile details
 const getUserProfile = async (req, res) => {
     try {

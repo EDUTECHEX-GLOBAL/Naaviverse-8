@@ -1,18 +1,9 @@
 const nodemailer = require("nodemailer");
 const { generateInvoicePDF } = require("./generateInvoicePDF");
-const fs = require("fs");
 const path = require("path");
 
-// ── Read logo as base64 ───────────────────────────────────────
+// ── Logo path ─────────────────────────────────────────────────
 const LOGO_PATH = path.join(__dirname, "naavi_final_logo2.png");
-let LOGO_BASE64 = "";
-try {
-  const logoBuffer = fs.readFileSync(LOGO_PATH);
-  LOGO_BASE64 = `data:image/png;base64,${logoBuffer.toString("base64")}`;
-  console.log("✅ Naavi logo loaded successfully");
-} catch (err) {
-  console.warn("⚠ Logo not found:", err.message);
-}
 
 // ── Transporter ───────────────────────────────────────────────
 const transporter = nodemailer.createTransport({
@@ -44,8 +35,8 @@ function invoiceNo(payment) {
 }
 
 function creditsForPlan(planTier) {
-  const map = { silver: 500, gold: 100, platinum: 1000 };
-  return map[(planTier || "").toLowerCase()] || 100;
+  const map = { silver: 500, gold: 750, platinum: 1000 };
+  return map[(planTier || "").toLowerCase()] || 500;
 }
 
 function planColor(planTier) {
@@ -77,30 +68,25 @@ function buildHtml(payment, invNo) {
 <table width="600" cellpadding="0" cellspacing="0"
   style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
 
-  <!-- HEADER -->
+  <!-- ✅ HEADER — white background, logo shows naturally, text is dark -->
   <tr>
-    <td style="background:#1A1A2E;padding:28px 36px 20px;">
+    <td style="background:#ffffff;padding:24px 36px 20px;border-bottom:1px solid #E5E7EB;">
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
-<td>
-  ${LOGO_BASE64
-      ? `<img src="${LOGO_BASE64}" alt="Naavi"
-            height="44"
-            style="display:block;max-width:180px;object-fit:contain;"/>`
-      : `<div style="font-size:24px;font-weight:800;color:#fff;">naavi</div>
-       <div style="font-size:10px;color:#9CA3AF;margin-top:2px;">AI Powered Path Engine</div>`
-    }
-</td>
-          <td align="right" style="vertical-align:top;">
-            <div style="font-size:11px;font-weight:700;color:#9CA3AF;letter-spacing:0.08em;">INVOICE</div>
-            <div style="font-size:13px;font-weight:700;color:#fff;margin-top:2px;">${invNo}</div>
+          <td style="vertical-align:middle;">
+            <img src="cid:naavi_logo" alt="Naavi" height="42"
+              style="display:block;max-width:160px;object-fit:contain;"/>
+          </td>
+          <td align="right" style="vertical-align:middle;">
+            <div style="font-size:11px;font-weight:700;color:#9CA3AF;letter-spacing:0.1em;text-transform:uppercase;">Invoice</div>
+            <div style="font-size:14px;font-weight:800;color:#1A1A2E;margin-top:3px;">${invNo}</div>
           </td>
         </tr>
       </table>
     </td>
   </tr>
 
-  <!-- TEAL ACCENT -->
+  <!-- TEAL ACCENT STRIP -->
   <tr><td style="background:#1D9E75;height:3px;font-size:0;"></td></tr>
 
   <!-- SUCCESS BANNER -->
@@ -226,18 +212,18 @@ function buildHtml(payment, invNo) {
     </td>
   </tr>
 
-  <!-- FOOTER -->
+  <!-- ✅ FOOTER — white background, support email in teal green, dark text -->
   <tr>
-    <td style="background:#1A1A2E;padding:20px 36px;border-radius:0 0 16px 16px;">
+    <td style="background:#ffffff;padding:20px 36px 28px;border-top:1px solid #E5E7EB;">
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
-          <td style="font-size:11px;color:#9CA3AF;">
-            Questions? <a href="mailto:support@naavi.ai" style="color:#6EE0E0;text-decoration:none;">support@naavi.ai</a>
+          <td style="font-size:11px;color:#4B5563;">
+            Questions?&nbsp;<a href="mailto:support@naavi.ai" style="color:#0F6E56;font-weight:700;text-decoration:none;">support@naavi.ai</a>
           </td>
           <td align="right" style="font-size:10px;color:#6B7280;">Secured by Razorpay</td>
         </tr>
         <tr>
-          <td colspan="2" style="padding-top:8px;font-size:9px;color:#4B5563;">
+          <td colspan="2" style="padding-top:8px;font-size:9px;color:#9CA3AF;">
             This is a computer-generated invoice and does not require a signature.
           </td>
         </tr>
@@ -264,6 +250,11 @@ async function sendInvoiceEmail(payment) {
     subject: `Your Naavi Invoice ${invNo} — Payment Confirmed`,
     html,
     attachments: [
+      {
+        filename: "naavi_logo.png",
+        path: LOGO_PATH,
+        cid: "naavi_logo",
+      },
       {
         filename: `Naavi_Invoice_${invNo}.pdf`,
         content: pdfBuffer,
