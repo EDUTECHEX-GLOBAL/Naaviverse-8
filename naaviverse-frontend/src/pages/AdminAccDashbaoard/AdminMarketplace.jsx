@@ -6,24 +6,32 @@ import { toast } from "react-toastify";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const roleConfig = {
-  institution: { color: "#7c3aed", bg: "linear-gradient(135deg, rgba(124,58,237,0.08), rgba(124,58,237,0.02))", emoji: "🏛" },
-  mentor: { color: "#0891b2", bg: "linear-gradient(135deg, rgba(8,145,178,0.08), rgba(8,145,178,0.02))", emoji: "👤" },
-  distributor: { color: "#d97706", bg: "linear-gradient(135deg, rgba(217,119,6,0.08), rgba(217,119,6,0.02))", emoji: "📦" },
-  vendor: { color: "#dc2626", bg: "linear-gradient(135deg, rgba(220,38,38,0.08), rgba(220,38,38,0.02))", emoji: "🛍" },
+// Single color palette for all boxes (as requested)
+const UNIFIED_COLOR = {
+  color: "#4f46e5",
+  bg: "#eef2ff",
+  gradient: "linear-gradient(135deg, #eef2ff, #e0e7ff)",
+  emoji: "🏛",
 };
 
-const getRoleConf = (role) =>
-  roleConfig[role?.toLowerCase()] || { color: "#64748b", bg: "linear-gradient(135deg, rgba(100,116,139,0.08), rgba(100,116,139,0.02))", emoji: "❓" };
+const getRoleConf = () => UNIFIED_COLOR;
 
 const formatPrice = (cost) => {
-  if (!cost) return "Price not set";
+  if (!cost) return "Free";
   return cost.toString();
 };
 
 const formatRole = (role) => {
   if (!role) return "UNKNOWN";
   return role.toUpperCase();
+};
+
+const parseFeatures = (features) => {
+  if (!features) return [];
+  return features
+    .split(/[,;]+/)
+    .map((f) => f.trim())
+    .filter(Boolean);
 };
 
 const AdminMarketplace = () => {
@@ -45,7 +53,7 @@ const AdminMarketplace = () => {
     features: "",
     outcomes: "",
     iterations: "",
-    partner_email: ""
+    partner_email: "",
   });
 
   useEffect(() => {
@@ -55,10 +63,11 @@ const AdminMarketplace = () => {
   const fetchMarketplaceItems = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${BASE_URL}/api/marketplace/admin/get-all`);
+      const response = await axios.get(
+        `${BASE_URL}/api/marketplace/admin/get-all`
+      );
       if (response.data?.status) {
         setItems(response.data.data || []);
-        if (response.data.data.length === 0) toast.info("No marketplace items available");
       } else {
         setItems([]);
         toast.error("Failed to load marketplace items");
@@ -85,16 +94,13 @@ const AdminMarketplace = () => {
       features: item.features || "",
       outcomes: item.outcomes || "",
       iterations: item.iterations || "",
-      partner_email: item.partner_email || ""
+      partner_email: item.partner_email || "",
     });
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setEditFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSave = async () => {
@@ -103,15 +109,12 @@ const AdminMarketplace = () => {
         `${BASE_URL}/api/marketplace/admin/update/${selectedItem._id}`,
         editFormData
       );
-      
       if (response.data?.status) {
         toast.success("Item updated successfully!");
         const updatedItem = response.data.data;
-        setItems(prevItems => 
-          prevItems.map(item => 
-            item._id === selectedItem._id 
-              ? updatedItem
-              : item
+        setItems((prev) =>
+          prev.map((item) =>
+            item._id === selectedItem._id ? updatedItem : item
           )
         );
         setSelectedItem(updatedItem);
@@ -121,13 +124,9 @@ const AdminMarketplace = () => {
       }
     } catch (error) {
       console.error("Error updating item:", error);
-      if (error.response?.status === 404) {
-        toast.error("Update endpoint not found. Please check server configuration.");
-      } else if (error.response?.status === 400) {
-        toast.error(error.response.data?.message || "Invalid data provided");
-      } else {
-        toast.error(error.response?.data?.message || "Error updating item. Please try again.");
-      }
+      toast.error(
+        error.response?.data?.message || "Error updating item. Please try again."
+      );
     }
   };
 
@@ -155,15 +154,19 @@ const AdminMarketplace = () => {
         <h1>Marketplace</h1>
         {!loading && (
           <span className="item-count">
-            {filteredItems.length} {filteredItems.length === 1 ? "item" : "items"}
+            {filteredItems.length}{" "}
+            {filteredItems.length === 1 ? "item" : "items"}
           </span>
         )}
       </div>
 
       <div className="mp-filters">
         <div className="filter-group">
-          <label>Partner Type</label>
-          <select value={partnerType} onChange={(e) => setPartnerType(e.target.value)}>
+          <label>PARTNER TYPE</label>
+          <select
+            value={partnerType}
+            onChange={(e) => setPartnerType(e.target.value)}
+          >
             <option value="all">All Partners</option>
             <option value="institution">Institutions</option>
             <option value="mentor">Mentors</option>
@@ -172,7 +175,7 @@ const AdminMarketplace = () => {
           </select>
         </div>
         <div className="filter-group">
-          <label>Search by Email</label>
+          <label>SEARCH BY EMAIL</label>
           <input
             type="text"
             placeholder="partner@example.com"
@@ -181,7 +184,7 @@ const AdminMarketplace = () => {
           />
         </div>
         <div className="filter-group">
-          <label>Search by Name</label>
+          <label>SEARCH BY NAME</label>
           <input
             type="text"
             placeholder="Course or service name..."
@@ -193,26 +196,39 @@ const AdminMarketplace = () => {
 
       {loading ? (
         <div className="mp-grid">
-          {Array(6).fill(0).map((_, i) => (
-            <div className="mp-card skeleton" key={i}>
-              <div className="card-top">
-                <Skeleton circle width={40} height={40} />
-                <Skeleton height={18} width="60%" style={{ marginLeft: 10 }} />
+          {Array(6)
+            .fill(0)
+            .map((_, i) => (
+              <div className="mp-card skeleton" key={i}>
+                <div className="card-top">
+                  <Skeleton circle width={40} height={40} />
+                  <Skeleton
+                    height={18}
+                    width="60%"
+                    style={{ marginLeft: 10 }}
+                  />
+                </div>
+                <div className="card-body">
+                  <Skeleton height={14} count={4} style={{ marginTop: 8 }} />
+                  <Skeleton
+                    height={40}
+                    style={{ marginTop: 16, borderRadius: 30 }}
+                  />
+                </div>
               </div>
-              <div className="card-body">
-                <Skeleton height={14} count={4} style={{ marginTop: 8 }} />
-                <Skeleton height={40} style={{ marginTop: 16, borderRadius: 30 }} />
-              </div>
-            </div>
-          ))}
+            ))}
         </div>
       ) : (
         <div className="mp-grid">
           {filteredItems.length > 0 ? (
             filteredItems.map((item) => {
-              const rc = getRoleConf(item.role);
+              const rc = getRoleConf();
               return (
-                <div className="mp-card" key={item._id} onClick={() => setSelectedItem(item)}>
+                <div
+                  className="mp-card"
+                  key={item._id}
+                  onClick={() => setSelectedItem(item)}
+                >
                   <div className="card-top">
                     <div className="card-top-left">
                       <div className="avatar" style={{ background: rc.bg }}>
@@ -231,11 +247,19 @@ const AdminMarketplace = () => {
 
                   <div className="card-body">
                     <div className="role-row">
-                      <div className="role-dot" style={{ background: rc.color }} />
-                      <div className="role-label" style={{ color: rc.color }}>
+                      <div
+                        className="role-dot"
+                        style={{ background: rc.color }}
+                      />
+                      <div
+                        className="role-label"
+                        style={{ color: rc.color }}
+                      >
                         {formatRole(item.role)}
                       </div>
-                      {item.layer && <div className="layer-chip">{item.layer}</div>}
+                      {item.layer && (
+                        <div className="layer-chip">{item.layer}</div>
+                      )}
                     </div>
 
                     {item.goal && (
@@ -250,7 +274,10 @@ const AdminMarketplace = () => {
                     )}
 
                     <div className="card-footer">
-                      <div className="partner-email" title={item.partner_email}>
+                      <div
+                        className="partner-email"
+                        title={item.partner_email}
+                      >
                         {item.partner_email || "—"}
                       </div>
                     </div>
@@ -279,23 +306,52 @@ const AdminMarketplace = () => {
 
       {/* Details Modal */}
       {selectedItem && (
-        <div className="modal-overlay" onClick={() => {
-          setSelectedItem(null);
-          setIsEditing(false);
-        }}>
-          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          onClick={() => {
+            setSelectedItem(null);
+            setIsEditing(false);
+          }}
+        >
+          <div
+            className="modal-container"
+            onClick={(e) => e.stopPropagation()}
+          >
             {(() => {
-              const rc = getRoleConf(selectedItem.role);
+              const rc = getRoleConf();
+              const featureList = parseFeatures(selectedItem.features);
               return (
                 <>
-                  <div className="modal-head">
+                  {/* Gradient Header - Unified Color */}
+                  <div
+                    className="modal-head"
+                    style={{ background: rc.gradient }}
+                  >
                     <div className="modal-head-left">
-                      <div className="modal-avatar" style={{ background: rc.bg }}>
-                        {rc.emoji}
-                      </div>
+                      {/* Just logo icon, no background */}
+                      <div className="modal-avatar">{rc.emoji}</div>
                       <div className="modal-title-wrapper">
                         {!isEditing ? (
-                          <h2>{selectedItem.name || "Item Details"}</h2>
+                          <>
+                            <h2>{selectedItem.name || "Item Details"}</h2>
+                            <div className="modal-meta">
+                              <span>{selectedItem.partner_email || "—"}</span>
+                              {selectedItem.createdAt && (
+                                <>
+                                  <span className="meta-dot">·</span>
+                                  <span>
+                                    {new Date(
+                                      selectedItem.createdAt
+                                    ).toLocaleDateString("en-IN", {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric",
+                                    })}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </>
                         ) : (
                           <input
                             type="text"
@@ -308,56 +364,68 @@ const AdminMarketplace = () => {
                         )}
                       </div>
                     </div>
-                    <button className="modal-close" onClick={() => {
-                      setSelectedItem(null);
-                      setIsEditing(false);
-                    }}>
-                      ×
-                    </button>
+                    <div className="modal-head-right">
+                      <div className="role-badge">{formatRole(selectedItem.role)}</div>
+                      <button
+                        className="modal-close"
+                        onClick={() => {
+                          setSelectedItem(null);
+                          setIsEditing(false);
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="modal-body">
-                    <div className="section-title">Access &amp; Pricing</div>
-                    <table className="access-table">
-                      <thead>
-                        <tr>
-                          <th>Access</th>
-                          <th>Price</th>
-                          {selectedItem.discount && <th>Discount</th>}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td className="highlight">
-                            {!isEditing ? (
-                              selectedItem.access || "—"
-                            ) : (
-                              <input
-                                type="text"
-                                name="access"
-                                value={editFormData.access}
-                                onChange={handleInputChange}
-                                className="edit-input"
-                              />
-                            )}
-                          </td>
-                          <td className="highlight">
-                            {!isEditing ? (
-                              formatPrice(selectedItem.cost)
-                            ) : (
-                              <input
-                                type="text"
-                                name="cost"
-                                value={editFormData.cost}
-                                onChange={handleInputChange}
-                                className="edit-input"
-                              />
-                            )}
-                          </td>
-                          {selectedItem.discount && (
+                  {/* Scrollable body */}
+                  <div className="modal-scroll-area">
+                    <div className="modal-body">
+                      {/* Access & Pricing */}
+                      <div className="section-header">
+                        <span className="section-icon">💰</span>
+                        <span className="section-title">Access & Pricing</span>
+                        <span className="field-count">3 fields</span>
+                      </div>
+                      <table className="access-table">
+                        <thead>
+                          <tr>
+                            <th>ACCESS</th>
+                            <th>PRICE</th>
+                            <th>DISCOUNT</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="highlight">
+                              {!isEditing ? (
+                                selectedItem.access || "Free"
+                              ) : (
+                                <input
+                                  type="text"
+                                  name="access"
+                                  value={editFormData.access}
+                                  onChange={handleInputChange}
+                                  className="edit-input"
+                                />
+                              )}
+                            </td>
+                            <td className="highlight">
+                              {!isEditing ? (
+                                formatPrice(selectedItem.cost)
+                              ) : (
+                                <input
+                                  type="text"
+                                  name="cost"
+                                  value={editFormData.cost}
+                                  onChange={handleInputChange}
+                                  className="edit-input"
+                                />
+                              )}
+                            </td>
                             <td className="discount-val">
                               {!isEditing ? (
-                                selectedItem.discount
+                                selectedItem.discount || "Not Applicable"
                               ) : (
                                 <input
                                   type="text"
@@ -367,156 +435,176 @@ const AdminMarketplace = () => {
                                   className="edit-input"
                                 />
                               )}
-                             </td>
-                          )}
-                        </tr>
-                      </tbody>
-                    </table>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
 
-                    <div className="section-title">Source</div>
-                    <div className="detail-grid" style={{ marginBottom: 20 }}>
-                      <div className="d-item">
-                        <div className="d-label">Layer</div>
-                        <div className="d-val">
-                          {!isEditing ? (
-                            selectedItem.layer || "Not specified"
-                          ) : (
-                            <input
-                              type="text"
-                              name="layer"
-                              value={editFormData.layer}
-                              onChange={handleInputChange}
-                              className="edit-input"
-                            />
-                          )}
+                      {/* Source */}
+                      <div className="section-header">
+                        <span className="section-icon">📌</span>
+                        <span className="section-title">Source</span>
+                      </div>
+                      <div className="detail-grid" style={{ marginBottom: 24 }}>
+                        <div className="d-item">
+                          <div className="d-label">LAYER</div>
+                          <div className="d-val">
+                            {!isEditing ? (
+                              selectedItem.layer || "Foundation"
+                            ) : (
+                              <select
+                                name="layer"
+                                value={editFormData.layer}
+                                onChange={handleInputChange}
+                                className="edit-select"
+                              >
+                                <option value="">Select Layer</option>
+                                <option value="Foundation">Foundation</option>
+                                <option value="macro">Macro</option>
+                                <option value="micro">Micro</option>
+                                <option value="nano">Nano</option>
+                              </select>
+                            )}
+                          </div>
+                        </div>
+                        <div className="d-item">
+                          <div className="d-label">DURATION</div>
+                          <div className="d-val">
+                            {!isEditing ? (
+                              selectedItem.duration || "—"
+                            ) : (
+                              <input
+                                type="text"
+                                name="duration"
+                                value={editFormData.duration}
+                                onChange={handleInputChange}
+                                className="edit-input"
+                              />
+                            )}
+                          </div>
                         </div>
                       </div>
-                      <div className="d-item">
-                        <div className="d-label">Duration</div>
-                        <div className="d-val">
-                          {!isEditing ? (
-                            selectedItem.duration || "—"
-                          ) : (
-                            <input
-                              type="text"
-                              name="duration"
-                              value={editFormData.duration}
-                              onChange={handleInputChange}
-                              className="edit-input"
-                            />
-                          )}
+
+                      {/* Details */}
+                      <div className="section-header">
+                        <span className="section-icon">📋</span>
+                        <span className="section-title">Details</span>
+                      </div>
+                      <div className="detail-grid">
+                        <div className="d-item">
+                          <div className="d-label">GOAL</div>
+                          <div className="d-val">
+                            {!isEditing ? (
+                              selectedItem.goal || "—"
+                            ) : (
+                              <input
+                                type="text"
+                                name="goal"
+                                value={editFormData.goal}
+                                onChange={handleInputChange}
+                                className="edit-input"
+                              />
+                            )}
+                          </div>
+                        </div>
+                        <div className="d-item">
+                          <div className="d-label">ITERATIONS</div>
+                          <div className="d-val">
+                            {!isEditing ? (
+                              selectedItem.iterations || "—"
+                            ) : (
+                              <input
+                                type="text"
+                                name="iterations"
+                                value={editFormData.iterations}
+                                onChange={handleInputChange}
+                                className="edit-input"
+                              />
+                            )}
+                          </div>
+                        </div>
+                        <div className="d-item wide">
+                          <div className="d-label">OUTCOMES</div>
+                          <div className="d-val">
+                            {!isEditing ? (
+                              selectedItem.outcomes || "—"
+                            ) : (
+                              <textarea
+                                name="outcomes"
+                                value={editFormData.outcomes}
+                                onChange={handleInputChange}
+                                className="edit-textarea"
+                                rows="3"
+                              />
+                            )}
+                          </div>
+                        </div>
+                        <div className="d-item wide">
+                          <div className="d-label">FEATURES</div>
+                          <div className="d-val">
+                            {!isEditing ? (
+                              featureList.length > 0 ? (
+                                <div className="feature-chips">
+                                  {featureList.map((f, i) => (
+                                    <span key={i} className="feature-chip">
+                                      {f}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : (
+                                selectedItem.features || "—"
+                              )
+                            ) : (
+                              <textarea
+                                name="features"
+                                value={editFormData.features}
+                                onChange={handleInputChange}
+                                className="edit-textarea"
+                                rows="3"
+                                placeholder="Live Sessions, Mentorship, Certification, Self-paced"
+                              />
+                            )}
+                          </div>
+                        </div>
+                        <div className="d-item wide">
+                          <div className="d-label">PARTNER EMAIL</div>
+                          <div className="d-val email">
+                            {!isEditing ? (
+                              selectedItem.partner_email || "Unknown"
+                            ) : (
+                              <input
+                                type="email"
+                                name="partner_email"
+                                value={editFormData.partner_email}
+                                onChange={handleInputChange}
+                                className="edit-input"
+                              />
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="section-title">Details</div>
-                    <div className="detail-grid">
-                      <div className="d-item">
-                        <div className="d-label">Goal</div>
-                        <div className="d-val">
-                          {!isEditing ? (
-                            selectedItem.goal || "—"
-                          ) : (
-                            <input
-                              type="text"
-                              name="goal"
-                              value={editFormData.goal}
-                              onChange={handleInputChange}
-                              className="edit-input"
-                            />
-                          )}
-                        </div>
-                      </div>
-                      <div className="d-item">
-                        <div className="d-label">Created</div>
-                        <div className="d-val">
-                          {new Date(selectedItem.createdAt).toLocaleDateString("en-IN", {
-                            day: "numeric", month: "short", year: "numeric",
-                          })}
-                        </div>
-                      </div>
-                      <div className="d-item">
-                        <div className="d-label">Iterations</div>
-                        <div className="d-val">
-                          {!isEditing ? (
-                            selectedItem.iterations || "—"
-                          ) : (
-                            <input
-                              type="text"
-                              name="iterations"
-                              value={editFormData.iterations}
-                              onChange={handleInputChange}
-                              className="edit-input"
-                            />
-                          )}
-                        </div>
-                      </div>
-                      <div className="d-item wide">
-                        <div className="d-label">Outcomes</div>
-                        <div className="d-val">
-                          {!isEditing ? (
-                            selectedItem.outcomes || "—"
-                          ) : (
-                            <textarea
-                              name="outcomes"
-                              value={editFormData.outcomes}
-                              onChange={handleInputChange}
-                              className="edit-textarea"
-                              rows="2"
-                            />
-                          )}
-                        </div>
-                      </div>
-                      <div className="d-item wide">
-                        <div className="d-label">Features</div>
-                        <div className="d-val">
-                          {!isEditing ? (
-                            selectedItem.features || "—"
-                          ) : (
-                            <textarea
-                              name="features"
-                              value={editFormData.features}
-                              onChange={handleInputChange}
-                              className="edit-textarea"
-                              rows="2"
-                            />
-                          )}
-                        </div>
-                      </div>
-                      <div className="d-item wide">
-                        <div className="d-label">Partner Email</div>
-                        <div className="d-val email">
-                          {!isEditing ? (
-                            selectedItem.partner_email || "Unknown"
-                          ) : (
-                            <input
-                              type="email"
-                              name="partner_email"
-                              value={editFormData.partner_email}
-                              onChange={handleInputChange}
-                              className="edit-input"
-                            />
-                          )}
-                        </div>
-                      </div>
+                    {/* Footer - No sticky, just natural flow */}
+                    <div className="modal-foot">
+                      {!isEditing ? (
+                        <button
+                          className="edit-btn"
+                          onClick={() => handleEditClick(selectedItem)}
+                        >
+                          Edit
+                        </button>
+                      ) : (
+                        <>
+                          <button className="cancel-btn" onClick={handleCancel}>
+                            Cancel
+                          </button>
+                          <button className="save-btn" onClick={handleSave}>
+                            Save Changes
+                          </button>
+                        </>
+                      )}
                     </div>
-                  </div>
-
-                  <div className="modal-foot">
-                    {!isEditing ? (
-                      <button className="edit-btn" onClick={() => handleEditClick(selectedItem)}>
-                        Edit
-                      </button>
-                    ) : (
-                      <>
-                        <button className="cancel-btn" onClick={handleCancel}>
-                          Cancel
-                        </button>
-                        <button className="save-btn" onClick={handleSave}>
-                          Save Changes
-                        </button>
-                      </>
-                    )}
                   </div>
                 </>
               );

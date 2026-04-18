@@ -212,19 +212,14 @@
   font-weight: 600;
 }
 
-/* Expired credits banner */
 .wallet-expired-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  background: #fef3cd;
-  border: 1px solid #f5c518;
-  border-radius: 10px;
-  padding: 13px 16px;
-  margin-bottom: 16px;
-  font-size: 13px;
+  font-size: 12px;
   color: #856404;
   font-weight: 500;
+  margin-bottom: 10px;
+  padding: 0;
+  background: none;
+  border: none;
 }
 
 /* Balance card sub-text warning state */
@@ -310,8 +305,13 @@
 }
 
 .wallet-credit-chip--expired {
-  background: #f8d7da;
-  color: #842029;
+  background: #fff0f0;
+  color: #999;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 500;
+  border: 1px solid #f5c6cb;
 }
 
 /* ── Never expires badge on txn rows ─────────────────── */
