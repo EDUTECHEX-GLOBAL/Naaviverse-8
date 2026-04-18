@@ -207,19 +207,15 @@ const Wallet = () => {
                   </div>
                 )}
 
-                {/* Expired banner — only for bonus, not subscription credits */}
-                {isCreditExpired && (
-                  <div className="wallet-expired-banner">
-                    <span>⏰</span>
-                    <p>
-                      Your 50 welcome credits expired on{" "}
-                      {moment(creditExpiresAt).format("MMM D, YYYY")}.
-                      {subscriptionCredits > 0
-                        ? " Your subscription credits are still active."
-                        : " Subscribe to unlock full access."}
-                    </p>
-                  </div>
-                )}
+               {isCreditExpired && (
+  <div className="wallet-expired-banner">
+    ⚠️ Your 50 welcome credits expired on{" "}
+    {moment(creditExpiresAt).format("MMM D, YYYY")}.
+    {subscriptionCredits > 0
+      ? " Your subscription credits are still active."
+      : " Subscribe to unlock full access."}
+  </div>
+)}
 
                 {/* ── Balance card ─────────────────────────────────────────── */}
                 {balanceLoading ? (

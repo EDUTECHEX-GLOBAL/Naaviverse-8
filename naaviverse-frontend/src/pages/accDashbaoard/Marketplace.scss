@@ -599,3 +599,61 @@ $accent:       #4f46e5;
 
   .detail-grid { grid-template-columns: 1fr; }
 }
+
+
+.edit-input-title {
+  font-family: $font-display;
+  font-size: 18px;
+  font-weight: 700;
+  color: $text;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+  padding: 4px 10px;
+  outline: none;
+  width: 100%;
+  &:focus { border-color: $accent; }
+}
+
+.edit-input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1.5px solid $border;
+  border-radius: 7px;
+  font-size: 13px;
+  font-family: $font-body;
+  color: $text;
+  outline: none;
+  &:focus { border-color: $accent; }
+}
+
+.edit-textarea {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1.5px solid $border;
+  border-radius: 7px;
+  font-size: 13px;
+  font-family: $font-body;
+  color: $text;
+  outline: none;
+  resize: vertical;
+  &:focus { border-color: $accent; }
+}
+
+.modal-foot {
+  button.edit-btn {
+    background: $accent;
+    color: white;
+    border-color: $accent;
+    &:hover { background: #4338ca; }
+  }
+  button.save-btn {
+    background: #059669;
+    color: white;
+    border-color: #059669;
+    &:hover { background: #047857; }
+  }
+  button.cancel-btn {
+    color: $muted;
+    &:hover { background: #f1f5f9; }
+  }
+}
