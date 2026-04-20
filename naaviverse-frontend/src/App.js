@@ -36,7 +36,7 @@ import ServicesListPage from "./pages/accDashbaoard/ServicesListPage";
 import AdminLogin from "./pages/AdminLogin";
 import AdminAccDashbaoard from "./pages/AdminAccDashbaoard";
 import AdminProfilePage from "./pages/AdminAccDashbaoard/Profile/profile_page";
-
+import Subscriptions from "./pages/AdminAccDashbaoard/Subscriptions";
 /* ================= SUPER ADMIN ================= */
 import SuperAdminLogin from "./AdminDashboard/pages/SuperAdminLogin";
 import AdminDashboard from "./AdminDashboard/pages/AdminDashboard";
@@ -133,7 +133,7 @@ function App() {
           <Route path="/admin/dashboard/paths" element={<AdminAccDashbaoard />} />
           <Route path="/admin/dashboard/steps" element={<AdminAccDashbaoard />} />
           <Route path="/admin/dashboard/marketplace" element={<AdminAccDashbaoard />} />
-
+          <Route path="/admin/dashboard/subscriptions" element={<AdminAccDashbaoard />} />
           {/* ================= SUPER ADMIN ================= */}
           <Route path="/admin-login" element={<SuperAdminLogin />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />}>

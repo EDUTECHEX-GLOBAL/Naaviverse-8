@@ -14,7 +14,7 @@ const Path     = require("../models/path.model");
 const Step     = require("../models/steps.model");
 const UserPath = require("../models/userpaths.model");   // ← THE SOURCE OF TRUTH
 const Purchase = require("../models/purchase.model");    // ← For CRM clients
-
+const { getUserActivity } = require("../controllers/userActivity.controller");
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SELECT A PATH FOR THE USER
@@ -102,6 +102,9 @@ router.post("/selectpath", async (req, res) => {
 // GET THE STEPS FOR THE SELECTED PATH
 // GET /api/userpaths/steps?pathId=xxx
 // ─────────────────────────────────────────────────────────────────────────────
+
+
+router.get("/activity", getUserActivity);
 router.get("/steps", async (req, res) => {
   try {
     const { pathId } = req.query;

@@ -21,7 +21,7 @@ const {
   getPartnerProfilePic,
   verifyOtp,
 } = require("../controllers/partners.controller");
-
+const { getPartnerActivity } = require("../controllers/partnerActivity.controller");
 // ── Authentication ────────────────────────────────────────────────────────
 router.post("/signup",              signUp);
 router.post("/login",               login);
@@ -39,7 +39,7 @@ router.get("/getpartners",          getAllPartners);
 router.put("/add",                  updatePartnerProfile);
 router.get("/get",                  getPartnerByEmail);
 router.get("/get-profile-pic",      getPartnerProfilePic);
-
+router.get("/activity", getPartnerActivity); 
 // ── NOTE ──────────────────────────────────────────────────────────────────
 // Activity routes previously here have been removed.
 // Use /api/activity/partners and /api/activity/partners/log instead.

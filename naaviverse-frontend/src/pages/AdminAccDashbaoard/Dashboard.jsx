@@ -364,6 +364,7 @@ export default function Dashboard() {
       subtitleLines: [
         `Active: ${activityUsers.filter((u) => u.status === "active").length}`,
         `Idle: ${activityUsers.filter((u) => u.status === "idle").length}`,
+        `Offline: ${activityUsers.filter((u) => u.status === "offline").length}`,
       ],
       btnLabel: "View All →",
       onBtn: () => { setView("activity"); setSelectedActivityUser(null); },

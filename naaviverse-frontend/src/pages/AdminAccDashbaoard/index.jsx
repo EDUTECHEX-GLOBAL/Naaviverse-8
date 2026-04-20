@@ -62,7 +62,7 @@ import AdminStepDataPage from "./AdminStepDataPage.jsx";
 import MyStepsAdmin from "./MyStepsAdmin/index.jsx";
 import MenuNav from "../../components/MenuNav/index.jsx";
 import EditServiceForm from "./EditServices";
-
+import Subscriptions from "./Subscriptions.jsx";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -1191,7 +1191,7 @@ const AccDashboard = () => {
             onClick={() => resetpop()}
             style={{
               height: "100vh",
-              overflow: "hidden",
+              overflow: "auto",
               maxWidth: "calc(100vw - 220px)",
               width: "calc(100% - 20px)",
             }}
@@ -1211,6 +1211,11 @@ const AccDashboard = () => {
                   )}
 
                   {accsideNav === "CRM" && <AdminCRM />}
+
+
+                  {accsideNav === "Subscriptions" && (
+  <Subscriptions />
+)}
 
                   {/* MARKETPLACE SECTION */}
                   {accsideNav === "Marketplace" && (
@@ -1298,6 +1303,7 @@ const AccDashboard = () => {
                   {![
                     "Dashboard",   // ← THIS WAS MISSING — caused "Coming Soon" on load
                     "CRM",
+                    "Subscriptions",
                     "Marketplace",
                     "Calendar",
                     "Wallet",

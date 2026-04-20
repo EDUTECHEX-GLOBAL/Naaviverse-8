@@ -905,3 +905,54 @@ table {
 .ph-notif-full-meta  { display: flex; align-items: center; gap: 7px; margin-top: 5px; }
 .ph-notif-full-time  { font-size: 10.5px; color: var(--ph-slate-400); }
 .ph-notif-full-tag   { font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 6px; }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ENGAGEMENT HEALTH BARS (Box 2)
+// ══════════════════════════════════════════════════════════════════════════════
+.ph-engagement-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 10px 0 0;
+}
+
+.ph-eng-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ph-eng-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,.75);
+  width: 46px;
+  flex-shrink: 0;
+}
+
+.ph-eng-track {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,.2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.ph-eng-fill {
+  height: 4px;
+  border-radius: 999px;
+  transition: width .5s ease;
+}
+
+.ph-eng-green  { background: rgba(255,255,255,.9); }
+.ph-eng-amber  { background: rgba(255,220,130,.85); }
+.ph-eng-teal   { background: rgba(153,246,228,.85); }
+
+.ph-eng-pct {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255,255,255,.85);
+  width: 26px;
+  text-align: right;
+  flex-shrink: 0;
+}

@@ -8,9 +8,11 @@ import logo from "../../assets/images/logo/naavi_final_logo2.png";
 const ROUTE_MAP = {
   Overview:    "/admin/dashboard/accountants",
   CRM:         "/admin/dashboard/crm",
+  Subscriptions: "/admin/dashboard/subscriptions",
   Paths:       "/admin/dashboard/paths?tab=active",
   Steps:       "/admin/dashboard/steps?tab=active",
   Marketplace: "/admin/dashboard/marketplace",
+
 };
 
 // ── Icons ──────────────────────────────────────────────────────────────────
@@ -31,6 +33,14 @@ const Icons = {
       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   ),
+
+  Subscriptions: ({ color }) => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+    <line x1="1" y1="10" x2="23" y2="10" />
+  </svg>
+),
+
 Paths: ({ color }) => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="5" cy="18" r="2" />
@@ -86,9 +96,11 @@ const sidebarMenu1 = [
 const sidebarMenu2 = [
   { id: 0, display: "Overview",    title: "Overview",    click: true },
   { id: 1, display: "CRM",         title: "CRM",         click: true },
-  { id: 2, display: "Paths",       title: "Paths",       click: true },
-  { id: 3, display: "Steps",       title: "Steps",       click: true },
-  { id: 4, display: "Marketplace", title: "Marketplace", click: true },
+  { id: 2, display: "Subscriptions", title: "Subscriptions", click: true },
+  { id: 3, display: "Paths",       title: "Paths",       click: true },
+  { id: 4, display: "Steps",       title: "Steps",       click: true },
+  { id: 5, display: "Marketplace", title: "Marketplace", click: true },
+
 ];
 
 const sidebarMenu3 = [];

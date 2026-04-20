@@ -204,7 +204,7 @@ const ActivityPopup = ({ item, type, onClose }) => {
               <>
                 <Section title="Selected Paths"        icon={<MapIcon />}   items={activity.paths}         chipCls="chip-blue"   />
                 <Section title="Subscriptions"         icon={<StarIcon />}  items={activity.subscriptions} chipCls="chip-purple" />
-                <Section title="Explored / Discovered" icon={<GlobeIcon />} items={activity.explored}      chipCls="chip-teal"   />
+                <Section title="Marketplace Purchase" icon={<GlobeIcon />} items={activity.explored}      chipCls="chip-teal"   />
               </>
             ) : (
               <>

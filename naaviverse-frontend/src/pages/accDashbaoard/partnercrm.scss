@@ -63,17 +63,17 @@
       box-shadow: 0 4px 14px rgba(129, 140, 248, 0.28);
       border: 1px solid rgba(255, 255, 255, 0.3);
 
-      .cs-label, .cs-sub { color: rgba(255, 255, 255, 0.88); }
+      .cs-label, .cs-sub { color: rgba(255, 255, 255, 1); }
       .cs-value { color: #ffffff; }
     }
 
-    // ── Orange (Total Revenue) — pastel peach ────────────────────────────────
+    // ── Pink (Total Revenue) — replaces orange ───────────────────────────────
     &.orange {
-      background: linear-gradient(135deg, #fdba74 0%, #fb923c 100%);
-      box-shadow: 0 4px 14px rgba(251, 146, 60, 0.28);
+      background: linear-gradient(135deg, #f9a8d4 0%, #ec4899 100%);
+      box-shadow: 0 4px 14px rgba(236, 72, 153, 0.28);
       border: 1px solid rgba(255, 255, 255, 0.3);
 
-      .cs-label, .cs-sub { color: rgba(255, 255, 255, 0.88); }
+      .cs-label, .cs-sub { color: rgba(255, 255, 255, 1); }
       .cs-value { color: #ffffff; }
     }
 
@@ -83,7 +83,7 @@
       box-shadow: 0 4px 14px rgba(52, 211, 153, 0.28);
       border: 1px solid rgba(255, 255, 255, 0.3);
 
-      .cs-label, .cs-sub { color: rgba(255, 255, 255, 0.88); }
+      .cs-label, .cs-sub { color: rgba(255, 255, 255, 1); }
       .cs-value { color: #ffffff; }
     }
 
@@ -92,7 +92,7 @@
       background: linear-gradient(135deg, #5eead4 0%, #2dd4bf 100%);
       box-shadow: 0 4px 14px rgba(45, 212, 191, 0.25);
       border: 1px solid rgba(255, 255, 255, 0.25);
-      .cs-label, .cs-sub { color: rgba(255, 255, 255, 0.88); }
+      .cs-label, .cs-sub { color: rgba(255, 255, 255, 1); }
       .cs-value { color: #ffffff; }
     }
 
@@ -100,7 +100,7 @@
       background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%);
       box-shadow: 0 4px 14px rgba(167, 139, 250, 0.25);
       border: 1px solid rgba(255, 255, 255, 0.25);
-      .cs-label, .cs-sub { color: rgba(255, 255, 255, 0.88); }
+      .cs-label, .cs-sub { color: rgba(255, 255, 255, 1); }
       .cs-value { color: #ffffff; }
     }
 
@@ -108,7 +108,7 @@
       background: linear-gradient(135deg, #fda4af 0%, #fb7185 100%);
       box-shadow: 0 4px 14px rgba(251, 113, 133, 0.25);
       border: 1px solid rgba(255, 255, 255, 0.25);
-      .cs-label, .cs-sub { color: rgba(255, 255, 255, 0.88); }
+      .cs-label, .cs-sub { color: rgba(255, 255, 255, 1); }
       .cs-value { color: #ffffff; }
     }
 
@@ -118,7 +118,7 @@
       letter-spacing: 0.1em;
       text-transform: uppercase;
       margin-bottom: 4px;
-      opacity: 0.9;
+      opacity: 1;
     }
 
     .cs-value {
@@ -157,13 +157,13 @@
     background: #eef2f6;
     user-select: none;
 
-    &:hover { background: #e2e8f0; color: #8b5cf6; }
+    // &:hover {  color: #64748b; }
 
-    &.active {
-      background: #8b5cf6;
-      color: #fff;
-      box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
-    }
+    // &.active {
+    //   background: #eef2f6;
+    //   color: #fff;
+    //   //box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+    // }
   }
 
   // ─── PURCHASE FILTER TABS ────────────────────────────────────────────────────
@@ -226,7 +226,7 @@
   .crm-table-header {
     padding: 0.55rem 1.2rem;
     background: #fafbfc;
-    border-bottom: 1px solid #f1f5f9;  // subtle, not white
+    border-bottom: 1px solid #f1f5f9;
     align-items: center;
 
     span {
