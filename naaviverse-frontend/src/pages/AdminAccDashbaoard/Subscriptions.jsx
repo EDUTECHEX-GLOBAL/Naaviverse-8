@@ -1,177 +1,305 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const STATIC_SUBSCRIPTIONS = [
-  { id: 1, name: "Arjun Sharma",  email: "arjun@example.com",  plan: "Pro",      layer: "Micro", billing: "Monthly", date: "Mar 1, 2025",  time: "10:30 AM", amount: 4150,  status: "Active" },
-  { id: 2, name: "Priya Nair",    email: "priya@example.com",  plan: "Standard", layer: "Micro", billing: "Annual",  date: "Jan 15, 2025", time: "2:15 PM",  amount: 9960,  status: "Active" },
-  { id: 3, name: "Rohan Mehta",   email: "rohan@example.com",  plan: "Pro Plus", layer: "Nano",  billing: "Monthly", date: "Apr 10, 2025", time: "9:00 AM",  amount: 8300,  status: "Active" },
-  { id: 4, name: "Sneha Reddy",   email: "sneha@example.com",  plan: "Pro",      layer: "Nano",  billing: "Annual",  date: "Dec 20, 2024", time: "5:45 PM",  amount: 49800, status: "Expired" },
-  { id: 5, name: "Vikram Das",    email: "vikram@example.com", plan: "Standard", layer: "Micro", billing: "Monthly", date: "Feb 28, 2025", time: "11:00 AM", amount: 830,   status: "Active" },
-  { id: 6, name: "Ananya Iyer",   email: "ananya@example.com", plan: "Pro Plus", layer: "Nano",  billing: "Annual",  date: "Mar 22, 2025", time: "3:20 PM",  amount: 99600, status: "Active" },
-  { id: 7, name: "Karan Bose",    email: "karan@example.com",  plan: "Pro",      layer: "Micro", billing: "Monthly", date: "Apr 1, 2025",  time: "8:50 AM",  amount: 4150,  status: "Active" },
-  { id: 8, name: "Meera Pillai",  email: "meera@example.com",  plan: "Standard", layer: "Micro", billing: "Annual",  date: "Jan 5, 2025",  time: "4:10 PM",  amount: 9960,  status: "Cancelled" },
-];
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const PLAN_COLORS = {
-  Standard:   { bg: "#f0f4ff", color: "#4361ee", border: "#c7d2fe" },
+/* ── Normalizers ────────────────────────────────────────────────── */
+const normalizePlan = (planTier) => {
+  if (!planTier) return "Standard";
+  const map = { gold: "Standard", silver: "Pro", platinum: "Pro Plus" };
+  return map[planTier.toLowerCase()] || planTier;
+};
+const normalizeLayer = (tier) => {
+  if (!tier) return "Micro";
+  return tier.charAt(0).toUpperCase() + tier.slice(1).replace("_only", "");
+};
+const normalizeBilling = (billingMethod) => {
+  if (!billingMethod) return "Monthly";
+  const map = { monthly: "Monthly", annual: "Annual", lifetime: "Lifetime" };
+  return map[billingMethod.toLowerCase()] || billingMethod;
+};
+const normalizeStatus = (status) => {
+  if (!status) return "Active";
+  return status.charAt(0).toUpperCase() + status.slice(1);
+};
+const formatDate = (dateStr) => {
+  if (!dateStr) return "—";
+  return new Date(dateStr).toLocaleDateString("en-IN", {
+    day: "2-digit", month: "short", year: "numeric",
+  });
+};
+const formatTime = (dateStr) => {
+  if (!dateStr) return "";
+  return new Date(dateStr).toLocaleTimeString("en-IN", {
+    hour: "2-digit", minute: "2-digit",
+  });
+};
+const fmt = (n) => "₹" + Number(n).toLocaleString("en-IN");
+
+/* ── Colors ─────────────────────────────────────────────────────── */
+const STATUS_META = {
+  Active:    { dot: "#22c55e", color: "#15803d", bg: "#f0fdf4", border: "#bbf7d0" },
+  Expired:   { dot: "#f87171", color: "#b91c1c", bg: "#fef2f2", border: "#fecaca" },
+  Cancelled: { dot: "#94a3b8", color: "#64748b", bg: "#f8fafc", border: "#e2e8f0" },
+};
+const BILLING_META = {
+  Monthly:  { bg: "#fefce8", color: "#a16207" },
+  Annual:   { bg: "#faf5ff", color: "#7c3aed" },
+  Lifetime: { bg: "#f0fdf4", color: "#15803d" },
+};
+const PLAN_META = {
+  Standard:   { bg: "#eff6ff", color: "#2563eb", border: "#bfdbfe" },
   Pro:        { bg: "#f0fdf4", color: "#16a34a", border: "#bbf7d0" },
   "Pro Plus": { bg: "#fff7ed", color: "#ea580c", border: "#fed7aa" },
 };
-
-const STATUS_META = {
-  Active:    { dot: "#22c55e", color: "#15803d", bg: "rgba(22,163,74,0.08)" },
-  Expired:   { dot: "#f87171", color: "#b91c1c", bg: "rgba(239,68,68,0.08)" },
-  Cancelled: { dot: "#94a3b8", color: "#64748b", bg: "rgba(148,163,184,0.1)" },
-};
-
-const BILLING_META = {
-  Monthly: { bg: "#fef9c3", color: "#a16207" },
-  Annual:  { bg: "#ede9fe", color: "#6d28d9" },
-};
-
-const AVATAR_COLORS = [
-  ["#fbbf24", "#92400e"],
-  ["#34d399", "#065f46"],
-  ["#60a5fa", "#1e3a8a"],
-  ["#f472b6", "#831843"],
-  ["#a78bfa", "#4c1d95"],
-  ["#fb923c", "#7c2d12"],
-  ["#38bdf8", "#0c4a6e"],
-  ["#4ade80", "#14532d"],
+const AVATAR_GRADIENTS = [
+  ["#fbbf24","#d97706"],["#34d399","#059669"],
+  ["#60a5fa","#2563eb"],["#f472b6","#db2777"],
+  ["#a78bfa","#7c3aed"],["#fb923c","#ea580c"],
+  ["#38bdf8","#0284c7"],["#4ade80","#16a34a"],
 ];
-
 const getInitials = (name) =>
-  name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  name.split("@")[0].slice(0, 2).toUpperCase();
 
-const fmt = (n) => "₹" + n.toLocaleString("en-IN");
+/* ── Icons ───────────────────────────────────────────────────────── */
+const IconSearch = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+    stroke="#94a3b8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+);
+const IconChevron = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9"/>
+  </svg>
+);
 
-// ── Compact stat card ──────────────────────────────────────────────────────
-const StatCard = ({ icon, label, value, accent, bg }) => (
+/* ── Stat Card ───────────────────────────────────────────────────── */
+const StatCard = ({ label, value, accent, bg, border }) => (
   <div style={{
-    background: "#fff",
-    border: "1px solid #f1f5f9",
-    borderRadius: "12px",
-    padding: "14px 18px",
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    flex: 1,
-    minWidth: "140px",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-  }}>
-    <div style={{
-      width: "36px", height: "36px", borderRadius: "10px",
-      background: bg, display: "flex", alignItems: "center",
-      justifyContent: "center", flexShrink: 0, fontSize: "16px",
-    }}>{icon}</div>
+    background: bg, border: `1.5px solid ${border}`,
+    borderRadius: "12px", padding: "14px 18px",
+    display: "flex", alignItems: "center", gap: "12px",
+    flex: 1, minWidth: "120px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+    transition: "transform 0.15s, box-shadow 0.15s",
+    cursor: "default",
+  }}
+    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)"; }}
+    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; }}
+  >
     <div>
-      <div style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 500, marginBottom: "2px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</div>
-      <div style={{ fontSize: "1.1rem", fontWeight: 700, color: accent, lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: "10px", color: accent, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", opacity: 0.7, marginBottom: "2px" }}>{label}</div>
+      <div style={{ fontSize: "1.3rem", fontWeight: 800, color: accent, lineHeight: 1 }}>{value}</div>
     </div>
   </div>
 );
 
+/* ══════════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+══════════════════════════════════════════════════════════════════ */
 export default function Subscriptions() {
-  const [search, setSearch]           = useState("");
-  const [planFilter, setPlanFilter]   = useState("All");
+  const [search, setSearch]         = useState("");
+  const [planFilter, setPlanFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [statusDropOpen, setStatusDropOpen] = useState(false);
+  const [subscriptions, setSubscriptions]   = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState("");
 
-  const filtered = STATIC_SUBSCRIPTIONS.filter((s) => {
+  useEffect(() => {
+    const fetchAll = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get(`${BASE_URL}/api/subscriptions/all?limit=100`);
+        if (res.data?.success) setSubscriptions(res.data.subscriptions || []);
+      } catch {
+        setError("Failed to load subscriptions.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAll();
+  }, []);
+
+  /* Normalize */
+  const normalized = subscriptions.map((s, i) => ({
+    id:      s._id || i,
+    name:    s.userEmail?.split("@")[0] || "Unknown",
+    email:   s.userEmail || "—",
+    plan:    normalizePlan(s.planTier),
+    layer:   normalizeLayer(s.tier),
+    billing: normalizeBilling(s.billingMethod),
+    date:    formatDate(s.startDate || s.createdAt),
+    time:    formatTime(s.startDate || s.createdAt),
+    amount:  s.amount || 0,
+    status:  normalizeStatus(s.status),
+    _idx:    i,
+  }));
+
+  /* ── FIX: case-insensitive plan filter ── */
+  const filtered = normalized.filter((s) => {
     const q = search.toLowerCase();
-    return (
-      (s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q)) &&
-      (planFilter   === "All" || s.plan   === planFilter) &&
-      (statusFilter === "All" || s.status === statusFilter)
-    );
+    const matchSearch = s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q);
+    const matchPlan   = planFilter === "All" || s.plan.toLowerCase() === planFilter.toLowerCase();
+    const matchStatus = statusFilter === "All" || s.status.toLowerCase() === statusFilter.toLowerCase();
+    return matchSearch && matchPlan && matchStatus;
   });
 
-  const totalRevenue = STATIC_SUBSCRIPTIONS.reduce((a, s) => a + s.amount, 0);
-  const activeCount  = STATIC_SUBSCRIPTIONS.filter((s) => s.status === "Active").length;
-  const expiredCount = STATIC_SUBSCRIPTIONS.filter((s) => s.status === "Expired").length;
-  const cancelCount  = STATIC_SUBSCRIPTIONS.filter((s) => s.status === "Cancelled").length;
+  const activeCount  = normalized.filter(s => s.status === "Active").length;
+  const expiredCount = normalized.filter(s => s.status === "Expired").length;
+  const cancelCount  = normalized.filter(s => s.status === "Cancelled").length;
+
+  const statusLabel = statusFilter === "All"
+    ? `All (${normalized.length})`
+    : `${statusFilter} (${normalized.filter(s => s.status === statusFilter).length})`;
+
+  if (loading) return (
+    <div style={{ padding: "60px", textAlign: "center", color: "#94a3b8", fontSize: "14px" }}>
+      Loading subscriptions…
+    </div>
+  );
+  if (error) return (
+    <div style={{ padding: "60px", textAlign: "center", color: "#dc2626", fontSize: "14px" }}>
+      {error}
+    </div>
+  );
 
   return (
-    <div style={{ padding: "20px 28px", minHeight: "100vh", background: "#f8fafc", fontFamily: "inherit" }}>
+    <div
+      style={{
+        padding: "24px 28px", minHeight: "100vh",
+        background: "#f5f7fb", fontFamily: "'DM Sans', sans-serif",
+      }}
+      onClick={() => setStatusDropOpen(false)}
+    >
 
-      {/* ── Page title ──────────────────────────────────────────── */}
-      <div style={{ marginBottom: "16px" }}>
-        <h2 style={{ fontSize: "1.15rem", fontWeight: 700, color: "#0f172a", margin: 0 }}>
+      {/* ── Header ─────────────────────────────────────────────── */}
+      <div style={{ marginBottom: "18px" }}>
+        <h2 style={{ fontSize: "1.15rem", fontWeight: 800, color: "#0f172a", margin: 0 }}>
           Subscriptions
         </h2>
-        <p style={{ color: "#94a3b8", fontSize: "12px", marginTop: "3px" }}>
-          All user plan data · {STATIC_SUBSCRIPTIONS.length} total
+        <p style={{ color: "#94a3b8", fontSize: "12px", marginTop: "3px", fontWeight: 500 }}>
+          All user plan data · {normalized.length} total
         </p>
       </div>
 
-      {/* ── Stat strip ──────────────────────────────────────────── */}
+      {/* ── Stat strip (no Revenue) ─────────────────────────────── */}
       <div style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
-        <StatCard icon="💰" label="Revenue"   value={fmt(totalRevenue)} accent="#0f172a"  bg="#f0fdf4" />
-        <StatCard icon="✅" label="Active"    value={activeCount}       accent="#16a34a"  bg="#dcfce7" />
-        <StatCard icon="⏳" label="Expired"   value={expiredCount}      accent="#dc2626"  bg="#fee2e2" />
-        <StatCard icon="✕"  label="Cancelled" value={cancelCount}       accent="#64748b"  bg="#f1f5f9" />
-        <StatCard icon="👥" label="Total"     value={STATIC_SUBSCRIPTIONS.length} accent="#4361ee" bg="#e0e7ff" />
+        <StatCard label="Active"    value={activeCount}        accent="#2563eb" bg="#eff6ff" border="#bfdbfe" />
+        <StatCard label="Expired"   value={expiredCount}       accent="#dc2626" bg="#fef2f2" border="#fecaca" />
+        <StatCard label="Cancelled" value={cancelCount}        accent="#64748b" bg="#f8fafc" border="#e2e8f0" />
+        <StatCard label="Total"     value={normalized.length}  accent="#7c3aed" bg="#faf5ff" border="#e9d5ff" />
       </div>
 
-      {/* ── Filters ─────────────────────────────────────────────── */}
+      {/* ── Filter bar ─────────────────────────────────────────── */}
       <div style={{
-        display: "flex", gap: "8px", marginBottom: "12px",
-        alignItems: "center", flexWrap: "wrap",
+        display: "flex", alignItems: "center",
+        gap: "10px", marginBottom: "14px", flexWrap: "wrap",
       }}>
-        {/* Status tabs */}
+
+        {/* LEFT — Plan buttons */}
         <div style={{ display: "flex", gap: "6px" }}>
-          {[
-            { label: `All (${STATIC_SUBSCRIPTIONS.length})`, value: "All" },
-            { label: `Active (${activeCount})`,   value: "Active" },
-            { label: `Expired (${expiredCount})`, value: "Expired" },
-            { label: `Cancelled (${cancelCount})`,value: "Cancelled" },
-          ].map((t) => (
-            <button key={t.value} onClick={() => setStatusFilter(t.value)} style={{
-              padding: "5px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: 500,
-              cursor: "pointer", border: "1.5px solid",
-              background:  statusFilter === t.value ? "#0f172a" : "#fff",
-              color:       statusFilter === t.value ? "#fff"    : "#64748b",
-              borderColor: statusFilter === t.value ? "#0f172a" : "#e2e8f0",
-              transition: "all 0.15s",
-            }}>{t.label}</button>
-          ))}
+          {["All", "Standard", "Pro", "Pro Plus"].map((p) => {
+            const active = planFilter === p;
+            const meta   = PLAN_META[p] || {};
+            return (
+              <button key={p} onClick={() => setPlanFilter(p)} style={{
+                padding: "6px 14px", borderRadius: "20px",
+                fontSize: "12px", fontWeight: 600,
+                cursor: "pointer", border: "1.5px solid",
+                transition: "all 0.15s",
+                background:  active ? (meta.bg  || "#e2e8f0") : "#fff",
+                color:       active ? (meta.color || "#475569") : "#64748b",
+                borderColor: active ? (meta.border || "#e2e8f0") : "#e2e8f0",
+              }}>{p}</button>
+            );
+          })}
         </div>
 
-        {/* Spacer */}
         <div style={{ flex: 1 }} />
 
-        {/* Search */}
-        <input
-          type="text" placeholder="Search name or email…" value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{
-            padding: "6px 12px", border: "1.5px solid #e2e8f0", borderRadius: "8px",
-            fontSize: "12px", outline: "none", background: "#fff", width: "190px",
-          }}
-        />
+        {/* RIGHT — Status dropdown */}
+        <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
+          <button
+            onClick={() => setStatusDropOpen(o => !o)}
+            style={{
+              display: "flex", alignItems: "center", gap: "6px",
+              padding: "7px 14px", borderRadius: "9px",
+              border: "1.5px solid #e2e8f0", background: "#fff",
+              fontSize: "12px", fontWeight: 600, color: "#475569",
+              cursor: "pointer", fontFamily: "inherit",
+              minWidth: "150px", justifyContent: "space-between",
+            }}
+          >
+            {statusLabel}
+            <IconChevron />
+          </button>
+          {statusDropOpen && (
+            <div style={{
+              position: "absolute", top: "calc(100% + 4px)", right: 0,
+              background: "#fff", border: "1px solid #e2e8f0",
+              borderRadius: "10px", boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
+              zIndex: 50, minWidth: "160px", overflow: "hidden",
+            }}>
+              {[
+                { label: `All (${normalized.length})`,  value: "All" },
+                { label: `Active (${activeCount})`,     value: "Active" },
+                { label: `Expired (${expiredCount})`,   value: "Expired" },
+                { label: `Cancelled (${cancelCount})`,  value: "Cancelled" },
+              ].map((t) => (
+                <div key={t.value}
+                  onClick={() => { setStatusFilter(t.value); setStatusDropOpen(false); }}
+                  style={{
+                    padding: "9px 14px", fontSize: "12px", fontWeight: 500,
+                    cursor: "pointer", color: statusFilter === t.value ? "#2563eb" : "#475569",
+                    background: statusFilter === t.value ? "#eff6ff" : "transparent",
+                    transition: "background 0.12s",
+                  }}
+                  onMouseEnter={e => { if (statusFilter !== t.value) e.currentTarget.style.background = "#f8fafc"; }}
+                  onMouseLeave={e => { if (statusFilter !== t.value) e.currentTarget.style.background = "transparent"; }}
+                >
+                  {t.label}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-        {/* Plan filter */}
-        <select value={planFilter} onChange={(e) => setPlanFilter(e.target.value)} style={{
-          padding: "6px 10px", border: "1.5px solid #e2e8f0", borderRadius: "8px",
-          fontSize: "12px", outline: "none", background: "#fff", cursor: "pointer",
+        {/* Search */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: "7px",
+          background: "#fff", border: "1.5px solid #e2e8f0",
+          padding: "6px 12px", borderRadius: "9px",
         }}>
-          {["All", "Standard", "Pro", "Pro Plus"].map((p) => (
-            <option key={p} value={p}>{p === "All" ? "All Plans" : p}</option>
-          ))}
-        </select>
+          <IconSearch />
+          <input
+            type="text" placeholder="Search name or email…" value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{
+              border: "none", outline: "none", background: "transparent",
+              fontSize: "12px", color: "#1e293b", width: "170px", fontFamily: "inherit",
+            }}
+          />
+        </div>
       </div>
 
-      {/* ── Table ───────────────────────────────────────────────── */}
+      {/* ── Table ──────────────────────────────────────────────── */}
       <div style={{
-        background: "#fff", borderRadius: "12px",
-        border: "1px solid #e8edf5", overflow: "hidden",
-        boxShadow: "0 1px 6px rgba(0,0,0,0.04)",
+        background: "#fff", borderRadius: "14px",
+        border: "1px solid #e2e8f0", overflow: "hidden",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
       }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
           <thead>
-            <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e8edf5" }}>
-              {["User", "Plan", "Layer", "Amount", "Billing", "Date", "Status"].map((h) => (
+            <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+              {["User", "Plan", "Layer", "Amount", "Billing", "Date", "Status"].map(h => (
                 <th key={h} style={{
-                  padding: "10px 16px", textAlign: "left", fontSize: "10px",
-                  fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.07em",
+                  padding: "10px 16px", textAlign: "left",
+                  fontSize: "10.5px", fontWeight: 700,
+                  color: "#94a3b8", textTransform: "uppercase",
+                  letterSpacing: "0.06em", fontFamily: "inherit",
                 }}>{h}</th>
               ))}
             </tr>
@@ -179,81 +307,104 @@ export default function Subscriptions() {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={7} style={{ padding: "36px", textAlign: "center", color: "#cbd5e1", fontSize: "13px" }}>
+                <td colSpan={7} style={{
+                  padding: "48px", textAlign: "center",
+                  color: "#cbd5e1", fontSize: "13px",
+                }}>
                   No subscriptions found.
                 </td>
               </tr>
             ) : filtered.map((s, i) => {
-              const [av1, av2] = AVATAR_COLORS[i % AVATAR_COLORS.length];
-              const pm = PLAN_COLORS[s.plan]   || {};
-              const sm = STATUS_META[s.status] || {};
-              const bm = BILLING_META[s.billing] || {};
+              const [g1, g2] = AVATAR_GRADIENTS[s._idx % AVATAR_GRADIENTS.length];
+              const sm = STATUS_META[s.status]   || STATUS_META.Active;
+              const bm = BILLING_META[s.billing] || BILLING_META.Monthly;
+              const pm = PLAN_META[s.plan]       || PLAN_META.Standard;
               return (
                 <tr key={s.id}
-                  style={{ borderBottom: i < filtered.length - 1 ? "1px solid #f1f5f9" : "none", transition: "background 0.12s" }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = "#fafbfc"}
-                  onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                  style={{
+                    borderBottom: i < filtered.length - 1 ? "1px solid #f1f5f9" : "none",
+                    transition: "background 0.12s",
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = "#fafbff"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                 >
                   {/* User */}
-                  <td style={{ padding: "11px 16px" }}>
+                  <td style={{ padding: "12px 16px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <div style={{
-                        width: "30px", height: "30px", borderRadius: "50%", flexShrink: 0,
-                        background: `linear-gradient(135deg, ${av1}, ${av2})`,
+                        width: "32px", height: "32px", borderRadius: "9px",
+                        background: `linear-gradient(135deg, ${g1}, ${g2})`,
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: "10px", fontWeight: 700, color: "#fff", letterSpacing: "0.03em",
-                      }}>{getInitials(s.name)}</div>
+                        fontSize: "11px", fontWeight: 700, color: "#fff", flexShrink: 0,
+                      }}>{getInitials(s.email)}</div>
                       <div>
                         <div style={{ fontWeight: 600, color: "#0f172a", fontSize: "13px" }}>{s.name}</div>
-                        <div style={{ fontSize: "11px", color: "#94a3b8" }}>{s.email}</div>
+                        <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "1px" }}>{s.email}</div>
                       </div>
                     </div>
                   </td>
 
                   {/* Plan */}
-                  <td style={{ padding: "11px 16px" }}>
+                  <td style={{ padding: "12px 16px" }}>
                     <span style={{
-                      padding: "3px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
-                      background: pm.bg, color: pm.color, border: `1px solid ${pm.border}`,
+                      padding: "3px 10px", borderRadius: "20px",
+                      fontSize: "11px", fontWeight: 600,
+                      background: pm.bg, color: pm.color,
+                      border: `1px solid ${pm.border}`,
                     }}>{s.plan}</span>
                   </td>
 
                   {/* Layer */}
-                  <td style={{ padding: "11px 16px" }}>
+                  <td style={{ padding: "12px 16px" }}>
                     <span style={{
-                      fontSize: "11px", fontWeight: 600, padding: "3px 10px", borderRadius: "20px",
-                      background: s.layer === "Nano" ? "#f5f3ff" : "#e0f2fe",
-                      color:      s.layer === "Nano" ? "#6d28d9" : "#0369a1",
-                    }}>● {s.layer}</span>
+                      fontSize: "11px", fontWeight: 700,
+                      padding: "3px 10px", borderRadius: "7px",
+                      background: s.layer === "Nano" ? "#faf5ff" : "#eff6ff",
+                      color:      s.layer === "Nano" ? "#7c3aed" : "#2563eb",
+                      border:     s.layer === "Nano" ? "1px solid #e9d5ff" : "1px solid #bfdbfe",
+                    }}>
+                      <span style={{
+                        display: "inline-block", width: "5px", height: "5px",
+                        borderRadius: "50%", marginRight: "5px", verticalAlign: "middle",
+                        background: s.layer === "Nano" ? "#a78bfa" : "#60a5fa",
+                      }} />
+                      {s.layer}
+                    </span>
                   </td>
 
                   {/* Amount */}
-                  <td style={{ padding: "11px 16px", fontWeight: 700, color: "#0f172a", fontSize: "13px" }}>
+                  <td style={{ padding: "12px 16px", fontWeight: 600, color: "#0f172a", fontSize: "13px" }}>
                     {fmt(s.amount)}
                   </td>
 
                   {/* Billing */}
-                  <td style={{ padding: "11px 16px" }}>
+                  <td style={{ padding: "12px 16px" }}>
                     <span style={{
-                      padding: "3px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
+                      padding: "3px 10px", borderRadius: "20px",
+                      fontSize: "11px", fontWeight: 600,
                       background: bm.bg, color: bm.color,
                     }}>{s.billing}</span>
                   </td>
 
                   {/* Date */}
-                  <td style={{ padding: "11px 16px" }}>
-                    <div style={{ fontSize: "12px", color: "#475569", fontWeight: 500 }}>{s.date}</div>
-                    <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "1px" }}>{s.time}</div>
+                  <td style={{ padding: "12px 16px" }}>
+                    <div style={{ fontSize: "12px", color: "#475569", fontWeight: 600 }}>{s.date}</div>
+                    <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>{s.time}</div>
                   </td>
 
                   {/* Status */}
-                  <td style={{ padding: "11px 16px" }}>
+                  <td style={{ padding: "12px 16px" }}>
                     <span style={{
                       display: "inline-flex", alignItems: "center", gap: "5px",
-                      padding: "3px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
+                      padding: "3px 10px", borderRadius: "20px",
+                      fontSize: "11px", fontWeight: 700,
                       background: sm.bg, color: sm.color,
+                      border: `1px solid ${sm.border}`,
                     }}>
-                      <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: sm.dot, flexShrink: 0 }} />
+                      <span style={{
+                        width: "6px", height: "6px", borderRadius: "50%",
+                        background: sm.dot, flexShrink: 0,
+                      }} />
                       {s.status}
                     </span>
                   </td>
@@ -265,8 +416,8 @@ export default function Subscriptions() {
       </div>
 
       {/* Footer */}
-      <div style={{ marginTop: "10px", fontSize: "11px", color: "#94a3b8", textAlign: "right" }}>
-        Showing {filtered.length} of {STATIC_SUBSCRIPTIONS.length} subscriptions
+      <div style={{ marginTop: "10px", fontSize: "11px", color: "#94a3b8", textAlign: "right", fontWeight: 500 }}>
+        Showing {filtered.length} of {normalized.length} subscriptions
       </div>
     </div>
   );

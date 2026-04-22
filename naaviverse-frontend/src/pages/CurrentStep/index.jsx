@@ -21,9 +21,9 @@ const PLAN_META = {
 };
 
 const PLAN_COLORS = {
-  standard: { accent: "#3b82f6", bg: "#eff6ff", border: "#bfdbfe", badge: "#1d4ed8" },
-  pro: { accent: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0", badge: "#15803d" },
-  proplus: { accent: "#d97706", bg: "#fffbeb", border: "#fde68a", badge: "#b45309" },
+  standard: { accent: "#0a5244", bg: "#d6f0e8", border: "#8ecfbe", badge: "#0e7a62" },
+  pro:      { accent: "#2e1f9a", bg: "#e0dcfa", border: "#a89ded", badge: "#3d2eb0" },
+  proplus:  { accent: "#8a3e00", bg: "#fde8cc", border: "#f0bc78", badge: "#b05e10" },
 };
 
 const PLAN_FEATS = {
@@ -217,39 +217,29 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, initialTier = null
 
                 {/* Plan name */}
                 <div className="spc-header">
-                  <span className="spc-label" style={{ color: active ? pc.accent : "#0f1f3d" }}>{pm.label}</span>
+                <span className="spc-label">{pm.label}</span>
                 </div>
 
                 {/* Price */}
-                <div className="spc-price" style={{ color: active ? pc.accent : "#0f1f3d" }}>
+               <div className="spc-price">
                   {getPrice(p)}
                   <span className="spc-period">/{selectedBilling === "annual" ? "yr" : "mo"}</span>
                 </div>
 
                 {/* "2 months free" shown only on annual */}
-                <div className="spc-save" style={{ color: pc.accent }}>
+               <div className="spc-save">
                   {selectedBilling === "annual" ? "2 months free" : "\u00A0"}
                 </div>
 
                 {/* Credits badge */}
-                <div
-                  className="spc-credits"
-                  style={{
-                    background: active ? pc.bg : "#f8fafc",
-                    color: pc.accent,
-                    border: `1px solid ${active ? pc.border : "#e2e8f0"}`,
-                  }}
-                >
+                <div className="spc-credits">
                   {pm.credits} Credits / Month
                 </div>
 
                 {/* Subscribe button */}
                 <button
                   className="spc-subscribe-btn"
-                  style={{
-                    background: active ? pc.accent : "#edf0f4",
-                    color: active ? "#fff" : "#64748b",
-                  }}
+                
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelectedTier(p);
