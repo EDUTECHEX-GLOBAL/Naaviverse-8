@@ -714,69 +714,38 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                         }}
                       >
 
-                        {/* Changes requested banner on card */}
-                        {(e?.review_notes || e?.status === "changesrequested") && (() => {
-                          const latestCR = (e?.changeRequests || [])
-                            .filter(cr => cr.status === "pending")
-                            .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt))[0];
+                     {e?.status === "changesrequested" &&
+  (e?.changeRequests || []).some(cr => cr.status === "pending") && (() => {
+  const latestCR = (e?.changeRequests || [])
+    .filter(cr => cr.status === "pending")
+    .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt))[0];
 
-                          const issues = latestCR?.issues?.filter(i => i && i.trim()) || [];
-                          const adminNote = latestCR?.adminNote || "";
+  if (!latestCR) return null;
 
-                          return (
-                            <div
-                              style={{
-                                background: '#fff1f2',
-                                border: '1px solid #fecaca',
-                                borderRadius: '8px',
-                                padding: '10px 12px',
-                                marginBottom: '10px',
-                              }}
-                              onClick={(evt) => evt.stopPropagation()}
-                            >
-                              {/* Line 1: Changes Requested: [issue] */}
-                              <div style={{
-                                display: 'flex', alignItems: 'center',
-                                flexWrap: 'wrap', gap: '5px',
-                              }}>
-                                <span style={{
-                                  width: 6, height: 6, borderRadius: '50%',
-                                  background: '#ef4444', flexShrink: 0, display: 'inline-block'
-                                }} />
-                                <span style={{ fontSize: '0.75rem', color: '#be123c', fontWeight: 700 }}>
-                                  Changes Requested:
-                                </span>
-                                {issues.length > 0 ? (
-                                  issues.map((issue, idx) => (
-                                    <span key={idx} style={{
-                                      fontSize: '0.75rem', fontWeight: 600, color: '#be123c',
-                                    }}>
-                                      {issue}{idx < issues.length - 1 ? ', ' : ''}
-                                    </span>
-                                  ))
-                                ) : (
-                                  <span style={{ fontSize: '0.75rem', color: '#be123c', fontWeight: 600 }}>
-                                    {e.review_notes}
-                                  </span>
-                                )}
-                              </div>
-
-                              {/* Line 2: Admin note */}
-                              {adminNote && (
-                                <div style={{
-                                  marginTop: '5px',
-                                  paddingLeft: '12px',
-                                  fontSize: '0.72rem',
-                                  color: '#9f1239',
-                                  fontWeight: 400,
-                                }}>
-                                  {adminNote}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })()}
-
+  // No need to show issues/adminNote on card — just show simple banner
+  return (
+    <div
+      style={{
+        background: '#fff1f2',
+        border: '1px solid #fecaca',
+        borderRadius: '8px',
+        padding: '10px 12px',
+        marginBottom: '10px',
+      }}
+      onClick={(evt) => evt.stopPropagation()}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+        <span style={{
+          width: 6, height: 6, borderRadius: '50%',
+          background: '#ef4444', flexShrink: 0, display: 'inline-block'
+        }} />
+        <span style={{ fontSize: '0.75rem', color: '#be123c', fontWeight: 700 }}>
+          Changes Requested
+        </span>
+      </div>
+    </div>
+  );
+})()}
                         {/* Card Header */}
                         <div className="path-header">
                           <div className="path-title">

@@ -653,68 +653,39 @@ const DraftPathView = () => {
               <p className="path-description">{pathData.description}</p>
             )}
 
-            {/* ── CHANGES REQUESTED BANNER ── */}
-            {(pathData?.review_notes || pathData?.status === "changesrequested") && (() => {
-              const latestCR = (pathData?.changeRequests || [])
-                .filter(cr => cr.status === "pending")
-                .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt))[0];
+           {/* ── CHANGES REQUESTED BANNER ── */}
+{pathData?.status === "changesrequested" &&
+  (pathData?.changeRequests || []).some(cr => cr.status === "pending") && (() => {
+    const latestCR = (pathData?.changeRequests || [])
+      .filter(cr => cr.status === "pending")
+      .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt))[0];
 
-              const issues = latestCR?.issues?.filter(i => i && i.trim()) || [];
-              const adminNote = latestCR?.adminNote || "";
+    if (!latestCR) return null;
 
-              return (
-                <div
-                  onClick={openReviewPanel}
-                  style={{
-                    background: '#fff1f2',
-                    border: '1px solid #fecaca',
-                    borderRadius: '10px',
-                    padding: '12px 16px',
-                    marginBottom: '16px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {/* Line 1: dot + "Changes Requested:" + issue(s) */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-                      <span style={{
-                        width: 7, height: 7, borderRadius: '50%',
-                        background: '#ef4444', display: 'inline-block', flexShrink: 0,
-                      }} />
-                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#be123c' }}>
-                        Changes Requested:
-                      </span>
-                      {issues.length > 0 ? (
-                        issues.map((issue, i) => (
-                          <span key={i} style={{ fontSize: '0.78rem', fontWeight: 600, color: '#be123c' }}>
-                            {issue}{i < issues.length - 1 ? ', ' : ''}
-                          </span>
-                        ))
-                      ) : (
-                        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#be123c' }}>
-                          {pathData.review_notes}
-                        </span>
-                      )}
-                    </div>
-                    <span style={{ fontSize: '0.75rem', color: '#be123c', fontWeight: 500, flexShrink: 0, marginLeft: 12 }}>
-                      View Feedback →
-                    </span>
-                  </div>
-
-                  {/* Line 2: admin note */}
-                  {adminNote && (
-                    <div style={{
-                      marginTop: '6px',
-                      paddingLeft: '13px',
-                      fontSize: '0.73rem',
-                      color: '#9f1239',
-                    }}>
-                      {adminNote}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
+    return (
+      <div onClick={openReviewPanel} style={{
+        background: '#fff1f2',
+        border: '1px solid #fecaca',
+        borderRadius: '10px',
+        padding: '12px 16px',
+        marginBottom: '16px',
+        cursor: 'pointer',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{
+            width: 7, height: 7, borderRadius: '50%',
+            background: '#ef4444', display: 'inline-block',
+          }} />
+          <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#be123c' }}>
+            Changes Requested
+          </span>
+          <span style={{ fontSize: '0.75rem', color: '#be123c', marginLeft: 'auto' }}>
+            View Feedback →
+          </span>
+        </div>
+      </div>
+    );
+  })()}
 
             <div className="path-actions-row">
               <button className="btn-outline" onClick={() => setViewAllOpen(true)}>View All Steps</button>
