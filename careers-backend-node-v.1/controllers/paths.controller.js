@@ -745,6 +745,35 @@ const getPathById = async (req, res) => {
   }
 };
 
+const editPath = async (req, res) => {
+  try {
+    const { pathId, ...updateData } = req.body;
+
+    if (!pathId || !mongoose.Types.ObjectId.isValid(pathId)) {
+      return res.status(400).json({ status: false, message: "Invalid or missing pathId" });
+    }
+
+    const existingPath = await pathModel.findById(pathId);
+    if (!existingPath) {
+      return res.status(404).json({ status: false, message: "Path not found" });
+    }
+
+    // Never allow status changes through this endpoint
+    delete updateData.status;
+
+    const updatedPath = await pathModel.findByIdAndUpdate(
+      pathId,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
+
+    return res.status(200).json({ status: true, message: "Path updated successfully", data: updatedPath });
+  } catch (error) {
+    console.error("editPath error:", error);
+    return res.status(500).json({ status: false, message: "Internal server error" });
+  }
+};
+
 module.exports = {
   addPath,
   submitForApproval,
@@ -755,6 +784,7 @@ module.exports = {
   getPathNormal,
   updateFields,
   updatePath,
+  editPath,
   getActivePaths,
   updatePathStatus,
   reactivatePath,

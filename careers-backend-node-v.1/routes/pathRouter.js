@@ -7,6 +7,7 @@ const { verifyToken } = require("../middlewares/authJwt");
 // ADD NEW PATH
 router.post("/add", pathController.addPath);
 router.put("/submit", pathController.submitForApproval);
+router.patch("/edit", pathController.editPath);
 
 // GET PATHS (general fetch)
 router.get("/get", pathController.getPath);
