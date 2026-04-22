@@ -512,15 +512,14 @@ const replyToChangeRequest = async (req, res) => {
       ...(from === "partner" ? { partnerEmail } : { adminEmail }),
     };
 
-    const result = await pathModel.findOneAndUpdate(
-      { _id: pathId, "changeRequests._id": changeRequestId },
-      {
-        $push: { "changeRequests.$.replies": reply },
-        ...(from === "partner" ? { $set: { "changeRequests.$.status": "addressed" } } : {}),
-      },
-      { new: true }
-    );
-
+   const result = await pathModel.findOneAndUpdate(
+  { _id: pathId, "changeRequests._id": changeRequestId },
+  {
+    $push: { "changeRequests.$.replies": reply },
+    // no auto-address — only admin can mark as addressed
+  },
+  { new: true }
+);
     if (!result) {
       return res.status(404).json({ status: false, message: "Path or change request not found" });
     }
@@ -545,6 +544,43 @@ const replyToChangeRequest = async (req, res) => {
     return res.status(500).json({ status: false, message: error.message });
   }
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MARK CHANGE REQUEST AS ADDRESSED (admin only)
+// ─────────────────────────────────────────────────────────────────────────────
+const markChangeRequestAddressed = async (req, res) => {
+  try {
+    const { pathId, changeRequestId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(pathId)) {
+      return res.status(400).json({ status: false, message: "Invalid pathId" });
+    }
+
+    const result = await pathModel.findOneAndUpdate(
+      { _id: pathId, "changeRequests._id": changeRequestId },
+      { $set: { "changeRequests.$.status": "addressed" } },
+      { new: true }
+    );
+
+    if (!result) {
+      return res.status(404).json({ status: false, message: "Path or change request not found" });
+    }
+
+    // If ALL CRs are now addressed → move path back to waitingforapproval
+    const allAddressed = result.changeRequests.every(cr => cr.status === "addressed");
+    if (allAddressed) {
+      await pathModel.findByIdAndUpdate(pathId, {
+        status: "waitingforapproval",
+        review_notes: "",
+      });
+    }
+
+    return res.json({ status: true, message: "Change request marked as addressed", data: result });
+  } catch (error) {
+    console.error("markChangeRequestAddressed error:", error);
+    return res.status(500).json({ status: false, message: error.message });
+  }
+}; 
 
 // ─────────────────────────────────────────────────────────────────────────────
 // READ-ONLY endpoints — no activity logging needed
@@ -727,4 +763,5 @@ module.exports = {
   uploadBulkPaths,
   requestChanges,
   replyToChangeRequest,
+  markChangeRequestAddressed,
 };

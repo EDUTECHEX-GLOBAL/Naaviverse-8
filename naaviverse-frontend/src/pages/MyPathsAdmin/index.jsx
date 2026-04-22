@@ -1005,62 +1005,61 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
 
             <div className="pp-body">
 
-              {/* ── STEP 1: MAIN ACTIONS — ACTIVE / INACTIVE ── */}
-              {pathActionStep === 1 && editPaths === "default" && mypathsMenu !== "Pending Paths" && (
-                <div className="pp-cards-grid">
-                  <ActionCard
-                    color="blue"
-                    icon={<IconPencil />}
-                    title="Edit Path"
-                    desc="Modify steps, metadata, or structure"
-                    onClick={() => setPathActionStep(4)}
-                  />
-                  <ActionCard
-                    color={mypathsMenu === "Inactive Paths" ? "green" : "red"}
-                    icon={mypathsMenu === "Inactive Paths" ? <IconCheck /> : <IconTrash />}
-                    title={mypathsMenu === "Inactive Paths" ? "Reactivate Path" : "Delete Path"}
-                    desc={mypathsMenu === "Inactive Paths" ? "Restore this path to active" : "Permanently remove this path"}
-                    onClick={() => setPathActionStep(2)}
-                  />
-                  <ActionCard
-                    color="purple"
-                    icon={<IconPencil />}
-                    title="Review Path"
-                    desc="Open the complete path page"
-                    onClick={() => { localStorage.setItem("selectedPathId", selectedPathId); navigate(`/dashboard/path/${selectedPathId}`); }}
-                  />
-                  <ActionCard
-                    color="teal"
-                    icon={<IconShop />}
-                    title="Marketplace"
-                    desc="Attach services to steps"
-                    onClick={() => setEditPaths("marketplace_steps")}
-                  />
-                </div>
-              )}
-
-              {/* ── STEP 1: MAIN ACTIONS — PENDING ── */}
-              {pathActionStep === 1 && editPaths === "default" && mypathsMenu === "Pending Paths" && (
-                <div className="pp-cards-grid">
-                  <ActionCard color="green" icon={<IconCheck />} title="Approve Path" desc="Publish this path to users" onClick={() => setPathActionStep(5)} />
-                  <ActionCard color="amber" icon={<IconX />} title="Reject Path" desc="Send back for revisions" onClick={() => setPathActionStep(6)} />
-                  <ActionCard color="blue" icon={<IconPencil />} title="Edit Path" desc="Modify steps and structure" onClick={() => setPathActionStep(4)} />
-                  <ActionCard
-                    color="purple"
-                    icon={<IconPencil />}
-                    title="Open Path"
-                    desc="Open the complete path page"
-                    onClick={() => { localStorage.setItem("selectedPathId", selectedPathId); navigate(`/dashboard/path/${selectedPathId}`); }}
-                  />
-                  <ActionCard
-                    color="teal"
-                    icon={<IconShop />}
-                    title="Marketplace"
-                    desc="Attach services to steps"
-                    onClick={() => setEditPaths("marketplace_steps")}
-                  />
-                </div>
-              )}
+            {/* ── STEP 1: MAIN ACTIONS — ACTIVE / INACTIVE ── */}
+{pathActionStep === 1 && editPaths === "default" && mypathsMenu !== "Pending Paths" && (
+  <div className="pp-cards-grid">
+    {/* For Inactive Paths: only show Review and Reactivate */}
+    {mypathsMenu === "Inactive Paths" ? (
+      <>
+        <ActionCard
+          color="green"
+          icon={<IconCheck />}
+          title="Reactivate Path"
+          desc="Restore this path to active"
+          onClick={() => setPathActionStep(2)}
+        />
+        <ActionCard
+          color="purple"
+          icon={<IconPencil />}
+          title="Review Path"
+          desc="Open the complete path page"
+          onClick={() => { localStorage.setItem("selectedPathId", selectedPathId); navigate(`/dashboard/path/${selectedPathId}`); }}
+        />
+      </>
+    ) : (
+      <>
+        <ActionCard
+          color="blue"
+          icon={<IconPencil />}
+          title="Edit Path"
+          desc="Modify steps, metadata, or structure"
+          onClick={() => setPathActionStep(4)}
+        />
+        <ActionCard
+          color="red"
+          icon={<IconTrash />}
+          title="Delete Path"
+          desc="Permanently remove this path"
+          onClick={() => setPathActionStep(2)}
+        />
+        <ActionCard
+          color="purple"
+          icon={<IconPencil />}
+          title="Review Path"
+          desc="Open the complete path page"
+          onClick={() => { localStorage.setItem("selectedPathId", selectedPathId); navigate(`/dashboard/path/${selectedPathId}`); }}
+        />
+        <ActionCard
+          color="teal"
+          icon={<IconShop />}
+          title="Marketplace"
+          desc="Attach services to steps"
+          onClick={() => setEditPaths("marketplace_steps")}
+        />
+      </>
+    )}
+  </div>
+)}
 
               {/* ── STEP 2: DELETE / REACTIVATE CONFIRM ── */}
               {pathActionStep === 2 && (
@@ -1847,40 +1846,70 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                             );
                           })}
 
-                          {/* Reply input */}
-                          <div className="vcr-reply-box">
-                            <textarea
-                              className="vcr-reply-input"
-                              rows={1}
-                              placeholder="Reply to partner…"
-                              value={adminReplyTexts[cr._id] || ""}
-                              onChange={(e) => {
-                                setAdminReplyTexts(prev => ({ ...prev, [cr._id]: e.target.value }));
-                                e.target.style.height = "auto";
-                                e.target.style.height = Math.min(e.target.scrollHeight, 90) + "px";
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" && !e.shiftKey) {
-                                  e.preventDefault();
-                                  sendAdminReply(pendingPopup?.pathId, cr._id);
-                                }
-                              }}
-                            />
-                            <button
-                              className={`vcr-send-btn ${adminReplyTexts[cr._id]?.trim() ? "active" : ""}`}
-                              disabled={!adminReplyTexts[cr._id]?.trim() || adminReplyLoading[cr._id]}
-                              onClick={() => sendAdminReply(pendingPopup?.pathId, cr._id)}
-                            >
-                              {adminReplyLoading[cr._id] ? (
-                                <span className="vcr-send-spinner" />
-                              ) : (
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                                  <path d="M2 21l21-9L2 3v7l15 2-15 2v7z" />
-                                </svg>
-                              )}
-                            </button>
-                          
-                          </div>
+                       {/* Reply input */}
+<div className="vcr-reply-box">
+  <textarea
+    className="vcr-reply-input"
+    rows={1}
+    placeholder="Reply to partner…"
+    value={adminReplyTexts[cr._id] || ""}
+    onChange={(e) => {
+      setAdminReplyTexts(prev => ({ ...prev, [cr._id]: e.target.value }));
+      e.target.style.height = "auto";
+      e.target.style.height = Math.min(e.target.scrollHeight, 90) + "px";
+    }}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendAdminReply(pendingPopup?.pathId, cr._id);
+      }
+    }}
+  />
+  <button
+    className={`vcr-send-btn ${adminReplyTexts[cr._id]?.trim() ? "active" : ""}`}
+    disabled={!adminReplyTexts[cr._id]?.trim() || adminReplyLoading[cr._id]}
+    onClick={() => sendAdminReply(pendingPopup?.pathId, cr._id)}
+  >
+    {adminReplyLoading[cr._id] ? (
+      <span className="vcr-send-spinner" />
+    ) : (
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z" />
+      </svg>
+    )}
+  </button>
+</div>
+
+{/* ── MARK AS ADDRESSED BUTTON ── */}
+{cr.status !== "addressed" && (
+  <button
+    onClick={async () => {
+      try {
+        setActionLoading(true);
+        await axios.patch(
+          `${BASE_URL}/api/paths/address/${pendingPopup?.pathId}/${cr._id}`
+        );
+        // Refresh the change requests
+        const { data } = await axios.get(
+          `${BASE_URL}/api/paths/viewpath/${pendingPopup?.pathId}`
+        );
+        if (data?.status) {
+          setPathChangeRequests(prev => ({
+            ...prev,
+            [pendingPopup?.pathId]: data.data?.changeRequests || [],
+          }));
+        }
+        setActionLoading(false);
+      } catch (err) {
+        console.error("Address error:", err);
+        setActionLoading(false);
+      }
+    }}
+    className="vcr-address-btn"
+  >
+    ✓ Mark as Addressed
+  </button>
+)}
                         </div>
                       </div>
                     );

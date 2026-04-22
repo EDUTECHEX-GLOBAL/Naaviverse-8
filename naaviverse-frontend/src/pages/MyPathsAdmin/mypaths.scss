@@ -2999,3 +2999,29 @@ body.admin-popup-open {
 .vcr-thread-time {
   font-size: 0.65rem !important;
 }
+
+// ─── MARK AS ADDRESSED BUTTON ────────────────────────────────────
+.vcr-address-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px 0;
+  border-radius: 50px;
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: all 0.14s ease;
+  outline: none;
+
+  &:hover {
+    background: #a7f3d0;
+    border-color: #34d399;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}  
