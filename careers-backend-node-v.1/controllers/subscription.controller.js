@@ -303,30 +303,47 @@ const getAllSubscriptions = async (req, res) => {
   try {
     const { status, billingMethod, tier, planTier, page = 1, limit = 20 } = req.query;
     const filter = {};
-    if (status) filter.status = status;
-    if (billingMethod) filter.billingMethod = billingMethod;
-    if (tier) filter.tier = tier;
-    if (planTier) filter.planTier = planTier;
+    if (status)        filter.status        = status;
+    if (billingMethod) filter.billingMethod  = billingMethod;
+    if (tier)          filter.tier           = tier;
+    if (planTier)      filter.planTier       = planTier;
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
+
     const [subscriptions, total] = await Promise.all([
       Subscription.find(filter).sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit)),
       Subscription.countDocuments(filter),
     ]);
+
+    // ── Enrich each subscription with payment amount ──────────
+    const enriched = await Promise.all(
+      subscriptions.map(async (sub) => {
+        const payment = await Payment.findOne({
+          userEmail: sub.userEmail,
+          productId: sub.productId,
+          status: "paid",
+        }).sort({ createdAt: -1 });
+
+        return {
+          ...sub.toObject(),
+          amount: payment?.amount || 0,
+          currency: payment?.currency || "INR",
+        };
+      })
+    );
 
     return res.json({
       success: true,
       total,
       page: parseInt(page),
       totalPages: Math.ceil(total / parseInt(limit)),
-      subscriptions,
+      subscriptions: enriched,
     });
   } catch (err) {
     console.error("❌ getAllSubscriptions error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 };
-
 /* =================================================================
    7. CHECK STEP UNLOCKS
 ================================================================= */

@@ -2030,7 +2030,7 @@ useEffect(() => {
   </>
              ) : accsideNav === "Home" ? (
   <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
-    <PartnerHome />
+     <PartnerHome setispopular={setispopular} />
   </div>
               ) : accsideNav === "Marketplace" ? (
                 <>
@@ -2216,7 +2216,7 @@ useEffect(() => {
                   <div>
                     {/* <div className="acc-step-text">New</div> */}
                     <div>
-                      <div
+                      {/* <div
                         className="acc-step-box"
                         onClick={() => {
                           setselectNew("Service");
@@ -2229,7 +2229,7 @@ useEffect(() => {
                         }}
                       >
                         Service
-                      </div>
+                      </div> */}
 
                       <div
                         className="acc-step-box"

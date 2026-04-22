@@ -80,7 +80,7 @@ const Skeleton = ({ width="100%", height=16, radius=6, style={} }) => (
   <div style={{ width, height, borderRadius:radius, background:"linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%)", backgroundSize:"200% 100%", animation:"ph-shimmer 1.4s infinite", ...style }} />
 );
 
-export default function PartnerHome() {
+export default function PartnerHome({ setispopular }) {
   const [view,             setView]            = useState("home");
   const [selectedPath,     setSelectedPath]    = useState(null);
   const [selectedItem,     setSelectedItem]    = useState(null);
@@ -528,10 +528,12 @@ export default function PartnerHome() {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2"/></svg>
             {new Date().toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}
           </div>
-          <button className="ph-add-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
-            Add New
-          </button>
+          <button className="ph-add-btn" onClick={() => setispopular && setispopular(true)}>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+    <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+  </svg>
+  Add New
+</button>
         </div>
       </div>
 

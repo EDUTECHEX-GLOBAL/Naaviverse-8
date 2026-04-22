@@ -56,13 +56,6 @@ const ClockIcon = ({ size = 16, color = "white" }) => (
   </svg>
 );
 
-const ActivityIcon = ({ size = 11, color = "currentColor" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" />
-    <polyline points="12 6 12 12 16 14" />
-  </svg>
-);
-
 const MapIcon = ({ size = 15 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
@@ -96,6 +89,14 @@ const ShopIcon = ({ size = 15 }) => (
 const HandshakeIcon = ({ size = 15 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20.42 4.58a5.4 5.4 0 00-7.65 0l-.77.78-.77-.78a5.4 5.4 0 00-7.65 7.65l1.06 1.06L12 21.23l7.36-7.94 1.06-1.06a5.4 5.4 0 000-7.65z" />
+  </svg>
+);
+
+/* Arrow icon for the activity trigger button */
+const ArrowIcon = ({ size = 13 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <polyline points="12 5 19 12 12 19" />
   </svg>
 );
 
@@ -181,7 +182,6 @@ const ActivityPopup = ({ item, type, onClose }) => {
     <>
       <div className="apop-backdrop" onClick={onClose} />
       <div className="apop-box">
-        {/* Gradient header */}
         <div className="apop-header">
           <div className="apop-header-icon-wrap">
             <ClockIcon size={18} color="white" />
@@ -193,7 +193,6 @@ const ActivityPopup = ({ item, type, onClose }) => {
           <button className="apop-close" onClick={onClose}>✕</button>
         </div>
 
-        {/* Sections body */}
         <div className="apop-body">
           {loading ? (
             <div className="apop-loading">
@@ -202,15 +201,15 @@ const ActivityPopup = ({ item, type, onClose }) => {
           ) : activity ? (
             type === "user" ? (
               <>
-                <Section title="Selected Paths"        icon={<MapIcon />}   items={activity.paths}         chipCls="chip-blue"   />
-                <Section title="Subscriptions"         icon={<StarIcon />}  items={activity.subscriptions} chipCls="chip-purple" />
+                <Section title="Selected Paths"       icon={<MapIcon />}   items={activity.paths}         chipCls="chip-blue"   />
+                <Section title="Subscriptions"        icon={<StarIcon />}  items={activity.subscriptions} chipCls="chip-purple" />
                 <Section title="Marketplace Purchase" icon={<GlobeIcon />} items={activity.explored}      chipCls="chip-teal"   />
               </>
             ) : (
               <>
-                <Section title="Paths Added"           icon={<MapIcon />}       items={activity.pathsAdded}  chipCls="chip-blue"   />
-                <Section title="Marketplace Listings"  icon={<ShopIcon />}      items={activity.listings}    chipCls="chip-purple" />
-                <Section title="Active Deals"          icon={<HandshakeIcon />} items={activity.activeDeals} chipCls="chip-teal"   />
+                <Section title="Paths Added"          icon={<MapIcon />}       items={activity.pathsAdded}  chipCls="chip-blue"   />
+                <Section title="Marketplace Listings" icon={<ShopIcon />}      items={activity.listings}    chipCls="chip-purple" />
+                <Section title="Active Deals"         icon={<HandshakeIcon />} items={activity.activeDeals} chipCls="chip-teal"   />
               </>
             )
           ) : null}
@@ -304,27 +303,27 @@ const AdminCRM = () => {
       {/* Table */}
       <div className="acrm-table-wrap">
 
-        {/* Users thead */}
+        {/* Users thead — classes only, no inline widths */}
         {tab === "Users" && (
-          <div className="acrm-thead">
-            <div style={{ width: "22%" }}>Name</div>
-            <div style={{ width: "28%" }}>Email</div>
-            <div style={{ width: "13%" }}>Country</div>
-            <div style={{ width: "17%" }}>Phone</div>
-            <div style={{ width: "12%" }}>Profile Level</div>
-            <div style={{ width: "8%", textAlign: "right", paddingRight: "6px" }}>Activity</div>
+          <div className="acrm-thead acrm-thead--users">
+            <div className="col-name">Name</div>
+            <div className="col-email">Email</div>
+            <div className="col-country">Country</div>
+            <div className="col-phone">Phone</div>
+            <div className="col-level">Profile Level</div>
+            <div className="col-activity">Activity</div>
           </div>
         )}
 
-        {/* Partners thead */}
+        {/* Partners thead — classes only, no inline widths */}
         {tab === "Partners" && (
-          <div className="acrm-thead">
-            <div style={{ width: "24%" }}>Business</div>
-            <div style={{ width: "24%" }}>Email</div>
-            <div style={{ width: "12%" }}>Country</div>
-            <div style={{ width: "16%" }}>Partner Type</div>
-            <div style={{ width: "16%" }}>POC</div>
-            <div style={{ width: "8%", textAlign: "right", paddingRight: "6px" }}>Activity</div>
+          <div className="acrm-thead acrm-thead--partners">
+            <div className="col-business">Business</div>
+            <div className="col-email">Email</div>
+            <div className="col-country">Country</div>
+            <div className="col-partner-type">Partner Type</div>
+            <div className="col-poc">POC</div>
+            <div className="col-activity">Activity</div>
           </div>
         )}
 
@@ -338,27 +337,23 @@ const AdminCRM = () => {
               : filteredUsers.length === 0
                 ? <div className="acrm-empty">No users found</div>
                 : filteredUsers.map((u, i) => (
-                  <div className="acrm-row" key={i}>
-                    <div className="cell-name" style={{ width: "22%" }}>
-                      <div
-                        className="row-av"
-                        style={{ background: USER_GRADIENTS[i % USER_GRADIENTS.length] }}
-                      >
+                  <div className="acrm-row acrm-row--users" key={i}>
+                    <div className="col-name cell-name">
+                      <div className="row-av" style={{ background: USER_GRADIENTS[i % USER_GRADIENTS.length] }}>
                         {initial(u.name)}
                       </div>
                       <span className="row-nm">{u.name || "—"}</span>
                     </div>
-                    <div className="cell-mono" style={{ width: "28%" }}>{u.email}</div>
-                    <div style={{ width: "13%", fontSize: "12.5px", color: "#475569" }}>{u.country || "—"}</div>
-                    <div style={{ width: "17%", fontSize: "12.5px", color: "#475569" }}>{u.phoneNumber || "—"}</div>
-                    <div style={{ width: "12%" }}>
+                    <div className="col-email cell-mono">{u.email}</div>
+                    <div className="col-country cell-txt">{u.country || "—"}</div>
+                    <div className="col-phone cell-txt">{u.phoneNumber || "—"}</div>
+                    <div className="col-level">
                       <span className={`lvl-badge ${lvlCls(u.user_level)}`}>{lvlLabel(u.user_level)}</span>
                     </div>
-                    <div style={{ width: "8%", textAlign: "right", paddingRight: "6px" }}>
-                      <button className="act-btn" onClick={() => openPopup(u, "user")}>
-                        <ActivityIcon size={11} />
-                        Activity
-                      </button>
+                    <div className="col-activity">
+                   <button className="act-btn" title="View Activity" onClick={() => openPopup(u, "user")}>
+  View <ArrowIcon size={12} />
+</button>
                     </div>
                   </div>
                 ))
@@ -371,30 +366,29 @@ const AdminCRM = () => {
               : filteredPartners.length === 0
                 ? <div className="acrm-empty">No partners found</div>
                 : filteredPartners.map((p, i) => (
-                  <div className="acrm-row" key={i}>
-                    <div className="cell-name" style={{ width: "24%" }}>
+                  <div className="acrm-row acrm-row--partners" key={i}>
+                    <div className="col-business cell-name">
                       {p.logo
                         ? <img src={p.logo} alt="" className="row-logo" />
                         : <div className="row-av partner-av">{initial(p.businessName)}</div>
                       }
                       <span className="row-nm">{p.businessName || "—"}</span>
                     </div>
-                    <div className="cell-mono" style={{ width: "24%" }}>{p.email}</div>
-                    <div style={{ width: "12%", fontSize: "12.5px", color: "#475569" }}>{p.country || "—"}</div>
-                    <div style={{ width: "16%" }}>
+                    <div className="col-email cell-mono">{p.email}</div>
+                    <div className="col-country cell-txt">{p.country || "—"}</div>
+                    <div className="col-partner-type">
                       {p.partnerType
                         ? <span className={`type-tag ${getTypeColor(p.partnerType)}`}>{getTypeLabel(p.partnerType)}</span>
-                        : <span style={{ color: "#94a3b8" }}>—</span>
+                        : <span className="cell-txt">—</span>
                       }
                     </div>
-                    <div style={{ width: "16%", fontSize: "12.5px", color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <div className="col-poc cell-txt">
                       {`${p.firstName || ""} ${p.lastName || ""}`.trim() || "—"}
                     </div>
-                    <div style={{ width: "8%", textAlign: "right", paddingRight: "6px" }}>
-                      <button className="act-btn" onClick={() => openPopup(p, "partner")}>
-                        <ActivityIcon size={11} />
-                        Activity
-                      </button>
+                    <div className="col-activity">
+                      <button className="act-btn" title="View Activity" onClick={() => openPopup(p, "partner")}>
+  View <ArrowIcon size={12} />
+</button>
                     </div>
                   </div>
                 ))

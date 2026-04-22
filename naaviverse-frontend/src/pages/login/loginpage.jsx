@@ -136,7 +136,7 @@ const Loginpage = () => {
                         console.warn("Could not fetch profile at login:", e?.message);
                     }
                 }
-                navigate("/dashboard/users/profile");
+                navigate("/dashboard/users/home");
 
 
             } else {
@@ -192,13 +192,13 @@ const Loginpage = () => {
                 console.log("✅ Partner saved to localStorage with approvalStatus:", approvalStatus);
 
 
-                if (profileData?.businessName) {
-                    // Has a complete profile — go to dashboard
-                    navigate("/dashboard/accountants");
-                } else {
-                    // No profile yet — force profile creation
-                    navigate("/dashboard/accountants/profile");
-                }
+               if (profileData?.businessName) {
+    // Has a complete profile — go to home
+    navigate("/dashboard/accountants/home");
+} else {
+    // No profile yet — force profile creation
+    navigate("/dashboard/accountants/profile");
+}
             }
 
             getProfilePic(emailToStore, loginType);

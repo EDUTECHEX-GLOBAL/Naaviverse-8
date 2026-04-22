@@ -156,6 +156,9 @@
   border-bottom: 1px solid var(--border);
   text-transform: uppercase;
   letter-spacing: 0.6px;
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
 }
 
 /* ───────── BODY ───────── */
@@ -178,26 +181,64 @@
   border-bottom: 1px solid #f1f5f9;
   transition: background .15s;
   cursor: default;
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
 
   &:hover {
     background: linear-gradient(to right, #fafbff, #f8faff);
 
-    .act-btn {
+    .act-icon-btn {
       border-color: var(--acc);
       background: var(--acc-bg);
       color: var(--acc-dark);
+      box-shadow: 0 2px 8px rgba(99,102,241,.2);
     }
   }
 
   &:last-child { border-bottom: none; }
 }
 
-.acrm-row > div {
+/* ───────── ALL CELLS — shared base ───────── */
+.acrm-row > div,
+.acrm-thead > div {
+  box-sizing: border-box;
   padding: 0 6px;
-  font-size: 12.5px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  flex-shrink: 0;
+  font-size: 12.5px;
+}
+
+/* ================================================================
+   COLUMN WIDTHS — USERS
+   NAME(22) EMAIL(25) COUNTRY(11) PHONE(15) LEVEL(15) ACTIVITY(12)
+   = 100%
+================================================================ */
+.acrm-thead--users,
+.acrm-row--users {
+  .col-name     { flex: 0 0 22%; }
+  .col-email    { flex: 0 0 25%; }
+  .col-country  { flex: 0 0 11%; }
+  .col-phone    { flex: 0 0 15%; }
+  .col-level    { flex: 0 0 15%; }
+  .col-activity { flex: 0 0 12%; display: flex; align-items: center; }
+}
+
+/* ================================================================
+   COLUMN WIDTHS — PARTNERS
+   BUSINESS(22) EMAIL(23) COUNTRY(10) TYPE(14) POC(19) ACTIVITY(12)
+   = 100%
+================================================================ */
+.acrm-thead--partners,
+.acrm-row--partners {
+  .col-business      { flex: 0 0 22%; }
+  .col-email         { flex: 0 0 23%; }
+  .col-country       { flex: 0 0 10%; }
+  .col-partner-type  { flex: 0 0 14%; }
+  .col-poc           { flex: 0 0 19%; }
+  .col-activity      { flex: 0 0 12%; display: flex; align-items: center; }
 }
 
 /* ───────── AVATAR ───────── */
@@ -228,6 +269,7 @@
   border-radius: 8px;
   object-fit: cover;
   border: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 /* ───────── NAME CELL ───────── */
@@ -235,13 +277,23 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  overflow: hidden;
 
   .row-nm {
     font-size: 13px;
     font-weight: 600;
     color: var(--txt);
     letter-spacing: -0.1px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
+}
+
+/* ───────── PLAIN TEXT CELL ───────── */
+.cell-txt {
+  font-size: 12.5px;
+  color: var(--txt2);
 }
 
 /* ───────── EMAIL ───────── */
@@ -296,33 +348,30 @@
 .type-orange { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
 .type-purple { background: #faf5ff; color: #6d28d9; border: 1px solid #ddd6fe; }
 
-/* ───────── ACTIVITY BUTTON ───────── */
-.act-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  font-family: 'DM Sans', sans-serif;
-  border-radius: 7px;
+/* ───────── ACTIVITY ICON BUTTON ───────── */
+.act-icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   border: 1.5px solid var(--border);
   background: var(--white);
-  color: var(--txt2);
+  color: var(--txt3);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
   transition: all .18s ease;
-  white-space: nowrap;
 
-  svg {
-    flex-shrink: 0;
-  }
+  svg { flex-shrink: 0; }
 
   &:hover {
     border-color: var(--acc);
     background: var(--acc-bg);
     color: var(--acc-dark);
-    box-shadow: 0 2px 8px rgba(99,102,241,.15);
-    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(99,102,241,.2);
+    transform: translateX(2px);
   }
 }
 
@@ -362,7 +411,6 @@
   }
 }
 
-/* POPUP BOX */
 .apop-box {
   position: fixed;
   top: 50%;
@@ -389,7 +437,6 @@
   }
 }
 
-/* HEADER — gradient strip */
 .apop-header {
   display: flex;
   align-items: center;
@@ -476,7 +523,6 @@
   }
 }
 
-/* BODY */
 .apop-body {
   padding: 16px 18px;
   overflow-y: auto;
@@ -488,7 +534,6 @@
   &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 }
 
-/* SECTION */
 .apop-section {
   background: white;
   border: 1px solid #e8edf5;
@@ -506,7 +551,6 @@
   }
 }
 
-/* SECTION HEADER */
 .apop-sec-head {
   display: flex;
   align-items: center;
@@ -549,14 +593,12 @@
   }
 }
 
-/* CHIPS ROW */
 .apop-chips-row {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
 }
 
-/* BASE CHIP */
 .apop-chip {
   padding: 4px 10px;
   font-size: 11.5px;
@@ -574,7 +616,6 @@
 .chip-purple { background: #faf5ff; color: #6d28d9; border-color: #ddd6fe; font-weight: 600; }
 .chip-teal   { background: #f0fdfa; color: #0f766e; border-color: #99f6e4; font-weight: 600; }
 
-/* EMPTY TEXT */
 .apop-none {
   font-size: 12px;
   color: #94a3b8;
@@ -591,7 +632,33 @@
   }
 }
 
-/* ───────── LOADING ───────── */
 .apop-loading {
   padding: 6px 0;
+}
+
+.act-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  color: var(--txt2);
+  cursor: pointer;
+  transition: all .18s ease;
+  white-space: nowrap;
+
+  svg { flex-shrink: 0; }
+
+  &:hover {
+    border-color: var(--acc);
+    background: var(--acc-bg);
+    color: var(--acc-dark);
+    box-shadow: 0 2px 8px rgba(99,102,241,.15);
+    transform: translateX(2px);
+  }
 }

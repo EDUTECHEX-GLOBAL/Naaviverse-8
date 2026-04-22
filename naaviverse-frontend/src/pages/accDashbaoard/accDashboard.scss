@@ -573,7 +573,7 @@ $pastel-mint: rgba(220, 240, 230, 0.3);
   animation: modalPopIn 0.3s ease forwards;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.5) !important;
-  overflow-y: auto;
+  overflow-y: hidden;
 
   &::before {
     content: '';
@@ -868,15 +868,6 @@ $pastel-mint: rgba(220, 240, 230, 0.3);
   background: #f5f5f5;
   transition: all 0.2s ease;
   cursor: pointer;
-
-  &:hover {
-    background: linear-gradient(135deg, #29449d, #47b4d5);
-    transform: rotate(90deg);
-
-    img {
-      filter: brightness(0) invert(1);
-    }
-  }
 
   img {
     width: 20px;
