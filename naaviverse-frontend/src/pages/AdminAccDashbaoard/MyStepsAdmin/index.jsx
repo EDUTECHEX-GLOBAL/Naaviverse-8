@@ -537,67 +537,42 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
 
             <div className="sm-body">
               {/* MAIN - Keep same content structure but with admin classes where needed */}
-              {modalScreen === "main" && (
-                <div className="sm-option-list">
-                  <div className="sm-option" onClick={() => goTo("editStep")}>
-                    <div className="sm-option-icon" style={{ background: "#eff6ff" }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                        <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z" />
-                      </svg>
-                    </div>
-                    <div className="sm-option-content">
-                      <strong>Edit Step</strong>
-                      <span>Update name, description, cost and length</span>
-                    </div>
-                    <IconChevron />
-                  </div>
+             {modalScreen === "main" && (
+  <div className="sm-option-list">
 
-                  <div className="sm-option" onClick={() => goTo("viewStep")}>
-                    <div className="sm-option-icon" style={{ background: "#f5f3ff" }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
-                    </div>
-                    <div className="sm-option-content">
-                      <strong>View Step</strong>
-                      <span>See Macro, Micro and Nano layer details</span>
-                    </div>
-                    <IconChevron />
-                  </div>
+    <div className="sm-option" onClick={() => goTo("viewStep")}>
+      <div className="sm-option-icon" style={{ background: "#f5f3ff" }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+      </div>
+      <div className="sm-option-content">
+        <strong>View Step</strong>
+        <span>See Macro, Micro and Nano layer details</span>
+      </div>
+      <IconChevron />
+    </div>
 
-                  <div className="sm-option" onClick={() => goTo("marketplace_layer")}>
-                    <div className="sm-option-icon" style={{ background: "#f0fdfa" }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#14b8a6" strokeWidth="2">
-                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                        <line x1="3" y1="6" x2="21" y2="6" />
-                        <path d="M16 10a4 4 0 0 1-8 0" />
-                      </svg>
-                    </div>
-                    <div className="sm-option-content">
-                      <strong>Marketplace</strong>
-                      <span>Add or manage marketplace listings by layer</span>
-                    </div>
-                    <IconChevron />
-                  </div>
+    <div className="sm-option sm-option--danger" onClick={() => goTo("deleteConfirm")}>
+      <div className="sm-option-icon" style={{ background: "#fef2f2" }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
+          <polyline points="3 6 5 6 21 6" />
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0h10" />
+          <line x1="10" y1="11" x2="10" y2="17" />
+          <line x1="14" y1="11" x2="14" y2="17" />
+        </svg>
+      </div>
+      <div className="sm-option-content">
+        <strong>Delete Step</strong>
+        <span>Permanently remove this step</span>
+      </div>
+      <IconChevron />
+    </div>
 
-                  <div className="sm-option sm-option--danger" onClick={() => goTo("deleteConfirm")}>
-                    <div className="sm-option-icon" style={{ background: "#fef2f2" }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
-                        <polyline points="3 6 5 6 21 6" />
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0h10" />
-                        <line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" />
-                      </svg>
-                    </div>
-                    <div className="sm-option-content">
-                      <strong>Delete Step</strong>
-                      <span>Permanently remove this step</span>
-                    </div>
-                    <IconChevron />
-                  </div>
-                </div>
-              )}
+  </div>
+)}
+              
 
               {/* EDIT STEP */}
               {modalScreen === "editStep" && (
