@@ -300,101 +300,103 @@ const AdminCRM = () => {
         </div>
       </div>
 
-      {/* Table */}
+    {/* Table */}
       <div className="acrm-table-wrap">
+        <div className="acrm-scroll-inner">
 
-        {/* Users thead — classes only, no inline widths */}
-        {tab === "Users" && (
-          <div className="acrm-thead acrm-thead--users">
-            <div className="col-name">Name</div>
-            <div className="col-email">Email</div>
-            <div className="col-country">Country</div>
-            <div className="col-phone">Phone</div>
-            <div className="col-level">Profile Level</div>
-            <div className="col-activity">Activity</div>
-          </div>
-        )}
-
-        {/* Partners thead — classes only, no inline widths */}
-        {tab === "Partners" && (
-          <div className="acrm-thead acrm-thead--partners">
-            <div className="col-business">Business</div>
-            <div className="col-email">Email</div>
-            <div className="col-country">Country</div>
-            <div className="col-partner-type">Partner Type</div>
-            <div className="col-poc">POC</div>
-            <div className="col-activity">Activity</div>
-          </div>
-        )}
-
-        {/* tbody */}
-        <div className="acrm-tbody">
-
-          {/* Users rows */}
+          {/* Users */}
           {tab === "Users" && (
-            userLoading
-              ? Array(8).fill("").map((_, i) => <SkelRow key={i} />)
-              : filteredUsers.length === 0
-                ? <div className="acrm-empty">No users found</div>
-                : filteredUsers.map((u, i) => (
-                  <div className="acrm-row acrm-row--users" key={i}>
-                    <div className="col-name cell-name">
-                      <div className="row-av" style={{ background: USER_GRADIENTS[i % USER_GRADIENTS.length] }}>
-                        {initial(u.name)}
+            <>
+              <div className="acrm-thead acrm-thead--users">
+                <div className="col-name">Name</div>
+                <div className="col-email">Email</div>
+                <div className="col-country">Country</div>
+                <div className="col-phone">Phone</div>
+                <div className="col-level">Profile Level</div>
+                <div className="col-activity">Activity</div>
+              </div>
+
+              <div className="acrm-tbody">
+                {userLoading
+                  ? Array(8).fill("").map((_, i) => <SkelRow key={i} />)
+                  : filteredUsers.length === 0
+                    ? <div className="acrm-empty">No users found</div>
+                    : filteredUsers.map((u, i) => (
+                      <div className="acrm-row acrm-row--users" key={i}>
+                        <div className="col-name cell-name">
+                          <div className="row-av" style={{ background: USER_GRADIENTS[i % USER_GRADIENTS.length] }}>
+                            {initial(u.name)}
+                          </div>
+                          <span className="row-nm">{u.name || "—"}</span>
+                        </div>
+                        <div className="col-email cell-mono">{u.email}</div>
+                        <div className="col-country cell-txt">{u.country || "—"}</div>
+                        <div className="col-phone cell-txt">{u.phoneNumber || "—"}</div>
+                        <div className="col-level">
+                          <span className={`lvl-badge ${lvlCls(u.user_level)}`}>{lvlLabel(u.user_level)}</span>
+                        </div>
+                        <div className="col-activity">
+                          <button className="act-btn" title="View Activity" onClick={() => openPopup(u, "user")}>
+                            View <ArrowIcon size={12} />
+                          </button>
+                        </div>
                       </div>
-                      <span className="row-nm">{u.name || "—"}</span>
-                    </div>
-                    <div className="col-email cell-mono">{u.email}</div>
-                    <div className="col-country cell-txt">{u.country || "—"}</div>
-                    <div className="col-phone cell-txt">{u.phoneNumber || "—"}</div>
-                    <div className="col-level">
-                      <span className={`lvl-badge ${lvlCls(u.user_level)}`}>{lvlLabel(u.user_level)}</span>
-                    </div>
-                    <div className="col-activity">
-                   <button className="act-btn" title="View Activity" onClick={() => openPopup(u, "user")}>
-  View <ArrowIcon size={12} />
-</button>
-                    </div>
-                  </div>
-                ))
+                    ))
+                }
+              </div>
+            </>
           )}
 
-          {/* Partners rows */}
+          {/* Partners */}
           {tab === "Partners" && (
-            partnerLoading
-              ? Array(6).fill("").map((_, i) => <SkelRow key={i} />)
-              : filteredPartners.length === 0
-                ? <div className="acrm-empty">No partners found</div>
-                : filteredPartners.map((p, i) => (
-                  <div className="acrm-row acrm-row--partners" key={i}>
-                    <div className="col-business cell-name">
-                      {p.logo
-                        ? <img src={p.logo} alt="" className="row-logo" />
-                        : <div className="row-av partner-av">{initial(p.businessName)}</div>
-                      }
-                      <span className="row-nm">{p.businessName || "—"}</span>
-                    </div>
-                    <div className="col-email cell-mono">{p.email}</div>
-                    <div className="col-country cell-txt">{p.country || "—"}</div>
-                    <div className="col-partner-type">
-                      {p.partnerType
-                        ? <span className={`type-tag ${getTypeColor(p.partnerType)}`}>{getTypeLabel(p.partnerType)}</span>
-                        : <span className="cell-txt">—</span>
-                      }
-                    </div>
-                    <div className="col-poc cell-txt">
-                      {`${p.firstName || ""} ${p.lastName || ""}`.trim() || "—"}
-                    </div>
-                    <div className="col-activity">
-                      <button className="act-btn" title="View Activity" onClick={() => openPopup(p, "partner")}>
-  View <ArrowIcon size={12} />
-</button>
-                    </div>
-                  </div>
-                ))
+            <>
+              <div className="acrm-thead acrm-thead--partners">
+                <div className="col-business">Business</div>
+                <div className="col-email">Email</div>
+                <div className="col-country">Country</div>
+                <div className="col-partner-type">Partner Type</div>
+                <div className="col-poc">POC</div>
+                <div className="col-activity">Activity</div>
+              </div>
+
+              <div className="acrm-tbody">
+                {partnerLoading
+                  ? Array(6).fill("").map((_, i) => <SkelRow key={i} />)
+                  : filteredPartners.length === 0
+                    ? <div className="acrm-empty">No partners found</div>
+                    : filteredPartners.map((p, i) => (
+                      <div className="acrm-row acrm-row--partners" key={i}>
+                        <div className="col-business cell-name">
+                          {p.logo
+                            ? <img src={p.logo} alt="" className="row-logo" />
+                            : <div className="row-av partner-av">{initial(p.businessName)}</div>
+                          }
+                          <span className="row-nm">{p.businessName || "—"}</span>
+                        </div>
+                        <div className="col-email cell-mono">{p.email}</div>
+                        <div className="col-country cell-txt">{p.country || "—"}</div>
+                        <div className="col-partner-type">
+                          {p.partnerType
+                            ? <span className={`type-tag ${getTypeColor(p.partnerType)}`}>{getTypeLabel(p.partnerType)}</span>
+                            : <span className="cell-txt">—</span>
+                          }
+                        </div>
+                        <div className="col-poc cell-txt">
+                          {`${p.firstName || ""} ${p.lastName || ""}`.trim() || "—"}
+                        </div>
+                        <div className="col-activity">
+                          <button className="act-btn" title="View Activity" onClick={() => openPopup(p, "partner")}>
+                            View <ArrowIcon size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                }
+              </div>
+            </>
           )}
 
-        </div>
+        </div>{/* end acrm-scroll-inner */}
       </div>
 
       {/* Popup */}

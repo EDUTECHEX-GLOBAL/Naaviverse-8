@@ -662,3 +662,105 @@
     transform: translateX(2px);
   }
 }
+/* ================================================================
+   REPLACE the entire @media (max-width: 768px) block in Admincrm.scss
+================================================================ */
+
+@media (max-width: 768px) {
+
+  .acrm-root {
+    height: auto;
+    min-height: calc(100vh - 56px);
+    overflow: visible;
+  }
+
+  /* ── Topbar: stack tabs + search vertically ── */
+  .acrm-topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 10px 14px;
+  }
+
+  .acrm-tabs {
+    width: 100%;
+    button { flex: 1; text-align: center; }
+  }
+
+  .acrm-search {
+    width: 100%;
+    min-width: unset;
+    box-sizing: border-box;
+  }
+
+  /* ── Table outer box ── */
+  .acrm-table-wrap {
+    margin: 10px 12px;
+    overflow: hidden;        /* keeps border-radius clean */
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 200px);
+  }
+
+  /* ── Single scroll container — thead + tbody move together ── */
+  .acrm-scroll-inner {
+    overflow-x: auto;        /* horizontal scroll */
+    overflow-y: auto;        /* vertical scroll   */
+    -webkit-overflow-scrolling: touch;
+    flex: 1;
+
+    &::-webkit-scrollbar { width: 4px; height: 4px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  }
+
+  /* ── tbody must NOT have its own scroll — parent handles it ── */
+  .acrm-tbody {
+    overflow: visible !important;
+    max-height: none !important;
+    flex: unset;
+  }
+
+  /* ── Fixed px widths so columns never squish ── */
+  .acrm-thead,
+  .acrm-row {
+    min-width: 660px;
+  }
+
+  .acrm-thead--users,
+  .acrm-row--users {
+    .col-name     { flex: 0 0 140px; }
+    .col-email    { flex: 0 0 175px; }
+    .col-country  { flex: 0 0 80px;  }
+    .col-phone    { flex: 0 0 115px; }
+    .col-level    { flex: 0 0 90px;  }
+    .col-activity { flex: 0 0 60px;  }
+  }
+
+  .acrm-thead--partners,
+  .acrm-row--partners {
+    .col-business     { flex: 0 0 140px; }
+    .col-email        { flex: 0 0 165px; }
+    .col-country      { flex: 0 0 80px;  }
+    .col-partner-type { flex: 0 0 105px; }
+    .col-poc          { flex: 0 0 110px; }
+    .col-activity     { flex: 0 0 60px;  }
+  }
+
+  /* ── Activity popup full-width ── */
+  .apop-box {
+    width: calc(100vw - 24px);
+    max-height: 85vh;
+    border-radius: 16px;
+  }
+
+  .apop-header {
+    padding: 12px 14px;
+    .apop-header-text h3 { font-size: 14px; }
+    .apop-header-text p  { font-size: 11px; }
+  }
+
+  .apop-body {
+    padding: 12px 14px;
+  }
+}

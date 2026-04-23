@@ -58,8 +58,7 @@ const AVATAR_GRADIENTS = [
   ["#a78bfa","#7c3aed"],["#fb923c","#ea580c"],
   ["#38bdf8","#0284c7"],["#4ade80","#16a34a"],
 ];
-const getInitials = (name) =>
-  name.split("@")[0].slice(0, 2).toUpperCase();
+const getInitials = (name) => name.split("@")[0].slice(0, 2).toUpperCase();
 
 /* ── Icons ───────────────────────────────────────────────────────── */
 const IconSearch = () => (
@@ -78,20 +77,20 @@ const IconChevron = () => (
 /* ── Stat Card ───────────────────────────────────────────────────── */
 const StatCard = ({ label, value, accent, bg, border }) => (
   <div style={{
-    background: bg, border: `1.5px solid ${border}`,
-    borderRadius: "12px", padding: "14px 18px",
-    display: "flex", alignItems: "center", gap: "12px",
-    flex: 1, minWidth: "120px",
+    background: bg,
+    border: `1.5px solid ${border}`,
+    borderRadius: "12px",
+    padding: "12px 14px",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    flex: "1 1 calc(25% - 8px)",
+    minWidth: "70px",
     boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-    transition: "transform 0.15s, box-shadow 0.15s",
-    cursor: "default",
-  }}
-    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)"; }}
-    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; }}
-  >
+  }}>
     <div>
-      <div style={{ fontSize: "10px", color: accent, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", opacity: 0.7, marginBottom: "2px" }}>{label}</div>
-      <div style={{ fontSize: "1.3rem", fontWeight: 800, color: accent, lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: "9px", color: accent, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", opacity: 0.7, marginBottom: "2px" }}>{label}</div>
+      <div style={{ fontSize: "1.2rem", fontWeight: 800, color: accent, lineHeight: 1 }}>{value}</div>
     </div>
   </div>
 );
@@ -100,13 +99,13 @@ const StatCard = ({ label, value, accent, bg, border }) => (
    MAIN COMPONENT
 ══════════════════════════════════════════════════════════════════ */
 export default function Subscriptions() {
-  const [search, setSearch]         = useState("");
-  const [planFilter, setPlanFilter] = useState("All");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [search, setSearch]               = useState("");
+  const [planFilter, setPlanFilter]       = useState("All");
+  const [statusFilter, setStatusFilter]   = useState("All");
   const [statusDropOpen, setStatusDropOpen] = useState(false);
-  const [subscriptions, setSubscriptions]   = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState("");
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [loading, setLoading]             = useState(true);
+  const [error, setError]                 = useState("");
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -123,7 +122,6 @@ export default function Subscriptions() {
     fetchAll();
   }, []);
 
-  /* Normalize */
   const normalized = subscriptions.map((s, i) => ({
     id:      s._id || i,
     name:    s.userEmail?.split("@")[0] || "Unknown",
@@ -138,7 +136,6 @@ export default function Subscriptions() {
     _idx:    i,
   }));
 
-  /* ── FIX: case-insensitive plan filter ── */
   const filtered = normalized.filter((s) => {
     const q = search.toLowerCase();
     const matchSearch = s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q);
@@ -169,137 +166,176 @@ export default function Subscriptions() {
   return (
     <div
       style={{
-        padding: "24px 28px", minHeight: "100vh",
-        background: "#f5f7fb", fontFamily: "'DM Sans', sans-serif",
+        padding: "16px",
+        minHeight: "100vh",
+        background: "#f5f7fb",
+        fontFamily: "'DM Sans', sans-serif",
+        boxSizing: "border-box",
       }}
       onClick={() => setStatusDropOpen(false)}
     >
 
-      {/* ── Header ─────────────────────────────────────────────── */}
-      <div style={{ marginBottom: "18px" }}>
-        <h2 style={{ fontSize: "1.15rem", fontWeight: 800, color: "#0f172a", margin: 0 }}>
+      {/* ── Header ── */}
+      <div style={{ marginBottom: "14px" }}>
+        <h2 style={{ fontSize: "1.1rem", fontWeight: 800, color: "#0f172a", margin: 0 }}>
           Subscriptions
         </h2>
-        <p style={{ color: "#94a3b8", fontSize: "12px", marginTop: "3px", fontWeight: 500 }}>
+        <p style={{ color: "#94a3b8", fontSize: "11px", marginTop: "2px", fontWeight: 500 }}>
           All user plan data · {normalized.length} total
         </p>
       </div>
 
-      {/* ── Stat strip (no Revenue) ─────────────────────────────── */}
-      <div style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
-        <StatCard label="Active"    value={activeCount}        accent="#2563eb" bg="#eff6ff" border="#bfdbfe" />
-        <StatCard label="Expired"   value={expiredCount}       accent="#dc2626" bg="#fef2f2" border="#fecaca" />
-        <StatCard label="Cancelled" value={cancelCount}        accent="#64748b" bg="#f8fafc" border="#e2e8f0" />
-        <StatCard label="Total"     value={normalized.length}  accent="#7c3aed" bg="#faf5ff" border="#e9d5ff" />
+      {/* ── Stat strip — always 1 row, 4 equal cards ── */}
+      <div style={{
+        display: "flex",
+        gap: "8px",
+        marginBottom: "14px",
+        flexWrap: "nowrap",   /* force single row */
+      }}>
+        <StatCard label="Active"    value={activeCount}       accent="#2563eb" bg="#eff6ff" border="#bfdbfe" />
+        <StatCard label="Expired"   value={expiredCount}      accent="#dc2626" bg="#fef2f2" border="#fecaca" />
+        <StatCard label="Cancelled" value={cancelCount}       accent="#64748b" bg="#f8fafc" border="#e2e8f0" />
+        <StatCard label="Total"     value={normalized.length} accent="#7c3aed" bg="#faf5ff" border="#e9d5ff" />
       </div>
 
-      {/* ── Filter bar ─────────────────────────────────────────── */}
-      <div style={{
-        display: "flex", alignItems: "center",
-        gap: "10px", marginBottom: "14px", flexWrap: "wrap",
-      }}>
+      {/* ── Filter bar ── */}
+      <div style={{ marginBottom: "12px" }}>
 
-        {/* LEFT — Plan buttons */}
-        <div style={{ display: "flex", gap: "6px" }}>
+        {/* Row 1: Plan pills — single scrollable row */}
+        <div style={{
+          display: "flex",
+          gap: "6px",
+          overflowX: "auto",
+          paddingBottom: "4px",
+          marginBottom: "8px",
+          WebkitOverflowScrolling: "touch",
+          scrollbarWidth: "none",
+        }}>
           {["All", "Standard", "Pro", "Pro Plus"].map((p) => {
             const active = planFilter === p;
             const meta   = PLAN_META[p] || {};
             return (
-              <button key={p} onClick={() => setPlanFilter(p)} style={{
-                padding: "6px 14px", borderRadius: "20px",
-                fontSize: "12px", fontWeight: 600,
-                cursor: "pointer", border: "1.5px solid",
-                transition: "all 0.15s",
-                background:  active ? (meta.bg  || "#e2e8f0") : "#fff",
-                color:       active ? (meta.color || "#475569") : "#64748b",
-                borderColor: active ? (meta.border || "#e2e8f0") : "#e2e8f0",
-              }}>{p}</button>
+              <button
+                key={p}
+                onClick={() => setPlanFilter(p)}
+                style={{
+                  padding: "5px 12px",
+                  borderRadius: "20px",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  border: "1.5px solid",
+                  whiteSpace: "nowrap",   /* never wrap */
+                  flexShrink: 0,
+                  transition: "all 0.15s",
+                  background:   active ? (meta.bg     || "#e2e8f0") : "#fff",
+                  color:        active ? (meta.color  || "#475569") : "#64748b",
+                  borderColor:  active ? (meta.border || "#e2e8f0") : "#e2e8f0",
+                }}
+              >{p}</button>
             );
           })}
         </div>
 
-        <div style={{ flex: 1 }} />
+        {/* Row 2: Status dropdown + Search */}
+        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
 
-        {/* RIGHT — Status dropdown */}
-        <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
-          <button
-            onClick={() => setStatusDropOpen(o => !o)}
-            style={{
-              display: "flex", alignItems: "center", gap: "6px",
-              padding: "7px 14px", borderRadius: "9px",
-              border: "1.5px solid #e2e8f0", background: "#fff",
-              fontSize: "12px", fontWeight: 600, color: "#475569",
-              cursor: "pointer", fontFamily: "inherit",
-              minWidth: "150px", justifyContent: "space-between",
-            }}
-          >
-            {statusLabel}
-            <IconChevron />
-          </button>
-          {statusDropOpen && (
-            <div style={{
-              position: "absolute", top: "calc(100% + 4px)", right: 0,
-              background: "#fff", border: "1px solid #e2e8f0",
-              borderRadius: "10px", boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
-              zIndex: 50, minWidth: "160px", overflow: "hidden",
-            }}>
-              {[
-                { label: `All (${normalized.length})`,  value: "All" },
-                { label: `Active (${activeCount})`,     value: "Active" },
-                { label: `Expired (${expiredCount})`,   value: "Expired" },
-                { label: `Cancelled (${cancelCount})`,  value: "Cancelled" },
-              ].map((t) => (
-                <div key={t.value}
-                  onClick={() => { setStatusFilter(t.value); setStatusDropOpen(false); }}
-                  style={{
-                    padding: "9px 14px", fontSize: "12px", fontWeight: 500,
-                    cursor: "pointer", color: statusFilter === t.value ? "#2563eb" : "#475569",
-                    background: statusFilter === t.value ? "#eff6ff" : "transparent",
-                    transition: "background 0.12s",
-                  }}
-                  onMouseEnter={e => { if (statusFilter !== t.value) e.currentTarget.style.background = "#f8fafc"; }}
-                  onMouseLeave={e => { if (statusFilter !== t.value) e.currentTarget.style.background = "transparent"; }}
-                >
-                  {t.label}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+          {/* Status dropdown */}
+          <div style={{ position: "relative", flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setStatusDropOpen(o => !o)}
+              style={{
+                display: "flex", alignItems: "center", gap: "6px",
+                padding: "7px 12px", borderRadius: "9px",
+                border: "1.5px solid #e2e8f0", background: "#fff",
+                fontSize: "11px", fontWeight: 600, color: "#475569",
+                cursor: "pointer", fontFamily: "inherit",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {statusLabel} <IconChevron />
+            </button>
+            {statusDropOpen && (
+              <div style={{
+                position: "absolute", top: "calc(100% + 4px)", left: 0,
+                background: "#fff", border: "1px solid #e2e8f0",
+                borderRadius: "10px", boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
+                zIndex: 50, minWidth: "160px", overflow: "hidden",
+              }}>
+                {[
+                  { label: `All (${normalized.length})`, value: "All" },
+                  { label: `Active (${activeCount})`,    value: "Active" },
+                  { label: `Expired (${expiredCount})`,  value: "Expired" },
+                  { label: `Cancelled (${cancelCount})`, value: "Cancelled" },
+                ].map((t) => (
+                  <div key={t.value}
+                    onClick={() => { setStatusFilter(t.value); setStatusDropOpen(false); }}
+                    style={{
+                      padding: "9px 14px", fontSize: "12px", fontWeight: 500,
+                      cursor: "pointer",
+                      color:      statusFilter === t.value ? "#2563eb" : "#475569",
+                      background: statusFilter === t.value ? "#eff6ff" : "transparent",
+                    }}
+                    onMouseEnter={e => { if (statusFilter !== t.value) e.currentTarget.style.background = "#f8fafc"; }}
+                    onMouseLeave={e => { if (statusFilter !== t.value) e.currentTarget.style.background = "transparent"; }}
+                  >
+                    {t.label}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-        {/* Search */}
-        <div style={{
-          display: "flex", alignItems: "center", gap: "7px",
-          background: "#fff", border: "1.5px solid #e2e8f0",
-          padding: "6px 12px", borderRadius: "9px",
-        }}>
-          <IconSearch />
-          <input
-            type="text" placeholder="Search name or email…" value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{
-              border: "none", outline: "none", background: "transparent",
-              fontSize: "12px", color: "#1e293b", width: "170px", fontFamily: "inherit",
-            }}
-          />
+          {/* Search — takes remaining space */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: "7px",
+            background: "#fff", border: "1.5px solid #e2e8f0",
+            padding: "6px 10px", borderRadius: "9px", flex: 1,
+            minWidth: 0,
+          }}>
+            <IconSearch />
+            <input
+              type="text"
+              placeholder="Search…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{
+                border: "none", outline: "none", background: "transparent",
+                fontSize: "12px", color: "#1e293b", width: "100%",
+                fontFamily: "inherit",
+              }}
+            />
+          </div>
         </div>
       </div>
 
-      {/* ── Table ──────────────────────────────────────────────── */}
+      {/* ── Table — horizontal scroll wrapper ── */}
       <div style={{
-        background: "#fff", borderRadius: "14px",
-        border: "1px solid #e2e8f0", overflow: "hidden",
+        background: "#fff",
+        borderRadius: "14px",
+        border: "1px solid #e2e8f0",
         boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+        overflowX: "auto",              /* horizontal scroll on mobile */
+        WebkitOverflowScrolling: "touch",
+        /* thin scrollbar */
+        scrollbarWidth: "thin",
+        scrollbarColor: "#cbd5e1 transparent",
       }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+        <table style={{
+          width: "100%",
+          minWidth: "680px",            /* forces scroll before squish */
+          borderCollapse: "collapse",
+          fontSize: "13px",
+        }}>
           <thead>
             <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
               {["User", "Plan", "Layer", "Amount", "Billing", "Date", "Status"].map(h => (
                 <th key={h} style={{
-                  padding: "10px 16px", textAlign: "left",
-                  fontSize: "10.5px", fontWeight: 700,
+                  padding: "10px 14px", textAlign: "left",
+                  fontSize: "10px", fontWeight: 700,
                   color: "#94a3b8", textTransform: "uppercase",
                   letterSpacing: "0.06em", fontFamily: "inherit",
+                  whiteSpace: "nowrap",
                 }}>{h}</th>
               ))}
             </tr>
@@ -329,43 +365,43 @@ export default function Subscriptions() {
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                 >
                   {/* User */}
-                  <td style={{ padding: "12px 16px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <div style={{
-                        width: "32px", height: "32px", borderRadius: "9px",
+                        width: "30px", height: "30px", borderRadius: "8px",
                         background: `linear-gradient(135deg, ${g1}, ${g2})`,
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: "11px", fontWeight: 700, color: "#fff", flexShrink: 0,
+                        fontSize: "10px", fontWeight: 700, color: "#fff", flexShrink: 0,
                       }}>{getInitials(s.email)}</div>
                       <div>
-                        <div style={{ fontWeight: 600, color: "#0f172a", fontSize: "13px" }}>{s.name}</div>
-                        <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "1px" }}>{s.email}</div>
+                        <div style={{ fontWeight: 600, color: "#0f172a", fontSize: "12px" }}>{s.name}</div>
+                        <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "1px" }}>{s.email}</div>
                       </div>
                     </div>
                   </td>
 
                   {/* Plan */}
-                  <td style={{ padding: "12px 16px" }}>
+                  <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
                     <span style={{
-                      padding: "3px 10px", borderRadius: "20px",
-                      fontSize: "11px", fontWeight: 600,
+                      padding: "3px 9px", borderRadius: "20px",
+                      fontSize: "10px", fontWeight: 600,
                       background: pm.bg, color: pm.color,
                       border: `1px solid ${pm.border}`,
                     }}>{s.plan}</span>
                   </td>
 
                   {/* Layer */}
-                  <td style={{ padding: "12px 16px" }}>
+                  <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
                     <span style={{
-                      fontSize: "11px", fontWeight: 700,
-                      padding: "3px 10px", borderRadius: "7px",
+                      fontSize: "10px", fontWeight: 700,
+                      padding: "3px 9px", borderRadius: "7px",
                       background: s.layer === "Nano" ? "#faf5ff" : "#eff6ff",
                       color:      s.layer === "Nano" ? "#7c3aed" : "#2563eb",
                       border:     s.layer === "Nano" ? "1px solid #e9d5ff" : "1px solid #bfdbfe",
                     }}>
                       <span style={{
                         display: "inline-block", width: "5px", height: "5px",
-                        borderRadius: "50%", marginRight: "5px", verticalAlign: "middle",
+                        borderRadius: "50%", marginRight: "4px", verticalAlign: "middle",
                         background: s.layer === "Nano" ? "#a78bfa" : "#60a5fa",
                       }} />
                       {s.layer}
@@ -373,36 +409,36 @@ export default function Subscriptions() {
                   </td>
 
                   {/* Amount */}
-                  <td style={{ padding: "12px 16px", fontWeight: 600, color: "#0f172a", fontSize: "13px" }}>
+                  <td style={{ padding: "10px 14px", fontWeight: 600, color: "#0f172a", fontSize: "12px", whiteSpace: "nowrap" }}>
                     {fmt(s.amount)}
                   </td>
 
                   {/* Billing */}
-                  <td style={{ padding: "12px 16px" }}>
+                  <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
                     <span style={{
-                      padding: "3px 10px", borderRadius: "20px",
-                      fontSize: "11px", fontWeight: 600,
+                      padding: "3px 9px", borderRadius: "20px",
+                      fontSize: "10px", fontWeight: 600,
                       background: bm.bg, color: bm.color,
                     }}>{s.billing}</span>
                   </td>
 
                   {/* Date */}
-                  <td style={{ padding: "12px 16px" }}>
-                    <div style={{ fontSize: "12px", color: "#475569", fontWeight: 600 }}>{s.date}</div>
-                    <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>{s.time}</div>
+                  <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                    <div style={{ fontSize: "11px", color: "#475569", fontWeight: 600 }}>{s.date}</div>
+                    <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "1px" }}>{s.time}</div>
                   </td>
 
                   {/* Status */}
-                  <td style={{ padding: "12px 16px" }}>
+                  <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
                     <span style={{
                       display: "inline-flex", alignItems: "center", gap: "5px",
-                      padding: "3px 10px", borderRadius: "20px",
-                      fontSize: "11px", fontWeight: 700,
+                      padding: "3px 9px", borderRadius: "20px",
+                      fontSize: "10px", fontWeight: 700,
                       background: sm.bg, color: sm.color,
                       border: `1px solid ${sm.border}`,
                     }}>
                       <span style={{
-                        width: "6px", height: "6px", borderRadius: "50%",
+                        width: "5px", height: "5px", borderRadius: "50%",
                         background: sm.dot, flexShrink: 0,
                       }} />
                       {s.status}
