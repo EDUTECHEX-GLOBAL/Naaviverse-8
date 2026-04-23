@@ -210,7 +210,7 @@ const updateStep = async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 const editStep = async (req, res) => {
   try {
-    let { stepId } = req.body;
+    let stepId = req.params.id;
     console.log("Received stepId:", stepId, "Type:", typeof stepId);
 
     if (!stepId || typeof stepId !== "string") {

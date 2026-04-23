@@ -448,7 +448,9 @@ export default function Dashboard() {
     },
   ];
 
-  const CARDS_PER_PAGE = 4;
+  const CARDS_PER_PAGE = typeof window !== "undefined" && window.innerWidth < 600 ? 1
+  : typeof window !== "undefined" && window.innerWidth < 900 ? 2
+  : 4;
   const totalPages = Math.ceil(ALL_STAT_CARDS.length / CARDS_PER_PAGE);
   const [slideOffset, setSlideOffset] = useState(0);
 

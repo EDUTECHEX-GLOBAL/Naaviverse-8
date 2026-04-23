@@ -288,7 +288,9 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
         payload.length = Number(editLength);
       }
       if (editCost) payload.cost = editCost;
-      await axios.patch(`${BASE_URL}/api/steps/edit/${selectedStep._id}`, payload);
+      // AFTER — hits the admin PUT /:id route that already exists
+      // in handleSaveStep — index.jsx:292
+await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
       toast.success("Step updated");
       setActionLoading(false);
       getAllSteps();

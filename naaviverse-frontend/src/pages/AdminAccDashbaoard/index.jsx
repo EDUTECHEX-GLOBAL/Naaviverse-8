@@ -241,7 +241,7 @@ const AccDashboard = () => {
   } = useCoinContextData();
 
   const URL_TO_NAV = {
-    "/admin/dashboard/accountants": "Dashboard",
+    "/admin/dashboard/accountants": "Overview",
     "/admin/dashboard/crm": "CRM",
     "/admin/dashboard/paths": "Paths",
     "/admin/dashboard/steps": "Steps",
@@ -1192,6 +1192,7 @@ const AccDashboard = () => {
             style={{
               height: "100vh",
               overflow: "auto",
+              flex : 1,
               maxWidth: "calc(100vw - 220px)",
               width: "calc(100% - 20px)",
             }}
@@ -1206,9 +1207,7 @@ const AccDashboard = () => {
                       FIX 1: Added this block — was missing entirely.
                       FIX 2: "Dashboard" added to the known nav list below
                       so it never hits the "Coming Soon" fallback.          */}
-                  {accsideNav === "Dashboard" && (
-                    <Dashboard />
-                  )}
+                 {(accsideNav === "Dashboard" || accsideNav === "Overview") && <Dashboard />}
 
                   {accsideNav === "CRM" && <AdminCRM />}
 
@@ -1301,7 +1300,8 @@ const AccDashboard = () => {
                       FIX: Added "Dashboard" to this list so it never shows
                       "Coming Soon" when the default nav loads on first visit  */}
                   {![
-                    "Dashboard",   // ← THIS WAS MISSING — caused "Coming Soon" on load
+                    "Dashboard",
+                    "Overview",   // ← THIS WAS MISSING — caused "Coming Soon" on load
                     "CRM",
                     "Subscriptions",
                     "Marketplace",
