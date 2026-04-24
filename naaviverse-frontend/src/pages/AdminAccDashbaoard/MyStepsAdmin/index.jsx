@@ -834,7 +834,6 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
               {/* MARKETPLACE CREATE */}
               {modalScreen === "marketplace_create" && (
                 <div className="admin-pp-selector">
- // REPLACE the currentLayerCfg block at top of marketplace_attach
                   {currentLayerCfg && (
                     <div style={{
                       display: "flex",
