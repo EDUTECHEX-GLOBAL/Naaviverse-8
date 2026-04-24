@@ -6,24 +6,76 @@ import { toast } from "react-toastify";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-// Single color palette for all boxes (as requested)
-const UNIFIED_COLOR = {
-  color: "#4f46e5",
-  bg: "#eef2ff",
-  gradient: "linear-gradient(135deg, #eef2ff, #e0e7ff)",
-  emoji: "🏛",
+// Premium icons (no emojis)
+const PARTNER_ICONS = {
+  institution: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 21H21M5 21V7L12 3L19 7V21M9 21V13H15V21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  ),
+  mentor: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 15C14.7614 15 17 12.7614 17 10C17 7.23858 14.7614 5 12 5C9.23858 5 7 7.23858 7 10C7 12.7614 9.23858 15 12 15Z" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M3 20.5C4.5 17.5 7.5 16 12 16C16.5 16 19.5 17.5 21 20.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  ),
+  distributor: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 6H20V18H4V6Z" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M8 6L12 3L16 6" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+      <rect x="8" y="15" width="2" height="2" fill="currentColor"/>
+      <rect x="14" y="15" width="2" height="2" fill="currentColor"/>
+    </svg>
+  ),
+  vendor: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 7L3 12L6 17H18L21 12L18 7H6Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+      <circle cx="8" cy="12" r="1.5" fill="currentColor"/>
+      <circle cx="16" cy="12" r="1.5" fill="currentColor"/>
+    </svg>
+  ),
 };
 
-const getRoleConf = () => UNIFIED_COLOR;
+// Theme colors - soft gradients, no dark/black
+const THEMES = {
+  institution: {
+    color: "#0F3B3C",
+    bg: "#E6F7F5",
+    gradient: "linear-gradient(135deg, #f0f9f6, #e6f2ef)",
+    icon: PARTNER_ICONS.institution,
+  },
+  mentor: {
+    color: "#4A2E1B",
+    bg: "#FDF4E3",
+    gradient: "linear-gradient(135deg, #fef7e8, #f5ede0)",
+    icon: PARTNER_ICONS.mentor,
+  },
+  distributor: {
+    color: "#1E4A6D",
+    bg: "#EAF4FC",
+    gradient: "linear-gradient(135deg, #eff5fa, #e5edf5)",
+    icon: PARTNER_ICONS.distributor,
+  },
+  vendor: {
+    color: "#5A2A4A",
+    bg: "#FDF0F6",
+    gradient: "linear-gradient(135deg, #fdf2f7, #f5eaf0)",
+    icon: PARTNER_ICONS.vendor,
+  },
+};
 
 const formatPrice = (cost) => {
-  if (!cost) return "Free";
-  return cost.toString();
+  if (!cost || cost === "0") return "Free";
+  return `$${cost}`;
 };
 
-const formatRole = (role) => {
-  if (!role) return "UNKNOWN";
-  return role.toUpperCase();
+const formatDate = (date) => {
+  if (!date) return "";
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 };
 
 const parseFeatures = (features) => {
@@ -148,18 +200,45 @@ const AdminMarketplace = () => {
     return roleMatch && emailMatch && titleMatch;
   });
 
+  const totalItems = filteredItems.length;
+  const freeItems = filteredItems.filter(
+    (i) => !i.cost || i.cost === "0"
+  ).length;
+  const paidItems = totalItems - freeItems;
+  const uniquePartners = new Set(
+    filteredItems.map((i) => i.partner_email).filter(Boolean)
+  ).size;
+
   return (
     <div className="admin-marketplace">
-      <div className="mp-header">
-        <h1>Marketplace</h1>
-        {!loading && (
-          <span className="item-count">
-            {filteredItems.length}{" "}
-            {filteredItems.length === 1 ? "item" : "items"}
-          </span>
-        )}
-      </div>
+      {/* Hero Section - Reduced Size, Soft Colors */}
+  {/* Hero Section - Green transparent effect */}
+<div className="mp-hero">
+  <div className="hero-stats">
+    <div className="stat-card">
+      <span className="stat-value">{totalItems}</span>
+      <span className="stat-label">Total Listings</span>
+    </div>
+    <div className="stat-card">
+      <span className="stat-value">{paidItems}</span>
+      <span className="stat-label">Paid</span>
+    </div>
+    <div className="stat-card">
+      <span className="stat-value">{freeItems}</span>
+      <span className="stat-label">Free</span>
+    </div>
+    <div className="stat-card">
+      <span className="stat-value">{uniquePartners}</span>
+      <span className="stat-label">Partners</span>
+    </div>
+  </div>
+  <div className="hero-content">
+    <h1>Marketplace Overview</h1>
+    <p>Browse, manage, and update partner offerings</p>
+  </div>
+</div>
 
+      {/* Filters */}
       <div className="mp-filters">
         <div className="filter-group">
           <label>PARTNER TYPE</label>
@@ -194,6 +273,7 @@ const AdminMarketplace = () => {
         </div>
       </div>
 
+      {/* Cards Grid - 3 per row */}
       {loading ? (
         <div className="mp-grid">
           {Array(6)
@@ -202,18 +282,11 @@ const AdminMarketplace = () => {
               <div className="mp-card skeleton" key={i}>
                 <div className="card-top">
                   <Skeleton circle width={40} height={40} />
-                  <Skeleton
-                    height={18}
-                    width="60%"
-                    style={{ marginLeft: 10 }}
-                  />
+                  <Skeleton height={18} width="60%" style={{ marginLeft: 10 }} />
                 </div>
                 <div className="card-body">
                   <Skeleton height={14} count={4} style={{ marginTop: 8 }} />
-                  <Skeleton
-                    height={40}
-                    style={{ marginTop: 16, borderRadius: 30 }}
-                  />
+                  <Skeleton height={40} style={{ marginTop: 16, borderRadius: 30 }} />
                 </div>
               </div>
             ))}
@@ -222,24 +295,24 @@ const AdminMarketplace = () => {
         <div className="mp-grid">
           {filteredItems.length > 0 ? (
             filteredItems.map((item) => {
-              const rc = getRoleConf();
+              const theme = THEMES[item.role] || THEMES.institution;
+              const featureList = parseFeatures(item.features);
               return (
                 <div
                   className="mp-card"
                   key={item._id}
                   onClick={() => setSelectedItem(item)}
+                  style={{ borderTop: `3px solid ${theme.color}` }}
                 >
                   <div className="card-top">
                     <div className="card-top-left">
-                      <div className="avatar" style={{ background: rc.bg }}>
-                        {rc.emoji}
+                      <div className="avatar" style={{ background: theme.bg, color: theme.color }}>
+                        {theme.icon}
                       </div>
                       <div className="card-name">{item.name || "Untitled"}</div>
                     </div>
                     {item.duration && (
-                      <div className="price-badge price-yellow">
-                        {item.duration}
-                      </div>
+                      <div className="price-badge price-yellow">{item.duration}</div>
                     )}
                   </div>
 
@@ -247,50 +320,34 @@ const AdminMarketplace = () => {
 
                   <div className="card-body">
                     <div className="role-row">
-                      <div
-                        className="role-dot"
-                        style={{ background: rc.color }}
-                      />
-                      <div
-                        className="role-label"
-                        style={{ color: rc.color }}
-                      >
-                        {formatRole(item.role)}
+                      <div className="role-dot" style={{ background: theme.color }} />
+                      <div className="role-label" style={{ color: theme.color }}>
+                        {item.role?.toUpperCase() || "UNKNOWN"}
                       </div>
-                      {item.layer && (
-                        <div className="layer-chip">{item.layer}</div>
-                      )}
+                      {item.layer && <div className="layer-chip">{item.layer}</div>}
                     </div>
-
+{/* 
                     {item.goal && (
                       <div className="goal-row">
                         <span className="goal-label">Goal</span>
                         <span className="goal-val">{item.goal}</span>
                       </div>
-                    )}
+                    )} */}
 
-                    {item.features && (
-                      <div className="card-features">{item.features}</div>
-                    )}
+                    {/* {item.features && <div className="card-features">{item.features}</div>} */}
 
                     <div className="card-footer">
-                      <div
-                        className="partner-email"
-                        title={item.partner_email}
-                      >
+                      <div className="partner-email" title={item.partner_email}>
                         {item.partner_email || "—"}
                       </div>
                     </div>
 
-                    <button
-                      className="view-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedItem(item);
-                      }}
-                    >
-                      View Details
-                    </button>
+                    <button className="view-btn" onClick={(e) => {
+    e.stopPropagation();
+    setSelectedItem(item);
+  }}>
+    View →
+  </button>
                   </div>
                 </div>
               );
@@ -304,7 +361,7 @@ const AdminMarketplace = () => {
         </div>
       )}
 
-      {/* Details Modal */}
+      {/* Details Modal - Reduced Header Height */}
       {selectedItem && (
         <div
           className="modal-overlay"
@@ -313,23 +370,18 @@ const AdminMarketplace = () => {
             setIsEditing(false);
           }}
         >
-          <div
-            className="modal-container"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
             {(() => {
-              const rc = getRoleConf();
+              const theme = THEMES[selectedItem.role] || THEMES.institution;
               const featureList = parseFeatures(selectedItem.features);
               return (
                 <>
-                  {/* Gradient Header - Unified Color */}
-                  <div
-                    className="modal-head"
-                    style={{ background: rc.gradient }}
-                  >
+                  {/* Modal Header - REDUCED HEIGHT */}
+                  <div className="modal-head" style={{ background: theme.gradient }}>
                     <div className="modal-head-left">
-                      {/* Just logo icon, no background */}
-                      <div className="modal-avatar">{rc.emoji}</div>
+                      <div className="modal-avatar" style={{ background: theme.bg, color: theme.color }}>
+                        {theme.icon}
+                      </div>
                       <div className="modal-title-wrapper">
                         {!isEditing ? (
                           <>
@@ -340,9 +392,7 @@ const AdminMarketplace = () => {
                                 <>
                                   <span className="meta-dot">·</span>
                                   <span>
-                                    {new Date(
-                                      selectedItem.createdAt
-                                    ).toLocaleDateString("en-IN", {
+                                    {new Date(selectedItem.createdAt).toLocaleDateString("en-IN", {
                                       day: "numeric",
                                       month: "short",
                                       year: "numeric",
@@ -365,7 +415,9 @@ const AdminMarketplace = () => {
                       </div>
                     </div>
                     <div className="modal-head-right">
-                      <div className="role-badge">{formatRole(selectedItem.role)}</div>
+                      <div className="role-badge" style={{ background: theme.bg, color: theme.color }}>
+                        {selectedItem.role?.toUpperCase() || "UNKNOWN"}
+                      </div>
                       <button
                         className="modal-close"
                         onClick={() => {
@@ -378,14 +430,12 @@ const AdminMarketplace = () => {
                     </div>
                   </div>
 
-                  {/* Scrollable body */}
                   <div className="modal-scroll-area">
                     <div className="modal-body">
                       {/* Access & Pricing */}
                       <div className="section-header">
                         <span className="section-icon">💰</span>
                         <span className="section-title">Access & Pricing</span>
-                        <span className="field-count">3 fields</span>
                       </div>
                       <table className="access-table">
                         <thead>
@@ -445,7 +495,7 @@ const AdminMarketplace = () => {
                         <span className="section-icon">📌</span>
                         <span className="section-title">Source</span>
                       </div>
-                      <div className="detail-grid" style={{ marginBottom: 24 }}>
+                      <div className="detail-grid">
                         <div className="d-item">
                           <div className="d-label">LAYER</div>
                           <div className="d-val">
@@ -491,18 +541,18 @@ const AdminMarketplace = () => {
                         <span className="section-title">Details</span>
                       </div>
                       <div className="detail-grid">
-                        <div className="d-item">
+                        <div className="d-item wide">
                           <div className="d-label">GOAL</div>
                           <div className="d-val">
                             {!isEditing ? (
                               selectedItem.goal || "—"
                             ) : (
-                              <input
-                                type="text"
+                              <textarea
                                 name="goal"
                                 value={editFormData.goal}
                                 onChange={handleInputChange}
-                                className="edit-input"
+                                className="edit-textarea"
+                                rows="3"
                               />
                             )}
                           </div>
@@ -546,7 +596,7 @@ const AdminMarketplace = () => {
                               featureList.length > 0 ? (
                                 <div className="feature-chips">
                                   {featureList.map((f, i) => (
-                                    <span key={i} className="feature-chip">
+                                    <span key={i} className="feature-chip" style={{ background: theme.bg, color: theme.color }}>
                                       {f}
                                     </span>
                                   ))}
@@ -566,32 +616,12 @@ const AdminMarketplace = () => {
                             )}
                           </div>
                         </div>
-                        <div className="d-item wide">
-                          <div className="d-label">PARTNER EMAIL</div>
-                          <div className="d-val email">
-                            {!isEditing ? (
-                              selectedItem.partner_email || "Unknown"
-                            ) : (
-                              <input
-                                type="email"
-                                name="partner_email"
-                                value={editFormData.partner_email}
-                                onChange={handleInputChange}
-                                className="edit-input"
-                              />
-                            )}
-                          </div>
-                        </div>
                       </div>
                     </div>
 
-                    {/* Footer - No sticky, just natural flow */}
                     <div className="modal-foot">
                       {!isEditing ? (
-                        <button
-                          className="edit-btn"
-                          onClick={() => handleEditClick(selectedItem)}
-                        >
+                        <button className="edit-btn" onClick={() => handleEditClick(selectedItem)}>
                           Edit
                         </button>
                       ) : (

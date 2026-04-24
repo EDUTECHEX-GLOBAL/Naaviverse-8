@@ -32,15 +32,14 @@
 }
 
 /* ───────── TOP BAR ───────── */
+/* No white background — uses the same blue-shade bg from root */
 .acrm-topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 8px 20px;
-  background: rgba(255,255,255,.92);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 1px 6px rgba(0,0,0,.05);
+  background: transparent;
+  border-bottom: none;
   min-height: 48px;
 }
 
@@ -48,10 +47,10 @@
 .acrm-tabs {
   display: flex;
   gap: 3px;
-  background: var(--bg2);
+  background: rgba(224, 231, 245, 0.65);
   padding: 3px;
   border-radius: 10px;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(203, 213, 225, 0.5);
 
   button {
     padding: 5px 16px;
@@ -68,11 +67,12 @@
 
     &:hover:not(.active) {
       color: var(--txt);
-      background: rgba(255,255,255,.6);
+      background: rgba(255,255,255,.45);
     }
 
     &.active {
-      background: var(--white);
+      /* Matches the same bg shade as the page — no harsh white */
+      background: rgba(240, 244, 251, 0.92);
       color: var(--acc-dark);
       font-weight: 700;
       box-shadow: 0 2px 6px rgba(99,102,241,.15), 0 1px 2px rgba(0,0,0,.07);
@@ -85,15 +85,15 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  background: var(--white);
-  border: 1.5px solid var(--border);
+  background: rgba(224, 231, 245, 0.55);
+  border: 1.5px solid rgba(203, 213, 225, 0.55);
   padding: 6px 11px;
   border-radius: 9px;
   min-width: 220px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.04);
-  transition: border-color .18s, box-shadow .18s;
+  transition: border-color .18s, box-shadow .18s, background .18s;
 
   &:focus-within {
+    background: rgba(238, 242, 255, 0.75);
     border-color: var(--acc-border);
     box-shadow: 0 0 0 3px rgba(99,102,241,.1);
   }
@@ -111,7 +111,7 @@
   }
 
   .srch-x {
-    background: var(--bg2);
+    background: rgba(203, 213, 225, 0.45);
     border: none;
     color: var(--txt3);
     font-size: 10px;
@@ -133,9 +133,10 @@
 /* ───────── TABLE WRAPPER ───────── */
 .acrm-table-wrap {
   flex: 1;
-  margin: 12px 20px;
+  margin: 8px 20px 16px;
   background: var(--white);
   border: 1px solid var(--border);
+  min-height: 0;
   border-radius: 14px;
   display: flex;
   flex-direction: column;
@@ -159,12 +160,23 @@
   box-sizing: border-box;
   width: 100%;
   overflow: hidden;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
+
+  /* Header cells: vertically centered in the 36px row */
+  > div {
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
 }
 
 /* ───────── BODY ───────── */
 .acrm-tbody {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
   scroll-behavior: smooth;
 
   &::-webkit-scrollbar { width: 4px; }
@@ -211,6 +223,12 @@
   font-size: 12.5px;
 }
 
+/* Row data cells: flex so content sits perfectly centered vertically */
+.acrm-row > div {
+  display: flex;
+  align-items: center;
+}
+
 /* ================================================================
    COLUMN WIDTHS — USERS
    NAME(22) EMAIL(25) COUNTRY(11) PHONE(15) LEVEL(15) ACTIVITY(12)
@@ -223,7 +241,7 @@
   .col-country  { flex: 0 0 11%; }
   .col-phone    { flex: 0 0 15%; }
   .col-level    { flex: 0 0 15%; }
-  .col-activity { flex: 0 0 12%; display: flex; align-items: center; }
+  .col-activity { flex: 0 0 12%; }
 }
 
 /* ================================================================
@@ -238,7 +256,7 @@
   .col-country       { flex: 0 0 10%; }
   .col-partner-type  { flex: 0 0 14%; }
   .col-poc           { flex: 0 0 19%; }
-  .col-activity      { flex: 0 0 12%; display: flex; align-items: center; }
+  .col-activity      { flex: 0 0 12%; }
 }
 
 /* ───────── AVATAR ───────── */
@@ -371,6 +389,32 @@
     background: var(--acc-bg);
     color: var(--acc-dark);
     box-shadow: 0 2px 8px rgba(99,102,241,.2);
+    transform: translateX(2px);
+  }
+}
+
+/* ───────── "View →" pill button ───────── */
+.act-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  color: var(--txt2);
+  cursor: pointer;
+  transition: all .18s ease;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--acc);
+    background: var(--acc-bg);
+    color: var(--acc-dark);
+    box-shadow: 0 2px 8px rgba(99,102,241,.15);
     transform: translateX(2px);
   }
 }
@@ -662,10 +706,28 @@
     transform: translateX(2px);
   }
 }
-/* ================================================================
-   REPLACE the entire @media (max-width: 768px) block in Admincrm.scss
-================================================================ */
 
+/* ───────── SCROLL INNER (desktop) ───────── */
+.acrm-scroll-inner {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+  min-height: 0;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+}
+
+/* ── Min-width so columns never squish ── */
+.acrm-thead,
+.acrm-row {
+  min-width: 700px;
+}
+
+/* ================================================================
+   MOBILE — max-width: 768px
+================================================================ */
 @media (max-width: 768px) {
 
   .acrm-root {
@@ -674,7 +736,6 @@
     overflow: visible;
   }
 
-  /* ── Topbar: stack tabs + search vertically ── */
   .acrm-topbar {
     flex-direction: column;
     align-items: stretch;
@@ -693,19 +754,17 @@
     box-sizing: border-box;
   }
 
-  /* ── Table outer box ── */
   .acrm-table-wrap {
     margin: 10px 12px;
-    overflow: hidden;        /* keeps border-radius clean */
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     max-height: calc(100vh - 200px);
   }
 
-  /* ── Single scroll container — thead + tbody move together ── */
   .acrm-scroll-inner {
-    overflow-x: auto;        /* horizontal scroll */
-    overflow-y: auto;        /* vertical scroll   */
+    overflow-x: auto;
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     flex: 1;
 
@@ -714,14 +773,12 @@
     &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
   }
 
-  /* ── tbody must NOT have its own scroll — parent handles it ── */
   .acrm-tbody {
     overflow: visible !important;
     max-height: none !important;
     flex: unset;
   }
 
-  /* ── Fixed px widths so columns never squish ── */
   .acrm-thead,
   .acrm-row {
     min-width: 660px;
@@ -747,7 +804,6 @@
     .col-activity     { flex: 0 0 60px;  }
   }
 
-  /* ── Activity popup full-width ── */
   .apop-box {
     width: calc(100vw - 24px);
     max-height: 85vh;
