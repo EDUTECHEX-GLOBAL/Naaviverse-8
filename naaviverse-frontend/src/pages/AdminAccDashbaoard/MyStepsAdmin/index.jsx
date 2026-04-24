@@ -1001,7 +1001,7 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
                     </svg>
                   </div>
                   <h3>Delete this step?</h3>
-                  <p><strong>"{selectedStep?.name}"</strong> will be permanently removed.</p>
+                  <p> will be permanently removed</p>
                   <div className="sm-confirm-actions">
                     <button className="sm-btn-danger" onClick={handleDeleteStep} disabled={actionLoading}>
                       {actionLoading ? "Deleting..." : "Yes, Delete"}

@@ -17,7 +17,7 @@ function PortalDropdown({ anchorRef, isOpen, onClose, children }) {
     } else {
       setPos(null);
     }
-  }, [isOpen]);
+  }, [isOpen, anchorRef]);
 
   if (!isOpen || !pos) return null;
 
@@ -160,9 +160,6 @@ export default function Dashboard() {
   const [view, setView] = useState("home");
   const navigate = useNavigate();
 
-  // ── Carousel state ────────────────────────────────────────────────────────
-  const [carouselPage, setCarouselPage] = useState(0);
-
   // ── Notification state ────────────────────────────────────────────────────
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [notifications, setNotifications] = useState([
@@ -186,7 +183,6 @@ export default function Dashboard() {
 
   const markAllRead = () => setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
   const markOneRead = (id) => setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, unread: false } : n)));
-  const trackWrapRef = useRef(null);
   
   useEffect(() => {
     const handler = (e) => {
@@ -294,7 +290,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (view === "approvals" && roleView === "user" && userData.length === 0)
       fetchApprovals("User", setUserData);
-  }, [roleView, view]);
+  }, [roleView, view, userData.length]);
 
   useEffect(() => {
     if (!selected) { setFullUserData(null); return; }
@@ -308,7 +304,6 @@ export default function Dashboard() {
   }, [selected]);
 
   const activeData    = roleView === "partner" ? partnerData : userData;
-  const countByStatus = (s) => s === "all" ? activeData.length : activeData.filter((a) => a.status === s).length;
   const filtered      = tab === "all" ? activeData : activeData.filter((a) => a.status === tab);
 
   const approve = (id) => {
@@ -448,25 +443,6 @@ export default function Dashboard() {
     },
   ];
 
-  const CARDS_PER_PAGE = typeof window !== "undefined" && window.innerWidth < 600 ? 1
-  : typeof window !== "undefined" && window.innerWidth < 900 ? 2
-  : 4;
-  const totalPages = Math.ceil(ALL_STAT_CARDS.length / CARDS_PER_PAGE);
-  const [slideOffset, setSlideOffset] = useState(0);
-
-  useEffect(() => {
-    const calc = () => {
-      if (!trackWrapRef.current) return;
-      const w = trackWrapRef.current.getBoundingClientRect().width;
-      const oneCardWidth = (w - 3 * 14) / 4;
-      const onePage = oneCardWidth * 4 + 4 * 14;
-      setSlideOffset(carouselPage * onePage);
-    };
-    calc();
-    window.addEventListener("resize", calc);
-    return () => window.removeEventListener("resize", calc);
-  }, [carouselPage]);
-
   // ══════════════════════════════════════════════════════════════════════════
   // HOME VIEW
   // ══════════════════════════════════════════════════════════════════════════
@@ -525,68 +501,25 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* ── Stat Boxes Carousel ── */}
           <div className="stat-boxes-carousel">
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <button
-                onClick={() => setCarouselPage((p) => Math.max(0, p - 1))}
-                disabled={carouselPage === 0}
-                style={{
-                  width: 34, height: 34, borderRadius: "50%",
-                  border: "1.5px solid var(--slate-200)",
-                  background: "white", cursor: "pointer",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  opacity: carouselPage === 0 ? 0.35 : 1,
-                  flexShrink: 0, fontSize: 18, color: "var(--slate-500)",
-                  transition: "opacity .2s",
-                }}
-              >‹</button>
-
-              <div className="stat-boxes-track-wrap" ref={trackWrapRef} style={{ flex: 1 }}>
-                <div className="stat-boxes-track" style={{ transform: `translateX(-${slideOffset}px)` }}>
-                  {ALL_STAT_CARDS.map((card, idx) => (
-                    <div key={idx} className={`stat-box ${card.colorClass}`}>
-                      <div className="stat-box-top">
-                        <div className="stat-box-icon">{card.iconSvg}</div>
-                        <div className="stat-box-badge">{card.badge}</div>
-                      </div>
-                      <div className="stat-box-title">{card.title}</div>
-                      <div className="stat-box-value">{card.value}</div>
-                      <div className="stat-box-subtitle">
-                        {card.subtitleLines.map((line, i) => (
-                          <span key={i}>{line}</span>
-                        ))}
-                      </div>
-                      <button className="stat-box-btn" onClick={card.onBtn}>
-                        {card.btnLabel}
-                      </button>
-                    </div>
-                  ))}
+            <div className="stat-boxes-scroll-track">
+              {ALL_STAT_CARDS.map((card, idx) => (
+                <div key={idx} className={`stat-box ${card.colorClass}`}>
+                  <div className="stat-box-top">
+                    <div className="stat-box-icon">{card.iconSvg}</div>
+                    <div className="stat-box-badge">{card.badge}</div>
+                  </div>
+                  <div className="stat-box-title">{card.title}</div>
+                  <div className="stat-box-value">{card.value}</div>
+                  <div className="stat-box-subtitle">
+                    {card.subtitleLines.map((line, i) => (
+                      <span key={i}>{line}</span>
+                    ))}
+                  </div>
+                  <button className="stat-box-btn" onClick={card.onBtn}>
+                    {card.btnLabel}
+                  </button>
                 </div>
-              </div>
-
-              <button
-                onClick={() => setCarouselPage((p) => Math.min(totalPages - 1, p + 1))}
-                disabled={carouselPage === totalPages - 1}
-                style={{
-                  width: 34, height: 34, borderRadius: "50%",
-                  border: "1.5px solid var(--slate-200)",
-                  background: "white", cursor: "pointer",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  opacity: carouselPage === totalPages - 1 ? 0.35 : 1,
-                  flexShrink: 0, fontSize: 18, color: "var(--slate-500)",
-                  transition: "opacity .2s",
-                }}
-              >›</button>
-            </div>
-
-            <div className="stat-boxes-dots">
-              {Array.from({ length: totalPages }).map((_, i) => (
-                <button
-                  key={i}
-                  className={`stat-dot ${carouselPage === i ? "active" : ""}`}
-                  onClick={() => setCarouselPage(i)}
-                />
               ))}
             </div>
           </div>
@@ -1555,4 +1488,4 @@ function DetailItem({ label, value, icon, isLink }) {
       </div>
     </div>
   );
-}  
+}
