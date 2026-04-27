@@ -8,12 +8,12 @@ import history from "./history.svg";
 
 const NavIcon = ({ type, isActive }) => {
   const iconProps = {
-    className: "nav-icon",
+    className: "user-nav-icon",
     width: "18",
     height: "18",
     viewBox: "0 0 24 24",
     fill: "none",
-    stroke: isActive ? "#2273E6" : "#9ca3af",
+    stroke: isActive ? "#ffffff" : "#888",
     strokeWidth: "1.7",
     strokeLinecap: "round",
     strokeLinejoin: "round",
@@ -36,7 +36,6 @@ const NavIcon = ({ type, isActive }) => {
         </svg>
       );
     case "journey":
-      // Map pin / route — suits "My Journey"
       return (
         <svg {...iconProps}>
           <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
@@ -44,7 +43,6 @@ const NavIcon = ({ type, isActive }) => {
         </svg>
       );
     case "current-step":
-      // Footsteps / play-next — suits "Current Step"
       return (
         <svg {...iconProps}>
           <polyline points="5 12 12 5 19 12" />
@@ -53,7 +51,6 @@ const NavIcon = ({ type, isActive }) => {
         </svg>
       );
     case "transactions":
-      // Two arrows up/down — suits "Transactions"
       return (
         <svg {...iconProps}>
           <polyline points="17 1 21 5 17 9" />
@@ -67,7 +64,7 @@ const NavIcon = ({ type, isActive }) => {
         <svg {...iconProps}>
           <rect x="2" y="5" width="20" height="14" rx="2" ry="2" />
           <line x1="2" y1="10" x2="22" y2="10" />
-          <circle cx="18" cy="15" r="1" fill="currentColor" />
+          <circle cx="18" cy="15" r="1" fill={isActive ? "#ffffff" : "#888"} />
         </svg>
       );
     default:
@@ -76,16 +73,18 @@ const NavIcon = ({ type, isActive }) => {
 };
 
 const sidebarMenu1 = [
-  { id: 0, title: "Home",  display: "Home",  icon: "home",  path: "/dashboard/users/home" },
-  { id: 1, title: "Paths", display: "Paths", icon: "paths", path: "/dashboard/users/paths" },
+  { id: "home",  title: "Home",  display: "Home",  icon: "home",  path: "/dashboard/users/home" },
+  { id: "paths", title: "Paths", display: "Paths", icon: "paths", path: "/dashboard/users/paths" },
 ];
 
 const sidebarMenu2 = [
-  { id: 0, title: "My Journey",   display: "My Journey",   icon: "journey",      path: "/dashboard/users/my-journey" },
-  { id: 1, title: "Current Step", display: "Current Step", icon: "current-step", path: "/dashboard/users/current-step" },
-  { id: 2, title: "Transactions", display: "Transactions", icon: "transactions", path: "/dashboard/users/transactions" },
-  { id: 3, title: "Wallet",       display: "Wallet",       icon: "wallet",       path: "/dashboard/users/wallet" },
+  { id: "journey",      title: "My Journey",   display: "My Journey",   icon: "journey",      path: "/dashboard/users/my-journey" },
+  { id: "current-step", title: "Current Step", display: "Current Step", icon: "current-step", path: "/dashboard/users/current-step" },
+  { id: "transactions", title: "Transactions", display: "Transactions", icon: "transactions", path: "/dashboard/users/transactions" },
+  { id: "wallet",       title: "Wallet",       display: "Wallet",       icon: "wallet",       path: "/dashboard/users/wallet" },
 ];
+
+const allMenuItems = [...sidebarMenu1, ...sidebarMenu2];
 
 const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileIncomplete }) => {
   const { sideNav, setsideNav } = useStore();
@@ -116,15 +115,16 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
     } catch { return null; }
   };
 
-  const userDetails  = getUserFromStorage();
-  const rawName      = userDetails?.name || userDetails?.fullName || localStorage.getItem("userName") || "";
-  const firstName    = rawName.split(" ")[0] || (userDetails?.email || "User").split("@")[0];
-  const userInitial  = firstName.charAt(0).toUpperCase() || "U";
-  const profilePic   = localStorage.getItem("userProfilePic") || userDetails?.profilePicture || userDetails?.profilePicURL || null;
+  const userDetails = getUserFromStorage();
+  const rawName     = userDetails?.name || userDetails?.fullName || localStorage.getItem("userName") || "";
+  const firstName   = rawName.split(" ")[0] || (userDetails?.email || "User").split("@")[0];
+  const userInitial = firstName.charAt(0).toUpperCase() || "U";
+  const profilePic  = localStorage.getItem("userProfilePic") || userDetails?.profilePicture || userDetails?.profilePicURL || null;
 
   const isActive = (path) => location.pathname === path;
 
-  const handleNavigation = (title, path) => {
+  const handleNavigation = (e, title, path) => {
+    e.stopPropagation();
     if (isLocked) return;
     setCurrentStepData("");
     setCurrentStepDataLength("");
@@ -137,12 +137,14 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
     setMobileOpen(false);
   };
 
-  const handleLogout = () => {
+  const handleLogout = (e) => {
+    if (e) e.stopPropagation();
     ["authToken", "user", "partner", "userType", "userProfilePic"].forEach((k) => localStorage.removeItem(k));
     navigate("/login", { replace: true });
   };
 
-  const handleProfileClick = () => {
+  const handleProfileClick = (e) => {
+    e.stopPropagation();
     if (isLocked) return;
     setsideNav("Profile");
     navigate("/dashboard/users/profile");
@@ -164,64 +166,84 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
     <>
       {/* Mobile burger */}
       <button
-        className={`mobile-menu-btn ${mobileOpen ? "open" : ""}`}
-        onClick={() => setMobileOpen(v => !v)}
+        className={`user-mobile-menu-btn ${mobileOpen ? "open" : ""}`}
+        onClick={(e) => { e.stopPropagation(); setMobileOpen(v => !v); }}
         aria-label="Toggle navigation menu"
       >
         <span /><span /><span />
       </button>
 
-      {/* Mobile backdrop */}
-      <div
-        className={`sidebar-backdrop ${mobileOpen ? "visible" : ""}`}
-        onClick={() => { setMobileOpen(false); setShowLogoutMenu(false); }}
-      />
+      {/* Backdrop */}
+      {mobileOpen && (
+        <div
+          className="user-sidebar-backdrop visible"
+          onMouseDown={(e) => {
+            setMobileOpen(false);
+            setShowLogoutMenu(false);
+          }}
+        />
+      )}
 
       {/* Profile-incomplete overlay */}
       {isProfileIncomplete && !isOnProfilePage && (
-        <div className="profile-overlay">
-          <div className="profile-overlay-card">
-            <div className="profile-overlay-icon">👤</div>
-            <div className="profile-overlay-title">Complete Your Profile First</div>
-            <div className="profile-overlay-divider" />
-            <div className="profile-overlay-message">
+        <div className="user-profile-overlay">
+          <div className="user-profile-overlay-card">
+            <div className="user-profile-overlay-icon">👤</div>
+            <div className="user-profile-overlay-title">Complete Your Profile First</div>
+            <div className="user-profile-overlay-divider" />
+            <div className="user-profile-overlay-message">
               You need to complete all <strong>3 levels</strong> of your Naavi profile before accessing the platform.
             </div>
-            <div className="profile-overlay-button" onClick={() => { navigate("/dashboard/users/profile"); setShowLogoutMenu(false); setMobileOpen(false); }}>
+            <div
+              className="user-profile-overlay-button"
+              onClick={() => {
+                navigate("/dashboard/users/profile");
+                setShowLogoutMenu(false);
+                setMobileOpen(false);
+              }}
+            >
               Complete Profile →
             </div>
             <div>
-              <span className="profile-overlay-logout" onClick={handleLogout}>Log out instead</span>
+              <span className="user-profile-overlay-logout" onClick={() => handleLogout(null)}>
+                Log out instead
+              </span>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Sidebar ── */}
-      <div className={`dashboard-sidebar ${mobileOpen ? "mobile-open" : ""}`}>
-
+      {/* Sidebar */}
+      <div
+        className={`user-dashboard-sidebar ${mobileOpen ? "mobile-open" : ""}`}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Logo */}
         <div
-          className="dashboard-left"
+          className="user-dashboard-left"
           style={{ cursor: isLocked ? "default" : "pointer" }}
-          onClick={() => {
-            if (!isLocked) { setsideNav("Home"); navigate("/dashboard/users/home"); setMobileOpen(false); }
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!isLocked) {
+              setsideNav("Home");
+              navigate("/dashboard/users/home");
+              setMobileOpen(false);
+            }
           }}
         >
-          <img className="dashboard-logo" src={logo} alt="Naavi" />
+          <img className="user-dashboard-logo" src={logo} alt="Naavi" />
         </div>
 
-        {/* Nav */}
-        <div className="sidebar-menu-scrollable" style={{ padding: "0 12px" }}>
-
-          {/* Menu group 1 + 2 combined — no divider, no extra gap */}
-          {[...sidebarMenu1, ...sidebarMenu2].map((each) => {
+        {/* Nav items */}
+        <div className="user-sidebar-menu-scrollable">
+          {allMenuItems.map((each) => {
             const active = isActive(each.path);
             return (
               <div
-                key={each.id + each.title}
-                className={`each-sidenav ${active ? "active" : ""} ${isLocked ? "locked" : ""}`}
-                onClick={() => handleNavigation(each.title, each.path)}
+                key={each.id}
+                className={`user-each-sidenav ${active ? "active" : ""} ${isLocked ? "locked" : ""}`}
+                onClick={(e) => handleNavigation(e, each.title, each.path)}
               >
                 <NavIcon type={each.icon} isActive={active} />
                 <span>{each.display}</span>
@@ -230,22 +252,26 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
           })}
 
           {checkForHistory && !isLocked && (
-            <div className="history-div">
-              <div className="history-box">
+            <div className="user-history-div">
+              <div className="user-history-box">
                 <img src={history} alt="history" />
-                <div className="history-label">You viewed the following path:</div>
-                <div className="history-details">
-                  <div className="history-title">{preLoginHistoryData?.destination_institution}</div>
-                  <div className="history-program">{preLoginHistoryData?.program}</div>
-                  <div className="pathId-text"><span>pathid:</span> {preLoginHistoryData?._id}</div>
+                <div className="user-history-label">You viewed the following path:</div>
+                <div className="user-history-details">
+                  <div className="user-history-title">{preLoginHistoryData?.destination_institution}</div>
+                  <div className="user-history-program">{preLoginHistoryData?.program}</div>
+                  <div className="user-pathId-text"><span>pathid:</span> {preLoginHistoryData?._id}</div>
                 </div>
-                <div className="open-btn" onClick={() => {
-                  setPathItemSelected(true);
-                  setSelectedPathItem(preLoginHistoryData);
-                  localStorage.setItem("selectedPath", JSON.stringify(preLoginHistoryData?.nameOfPath));
-                  navigate("/dashboard/users/my-journey");
-                  setMobileOpen(false);
-                }}>
+                <div
+                  className="user-open-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPathItemSelected(true);
+                    setSelectedPathItem(preLoginHistoryData);
+                    localStorage.setItem("selectedPath", JSON.stringify(preLoginHistoryData?.nameOfPath));
+                    navigate("/dashboard/users/my-journey");
+                    setMobileOpen(false);
+                  }}
+                >
                   Open
                 </div>
               </div>
@@ -253,13 +279,12 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
           )}
         </div>
 
-        {/* ── Profile ── */}
-        <div className="sidebar-profile-section">
+        {/* Profile section at bottom */}
+        <div className="user-sidebar-profile-section">
           <div style={{ position: "relative" }} ref={logoutMenuRef}>
-
-            <div className="sidebar-profile-row">
+            <div className="user-sidebar-profile-row">
               <div
-                className="sidebar-profile-info"
+                className="user-sidebar-profile-info"
                 style={{ cursor: isLocked ? "default" : "pointer" }}
                 onClick={handleProfileClick}
               >
@@ -268,26 +293,30 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
                     src={profilePic}
                     alt={firstName}
                     onError={() => setImgError(true)}
-                    className="sidebar-avatar-img"
+                    className="user-sidebar-avatar-img"
                   />
                 ) : (
-                  <div className="sidebar-avatar-initials">{userInitial}</div>
+                  <div className="user-sidebar-avatar-initials">{userInitial}</div>
                 )}
-                <div className="sidebar-profile-name-wrap">
-                  <div className="sidebar-profile-name">{firstName}</div>
+                <div className="user-sidebar-profile-name-wrap">
+                  <div className="user-sidebar-profile-name">{firstName}</div>
                   {isLocked && (
                     <div
-                      className="sidebar-profile-status"
+                      className="user-sidebar-profile-status"
                       style={{ color: approvalStatus === "rejected" ? "#ef4444" : "#f59e0b" }}
                     >
-                      {approvalStatus === "rejected" ? "Rejected" : approvalStatus === "pending" ? "Pending Approval" : "Profile Required"}
+                      {approvalStatus === "rejected"
+                        ? "Rejected"
+                        : approvalStatus === "pending"
+                        ? "Pending Approval"
+                        : "Profile Required"}
                     </div>
                   )}
                 </div>
               </div>
 
               <div
-                className="sidebar-dots-btn"
+                className="user-sidebar-dots-btn"
                 onClick={(e) => { e.stopPropagation(); setShowLogoutMenu(v => !v); }}
               >
                 •••
@@ -295,8 +324,8 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
             </div>
 
             {showLogoutMenu && (
-              <div className="sidebar-logout-menu">
-                <div className="sidebar-logout-item" onClick={handleLogout}>
+              <div className="user-sidebar-logout-menu">
+                <div className="user-sidebar-logout-item" onClick={(e) => handleLogout(e)}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                     <polyline points="16 17 21 12 16 7" />
@@ -308,7 +337,6 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
             )}
           </div>
         </div>
-
       </div>
     </>
   );

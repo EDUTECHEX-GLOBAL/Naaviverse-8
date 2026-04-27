@@ -163,29 +163,14 @@ $card-accents: (
   position: relative;
   overflow: hidden;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 4px;
-    height: 100%;
-    background: $gray200;
-    transition: background 0.2s;
-  }
+
 
   &:hover {
     box-shadow: $shadow-md;
     border-color: $teal-mid;
     transform: translateY(-2px);
-    &::before { background: $teal; }
     .sc-cta { color: $teal; }
   }
-
-  // Cycle accent bar color per card position
-  &:nth-child(4n+1)::before { background: $teal; }
-  &:nth-child(4n+2)::before { background: $sky; }
-  &:nth-child(4n+3)::before { background: $orange; }
-  &:nth-child(4n+4)::before { background: $green; }
 
   // Cycle number bubble bg
   .sc-number {
