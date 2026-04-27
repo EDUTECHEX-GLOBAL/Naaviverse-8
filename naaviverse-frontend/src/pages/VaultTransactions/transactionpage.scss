@@ -3,12 +3,16 @@
 .txn-page {
   width: 100%;
   min-height: calc(100% - 63px);
- height: calc(100vh - 63px);   // 🔥 FIXED HEIGHT
-  overflow-y: auto; 
+  height: calc(100vh - 63px);
+  overflow-y: auto;
   overflow-x: hidden;
   color: #1e2a45;
   font-family: 'DM Sans', 'Inter', sans-serif;
   background: #f0f3fa;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #d0d7e8; border-radius: 4px; }
 
   // ─── SUMMARY CARDS ──────────────────────────────────────────
   .txn-summary-strip {
@@ -17,6 +21,13 @@
     gap: 10px;
     padding: 0.65rem 28px 0;
     margin-bottom: 0.65rem;
+
+    @media (max-width: 600px) {
+      grid-template-columns: repeat(3, 1fr); // keep 3 cols but smaller
+      padding: 0.6rem 12px 0;
+      gap: 7px;
+      margin-bottom: 0.5rem;
+    }
   }
 
   .summary-card {
@@ -32,37 +43,44 @@
     &::after {
       content: '';
       position: absolute;
-      top: -12px;
-      right: -12px;
-      width: 44px;
-      height: 44px;
+      top: -12px; right: -12px;
+      width: 44px; height: 44px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255,255,255,.15);
       pointer-events: none;
     }
 
-    &.blue  { background: linear-gradient(135deg, #6c63ff 0%, #a78bfa 100%); box-shadow: 0 3px 12px rgba(108, 99, 255, 0.28); }
-    &.green { background: linear-gradient(135deg, #f0547a 0%, #f886a8 100%); box-shadow: 0 3px 12px rgba(240, 84, 122, 0.28); }
-    &.amber { background: linear-gradient(135deg, #2ec4c4 0%, #6ee0e0 100%); box-shadow: 0 3px 12px rgba(46, 196, 196, 0.28); }
+    &.blue  { background: linear-gradient(135deg, #6c63ff 0%, #a78bfa 100%); box-shadow: 0 3px 12px rgba(108,99,255,.28); }
+    &.green { background: linear-gradient(135deg, #f0547a 0%, #f886a8 100%); box-shadow: 0 3px 12px rgba(240,84,122,.28); }
+    &.amber { background: linear-gradient(135deg, #2ec4c4 0%, #6ee0e0 100%); box-shadow: 0 3px 12px rgba(46,196,196,.28); }
 
     .s-label {
       font-size: 8px;
       font-weight: 700;
       letter-spacing: 0.09em;
       text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.75);
+      color: rgba(255,255,255,.75);
       margin-bottom: 2px;
+
+      @media (max-width: 600px) { font-size: 7px; letter-spacing: 0.05em; }
     }
+
     .s-value {
       font-size: 16px;
       font-weight: 800;
-      color: #ffffff;
+      color: #fff;
       line-height: 1.2;
       margin-bottom: 1px;
+
+      @media (max-width: 600px) { font-size: 13px; }
+      @media (max-width: 380px) { font-size: 11px; }
     }
+
     .s-sub {
       font-size: 8.5px;
-      color: rgba(255, 255, 255, 0.62);
+      color: rgba(255,255,255,.62);
+
+      @media (max-width: 600px) { font-size: 7.5px; }
     }
   }
 
@@ -73,6 +91,16 @@
     gap: 5px;
     padding: 0 28px;
     margin-bottom: 0.65rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+    flex-wrap: nowrap;
+
+    @media (max-width: 600px) {
+      padding: 0 12px;
+      gap: 4px;
+    }
   }
 
   .txn-tab {
@@ -86,25 +114,34 @@
     color: #7a869a;
     background: #e8ecf7;
     user-select: none;
+    white-space: nowrap;
+    flex-shrink: 0;
 
     &:hover  { background: #dde3f7; color: #6c63ff; }
-    &.active { background: #6c63ff; color: #ffffff; border-color: #6c63ff; box-shadow: 0 2px 8px rgba(108, 99, 255, 0.28); }
+    &.active { background: #6c63ff; color: #fff; border-color: #6c63ff; box-shadow: 0 2px 8px rgba(108,99,255,.28); }
+
+    @media (max-width: 600px) { font-size: 10px; padding: 3px 10px; }
   }
 
   // ─── TABLE WRAPPER ───────────────────────────────────────────
   .txn-table-wrap {
     margin: 0 28px 1.5rem;
-    background: #ffffff;
+    background: #fff;
     border-radius: 14px;
     border: 1px solid #e4e9f5;
     overflow: hidden;
-    box-shadow: 0 2px 10px rgba(108, 99, 255, 0.06);
+    box-shadow: 0 2px 10px rgba(108,99,255,.06);
+
+    @media (max-width: 600px) {
+      margin: 0 12px 1.2rem;
+      border-radius: 12px;
+    }
   }
 
-  // ─── HEADER ROW — 7 cols ─────────────────────────────────────
+  // ─── DESKTOP: grid-based header + rows ───────────────────────
   .txn-header-row {
     display: grid;
-    grid-template-columns: 1.8fr 1fr 1.6fr 0.9fr 0.9fr 0.8fr 0.7fr; // ← 7th col: Invoice
+    grid-template-columns: 1.8fr 1fr 1.6fr 0.9fr 0.9fr 0.8fr 0.7fr;
     padding: 0.5rem 1.2rem;
     background: #f4f6fd;
     border-bottom: 1.5px solid #e8ecf7;
@@ -116,15 +153,16 @@
       text-transform: uppercase;
       color: #8895b3;
     }
+
+    @media (max-width: 768px) { display: none; } // hide header on mobile — card layout handles it
   }
 
-  // ─── TABLE BODY ──────────────────────────────────────────────
   .txn-body { width: 100%; }
 
-  // ─── DATA ROW — 7 cols ───────────────────────────────────────
+  // ─── DESKTOP DATA ROW ────────────────────────────────────────
   .txn-row {
     display: grid;
-    grid-template-columns: 1.8fr 1fr 1.6fr 0.9fr 0.9fr 0.8fr 0.7fr; // ← 7th col: Invoice
+    grid-template-columns: 1.8fr 1fr 1.6fr 0.9fr 0.9fr 0.8fr 0.7fr;
     padding: 0.55rem 1.2rem;
     align-items: center;
     border-bottom: 1px solid #f0f3fa;
@@ -133,9 +171,26 @@
 
     &:last-child { border-bottom: none; }
     &:hover { background: #f7f9ff; }
+
+    // ── Mobile: switch to card layout ──
+    @media (max-width: 768px) {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 12px 14px;
+      gap: 0;
+      border-bottom: 1px solid #eef1f9;
+      position: relative;
+
+      // Top row: date + amount side by side
+      &::before { display: none; }
+
+      // Override: each child stacks differently — handled via .txn-mobile-* helpers below
+      // but we use the existing cell classes with overrides
+    }
   }
 
-  // ─── SKELETON ROW — 7 cols ───────────────────────────────────
+  // ─── SKELETON ROW ────────────────────────────────────────────
   .txn-skeleton-row {
     display: grid;
     grid-template-columns: 1.8fr 1fr 1.6fr 0.9fr 0.9fr 0.8fr 0.7fr;
@@ -145,15 +200,26 @@
     align-items: center;
 
     &:last-child { border-bottom: none; }
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr 1fr;
+      padding: 12px 14px;
+      gap: 8px;
+    }
   }
 
-  // ─── DATE CELL ───────────────────────────────────────────────
+  // ─── CELL STYLES (used in both desktop + mobile) ──────────────
+
   .date-cell {
     .date-main { font-size: 12px; font-weight: 600; color: #1e2a45; }
     .date-time  { font-size: 9.5px; color: #a0aec0; margin-top: 1px; font-family: 'DM Mono', monospace; }
+
+    @media (max-width: 768px) {
+      .date-main { font-size: 11px; }
+      .date-time  { font-size: 9px; }
+    }
   }
 
-  // ─── PARTNER BADGE ───────────────────────────────────────────
   .partner-badge {
     display: inline-flex;
     align-items: center;
@@ -164,31 +230,39 @@
     border: 1px solid #d8d6ff;
 
     .partner-dot { width: 5px; height: 5px; border-radius: 50%; background: #6c63ff; flex-shrink: 0; }
-    span          { font-size: 11px; font-weight: 600; color: #6c63ff; }
+    span { font-size: 11px; font-weight: 600; color: #6c63ff; }
+
+    @media (max-width: 768px) {
+      padding: 2px 6px;
+      span { font-size: 10px; }
+    }
   }
 
-  // ─── SERVICE CELL ────────────────────────────────────────────
   .service-name {
     font-size: 12px; font-weight: 600; color: #1e2a45;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+
+    @media (max-width: 768px) { font-size: 13px; white-space: normal; }
   }
   .service-sub { font-size: 9.5px; color: #a0aec0; margin-top: 1px; }
 
-  // ─── AMOUNT CELL ─────────────────────────────────────────────
-  .amount-cell { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 600; color: #1e2a45; }
+  .amount-cell {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; font-weight: 600; color: #1e2a45;
 
-  // ─── BILLING PILL ────────────────────────────────────────────
+    @media (max-width: 768px) { font-size: 14px; font-weight: 700; }
+  }
+
   .billing-pill {
     display: inline-block;
     font-size: 10px; font-weight: 600;
     padding: 2px 8px; border-radius: 20px;
     background: #e0fdf4; color: #0d9e6e;
-    border: 1.5px solid rgba(13, 158, 110, 0.2);
+    border: 1.5px solid rgba(13,158,110,.2);
 
-    &.monthly { background: #fff4e6; color: #e07a10; border-color: rgba(224, 122, 16, 0.2); }
+    &.monthly { background: #fff4e6; color: #e07a10; border-color: rgba(224,122,16,.2); }
   }
 
-  // ─── STATUS INDICATORS ───────────────────────────────────────
   %status-base {
     display: inline-flex; align-items: center; gap: 4px;
     font-size: 11px; font-weight: 600;
@@ -199,69 +273,44 @@
     }
   }
 
-  .status-paid    { @extend %status-base; color: #0d9e6e; &::before { background: #0d9e6e; box-shadow: 0 0 0 2px rgba(13, 158, 110, 0.16); } }
-  .status-pending { @extend %status-base; color: #e07a10; &::before { background: #f5a742; box-shadow: 0 0 0 2px rgba(245, 167, 66, 0.16); } }
-  .status-failed  { @extend %status-base; color: #d63d3d; &::before { background: #e86060; box-shadow: 0 0 0 2px rgba(232, 96, 96, 0.16); } }
+  .status-paid    { @extend %status-base; color: #0d9e6e; &::before { background: #0d9e6e; box-shadow: 0 0 0 2px rgba(13,158,110,.16); } }
+  .status-pending { @extend %status-base; color: #e07a10; &::before { background: #f5a742; box-shadow: 0 0 0 2px rgba(245,167,66,.16); } }
+  .status-failed  { @extend %status-base; color: #d63d3d; &::before { background: #e86060; box-shadow: 0 0 0 2px rgba(232,96,96,.16); } }
   .status-default { @extend %status-base; color: #8895b3; &::before { background: #b0bdd4; } }
 
- .invoice-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px;                // 🔥 smaller
-  border-radius: 6px;              // 🔥 small rectangle
-  border: 1px solid rgba(108, 99, 255, 0.25);
+  .invoice-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(108,99,255,.25);
+    background: linear-gradient(135deg, rgba(108,99,255,.08), rgba(108,99,255,.02));
+    color: #6c63ff;
+    font-size: 9.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
 
-  background: linear-gradient(
-    135deg,
-    rgba(108, 99, 255, 0.08),
-    rgba(108, 99, 255, 0.02)
-  );                                // 🔥 light gradient
+    svg { width: 12px; height: 12px; stroke: #6c63ff; }
 
-  color: #6c63ff;
-  font-size: 9.5px;                 // 🔥 smaller text
-  font-weight: 600;
-  cursor: pointer;
-
-  transition: all 0.15s ease;
-  white-space: nowrap;
-
-  svg {
-    width: 12px;
-    height: 12px;
-    stroke: #6c63ff;
+    &--loading { border-color: #a0aec0; color: #a0aec0; }
   }
 
-
-    // Loading state
-    &--loading {
-      border-color: #a0aec0;
-      color: #a0aec0;
-    }
-  }
-
-  // Spinner inside the button
   .invoice-btn__spinner {
     display: inline-block;
-    width: 11px;
-    height: 11px;
-    border: 2px solid rgba(160, 174, 192, 0.35);
+    width: 11px; height: 11px;
+    border: 2px solid rgba(160,174,192,.35);
     border-top-color: #a0aec0;
     border-radius: 50%;
     animation: invoice-spin 0.65s linear infinite;
     flex-shrink: 0;
   }
 
-  @keyframes invoice-spin {
-    to { transform: rotate(360deg); }
-  }
+  @keyframes invoice-spin { to { transform: rotate(360deg); } }
 
-  // N/A placeholder for non-paid rows
-  .invoice-na {
-    font-size: 12px;
-    color: #c8d0e0;
-    font-weight: 500;
-  }
+  .invoice-na { font-size: 12px; color: #c8d0e0; font-weight: 500; }
 
   // ─── EMPTY STATE ─────────────────────────────────────────────
   .txn-empty {
@@ -273,21 +322,94 @@
     .empty-sub   { font-size: 11px; color: #a0aec0; }
   }
 
-  // ─── RESPONSIVE ──────────────────────────────────────────────
-  @media (max-width: 900px) {
-    .txn-summary-strip { grid-template-columns: 1fr; padding: 0.75rem 16px 0; }
-    .txn-tabs          { padding: 0 16px; }
-    .txn-table-wrap    { margin: 0 16px 1.5rem; }
+  // ─── MOBILE CARD OVERRIDES ────────────────────────────────────
+  // Restructure each .txn-row into a readable card on small screens
+  @media (max-width: 768px) {
 
-    // On mobile: hide Partner + Billing columns, keep Invoice
-    .txn-header-row,
-    .txn-row,
-    .txn-skeleton-row {
-      grid-template-columns: 1.4fr 1.2fr 1fr 0.9fr 0.7fr;
+    .txn-row {
+      // Row 1: service name (full width)
+      // Row 2: date+time  |  amount  (space-between)
+      // Row 3: billing pill  |  status  (space-between)
+      // Row 4: invoice btn (right-aligned, only if applicable)
 
-      // hide Partner (2nd) and Billing (5th)
-      > *:nth-child(2),
-      > *:nth-child(5) { display: none; }
+      // We use display:flex + flex-wrap to reflow the existing cells
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 12px 14px 10px;
+
+      // Service name — full width, shown first
+      .service-name {
+        order: 1;
+        width: 100%;
+        font-size: 13px;
+        font-weight: 700;
+        color: #1e2a45;
+        white-space: normal;
+        margin-bottom: 2px;
+      }
+
+      .service-sub {
+        order: 2;
+        width: 100%;
+        font-size: 10px;
+        color: #a0aec0;
+        margin-top: -2px;
+        margin-bottom: 4px;
+      }
+
+      // Date cell — left side of row 2
+      .date-cell {
+        order: 3;
+        flex: 1;
+        min-width: 0;
+
+        .date-main { font-size: 11px; color: #5a6a8a; font-weight: 500; }
+        .date-time  { font-size: 10px; margin-top: 1px; }
+      }
+
+      // Amount — right side of row 2, prominent
+      .amount-cell {
+        order: 4;
+        flex-shrink: 0;
+        font-size: 15px;
+        font-weight: 700;
+        color: #1e2a45;
+        text-align: right;
+      }
+
+      // Partner badge — left, row 3
+      .partner-badge {
+        order: 5;
+        flex: 1;
+        margin-top: 4px;
+      }
+
+      // Status — right of row 3
+      .status-paid,
+      .status-pending,
+      .status-failed,
+      .status-default {
+        order: 6;
+        flex-shrink: 0;
+        margin-top: 4px;
+        text-align: right;
+        font-size: 11px;
+      }
+
+      // Billing pill — row 4 left
+      .billing-pill {
+        order: 7;
+        margin-top: 4px;
+      }
+
+      // Invoice btn — row 4 right
+      .invoice-btn,
+      .invoice-na {
+        order: 8;
+        margin-left: auto;
+        margin-top: 4px;
+      }
     }
   }
 }

@@ -30,141 +30,72 @@ const parseDuration = (raw) => {
     }
 };
 
-// ─── Layer Card Component ─────────────────────────────────────────────────────
-const LayerCard = ({ type, name, description, length, access }) => {
-    const config = {
-        macro: {
-            label: "MACRO",
-            borderColor: "#0d6b6e",
-            labelColor: "#0d6b6e",
-            bgColor: "#e6f3f4",
-            icon: "◈",
-        },
-        micro: {
-            label: "MICRO",
-            borderColor: "#3b82f6",
-            labelColor: "#3b82f6",
-            bgColor: "#eff6ff",
-            icon: "◆",
-        },
-        nano: {
-            label: "NANO",
-            borderColor: "#a855f7",
-            labelColor: "#a855f7",
-            bgColor: "#faf5ff",
-            icon: "◇",
-        },
-    };
-    const c = config[type];
+// ─── Layer Configuration ─────────────────────────────────────────────────────
+const LAYER_CONFIG = {
+    macro: { label: "MACRO", color: "#0d6b6e", bg: "#e6f3f4", icon: "◈" },
+    micro: { label: "MICRO", color: "#3b82f6", bg: "#eff6ff", icon: "◆" },
+    nano:  { label: "NANO",  color: "#a855f7", bg: "#faf5ff", icon: "◇" },
+};
 
+// ─── Layer Card Component ────────────────────────────────────────────────────
+const LayerCard = ({ type, name, description, length, access }) => {
+    const c = LAYER_CONFIG[type];
     if (!name) return null;
+
+    const isFree = access?.toLowerCase() === "free";
 
     return (
         <div
-            style={{
-                background: "#fafdff",
-                borderRadius: "16px",
-                padding: "1rem",
-                border: `1px solid #e2eaf2`,
-                borderTop: `4px solid ${c.borderColor}`,
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.5rem",
-            }}
+            className="layer-card"
+            style={{ "--layer-color": c.color, "--layer-bg": c.bg }}
         >
-            {/* Layer label */}
-            <div
-                style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.35rem",
-                    background: c.bgColor,
-                    color: c.labelColor,
-                    borderRadius: "30px",
-                    padding: "0.2rem 0.75rem",
-                    fontSize: "0.75rem",
-                    fontWeight: 700,
-                    letterSpacing: "0.06em",
-                    width: "fit-content",
-                }}
-            >
+            {/* Badge */}
+            <div className="layer-badge">
                 <span>{c.icon}</span>
                 {c.label}
             </div>
 
             {/* Name */}
-            <div style={{ fontWeight: 700, color: "#0a1c2a", fontSize: "0.95rem", lineHeight: 1.3 }}>
-                {name}
-            </div>
+            <div className="layer-name">{name}</div>
 
             {/* Description */}
             {description && (
-                <div style={{ color: "#4b5e6b", fontSize: "0.82rem", lineHeight: 1.5 }}>
-                    {description}
-                </div>
+                <div className="layer-desc">{description}</div>
             )}
 
             {/* Meta chips */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginTop: "0.25rem" }}>
-                {length && (
-                    <span
-                        style={{
-                            background: "#ecf3f9",
-                            color: "#4b5e6b",
-                            borderRadius: "30px",
-                            padding: "0.2rem 0.65rem",
-                            fontSize: "0.78rem",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.2rem",
-                        }}
-                    >
-                        ⏱ {length}
-                    </span>
-                )}
-                {access && (
-                    <span
-                        style={{
-                            background: access?.toLowerCase() === "free" ? "#d1fae5" : "#fef3c7",
-                            color: access?.toLowerCase() === "free" ? "#047857" : "#92400e",
-                            borderRadius: "30px",
-                            padding: "0.2rem 0.65rem",
-                            fontSize: "0.78rem",
-                            fontWeight: 600,
-                        }}
-                    >
-                        {access}
-                    </span>
-                )}
-            </div>
+            {(length || access) && (
+                <div className="layer-meta">
+                    {length && (
+                        <span className="meta-chip duration">⏱ {length}</span>
+                    )}
+                    {access && (
+                        <span className={`meta-chip ${isFree ? "free" : "paid"}`}>
+                            {access}
+                        </span>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
 
-// ─── Step Card Skeleton ───────────────────────────────────────────────────────
+// ─── Step Card Skeleton ─────────────────────────────────────────────────────
 const StepCardSkeleton = () => (
-    <div
-        style={{
-            background: "white",
-            borderRadius: "20px",
-            border: "1px solid #e2eaf2",
-            padding: "1.5rem",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-        }}
-    >
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem" }}>
-            <Skeleton width={260} height={28} />
-            <Skeleton width={100} height={24} />
+    <div className="step-card-skeleton">
+        <div className="skeleton-header">
+            <Skeleton width={220} height={24} />
+            <Skeleton width={80}  height={20} />
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
-            <Skeleton height={130} borderRadius={16} />
-            <Skeleton height={130} borderRadius={16} />
-            <Skeleton height={130} borderRadius={16} />
+        <div className="skeleton-grid">
+            <Skeleton height={120} borderRadius={14} />
+            <Skeleton height={120} borderRadius={14} />
+            <Skeleton height={120} borderRadius={14} />
         </div>
     </div>
 );
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Main Component ─────────────────────────────────────────────────────────
 const MyStepsAcc = ({
     search,
     setSearch,
@@ -232,6 +163,7 @@ const MyStepsAcc = ({
             setMypathsMenu("Active Steps");
         }
     }, [location.search]);
+    
     // ── API functions ─────────────────────────────────────────────────────────
     const getAllPaths = () => {
         setLoading(true);
@@ -267,17 +199,11 @@ const MyStepsAcc = ({
         if (selectedPathId) getAllStepsForPath();
     }, [selectedPathId]);
 
-    // ─── FIX 1 & 2: Fetch steps differently depending on whether we are
-    //     viewing steps for a specific path (filterPathId) or the general list.
-    //     When filterPathId is present, call /api/steps/get?path_id=... directly
-    //     (same endpoint that DraftPathView uses — works for ALL path statuses).
-    //     When not, fall back to the original status-based partner endpoint.
-    // ─────────────────────────────────────────────────────────────────────────
+    // ─── Fetch steps: different endpoint when filterPathId is present ─────────
     useEffect(() => {
         if (!userDetails?.email) return;
 
-        // ✅ FIX 1: Coming from "View Steps" on any path (active, draft, etc.)
-        // Fetch steps directly by path_id — no status filter applied.
+        // Coming from "View Steps" on any path (active, draft, etc.)
         if (filterPathId) {
             setLoading(true);
             axios
@@ -291,10 +217,10 @@ const MyStepsAcc = ({
                 })
                 .catch(console.error)
                 .finally(() => setLoading(false));
-            return; // skip the status-based fetch below
+            return;
         }
 
-        // Normal flow (My Steps tab — no path filter in URL)
+        // Normal flow (My Steps tab)
         const status = mypathsMenu === "Inactive Steps" ? "inactive" : "active";
         axios
             .get(`${BASE_URL}/api/steps/partner?email=${userDetails.email}&status=${status}`)
@@ -302,8 +228,7 @@ const MyStepsAcc = ({
                 if (data.status) setPartnerStepsData(data.data);
             })
             .catch(console.error);
-
-    }, [mypathsMenu, filterPathId]); // ✅ FIX 2: added filterPathId to deps
+    }, [mypathsMenu, filterPathId, userDetails?.email]);
 
     const getNewPath = () => {
         setLoading(true);
@@ -624,24 +549,19 @@ const MyStepsAcc = ({
         return map;
     }, [partnerPathData]);
 
-    // ─── FIX 3: filteredSteps — when filterPathId is present, data is already
-    //     scoped to that path from the API, so skip the stepToPathMap check.
-    //     Previously this check always returned false for draft path steps
-    //     because stepToPathMap was built only from active paths.
-    // ─────────────────────────────────────────────────────────────────────────
+    // ─── Filtered steps: skip path mapping when filterPathId is present ───────
     const filteredSteps = partnerStepsData?.filter((step) => {
         const title = step?.macro_name || step?.name || "";
         const desc = step?.macro_description || step?.description || "";
         const q = search?.toLowerCase() || "";
         if (!title.trim()) return false;
 
-        // ✅ FIX 3: When coming from "View Steps", steps are already filtered
-        // by path_id at the API level — just apply the search query filter.
+        // When coming from "View Steps", steps are already filtered by path_id
         if (filterPathId) {
             return title.toLowerCase().includes(q) || desc.toLowerCase().includes(q);
         }
 
-        // Normal My Steps view — apply path name filter via stepToPathMap
+        // Normal My Steps view
         const linkedToPath = stepToPathMap[step._id?.toString()] === decodeURIComponent(filterPathName || "");
         if (filterPathName && !linkedToPath) return false;
 
@@ -653,7 +573,6 @@ const MyStepsAcc = ({
     // ═══════════════════════════════════════════════════════════════════════════
     return (
         <div className="mypaths">
-
             {/* ── Main Content ───────────────────────────────────────────── */}
             <div className="mypaths-content">
 
@@ -779,205 +698,101 @@ const MyStepsAcc = ({
                         </div>
                     </div>
                 ) : (
-                    /* ── Card List ─────────────────────────────────────────── */
-                    <div
-                        style={{
-                            padding: "1.5rem",
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "1.25rem",
-                            paddingBottom: "2rem",
-                        }}
-                    >
-                        {/* Back to Paths banner — only shown when coming from View Steps */}
+                    /* ── Card List Block (REPLACED) ───────────────────────────────── */
+                    <div className="steps-card-list">
+                        {/* Back-to-paths banner */}
                         {filterPathId && (
-                            <div style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "0.75rem",
-                                background: "#e6f3f4",
-                                borderRadius: "12px",
-                                padding: "0.75rem 1.25rem",
-                            }}>
+                            <div className="steps-back-banner">
                                 <span
+                                    className="back-link"
                                     onClick={() => navigate("/dashboard/accountants/paths")}
-                                    style={{ cursor: "pointer", color: "#0d6b6e", fontWeight: 600, fontSize: "0.9rem" }}
                                 >
                                     ← Back to Paths
                                 </span>
-                                <span style={{ color: "#4b5e6b", fontSize: "0.9rem" }}>
-                                    Showing Steps For: <strong>{decodeURIComponent(filterPathName || "")}</strong>
+                                <span className="back-label">
+                                    Showing steps for: <strong>{decodeURIComponent(filterPathName || "")}</strong>
                                 </span>
                             </div>
                         )}
 
-                        {loading ? (
-                            Array(3)
-                                .fill("")
-                                .map((_, i) => <StepCardSkeleton key={i} />)
-                        ) : filteredSteps?.length === 0 ? (
-                            <div
-                                style={{
-                                    textAlign: "center",
-                                    padding: "4rem 2rem",
-                                    color: "#8fa3b4",
-                                }}
-                            >
-                                <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>📌</div>
-                                <div style={{ fontSize: "1.1rem", fontWeight: 600 }}>No Steps Found</div>
-                                <div style={{ fontSize: "0.9rem", marginTop: "0.4rem" }}>
-                                    Try Adjusting Your Search Or Add A New Step.
-                                </div>
+                        {/* Loading skeletons */}
+                        {loading && Array(3).fill("").map((_, i) => <StepCardSkeleton key={i} />)}
+
+                        {/* Empty state */}
+                        {!loading && filteredSteps?.length === 0 && (
+                            <div className="steps-empty">
+                                <div className="steps-empty-icon">📌</div>
+                                <div className="steps-empty-title">No Steps Found</div>
+                                <div className="steps-empty-sub">Try adjusting your search or add a new step.</div>
                             </div>
-                        ) : (
-                            filteredSteps?.map((step) => {
-                                const pathName =
-                                    stepToPathMap[step._id?.toString()] ||
-                                    stepToPathMap[step._id] ||
-                                    null;
+                        )}
 
-                                const macroDuration =
-                                    parseDuration(step.macro_length) || `${step.length || 0} Days`;
-                                const microDuration = parseDuration(step.micro_length);
-                                const nanoDuration = parseDuration(step.nano_length);
+                        {/* Step cards */}
+                        {!loading && filteredSteps?.map((step) => {
+                            const pathName = stepToPathMap[step._id?.toString()] || stepToPathMap[step._id] || null;
+                            const macroDuration = parseDuration(step.macro_length) || `${step.length || 0} Days`;
+                            const microDuration = parseDuration(step.micro_length);
+                            const nanoDuration = parseDuration(step.nano_length);
+                            const isActiveStep = mypathsMenu !== "Inactive Steps";
 
-                                const isActive = mypathsMenu !== "Inactive Steps";
-
-                                return (
-                                    <div
-                                        key={step._id}
-                                        onClick={() => {
-                                            setSelectedStep(step);
-                                            setSelectedStepId(step._id);
-                                            setStepActionEnabled(true);
-                                        }}
-                                        style={{
-                                            background: "white",
-                                            borderRadius: "20px",
-                                            border: "1px solid #e2eaf2",
-                                            padding: "1.4rem 1.5rem",
-                                            boxShadow: "0 2px 10px rgba(0,20,40,0.04)",
-                                            cursor: "pointer",
-                                            transition: "box-shadow 0.2s, transform 0.15s",
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.boxShadow = "0 8px 28px rgba(0,40,60,0.09)";
-                                            e.currentTarget.style.transform = "translateY(-1px)";
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,20,40,0.04)";
-                                            e.currentTarget.style.transform = "translateY(0)";
-                                        }}
-                                    >
-                                        {/* ── Card Header ──────────────────────────── */}
-                                        <div
-                                            style={{
-                                                display: "flex",
-                                                flexWrap: "wrap",
-                                                alignItems: "center",
-                                                justifyContent: "space-between",
-                                                gap: "0.75rem",
-                                                paddingBottom: "1rem",
-                                                marginBottom: "1rem",
-                                                borderBottom: "1px solid #ecf3f9",
-                                            }}
-                                        >
-                                            <div
-                                                style={{
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    flexWrap: "wrap",
-                                                    gap: "0.6rem",
-                                                }}
-                                            >
-                                                <h3
-                                                    style={{
-                                                        fontSize: "1.15rem",
-                                                        fontWeight: 700,
-                                                        color: "#0a1c2a",
-                                                        margin: 0,
-                                                    }}
-                                                >
-                                                    {step.macro_name || step.name || "Untitled Step"}
-                                                </h3>
-
-                                                {/* Path badge */}
-                                                {pathName && (
-                                                    <span
-                                                        style={{
-                                                            background: "#e6f3f4",
-                                                            color: "#0d6b6e",
-                                                            borderRadius: "30px",
-                                                            padding: "0.25rem 0.8rem",
-                                                            fontSize: "0.78rem",
-                                                            fontWeight: 600,
-                                                            display: "flex",
-                                                            alignItems: "center",
-                                                            gap: "0.25rem",
-                                                        }}
-                                                    >
-                                                        🔗 {pathName}
-                                                    </span>
-                                                )}
-
-                                                {/* Status badge */}
-                                                <span
-                                                    style={{
-                                                        background: isActive ? "#d1fae5" : "#fee2e2",
-                                                        color: isActive ? "#047857" : "#b91c1c",
-                                                        borderRadius: "30px",
-                                                        padding: "0.22rem 0.8rem",
-                                                        fontSize: "0.72rem",
-                                                        fontWeight: 700,
-                                                        letterSpacing: "0.05em",
-                                                        textTransform: "uppercase",
-                                                    }}
-                                                >
-                                                    {isActive ? "Active" : "Inactive"}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        {/* ── Three-Layer Grid ─────────────────────── */}
-                                        <div
-                                            style={{
-                                                display: "grid",
-                                                gridTemplateColumns: "repeat(3, 1fr)",
-                                                gap: "1rem",
-                                            }}
-                                        >
-                                            <LayerCard
-                                                type="macro"
-                                                name={step.macro_name || step.name}
-                                                description={step.macro_description || step.description}
-                                                length={macroDuration}
-                                                access={step.macro_access || step.cost || "Free"}
-                                            />
-                                            <LayerCard
-                                                type="micro"
-                                                name={step.micro_name}
-                                                description={step.micro_description}
-                                                length={microDuration}
-                                                access={step.micro_access}
-                                            />
-                                            <LayerCard
-                                                type="nano"
-                                                name={step.nano_name}
-                                                description={step.nano_description}
-                                                length={nanoDuration}
-                                                access={step.nano_access}
-                                            />
+                            return (
+                                <div
+                                    key={step._id}
+                                    className="step-card"
+                                    onClick={() => {
+                                        setSelectedStep(step);
+                                        setSelectedStepId(step._id);
+                                        setStepActionEnabled(true);
+                                    }}
+                                >
+                                    {/* Header */}
+                                    <div className="step-card-header">
+                                        <h3 className="step-card-title">
+                                            {step.macro_name || step.name || "Untitled Step"}
+                                        </h3>
+                                        <div className="step-card-badges">
+                                            {pathName && (
+                                                <span className="badge-path">🔗 {pathName}</span>
+                                            )}
+                                            <span className={`badge-status ${isActiveStep ? "active" : "inactive"}`}>
+                                                {isActiveStep ? "Active" : "Inactive"}
+                                            </span>
                                         </div>
                                     </div>
-                                );
-                            })
-                        )}
+
+                                    {/* Three-layer grid — stacks on mobile, row on tablet+ */}
+                                    <div className="step-layers-grid">
+                                        <LayerCard
+                                            type="macro"
+                                            name={step.macro_name || step.name}
+                                            description={step.macro_description || step.description}
+                                            length={macroDuration}
+                                            access={step.macro_access || step.cost || "Free"}
+                                        />
+                                        <LayerCard
+                                            type="micro"
+                                            name={step.micro_name}
+                                            description={step.micro_description}
+                                            length={microDuration}
+                                            access={step.micro_access}
+                                        />
+                                        <LayerCard
+                                            type="nano"
+                                            name={step.nano_name}
+                                            description={step.nano_description}
+                                            length={nanoDuration}
+                                            access={step.nano_access}
+                                        />
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
 
                 {/* ═══════════════════════════════════════════════════════════
                         PATH ACTION PANEL
-                    ══════════════════════════════════════════════════════════════ */}
+                    ═══════════════════════════════════════════════════════════ */}
                 {pathActionEnabled && (
                     <div className="acc-popular1">
                         <div

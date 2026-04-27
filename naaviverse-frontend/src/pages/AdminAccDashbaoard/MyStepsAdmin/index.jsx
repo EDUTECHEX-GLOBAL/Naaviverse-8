@@ -486,7 +486,7 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
                           ? new Date(e.createdAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
                           : "—"}
                       </span>
-                      <span className="admin-step-mkt-count">🛒 {serviceCountMap[e._id] ?? 0}</span>
+  
                     </div>
                     <span
                       className="admin-step-actions-pill"

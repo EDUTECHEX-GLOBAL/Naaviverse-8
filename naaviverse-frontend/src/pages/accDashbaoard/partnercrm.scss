@@ -32,7 +32,6 @@
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     }
 
-    // Decorative circles
     &::before {
       content: '';
       position: absolute;
@@ -57,37 +56,30 @@
       pointer-events: none;
     }
 
-    // ── Blue (Total Clients) — pastel periwinkle ─────────────────────────────
     &.blue {
       background: linear-gradient(135deg, #a5b4fc 0%, #818cf8 100%);
       box-shadow: 0 4px 14px rgba(129, 140, 248, 0.28);
       border: 1px solid rgba(255, 255, 255, 0.3);
-
       .cs-label, .cs-sub { color: rgba(255, 255, 255, 1); }
       .cs-value { color: #ffffff; }
     }
 
-    // ── Pink (Total Revenue) — replaces orange ───────────────────────────────
     &.orange {
       background: linear-gradient(135deg, #f9a8d4 0%, #ec4899 100%);
       box-shadow: 0 4px 14px rgba(236, 72, 153, 0.28);
       border: 1px solid rgba(255, 255, 255, 0.3);
-
       .cs-label, .cs-sub { color: rgba(255, 255, 255, 1); }
       .cs-value { color: #ffffff; }
     }
 
-    // ── Emerald (Total Purchases) — pastel mint ──────────────────────────────
     &.emerald {
       background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%);
       box-shadow: 0 4px 14px rgba(52, 211, 153, 0.28);
       border: 1px solid rgba(255, 255, 255, 0.3);
-
       .cs-label, .cs-sub { color: rgba(255, 255, 255, 1); }
       .cs-value { color: #ffffff; }
     }
 
-    // ── Legacy aliases (teal / violet / rose) kept for safety ────────────────
     &.teal {
       background: linear-gradient(135deg, #5eead4 0%, #2dd4bf 100%);
       box-shadow: 0 4px 14px rgba(45, 212, 191, 0.25);
@@ -136,7 +128,7 @@
     }
   }
 
-  // ─── TOP TABS (Clients / Purchases) ─────────────────────────────────────────
+  // ─── TOP TABS ────────────────────────────────────────────────────────────────
   .crm-top-tabs {
     display: flex;
     align-items: center;
@@ -156,14 +148,6 @@
     color: #64748b;
     background: #eef2f6;
     user-select: none;
-
-    // &:hover {  color: #64748b; }
-
-    // &.active {
-    //   background: #eef2f6;
-    //   color: #fff;
-    //   //box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
-    // }
   }
 
   // ─── PURCHASE FILTER TABS ────────────────────────────────────────────────────
@@ -173,6 +157,10 @@
     gap: 6px;
     padding: 0 28px;
     margin-bottom: 0.6rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
   }
 
   .purchase-filter-tab {
@@ -186,6 +174,8 @@
     color: #64748b;
     background: #ffffff;
     user-select: none;
+    white-space: nowrap;
+    flex-shrink: 0;
 
     &:hover {
       border-color: #c4b5fd;
@@ -239,9 +229,7 @@
   }
 
   // ─── TABLE BODY ──────────────────────────────────────────────────────────────
-  .crm-table-body {
-    width: 100%;
-  }
+  .crm-table-body { width: 100%; }
 
   // ─── DATA ROW ────────────────────────────────────────────────────────────────
   .crm-data-row {
@@ -261,7 +249,6 @@
     gap: 0.8rem;
     border-bottom: 1px solid #f1f5f9;
     align-items: center;
-
     &:last-child { border-bottom: none; }
   }
 
@@ -270,6 +257,7 @@
     display: flex;
     align-items: center;
     gap: 9px;
+    min-width: 0; // allows text-overflow to work inside flex
   }
 
   .client-avatar {
@@ -297,18 +285,27 @@
     font-weight: 600;
     color: #1e293b;
     line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .client-sub {
     font-size: 9.5px;
     color: #94a3b8;
     margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   // ─── GENERIC CELL ────────────────────────────────────────────────────────────
   .crm-cell {
     font-size: 11.5px;
     color: #334155;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     &.mono {
       font-family: 'DM Mono', monospace;
@@ -422,33 +419,10 @@
     }
   }
 
-  .status-paid {
-    @extend %status-base;
-    background: #ecfdf5;
-    color: #059669;
-    &::before { background: #059669; }
-  }
-
-  .status-pending {
-    @extend %status-base;
-    background: #fffbeb;
-    color: #d97706;
-    &::before { background: #fbbf24; }
-  }
-
-  .status-failed {
-    @extend %status-base;
-    background: #fef2f2;
-    color: #e11d48;
-    &::before { background: #fb7185; }
-  }
-
-  .status-default {
-    @extend %status-base;
-    background: #f8fafc;
-    color: #94a3b8;
-    &::before { background: #cbd5e1; }
-  }
+  .status-paid    { @extend %status-base; background: #ecfdf5; color: #059669; &::before { background: #059669; } }
+  .status-pending { @extend %status-base; background: #fffbeb; color: #d97706; &::before { background: #fbbf24; } }
+  .status-failed  { @extend %status-base; background: #fef2f2; color: #e11d48; &::before { background: #fb7185; } }
+  .status-default { @extend %status-base; background: #f8fafc; color: #94a3b8; &::before { background: #cbd5e1; } }
 
   // ─── EMPTY STATE ─────────────────────────────────────────────────────────────
   .crm-empty {
@@ -460,30 +434,208 @@
     .empty-sub   { font-size: 11px; color: #94a3b8; }
   }
 
-  // ─── RESPONSIVE ──────────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  RESPONSIVE — 1024px: hide less important columns
+  // ═══════════════════════════════════════════════════════════════════════════
   @media (max-width: 1024px) {
     .clients-grid {
-      grid-template-columns: 1.8fr 1.4fr 1fr 0.8fr;
-      span:nth-child(4), div:nth-child(4),
-      span:nth-child(5), div:nth-child(5) { display: none; }
+      grid-template-columns: 2fr 1.4fr 1fr 0.8fr;
+
+      // Hide Country (4th) and Purchases (6th) header spans
+      span:nth-child(4),
+      span:nth-child(6) { display: none; }
+
+      // Hide Country (4th) and Purchases (6th) data cells
+      .crm-data-row > *:nth-child(4),
+      .crm-data-row > *:nth-child(6) { display: none; }
     }
   }
 
-  @media (max-width: 900px) {
-    .crm-summary-strip        { grid-template-columns: 1fr; padding: 0.75rem 16px 0; gap: 8px; }
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  RESPONSIVE — 768px: strip down further, compact padding
+  // ═══════════════════════════════════════════════════════════════════════════
+  @media (max-width: 768px) {
+    .crm-summary-strip {
+      grid-template-columns: 1fr;
+      padding: 0.75rem 16px 0;
+      gap: 8px;
+    }
+
     .crm-top-tabs,
-    .purchase-filter-tabs     { padding: 0 16px; }
-    .crm-table-wrap           { margin: 0 16px 1.5rem; }
+    .purchase-filter-tabs { padding: 0 16px; }
+
+    .crm-table-wrap { margin: 0 16px 1.5rem; }
 
     .clients-grid {
-      grid-template-columns: 1.5fr 1fr 0.7fr;
-      span:nth-child(n+4), div:nth-child(n+4) { display: none; }
+      grid-template-columns: 1.8fr 1fr;
+
+      span:nth-child(n+3),
+      span:nth-child(n+3) { display: none; }
     }
 
     .purchases-grid {
-      grid-template-columns: 1.4fr 1.2fr 0.8fr 0.8fr;
-      span:nth-child(3), div:nth-child(3),
-      span:nth-child(5), div:nth-child(5) { display: none; }
+      grid-template-columns: 1.6fr 1fr 0.9fr;
+
+      span:nth-child(3),
+      span:nth-child(5) { display: none; }
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  RESPONSIVE — 480px: CARD-BASED LAYOUT (replaces table grid entirely)
+  //  Each row becomes a self-contained card with labeled key-value pairs.
+  // ═══════════════════════════════════════════════════════════════════════════
+  @media (max-width: 480px) {
+    .crm-summary-strip {
+      grid-template-columns: 1fr;
+      padding: 0.6rem 12px 0;
+      gap: 8px;
+    }
+
+    .crm-summary-card {
+      padding: 0.6rem 1rem;
+      .cs-value { font-size: 20px; }
+    }
+
+    .crm-top-tabs,
+    .purchase-filter-tabs { padding: 0 12px; }
+
+    .crm-table-wrap {
+      margin: 0 12px 1.5rem;
+      border-radius: 12px;
+    }
+
+    // ── Hide the desktop table header entirely on mobile ──────────────────
+    .crm-table-header { display: none !important; }
+
+    // ── Clients: card layout ──────────────────────────────────────────────
+    .crm-data-row.clients-grid {
+      display: flex;
+      flex-direction: column;
+      padding: 0.75rem 1rem;
+      gap: 0;
+      border-bottom: 1px solid #f1f5f9;
+
+      &:last-child { border-bottom: none; }
+      &:hover { background: #faf9fe; }
+
+      // Show ALL children as flex rows
+      > * { display: flex !important; }
+
+      // ── Top row: avatar + name (full width) ──────────────────────────
+      .client-name-cell {
+        width: 100%;
+        margin-bottom: 8px;
+
+        .client-name  { font-size: 13px; }
+        .client-sub   { font-size: 10px; }
+      }
+
+      // ── Detail rows: label left, value right ─────────────────────────
+      // We use data-label added via CSS counters approach — instead we
+      // piggyback on the existing crm-cell elements and show them as
+      // full-width key-value rows using ::before pseudo labels.
+      .crm-cell {
+        width: 100%;
+        justify-content: space-between;
+        align-items: center;
+        padding: 3px 0;
+        font-size: 11.5px;
+        color: #475569;
+        border-bottom: 1px dashed #f1f5f9;
+
+        &:last-child { border-bottom: none; }
+
+        // Value side
+        text-align: right;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+      }
+
+      // Email cell (2nd child in clients-grid)
+      > *:nth-child(2)::before { content: 'Email'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+
+      // Phone cell (3rd)
+      > *:nth-child(3)::before { content: 'Phone'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+
+      // Country cell (4th)
+      > *:nth-child(4)::before { content: 'Country'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+
+      // Joined cell (5th)
+      > *:nth-child(5)::before { content: 'Joined'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+
+      // Purchases cell (6th)
+      > *:nth-child(6) {
+        border-bottom: none;
+        &::before { content: 'Purchases'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+      }
+    }
+
+    // Skeleton rows on mobile
+    .crm-skeleton-row.clients-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 0.75rem 1rem;
+    }
+
+    // ── Purchases: card layout ────────────────────────────────────────────
+    .crm-data-row.purchases-grid {
+      display: flex;
+      flex-direction: column;
+      padding: 0.75rem 1rem;
+      gap: 0;
+      border-bottom: 1px solid #f1f5f9;
+
+      &:last-child { border-bottom: none; }
+      &:hover { background: #faf9fe; }
+
+      > * { display: flex !important; }
+
+      // Client cell (1st — name-cell)
+      .client-name-cell {
+        width: 100%;
+        margin-bottom: 8px;
+        .client-name { font-size: 13px; }
+        .client-sub  { font-size: 10px; }
+      }
+
+      // Shared detail row style
+      > *:nth-child(n+2) {
+        width: 100%;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 0;
+        font-size: 11.5px;
+        color: #475569;
+        border-bottom: 1px dashed #f1f5f9;
+
+        &:last-child { border-bottom: none; }
+      }
+
+      // Product (2nd)
+      > *:nth-child(2) {
+        flex-direction: row;
+        &::before { content: 'Product'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+        .product-name { font-size: 11.5px; text-align: right; }
+        .product-sub  { display: none; }
+      }
+
+      // Date (3rd)
+      > *:nth-child(3)::before { content: 'Date'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+
+      // Amount (4th)
+      > *:nth-child(4)::before { content: 'Amount'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+
+      // Billing (5th)
+      > *:nth-child(5)::before { content: 'Billing'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+
+      // Status (6th)
+      > *:nth-child(6) {
+        border-bottom: none;
+        &::before { content: 'Status'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+      }
     }
   }
 }
