@@ -17,8 +17,8 @@ const SubscriptionSchema = new mongoose.Schema(
 
     planTier: {
       type: String,
-      enum: ["gold", "silver", "platinum"],
-      default: "gold",       // ← already there, confirm it's present
+      enum: ["standard", "pro", "proplus"],
+      default: "standard",
     },
 
     billingMethod: {

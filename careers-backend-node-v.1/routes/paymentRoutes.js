@@ -17,35 +17,34 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_SECRET_KEY,
 });
 
-// ── Plan credits map ──────────────────────────────────────────────────────────
+// ── Plan credits map ──────────────────────────────────────────────
 const PLAN_CREDITS = {
   standard: 100,
   pro:      500,
   proplus:  1000,
 };
 
-// ── Helper: derive planTier from productName OR direct planTier field ─────────
-// Accepts both "Naavi Standard Plan" (productName) and "standard" (direct)
-function derivePlanFields(productName = "", planTierOverride = null) {
-  // If frontend sends planTier directly and it's valid — use it
-  if (planTierOverride && ["standard", "pro", "proplus"].includes(planTierOverride)) {
-    return { planTier: planTierOverride, tier: "micro" };
-  }
+// ── Helper: derive planTier and tier ─────────────────────────────
+function derivePlanFields(productName = "", planTierOverride = null, tierOverride = null) {
+  const validPlanTiers = ["standard", "pro", "proplus"];
+  const validTiers     = ["micro", "nano"];
 
-  // Otherwise parse from productName string
-  const name = productName.toLowerCase();
+  // Resolve planTier — use override if valid, else parse from productName
+  const planTier = validPlanTiers.includes(planTierOverride)
+    ? planTierOverride
+    : (() => {
+        const name = (productName || "").toLowerCase();
+        return name.includes("proplus") || name.includes("pro plus") ? "proplus"
+          : name.includes("pro") ? "pro"
+          : "standard";
+      })();
 
-  // IMPORTANT: check "proplus" before "pro" to avoid false match
-  const planTier = name.includes("proplus") || name.includes("pro plus")
-    ? "proplus"
-    : name.includes("pro")
-    ? "pro"
-    : name.includes("standard")
-    ? "standard"
-    : null;
+  // Resolve tier — use override if valid, else detect from productName
+  const tier = validTiers.includes(tierOverride)
+    ? tierOverride
+    : (productName || "").toLowerCase().includes("nano") ? "nano" : "micro";
 
-  // tier is always "micro" for subscriptions
-  return { planTier, tier: "micro" };
+  return { planTier, tier };
 }
 
 // ═════════════════════════════════════════
@@ -63,13 +62,13 @@ router.post("/create-order", async (req, res) => {
       profileId,
       amount,
       currency = "INR",
-      planTier: planTierFromBody,   // accept direct planTier from frontend
+      planTier: planTierFromBody,
+      tier:     tierFromBody,      // ← NOW READING tier FROM BODY
     } = req.body;
 
-    console.log("📦 productName:", productName, "| planTierFromBody:", planTierFromBody);
+    console.log("📦 productName:", productName, "| planTierFromBody:", planTierFromBody, "| tierFromBody:", tierFromBody);
 
-    // Derive planTier — try direct field first, then parse from productName
-    const { planTier, tier } = derivePlanFields(productName, planTierFromBody);
+    const { planTier, tier } = derivePlanFields(productName, planTierFromBody, tierFromBody);
 
     if (!planTier) {
       console.error("❌ Cannot derive planTier. productName:", productName, "planTierFromBody:", planTierFromBody);
@@ -97,15 +96,15 @@ router.post("/create-order", async (req, res) => {
       profileId:  profileId || null,
       amount,
       currency,
-      tier,
-      planTier,
+      tier,       // ← SAVES "micro" or "nano" correctly ✅
+      planTier,   // ← SAVES "standard"|"pro"|"proplus" correctly ✅
       status: "pending",
     });
-    console.log("✅ Payment record created:", payment._id);
+    console.log("✅ Payment record created:", payment._id, "| tier:", tier, "| planTier:", planTier);
 
     // Create Razorpay order
     const order = await razorpay.orders.create({
-      amount:   amount * 100,   // paise
+      amount:   amount * 100,
       currency,
       receipt:  "receipt_" + payment._id,
       notes: {
@@ -179,12 +178,9 @@ router.post("/verify", async (req, res) => {
       endDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
     }
 
-    // ── 4. Resolve planTier & tier ────────────────────────────────
-    // Use stored values from payment record (set at create-order time)
-    // Fallback to re-derive if somehow missing
-    const { planTier: derivedPlanTier, tier: derivedTier } = derivePlanFields(payment.productName);
-    const resolvedPlanTier = payment.planTier || derivedPlanTier || "standard";
-    const resolvedTier     = payment.tier     || derivedTier     || "micro";
+    // ── 4. Use tier/planTier from saved payment record ────────────
+    const resolvedPlanTier = payment.planTier || "standard";
+    const resolvedTier     = payment.tier     || "micro";  // reads what was saved at create-order ✅
 
     console.log(`✅ Resolved: planTier=${resolvedPlanTier}, tier=${resolvedTier}`);
 
@@ -198,8 +194,8 @@ router.post("/verify", async (req, res) => {
           productName:   payment.productName || "Naavi Platform",
           billingMethod: payment.billingMethod || "monthly",
           profileId:     payment.profileId || null,
-          tier:          resolvedTier,
-          planTier:      resolvedPlanTier,
+          tier:          resolvedTier,      // "micro" or "nano" ✅
+          planTier:      resolvedPlanTier,  // "standard"|"pro"|"proplus" ✅
           startDate:     new Date(),
           endDate,
           status:        "active",

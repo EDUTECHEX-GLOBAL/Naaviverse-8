@@ -1,13 +1,3 @@
-/**
- * ═══════════════════════════════════════════════════════════════
- *  NAAVI — paymentController.js
- *  NOTE: This project uses paymentRoutes.js as the main handler.
- *  This controller is kept as a clean reference / fallback.
- *  If your routes call these exports, they are fully aligned
- *  with the same planTier logic.
- * ═══════════════════════════════════════════════════════════════
- */
-
 const Payment      = require("../models/payment.model");
 const Subscription = require("../models/subscription.model");
 const Razorpay     = require("razorpay");
@@ -18,39 +8,46 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_SECRET_KEY,
 });
 
-// ── Price table — matches frontend PLAN_META exactly ─────────────────────────
 const PRICES = {
-  standard: { monthly: 830,  annual: 9960  },
-  pro:      { monthly: 4150, annual: 49800 },
-  proplus:  { monthly: 8300, annual: 99600 },
-};
-
-const PLAN_CREDITS = {
-  standard: 100,
-  pro:      500,
-  proplus:  1000,
+  // Micro tier plans
+  standard:      { monthly: 830,   annual: 9960   },
+  pro:           { monthly: 4150,  annual: 49800  },
+  proplus:       { monthly: 8300,  annual: 99600  },
+  // Nano tier plans
+  standard_nano: { monthly: 1660,  annual: 19920  },
+  pro_nano:      { monthly: 8300,  annual: 99600  },
+  proplus_nano:  { monthly: 16600, annual: 199200 },
 };
 
 const PLAN_LABELS = {
-  standard: "Standard",
-  pro:      "Pro",
-  proplus:  "Pro Plus",
+  standard:      "Standard",
+  pro:           "Pro",
+  proplus:       "Pro Plus",
+  standard_nano: "Standard Nano",
+  pro_nano:      "Pro Nano",
+  proplus_nano:  "Pro Plus Nano",
 };
 
-// ── Helper ────────────────────────────────────────────────────────────────────
-function derivePlanFields(productName = "", planTierOverride = null) {
-  if (planTierOverride && ["standard", "pro", "proplus"].includes(planTierOverride)) {
-    return { planTier: planTierOverride, tier: "micro" };
-  }
-  const name = productName.toLowerCase();
-  const planTier = name.includes("proplus") || name.includes("pro plus")
-    ? "proplus"
-    : name.includes("pro")
-    ? "pro"
-    : name.includes("standard")
-    ? "standard"
-    : null;
-  return { planTier, tier: "micro" };
+// ── Derive planTier and tier from request body ────────────────────
+function derivePlanFields(productName = "", planTierOverride = null, tierOverride = null) {
+  // Use explicit overrides from frontend if provided
+  const validPlanTiers = ["standard", "pro", "proplus"];
+  const validTiers     = ["micro", "nano"];
+
+  const planTier = validPlanTiers.includes(planTierOverride)
+    ? planTierOverride
+    : (() => {
+        const name = (productName || "").toLowerCase();
+        return name.includes("proplus") || name.includes("pro plus") ? "proplus"
+          : name.includes("pro") ? "pro"
+          : "standard";
+      })();
+
+  const tier = validTiers.includes(tierOverride)
+    ? tierOverride
+    : (productName || "").toLowerCase().includes("nano") ? "nano" : "micro";
+
+  return { planTier, tier };
 }
 
 // ═════════════════════════════════════════
@@ -66,16 +63,11 @@ exports.createOrder = async (req, res) => {
       profileId,
       currency = "INR",
       planTier: planTierFromBody,
+      tier:     tierFromBody,        // ← NOW READING tier FROM BODY
+      amount:   amountFromBody,
     } = req.body;
 
-    const { planTier, tier } = derivePlanFields(productName, planTierFromBody);
-
-    if (!planTier) {
-      return res.status(400).json({
-        success: false,
-        error: `Invalid plan. productName="${productName}", planTier="${planTierFromBody}"`,
-      });
-    }
+    const { planTier, tier } = derivePlanFields(productName, planTierFromBody, tierFromBody);
 
     if (!billingMethod || !["monthly", "annual"].includes(billingMethod)) {
       return res.status(400).json({
@@ -84,18 +76,25 @@ exports.createOrder = async (req, res) => {
       });
     }
 
-    const amount = PRICES[planTier][billingMethod];
+    // Use amount from frontend (supports nano pricing), fallback to PRICES table
+    const amount = amountFromBody || PRICES[planTier]?.[billingMethod];
+    if (!amount) {
+      return res.status(400).json({
+        success: false,
+        error: `Cannot determine amount for plan "${planTier}" / billing "${billingMethod}"`,
+      });
+    }
 
     const payment = await Payment.create({
       userEmail,
       productId,
-      productName:   productName || `Naavi ${PLAN_LABELS[planTier]} Plan`,
+      productName:   productName || `Naavi Plan`,
       billingMethod,
       profileId:     profileId || null,
       amount,
       currency,
-      tier,
-      planTier,
+      tier,          // ← SAVES CORRECT tier ("micro" or "nano")
+      planTier,      // ← SAVES CORRECT planTier
       status: "pending",
     });
 
@@ -109,7 +108,7 @@ exports.createOrder = async (req, res) => {
     payment.razorpayOrderId = order.id;
     await payment.save();
 
-    console.log(`✅ Order created: ${order.id} | ${planTier}/${billingMethod} | ₹${amount}`);
+    console.log(`✅ Order created: ${order.id} | ${planTier}/${tier}/${billingMethod} | ₹${amount}`);
     return res.json({ success: true, order });
 
   } catch (err) {
@@ -167,10 +166,9 @@ exports.verifyPayment = async (req, res) => {
       endDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
     }
 
-    // ── 4. Resolve plan fields ────────────────────────────────────
-    const { planTier: derivedPlanTier, tier: derivedTier } = derivePlanFields(payment.productName);
-    const resolvedPlanTier = payment.planTier || derivedPlanTier || "standard";
-    const resolvedTier     = payment.tier     || derivedTier     || "micro";
+    // ── 4. Use tier/planTier already saved on payment record ──────
+    const resolvedPlanTier = payment.planTier || "standard";
+    const resolvedTier     = payment.tier     || "micro";   // ← reads what was saved
 
     // ── 5. Upsert subscription ────────────────────────────────────
     await Subscription.findOneAndUpdate(
@@ -182,8 +180,8 @@ exports.verifyPayment = async (req, res) => {
           productName:   payment.productName || "Naavi Platform",
           billingMethod: payment.billingMethod,
           profileId:     payment.profileId || null,
-          tier:          resolvedTier,
-          planTier:      resolvedPlanTier,
+          tier:          resolvedTier,      // ← "micro" or "nano" ✅
+          planTier:      resolvedPlanTier,  // ← "standard"|"pro"|"proplus" ✅
           startDate:     new Date(),
           endDate,
           status:        "active",

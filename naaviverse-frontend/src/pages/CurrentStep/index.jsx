@@ -20,10 +20,16 @@ const PLAN_META = {
   proplus: { label: "Pro Plus", credits: 1000, monthlyPrice: "₹8,300", annualPrice: "₹99,600", monthlyAmt: 8300, annualAmt: 99600, tag: "Best Value" },
 };
 
+const NANO_PLAN_META = {
+  standard: { label: "Standard Nano", credits: 100, monthlyPrice: "₹1,660", tag: null },
+  pro: { label: "Pro Nano", credits: 500, monthlyPrice: "₹8,300", tag: "Most Popular" },
+  proplus: { label: "Pro Plus Nano", credits: 1000, monthlyPrice: "₹16,600", tag: "Best Value" },
+};
+
 const PLAN_COLORS = {
   standard: { accent: "#0a5244", bg: "#d6f0e8", border: "#8ecfbe", badge: "#0e7a62" },
-  pro:      { accent: "#2e1f9a", bg: "#e0dcfa", border: "#a89ded", badge: "#3d2eb0" },
-  proplus:  { accent: "#8a3e00", bg: "#fde8cc", border: "#f0bc78", badge: "#b05e10" },
+  pro: { accent: "#2e1f9a", bg: "#e0dcfa", border: "#a89ded", badge: "#3d2eb0" },
+  proplus: { accent: "#8a3e00", bg: "#fde8cc", border: "#f0bc78", badge: "#b05e10" },
 };
 
 const PLAN_FEATS = {
@@ -217,17 +223,17 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, initialTier = null
 
                 {/* Plan name */}
                 <div className="spc-header">
-                <span className="spc-label">{pm.label}</span>
+                  <span className="spc-label">{pm.label}</span>
                 </div>
 
                 {/* Price */}
-               <div className="spc-price">
+                <div className="spc-price">
                   {getPrice(p)}
                   <span className="spc-period">/{selectedBilling === "annual" ? "yr" : "mo"}</span>
                 </div>
 
                 {/* "2 months free" shown only on annual */}
-               <div className="spc-save">
+                <div className="spc-save">
                   {selectedBilling === "annual" ? "2 months free" : "\u00A0"}
                 </div>
 
@@ -239,7 +245,7 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, initialTier = null
                 {/* Subscribe button */}
                 <button
                   className="spc-subscribe-btn"
-                
+
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelectedTier(p);
@@ -333,6 +339,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   const [subscribedPlan, setSubscribedPlan] = useState("");
   const [subscribedPlanTier, setSubscribedPlanTier] = useState("");
   const [subGateInitialTier, setSubGateInitialTier] = useState(null);
+  const [showNanoGate, setShowNanoGate] = useState(false);
 
   /* ── Credit / wallet state ───────────────────────────────────── */
   const [walletBalance, setWalletBalance] = useState(0);
@@ -379,23 +386,24 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   };
 
   const isSubscriber = subscribed && ["standard", "pro", "proplus"].includes(subPlanTier);
-  const hasMicro = (subscribed && subTier === "micro") || creditUnlocked.micro;
+  const hasMicro = (subscribed && (subTier === "micro" || subTier === "nano")) || creditUnlocked.micro;
   const hasNano = (subscribed && subTier === "nano") || creditUnlocked.nano;
 
   /* ── Razorpay ────────────────────────────────────────────────── */
   const { initiatePayment } = useRazorpayPayment({
     userEmail,
     userDetails,
-    onSuccess: ({ tier, billing }) => {
+    onSuccess: ({ tier, billing, actualTier, basePlanTier }) => {
       localStorage.setItem(SUB_KEY, "true");
-      localStorage.setItem(SUB_TIER_KEY, "micro");
-      localStorage.setItem(SUB_PLANTIER_KEY, tier);
+      localStorage.setItem(SUB_TIER_KEY, actualTier);     // "micro" or "nano" ✅
+      localStorage.setItem(SUB_PLANTIER_KEY, basePlanTier); // "standard"|"pro"|"proplus" ✅
       setSubscribed(true);
-      setSubTier("micro");
-      setSubPlanTier(tier);
+      setSubTier(actualTier);
+      setSubPlanTier(basePlanTier);
       setShowSubGate(false);
+      setShowNanoGate(false);
       setSubscribedPlan(billing);
-      setSubscribedPlanTier(tier);
+      setSubscribedPlanTier(basePlanTier);
       setSubscribing(false);
       setSubError("");
       setShowSuccess(true);
@@ -407,36 +415,36 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   });
 
   /* ── Verify subscription from DB ─────────────────────────────── */
+  const verifySubscription = useCallback(async () => {
+    if (!userEmail || userEmail === "guest") return;
+    try {
+      const res = await axios.get(
+        `${BASE_URL}/api/subscriptions/status?email=${userEmail}&productId=${PRODUCT_ID}`
+      );
+      const isSubscribed = res.data?.subscribed === true;
+      const tier = res.data?.tier || null;
+      const planTier = res.data?.planTier || null;
+
+      localStorage.setItem(SUB_KEY, String(isSubscribed));
+      localStorage.setItem(SUB_TIER_KEY, tier || "");
+      localStorage.setItem(SUB_PLANTIER_KEY, planTier || "");
+
+      setSubscribed(isSubscribed);
+      setSubTier(isSubscribed ? tier : null);
+      setSubPlanTier(isSubscribed ? planTier : null);
+    } catch {
+      const cachedSub = localStorage.getItem(SUB_KEY) === "true";
+      const cachedTier = localStorage.getItem(SUB_TIER_KEY) || null;
+      const cachedPlanTier = localStorage.getItem(SUB_PLANTIER_KEY) || null;
+      setSubscribed(cachedSub);
+      setSubTier(cachedSub ? cachedTier : null);
+      setSubPlanTier(cachedSub ? cachedPlanTier : null);
+    }
+  }, [userEmail, SUB_KEY, SUB_TIER_KEY, SUB_PLANTIER_KEY, PRODUCT_ID]);
+
   useEffect(() => {
-    const verify = async () => {
-      if (!userEmail || userEmail === "guest") return;
-      try {
-        const res = await axios.get(
-          `${BASE_URL}/api/subscriptions/status?email=${userEmail}&productId=${PRODUCT_ID}`
-        );
-        const isSubscribed = res.data?.subscribed === true;
-        const tier = res.data?.tier || null;
-        const planTier = res.data?.planTier || null;
-
-        localStorage.setItem(SUB_KEY, String(isSubscribed));
-        localStorage.setItem(SUB_TIER_KEY, tier || "");
-        localStorage.setItem(SUB_PLANTIER_KEY, planTier || "");
-
-        setSubscribed(isSubscribed);
-        setSubTier(isSubscribed ? tier : null);
-        setSubPlanTier(isSubscribed ? planTier : null);
-      } catch {
-        const cachedSub = localStorage.getItem(SUB_KEY) === "true";
-        const cachedTier = localStorage.getItem(SUB_TIER_KEY) || null;
-        const cachedPlanTier = localStorage.getItem(SUB_PLANTIER_KEY) || null;
-        setSubscribed(cachedSub);
-        setSubTier(cachedSub ? cachedTier : null);
-        setSubPlanTier(cachedSub ? cachedPlanTier : null);
-      }
-    };
-    verify();
+    verifySubscription();
   }, [userEmail]);
-
   /* ── Fetch wallet balance + credit unlocks ───────────────────── */
   useEffect(() => {
     const stepId = localStorage.getItem("selectedStepId");
@@ -603,8 +611,96 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         <SubscriptionSuccess
           plan={subscribedPlan}
           planTier={subscribedPlanTier}
-          onStartLearning={() => setShowSuccess(false)}
+          onStartLearning={async () => {
+            await verifySubscription();
+            setShowSuccess(false);
+          }}
         />
+      </div>
+    );
+  }
+
+  if (showNanoGate) {
+    return (
+      <div className="currentstep">
+        <div className="step-bar">
+          <div className="sp active"><span className="sp-n">1</span>Current Step</div>
+          <span className="sp-arr">›</span>
+          <div className="sp"><span className="sp-n">2</span>Subscription</div>
+          <span className="sp-arr">›</span>
+          <div className="sp"><span className="sp-n">3</span>Marketplace</div>
+          <span className="sp-arr">›</span>
+          <div className="sp"><span className="sp-n">4</span>Cart</div>
+          <span className="sp-arr">›</span>
+          <div className="sp"><span className="sp-n">5</span>Confirmed</div>
+        </div>
+        {subError && (
+          <div style={{
+            background: "#fef2f2", border: "1px solid #fee2e2", color: "#b91c1c",
+            padding: "10px 20px", fontSize: "13px", fontWeight: 600, textAlign: "center",
+          }}>
+            {subError}
+          </div>
+        )}
+        <div className="sub-gate">
+          <div className="sub-gate__inner">
+            <button className="sub-gate__back"
+              onClick={() => { setShowNanoGate(false); setSubError(""); }}
+              disabled={subscribing}>
+              ← Back to Current Step
+            </button>
+            <h2 className="sub-gate__title">Upgrade to Nano View</h2>
+            <p style={{ textAlign: "center", color: "#666", marginBottom: "24px", fontSize: "14px" }}>
+              Unlock 1-on-1 Expert Sessions & Premium Mentorship
+            </p>
+            <div className="sub-plans-grid">
+              {["standard", "pro", "proplus"].map((p) => {
+                const pm = NANO_PLAN_META[p];
+                const pc = PLAN_COLORS[p];
+                return (
+                  <div key={p} className={`sub-plan-card sub-plan-card--${p}`}>
+                    {pm.tag && (
+                      <div className="spc-tag" style={{ background: pc.badge }}>{pm.tag}</div>
+                    )}
+                    <div className="spc-header">
+                      <span className="spc-label">{pm.label}</span>
+                    </div>
+                    <div className="spc-price">
+                      {pm.monthlyPrice}
+                      <span className="spc-period">/mo</span>
+                    </div>
+                    <div className="spc-save">&nbsp;</div>
+                    <div className="spc-credits">{pm.credits} Credits / Month</div>
+                    <button
+                      className="spc-subscribe-btn"
+                      disabled={subscribing}
+                      onClick={() => {
+                        setSubscribing(true);
+                        setSubError("");
+                        initiatePayment({ tier: `${p}_nano`, billing: "monthly" });
+                      }}
+                    >
+                      {subscribing ? "Activating…" : "Upgrade to Nano"}
+                    </button>
+                    <hr className="spc-divider" />
+                    <ul className="spc-feats">
+                      {[
+                        "1-on-1 Expert Sessions",
+                        "Premium Mentorship",
+                        "Nano View Access",
+                        "Priority Support",
+                      ].map((f) => (
+                        <li key={f}>
+                          <span className="spc-check" style={{ color: pc.accent }}>✓</span>{f}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -788,7 +884,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                   balance={walletBalance}
                   unlocking={unlocking.nano}
                   onUnlock={() => handleCreditUnlock("nano")}
-                  onSeePlans={() => handleSeePlans("standard")}
+                  onSeePlans={() => { setSubError(""); setShowNanoGate(true); }}  // ← FIXED
                   isSubscriber={isSubscriber}
                 />
               )}
@@ -824,7 +920,9 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                     });
                   }}>Book a Session →</button>
                 ) : (
-                  <button className="vc-btn bLocked" onClick={() => handleSeePlans("standard")}>Unlock Required</button>
+                  <button className="vc-btn bLocked" onClick={() => { setSubError(""); setShowNanoGate(true); }}>
+                    Unlock Required
+                  </button>
                 )}
               </div>
             </div>

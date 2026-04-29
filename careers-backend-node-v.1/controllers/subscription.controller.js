@@ -2,7 +2,7 @@ const Subscription = require("../models/subscription.model");
 const VaultTransaction = require("../models/VaultTransaction");
 const Payment = require("../models/payment.model");
 
-const LAYER_COST_FREEMIUM   = { micro: 2, nano: 4  };
+const LAYER_COST_FREEMIUM = { micro: 2, nano: 4 };
 const LAYER_COST_SUBSCRIBER = { micro: 5, nano: 10 };
 const PRODUCT_ID = "naavi-platform";
 
@@ -56,9 +56,9 @@ const createSubscription = async (req, res) => {
     }
 
     const validTiers = ["micro", "nano"];
-    const validPlanTiers = ["gold", "silver", "platinum"];
+    const validPlanTiers = ["standard", "pro", "proplus"];
     const resolvedTier = validTiers.includes(tier) ? tier : "micro";
-    const resolvedPlanTier = validPlanTiers.includes(planTier) ? planTier : "gold";
+    const resolvedPlanTier = validPlanTiers.includes(planTier) ? planTier : "standard";
 
     const existing = await Subscription.findOne({ userEmail, productId });
 
@@ -162,7 +162,7 @@ const checkStatus = async (req, res) => {
         success: true,
         subscribed: active,
         tier: active ? (sub.tier || "micro") : null,
-        planTier: active ? (sub.planTier || "gold") : null,
+        planTier: active ? (sub.planTier || "standard") : null,
         subscription: sub,
       });
     }
@@ -178,9 +178,9 @@ const checkStatus = async (req, res) => {
     let planTier = payment.planTier || null;
     if (!planTier && payment.productName) {
       const name = payment.productName.toLowerCase();
-      planTier = name.includes("platinum") ? "platinum"
-        : name.includes("silver") ? "silver"
-        : "gold";
+      planTier = name.includes("proplus") || name.includes("pro plus") ? "proplus"
+        : name.includes("pro") ? "pro"
+          : "standard";
     }
 
     // Derive tier (view layer) from productName
@@ -194,7 +194,7 @@ const checkStatus = async (req, res) => {
       productId,
       productName: payment.productName,
       tier,
-      planTier: planTier || "gold",
+      planTier: planTier || "standard",
       billingMethod: payment.billingMethod,
       status: "active",
       startDate: payment.createdAt || new Date(),
@@ -281,7 +281,7 @@ const renewSubscription = async (req, res) => {
     }
 
     const validTiers = ["micro", "nano"];
-    const validPlanTiers = ["gold", "silver", "platinum"];
+    const validPlanTiers = ["standard", "pro", "proplus"];
     if (tier && validTiers.includes(tier)) sub.tier = tier;
     if (planTier && validPlanTiers.includes(planTier)) sub.planTier = planTier;
 
@@ -303,10 +303,10 @@ const getAllSubscriptions = async (req, res) => {
   try {
     const { status, billingMethod, tier, planTier, page = 1, limit = 20 } = req.query;
     const filter = {};
-    if (status)        filter.status        = status;
-    if (billingMethod) filter.billingMethod  = billingMethod;
-    if (tier)          filter.tier           = tier;
-    if (planTier)      filter.planTier       = planTier;
+    if (status) filter.status = status;
+    if (billingMethod) filter.billingMethod = billingMethod;
+    if (tier) filter.tier = tier;
+    if (planTier) filter.planTier = planTier;
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
@@ -405,7 +405,7 @@ const unlockStep = async (req, res) => {
         billingMethod: "credit_only",
         status: "expired",
         tier: "credit_only",
-        planTier: "gold",
+        planTier: "standard",
         unlockedSteps: [],
       });
     }
