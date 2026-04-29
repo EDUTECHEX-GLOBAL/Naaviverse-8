@@ -3,25 +3,23 @@
 $font: 'Plus Jakarta Sans', sans-serif;
 $mono: 'DM Mono', monospace;
 
-// ── Palette ──────────────────────────────────────────────────────
-$navy:    #0f1e3c;
-$teal:    #0d9488;
-$teal-lt: #f0fdf9;
-$teal-md: #99f6e4;
-$indigo:  #6366f1;
+$navy:      #0f1e3c;
+$teal:      #0d9488;
+$teal-lt:   #f0fdf9;
+$teal-md:   #99f6e4;
+$indigo:    #6366f1;
 $indigo-lt: #eef2ff;
-$amber:   #f59e0b;
-$amber-lt:#fffbeb;
-$red:     #ef4444;
-$red-lt:  #fef2f2;
-$green:   #10b981;
-$green-lt:#ecfdf5;
-$muted:   #64748b;
-$border:  #e8edf4;
-$bg:      #f4f7fb;
-$card:    #ffffff;
+$amber:     #f59e0b;
+$amber-lt:  #fffbeb;
+$red:       #ef4444;
+$red-lt:    #fef2f2;
+$green:     #10b981;
+$green-lt:  #ecfdf5;
+$muted:     #64748b;
+$border:    #e8edf4;
+$bg:        #f4f7fb;
+$card:      #ffffff;
 
-// ── Base ──────────────────────────────────────────────────────────
 .admin-marketplace {
   font-family: $font;
   background: $bg;
@@ -32,100 +30,89 @@ $card:    #ffffff;
   @media (max-width: 768px) { padding: 16px 14px 40px; }
 }
 
-// ── HERO ──────────────────────────────────────────────────────────
-.mp-hero {
-  background: linear-gradient(135deg, #0f2650 0%, #0f3b4a 50%, #0d4a3a 100%);
-  border-radius: 22px;
-  padding: 28px 32px;
-  margin-bottom: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  position: relative;
-  overflow: hidden;
+// ── 4 STAT CARDS (reduced size) ──────────────────────────────────
+.mp-below-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 22px;
 
-  // Decorative orbs
-  &::before {
-    content: '';
-    position: absolute;
-    top: -40px; right: -40px;
-    width: 200px; height: 200px;
-    border-radius: 50%;
-    background: rgba(13,148,136,0.18);
-    pointer-events: none;
-  }
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -30px; left: 30%;
-    width: 140px; height: 140px;
-    border-radius: 50%;
-    background: rgba(99,102,241,0.12);
-    pointer-events: none;
-  }
+  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 500px) { grid-template-columns: 1fr; }
 
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 22px 20px;
-  }
-
-  .hero-content {
-    z-index: 1;
-
-    h1 {
-      font-size: 22px;
-      font-weight: 800;
-      color: #fff;
-      margin: 0 0 5px;
-      letter-spacing: -0.02em;
-    }
-
-    p {
-      font-size: 13px;
-      color: rgba(255,255,255,0.6);
-      margin: 0;
-      font-weight: 400;
-    }
-  }
-
-  .hero-stats {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    z-index: 1;
-
-    @media (max-width: 768px) { gap: 8px; }
-  }
-
-  .stat-card {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.12);
+  .mbs-card {
     border-radius: 14px;
-    padding: 14px 20px;
-    text-align: center;
-    min-width: 80px;
-    backdrop-filter: blur(4px);
+    padding: 12px 14px;        // reduced padding
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    border: 1.5px solid transparent;
+  }
 
-    .stat-value {
-      display: block;
-      font-size: 28px;
-      font-weight: 800;
-      color: #fff;
-      line-height: 1;
-      letter-spacing: -0.03em;
-    }
+  .mbs-icon-wrap {
+    width: 36px;               // reduced from 42px
+    height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
 
-    .stat-label {
-      display: block;
-      font-size: 10px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.5);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-top: 4px;
-    }
+ .mbs-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+
+  .mbs-label { margin-bottom: 4px; }   // ← space above the number
+  .mbs-sub   { margin-top: 4px; }      // ← space below the number
+}
+
+  .mbs-label {
+    font-size: 7.7px;
+    font-weight: 790;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    line-height: 1;
+  }
+  .mbs-value {
+    font-size: 22px;           // reduced from 28px
+    font-weight: 600;
+    line-height: 1.1;
+  }
+  .mbs-sub {
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  .mbs-teal {
+    background: #e6f7f5; border-color: #5DCAA5;
+    .mbs-icon-wrap { background: #9FE1CB; color: #085041; }
+    .mbs-label { color: #0F6E56; }
+    .mbs-value { color: #085041; }
+    .mbs-sub   { color: #0F6E56; }
+  }
+
+  .mbs-purple {
+    background: #EEEDFE; border-color: #AFA9EC;
+    .mbs-icon-wrap { background: #CECBF6; color: #3C3489; }
+    .mbs-label { color: #534AB7; }
+    .mbs-value { color: #26215C; }
+    .mbs-sub   { color: #534AB7; }
+  }
+
+  .mbs-green {
+    background: #EAF3DE; border-color: #97C459;
+    .mbs-icon-wrap { background: #C0DD97; color: #27500A; }
+    .mbs-label { color: #3B6D11; }
+    .mbs-value { color: #173404; }
+    .mbs-sub   { color: #3B6D11; }
+  }
+
+  .mbs-amber {
+    background: #FAEEDA; border-color: #EF9F27;
+    .mbs-icon-wrap { background: #FAC775; color: #633806; }
+    .mbs-label { color: #854F0B; }
+    .mbs-value { color: #412402; }
+    .mbs-sub   { color: #854F0B; }
   }
 }
 
@@ -168,7 +155,6 @@ $card:    #ffffff;
         border-color: $teal;
         box-shadow: 0 0 0 3px rgba(13,148,136,0.1);
       }
-
       &::placeholder { color: #b0bec5; }
     }
 
@@ -182,7 +168,7 @@ $card:    #ffffff;
   }
 }
 
-// ── SECTION LABEL ──────────────────────────────────────────────────
+// ── SECTION LABEL ─────────────────────────────────────────────────
 .mp-section-label {
   font-size: 11px;
   font-weight: 700;
@@ -212,26 +198,26 @@ $card:    #ffffff;
   @media (max-width: 640px)  { grid-template-columns: 1fr; }
 }
 
-// ── CARD ──────────────────────────────────────────────────────────
+// ── CARD — no top border, always elevated style ───────────────────
 .mp-card {
   background: $card;
   border-radius: 18px;
   border: 1.5px solid $border;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   display: flex;
   flex-direction: column;
+  // Always show the elevated state (no hover needed)
+  box-shadow: 0 6px 20px rgba(0, 20, 50, 0.07);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 32px rgba(0,20,50,0.1);
-    border-color: rgba(13,148,136,0.3);
+    box-shadow: 0 12px 32px rgba(0, 20, 50, 0.13);
+    transform: translateY(-2px);
   }
 
-  // ── Card header band ──
   .card-top {
-    padding: 16px 16px 14px;
+    padding: 14px 14px 12px;
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -247,19 +233,15 @@ $card:    #ffffff;
   }
 
   .avatar {
-    width: 42px;
-    height: 42px;
-    border-radius: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
-
     svg { width: 20px; height: 20px; }
   }
 
   .card-name {
-    font-size: 13.5px;
+    font-size: 13px;
     font-weight: 700;
     color: $navy;
     line-height: 1.35;
@@ -273,7 +255,7 @@ $card:    #ffffff;
   .price-badge {
     font-size: 10px;
     font-weight: 700;
-    padding: 4px 10px;
+    padding: 3px 9px;
     border-radius: 20px;
     white-space: nowrap;
     background: $amber-lt;
@@ -286,29 +268,28 @@ $card:    #ffffff;
   .card-divider {
     height: 1px;
     background: $border;
-    margin: 0 16px;
+    margin: 0 14px;
   }
 
   .card-body {
-    padding: 12px 16px 16px;
+    padding: 10px 14px 14px;
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
   }
 
-  .role-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
+  // .role-row {
+  //   display: flex;
+  //   align-items: center;
+  //   gap: 6px;
+  // }
 
-  .role-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
+  // .role-dot {
+  //   width: 6px; height: 6px;
+  //   border-radius: 50%;
+  //   flex-shrink: 0;
+  // }
 
   .role-label {
     font-size: 10px;
@@ -332,9 +313,9 @@ $card:    #ffffff;
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 10px;
+    padding: 6px 9px;
     background: $bg;
-    border-radius: 10px;
+    border-radius: 9px;
   }
 
   .email-icon {
@@ -343,7 +324,7 @@ $card:    #ffffff;
   }
 
   .partner-email {
-    font-size: 11px;
+    font-size: 10px;
     color: $muted;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -351,26 +332,23 @@ $card:    #ffffff;
     font-family: $mono;
   }
 
-  .view-btn {
-    width: 100%;
-    padding: 10px;
-    background: $teal-lt;
-    color: $teal;
-    border: 1.5px solid $teal-md;
-    border-radius: 30px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.18s ease;
-    font-family: $font;
-    letter-spacing: 0.01em;
+  // ── Small "View →" button ──────────────────────────────────────
+.view-btn {
+  display: block;
+  width: fit-content;        /* ← key fix, no full width */
+  margin: 4px auto 0;        /* ← centers it */
+  padding: 2px 16px;
+  color: $teal;
+  border: 1.5px solid $teal-md;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: $font;
+  transition: opacity 0.15s;
 
-    &:hover {
-      background: $teal;
-      color: #fff;
-      border-color: $teal;
-    }
-  }
+  &:hover { opacity: 0.8; }
+}
 }
 
 // ── NO ITEMS ──────────────────────────────────────────────────────
@@ -424,7 +402,7 @@ $card:    #ffffff;
 
 // ── MODAL HEAD ────────────────────────────────────────────────────
 .modal-head {
-  padding: 18px 20px 16px;
+  padding: 16px 18px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -441,18 +419,18 @@ $card:    #ffffff;
   }
 
   .modal-avatar {
-    width: 44px; height: 44px;
-    border-radius: 12px;
+    width: 42px; height: 42px;
+    border-radius: 11px;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
-    svg { width: 22px; height: 22px; }
+    svg { width: 20px; height: 20px; }
   }
 
   .modal-title-wrapper {
     flex: 1; min-width: 0;
 
     h2 {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 800;
       color: $navy;
       margin: 0 0 3px;
@@ -475,26 +453,81 @@ $card:    #ffffff;
   .modal-head-right {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     flex-shrink: 0;
   }
 
   .role-badge {
     font-size: 10px;
     font-weight: 700;
-    padding: 4px 10px;
-    border-radius: 14px;
+    padding: 3px 9px;
+    border-radius: 12px;
     font-family: $mono;
     letter-spacing: 0.04em;
   }
 
-  .modal-close {
-    width: 32px; height: 32px;
+  // ── Pencil edit icon button ────────────────────────────────────
+  .modal-edit-pencil {
+    width: 30px; height: 30px;
     border-radius: 50%;
     border: 1.5px solid $border;
     background: $card;
     cursor: pointer;
-    font-size: 18px;
+    color: $muted;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+
+    &:hover {
+      background: $indigo-lt;
+      border-color: $indigo;
+      color: $indigo;
+    }
+  }
+
+  // ── Inline save/cancel when editing ───────────────────────────
+  .modal-edit-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .modal-save-btn {
+    padding: 5px 14px;
+    border-radius: 20px;
+    background: $teal;
+    color: #fff;
+    border: none;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: $font;
+    transition: background 0.15s;
+
+    &:hover { background: darken($teal, 6%); }
+  }
+
+  .modal-cancel-btn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: transparent;
+    color: $muted;
+    border: 1.5px solid $border;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: $font;
+    transition: background 0.15s;
+
+    &:hover { background: $bg; color: $navy; }
+  }
+
+  .modal-close {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid $border;
+    background: $card;
+    cursor: pointer;
+    font-size: 17px;
     color: $muted;
     display: flex; align-items: center; justify-content: center;
     transition: all 0.15s;
@@ -512,7 +545,7 @@ $card:    #ffffff;
   &::-webkit-scrollbar-thumb { background: $border; border-radius: 4px; }
 }
 
-.modal-body { padding: 20px; }
+.modal-body { padding: 18px 20px 24px; }
 
 // ── SECTION HEADER ────────────────────────────────────────────────
 .section-header {
@@ -538,7 +571,7 @@ $card:    #ffffff;
 .access-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 22px;
+  margin-bottom: 20px;
   border: 1.5px solid $border;
   border-radius: 12px;
   overflow: hidden;
@@ -559,10 +592,9 @@ $card:    #ffffff;
     font-size: 13px;
     padding: 11px 14px;
     color: $navy;
-    border-top: 1px solid $border;
 
-    &.highlight { color: $teal; font-weight: 700; }
-    &.discount-val { color: $red; font-weight: 600; }
+    &.highlight    { color: $teal; font-weight: 700; }
+    &.discount-val { color: $red;  font-weight: 600; }
   }
 }
 
@@ -571,7 +603,7 @@ $card:    #ffffff;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 22px;
+  margin-bottom: 20px;
 
   .wide { grid-column: 1 / -1; }
 }
@@ -579,7 +611,7 @@ $card:    #ffffff;
 .d-item {
   background: $bg;
   border-radius: 11px;
-  padding: 11px 14px;
+  padding: 10px 13px;
   border: 1px solid $border;
 
   .d-label {
@@ -615,53 +647,11 @@ $card:    #ffffff;
   }
 }
 
-// ── MODAL FOOTER ──────────────────────────────────────────────────
-.modal-foot {
-  padding: 14px 20px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  border-top: 1px solid $border;
-  background: $bg;
-  flex-shrink: 0;
-
-  button {
-    padding: 9px 22px;
-    border-radius: 30px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: $font;
-    transition: all 0.15s;
-    border: none;
-  }
-
-  .edit-btn {
-    background: $indigo-lt;
-    color: $indigo;
-    border: 1.5px solid #c7d2fe;
-    &:hover { background: $indigo; color: #fff; }
-  }
-
-  .save-btn {
-    background: $teal;
-    color: #fff;
-    &:hover { background: darken($teal, 6%); box-shadow: 0 6px 14px rgba(13,148,136,0.28); transform: translateY(-1px); }
-  }
-
-  .cancel-btn {
-    background: transparent;
-    color: $muted;
-    border: 1.5px solid $border;
-    &:hover { background: #f1f5f9; color: $navy; }
-  }
-}
-
 // ── EDIT INPUTS ───────────────────────────────────────────────────
 .edit-input-title {
   font-size: 14px;
   font-weight: 700;
-  padding: 7px 10px;
+  padding: 6px 9px;
   border: 1.5px solid $border;
   border-radius: 8px;
   width: 100%;
@@ -702,5 +692,5 @@ $card:    #ffffff;
 }
 
 // ── ANIMATIONS ────────────────────────────────────────────────────
-@keyframes fadeIn   { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp  { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn  { from { opacity: 0; }              to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }

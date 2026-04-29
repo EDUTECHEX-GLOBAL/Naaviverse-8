@@ -1851,33 +1851,23 @@ useEffect(() => {
                   width: "100%",
                   overflow: "hidden"
                 }}>
-                  <div style={{
-                    padding: "0 35px",
-                    height: "60px",
-                    display: "flex",
-                    alignItems: "center",
-                    borderBottom: "0.5px solid #E5E5E5",
-                    flexShrink: 0,
-                    backgroundColor: "#ffffff"
-                  }}>
-                    <div style={{
-                      padding: "10px 30px",
-                      borderRadius: "35px",
-                      fontWeight: "700",
-                      fontSize: "15px",
-                      color: "#1f304f",
-                      background: "rgba(241, 241, 241, 0.5)"
-                    }}>
-                      Create New Path
-                    </div>
-                  </div>
-                  <div style={{
-                    flex: 1,
-                    minHeight: 0,
-                    overflowY: "auto",
-                    padding: "0",
-                    backgroundColor: "#ffffff"
-                  }}>
+                <div style={{
+  padding: "0 35px",
+  height: "60px",
+  display: "flex",
+  alignItems: "center",
+  flexShrink: 0,
+  backgroundColor: "#e8edf2"   // matches page canvas bg
+}}>
+  
+</div>
+<div style={{
+  flex: 1,
+  minHeight: 0,
+  overflowY: "auto",
+  padding: "0",
+  backgroundColor: "#e8edf2"  // matches page canvas bg
+}}>
                     <CreateNewPath
                       setpstep={setpstep}
                       setaccsideNav={setaccsideNav}
