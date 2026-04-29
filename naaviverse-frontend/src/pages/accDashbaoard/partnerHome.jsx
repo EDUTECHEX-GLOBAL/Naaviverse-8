@@ -479,61 +479,62 @@ export default function PartnerHome({ setispopular }) {
   return (
     <div className="ph-root">
       <style>{`@keyframes ph-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
-
-      <div className="ph-header">
+<div className="ph-header">
         <div>
-          <div className="ph-welcome">Welcome back, <span className="ph-accent">{PARTNER_NAME}</span></div>
+          <div className="ph-welcome" style={{ display:"flex", alignItems:"center", gap:8 }}>
+            Welcome back, <span className="ph-accent">{PARTNER_NAME}</span>
+            <div ref={notifRef} className="ph-notif-wrap">
+              <button className="ph-bell-btn" onClick={() => setShowNotif(p => !p)}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                {unread>0 && <span className="ph-bell-badge">{unread}</span>}
+              </button>
+              {showNotif && (
+                <div className="ph-notif-dd">
+                  <div className="ph-notif-dd-head">
+                    <span className="ph-notif-dd-title">Notifications</span>
+                    <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+                      {unread>0 && <span className="ph-notif-new-badge">{unread} new</span>}
+                      <button className="ph-mark-all-btn" onClick={markAllRead}>Mark all read</button>
+                    </div>
+                  </div>
+                  <div className="ph-notif-dd-list">
+                    {notifications.slice(0,5).map(n => {
+                      const cfg = NOTIF_CFG[n.type]||NOTIF_CFG.system;
+                      return (
+                        <div key={n.id} className={`ph-notif-dd-item ${n.unread?"unread":""}`} onClick={() => markRead(n.id)}>
+                          <div className="ph-notif-dd-icon" style={{ background:cfg.bg }}>{cfg.icon}</div>
+                          <div className="ph-notif-dd-body">
+                            <div className="ph-notif-dd-item-title">{n.title}</div>
+                            <div className="ph-notif-dd-item-desc">{n.desc}</div>
+                            <div className="ph-notif-dd-item-time">{n.time}</div>
+                          </div>
+                          {n.unread && <div className="ph-unread-dot"/>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="ph-notif-dd-footer">
+                    <button className="ph-view-all-notif-btn" onClick={() => { setShowNotif(false); setView("notifications"); }}>View all notifications →</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
           <div className="ph-sub">Partner overview · updated just now</div>
         </div>
         <div className="ph-header-right">
-          <div ref={notifRef} className="ph-notif-wrap">
-            <button className="ph-bell-btn" onClick={() => setShowNotif(p => !p)}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              {unread>0 && <span className="ph-bell-badge">{unread}</span>}
-            </button>
-            {showNotif && (
-              <div className="ph-notif-dd">
-                <div className="ph-notif-dd-head">
-                  <span className="ph-notif-dd-title">Notifications</span>
-                  <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-                    {unread>0 && <span className="ph-notif-new-badge">{unread} new</span>}
-                    <button className="ph-mark-all-btn" onClick={markAllRead}>Mark all read</button>
-                  </div>
-                </div>
-                <div className="ph-notif-dd-list">
-                  {notifications.slice(0,5).map(n => {
-                    const cfg = NOTIF_CFG[n.type]||NOTIF_CFG.system;
-                    return (
-                      <div key={n.id} className={`ph-notif-dd-item ${n.unread?"unread":""}`} onClick={() => markRead(n.id)}>
-                        <div className="ph-notif-dd-icon" style={{ background:cfg.bg }}>{cfg.icon}</div>
-                        <div className="ph-notif-dd-body">
-                          <div className="ph-notif-dd-item-title">{n.title}</div>
-                          <div className="ph-notif-dd-item-desc">{n.desc}</div>
-                          <div className="ph-notif-dd-item-time">{n.time}</div>
-                        </div>
-                        {n.unread && <div className="ph-unread-dot"/>}
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="ph-notif-dd-footer">
-                  <button className="ph-view-all-notif-btn" onClick={() => { setShowNotif(false); setView("notifications"); }}>View all notifications →</button>
-                </div>
-              </div>
-            )}
-          </div>
           <div className="ph-date-badge">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2"/></svg>
             {new Date().toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}
           </div>
           <button className="ph-add-btn" onClick={() => setispopular && setispopular(true)}>
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-    <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
-  </svg>
-  Add New
-</button>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+            </svg>
+            Add New
+          </button>
         </div>
       </div>
 

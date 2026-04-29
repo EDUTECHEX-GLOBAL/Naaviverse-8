@@ -8,18 +8,18 @@ const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const PARTNER_ICONS = {
   institution: (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
       <path d="M3 21H21M5 21V7L12 3L19 7V21M9 21V13H15V21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
     </svg>
   ),
   mentor: (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
       <path d="M12 15C14.7614 15 17 12.7614 17 10C17 7.23858 14.7614 5 12 5C9.23858 5 7 7.23858 7 10C7 12.7614 9.23858 15 12 15Z" stroke="currentColor" strokeWidth="1.5"/>
       <path d="M3 20.5C4.5 17.5 7.5 16 12 16C16.5 16 19.5 17.5 21 20.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
     </svg>
   ),
   distributor: (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
       <path d="M4 6H20V18H4V6Z" stroke="currentColor" strokeWidth="1.5"/>
       <path d="M8 6L12 3L16 6" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
       <rect x="8" y="15" width="2" height="2" fill="currentColor"/>
@@ -27,7 +27,7 @@ const PARTNER_ICONS = {
     </svg>
   ),
   vendor: (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
       <path d="M6 7L3 12L6 17H18L21 12L18 7H6Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
       <circle cx="8" cy="12" r="1.5" fill="currentColor"/>
       <circle cx="16" cy="12" r="1.5" fill="currentColor"/>
@@ -37,40 +37,71 @@ const PARTNER_ICONS = {
 
 const THEMES = {
   institution: {
-    color: "#0d6b6e",
-    bg: "#e6f7f5",
+   color: "#166534",  // Dark green text (optional)
+    bg: "#dcfce7",     
     gradient: "linear-gradient(135deg, #f0f9f6, #e6f2ef)",
     icon: PARTNER_ICONS.institution,
   },
   mentor: {
-    color: "#b45309",
-    bg: "#fffbeb",
+    color: "#b45309", bg: "#fffbeb",
     gradient: "linear-gradient(135deg, #fef7e8, #f5ede0)",
     icon: PARTNER_ICONS.mentor,
   },
   distributor: {
-    color: "#1d4ed8",
-    bg: "#eff6ff",
+    color: "#1d4ed8", bg: "#eff6ff",
     gradient: "linear-gradient(135deg, #eff5fa, #e5edf5)",
     icon: PARTNER_ICONS.distributor,
   },
   vendor: {
-    color: "#7c3aed",
-    bg: "#f5f3ff",
+    color: "#7c3aed", bg: "#f5f3ff",
     gradient: "linear-gradient(135deg, #fdf2f7, #f5eaf0)",
     icon: PARTNER_ICONS.vendor,
   },
 };
 
-const formatPrice = (cost) => (!cost || cost === "0" ? "Free" : `$${cost}`);
+/* ── 4 different icons for stat cards ── */
+const StatIcons = {
+  listings: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="3" y="3" width="18" height="18" rx="3"/>
+      <path d="M3 9h18M9 21V9"/>
+    </svg>
+  ),
+  paid: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 7v1m0 8v1M9.5 9.5a2.5 2.5 0 0 1 5 0c0 1.5-1 2-2.5 2.5S9.5 13 9.5 14.5a2.5 2.5 0 0 0 5 0"/>
+    </svg>
+  ),
+  free: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+    </svg>
+  ),
+  partners: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+  ),
+};
 
+const PencilIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+  </svg>
+);
+
+const formatPrice = (cost) => (!cost || cost === "0" ? "Free" : `$${cost}`);
 const parseFeatures = (features) => {
   if (!features) return [];
   return features.split(/[,;]+/).map((f) => f.trim()).filter(Boolean);
 };
 
 const EmailIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z"/>
     <polyline points="22,6 12,13 2,6"/>
   </svg>
@@ -111,14 +142,20 @@ const AdminMarketplace = () => {
     }
   };
 
-  const handleEditClick = (item) => {
+  const handleEditClick = () => {
     setIsEditing(true);
     setEditFormData({
-      name: item.name || "", access: item.access || "", cost: item.cost || "",
-      discount: item.discount || "", layer: item.layer || "",
-      duration: item.duration || "", goal: item.goal || "",
-      features: item.features || "", outcomes: item.outcomes || "",
-      iterations: item.iterations || "", partner_email: item.partner_email || "",
+      name: selectedItem.name || "",
+      access: selectedItem.access || "",
+      cost: selectedItem.cost || "",
+      discount: selectedItem.discount || "",
+      layer: selectedItem.layer || "",
+      duration: selectedItem.duration || "",
+      goal: selectedItem.goal || "",
+      features: selectedItem.features || "",
+      outcomes: selectedItem.outcomes || "",
+      iterations: selectedItem.iterations || "",
+      partner_email: selectedItem.partner_email || "",
     });
   };
 
@@ -157,33 +194,35 @@ const AdminMarketplace = () => {
     return roleMatch && emailMatch && titleMatch;
   });
 
-  const totalItems    = filteredItems.length;
-  const freeItems     = filteredItems.filter((i) => !i.cost || i.cost === "0").length;
-  const paidItems     = totalItems - freeItems;
+  const totalItems     = filteredItems.length;
+  const freeItems      = filteredItems.filter((i) => !i.cost || i.cost === "0").length;
+  const paidItems      = totalItems - freeItems;
   const uniquePartners = new Set(filteredItems.map((i) => i.partner_email).filter(Boolean)).size;
+
+  const statCards = [
+    { label: "Total Listings", value: totalItems,     iconKey: "listings", sub: "All partner items",  cls: "mbs-teal"   },
+    { label: "Paid Items",     value: paidItems,      iconKey: "paid",     sub: "Paid offerings",     cls: "mbs-purple" },
+    { label: "Free Items",     value: freeItems,      iconKey: "free",     sub: "No cost access",     cls: "mbs-green"  },
+    { label: "Partners",       value: uniquePartners, iconKey: "partners", sub: "Active partners",    cls: "mbs-amber"  },
+  ];
 
   return (
     <div className="admin-marketplace">
 
-      {/* ── Hero ── */}
-      <div className="mp-hero">
-        <div className="hero-content">
-          <h1>Marketplace</h1>
-          <p>Browse, manage and update partner offerings</p>
-        </div>
-        <div className="hero-stats">
-          {[
-            { value: totalItems,      label: "Listings" },
-            { value: paidItems,       label: "Paid" },
-            { value: freeItems,       label: "Free" },
-            { value: uniquePartners,  label: "Partners" },
-          ].map(({ value, label }) => (
-            <div className="stat-card" key={label}>
-              <span className="stat-value">{value}</span>
-              <span className="stat-label">{label}</span>
+      {/* ── 4 Stat Cards ── */}
+      <div className="mp-below-stats">
+        {statCards.map(({ label, value, iconKey, sub, cls }) => (
+          <div className={`mbs-card ${cls}`} key={label}>
+            <div className="mbs-icon-wrap">
+              {StatIcons[iconKey]}
             </div>
-          ))}
-        </div>
+            <div className="mbs-info">
+              <div className="mbs-label">{label}</div>
+              <div className="mbs-value">{value}</div>
+              <div className="mbs-sub">{sub}</div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* ── Filters ── */}
@@ -200,29 +239,22 @@ const AdminMarketplace = () => {
         </div>
         <div className="filter-group">
           <label>Search by Email</label>
-          <input
-            type="text"
-            placeholder="partner@example.com"
-            value={emailSearch}
-            onChange={(e) => setEmailSearch(e.target.value)}
-          />
+          <input type="text" placeholder="partner@example.com" value={emailSearch}
+            onChange={(e) => setEmailSearch(e.target.value)} />
         </div>
         <div className="filter-group">
           <label>Search by Name</label>
-          <input
-            type="text"
-            placeholder="Course or service name..."
-            value={titleSearch}
-            onChange={(e) => setTitleSearch(e.target.value)}
-          />
+          <input type="text" placeholder="Course or service name..." value={titleSearch}
+            onChange={(e) => setTitleSearch(e.target.value)} />
         </div>
       </div>
 
-      {/* ── Grid ── */}
+      {/* ── Section label ── */}
       <div className="mp-section-label">
         {loading ? "Loading…" : `${filteredItems.length} listing${filteredItems.length !== 1 ? "s" : ""}`}
       </div>
 
+      {/* ── Grid ── */}
       {loading ? (
         <div className="mp-grid">
           {Array(6).fill(0).map((_, i) => (
@@ -234,7 +266,7 @@ const AdminMarketplace = () => {
                 </div>
                 <Skeleton height={1} style={{ marginBottom: 12 }} />
                 <Skeleton height={14} width="40%" style={{ marginBottom: 10 }} />
-                <Skeleton height={36} style={{ borderRadius: 30 }} />
+                <Skeleton height={28} style={{ borderRadius: 20 }} />
               </div>
             </div>
           ))}
@@ -249,7 +281,6 @@ const AdminMarketplace = () => {
                   className="mp-card"
                   key={item._id}
                   onClick={() => setSelectedItem(item)}
-                  style={{ borderTop: `3px solid ${theme.color}` }}
                 >
                   {/* Top */}
                   <div className="card-top">
@@ -259,22 +290,21 @@ const AdminMarketplace = () => {
                       </div>
                       <div className="card-name">{item.name || "Untitled"}</div>
                     </div>
-                    {item.duration && (
+                    {/* {item.duration && (
                       <div className="price-badge">{item.duration}</div>
-                    )}
+                    )} */}
                   </div>
 
                   <div className="card-divider" />
 
-                  {/* Body */}
-                  <div className="card-body">
-                    <div className="role-row">
-                      <div className="role-dot" style={{ background: theme.color }} />
-                      <div className="role-label" style={{ color: theme.color }}>
-                        {item.role?.toUpperCase() || "UNKNOWN"}
-                      </div>
-                      {item.layer && <div className="layer-chip">{item.layer}</div>}
-                    </div>
+                 {/* Body */}
+<div className="card-body">
+  <div className="role-row">
+    <div className="role-label" style={{ color: theme.color }}>
+      {item.role?.toUpperCase() || "UNKNOWN"}
+    </div>
+    {item.layer && <div className="layer-chip">{item.layer}</div>}
+  </div>
 
                     <div className="card-footer">
                       <span className="email-icon"><EmailIcon /></span>
@@ -283,19 +313,16 @@ const AdminMarketplace = () => {
                       </div>
                     </div>
 
-                    <button
-                      className="view-btn"
-                      onClick={(e) => { e.stopPropagation(); setSelectedItem(item); }}
-                    >
-                      View Details →
-                    </button>
+ <button className="view-btn" onClick={(e) => { e.stopPropagation(); setSelectedItem(item); }}>
+  View →
+</button>
                   </div>
                 </div>
               );
             })
           ) : (
             <div className="no-items">
-              <div className="no-items-icon">📦</div>
+              {/* <div className="no-items-icon">📦</div> */}
               <h3>No listings found</h3>
               <p>Try adjusting your filters or search criteria</p>
             </div>
@@ -305,16 +332,14 @@ const AdminMarketplace = () => {
 
       {/* ── Modal ── */}
       {selectedItem && (
-        <div
-          className="modal-overlay"
-          onClick={() => { setSelectedItem(null); setIsEditing(false); }}
-        >
+        <div className="modal-overlay" onClick={() => { setSelectedItem(null); setIsEditing(false); }}>
           <div className="modal-container" onClick={(e) => e.stopPropagation()}>
             {(() => {
               const theme = THEMES[selectedItem.role] || THEMES.institution;
               const featureList = parseFeatures(selectedItem.features);
               return (
                 <>
+                  {/* Modal Head — pencil edit button here */}
                   <div className="modal-head" style={{ background: theme.gradient }}>
                     <div className="modal-head-left">
                       <div className="modal-avatar" style={{ background: theme.bg, color: theme.color }}>
@@ -335,14 +360,8 @@ const AdminMarketplace = () => {
                             </div>
                           </>
                         ) : (
-                          <input
-                            type="text"
-                            name="name"
-                            value={editFormData.name}
-                            onChange={handleInputChange}
-                            className="edit-input-title"
-                            placeholder="Item Name"
-                          />
+                          <input type="text" name="name" value={editFormData.name}
+                            onChange={handleInputChange} className="edit-input-title" placeholder="Item Name" />
                         )}
                       </div>
                     </div>
@@ -350,16 +369,28 @@ const AdminMarketplace = () => {
                       <div className="role-badge" style={{ background: theme.bg, color: theme.color }}>
                         {selectedItem.role?.toUpperCase() || "UNKNOWN"}
                       </div>
+                      {/* Pencil edit icon in header */}
+                      {!isEditing ? (
+                        <button className="modal-edit-pencil" onClick={handleEditClick} title="Edit item">
+                          <PencilIcon />
+                        </button>
+                      ) : (
+                        <div className="modal-edit-actions">
+                          <button className="modal-save-btn" onClick={handleSave}>Save</button>
+                          <button className="modal-cancel-btn" onClick={handleCancel}>Cancel</button>
+                        </div>
+                      )}
                       <button className="modal-close" onClick={() => { setSelectedItem(null); setIsEditing(false); }}>×</button>
                     </div>
                   </div>
 
+                  {/* Modal Body — NO footer */}
                   <div className="modal-scroll-area">
                     <div className="modal-body">
 
                       {/* Access & Pricing */}
                       <div className="section-header">
-                        <span className="section-icon">💰</span>
+                        {/* <span className="section-icon">💰</span> */}
                         <span className="section-title">Access & Pricing</span>
                       </div>
                       <table className="access-table">
@@ -389,7 +420,7 @@ const AdminMarketplace = () => {
 
                       {/* Source */}
                       <div className="section-header">
-                        <span className="section-icon">📌</span>
+                        {/* <span className="section-icon">📌</span> */}
                         <span className="section-title">Source</span>
                       </div>
                       <div className="detail-grid">
@@ -419,7 +450,7 @@ const AdminMarketplace = () => {
 
                       {/* Details */}
                       <div className="section-header">
-                        <span className="section-icon">📋</span>
+                        {/* <span className="section-icon">📋</span> */}
                         <span className="section-title">Details</span>
                       </div>
                       <div className="detail-grid">
@@ -454,30 +485,23 @@ const AdminMarketplace = () => {
                               featureList.length > 0 ? (
                                 <div className="feature-chips">
                                   {featureList.map((f, i) => (
-                                    <span key={i} className="feature-chip" style={{ background: theme.bg, color: theme.color }}>
+                                    <span key={i} className="feature-chip"
+                                      style={{ background: theme.bg, color: theme.color }}>
                                       {f}
                                     </span>
                                   ))}
                                 </div>
                               ) : (selectedItem.features || "—")
                             ) : (
-                              <textarea name="features" value={editFormData.features} onChange={handleInputChange} className="edit-textarea" rows="3" placeholder="Live Sessions, Mentorship, Certification" />
+                              <textarea name="features" value={editFormData.features} onChange={handleInputChange}
+                                className="edit-textarea" rows="3" placeholder="Live Sessions, Mentorship, Certification" />
                             )}
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="modal-foot">
-                      {!isEditing ? (
-                        <button className="edit-btn" onClick={() => handleEditClick(selectedItem)}>Edit</button>
-                      ) : (
-                        <>
-                          <button className="cancel-btn" onClick={handleCancel}>Cancel</button>
-                          <button className="save-btn" onClick={handleSave}>Save Changes</button>
-                        </>
-                      )}
                     </div>
+                    {/* NO modal-foot here — removed completely */}
                   </div>
                 </>
               );
