@@ -41,16 +41,6 @@ const PLAN_LABELS = {
   proplus_nano:  "Pro Plus Nano",
 };
 
-// ── Credits per plan ─────────────────────────────────────────────
-const PLAN_CREDITS = {
-  standard:      100,
-  pro:           500,
-  proplus:       1000,
-  standard_nano: 100,
-  pro_nano:      500,
-  proplus_nano:  1000,
-};
-
 export const useRazorpayPayment = ({ userEmail, userDetails, onSuccess, onError }) => {
 
   const initiatePayment = useCallback(async ({ tier, billing }) => {
@@ -72,14 +62,14 @@ export const useRazorpayPayment = ({ userEmail, userDetails, onSuccess, onError 
     // ── Derive actual tier and planTier ───────────────────────────
     const isNanoTier   = tier.includes("_nano");
     const actualTier   = isNanoTier ? "nano" : "micro";
-    const basePlanTier = tier.replace("_nano", ""); // "standard_nano" → "standard"
+    const basePlanTier = tier.replace("_nano", "");
 
     let order;
     try {
       const res = await axios.post(`${BASE_URL}/api/payment/create-order`, {
         userEmail,
-        productId:    "naavi-platform",
-        productName:  `Naavi ${planLabel} Plan`,
+        productId:     "naavi-platform",
+        productName:   `Naavi ${planLabel} Plan`,
         billingMethod: billing,
         amount,
         currency:  "INR",
@@ -110,8 +100,8 @@ export const useRazorpayPayment = ({ userEmail, userDetails, onSuccess, onError 
 
       prefill: {
         email:   userEmail,
-        name:    userDetails?.user?.name    || userDetails?.name    || "",
-        contact: userDetails?.user?.phone   || userDetails?.phone   || "",
+        name:    userDetails?.user?.name || userDetails?.name    || "",
+        contact: userDetails?.user?.phone || userDetails?.phone  || "",
       },
 
       theme: { color: "#5c62ec" },
@@ -125,38 +115,11 @@ export const useRazorpayPayment = ({ userEmail, userDetails, onSuccess, onError 
           });
 
           if (verifyRes.data?.success) {
-
-            // ── Create / update subscription in DB ────────────────
-            try {
-              await axios.post(`${BASE_URL}/api/subscriptions/create`, {
-                userEmail,
-                profileId:    userDetails?.id || userDetails?.user?.id || null,
-                productId:    "naavi-platform",
-                productName:  `Naavi ${planLabel} Plan`,
-                billingMethod: billing,
-                tier:      actualTier,    // "micro" or "nano" ✅
-                planTier:  basePlanTier,  // "standard" | "pro" | "proplus" ✅
-              });
-            } catch (e) {
-              console.warn("⚠ Subscription create failed:", e.message);
-            }
-
-            // ── Credit wallet with plan credits ───────────────────
-            const credits = PLAN_CREDITS[tier] || 100;
-            try {
-              await axios.post(`${BASE_URL}/api/wallet/credit`, {
-                email:       userEmail,
-                amount:      credits,
-                description: `${planLabel} Plan credits`,
-                source:      "subscription",
-              });
-            } catch (e) {
-              console.warn("⚠ Wallet credit failed (non-critical):", e.message);
-            }
-
-            // ── Notify parent with correct tier info ──────────────
+            // ── Backend handles everything ────────────────────────
+            // ✅ Subscription upsert  → done in paymentRoutes.js
+            // ✅ Wallet credit        → done in paymentRoutes.js
+            // ✅ Invoice email        → done in paymentRoutes.js
             onSuccess({ tier, billing, actualTier, basePlanTier });
-
           } else {
             onError(
               verifyRes.data?.message ||

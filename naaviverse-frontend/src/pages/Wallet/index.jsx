@@ -17,16 +17,16 @@ const Wallet = () => {
   const { accsideNav, setaccsideNav } = useStore();
   const navigate = useNavigate();
 
-  const [showDrop, setShowDrop]               = useState(false);
-  const [balance, setBalance]                 = useState(0);
-  const [txns, setTxns]                       = useState([]);
-  const [balanceLoading, setBalanceLoading]   = useState(true);
-  const [txnsLoading, setTxnsLoading]         = useState(true);
-  const [isNewUser, setIsNewUser]             = useState(false);
+  const [showDrop, setShowDrop] = useState(false);
+  const [balance, setBalance] = useState(0);
+  const [txns, setTxns] = useState([]);
+  const [balanceLoading, setBalanceLoading] = useState(true);
+  const [txnsLoading, setTxnsLoading] = useState(true);
+  const [isNewUser, setIsNewUser] = useState(false);
   const [creditExpiresAt, setCreditExpiresAt] = useState(null);
 
   // ── NEW: track bonus vs subscription credits separately ─────────────────────
-  const [bonusCredits, setBonusCredits]               = useState(0);
+  const [bonusCredits, setBonusCredits] = useState(0);
   const [subscriptionCredits, setSubscriptionCredits] = useState(0);
 
   const getUserFromStorage = () => {
@@ -39,7 +39,7 @@ const Wallet = () => {
   };
 
   const userDetails = getUserFromStorage();
-  const email       = userDetails?.email || "";
+  const email = userDetails?.email || "";
 
   // ─────────────────────────────────────────────────────────────────────────────
   // computeExpiresAt — works for BOTH new and old DB records
@@ -87,32 +87,46 @@ const Wallet = () => {
     // Remaining bonus (can't exceed actual balance)
     const remainingBonus = Math.max(0, Math.min(bonusTotal, totalBalance));
     // Remaining subscription credits = rest
-    const remainingSub   = Math.max(0, totalBalance - remainingBonus);
+    const remainingSub = Math.max(0, totalBalance - remainingBonus);
 
     setBonusCredits(remainingBonus);
     setSubscriptionCredits(remainingSub);
   };
 
+  // REPLACE your useEffect and both fetch functions
   useEffect(() => {
     if (!email) { navigate("/login"); return; }
-    fetchBalance();
-    fetchTxns();
+    fetchBalanceThenTxns(); // ✅ chain the calls
     const createdAt = userDetails?.createdAt;
     setIsNewUser(!createdAt || moment().diff(moment(createdAt), "hours") < 24);
   }, [email]);
 
-  const fetchBalance = () => {
+  const fetchBalanceThenTxns = () => {
     setBalanceLoading(true);
+    setTxnsLoading(true);
+
     GetWalletBalance(email)
       .then((res) => {
-        if (res.data.status) setBalance(res.data.balance);
+        const fetchedBalance = res.data.status ? res.data.balance : 0;
+        setBalance(fetchedBalance);
         setBalanceLoading(false);
+
+        // ✅ Now fetch txns with the real balance in hand
+        return GetWalletTxns(email).then((txnRes) => {
+          if (txnRes.data.status) {
+            const fetchedTxns = txnRes.data.txns;
+            setTxns(fetchedTxns);
+            const expiry = computeExpiresAt(fetchedTxns);
+            if (expiry) setCreditExpiresAt(expiry);
+            computeCreditBreakdown(fetchedTxns, fetchedBalance); // ✅ real balance
+          }
+          setTxnsLoading(false);
+        });
       })
       .catch(() => {
         setBalanceLoading(false);
-        toast.error("Could not load wallet balance.", {
-          position: toast.POSITION.TOP_RIGHT,
-        });
+        setTxnsLoading(false);
+        toast.error("Could not load wallet.", { position: toast.POSITION.TOP_RIGHT });
       });
   };
 
@@ -125,8 +139,9 @@ const Wallet = () => {
           setTxns(fetchedTxns);
           const expiry = computeExpiresAt(fetchedTxns);
           if (expiry) setCreditExpiresAt(expiry);
-          // ── NEW: compute split after txns are available ──────────────────
-          computeCreditBreakdown(fetchedTxns, res.data.balance || 0);
+          // ✅ FIX: use `balance` from state (already fetched by fetchBalance)
+          //    not res.data.balance which is undefined from /txns endpoint
+          computeCreditBreakdown(fetchedTxns, balance);
         }
         setTxnsLoading(false);
       })
@@ -139,18 +154,18 @@ const Wallet = () => {
   };
 
   // ── Derived expiry values ────────────────────────────────────────────────────
-  const now             = new Date();
+  const now = new Date();
   const isCreditExpired = creditExpiresAt ? creditExpiresAt < now : false;
-  const msLeft          = creditExpiresAt ? Math.max(0, creditExpiresAt - now) : 0;
-  const daysLeft        = msLeft ? Math.ceil(msLeft / (1000 * 60 * 60 * 24)) : 0;
+  const msLeft = creditExpiresAt ? Math.max(0, creditExpiresAt - now) : 0;
+  const daysLeft = msLeft ? Math.ceil(msLeft / (1000 * 60 * 60 * 24)) : 0;
 
   // ── UPDATED: subtext only refers to bonus credits, never total balance ───────
   const getExpirySubText = () => {
     if (subscriptionCredits > 0 && bonusCredits === 0) return "Subscription credits never expire";
-    if (!creditExpiresAt)   return "Credits earned on signup & purchases";
-    if (isCreditExpired)    return "Welcome bonus expired · Subscription credits are permanent";
-    if (daysLeft <= 1)      return `⚠ ${bonusCredits} welcome credits expire today`;
-    if (daysLeft <= 3)      return `⚠ ${bonusCredits} welcome credits expire in ${daysLeft} days`;
+    if (!creditExpiresAt) return "Credits earned on signup & purchases";
+    if (isCreditExpired) return "Welcome bonus expired · Subscription credits are permanent";
+    if (daysLeft <= 1) return `⚠ ${bonusCredits} welcome credits expire today`;
+    if (daysLeft <= 3) return `⚠ ${bonusCredits} welcome credits expire in ${daysLeft} days`;
     return `Welcome bonus: ${bonusCredits} credits · Expires ${moment(creditExpiresAt).format("MMM D, YYYY")}`;
   };
 
@@ -158,12 +173,12 @@ const Wallet = () => {
   const groupedTxns = txns.reduce((acc, txn) => {
     const key = moment(txn.timestamp).format("MMDDYYYY");
     if (!acc[key]) {
-      const d         = moment(txn.timestamp).startOf("day");
-      const today     = moment().startOf("day");
+      const d = moment(txn.timestamp).startOf("day");
+      const today = moment().startOf("day");
       const yesterday = moment().subtract(1, "days").startOf("day");
-      const label = d.isSame(today)     ? "Today"
-                  : d.isSame(yesterday) ? "Yesterday"
-                  : moment(txn.timestamp).format("MMMM D, YYYY");
+      const label = d.isSame(today) ? "Today"
+        : d.isSame(yesterday) ? "Yesterday"
+          : moment(txn.timestamp).format("MMMM D, YYYY");
       acc[key] = { label, items: [] };
     }
     acc[key].items.push(txn);
@@ -185,9 +200,9 @@ const Wallet = () => {
               {/* Page heading */}
               <div className="wallet-page-header">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                  <rect x="2" y="6" width="18" height="13" rx="2.5" stroke="#1a1a2e" strokeWidth="1.6"/>
-                  <path d="M2 10h18" stroke="#1a1a2e" strokeWidth="1.6"/>
-                  <circle cx="16" cy="14" r="1.8" fill="#1a1a2e"/>
+                  <rect x="2" y="6" width="18" height="13" rx="2.5" stroke="#1a1a2e" strokeWidth="1.6" />
+                  <path d="M2 10h18" stroke="#1a1a2e" strokeWidth="1.6" />
+                  <circle cx="16" cy="14" r="1.8" fill="#1a1a2e" />
                 </svg>
                 <span className="wallet-page-title">My Wallet</span>
               </div>
@@ -207,15 +222,15 @@ const Wallet = () => {
                   </div>
                 )}
 
-               {isCreditExpired && (
-  <div className="wallet-expired-banner">
-    ⚠️ Your 50 welcome credits expired on{" "}
-    {moment(creditExpiresAt).format("MMM D, YYYY")}.
-    {subscriptionCredits > 0
-      ? " Your subscription credits are still active."
-      : " Subscribe to unlock full access."}
-  </div>
-)}
+                {isCreditExpired && (
+                  <div className="wallet-expired-banner">
+                    ⚠️ Your 50 welcome credits expired on{" "}
+                    {moment(creditExpiresAt).format("MMM D, YYYY")}.
+                    {subscriptionCredits > 0
+                      ? " Your subscription credits are still active."
+                      : " Subscribe to unlock full access."}
+                  </div>
+                )}
 
                 {/* ── Balance card ─────────────────────────────────────────── */}
                 {balanceLoading ? (
@@ -308,8 +323,8 @@ const Wallet = () => {
 
                 <div className="wallet-info-note">
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
-                    <circle cx="7" cy="7" r="5.5" stroke="#5b3fa0" strokeWidth="1.4"/>
-                    <path d="M7 6v4M7 4.5v.01" stroke="#5b3fa0" strokeWidth="1.5" strokeLinecap="round"/>
+                    <circle cx="7" cy="7" r="5.5" stroke="#5b3fa0" strokeWidth="1.4" />
+                    <path d="M7 6v4M7 4.5v.01" stroke="#5b3fa0" strokeWidth="1.5" strokeLinecap="round" />
                   </svg>
                   Credits are used to unlock paths, premium counselling sessions, and exclusive Naavi features.
                   {" "}Subscription credits are permanent and never expire.
@@ -330,26 +345,26 @@ const Wallet = () => {
 
 // ─── WalletTxnRow ─────────────────────────────────────────────────────────────
 const WalletTxnRow = ({ txn, bonusExpiresAt }) => {
-  const isCredit  = txn.type === "credit";
-  const isBonus   = txn.metadata?.type === "welcome_bonus";
+  const isCredit = txn.type === "credit";
+  const isBonus = txn.metadata?.type === "welcome_bonus";
   const isExpired = txn.isExpired;
 
   // Expiry only applies to welcome bonus rows, never to subscription credits
   const resolvedExpiry = (() => {
     if (!isBonus) return null;
-    if (txn.expiresAt)  return new Date(txn.expiresAt);
+    if (txn.expiresAt) return new Date(txn.expiresAt);
     if (bonusExpiresAt) return bonusExpiresAt;
     return null;
   })();
 
   const expiryLabel = (() => {
     if (!resolvedExpiry) return null;
-    const now  = new Date();
+    const now = new Date();
     if (resolvedExpiry < now) return { text: "Expired", warn: true, gone: true };
     const days = Math.ceil((resolvedExpiry - now) / (1000 * 60 * 60 * 24));
-    if (days <= 1) return { text: "Expires today",       warn: true,  gone: false };
-    if (days <= 3) return { text: `Expires in ${days}d`, warn: true,  gone: false };
-    return           { text: `Expires ${moment(resolvedExpiry).format("MMM D")}`, warn: false, gone: false };
+    if (days <= 1) return { text: "Expires today", warn: true, gone: false };
+    if (days <= 3) return { text: `Expires in ${days}d`, warn: true, gone: false };
+    return { text: `Expires ${moment(resolvedExpiry).format("MMM D")}`, warn: false, gone: false };
   })();
 
   return (
@@ -358,8 +373,8 @@ const WalletTxnRow = ({ txn, bonusExpiresAt }) => {
         className="wallet-tx-icon"
         style={{
           background: isBonus ? "#e8eeff" : isCredit ? "#eaf3de" : "#faeeda",
-          color:      isBonus ? "#185FA5" : isCredit ? "#3B6D11"  : "#854F0B",
-          opacity:    isExpired ? 0.45 : 1,
+          color: isBonus ? "#185FA5" : isCredit ? "#3B6D11" : "#854F0B",
+          opacity: isExpired ? 0.45 : 1,
         }}
       >
         {isBonus ? "★" : isCredit ? "↑" : "↓"}
@@ -388,7 +403,7 @@ const WalletTxnRow = ({ txn, bonusExpiresAt }) => {
       <div
         className="wallet-tx-amount"
         style={{
-          color:   isExpired ? "#bbb" : isCredit ? "#3B6D11" : "#A32D2D",
+          color: isExpired ? "#bbb" : isCredit ? "#3B6D11" : "#A32D2D",
           opacity: isExpired ? 0.5 : 1,
         }}
       >
