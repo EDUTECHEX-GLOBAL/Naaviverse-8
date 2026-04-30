@@ -1,8 +1,10 @@
 /* ============================================
    USER DASHBOARD SIDEBAR - LIGHT THEME
    ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 .user-dashboard-sidebar {
+  font-family: 'Poppins', sans-serif;
   // Core dimensions
   height: 100vh;
   width: 240px;
@@ -55,7 +57,7 @@
     background: #ffffff;
 
     .user-dashboard-logo {
-      height: 28px;
+      height: 35px;
       width: auto;
       object-fit: contain;
     }

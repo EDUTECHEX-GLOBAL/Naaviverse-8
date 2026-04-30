@@ -248,7 +248,7 @@ const Wallet = () => {
                       {subscriptionCredits > 0 && (
                         <div className="wallet-credit-row">
                           <span className="wallet-credit-chip wallet-credit-chip--permanent">
-                            🎁 {subscriptionCredits} Subscription Credits · Never Expire
+                             {subscriptionCredits} Subscription Credits · Never Expire
                           </span>
                         </div>
                       )}
@@ -390,9 +390,9 @@ const WalletTxnRow = ({ txn, bonusExpiresAt }) => {
             </span>
           )}
           {/* Permanent badge on non-bonus credit rows */}
-          {isCredit && !isBonus && (
+          {/* {isCredit && !isBonus && (
             <span className="wallet-tx-expiry-pill permanent">Never Expires</span>
-          )}
+          )} */}
         </div>
         <div className="wallet-tx-date">
           {moment(txn.timestamp).format("h:mm A")}

@@ -1,696 +1,809 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&display=swap');
 
-$font: 'Plus Jakarta Sans', sans-serif;
-$mono: 'DM Mono', monospace;
+$font-display : 'Bricolage Grotesque', sans-serif;
+$font-body    : 'Plus Jakarta Sans', sans-serif;
+$bg           : #F4F6FB;
+$card         : #FFFFFF;
+$text         : #0D1117;
+$muted        : #6B7280;
+$border       : #E5E7EB;
+$radius       : 14px;
+$radius-lg    : 18px;
 
-$navy:      #0f1e3c;
-$teal:      #0d9488;
-$teal-lt:   #f0fdf9;
-$teal-md:   #99f6e4;
-$indigo:    #6366f1;
-$indigo-lt: #eef2ff;
-$amber:     #f59e0b;
-$amber-lt:  #fffbeb;
-$red:       #ef4444;
-$red-lt:    #fef2f2;
-$green:     #10b981;
-$green-lt:  #ecfdf5;
-$muted:     #64748b;
-$border:    #e8edf4;
-$bg:        #f4f7fb;
-$card:      #ffffff;
-
-.admin-marketplace {
-  font-family: $font;
+// ── Root ──────────────────────────────────────────────────
+.adm-root {
+  font-family: $font-body;
   background: $bg;
-  min-height: 100%;
-  padding: 24px 28px 56px;
-  box-sizing: border-box;
+  min-height: calc(100vh - 70px);
+  padding: 22px 24px 48px;
+  color: $text;
+  overflow-y: auto;
+  height: 100%;
 
-  @media (max-width: 768px) { padding: 16px 14px 40px; }
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 10px; }
 }
 
-// ── 4 STAT CARDS (reduced size) ──────────────────────────────────
-.mp-below-stats {
+// ── Header ─────────────────────────────────────────────────
+.adm-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+
+  &__title {
+    font-family: $font-display;
+    font-size: 22px;
+    font-weight: 700;
+    color: $text;
+    letter-spacing: -0.04em;
+    margin: 0;
+  }
+
+  &__badge {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: $muted;
+    background: $card;
+    border: 1px solid $border;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+}
+
+// ── Stat Cards ─────────────────────────────────────────────
+.adm-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
-  margin-bottom: 22px;
-
-  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
-  @media (max-width: 500px) { grid-template-columns: 1fr; }
-
-  .mbs-card {
-    border-radius: 14px;
-    padding: 12px 14px;        // reduced padding
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    border: 1.5px solid transparent;
-  }
-
-  .mbs-icon-wrap {
-    width: 36px;               // reduced from 42px
-    height: 36px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-
- .mbs-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-
-  .mbs-label { margin-bottom: 4px; }   // ← space above the number
-  .mbs-sub   { margin-top: 4px; }      // ← space below the number
+  margin-bottom: 16px;
 }
 
-  .mbs-label {
-    font-size: 7.7px;
-    font-weight: 790;
+.adm-stat {
+  border-radius: 13px;
+  //border: 1.5px solid transparent;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  &__icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg { width: 16px; height: 16px; }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  &__label {
+    font-size: 9.5px;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.07em;
     line-height: 1;
   }
-  .mbs-value {
-    font-size: 22px;           // reduced from 28px
-    font-weight: 600;
-    line-height: 1.1;
-  }
-  .mbs-sub {
-    font-size: 10px;
-    font-weight: 500;
+
+  &__val {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.15;
+    font-family: $font-display;
   }
 
-  .mbs-teal {
-    background: #e6f7f5; border-color: #5DCAA5;
-    .mbs-icon-wrap { background: #9FE1CB; color: #085041; }
-    .mbs-label { color: #0F6E56; }
-    .mbs-value { color: #085041; }
-    .mbs-sub   { color: #0F6E56; }
+  &--teal   { background: #E6F7F5; border-color: #5DCAA5;
+    .adm-stat__icon { background: #9FE1CB; color: #085041; }
+    .adm-stat__label { color: #0F6E56; }
+    .adm-stat__val   { color: #085041; }
   }
-
-  .mbs-purple {
-    background: #EEEDFE; border-color: #AFA9EC;
-    .mbs-icon-wrap { background: #CECBF6; color: #3C3489; }
-    .mbs-label { color: #534AB7; }
-    .mbs-value { color: #26215C; }
-    .mbs-sub   { color: #534AB7; }
+  &--purple { background: #EEEDFE; border-color: #AFA9EC;
+    .adm-stat__icon { background: #CECBF6; color: #3C3489; }
+    .adm-stat__label { color: #534AB7; }
+    .adm-stat__val   { color: #26215C; }
   }
-
-  .mbs-green {
-    background: #EAF3DE; border-color: #97C459;
-    .mbs-icon-wrap { background: #C0DD97; color: #27500A; }
-    .mbs-label { color: #3B6D11; }
-    .mbs-value { color: #173404; }
-    .mbs-sub   { color: #3B6D11; }
+  &--green  { background: #EAF3DE; border-color: #97C459;
+    .adm-stat__icon { background: #C0DD97; color: #27500A; }
+    .adm-stat__label { color: #3B6D11; }
+    .adm-stat__val   { color: #173404; }
   }
-
-  .mbs-amber {
-    background: #FAEEDA; border-color: #EF9F27;
-    .mbs-icon-wrap { background: #FAC775; color: #633806; }
-    .mbs-label { color: #854F0B; }
-    .mbs-value { color: #412402; }
-    .mbs-sub   { color: #854F0B; }
+  &--amber  { background: #FAEEDA; border-color: #EF9F27;
+    .adm-stat__icon { background: #FAC775; color: #633806; }
+    .adm-stat__label { color: #854F0B; }
+    .adm-stat__val   { color: #412402; }
   }
 }
 
-// ── FILTERS ───────────────────────────────────────────────────────
-.mp-filters {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-
-  .filter-group {
-    flex: 1;
-    min-width: 160px;
-
-    label {
-      display: block;
-      font-size: 10px;
-      font-weight: 700;
-      color: $muted;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 6px;
-    }
-
-    select, input {
-      width: 100%;
-      height: 40px;
-      border-radius: 10px;
-      border: 1.5px solid $border;
-      padding: 0 12px;
-      font-size: 13px;
-      font-family: $font;
-      background: $card;
-      color: $navy;
-      box-sizing: border-box;
-      transition: border-color 0.15s, box-shadow 0.15s;
-
-      &:focus {
-        outline: none;
-        border-color: $teal;
-        box-shadow: 0 0 0 3px rgba(13,148,136,0.1);
-      }
-      &::placeholder { color: #b0bec5; }
-    }
-
-    select {
-      appearance: none;
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      background-size: 14px;
-    }
-  }
-}
-
-// ── SECTION LABEL ─────────────────────────────────────────────────
-.mp-section-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: $muted;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: $border;
-  }
-}
-
-// ── GRID ──────────────────────────────────────────────────────────
-.mp-grid {
+// ── Category Cards ─────────────────────────────────────────
+.adm-cat-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-
-  @media (max-width: 1100px) { grid-template-columns: repeat(2, 1fr); }
-  @media (max-width: 640px)  { grid-template-columns: 1fr; }
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
-// ── CARD — no top border, always elevated style ───────────────────
-.mp-card {
+.adm-cat-card {
   background: $card;
-  border-radius: 18px;
+  border-radius: $radius-lg;
   border: 1.5px solid $border;
-  overflow: hidden;
+  padding: 16px 16px 14px;
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  // Always show the elevated state (no hover needed)
-  box-shadow: 0 6px 20px rgba(0, 20, 50, 0.07);
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease,
+              border-color 0.2s ease;
 
   &:hover {
-    box-shadow: 0 12px 32px rgba(0, 20, 50, 0.13);
     transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    border-color: var(--cm);
   }
 
-  .card-top {
-    padding: 14px 14px 12px;
+  &--active {
+    border-color: var(--cc) !important;
+    background: linear-gradient(150deg, $card 50%, var(--cl) 150%);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--cc) 12%, transparent),
+                0 8px 24px rgba(0,0,0,0.07);
+
+    .adm-cat-card__count {
+      background: var(--cc);
+      color: #fff;
+    }
+
+    .adm-cat-card__icon-wrap {
+      background: var(--cl);
+      color: var(--cc);
+    }
+  }
+
+  &__top {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 10px;
+    margin-bottom: 12px;
   }
 
-  .card-top-left {
+  &__icon-wrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #F3F4F6;
+    color: #6B7280;
     display: flex;
     align-items: center;
-    gap: 10px;
-    flex: 1;
-    min-width: 0;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+
+    svg { width: 18px; height: 18px; }
   }
 
-  .avatar {
-    width: 40px; height: 40px;
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    svg { width: 20px; height: 20px; }
+  &:hover &__icon-wrap {
+    background: var(--cl);
+    color: var(--cc);
+    transform: scale(1.07) rotate(-4deg);
   }
 
-  .card-name {
-    font-size: 13px;
+  &__count {
+    font-size: 12.5px;
     font-weight: 700;
-    color: $navy;
-    line-height: 1.35;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    letter-spacing: -0.01em;
-  }
-
-  .price-badge {
-    font-size: 10px;
-    font-weight: 700;
-    padding: 3px 9px;
+    padding: 2px 9px;
     border-radius: 20px;
-    white-space: nowrap;
-    background: $amber-lt;
-    color: #92400e;
-    border: 1px solid #fde68a;
-    flex-shrink: 0;
-    font-family: $mono;
+    background: var(--cl);
+    color: var(--cc);
+    transition: background 0.2s, color 0.2s;
+    min-width: 24px;
+    text-align: center;
   }
 
-  .card-divider {
-    height: 1px;
-    background: $border;
-    margin: 0 14px;
+  &__label {
+    font-family: $font-display;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: $text;
+    letter-spacing: -0.02em;
   }
 
-  .card-body {
-    padding: 10px 14px 14px;
-    flex: 1;
+  &__glow {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2.5px;
+    //background: var(--cc);
+    border-radius: 0 0 $radius-lg $radius-lg;
+    opacity: 0;
+    transform: scaleX(0.4);
+    transition: opacity 0.22s, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  &--active &__glow {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+// ── Table Panel ────────────────────────────────────────────
+.adm-panel {
+  background: $card;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+
+  &__bar {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 16px;
+    border-bottom: 1px solid $border;
+    background: #FAFBFC;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    &-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    &-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
   }
 
-  // .role-row {
-  //   display: flex;
-  //   align-items: center;
-  //   gap: 6px;
-  // }
-
-  // .role-dot {
-  //   width: 6px; height: 6px;
+  // // &__dot {
+  //   width: 7px;
+  //   height: 7px;
   //   border-radius: 50%;
   //   flex-shrink: 0;
   // }
 
-  .role-label {
-    font-size: 10px;
-    font-weight: 800;
+  &__title {
+    font-family: $font-display;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: $text;
+    letter-spacing: -0.02em;
+  }
+
+  &__pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 20px;
+  }
+}
+
+// ── Search ─────────────────────────────────────────────────
+.adm-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: $card;
+  border: 1px solid $border;
+  border-radius: 30px;
+  padding: 0 12px;
+  height: 30px;
+  min-width: 160px;
+  color: $muted;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus-within {
+    border-color: #A5B4FC;
+    box-shadow: 0 0 0 2px rgba(99,102,241,0.1);
+  }
+
+  &__input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 12px;
+    font-family: $font-body;
+    color: $text;
+    width: 100%;
+    &::placeholder { color: #9CA3AF; }
+  }
+}
+
+// ── Table ──────────────────────────────────────────────────
+.adm-table-wrap {
+  animation: tblIn 0.22s ease forwards;
+
+  @keyframes tblIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to   { opacity: 1; transform: none; }
+  }
+}
+
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead tr { background: #F9FAFB; }
+
+  th {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
     letter-spacing: 0.07em;
-    font-family: $mono;
-  }
-
-  .layer-chip {
-    font-size: 10px;
     color: $muted;
-    background: $bg;
-    border: 1px solid $border;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 500;
+    text-align: left;
+    padding: 9px 14px;
+    border-bottom: 1px solid $border;
+    white-space: nowrap;
   }
 
-  .card-footer {
-    margin-top: auto;
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #F3F4F6;
+    vertical-align: middle;
+    font-size: 13px;
+    background: transparent;
+  }
+}
+
+.adm-row {
+  cursor: pointer;
+  transition: background-color 0.12s;
+
+  &:hover { background-color: #F0F1FF; }
+  &:hover td { background: transparent; }
+  &:last-child td { border-bottom: none; }
+
+  &__name-td {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    max-width: 200px;
+  }
+
+  &__icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 9px;
-    background: $bg;
-    border-radius: 9px;
-  }
-
-  .email-icon {
-    color: $muted;
+    justify-content: center;
     flex-shrink: 0;
+    svg { width: 13px; height: 13px; }
   }
 
-  .partner-email {
-    font-size: 10px;
-    color: $muted;
+  &__name {
+    font-weight: 500;
+    color: $text;
+    font-size: 13px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-family: $mono;
   }
 
-  // ── Small "View →" button ──────────────────────────────────────
-.view-btn {
-  display: block;
-  width: fit-content;        /* ← key fix, no full width */
-  margin: 4px auto 0;        /* ← centers it */
-  padding: 2px 16px;
-  color: $teal;
-  border: 1.5px solid $teal-md;
+  &__email {
+    font-size: 12px;
+    color: $muted;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__goal {
+    color: $muted;
+    font-size: 12.5px;
+    max-width: 220px;
+    line-height: 1.45;
+    word-break: break-word;
+  }
+}
+
+.adm-nil { color: #D1D5DB; }
+
+// ── Badges ─────────────────────────────────────────────────
+.adm-access {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 9px;
   border-radius: 20px;
+  white-space: nowrap;
+
+  &--free { background: #D1FAE5; color: #065F46; }
+  &--paid { background: #FEE2E2; color: #991B1B; }
+}
+
+.adm-layer-pill {
+  display: inline-block;
   font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.adm-view-btn {
+  padding: 5px 13px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+  font-family: $font-body;
+  border: 1.5px solid var(--bl);
+  background: var(--bl);
+  color: var(--bc);
   cursor: pointer;
-  font-family: $font;
-  transition: opacity 0.15s;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
 
-  &:hover { opacity: 0.8; }
-}
-}
-
-// ── NO ITEMS ──────────────────────────────────────────────────────
-.no-items {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 60px 20px;
-  background: $card;
-  border-radius: 18px;
-  border: 1.5px dashed $border;
-
-  .no-items-icon {
-    width: 56px; height: 56px;
-    background: $bg;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 14px;
-    font-size: 24px;
+  &:hover {
+    background: color-mix(in srgb, var(--bc) 16%, white);
+    border-color: color-mix(in srgb, var(--bc) 38%, white);
+    transform: scale(1.04);
   }
-
-  h3 { font-size: 15px; font-weight: 700; color: $navy; margin: 0 0 6px; }
-  p  { font-size: 13px; color: $muted; margin: 0; }
+  &:active { transform: scale(0.97); }
 }
 
-// ── MODAL OVERLAY ─────────────────────────────────────────────────
-.modal-overlay {
+// ── Empty & Skeleton ──────────────────────────────────────
+.adm-empty {
+  text-align: center;
+  padding: 40px 24px;
+
+  &__icon { width: 36px; height: 36px; margin: 0 auto 10px;
+    svg { width: 36px; height: 36px; }
+  }
+  &__text { font-size: 13px; font-weight: 500; color: $muted; }
+}
+
+.adm-skeletons { padding: 4px 0; }
+.adm-skel-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 14px;
+  border-bottom: 1px solid #F3F4F6;
+  &:last-child { border-bottom: none; }
+}
+
+// ── Modal ──────────────────────────────────────────────────
+.adm-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(10,20,40,0.45);
-  backdrop-filter: blur(6px);
+  background: rgba(13,17,23,0.48);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
   padding: 20px;
-  animation: fadeIn 0.2s ease;
+  animation: ovIn 0.2s ease forwards;
+
+  @keyframes ovIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
 }
 
-.modal-container {
+.adm-modal {
   background: $card;
   width: 100%;
-  max-width: 600px;
-  max-height: 88vh;
-  border-radius: 22px;
+  max-width: 500px;
+  border-radius: 20px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 32px 64px -12px rgba(0,0,0,0.28);
-  animation: slideUp 0.25s cubic-bezier(0.16,1,0.3,1);
-}
+  box-shadow: 0 28px 70px rgba(13,17,23,0.22), 0 0 0 0.5px rgba(0,0,0,0.08);
+  animation: mdIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  position: relative;
+  max-height: 88vh;
 
-// ── MODAL HEAD ────────────────────────────────────────────────────
-.modal-head {
-  padding: 16px 18px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  border-bottom: 1px solid $border;
-  flex-shrink: 0;
+  @keyframes mdIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to   { opacity: 1; transform: none; }
+  }
 
-  .modal-head-left {
+  &__x {
+    position: absolute;
+    top: 12px; right: 12px;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.1);
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(4px);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    transition: background 0.15s, transform 0.2s;
+
+    svg { width: 12px; height: 12px; }
+    &:hover { background: #FEE2E2; transform: rotate(90deg); }
+  }
+
+  &__head {
+    padding: 18px 20px 14px;
+    background: linear-gradient(140deg, #FAFBFC 30%, color-mix(in srgb, var(--rl, #F3F4F6) 60%, white) 120%);
+    border-bottom: 1px solid $border;
     display: flex;
     align-items: center;
     gap: 12px;
+    flex-shrink: 0;
+  }
+
+  &__avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: var(--rl, #f1f5f9);
+    color: var(--rc, #6b7280);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    svg { width: 19px; height: 19px; }
+  }
+
+  &__head-text {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
 
-  .modal-avatar {
-    width: 42px; height: 42px;
-    border-radius: 11px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    svg { width: 20px; height: 20px; }
+  &__name {
+    font-family: $font-display;
+    font-size: 15px;
+    font-weight: 700;
+    color: $text;
+    letter-spacing: -0.03em;
+    margin: 0;
+    line-height: 1.2;
   }
 
-  .modal-title-wrapper {
-    flex: 1; min-width: 0;
-
-    h2 {
-      font-size: 14px;
-      font-weight: 800;
-      color: $navy;
-      margin: 0 0 3px;
-      letter-spacing: -0.02em;
-    }
-  }
-
-  .modal-meta {
+  &__meta {
     display: flex;
     align-items: center;
     gap: 5px;
     font-size: 11px;
     color: $muted;
-    font-family: $mono;
     flex-wrap: wrap;
-
-    .meta-dot { color: $border; }
   }
 
-  .modal-head-right {
+  &__meta-dot { color: #D1D5DB; }
+
+  &__head-right {
     display: flex;
     align-items: center;
     gap: 7px;
     flex-shrink: 0;
+    padding-right: 30px; // space for the ✕ button
   }
 
-  .role-badge {
-    font-size: 10px;
+  &__role-tag {
+    display: inline-block;
+    font-size: 10.5px;
     font-weight: 700;
-    padding: 3px 9px;
-    border-radius: 12px;
-    font-family: $mono;
-    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 2px 9px;
+    border-radius: 20px;
   }
 
-  // ── Pencil edit icon button ────────────────────────────────────
-  .modal-edit-pencil {
-    width: 30px; height: 30px;
+  &__edit-btn {
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    border: 1.5px solid $border;
+    border: 1px solid $border;
     background: $card;
     cursor: pointer;
     color: $muted;
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: all 0.15s;
 
+    svg { width: 13px; height: 13px; }
+
     &:hover {
-      background: $indigo-lt;
-      border-color: $indigo;
-      color: $indigo;
+      background: #EEF2FF;
+      border-color: #818CF8;
+      color: #4F46E5;
     }
   }
 
-  // ── Inline save/cancel when editing ───────────────────────────
-  .modal-edit-actions {
+  &__edit-actions {
     display: flex;
     gap: 6px;
     align-items: center;
   }
 
-  .modal-save-btn {
+  &__save-btn {
     padding: 5px 14px;
     border-radius: 20px;
-    background: $teal;
+    background: #059669;
     color: #fff;
     border: none;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
-    font-family: $font;
+    font-family: $font-body;
     transition: background 0.15s;
-
-    &:hover { background: darken($teal, 6%); }
+    &:hover { background: #047857; }
   }
 
-  .modal-cancel-btn {
+  &__cancel-btn {
     padding: 5px 12px;
     border-radius: 20px;
     background: transparent;
     color: $muted;
-    border: 1.5px solid $border;
+    border: 1px solid $border;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
-    font-family: $font;
+    font-family: $font-body;
     transition: background 0.15s;
-
-    &:hover { background: $bg; color: $navy; }
+    &:hover { background: #F3F4F6; }
   }
 
-  .modal-close {
-    width: 30px; height: 30px;
-    border-radius: 50%;
-    border: 1.5px solid $border;
-    background: $card;
-    cursor: pointer;
-    font-size: 17px;
-    color: $muted;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s;
+  &__body {
+    padding: 16px 18px 18px;
+    overflow-y: auto;
+    flex: 1;
 
-    &:hover { background: $red-lt; border-color: $red; color: $red; }
+    &::-webkit-scrollbar { width: 3px; }
+    &::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 10px; }
   }
 }
 
-// ── MODAL SCROLL AREA ─────────────────────────────────────────────
-.modal-scroll-area {
-  overflow-y: auto;
-  flex: 1;
-
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: $border; border-radius: 4px; }
+// ── Edit title input ──────────────────────────────────────
+.adm-edit-title {
+  font-family: $font-display;
+  font-size: 15px;
+  font-weight: 700;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+  padding: 4px 9px;
+  outline: none;
+  width: 100%;
+  color: $text;
+  &:focus { border-color: #818CF8; }
 }
 
-.modal-body { padding: 18px 20px 24px; }
-
-// ── SECTION HEADER ────────────────────────────────────────────────
-.section-header {
+// ── Chips ─────────────────────────────────────────────────
+.adm-chips {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid $border;
-
-  .section-icon { font-size: 14px; }
-
-  .section-title {
-    font-size: 11px;
-    font-weight: 800;
-    color: $navy;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
 }
 
-// ── ACCESS TABLE ──────────────────────────────────────────────────
-.access-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
-  border: 1.5px solid $border;
-  border-radius: 12px;
-  overflow: hidden;
+.adm-chip {
+  background: #F9FAFB;
+  border: 1px solid #F1F5F9;
+  border-radius: 10px;
+  padding: 7px 11px;
+  min-width: 72px;
 
-  th {
-    font-size: 10px;
+  &__label {
+    display: block;
+    font-size: 9.5px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: $muted;
-    padding: 9px 14px;
-    background: $bg;
-    text-align: left;
-    font-family: $mono;
+    letter-spacing: 0.07em;
+    color: #9CA3AF;
+    margin-bottom: 3px;
   }
 
-  td {
+  &__val {
+    display: block;
     font-size: 13px;
-    padding: 11px 14px;
-    color: $navy;
+    font-weight: 600;
+    color: $text;
+  }
 
-    &.highlight    { color: $teal; font-weight: 700; }
-    &.discount-val { color: $red;  font-weight: 600; }
+  &__input {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: $font-body;
+    color: $text;
+    border: 1px solid $border;
+    border-radius: 6px;
+    padding: 3px 7px;
+    outline: none;
+    width: 100%;
+    background: $card;
+
+    &:focus { border-color: #818CF8; }
   }
 }
 
-// ── DETAIL GRID ───────────────────────────────────────────────────
-.detail-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 20px;
+// ── Modal text fields ─────────────────────────────────────
+.adm-mfield {
+  background: #F9FAFB;
+  border: 1px solid #F1F5F9;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
 
-  .wide { grid-column: 1 / -1; }
-}
+  &:last-child { margin-bottom: 0; }
 
-.d-item {
-  background: $bg;
-  border-radius: 11px;
-  padding: 10px 13px;
-  border: 1px solid $border;
-
-  .d-label {
-    font-size: 10px;
+  &__label {
+    display: block;
+    font-size: 9.5px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: $muted;
+    letter-spacing: 0.07em;
+    color: #9CA3AF;
     margin-bottom: 5px;
-    font-family: $mono;
   }
 
-  .d-val {
-    font-size: 13px;
-    color: $navy;
+  &__text {
+    font-size: 12.5px;
+    color: #374151;
     line-height: 1.6;
     word-break: break-word;
+    margin: 0;
+  }
+
+  &__textarea {
+    width: 100%;
+    font-size: 12.5px;
+    font-family: $font-body;
+    color: $text;
+    border: 1.5px solid $border;
+    border-radius: 7px;
+    padding: 7px 9px;
+    outline: none;
+    resize: vertical;
+    line-height: 1.6;
+    background: $card;
+    box-sizing: border-box;
+
+    &:focus { border-color: #818CF8; }
   }
 }
 
-// ── FEATURE CHIPS ─────────────────────────────────────────────────
-.feature-chips {
+// ── Feature chips ─────────────────────────────────────────
+.adm-feature-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-
-  .feature-chip {
-    font-size: 11px;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 20px;
-    border: 1px solid transparent;
-  }
+  margin-top: 2px;
 }
 
-// ── EDIT INPUTS ───────────────────────────────────────────────────
-.edit-input-title {
-  font-size: 14px;
-  font-weight: 700;
-  padding: 6px 9px;
-  border: 1.5px solid $border;
-  border-radius: 8px;
-  width: 100%;
-  font-family: $font;
-  color: $navy;
-  box-sizing: border-box;
-
-  &:focus { outline: none; border-color: $teal; box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+.adm-feature-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
 }
 
-.edit-input, .edit-select {
-  width: 100%;
-  padding: 7px 10px;
-  border: 1.5px solid $border;
-  border-radius: 8px;
-  font-size: 13px;
-  font-family: $font;
-  color: $navy;
-  background: #fff;
-  box-sizing: border-box;
-
-  &:focus { outline: none; border-color: $teal; }
+// ── Responsive ─────────────────────────────────────────────
+@media (max-width: 960px) {
+  .adm-stats    { grid-template-columns: repeat(2, 1fr); }
+  .adm-cat-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-.edit-textarea {
-  width: 100%;
-  padding: 9px 10px;
-  border: 1.5px solid $border;
-  border-radius: 8px;
-  font-size: 13px;
-  font-family: $font;
-  color: $navy;
-  resize: vertical;
-  box-sizing: border-box;
-  line-height: 1.6;
+@media (max-width: 640px) {
+  .adm-root  { padding: 14px 14px 32px; }
+  .adm-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .adm-cat-grid { gap: 8px; }
+  .adm-panel__bar { flex-direction: column; align-items: flex-start; }
+  .adm-panel__bar-right { width: 100%; flex-wrap: wrap; }
+  .adm-search { flex: 1; min-width: 0; }
+  .adm-modal { max-width: 96%; }
 
-  &:focus { outline: none; border-color: $teal; }
+  .adm-row__email { display: none; }
+  .adm-table th:nth-child(2),
+  .adm-table td:nth-child(2) { display: none; }
 }
-
-// ── ANIMATIONS ────────────────────────────────────────────────────
-@keyframes fadeIn  { from { opacity: 0; }              to { opacity: 1; } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }

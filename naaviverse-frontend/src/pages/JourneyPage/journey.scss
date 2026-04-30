@@ -1,26 +1,28 @@
 // ── Design Tokens — Naavi Logo Pastels ─────────────────────────────────────
-$navy:         #1f304f;          // logo navy — used sparingly for text only
-$teal:         #0d9488;          // logo teal
-$teal-light:   #e6f7f6;          // pastel teal bg
-$teal-mid:     #b2e8e5;
-$orange:       #f97316;          // logo orange-red
-$orange-light: #fff3ec;          // pastel orange bg
-$green:        #22c55e;          // logo green
-$green-light:  #f0fdf4;          // pastel green bg
-$green-mid:    #bbf7d0;
-$sky:          #0ea5e9;          // logo sky-blue accent
-$sky-light:    #e0f2fe;          // pastel sky bg
+$navy:          #1f304f;
+$teal:          #0d9488;
+$teal-light:    #e6f7f6;
+$teal-mid:      #b2e8e5;
 
-$gray50:       #f8fafc;
-$gray100:      #f1f5f9;
-$gray200:      #e2e8f0;
-$gray300:      #cbd5e1;
-$gray400:      #94a3b8;
-$gray600:      #475569;
+// Card — warm cream (from screenshot)
+$card-bg:       #fdf8f0;
+$card-border:   #f0e6d0;
 
-$radius:       14px;
-$shadow:       0 2px 12px rgba(15, 31, 61, 0.06);
-$shadow-md:    0 4px 20px rgba(15, 31, 61, 0.09);
+// Card number bubble — orange (from screenshot)
+$orange:        #d97706;
+$orange-light:  #fef3c7;
+$orange-border: #fde68a;
+
+$gray50:        #f8fafc;
+$gray100:       #f1f5f9;
+$gray200:       #e2e8f0;
+$gray300:       #cbd5e1;
+$gray400:       #94a3b8;
+$gray600:       #475569;
+
+$radius:        14px;
+$shadow:        0 2px 12px rgba(15, 31, 61, 0.06);
+$shadow-md:     0 4px 20px rgba(15, 31, 61, 0.09);
 
 // ── Base ────────────────────────────────────────────────────────────────────
 .journeypage {
@@ -34,13 +36,13 @@ $shadow-md:    0 4px 20px rgba(15, 31, 61, 0.09);
   box-sizing: border-box;
 }
 
-// ── Path Header ─────────────────────────────────────────────────────────────
+// ── Path Header — teal mint style (matches screenshot 2) ────────────────────
 .journey-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
-  background: #fff;
+  background: $teal-light;
   border: 1.5px solid $teal-mid;
   border-radius: 18px;
   padding: 28px 32px;
@@ -55,17 +57,18 @@ $shadow-md:    0 4px 20px rgba(15, 31, 61, 0.09);
   align-items: center;
   gap: 8px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1.4px;
   color: $teal;
   margin-bottom: 10px;
+
   .jh-icon { display: flex; align-items: center; color: $teal; }
 }
 
 .jh-title {
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
   color: $navy;
   margin: 0 0 10px;
   line-height: 1.25;
@@ -81,8 +84,9 @@ $shadow-md:    0 4px 20px rgba(15, 31, 61, 0.09);
 
 .jh-right { flex-shrink: 0; }
 
+// Total steps badge — white card on teal bg (matches screenshot 2)
 .jh-stat {
-  background: $teal-light;
+  background: #ffffff;
   border: 1.5px solid $teal-mid;
   border-radius: 14px;
   padding: 18px 28px;
@@ -117,6 +121,7 @@ $shadow-md:    0 4px 20px rgba(15, 31, 61, 0.09);
   gap: 12px;
   margin-bottom: 20px;
 }
+
 .ssh-label {
   font-size: 11px;
   font-weight: 800;
@@ -125,7 +130,9 @@ $shadow-md:    0 4px 20px rgba(15, 31, 61, 0.09);
   color: $gray400;
   white-space: nowrap;
 }
-.ssh-line { flex: 1; height: 1px; background: $gray200; }
+
+.ssh-line  { flex: 1; height: 1px; background: $gray200; }
+
 .ssh-count {
   font-size: 11px;
   font-weight: 600;
@@ -140,19 +147,11 @@ $shadow-md:    0 4px 20px rgba(15, 31, 61, 0.09);
   gap: 16px;
 }
 
-// ── Step Card ───────────────────────────────────────────────────────────────
-// Cycle card accent colors using logo palette
-$card-accents: (
-  1: ($teal,   $teal-light,  $teal-mid),
-  2: ($sky,    $sky-light,   #bae6fd),
-  3: ($orange, $orange-light,#fed7aa),
-  4: ($green,  $green-light, $green-mid),
-);
-
+// ── Step Card — warm cream for ALL cards (matches screenshot 1) ─────────────
 .step-card {
-  background: #fff;
+  background: $card-bg;
   border-radius: $radius;
-  border: 1.5px solid $gray200;
+  border: 1.5px solid $card-border;
   box-shadow: $shadow;
   padding: 20px 22px;
   cursor: pointer;
@@ -163,21 +162,12 @@ $card-accents: (
   position: relative;
   overflow: hidden;
 
-
-
   &:hover {
     box-shadow: $shadow-md;
-    border-color: $teal-mid;
+    border-color: $orange-border;
     transform: translateY(-2px);
-    .sc-cta { color: $teal; }
-  }
 
-  // Cycle number bubble bg
-  .sc-number {
-    &--1 { background: $teal-light;   color: $teal;   border: 1.5px solid $teal-mid; }
-    &--2 { background: $sky-light;    color: $sky;    border: 1.5px solid #bae6fd; }
-    &--3 { background: $orange-light; color: $orange; border: 1.5px solid #fed7aa; }
-    &--4 { background: $green-light;  color: $green;  border: 1.5px solid $green-mid; }
+    .sc-cta { color: $orange; }
   }
 }
 
@@ -188,6 +178,7 @@ $card-accents: (
   justify-content: space-between;
 }
 
+// Number bubble — orange for ALL cards (matches screenshot 1)
 .sc-number {
   width: 34px;
   height: 34px;
@@ -198,17 +189,10 @@ $card-accents: (
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  // default — overridden by --1/--2/--3/--4 above
-  background: $teal-light;
-  color: $teal;
-  border: 1.5px solid $teal-mid;
+  background: $orange-light;
+  color: $orange;
+  border: 1.5px solid $orange-border;
 }
-
-// nth-child drives bubble color without needing extra class
-.step-card:nth-child(4n+1) .sc-number { background: $teal-light;   color: $teal;   border-color: $teal-mid; }
-.step-card:nth-child(4n+2) .sc-number { background: $sky-light;    color: $sky;    border-color: #bae6fd; }
-.step-card:nth-child(4n+3) .sc-number { background: $orange-light; color: $orange; border-color: #fed7aa; }
-.step-card:nth-child(4n+4) .sc-number { background: $green-light;  color: $green;  border-color: $green-mid; }
 
 .sc-badge {
   font-size: 10px;
@@ -217,8 +201,9 @@ $card-accents: (
   letter-spacing: 0.8px;
   padding: 3px 10px;
   border-radius: 20px;
-  &--free { background: $green-light; color: $green; border: 1px solid $green-mid; }
-  &--paid { background: $orange-light; color: $orange; border: 1px solid #fed7aa; }
+
+  &--free { background: #f0fdf4; color: #22c55e; border: 1px solid #bbf7d0; }
+  &--paid { background: $orange-light; color: $orange; border: 1px solid $orange-border; }
 }
 
 // ── Card Body ───────────────────────────────────────────────────────────────
@@ -231,7 +216,7 @@ $card-accents: (
 
 .sc-title {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   color: $navy;
   line-height: 1.35;
 }
@@ -252,7 +237,7 @@ $card-accents: (
   align-items: center;
   justify-content: space-between;
   padding-top: 12px;
-  border-top: 1px solid $gray100;
+  border-top: 1px solid $card-border;
 }
 
 .sc-duration {
@@ -287,7 +272,8 @@ $card-accents: (
 }
 
 .no-path-icon {
-  width: 80px; height: 80px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   background: $teal-light;
   border: 1.5px solid $teal-mid;
@@ -322,6 +308,7 @@ $card-accents: (
   font-weight: 700;
   cursor: pointer;
   transition: background 0.15s;
+
   &:hover { background: darken($teal, 8%); }
 }
 

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 .txn-page {
   width: 100%;
@@ -7,7 +7,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   color: #1e2a45;
-  font-family: 'DM Sans', 'Inter', sans-serif;
+  font-family: 'Poppins', sans-serif !important;
   background: #f0f3fa;
 
   &::-webkit-scrollbar { width: 4px; }
@@ -211,8 +211,8 @@
   // ─── CELL STYLES (used in both desktop + mobile) ──────────────
 
   .date-cell {
-    .date-main { font-size: 12px; font-weight: 600; color: #1e2a45; }
-    .date-time  { font-size: 9.5px; color: #a0aec0; margin-top: 1px; font-family: 'DM Mono', monospace; }
+    .date-main { font-size: 12px; font-weight: 500; color: #1e2a45; }
+    .date-time  { font-size: 9.5px; color: #a0aec0; margin-top: 1px; font-family: 'Poppins', sans-serif !important; }
 
     @media (max-width: 768px) {
       .date-main { font-size: 11px; }
@@ -239,7 +239,7 @@
   }
 
   .service-name {
-    font-size: 12px; font-weight: 600; color: #1e2a45;
+    font-size: 12px; font-weight: 500; color: #1e2a45;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 
     @media (max-width: 768px) { font-size: 13px; white-space: normal; }
@@ -247,8 +247,10 @@
   .service-sub { font-size: 9.5px; color: #a0aec0; margin-top: 1px; }
 
   .amount-cell {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px; font-weight: 600; color: #1e2a45;
+font-family: 'Poppins', sans-serif !important;
+    font-size: 12px; 
+    font-weight: 500; 
+    color: #1e2a45;
 
     @media (max-width: 768px) { font-size: 14px; font-weight: 700; }
   }

@@ -1,7 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import "../../static/scss/colors";
 @import "../../static/scss/mixin";
 
 .dashboard-sidebar {
+    font-family: 'Poppins', sans-serif !important;
     height: 100vh;
     padding: 30px 2vw 0px 2vw;
     overflow-y: scroll;
@@ -19,7 +21,7 @@
       width: calc(100%);
       display: flex;
       align-items: center;
-      font-weight: 500;
+      font-weight: 450;
       font-size: 17px;
       line-height: 21px;
       color: #100F0D;
@@ -141,4 +143,6 @@ body.admin-popup-open .dashboard-sidebar {
   pointer-events: auto;
 }
 
-
+.dashboard-sidebar * {
+  font-family: 'Poppins', sans-serif !important;
+}

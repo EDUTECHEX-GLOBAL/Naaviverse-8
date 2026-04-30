@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "./AdminMarketplace.scss";
 import Skeleton from "react-loading-skeleton";
 import axios from "axios";
@@ -6,155 +6,147 @@ import { toast } from "react-toastify";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const PARTNER_ICONS = {
-  institution: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <path d="M3 21H21M5 21V7L12 3L19 7V21M9 21V13H15V21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    </svg>
-  ),
-  mentor: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <path d="M12 15C14.7614 15 17 12.7614 17 10C17 7.23858 14.7614 5 12 5C9.23858 5 7 7.23858 7 10C7 12.7614 9.23858 15 12 15Z" stroke="currentColor" strokeWidth="1.5"/>
-      <path d="M3 20.5C4.5 17.5 7.5 16 12 16C16.5 16 19.5 17.5 21 20.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    </svg>
-  ),
-  distributor: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <path d="M4 6H20V18H4V6Z" stroke="currentColor" strokeWidth="1.5"/>
-      <path d="M8 6L12 3L16 6" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-      <rect x="8" y="15" width="2" height="2" fill="currentColor"/>
-      <rect x="14" y="15" width="2" height="2" fill="currentColor"/>
-    </svg>
-  ),
-  vendor: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <path d="M6 7L3 12L6 17H18L21 12L18 7H6Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-      <circle cx="8" cy="12" r="1.5" fill="currentColor"/>
-      <circle cx="16" cy="12" r="1.5" fill="currentColor"/>
-    </svg>
-  ),
-};
+// ── Premium SVG Icons ─────────────────────────────────────
+const IconInstitution = () => (
+  <svg viewBox="0 0 24 24" fill="none">
+    <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 10v11M12 10v11M16 10v11"
+      stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+const IconMentor = () => (
+  <svg viewBox="0 0 24 24" fill="none">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.65"/>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+      stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+const IconVendor = () => (
+  <svg viewBox="0 0 24 24" fill="none">
+    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"
+      stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M3 6h18" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round"/>
+    <path d="M16 10a4 4 0 0 1-8 0"
+      stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+const IconDistributor = () => (
+  <svg viewBox="0 0 24 24" fill="none">
+    <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"
+      stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M16.5 9.4 7.55 4.24M3.29 7 12 12l8.71-5M12 22V12"
+      stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M18 15v6M15 18h6" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round"/>
+  </svg>
+);
 
-const THEMES = {
-  institution: {
-   color: "#166534",  // Dark green text (optional)
-    bg: "#dcfce7",     
-    gradient: "linear-gradient(135deg, #f0f9f6, #e6f2ef)",
-    icon: PARTNER_ICONS.institution,
-  },
-  mentor: {
-    color: "#b45309", bg: "#fffbeb",
-    gradient: "linear-gradient(135deg, #fef7e8, #f5ede0)",
-    icon: PARTNER_ICONS.mentor,
-  },
-  distributor: {
-    color: "#1d4ed8", bg: "#eff6ff",
-    gradient: "linear-gradient(135deg, #eff5fa, #e5edf5)",
-    icon: PARTNER_ICONS.distributor,
-  },
-  vendor: {
-    color: "#7c3aed", bg: "#f5f3ff",
-    gradient: "linear-gradient(135deg, #fdf2f7, #f5eaf0)",
-    icon: PARTNER_ICONS.vendor,
-  },
-};
-
-/* ── 4 different icons for stat cards ── */
-const StatIcons = {
-  listings: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <rect x="3" y="3" width="18" height="18" rx="3"/>
-      <path d="M3 9h18M9 21V9"/>
-    </svg>
-  ),
-  paid: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <circle cx="12" cy="12" r="9"/>
-      <path d="M12 7v1m0 8v1M9.5 9.5a2.5 2.5 0 0 1 5 0c0 1.5-1 2-2.5 2.5S9.5 13 9.5 14.5a2.5 2.5 0 0 0 5 0"/>
-    </svg>
-  ),
-  free: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
-    </svg>
-  ),
-  partners: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-    </svg>
-  ),
-};
-
-const PencilIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+const IconEdit = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
   </svg>
 );
 
-const formatPrice = (cost) => (!cost || cost === "0" ? "Free" : `$${cost}`);
-const parseFeatures = (features) => {
-  if (!features) return [];
-  return features.split(/[,;]+/).map((f) => f.trim()).filter(Boolean);
-};
-
-const EmailIcon = () => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z"/>
-    <polyline points="22,6 12,13 2,6"/>
+// ── Stat icons ────────────────────────────────────────────
+const StatListings = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/>
+  </svg>
+);
+const StatPaid = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <circle cx="12" cy="12" r="9"/>
+    <path d="M12 7v1m0 8v1M9.5 9.5a2.5 2.5 0 0 1 5 0c0 1.5-1 2-2.5 2.5S9.5 13 9.5 14.5a2.5 2.5 0 0 0 5 0"/>
+  </svg>
+);
+const StatFree = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+  </svg>
+);
+const StatPartners = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+    <circle cx="9" cy="7" r="4"/>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
   </svg>
 );
 
+// ── Config ────────────────────────────────────────────────
+const CATEGORY_CONFIG = {
+  institution: { color: "#6C5CE7", colorLight: "#EDEBFF", colorMid: "#B2ABED", Icon: IconInstitution, label: "Institutions" },
+  mentor:      { color: "#0EA5E9", colorLight: "#E0F5FF", colorMid: "#7DD3FC", Icon: IconMentor,      label: "Mentors" },
+  vendor:      { color: "#F43F5E", colorLight: "#FFE4EA", colorMid: "#FDA4AF", Icon: IconVendor,      label: "Vendors" },
+  distributor: { color: "#F59E0B", colorLight: "#FEF3C7", colorMid: "#FCD34D", Icon: IconDistributor, label: "Distributors" },
+};
+
+const LAYER_COLORS = {
+  NANO:       { bg: "#EEF2FF", color: "#4338CA" },
+  MICRO:      { bg: "#F0FDF4", color: "#15803D" },
+  MACRO:      { bg: "#FFF7ED", color: "#C2410C" },
+  FOUNDATION: { bg: "#F8FAFC", color: "#475569" },
+};
+
+const getRoleConf = (role) =>
+  CATEGORY_CONFIG[role?.toLowerCase()] || { color: "#94a3b8", colorLight: "#f1f5f9", colorMid: "#e2e8f0", Icon: () => null, label: "Unknown" };
+
+const formatPrice = (cost) => (!cost || cost === "0" || cost === 0 ? "Free" : `$${cost}`);
+
+const parseFeatures = (features) => {
+  if (!features) return [];
+  if (Array.isArray(features)) return features;
+  return features.split(/[,;]+/).map((f) => f.trim()).filter(Boolean);
+};
+
+// ── Main Component ────────────────────────────────────────
 const AdminMarketplace = () => {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [partnerType, setPartnerType] = useState("all");
-  const [emailSearch, setEmailSearch] = useState("");
-  const [titleSearch, setTitleSearch] = useState("");
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editFormData, setEditFormData] = useState({
+  const [items,          setItems]          = useState([]);
+  const [loading,        setLoading]        = useState(true);
+  const [activeCategory, setActiveCategory] = useState("institution");
+  const [emailSearch,    setEmailSearch]    = useState("");
+  const [nameSearch,     setNameSearch]     = useState("");
+  const [selectedItem,   setSelectedItem]   = useState(null);
+  const [isEditing,      setIsEditing]      = useState(false);
+  const [tableKey,       setTableKey]       = useState(0);
+  const [editFormData,   setEditFormData]   = useState({
     name: "", access: "", cost: "", discount: "", layer: "",
-    duration: "", goal: "", features: "", outcomes: "",
-    iterations: "", partner_email: "",
+    duration: "", goal: "", features: "", outcomes: "", iterations: "", partner_email: "",
   });
 
-  useEffect(() => { fetchMarketplaceItems(); }, []);
-
-  const fetchMarketplaceItems = async () => {
+  const fetchMarketplaceItems = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${BASE_URL}/api/marketplace/admin/get-all`);
-      if (response.data?.status) {
-        setItems(response.data.data || []);
-      } else {
-        setItems([]);
-        toast.error("Failed to load marketplace items");
-      }
-    } catch (error) {
-      console.error("Error fetching marketplace:", error);
-      toast.error("Error loading marketplace items");
+      const res = await axios.get(`${BASE_URL}/api/marketplace/admin/get-all`);
+      if (res.data?.status) setItems(res.data.data || []);
+      else { setItems([]); toast.error(res.data?.message || "Failed to load items"); }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Error loading items");
       setItems([]);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { fetchMarketplaceItems(); }, [fetchMarketplaceItems]);
+
+  const handleCategoryClick = (cat) => {
+    if (cat === activeCategory) return;
+    setTableKey((k) => k + 1);
+    setActiveCategory(cat);
   };
 
   const handleEditClick = () => {
     setIsEditing(true);
     setEditFormData({
-      name: selectedItem.name || "",
-      access: selectedItem.access || "",
-      cost: selectedItem.cost || "",
-      discount: selectedItem.discount || "",
-      layer: selectedItem.layer || "",
-      duration: selectedItem.duration || "",
-      goal: selectedItem.goal || "",
-      features: selectedItem.features || "",
-      outcomes: selectedItem.outcomes || "",
-      iterations: selectedItem.iterations || "",
+      name:          selectedItem.name          || "",
+      access:        selectedItem.access        || "",
+      cost:          selectedItem.cost          || "",
+      discount:      selectedItem.discount      || "",
+      layer:         selectedItem.layer         || "",
+      duration:      selectedItem.duration      || "",
+      goal:          selectedItem.goal          || "",
+      features:      selectedItem.features      || "",
+      outcomes:      selectedItem.outcomes      || "",
+      iterations:    selectedItem.iterations    || "",
       partner_email: selectedItem.partner_email || "",
     });
   };
@@ -166,349 +158,377 @@ const AdminMarketplace = () => {
 
   const handleSave = async () => {
     try {
-      const response = await axios.put(
+      const res = await axios.put(
         `${BASE_URL}/api/marketplace/admin/update/${selectedItem._id}`,
         editFormData
       );
-      if (response.data?.status) {
-        toast.success("Item updated successfully!");
-        const updatedItem = response.data.data;
-        setItems((prev) => prev.map((item) => item._id === selectedItem._id ? updatedItem : item));
-        setSelectedItem(updatedItem);
+      if (res.data?.status) {
+        toast.success("Item updated!");
+        const updated = res.data.data;
+        setItems((prev) => prev.map((i) => (i._id === selectedItem._id ? updated : i)));
+        setSelectedItem(updated);
         setIsEditing(false);
-      } else {
-        toast.error(response.data?.message || "Failed to update item");
-      }
-    } catch (error) {
-      console.error("Error updating item:", error);
-      toast.error(error.response?.data?.message || "Error updating item.");
+      } else toast.error(res.data?.message || "Failed to update");
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Error updating item.");
     }
   };
 
-  const handleCancel = () => { setIsEditing(false); setEditFormData({}); };
+  const handleCancel    = () => { setIsEditing(false); setEditFormData({}); };
+  const handleCloseModal = () => { setSelectedItem(null); setIsEditing(false); };
 
+  // Counts per category (no email/name filter for summary cards)
+  const categoryCounts = Object.keys(CATEGORY_CONFIG).reduce((acc, cat) => {
+    acc[cat] = items.filter((i) => i.role?.toLowerCase() === cat).length;
+    return acc;
+  }, {});
+
+  // Filtered items for the active table view
   const filteredItems = items.filter((item) => {
-    const roleMatch = partnerType === "all" || item.role?.toLowerCase() === partnerType.toLowerCase();
-    const emailMatch = emailSearch === "" || item.partner_email?.toLowerCase().includes(emailSearch.toLowerCase());
-    const titleMatch = titleSearch === "" || item.name?.toLowerCase().includes(titleSearch.toLowerCase());
-    return roleMatch && emailMatch && titleMatch;
+    const roleMatch  = item.role?.toLowerCase() === activeCategory;
+    const emailMatch = !emailSearch || item.partner_email?.toLowerCase().includes(emailSearch.toLowerCase());
+    const nameMatch  = !nameSearch  || item.name?.toLowerCase().includes(nameSearch.toLowerCase());
+    return roleMatch && emailMatch && nameMatch;
   });
 
-  const totalItems     = filteredItems.length;
-  const freeItems      = filteredItems.filter((i) => !i.cost || i.cost === "0").length;
+  // Stats (across all categories, respecting email/name filters)
+  const allFiltered    = items.filter((i) => (!emailSearch || i.partner_email?.toLowerCase().includes(emailSearch.toLowerCase())) && (!nameSearch || i.name?.toLowerCase().includes(nameSearch.toLowerCase())));
+  const totalItems     = allFiltered.length;
+  const freeItems      = allFiltered.filter((i) => !i.cost || i.cost === "0" || i.cost === 0).length;
   const paidItems      = totalItems - freeItems;
-  const uniquePartners = new Set(filteredItems.map((i) => i.partner_email).filter(Boolean)).size;
+  const uniquePartners = new Set(allFiltered.map((i) => i.partner_email).filter(Boolean)).size;
 
-  const statCards = [
-    { label: "Total Listings", value: totalItems,     iconKey: "listings", sub: "All partner items",  cls: "mbs-teal"   },
-    { label: "Paid Items",     value: paidItems,      iconKey: "paid",     sub: "Paid offerings",     cls: "mbs-purple" },
-    { label: "Free Items",     value: freeItems,      iconKey: "free",     sub: "No cost access",     cls: "mbs-green"  },
-    { label: "Partners",       value: uniquePartners, iconKey: "partners", sub: "Active partners",    cls: "mbs-amber"  },
-  ];
+  const ac = CATEGORY_CONFIG[activeCategory];
 
   return (
-    <div className="admin-marketplace">
+    <div className="adm-root">
 
-      {/* ── 4 Stat Cards ── */}
-      <div className="mp-below-stats">
-        {statCards.map(({ label, value, iconKey, sub, cls }) => (
-          <div className={`mbs-card ${cls}`} key={label}>
-            <div className="mbs-icon-wrap">
-              {StatIcons[iconKey]}
-            </div>
-            <div className="mbs-info">
-              <div className="mbs-label">{label}</div>
-              <div className="mbs-value">{value}</div>
-              <div className="mbs-sub">{sub}</div>
+      {/* Header */}
+      <div className="adm-header">
+        <h1 className="adm-header__title">Marketplace</h1>
+        {!loading && <span className="adm-header__badge">{items.length} Total Items</span>}
+      </div>
+
+      {/* Stat Cards */}
+      <div className="adm-stats">
+        {[
+          { label: "Total Listings", value: totalItems,     Icon: StatListings, cls: "adm-stat--teal"   },
+          { label: "Paid Items",     value: paidItems,      Icon: StatPaid,     cls: "adm-stat--purple" },
+          { label: "Free Items",     value: freeItems,      Icon: StatFree,     cls: "adm-stat--green"  },
+          { label: "Partners",       value: uniquePartners, Icon: StatPartners, cls: "adm-stat--amber"  },
+        ].map(({ label, value, Icon, cls }) => (
+          <div className={`adm-stat ${cls}`} key={label}>
+            <div className="adm-stat__icon"><Icon /></div>
+            <div className="adm-stat__body">
+              <span className="adm-stat__label">{label}</span>
+              <span className="adm-stat__val">{loading ? "—" : value}</span>
             </div>
           </div>
         ))}
       </div>
 
-      {/* ── Filters ── */}
-      <div className="mp-filters">
-        <div className="filter-group">
-          <label>Partner Type</label>
-          <select value={partnerType} onChange={(e) => setPartnerType(e.target.value)}>
-            <option value="all">All Partners</option>
-            <option value="institution">Institutions</option>
-            <option value="mentor">Mentors</option>
-            <option value="distributor">Distributors</option>
-            <option value="vendor">Vendors</option>
-          </select>
-        </div>
-        <div className="filter-group">
-          <label>Search by Email</label>
-          <input type="text" placeholder="partner@example.com" value={emailSearch}
-            onChange={(e) => setEmailSearch(e.target.value)} />
-        </div>
-        <div className="filter-group">
-          <label>Search by Name</label>
-          <input type="text" placeholder="Course or service name..." value={titleSearch}
-            onChange={(e) => setTitleSearch(e.target.value)} />
-        </div>
-      </div>
-
-      {/* ── Section label ── */}
-      <div className="mp-section-label">
-        {loading ? "Loading…" : `${filteredItems.length} listing${filteredItems.length !== 1 ? "s" : ""}`}
-      </div>
-
-      {/* ── Grid ── */}
-      {loading ? (
-        <div className="mp-grid">
-          {Array(6).fill(0).map((_, i) => (
-            <div className="mp-card skeleton" key={i}>
-              <div style={{ padding: "16px" }}>
-                <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
-                  <Skeleton circle width={42} height={42} />
-                  <Skeleton height={18} width="60%" style={{ marginTop: 6 }} />
-                </div>
-                <Skeleton height={1} style={{ marginBottom: 12 }} />
-                <Skeleton height={14} width="40%" style={{ marginBottom: 10 }} />
-                <Skeleton height={28} style={{ borderRadius: 20 }} />
+      {/* Category Cards */}
+      <div className="adm-cat-grid">
+        {Object.entries(CATEGORY_CONFIG).map(([key, conf]) => {
+          const { Icon } = conf;
+          return (
+            <div
+              key={key}
+              className={`adm-cat-card ${activeCategory === key ? "adm-cat-card--active" : ""}`}
+              style={{ "--cc": conf.color, "--cl": conf.colorLight, "--cm": conf.colorMid }}
+              onClick={() => handleCategoryClick(key)}
+            >
+              <div className="adm-cat-card__top">
+                <div className="adm-cat-card__icon-wrap"><Icon /></div>
+                <span className="adm-cat-card__count">
+                  {loading ? "—" : (categoryCounts[key] || 0)}
+                </span>
               </div>
+              <div className="adm-cat-card__label">{conf.label}</div>
+              <div className="adm-cat-card__glow" />
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="mp-grid">
-          {filteredItems.length > 0 ? (
-            filteredItems.map((item) => {
-              const theme = THEMES[item.role] || THEMES.institution;
-              return (
-                <div
-                  className="mp-card"
-                  key={item._id}
-                  onClick={() => setSelectedItem(item)}
-                >
-                  {/* Top */}
-                  <div className="card-top">
-                    <div className="card-top-left">
-                      <div className="avatar" style={{ background: theme.bg, color: theme.color }}>
-                        {theme.icon}
-                      </div>
-                      <div className="card-name">{item.name || "Untitled"}</div>
-                    </div>
-                    {/* {item.duration && (
-                      <div className="price-badge">{item.duration}</div>
-                    )} */}
-                  </div>
+          );
+        })}
+      </div>
 
-                  <div className="card-divider" />
-
-                 {/* Body */}
-<div className="card-body">
-  <div className="role-row">
-    <div className="role-label" style={{ color: theme.color }}>
-      {item.role?.toUpperCase() || "UNKNOWN"}
-    </div>
-    {item.layer && <div className="layer-chip">{item.layer}</div>}
-  </div>
-
-                    <div className="card-footer">
-                      <span className="email-icon"><EmailIcon /></span>
-                      <div className="partner-email" title={item.partner_email}>
-                        {item.partner_email || "—"}
-                      </div>
-                    </div>
-
- <button className="view-btn" onClick={(e) => { e.stopPropagation(); setSelectedItem(item); }}>
-  View →
-</button>
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            <div className="no-items">
-              {/* <div className="no-items-icon">📦</div> */}
-              <h3>No listings found</h3>
-              <p>Try adjusting your filters or search criteria</p>
+      {/* Table Panel */}
+      <div className="adm-panel">
+        <div className="adm-panel__bar">
+          <div className="adm-panel__bar-left">
+            <span className="adm-panel__dot" style={{ background: ac.color }} />
+            <span className="adm-panel__title">{ac.label}</span>
+            {!loading && (
+              <span className="adm-panel__pill"
+                style={{ background: ac.colorLight, color: ac.color }}>
+                {filteredItems.length} {filteredItems.length === 1 ? "Item" : "Items"}
+              </span>
+            )}
+          </div>
+          <div className="adm-panel__bar-right">
+            <div className="adm-search">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                <circle cx="11" cy="11" r="8"/><path d="M21 21L16.65 16.65" strokeLinecap="round"/>
+              </svg>
+              <input type="text" placeholder="Search name..." value={nameSearch}
+                onChange={(e) => setNameSearch(e.target.value)} className="adm-search__input" />
             </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Modal ── */}
-      {selectedItem && (
-        <div className="modal-overlay" onClick={() => { setSelectedItem(null); setIsEditing(false); }}>
-          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
-            {(() => {
-              const theme = THEMES[selectedItem.role] || THEMES.institution;
-              const featureList = parseFeatures(selectedItem.features);
-              return (
-                <>
-                  {/* Modal Head — pencil edit button here */}
-                  <div className="modal-head" style={{ background: theme.gradient }}>
-                    <div className="modal-head-left">
-                      <div className="modal-avatar" style={{ background: theme.bg, color: theme.color }}>
-                        {theme.icon}
-                      </div>
-                      <div className="modal-title-wrapper">
-                        {!isEditing ? (
-                          <>
-                            <h2>{selectedItem.name || "Item Details"}</h2>
-                            <div className="modal-meta">
-                              <span>{selectedItem.partner_email || "—"}</span>
-                              {selectedItem.createdAt && (
-                                <>
-                                  <span className="meta-dot">·</span>
-                                  <span>{new Date(selectedItem.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
-                                </>
-                              )}
-                            </div>
-                          </>
-                        ) : (
-                          <input type="text" name="name" value={editFormData.name}
-                            onChange={handleInputChange} className="edit-input-title" placeholder="Item Name" />
-                        )}
-                      </div>
-                    </div>
-                    <div className="modal-head-right">
-                      <div className="role-badge" style={{ background: theme.bg, color: theme.color }}>
-                        {selectedItem.role?.toUpperCase() || "UNKNOWN"}
-                      </div>
-                      {/* Pencil edit icon in header */}
-                      {!isEditing ? (
-                        <button className="modal-edit-pencil" onClick={handleEditClick} title="Edit item">
-                          <PencilIcon />
-                        </button>
-                      ) : (
-                        <div className="modal-edit-actions">
-                          <button className="modal-save-btn" onClick={handleSave}>Save</button>
-                          <button className="modal-cancel-btn" onClick={handleCancel}>Cancel</button>
-                        </div>
-                      )}
-                      <button className="modal-close" onClick={() => { setSelectedItem(null); setIsEditing(false); }}>×</button>
-                    </div>
-                  </div>
-
-                  {/* Modal Body — NO footer */}
-                  <div className="modal-scroll-area">
-                    <div className="modal-body">
-
-                      {/* Access & Pricing */}
-                      <div className="section-header">
-                        {/* <span className="section-icon">💰</span> */}
-                        <span className="section-title">Access & Pricing</span>
-                      </div>
-                      <table className="access-table">
-                        <thead>
-                          <tr><th>ACCESS</th><th>PRICE</th><th>DISCOUNT</th></tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td className="highlight">
-                              {!isEditing ? selectedItem.access || "Free" : (
-                                <input type="text" name="access" value={editFormData.access} onChange={handleInputChange} className="edit-input" />
-                              )}
-                            </td>
-                            <td className="highlight">
-                              {!isEditing ? formatPrice(selectedItem.cost) : (
-                                <input type="text" name="cost" value={editFormData.cost} onChange={handleInputChange} className="edit-input" />
-                              )}
-                            </td>
-                            <td className="discount-val">
-                              {!isEditing ? selectedItem.discount || "N/A" : (
-                                <input type="text" name="discount" value={editFormData.discount} onChange={handleInputChange} className="edit-input" />
-                              )}
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-
-                      {/* Source */}
-                      <div className="section-header">
-                        {/* <span className="section-icon">📌</span> */}
-                        <span className="section-title">Source</span>
-                      </div>
-                      <div className="detail-grid">
-                        <div className="d-item">
-                          <div className="d-label">Layer</div>
-                          <div className="d-val">
-                            {!isEditing ? selectedItem.layer || "Foundation" : (
-                              <select name="layer" value={editFormData.layer} onChange={handleInputChange} className="edit-select">
-                                <option value="">Select Layer</option>
-                                <option value="Foundation">Foundation</option>
-                                <option value="macro">Macro</option>
-                                <option value="micro">Micro</option>
-                                <option value="nano">Nano</option>
-                              </select>
-                            )}
-                          </div>
-                        </div>
-                        <div className="d-item">
-                          <div className="d-label">Duration</div>
-                          <div className="d-val">
-                            {!isEditing ? selectedItem.duration || "—" : (
-                              <input type="text" name="duration" value={editFormData.duration} onChange={handleInputChange} className="edit-input" />
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Details */}
-                      <div className="section-header">
-                        {/* <span className="section-icon">📋</span> */}
-                        <span className="section-title">Details</span>
-                      </div>
-                      <div className="detail-grid">
-                        <div className="d-item wide">
-                          <div className="d-label">Goal</div>
-                          <div className="d-val">
-                            {!isEditing ? selectedItem.goal || "—" : (
-                              <textarea name="goal" value={editFormData.goal} onChange={handleInputChange} className="edit-textarea" rows="3" />
-                            )}
-                          </div>
-                        </div>
-                        <div className="d-item">
-                          <div className="d-label">Iterations</div>
-                          <div className="d-val">
-                            {!isEditing ? selectedItem.iterations || "—" : (
-                              <input type="text" name="iterations" value={editFormData.iterations} onChange={handleInputChange} className="edit-input" />
-                            )}
-                          </div>
-                        </div>
-                        <div className="d-item wide">
-                          <div className="d-label">Outcomes</div>
-                          <div className="d-val">
-                            {!isEditing ? selectedItem.outcomes || "—" : (
-                              <textarea name="outcomes" value={editFormData.outcomes} onChange={handleInputChange} className="edit-textarea" rows="3" />
-                            )}
-                          </div>
-                        </div>
-                        <div className="d-item wide">
-                          <div className="d-label">Features</div>
-                          <div className="d-val">
-                            {!isEditing ? (
-                              featureList.length > 0 ? (
-                                <div className="feature-chips">
-                                  {featureList.map((f, i) => (
-                                    <span key={i} className="feature-chip"
-                                      style={{ background: theme.bg, color: theme.color }}>
-                                      {f}
-                                    </span>
-                                  ))}
-                                </div>
-                              ) : (selectedItem.features || "—")
-                            ) : (
-                              <textarea name="features" value={editFormData.features} onChange={handleInputChange}
-                                className="edit-textarea" rows="3" placeholder="Live Sessions, Mentorship, Certification" />
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                    </div>
-                    {/* NO modal-foot here — removed completely */}
-                  </div>
-                </>
-              );
-            })()}
+            <div className="adm-search">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <input type="text" placeholder="Search email..." value={emailSearch}
+                onChange={(e) => setEmailSearch(e.target.value)} className="adm-search__input" />
+            </div>
           </div>
         </div>
-      )}
+
+        <div className="adm-table-wrap" key={tableKey}>
+          {loading ? (
+            <div className="adm-skeletons">
+              {Array(5).fill(0).map((_, i) => (
+                <div className="adm-skel-row" key={i}>
+                  <Skeleton circle width={24} height={24} />
+                  <Skeleton height={11} width={130} />
+                  <Skeleton height={11} width={150} />
+                  <Skeleton height={11} width={90} />
+                  <Skeleton height={18} width={40} borderRadius={20} />
+                  <Skeleton height={22} width={60} borderRadius={20} />
+                </div>
+              ))}
+            </div>
+          ) : filteredItems.length === 0 ? (
+            <div className="adm-empty">
+              <div className="adm-empty__icon" style={{ color: ac.color }}><ac.Icon /></div>
+              <p className="adm-empty__text">No {ac.label.toLowerCase()} found</p>
+            </div>
+          ) : (
+            <table className="adm-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Partner Email</th>
+                  <th>Goal</th>
+                  <th>Access</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredItems.map((item) => (
+                  <tr key={item._id} className="adm-row" onClick={() => setSelectedItem(item)}>
+                    <td className="adm-row__name-td">
+                      <span className="adm-row__icon" style={{ background: ac.colorLight, color: ac.color }}>
+                        <ac.Icon />
+                      </span>
+                      <span className="adm-row__name">{item.name || "Untitled"}</span>
+                    </td>
+                    <td className="adm-row__email">{item.partner_email || <span className="adm-nil">—</span>}</td>
+                    <td className="adm-row__goal">{item.goal || <span className="adm-nil">—</span>}</td>
+                    <td>
+                      <span className={`adm-access ${!item.cost || item.cost === "0" || item.cost === 0 ? "adm-access--free" : "adm-access--paid"}`}>
+                        {!item.cost || item.cost === "0" || item.cost === 0 ? "Free" : "Paid"}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className="adm-view-btn"
+                        style={{ "--bc": ac.color, "--bl": ac.colorLight }}
+                        onClick={(e) => { e.stopPropagation(); setSelectedItem(item); }}
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+
+      {/* Detail / Edit Modal */}
+      {selectedItem && (() => {
+        const rc = getRoleConf(selectedItem.role);
+        const RcIcon = rc.Icon;
+        const layer  = selectedItem.layer?.toUpperCase();
+        const ls     = LAYER_COLORS[layer] || { bg: "#f1f5f9", color: "#475569" };
+        const featureList = parseFeatures(selectedItem.features);
+
+        return (
+          <div className="adm-overlay" onClick={handleCloseModal}>
+            <div className="adm-modal" onClick={(e) => e.stopPropagation()}>
+
+              {/* Close button */}
+              <button className="adm-modal__x" onClick={handleCloseModal}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                  <path d="M18 6 6 18M6 6l12 12"/>
+                </svg>
+              </button>
+
+              {/* Head */}
+              <div className="adm-modal__head" style={{ "--rc": rc.color, "--rl": rc.colorLight }}>
+                <div className="adm-modal__avatar"><RcIcon /></div>
+                <div className="adm-modal__head-text">
+                  {!isEditing ? (
+                    <>
+                      <h2 className="adm-modal__name">{selectedItem.name || "Item Details"}</h2>
+                      <div className="adm-modal__meta">
+                        <span>{selectedItem.partner_email || "—"}</span>
+                        {selectedItem.createdAt && (
+                          <>
+                            <span className="adm-modal__meta-dot">·</span>
+                            <span>{new Date(selectedItem.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+                          </>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <input
+                      type="text" name="name" value={editFormData.name}
+                      onChange={handleInputChange} className="adm-edit-title"
+                      placeholder="Item Name"
+                    />
+                  )}
+                </div>
+                <div className="adm-modal__head-right">
+                  <span className="adm-modal__role-tag" style={{ background: rc.colorLight, color: rc.color }}>
+                    {rc.label}
+                  </span>
+                  {!isEditing ? (
+                    <button className="adm-modal__edit-btn" onClick={handleEditClick} title="Edit">
+                      <IconEdit />
+                    </button>
+                  ) : (
+                    <div className="adm-modal__edit-actions">
+                      <button className="adm-modal__save-btn" onClick={handleSave}>Save</button>
+                      <button className="adm-modal__cancel-btn" onClick={handleCancel}>Cancel</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="adm-modal__body">
+
+                {/* Chip row */}
+                <div className="adm-chips">
+                  <div className="adm-chip">
+                    <span className="adm-chip__label">Access</span>
+                    {!isEditing ? (
+                      <span className="adm-chip__val"
+                        style={{ color: (!selectedItem.cost || selectedItem.cost === "0") ? "#059669" : "#E11D48" }}>
+                        {selectedItem.access || "Free"}
+                      </span>
+                    ) : (
+                      <input name="access" value={editFormData.access} onChange={handleInputChange} className="adm-chip__input" />
+                    )}
+                  </div>
+                  <div className="adm-chip">
+                    <span className="adm-chip__label">Price</span>
+                    {!isEditing ? (
+                      <span className="adm-chip__val">{formatPrice(selectedItem.cost)}</span>
+                    ) : (
+                      <input name="cost" value={editFormData.cost} onChange={handleInputChange} className="adm-chip__input" />
+                    )}
+                  </div>
+                  {(selectedItem.discount || isEditing) && (
+                    <div className="adm-chip">
+                      <span className="adm-chip__label">Discount</span>
+                      {!isEditing ? (
+                        <span className="adm-chip__val" style={{ color: "#E11D48" }}>{selectedItem.discount}</span>
+                      ) : (
+                        <input name="discount" value={editFormData.discount} onChange={handleInputChange} className="adm-chip__input" />
+                      )}
+                    </div>
+                  )}
+                  {(layer || isEditing) && (
+                    <div className="adm-chip">
+                      <span className="adm-chip__label">Layer</span>
+                      {!isEditing ? (
+                        <span className="adm-layer-pill" style={{ background: ls.bg, color: ls.color }}>{layer}</span>
+                      ) : (
+                        <select name="layer" value={editFormData.layer} onChange={handleInputChange} className="adm-chip__input">
+                          <option value="">—</option>
+                          <option value="Foundation">Foundation</option>
+                          <option value="macro">Macro</option>
+                          <option value="micro">Micro</option>
+                          <option value="nano">Nano</option>
+                        </select>
+                      )}
+                    </div>
+                  )}
+                  {(selectedItem.duration || isEditing) && (
+                    <div className="adm-chip">
+                      <span className="adm-chip__label">Duration</span>
+                      {!isEditing ? (
+                        <span className="adm-chip__val">{selectedItem.duration}</span>
+                      ) : (
+                        <input name="duration" value={editFormData.duration} onChange={handleInputChange} className="adm-chip__input" />
+                      )}
+                    </div>
+                  )}
+                  {(selectedItem.iterations || isEditing) && (
+                    <div className="adm-chip">
+                      <span className="adm-chip__label">Iterations</span>
+                      {!isEditing ? (
+                        <span className="adm-chip__val">{selectedItem.iterations}</span>
+                      ) : (
+                        <input name="iterations" value={editFormData.iterations} onChange={handleInputChange} className="adm-chip__input" />
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Text fields */}
+                {(selectedItem.goal || isEditing) && (
+                  <div className="adm-mfield">
+                    <span className="adm-mfield__label">Goal</span>
+                    {!isEditing ? (
+                      <p className="adm-mfield__text">{selectedItem.goal}</p>
+                    ) : (
+                      <textarea name="goal" value={editFormData.goal} onChange={handleInputChange}
+                        className="adm-mfield__textarea" rows="3" />
+                    )}
+                  </div>
+                )}
+                {(selectedItem.outcomes || isEditing) && (
+                  <div className="adm-mfield">
+                    <span className="adm-mfield__label">Outcomes</span>
+                    {!isEditing ? (
+                      <p className="adm-mfield__text">{selectedItem.outcomes}</p>
+                    ) : (
+                      <textarea name="outcomes" value={editFormData.outcomes} onChange={handleInputChange}
+                        className="adm-mfield__textarea" rows="3" />
+                    )}
+                  </div>
+                )}
+                {(selectedItem.features || isEditing) && (
+                  <div className="adm-mfield">
+                    <span className="adm-mfield__label">Features</span>
+                    {!isEditing ? (
+                      featureList.length > 0 ? (
+                        <div className="adm-feature-chips">
+                          {featureList.map((f, i) => (
+                            <span key={i} className="adm-feature-chip"
+                              style={{ background: rc.colorLight, color: rc.color }}>{f}</span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="adm-mfield__text">{selectedItem.features}</p>
+                      )
+                    ) : (
+                      <textarea name="features" value={editFormData.features} onChange={handleInputChange}
+                        className="adm-mfield__textarea" rows="3"
+                        placeholder="Live Sessions, Mentorship, Certification" />
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };
