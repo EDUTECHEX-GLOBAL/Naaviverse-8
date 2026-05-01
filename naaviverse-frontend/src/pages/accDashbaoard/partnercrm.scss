@@ -13,96 +13,126 @@
   // ─── SUMMARY CARDS ──────────────────────────────────────────────────────────
   .crm-summary-strip {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px;
     padding: 0.4rem 28px 0;
     margin-bottom: 0.75rem;
   }
 
   .crm-summary-card {
-    border-radius: 14px;
-    padding: 0.4rem 0.85rem;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.25s ease;
-    cursor: default;
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
 
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-    }
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
+  }
 
-    &::before {
-      content: '';
-      position: absolute;
-      top: -30%;
-      right: -15%;
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.18);
-      pointer-events: none;
-    }
+  // ── Icon box ──────────────────────────────────────────────
+  .cs-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -25%;
-      left: -8%;
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
-      pointer-events: none;
+    svg {
+      width: 15px;
+      height: 15px;
+      stroke: #fff;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
     }
+  }
 
-    &.blue {
-      background: linear-gradient(135deg, #a5b4fc 0%, #818cf8 100%);
-      box-shadow: 0 4px 14px rgba(129, 140, 248, 0.28);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      .cs-label, .cs-sub { color: rgba(255, 255, 255, 1); }
-      .cs-value { color: #ffffff; }
-    }
+  // ── Text ──────────────────────────────────────────────────
+  .cs-label {
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1px;
+  }
 
-    &.orange {
-      background: linear-gradient(135deg, #f9a8d4 0%, #ec4899 100%);
-      box-shadow: 0 4px 14px rgba(236, 72, 153, 0.28);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      .cs-label, .cs-sub { color: rgba(255, 255, 255, 1); }
-      .cs-value { color: #ffffff; }
-    }
+  .cs-value {
+    font-size: 1.15rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 1px;
+  }
 
-    &.emerald {
-      background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%);
-      box-shadow: 0 4px 14px rgba(52, 211, 153, 0.28);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      .cs-label, .cs-sub { color: rgba(255, 255, 255, 1); }
-      .cs-value { color: #ffffff; }
-    }
+  .cs-sub {
+    font-size: 8px;
+    font-weight: 500;
+  }
 
-    &.teal {
-      background: linear-gradient(135deg, #5eead4 0%, #2dd4bf 100%);
-      box-shadow: 0 4px 14px rgba(45, 212, 191, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      .cs-label, .cs-sub { color: rgba(255, 255, 255, 1); }
-      .cs-value { color: #ffffff; }
-    }
+  // ── Color themes ──────────────────────────────────────────
+  &.blue {
+    background: #e0e7ff;
+    .cs-icon    { background: #6366f1; }
+    .cs-label   { color: #4338ca; }
+    .cs-value   { color: #3730a3; }
+    .cs-sub     { color: #6366f1; }
+  }
 
-    &.violet {
-      background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%);
-      box-shadow: 0 4px 14px rgba(167, 139, 250, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      .cs-label, .cs-sub { color: rgba(255, 255, 255, 1); }
-      .cs-value { color: #ffffff; }
-    }
+  &.orange {
+    background: #fce7f3;
+    .cs-icon    { background: #ec4899; }
+    .cs-label   { color: #be185d; }
+    .cs-value   { color: #9d174d; }
+    .cs-sub     { color: #ec4899; }
+  }
 
-    &.rose {
-      background: linear-gradient(135deg, #fda4af 0%, #fb7185 100%);
-      box-shadow: 0 4px 14px rgba(251, 113, 133, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      .cs-label, .cs-sub { color: rgba(255, 255, 255, 1); }
-      .cs-value { color: #ffffff; }
-    }
+  &.emerald {
+    background: #d1fae5;
+    .cs-icon    { background: #10b981; }
+    .cs-label   { color: #065f46; }
+    .cs-value   { color: #064e3b; }
+    .cs-sub     { color: #10b981; }
+  }
+
+  &.teal {
+    background: #ccfbf1;
+    .cs-icon    { background: #14b8a6; }
+    .cs-label   { color: #0f766e; }
+    .cs-value   { color: #134e4a; }
+    .cs-sub     { color: #14b8a6; }
+  }
+
+&.violet {
+  background: #ede9fe;
+  .cs-icon  { background: #7c3aed; }
+  .cs-label { color: #5b21b6; }
+  .cs-value { color: #4c1d95; }
+  .cs-sub   { color: #7c3aed; }
+}
+
+  &.violet {
+    background: #ede9fe;
+    .cs-icon    { background: #7c3aed; }
+    .cs-label   { color: #5b21b6; }
+    .cs-value   { color: #4c1d95; }
+    .cs-sub     { color: #7c3aed; }
+  }
+
+  &.rose {
+    background: #ffe4e6;
+    .cs-icon    { background: #f43f5e; }
+    .cs-label   { color: #be123c; }
+    .cs-value   { color: #9f1239; }
+    .cs-sub     { color: #f43f5e; }
+  }
+}
 
     .cs-label {
       font-size: 8px;
@@ -638,4 +668,4 @@
       }
     }
   }
-}
+

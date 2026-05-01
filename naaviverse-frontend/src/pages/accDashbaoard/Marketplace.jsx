@@ -226,12 +226,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
           <div className="mp-panel__bar-left">
             <span className="mp-panel__dot" style={{ background: ac.color }} />
             <span className="mp-panel__title">{ac.label}</span>
-            {!loading && (
-              <span className="mp-panel__pill"
-                style={{ background: ac.colorLight, color: ac.color }}>
-                {filteredItems.length} {filteredItems.length === 1 ? "Item" : "Items"}
-              </span>
-            )}
+          
           </div>
           <div className="mp-search">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">

@@ -12,7 +12,11 @@ const LAYER_META = {
   micro: { label: "MICRO VIEW — SUBSCRIPTIONS", sub: "Structured progress tracking.", badgeCls: "vsh-micro", cardCls: "vMicro" },
   nano: { label: "NANO VIEW — 1-ON-1 SESSIONS", sub: "Book a personalised expert session.", badgeCls: "vsh-nano", cardCls: "vNano" },
 };
-const LAYER_ICON = { macro: "📊", micro: "📚", nano: "🎓" };
+const LAYER_ICON = {
+  macro: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+  micro: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>,
+  nano:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 6 3 6 3s6-1 6-3v-5"/></svg>,
+};
 const TIME_SLOTS = ["10:00 AM", "12:00 PM", "2:00 PM", "4:00 PM", "6:00 PM", "8:00 PM"];
 const LAYER_PILLS = [
   { key: "all", label: "All" },
@@ -58,7 +62,9 @@ const ServiceCard = ({ item, inCart, onToggleCart, onCardView }) => {
         <div className="svc-tags">
           {item.role && <span className="svc-tag role-tag">{item.role}</span>}
         </div>
-        <span className="svc-ico">{LAYER_ICON[layer]}</span>
+        <span className="svc-ico" style={{ color: layer === "macro" ? "#6366f1" : layer === "micro" ? "#0d9488" : "#d97706" }}>
+  {LAYER_ICON[layer]}
+</span>
         <div className="svc-name">{item.name || "Unnamed Service"}</div>
         <div className="svc-by">by {item.partner_email || ""}</div>
         {item.goal && <div className="svc-desc">{item.goal}</div>}
@@ -111,7 +117,9 @@ const CartDrawer = ({ cart, onRemove, onClose, onCheckout }) => {
                 const layer = s.layer?.toLowerCase() || "macro";
                 return (
                   <div className="cart-item" key={s._id}>
-                    <div className="ci-ico">{LAYER_ICON[layer]}</div>
+                  <div className="ci-ico" style={{ color: layer === "macro" ? "#6366f1" : layer === "micro" ? "#0d9488" : "#d97706" }}>
+  {LAYER_ICON[layer]}
+</div>
                     <div className="ci-inf">
                       <div className="ci-name">{s.name}</div>
                       <div className="ci-meta">
@@ -219,7 +227,7 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
     onConfirm({ orderId, total, itemCount: cart.length, date: new Date() });
     setSubmitting(false);
   };
-
+  
   return (
     <div className="checkout-page">
       <div className="chk-layout">
@@ -246,7 +254,7 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
             <div className="pay-methods">
               {["Card", "UPI", "Net Banking"].map(m => (
                 <div key={m} className={`pay-method ${payMethod === m ? "active" : ""}`} onClick={() => setPayMethod(m)}>
-                  {m === "Card" && "💳 "}{m === "UPI" && "📱 "}{m === "Net Banking" && "🏦 "}{m}
+                  {m === "Card" && " "}{m === "UPI" && ""}{m === "Net Banking" && ""}{m}
                 </div>
               ))}
             </div>
@@ -270,8 +278,9 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
             <div className="os-items">
               {cart.map(s => (
                 <div className="os-row" key={s._id}>
-                  <span className="os-ico">{LAYER_ICON[s.layer?.toLowerCase() || "macro"]}</span>
-                  <span className="os-name">{s.name}</span>
+<span className="os-ico" style={{ color: s.layer === "macro" ? "#6366f1" : s.layer === "micro" ? "#0d9488" : "#d97706" }}>
+  {LAYER_ICON[s.layer?.toLowerCase() || "macro"]}
+</span>                  <span className="os-name">{s.name}</span>
                   <span className="os-price">{getCostDisplay(s)}</span>
                 </div>
               ))}

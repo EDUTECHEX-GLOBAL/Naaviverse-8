@@ -75,26 +75,36 @@ const IconChevron = () => (
 );
 
 /* ── Stat Card ───────────────────────────────────────────────────── */
-const StatCard = ({ label, value, accent, bg, border }) => (
+const StatCard = ({ label, value, accent, bg, iconPath }) => (
   <div style={{
     background: bg,
-    border: `1.5px solid ${border}`,
-    borderRadius: "12px",
-    padding: "12px 14px",
+    borderRadius: "14px",
+    padding: "14px 16px",
     display: "flex",
     alignItems: "center",
-    gap: "10px",
+    gap: "12px",
     flex: "1 1 calc(25% - 8px)",
     minWidth: "70px",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
   }}>
+    <div style={{
+      width: "40px", height: "40px", borderRadius: "10px",
+      background: accent, display: "flex", alignItems: "center",
+      justifyContent: "center", flexShrink: 0,
+    }}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+        stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        {iconPath}
+      </svg>
+    </div>
     <div>
-      <div style={{ fontSize: "9px", color: accent, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", opacity: 0.7, marginBottom: "2px" }}>{label}</div>
-      <div style={{ fontSize: "1.2rem", fontWeight: 800, color: accent, lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: "10px", fontWeight: 700, color: accent,
+        textTransform: "uppercase", letterSpacing: "0.06em",
+        opacity: 0.8, marginBottom: "2px" }}>{label}</div>
+      <div style={{ fontSize: "1.5rem", fontWeight: 800,
+        color: accent, lineHeight: 1 }}>{value}</div>
     </div>
   </div>
 );
-
 /* ══════════════════════════════════════════════════════════════════
    MAIN COMPONENT
 ══════════════════════════════════════════════════════════════════ */
@@ -192,10 +202,14 @@ export default function Subscriptions() {
         marginBottom: "14px",
         flexWrap: "nowrap",   /* force single row */
       }}>
-        <StatCard label="Active"    value={activeCount}       accent="#2563eb" bg="#eff6ff" border="#bfdbfe" />
-        <StatCard label="Expired"   value={expiredCount}      accent="#dc2626" bg="#fef2f2" border="#fecaca" />
-        <StatCard label="Cancelled" value={cancelCount}       accent="#64748b" bg="#f8fafc" border="#e2e8f0" />
-        <StatCard label="Total"     value={normalized.length} accent="#7c3aed" bg="#faf5ff" border="#e9d5ff" />
+       <StatCard label="Active"    value={activeCount}       accent="#2563eb" bg="#dbeafe"
+  iconPath={<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>} />
+<StatCard label="Expired"   value={expiredCount}      accent="#ef4444" bg="#fee2e2"
+  iconPath={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />
+<StatCard label="Cancelled" value={cancelCount}       accent="#64748b" bg="#e2e8f0"
+  iconPath={<><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></>} />
+<StatCard label="Total"     value={normalized.length} accent="#7c3aed" bg="#ede9fe"
+  iconPath={<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>} />
       </div>
 
       {/* ── Filter bar ── */}

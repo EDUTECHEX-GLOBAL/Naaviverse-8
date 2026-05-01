@@ -184,15 +184,9 @@ $sidebar-width: 220px;
     margin: 0;
   }
 
-  &--confirm {
-    font-size: 1.5rem;
-    background: linear-gradient(135deg, #fdcb6e, #e17055);
-  }
-
-  &--success {
-    font-size: 1.5rem;
-    background: linear-gradient(135deg, $success, #55efc4);
-  }
+  // TO:
+&--confirm { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #fdcb6e, #e17055); }
+&--success { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, $success, #55efc4); }
 }
 
 .pfm-explore-header {

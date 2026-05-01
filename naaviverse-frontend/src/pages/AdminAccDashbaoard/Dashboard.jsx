@@ -115,12 +115,20 @@ function NotifItem({ notif, onRead, onView, full = false }) {
   );
 }
 
+// REMOVE emoji fields entirely — they're used in activity timeline icons
+// Replace: emoji: "🔍" → use SVG in activity-tl-icon directly
+
 const TYPE_CONFIG = {
-  login:   { bg: "#f1f5f9", color: "#475569", emoji: "🔐", chipClass: "activity-chip-login" },
-  explore: { bg: "#fef3c7", color: "#b45309", emoji: "🔍", chipClass: "activity-chip-explore" },
-  path:    { bg: "#ede9fe", color: "#7c3aed", emoji: "📈", chipClass: "activity-chip-path" },
-  market:  { bg: "#cffafe", color: "#0e7490", emoji: "🛒", chipClass: "activity-chip-market" },
-  step:    { bg: "#dcfce7", color: "#15803d", emoji: "🪜", chipClass: "activity-chip-path" },
+  login:   { bg: "#f1f5f9", color: "#475569", chipClass: "activity-chip-login",
+    svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg> },
+  explore: { bg: "#fef3c7", color: "#b45309", chipClass: "activity-chip-explore",
+    svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> },
+  path:    { bg: "#ede9fe", color: "#7c3aed", chipClass: "activity-chip-path",
+    svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round"><path d="M4 17L8 7l4 6 4-4 4 8"/></svg> },
+  market:  { bg: "#cffafe", color: "#0e7490", chipClass: "activity-chip-market",
+    svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0e7490" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg> },
+  step:    { bg: "#dcfce7", color: "#15803d", chipClass: "activity-chip-path",
+    svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> },
 };
 
 const STATUS_COLORS = {
@@ -730,7 +738,9 @@ export default function Dashboard() {
             <div style={{ flex: 1, overflowY: "auto" }}>
               {filteredNotifs.length === 0 ? (
                 <div style={{ padding: "60px", textAlign: "center", color: "var(--slate-400)" }}>
-                  <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.3 }}>🔔</div>
+                  <div style={{ marginBottom: 8, opacity: 0.3, display:"flex", justifyContent:"center" }}>
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+</div>
                   <p>No notifications here</p>
                 </div>
               ) : (
@@ -764,7 +774,8 @@ export default function Dashboard() {
 
           <div className="card-header">
             <div className="header-left">
-              <div className="header-icon" style={{ background: "#fce7f3", border: "1px solid #fbcfe8", fontSize: 22 }}>⏱</div>
+              <div className="header-icon" style={{ background: "#fce7f3", border: "1px solid #fbcfe8", fontSize: 22 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#be185d" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
               <div>
                 <h2>User Activity</h2>
                 <p className="header-subtitle">Live journey overview — login · paths · marketplace</p>
@@ -777,7 +788,11 @@ export default function Dashboard() {
             <div style={{ padding: "40px", textAlign: "center", color: "#9CA3AF" }}>Loading activity...</div>
           ) : activityUsers.length === 0 ? (
             <div style={{ padding: "48px", textAlign: "center" }}>
-              <div style={{ fontSize: 36, opacity: 0.3 }}>⏱</div>
+              <div style={{ fontSize: 36, opacity: 0.3 }}>
+<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+
+
+              </div>
               <p style={{ color: "#94a3b8", marginTop: 8 }}>No activity recorded yet</p>
             </div>
           ) : (
@@ -892,7 +907,7 @@ export default function Dashboard() {
                   <div key={i} className="activity-tl-item">
                     <div className="activity-tl-left">
                       <div className="activity-tl-icon" style={{ background: cfg.bg }}>
-                        <span style={{ fontSize: 14 }}>{cfg.emoji}</span>
+                        {cfg.svg}
                       </div>
                       {i < u.events.length - 1 && <div className="activity-tl-line" />}
                     </div>
@@ -941,7 +956,10 @@ export default function Dashboard() {
 
           <div className="card-header">
             <div className="header-left">
-              <div className="header-icon" style={{ background: "#d1fae5", border: "1px solid #a7f3d0", fontSize: 22 }}>🤝</div>
+              <div className="header-icon" style={{ background: "#d1fae5", border: "1px solid #a7f3d0", fontSize: 22 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+
+              </div>
               <div>
                 <h2>Partner Activity</h2>
                 <p className="header-subtitle">Live portal activity — logins · listings · content · messages</p>
@@ -964,7 +982,11 @@ export default function Dashboard() {
             </div>
           ) : filteredPartners.length === 0 ? (
             <div style={{ padding: "48px", textAlign: "center" }}>
-              <div style={{ fontSize: 36, opacity: 0.3 }}>🤝</div>
+              <div style={{ fontSize: 36, opacity: 0.3 }}>
+<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+
+
+              </div>
               <p style={{ color: "#94a3b8", marginTop: 8 }}>No partner activity recorded yet</p>
             </div>
           ) : (
@@ -1033,13 +1055,13 @@ export default function Dashboard() {
     const u   = selectedPartnerUser;
     const pal = u.palette || PARTNER_AVATAR_PALETTE[0];
     const PARTNER_TYPE_ICONS = {
-      login:    { bg: "#f1f5f9", emoji: "🔐" },
-      publish:  { bg: "#dcfce7", emoji: "📢" },
-      listing:  { bg: "#d1fae5", emoji: "🏪" },
-      approval: { bg: "#fef3c7", emoji: "✅" },
-      invite:   { bg: "#cffafe", emoji: "✉️" },
-      message:  { bg: "#e0e7ff", emoji: "💬" },
-    };
+  login:    { bg: "#f1f5f9", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg> },
+  publish:  { bg: "#dcfce7", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg> },
+  listing:  { bg: "#d1fae5", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
+  approval: { bg: "#fef3c7", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> },
+  invite:   { bg: "#cffafe", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0e7490" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> },
+  message:  { bg: "#e0e7ff", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4338ca" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> },
+};
     return (
       <div className="dashboard">
         <div className="details-card" style={{ maxWidth: 760 }}>
@@ -1074,7 +1096,7 @@ export default function Dashboard() {
                 return (
                   <div key={i} className="activity-tl-item">
                     <div className="activity-tl-left">
-                      <div className="activity-tl-icon" style={{ background: cfg.bg }}><span style={{ fontSize: 14 }}>{cfg.emoji}</span></div>
+                      <div className="activity-tl-icon" style={{ background: cfg.bg }}>{cfg.svg}</div>
                       {i < u.events.length - 1 && <div className="activity-tl-line" />}
                     </div>
                     <div className="activity-tl-body">
@@ -1115,7 +1137,10 @@ export default function Dashboard() {
           </button>
           <div className="card-header">
             <div className="header-left">
-              <div className="header-icon" style={{ background: "#e0e7ff", border: "1px solid #c7d2fe", fontSize: 22 }}>🛒</div>
+              <div className="header-icon" style={{ background: "#e0e7ff", border: "1px solid #c7d2fe", fontSize: 22 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4338ca" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg>
+
+              </div>
               <div>
                 <h2>Marketplace Purchases</h2>
                 <p className="header-subtitle">All user purchases — micro · nano · bundle · premium plans</p>
@@ -1171,7 +1196,8 @@ export default function Dashboard() {
                         <td className="date-cell">{p.date}</td>
                         <td>
                           <span className={`status-pill ${p.status === "completed" ? "approved" : "pending"}`}>
-                            {p.status === "completed" ? "✓ Done" : "⏳ Pending"}
+                           {p.status === "completed" ? "✓ Done" : "Pending"}
+
                           </span>
                         </td>
                         <td><button className="view-btn" onClick={() => setSelectedPurchase(p)}>Details</button></td>
@@ -1207,7 +1233,7 @@ export default function Dashboard() {
               <div className="details-hero-top">
                 <h2>{p.user}</h2>
                 <span className={`status-pill ${p.status === "completed" ? "approved" : "pending"}`}>
-                  {p.status === "completed" ? "✓ Completed" : "⏳ Pending"}
+                  {p.status === "completed" ? "✓ Completed" : "Pending"}
                 </span>
               </div>
               <div style={{ fontSize: 13, color: "var(--slate-400)" }}>{p.email}</div>
@@ -1227,10 +1253,10 @@ export default function Dashboard() {
           </div>
           <div className="details-section-title">Item Details</div>
           <div className="details-grid">
-            <DetailItem label="Item Name"         value={p.item}    icon="📦" />
+            <DetailItem label="Item Name"         value={p.item}    icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>} />
             <DetailItem label="Item Type"         value={p.type} />
             <DetailItem label="Subscription Plan" value={p.plan} />
-            <DetailItem label="Marketplace"       value={p.marketplace} icon="🏪" />
+            <DetailItem label="Marketplace"       value={p.marketplace} icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>} />
             <DetailItem label="Duration"          value={p.duration} />
             <DetailItem label="Total Steps"       value={`${p.steps} steps`} />
             <DetailItem label="Micro Lessons"     value={`${p.microLessons} lessons`} />
@@ -1239,7 +1265,7 @@ export default function Dashboard() {
           </div>
           <div className="details-section-title">Buyer Details</div>
           <div className="details-grid">
-            <DetailItem label="Full Name" value={p.user}  icon="👤" />
+            <DetailItem label="Full Name" value={p.user}  icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} />
             <DetailItem label="Email"     value={p.email} />
           </div>
         </div>
@@ -1274,7 +1300,11 @@ export default function Dashboard() {
                 </span>
               </div>
               <span className={`role-chip ${isPartner ? "partner" : "user"}`}>
-                {isPartner ? "🤝 Partner" : "👤 User"}
+               {isPartner ? (
+  <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg> Partner</>
+) : (
+  <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> User</>
+)}
               </span>
             </div>
           </div>
@@ -1283,7 +1313,7 @@ export default function Dashboard() {
             <>
               <div className="details-section-title">Profile Details</div>
               <div className="details-grid">
-                <DetailItem label="Business Name" value={selected.businessName} icon="🏢" />
+                <DetailItem label="Business Name" value={selected.businessName} icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>} />
                 <DetailItem label="Business Type" value={selected.type} />
                 <DetailItem label="Email"         value={selected.email} />
                 <DetailItem label="Website"       value={selected.website} isLink />
@@ -1299,7 +1329,7 @@ export default function Dashboard() {
             <>
               <SectionTitle>Level 1 — Basic Info</SectionTitle>
               <div className="details-grid">
-                <DetailItem label="Full Name"    value={fullUserData?.name || selected.businessName} icon="👤" />
+                <DetailItem label="Full Name"    value={fullUserData?.name || selected.businessName}  icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} />
                 <DetailItem label="Email"        value={fullUserData?.email || selected.email} />
                 <DetailItem label="Username"     value={fullUserData?.username} />
                 <DetailItem label="Phone"        value={fullUserData?.phoneNumber} />
@@ -1321,7 +1351,7 @@ export default function Dashboard() {
               </div>
               <SectionTitle>Level 3 — Personality</SectionTitle>
               <div className="details-grid">
-                <DetailItem label="Personality Type" icon="🧠"
+                <DetailItem label="Personality Type" icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a4 4 0 014 4 4 4 0 01-1.2 2.8A4 4 0 0116 12a4 4 0 01-4 4 4 4 0 01-4-4 4 4 0 011.2-3.2A4 4 0 018 6a4 4 0 014-4z"/></svg>}
                   value={fullUserData?.personality ? fullUserData.personality.charAt(0).toUpperCase() + fullUserData.personality.slice(1) : undefined}
                 />
               </div>
@@ -1331,7 +1361,10 @@ export default function Dashboard() {
           {isPending && (
             <>
               <div className={`approval-note ${isPartner ? "partner-note" : "user-note"}`}>
-                <span>📧 Approval confirmation will be emailed to the {isPartner ? "partner" : "user"}</span>
+                <span style={{display:"flex",alignItems:"center",gap:8}}>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+  Approval confirmation will be emailed to the {isPartner ? "partner" : "user"}
+</span>
               </div>
               <div className="action-buttons">
                 <button className="btn btn-reject" onClick={() => reject(selected._id)}>
@@ -1352,7 +1385,11 @@ export default function Dashboard() {
 
           {!isPending && (
             <div style={{ marginTop: "32px", padding: "16px 20px", borderRadius: "12px", background: selected.status === "approved" ? "#E6F4EA" : "#FDE8E8", color: selected.status === "approved" ? "#1E7E34" : "#C0392B", fontSize: "14px", fontWeight: "500", display: "flex", alignItems: "center", gap: "10px" }}>
-              <span style={{ fontSize: "18px" }}>{selected.status === "approved" ? "✅" : "❌"}</span>
+           {selected.status === "approved" ? (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E7E34" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+) : (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C0392B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+)}
               This {isPartner ? "partner" : "user"} has already been <strong>{selected.status}</strong>. No further action required.
             </div>
           )}
@@ -1379,8 +1416,12 @@ export default function Dashboard() {
         <div className="card-header">
           <div className="header-left">
             <div className={`header-icon ${isPartnerView ? "partner-icon" : "user-icon"}`}>
-              {isPartnerView ? "🤝" : "👤"}
-            </div>
+  {isPartnerView ? (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+  ) : (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+  )}
+</div>
             <div>
               <h2>{isPartnerView ? "Partner Approvals" : "User Approvals"}</h2>
               <p className="header-subtitle">
@@ -1398,11 +1439,16 @@ export default function Dashboard() {
             </button>
             <PortalDropdown anchorRef={dropdownRef} isOpen={showRoleDropdown} onClose={() => setShowRoleDropdown(false)}>
               <button className={roleView === "partner" ? "partner-active" : ""} onClick={() => { setRoleView("partner"); setTab("all"); setShowRoleDropdown(false); }}>
-                <span className="menu-icon">🤝</span> Partners
+                <span className="menu-icon">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+
+                  </span> Partners
                 <span className="menu-count partner-count">{partnerData.length}</span>
               </button>
               <button className={roleView === "user" ? "user-active" : ""} onClick={() => { setRoleView("user"); setTab("all"); setShowRoleDropdown(false); }}>
-                <span className="menu-icon">👤</span> Users
+                <span className="menu-icon">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+</span> Users
                 <span className="menu-count user-count">{userData.length}</span>
               </button>
             </PortalDropdown>
@@ -1449,8 +1495,13 @@ export default function Dashboard() {
                   <tr>
                     <td colSpan="5" className="no-results">
                       <div className="empty-state">
-                        <div className="empty-icon">{isPartnerView ? "🤝" : "👤"}</div>
-                        <p>No {tab === "all" ? "" : tab} {isPartnerView ? "partner" : "user"} records found</p>
+<div className="empty-icon">
+  {isPartnerView ? (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+  ) : (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+  )}
+</div>                        <p>No {tab === "all" ? "" : tab} {isPartnerView ? "partner" : "user"} records found</p>
                       </div>
                     </td>
                   </tr>

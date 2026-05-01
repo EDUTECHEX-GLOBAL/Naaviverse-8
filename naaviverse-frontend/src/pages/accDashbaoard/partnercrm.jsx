@@ -41,27 +41,24 @@ const CRMPage = ({
   search = '',
   crmMenu,
   setcrmMenu,
-  crmClientData = [],       // ← data from parent
+  crmClientData = [],
   crmPurchaseData = [],
-  isClientLoading = false,  // ← loading from parent
+  isClientLoading = false,
   isPurchaseLoading = false,
 }) => {
-  const [clients, setClients]               = useState([]);
-  const [purchases, setPurchases]           = useState([]);
-  // FIXED: Removed duplicate isClientLoading declaration, using the one from props
-  const [clientLoading, setClientLoading]   = useState(true);  // ← renamed to avoid conflict
+  const [clients, setClients]             = useState([]);
+  const [purchases, setPurchases]         = useState([]);
+  const [clientLoading, setClientLoading] = useState(true);
   const [purchaseFilter, setPurchaseFilter] = useState('All');
 
-  // ── Fetch CRM data on mount or when partnerEmail changes ─────────────────
-  // Use data passed from parent — no internal fetch needed
   useEffect(() => {
     if (crmClientData?.length) {
       const normalised = crmClientData.map(c => ({
         ...c,
         name:        c.name || c.username || c.email,
-        phone:       c.phone || c.phoneNumber || "—",
-        avatar:      (c.name || c.username || c.email || "?").slice(0, 2).toUpperCase(),
-        avatarColor: colorFor(c.email || ""),
+        phone:       c.phone || c.phoneNumber || '—',
+        avatar:      (c.name || c.username || c.email || '?').slice(0, 2).toUpperCase(),
+        avatarColor: colorFor(c.email || ''),
       }));
       setClients(normalised);
 
@@ -86,6 +83,9 @@ const CRMPage = ({
   const totalRevenue = purchases
     .filter(p => p.status?.toLowerCase() === 'paid')
     .reduce((s, p) => s + (Number(p.amount) || 0), 0);
+// add this with the other derived stats
+   const activeSubsCount = purchases.filter(p => p.status?.toLowerCase() === 'paid').length;
+
 
   // ── Filtered lists ───────────────────────────────────────────────────────
   const filteredClients = clients.filter(c =>
@@ -93,8 +93,8 @@ const CRMPage = ({
     c.email?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const purchaseTabs       = ['All', 'Paid', 'Pending', 'Failed'];
-  const filteredPurchases  = purchases
+  const purchaseTabs      = ['All', 'Paid', 'Pending', 'Failed'];
+  const filteredPurchases = purchases
     .filter(p => purchaseFilter === 'All' || p.status?.toLowerCase() === purchaseFilter.toLowerCase())
     .filter(p =>
       p.clientName?.toLowerCase().includes(search.toLowerCase()) ||
@@ -102,7 +102,6 @@ const CRMPage = ({
       p.product?.toLowerCase().includes(search.toLowerCase())
     );
 
-  // Use either prop loading or local loading state
   const isLoading = isClientLoading || clientLoading;
 
   return (
@@ -110,36 +109,81 @@ const CRMPage = ({
 
       {/* ── SUMMARY CARDS ── */}
       <div className="crm-summary-strip">
+
         <div className="crm-summary-card blue">
-          <div className="cs-label">Total Clients</div>
-          <div className="cs-value">{isLoading ? '—' : clients.length}</div>
-          <div className="cs-sub">Registered users</div>
+          <div className="cs-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div>
+            <div className="cs-label">Total Clients</div>
+            <div className="cs-value">{isLoading ? '—' : clients.length}</div>
+            <div className="cs-sub">Registered users</div>
+          </div>
         </div>
+
         <div className="crm-summary-card orange">
-          <div className="cs-label">Total Revenue</div>
-          <div className="cs-value">₹{totalRevenue.toLocaleString('en-IN')}</div>
-          <div className="cs-sub">From paid orders</div>
+          <div className="cs-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+          <div>
+            <div className="cs-label">Total Revenue</div>
+            <div className="cs-value">₹{totalRevenue.toLocaleString('en-IN')}</div>
+            <div className="cs-sub">From paid orders</div>
+          </div>
         </div>
+
         <div className="crm-summary-card emerald">
-          <div className="cs-label">Total Purchases</div>
-          <div className="cs-value">{purchases.length}</div>
-          <div className="cs-sub">All transactions</div>
+          <div className="cs-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="9" cy="21" r="1"/>
+              <circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+          </div>
+          <div>
+            <div className="cs-label">Total Purchases</div>
+            <div className="cs-value">{purchases.length}</div>
+            <div className="cs-sub">All transactions</div>
+          </div>
         </div>
-      </div>
+
+
+<div className="crm-summary-card violet">
+  <div className="cs-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </svg>
+  </div>
+  <div>
+    <div className="cs-label">Active Subs</div>
+    <div className="cs-value">{activeSubsCount}</div>
+    <div className="cs-sub">Live subscriptions</div>
+  </div>
+</div>
+
+      </div>{/* ── END SUMMARY STRIP ── */}
 
       {/* ── TABS ── */}
       <div className="crm-top-tabs">
-        <div 
-          className={`crm-top-tab ${crmMenu === 'Clients' ? 'active' : ''}`} 
+        <div
+          className={`crm-top-tab ${crmMenu === 'Clients' ? 'active' : ''}`}
           onClick={() => setcrmMenu('Clients')}
         >
-          Clients ({filteredClients.length})
+          Clients 
         </div>
-        <div 
-          className={`crm-top-tab ${crmMenu === 'Purchases' ? 'active' : ''}`} 
+        <div
+          className={`crm-top-tab ${crmMenu === 'Purchases' ? 'active' : ''}`}
           onClick={() => setcrmMenu('Purchases')}
         >
-          Purchases ({purchases.length})
+          Purchases 
         </div>
       </div>
 
@@ -170,12 +214,8 @@ const CRMPage = ({
                 const joined = formatDate(client.joinedAt || client.createdAt);
                 return (
                   <div className="crm-data-row clients-grid" key={i}>
-                    {/* Client name + avatar */}
                     <div className="client-name-cell">
-                      <div
-                        className="client-avatar"
-                        style={{ background: client.avatarColor }}
-                      >
+                      <div className="client-avatar" style={{ background: client.avatarColor }}>
                         {client.avatar}
                       </div>
                       <div>
@@ -183,7 +223,6 @@ const CRMPage = ({
                         <div className="client-sub">{client.email}</div>
                       </div>
                     </div>
-
                     <div className="crm-cell">{client.email}</div>
                     <div className="crm-cell mono">{client.phone || '—'}</div>
                     <div className="crm-cell">{client.country || '—'}</div>
@@ -214,11 +253,10 @@ const CRMPage = ({
       ══════════════════════════════════════ */}
       {crmMenu === 'Purchases' && (
         <>
-          {/* purchase filter tabs */}
           <div className="purchase-filter-tabs">
             {purchaseTabs.map(tab => {
-              const count = tab === 'All' 
-                ? purchases.length 
+              const count = tab === 'All'
+                ? purchases.length
                 : purchases.filter(p => p.status?.toLowerCase() === tab.toLowerCase()).length;
               return (
                 <div
@@ -247,12 +285,8 @@ const CRMPage = ({
                   const { date, time } = formatDate(p.date || p.createdAt);
                   return (
                     <div className="crm-data-row purchases-grid" key={i}>
-                      {/* Client */}
                       <div className="client-name-cell">
-                        <div
-                          className="client-avatar small"
-                          style={{ background: p.avatarColor }}
-                        >
+                        <div className="client-avatar small" style={{ background: p.avatarColor }}>
                           {p.avatar}
                         </div>
                         <div>
@@ -260,32 +294,22 @@ const CRMPage = ({
                           <div className="client-sub">{p.clientEmail}</div>
                         </div>
                       </div>
-
-                      {/* Product */}
                       <div>
                         <div className="product-name">{p.product || p.productName || '—'}</div>
                         <div className="product-sub">Subscription</div>
                       </div>
-
-                      {/* Date */}
                       <div className="date-cell-wrap">
                         <div className="date-main">{date}</div>
                         <div className="date-time">{time}</div>
                       </div>
-
-                      {/* Amount */}
                       <div className="crm-cell mono amount-cell">
                         ₹{Number(p.amount).toLocaleString('en-IN')}
                       </div>
-
-                      {/* Billing */}
                       <div>
                         <span className={`billing-pill ${p.billing?.toLowerCase() === 'monthly' ? 'monthly' : ''}`}>
                           {p.billing || p.billingMethod || '—'}
                         </span>
                       </div>
-
-                      {/* Status */}
                       <div>
                         <span className={getStatusClass(p.status)}>
                           {p.status || '—'}

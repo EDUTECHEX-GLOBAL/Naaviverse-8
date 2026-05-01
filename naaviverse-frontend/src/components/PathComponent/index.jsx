@@ -340,7 +340,12 @@ const PathComponent = () => {
         <div className="path-flow-modal">
           <button className="pfm-close" onClick={closeModal}>✕</button>
 
-          <div className="pfm-icon pfm-icon--confirm">🎓</div>
+         <div className="pfm-icon pfm-icon--confirm">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+    <path d="M6 12v5c0 2 6 3 6 3s6-1 6-3v-5"/>
+  </svg>
+</div>
           <h3 className="pfm-title">Confirm Selection</h3>
           <p className="pfm-sub">Are you sure you want to select this path?</p>
           <span className="pfm-tag pfm-tag--lg">
@@ -370,7 +375,11 @@ const PathComponent = () => {
         <div className="path-flow-modal">
           <button className="pfm-close" onClick={closeModal}>✕</button>
 
-          <div className="pfm-icon pfm-icon--success">🎉</div>
+          <div className="pfm-icon pfm-icon--success">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+</div>
           <h3 className="pfm-title pfm-title--success">Congratulations!</h3>
           <p className="pfm-sub">You've successfully enrolled in:</p>
           <span className="pfm-tag pfm-tag--lg">

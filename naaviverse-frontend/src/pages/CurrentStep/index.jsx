@@ -263,7 +263,17 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, initialTier = null
                 <ul className="spc-feats">
                   {PLAN_FEATS[p].map((f) => (
                     <li key={f}>
-                      <span className="spc-check" style={{ color: pc.accent }}>✓</span>
+                      // For "Macro View — Always Free" → Eye icon
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+
+// For "Micro View" → Layers icon  
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+
+// For "Nano View / Sessions" → Users icon
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+
+// For "Cancel Anytime / Support" → Shield icon
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                       {f}
                     </li>
                   ))}
@@ -691,7 +701,17 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                         "Priority Support",
                       ].map((f) => (
                         <li key={f}>
-                          <span className="spc-check" style={{ color: pc.accent }}>✓</span>{f}
+                          // For "Macro View — Always Free" → Eye icon
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+
+// For "Micro View" → Layers icon  
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+
+// For "Nano View / Sessions" → Users icon
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+
+// For "Cancel Anytime / Support" → Shield icon
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>{f}
                         </li>
                       ))}
                     </ul>
