@@ -636,7 +636,11 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  &.warn { background: var(--uh-amber-pale); border-color: #fde68a; }
+  &.warn { background: var(--uh-amber-pale); border-color: #fde68a;
+  
+  &.red { color: var(--uh-red); }
+&.warn  { background: var(--uh-amber-pale); border-color: #fde68a; }
+&.warn.expired { background: var(--uh-red-light); border-color: #fecaca; }}
 }
 
 .uh-ws-label { font-size: 9.5px; font-weight: 600; color: var(--uh-ink-4); letter-spacing: .4px; }
@@ -1086,3 +1090,169 @@
 
 .uh-bs-label { font-size: 11px; color: var(--uh-ink-4); font-weight: 500; flex: 1; }
 .uh-bs-div { width: 1px; height: 26px; background: var(--uh-line); flex-shrink: 0; }
+
+// ── Wallet Analytics ─────────────────────────────────────────────────────────
+.uh-wallet-analytics {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.uh-analytics-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 13px;
+  border-radius: var(--uh-r-md);
+  border: 1px solid var(--uh-line);
+  transition: all .14s;
+  &:hover { box-shadow: var(--uh-sh-sm); }
+  &.uh-analytics-bonus { background: var(--uh-amber-pale); border-color: #fde68a; }
+  &.uh-analytics-sub   { background: var(--uh-blue-pale);  border-color: var(--uh-blue-light); }
+}
+
+.uh-analytics-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--uh-r-sm);
+  background: var(--uh-card-bg);
+  border: 1px solid var(--uh-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.uh-analytics-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.uh-analytics-title { font-size: 12.5px; font-weight: 600; color: var(--uh-ink-2); }
+.uh-analytics-sub   { font-size: 10px; color: var(--uh-ink-4); }
+
+.uh-analytics-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.uh-analytics-cr {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--uh-green);
+}
+
+.uh-analytics-tag {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 99px;
+  &.active    { background: var(--uh-blue-light);  color: var(--uh-blue-dark); }
+  &.expired   { background: var(--uh-red-light);   color: var(--uh-red); }
+  &.permanent { background: var(--uh-green-light); color: #166534; }
+}
+
+// ── Usage summary bars ────────────────────────────────────────────────────────
+.uh-usage-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--uh-line-light);
+  border-radius: var(--uh-r-md);
+  border: 1px solid var(--uh-line);
+  margin-top: 4px;
+}
+
+.uh-usage-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  span:first-child {
+    font-size: 10.5px;
+    color: var(--uh-ink-4);
+    font-weight: 500;
+    width: 90px;
+    flex-shrink: 0;
+  }
+}
+
+.uh-usage-bar-wrap {
+  flex: 1;
+  height: 5px;
+  background: var(--uh-line);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.uh-usage-bar {
+  height: 5px;
+  border-radius: 99px;
+  transition: width .8s ease;
+  &.green { background: var(--uh-green); }
+  &.red   { background: var(--uh-red); }
+  &.blue  { background: var(--uh-blue); }
+}
+
+.uh-usage-val {
+  font-size: 11px;
+  font-weight: 700;
+  width: 40px;
+  text-align: right;
+  flex-shrink: 0;
+  &.green { color: var(--uh-green); }
+  &.red   { color: var(--uh-red); }
+  &.blue  { color: var(--uh-blue-mid); }
+}
+
+.uh-loading {
+  padding: 40px 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--uh-ink-4);
+}
+// inside .uh-ws-num — add after &.amber
+.uh-no-path {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  gap: 10px;
+}
+
+.uh-no-path-icon { font-size: 36px; }
+
+.uh-no-path-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--uh-ink-2);
+}
+
+.uh-no-path-sub {
+  font-size: 12px;
+  color: var(--uh-ink-4);
+  margin: 0;
+}
+
+.uh-no-path-btn {
+  margin-top: 8px;
+  padding: 9px 20px;
+  background: var(--uh-blue-mid);
+  color: white;
+  border: none;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--uh-f);
+  cursor: pointer;
+  transition: background .16s;
+  &:hover { background: var(--uh-blue-dark); }
+}

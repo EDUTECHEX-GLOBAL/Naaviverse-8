@@ -203,99 +203,137 @@ export default function PartnerHome({ setispopular }) {
     );
   }
 
-  // ── ACTIONS PAGE ────────────────────────────────────────────────────────
-  if (view==="actions") {
-    return (
-      <div className="ph-root">
-        <div className="ph-page-card">
-          <div className="ph-page-topbar">
-            <button className="ph-back-btn" onClick={() => setView("home")}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Back
-            </button>
-            <div className="ph-page-header">
-              <div className="ph-page-icon" style={{ background:"linear-gradient(135deg,#2563eb,#60a5fa)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M9 11l3 3L22 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <div>
-                <h2>Pending Actions</h2>
-                <p>{highCount} urgent · {PENDING_ACTIONS.length} total items need attention</p>
-              </div>
+ // ── ACTIONS PAGE ────────────────────────────────────────────────────────
+if (view==="actions") {
+  return (
+    <div className="ph-root">
+      <div className="ph-page-card">
+        <div className="ph-page-topbar">
+          <button className="ph-back-btn-icon" onClick={() => setView("home")}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span>Back</span>
+          </button>
+          <div className="ph-page-header-left">
+            <div className="ph-page-header-content">
+              <h2>Pending Actions</h2>
+              <p>{highCount} urgent · {PENDING_ACTIONS.length} total items need attention</p>
             </div>
-          </div>
-          <div className="ph-table-wrap">
-            <table>
-              <thead><tr><th>Action</th><th>Details</th><th>Priority</th><th></th></tr></thead>
-              <tbody>
-                {sortedActions.map(action => (
-                  <tr key={action.id} className="ph-table-row">
-                    <td><div className="ph-cell-name">{action.label}</div></td>
-                    <td style={{ fontSize:12, color:"#64748b" }}>{action.desc}</td>
-                    <td>
-                      <span className={`ph-status-pill ${action.urgency==="high"?"ph-status-pending":action.urgency==="medium"?"ph-status-inactive":"ph-status-active"}`}>
-                        {action.urgency==="high"?"Urgent":action.urgency==="medium"?"Medium":"Low"}
-                      </span>
-                    </td>
-                    <td><button className="ph-view-btn" onClick={() => setView(action.nav)}>Go →</button></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
         </div>
+        
+        <div className="ph-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>Details</th>
+                <th>Priority</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedActions.map(action => (
+                <tr key={action.id} className="ph-table-row">
+                  <td><div className="ph-cell-name">{action.label}</div></td>
+                  <td style={{ fontSize:12, color:"#64748b" }}>{action.desc}</td>
+                  <td>
+                    <span className={`ph-status-pill ${action.urgency==="high"?"ph-status-pending":action.urgency==="medium"?"ph-status-inactive":"ph-status-active"}`}>
+                      {action.urgency==="high"?"Urgent":action.urgency==="medium"?"Medium":"Low"}
+                    </span>
+                  </td>
+                  <td>
+                    <button className="ph-view-btn" onClick={() => setView(action.nav)}>
+                      Go <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M6 12L10 8 6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    );
-  }
-
-  // ── PATHS LIST PAGE ──────────────────────────────────────────────────────
-  if (view==="paths" && !selectedPath) {
-    const filtered = pathTab==="all" ? MY_PATHS : MY_PATHS.filter(p => (p.status||"active")===pathTab);
-    return (
-      <div className="ph-root">
-        <div className="ph-page-card">
-          <div className="ph-page-topbar">
-            <button className="ph-back-btn" onClick={() => setView("home")}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Back
-            </button>
-            <div className="ph-page-header">
-              <div className="ph-page-icon" style={{ background:"linear-gradient(135deg,#0d9488,#14b8a6)" }}>📈</div>
-              <div><h2>My Learning Paths</h2><p>Manage paths · track enrollments · monitor completion</p></div>
+    </div>
+  );
+}
+ // ── PATHS LIST PAGE ──────────────────────────────────────────────────────
+if (view==="paths" && !selectedPath) {
+  const filtered = pathTab==="all" ? MY_PATHS : MY_PATHS.filter(p => (p.status||"active")===pathTab);
+  return (
+    <div className="ph-root">
+      <div className="ph-page-card">
+        <div className="ph-page-topbar">
+          <button className="ph-back-btn-icon" onClick={() => setView("home")}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span>Back</span>
+          </button>
+          <div className="ph-page-header-left">
+            <div className="ph-page-header-content">
+              <h2>My Learning Paths</h2>
+              <p>Manage paths · track enrollments · monitor completion</p>
             </div>
-            <button className="ph-mark-all-btn" onClick={fetchStats} disabled={statsLoading} style={{ marginLeft:"auto" }}>
-              {statsLoading?"Refreshing…":"↻ Refresh"}
-            </button>
           </div>
-          <div className="ph-tab-group">
-            {["all","active","inactive","pending"].map(t => (
-              <button key={t} className={`ph-tab-btn ${pathTab===t?"active":""}`} onClick={() => setPathTab(t)}>
-                {t.charAt(0).toUpperCase()+t.slice(1)}
-              </button>
+          <button className="ph-refresh-btn" onClick={fetchStats} disabled={statsLoading}>
+            {statsLoading?"Refreshing…":"↻ Refresh"}
+          </button>
+        </div>
+        
+        <div className="ph-tab-group">
+          <button className={`ph-tab-btn ${pathTab==="all" ? "active" : ""}`} onClick={() => setPathTab("all")}>
+            All
+          </button>
+          <button className={`ph-tab-btn ${pathTab==="active" ? "active" : ""}`} onClick={() => setPathTab("active")}>
+            Active
+          </button>
+          <button className={`ph-tab-btn ${pathTab==="inactive" ? "active" : ""}`} onClick={() => setPathTab("inactive")}>
+            Inactive
+          </button>
+          <button className={`ph-tab-btn ${pathTab==="pending" ? "active" : ""}`} onClick={() => setPathTab("pending")}>
+            Pending
+          </button>
+          <button className="ph-add-new-btn" onClick={() => setispopular && setispopular(true)}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+            </svg>
+            Add New
+          </button>
+        </div>
+        
+        {statsLoading ? (
+          <div style={{ padding:"24px 0" }}>
+            {[1,2,3].map(i => (
+              <div key={i} style={{ display:"flex", gap:16, padding:"12px 0", borderBottom:"1px solid #f1f5f9" }}>
+                <Skeleton width={200} height={14}/><Skeleton width={80} height={14}/><Skeleton width={50} height={14}/><Skeleton width={100} height={14}/>
+              </div>
             ))}
           </div>
-          {statsLoading ? (
-            <div style={{ padding:"24px 0" }}>
-              {[1,2,3].map(i => (
-                <div key={i} style={{ display:"flex", gap:16, padding:"12px 0", borderBottom:"1px solid #f1f5f9" }}>
-                  <Skeleton width={200} height={14}/><Skeleton width={80} height={14}/><Skeleton width={50} height={14}/><Skeleton width={100} height={14}/>
-                </div>
-              ))}
-            </div>
-          ) : statsError ? (
-            <div style={{ padding:24, textAlign:"center", color:"#e55a2b" }}>
-              {statsError} <button className="ph-mark-all-btn" onClick={fetchStats} style={{ marginLeft:12 }}>Retry</button>
-            </div>
-          ) : (
-            <div className="ph-table-wrap">
-              <table>
-                <thead><tr><th>Path</th><th>Category</th><th>Enrolled</th><th>This Week</th><th>Completion</th><th>Steps</th><th>Status</th><th></th></tr></thead>
-                <tbody>
-                  {filtered.length===0 ? (
-                    <tr><td colSpan={8} style={{ textAlign:"center", color:"#94a3b8", padding:32 }}>No paths found.</td></tr>
-                  ) : filtered.map(path => (
+        ) : statsError ? (
+          <div style={{ padding:24, textAlign:"center", color:"#e55a2b" }}>
+            {statsError} <button className="ph-refresh-btn" onClick={fetchStats} style={{ marginLeft:12 }}>Retry</button>
+          </div>
+        ) : (
+          <div className="ph-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Path</th>
+                  <th>Category</th>
+                  <th>Enrolled</th>
+                  <th>This Week</th>
+                  <th>Completion</th>
+                  <th>Steps</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length===0 ? (
+                  <tr><td colSpan={8} style={{ textAlign:"center", color:"#94a3b8", padding:32 }}>No paths found.</td></tr>
+                ) : (
+                  filtered.map(path => (
                     <tr key={path._id} className="ph-table-row">
                       <td><div className="ph-cell-name">{path.nameOfPath}</div></td>
                       <td><span className="ph-type-chip">{path.category}</span></td>
@@ -311,15 +349,16 @@ export default function PartnerHome({ setispopular }) {
                       <td><span className="ph-status-pill ph-status-active">Active</span></td>
                       <td><button className="ph-view-btn" onClick={() => { setSelectedPath(path); fetchPathUsers(path._id); setView("pathDetail"); }}>Details</button></td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   // ── PATH DETAIL PAGE ─────────────────────────────────────────────────────
   if (view==="pathDetail" && selectedPath) {
@@ -402,45 +441,59 @@ export default function PartnerHome({ setispopular }) {
   }
 
   // ── MARKETPLACE LIST PAGE ────────────────────────────────────────────────
-  if (view==="marketplace" && !selectedItem) {
-    const totalRev = MARKETPLACE_ITEMS.reduce((s,m) => s+m.revenue, 0);
-    return (
-      <div className="ph-root">
-        <div className="ph-page-card">
-          <div className="ph-page-topbar">
-            <button className="ph-back-btn" onClick={() => setView("home")}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Back
-            </button>
-            <div className="ph-page-header">
-              <div className="ph-page-icon" style={{ background:"linear-gradient(135deg,#7c3aed,#a78bfa)" }}>🛒</div>
-              <div><h2>My Marketplace</h2><p>Track purchases · monitor revenue · manage listings</p></div>
+if (view==="marketplace" && !selectedItem) {
+  const totalRev = MARKETPLACE_ITEMS.reduce((s,m) => s+m.revenue, 0);
+  return (
+    <div className="ph-root">
+      <div className="ph-page-card">
+        <div className="ph-page-topbar">
+          <button className="ph-back-btn-icon" onClick={() => setView("home")}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span>Back</span>
+          </button>
+          <div className="ph-page-header-left">
+            <div className="ph-page-header-content">
+              <h2>My Marketplace</h2>
+              <p>Track purchases · monitor revenue · manage listings</p>
             </div>
-            <div className="ph-rev-badge">₹{totalRev.toLocaleString("en-IN")} revenue</div>
           </div>
-          <div className="ph-table-wrap">
-            <table>
-              <thead><tr><th>Item</th><th>Type</th><th>Plan</th><th>Purchases</th><th>Revenue</th><th>Status</th><th></th></tr></thead>
-              <tbody>
-                {MARKETPLACE_ITEMS.map(item => (
-                  <tr key={item.id} className="ph-table-row">
-                    <td><div className="ph-cell-name">{item.name}</div></td>
-                    <td><span className="ph-type-chip">{item.type}</span></td>
-                    <td><span className="ph-plan-badge" style={{ background:PLAN_BADGE[item.plan]?.bg, color:PLAN_BADGE[item.plan]?.color }}>{item.plan}</span></td>
-                    <td style={{ fontWeight:700, color:"#1e293b" }}>{item.purchases}</td>
-                    <td style={{ fontWeight:700, color:"#7c3aed" }}>₹{item.revenue.toLocaleString("en-IN")}</td>
-                    <td><span className={`ph-status-pill ph-status-${item.status}`}>{item.status==="active"?"● Active":"⏳ Pending"}</span></td>
-                    <td><button className="ph-view-btn" onClick={() => { setSelectedItem(item); setView("marketDetail"); }}>Details</button></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <div className="ph-rev-badge">₹{totalRev.toLocaleString("en-IN")} revenue</div>
+        </div>
+        
+        <div className="ph-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Type</th>
+                <th>Plan</th>
+                <th>Purchases</th>
+                <th>Revenue</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {MARKETPLACE_ITEMS.map(item => (
+                <tr key={item.id} className="ph-table-row">
+                  <td><div className="ph-cell-name">{item.name}</div></td>
+                  <td><span className="ph-type-chip">{item.type}</span></td>
+                  <td><span className="ph-plan-badge" style={{ background:PLAN_BADGE[item.plan]?.bg, color:PLAN_BADGE[item.plan]?.color }}>{item.plan}</span></td>
+                  <td style={{ fontWeight:700, color:"#1e293b" }}>{item.purchases}</td>
+                  <td style={{ fontWeight:700, color:"#7c3aed" }}>₹{item.revenue.toLocaleString("en-IN")}</td>
+                  <td><span className={`ph-status-pill ph-status-${item.status}`}>{item.status==="active"?"Active":"Pending"}</span></td>
+                  <td><button className="ph-view-btn" onClick={() => { setSelectedItem(item); setView("marketDetail"); }}>Details</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-    );
-  }
-
+    </div>
+  );
+}
   // ── MARKETPLACE DETAIL PAGE ──────────────────────────────────────────────
   if (view==="marketDetail" && selectedItem) {
     const item = selectedItem;

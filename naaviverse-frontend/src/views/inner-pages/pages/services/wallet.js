@@ -13,6 +13,6 @@ export const AddWalletCredits = (payload) =>
  
 export const DeductWalletCredits = (payload) =>
   axios.post(`${BASE_URL}/api/wallet/deduct`, payload);
- 
+
 export const ApplyWelcomeBonus = (email) =>
   axios.post(`${BASE_URL}/api/wallet/welcome-bonus`, { email });

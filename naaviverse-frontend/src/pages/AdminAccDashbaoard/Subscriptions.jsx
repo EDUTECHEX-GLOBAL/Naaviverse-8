@@ -100,7 +100,7 @@ const StatCard = ({ label, value, accent, bg, iconPath }) => (
       <div style={{ fontSize: "10px", fontWeight: 700, color: accent,
         textTransform: "uppercase", letterSpacing: "0.06em",
         opacity: 0.8, marginBottom: "2px" }}>{label}</div>
-      <div style={{ fontSize: "1.5rem", fontWeight: 800,
+      <div style={{ fontSize: "1.25rem", fontWeight: 500,
         color: accent, lineHeight: 1 }}>{value}</div>
     </div>
   </div>
@@ -187,7 +187,7 @@ export default function Subscriptions() {
 
       {/* ── Header ── */}
       <div style={{ marginBottom: "14px" }}>
-        <h2 style={{ fontSize: "1.1rem", fontWeight: 800, color: "#0f172a", margin: 0 }}>
+        <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#0f172a", margin: 0 }}>
           Subscriptions
         </h2>
         <p style={{ color: "#94a3b8", fontSize: "11px", marginTop: "2px", fontWeight: 500 }}>

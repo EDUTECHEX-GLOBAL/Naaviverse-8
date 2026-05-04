@@ -67,6 +67,15 @@ const NavIcon = ({ type, isActive }) => {
           <circle cx="18" cy="15" r="1" fill={isActive ? "#ffffff" : "#888"} />
         </svg>
       );
+
+      case "action-plan":
+  return (
+    <svg {...iconProps}>
+      <path d="M9 11l3 3L22 4" />  {/* checkmark */}
+      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+    </svg>
+  );
+  
     default:
       return <svg {...iconProps}><circle cx="12" cy="12" r="10" /></svg>;
   }
@@ -82,6 +91,8 @@ const sidebarMenu2 = [
   { id: "current-step", title: "Current Step", display: "Current Step", icon: "current-step", path: "/dashboard/users/current-step" },
   { id: "transactions", title: "Transactions", display: "Transactions", icon: "transactions", path: "/dashboard/users/transactions" },
   { id: "wallet",       title: "Wallet",       display: "Wallet",       icon: "wallet",       path: "/dashboard/users/wallet" },
+    { id: "action-plan",  title: "Action Plan",  display: "Action Plan",  icon: "action-plan",  path: "/dashboard/users/action-plan" },
+
 ];
 
 const allMenuItems = [...sidebarMenu1, ...sidebarMenu2];

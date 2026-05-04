@@ -256,14 +256,9 @@ const AdminMarketplace = () => {
       <div className="adm-panel">
         <div className="adm-panel__bar">
           <div className="adm-panel__bar-left">
-            <span className="adm-panel__dot" style={{ background: ac.color }} />
+           
             <span className="adm-panel__title">{ac.label}</span>
-            {!loading && (
-              <span className="adm-panel__pill"
-                style={{ background: ac.colorLight, color: ac.color }}>
-                {filteredItems.length} {filteredItems.length === 1 ? "Item" : "Items"}
-              </span>
-            )}
+           
           </div>
           <div className="adm-panel__bar-right">
             <div className="adm-search">

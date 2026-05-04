@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./userHome.scss";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { GetWalletBalance, GetWalletTxns } from "../../views/inner-pages/pages/services/wallet";
+
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const getUserFromStorage = () => {
   try {
@@ -8,6 +12,27 @@ const getUserFromStorage = () => {
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     return parsed?.user || parsed;
+  } catch { return null; }
+};
+
+const mapTxnType = (t) => {
+  const src = t.metadata?.source || "";
+  const typ = t.metadata?.type  || "";
+  if (typ === "welcome_bonus")   return "bonus";
+  if (src === "marketplace")     return "purchase";
+  if (src === "mentor")          return "mentor";
+  if (t.type === "credit")       return "step";
+  return "purchase";
+};
+
+const parseDuration = (raw) => {
+  try {
+    const l = JSON.parse(raw);
+    const parts = [];
+    if (parseInt(l.years)  > 0) parts.push(`${l.years}y`);
+    if (parseInt(l.months) > 0) parts.push(`${l.months}m`);
+    if (parseInt(l.days)   > 0) parts.push(`${l.days}d`);
+    return parts.length > 0 ? parts.join(" ") : null;
   } catch { return null; }
 };
 
@@ -46,53 +71,11 @@ const Ring = ({ pct, size = 52, stroke = 4, color = "#60a5fa", bg = "rgba(96,165
   );
 };
 
-// ── Static data ───────────────────────────────────────────────────────────────
-const CREDITS = { available: 32, used: 18, total: 50, expiry: "Apr 13, 2026", daysLeft: 8, plan: "Premium" };
-
-const ACTIVITY = [
-  { id: 1, action: "Completed Step 1: Tech Awareness", time: "2 days ago", type: "step", delta: null },
-  { id: 2, action: "Purchased AI for Finance path", time: "5 days ago", type: "purchase", delta: -4 },
-  { id: 3, action: "Booked mentor: Dr. Priya Sharma", time: "1 week ago", type: "mentor", delta: -6 },
-  { id: 4, action: "Welcome bonus applied", time: "Apr 1, 2026", type: "bonus", delta: +50 },
-  { id: 5, action: "Path selection: CS Pathway USA", time: "Apr 1, 2026", type: "purchase", delta: -16 },
-  { id: 6, action: "Completed Quiz: Introduction", time: "Mar 30, 2026", type: "step", delta: null },
-  { id: 7, action: "Explored: Data Science path", time: "Mar 28, 2026", type: "explore", delta: null },
-  { id: 8, action: "Enrolled in Cloud Computing Bundle", time: "Mar 28, 2026", type: "purchase", delta: -2 },
-];
-
+// ── Static data (kept as is) ───────────────────────────────────────────────────────────────
 const PURCHASES = [
   { id: 1, icon: "🎯", name: "AI for Finance", type: "Path", plan: "Premium", credits: 4, date: "Apr 2, 2026", status: "active" },
-  { id: 2, icon: "☁️", name: "Cloud Computing Bundle", type: "Bundle", plan: "Micro", credits: 2, date: "Mar 28, 2026", status: "active" },
-  { id: 3, icon: "📊", name: "Data Science Essentials", type: "Path", plan: "Micro", credits: 2, date: "Mar 15, 2026", status: "completed" },
-  { id: 4, icon: "🤖", name: "ML Fundamentals", type: "Bundle", plan: "Micro", credits: 3, date: "Feb 20, 2026", status: "completed" },
 ];
 
-const MY_PATH = {
-  name: "CS Pathway USA",
-  goal: "Computer Science degree in USA",
-  progress: 35,
-  creditsUsed: 16,
-  enrolledOn: "Apr 1, 2026",
-  steps: [
-    { id: 1, title: "Tech Awareness", desc: "Basics of CS, tools, and industry overview", status: "done", duration: "2 weeks" },
-    { id: 2, title: "Foundations of Programming", desc: "Python, data structures, algorithms intro", status: "active", duration: "4 weeks" },
-    { id: 3, title: "Macroeconomics & US Education", desc: "Understanding the US education landscape", status: "locked", duration: "2 weeks" },
-    { id: 4, title: "SAT / ACT Preparation", desc: "Test strategy, mock tests, scoring", status: "locked", duration: "6 weeks" },
-    { id: 5, title: "University Shortlisting", desc: "Profile matching with top CS programs", status: "locked", duration: "3 weeks" },
-    { id: 6, title: "Application & Essays", desc: "SOP, LOR, applications submission", status: "locked", duration: "5 weeks" },
-  ],
-  marketplace: [
-    { name: "AI for Finance", type: "Add-on Path", credits: 4 },
-    { name: "Cloud Computing Bundle", type: "Bundle", credits: 2 },
-  ],
-};
-
-const EXPLORED_PATHS = [
-  { id: 1, icon: "🇺🇸", name: "CS Pathway USA", desc: "Top US universities for Computer Science", match: 92, enrolled: true, steps: 6 },
-  { id: 2, icon: "🇬🇧", name: "Engineering UK", desc: "Premier engineering programs in the UK", match: 78, enrolled: false, steps: 5 },
-  { id: 3, icon: "🇩🇪", name: "Tech Masters Germany", desc: "Tuition-free tech programs in Germany", match: 71, enrolled: false, steps: 7 },
-  { id: 4, icon: "🇨🇦", name: "CS Canada Stream", desc: "Canadian universities with co-op programs", match: 85, enrolled: false, steps: 6 },
-];
 
 const MENTORS = [
   { id: 1, name: "Dr. Priya Sharma", role: "CS Career Coach", initials: "PS", color: "#3b82f6", date: "Apr 10, 2026", time: "4:00 PM IST", status: "upcoming", rating: 4.9, sessions: 3, speciality: "US CS applications" },
@@ -105,7 +88,7 @@ const NOTIFS = [
   { id: 3, text: "Step 3: Macroeconomics unlocked", time: "2d ago", read: true, type: "success" },
 ];
 
-// ── TABS config ───────────────────────────────────────────────────────────────
+// ── TABS config (MyPath removed - will be separate page) ─────────────────────────────────
 const TABS = [
   { key: "wallet",    label: "My Wallet",     icon: "wallet" },
   { key: "purchases", label: "Purchases",     icon: "market" },
@@ -124,9 +107,17 @@ export default function UserHome() {
   const [activeTab, setActiveTab] = useState("wallet");
   const [showNotif, setShowNotif]  = useState(false);
   const [notifications, setNotifications] = useState(NOTIFS);
+  const [credits, setCredits]   = useState(null);
+  const [activity, setActivity] = useState([]);
+  const [walletLoading, setWalletLoading] = useState(true);
+  const [myPath, setMyPath] = useState(null);
+  const [explorePaths, setExplorePaths] = useState([]);
+  const [pathLoading, setPathLoading] = useState(true);
   const notifRef = useRef(null);
   const unread = notifications.filter(n => !n.read).length;
-  const creditPct = Math.round((CREDITS.available / CREDITS.total) * 100);
+  const creditPct = credits
+    ? Math.round((credits.available / (credits.total || 50)) * 100)
+    : 0;
   const today = new Date().toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
 
   useEffect(() => {
@@ -135,62 +126,352 @@ export default function UserHome() {
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
+  // Fetch wallet data
+  useEffect(() => {
+    if (!user?.email) return;
+
+    const fetchWallet = async () => {
+      try {
+        setWalletLoading(true);
+
+        const [balRes, txnRes] = await Promise.all([
+          GetWalletBalance(user.email),
+          GetWalletTxns(user.email),
+        ]);
+
+        const bal = balRes.data;
+        const txns = txnRes.data.txns || [];
+
+        const bonusTxn = txns.find(t => t.metadata?.type === "welcome_bonus");
+        let expiresAt = null;
+        if (bonusTxn) {
+          if (bonusTxn.expiresAt) {
+            expiresAt = new Date(bonusTxn.expiresAt);
+          } else if (bonusTxn.timestamp) {
+            expiresAt = new Date(bonusTxn.timestamp);
+            expiresAt.setDate(expiresAt.getDate() + 14);
+          }
+        }
+
+        const now = new Date();
+        const isExpired = expiresAt ? expiresAt < now : false;
+        const msLeft = expiresAt ? Math.max(0, expiresAt - now) : 0;
+        const daysLeft = msLeft ? Math.ceil(msLeft / (1000 * 60 * 60 * 24)) : 0;
+
+        let expiryLabel = "—";
+        if (expiresAt) {
+          const dateStr = expiresAt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+          if (isExpired) {
+            const daysAgo = Math.floor((now - expiresAt) / (1000 * 60 * 60 * 24));
+            expiryLabel = daysAgo === 0
+              ? `Expired today`
+              : daysAgo === 1
+              ? `Expired yesterday`
+              : `Expired ${daysAgo}d ago`;
+          } else {
+            expiryLabel = daysLeft <= 1
+              ? `Expires today`
+              : daysLeft <= 7
+              ? `Expires in ${daysLeft} days`
+              : `Expires ${dateStr}`;
+          }
+        }
+
+        setCredits({
+          available:   bal.balance,
+          used:        txns.filter(t => t.type === "debit").reduce((s, t) => s + t.amount, 0),
+          total:       txns.filter(t => t.type === "credit").reduce((s, t) => s + t.amount, 0),
+          expiry:      expiryLabel,
+          expiresAt:   expiresAt,
+          daysLeft:    isExpired ? 0 : daysLeft,
+          isExpired:   isExpired,
+          plan:        "Premium",
+        });
+
+        const mapped = txns.map(t => ({
+          id:    t._id,
+          action: t.metadata?.description || (t.type === "credit" ? "Credits added" : "Credits used"),
+          time:  new Date(t.timestamp).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
+          type:  mapTxnType(t),
+          delta: t.type === "credit" ? +t.amount : -t.amount,
+        }));
+
+        setActivity(mapped);
+      } catch (err) {
+        console.error("Wallet fetch failed:", err);
+      } finally {
+        setWalletLoading(false);
+      }
+    };
+
+    fetchWallet();
+  }, [user?.email]);
+
+useEffect(() => {
+  if (!user?.email) return;
+
+  const fetchMyPath = async () => {
+    try {
+      setPathLoading(true);
+
+      const userPathRes = await axios.get(`${BASE_URL}/api/userpaths`, {
+        params: { email: user.email, status: "active" }
+      });
+
+     const userPaths = userPathRes.data?.data || [];
+if (!userPaths.length) { setMyPath(null); setPathLoading(false); return; }
+const enrolledPathIds = new Set(
+  userPaths.map(p => p.pathId?.toString())
+);
+// prefer the path the user is currently viewing/working on
+const selectedPathId = localStorage.getItem("selectedPathId");
+
+let activePath;
+if (selectedPathId) {
+  // find the enrolled doc matching what user is currently working on
+  activePath = userPaths.find(p =>
+    p.pathId?.toString() === selectedPathId ||
+    p.PathDetails?.[0]?._id?.toString() === selectedPathId
+  );
+}
+// fallback to most recently enrolled
+if (!activePath) {
+  activePath = userPaths.sort((a, b) =>
+    new Date(b.createdAt) - new Date(a.createdAt)
+  )[0];
+}
+// fetch raw userpath doc to get completedSteps (aggregate may drop it)
+let completedStepIds = [];
+let currentStep = null;
+let enrolledOn = "—";
+
+try {
+  const rawRes = await axios.get(`${BASE_URL}/api/userpaths`, {
+    params: { email: user.email, status: "active" }
+  });
+  // find the matching raw doc — check if completedSteps exists directly
+  const rawDoc = rawRes.data?.data?.find(p =>
+    p.pathId?.toString() === pathId
+  );
+  console.log("rawDoc:", rawDoc?.completedSteps, rawDoc?.currentStep);
+  completedStepIds = rawDoc?.completedSteps?.map(id => id.toString()) || [];
+  currentStep = rawDoc?.currentStep || null;
+  enrolledOn = rawDoc?.createdAt
+    ? new Date(rawDoc.createdAt).toLocaleDateString("en-IN", {
+        day: "numeric", month: "short", year: "numeric"
+      })
+    : "—";
+} catch (e) {
+  console.error("rawDoc fetch failed", e);
+}
+
+
+const pathId = activePath?.pathId?.toString() ||
+  activePath?.PathDetails?.[0]?._id?.toString();
+        activePath?.PathDetails?.[0]?._id?.toString();
+
+      if (!pathId) { setMyPath(null); setPathLoading(false); return; }
+
+      const stepsRes = await axios.get(`${BASE_URL}/api/userpaths/steps`, {
+        params: { pathId }
+      });
+
+      const pathData = stepsRes.data?.data;
+
+      const steps = (pathData?.steps || [])
+        .sort((a, b) => (a.step_order || 0) - (b.step_order || 0))
+        .map(s => ({
+          id:       s._id,
+          title:    s.macro_name || s.name || "Step",
+          desc:     s.macro_description || s.description || "",
+          duration: s.macro_length ? parseDuration(s.macro_length) : null,
+          status:   completedStepIds.includes(s._id.toString())
+                      ? "done"
+                      : currentStep === s._id.toString()
+                      ? "active"
+                      : "locked",
+        }));
+
+      const doneCount = steps.filter(s => s.status === "done").length;
+      const progress  = steps.length ? Math.round((doneCount / steps.length) * 100) : 0;
+
+      setMyPath({
+        name:       pathData?.name || pathData?.nameOfPath || "—",
+        goal:       pathData?.description || "",
+        progress,
+        steps,
+        doneCount,
+        totalSteps: steps.length,
+        enrolledOn: activePath?.createdAt
+          ? new Date(activePath.createdAt).toLocaleDateString("en-IN", {
+              day: "numeric", month: "short", year: "numeric"
+            })
+          : "—",
+      });
+
+      // fetch explore paths
+    try {
+      const pathsRes = await axios.get(`${BASE_URL}/api/paths/active`);
+      const allPaths = pathsRes.data?.data || [];
+      const explored = allPaths.map(p => ({
+        id:       p._id,
+        icon:     p.country ? p.country.slice(0, 2).toUpperCase() : "🌍",
+        name:     p.nameOfPath || p.name,
+        desc:     p.description || "",
+        steps:    p.total_steps || p.the_ids?.length || 0,
+        match:    Math.floor(Math.random() * 20) + 75,
+        enrolled: enrolledPathIds.has(p._id.toString()),
+      }));
+      setExplorePaths(explored);
+    } catch (e) {
+      console.error("Explore paths fetch failed", e);
+    }
+    } catch (err) {
+      console.error("MyPath fetch failed:", err);
+      setMyPath(null);
+    } finally {
+      setPathLoading(false);
+    }
+  };
+
+  fetchMyPath();
+}, [user?.email]);
+
   const markRead = (id) => setNotifications(ns => ns.map(n => n.id === id ? { ...n, read: true } : n));
   const markAll  = () => setNotifications(ns => ns.map(n => ({ ...n, read: true })));
 
-  // ── Tab panels ─────────────────────────────────────────────────────
-  const WalletPanel = () => (
-    <div className="uh-panel">
-      <div className="uh-panel-top">
-        <div className="uh-wallet-summary">
-          <div className="uh-ws-card">
-            <span className="uh-ws-label">Available</span>
-            <span className="uh-ws-num blue">{CREDITS.available}</span>
-            <span className="uh-ws-sub">credits</span>
-          </div>
-          <div className="uh-ws-card">
-            <span className="uh-ws-label">Used</span>
-            <span className="uh-ws-num slate">{CREDITS.used}</span>
-            <span className="uh-ws-sub">credits</span>
-          </div>
-          <div className="uh-ws-card">
-            <span className="uh-ws-label">Total</span>
-            <span className="uh-ws-num slate">{CREDITS.total}</span>
-            <span className="uh-ws-sub">credits</span>
-          </div>
-          <div className="uh-ws-card warn">
-            <span className="uh-ws-label">Expires</span>
-            <span className="uh-ws-num amber">{CREDITS.daysLeft}d</span>
-            <span className="uh-ws-sub">{CREDITS.expiry}</span>
-          </div>
-        </div>
-        <div className="uh-wallet-bar-wrap">
-          <div className="uh-wallet-bar-track">
-            <div className="uh-wallet-bar-fill" style={{ width: `${creditPct}%` }} />
-          </div>
-          <span className="uh-wallet-bar-pct">{creditPct}% remaining · {CREDITS.plan} Plan</span>
-        </div>
-      </div>
+  const WalletPanel = () => {
+    const bonusTxn = activity.find(a => a.type === "bonus");
+    const totalCredits = activity.filter(a => a.delta > 0).reduce((s, a) => s + a.delta, 0);
+    const totalDebits  = activity.filter(a => a.delta < 0).reduce((s, a) => s + Math.abs(a.delta), 0);
 
-      <div className="uh-section-title">Transaction History</div>
-      <div className="uh-txn-list">
-        {ACTIVITY.map(a => (
-          <div key={a.id} className="uh-txn-row">
-            <div className={`uh-txn-dot t-${a.type}`} />
-            <div className="uh-txn-body">
-              <span className="uh-txn-label">{a.action}</span>
-              <span className="uh-txn-time">{a.time}</span>
+    return (
+      <div className="uh-panel">
+        {walletLoading ? (
+          <div className="uh-loading">Loading wallet…</div>
+        ) : (
+          <>
+            <div className="uh-wallet-summary">
+              <div className="uh-ws-card">
+                <span className="uh-ws-label">Available</span>
+                <span className="uh-ws-num blue">{credits?.available ?? "—"}</span>
+                <span className="uh-ws-sub">credits</span>
+              </div>
+              <div className="uh-ws-card">
+                <span className="uh-ws-label">Used</span>
+                <span className="uh-ws-num slate">{totalDebits}</span>
+                <span className="uh-ws-sub">credits</span>
+              </div>
+              <div className="uh-ws-card">
+                <span className="uh-ws-label">Total Earned</span>
+                <span className="uh-ws-num slate">{totalCredits}</span>
+                <span className="uh-ws-sub">credits</span>
+              </div>
+              <div className={`uh-ws-card warn ${credits?.isExpired ? "expired" : ""}`}>
+                <span className="uh-ws-label">Expires</span>
+                <span className={`uh-ws-num ${credits?.isExpired ? "red" : "amber"}`}>
+                  {credits?.isExpired
+                    ? "Expired"
+                    : credits?.daysLeft
+                    ? `${credits.daysLeft}d`
+                    : "—"}
+                </span>
+                <span className="uh-ws-sub">{credits?.expiry ?? "—"}</span>
+              </div>
             </div>
-            {a.delta !== null && (
-              <span className={`uh-txn-delta ${a.delta > 0 ? "pos" : "neg"}`}>
-                {a.delta > 0 ? "+" : ""}{a.delta} cr
-              </span>
-            )}
-          </div>
-        ))}
+
+            <div className="uh-wallet-bar-wrap" style={{ marginBottom: 18 }}>
+              <div className="uh-wallet-bar-track">
+                <div className="uh-wallet-bar-fill" style={{ width: `${creditPct}%` }} />
+              </div>
+              <span className="uh-wallet-bar-pct">{creditPct}% remaining · {credits?.plan ?? ""} Plan</span>
+            </div>
+
+            <div className="uh-section-title">Credit Breakdown</div>
+            <div className="uh-wallet-analytics">
+              {bonusTxn && (
+                <div className="uh-analytics-card uh-analytics-bonus">
+                  <div className="uh-analytics-icon">⭐</div>
+                  <div className="uh-analytics-info">
+                    <span className="uh-analytics-title">Welcome Bonus</span>
+                    <span className="uh-analytics-sub">50 credits · Given on signup</span>
+                    <span className="uh-analytics-sub">{bonusTxn.time}</span>
+                  </div>
+                  <div className="uh-analytics-right">
+                    {(credits?.daysLeft ?? 0) <= 0
+                      ? <span className="uh-analytics-tag expired">Expired</span>
+                      : <span className="uh-analytics-tag active">
+                          {credits?.daysLeft}d left
+                        </span>
+                    }
+                    <span className="uh-analytics-cr">+50</span>
+                  </div>
+                </div>
+              )}
+
+              {activity.filter(a => a.type === "step" && a.delta > 0).map(a => (
+                <div key={a.id} className="uh-analytics-card uh-analytics-sub">
+                  <div className="uh-analytics-icon">💳</div>
+                  <div className="uh-analytics-info">
+                    <span className="uh-analytics-title">{a.action}</span>
+                    <span className="uh-analytics-sub">{a.time}</span>
+                    <span className="uh-analytics-sub" style={{ color: "#22c55e", fontWeight: 600 }}>Never expires</span>
+                  </div>
+                  <div className="uh-analytics-right">
+                    <span className="uh-analytics-tag permanent">Permanent</span>
+                    <span className="uh-analytics-cr">+{a.delta}</span>
+                  </div>
+                </div>
+              ))}
+
+              <div className="uh-usage-summary">
+                <div className="uh-usage-row">
+                  <span>Credits Earned</span>
+                  <div className="uh-usage-bar-wrap">
+                    <div className="uh-usage-bar green" style={{ width: "100%" }} />
+                  </div>
+                  <span className="uh-usage-val green">+{totalCredits}</span>
+                </div>
+                <div className="uh-usage-row">
+                  <span>Credits Spent</span>
+                  <div className="uh-usage-bar-wrap">
+                    <div className="uh-usage-bar red"
+                      style={{ width: `${totalCredits ? (totalDebits / totalCredits) * 100 : 0}%` }} />
+                  </div>
+                  <span className="uh-usage-val red">-{totalDebits}</span>
+                </div>
+                <div className="uh-usage-row">
+                  <span>Remaining</span>
+                  <div className="uh-usage-bar-wrap">
+                    <div className="uh-usage-bar blue" style={{ width: `${creditPct}%` }} />
+                  </div>
+                  <span className="uh-usage-val blue">{credits?.available}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* <div className="uh-section-title" style={{ marginTop: 18 }}>Transaction History</div>
+            <div className="uh-txn-list">
+              {activity.map(a => (
+                <div key={a.id} className="uh-txn-row">
+                  <div className={`uh-txn-dot t-${a.type}`} />
+                  <div className="uh-txn-body">
+                    <span className="uh-txn-label">{a.action}</span>
+                    <span className="uh-txn-time">{a.time}</span>
+                  </div>
+                  {a.delta !== null && (
+                    <span className={`uh-txn-delta ${a.delta > 0 ? "pos" : "neg"}`}>
+                      {a.delta > 0 ? "+" : ""}{a.delta} cr
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div> */}
+          </>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   const PurchasesPanel = () => (
     <div className="uh-panel">
@@ -218,81 +499,14 @@ export default function UserHome() {
     </div>
   );
 
-  const MyPathPanel = () => (
-    <div className="uh-panel">
-      <div className="uh-path-header">
-        <div className="uh-path-meta">
-          <span className="uh-path-tag">Current Path</span>
-          <h3 className="uh-path-name">{MY_PATH.name}</h3>
-          <p className="uh-path-goal">{MY_PATH.goal}</p>
-        </div>
-        <div className="uh-path-stats">
-          <div className="uh-ps-item">
-            <span>{MY_PATH.creditsUsed} cr</span>
-            <span>Used</span>
-          </div>
-          <div className="uh-ps-item">
-            <span>{MY_PATH.progress}%</span>
-            <span>Progress</span>
-          </div>
-          <div className="uh-ps-item">
-            <span>{MY_PATH.enrolledOn}</span>
-            <span>Enrolled</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="uh-path-bar-wrap">
-        <div className="uh-path-bar-track">
-          <div className="uh-path-bar-fill" style={{ width: `${MY_PATH.progress}%` }} />
-        </div>
-        <span>{MY_PATH.progress}% complete</span>
-      </div>
-
-      <div className="uh-section-title" style={{ marginTop: 20 }}>Steps</div>
-      <div className="uh-steps-list">
-        {MY_PATH.steps.map((s, i) => (
-          <div key={s.id} className={`uh-step-row s-${s.status}`}>
-            <div className="uh-step-num">
-              {s.status === "done" ? <Icon type="check" size={12} color="#22c55e" /> :
-               s.status === "active" ? <span>{i + 1}</span> :
-               <Icon type="lock" size={11} color="#94a3b8" />}
-            </div>
-            <div className="uh-step-info">
-              <span className="uh-step-title">{s.title}</span>
-              <span className="uh-step-desc">{s.desc}</span>
-            </div>
-            <span className="uh-step-dur">{s.duration}</span>
-            <span className={`uh-step-badge sb-${s.status}`}>
-              {s.status === "done" ? "Done" : s.status === "active" ? "In Progress" : "Locked"}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {MY_PATH.marketplace.length > 0 && (
-        <>
-          <div className="uh-section-title" style={{ marginTop: 20 }}>Add-ons from Marketplace</div>
-          <div className="uh-addons-list">
-            {MY_PATH.marketplace.map((a, i) => (
-              <div key={i} className="uh-addon-row">
-                <Icon type="market" size={13} color="#3b82f6" />
-                <span className="uh-addon-name">{a.name}</span>
-                <span className="uh-addon-type">{a.type}</span>
-                <span className="uh-addon-cr">{a.credits} cr</span>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-
-  const ExplorePanel = () => (
-    <div className="uh-panel">
-      <div className="uh-section-title">Paths You've Explored</div>
+ const ExplorePanel = () => (
+  <div className="uh-panel">
+    <div className="uh-section-title">Paths You've Explored</div>
+    {explorePaths.length === 0 ? (
+      <div className="uh-loading">Loading paths…</div>
+    ) : (
       <div className="uh-explore-list">
-        {EXPLORED_PATHS.map(p => (
+        {explorePaths.map(p => (
           <div key={p.id} className={`uh-explore-row ${p.enrolled ? "enrolled" : ""}`}>
             <div className="uh-explore-icon">{p.icon}</div>
             <div className="uh-explore-info">
@@ -302,26 +516,29 @@ export default function UserHome() {
             </div>
             <div className="uh-explore-right">
               <div className="uh-match-ring">
-                <Ring pct={p.match} size={40} stroke={3} color={p.match >= 85 ? "#22c55e" : p.match >= 75 ? "#3b82f6" : "#94a3b8"} bg="rgba(148,163,184,.15)" />
+                <Ring
+                  pct={p.match}
+                  size={40}
+                  stroke={3}
+                  color={p.match >= 85 ? "#22c55e" : p.match >= 75 ? "#3b82f6" : "#94a3b8"}
+                  bg="rgba(148,163,184,.15)"
+                />
                 <span className="uh-match-pct">{p.match}%</span>
               </div>
               {p.enrolled
                 ? <span className="uh-enr-tag">Enrolled</span>
-: <button
-  className="uh-explore-btn"
-  onClick={() =>
-    navigate("/dashboard/users/Marketplace", {
-      state: { defaultTab: "marketplace" }
-    })
-  }
->Explore</button>
+                : <button
+                    className="uh-explore-btn"
+                    onClick={() => navigate("/dashboard/users/paths")}
+                  >Explore</button>
               }
             </div>
           </div>
         ))}
       </div>
-    </div>
-  );
+    )}
+  </div>
+);
 
   const MentorsPanel = () => (
     <div className="uh-panel">
@@ -355,7 +572,89 @@ export default function UserHome() {
     </div>
   );
 
-  const panels = { wallet: <WalletPanel />, purchases: <PurchasesPanel />, mypath: <MyPathPanel />, paths: <ExplorePanel />, mentors: <MentorsPanel /> };
+
+const MyPathPanel = () => {
+  if (pathLoading) return <div className="uh-loading">Loading path…</div>;
+ if (!myPath) return (
+  <div className="uh-panel">
+    <div className="uh-no-path">
+      <div className="uh-no-path-icon">🗺️</div>
+      <div className="uh-no-path-title">No Path Selected Yet</div>
+      <p className="uh-no-path-sub">Choose a learning path to start your Naavi journey.</p>
+      <button
+        className="uh-no-path-btn"
+        onClick={() => navigate("/dashboard/users/paths")}
+      >
+        Go to Paths →
+      </button>
+    </div>
+  </div>
+);
+
+  return (
+    <div className="uh-panel">
+      <div className="uh-path-header">
+        <div className="uh-path-meta">
+          <span className="uh-path-tag">Current Path</span>
+          <h3 className="uh-path-name">{myPath.name}</h3>
+          <p className="uh-path-goal">{myPath.goal}</p>
+        </div>
+        <div className="uh-path-stats">
+          <div className="uh-ps-item">
+            <span>{myPath.doneCount}/{myPath.totalSteps}</span>
+            <span>Steps</span>
+          </div>
+          <div className="uh-ps-item">
+            <span>{myPath.progress}%</span>
+            <span>Progress</span>
+          </div>
+          <div className="uh-ps-item">
+            <span>{myPath.enrolledOn}</span>
+            <span>Enrolled</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="uh-path-bar-wrap">
+        <div className="uh-path-bar-track">
+          <div className="uh-path-bar-fill" style={{ width: `${myPath.progress}%` }} />
+        </div>
+        <span>{myPath.progress}% complete</span>
+      </div>
+
+      <div className="uh-section-title" style={{ marginTop: 20 }}>Steps</div>
+      <div className="uh-steps-list">
+        {myPath.steps.map((s, i) => (
+          <div key={s.id} className={`uh-step-row s-${s.status}`}>
+            <div className="uh-step-num">
+              {s.status === "done"
+                ? <Icon type="check" size={12} color="#22c55e" />
+                : s.status === "active"
+                ? <span>{i + 1}</span>
+                : <Icon type="lock" size={11} color="#94a3b8" />}
+            </div>
+            <div className="uh-step-info">
+              <span className="uh-step-title">{s.title}</span>
+              <span className="uh-step-desc">{s.desc}</span>
+            </div>
+            {s.duration && <span className="uh-step-dur">{s.duration}</span>}
+            <span className={`uh-step-badge sb-${s.status}`}>
+              {s.status === "done" ? "Done" : s.status === "active" ? "In Progress" : "Locked"}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const panels = { 
+  wallet:    <WalletPanel />, 
+  purchases: <PurchasesPanel />,
+  mypath:    <MyPathPanel />,
+  paths:     <ExplorePanel />, 
+  mentors:   <MentorsPanel /> 
+};
 
   // ── RENDER ──────────────────────────────────────────────────────────
   return (
@@ -372,10 +671,10 @@ export default function UserHome() {
             <Icon type="calendar" size={11} color="#3b82f6" />
             {today}
           </span>
-          {CREDITS.daysLeft <= 10 && (
+          {(credits?.daysLeft ?? 0) <= 10 && (
             <span className="uh-expiry-chip">
               <span className="uh-expiry-dot" />
-              {CREDITS.daysLeft}d left
+              {credits?.daysLeft ?? 0}d left
             </span>
           )}
           <div className="uh-notif-wrap" ref={notifRef}>
@@ -409,8 +708,8 @@ export default function UserHome() {
         <div className="uh-credits-hero" onClick={() => setActiveTab("wallet")}>
           <div className="uh-ch-left">
             <div className="uh-ch-label">AVAILABLE CREDITS</div>
-            <div className="uh-ch-number">{CREDITS.available}</div>
-            <div className="uh-ch-meta">{CREDITS.used} used · expires {CREDITS.expiry}</div>
+            <div className="uh-ch-number">{credits?.available ?? "—"}</div>
+            <div className="uh-ch-meta">{credits?.used ?? "—"} used · expires {credits?.expiry ?? "—"}</div>
             <div className="uh-ch-bar-wrap">
               <div className="uh-ch-bar" style={{ width: `${creditPct}%` }} />
             </div>
@@ -446,7 +745,7 @@ export default function UserHome() {
             <h3>Recent Activity</h3>
           </div>
           <div className="uh-activity-list">
-            {ACTIVITY.slice(0, 6).map(a => (
+            {activity.slice(0, 6).map(a => (
               <div key={a.id} className="uh-act-row">
                 <div className={`uh-act-dot t-${a.type}`} />
                 <div className="uh-act-body">
@@ -483,14 +782,16 @@ export default function UserHome() {
 
       {/* ── BOTTOM STRIP ──────────────────────────────────────────── */}
       <div className="uh-bottom-strip">
-        <div className="uh-bs-item" onClick={() => setActiveTab("mypath")}>
-          <span className="uh-bs-num">1/6</span>
+        <div className="uh-bs-item" onClick={() => navigate("/dashboard/users/MyPath")}>
+          <span className="uh-bs-num">
+            {myPath ? `${myPath.doneCount}/${myPath.totalSteps}` : "—"}
+          </span>
           <span className="uh-bs-label">Steps done</span>
           <Icon type="arrow-r" size={11} color="#3b82f6" />
         </div>
         <div className="uh-bs-div" />
         <div className="uh-bs-item" onClick={() => setActiveTab("paths")}>
-          <span className="uh-bs-num">{EXPLORED_PATHS.length}</span>
+         <span className="uh-bs-num">{explorePaths.length}</span>
           <span className="uh-bs-label">Paths explored</span>
           <Icon type="arrow-r" size={11} color="#3b82f6" />
         </div>
