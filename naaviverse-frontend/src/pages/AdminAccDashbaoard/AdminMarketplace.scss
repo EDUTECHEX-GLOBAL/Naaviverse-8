@@ -61,7 +61,6 @@ $radius-lg    : 18px;
 
 .adm-stat {
   border-radius: 13px;
-  //border: 1.5px solid transparent;
   padding: 12px 14px;
   display: flex;
   align-items: center;
@@ -138,26 +137,31 @@ $radius-lg    : 18px;
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.2s ease,
-              border-color 0.2s ease;
+  transition: border-color 0.2s ease;
 
+  // Hover - NO transform, NO box-shadow, NO border change
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-    border-color: var(--cm);
+    transform: none;
+    box-shadow: none;
+    border-color: $border;
   }
 
-  &--active {
-    border-color: var(--cc) !important;
-    background: linear-gradient(150deg, $card 50%, var(--cl) 150%);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--cc) 12%, transparent),
-                0 8px 24px rgba(0,0,0,0.07);
+  // Hover on icon only - keeps the colored effect
+  &:hover &__icon-wrap {
+    background: var(--cl);
+    color: var(--cc);
+    transform: scale(1.07) rotate(-4deg);
+  }
 
-    .adm-cat-card__count {
-      background: var(--cc);
-      color: #fff;
-    }
+  
+
+  &--active {
+    // border-color: var(--cc) !important;
+    // background: linear-gradient(150deg, $card 50%, var(--cl) 150%);
+    // box-shadow: 0 0 0 3px color-mix(in srgb, var(--cc) 12%, transparent),
+    //             0 8px 24px rgba(0,0,0,0.07);
+
+    
 
     .adm-cat-card__icon-wrap {
       background: var(--cl);
@@ -186,23 +190,17 @@ $radius-lg    : 18px;
     svg { width: 18px; height: 18px; }
   }
 
-  &:hover &__icon-wrap {
-    background: var(--cl);
-    color: var(--cc);
-    transform: scale(1.07) rotate(-4deg);
-  }
-
-  &__count {
-    font-size: 12.5px;
-    font-weight: 700;
-    padding: 2px 9px;
-    border-radius: 20px;
-    background: var(--cl);
-    color: var(--cc);
-    transition: background 0.2s, color 0.2s;
-    min-width: 24px;
-    text-align: center;
-  }
+ &__count {
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 20px;
+  background: var(--cl);  // This is the default light background
+  color: var(--cc);       // This is the default colored text
+  transition: background 0.2s, color 0.2s;
+  min-width: 24px;
+  text-align: center;
+}
 
   &__label {
     font-family: $font-display;
@@ -216,7 +214,6 @@ $radius-lg    : 18px;
     position: absolute;
     bottom: 0; left: 0; right: 0;
     height: 2.5px;
-    //background: var(--cc);
     border-radius: 0 0 $radius-lg $radius-lg;
     opacity: 0;
     transform: scaleX(0.4);
@@ -235,7 +232,7 @@ $radius-lg    : 18px;
   border: 1px solid $border;
   border-radius: $radius-lg;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  // box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 
   &__bar {
     display: flex;
@@ -259,13 +256,6 @@ $radius-lg    : 18px;
       gap: 8px;
     }
   }
-
-  // // &__dot {
-  //   width: 7px;
-  //   height: 7px;
-  //   border-radius: 50%;
-  //   flex-shrink: 0;
-  // }
 
   &__title {
     font-family: $font-display;
@@ -295,11 +285,11 @@ $radius-lg    : 18px;
   height: 30px;
   min-width: 160px;
   color: $muted;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  // transition: border-color 0.2s, box-shadow 0.2s;
 
   &:focus-within {
     border-color: #A5B4FC;
-    box-shadow: 0 0 0 2px rgba(99,102,241,0.1);
+    // box-shadow: 0 0 0 2px rgba(99,102,241,0.1);
   }
 
   &__input {
@@ -327,6 +317,7 @@ $radius-lg    : 18px;
 .adm-table {
   width: 100%;
   border-collapse: collapse;
+  
 
   thead tr { background: #F9FAFB; }
 
@@ -499,7 +490,7 @@ $radius-lg    : 18px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 28px 70px rgba(13,17,23,0.22), 0 0 0 0.5px rgba(0,0,0,0.08);
+  // box-shadow: 0 28px 70px rgba(13,17,23,0.22), 0 0 0 0.5px rgba(0,0,0,0.08);
   animation: mdIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   position: relative;
   max-height: 88vh;
@@ -585,7 +576,7 @@ $radius-lg    : 18px;
     align-items: center;
     gap: 7px;
     flex-shrink: 0;
-    padding-right: 30px; // space for the ✕ button
+    padding-right: 30px;
   }
 
   &__role-tag {
@@ -806,4 +797,4 @@ $radius-lg    : 18px;
   .adm-row__email { display: none; }
   .adm-table th:nth-child(2),
   .adm-table td:nth-child(2) { display: none; }
-}
+}  

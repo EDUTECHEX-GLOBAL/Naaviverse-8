@@ -1424,3 +1424,170 @@ table {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+
+// ========== BACK BUTTON - Text only, no green hover, small size ==========
+.ph-back-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--ph-font);
+  color: var(--ph-slate-500);
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  svg {
+    width: 12px;
+    height: 12px;
+    stroke: var(--ph-slate-500);
+  }
+
+  span {
+    display: inline-block;
+  }
+
+  &:hover {
+    background: transparent;
+    border: none;
+    color: var(--ph-slate-700);
+    transform: none;
+    
+    svg {
+      stroke: var(--ph-slate-700);
+    }
+  }
+
+  &:active {
+    transform: none;
+  }
+}
+
+// ========== PAGE HEADER - Left aligned ==========
+.ph-page-header-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.ph-page-header-content {
+  h2 {
+    font-family: var(--ph-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ph-slate-800);
+    margin: 0 0 4px 0;
+
+    @media (min-width: 600px) {
+      font-size: 20px;
+    }
+  }
+
+  p {
+    font-size: 12px;
+    color: var(--ph-slate-500);
+    margin: 0;
+  }
+}
+
+// ========== TAB BUTTONS - No hover effect ==========
+.ph-tab-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ph-slate-200);
+}
+
+.ph-tab-btn {
+  padding: 6px 16px;
+  border-radius: var(--ph-r-full);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--ph-font);
+  background: transparent;
+  border: 1px solid var(--ph-slate-200);
+  color: var(--ph-slate-600);
+  cursor: pointer;
+  transition: none;  // NO HOVER TRANSITION
+  white-space: nowrap;
+
+  &.active {
+    background: var(--ph-teal-600);
+    border-color: var(--ph-teal-600);
+    color: white;
+  }
+
+  // NO HOVER EFFECT - explicitly removed
+  // No &:hover rules
+}
+
+// ========== ADD NEW BUTTON ==========
+.ph-add-new-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--ph-r-full);
+  background: var(--ph-teal-600);
+  border: none;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--ph-font);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  &:hover {
+    background: var(--ph-teal-700);
+    transform: translateY(-1px);
+  }
+}
+
+// ========== REFRESH BUTTON ==========
+.ph-refresh-btn {
+  padding: 5px 12px;
+  border-radius: var(--ph-r-full);
+  background: white;
+  border: 1px solid var(--ph-slate-200);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ph-slate-600);
+  cursor: pointer;
+  font-family: var(--ph-font);
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--ph-slate-50);
+    border-color: var(--ph-slate-300);
+  }
+}
+
+// ========== PAGE TOPBAR LAYOUT ==========
+.ph-page-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+// ========== REPLACE ph-page-header with left alignment ==========
+// Remove or override existing .ph-page-header styles
+.ph-page-header {
+  // This class may not be needed anymore - used .ph-page-header-left instead
+}
