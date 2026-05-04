@@ -433,13 +433,13 @@ const AccDashboard = () => {
     // }
   };
 
-  useEffect(() => {
-    axios.get(`https://careers.marketsverse.com/paths/get`).then((res) => {
-      let result = res?.data?.data;
-      // console.log(result, "all paths fetched");
-      setBackupPathList(result);
-    });
-  }, []);
+  // useEffect(() => {
+  //   axios.get(`https://careers.marketsverse.com/paths/get`).then((res) => {
+  //     let result = res?.data?.data;
+  //     // console.log(result, "all paths fetched");
+  //     setBackupPathList(result);
+  //   });
+  // }, []);
 
   const addBackupPath = (backupPathId, selectedStepId) => {
     // console.log(pathSteps, "kjedkjweld");
@@ -1183,20 +1183,20 @@ const AccDashboard = () => {
       });
   };
 
-  const getAppsforUser = () => {
-    setIsfetching(true);
-    axios
-      .get("https://comms.globalxchange.io/gxb/apps/get")
-      .then((response) => {
-        let result = response?.data?.apps;
-        // console.log(result, 'getAppsforUser result');
-        setUserCreatedApps(result);
-        setIsfetching(false);
-      })
-      .catch((error) => {
-        console.log(error, "getAppsforUser error");
-      });
-  };
+  // const getAppsforUser = () => {
+  //   setIsfetching(true);
+  //   axios
+  //     .get("https://comms.globalxchange.io/gxb/apps/get")
+  //     .then((response) => {
+  //       let result = response?.data?.apps;
+  //       // console.log(result, 'getAppsforUser result');
+  //       setUserCreatedApps(result);
+  //       setIsfetching(false);
+  //     })
+  //     .catch((error) => {
+  //       console.log(error, "getAppsforUser error");
+  //     });
+  // };
 
   const handleSavePath = () => {
     console.log("📨 FINAL PATH STEPS SUBMITTED:", pathSteps);
@@ -1215,7 +1215,6 @@ const AccDashboard = () => {
     setLevels();
     setInputValues([]);
     setMultiplier([]);
-    getWithCompPlan();
     setservicesMenu("With CompPlan");
   }
 
@@ -1310,29 +1309,29 @@ const AccDashboard = () => {
     ));
   };
 
-  const getWithCompPlan = () => {
-    setGettingData(true);
-    let obj = {
-      product_creator: userDetails?.email,
-    };
-    axios
-      .post(
-        `https://comms.globalxchange.io/gxb/product/price/with/fees/get`,
-        obj
-      )
-      .then((response) => {
-        let result = response?.data?.products;
-        setWithCompPlanData(result);
-        setGettingData(false);
-      })
-      .catch((error) => {
-        console.log(error, "error in getWithCompPlan");
-      });
-  };
+  // const getWithCompPlan = () => {
+  //   setGettingData(true);
+  //   let obj = {
+  //     product_creator: userDetails?.email,
+  //   };
+  //   axios
+  //     .post(
+  //       `https://comms.globalxchange.io/gxb/product/price/with/fees/get`,
+  //       obj
+  //     )
+  //     .then((response) => {
+  //       let result = response?.data?.products;
+  //       setWithCompPlanData(result);
+  //       setGettingData(false);
+  //     })
+  //     .catch((error) => {
+  //       console.log(error, "error in getWithCompPlan");
+  //     });
+  // };
 
-  useEffect(() => {
-    getWithCompPlan();
-  }, []);
+  // useEffect(() => {
+  //   getWithCompPlan();
+  // }, []);
 
   const getCounsellorEmail = () => {
     const local = JSON.parse(localStorage.getItem("partner"));
@@ -1554,21 +1553,21 @@ useEffect(() => {
     setForexQuote([]);
   };
 
-  // get profile id
-  useEffect(() => {
-    let email = userDetails?.email;
-    if (coinAction?.includes("Add") && addActionStep === 1) {
-      axios
-        .get(`https://comms.globalxchange.io/user/details/get?email=${email}`)
-        .then((res) => {
-          const { data } = res;
-          if (data?.status) {
-            // console.log(data?.user["naavi_profile_id"], "profile id");
-            setProfileId(data?.user["naavi_profile_id"]);
-          }
-        });
-    }
-  }, [coinAction, addActionStep]);
+  // // get profile id
+  // useEffect(() => {
+  //   let email = userDetails?.email;
+  //   if (coinAction?.includes("Add") && addActionStep === 1) {
+  //     axios
+  //       .get(`https://comms.globalxchange.io/user/details/get?email=${email}`)
+  //       .then((res) => {
+  //         const { data } = res;
+  //         if (data?.status) {
+  //           // console.log(data?.user["naavi_profile_id"], "profile id");
+  //           setProfileId(data?.user["naavi_profile_id"]);
+  //         }
+  //       });
+  //   }
+  // }, [coinAction, addActionStep]);
 
   // get payment methods for forex add action
   useEffect(() => {
@@ -1588,28 +1587,28 @@ useEffect(() => {
     }
   }, [coinAction, selectedCoin]);
 
-  const getPathId = () => {
-    axios
-      .get(
-        `https://comms.globalxchange.io/coin/vault/service/payment/paths/get?from_currency=${selectedCoin?.coinSymbol}&to_currency=${selectedCoin?.coinSymbol}&select_type=fund&banker=shorupan@indianotc.com&paymentMethod=${selectedPaymentMethod}`
-      )
-      .then((response) => {
-        let result = response?.data?.paths;
-        // console.log(result, "getPathId result");
-        if (result?.length > 0) {
-          setForexPathId(result[0]?.path_id);
-          // console.log(result[0]?.path_id, "pathId");
-        }
-      })
-      .catch((error) => {
-        console.log(error, "error in getPathId");
-      });
-  };
+  // const getPathId = () => {
+  //   axios
+  //     .get(
+  //       `https://comms.globalxchange.io/coin/vault/service/payment/paths/get?from_currency=${selectedCoin?.coinSymbol}&to_currency=${selectedCoin?.coinSymbol}&select_type=fund&banker=shorupan@indianotc.com&paymentMethod=${selectedPaymentMethod}`
+  //     )
+  //     .then((response) => {
+  //       let result = response?.data?.paths;
+  //       // console.log(result, "getPathId result");
+  //       if (result?.length > 0) {
+  //         setForexPathId(result[0]?.path_id);
+  //         // console.log(result[0]?.path_id, "pathId");
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.log(error, "error in getPathId");
+  //     });
+  // };
 
-  const onBlur = (e) => {
-    const float = parseFloat(e.target.value);
-    setAddForexAmount(float.toFixed(2));
-  };
+  // const onBlur = (e) => {
+  //   const float = parseFloat(e.target.value);
+  //   setAddForexAmount(float.toFixed(2));
+  // };
   const getQuote = () => {
     const partner = getPartner();
     const partnerEmailLocal = partner?.email || partner?.user?.email;

@@ -11,6 +11,7 @@ import { MainContext } from "./Context";
 
 export const VaultPageContext = createContext();
 function VaultPageContextProvider({ children }) {
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
   const { email } = useContext(MainContext);
   const [appSelected, setAppSelected] = useState();
   const [vaultSelected, setVaultSelected] = useState();
@@ -46,6 +47,8 @@ function VaultPageContextProvider({ children }) {
   const [transactionDetailStepsLoading, setTransactionDetailStepsLoading] =
     useState(false);
   const [imagesBtnLoading, setimagesBtnLoading] = useState(false);
+  
+  
 
   //reset pagination vaults
   useEffect(() => {
@@ -53,34 +56,34 @@ function VaultPageContextProvider({ children }) {
     setBondsTxnsPerPage(25);
   }, [assetClass]);
 
-  useEffect(() => {
-    setstatusDropdown(false);
-    setassetDropdown(false);
-    // console.log(trackerType, "trackerType vault context useffect");
-    if (trackerType == "withdraw") {
-      getTracketData(
-        `https://comms.globalxchange.io/coin/vault/service/path/withdraw/txn/get?app_code=naavi&email=${email}`
-      );
-    } else if (assetDropdownSelected && statusDropdownSelected) {
-      getTracketData(
-        `https://comms.globalxchange.io/coin/vault/service/path/deposit/txn/get?email=${email}&status=${statusDropdownSelected}&app_code=naavi&coin=${assetDropdownSelected}`
-      );
-    } else if (assetDropdownSelected) {
-      getTracketData(
-        `https://comms.globalxchange.io/coin/vault/service/path/deposit/txn/get?email=${email}&app_code=naavi&coin=${assetDropdownSelected}`
-      );
-    } else if (statusDropdownSelected) {
-      getTracketData(
-        `https://comms.globalxchange.io/coin/vault/service/path/deposit/txn/get?email=${email}&status=${statusDropdownSelected}&app_code=naavi`
-      );
-    } else {
-      getTracketData(
-        `https://comms.globalxchange.io/coin/vault/service/path/deposit/txn/get?email=${email}&app_code=naavi`
-      );
-    }
+  // useEffect(() => {
+  //   setstatusDropdown(false);
+  //   setassetDropdown(false);
+  //   // console.log(trackerType, "trackerType vault context useffect");
+  //   if (trackerType == "withdraw") {
+  //     getTracketData(
+  //       `${BASE_URL}/coin/vault/service/path/withdraw/txn/get?app_code=naavi&email=${email}`
+  //     );
+  //   } else if (assetDropdownSelected && statusDropdownSelected) {
+  //     getTracketData(
+  //       `${BASE_URL}/coin/vault/service/path/deposit/txn/get?email=${email}&status=${statusDropdownSelected}&app_code=naavi&coin=${assetDropdownSelected}`
+  //     );
+  //   } else if (assetDropdownSelected) {
+  //     getTracketData(
+  //       `${BASE_URL}/coin/vault/service/path/deposit/txn/get?email=${email}&app_code=naavi&coin=${assetDropdownSelected}`
+  //     );
+  //   } else if (statusDropdownSelected) {
+  //     getTracketData(
+  //       `${BASE_URL}/coin/vault/service/path/deposit/txn/get?email=${email}&status=${statusDropdownSelected}&app_code=naavi`
+  //     );
+  //   } else {
+  //     getTracketData(
+  //       `${BASE_URL}/coin/vault/service/path/deposit/txn/get?email=${email}&app_code=naavi`
+  //     );
+  //   }
 
-    assetDropdownDeposit();
-  }, [statusDropdownSelected, assetDropdownSelected, trackerType]);
+  //   assetDropdownDeposit();
+  // }, [statusDropdownSelected, assetDropdownSelected, trackerType]);
 
   function getTracketData(API) {
     settrackerDataLoading(true);
@@ -103,7 +106,7 @@ function VaultPageContextProvider({ children }) {
     // console.log('assetDropdownDeposit');
     axios
       .get(
-        `https://comms.globalxchange.io/coin/vault/service/path/deposit/txn/get?email=${email}&app_code=naavi`
+        `${BASE_URL}/coin/vault/service/path/deposit/txn/get?email=${email}&app_code=naavi`
       )
       .then((response) => {
         // console.log('assetDropdownDeposit', response?.data);
@@ -235,22 +238,22 @@ function VaultPageContextProvider({ children }) {
   //   refetchData();
   // }, [allDirection, allTypes]);
 
-  useEffect(() => {
-    setimagesBtnLoading(true);
-    axios
-      .get(
-        `https://comms.globalxchange.io/coin/vault/service/get/user/file/uploads?id=${trackingImage}`
-      )
-      .then((response) => {
-        // console.log(response?.data?.result, 'responsee from image traking');
-        setTrackingImageResponse(response?.data?.result);
-        setimagesBtnLoading(false);
-      })
-      .catch((error) => {
-        console.log(error, "errorrr from traking");
-        setimagesBtnLoading(false);
-      });
-  }, [trackingImage, trackerImageOpen]);
+  // useEffect(() => {
+  //   setimagesBtnLoading(true);
+  //   axios
+  //     .get(
+  //       `${BASE_URL}/coin/vault/service/get/user/file/uploads?id=${trackingImage}`
+  //     )
+  //     .then((response) => {
+  //       // console.log(response?.data?.result, 'responsee from image traking');
+  //       setTrackingImageResponse(response?.data?.result);
+  //       setimagesBtnLoading(false);
+  //     })
+  //     .catch((error) => {
+  //       console.log(error, "errorrr from traking");
+  //       setimagesBtnLoading(false);
+  //     });
+  // }, [trackingImage, trackerImageOpen]);
 
   useEffect(() => {
     setTransactionDetail("");
@@ -267,7 +270,7 @@ function VaultPageContextProvider({ children }) {
     if (transactionDetailSelected) {
       axios
         .get(
-          `https://comms.globalxchange.io/coin/vault/service/payment/paths/get?path_id=${transactionDetailSelected}`
+          `${BASE_URL}/coin/vault/service/payment/paths/get?path_id=${transactionDetailSelected}`
         )
         .then((response) => {
           let res;
