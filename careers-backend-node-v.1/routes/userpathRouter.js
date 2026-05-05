@@ -15,7 +15,7 @@ const Step     = require("../models/steps.model");
 const UserPath = require("../models/userpaths.model");   // ← THE SOURCE OF TRUTH
 const Purchase = require("../models/purchase.model");    // ← For CRM clients
 const { getUserActivity } = require("../controllers/userActivity.controller");
-const { getUserPath } = require("../controllers/userPaths.controller");
+const { getUserPath, completeStep, failedStep } = require("../controllers/userPaths.controller");
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SELECT A PATH FOR THE USER
@@ -169,76 +169,13 @@ router.get("/selected", async (req, res) => {
 // MARK STEP AS COMPLETED
 // PUT /api/userpaths/completeStep
 // ─────────────────────────────────────────────────────────────────────────────
-router.put("/completeStep", async (req, res) => {
-  try {
-    const { email, pathId, step_id } = req.body;
-
-    if (!email || !pathId || !step_id) {
-      return res.status(400).json({
-        status: false,
-        message: "email, pathId, and step_id are required",
-      });
-    }
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ status: false, message: "User not found" });
-    }
-
-    // Update naavi_users
-    user.completedSteps = user.completedSteps || [];
-    if (!user.completedSteps.includes(step_id)) {
-      user.completedSteps.push(step_id);
-    }
-    await user.save();
-
-    // Also update userPaths collection so dashboard completion% is accurate
-    await UserPath.findOneAndUpdate(
-      { email, status: "active" },
-      { $addToSet: { completedSteps: new mongoose.Types.ObjectId(step_id) } },
-      { new: true }
-    );
-
-    return res.status(200).json({ status: true, message: "Step marked as completed" });
-  } catch (error) {
-    console.error("Complete Step Error:", error);
-    return res.status(500).json({ status: false, message: error.message });
-  }
-});
-
+router.put("/completeStep", completeStep);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MARK STEP AS FAILED
 // PUT /api/userpaths/failedStep
 // ─────────────────────────────────────────────────────────────────────────────
-router.put("/failedStep", async (req, res) => {
-  try {
-    const { email, pathId, step_id } = req.body;
-
-    if (!email || !pathId || !step_id) {
-      return res.status(400).json({
-        status: false,
-        message: "email, pathId, and step_id are required",
-      });
-    }
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ status: false, message: "User not found" });
-    }
-
-    user.failedSteps = user.failedSteps || [];
-    if (!user.failedSteps.includes(step_id)) {
-      user.failedSteps.push(step_id);
-    }
-    await user.save();
-
-    return res.status(200).json({ status: true, message: "Step marked as failed" });
-  } catch (error) {
-    console.error("Failed Step Error:", error);
-    return res.status(500).json({ status: false, message: error.message });
-  }
-});
+router.put("/failedStep", failedStep);
 
 
 // ─────────────────────────────────────────────────────────────────────────────

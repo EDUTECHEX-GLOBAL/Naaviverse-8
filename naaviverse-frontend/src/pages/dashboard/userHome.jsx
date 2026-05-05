@@ -17,11 +17,11 @@ const getUserFromStorage = () => {
 
 const mapTxnType = (t) => {
   const src = t.metadata?.source || "";
-  const typ = t.metadata?.type  || "";
-  if (typ === "welcome_bonus")   return "bonus";
-  if (src === "marketplace")     return "purchase";
-  if (src === "mentor")          return "mentor";
-  if (t.type === "credit")       return "step";
+  const typ = t.metadata?.type || "";
+  if (typ === "welcome_bonus") return "bonus";
+  if (src === "marketplace") return "purchase";
+  if (src === "mentor") return "mentor";
+  if (t.type === "credit") return "step";
   return "purchase";
 };
 
@@ -29,9 +29,9 @@ const parseDuration = (raw) => {
   try {
     const l = JSON.parse(raw);
     const parts = [];
-    if (parseInt(l.years)  > 0) parts.push(`${l.years}y`);
+    if (parseInt(l.years) > 0) parts.push(`${l.years}y`);
     if (parseInt(l.months) > 0) parts.push(`${l.months}m`);
-    if (parseInt(l.days)   > 0) parts.push(`${l.days}d`);
+    if (parseInt(l.days) > 0) parts.push(`${l.days}d`);
     return parts.length > 0 ? parts.join(" ") : null;
   } catch { return null; }
 };
@@ -39,21 +39,21 @@ const parseDuration = (raw) => {
 const Icon = ({ type, size = 16, color = "currentColor" }) => {
   const p = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: color, strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round" };
   switch (type) {
-    case "wallet":   return <svg {...p}><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><circle cx="18" cy="15" r="1" fill={color}/></svg>;
-    case "path":     return <svg {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
-    case "market":   return <svg {...p}><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>;
-    case "mentor":   return <svg {...p}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>;
-    case "bell":     return <svg {...p}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>;
-    case "arrow-r":  return <svg {...p}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>;
-    case "check":    return <svg {...p}><polyline points="20 6 9 17 4 12"/></svg>;
-    case "calendar": return <svg {...p}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
-    case "activity": return <svg {...p}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>;
-    case "explore":  return <svg {...p}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
-    case "credit":   return <svg {...p}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>;
-    case "steps":    return <svg {...p}><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>;
-    case "lock":     return <svg {...p}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>;
-    case "map":      return <svg {...p}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>;
-    default:         return <svg {...p}><circle cx="12" cy="12" r="10"/></svg>;
+    case "wallet": return <svg {...p}><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /><circle cx="18" cy="15" r="1" fill={color} /></svg>;
+    case "path": return <svg {...p}><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>;
+    case "market": return <svg {...p}><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" /></svg>;
+    case "mentor": return <svg {...p}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" /></svg>;
+    case "bell": return <svg {...p}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>;
+    case "arrow-r": return <svg {...p}><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>;
+    case "check": return <svg {...p}><polyline points="20 6 9 17 4 12" /></svg>;
+    case "calendar": return <svg {...p}><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>;
+    case "activity": return <svg {...p}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>;
+    case "explore": return <svg {...p}><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>;
+    case "credit": return <svg {...p}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>;
+    case "steps": return <svg {...p}><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" /></svg>;
+    case "lock": return <svg {...p}><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></svg>;
+    case "map": return <svg {...p}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" /><line x1="9" y1="3" x2="9" y2="18" /><line x1="15" y1="6" x2="15" y2="21" /></svg>;
+    default: return <svg {...p}><circle cx="12" cy="12" r="10" /></svg>;
   }
 };
 
@@ -63,19 +63,18 @@ const Ring = ({ pct, size = 52, stroke = 4, color = "#60a5fa", bg = "rgba(96,165
   const dash = (pct / 100) * circ;
   return (
     <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={bg} strokeWidth={stroke} />
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={stroke}
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={bg} strokeWidth={stroke} />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
         strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
         style={{ transition: "stroke-dasharray 1s ease" }} />
     </svg>
   );
 };
 
-// ── Static data (kept as is) ───────────────────────────────────────────────────────────────
+// ── Static data ────────────────────────────────────────────────────────────────
 const PURCHASES = [
   { id: 1, icon: "🎯", name: "AI for Finance", type: "Path", plan: "Premium", credits: 4, date: "Apr 2, 2026", status: "active" },
 ];
-
 
 const MENTORS = [
   { id: 1, name: "Dr. Priya Sharma", role: "CS Career Coach", initials: "PS", color: "#3b82f6", date: "Apr 10, 2026", time: "4:00 PM IST", status: "upcoming", rating: 4.9, sessions: 3, speciality: "US CS applications" },
@@ -88,13 +87,12 @@ const NOTIFS = [
   { id: 3, text: "Step 3: Macroeconomics unlocked", time: "2d ago", read: true, type: "success" },
 ];
 
-// ── TABS config (MyPath removed - will be separate page) ─────────────────────────────────
 const TABS = [
-  { key: "wallet",    label: "My Wallet",     icon: "wallet" },
-  { key: "purchases", label: "Purchases",     icon: "market" },
-  { key: "mypath",    label: "My Path",       icon: "steps"  },
-  { key: "paths",     label: "Explore Paths", icon: "map"    },
-  { key: "mentors",   label: "Mentors",       icon: "mentor" },
+  { key: "wallet", label: "My Wallet", icon: "wallet" },
+  { key: "purchases", label: "Purchases", icon: "market" },
+  { key: "mypath", label: "My Path", icon: "steps" },
+  { key: "paths", label: "Explore Paths", icon: "map" },
+  { key: "mentors", label: "Mentors", icon: "mentor" },
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -105,14 +103,16 @@ export default function UserHome() {
   const firstName = rawName.split(" ")[0] || (user?.email || "there").split("@")[0] || "Aparna";
 
   const [activeTab, setActiveTab] = useState("wallet");
-  const [showNotif, setShowNotif]  = useState(false);
+  const [showNotif, setShowNotif] = useState(false);
   const [notifications, setNotifications] = useState(NOTIFS);
-  const [credits, setCredits]   = useState(null);
+  const [credits, setCredits] = useState(null);
   const [activity, setActivity] = useState([]);
   const [walletLoading, setWalletLoading] = useState(true);
   const [myPath, setMyPath] = useState(null);
   const [explorePaths, setExplorePaths] = useState([]);
   const [pathLoading, setPathLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0); // incremented on step completion to re-fetch
+
   const notifRef = useRef(null);
   const unread = notifications.filter(n => !n.read).length;
   const creditPct = credits
@@ -120,13 +120,24 @@ export default function UserHome() {
     : 0;
   const today = new Date().toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
 
+  // ── Close notif panel on outside click ──────────────────────────────────────
   useEffect(() => {
     const h = (e) => { if (notifRef.current && !notifRef.current.contains(e.target)) setShowNotif(false); };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
-  // Fetch wallet data
+  // ✅ FIX 2 — Listen for CustomEvent fired by CurrentStep on step completion.
+  // We use CustomEvent ("naavi:step-completed") instead of the native "storage" event
+  // because the native storage event is suppressed in the SAME tab by all browsers.
+  // CustomEvent fires instantly and reliably within the same tab.
+  useEffect(() => {
+    const handleStepCompleted = () => setRefreshKey(k => k + 1);
+    window.addEventListener("naavi:step-completed", handleStepCompleted);
+    return () => window.removeEventListener("naavi:step-completed", handleStepCompleted);
+  }, []);
+
+  // ── Fetch wallet data ────────────────────────────────────────────────────────
   useEffect(() => {
     if (!user?.email) return;
 
@@ -163,36 +174,28 @@ export default function UserHome() {
           const dateStr = expiresAt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
           if (isExpired) {
             const daysAgo = Math.floor((now - expiresAt) / (1000 * 60 * 60 * 24));
-            expiryLabel = daysAgo === 0
-              ? `Expired today`
-              : daysAgo === 1
-              ? `Expired yesterday`
-              : `Expired ${daysAgo}d ago`;
+            expiryLabel = daysAgo === 0 ? "Expired today" : daysAgo === 1 ? "Expired yesterday" : `Expired ${daysAgo}d ago`;
           } else {
-            expiryLabel = daysLeft <= 1
-              ? `Expires today`
-              : daysLeft <= 7
-              ? `Expires in ${daysLeft} days`
-              : `Expires ${dateStr}`;
+            expiryLabel = daysLeft <= 1 ? "Expires today" : daysLeft <= 7 ? `Expires in ${daysLeft} days` : `Expires ${dateStr}`;
           }
         }
 
         setCredits({
-          available:   bal.balance,
-          used:        txns.filter(t => t.type === "debit").reduce((s, t) => s + t.amount, 0),
-          total:       txns.filter(t => t.type === "credit").reduce((s, t) => s + t.amount, 0),
-          expiry:      expiryLabel,
-          expiresAt:   expiresAt,
-          daysLeft:    isExpired ? 0 : daysLeft,
-          isExpired:   isExpired,
-          plan:        "Premium",
+          available: bal.balance,
+          used: txns.filter(t => t.type === "debit").reduce((s, t) => s + t.amount, 0),
+          total: txns.filter(t => t.type === "credit").reduce((s, t) => s + t.amount, 0),
+          expiry: expiryLabel,
+          expiresAt,
+          daysLeft: isExpired ? 0 : daysLeft,
+          isExpired,
+          plan: "Premium",
         });
 
         const mapped = txns.map(t => ({
-          id:    t._id,
+          id: t._id,
           action: t.metadata?.description || (t.type === "credit" ? "Credits added" : "Credits used"),
-          time:  new Date(t.timestamp).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
-          type:  mapTxnType(t),
+          time: new Date(t.timestamp).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
+          type: mapTxnType(t),
           delta: t.type === "credit" ? +t.amount : -t.amount,
         }));
 
@@ -207,143 +210,134 @@ export default function UserHome() {
     fetchWallet();
   }, [user?.email]);
 
-useEffect(() => {
-  if (!user?.email) return;
+  // ── Fetch path data ──────────────────────────────────────────────────────────
+  // refreshKey in the dependency array causes this to re-run whenever a step is completed.
+  useEffect(() => {
+    if (!user?.email) return;
 
-  const fetchMyPath = async () => {
-    try {
-      setPathLoading(true);
+    const fetchMyPath = async () => {
+      try {
+        setPathLoading(true);
 
-      const userPathRes = await axios.get(`${BASE_URL}/api/userpaths`, {
-        params: { email: user.email, status: "active" }
-      });
+        const userPathRes = await axios.get(`${BASE_URL}/api/userpaths`, {
+          params: { email: user.email, status: "active" }
+        });
 
-     const userPaths = userPathRes.data?.data || [];
-if (!userPaths.length) { setMyPath(null); setPathLoading(false); return; }
-const enrolledPathIds = new Set(
-  userPaths.map(p => p.pathId?.toString())
-);
-// prefer the path the user is currently viewing/working on
-const selectedPathId = localStorage.getItem("selectedPathId");
+        const userPaths = userPathRes.data?.data || [];
+        if (!userPaths.length) { setMyPath(null); setPathLoading(false); return; }
 
-let activePath;
-if (selectedPathId) {
-  // find the enrolled doc matching what user is currently working on
-  activePath = userPaths.find(p =>
-    p.pathId?.toString() === selectedPathId ||
-    p.PathDetails?.[0]?._id?.toString() === selectedPathId
-  );
-}
-// fallback to most recently enrolled
-if (!activePath) {
-  activePath = userPaths.sort((a, b) =>
-    new Date(b.createdAt) - new Date(a.createdAt)
-  )[0];
-}
-// fetch raw userpath doc to get completedSteps (aggregate may drop it)
-let completedStepIds = [];
-let currentStep = null;
-let enrolledOn = "—";
+        const enrolledPathIds = new Set(userPaths.map(p => p.pathId?.toString()));
+        const selectedPathId = localStorage.getItem("selectedPathId");
 
-try {
-  const rawRes = await axios.get(`${BASE_URL}/api/userpaths`, {
-    params: { email: user.email, status: "active" }
-  });
-  // find the matching raw doc — check if completedSteps exists directly
-  const rawDoc = rawRes.data?.data?.find(p =>
-    p.pathId?.toString() === pathId
-  );
-  console.log("rawDoc:", rawDoc?.completedSteps, rawDoc?.currentStep);
-  completedStepIds = rawDoc?.completedSteps?.map(id => id.toString()) || [];
-  currentStep = rawDoc?.currentStep || null;
-  enrolledOn = rawDoc?.createdAt
-    ? new Date(rawDoc.createdAt).toLocaleDateString("en-IN", {
-        day: "numeric", month: "short", year: "numeric"
-      })
-    : "—";
-} catch (e) {
-  console.error("rawDoc fetch failed", e);
-}
+        // Prefer the path the user is currently working on
+        let activePath = selectedPathId
+          ? userPaths.find(p =>
+            p.pathId?.toString() === selectedPathId ||
+            p.PathDetails?.[0]?._id?.toString() === selectedPathId
+          )
+          : null;
 
+        // Fallback to most recently enrolled
+        if (!activePath) {
+          activePath = [...userPaths].sort((a, b) =>
+            new Date(b.createdAt) - new Date(a.createdAt)
+          )[0];
+        }
 
-const pathId = activePath?.pathId?.toString() ||
-  activePath?.PathDetails?.[0]?._id?.toString();
-        activePath?.PathDetails?.[0]?._id?.toString();
+        const pathId = activePath?.pathId?.toString() ||
+          activePath?.PathDetails?.[0]?._id?.toString();
 
-      if (!pathId) { setMyPath(null); setPathLoading(false); return; }
+        if (!pathId) { setMyPath(null); setPathLoading(false); return; }
 
-      const stepsRes = await axios.get(`${BASE_URL}/api/userpaths/steps`, {
-        params: { pathId }
-      });
+        // ✅ FIX 3 — Make a FRESH API call for completedSteps instead of reading
+        // from the already-fetched userPaths array which may be stale.
+        // This guarantees we get the latest completedSteps after a step completion.
+        const freshPathRes = await axios.get(`${BASE_URL}/api/userpaths`, {
+          params: { email: user.email, status: "active", _t: Date.now() }
+        });
+        const freshPaths = freshPathRes.data?.data || [];
+        const rawDoc = freshPaths.find(p => p.pathId?.toString() === pathId);
 
-      const pathData = stepsRes.data?.data;
+        console.log("✅ rawDoc completedSteps:", rawDoc?.completedSteps);
+        console.log("✅ rawDoc currentStep:", rawDoc?.currentStep);
 
-      const steps = (pathData?.steps || [])
-        .sort((a, b) => (a.step_order || 0) - (b.step_order || 0))
-        .map(s => ({
-          id:       s._id,
-          title:    s.macro_name || s.name || "Step",
-          desc:     s.macro_description || s.description || "",
-          duration: s.macro_length ? parseDuration(s.macro_length) : null,
-          status:   completedStepIds.includes(s._id.toString())
-                      ? "done"
-                      : currentStep === s._id.toString()
-                      ? "active"
-                      : "locked",
-        }));
+        const completedStepIds = (rawDoc?.completedSteps || []).map(id => id.toString());
+        const currentStep = rawDoc?.currentStep?.toString() || null;
 
-      const doneCount = steps.filter(s => s.status === "done").length;
-      const progress  = steps.length ? Math.round((doneCount / steps.length) * 100) : 0;
+        const stepsRes = await axios.get(`${BASE_URL}/api/userpaths/steps`, {
+          params: { pathId }
+        });
 
-      setMyPath({
-        name:       pathData?.name || pathData?.nameOfPath || "—",
-        goal:       pathData?.description || "",
-        progress,
-        steps,
-        doneCount,
-        totalSteps: steps.length,
-        enrolledOn: activePath?.createdAt
-          ? new Date(activePath.createdAt).toLocaleDateString("en-IN", {
+        const pathData = stepsRes.data?.data;
+
+        const steps = (pathData?.steps || [])
+          .sort((a, b) => (a.step_order || 0) - (b.step_order || 0))
+          .map(s => ({
+            id: s._id,
+            title: s.macro_name || s.name || "Step",
+            desc: s.macro_description || s.description || "",
+            duration: s.macro_length ? parseDuration(s.macro_length) : null,
+            status: completedStepIds.includes(s._id.toString())
+              ? "done"
+              : currentStep === s._id.toString()
+                ? "active"
+                : "locked",
+          }));
+
+        const doneCount = steps.filter(s => s.status === "done").length;
+        const progress = steps.length ? Math.round((doneCount / steps.length) * 100) : 0;
+
+        setMyPath({
+          name: pathData?.name || pathData?.nameOfPath || "—",
+          goal: pathData?.description || "",
+          progress,
+          steps,
+          doneCount,
+          totalSteps: steps.length,
+          enrolledOn: activePath?.createdAt
+            ? new Date(activePath.createdAt).toLocaleDateString("en-IN", {
               day: "numeric", month: "short", year: "numeric"
             })
-          : "—",
-      });
+            : "—",
+        });
 
-      // fetch explore paths
-    try {
-      const pathsRes = await axios.get(`${BASE_URL}/api/paths/active`);
-      const allPaths = pathsRes.data?.data || [];
-      const explored = allPaths.map(p => ({
-        id:       p._id,
-        icon:     p.country ? p.country.slice(0, 2).toUpperCase() : "🌍",
-        name:     p.nameOfPath || p.name,
-        desc:     p.description || "",
-        steps:    p.total_steps || p.the_ids?.length || 0,
-        match:    Math.floor(Math.random() * 20) + 75,
-        enrolled: enrolledPathIds.has(p._id.toString()),
-      }));
-      setExplorePaths(explored);
-    } catch (e) {
-      console.error("Explore paths fetch failed", e);
-    }
-    } catch (err) {
-      console.error("MyPath fetch failed:", err);
-      setMyPath(null);
-    } finally {
-      setPathLoading(false);
-    }
-  };
+        // Fetch explore paths
+        try {
+          const pathsRes = await axios.get(`${BASE_URL}/api/paths/active`);
+          const allPaths = pathsRes.data?.data || [];
+          setExplorePaths(allPaths.map(p => ({
+            id: p._id,
+            icon: p.country ? p.country.slice(0, 2).toUpperCase() : "🌍",
+            name: p.nameOfPath || p.name,
+            desc: p.description || "",
+            steps: p.total_steps || p.the_ids?.length || 0,
+            match: Math.floor(Math.random() * 20) + 75,
+            enrolled: enrolledPathIds.has(p._id.toString()),
+          })));
+        } catch (e) {
+          console.error("Explore paths fetch failed", e);
+        }
 
-  fetchMyPath();
-}, [user?.email]);
+      } catch (err) {
+        console.error("MyPath fetch failed:", err);
+        setMyPath(null);
+      } finally {
+        setPathLoading(false);
+      }
+    };
 
+    fetchMyPath();
+  }, [user?.email, refreshKey]); // refreshKey re-runs this on every step completion
+
+  // ── Helpers ─────────────────────────────────────────────────────────────────
   const markRead = (id) => setNotifications(ns => ns.map(n => n.id === id ? { ...n, read: true } : n));
-  const markAll  = () => setNotifications(ns => ns.map(n => ({ ...n, read: true })));
+  const markAll = () => setNotifications(ns => ns.map(n => ({ ...n, read: true })));
 
+  // ── Panels ──────────────────────────────────────────────────────────────────
   const WalletPanel = () => {
     const bonusTxn = activity.find(a => a.type === "bonus");
     const totalCredits = activity.filter(a => a.delta > 0).reduce((s, a) => s + a.delta, 0);
-    const totalDebits  = activity.filter(a => a.delta < 0).reduce((s, a) => s + Math.abs(a.delta), 0);
+    const totalDebits = activity.filter(a => a.delta < 0).reduce((s, a) => s + Math.abs(a.delta), 0);
 
     return (
       <div className="uh-panel">
@@ -370,11 +364,7 @@ const pathId = activePath?.pathId?.toString() ||
               <div className={`uh-ws-card warn ${credits?.isExpired ? "expired" : ""}`}>
                 <span className="uh-ws-label">Expires</span>
                 <span className={`uh-ws-num ${credits?.isExpired ? "red" : "amber"}`}>
-                  {credits?.isExpired
-                    ? "Expired"
-                    : credits?.daysLeft
-                    ? `${credits.daysLeft}d`
-                    : "—"}
+                  {credits?.isExpired ? "Expired" : credits?.daysLeft ? `${credits.daysLeft}d` : "—"}
                 </span>
                 <span className="uh-ws-sub">{credits?.expiry ?? "—"}</span>
               </div>
@@ -400,9 +390,7 @@ const pathId = activePath?.pathId?.toString() ||
                   <div className="uh-analytics-right">
                     {(credits?.daysLeft ?? 0) <= 0
                       ? <span className="uh-analytics-tag expired">Expired</span>
-                      : <span className="uh-analytics-tag active">
-                          {credits?.daysLeft}d left
-                        </span>
+                      : <span className="uh-analytics-tag active">{credits?.daysLeft}d left</span>
                     }
                     <span className="uh-analytics-cr">+50</span>
                   </div>
@@ -427,46 +415,23 @@ const pathId = activePath?.pathId?.toString() ||
               <div className="uh-usage-summary">
                 <div className="uh-usage-row">
                   <span>Credits Earned</span>
-                  <div className="uh-usage-bar-wrap">
-                    <div className="uh-usage-bar green" style={{ width: "100%" }} />
-                  </div>
+                  <div className="uh-usage-bar-wrap"><div className="uh-usage-bar green" style={{ width: "100%" }} /></div>
                   <span className="uh-usage-val green">+{totalCredits}</span>
                 </div>
                 <div className="uh-usage-row">
                   <span>Credits Spent</span>
                   <div className="uh-usage-bar-wrap">
-                    <div className="uh-usage-bar red"
-                      style={{ width: `${totalCredits ? (totalDebits / totalCredits) * 100 : 0}%` }} />
+                    <div className="uh-usage-bar red" style={{ width: `${totalCredits ? (totalDebits / totalCredits) * 100 : 0}%` }} />
                   </div>
                   <span className="uh-usage-val red">-{totalDebits}</span>
                 </div>
                 <div className="uh-usage-row">
                   <span>Remaining</span>
-                  <div className="uh-usage-bar-wrap">
-                    <div className="uh-usage-bar blue" style={{ width: `${creditPct}%` }} />
-                  </div>
+                  <div className="uh-usage-bar-wrap"><div className="uh-usage-bar blue" style={{ width: `${creditPct}%` }} /></div>
                   <span className="uh-usage-val blue">{credits?.available}</span>
                 </div>
               </div>
             </div>
-
-            {/* <div className="uh-section-title" style={{ marginTop: 18 }}>Transaction History</div>
-            <div className="uh-txn-list">
-              {activity.map(a => (
-                <div key={a.id} className="uh-txn-row">
-                  <div className={`uh-txn-dot t-${a.type}`} />
-                  <div className="uh-txn-body">
-                    <span className="uh-txn-label">{a.action}</span>
-                    <span className="uh-txn-time">{a.time}</span>
-                  </div>
-                  {a.delta !== null && (
-                    <span className={`uh-txn-delta ${a.delta > 0 ? "pos" : "neg"}`}>
-                      {a.delta > 0 ? "+" : ""}{a.delta} cr
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div> */}
           </>
         )}
       </div>
@@ -499,46 +464,43 @@ const pathId = activePath?.pathId?.toString() ||
     </div>
   );
 
- const ExplorePanel = () => (
-  <div className="uh-panel">
-    <div className="uh-section-title">Paths You've Explored</div>
-    {explorePaths.length === 0 ? (
-      <div className="uh-loading">Loading paths…</div>
-    ) : (
-      <div className="uh-explore-list">
-        {explorePaths.map(p => (
-          <div key={p.id} className={`uh-explore-row ${p.enrolled ? "enrolled" : ""}`}>
-            <div className="uh-explore-icon">{p.icon}</div>
-            <div className="uh-explore-info">
-              <span className="uh-explore-name">{p.name}</span>
-              <span className="uh-explore-desc">{p.desc}</span>
-              <span className="uh-explore-steps">{p.steps} steps</span>
-            </div>
-            <div className="uh-explore-right">
-              <div className="uh-match-ring">
-                <Ring
-                  pct={p.match}
-                  size={40}
-                  stroke={3}
-                  color={p.match >= 85 ? "#22c55e" : p.match >= 75 ? "#3b82f6" : "#94a3b8"}
-                  bg="rgba(148,163,184,.15)"
-                />
-                <span className="uh-match-pct">{p.match}%</span>
+  const ExplorePanel = () => (
+    <div className="uh-panel">
+      <div className="uh-section-title">Paths You've Explored</div>
+      {explorePaths.length === 0 ? (
+        <div className="uh-loading">Loading paths…</div>
+      ) : (
+        <div className="uh-explore-list">
+          {explorePaths.map(p => (
+            <div key={p.id} className={`uh-explore-row ${p.enrolled ? "enrolled" : ""}`}>
+              <div className="uh-explore-icon">{p.icon}</div>
+              <div className="uh-explore-info">
+                <span className="uh-explore-name">{p.name}</span>
+                <span className="uh-explore-desc">{p.desc}</span>
+                <span className="uh-explore-steps">{p.steps} steps</span>
               </div>
-              {p.enrolled
-                ? <span className="uh-enr-tag">Enrolled</span>
-                : <button
-                    className="uh-explore-btn"
-                    onClick={() => navigate("/dashboard/users/paths")}
-                  >Explore</button>
-              }
+              <div className="uh-explore-right">
+                <div className="uh-match-ring">
+                  <Ring
+                    pct={p.match}
+                    size={40}
+                    stroke={3}
+                    color={p.match >= 85 ? "#22c55e" : p.match >= 75 ? "#3b82f6" : "#94a3b8"}
+                    bg="rgba(148,163,184,.15)"
+                  />
+                  <span className="uh-match-pct">{p.match}%</span>
+                </div>
+                {p.enrolled
+                  ? <span className="uh-enr-tag">Enrolled</span>
+                  : <button className="uh-explore-btn" onClick={() => navigate("/dashboard/users/paths")}>Explore</button>
+                }
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
-);
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   const MentorsPanel = () => (
     <div className="uh-panel">
@@ -572,95 +534,91 @@ const pathId = activePath?.pathId?.toString() ||
     </div>
   );
 
-
-const MyPathPanel = () => {
-  if (pathLoading) return <div className="uh-loading">Loading path…</div>;
- if (!myPath) return (
-  <div className="uh-panel">
-    <div className="uh-no-path">
-      <div className="uh-no-path-icon">🗺️</div>
-      <div className="uh-no-path-title">No Path Selected Yet</div>
-      <p className="uh-no-path-sub">Choose a learning path to start your Naavi journey.</p>
-      <button
-        className="uh-no-path-btn"
-        onClick={() => navigate("/dashboard/users/paths")}
-      >
-        Go to Paths →
-      </button>
-    </div>
-  </div>
-);
-
-  return (
-    <div className="uh-panel">
-      <div className="uh-path-header">
-        <div className="uh-path-meta">
-          <span className="uh-path-tag">Current Path</span>
-          <h3 className="uh-path-name">{myPath.name}</h3>
-          <p className="uh-path-goal">{myPath.goal}</p>
-        </div>
-        <div className="uh-path-stats">
-          <div className="uh-ps-item">
-            <span>{myPath.doneCount}/{myPath.totalSteps}</span>
-            <span>Steps</span>
-          </div>
-          <div className="uh-ps-item">
-            <span>{myPath.progress}%</span>
-            <span>Progress</span>
-          </div>
-          <div className="uh-ps-item">
-            <span>{myPath.enrolledOn}</span>
-            <span>Enrolled</span>
-          </div>
+  const MyPathPanel = () => {
+    if (pathLoading) return <div className="uh-loading">Loading path…</div>;
+    if (!myPath) return (
+      <div className="uh-panel">
+        <div className="uh-no-path">
+          <div className="uh-no-path-icon">🗺️</div>
+          <div className="uh-no-path-title">No Path Selected Yet</div>
+          <p className="uh-no-path-sub">Choose a learning path to start your Naavi journey.</p>
+          <button className="uh-no-path-btn" onClick={() => navigate("/dashboard/users/paths")}>
+            Go to Paths →
+          </button>
         </div>
       </div>
+    );
 
-      <div className="uh-path-bar-wrap">
-        <div className="uh-path-bar-track">
-          <div className="uh-path-bar-fill" style={{ width: `${myPath.progress}%` }} />
-        </div>
-        <span>{myPath.progress}% complete</span>
-      </div>
-
-      <div className="uh-section-title" style={{ marginTop: 20 }}>Steps</div>
-      <div className="uh-steps-list">
-        {myPath.steps.map((s, i) => (
-          <div key={s.id} className={`uh-step-row s-${s.status}`}>
-            <div className="uh-step-num">
-              {s.status === "done"
-                ? <Icon type="check" size={12} color="#22c55e" />
-                : s.status === "active"
-                ? <span>{i + 1}</span>
-                : <Icon type="lock" size={11} color="#94a3b8" />}
+    return (
+      <div className="uh-panel">
+        <div className="uh-path-header">
+          <div className="uh-path-meta">
+            <span className="uh-path-tag">Current Path</span>
+            <h3 className="uh-path-name">{myPath.name}</h3>
+            <p className="uh-path-goal">{myPath.goal}</p>
+          </div>
+          <div className="uh-path-stats">
+            <div className="uh-ps-item">
+              <span>{myPath.doneCount}/{myPath.totalSteps}</span>
+              <span>Steps</span>
             </div>
-            <div className="uh-step-info">
-              <span className="uh-step-title">{s.title}</span>
-              <span className="uh-step-desc">{s.desc}</span>
+            <div className="uh-ps-item">
+              <span>{myPath.progress}%</span>
+              <span>Progress</span>
             </div>
-            {s.duration && <span className="uh-step-dur">{s.duration}</span>}
-            <span className={`uh-step-badge sb-${s.status}`}>
-              {s.status === "done" ? "Done" : s.status === "active" ? "In Progress" : "Locked"}
-            </span>
+            <div className="uh-ps-item">
+              <span>{myPath.enrolledOn}</span>
+              <span>Enrolled</span>
+            </div>
           </div>
-        ))}
+        </div>
+
+        <div className="uh-path-bar-wrap">
+          <div className="uh-path-bar-track">
+            <div className="uh-path-bar-fill" style={{ width: `${myPath.progress}%` }} />
+          </div>
+          <span>{myPath.progress}% complete</span>
+        </div>
+
+        <div className="uh-section-title" style={{ marginTop: 20 }}>Steps</div>
+        <div className="uh-steps-list">
+          {myPath.steps.map((s, i) => (
+            <div key={s.id} className={`uh-step-row s-${s.status}`}>
+              <div className="uh-step-num">
+                {s.status === "done"
+                  ? <Icon type="check" size={12} color="#22c55e" />
+                  : s.status === "active"
+                    ? <span>{i + 1}</span>
+                    : <Icon type="lock" size={11} color="#94a3b8" />}
+              </div>
+              <div className="uh-step-info">
+                <span className="uh-step-title">{s.title}</span>
+                <span className="uh-step-desc">{s.desc}</span>
+              </div>
+              {s.duration && <span className="uh-step-dur">{s.duration}</span>}
+              <span className={`uh-step-badge sb-${s.status}`}>
+                {s.status === "done" ? "Done" : s.status === "active" ? "In Progress" : "Locked"}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
-const panels = { 
-  wallet:    <WalletPanel />, 
-  purchases: <PurchasesPanel />,
-  mypath:    <MyPathPanel />,
-  paths:     <ExplorePanel />, 
-  mentors:   <MentorsPanel /> 
-};
+  const panels = {
+    wallet: <WalletPanel />,
+    purchases: <PurchasesPanel />,
+    mypath: <MyPathPanel />,
+    paths: <ExplorePanel />,
+    mentors: <MentorsPanel />,
+  };
 
-  // ── RENDER ──────────────────────────────────────────────────────────
+  // ── RENDER ───────────────────────────────────────────────────────────────────
   return (
     <div className="uh-root">
 
-      {/* ── HEADER ────────────────────────────────────────────────── */}
+      {/* ── HEADER ──────────────────────────────────────────────────────────── */}
       <header className="uh-header">
         <div className="uh-header-left">
           <span className="uh-journey-text">Your Naavi Journey</span>
@@ -703,7 +661,7 @@ const panels = {
         </div>
       </header>
 
-      {/* ── TOP STRIP — wallet card + quick tiles ─────────────────── */}
+      {/* ── TOP STRIP ───────────────────────────────────────────────────────── */}
       <div className="uh-top-strip">
         <div className="uh-credits-hero" onClick={() => setActiveTab("wallet")}>
           <div className="uh-ch-left">
@@ -735,10 +693,10 @@ const panels = {
         </div>
       </div>
 
-      {/* ── MAIN GRID — activity + detail panel ───────────────────── */}
+      {/* ── MAIN GRID ───────────────────────────────────────────────────────── */}
       <div className="uh-main-grid">
 
-        {/* Recent Activity — narrow */}
+        {/* Recent Activity */}
         <div className="uh-card uh-card-activity">
           <div className="uh-card-head">
             <div className="uh-ch-icon-wrap blue"><Icon type="activity" size={13} color="#3b82f6" /></div>
@@ -763,7 +721,7 @@ const panels = {
           <button className="uh-card-cta" onClick={() => setActiveTab("wallet")}>View all →</button>
         </div>
 
-        {/* Detail panel — tabs */}
+        {/* Detail panel */}
         <div className="uh-card uh-card-detail">
           <div className="uh-tab-bar">
             {TABS.map(t => (
@@ -780,18 +738,16 @@ const panels = {
 
       </div>
 
-      {/* ── BOTTOM STRIP ──────────────────────────────────────────── */}
+      {/* ── BOTTOM STRIP ────────────────────────────────────────────────────── */}
       <div className="uh-bottom-strip">
         <div className="uh-bs-item" onClick={() => navigate("/dashboard/users/MyPath")}>
-          <span className="uh-bs-num">
-            {myPath ? `${myPath.doneCount}/${myPath.totalSteps}` : "—"}
-          </span>
+          <span className="uh-bs-num">{myPath ? `${myPath.doneCount}/${myPath.totalSteps}` : "—"}</span>
           <span className="uh-bs-label">Steps done</span>
           <Icon type="arrow-r" size={11} color="#3b82f6" />
         </div>
         <div className="uh-bs-div" />
         <div className="uh-bs-item" onClick={() => setActiveTab("paths")}>
-         <span className="uh-bs-num">{explorePaths.length}</span>
+          <span className="uh-bs-num">{explorePaths.length}</span>
           <span className="uh-bs-label">Paths explored</span>
           <Icon type="arrow-r" size={11} color="#3b82f6" />
         </div>

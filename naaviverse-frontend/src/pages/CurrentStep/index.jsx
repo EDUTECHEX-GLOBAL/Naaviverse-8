@@ -185,7 +185,6 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, initialTier = null
 
         <h2 className="sub-gate__title">Choose Your Naavi Plan</h2>
 
-        {/* ── Billing toggle ──────────────────────────────────── */}
         <div className="sub-billing-toggle">
           <button
             className={`sbt-btn ${selectedBilling === "monthly" ? "sbt-btn--active" : ""}`}
@@ -201,7 +200,6 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, initialTier = null
           </button>
         </div>
 
-        {/* ── Plan cards ──────────────────────────────────────── */}
         <div className="sub-plans-grid">
           {["standard", "pro", "proplus"].map((p) => {
             const pm = PLAN_META[p];
@@ -214,38 +212,26 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, initialTier = null
                 className={`sub-plan-card sub-plan-card--${p} ${active ? "sub-plan-card--active" : ""}`}
                 onClick={() => setSelectedTier(p)}
               >
-                {/* Badge */}
                 {pm.tag && (
                   <div className="spc-tag" style={{ background: pc.badge }}>
                     {pm.tag}
                   </div>
                 )}
-
-                {/* Plan name */}
                 <div className="spc-header">
                   <span className="spc-label">{pm.label}</span>
                 </div>
-
-                {/* Price */}
                 <div className="spc-price">
                   {getPrice(p)}
                   <span className="spc-period">/{selectedBilling === "annual" ? "yr" : "mo"}</span>
                 </div>
-
-                {/* "2 months free" shown only on annual */}
                 <div className="spc-save">
                   {selectedBilling === "annual" ? "2 months free" : "\u00A0"}
                 </div>
-
-                {/* Credits badge */}
                 <div className="spc-credits">
                   {pm.credits} Credits / Month
                 </div>
-
-                {/* Subscribe button */}
                 <button
                   className="spc-subscribe-btn"
-
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelectedTier(p);
@@ -255,25 +241,11 @@ const SubscriptionGate = ({ onBack, onSubscribe, subscribing, initialTier = null
                 >
                   {subscribing && selectedTier === p ? "Activating…" : "Subscribe Now"}
                 </button>
-
-                {/* Divider */}
                 <hr className="spc-divider" />
-
-                {/* Features */}
                 <ul className="spc-feats">
                   {PLAN_FEATS[p].map((f) => (
                     <li key={f}>
-                      // For "Macro View — Always Free" → Eye icon
-<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-
-// For "Micro View" → Layers icon  
-<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-
-// For "Nano View / Sessions" → Users icon
-<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-
-// For "Cancel Anytime / Support" → Shield icon
-<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
                       {f}
                     </li>
                   ))}
@@ -405,8 +377,8 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     userDetails,
     onSuccess: ({ tier, billing, actualTier, basePlanTier }) => {
       localStorage.setItem(SUB_KEY, "true");
-      localStorage.setItem(SUB_TIER_KEY, actualTier);     // "micro" or "nano" ✅
-      localStorage.setItem(SUB_PLANTIER_KEY, basePlanTier); // "standard"|"pro"|"proplus" ✅
+      localStorage.setItem(SUB_TIER_KEY, actualTier);
+      localStorage.setItem(SUB_PLANTIER_KEY, basePlanTier);
       setSubscribed(true);
       setSubTier(actualTier);
       setSubPlanTier(basePlanTier);
@@ -455,6 +427,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   useEffect(() => {
     verifySubscription();
   }, [userEmail]);
+
   /* ── Fetch wallet balance + credit unlocks ───────────────────── */
   useEffect(() => {
     const stepId = localStorage.getItem("selectedStepId");
@@ -566,18 +539,64 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     } catch { return null; }
   };
 
+  /* ── Complete step ───────────────────────────────────────────── */
   const completeStep = async (stepid) => {
     const pathId = selectedPathId || localStorage.getItem("selectedPathId");
     const email = userDetails?.email || userDetails?.user?.email;
-    try { await axios.put(`${BASE_URL}/api/userpaths/completeStep`, { email, pathId, step_id: stepid }); } catch { }
-    setPopupContent("success"); setPopupDetails("yes");
+
+    console.log("🔍 completeStep called with:", { email, pathId, step_id: stepid });
+
+    try {
+      const res = await axios.put(`${BASE_URL}/api/userpaths/completeStep`, {
+        email,
+        pathId,
+        step_id: stepid,
+      });
+
+      console.log("✅ completeStep response:", res.data);
+
+      if (res.data?.status) {
+        // ✅ FIX 1 — Use CustomEvent instead of StorageEvent.
+        // StorageEvent only fires in OTHER tabs, not the same tab.
+        // CustomEvent fires immediately and reliably in the same tab.
+        // ADD a small delay so the DB write commits before Home re-fetches
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent("naavi:step-completed"));
+        }, 800);
+
+        setPopupContent("success");
+        setPopupDetails("yes");
+      } else {
+        console.error("❌ completeStep failed:", res.data?.message);
+        alert("Progress save failed: " + res.data?.message);
+      }
+    } catch (err) {
+      console.error("❌ completeStep error:", err);
+      alert("Network error saving progress");
+    }
   };
 
+  /* ── Fail step ───────────────────────────────────────────────── */
   const failStep = async (stepid) => {
     const pathId = selectedPathId || localStorage.getItem("selectedPathId");
     const email = userDetails?.email || userDetails?.user?.email;
-    try { await axios.put(`${BASE_URL}/api/userpaths/failedStep`, { email, pathId, step_id: stepid }); } catch { }
-    setPopupContent("success"); setPopupDetails("no");
+
+    try {
+      const res = await axios.put(`${BASE_URL}/api/userpaths/failedStep`, {
+        email,
+        pathId,
+        step_id: stepid,
+      });
+
+      if (res.data?.status) {
+        setPopupContent("success");
+        setPopupDetails("no");
+      } else {
+        console.error("❌ failStep failed:", res.data?.message);
+      }
+    } catch (err) {
+      console.error("❌ failStep error:", err);
+    }
   };
 
   function filterItem(text) {
@@ -694,24 +713,10 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                     </button>
                     <hr className="spc-divider" />
                     <ul className="spc-feats">
-                      {[
-                        "1-on-1 Expert Sessions",
-                        "Premium Mentorship",
-                        "Nano View Access",
-                        "Priority Support",
-                      ].map((f) => (
+                      {["1-on-1 Expert Sessions", "Premium Mentorship", "Nano View Access", "Priority Support"].map((f) => (
                         <li key={f}>
-                          // For "Macro View — Always Free" → Eye icon
-<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-
-// For "Micro View" → Layers icon  
-<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-
-// For "Nano View / Sessions" → Users icon
-<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-
-// For "Cancel Anytime / Support" → Shield icon
-<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>{f}
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+                          {f}
                         </li>
                       ))}
                     </ul>
@@ -904,7 +909,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                   balance={walletBalance}
                   unlocking={unlocking.nano}
                   onUnlock={() => handleCreditUnlock("nano")}
-                  onSeePlans={() => { setSubError(""); setShowNanoGate(true); }}  // ← FIXED
+                  onSeePlans={() => { setSubError(""); setShowNanoGate(true); }}
                   isSubscriber={isSubscriber}
                 />
               )}
@@ -1029,36 +1034,40 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         <div className="popup-overlay" onClick={() => { setPopup(false); setPopupContent("default"); setPopupDetails(""); }}>
           <div className="modal-container" onClick={(e) => e.stopPropagation()}>
             <div><img src={logo} alt="" /></div>
+
             {popupContent === "default" && popupDetails === "yes" && (
               <>
                 <div className="popup-text">Are you sure you have completed this step?</div>
                 <div className="popup-btns">
                   <div className="yes-Btn" onClick={() => {
                     const id = currentStepData?._id || currentStepPageData?._id;
-                    if (id) completeStep(id, selectedPathId);
-                    else { const fb = localStorage.getItem("selectedStepId"); if (fb) completeStep(fb, selectedPathId); }
+                    if (id) completeStep(id);
+                    else { const fb = localStorage.getItem("selectedStepId"); if (fb) completeStep(fb); }
                   }}>Yes, go to next step</div>
                   <div className="no-btn" onClick={() => { setPopup(false); setPopupDetails(""); setPopupContent("default"); }}>Never mind</div>
                 </div>
               </>
             )}
+
             {popupContent === "default" && popupDetails === "no" && (
               <>
                 <div className="popup-text">Are you sure you have failed this step?</div>
                 <div className="popup-btns">
                   <div className="yes-Btn" style={{ background: "#100F0D" }} onClick={() => {
                     const id = currentStepData?._id || currentStepPageData?._id;
-                    if (id) failStep(id, selectedPathId);
+                    if (id) failStep(id);
                   }}>Yes, move me to another path</div>
                   <div className="no-btn" onClick={() => { setPopup(false); setPopupDetails(""); setPopupContent("default"); }}>Never mind</div>
                 </div>
               </>
             )}
+
             {popupContent === "success" && (
               <>
                 <div className="popup-text">{popupDetails === "yes" ? "Completed Step Updated!" : "Failed Step Updated!"}</div>
                 <div className="popup-btns">
                   <div className="yes-Btn" onClick={async () => {
+                    window.dispatchEvent(new CustomEvent("naavi:step-completed"));
                     if (popupDetails === "yes") {
                       setPopup(false); setPopupContent("default"); setPopupDetails("");
                       try {
