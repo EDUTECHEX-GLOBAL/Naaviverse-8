@@ -148,12 +148,15 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
     setMobileOpen(false);
   };
 
-  const handleLogout = (e) => {
-    if (e) e.stopPropagation();
-    ["authToken", "user", "partner", "userType", "userProfilePic"].forEach((k) => localStorage.removeItem(k));
-    navigate("/login", { replace: true });
-  };
-
+const handleLogout = (e) => {
+  if (e) e.stopPropagation();
+  [
+    "authToken", "user", "partner", "userType", "userProfilePic",
+    "selectedPathId", "selectedPathOwner",        // 👈 ADD THESE
+    "selectedStepId", "selectedStepNumber",        // 👈 ADD THESE
+  ].forEach((k) => localStorage.removeItem(k));
+  navigate("/login", { replace: true });
+};
   const handleProfileClick = (e) => {
     e.stopPropagation();
     if (isLocked) return;

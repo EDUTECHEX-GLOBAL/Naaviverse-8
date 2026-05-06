@@ -336,3 +336,87 @@ $shadow-md:     0 4px 20px rgba(15, 31, 61, 0.09);
   .jh-right .jh-stat { flex-direction: row; justify-content: center; gap: 12px; width: 100%; }
   .steps-grid { grid-template-columns: 1fr; }
 }
+/* ─────────────────────────────────────────────────────────────
+   COMPLETED STEP CARD  — add these rules to your journey.scss
+   ───────────────────────────────────────────────────────────── */
+
+/* Completed card: dimmed, desaturated, with a subtle green tint */
+.step-card--completed {
+  position: relative;
+  opacity: 0.72;
+  filter: grayscale(30%);
+  border-color: #b7e4c7 !important;          /* soft green border */
+  background: linear-gradient(145deg, #f6fdf8, #edf7f1) !important;
+  cursor: pointer;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+
+  &:hover {
+    opacity: 0.88;
+    filter: grayscale(10%);
+  }
+}
+
+/* Full-card frosted overlay that fades in on hover */
+.sc-completed-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(230, 248, 237, 0.55);
+  backdrop-filter: blur(1.5px);
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+}
+
+.step-card--completed:hover .sc-completed-overlay {
+  opacity: 1;
+}
+
+/* "Completed" pill shown on hover */
+.sc-completed-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #1a7f4b;
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 14px rgba(26, 127, 75, 0.35);
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+/* Step number bubble — green when done */
+.sc-number--done {
+  background: #d1fae5 !important;
+  color: #065f46 !important;
+  border: 2px solid #6ee7b7 !important;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* CTA link text — muted green when done */
+.sc-cta--done {
+  color: #059669 !important;
+  opacity: 0.85;
+}
+
+/* ── Progress stat chip in header ── */
+.jh-stat--completed .jh-stat-num {
+  color: #059669;
+}
+.jh-stat--completed .jh-stat-lbl {
+  color: #6ee7b7;
+}

@@ -141,22 +141,29 @@ router.get("/steps", async (req, res) => {
 // GET USER'S SELECTED PATH ID
 // GET /api/userpaths/selected?email=xxx
 // ─────────────────────────────────────────────────────────────────────────────
+// REPLACE the existing /selected route with this:
 router.get("/selected", async (req, res) => {
   try {
     const { email } = req.query;
-
     if (!email) {
       return res.status(400).json({ status: false, message: "Email is required" });
     }
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ status: false, message: "User not found" });
+    // Query the actual userPaths collection — this is always up to date
+    // Sort by createdAt desc to get the most recently enrolled path
+    const latestUserPath = await UserPath.findOne(
+      { email, status: "active" },
+      { pathId: 1 },
+      { sort: { createdAt: -1 } }
+    ).lean();
+
+    if (!latestUserPath) {
+      return res.status(200).json({ status: true, pathId: null });
     }
 
     return res.status(200).json({
       status: true,
-      pathId: user.selectedPath || null,
+      pathId: latestUserPath.pathId.toString(),
     });
   } catch (error) {
     console.error("Get Selected Path Error:", error);

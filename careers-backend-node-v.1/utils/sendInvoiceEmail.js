@@ -195,7 +195,7 @@ function buildHtml(payment, invNo) {
         style="background:#E1F5EE;border-radius:10px;border:1px solid #9FE1CB;">
         <tr>
           <td style="padding:12px 16px;font-size:12px;color:#0F6E56;font-weight:500;">
-            🎯 <strong>${credits} Credits</strong> have been added to your Naavi wallet
+             <strong>${credits} Credits</strong> have been added to your Naavi wallet
           </td>
         </tr>
       </table>

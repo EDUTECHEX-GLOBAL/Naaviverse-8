@@ -73,7 +73,7 @@ const Ring = ({ pct, size = 52, stroke = 4, color = "#60a5fa", bg = "rgba(96,165
 
 // ── Static data ────────────────────────────────────────────────────────────────
 const PURCHASES = [
-  { id: 1, icon: "🎯", name: "AI for Finance", type: "Path", plan: "Premium", credits: 4, date: "Apr 2, 2026", status: "active" },
+  { id: 1, name: "AI for Finance", type: "Path", plan: "Premium", credits: 4, date: "Apr 2, 2026", status: "active" },
 ];
 
 const MENTORS = [
@@ -111,9 +111,10 @@ export default function UserHome() {
   const [myPath, setMyPath] = useState(null);
   const [explorePaths, setExplorePaths] = useState([]);
   const [pathLoading, setPathLoading] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0); // incremented on step completion to re-fetch
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const notifRef = useRef(null);
+  const detailCardRef = useRef(null); 
   const unread = notifications.filter(n => !n.read).length;
   const creditPct = credits
     ? Math.round((credits.available / (credits.total || 50)) * 100)
@@ -127,10 +128,14 @@ export default function UserHome() {
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
-  // ✅ FIX 2 — Listen for CustomEvent fired by CurrentStep on step completion.
-  // We use CustomEvent ("naavi:step-completed") instead of the native "storage" event
-  // because the native storage event is suppressed in the SAME tab by all browsers.
-  // CustomEvent fires instantly and reliably within the same tab.
+  // ✅ Correct placement - This useEffect scrolls when activeTab changes
+  useEffect(() => {
+    if (detailCardRef.current) {
+      detailCardRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [activeTab]);
+
+  // ✅ Listen for CustomEvent fired by CurrentStep on step completion
   useEffect(() => {
     const handleStepCompleted = () => setRefreshKey(k => k + 1);
     window.addEventListener("naavi:step-completed", handleStepCompleted);
@@ -210,124 +215,160 @@ export default function UserHome() {
     fetchWallet();
   }, [user?.email]);
 
-  // ── Fetch path data ──────────────────────────────────────────────────────────
-  // refreshKey in the dependency array causes this to re-run whenever a step is completed.
-  useEffect(() => {
-    if (!user?.email) return;
+ // ── Fetch path data ──────────────────────────────────────────────────────────
+useEffect(() => {
+  if (!user?.email) return;
 
-    const fetchMyPath = async () => {
-      try {
-        setPathLoading(true);
+  const fetchMyPath = async () => {
+    try {
+      setPathLoading(true);
 
-        const userPathRes = await axios.get(`${BASE_URL}/api/userpaths`, {
-          params: { email: user.email, status: "active" }
-        });
+      // First fetch user paths to validate selectedPathId
+      const userPathRes = await axios.get(`${BASE_URL}/api/userpaths`, {
+        params: { email: user.email, status: "active" }
+      });
 
-        const userPaths = userPathRes.data?.data || [];
-        if (!userPaths.length) { setMyPath(null); setPathLoading(false); return; }
+      const userPaths = userPathRes.data?.data || [];
+      
+      // Validate selectedPathId belongs to THIS user
+      let selectedPathId = localStorage.getItem("selectedPathId");
+      if (selectedPathId) {
+        const belongsToUser = userPaths.some(
+          (p) => p.pathId?.toString() === selectedPathId
+        );
+        if (!belongsToUser) {
+          // Stale key from previous user — clear it
+          localStorage.removeItem("selectedPathId");
+           localStorage.removeItem("selectedPathOwner"); 
+          localStorage.removeItem("selectedStepId");
+          localStorage.removeItem("selectedStepNumber");
+          selectedPathId = null;
+        }
+      }
 
-        const enrolledPathIds = new Set(userPaths.map(p => p.pathId?.toString()));
-        const selectedPathId = localStorage.getItem("selectedPathId");
+      // If still no selectedPathId, try to fetch from API
+      if (!selectedPathId) {
+        try {
+          const selRes = await axios.get(`${BASE_URL}/api/userpaths/selected`, {
+            params: { email: user.email },
+          });
+          if (selRes.data?.status && selRes.data?.pathId) {
+            selectedPathId = selRes.data.pathId;
+            localStorage.setItem("selectedPathId", selectedPathId);
+            localStorage.setItem("selectedPathOwner", user.email);
+          }
+        } catch (_) {}
+      }
 
-        // Prefer the path the user is currently working on
-        let activePath = selectedPathId
-          ? userPaths.find(p =>
+      if (!userPaths.length) { 
+        setMyPath(null); 
+        setPathLoading(false); 
+        return; 
+      }
+
+      const enrolledPathIds = new Set(userPaths.map(p => p.pathId?.toString()));
+
+      // Prefer the path the user is currently working on
+      let activePath = selectedPathId
+        ? userPaths.find(p =>
             p.pathId?.toString() === selectedPathId ||
             p.PathDetails?.[0]?._id?.toString() === selectedPathId
           )
-          : null;
+        : null;
 
-        // Fallback to most recently enrolled
-        if (!activePath) {
-          activePath = [...userPaths].sort((a, b) =>
-            new Date(b.createdAt) - new Date(a.createdAt)
-          )[0];
-        }
+      // Fallback to most recently enrolled
+      if (!activePath) {
+        activePath = [...userPaths].sort((a, b) =>
+          new Date(b.createdAt) - new Date(a.createdAt)
+        )[0];
+      }
 
-        const pathId = activePath?.pathId?.toString() ||
-          activePath?.PathDetails?.[0]?._id?.toString();
+      const pathId = activePath?.pathId?.toString() ||
+        activePath?.PathDetails?.[0]?._id?.toString();
 
-        if (!pathId) { setMyPath(null); setPathLoading(false); return; }
+      if (!pathId) { 
+        setMyPath(null); 
+        setPathLoading(false); 
+        return; 
+      }
 
-        // ✅ FIX 3 — Make a FRESH API call for completedSteps instead of reading
-        // from the already-fetched userPaths array which may be stale.
-        // This guarantees we get the latest completedSteps after a step completion.
-        const freshPathRes = await axios.get(`${BASE_URL}/api/userpaths`, {
-          params: { email: user.email, status: "active", _t: Date.now() }
-        });
-        const freshPaths = freshPathRes.data?.data || [];
-        const rawDoc = freshPaths.find(p => p.pathId?.toString() === pathId);
+      // Make a FRESH API call for completedSteps
+      const freshPathRes = await axios.get(`${BASE_URL}/api/userpaths`, {
+        params: { email: user.email, status: "active", _t: Date.now() }
+      });
+      const freshPaths = freshPathRes.data?.data || [];
+      const rawDoc = freshPaths.find(p => p.pathId?.toString() === pathId);
 
-        console.log("✅ rawDoc completedSteps:", rawDoc?.completedSteps);
-        console.log("✅ rawDoc currentStep:", rawDoc?.currentStep);
+      console.log("✅ rawDoc completedSteps:", rawDoc?.completedSteps);
+      console.log("✅ rawDoc currentStep:", rawDoc?.currentStep);
 
-        const completedStepIds = (rawDoc?.completedSteps || []).map(id => id.toString());
-        const currentStep = rawDoc?.currentStep?.toString() || null;
+      const completedStepIds = (rawDoc?.completedSteps || []).map(id => id.toString());
+      const currentStep = rawDoc?.currentStep?.toString() || null;
 
-        const stepsRes = await axios.get(`${BASE_URL}/api/userpaths/steps`, {
-          params: { pathId }
-        });
+      const stepsRes = await axios.get(`${BASE_URL}/api/userpaths/steps`, {
+        params: { pathId }
+      });
 
-        const pathData = stepsRes.data?.data;
+      const pathData = stepsRes.data?.data;
 
-        const steps = (pathData?.steps || [])
-          .sort((a, b) => (a.step_order || 0) - (b.step_order || 0))
-          .map(s => ({
-            id: s._id,
-            title: s.macro_name || s.name || "Step",
-            desc: s.macro_description || s.description || "",
-            duration: s.macro_length ? parseDuration(s.macro_length) : null,
-            status: completedStepIds.includes(s._id.toString())
-              ? "done"
-              : currentStep === s._id.toString()
-                ? "active"
-                : "locked",
-          }));
+      const steps = (pathData?.steps || [])
+        .sort((a, b) => (a.step_order || 0) - (b.step_order || 0))
+        .map(s => ({
+          id: s._id,
+          title: s.macro_name || s.name || "Step",
+          desc: s.macro_description || s.description || "",
+          duration: s.macro_length ? parseDuration(s.macro_length) : null,
+          status: completedStepIds.includes(s._id.toString())
+            ? "done"
+            : currentStep === s._id.toString()
+              ? "active"
+              : "locked",
+        }));
 
-        const doneCount = steps.filter(s => s.status === "done").length;
-        const progress = steps.length ? Math.round((doneCount / steps.length) * 100) : 0;
+      const doneCount = steps.filter(s => s.status === "done").length;
+      const progress = steps.length ? Math.round((doneCount / steps.length) * 100) : 0;
 
-        setMyPath({
-          name: pathData?.name || pathData?.nameOfPath || "—",
-          goal: pathData?.description || "",
-          progress,
-          steps,
-          doneCount,
-          totalSteps: steps.length,
-          enrolledOn: activePath?.createdAt
-            ? new Date(activePath.createdAt).toLocaleDateString("en-IN", {
+      setMyPath({
+        name: pathData?.name || pathData?.nameOfPath || "—",
+        goal: pathData?.description || "",
+        progress,
+        steps,
+        doneCount,
+        totalSteps: steps.length,
+        enrolledOn: activePath?.createdAt
+          ? new Date(activePath.createdAt).toLocaleDateString("en-IN", {
               day: "numeric", month: "short", year: "numeric"
             })
-            : "—",
-        });
+          : "—",
+      });
 
-        // Fetch explore paths
-        try {
-          const pathsRes = await axios.get(`${BASE_URL}/api/paths/active`);
-          const allPaths = pathsRes.data?.data || [];
-          setExplorePaths(allPaths.map(p => ({
-            id: p._id,
-            icon: p.country ? p.country.slice(0, 2).toUpperCase() : "🌍",
-            name: p.nameOfPath || p.name,
-            desc: p.description || "",
-            steps: p.total_steps || p.the_ids?.length || 0,
-            match: Math.floor(Math.random() * 20) + 75,
-            enrolled: enrolledPathIds.has(p._id.toString()),
-          })));
-        } catch (e) {
-          console.error("Explore paths fetch failed", e);
-        }
-
-      } catch (err) {
-        console.error("MyPath fetch failed:", err);
-        setMyPath(null);
-      } finally {
-        setPathLoading(false);
+      // Fetch explore paths
+      try {
+        const pathsRes = await axios.get(`${BASE_URL}/api/paths/active`);
+        const allPaths = pathsRes.data?.data || [];
+        setExplorePaths(allPaths.map(p => ({
+          id: p._id,
+          icon: p.country ? p.country.slice(0, 2).toUpperCase() : "🌍",
+          name: p.nameOfPath || p.name,
+          desc: p.description || "",
+          steps: p.total_steps || p.the_ids?.length || 0,
+          match: Math.floor(Math.random() * 20) + 75,
+          enrolled: enrolledPathIds.has(p._id.toString()),
+        })));
+      } catch (e) {
+        console.error("Explore paths fetch failed", e);
       }
-    };
 
-    fetchMyPath();
-  }, [user?.email, refreshKey]); // refreshKey re-runs this on every step completion
+    } catch (err) {
+      console.error("MyPath fetch failed:", err);
+      setMyPath(null);
+    } finally {
+      setPathLoading(false);
+    }
+  };
+
+  fetchMyPath();
+}, [user?.email, refreshKey]);
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
   const markRead = (id) => setNotifications(ns => ns.map(n => n.id === id ? { ...n, read: true } : n));
@@ -381,7 +422,11 @@ export default function UserHome() {
             <div className="uh-wallet-analytics">
               {bonusTxn && (
                 <div className="uh-analytics-card uh-analytics-bonus">
-                  <div className="uh-analytics-icon">⭐</div>
+                 <div className="uh-analytics-icon">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+  </svg>
+</div>
                   <div className="uh-analytics-info">
                     <span className="uh-analytics-title">Welcome Bonus</span>
                     <span className="uh-analytics-sub">50 credits · Given on signup</span>
@@ -399,7 +444,13 @@ export default function UserHome() {
 
               {activity.filter(a => a.type === "step" && a.delta > 0).map(a => (
                 <div key={a.id} className="uh-analytics-card uh-analytics-sub">
-                  <div className="uh-analytics-icon">💳</div>
+                  <div className="uh-analytics-icon">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="5" width="20" height="14" rx="2"/>
+    <line x1="2" y1="10" x2="22" y2="10"/>
+    <circle cx="18" cy="15" r="1" fill="#3b82f6"/>
+  </svg>
+</div>
                   <div className="uh-analytics-info">
                     <span className="uh-analytics-title">{a.action}</span>
                     <span className="uh-analytics-sub">{a.time}</span>
@@ -722,7 +773,7 @@ export default function UserHome() {
         </div>
 
         {/* Detail panel */}
-        <div className="uh-card uh-card-detail">
+        <div className="uh-card uh-card-detail" ref={detailCardRef}>
           <div className="uh-tab-bar">
             {TABS.map(t => (
               <button key={t.key} className={`uh-tab-btn ${activeTab === t.key ? "active" : ""}`} onClick={() => setActiveTab(t.key)}>

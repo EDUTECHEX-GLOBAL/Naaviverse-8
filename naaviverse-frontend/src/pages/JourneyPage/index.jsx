@@ -23,11 +23,6 @@ const parseDuration = (raw) => {
 };
 
 // ── SVG Icons ──────────────────────────────────────────────────────────────
-const IconClock = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-  </svg>
-);
 const IconArrow = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
@@ -44,17 +39,35 @@ const IconTarget = () => (
     <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
   </svg>
 );
+const IconCheck = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
 
 // ── Step Card ──────────────────────────────────────────────────────────────
-const StepCard = ({ step, index, onClick }) => {
-  const duration = parseDuration(step.macro_length);
-  const isFree   = step.macro_access === "free";
-  const stepNum  = step.step_order || index + 1;
+const StepCard = ({ step, index, onClick, isCompleted }) => {
+  const stepNum = step.step_order || index + 1;
 
   return (
-    <div className="step-card" onClick={onClick}>
+    <div
+      className={`step-card${isCompleted ? " step-card--completed" : ""}`}
+      onClick={onClick}
+    >
+      {/* Frosted "Completed" badge visible on hover */}
+      {isCompleted && (
+        <div className="sc-completed-overlay">
+          <div className="sc-completed-badge">
+            <IconCheck />
+            <span>Completed</span>
+          </div>
+        </div>
+      )}
+
       <div className="sc-top">
-        <div className="sc-number">{stepNum}</div>
+        <div className={`sc-number${isCompleted ? " sc-number--done" : ""}`}>
+          {isCompleted ? <IconCheck /> : stepNum}
+        </div>
       </div>
 
       <div className="sc-body">
@@ -63,9 +76,8 @@ const StepCard = ({ step, index, onClick }) => {
       </div>
 
       <div className="sc-footer">
-       
-        <span className="sc-cta">
-          View Step <IconArrow />
+        <span className={`sc-cta${isCompleted ? " sc-cta--done" : ""}`}>
+          {isCompleted ? "Review Step" : "View Step"} <IconArrow />
         </span>
       </div>
     </div>
@@ -78,29 +90,118 @@ const JourneyPage = () => {
   const { setCurrentStepData, setCurrentStepDataLength } = useCoinContextData();
   const { setsideNav } = useStore();
 
-  const [loading,         setLoading]         = useState(true);
-  const [journeyPageData, setJourneyPageData] = useState(null);
+  const [loading,          setLoading]          = useState(true);
+  const [journeyPageData,  setJourneyPageData]  = useState(null);
+  const [completedStepIds, setCompletedStepIds] = useState(new Set());
 
-  useEffect(() => {
-    const pathId = localStorage.getItem("selectedPathId");
-    if (!pathId) { setLoading(false); return; }
+  // Read user email once — same pattern as CurrentStep
+  const userDetails = (() => {
+    try { return JSON.parse(localStorage.getItem("user")); }
+    catch { return null; }
+  })();
+  const userEmail = userDetails?.user?.email || userDetails?.email || null;
+
+useEffect(() => {
+  const init = async () => {
+    if (!userEmail) {
+      setLoading(false);
+      return;
+    }
+
+    let pathId = localStorage.getItem("selectedPathId");
+    const pathOwner = localStorage.getItem("selectedPathOwner");
+
+    // ── If stored path belongs to a different user, clear it ──
+    if (pathId && pathOwner && pathOwner !== userEmail) {
+      localStorage.removeItem("selectedPathId");
+      localStorage.removeItem("selectedPathOwner");
+      localStorage.removeItem("selectedStepId");
+      localStorage.removeItem("selectedStepNumber");
+      pathId = null;
+    }
+
+    // ── If no pathId, try to restore from backend for THIS user ──
+    if (!pathId) {
+      try {
+        const res = await axios.get(`${BASE_URL}/api/userpaths/selected`, {
+          params: { email: userEmail },
+        });
+        if (res.data?.status && res.data?.pathId) {
+          pathId = res.data.pathId;
+          localStorage.setItem("selectedPathId", pathId);
+          localStorage.setItem("selectedPathOwner", userEmail);
+        }
+      } catch (err) {
+        console.error("Failed to restore selectedPathId:", err);
+      }
+    }
+
+    if (!pathId) {
+      setLoading(false);
+      return;
+    }
+
     fetchJourneyData(pathId);
+  };
+
+  init();
+}, [userEmail]);
+
+  // Re-fetch when CurrentStep fires the completion event (same tab)
+  useEffect(() => {
+    const handler = () => {
+      const pathId = localStorage.getItem("selectedPathId");
+      if (pathId) fetchJourneyData(pathId);
+    };
+    window.addEventListener("naavi:step-completed", handler);
+    return () => window.removeEventListener("naavi:step-completed", handler);
   }, []);
 
   const fetchJourneyData = async (pathId) => {
     try {
-      const response = await axios.get(`${BASE_URL}/api/userpaths/steps?pathId=${pathId}`);
-      if (response.data.status) {
-        const data = response.data.data;
-        if (data?.steps) {
-          data.steps = data.steps.sort((a, b) => (a.step_order || 0) - (b.step_order || 0));
-        }
-        setJourneyPageData(data);
-      } else {
+      // ── 1. Steps  GET /api/userpaths/steps?pathId=xxx ──────────────────
+      // Router: router.get("/steps", ...) in userpathRouter.js
+      // Returns: { status, data: { name, description, steps: [...] } }
+      const stepsRes = await axios.get(`${BASE_URL}/api/userpaths/steps?pathId=${pathId}`);
+
+      if (!stepsRes.data.status) {
         setJourneyPageData(null);
+        setLoading(false);
+        return;
       }
+
+      const data = stepsRes.data.data;
+      if (data?.steps) {
+        data.steps = data.steps.sort((a, b) => (a.step_order || 0) - (b.step_order || 0));
+      }
+      setJourneyPageData(data);
+
+      // ── 2. UserPath doc  GET /api/userpaths?email=xxx&pathId=xxx ───────
+      // Router: router.get("/", getUserPath) in userpathRouter.js
+      // getUserPath filters by { email, pathId, status:"active" } and returns
+      // the full UserPath doc which includes: completedSteps: [ObjectId, ...]
+      // completedSteps is populated via $addToSet in the completeStep() controller
+      if (!userEmail) return;
+
+      const userPathRes = await axios.get(`${BASE_URL}/api/userpaths`, {
+        params: { email: userEmail, pathId },
+      });
+
+      if (!userPathRes.data?.status || !Array.isArray(userPathRes.data.data)) return;
+
+      // getUserPath may return multiple docs — find the one for this pathId
+      const userPathDoc =
+        userPathRes.data.data.find((doc) => String(doc.pathId) === String(pathId)) ||
+        userPathRes.data.data[0];
+
+      if (!userPathDoc) return;
+
+      // completedSteps stores step _ids as ObjectId → convert all to strings for comparison
+      const rawCompleted = userPathDoc.completedSteps || [];
+      setCompletedStepIds(new Set(rawCompleted.map((id) => String(id))));
+
     } catch (error) {
-      console.error("❌ Error fetching steps:", error);
+      console.error("❌ Error fetching journey data:", error);
       setJourneyPageData(null);
     } finally {
       setLoading(false);
@@ -127,7 +228,8 @@ const JourneyPage = () => {
     </div>
   );
 
-  const totalSteps = journeyPageData?.steps?.length || 0;
+  const totalSteps     = journeyPageData?.steps?.length || 0;
+  const completedCount = completedStepIds.size;
 
   return (
     <div className="journeypage">
@@ -150,6 +252,12 @@ const JourneyPage = () => {
               <span className="jh-stat-num">{totalSteps}</span>
               <span className="jh-stat-lbl">Total Steps</span>
             </div>
+            {completedCount > 0 && (
+              <div className="jh-stat jh-stat--completed">
+                <span className="jh-stat-num">{completedCount}</span>
+                <span className="jh-stat-lbl">Completed</span>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -174,14 +282,21 @@ const JourneyPage = () => {
         ) : !localStorage.getItem("selectedPathId") ? (
           renderNoPathSelected()
         ) : journeyPageData?.steps?.length > 0 ? (
-          journeyPageData.steps.map((step, index) => (
-            <StepCard
-              key={step._id}
-              step={step}
-              index={index}
-              onClick={() => handleStepClick(step, index)}
-            />
-          ))
+          journeyPageData.steps.map((step, index) => {
+            // Step _id from the steps collection must match what completeStep()
+            // pushed into completedSteps via $addToSet — both are ObjectId strings
+            const stepId      = String(step._id || step.step_id || "");
+            const isCompleted = completedStepIds.has(stepId);
+            return (
+              <StepCard
+                key={stepId || index}
+                step={step}
+                index={index}
+                isCompleted={isCompleted}
+                onClick={() => handleStepClick(step, index)}
+              />
+            );
+          })
         ) : (
           <div className="no-steps-msg">No steps found for this path.</div>
         )}
