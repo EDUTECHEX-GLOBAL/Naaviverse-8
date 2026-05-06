@@ -5,8 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const mongoose         = require("mongoose");
-const UserPath         = require("../models/userpaths.model");         // email + pathId + status
-const UserPathSelection = require("../models/userpathselection.model"); // userEmail + pathId + steps
+const UserPath         = require("../models/userpaths.model");         // email + pathId + status// userEmail + pathId + steps
 const Payment          = require("../models/payment.model");           // userEmail + planTier + status
 const Path             = require("../models/path.model");              // _id + nameOfPath
 

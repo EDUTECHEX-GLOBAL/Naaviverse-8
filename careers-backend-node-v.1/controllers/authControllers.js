@@ -3,7 +3,7 @@ const User = require("../models/users.model");
 require("dotenv").config({ path: ".env" });
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-
+const UserPath = require("../models/userpaths.model"); // 👈 ADD THIS
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const { generateOTP, sendOTP, sendNotificationMail } = require("../middlewares/verifySignUp");
 
@@ -152,13 +152,28 @@ const login = async (req, res) => {
     if (!user.OTPverified) {
       return res.status(401).json({ success: false, message: "Please verify your email via OTP before logging in" });
     }
+const isMatch = await user.matchPassword(password);
+if (!isMatch) {
+  return res.status(401).json({ success: false, message: "Invalid password" });
+}
 
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: "Invalid password" });
-    }
+// ── Auto-restore selectedPath if missing ──────────────────────────
+if (!user.selectedPath) {
+  const latestUserPath = await UserPath.findOne(
+    { email, status: "active" },
+    { pathId: 1 },
+    { sort: { createdAt: -1 } }
+  ).lean();
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
+  if (latestUserPath) {
+    user.selectedPath = latestUserPath.pathId;
+    await user.save();
+  }
+}
+// ──────────────────────────────────────────────────────────────────
+
+const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
+  
 
     // ✅ Log login activity — non-blocking, never breaks login
     logActivityInternal({

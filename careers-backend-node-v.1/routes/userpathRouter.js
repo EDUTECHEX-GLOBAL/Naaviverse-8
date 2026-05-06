@@ -145,26 +145,40 @@ router.get("/steps", async (req, res) => {
 router.get("/selected", async (req, res) => {
   try {
     const { email } = req.query;
-    if (!email) {
-      return res.status(400).json({ status: false, message: "Email is required" });
+    if (!email) return res.status(400).json({ status: false, message: "Email is required" });
+
+    // ── First priority: user.selectedPath (set on every path selection) ──
+    const user = await User.findOne({ email }).lean();
+    if (!user) return res.status(404).json({ status: false, message: "User not found" });
+
+    if (user.selectedPath) {
+      // Verify this path is still active in userPaths collection
+      const stillActive = await UserPath.findOne({
+        email,
+        pathId: new mongoose.Types.ObjectId(user.selectedPath.toString()),
+        status: "active",
+      }).lean();
+
+      if (stillActive) {
+        return res.status(200).json({
+          status: true,
+          pathId: user.selectedPath.toString(),
+        });
+      }
     }
 
-    // Query the actual userPaths collection — this is always up to date
-    // Sort by createdAt desc to get the most recently enrolled path
+    // ── Fallback: most recently enrolled active path ──
     const latestUserPath = await UserPath.findOne(
       { email, status: "active" },
       { pathId: 1 },
       { sort: { createdAt: -1 } }
     ).lean();
 
-    if (!latestUserPath) {
-      return res.status(200).json({ status: true, pathId: null });
-    }
-
     return res.status(200).json({
       status: true,
-      pathId: latestUserPath.pathId.toString(),
+      pathId: latestUserPath ? latestUserPath.pathId.toString() : null,
     });
+
   } catch (error) {
     console.error("Get Selected Path Error:", error);
     return res.status(500).json({ status: false, message: error.message });

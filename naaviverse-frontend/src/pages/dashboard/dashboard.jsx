@@ -32,10 +32,10 @@ import { useCoinContextData } from "../../context/CoinContext";
 import axios from "axios";
 import VaultTransactions from "../VaultTransactions/index.jsx";
 import TransactionPage from "./TransactionPage/index.jsx";
-// REMOVED: import MenuNav from "../../components/MenuNav/index.jsx";
 import UserHome from "./userHome.jsx"; 
-// ✅ NEW: Import the new Marketplace component
 import UserMarketplace from "../UserMarketplace.jsx";
+
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const URL_TO_SIDENAV = {
   "/dashboard/users/home": "Home",
@@ -44,14 +44,12 @@ const URL_TO_SIDENAV = {
   "/dashboard/users/my-journey": "My Journey",
   "/dashboard/users/transactions": "Transactions",
   "/dashboard/users/paths": "Paths",
-
-  // default fallback
   "/dashboard/users": "Home",
 };
 
 const Dashboard = () => {
-  // ✅ useLocation — reacts to EVERY navigation, not just mount
   const location = useLocation();
+  const navigate = useNavigate();
 
   const {
     sideNav,
@@ -102,11 +100,65 @@ const Dashboard = () => {
   const [productKeys, setProductKeys] = useState(null);
   const [profileId, setProfileId] = useState("");
   const [productDataArray, setProductDataArray] = useState([]);
+  
+  // ✅ ADDED: Access control states
+  const [approvalStatus, setApprovalStatus] = useState("");
+  const [isProfileIncomplete, setIsProfileIncomplete] = useState(true);
 
   const userDetails = JSON.parse(localStorage.getItem("user"));
-  const navigate = useNavigate();
 
-  // ✅ Derive correct page from URL SYNCHRONOUSLY on every render — no flash of stale sideNav
+  // ✅ ADDED: Function to check user access (profile completion + approval)
+  const checkUserAccess = async () => {
+    try {
+      const raw = localStorage.getItem("user");
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      const email = parsed?.user?.email || parsed?.email;
+      if (!email) return;
+
+      // Check profile completion
+      const profileRes = await axios.get(`${BASE_URL}/api/users/get/${email}`);
+      const data = profileRes.data?.data;
+
+      const isComplete =
+        data?.isProfileCompleted === true ||
+        (data?.name && data?.username && data?.phoneNumber &&
+         data?.school && data?.personality);
+
+      if (!isComplete) {
+        setIsProfileIncomplete(true);
+        setApprovalStatus("");
+        // Redirect to profile page
+        navigate("/dashboard/users/profile");
+        return;
+      }
+
+      setIsProfileIncomplete(false);
+
+      // Check approval status
+      const cached = parsed?.approvalStatus;
+      if (cached === "approved") {
+        setApprovalStatus("approved");
+        return;
+      }
+
+      const approvalRes = await axios.get(
+        `${BASE_URL}/api/approvals/status?email=${email}&role=User`
+      );
+      const status = approvalRes.data?.data?.status;
+      setApprovalStatus(status || "pending");
+
+      // Update localStorage
+      const updated = { ...parsed, approvalStatus: status || "pending" };
+      localStorage.setItem("user", JSON.stringify(updated));
+
+    } catch (err) {
+      console.error("Access check failed:", err);
+      setIsProfileIncomplete(false);
+    }
+  };
+
+  // ✅ Derive correct page from URL SYNCHRONOUSLY on every render
   const activePage = (() => {
     const currentPath = location.pathname;
     const matchedKey = Object.keys(URL_TO_SIDENAV)
@@ -150,11 +202,13 @@ const Dashboard = () => {
     fetchData();
   }, [productKeys]);
 
-  // ── Auth + follow ────────────────────────────────────────────────────────
+  // ── Auth + follow + access check ────────────────────────────────────────
+  // ✅ REPLACED: Added checkUserAccess() call
   useEffect(() => {
     const userDetails = JSON.parse(localStorage.getItem("user"));
     if (!userDetails) navigate("/login");
     handleFollowList();
+    checkUserAccess(); // 👈 ADDED: Check profile and approval status
   }, []);
 
   const handleFollowList = () => {
@@ -237,7 +291,11 @@ const Dashboard = () => {
       <div className="dashboard-main">
         <div className="dashboard-body">
           <div onClick={() => setShowDrop(false)}>
-            <Dashsidebar />
+            {/* ✅ FIXED: Pass props to Dashsidebar */}
+            <Dashsidebar
+              approvalStatus={approvalStatus}
+              isProfileIncomplete={isProfileIncomplete}
+            />
           </div>
 
           <div className="dashboard-screens">
@@ -583,4 +641,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Dashboard; 

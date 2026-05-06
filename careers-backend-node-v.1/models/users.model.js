@@ -37,6 +37,8 @@ const userSchema = new mongoose.Schema({
   profileComplete: { type: Boolean, default: false },
   personality: { type: String, enum: ['realistic', 'investigative', 'artistic', 'social', 'enterprising', 'conventional'], default: 'realistic' },
   status: { type: String, enum: ['active', 'inactive', 'false'], default: 'active' },
+  // ADD this line inside userSchema fields:
+selectedPath: { type: mongoose.Schema.Types.ObjectId, ref: "paths", default: null },
 }, { timestamps: true });
 
 // Normalize username fields before save
