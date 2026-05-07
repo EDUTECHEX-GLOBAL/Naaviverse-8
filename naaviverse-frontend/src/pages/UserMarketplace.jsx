@@ -101,12 +101,25 @@ const CartDrawer = ({ cart, onRemove, onClose, onCheckout }) => {
     <div className="cart-drawer-overlay" onClick={onClose}>
       <div className="cart-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="cd-header">
-          <h2>🛒 Your Cart</h2>
+          <h2>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: 8, verticalAlign: "middle"}}>
+    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <path d="M16 10a4 4 0 01-8 0"/>
+  </svg>
+  Your Cart
+</h2>
           <button className="cd-close" onClick={onClose}>✕</button>
         </div>
         {cart.length === 0 ? (
           <div className="cd-empty">
-            <div className="cd-empty-icon">🛒</div>
+            <div className="cd-empty-icon">
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <path d="M16 10a4 4 0 01-8 0"/>
+  </svg>
+</div>
             <p className="cd-empty-title">Cart is empty</p>
             <p className="cd-empty-sub">Browse the marketplace to add services.</p>
           </div>

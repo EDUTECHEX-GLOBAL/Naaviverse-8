@@ -239,7 +239,13 @@ const TransactionPage = ({
               })
             ) : (
               <div className="txn-empty">
-                <div className="empty-icon">💳</div>
+               <div className="empty-icon">
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 2v20l3-2 2 2 2-2 2 2 2-2 3 2V2l-3 2-2-2-2 2-2-2-2 2-3-2z"/>
+    <line x1="8" y1="10" x2="16" y2="10"/>
+    <line x1="8" y1="14" x2="14" y2="14"/>
+  </svg>
+</div>
                 <div className="empty-title">No transactions found</div>
                 <div className="empty-sub">Your payment history will appear here</div>
               </div>

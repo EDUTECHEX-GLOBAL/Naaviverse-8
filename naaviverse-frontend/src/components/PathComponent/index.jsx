@@ -337,40 +337,44 @@ localStorage.removeItem("selectedStepNumber");
         </div>
       )}
 
-      {/* ── CONFIRM MODAL ── */}
-      {modalStep === "confirm" && modalPath && (
-        <div className="path-flow-modal">
-          <button className="pfm-close" onClick={closeModal}>✕</button>
+     {modalStep === "confirm" && modalPath && (
+  <div className="path-flow-modal">
+    <button className="pfm-close" onClick={closeModal}>✕</button>
 
-         <div className="pfm-icon pfm-icon--confirm">
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-    <path d="M6 12v5c0 2 6 3 6 3s6-1 6-3v-5"/>
-  </svg>
-</div>
-          <h3 className="pfm-title">Confirm Selection</h3>
-          <p className="pfm-sub">Are you sure you want to select this path?</p>
-          <span className="pfm-tag pfm-tag--lg">
-            {modalPath.nameOfPath || modalPath.name}
-          </span>
+    {/* CENTERED ICON - no wrapper div */}
+    <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Shield shape */}
+        <path d="M12 2L4 6V12C4 16.4 7.4 20.5 12 22C16.6 20.5 20 16.4 20 12V6L12 2Z" fill="#3b82f6" opacity="0.15"/>
+        <path d="M12 2L4 6V12C4 16.4 7.4 20.5 12 22C16.6 20.5 20 16.4 20 12V6L12 2Z" stroke="#3b82f6" strokeWidth="1.8" strokeLinejoin="round"/>
+        {/* Checkmark inside */}
+        <path d="M8.5 12L11 14.5L15.5 10" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </div>
 
-          <div className="pfm-btns">
-            <button
-              className="pfm-btn pfm-btn--primary"
-              onClick={handleConfirmSelect}
-              disabled={confirmLoading}
-            >
-              {confirmLoading ? "Confirming…" : "Yes, Select"}
-            </button>
-            <button
-              className="pfm-btn pfm-btn--ghost"
-              onClick={() => setModalStep(pathSteps.length ? "explore" : "view")}
-            >
-              ← Cancel
-            </button>
-          </div>
-        </div>
-      )}
+    <h3 className="pfm-title">Confirm Selection</h3>
+    <p className="pfm-sub">Are you sure you want to select this path?</p>
+    <span className="pfm-tag pfm-tag--lg">
+      {modalPath.nameOfPath || modalPath.name}
+    </span>
+
+    <div className="pfm-btns">
+      <button
+        className="pfm-btn pfm-btn--primary"
+        onClick={handleConfirmSelect}
+        disabled={confirmLoading}
+      >
+        {confirmLoading ? "Confirming…" : "Yes, Select"}
+      </button>
+      <button
+        className="pfm-btn pfm-btn--ghost"
+        onClick={() => setModalStep(pathSteps.length ? "explore" : "view")}
+      >
+        ← Cancel
+      </button>
+    </div>
+  </div>
+)}
 
       {/* ── SUCCESS MODAL ── */}
       {modalStep === "success" && modalPath && (

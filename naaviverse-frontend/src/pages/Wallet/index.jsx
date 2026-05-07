@@ -209,22 +209,23 @@ const Wallet = () => {
 
               <div className="wallet-container">
 
-                {/* Welcome banner — shows when bonus is still active */}
-                {creditExpiresAt && !isCreditExpired && bonusCredits > 0 && (
-                  <div className="wallet-welcome-banner">
-                    <span className="wallet-welcome-icon">⭐</span>
-                    <div style={{ flex: 1 }}>
-                      <p className="wallet-welcome-text">
-                        <strong>Welcome bonus applied!</strong> You received{" "}
-                        <strong>50 free credits</strong> when you created your Naavi account.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
+               {/* {creditExpiresAt && !isCreditExpired && bonusCredits > 0 && (
+  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+    <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#f97316" }}>
+      Welcome bonus applied! You received <strong>50 free credits</strong> when you created your Naavi account.
+    </span>
+  </div>
+)} */}
                 {isCreditExpired && (
                   <div className="wallet-expired-banner">
-                    ⚠️ Your 50 welcome credits expired on{" "}
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: 6, verticalAlign: "middle"}}>
+  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+</svg>
+Your 50 welcome credits expired on{" "}
                     {moment(creditExpiresAt).format("MMM D, YYYY")}.
                     {subscriptionCredits > 0
                       ? " Your subscription credits are still active."
@@ -255,8 +256,10 @@ const Wallet = () => {
                       {bonusCredits > 0 && !isCreditExpired && (
                         <div className="wallet-credit-row">
                           <span className={`wallet-credit-chip wallet-credit-chip--bonus${daysLeft <= 3 ? " warn" : ""}`}>
-                            ⭐ {bonusCredits} Welcome Bonus · Expires {moment(creditExpiresAt).format("MMM D, YYYY")}
-                          </span>
+<svg width="11" height="11" viewBox="0 0 24 24" fill="#f97316" stroke="#f97316" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: 4, verticalAlign: "middle"}}>
+  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+</svg>
+{bonusCredits} Welcome Bonus · Expires {moment(creditExpiresAt).format("MMM D, YYYY")}                          </span>
                         </div>
                       )}
                       {isCreditExpired && bonusCredits === 0 && subscriptionCredits === 0 && (
