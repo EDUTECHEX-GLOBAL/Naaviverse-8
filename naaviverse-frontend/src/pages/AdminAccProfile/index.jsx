@@ -273,13 +273,13 @@ const AdminAccProfile = () => {
     }
   };
 
-  useEffect(() => {
-    axios.get(`https://careers.marketsverse.com/paths/get`).then((res) => {
-      let result = res?.data?.data;
-      // console.log(result, "all paths fetched");
-      setBackupPathList(result);
-    });
-  }, []);
+  // useEffect(() => {
+  //   axios.get(`https://careers.marketsverse.com/paths/get`).then((res) => {
+  //     let result = res?.data?.data;
+  //     // console.log(result, "all paths fetched");
+  //     setBackupPathList(result);
+  //   });
+  // }, []);
 
   const addBackupPath = (backupPathId, selectedStepId) => {
     // console.log(pathSteps, "kjedkjweld");
