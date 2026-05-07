@@ -22,18 +22,18 @@ const MapComponent = () => {
     setCenter(newCenter);
   };
 
-  useEffect(() => {
-    axios
-      .get("https://careers.marketsverse.com/paths/get")
-      .then((response) => {
-        let result = response?.data?.data;
-        // console.log(result, "maps page result");
-        setData(result);
-      })
-      .catch((error) => {
-        console.log(error, "error in maps page");
-      });
-  }, []);
+  // useEffect(() => {
+  //   axios
+  //     .get("https://careers.marketsverse.com/paths/get")
+  //     .then((response) => {
+  //       let result = response?.data?.data;
+  //       // console.log(result, "maps page result");
+  //       setData(result);
+  //     })
+  //     .catch((error) => {
+  //       console.log(error, "error in maps page");
+  //     });
+  // }, []);
 
   function getBoundingBox(coordinates) {
     let minX = Infinity;
