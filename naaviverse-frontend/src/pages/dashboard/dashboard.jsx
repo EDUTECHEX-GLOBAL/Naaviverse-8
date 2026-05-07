@@ -103,7 +103,7 @@ const Dashboard = () => {
   
   // ✅ ADDED: Access control states
   const [approvalStatus, setApprovalStatus] = useState("");
-  const [isProfileIncomplete, setIsProfileIncomplete] = useState(true);
+ const [isProfileIncomplete, setIsProfileIncomplete] = useState(null); 
 
   const userDetails = JSON.parse(localStorage.getItem("user"));
 
@@ -293,9 +293,9 @@ const Dashboard = () => {
           <div onClick={() => setShowDrop(false)}>
             {/* ✅ FIXED: Pass props to Dashsidebar */}
             <Dashsidebar
-              approvalStatus={approvalStatus}
-              isProfileIncomplete={isProfileIncomplete}
-            />
+  approvalStatus={approvalStatus}
+  isProfileIncomplete={isProfileIncomplete === true} // only true when CONFIRMED incomplete, not during loading
+/>
           </div>
 
           <div className="dashboard-screens">

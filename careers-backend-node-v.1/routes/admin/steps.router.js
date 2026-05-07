@@ -8,7 +8,6 @@ const { verifyToken, verifyAdmin } = require("../../middlewares/authJwt");
 // 🔥 protect ALL admin routes
 router.use(verifyToken, verifyAdmin);
 
-
 // -------- STATIC ROUTES FIRST --------
 router.post("/bulk", controller.bulkUploadSteps);
 router.post("/", controller.addStep);
