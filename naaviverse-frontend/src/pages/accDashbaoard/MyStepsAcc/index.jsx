@@ -12,7 +12,7 @@ import CurrentStep from "../../CurrentStep";
 import { useStore } from "../../../components/store/store.ts";
 import { useNavigate, useLocation } from "react-router-dom";
 import MenuNav from "../../../components/MenuNav/index.jsx";
-
+import stepIcon from '../../../assets/images/assets/naavi-icon3.webp';
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 // ─── Helper: parse duration object → human-readable string ───────────────────
@@ -747,9 +747,10 @@ const MyStepsAcc = ({
                                 >
                                     {/* Header */}
                                     <div className="step-card-header">
-                                        <h3 className="step-card-title">
-                                            {step.macro_name || step.name || "Untitled Step"}
-                                        </h3>
+                                      <h3 className="step-card-title">
+  <img src={stepIcon} alt="step" style={{ width: "18px", height: "18px", objectFit: "contain", opacity: 0.8, flexShrink: 0, verticalAlign: "middle", marginRight: "7px" }} />
+  {step.macro_name || step.name || "Untitled Step"}
+</h3>
                                         <div className="step-card-badges">
                                             {pathName && (
                                                 <span className="badge-path">🔗 {pathName}</span>

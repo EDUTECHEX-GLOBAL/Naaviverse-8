@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Skeleton from "react-loading-skeleton";
 import { useCoinContextData } from "../../context/CoinContext";
 import "./pathview.scss";
-
+import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
 const ITEMS_PER_PAGE = 6;
 
 const Pathview = ({ paths, loading, onAdjustCoordinates, onViewPath }) => {
@@ -107,15 +107,15 @@ const Pathview = ({ paths, loading, onAdjustCoordinates, onViewPath }) => {
               key={row._id}
               style={{ animationDelay: `${index * 0.05}s` }}
             >
-              <div className="path-card__inner">
-                <div className="path-card__header">
-                  <div className="path-card__icon">
-                    {row.pathName.charAt(0).toUpperCase()}
-                  </div>
-                  {getProgramTag(row.program)}
-                </div>
+      <div className="path-card__inner">
+  <div className="path-card__header">
+    <div className="path-card__icon">
+      <img src={pathIcon} alt="path" style={{ width: "18px", height: "18px", objectFit: "contain" }} />
+    </div>
+    {getProgramTag(row.program)}
+  </div>
 
-                <h3 className="path-card__title">{row.pathName}</h3>
+  <h3 className="path-card__title">{row.pathName}</h3>
 
                 {row.description !== "-" && (
                   <p className="path-card__desc">{row.description}</p>

@@ -5,7 +5,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useCoinContextData } from "../../context/CoinContext";
 import logo from '../../assets/images/logo/naavi_final_logo2.png';
 import history from "./history.svg";
-
+import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
+import stepIcon from '../../assets/images/assets/naavi-icon3.webp';
 const NavIcon = ({ type, isActive }) => {
   const iconProps = {
     className: "user-nav-icon",
@@ -13,7 +14,7 @@ const NavIcon = ({ type, isActive }) => {
     height: "18",
     viewBox: "0 0 24 24",
     fill: "none",
-    stroke: isActive ? "#ffffff" : "#888",
+   stroke: isActive ? "#ffffff" : "#000000",
     strokeWidth: "1.7",
     strokeLinecap: "round",
     strokeLinejoin: "round",
@@ -27,14 +28,16 @@ const NavIcon = ({ type, isActive }) => {
           <polyline points="9 22 9 12 15 12 15 22" />
         </svg>
       );
-    case "paths":
-      return (
-        <svg {...iconProps}>
-          <circle cx="5" cy="18" r="2" />
-          <circle cx="19" cy="6" r="2" />
-          <path d="M5 16 C5 8, 19 16, 19 8" />
-        </svg>
-      );
+   case "paths":
+  return (
+    <img
+      src={pathIcon}
+      alt="paths"
+      width="18"
+      height="18"
+      style={{ objectFit: "contain", opacity: isActive ? 1 : 0.55 }}
+    />
+  );
     case "journey":
       return (
         <svg {...iconProps}>
@@ -42,14 +45,16 @@ const NavIcon = ({ type, isActive }) => {
           <circle cx="12" cy="9" r="2.5" />
         </svg>
       );
-    case "current-step":
-      return (
-        <svg {...iconProps}>
-          <polyline points="5 12 12 5 19 12" />
-          <path d="M12 5v14" />
-          <line x1="8" y1="19" x2="16" y2="19" />
-        </svg>
-      );
+   case "current-step":
+  return (
+    <img
+      src={stepIcon}
+      alt="current-step"
+      width="18"
+      height="18"
+      style={{ objectFit: "contain", opacity: isActive ? 1 : 0.55 }}
+    />
+  );
     case "transactions":
       return (
         <svg {...iconProps}>
@@ -68,14 +73,13 @@ const NavIcon = ({ type, isActive }) => {
         </svg>
       );
 
-      case "action-plan":
+   
   return (
     <svg {...iconProps}>
       <path d="M9 11l3 3L22 4" />  {/* checkmark */}
       <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
     </svg>
-  );
-  
+  )  
     default:
       return <svg {...iconProps}><circle cx="12" cy="12" r="10" /></svg>;
   }
@@ -91,7 +95,6 @@ const sidebarMenu2 = [
   { id: "current-step", title: "Current Step", display: "Current Step", icon: "current-step", path: "/dashboard/users/current-step" },
   { id: "transactions", title: "Transactions", display: "Transactions", icon: "transactions", path: "/dashboard/users/transactions" },
   { id: "wallet",       title: "Wallet",       display: "Wallet",       icon: "wallet",       path: "/dashboard/users/wallet" },
-    { id: "action-plan",  title: "Action Plan",  display: "Action Plan",  icon: "action-plan",  path: "/dashboard/users/action-plan" },
 
 ];
 

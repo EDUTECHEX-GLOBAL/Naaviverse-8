@@ -9,7 +9,7 @@ import lg1 from "../../static/images/login/lg1.svg";
 import CurrentStep from "../CurrentStep/index.jsx";
 import { useStore } from "../../components/store/store.ts";
 import { useNavigate, useLocation } from "react-router-dom";
-
+import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) => {
@@ -881,9 +881,11 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                   <div className="pending-path-card" key={i}>
                     <div className="pending-card-top">
                       <div className="pending-card-left">
-                        <span className="pending-path-name">{path?.nameOfPath}</span>
-
-                      </div>
+  <div className="admin-icon-box">
+    <img src={pathIcon} alt="path" style={{ width: "14px", height: "14px", objectFit: "contain" }} />
+  </div>
+  <span className="pending-path-name">{path?.nameOfPath}</span>
+</div>
                       <span className="pending-date">
                         {path?.createdAt ? new Date(path.createdAt).toLocaleString("en-IN", {
                           day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
@@ -944,8 +946,12 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                       const res = await axios.get(`${BASE_URL}/api/paths/viewpath/${path?._id}`);
                       if (res.data?.data) setSelectedPath(res.data.data);
                     }}>
-                    <div className="paths-col-name"><span className="path-name-text">{path?.nameOfPath}</span></div>
-                    <div className="paths-col-desc" onClick={ev => ev.stopPropagation()}>
+<div className="paths-col-name">
+  <div className="admin-icon-box">
+    <img src={pathIcon} alt="path" style={{ width: "16px", height: "16px", objectFit: "contain" }} />
+  </div>
+  <span className="path-name-text">{path?.nameOfPath}</span>
+</div>                <div className="paths-col-desc" onClick={ev => ev.stopPropagation()}>
                       <span className="path-desc-text">
                         {expandedRows[path?._id] ? path?.description : (path?.description?.length > 120 ? path?.description?.substring(0, 120) + "..." : path?.description)}
                       </span>

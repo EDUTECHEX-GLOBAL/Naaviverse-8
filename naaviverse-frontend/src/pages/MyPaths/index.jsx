@@ -5,7 +5,7 @@ import "./mypaths.scss";
 import axios from "axios";
 import { Draggable } from "react-drag-reorder";
 import EditPathForm from "../MyPaths/paths.jsx";
-
+import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
 // images
 import dummy from "./dummy.svg";
 import closepop from "../../static/images/dashboard/closepop.svg";
@@ -749,7 +749,8 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                         {/* Card Header */}
                         <div className="path-header">
                           <div className="path-title">
-                            <h3>{e?.nameOfPath || "Untitled Path"}</h3>
+                           <img src={pathIcon} alt="path" style={{ width: "18px", height: "18px", objectFit: "contain", opacity: 0.8, flexShrink: 0 }} />
+<h3>{e?.nameOfPath || "Untitled Path"}</h3>
                           </div>
                           <div className="path-meta">
                             {(e?.status === "draft" || e?.status === "changesrequested") ? (

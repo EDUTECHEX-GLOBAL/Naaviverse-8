@@ -8,6 +8,7 @@ import { useStore } from "../../../components/store/store.ts";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useLocation } from "react-router-dom";
+import stepIcon from '../../../assets/images/assets/naavi-icon3.webp';
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const parseDuration = (raw) => {
@@ -449,9 +450,12 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
                 : null;
               return (
                 <div className="admin-step-card" key={e._id} onClick={() => openModal(e)}>
-                  <div className="admin-step-name">
-                    <span className="admin-step-name-text">{e?.name || "Untitled"}</span>
-                  </div>
+     <div className="admin-step-name">
+  <div className="admin-icon-box">
+    <img src={stepIcon} alt="step" style={{ width: "16px", height: "16px", objectFit: "contain" }} />
+  </div>
+  <span className="admin-step-name-text">{e?.name || "Untitled"}</span>
+</div>
                   <div className="admin-step-desc" onClick={ev => ev.stopPropagation()}>
                     {desc ? (
                       <span className="admin-step-desc-text">
