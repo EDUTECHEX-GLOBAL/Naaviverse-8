@@ -3,7 +3,8 @@ import "./userHome.scss";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { GetWalletBalance, GetWalletTxns } from "../../views/inner-pages/pages/services/wallet";
-
+import pathIcon from "../../assets/images/assets/naavi-icon2.webp";
+import stepIcon from "../../assets/images/assets/naavi-icon3.webp";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const getUserFromStorage = () => {
@@ -328,46 +329,64 @@ useEffect(() => {
       const doneCount = steps.filter(s => s.status === "done").length;
       const progress = steps.length ? Math.round((doneCount / steps.length) * 100) : 0;
 
-      setMyPath({
-        name: pathData?.name || pathData?.nameOfPath || "—",
-        goal: pathData?.description || "",
-        progress,
-        steps,
-        doneCount,
-        totalSteps: steps.length,
-        enrolledOn: activePath?.createdAt
-          ? new Date(activePath.createdAt).toLocaleDateString("en-IN", {
-              day: "numeric", month: "short", year: "numeric"
-            })
-          : "—",
-      });
+   setMyPath({
+  name: pathData?.name || pathData?.nameOfPath || "—",
+  goal: pathData?.description || "",
+  progress,
+  steps,
+  doneCount,
+  totalSteps: steps.length,
+  enrolledOn: activePath?.createdAt
+    ? new Date(activePath.createdAt).toLocaleDateString("en-IN", {
+        day: "numeric", month: "short", year: "numeric"
+      })
+    : "—",
+  studentInfo: null,
+});
 
-      // Fetch explore paths
-      try {
-        const pathsRes = await axios.get(`${BASE_URL}/api/paths/active`);
-        const allPaths = pathsRes.data?.data || [];
-        setExplorePaths(allPaths.map(p => ({
-          id: p._id,
-          icon: p.country ? p.country.slice(0, 2).toUpperCase() : "🌍",
-          name: p.nameOfPath || p.name,
-          desc: p.description || "",
-          steps: p.total_steps || p.the_ids?.length || 0,
-          match: Math.floor(Math.random() * 20) + 75,
-          enrolled: enrolledPathIds.has(p._id.toString()),
-        })));
-      } catch (e) {
-        console.error("Explore paths fetch failed", e);
+// Fetch student profile info
+try {
+  const profileRes = await axios.get(`${BASE_URL}/api/users/get/${user.email}`);
+  const pd = profileRes.data?.data;
+  if (pd) {
+    setMyPath(prev => ({
+      ...prev,
+      studentInfo: {
+        grade: pd.grade || "",
+        curriculum: pd.curriculum || "",
+        stream: pd.stream || "",
+        school: pd.school || "",
       }
+    }));
+  }
+} catch (_) {}
 
-    } catch (err) {
-      console.error("MyPath fetch failed:", err);
-      setMyPath(null);
-    } finally {
-      setPathLoading(false);
-    }
-  };
+// Fetch explore paths
+try {
+  const pathsRes = await axios.get(`${BASE_URL}/api/paths/active`);
+  const allPaths = pathsRes.data?.data || [];
+  setExplorePaths(allPaths.map(p => ({
+    id: p._id,
+    icon: p.country ? p.country.slice(0, 2).toUpperCase() : "🌍",
+    name: p.nameOfPath || p.name,
+    desc: p.description || "",
+    steps: p.total_steps || p.the_ids?.length || 0,
+    match: Math.floor(Math.random() * 20) + 75,
+    enrolled: enrolledPathIds.has(p._id.toString()),
+  })));
+} catch (e) {
+  console.error("Explore paths fetch failed", e);
+}
 
-  fetchMyPath();
+} catch (err) {
+  console.error("MyPath fetch failed:", err);
+  setMyPath(null);
+} finally {
+  setPathLoading(false);
+}
+};
+
+fetchMyPath();
 }, [user?.email, refreshKey]);
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -524,7 +543,9 @@ useEffect(() => {
         <div className="uh-explore-list">
           {explorePaths.map(p => (
             <div key={p.id} className={`uh-explore-row ${p.enrolled ? "enrolled" : ""}`}>
-              <div className="uh-explore-icon">{p.icon}</div>
+              <div className="uh-explore-icon">
+  <img src={pathIcon} alt="path icon" className="uh-path-icon" />
+</div>
               <div className="uh-explore-info">
                 <span className="uh-explore-name">{p.name}</span>
                 <span className="uh-explore-desc">{p.desc}</span>
@@ -603,11 +624,43 @@ useEffect(() => {
     return (
       <div className="uh-panel">
         <div className="uh-path-header">
-          <div className="uh-path-meta">
-            <span className="uh-path-tag">Current Path</span>
-            <h3 className="uh-path-name">{myPath.name}</h3>
-            <p className="uh-path-goal">{myPath.goal}</p>
+    <div className="uh-path-meta">
+  <span className="uh-path-tag">Selected Path</span>
+  <div className="uh-path-name-row">
+    <img src={pathIcon} alt="path icon" className="uh-path-icon" />
+    <h3 className="uh-path-name">{myPath.name}</h3>
+  </div>
+  <p className="uh-path-goal">{myPath.goal}</p>
+  {myPath.studentInfo && (
+    <div className="uh-student-strip">
+      {myPath.studentInfo.grade && (
+        <div className="uh-student-chip">
+                    <div>
+            <span className="uh-student-chip-label">Currently Studying</span>
+            <span className="uh-student-chip-val">{myPath.studentInfo.grade}{myPath.studentInfo.curriculum ? ` · ${myPath.studentInfo.curriculum}` : ""}</span>
           </div>
+        </div>
+      )}
+      {myPath.studentInfo.stream && (
+        <div className="uh-student-chip">
+        
+          <div>
+            <span className="uh-student-chip-label">Stream</span>
+            <span className="uh-student-chip-val">{myPath.studentInfo.stream}</span>
+          </div>
+        </div>
+      )}
+      {myPath.studentInfo.school && (
+        <div className="uh-student-chip">
+          <div>
+            <span className="uh-student-chip-label">School</span>
+            <span className="uh-student-chip-val">{myPath.studentInfo.school}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  )}
+</div>
           <div className="uh-path-stats">
             <div className="uh-ps-item">
               <span>{myPath.doneCount}/{myPath.totalSteps}</span>
@@ -636,12 +689,11 @@ useEffect(() => {
           {myPath.steps.map((s, i) => (
             <div key={s.id} className={`uh-step-row s-${s.status}`}>
               <div className="uh-step-num">
-                {s.status === "done"
-                  ? <Icon type="check" size={12} color="#22c55e" />
-                  : s.status === "active"
-                    ? <span>{i + 1}</span>
-                    : <Icon type="lock" size={11} color="#94a3b8" />}
-              </div>
+  {s.status === "locked"
+    ? <Icon type="lock" size={11} color="#94a3b8" />
+    : <img src={stepIcon} alt="step" style={{ width: "14px", height: "14px", objectFit: "contain", opacity: s.status === "done" ? 1 : 0.7 }} />
+  }
+</div>
               <div className="uh-step-info">
                 <span className="uh-step-title">{s.title}</span>
                 <span className="uh-step-desc">{s.desc}</span>

@@ -140,18 +140,16 @@ $transition:  all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &__icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
-    background: linear-gradient(135deg, $brand 0%, $brand-light 100%);
-    color: #fff;
-    font-weight: 700;
-    font-size: 0.92rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
 
   &__tag {
     font-size: 0.68rem;

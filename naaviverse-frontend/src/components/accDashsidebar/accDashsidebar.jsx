@@ -3,7 +3,8 @@ import "./accDashsidebar.scss";
 import { useStore } from "../store/store.ts";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../../assets/images/logo/naavi_final_logo2.png";
-
+import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
+import stepIcon from '../../assets/images/assets/naavi-icon3.webp';
 const ROUTE_MAP = {
   Home: "/dashboard/accountants/home",
   CRM: "/dashboard/accountants",
@@ -43,25 +44,26 @@ const NavIcon = ({ type, isActive }) => {
           <path d="M16 3.13a4 4 0 0 1 0 7.75" />
         </svg>
       );
-    case "paths":
-      return (
-        <svg {...iconProps}>
-          <circle cx="5" cy="18" r="2" />
-          <circle cx="19" cy="6" r="2" />
-          <path d="M5 16 C5 8, 19 16, 19 8" />
-        </svg>
-      );
-    case "steps":
-      return (
-        <svg {...iconProps}>
-          <line x1="8" y1="6" x2="21" y2="6" />
-          <line x1="8" y1="12" x2="21" y2="12" />
-          <line x1="8" y1="18" x2="21" y2="18" />
-          <line x1="3" y1="6" x2="3.01" y2="6" />
-          <line x1="3" y1="12" x2="3.01" y2="12" />
-          <line x1="3" y1="18" x2="3.01" y2="18" />
-        </svg>
-      );
+   case "paths":
+  return (
+    <img
+      src={pathIcon}
+      alt="paths"
+      width="20"
+      height="20"
+      style={{ objectFit: "contain", opacity: isActive ? 1 : 0.55 }}
+    />
+  );
+   case "steps":
+  return (
+    <img
+      src={stepIcon}
+      alt="steps"
+      width="20"
+      height="20"
+      style={{ objectFit: "contain", opacity: isActive ? 1 : 0.55 }}
+    />
+  );
     case "marketplace":
       return (
         <svg {...iconProps}>

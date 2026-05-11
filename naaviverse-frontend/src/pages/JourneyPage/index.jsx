@@ -3,10 +3,10 @@ import axios from "axios";
 import Skeleton from "react-loading-skeleton";
 import { useNavigate } from "react-router-dom";
 import "./journey.scss";
-
+import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
 import { useCoinContextData } from "../../context/CoinContext";
 import { useStore } from "../../components/store/store.ts";
-
+import stepIcon from '../../assets/images/assets/naavi-icon3.webp';
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const parseDuration = (raw) => {
@@ -66,8 +66,8 @@ const StepCard = ({ step, index, onClick, isCompleted }) => {
 
       <div className="sc-top">
         <div className={`sc-number${isCompleted ? " sc-number--done" : ""}`}>
-          {isCompleted ? <IconCheck /> : stepNum}
-        </div>
+  <img src={stepIcon} alt="step" style={{ width: "18px", height: "18px", objectFit: "contain" }} />
+</div>
       </div>
 
       <div className="sc-body">
@@ -242,9 +242,10 @@ useEffect(() => {
               <span className="jh-icon"><IconMap /></span>
               Your Selected Path
             </div>
-            <h1 className="jh-title">
-              {journeyPageData?.nameOfPath || journeyPageData?.name || "N/A"}
-            </h1>
+           <h1 className="jh-title">
+  <img src={pathIcon} alt="path" style={{ width: "28px", height: "28px", objectFit: "contain", marginRight: "8px", verticalAlign: "middle" }} />
+  {journeyPageData?.nameOfPath || journeyPageData?.name || "N/A"}
+</h1>
             <p className="jh-desc">{journeyPageData?.description}</p>
           </div>
           <div className="jh-right">

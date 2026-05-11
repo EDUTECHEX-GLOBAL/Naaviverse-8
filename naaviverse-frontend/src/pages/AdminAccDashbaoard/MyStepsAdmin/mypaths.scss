@@ -184,8 +184,9 @@ $pink-soft: rgba(99, 102, 241, 0.05);
   }
 
   .admin-step-name {
-    display: flex;
-    align-items: flex-start;
+     display: flex;
+  align-items: center;
+  gap: 8px;
 
     .admin-step-name-text {
       font-size: 0.82rem;
@@ -947,4 +948,16 @@ body.admin-popup-open { overflow: hidden; }
 @keyframes smSpin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
+}
+
+.admin-icon-box {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }

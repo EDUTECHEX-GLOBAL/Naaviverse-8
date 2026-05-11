@@ -3,7 +3,8 @@ import "./accDashsidebar.scss";
 import { useStore } from "../store/store.ts";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../../assets/images/logo/naavi_final_logo2.png";
-
+import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
+import stepIcon from '../../assets/images/assets/naavi-icon3.webp';
 // ✅ URL map for each section
 const ROUTE_MAP = {
   Overview:      "/admin/dashboard/accountants",
@@ -38,23 +39,24 @@ const Icons = {
       <line x1="1" y1="10" x2="23" y2="10" />
     </svg>
   ),
-  Paths: ({ color }) => (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="5" cy="18" r="2" />
-      <circle cx="19" cy="6" r="2" />
-      <path d="M5 16 C5 8, 19 16, 19 8" />
-    </svg>
-  ),
+ Paths: ({ color }) => (
+  <img
+    src={pathIcon}
+    alt="paths"
+    width="17"
+    height="17"
+    style={{ objectFit: "contain", opacity: color === "#2273E6" ? 1 : 0.55 }}
+  />
+),
   Steps: ({ color }) => (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="8" y1="6" x2="21" y2="6" />
-      <line x1="8" y1="12" x2="21" y2="12" />
-      <line x1="8" y1="18" x2="21" y2="18" />
-      <line x1="3" y1="6" x2="3.01" y2="6" />
-      <line x1="3" y1="12" x2="3.01" y2="12" />
-      <line x1="3" y1="18" x2="3.01" y2="18" />
-    </svg>
-  ),
+  <img
+    src={stepIcon}
+    alt="steps"
+    width="17"
+    height="17"
+    style={{ objectFit: "contain", opacity: color === "#2273E6" ? 1 : 0.55 }}
+  />
+),
   Marketplace: ({ color }) => (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />

@@ -1256,3 +1256,56 @@
   transition: background .16s;
   &:hover { background: var(--uh-blue-dark); }
 }
+
+.uh-path-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.uh-path-icon {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.uh-student-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.uh-student-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  background: var(--uh-blue-pale);
+  border: 1px solid var(--uh-blue-light);
+  border-radius: var(--uh-r-md);
+
+  .uh-student-chip-icon { font-size: 13px; flex-shrink: 0; }
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .uh-student-chip-label {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--uh-ink-4);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .uh-student-chip-val {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--uh-blue-mid);
+  }
+}

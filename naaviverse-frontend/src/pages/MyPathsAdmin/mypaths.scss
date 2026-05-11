@@ -196,11 +196,12 @@ $grad-active: linear-gradient(135deg, #6366f1 0%, #8b5cf6 40%, #a78bfa 90%);
 
   .paths-col-name {
     .path-name-text {
-      font-size: 0.82rem;
-      font-weight: 580;
+      font-size: 0.80rem;
+      font-weight: 530;
       color: #1e293b;
       line-height: 1.4;
       letter-spacing: -0.01em;
+      gap:7px;
     }
   }
 
@@ -1400,4 +1401,21 @@ body.admin-popup-open { overflow: hidden; }
   }
   .pp-body { padding: 10px 14px 14px; }
   .pending-popup-body { padding: 10px 14px 14px; }
+}
+
+.paths-col-name {
+  display: flex;
+  align-items: center;
+  gap:9px;
+}
+.admin-icon-box {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }

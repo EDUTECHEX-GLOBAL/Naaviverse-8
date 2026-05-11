@@ -183,17 +183,13 @@ $shadow-md:     0 4px 20px rgba(15, 31, 61, 0.09);
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  font-size: 13px;
-  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: $orange-light;
-  color: $orange;
-  border: 1.5px solid $orange-border;
+  background: #f1f5f9;
+  border: 1.5px solid #e2e8f0;
 }
-
 .sc-badge {
   font-size: 10px;
   font-weight: 700;
@@ -397,8 +393,7 @@ $shadow-md:     0 4px 20px rgba(15, 31, 61, 0.09);
 
 /* Step number bubble — green when done */
 .sc-number--done {
-  background: #d1fae5 !important;
-  color: #065f46 !important;
+ background: #d1fae5 !important;
   border: 2px solid #6ee7b7 !important;
 
   svg {
