@@ -3,8 +3,9 @@ const router  = express.Router();
 const crypto  = require("crypto");
 const Razorpay = require("razorpay");
 
-const Payment      = require("../models/payment.model");
-const Subscription = require("../models/subscription.model");
+const Payment          = require("../models/payment.model");
+const Subscription     = require("../models/subscription.model");
+const VaultTransaction = require("../models/VaultTransaction");          // ✅ ADDED
 const { sendInvoiceEmail } = require("../utils/sendInvoiceEmail");
 
 console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
@@ -29,7 +30,6 @@ function derivePlanFields(productName = "", planTierOverride = null, tierOverrid
   const validPlanTiers = ["standard", "pro", "proplus"];
   const validTiers     = ["micro", "nano"];
 
-  // Resolve planTier — use override if valid, else parse from productName
   const planTier = validPlanTiers.includes(planTierOverride)
     ? planTierOverride
     : (() => {
@@ -39,7 +39,6 @@ function derivePlanFields(productName = "", planTierOverride = null, tierOverrid
           : "standard";
       })();
 
-  // Resolve tier — use override if valid, else detect from productName
   const tier = validTiers.includes(tierOverride)
     ? tierOverride
     : (productName || "").toLowerCase().includes("nano") ? "nano" : "micro";
@@ -63,7 +62,7 @@ router.post("/create-order", async (req, res) => {
       amount,
       currency = "INR",
       planTier: planTierFromBody,
-      tier:     tierFromBody,      // ← NOW READING tier FROM BODY
+      tier:     tierFromBody,
     } = req.body;
 
     console.log("📦 productName:", productName, "| planTierFromBody:", planTierFromBody, "| tierFromBody:", tierFromBody);
@@ -87,7 +86,6 @@ router.post("/create-order", async (req, res) => {
 
     console.log(`✅ Derived: planTier=${planTier}, tier=${tier}`);
 
-    // Create pending payment record
     const payment = await Payment.create({
       userEmail,
       productId,
@@ -96,13 +94,12 @@ router.post("/create-order", async (req, res) => {
       profileId:  profileId || null,
       amount,
       currency,
-      tier,       // ← SAVES "micro" or "nano" correctly ✅
-      planTier,   // ← SAVES "standard"|"pro"|"proplus" correctly ✅
+      tier,
+      planTier,
       status: "pending",
     });
     console.log("✅ Payment record created:", payment._id, "| tier:", tier, "| planTier:", planTier);
 
-    // Create Razorpay order
     const order = await razorpay.orders.create({
       amount:   amount * 100,
       currency,
@@ -178,9 +175,9 @@ router.post("/verify", async (req, res) => {
       endDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
     }
 
-    // ── 4. Use tier/planTier from saved payment record ────────────
+    // ── 4. Resolve tier/planTier from saved payment record ────────
     const resolvedPlanTier = payment.planTier || "standard";
-    const resolvedTier     = payment.tier     || "micro";  // reads what was saved at create-order ✅
+    const resolvedTier     = payment.tier     || "micro";
 
     console.log(`✅ Resolved: planTier=${resolvedPlanTier}, tier=${resolvedTier}`);
 
@@ -194,8 +191,8 @@ router.post("/verify", async (req, res) => {
           productName:   payment.productName || "Naavi Platform",
           billingMethod: payment.billingMethod || "monthly",
           profileId:     payment.profileId || null,
-          tier:          resolvedTier,      // "micro" or "nano" ✅
-          planTier:      resolvedPlanTier,  // "standard"|"pro"|"proplus" ✅
+          tier:          resolvedTier,
+          planTier:      resolvedPlanTier,
           startDate:     new Date(),
           endDate,
           status:        "active",
@@ -205,19 +202,30 @@ router.post("/verify", async (req, res) => {
     );
     console.log(`✅ Subscription upserted: ${payment.userEmail} — ${resolvedPlanTier}/${resolvedTier}`);
 
-    // ── 6. Credit wallet with plan credits ────────────────────────
+    // ── 6. Credit wallet — DIRECT DB INSERT (no self-HTTP) ────────
+    // ✅ FIX: was axios.post to self which silently failed when
+    //         APP_BASE_URL was undefined or wrong port.
+    //         Now writes directly to VaultTransaction collection.
     const credits = PLAN_CREDITS[resolvedPlanTier] || 100;
     try {
-      const axios = require("axios");
-      await axios.post(`${process.env.APP_BASE_URL || "http://localhost:5000"}/api/wallet/credit`, {
-        email:       payment.userEmail,
-        amount:      credits,
-        description: `${resolvedPlanTier} Plan credits`,
-        source:      "subscription",
+      await VaultTransaction.create({
+        email:  payment.userEmail,
+        type:   "credit",
+        amount: credits,
+        metadata: {
+          description: `${resolvedPlanTier} Plan subscription credits`,
+          source:      "subscription",
+          planTier:    resolvedPlanTier,
+          tier:        resolvedTier,
+          paymentId:   razorpay_payment_id,
+        },
       });
       console.log(`✅ Wallet credited: ${credits} credits → ${payment.userEmail}`);
     } catch (walletErr) {
-      console.warn("⚠ Wallet credit failed (non-critical):", walletErr.message);
+      // Log as error (not warn) — credits missing is a real problem
+      console.error("❌ Wallet credit failed:", walletErr.message);
+      // Still return success to frontend (payment is confirmed)
+      // but alert yourself via logs to fix manually if needed
     }
 
     // ── 7. Send invoice email (non-blocking) ──────────────────────
