@@ -1,6 +1,7 @@
 import React from 'react';
 import { FiZap, FiSun, FiGlobe, FiBox, FiArrowRight } from 'react-icons/fi';
 import './Team.scss';
+import Footer from '../../../../components/footernew/index';
 
 const disciplines = [
   "Artificial Intelligence",
@@ -77,14 +78,14 @@ function SectionHeading({ eyebrow, title, sub, center }) {
 const Team = () => {
   return (
     <div className="team-page">
-      <PageHeader title="Our Founders" crumb="TEAM" />
+      <PageHeader title="Founders" crumb="TEAM" />
 
       {/* Founders Section */}
       <section className="team-section team-section--founders">
         <NetworkBackdrop />
         <div className="team-container">
           <SectionHeading
-            eyebrow="Founders"
+           
             title="Building the Future of Human Navigation"
             sub="Naavi is founded by a multidisciplinary team driven by a shared vision to redefine how people navigate education, skills, careers, and future opportunities."
           />
@@ -225,7 +226,7 @@ const Team = () => {
           <SectionHeading
             center
             eyebrow="Looking Ahead"
-            title="One intelligent, evolving universe — the Naaviverse"
+            
             sub="We are building Naavi as a global ecosystem that connects:"
           />
           <div className="team-ecosystem-tags">
@@ -239,6 +240,7 @@ const Team = () => {
           </p>
         </div>
       </section>
+    <Footer />
     </div>
   );
 };

@@ -70,54 +70,6 @@ const Technology = () => {
   return (
     <Fragment>
 
-      {/* ── PAGE HEADER ── */}
-      <div className="tech-page-header">
-        <div className="tech-container">
-          <p className="tech-crumb">TECHNOLOGY</p>
-          <h1 className="tech-page-title">Our Technology</h1>
-        </div>
-      </div>
-
-      {/* ── HUD INTRO ── */}
-      <section className="tech-hud-section">
-        <CircuitGrid />
-        <div className="tech-container tech-hud-inner">
-          <div className="tech-hud-text">
-            <span className="tech-ai-badge">
-              <span className="tech-pulse-dot" />
-              AI INFRASTRUCTURE
-            </span>
-            <h2 className="tech-hud-title">
-              The intelligence layer<br />
-              <span className="tech-gradient-text">behind every pathway.</span>
-            </h2>
-            <p className="tech-hud-desc">
-              Naavi is a deep-tech platform built on adaptive AI engines, language reasoning, and knowledge graphs — engineered to navigate human potential at scale.
-            </p>
-            <div className="tech-metrics-row">
-              {[
-                { v: "GraphRAG", l: "Architecture" },
-                { v: "Realtime",  l: "Adaptation" },
-                { v: "0-Halluc.", l: "Grounded AI" },
-              ].map((m) => (
-                <div key={m.l} className="tech-metric-card">
-                  <p className="tech-metric-val">{m.v}</p>
-                  <p className="tech-metric-label">{m.l}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="tech-hud-vis">
-            <div className="tech-node-anim">
-              {/* Simple animated node grid */}
-              {[...Array(9)].map((_, i) => (
-                <div key={i} className="tech-node" style={{ animationDelay: `${i * 0.3}s` }} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ── PATHWAYS ── */}
       <section id="pathways" className="tech-section tech-pathways">
@@ -128,7 +80,6 @@ const Technology = () => {
             <span className="tech-layer-line" />
           </div>
           <h2 className="tech-section-title">PATHWAYS</h2>
-          <p className="tech-section-sub">AI Pathways Engine — adaptive, intelligent, real-time.</p>
 
           <div className="tech-pathways-grid">
             <div className="tech-pathways-main">
@@ -201,7 +152,7 @@ const Technology = () => {
             <span className="tech-layer-line tech-layer-line-mint" />
           </div>
           <h2 className="tech-section-title tech-section-title-white">LLM's — KG's</h2>
-          <p className="tech-section-sub tech-section-sub-white">Reasoning intelligence × structured pathway understanding.</p>
+        
 
           <p className="tech-llm-intro">
             Naavi is powered by the powerful synergy between Large Language Models (LLMs) and Knowledge Graphs (KGs), combining reasoning intelligence with structured pathway understanding.
@@ -239,7 +190,7 @@ const Technology = () => {
                 </div>
                 <div>
                   <p className="tech-mono-tag">MODULE · KG</p>
-                  <p className="tech-module-title">Knowledge Graphs connect:</p>
+                  <p className="tech-module-title">Knowledge Graphs create a structured intelligence network connecting:</p>
                 </div>
               </div>
               <div className="tech-kg-tags">
@@ -247,7 +198,6 @@ const Technology = () => {
                   <span key={n} className="tech-kg-tag">{n}</span>
                 ))}
               </div>
-              <p className="tech-kg-desc">…into a structured intelligence network of skills, careers, and human pathways.</p>
             </div>
           </div>
 
@@ -285,6 +235,7 @@ const Technology = () => {
           </div>
         </div>
       </section>
+    <Footer />
 
     </Fragment>
   );

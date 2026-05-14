@@ -216,16 +216,12 @@ const scrollTo = (id) => {
               </div>
 
               <div className="ab-col-txt">
-                <div className="ab-label">01 — Introduction</div>
+                
                 <h2>What is <span className="ab-green">Naavi?</span></h2>
                 <p className="ab-lead">
                   Naavi is the world's first AI-powered Path Engine that helps people navigate
                   personalized education, skill, and career pathways aligned with their passion
                   and future potential.
-                </p>
-                <p>
-                  Think of Naavi as your personal GPS for life — mapping your skills, goals,
-                  and opportunities into a living roadmap that adapts as you grow.
                 </p>
                 <div className="ab-pills">
                   {['Smart Path Guidance','Learning Roadmaps','Expert Insights','Real-time Adaptation'].map(t => (
@@ -242,20 +238,14 @@ const scrollTo = (id) => {
           <div className="ab-container">
             <div className="ab-row ab-row-rev">
               <div className="ab-col-txt">
-                <div className="ab-label">02 — Vision</div>
+               
                 <h2>Our <span className="ab-green">Vision</span></h2>
                 <p className="ab-lead">
                   To build the intelligence layer for human growth — where every individual can
                   navigate toward their highest potential with clarity, purpose, and opportunity.
                 </p>
-                <blockquote className="ab-quote">
-                  "The world gives people information, but not direction. Naavi changes that."
-                </blockquote>
-                <div className="ab-vision-chips">
-                  <div className="ab-vchip"><CompassIcon /><span>Clarity</span></div>
-                  <div className="ab-vchip"><TargetIcon /><span>Purpose</span></div>
-                  <div className="ab-vchip"><GlobeIcon /><span>Opportunity</span></div>
-                </div>
+               
+                
               </div>
 
               <div className="ab-col-vis">
@@ -276,41 +266,9 @@ const scrollTo = (id) => {
         <section id="ab-why" className="ab-section ab-alt-white">
           <div className="ab-container">
             <div className="ab-center-hd">
-              <div className="ab-label">03 — Why</div>
+             
               <h2>Why <span className="ab-green">Naavi</span></h2>
-              <p>Because the world gives people information, but not direction. Naavi bridges that gap.</p>
-            </div>
-            <div className="ab-cards-grid">
-              <div className="ab-feature-card">
-                <div className="ab-fc-icon"><SearchIcon /></div>
-                <h4>Personalized Intelligence</h4>
-                <p>Every pathway uniquely crafted for your interests, strengths, and goals — not a generic template.</p>
-              </div>
-              <div className="ab-feature-card">
-                <div className="ab-fc-icon"><GlobeIcon /></div>
-                <h4>Real-Time Adaptation</h4>
-                <p>Like GPS rerouting, Naavi continuously updates your path based on market shifts and progress.</p>
-              </div>
-              <div className="ab-feature-card">
-                <div className="ab-fc-icon"><NetworkIcon /></div>
-                <h4>Global Reach</h4>
-                <p>Access pathways spanning 50+ countries, thousands of institutions, and millions of opportunities.</p>
-              </div>
-              <div className="ab-feature-card">
-                <div className="ab-fc-icon"><BrainIcon /></div>
-                <h4>Human + AI</h4>
-                <p>Expert mentors combined with AI intelligence — the best guidance is both smart and human.</p>
-              </div>
-              <div className="ab-feature-card">
-                <div className="ab-fc-icon"><ChartIcon /></div>
-                <h4>Data-Driven Clarity</h4>
-                <p>Decisions backed by real-world outcome data, not guesswork or outdated counseling systems.</p>
-              </div>
-              <div className="ab-feature-card">
-                <div className="ab-fc-icon"><RocketIcon /></div>
-                <h4>Future-Ready Paths</h4>
-                <p>We forecast emerging careers and align your skills with tomorrow's job market today.</p>
-              </div>
+              <p>Because the world gives people information, but not direction.Naavi transforms confusion into intelligent navigation through AI-powered personalized pathways.</p>
             </div>
           </div>
         </section>
@@ -320,39 +278,15 @@ const scrollTo = (id) => {
           <div className="ab-container">
             <div className="ab-row">
               <div className="ab-col-txt">
-                <div className="ab-label">04 — Problem</div>
+               
                 <h2>The Navigation <span className="ab-green">Problem</span></h2>
                 <p className="ab-lead">
-                  Millions of students and professionals make life-changing decisions with limited
-                  guidance, outdated systems, and fragmented information.
+                 Millions of students and professionals make life-changing decisions with limited guidance, outdated systems, and fragmented information. Naavi solves this with dynamic pathway intelligence.
                 </p>
-                <p>
-                  Naavi solves this with dynamic pathway intelligence — transforming confusion
-                  into clear, actionable, personalized navigation.
-                </p>
-                <Link to="/login" className="ab-link-cta">See how Naavi solves this →</Link>
+               
+                
               </div>
 
-              <div className="ab-col-vis">
-                <div className="ab-stat-grid">
-                  <div className="ab-stat-box">
-                    <strong>85%</strong>
-                    <p>students feel underprepared for career decisions</p>
-                  </div>
-                  <div className="ab-stat-box">
-                    <strong>1B+</strong>
-                    <p>people face skills mismatch globally</p>
-                  </div>
-                  <div className="ab-stat-box">
-                    <strong>40%</strong>
-                    <p>graduates work outside their degree field</p>
-                  </div>
-                  <div className="ab-stat-box">
-                    <strong>70%</strong>
-                    <p>career counseling uses outdated methods</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </section>
@@ -361,7 +295,7 @@ const scrollTo = (id) => {
         <section id="ab-intel" className="ab-section ab-alt-white">
           <div className="ab-container">
             <div className="ab-center-hd">
-              <div className="ab-label">05 — Engine</div>
+             
               <h2>Pathway <span className="ab-green">Intelligence</span></h2>
               <p>
                 Naavi combines AI, Knowledge Graphs, and real-world human journeys to generate
@@ -387,24 +321,7 @@ const scrollTo = (id) => {
               </div>
             </div>
 
-            <div className="ab-pathway-strip">
-              <div className="ab-ps-label">Pathway Engine — Live Preview</div>
-              <div className="ab-ps-steps">
-                {[
-                  {badge:'MACRO',label:'Computer Science Degree',  active:true },
-                  {badge:'MICRO',label:'AI & ML Specialization',   active:true },
-                  {badge:'NANO', label:'Python Fundamentals',      active:true },
-                  {badge:'NANO', label:'Neural Networks Course',   active:false},
-                  {badge:'NANO', label:'Portfolio Projects',       active:false},
-                ].map((s,i)=>(
-                  <div key={i} className={`ab-ps-step ${s.active?'active':''}`}>
-                    <span className="ab-ps-badge">{s.badge}</span>
-                    <span>{s.label}</span>
-                    {s.active && <span className="ab-ps-dot"/>}
-                  </div>
-                ))}
-              </div>
-            </div>
+
           </div>
         </section>
 
@@ -413,16 +330,12 @@ const scrollTo = (id) => {
           <div className="ab-container">
             <div className="ab-row ab-row-rev">
               <div className="ab-col-txt">
-                <div className="ab-label">06 — Philosophy</div>
                 <h2>Mission &amp; <span className="ab-green">Philosophy</span></h2>
                 <p className="ab-lead">
                   We believe human potential should never be accidental. Naavi exists to align
                   passion, skills, education, and opportunity into meaningful life journeys.
                 </p>
-                <p>
-                  We're not just a platform — we're a philosophy: that with the right intelligence,
-                  every person can navigate toward their highest self.
-                </p>
+                
                 <div className="ab-belief-list">
                   <h5>We Believe In</h5>
                   <ul>
@@ -479,22 +392,15 @@ const scrollTo = (id) => {
               </div>
 
               <div className="ab-col-txt">
-                <div className="ab-label">07 — Ecosystem</div>
+                
                 <h2><span className="ab-green">Naaviverse</span></h2>
                 <p className="ab-lead">
                   The Naaviverse is a living ecosystem of pathways, people, skills, mentors,
                   institutions, and opportunities — continuously evolving through collective
                   human intelligence.
                 </p>
-                <p>
-                  Every journey taken enriches the collective intelligence. Every mentor connected,
-                  every skill learned, every opportunity discovered strengthens the entire ecosystem.
-                </p>
-                <div className="ab-eco-tags">
-                  {['Students','Mentors','Institutions','Employers','Pathways','Skills'].map(e=>(
-                    <span key={e} className="ab-eco-tag">{e}</span>
-                  ))}
-                </div>
+               
+                
               </div>
             </div>
           </div>
