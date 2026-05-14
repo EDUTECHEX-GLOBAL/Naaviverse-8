@@ -6,7 +6,7 @@ import { useCoinContextData } from "../../context/CoinContext";
 import logo from '../../assets/images/logo/naavi_final_logo2.png';
 import history from "./history.svg";
 import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
-import stepIcon from '../../assets/images/assets/naavi-icon3.webp';
+import stepIcon from '../../assets/images/assets/naavi-icon1.webp';
 const NavIcon = ({ type, isActive }) => {
   const iconProps = {
     className: "user-nav-icon",

@@ -4,7 +4,7 @@ import { useStore } from "../store/store.ts";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../../assets/images/logo/naavi_final_logo2.png";
 import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
-import stepIcon from '../../assets/images/assets/naavi-icon3.webp';
+import stepIcon from '../../assets/images/assets/naavi-icon1.webp';
 const ROUTE_MAP = {
   Home: "/dashboard/accountants/home",
   CRM: "/dashboard/accountants",
