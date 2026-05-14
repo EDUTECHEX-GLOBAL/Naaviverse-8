@@ -372,20 +372,19 @@ const goTechnology = (sectionId) => {
         </div>
     </div>
 </li>
-                   {/* ── TECHNOLOGY ── single col */}
+{/* ── TECHNOLOGY ── single col */}
 <li className={`nav-item dropdown ${at('/technology') ? 'active' : ''}`}>
     <span className="nav-link">TECHNOLOGY <Chevron /></span>
     <div className="mega-menu">
         <div className="mega-inner g1">
             <div className="mega-col">
                 <p className="mega-heading">Core Tech</p>
-                <Link className="mega-item" to="/technology/pathways" onClick={() => go('/technology/pathways')}>Pathways</Link>
-                <Link className="mega-item" to="/technology/llms-kgs" onClick={() => go('/technology/llms-kgs')}>LLM's – KG's</Link>
+                <button className="mega-item" onClick={() => goTechnology('pathways')}>Pathways</button>
+                <button className="mega-item" onClick={() => goTechnology('llms-kgs')}>LLM's – KG's</button>
             </div>
         </div>
     </div>
 </li>
-
                     {/* ── MORE ── right-aligned, single col */}
                     <li className={`nav-item dropdown ${location.pathname === '/contact' ? 'active' : ''}`}>
                         <span className="nav-link">MORE <Chevron /></span>
