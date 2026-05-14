@@ -3,8 +3,6 @@ import React,{Fragment, useEffect} from 'react';
 import {Helmet} from 'react-helmet';
 import {Link} from 'react-router-dom';
 
-
-import TopNavFour from '../../components/header/TopNavFour';
 import HeroBannerFive from '../../components/hero-banner/HeroBannerFive';
 import FancyFeatureSeventeen from '../../components/feature/FancyFeatureSeventeen';
 import About from '../../components/about/About';
@@ -38,9 +36,6 @@ const UserAnalysis = () => {
                     <title>Naavi - Navigate Your Passion</title>
                 </Helmet>
                 {/* helmet end */}
-
-                <TopNavFour/>
-                {/* theme-menu-four */}
 
                 <HeroBannerFive/> 
                 {/* {Herobanner End} */}

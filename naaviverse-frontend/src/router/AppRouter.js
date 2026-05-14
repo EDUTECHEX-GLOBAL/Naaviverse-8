@@ -4,15 +4,17 @@ import { Routes, Route } from "react-router-dom";
 
 //All Home Page Routes
 import UserAnalysis from '../views/home-pages/UserAnalysis';
+import TopNavFour from '../components/header/TopNavFour';
 import ArtificialIntelligence from '../views/home-pages/ArtificialIntelligence';
 import DataScience from '../views/home-pages/DataScience';
 import ChatBoot from '../views/home-pages/ChatBoot';
 import MachineLearning from '../views/home-pages/MachineLearning';
 
+
 //All Inner Page Routes
 
 //All DropDown Page Routes
-
+import AboutPage from '../views/inner-pages/pages/about-us/AboutPage';
 //All About Page Routes
 import AboutUsOne from '../views/inner-pages/pages/about-us/AboutUsOne';
 import AboutUsTwo from '../views/inner-pages/pages/about-us/AboutUsTwo';
@@ -28,7 +30,7 @@ import ServicesDetails from '../views/inner-pages/pages/services/ServicesDetails
 import TeamMember from '../views/inner-pages/pages/team/TeamMember';
 import TeamDetails from '../views/inner-pages/pages/team/TeamDetails';
 
-
+import Team from '../views/inner-pages/pages/team/Team';
 // Testimonial Page Routes
 import Testimonial from '../views/inner-pages/pages/Testimonial';
 import OurPricing from '../views/inner-pages/pages/OurPricing';
@@ -58,13 +60,15 @@ import NotFound from "../views/NotFound";
 const AppRouter = () => {
   return (
     <Fragment>
+      <TopNavFour /> 
       <Routes>
         <Route path="/" element={<UserAnalysis />} />
         <Route path="/artificial-intelligence" element={<ArtificialIntelligence />} />
         <Route path="/data-science" element={<DataScience />} />
         <Route path="/chatboot" element={<ChatBoot />} />
         <Route path="/machine-learning" element={<MachineLearning />} />
-
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/about/*" element={<AboutPage />} />
         <Route path="/about-one" element={<AboutUsOne />} />
         <Route path="/about-two" element={<AboutUsTwo />} />
 
@@ -76,7 +80,7 @@ const AppRouter = () => {
         <Route path="/team-member" element={<TeamMember />} />
         <Route path="/team-details" element={<TeamDetails />} />
 
-
+<Route path="/team" element={<Team />} />
 
         <Route path="/testimonial" element={<Testimonial />} />
         <Route path="/price" element={<OurPricing />} />

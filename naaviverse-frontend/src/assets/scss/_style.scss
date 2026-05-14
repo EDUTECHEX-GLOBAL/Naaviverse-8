@@ -171,7 +171,7 @@
 }
 body {
     font-family: "gorditaregular";
-    font-weight: normal;
+    //font-weight: normal;
     font-size: 20px;
     position: relative;
     line-height: 2em;
@@ -211,12 +211,12 @@ h4 {
 .h5,
 h5 {
     font-size: 24px;
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
 }
 .h6,
 h6 {
     font-size: 20px;
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
 }
 ::-webkit-input-placeholder {
     color: rgba(0, 0, 0, 0.6);
@@ -314,7 +314,7 @@ button.scroll-top {
     margin-bottom: 14px;
 }
 .title-style-one .sc-title-three {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     display: inline-block;
     line-height: 30px;
     border-radius: 20px;
@@ -341,7 +341,7 @@ button.scroll-top {
     color: rgba(255, 255, 255, 0.8);
 }
 .title-style-one .sc-title-five {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     display: inline-block;
     line-height: 28px;
     border-radius: 5px;
@@ -354,7 +354,7 @@ button.scroll-top {
     margin-bottom: 12px;
 }
 .title-style-one .main-title {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 58px;
     line-height: 1.34em;
     letter-spacing: -1px;
@@ -373,7 +373,7 @@ button.scroll-top {
     margin-bottom: 2px;
 }
 .title-style-two .main-title {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 72px;
     line-height: 1.15em;
     color: #fff;
@@ -385,7 +385,7 @@ button.scroll-top {
     padding-top: 25px;
 }
 .title-style-three .main-title {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 60px;
     line-height: 1.31em;
     letter-spacing: -1px;
@@ -409,7 +409,7 @@ button.scroll-top {
     margin-bottom: 20px;
 }
 .title-style-four .main-title {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 50px;
     line-height: 1.4em;
     letter-spacing: -1px;
@@ -421,7 +421,7 @@ button.scroll-top {
     text-decoration-thickness: 4px;
 }
 .title-style-five .main-title {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 45px;
     line-height: 1.22em;
     letter-spacing: -1px;
@@ -455,7 +455,7 @@ button.scroll-top {
     transition: all 0.5s ease-in-out;
 }
 body .btn-one {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 18px;
     text-transform: capitalize;
     color: #fff;
@@ -516,7 +516,7 @@ body .btn-three:before {
     background: #738bae;
 }
 body .btn-three a {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     color: #0b3c6a;
     transition: all 0.3s ease-in-out;
 }
@@ -555,7 +555,7 @@ body .btn-three.color-three a i {
     background: var(--prime-three);
 }
 body .btn-four {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 18px;
     text-transform: capitalize;
     color: #fff;
@@ -576,7 +576,7 @@ body .btn-four:hover {
     background: var(--prime-two);
 }
 body .btn-five {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 17px;
     text-transform: capitalize;
     color: #fff;
@@ -592,7 +592,7 @@ body .btn-five:hover {
     background: var(--prime-two);
 }
 body .btn-six {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 17px;
     color: #fff;
     line-height: 48px;
@@ -623,7 +623,7 @@ body .btn-six:hover:after {
     opacity: 1;
 }
 body .btn-seven {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 17px;
     color: var(--prime-one);
     line-height: 48px;
@@ -639,7 +639,7 @@ body .btn-seven:hover {
     color: #fff;
 }
 body .btn-eight {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 17px;
     color: #fff;
     line-height: 48px;
@@ -712,7 +712,7 @@ body .btn-eight:hover {
 }
 
 .theme-main-menu .req-demo-btn {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 17px;
     line-height: 53px;
     color: var(--prime-two);
@@ -774,7 +774,7 @@ body .btn-eight:hover {
     position: relative;
 }
 .theme-search-form form input {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     width: 100%;
     height: 100%;
     display: block;
@@ -806,7 +806,7 @@ body .btn-eight:hover {
     padding-bottom: 30px;
 }
 .theme-main-menu .get-in-touch-btn {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 18px;
     width: 190px;
     line-height: 50px;
@@ -821,7 +821,7 @@ body .btn-eight:hover {
     color: #fff;
 }
 .theme-main-menu .call-button {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 17px;
 }
 .theme-main-menu .call-button a {
@@ -834,7 +834,7 @@ body .btn-eight:hover {
     color: var(--prime-one);
 }
 .theme-main-menu .lang-dropdown button {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     color: #6b839a;
     font-size: 16px;
     border: none;
@@ -923,7 +923,7 @@ body .btn-eight:hover {
     display: none;
 }
 .theme-main-menu .send-msg-btn {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 18px;
     width: 200px;
     line-height: 55px;
@@ -1016,7 +1016,7 @@ body .btn-eight:hover {
 }
 .hero-banner-one .hero-heading {
     font-size: 82px;
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     line-height: 1.18em;
     margin: 42px 0 55px;
     letter-spacing: -1px;
@@ -1105,7 +1105,7 @@ body .btn-eight:hover {
     z-index: 1;
 }
 .hero-banner-one .illustration-holder h6 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 20px;
     line-height: 1.35em;
     color: #000;
@@ -1190,7 +1190,7 @@ body .btn-eight:hover {
     max-height: 100%;
 }
 .block-style-one h5 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 24px;
     line-height: 1.66em;
     letter-spacing: 0.5px;
@@ -1201,7 +1201,7 @@ body .btn-eight:hover {
     z-index: 3;
 }
 .block-style-two ul.list-item li {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 19px;
     line-height: 1.7em;
     color: #0b3c6a;
@@ -1226,7 +1226,7 @@ body .btn-eight:hover {
     margin: 40px 0 20px;
 }
 .block-style-two .nav-tabs button {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 17px;
     color: #000f5c;
     border: none;
@@ -1380,7 +1380,7 @@ body .btn-eight:hover {
     background: var(--prime-three);
 }
 .counter-block-one .main-count {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 60px;
     line-height: initial;
     color: var(--prime-one);
@@ -1494,7 +1494,7 @@ body .btn-eight:hover {
     width: 100%;
 }
 .block-style-three h6 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 21px;
     margin-bottom: 16px;
 }
@@ -1503,7 +1503,7 @@ body .btn-eight:hover {
     line-height: 29px;
 }
 .block-style-three .numb {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 20px;
     color: var(--prime-two);
     text-align: center;
@@ -1572,7 +1572,7 @@ body .btn-eight:hover {
     color: rgba(0, 40, 78, 0.5);
 }
 .portfolio-block-one .title .pj-name {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 22px;
     color: var(--heading);
 }
@@ -1671,7 +1671,7 @@ body .btn-eight:hover {
     text-align: center;
 }
 .pricing-table-area-one .pr-table-wrapper .pack-name {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 32px;
     color: #00284e;
     letter-spacing: -1px;
@@ -1693,7 +1693,7 @@ body .btn-eight:hover {
     text-align: left;
 }
 .pricing-table-area-one .top-banner .price {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 48px;
     color: var(--prime-two);
     padding-right: 20px;
@@ -1703,7 +1703,7 @@ body .btn-eight:hover {
     top: -0.8em;
 }
 .pricing-table-area-one .top-banner span {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 22px;
     display: block;
     color: #00284e;
@@ -1728,7 +1728,7 @@ body .btn-eight:hover {
     margin-top: 30px;
 }
 .pricing-table-area-one .trial-button span {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     color: #00284e;
     transition: all 0.3s ease-in-out;
 }
@@ -1753,7 +1753,7 @@ body .btn-eight:hover {
     color: #fff;
 }
 .pricing-table-area-one .msg-note a {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     text-decoration: underline;
     color: #fff;
 }
@@ -1817,7 +1817,7 @@ body .btn-eight:hover {
 }
 .feedback-block-one .cost {
     font-size: 18px;
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     color: #99a9b8;
 }
 .feedback-block-one .cost span {
@@ -1935,7 +1935,7 @@ body .btn-eight:hover {
     transition: all 0.3s ease-in-out;
 }
 .blog-meta-one .blog-title h5 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 25px;
     letter-spacing: -0.5px;
     color: var(--heading);
@@ -2009,7 +2009,7 @@ body .btn-eight:hover {
     padding-left: 40px;
 }
 .address-block-one .text-meta .title {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 24px;
     margin-bottom: 10px;
 }
@@ -2051,7 +2051,7 @@ body .btn-eight:hover {
     margin: 0 auto;
 }
 .theme-basic-footer .footer-title {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 24px;
     margin-bottom: 20px;
 }
@@ -2148,7 +2148,7 @@ body .btn-eight:hover {
 .theme-basic-footer .newsletter form button {
     position: absolute;
     font-size: 16px;
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     top: 8px;
     right: 8px;
     bottom: 8px;
@@ -2208,7 +2208,7 @@ body .btn-eight:hover {
     letter-spacing: -2px;
 }
 .hero-banner-two .demo-btn {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 18px;
     color: #6a5dff;
     padding: 0 35px;
@@ -2285,7 +2285,7 @@ body .btn-eight:hover {
     padding: 20px 5px;
 }
 .hero-banner-two .illustration-holder .card-one h6 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 20px;
     margin: 0 0 0 15px;
 }
@@ -2311,7 +2311,7 @@ body .btn-eight:hover {
     width: 175px;
 }
 .hero-banner-two .illustration-holder .card-two .main-count {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 24px;
     color: var(--heading);
     line-height: initial;
@@ -2408,7 +2408,7 @@ body .btn-eight:hover {
     max-height: 100%;
 }
 .block-style-four h5 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 24px;
     color: var(--heading);
     margin: 52px 0 30px;
@@ -2557,7 +2557,7 @@ body .btn-eight:hover {
     margin-bottom: 35px;
 }
 .feedback-block-two .text-wrapper .read-btn span {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 17px;
     color: var(--heading);
 }
@@ -2571,7 +2571,7 @@ body .btn-eight:hover {
     background: rgba(68, 109, 255, 0.15);
 }
 .block-style-five .codeconSkillbar .skill-text span {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 16px;
     text-transform: uppercase;
     letter-spacing: 1.4px;
@@ -2591,7 +2591,7 @@ body .btn-eight:hover {
     width: 91%;
 }
 .block-style-five .codeconSkillbar .skillBar .PercentText {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     width: 40px;
     background: #ffffff;
     box-shadow: 0px 5px 20px rgba(0, 28, 99, 0.08);
@@ -2663,7 +2663,7 @@ body .btn-eight:hover {
     font-size: 17px;
 }
 .block-style-six h6 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 20px;
     margin: 25px 0 20px;
 }
@@ -2740,7 +2740,7 @@ body .btn-eight:hover {
     background: #000f5c;
 }
 .feedback-block-three .text-wrapper .name h6 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     margin-bottom: 0;
 }
 .feedback-block-three .text-wrapper .name span {
@@ -2822,7 +2822,7 @@ body .btn-eight:hover {
     border: none;
 }
 .accordion-style-one .accordion-button {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 20px;
     line-height: 1.62em;
     padding: 23px 20px 23px 35px;
@@ -2920,7 +2920,7 @@ body .btn-eight:hover {
     text-decoration: underline;
 }
 .blog-meta-two .blog-title h5 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 25px;
     color: var(--heading);
     line-height: 1.44em;
@@ -2932,7 +2932,7 @@ body .btn-eight:hover {
     color: var(--prime-one);
 }
 .blog-meta-two .read-btn {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 17px;
     color: rgba(0, 15, 92, 0.4);
 }
@@ -2978,13 +2978,13 @@ body .btn-eight:hover {
     text-transform: uppercase;
 }
 .fancy-short-banner-one h3 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 37px;
     line-height: 1.38em;
     margin: 0 0 0;
 }
 .fancy-short-banner-one .msg-btn {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 18px;
     color: var(--prime-one);
     padding: 0 40px;
@@ -3124,7 +3124,7 @@ body .btn-eight:hover {
     max-height: 100%;
 }
 .block-style-seven h5 a {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 25px;
     color: var(--heading);
     margin: 30px 0 8px;
@@ -3228,7 +3228,7 @@ body .btn-eight:hover {
     margin: 0 auto;
 }
 .block-style-eight .icon .num {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 17px;
     color: #fff;
     width: 45px;
@@ -3244,7 +3244,7 @@ body .btn-eight:hover {
     z-index: 1;
 }
 .block-style-eight h5 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 25px;
     line-height: 1.4em;
     color: #fff;
@@ -3315,7 +3315,7 @@ body .btn-eight:hover {
     animation: jumpThree 6s infinite linear;
 }
 .fancy-feature-twelve .illustration-holder .card-one h6 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 20px;
     margin: 0;
 }
@@ -3345,7 +3345,7 @@ body .btn-eight:hover {
     animation: jumpTwo 6s infinite linear;
 }
 .fancy-feature-twelve .illustration-holder .card-two .main-count {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 28px;
     color: var(--heading);
     line-height: initial;
@@ -3428,7 +3428,7 @@ body .btn-eight:hover {
     line-height: initial;
 }
 .fancy-short-banner-two .button-group a strong {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-weight: normal;
     font-size: 19px;
     display: block;
@@ -3553,7 +3553,7 @@ body .btn-eight:hover {
 }
 .hero-banner-four .hero-heading {
     font-size: 75px;
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     line-height: 1.14em;
     margin: 42px 0 45px;
     letter-spacing: -1px;
@@ -3580,7 +3580,7 @@ body .btn-eight:hover {
     padding: 0 190px 0 30px;
 }
 .hero-banner-four form button {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 16px;
     color: #fff;
     position: absolute;
@@ -3659,7 +3659,7 @@ body .btn-eight:hover {
     max-height: 100%;
 }
 .block-style-ten h6 a {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 21px;
     color: var(--heading);
     margin: 25px 0 18px;
@@ -3731,7 +3731,7 @@ body .btn-eight:hover {
     margin: 0 auto;
 }
 .block-style-eleven .icon .num {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 17px;
     color: #fff;
     width: 45px;
@@ -3747,7 +3747,7 @@ body .btn-eight:hover {
     z-index: 1;
 }
 .block-style-eleven h5 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 25px;
     line-height: 1.4em;
     text-align: center;
@@ -3772,7 +3772,7 @@ body .btn-eight:hover {
     background: rgba(68, 109, 255, 0.15);
 }
 .fancy-feature-sixteen .codeconSkillbar .skill-text span {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 17px;
     color: var(--heading);
     float: none;
@@ -3794,7 +3794,7 @@ body .btn-eight:hover {
     width: 78%;
 }
 .fancy-feature-sixteen .codeconSkillbar .skillBar .PercentText {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     width: 40px;
     background: #ffffff;
     box-shadow: 0px 5px 20px rgba(0, 28, 99, 0.08);
@@ -3825,7 +3825,7 @@ body .btn-eight:hover {
     color: rgba(0, 40, 78, 0.3);
 }
 .pricing-table-area-two .price {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 64px;
     color: var(--heading);
     line-height: initial;
@@ -3845,7 +3845,7 @@ body .btn-eight:hover {
     background: var(--prime-one);
 }
 .pricing-table-area-two .active .pack-name {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     color: #fff;
 }
 .pricing-table-area-two .active .price,
@@ -3887,7 +3887,7 @@ body .btn-eight:hover {
     background: linear-gradient(0deg, rgba(248, 253, 255, 0) 0%, rgba(241, 252, 255, 0.51782) 48.22%, #f6fdff 100%);
 }
 .hero-banner-five .hero-heading {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 60px;
     line-height: 1.17em;
 }
@@ -3940,7 +3940,7 @@ body .btn-eight:hover {
 }
 
 .hero-banner-five .hero-heading-problempage {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 55px;
     line-height: 1.17em;
 }
@@ -4048,7 +4048,7 @@ body .btn-eight:hover {
     max-height: 100%;
 }
 .block-style-twelve h5 a {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 25px;
     color: var(--heading);
     margin: 30px 0 8px;
@@ -4067,7 +4067,7 @@ body .btn-eight:hover {
 //llm and kgs heading styles in features
 
 .custom-feature-title {
-    font-family: "gorditamedium";  /* Same font family */
+    font-family: 'Poppins', sans-serif;  /* Same font family */
     font-size: 25px;               /* Same font size */
     color: var(--heading);         /* Same color */
     margin: 30px 0 8px;            /* Same margin as before */
@@ -4193,7 +4193,7 @@ body .btn-eight:hover {
     border-radius: 10px;
 }
 .block-style-thirteen .list-item li h6 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 19px;
 }
 .block-style-thirteen .list-item .numb {
@@ -4328,7 +4328,7 @@ body .btn-eight:hover {
     margin: 25px 0 38px;
 }
 .feedback-block-four .cp-info h6 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 22px;
     margin-bottom: -7px;
 }
@@ -4424,7 +4424,7 @@ body .btn-eight:hover {
     box-shadow: 0px 10px 20px rgba(0, 33, 63, 0.03);
 }
 .theme-basic-footer .subscribe-form form button {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 18px;
     color: #fff;
     width: 150px;
@@ -4478,7 +4478,7 @@ body .btn-eight:hover {
     animation: jumpThree 3s infinite linear;
 }
 .theme-inner-banner .intro-title {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 43px;
     letter-spacing: -0.8px;
     padding-top: 40px;
@@ -4657,7 +4657,7 @@ body .btn-eight:hover {
     line-height: initial;
 }
 .team-block-one .team-info .name {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     display: block;
     font-size: 21px;
     color: var(--heading);
@@ -4678,7 +4678,7 @@ body .btn-eight:hover {
     padding: 40px 50px 40px 70px;
 }
 .team-details .main-bg .text-wrapper .name {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 33px;
     color: var(--heading);
 }
@@ -4689,7 +4689,7 @@ body .btn-eight:hover {
     line-height: initial;
 }
 .team-details .main-bg .text-wrapper h6 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 19px;
     padding-bottom: 8px;
     text-transform: uppercase;
@@ -4796,14 +4796,14 @@ body .btn-eight:hover {
     border-radius: 20px;
 }
 .fancy-short-banner-five h3 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     color: #fff;
     font-size: 22px;
     line-height: 1.25em;
     margin: 0 0 0;
 }
 .fancy-short-banner-five .msg-btn {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 18px;
     color: #fff;
     padding: 0 38px;
@@ -4847,7 +4847,7 @@ body .btn-eight:hover {
     background: rgba(145, 59, 255, 0.15);
 }
 .service-sidebar .service-category .current-page a {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     color: var(--prime-three);
     background: rgba(145, 59, 255, 0.15);
 }
@@ -4870,7 +4870,7 @@ body .btn-eight:hover {
     margin: 7px 0 13px;
 }
 .sidebar-quote .name {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 19px;
     letter-spacing: -0.5px;
     color: #fff;
@@ -4879,7 +4879,7 @@ body .btn-eight:hover {
     font-family: "gorditaregular";
 }
 .service-sidebar .download-btn-group a {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 17px;
     line-height: 60px;
     width: 100%;
@@ -4908,7 +4908,7 @@ body .btn-eight:hover {
     color: var(--prime-three);
 }
 .service-details-meta .main-title {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 60px;
     line-height: 1.2em;
     letter-spacing: -1px;
@@ -4923,7 +4923,7 @@ body .btn-eight:hover {
     margin: 35px 0 55px;
 }
 .service-details-meta .sub-title {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 28px;
     margin-bottom: 20px;
 }
@@ -4951,7 +4951,7 @@ body .btn-eight:hover {
     padding: 22px 35px 18px;
 }
 .block-style-fifteen h6 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 22px;
     margin: 0;
 }
@@ -4962,7 +4962,7 @@ body .btn-eight:hover {
     margin: 5px 0 10px;
 }
 .block-style-fifteen .text .details-btn {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 17px;
     color: var(--prime-three);
 }
@@ -5024,7 +5024,7 @@ body .btn-eight:hover {
     border-radius: 50%;
 }
 .block-style-fifteen .percent_text {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     color: #000f5c;
     font-size: 20px;
     z-index: 3;
@@ -5039,7 +5039,7 @@ body .btn-eight:hover {
     stroke-width: 5px;
 }
 .block-style-fifteen .percent-inner .CircularProgressbar-text {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     fill: #000f5c;
     font-size: 20px;
 }
@@ -5056,7 +5056,7 @@ body .btn-eight:hover {
     transition: all 0.3s ease-in-out;
 }
 .g-control-nav-one li.react-tabs__tab--selected {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     color: var(--prime-three);
     background: rgba(145, 59, 255, 0.1);
     border-color: transparent;
@@ -5148,7 +5148,7 @@ body .btn-eight:hover {
     color: rgba(0, 40, 78, 0.5);
 }
 .portfolio-block-two .title .pj-name {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 22px;
     color: var(--heading);
 }
@@ -5196,7 +5196,7 @@ body .btn-eight:hover {
     background: rgba(145, 59, 255, 0.15);
 }
 .pr-details-one .sub-title {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 28px;
     margin-bottom: 20px;
 }
@@ -5206,7 +5206,7 @@ body .btn-eight:hover {
     line-height: 2.11em;
 }
 .pr-details-one .pt-title {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 14px;
     text-transform: uppercase;
     color: rgba(0, 40, 78, 0.3);
@@ -5214,7 +5214,7 @@ body .btn-eight:hover {
     margin-bottom: -4px;
 }
 .pr-details-one .pt-text {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 18px;
     line-height: 1.55em;
     color: rgba(0, 40, 78, 0.8);
@@ -5317,7 +5317,7 @@ body .btn-eight:hover {
     margin-bottom: 7px;
 }
 .blog-sidebar .sidebar-keyword ul li a {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 13px;
     letter-spacing: 1px;
     background: #fff;
@@ -5353,7 +5353,7 @@ body .btn-eight:hover {
     transition: all 0.3s ease-in-out;
 }
 .blog-meta-three .blog-title h4 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 33px;
     letter-spacing: -0.5px;
     color: var(--heading);
@@ -5384,7 +5384,7 @@ body .btn-eight:hover {
     letter-spacing: -0.5px;
 }
 .blog-details .tags li:first-child {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     color: #00284e;
     padding-right: 5px;
 }
@@ -5397,7 +5397,7 @@ body .btn-eight:hover {
     text-decoration: underline;
 }
 .blog-details .share-icon li:first-child {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     color: #00284e;
     font-size: 17px;
 }
@@ -5423,7 +5423,7 @@ body .btn-eight:hover {
     box-shadow: 0px 20px 60px rgba(0, 73, 140, 0.04);
 }
 .blog-details .blog-inner-title {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 42px;
     letter-spacing: -1px;
 }
@@ -5438,7 +5438,7 @@ body .btn-eight:hover {
     position: relative;
 }
 .blog-comment-area .comment .name {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 20px;
     color: var(--heading);
     letter-spacing: -1px;
@@ -5454,7 +5454,7 @@ body .btn-eight:hover {
     padding: 8px 50px 0 0;
 }
 .blog-comment-area .comment .reply-btn {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 13px;
     color: #fff;
     text-transform: uppercase;
@@ -5587,7 +5587,7 @@ body .btn-eight:hover {
     width: 38px;
 }
 .contact-section-one .address-block-two .title {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 24px;
     padding: 20px 0 14px;
     margin-bottom: 0;
@@ -5636,7 +5636,7 @@ body .btn-eight:hover {
     margin-bottom: 0;
 }
 .form-style-one .form-title {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 43px;
 }
 .form-style-one form label {
@@ -5695,7 +5695,7 @@ body .btn-eight:hover {
     color: var(--prime-three);
 }
 .faq-section-one .faq-title {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 33px;
     margin-bottom: 30px;
 }
@@ -5712,7 +5712,7 @@ body .btn-eight:hover {
     right: 0;
 }
 .error-page-content h2 {
-    font-family: "gorditamedium";
+    font-family: 'Poppins', sans-serif;
     font-size: 43px;
     letter-spacing: -1px;
     text-align: center;
