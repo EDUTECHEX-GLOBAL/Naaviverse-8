@@ -221,6 +221,7 @@ const NAAVI_STYLES = `
   white-space: nowrap;
   box-shadow: 0 2px 12px rgba(34, 115, 230, 0.28);
 }
+  
 `;
 
 /* ── Inject styles once into <head> ── */
@@ -266,6 +267,28 @@ const goAbout = (hash) => {
     }
 };
 
+
+const goImpact = (sectionId) => {
+    if (location.pathname === '/impact') {
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+        navigate('/impact');
+        setTimeout(() => {
+            document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 400);
+    }
+};
+
+const goTechnology = (sectionId) => {
+    if (location.pathname === '/technology') {
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+        navigate('/technology');
+        setTimeout(() => {
+            document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 400);
+    }
+};
        /* scroll to a section on /team */
     const goSection = (sectionId) => {
         if (location.pathname === '/team') {
@@ -324,45 +347,44 @@ const goAbout = (hash) => {
                         </div>
                     </li>
 
-                    {/* ── IMPACT ── 3 columns */}
-                    <li className={`nav-item dropdown ${at('/impact') ? 'active' : ''}`}>
-                        <span className="nav-link">IMPACT <Chevron /></span>
-                        <div className="mega-menu w-3col">
-                            <div className="mega-inner g3">
-                                <div className="mega-col">
-                                    <p className="mega-heading">The Problem</p>
-                                    <Link className="mega-item" to="/impact/skill-gap-problem"  onClick={() => go('/impact/skill-gap-problem')}>Skill Gap Problem</Link>
-                                    <Link className="mega-item" to="/impact/future-workforce"   onClick={() => go('/impact/future-workforce')}>Future Workforce</Link>
-                                    <Link className="mega-item" to="/impact/human-potential"    onClick={() => go('/impact/human-potential')}>Human Potential</Link>
-                                </div>
-                                <div className="mega-col">
-                                    <p className="mega-heading">Outcomes</p>
-                                    <Link className="mega-item" to="/impact/student-outcomes"          onClick={() => go('/impact/student-outcomes')}>Student Outcomes</Link>
-                                    <Link className="mega-item" to="/impact/education-transformation"  onClick={() => go('/impact/education-transformation')}>Education Transformation</Link>
-                                    <Link className="mega-item" to="/impact/success-stories"           onClick={() => go('/impact/success-stories')}>Success Stories</Link>
-                                </div>
-                                <div className="mega-col">
-                                    <p className="mega-heading">Global Reach</p>
-                                    <Link className="mega-item" to="/impact/global-opportunity-access" onClick={() => go('/impact/global-opportunity-access')}>Global Opportunity Access</Link>
-                                    <Link className="mega-item" to="/impact/sdgs-social-impact"        onClick={() => go('/impact/sdgs-social-impact')}>SDGs & Social Impact</Link>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-
-                    {/* ── TECHNOLOGY ── single col */}
-                    <li className={`nav-item dropdown ${at('/technology') ? 'active' : ''}`}>
-                        <span className="nav-link">TECHNOLOGY <Chevron /></span>
-                        <div className="mega-menu">
-                            <div className="mega-inner g1">
-                                <div className="mega-col">
-                                    <p className="mega-heading">Core Tech</p>
-                                    <Link className="mega-item" to="/technology/pathways" onClick={() => go('/technology/pathways')}>Pathways</Link>
-                                    <Link className="mega-item" to="/technology/llms-kgs" onClick={() => go('/technology/llms-kgs')}>LLM's – KG's</Link>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
+                 {/* ── IMPACT ── 3 columns */}
+<li className={`nav-item dropdown ${at('/impact') ? 'active' : ''}`}>
+    <span className="nav-link">IMPACT <Chevron /></span>
+    <div className="mega-menu w-3col">
+        <div className="mega-inner g3">
+            <div className="mega-col">
+                <p className="mega-heading">The Problem</p>
+                <button className="mega-item" onClick={() => goImpact('skill-gap-problem')}>Skill Gap Problem</button>
+                <button className="mega-item" onClick={() => goImpact('future-workforce')}>Future Workforce</button>
+                <button className="mega-item" onClick={() => goImpact('human-potential')}>Human Potential</button>
+            </div>
+            <div className="mega-col">
+                <p className="mega-heading">Outcomes</p>
+                <button className="mega-item" onClick={() => goImpact('student-outcomes')}>Student Outcomes</button>
+                <button className="mega-item" onClick={() => goImpact('education-transformation')}>Education Transformation</button>
+                <button className="mega-item" onClick={() => goImpact('success-stories')}>Success Stories</button>
+            </div>
+            <div className="mega-col">
+                <p className="mega-heading">Global Reach</p>
+                <button className="mega-item" onClick={() => goImpact('global-opportunity-access')}>Global Opportunity Access</button>
+                <button className="mega-item" onClick={() => goImpact('sdgs-social-impact')}>SDGs & Social Impact</button>
+            </div>
+        </div>
+    </div>
+</li>
+                   {/* ── TECHNOLOGY ── single col */}
+<li className={`nav-item dropdown ${at('/technology') ? 'active' : ''}`}>
+    <span className="nav-link">TECHNOLOGY <Chevron /></span>
+    <div className="mega-menu">
+        <div className="mega-inner g1">
+            <div className="mega-col">
+                <p className="mega-heading">Core Tech</p>
+                <Link className="mega-item" to="/technology/pathways" onClick={() => go('/technology/pathways')}>Pathways</Link>
+                <Link className="mega-item" to="/technology/llms-kgs" onClick={() => go('/technology/llms-kgs')}>LLM's – KG's</Link>
+            </div>
+        </div>
+    </div>
+</li>
 
                     {/* ── MORE ── right-aligned, single col */}
                     <li className={`nav-item dropdown ${location.pathname === '/contact' ? 'active' : ''}`}>

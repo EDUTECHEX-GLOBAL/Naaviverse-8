@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import Footer from '../../../../components/footernew/index';
 import './AboutPage.scss';
-
+const HEADER_OFFSET = 80;
 /* SVG Icons */
 const CompassIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -85,8 +85,9 @@ const AboutPage = () => {
       const id = hash.replace('#', '');
       setTimeout(() => {
         const element = document.getElementById(id);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+       if (element) {
+          const top = element.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
+          window.scrollTo({ top, behavior: 'smooth' });
         }
       }, 120);
     } else {
@@ -94,17 +95,19 @@ const AboutPage = () => {
     }
   }, []);
 
-  const scrollTo = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+const scrollTo = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
+    window.scrollTo({ top, behavior: 'smooth' });
   };
-
   return (
     <Fragment>
       <Helmet>
         <title>About Naavi — AI-Powered Path Engine</title>
       </Helmet>
 
-      <div className="ab-page">
+     <div className="ab-page" style={{ paddingTop: '80px' }}>
 
         {/* ── HERO ── */}
         {/* <section className="ab-hero">
