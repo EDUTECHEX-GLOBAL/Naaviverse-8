@@ -102,7 +102,7 @@ const Footer = () => {
             <div className="footer-col3">
               <h4 className="footer-heading">Offerings</h4>
               <ul className="footer-links">
-                <li>Smart Path Planning</li>
+                <li>  </li>
                 <li>Workflow Automation</li>
                 <li>AI-Driven Insights</li>
                 <li>Resource Optimization</li>

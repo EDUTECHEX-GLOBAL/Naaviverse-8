@@ -23,8 +23,9 @@ import AboutUsTwo from '../views/inner-pages/pages/about-us/AboutUsTwo';
 import ServicesOne from '../views/inner-pages/pages/services/ServicesOne';
 import ServicesTwo from '../views/inner-pages/pages/services/ServicesTwo';
 import ServicesDetails from '../views/inner-pages/pages/services/ServicesDetails';
+import Impact from '../views/inner-pages/Impact/impact';
 
-
+import Technology from '../views/inner-pages/Technology/Technology';
 
 //All Team Page Routes
 import TeamMember from '../views/inner-pages/pages/team/TeamMember';
@@ -105,7 +106,11 @@ const AppRouter = () => {
         <Route path="/blog-masonry" element={<BlogMasonry />} />
         <Route path="/blog-standard" element={<BlogStandard />} />
         <Route path="/blog-details" element={<BlogDetails />} />
+<Route path="/impact" element={<Impact />} />
+        <Route path="/impact/:section" element={<Impact />} />
 
+        <Route path="/technology" element={<Technology />} />
+<Route path="/technology/:section" element={<Technology />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
