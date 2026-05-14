@@ -27,6 +27,7 @@ import Impact from '../views/inner-pages/Impact/impact';
 
 import Technology from '../views/inner-pages/Technology/Technology';
 
+
 //All Team Page Routes
 import TeamMember from '../views/inner-pages/pages/team/TeamMember';
 import TeamDetails from '../views/inner-pages/pages/team/TeamDetails';
@@ -76,12 +77,12 @@ const AppRouter = () => {
         <Route path="/service-one" element={<ServicesOne />} />
         <Route path="/service-two" element={<ServicesTwo />} />
         <Route path="/service-details" element={<ServicesDetails />} />
-
+<Route path="/team" element={<Team />} />
         {/* Keep existing team routes for compatibility */}
         <Route path="/team-member" element={<TeamMember />} />
         <Route path="/team-details" element={<TeamDetails />} />
 
-<Route path="/team" element={<Team />} />
+
 
         <Route path="/testimonial" element={<Testimonial />} />
         <Route path="/price" element={<OurPricing />} />
