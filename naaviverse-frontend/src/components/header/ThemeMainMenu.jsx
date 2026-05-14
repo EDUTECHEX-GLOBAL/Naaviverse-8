@@ -1,321 +1,390 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
+/* ─────────────────────────────────────────────────────────────
+   STYLES — Poppins + mega-dropdown panel (injected once)
+   Written as SCSS-flavored CSS (compiled-compatible)
+───────────────────────────────────────────────────────────── */
+const NAAVI_STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+  html { scroll-behavior: smooth; }
+
+  /* ── Wrapper ── */
+  .naavi-navbar {
+    display: flex;
+    align-items: center;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  /* ── Top nav list ── */
+  .naavi-navbar .navbar-nav {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 0;
+  }
+
+  /* ── Nav item wrapper ── */
+  .naavi-navbar .nav-item {
+    position: relative;
+  }
+
+  /* ── Nav link (top level) ── */
+  .naavi-navbar .nav-link {
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    color: #1c1c2e;
+    padding: 10px 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: color 0.2s ease, background 0.2s ease;
+    white-space: nowrap;
+    user-select: none;
+    position: relative;
+  }
+
+  .naavi-navbar .nav-link:hover {
+    color: #2273E6;
+    background: rgba(34, 115, 230, 0.05);
+  }
+
+  .naavi-navbar .nav-item.active > .nav-link {
+    color: #2273E6;
+  }
+
+  /* active underline */
+  .naavi-navbar .nav-item.active > .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 13px;
+    right: 13px;
+    height: 2px;
+    border-radius: 2px;
+    background: #2273E6;
+  }
+
+  /* ── Chevron ── */
+  .naavi-navbar .chevron {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 3px solid transparent;
+    border-right: 3px solid transparent;
+    border-top: 3.5px solid currentColor;
+    transition: transform 0.22s ease;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+
+  .naavi-navbar .nav-item:hover .chevron {
+    transform: rotate(180deg);
+  }
+
+  /* ── Mega dropdown panel ── */
+  .naavi-navbar .mega-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+   transform: translateX(-50%) translateY(-2px);
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    border-radius: 14px;
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, 0.10),
+      0 4px 16px rgba(0, 0, 0, 0.06);
+    padding: 6px 30px 22px;
+    min-width: 220px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0.22s;
+    z-index: 9999;
+  }
+
+  /* right-aligned for last items */
+  .naavi-navbar .mega-menu.align-right {
+    left: auto;
+    right: 0;
+    transform: translateY(-8px);
+  }
+
+  /* width variants */
+  .naavi-navbar .mega-menu.w-2col { min-width: 460px; }
+  .naavi-navbar .mega-menu.w-3col { min-width: 660px; }
+
+  /* open state */
+  .naavi-navbar .nav-item:hover .mega-menu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .naavi-navbar .nav-item:hover .mega-menu.align-right {
+    transform: translateY(0);
+  }
+
+  /* ── Inner grid ── */
+  .naavi-navbar .mega-inner {
+    display: grid;
+    gap: 0 36px;
+  }
+  .naavi-navbar .mega-inner.g1 { grid-template-columns: 1fr; }
+  .naavi-navbar .mega-inner.g2 { grid-template-columns: 1fr 1fr; }
+  .naavi-navbar .mega-inner.g3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  /* ── Column ── */
+  .naavi-navbar .mega-col {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .naavi-navbar .mega-col + .mega-col {
+    border-left: 1px solid rgba(0, 0, 0, 0.06);
+    padding-left: 28px;
+  }
+
+  /* ── Column heading ── */
+  .naavi-navbar .mega-heading {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: #a0a8b8;
+    margin-bottom: 12px;
+    margin-top: -4px;
+  }
+
+  /* ── Dropdown item (link or button) ── */
+  .naavi-navbar .mega-item {
+    font-family: 'Poppins', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: #1c1c2e;
+    padding: 6.5px 0;
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    letter-spacing: 0.01em;
+    line-height: 1.5;
+    transition: color 0.16s ease, padding-left 0.16s ease;
+    display: block;
+  }
+
+  .naavi-navbar .mega-item:hover {
+    color: #2273E6;
+    padding-left: 5px;
+  }
+
+  
+ .naavi-navbar .get-started-btn {
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: #2273E6;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+
+  width: 100px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  margin-left: 35px;
+
+  transition: background 0.2s ease,
+              transform 0.15s ease,
+              box-shadow 0.2s ease;
+
+  white-space: nowrap;
+  box-shadow: 0 2px 12px rgba(34, 115, 230, 0.28);
+}
+`;
+
+/* ── Inject styles once into <head> ── */
+function useInjectStyles(css) {
+    useEffect(() => {
+        const id = 'naavi-mega-nav-styles';
+        if (!document.getElementById(id)) {
+            const tag = document.createElement('style');
+            tag.id = id;
+            tag.textContent = css;
+            document.head.appendChild(tag);
+        }
+    }, []);
+}
+
+/* ── Chevron icon component ── */
+const Chevron = () => <span className="chevron" aria-hidden="true" />;
+
+/* ─────────────────────────────────────────────────────────────
+   ThemeMainMenu
+───────────────────────────────────────────────────────────── */
 const ThemeMainMenu = () => {
+    useInjectStyles(NAAVI_STYLES);
+
     const location = useLocation();
     const navigate = useNavigate();
-    const handleSectionNavigation = (sectionId) => {
 
-    if (location.pathname === "/team-details") {
-
-        const element = document.getElementById(sectionId);
-
-        if (element) {
-            element.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-        }
-
-    } else {
-
-        navigate("/team-details");
-
-        setTimeout(() => {
-
-            const element = document.getElementById(sectionId);
-
-            if (element) {
-                element.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                });
-            }
-
-        }, 400);
-
-    }
-};
-
-
-const handlePartnersNavigation = () => {
-
-    if (location.pathname === "/") {
-
-        const element = document.getElementById("partners-section");
-
-        if (element) {
-            element.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-        }
-
-    } else {
-
-        navigate("/");
-
-        setTimeout(() => {
-
-            const element = document.getElementById("partners-section");
-
-            if (element) {
-                element.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                });
-            }
-
-        }, 400);
-
-    }
-};
-
-
-    const handleHomeClick = () => {
-        navigate('/');
-        window.scrollTo(0, 0);
-    };
-
-
-    const handlePageNavigation = (path) => {
-        window.scrollTo(0, 0);
+    /* smooth-scroll to top then navigate */
+    const go = (path) => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         navigate(path);
     };
+const goAbout = (hash) => {
+    // Convert hash to match AboutPage IDs: 'what' -> 'ab-what', 'vision' -> 'ab-vision', etc.
+    const sectionId = `ab-${hash}`;
+    if (location.pathname === '/about') {
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+        navigate('/about');
+        setTimeout(() => {
+            document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 400);
+    }
+};
+
+       /* scroll to a section on /team */
+    const goSection = (sectionId) => {
+        if (location.pathname === '/team') {
+            document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            navigate('/team');
+            setTimeout(() => {
+                document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 420);
+        }
+    };
+    const at = (prefix) => location.pathname.startsWith(prefix);
 
     return (
         <Fragment>
-            {/* Navigation Menu Items */}
-            <ul className="navbar-nav desktop-menu-only">
-                {/* Home Link */}
-                <li className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}>
-                    <Link className="nav-link" to="/" onClick={handleHomeClick}>HOME</Link>
-                </li>
+            <div className="naavi-navbar">
+                <ul className="navbar-nav desktop-menu-only">
 
-                {/* ABOUT Dropdown */}
-                <li className={`nav-item dropdown ${location.pathname.startsWith('/problem') ? 'active' : ''}`}>
-                    <span className="nav-link dropdown-toggle" onClick={(e) => e.preventDefault()}>
-                        ABOUT
-                        <span 
-    style={{
-        display: 'inline-block',
-        width: '0',
-        height: '0',
-        borderLeft: '4px solid transparent',
-        borderRight: '4px solid transparent',
-        borderTop: '4px solid currentColor',
-        marginLeft: '4px'
-    }}
-/>
-                    </span>
-                    <ul className="dropdown-menu">
-                       <li>
-    <Link
-        to="/problem/about-us#who-we-are"
-        className="dropdown-item"
-    >
-        ABOUT US
-    </Link>
-</li>
+                    {/* ── HOME ── */}
+                    <li className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}>
+                        <Link className="nav-link" to="/" onClick={() => go('/')}>HOME</Link>
+                    </li>
 
-<li>
-    <Link
-        to="/problem/about-us#why-naavi"
-        className="dropdown-item"
-    >
-        WHY NAAVI
-    </Link>
-</li>
+                    {/* ── ABOUT ── 2 columns */}
+                    <li className={`nav-item dropdown ${at('/about') ? 'active' : ''}`}>
+                        <span className="nav-link">ABOUT <Chevron /></span>
+                        <div className="mega-menu w-2col">
+                            <div className="mega-inner g2">
+                                <div className="mega-col">
+                                    <p className="mega-heading">Who We Are</p>
+                                    <button className="mega-item" onClick={() => goAbout('what')}>What is Naavi?</button>
+                                    <button className="mega-item" onClick={() => goAbout('vision')}>Our Vision</button>
+                                    <button className="mega-item" onClick={() => goAbout('why')}>Why Naavi</button>
+                                    <button className="mega-item" onClick={() => goAbout('mission')}>Mission & Philosophy</button>
+                                </div>
+                                <div className="mega-col">
+                                    <p className="mega-heading">Platform</p>
+                                    <button className="mega-item" onClick={() => goAbout('problem')}>The Navigation Problem</button>
+                                    <button className="mega-item" onClick={() => goAbout('intel')}>Pathway Intelligence</button>
+                                    <button className="mega-item" onClick={() => goAbout('verse')}>Naaviverse</button>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
 
-<li>
-    <Link
-        to="/problem/about-us#vision-mission"
-        className="dropdown-item"
-    >
-        VISION & MISSION
-    </Link>
-</li>
+                    {/* ── TEAM ── single col */}
+                    <li className={`nav-item dropdown ${at('/team') ? 'active' : ''}`}>
+                        <span className="nav-link">TEAM <Chevron /></span>
+                        <div className="mega-menu">
+                            <div className="mega-inner g1">
+                                <div className="mega-col">
+                                    <p className="mega-heading">Our People</p>
+                                    <button className="mega-item" onClick={() => goSection('founders')}>Founders</button>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
 
-                    </ul>
-                </li>
+                    {/* ── IMPACT ── 3 columns */}
+                    <li className={`nav-item dropdown ${at('/impact') ? 'active' : ''}`}>
+                        <span className="nav-link">IMPACT <Chevron /></span>
+                        <div className="mega-menu w-3col">
+                            <div className="mega-inner g3">
+                                <div className="mega-col">
+                                    <p className="mega-heading">The Problem</p>
+                                    <Link className="mega-item" to="/impact/skill-gap-problem"  onClick={() => go('/impact/skill-gap-problem')}>Skill Gap Problem</Link>
+                                    <Link className="mega-item" to="/impact/future-workforce"   onClick={() => go('/impact/future-workforce')}>Future Workforce</Link>
+                                    <Link className="mega-item" to="/impact/human-potential"    onClick={() => go('/impact/human-potential')}>Human Potential</Link>
+                                </div>
+                                <div className="mega-col">
+                                    <p className="mega-heading">Outcomes</p>
+                                    <Link className="mega-item" to="/impact/student-outcomes"          onClick={() => go('/impact/student-outcomes')}>Student Outcomes</Link>
+                                    <Link className="mega-item" to="/impact/education-transformation"  onClick={() => go('/impact/education-transformation')}>Education Transformation</Link>
+                                    <Link className="mega-item" to="/impact/success-stories"           onClick={() => go('/impact/success-stories')}>Success Stories</Link>
+                                </div>
+                                <div className="mega-col">
+                                    <p className="mega-heading">Global Reach</p>
+                                    <Link className="mega-item" to="/impact/global-opportunity-access" onClick={() => go('/impact/global-opportunity-access')}>Global Opportunity Access</Link>
+                                    <Link className="mega-item" to="/impact/sdgs-social-impact"        onClick={() => go('/impact/sdgs-social-impact')}>SDGs & Social Impact</Link>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
 
-                {/* TEAM Dropdown */}
-                <li className={`nav-item dropdown ${location.pathname.startsWith('/problem') ? 'active' : ''}`}>
-                    <span className="nav-link dropdown-toggle" onClick={(e) => e.preventDefault()}>
-                        TEAM
-                        <span 
-    style={{
-        display: 'inline-block',
-        width: '0',
-        height: '0',
-        borderLeft: '4px solid transparent',
-        borderRight: '4px solid transparent',
-        borderTop: '4px solid currentColor',
-        marginLeft: '4px'
-    }}
-/>
-                    </span>
-                    <ul className="dropdown-menu">
-                        <li>
-     <button
-    className="dropdown-item w-full text-left"
-    onClick={() => handleSectionNavigation("founders")}
->
-    FOUNDERS
-</button>
+                    {/* ── TECHNOLOGY ── single col */}
+                    <li className={`nav-item dropdown ${at('/technology') ? 'active' : ''}`}>
+                        <span className="nav-link">TECHNOLOGY <Chevron /></span>
+                        <div className="mega-menu">
+                            <div className="mega-inner g1">
+                                <div className="mega-col">
+                                    <p className="mega-heading">Core Tech</p>
+                                    <Link className="mega-item" to="/technology/pathways" onClick={() => go('/technology/pathways')}>Pathways</Link>
+                                    <Link className="mega-item" to="/technology/llms-kgs" onClick={() => go('/technology/llms-kgs')}>LLM's – KG's</Link>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
 
+                    {/* ── MORE ── right-aligned, single col */}
+                    <li className={`nav-item dropdown ${location.pathname === '/contact' ? 'active' : ''}`}>
+                        <span className="nav-link">MORE <Chevron /></span>
+                        <div className="mega-menu align-right">
+                            <div className="mega-inner g1">
+                                <div className="mega-col">
+                                    <p className="mega-heading">Get in Touch</p>
+                                    <Link className="mega-item" to="/contact" onClick={() => go('/contact')}>Contact</Link>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
 
-                        </li>
-                        <li>
-  <button
-    className="dropdown-item w-full text-left"
-    onClick={() => handleSectionNavigation("team-members")}
->
-    TEAM MEMBERS
-</button>
+                </ul>
 
-
-                        </li>
-                        <li>
-  <button
-    className="dropdown-item w-full text-left"
-    onClick={handlePartnersNavigation}
->
-    PARTNERS
-</button>
-
-
-
-                        </li>
-                    </ul>
-                </li>
-
-                {/* IMPACT Dropdown */}
-                <li className={`nav-item dropdown ${location.pathname.startsWith('/impact') ? 'active' : ''}`}>
-                    <span className="nav-link dropdown-toggle" onClick={(e) => e.preventDefault()}>
-                        IMPACT
-                        <span 
-    style={{
-        display: 'inline-block',
-        width: '0',
-        height: '0',
-        borderLeft: '4px solid transparent',
-        borderRight: '4px solid transparent',
-        borderTop: '4px solid currentColor',
-        marginLeft: '4px'
-    }}
-/>
-                    </span>
-                    <ul className="dropdown-menu">
-                        <li>
-      <Link to="/problem" className="dropdown-item" onClick={() => handlePageNavigation('/problem/about-us')}>
-        PROBLEM
-      </Link>
-    </li>
-    <li>
-      <Link to="/solution" className="dropdown-item" onClick={() => handlePageNavigation('/problem/why-naavi')}>
-        SOLUTION
-      </Link>
-    </li>
-                    </ul>
-                </li>
-
-                {/* TECHNOLOGY Dropdown */}
-                <li className={`nav-item dropdown ${location.pathname.startsWith('/technology') ? 'active' : ''}`}>
-                    <span className="nav-link dropdown-toggle" onClick={(e) => e.preventDefault()}>
-                        TECHNOLOGY
-                        <span 
-    style={{
-        display: 'inline-block',
-        width: '0',
-        height: '0',
-        borderLeft: '4px solid transparent',
-        borderRight: '4px solid transparent',
-        borderTop: '4px solid currentColor',
-        marginLeft: '4px'
-    }}
-/>
-                    </span>
-                    <ul className="dropdown-menu">
-                        <li>
-                            <Link to="/technology/pathways" className="dropdown-item" onClick={() => handlePageNavigation('/technology/pathways')}>
-                                PATHWAYS
-                            </Link>
-                        </li>
-                        <li>
-                            <Link to="/technology/llms-kgs" className="dropdown-item" onClick={() => handlePageNavigation('/technology/llms-kgs')}>
-                                LLMS-KGs
-                            </Link>
-                        </li>
-                    </ul>
-                </li>
-
-                {/* MORE Dropdown */}
-                <li className={`nav-item dropdown ${location.pathname.startsWith('/more') ? 'active' : ''}`}>
-                    <span className="nav-link dropdown-toggle" onClick={(e) => e.preventDefault()}>
-                        MORE
-                        <span 
-    style={{
-        display: 'inline-block',
-        width: '0',
-        height: '0',
-        borderLeft: '4px solid transparent',
-        borderRight: '4px solid transparent',
-        borderTop: '4px solid currentColor',
-        marginLeft: '4px'
-    }}
-/>
-                    </span>
-                    <ul className="dropdown-menu">
-                        <li>
-                            <Link to="/contact" className="dropdown-item" onClick={() => handlePageNavigation('/contact')}>
-                                CONTACT
-                            </Link>
-                        </li>
-                        <li>
-                            <Link to="/blog" className="dropdown-item" onClick={() => handlePageNavigation('/blog')}>
-                                BLOG & NEWS
-                            </Link>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-
-            {/* AUTH BUTTONS - EXACTLY LIKE REFERENCE IMAGE */}
-            <div className="nav-auth-buttons">
-                {/* <span 
-                    className="login-text"
-                    onClick={() => handlePageNavigation('/login')}
-                    style={{ 
-                        color: '#002244',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        padding: '6px 12px'
-                    }}
-                >
-                    Log In
-                </span> */}
-                <button 
-    className="get-started-btn"
-    onClick={() => handlePageNavigation('/login')}
-    style={{
-        background: '#2273E6', // Purple color
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        padding: '0px 8px', // Reduced vertical padding for smaller height
-        fontSize: '14px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        transition: 'background 0.2s',
-        marginLeft: '50px' // Moves button to the right
-    }}
-    // onMouseEnter={(e) => e.target.style.background = '#7b1fa2'}
-    // onMouseLeave={(e) => e.target.style.background = '#8a2be2'}
->
-    Get Started
-</button>
+                {/* ── CTA ── */}
+                <div className="nav-auth-buttons">
+                    <button className="get-started-btn" onClick={() => go('/login')}>
+                        Get Started
+                    </button>
+                </div>
             </div>
         </Fragment>
     );
