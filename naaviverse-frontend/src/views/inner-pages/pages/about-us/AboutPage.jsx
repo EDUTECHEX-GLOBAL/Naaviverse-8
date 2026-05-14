@@ -11,7 +11,7 @@ const CompassIcon = () => (
     <path d="M12 16L8 8L16 12L12 16Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
   </svg>
 );
-
+            
 const TargetIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
