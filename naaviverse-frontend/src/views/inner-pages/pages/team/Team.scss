@@ -1,619 +1,585 @@
-// ─── Naavi Brand Tokens ───────────────────────────────────────────────────────
-$primary:       #2DB67D;
-$primary-dark:  #1a9465;
-$navy:          #1A1A2E;
-$mint:          #edfaf4;
-$muted:         #6b7280;
-$white:         #ffffff;
-$border:        #e8eaf0;
-$shadow-soft:   0 10px 30px -10px rgba(26, 26, 46, 0.12);
-$shadow-glow:   0 20px 60px -20px rgba(45, 182, 125, 0.45);
-$gradient-primary: linear-gradient(135deg, #2DB67D, #1a8aab);
+// Team.scss
+// Premium Team Page — Clean white/light UI only, no grid lines, no dark backgrounds
 
-// ─── Fonts ────────────────────────────────────────────────────────────────────
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap');
+$green: #2DB67D;
+$green-light: #e8f8f1;
+$navy: #1A1A2E;
+$blue: #4DA6FF;
+$white: #ffffff;
+$soft-bg: #F7F9FC;
+$muted: #6B7A8D;
+$text-dark: #3D4A5C;
+$border-light: rgba(0, 0, 0, 0.06);
 
-// ─── Animations ───────────────────────────────────────────────────────────────
+// Animations
 @keyframes team-float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50%       { transform: translateY(-18px) rotate(2deg); }
-}
-
-@keyframes team-pulse-ring {
-  0%   { transform: scale(0.95); opacity: 0.7; }
-  70%  { transform: scale(1.4);  opacity: 0; }
-  100% { opacity: 0; }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
 @keyframes team-spin-slow {
   from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 
-// ─── Base ─────────────────────────────────────────────────────────────────────
+@keyframes team-spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes team-fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// Base
 .team-page {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: $navy;
   background: $white;
 }
 
 .team-container {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 28px;
   width: 100%;
 
-  &--grid {
+  &--two-col {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 3rem;
+    gap: 48px;
     align-items: center;
 
-    @media (max-width: 1024px) {
+    @media (max-width: 900px) {
       grid-template-columns: 1fr;
+      gap: 40px;
     }
   }
 
   &--center {
     text-align: center;
-    max-width: 900px;
+    max-width: 800px;
   }
 }
 
-// ─── Page Header ──────────────────────────────────────────────────────────────
-.team-page-header {
-  background: linear-gradient(135deg, #edfaf4 0%, #e8f4fb 100%);
-  padding: 5rem 0 4rem;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: -80px; left: -80px;
-    width: 300px; height: 300px;
-    border-radius: 50%;
-    background: rgba(45, 182, 125, 0.12);
-    filter: blur(60px);
-  }
-
-  &__crumb {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: $primary;
-    background: rgba(45, 182, 125, 0.1);
-    border: 1px solid rgba(45, 182, 125, 0.25);
-    padding: 4px 14px;
-    border-radius: 20px;
-    margin-bottom: 1rem;
-  }
-
-  &__title {
-    font-family: 'Sora', sans-serif;
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    font-weight: 800;
-    color: $navy;
-    letter-spacing: -0.02em;
-    margin: 0;
-  }
-}
-
-// ─── Section Heading ──────────────────────────────────────────────────────────
-.team-section-heading {
-  margin-bottom: 2rem;
-
-  &--center {
-    text-align: center;
-    margin: 0 auto 2rem;
-  }
-
-  &__eyebrow {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: $primary;
-    margin-bottom: 0.75rem;
-    position: relative;
-    padding-left: 24px;
-
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 50%;
-      transform: translateY(-50%);
-      width: 14px; height: 2px;
-      background: $primary;
-      border-radius: 2px;
-    }
-  }
-
-  &--center &__eyebrow {
-    padding-left: 0;
-    &::before { display: none; }
-  }
-
-  &__title {
-    font-family: 'Sora', sans-serif;
-    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
-    font-weight: 800;
-    color: $navy;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-    margin: 0 0 1rem;
-  }
-
-  &__sub {
-    font-size: 1.05rem;
-    color: $muted;
-    line-height: 1.75;
-    max-width: 640px;
-    margin: 0;
-  }
-}
-
-// ─── Sections ─────────────────────────────────────────────────────────────────
+// Sections
 .team-section {
-  padding: 6rem 0;
+  padding: 80px 0;
   position: relative;
-  overflow: hidden;
-
-  &--belief {
-    background: linear-gradient(135deg, #edfaf4 0%, #f0f9ff 100%);
-  }
-
-  &--beyond {
-    background: $navy;
-    color: $white;
-  }
 }
 
-// ─── Network Backdrop ─────────────────────────────────────────────────────────
-.team-backdrop {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-
-  &__grid {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0.12;
-  }
-
-  &__blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    animation: team-float 7s ease-in-out infinite;
-
-    &--1 {
-      top: -8rem; left: 2.5rem;
-      width: 28rem; height: 28rem;
-      background: rgba(45, 182, 125, 0.15);
-    }
-    &--2 {
-      top: 50%; right: -5rem;
-      width: 24rem; height: 24rem;
-      background: rgba(26, 138, 171, 0.15);
-      animation-delay: 3s;
-    }
-    &--3 {
-      bottom: 0; left: 50%;
-      width: 22rem; height: 22rem;
-      background: rgba(237, 250, 244, 0.5);
-      animation-delay: 5s;
-    }
-  }
+@media (max-width: 768px) {
+  .team-section { padding: 56px 0; }
 }
 
-// ─── Disciplines Card ─────────────────────────────────────────────────────────
+// Hero Section
+.team-hero {
+  background: linear-gradient(180deg, $white 0%, $soft-bg 100%);
+  padding-top: 100px;
+  margin-top: 80px;
+}
+
+.team-hero-content {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.team-hero-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: $green;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  padding: 4px 14px;
+  background: rgba(45, 182, 125, 0.08);
+  border: 1px solid rgba(45, 182, 125, 0.15);
+  border-radius: 40px;
+}
+
+.team-hero-title {
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 600;
+  line-height: 1.2;
+  color: $navy;
+  margin: 0 0 20px;
+  letter-spacing: -0.02em;
+}
+
+.team-accent {
+  color: $green;
+  font-weight: 700;
+}
+
+.team-hero-desc {
+  font-size: 16px;
+  line-height: 1.7;
+  color: $muted;
+  margin: 0;
+}
+
+// Disciplines Card
+.team-disciplines {
+  background: $white;
+}
+
 .team-disciplines-card {
-  margin-top: 3rem;
-  padding: 2.5rem;
-  border-radius: 24px;
-  background: rgba(255,255,255,0.75);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid $border;
-  box-shadow: $shadow-glow;
+  background: $soft-bg;
+  border-radius: 28px;
+  padding: 40px;
+  border: 1px solid $border-light;
+}
 
-  &__intro {
-    font-size: 1.05rem;
-    font-weight: 500;
-    color: rgba(26,26,46,0.8);
-    margin: 0 0 1.25rem;
-  }
+.team-disciplines-intro {
+  font-size: 16px;
+  font-weight: 500;
+  color: $text-dark;
+  margin: 0 0 20px;
+}
 
-  &__tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
-
-  &__outro {
-    margin: 2rem 0 0;
-    font-size: 1rem;
-    color: $muted;
-    line-height: 1.75;
-  }
+.team-tags-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .team-tag {
-  display: inline-block;
-  padding: 0.5rem 1.25rem;
-  border-radius: 999px;
+  padding: 8px 18px;
   background: $white;
-  border: 1px solid $border;
-  box-shadow: $shadow-soft;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: $navy;
-  cursor: default;
+  border: 1px solid $border-light;
+  border-radius: 40px;
+  font-size: 13px;
+  font-weight: 500;
+  color: $text-dark;
   transition: all 0.2s ease;
-
-  &:hover {
-    background: $gradient-primary;
-    color: $white;
-    border-color: transparent;
-    transform: translateY(-2px);
-  }
 }
 
-// ─── Body Text ────────────────────────────────────────────────────────────────
-.team-body-text {
-  font-size: 1.05rem;
+.team-tag:hover {
+  border-color: $green;
+  color: $green;
+  transform: translateY(-2px);
+}
+
+.team-disciplines-outro {
+  margin: 24px 0 0;
+  font-size: 14px;
   color: $muted;
-  line-height: 1.8;
-  margin: 1rem 0 0;
+  line-height: 1.7;
+}
+
+// Section Eyebrow & Title
+.team-section-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: $green;
+  text-transform: uppercase;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.team-section-title {
+  font-size: clamp(24px, 3vw, 34px);
+  font-weight: 600;
+  color: $navy;
+  margin: 0 0 20px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.team-section-header {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 48px;
+}
+
+// Body Text
+.team-body-text {
+  font-size: 15px;
+  line-height: 1.7;
+  color: $muted;
+  margin: 0 0 16px;
 
   &--bold {
-    font-size: 1.05rem;
     font-weight: 700;
     color: $navy;
   }
 
   &--muted {
     color: $muted;
+    margin-bottom: 12px;
   }
 }
 
-// ─── Belief Stack ─────────────────────────────────────────────────────────────
+// Belief Section
+.team-belief {
+  background: $soft-bg;
+}
+
 .team-belief-stack {
-  list-style: none;
-  margin: 1.25rem 0 0;
-  padding: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-
-  @media (max-width: 600px) { grid-template-columns: 1fr; }
-
-  &__item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem;
-    border-radius: 16px;
-    background: $white;
-    border: 1px solid $border;
-    box-shadow: $shadow-soft;
-    transition: box-shadow 0.2s;
-
-    &:hover { box-shadow: $shadow-glow; }
-  }
-
-  &__icon {
-    width: 36px; height: 36px;
-    border-radius: 10px;
-    background: $gradient-primary;
-    color: $white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  &__label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: $navy;
-  }
+  gap: 10px;
+  margin: 16px 0 20px;
 }
 
-// ─── Belief Visual ────────────────────────────────────────────────────────────
+@media (max-width: 500px) {
+  .team-belief-stack { grid-template-columns: 1fr; }
+}
+
+.team-belief-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: $white;
+  border: 1px solid $border-light;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: $text-dark;
+}
+
+.team-belief-icon {
+  width: 28px;
+  height: 28px;
+  background: rgba(45, 182, 125, 0.1);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $green;
+}
+
+// Belief Visual
 .team-belief-visual {
   position: relative;
   width: 100%;
-  max-width: 400px;
+  max-width: 380px;
   aspect-ratio: 1;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
+}
 
-  &__orbit {
-    position: absolute;
-    border-radius: 50%;
-    border: 1px dashed rgba(45,182,125,0.25);
+.team-visual-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(45, 182, 125, 0.2);
 
-    &--1 { width: 90%;  height: 90%;  animation: team-spin-slow 30s linear infinite; }
-    &--2 { width: 65%;  height: 65%;  animation: team-spin-slow 20s linear infinite reverse; }
-    &--3 { width: 40%;  height: 40%;  animation: team-spin-slow 14s linear infinite; }
+  &--outer {
+    width: 100%;
+    height: 100%;
+    animation: team-spin-slow 25s linear infinite;
   }
-
-  &__center {
-    position: relative;
-    z-index: 2;
-    width: 90px; height: 90px;
-    border-radius: 50%;
-    background: $gradient-primary;
-    color: $white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    font-weight: 700;
-    font-size: 13px;
-    box-shadow: $shadow-glow;
-    animation: team-float 7s ease-in-out infinite;
+  &--middle {
+    width: 70%;
+    height: 70%;
+    animation: team-spin-reverse 18s linear infinite;
   }
-
-  @mixin orbit-node($top, $left, $delay: 0s) {
-    position: absolute;
-    top: $top; left: $left;
-    transform: translate(-50%, -50%);
-    background: $white;
-    border: 1px solid $border;
-    border-radius: 12px;
-    padding: 6px 12px;
-    font-size: 11px;
-    font-weight: 600;
-    color: $navy;
-    box-shadow: $shadow-soft;
-    white-space: nowrap;
-    animation: team-float 7s ease-in-out infinite;
-    animation-delay: $delay;
-  }
-
-  &__node {
-    position: absolute;
-    background: $white;
-    border: 1px solid $border;
-    border-radius: 12px;
-    padding: 6px 12px;
-    font-size: 11px;
-    font-weight: 600;
-    color: $navy;
-    box-shadow: $shadow-soft;
-    white-space: nowrap;
-    animation: team-float 7s ease-in-out infinite;
-
-    &--1 { top: 8%;  left: 50%; transform: translateX(-50%); animation-delay: 0s; }
-    &--2 { top: 50%; right: 2%; transform: translateY(-50%); animation-delay: 1.5s; }
-    &--3 { bottom: 8%; left: 50%; transform: translateX(-50%); animation-delay: 3s; }
-    &--4 { top: 50%; left: 2%;  transform: translateY(-50%); animation-delay: 4.5s; }
+  &--inner {
+    width: 40%;
+    height: 40%;
+    animation: team-spin-slow 12s linear infinite;
   }
 }
 
-// ─── Drivers Grid ─────────────────────────────────────────────────────────────
+.team-visual-center {
+  position: relative;
+  z-index: 2;
+  width: 85px;
+  height: 85px;
+  background: linear-gradient(135deg, $green, #1a9e6a);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: $white;
+  font-weight: 700;
+  font-size: 13px;
+  gap: 4px;
+  box-shadow: 0 8px 20px rgba(45, 182, 125, 0.2);
+  animation: team-float 6s ease-in-out infinite;
+}
+
+.team-visual-node {
+  position: absolute;
+  background: $white;
+  border: 1px solid $border-light;
+  border-radius: 12px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: $navy;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  animation: team-float 5s ease-in-out infinite;
+
+  &--1 { top: 5%; left: 50%; transform: translateX(-50%); animation-delay: 0s; }
+  &--2 { top: 50%; right: 0%; transform: translateY(-50%); animation-delay: 1s; }
+  &--3 { bottom: 5%; left: 50%; transform: translateX(-50%); animation-delay: 2s; }
+  &--4 { top: 50%; left: 0%; transform: translateY(-50%); animation-delay: 3s; }
+}
+
+// Drivers Grid
+.team-drivers {
+  background: $white;
+}
+
 .team-drivers-grid {
-  margin-top: 3rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+  gap: 20px;
+}
 
-  @media (max-width: 1024px) { grid-template-columns: repeat(2, 1fr); }
-  @media (max-width: 600px)  { grid-template-columns: 1fr; }
+@media (max-width: 900px) {
+  .team-drivers-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 550px) {
+  .team-drivers-grid { grid-template-columns: 1fr; }
 }
 
 .team-driver-card {
-  padding: 1.75rem;
-  border-radius: 24px;
-  background: $white;
-  border: 1px solid $border;
-  box-shadow: $shadow-soft;
+  padding: 24px;
+  background: $soft-bg;
+  border-radius: 20px;
+  border: 1px solid $border-light;
   transition: all 0.25s ease;
-  cursor: default;
-
-  &:hover {
-    box-shadow: $shadow-glow;
-    transform: translateY(-4px);
-
-    .team-driver-card__arrow {
-      opacity: 1;
-      transform: translateX(4px);
-    }
-  }
-
-  &__top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.25rem;
-  }
-
-  &__number {
-    width: 48px; height: 48px;
-    border-radius: 14px;
-    background: $gradient-primary;
-    color: $white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 1rem;
-  }
-
-  &__arrow {
-    color: $primary;
-    opacity: 0;
-    transition: all 0.25s ease;
-  }
-
-  &__text {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: $navy;
-    line-height: 1.4;
-    margin: 0;
-  }
 }
 
-// ─── Beyond Section ───────────────────────────────────────────────────────────
-.team-section--beyond {
-  &__blobs {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    overflow: hidden;
-  }
-
-  &__blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    animation: team-float 7s ease-in-out infinite;
-
-    &--1 {
-      top: -8rem; left: -4rem;
-      width: 24rem; height: 24rem;
-      background: rgba(45,182,125,0.3);
-    }
-    &--2 {
-      bottom: 0; right: 0;
-      width: 24rem; height: 24rem;
-      background: rgba(26,138,171,0.3);
-      animation-delay: 3s;
-    }
-  }
+.team-driver-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+  border-color: rgba(45, 182, 125, 0.2);
 }
 
-.team-beyond-text {
+.team-driver-card .team-driver-arrow {
+  opacity: 0;
+  transition: all 0.2s;
+}
+
+.team-driver-card:hover .team-driver-arrow {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+.team-driver-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.team-driver-number {
+  width: 44px;
+  height: 44px;
+  background: rgba(45, 182, 125, 0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: $green;
+}
+
+.team-driver-arrow {
+  color: $green;
+}
+
+.team-driver-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: $navy;
+  line-height: 1.4;
+  margin: 0;
+}
+
+// Vision Image Section
+.team-vision-image {
+  background: $white;
+  padding: 0 0 80px;
+}
+
+.team-vision-banner {
+  border-radius: 28px;
+  overflow: hidden;
+  border: 1px solid $border-light;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+
+.team-vision-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+
+// Building Beyond Section - Light pastel background, dark text
+.team-beyond {
+  background: linear-gradient(135deg, #F0F9F4 0%, #E8F3F0 100%);
+  color: $navy;
   position: relative;
-  z-index: 1;
+  overflow: hidden;
 }
 
 .team-beyond-badge {
   display: inline-block;
-  padding: 4px 16px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
+  padding: 6px 16px;
+  background: rgba(45, 182, 125, 0.12);
+  border: 1px solid rgba(45, 182, 125, 0.25);
+  border-radius: 40px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
-  color: #a7f3d0;
-  margin-bottom: 1.25rem;
+  color: $green;
+  text-transform: uppercase;
+  margin-bottom: 24px;
 }
 
 .team-beyond-title {
-  font-family: 'Sora', sans-serif;
-  font-size: clamp(1.8rem, 4vw, 3rem);
-  font-weight: 800;
-  color: $white;
-  line-height: 1.15;
-  margin: 0 0 1rem;
+  font-size: clamp(32px, 4vw, 44px);
+  font-weight: 700;
+  color: $navy;
+  margin: 0 0 16px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .team-beyond-sub {
-  font-size: 1.05rem;
-  color: rgba(255,255,255,0.75);
-  margin: 0 0 0.5rem;
+  font-size: 16px;
+  color: $muted;
+  margin: 0 0 10px;
+  font-weight: 500;
 }
 
 .team-beyond-highlight {
-  font-family: 'Sora', sans-serif;
-  font-size: clamp(1.2rem, 2.5vw, 1.75rem);
-  font-weight: 800;
-  background: $gradient-primary;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  margin: 0 0 1.5rem;
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 700;
+  color: $green;
+  margin: 0 0 24px;
+  line-height: 1.3;
 }
 
 .team-beyond-body {
-  font-size: 1rem;
-  color: rgba(255,255,255,0.65);
-  line-height: 1.8;
+  font-size: 15px;
+  line-height: 1.75;
+  color: $text-dark;
   margin: 0;
+  max-width: 90%;
+}
+
+@media (max-width: 900px) {
+  .team-beyond-body {
+    max-width: 100%;
+  }
 }
 
 .team-beyond-cards {
-  position: relative;
-  z-index: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 480px) {
+  .team-beyond-cards {
+    grid-template-columns: 1fr;
+  }
 }
 
 .team-beyond-card {
-  padding: 1.5rem;
+  padding: 28px 20px;
+  background: $white;
+  border: 1px solid $border-light;
   border-radius: 24px;
-  background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.1);
-  transition: background 0.2s;
-
-  &:hover { background: rgba(255,255,255,0.1); }
-
-  &__icon {
-    color: #a7f3d0;
-    display: block;
-    margin-bottom: 1rem;
-  }
-
-  &__label {
-    font-weight: 700;
-    color: $white;
-    margin: 0;
-  }
+  text-align: center;
+  transition: all 0.25s ease;
+  cursor: default;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
-// ─── Ecosystem / Naaviverse ───────────────────────────────────────────────────
+.team-beyond-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(45, 182, 125, 0.3);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+}
+
+.team-beyond-card-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 18px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.team-beyond-card:hover .team-beyond-card-icon {
+  transform: scale(1.05);
+}
+
+.team-beyond-card-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: $navy;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+// Naaviverse Section
+.team-naaviverse {
+  background: $soft-bg;
+  text-align: center;
+}
+
 .team-ecosystem-tags {
-  margin-top: 2.5rem;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 10px;
+  margin: 32px 0 24px;
 }
 
 .team-ecosystem-tag {
-  display: inline-block;
-  padding: 0.65rem 1.5rem;
-  border-radius: 999px;
-  background: $gradient-primary;
-  color: $white;
-  font-size: 0.875rem;
-  font-weight: 700;
-  box-shadow: $shadow-glow;
-  transition: transform 0.2s;
-  cursor: default;
+  padding: 8px 20px;
+  background: $white;
+  border: 1px solid $border-light;
+  border-radius: 40px;
+  font-size: 13px;
+  font-weight: 600;
+  color: $navy;
+  transition: all 0.2s;
+}
 
-  &:hover { transform: translateY(-3px); }
+.team-ecosystem-tag:hover {
+  border-color: $green;
+  color: $green;
+  transform: translateY(-2px);
 }
 
 .team-naaviverse-outro {
-  margin-top: 2.5rem;
-  font-size: 1.05rem;
+  font-size: 15px;
   color: $muted;
-  line-height: 1.75;
+  line-height: 1.7;
+}
 
-  &__highlight {
-    background: $gradient-primary;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    font-weight: 800;
-  }
+.team-naaviverse-highlight {
+  color: $green;
+  font-weight: 700;
+}
+
+// Responsive
+@media (max-width: 480px) {
+  .team-container { padding: 0 20px; }
+  .team-disciplines-card { padding: 24px; }
+  .team-driver-card { padding: 18px; }
+  .team-beyond-card { padding: 16px; }
+  .team-visual-node { font-size: 9px; padding: 4px 8px; }
 }

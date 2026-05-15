@@ -396,21 +396,20 @@ const ThemeMainMenu = () => {
             </div>
           </li>
 
-          {/* MORE */}
-          <li
-            className={`nav-item dropdown ${location.pathname === '/contact' ? 'active' : ''}`}
-            onMouseLeave={reset}
-          >
-            <span className="nav-link">MORE <Chevron /></span>
-            <div className={`mega-menu align-right ${fc('more')}`}>
-              <div className="mega-inner g1">
-                <div className="mega-col">
-                  <p className="mega-heading">Get in Touch</p>
-                  <Link className="mega-item" to="/contact" onClick={() => { go('/contact'); close('more'); }}>Contact</Link>
-                </div>
-              </div>
-            </div>
-          </li>
+         {/* MORE */}
+<li
+  className={`nav-item dropdown ${location.pathname === '/contact' ? 'active' : ''}`}
+  onMouseLeave={reset}
+>
+  <span className="nav-link">MORE <Chevron /></span>
+  <div className={`mega-menu align-right ${fc('more')}`}>
+    <div className="mega-inner g1">
+      <div className="mega-col">
+        <p className="mega-heading">Get in Touch</p>
+<Link className="mega-item" to="/contact#contact-form" onClick={() => { close('more'); }}>Contact</Link>      </div>
+    </div>
+  </div>
+</li>
 
         </ul>
 

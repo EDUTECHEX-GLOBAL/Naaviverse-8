@@ -1,7 +1,20 @@
+// Team.jsx
 import React from 'react';
-import { FiZap, FiSun, FiGlobe, FiBox, FiArrowRight } from 'react-icons/fi';
+import {
+  FiZap,
+  FiSun,
+  FiGlobe,
+  FiBox,
+  FiArrowRight,
+  FiCpu,
+  FiUsers,
+  FiCompass,
+} from 'react-icons/fi';
 import './Team.scss';
 import Footer from '../../../../components/footernew/index';
+
+// Import image
+import teamVisionImage from '../../../../assets/images/assets/solution.png';
 
 const disciplines = [
   "Artificial Intelligence",
@@ -36,73 +49,37 @@ const ecosystem = [
   "future opportunities",
 ];
 
-function NetworkBackdrop() {
-  return (
-    <div aria-hidden="true" className="team-backdrop">
-      <svg className="team-backdrop__grid" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id="team-grid" width="48" height="48" patternUnits="userSpaceOnUse">
-            <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#2DB67D" strokeWidth="0.5" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#team-grid)" />
-      </svg>
-      <div className="team-backdrop__blob team-backdrop__blob--1" />
-      <div className="team-backdrop__blob team-backdrop__blob--2" />
-      <div className="team-backdrop__blob team-backdrop__blob--3" />
-    </div>
-  );
-}
-
-function PageHeader({ title, crumb }) {
-  return (
-    <div className="team-page-header">
-      <div className="team-container">
-        <span className="team-page-header__crumb">{crumb}</span>
-        <h1 className="team-page-header__title">{title}</h1>
-      </div>
-    </div>
-  );
-}
-
-function SectionHeading({ eyebrow, title, sub, center }) {
-  return (
-    <div className={`team-section-heading ${center ? 'team-section-heading--center' : ''}`}>
-      <span className="team-section-heading__eyebrow">{eyebrow}</span>
-      <h2 className="team-section-heading__title">{title}</h2>
-      {sub && <p className="team-section-heading__sub">{sub}</p>}
-    </div>
-  );
-}
-
 const Team = () => {
   return (
     <div className="team-page">
-      <PageHeader title="Founders" crumb="TEAM" />
-
-      {/* Founders Section */}
-      <section className="team-section team-section--founders">
-        <NetworkBackdrop />
+      {/* Hero Section */}
+      <section className="team-section team-hero">
         <div className="team-container">
-          <SectionHeading
-           
-            title="Building the Future of Human Navigation"
-            sub="Naavi is founded by a multidisciplinary team driven by a shared vision to redefine how people navigate education, skills, careers, and future opportunities."
-          />
+          <div className="team-hero-content">
+            <span className="team-hero-tag">MEET THE FOUNDERS</span>
+            <h1 className="team-hero-title">
+              Building the future of <span className="team-accent">human navigation</span>
+            </h1>
+            <p className="team-hero-desc">
+              Naavi is founded by a multidisciplinary team driven by a shared vision to redefine how people navigate education, skills, careers, and future opportunities.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Disciplines Section */}
+      <section className="team-section team-disciplines">
+        <div className="team-container">
           <div className="team-disciplines-card">
-            <p className="team-disciplines-card__intro">With backgrounds spanning:</p>
-            <div className="team-disciplines-card__tags">
+            <p className="team-disciplines-intro">With backgrounds spanning:</p>
+            <div className="team-tags-grid">
               {disciplines.map((d, i) => (
-                <span
-                  key={d}
-                  className="team-tag"
-                  style={{ animationDelay: `${i * 0.08}s` }}
-                >
+                <span key={d} className="team-tag">
                   {d}
                 </span>
               ))}
             </div>
-            <p className="team-disciplines-card__outro">
+            <p className="team-disciplines-outro">
               the founding team is building a next-generation intelligence platform designed to unlock human potential at scale.
             </p>
           </div>
@@ -110,45 +87,39 @@ const Team = () => {
       </section>
 
       {/* Belief Section */}
-      <section className="team-section team-section--belief">
-        <div className="team-container team-container--grid">
+      <section className="team-section team-belief">
+        <div className="team-container team-container--two-col">
           <div className="team-belief-text">
-            <SectionHeading
-              eyebrow="Our Belief"
-              title="Every individual carries unique potential"
-            />
+            <span className="team-section-eyebrow">Our Belief</span>
+            <h2 className="team-section-title">Every individual carries unique potential</h2>
             <p className="team-body-text">
               We believe that every individual carries unique potential, but most people navigate life with fragmented guidance and accidental decisions.
             </p>
-            <p className="team-body-text team-body-text--bold">
-              Naavi was created to change that.
-            </p>
+            <p className="team-body-text team-body-text--bold">Naavi was created to change that.</p>
             <p className="team-body-text team-body-text--muted">By combining:</p>
-            <ul className="team-belief-stack">
+            <div className="team-belief-stack">
               {beliefStack.map((b) => (
-                <li key={b} className="team-belief-stack__item">
-                  <span className="team-belief-stack__icon">
-                    <FiZap size={18} />
-                  </span>
-                  <span className="team-belief-stack__label">{b}</span>
-                </li>
+                <div key={b} className="team-belief-item">
+                  <div className="team-belief-icon">
+                    <FiZap size={16} />
+                  </div>
+                  <span>{b}</span>
+                </div>
               ))}
-            </ul>
-            <p className="team-body-text">
-              we aim to create a future where growth becomes intelligently navigable.
-            </p>
+            </div>
+            <p className="team-body-text">we aim to create a future where growth becomes intelligently navigable.</p>
           </div>
 
           <div className="team-belief-visual">
-            <div className="team-belief-visual__orbit team-belief-visual__orbit--1" />
-            <div className="team-belief-visual__orbit team-belief-visual__orbit--2" />
-            <div className="team-belief-visual__orbit team-belief-visual__orbit--3" />
-            <div className="team-belief-visual__center">
-              <FiGlobe size={40} />
+            <div className="team-visual-ring team-visual-ring--outer" />
+            <div className="team-visual-ring team-visual-ring--middle" />
+            <div className="team-visual-ring team-visual-ring--inner" />
+            <div className="team-visual-center">
+              <FiGlobe size={32} />
               <span>Naavi</span>
             </div>
             {beliefStack.map((b, i) => (
-              <div key={b} className={`team-belief-visual__node team-belief-visual__node--${i + 1}`}>
+              <div key={b} className={`team-visual-node team-visual-node--${i + 1}`}>
                 {b.split(' ').slice(0, 2).join(' ')}
               </div>
             ))}
@@ -157,78 +128,64 @@ const Team = () => {
       </section>
 
       {/* What Drives Us Section */}
-      <section className="team-section team-section--drivers">
-        <NetworkBackdrop />
+      <section className="team-section team-drivers">
         <div className="team-container">
-          <SectionHeading
-            eyebrow="What Drives Us"
-            title="The forces that move Naavi forward"
-          />
+          <div className="team-section-header">
+            <span className="team-section-eyebrow">What Drives Us</span>
+            <h2 className="team-section-title">The forces that move Naavi forward</h2>
+          </div>
+
           <div className="team-drivers-grid">
             {drivers.map((d, i) => (
               <div key={d} className="team-driver-card">
-                <div className="team-driver-card__top">
-                  <span className="team-driver-card__number">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <FiArrowRight className="team-driver-card__arrow" size={22} />
+                <div className="team-driver-card-top">
+                  <span className="team-driver-number">{String(i + 1).padStart(2, "0")}</span>
+                  <FiArrowRight className="team-driver-arrow" size={20} />
                 </div>
-                <p className="team-driver-card__text">{d}</p>
+                <p className="team-driver-text">{d}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Building Beyond Section */}
-      <section className="team-section team-section--beyond">
-        <div className="team-section--beyond__blobs">
-          <div className="team-section--beyond__blob team-section--beyond__blob--1" />
-          <div className="team-section--beyond__blob team-section--beyond__blob--2" />
-        </div>
-        <div className="team-container team-container--grid">
-          <div className="team-beyond-text">
-            <span className="team-beyond-badge">BUILDING BEYOND EDTECH</span>
-            <h2 className="team-beyond-title">Naavi is not just a platform.</h2>
-            <p className="team-beyond-sub">It is the foundation of a new category:</p>
-            <p className="team-beyond-highlight">
-              AI-powered human navigation infrastructure.
-            </p>
-            <p className="team-beyond-body">
-              The founders envision a world where every learner, professional, and institution can navigate toward meaningful futures with clarity, intelligence, and confidence.
-            </p>
-          </div>
 
-          <div className="team-beyond-cards">
-            {[
-              { Icon: FiBox,    label: "Infrastructure" },
-              { Icon: FiSun,   label: "Intelligence"   },
-              { Icon: FiGlobe, label: "Ecosystem"      },
-              { Icon: FiZap,   label: "Navigation"     },
-            ].map(({ Icon, label }, i) => (
-              <div
-                key={label}
-                className="team-beyond-card"
-                style={{ transform: i % 2 === 0 ? 'translateY(20px)' : 'translateY(-10px)' }}
-              >
-                <Icon size={32} className="team-beyond-card__icon" />
-                <p className="team-beyond-card__label">{label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+     {/* Building Beyond Section - Light background */}
+<section className="team-section team-beyond">
+  <div className="team-container team-container--two-col">
+    <div className="team-beyond-text">
+      <span className="team-beyond-badge">BUILDING BEYOND EDTECH</span>
+      <h2 className="team-beyond-title">Naavi is not just a platform.</h2>
+      <p className="team-beyond-sub">It is the foundation of a new category:</p>
+      <p className="team-beyond-highlight">AI-powered human navigation infrastructure.</p>
+      <p className="team-beyond-body">
+        The founders envision a world where every learner, professional, and institution can navigate toward meaningful futures with clarity, intelligence, and confidence.
+      </p>
+    </div>
 
-      {/* Looking Ahead / Naaviverse Section */}
-      <section className="team-section team-section--naaviverse">
-        <NetworkBackdrop />
+    <div className="team-beyond-cards">
+      {[
+        { Icon: FiBox, label: "Infrastructure", color: "#2DB67D" },
+        { Icon: FiSun, label: "Intelligence", color: "#4DA6FF" },
+        { Icon: FiGlobe, label: "Ecosystem", color: "#FF9500" },
+        { Icon: FiCompass, label: "Navigation", color: "#A259FF" },
+      ].map(({ Icon, label, color }) => (
+        <div key={label} className="team-beyond-card">
+          <div className="team-beyond-card-icon" style={{ backgroundColor: `${color}10`, color: color }}>
+            <Icon size={28} />
+          </div>
+          <p className="team-beyond-card-label">{label}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+      {/* Looking Ahead Section */}
+      <section className="team-section team-naaviverse">
         <div className="team-container team-container--center">
-          <SectionHeading
-            center
-            eyebrow="Looking Ahead"
-            
-            sub="We are building Naavi as a global ecosystem that connects:"
-          />
+          <span className="team-section-eyebrow">Looking Ahead</span>
+          <h2 className="team-section-title">We are building Naavi as a global ecosystem that connects:</h2>
           <div className="team-ecosystem-tags">
             {ecosystem.map((e) => (
               <span key={e} className="team-ecosystem-tag">{e}</span>
@@ -236,11 +193,12 @@ const Team = () => {
           </div>
           <p className="team-naaviverse-outro">
             into one intelligent, evolving universe —{' '}
-            <span className="team-naaviverse-outro__highlight">the Naaviverse.</span>
+            <span className="team-naaviverse-highlight">the Naaviverse.</span>
           </p>
         </div>
       </section>
-    <Footer />
+
+      <Footer />
     </div>
   );
 };
