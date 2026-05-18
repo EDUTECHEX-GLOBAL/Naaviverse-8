@@ -3,6 +3,10 @@ import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import Footer from '../../../../components/footernew/index';
 import './AboutPage.scss';
+
+import aboutWhatImg from './images/about-what.png';
+import naaviverseImg from './images/what.png';
+
 const HEADER_OFFSET = 80;
 /* SVG Icons */
 const CompassIcon = () => (
@@ -192,27 +196,13 @@ const scrollTo = (id) => {
           <div className="ab-container">
             <div className="ab-row">
               <div className="ab-col-vis">
-                <div className="ab-path-card">
-                  <div className="ab-pc-head">
-                    <span className="ab-pc-dot" />
-                    <span>Your Path Engine</span>
-                    <span className="ab-pc-live">LIVE</span>
-                  </div>
-                  {[
-                    { label: 'Passion & Interests',  done: true  },
-                    { label: 'Skill Assessment',     done: true  },
-                    { label: 'Pathway Generation',   done: true  },
-                    { label: 'Mentor Connect',       active: true },
-                    { label: 'Opportunity Mapping',  done: false },
-                  ].map((s, i) => (
-                    <div key={i} className={`ab-pc-row ${s.done?'done':''} ${s.active?'active':''}`}>
-                      <span className="ab-pc-circle" />
-                      <span>{s.label}</span>
-                      {s.done && <span className="ab-checkmark">✓</span>}
-                      {s.active && <span className="ab-ping" />}
-                    </div>
-                  ))}
-                </div>
+  <img
+    src={aboutWhatImg}
+    alt="What is Naavi"
+    className="ab-side-image"
+  />
+
+               
               </div>
 
               <div className="ab-col-txt">
@@ -248,16 +238,14 @@ const scrollTo = (id) => {
                 
               </div>
 
-              <div className="ab-col-vis">
-                <div className="ab-rings">
-                  <div className="ab-ring ab-r1" />
-                  <div className="ab-ring ab-r2" />
-                  <div className="ab-ring-core">
-                    <BrainIcon />
-                    <p>Human<br/>Growth</p>
-                  </div>
-                </div>
-              </div>
+              {/* <div className="ab-col-vis">
+  <img
+    src={visionImg}
+    alt="Our Vision"
+    className="ab-side-image"
+  />
+               
+              </div> */}
             </div>
           </div>
         </section>
@@ -304,17 +292,17 @@ const scrollTo = (id) => {
             </div>
 
             <div className="ab-tech-row">
-              <div className="ab-tech-card" style={{'--tc': '#4DA6FF'}}>
+<div className="ab-tech-card" style={{'--tc': '#4DA6FF', background: '#EAF3FF'}}>
                 <div className="ab-tc-icon"><BrainIcon /></div>
                 <h4>Large Language Models</h4>
                 <p>Conversational intelligence for pathway generation, predictive reasoning, and guidance at scale.</p>
               </div>
-              <div className="ab-tech-card" style={{'--tc': '#2DB67D'}}>
+<div className="ab-tech-card" style={{'--tc': '#2DB67D', background: '#E6F7F1'}}>
                 <div className="ab-tc-icon"><NetworkIcon /></div>
                 <h4>Knowledge Graphs</h4>
                 <p>Connecting skills, careers, universities, industries, mentors, and opportunities in living context.</p>
               </div>
-              <div className="ab-tech-card" style={{'--tc': '#FF9500'}}>
+<div className="ab-tech-card" style={{'--tc': '#FF9500', background: '#FFF4E5'}}>
                 <div className="ab-tc-icon"><ChartIcon /></div>
                 <h4>GraphRAG Framework</h4>
                 <p>Retrieval-augmented generation over knowledge graphs for explainable, future-aware pathways.</p>
@@ -336,15 +324,7 @@ const scrollTo = (id) => {
                   passion, skills, education, and opportunity into meaningful life journeys.
                 </p>
                 
-                <div className="ab-belief-list">
-                  <h5>We Believe In</h5>
-                  <ul>
-                    <li>Democratized access to opportunity</li>
-                    <li>AI as a force for human empowerment</li>
-                    <li>Purpose-driven education for all</li>
-                    <li>Passion aligned with real-world opportunity</li>
-                  </ul>
-                </div>
+              
               </div>
 
               <div className="ab-col-vis">
@@ -378,17 +358,12 @@ const scrollTo = (id) => {
           <div className="ab-container">
             <div className="ab-row">
               <div className="ab-col-vis">
-                <div className="ab-verse-wrap">
-                  <div className="ab-verse-center">Naaviverse</div>
-                  <div className="ab-verse-node" style={{left:'35%', top:'15%', animationDelay:'0s'}}>Students</div>
-                  <div className="ab-verse-node" style={{left:'65%', top:'15%', animationDelay:'0.25s'}}>Institutions</div>
-                  <div className="ab-verse-node" style={{left:'75%', top:'50%', animationDelay:'0.5s'}}>Employers</div>
-                  <div className="ab-verse-node" style={{left:'65%', top:'85%', animationDelay:'0.75s'}}>Mentors</div>
-                  <div className="ab-verse-node" style={{left:'35%', top:'85%', animationDelay:'1s'}}>Skills</div>
-                  <div className="ab-verse-node" style={{left:'25%', top:'50%', animationDelay:'1.25s'}}>Pathways</div>
-                  <div className="ab-verse-ring ab-vr1"/>
-                  <div className="ab-verse-ring ab-vr2"/>
-                </div>
+  <img
+    src={naaviverseImg}
+    alt="Naaviverse"
+    className="ab-side-image"
+  />
+              
               </div>
 
               <div className="ab-col-txt">

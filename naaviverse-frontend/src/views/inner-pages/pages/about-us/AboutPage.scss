@@ -416,9 +416,9 @@ h5 { font-size: 14px; font-weight: 600; color: $navy; margin-bottom: 10px; }
   @media(max-width:900px) { grid-template-columns: 1fr; }
 }
 .ab-tech-card {
-  background: $white; border-radius: 16px; padding: 28px 22px;
-  border: 1px solid $border; border-left: 4px solid var(--tc);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  border-radius: 16px; padding: 28px 22px;
+  border: none;
+  background: color-mix(in srgb, var(--tc) 10%, white);
   transition: transform .2s ease;
   &:hover { transform: translateY(-4px); }
 }
@@ -561,4 +561,27 @@ h5 { font-size: 14px; font-weight: 600; color: $navy; margin-bottom: 10px; }
   background: $navy; color: rgba(255,255,255,0.8);
   padding: 7px 16px; border-radius: 100px;
   font-size: 12px; font-weight: 500;
+}
+
+// ─────────────────────────────────────────
+// SIDE IMAGES
+// ─────────────────────────────────────────
+
+.ab-side-image {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 20px;
+  display: block;
+
+  @media (max-width: 900px) {
+    max-width: 100%;
+  }
+}
+
+.ab-col-vis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

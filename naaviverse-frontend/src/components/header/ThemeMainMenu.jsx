@@ -255,13 +255,13 @@ const ThemeMainMenu = () => {
     }
   };
 
-  const goSection = (sectionId) => {
+ const goSection = (sectionId) => {
     if (location.pathname === '/team') {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       navigate('/team');
       setTimeout(() => {
-        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 420);
     }
   };
