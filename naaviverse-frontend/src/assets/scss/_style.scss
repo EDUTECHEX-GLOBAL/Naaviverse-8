@@ -18,6 +18,7 @@
 ====================================================================
 
  ***/
+/* AFTER — grey scrollbar */
 ::-webkit-scrollbar {
     width: 5px;
 }
@@ -25,8 +26,8 @@
     background: #fff;
 }
 ::-webkit-scrollbar-thumb {
-    background: #2c7cb2;
-    border-radius: 0;
+    background: rgba(0, 0, 0, 0.2);  /* ← change #2c7cb2 to this */
+    border-radius: 10px;              /* ← change 0 to 10px */
 }
 :root {
     --text-color: rgba(0, 40, 78, 0.8);

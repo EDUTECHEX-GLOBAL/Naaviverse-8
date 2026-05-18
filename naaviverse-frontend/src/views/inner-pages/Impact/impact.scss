@@ -151,7 +151,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 }
 
 .imp-hero-btn-primary {
-   display: inline-flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 6px 16px;
@@ -164,6 +164,15 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   color: $green;
   margin-bottom: 20px;
   text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  transition: none; 
+
+  &:hover {           
+    background: rgba(45,182,125,0.08);
+    color: $green;
+    border-color: rgba(45,182,125,0.2);
+  }
 }
 
 .imp-hero-btn-ghost {

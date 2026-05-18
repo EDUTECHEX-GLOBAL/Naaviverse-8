@@ -27,7 +27,7 @@ $border:   rgba(0,0,0,0.07);
   font-family: 'Poppins', sans-serif;
   color: $navy;
   background: $white;
-  overflow-x: hidden;
+  overflow-x: clip;  // ← change hidden to clip
 }
 
 .ab-container { @include container; }
