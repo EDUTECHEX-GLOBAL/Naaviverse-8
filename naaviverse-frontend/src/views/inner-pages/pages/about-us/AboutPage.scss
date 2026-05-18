@@ -35,17 +35,26 @@ $border:   rgba(0,0,0,0.07);
 .ab-green { color: $green; }
 
 .ab-section {
-  padding: 96px 0;
-  @media(max-width:768px) { padding: 64px 0; }
+  padding: 48px 0;
+  @media(max-width:768px) { padding: 40px 0; }
 }
 .ab-alt-white { background: $white; }
 .ab-alt-soft  { background: $soft2; }
+
+#ab-what {
+  padding-top: 44px;
+  padding-bottom: 40px;
+}
+
+#ab-vision {
+  padding-top: 40px;
+}
 
 // two-col layout
 .ab-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 72px;
+  gap: clamp(40px, 5vw, 72px);
   align-items: center;
   @media(max-width:900px) {
     grid-template-columns: 1fr;
@@ -56,7 +65,10 @@ $border:   rgba(0,0,0,0.07);
     &.ab-row-rev .ab-col-vis { order: 0; }
   }
 }
-.ab-col-txt { max-width: 520px; }
+.ab-col-txt {
+  width: 100%;
+  max-width: 560px;
+}
 .ab-col-vis { @include flex-center; }
 
 // center heading
@@ -65,6 +77,48 @@ $border:   rgba(0,0,0,0.07);
   max-width: 600px;
   margin: 0 auto 60px;
   p { font-size: 17px; color: $muted; margin-top: 12px; }
+}
+
+#ab-why {
+  position: relative;
+  min-height: 480px;
+  display: flex;
+  align-items: center;
+  background: url('./images/why naavi.png') center / cover no-repeat;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(247, 249, 252, 0.68);
+    z-index: 0;
+  }
+
+  .ab-container {
+    position: relative;
+    z-index: 1;
+  }
+
+  .ab-center-hd {
+    max-width: 720px;
+    margin-bottom: 0;
+  }
+
+  .ab-center-hd h2 {
+    margin-bottom: 24px;
+  }
+
+  .ab-center-hd p {
+    color: $text;
+    font-size: 18px;
+    line-height: 1.8;
+  }
+
+  @media(max-width:768px) {
+    min-height: 420px;
+    background-position: center top;
+  }
 }
 
 // section label
@@ -418,9 +472,12 @@ h5 { font-size: 14px; font-weight: 600; color: $navy; margin-bottom: 10px; }
 .ab-tech-card {
   border-radius: 16px; padding: 28px 22px;
   border: none;
-  background: color-mix(in srgb, var(--tc) 10%, white);
   transition: transform .2s ease;
   &:hover { transform: translateY(-4px); }
+
+  &--blue { background: #EAF3FF; }
+  &--green { background: #E6F7F1; }
+  &--orange { background: #FFF4E5; }
 }
 .ab-tc-icon { font-size: 28px; margin-bottom: 14px; }
 .ab-tech-card h4 { font-size: 15px; margin-bottom: 8px; }
@@ -574,9 +631,10 @@ h5 { font-size: 14px; font-weight: 600; color: $navy; margin-bottom: 10px; }
   object-fit: contain;
   border-radius: 20px;
   display: block;
+  filter: drop-shadow(0 18px 34px rgba(26, 26, 46, 0.08));
 
   @media (max-width: 900px) {
-    max-width: 100%;
+    max-width: min(100%, 520px);
   }
 }
 
@@ -584,4 +642,28 @@ h5 { font-size: 14px; font-weight: 600; color: $navy; margin-bottom: 10px; }
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.ab-vision-row {
+  .ab-col-vis {
+    justify-content: flex-end;
+  }
+
+  @media (max-width: 900px) {
+    .ab-col-vis {
+      justify-content: center;
+    }
+  }
+}
+
+.ab-vision-image {
+  max-width: 640px;
+}
+
+.ab-problem-image {
+  max-width: 520px;
+}
+
+.ab-mission-image {
+  max-width: 520px;
 }

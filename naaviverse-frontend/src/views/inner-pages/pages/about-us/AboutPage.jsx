@@ -1,37 +1,16 @@
 import React, { Fragment, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link } from 'react-router-dom';
 import Footer from '../../../../components/footernew/index';
 import './AboutPage.scss';
 
 import aboutWhatImg from './images/about-what.png';
 import naaviverseImg from './images/what.png';
+import visionImg from './images/vision.png';
+import navigationProblemImg from './images/naavigation.png';
+import missionImg from './images/mission.png';
 
 const HEADER_OFFSET = 80;
 /* SVG Icons */
-const CompassIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="1.5"/>
-    <path d="M12 16L8 8L16 12L12 16Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-  </svg>
-);
-                    
-const TargetIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
-    <circle cx="12" cy="12" r="6" stroke="currentColor" strokeWidth="1.5"/>
-    <circle cx="12" cy="12" r="2" fill="currentColor"/>
-  </svg>
-);
-
-const GlobeIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
-    <path d="M2 12H22" stroke="currentColor" strokeWidth="1.5"/>
-    <path d="M12 2C14.5013 4.73835 15.9228 8.29203 16 12C15.9228 15.708 14.5013 19.2617 12 22C9.49872 19.2617 8.07725 15.708 8 12C8.07725 8.29203 9.49872 4.73835 12 2Z" stroke="currentColor" strokeWidth="1.5"/>
-  </svg>
-);
-
 const BrainIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M12 4C9.5 4 8 6 8 8C8 10 9.5 11 11 12C8.5 12.5 7 14 7 16.5C7 19 9 20 12 20C15 20 17 19 17 16.5C17 14 15.5 12.5 13 12C14.5 11 16 10 16 8C16 6 14.5 4 12 4Z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
@@ -60,23 +39,6 @@ const ChartIcon = () => (
   </svg>
 );
 
-const RocketIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 2L12 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    <path d="M12 19L12 22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    <path d="M5 5L7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    <path d="M17 17L19 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5"/>
-  </svg>
-);
-
-const SearchIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.5"/>
-    <path d="M16 16L21 21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-  </svg>
-);
-
 /* ════════════════════════════════════
    ABOUT PAGE — Single Long Page
 ════════════════════════════════════ */
@@ -99,12 +61,6 @@ const AboutPage = () => {
     }
   }, []);
 
-const scrollTo = (id) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const top = el.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
-    window.scrollTo({ top, behavior: 'smooth' });
-  };
   return (
     <Fragment>
       <Helmet>
@@ -226,7 +182,7 @@ const scrollTo = (id) => {
         {/* ── OUR VISION ── */}
         <section id="ab-vision" className="ab-section ab-alt-soft">
           <div className="ab-container">
-            <div className="ab-row ab-row-rev">
+            <div className="ab-row ab-vision-row">
               <div className="ab-col-txt">
                
                 <h2>Our <span className="ab-green">Vision</span></h2>
@@ -246,6 +202,13 @@ const scrollTo = (id) => {
   />
                
               </div> */}
+              <div className="ab-col-vis">
+                <img
+                  src={visionImg}
+                  alt="Our Vision"
+                  className="ab-side-image ab-vision-image"
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -256,7 +219,7 @@ const scrollTo = (id) => {
             <div className="ab-center-hd">
              
               <h2>Why <span className="ab-green">Naavi</span></h2>
-              <p>Because the world gives people information, but not direction.Naavi transforms confusion into intelligent navigation through AI-powered personalized pathways.</p>
+              <p>Because the world gives people information, but not direction. Naavi transforms confusion into intelligent navigation through AI-powered personalized pathways.</p>
             </div>
           </div>
         </section>
@@ -275,6 +238,13 @@ const scrollTo = (id) => {
                 
               </div>
 
+              <div className="ab-col-vis">
+                <img
+                  src={navigationProblemImg}
+                  alt="The Navigation Problem"
+                  className="ab-side-image ab-problem-image"
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -292,17 +262,19 @@ const scrollTo = (id) => {
             </div>
 
             <div className="ab-tech-row">
-<div className="ab-tech-card" style={{'--tc': '#4DA6FF', background: '#EAF3FF'}}>
+              <div className="ab-tech-card ab-tech-card--blue">
                 <div className="ab-tc-icon"><BrainIcon /></div>
                 <h4>Large Language Models</h4>
                 <p>Conversational intelligence for pathway generation, predictive reasoning, and guidance at scale.</p>
               </div>
-<div className="ab-tech-card" style={{'--tc': '#2DB67D', background: '#E6F7F1'}}>
+
+              <div className="ab-tech-card ab-tech-card--green">
                 <div className="ab-tc-icon"><NetworkIcon /></div>
                 <h4>Knowledge Graphs</h4>
                 <p>Connecting skills, careers, universities, industries, mentors, and opportunities in living context.</p>
               </div>
-<div className="ab-tech-card" style={{'--tc': '#FF9500', background: '#FFF4E5'}}>
+
+              <div className="ab-tech-card ab-tech-card--orange">
                 <div className="ab-tc-icon"><ChartIcon /></div>
                 <h4>GraphRAG Framework</h4>
                 <p>Retrieval-augmented generation over knowledge graphs for explainable, future-aware pathways.</p>
@@ -323,31 +295,14 @@ const scrollTo = (id) => {
                   We believe human potential should never be accidental. Naavi exists to align
                   passion, skills, education, and opportunity into meaningful life journeys.
                 </p>
-                
-              
               </div>
 
               <div className="ab-col-vis">
-                <div className="ab-orbit-wrap">
-                  <div className="ab-orbit-ring ab-or1" />
-                  <div className="ab-orbit-ring ab-or2" />
-                  <div className="ab-orbit-core">
-                    <span>🧠</span>
-                    <p>Human<br/>Potential</p>
-                  </div>
-                  <div className="ab-orbit-node" style={{left:'35%', top:'15%'}}>
-                    <span>❤️</span><p>Passion</p>
-                  </div>
-                  <div className="ab-orbit-node" style={{left:'65%', top:'15%'}}>
-                    <span>⚙️</span><p>Skills</p>
-                  </div>
-                  <div className="ab-orbit-node" style={{left:'65%', top:'85%'}}>
-                    <span>📚</span><p>Education</p>
-                  </div>
-                  <div className="ab-orbit-node" style={{left:'35%', top:'85%'}}>
-                    <span>🌟</span><p>Opportunity</p>
-                  </div>
-                </div>
+                <img
+                  src={missionImg}
+                  alt="Mission and Philosophy"
+                  className="ab-side-image ab-mission-image"
+                />
               </div>
             </div>
           </div>
@@ -357,15 +312,6 @@ const scrollTo = (id) => {
         <section id="ab-verse" className="ab-section ab-alt-white">
           <div className="ab-container">
             <div className="ab-row">
-              <div className="ab-col-vis">
-  <img
-    src={naaviverseImg}
-    alt="Naaviverse"
-    className="ab-side-image"
-  />
-              
-              </div>
-
               <div className="ab-col-txt">
                 
                 <h2><span className="ab-green">Naaviverse</span></h2>
@@ -376,6 +322,14 @@ const scrollTo = (id) => {
                 </p>
                
                 
+              </div>
+
+              <div className="ab-col-vis">
+                <img
+                  src={naaviverseImg}
+                  alt="Naaviverse"
+                  className="ab-side-image"
+                />
               </div>
             </div>
           </div>
