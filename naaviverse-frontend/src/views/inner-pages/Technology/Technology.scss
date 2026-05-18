@@ -454,3 +454,12 @@ $border-light: rgba(0, 0, 0, 0.06);
   .tech-synergy-banner { padding: 24px; }
   .tech-bullet-card { padding: 8px 12px; font-size: 12px; }
 }
+
+.tech-graph-visual img,
+img.tech-graph-visual {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 16px;
+}

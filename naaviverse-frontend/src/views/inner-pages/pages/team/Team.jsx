@@ -12,7 +12,7 @@ import {
 } from 'react-icons/fi';
 import './Team.scss';
 import Footer from '../../../../components/footernew/index';
-
+import buildingBeyondImg from './images/building beyond.png';
 // Import image
 import teamVisionImage from '../../../../assets/images/assets/solution.png';
 
@@ -137,14 +137,14 @@ const Team = () => {
 
           <div className="team-drivers-grid">
             {drivers.map((d, i) => (
-              <div key={d} className="team-driver-card">
-                <div className="team-driver-card-top">
-                  <span className="team-driver-number">{String(i + 1).padStart(2, "0")}</span>
-                  <FiArrowRight className="team-driver-arrow" size={20} />
-                </div>
-                <p className="team-driver-text">{d}</p>
-              </div>
-            ))}
+  <div key={d} className="team-driver-card">
+    <div className="team-driver-card-top">
+      <span className="team-driver-number">{String(i + 1).padStart(2, "0")}</span>
+    </div>
+    <FiArrowRight className="team-driver-arrow" size={18} />
+    <p className="team-driver-text">{d}</p>
+  </div>
+))}
           </div>
         </div>
       </section>
@@ -162,22 +162,9 @@ const Team = () => {
         The founders envision a world where every learner, professional, and institution can navigate toward meaningful futures with clarity, intelligence, and confidence.
       </p>
     </div>
-
-    <div className="team-beyond-cards">
-      {[
-        { Icon: FiBox, label: "Infrastructure", color: "#2DB67D" },
-        { Icon: FiSun, label: "Intelligence", color: "#4DA6FF" },
-        { Icon: FiGlobe, label: "Ecosystem", color: "#FF9500" },
-        { Icon: FiCompass, label: "Navigation", color: "#A259FF" },
-      ].map(({ Icon, label, color }) => (
-        <div key={label} className="team-beyond-card">
-          <div className="team-beyond-card-icon" style={{ backgroundColor: `${color}10`, color: color }}>
-            <Icon size={28} />
-          </div>
-          <p className="team-beyond-card-label">{label}</p>
-        </div>
-      ))}
-    </div>
+<div className="team-beyond-image">
+  <img src={buildingBeyondImg} alt="Building Beyond EdTech" className="team-beyond-img" />
+</div>
   </div>
 </section>
 

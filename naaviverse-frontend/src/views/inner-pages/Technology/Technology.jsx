@@ -11,7 +11,7 @@ import {
 } from "react-icons/hi2";
 import './Technology.scss';
 import Footer from '../../../components/footernew/index';
-
+import technologyImg from './images/technology.png';
 // Import the image
 import solutionImage from '../../../assets/images/assets/solution.png';
 
@@ -267,7 +267,8 @@ const Technology = () => {
 
           {/* Synergy Banner */}
           <div className="tech-synergy-banner">
-            <GraphNodesVisual />
+             <img src={technologyImg} alt="Technology Architecture" className="tech-graph-visual" />
+
             <div className="tech-synergy-content">
               <div className="tech-synergy-label">SYNERGY · LLM × KG</div>
               <h3 className="tech-synergy-title">

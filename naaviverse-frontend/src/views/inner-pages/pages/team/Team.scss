@@ -1,5 +1,4 @@
-// Team.scss
-// Premium Team Page — Clean white/light UI only, no grid lines, no dark backgrounds
+
 
 $green: #2DB67D;
 $green-light: #e8f8f1;
@@ -126,48 +125,58 @@ $border-light: rgba(0, 0, 0, 0.06);
   background: $white;
 }
 
+// REPLACE .team-disciplines-card
 .team-disciplines-card {
-  background: $soft-bg;
+  background: $white;
   border-radius: 28px;
-  padding: 40px;
+  padding: 48px 52px;
   border: 1px solid $border-light;
+  box-shadow: 0 2px 24px rgba(0, 0, 0, 0.05);
+  text-align: center;
 }
 
+// REPLACE .team-disciplines-intro
 .team-disciplines-intro {
-  font-size: 16px;
-  font-weight: 500;
-  color: $text-dark;
-  margin: 0 0 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: $navy;
+  margin: 0 0 28px;
 }
 
+// REPLACE .team-disciplines-outro
+.team-disciplines-outro {
+  margin: 32px auto 0;
+  font-size: 15px;
+  color: $muted;
+  line-height: 1.8;
+  max-width: 640px;
+}
+
+// REPLACE .team-tags-grid
 .team-tags-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
+  justify-content: center;
 }
 
+// REPLACE .team-tag
 .team-tag {
-  padding: 8px 18px;
-  background: $white;
-  border: 1px solid $border-light;
-  border-radius: 40px;
-  font-size: 13px;
+  padding: 10px 22px;
+  background: $soft-bg;
+  border: 1.5px solid $border-light;
+  border-radius: 100px;
+  font-size: 14px;
   font-weight: 500;
   color: $text-dark;
   transition: all 0.2s ease;
-}
 
-.team-tag:hover {
-  border-color: $green;
-  color: $green;
-  transform: translateY(-2px);
-}
-
-.team-disciplines-outro {
-  margin: 24px 0 0;
-  font-size: 14px;
-  color: $muted;
-  line-height: 1.7;
+  &:hover {
+    background: rgba(45, 182, 125, 0.08);
+    border-color: rgba(45, 182, 125, 0.35);
+    color: $green;
+    transform: translateY(-2px);
+  }
 }
 
 // Section Eyebrow & Title
@@ -326,79 +335,108 @@ $border-light: rgba(0, 0, 0, 0.06);
   &--4 { top: 50%; left: 0%; transform: translateY(-50%); animation-delay: 3s; }
 }
 
-// Drivers Grid
+// Drivers Section — completely replace everything from .team-drivers down to .team-driver-text
+// REPLACE .team-drivers
 .team-drivers {
   background: $white;
 }
 
+// REPLACE .team-drivers-grid
 .team-drivers-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid $border-light;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.04);
 }
 
 @media (max-width: 900px) {
-  .team-drivers-grid { grid-template-columns: repeat(2, 1fr); }
+  .team-drivers-grid { border-radius: 16px; }
 }
 
-@media (max-width: 550px) {
-  .team-drivers-grid { grid-template-columns: 1fr; }
-}
-
+// REPLACE .team-driver-card
 .team-driver-card {
-  padding: 24px;
-  background: $soft-bg;
-  border-radius: 20px;
-  border: 1px solid $border-light;
-  transition: all 0.25s ease;
+  padding: 28px 36px;
+  background: $white;
+  border-bottom: 1px solid $border-light;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  transition: all 0.22s ease;
+  cursor: default;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: #F8FDF9;
+    padding-left: 44px;
+
+    .team-driver-arrow {
+      opacity: 1;
+      transform: translateX(0);
+      color: $green;
+    }
+
+    .team-driver-number {
+      background: $green;
+      color: $white;
+    }
+  }
 }
 
-.team-driver-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
-  border-color: rgba(45, 182, 125, 0.2);
+@media (max-width: 600px) {
+  .team-driver-card {
+    padding: 22px 24px;
+    gap: 20px;
+  }
 }
 
-.team-driver-card .team-driver-arrow {
-  opacity: 0;
-  transition: all 0.2s;
-}
-
-.team-driver-card:hover .team-driver-arrow {
-  opacity: 1;
-  transform: translateX(4px);
-}
-
+// REPLACE .team-driver-card-top
 .team-driver-card-top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
+  gap: 0;
+  flex-shrink: 0;
 }
 
+// REPLACE .team-driver-number
 .team-driver-number {
-  width: 44px;
-  height: 44px;
-  background: rgba(45, 182, 125, 0.1);
+  width: 42px;
+  height: 42px;
+  background: rgba(45, 182, 125, 0.08);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
   color: $green;
+  flex-shrink: 0;
+  transition: all 0.22s ease;
 }
 
+// REPLACE .team-driver-arrow
 .team-driver-arrow {
+  opacity: 0;
   color: $green;
+  transform: translateX(-6px);
+  transition: all 0.22s ease;
+  flex-shrink: 0;
+  margin-left: 16px;
 }
 
+// REPLACE .team-driver-text
 .team-driver-text {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 500;
   color: $navy;
-  line-height: 1.4;
+  line-height: 1.5;
   margin: 0;
+  flex: 1;
 }
 
 // Vision Image Section
@@ -582,4 +620,23 @@ $border-light: rgba(0, 0, 0, 0.06);
   .team-driver-card { padding: 18px; }
   .team-beyond-card { padding: 16px; }
   .team-visual-node { font-size: 9px; padding: 4px 8px; }
+}
+
+.team-beyond-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-beyond-img {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 20px;
+  display: block;
+
+  @media (max-width: 900px) {
+    max-width: 100%;
+  }
 }
