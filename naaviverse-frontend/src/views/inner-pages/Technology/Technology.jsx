@@ -277,21 +277,7 @@ const Technology = () => {
                 Naavi generates highly personalized, explainable, and future-aware navigation pathways. By integrating LLMs with Knowledge Graphs through advanced{' '}
                 <span className="tech-mint-bold">GraphRAG frameworks</span>, Naavi builds a continuously evolving intelligence ecosystem capable of understanding not just information — but relationships, possibilities, and human potential itself.
               </p>
-              <div className="tech-synergy-chips">
-                {[
-                  { Icon: HiOutlineBolt, label: "Adaptive" },
-                  { Icon: HiOutlineGlobeAlt, label: "Future-aware" },
-                  { Icon: HiOutlineSparkles, label: "Explainable" },
-                  { Icon: HiOutlineShare, label: "Connected" },
-                  { Icon: HiOutlineChartBar, label: "Intelligent" },
-                  { Icon: HiOutlineUserGroup, label: "Personalized" },
-                ].map(({ Icon, label }) => (
-                  <div key={label} className="tech-chip-light">
-                    <Icon size={16} />
-                    <span>{label}</span>
-                  </div>
-                ))}
-              </div>
+            
             </div>
           </div>
         </div>
