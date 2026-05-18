@@ -431,6 +431,20 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   @media(max-width: 480px) { width: 220px; height: 200px; }
 }
 
+.imp-vis-image-wrap {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+}
+
+.imp-story-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 34px rgba(26, 26, 46, 0.08));
+}
+
 .imp-vis-glow {
   position: absolute;
   inset: -30px;

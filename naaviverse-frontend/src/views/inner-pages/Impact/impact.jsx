@@ -1,6 +1,14 @@
-import React, { Fragment, useRef } from 'react';
+import React, { Fragment } from 'react';
 import './impact.scss';
 import Footer from '../../../components/footernew/index';
+import skillGapProblemImg from './images/skill gap problem.png';
+import futureWorkforceImg from './images/second image.png';
+import studentOutcomesImg from './images/student.png';
+import educationTransformationImg from './images/education.png';
+import humanPotentialImg from './images/human.png';
+import globalOpportunityImg from './images/global.png';
+import sdgImpactImg from './images/SDG.png';
+import successStoriesImg from './images/successs.png';
 
 const navTerms = [
   { num: '01', label: 'Skill Gap Problem',      id: 'skill-gap-problem',        accent: '#2DB67D' },
@@ -86,143 +94,90 @@ function SectionVisual({ type, accent }) {
   switch (type) {
     case 'gap':
       return (
-        <div className="imp-vis">
-          <div className="imp-vis-glow" style={{ background: `radial-gradient(circle, ${accent}18, transparent 65%)` }} />
-          <svg viewBox="0 0 220 180" className="imp-vis-svg">
-            <rect x="15"  y="110" width="28" height="60" rx="5" fill={accent} opacity="0.85" />
-            <rect x="58"  y="80"  width="28" height="90" rx="5" fill={accent} opacity="0.6"  />
-            <rect x="101" y="50"  width="28" height="120" rx="5" fill={accent} opacity="0.4" />
-            <rect x="144" y="20"  width="28" height="150" rx="5" fill={accent} opacity="0.2" />
-            <polyline points="29,110 72,80 115,50 158,20" fill="none" stroke={accent} strokeWidth="2" strokeDasharray="6 4" opacity="0.5" />
-            <circle cx="29"  cy="110" r="5" fill={accent} />
-            <circle cx="72"  cy="80"  r="5" fill={accent} opacity="0.7" />
-            <circle cx="115" cy="50"  r="5" fill={accent} opacity="0.5" />
-            <circle cx="158" cy="20"  r="5" fill={accent} opacity="0.3" />
-            <text x="12" y="12" fontSize="9" fill={accent} fontWeight="700" opacity="0.7">120M+ gap</text>
-          </svg>
+        <div className="imp-vis imp-vis-image-wrap">
+          <img
+            src={skillGapProblemImg}
+            alt="Skill gap problem"
+            className="imp-story-image"
+          />
         </div>
       );
 
     case 'workforce':
       return (
-        <div className="imp-vis">
-          <div className="imp-vis-glow" style={{ background: `radial-gradient(circle, ${accent}18, transparent 65%)` }} />
-          <div className="imp-vis-nodes-wrap">
-            {['Adaptability','AI Skills','Creativity','Navigation','Leadership'].map((n, i) => (
-              <div key={n} className="imp-vis-node" style={{
-                '--accent': accent,
-                animationDelay: `${i * 0.35}s`,
-                top:  `${[12,4,46,72,32][i]}%`,
-                left: `${[8, 52,70,18,38][i]}%`,
-              }}>
-                {n}
-              </div>
-            ))}
-          </div>
+        <div className="imp-vis imp-vis-image-wrap">
+          <img
+            src={futureWorkforceImg}
+            alt="Future workforce"
+            className="imp-story-image"
+          />
         </div>
       );
 
     case 'outcomes':
       return (
-        <div className="imp-vis">
-          <div className="imp-vis-glow" style={{ background: `radial-gradient(circle, ${accent}18, transparent 65%)` }} />
-          <div className="imp-vis-ring-wrap">
-            <div className="imp-vis-ring" style={{ '--accent': accent, width:'190px', height:'190px' }} />
-            <div className="imp-vis-ring" style={{ '--accent': accent, width:'120px', height:'120px', animationDirection:'reverse', animationDuration:'11s' }} />
-            <div className="imp-vis-core" style={{ background: accent }}>
-              <span className="imp-vis-core-num">98%</span>
-              <span className="imp-vis-core-lbl">Clarity</span>
-            </div>
-          </div>
+        <div className="imp-vis imp-vis-image-wrap">
+          <img
+            src={studentOutcomesImg}
+            alt="Student outcomes"
+            className="imp-story-image"
+          />
         </div>
       );
 
     case 'education':
       return (
-        <div className="imp-vis">
-          <div className="imp-vis-glow" style={{ background: `radial-gradient(circle, ${accent}18, transparent 65%)` }} />
-          <div className="imp-vis-steps">
-            {['Standard','Data-Driven','Adaptive','Personalized'].map((step, i) => (
-              <div key={step} className="imp-vis-step" style={{ '--accent': accent, '--delay': `${i * 0.25}s` }}>
-                <div className="imp-vis-step-dot" />
-                <span>{step}</span>
-              </div>
-            ))}
-          </div>
+        <div className="imp-vis imp-vis-image-wrap">
+          <img
+            src={educationTransformationImg}
+            alt="Education transformation"
+            className="imp-story-image"
+          />
         </div>
       );
 
     case 'potential':
       return (
-        <div className="imp-vis">
-          <div className="imp-vis-glow" style={{ background: `radial-gradient(circle, ${accent}18, transparent 65%)` }} />
-          <div className="imp-vis-orbit-wrap">
-            <div className="imp-vis-orbit" style={{ '--accent': accent, width:'200px', height:'200px' }} />
-            <div className="imp-vis-orbit" style={{ '--accent': accent, width:'128px', height:'128px', animationDirection:'reverse', animationDuration:'9s' }} />
-            <div className="imp-vis-orbit-core" style={{ background: `linear-gradient(135deg, ${accent}, ${accent}99)` }}>🧠</div>
-            {['Passion','Skills','Goals','Growth'].map((label, i) => (
-              <div key={label} className="imp-vis-orbit-node" style={{
-                top:  `${[4, 48, 88, 48][i]}%`,
-                left: `${[48, 88, 48, 8][i]}%`,
-                animationDelay: `${i * 0.4}s`,
-              }}>
-                {label}
-              </div>
-            ))}
-          </div>
+        <div className="imp-vis imp-vis-image-wrap">
+          <img
+            src={humanPotentialImg}
+            alt="Human potential"
+            className="imp-story-image"
+          />
         </div>
       );
 
     case 'global':
       return (
-        <div className="imp-vis">
-          <div className="imp-vis-glow" style={{ background: `radial-gradient(circle, ${accent}18, transparent 65%)` }} />
-          <svg viewBox="0 0 200 180" className="imp-vis-svg">
-            <ellipse cx="100" cy="90" rx="78" ry="68" fill="none" stroke={accent} strokeWidth="1.2" opacity="0.25" />
-            <ellipse cx="100" cy="90" rx="50" ry="68" fill="none" stroke={accent} strokeWidth="0.8" opacity="0.15" />
-            <line x1="22" y1="90" x2="178" y2="90" stroke={accent} strokeWidth="0.8" opacity="0.15" />
-            <line x1="100" y1="22" x2="100" y2="158" stroke={accent} strokeWidth="0.8" opacity="0.15" />
-            {[[55,50],[138,62],[72,122],[148,108],[100,35],[65,145]].map(([cx,cy],i) => (
-              <circle key={i} cx={cx} cy={cy} r="5" fill={accent} opacity={0.35 + i * 0.1}>
-                <animate attributeName="r" values="4;7;4" dur={`${2+i*0.5}s`} repeatCount="indefinite" />
-              </circle>
-            ))}
-          </svg>
+        <div className="imp-vis imp-vis-image-wrap">
+          <img
+            src={globalOpportunityImg}
+            alt="Global opportunity access"
+            className="imp-story-image"
+          />
         </div>
       );
 
     case 'sdgs':
       return (
-        <div className="imp-vis">
-          <div className="imp-vis-glow" style={{ background: `radial-gradient(circle, ${accent}18, transparent 65%)` }} />
-          <div className="imp-vis-list">
-            {['Quality Education','Decent Work','Reduced Inequalities','Innovation','Lifelong Learning'].map((g, i) => (
-              <div key={g} className="imp-vis-list-item" style={{ '--accent': accent, '--delay': `${i * 0.15}s` }}>
-                <div className="imp-vis-list-dot" style={{ background: accent }} />
-                <span>{g}</span>
-              </div>
-            ))}
-          </div>
+        <div className="imp-vis imp-vis-image-wrap">
+          <img
+            src={sdgImpactImg}
+            alt="SDGs and social impact"
+            className="imp-story-image"
+          />
         </div>
       );
 
     case 'stories':
     default:
       return (
-        <div className="imp-vis">
-          <div className="imp-vis-glow" style={{ background: `radial-gradient(circle, ${accent}18, transparent 65%)` }} />
-          <div className="imp-vis-circles">
-            {[160,120,84,52,28].map((size, i) => (
-              <div key={i} className="imp-vis-circle" style={{
-                width: `${size}px`, height: `${size}px`,
-                borderColor: accent,
-                opacity: 0.1 + i * 0.12,
-                animationDelay: `${i * 0.3}s`,
-              }} />
-            ))}
-            <div className="imp-vis-circle-label" style={{ color: accent }}>1000+</div>
-            <div className="imp-vis-circle-sub">Journeys</div>
-          </div>
+        <div className="imp-vis imp-vis-image-wrap">
+          <img
+            src={successStoriesImg}
+            alt="Success stories"
+            className="imp-story-image"
+          />
         </div>
       );
   }
