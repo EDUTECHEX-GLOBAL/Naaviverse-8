@@ -112,7 +112,6 @@ const NAAVI_STYLES = `
   .naavi-navbar .mega-menu.w-2col { min-width: 460px; }
   .naavi-navbar .mega-menu.w-3col { min-width: 660px; }
 
-  /* CSS :hover opens the dropdown */
   .naavi-navbar .nav-item:hover .mega-menu {
     opacity: 1;
     visibility: visible;
@@ -124,7 +123,6 @@ const NAAVI_STYLES = `
     transform: translateY(0);
   }
 
-  /* force-close overrides :hover — applied after a click, cleared on mouseleave */
   .naavi-navbar .mega-menu.force-close {
     opacity: 0 !important;
     visibility: hidden !important;
@@ -230,10 +228,8 @@ const ThemeMainMenu = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Which menu is temporarily force-closed after a click
   const [closedMenu, setClosedMenu] = useState(null);
 
-  // Clear force-close state whenever the route changes
   useEffect(() => {
     setClosedMenu(null);
   }, [location.pathname]);
@@ -243,60 +239,30 @@ const ThemeMainMenu = () => {
     navigate(path);
   };
 
-  const goAbout = (hash) => {
-    const sectionId = `ab-${hash}`;
-    if (location.pathname === '/about') {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      navigate('/about');
-      setTimeout(() => {
-        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 400);
-    }
+  // Simple navigation with URLs - no hash needed!
+  const goToAboutSection = (sectionPath) => {
+    navigate(`/about/${sectionPath}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
- const goSection = (sectionId) => {
-    if (location.pathname === '/team') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      navigate('/team');
-      setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 420);
-    }
+  const goToTeamSection = (sectionPath) => {
+    navigate(`/team/${sectionPath}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const goImpact = (sectionId) => {
-    if (location.pathname === '/impact') {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      navigate('/impact');
-      setTimeout(() => {
-        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 400);
-    }
+  const goToImpactSection = (sectionPath) => {
+    navigate(`/impact/${sectionPath}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const goTechnology = (sectionId) => {
-    if (location.pathname === '/technology') {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      navigate('/technology');
-      setTimeout(() => {
-        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 400);
-    }
+  const goToTechnologySection = (sectionPath) => {
+    navigate(`/technology/${sectionPath}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const at = (prefix) => location.pathname.startsWith(prefix);
-
-  // Returns 'force-close' string if this menu was just clicked, else ''
   const fc = (menuName) => closedMenu === menuName ? 'force-close' : '';
-
-  // Call on item click: hides the menu immediately
   const close = (menuName) => setClosedMenu(menuName);
-
-  // Call on <li> mouseleave: re-enables hover for next time
   const reset = () => setClosedMenu(null);
 
   return (
@@ -304,12 +270,12 @@ const ThemeMainMenu = () => {
       <div className="naavi-navbar">
         <ul className="navbar-nav desktop-menu-only">
 
-          {/* HOME */}
+          {/* HOME - URL: http://localhost:3000/ */}
           <li className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}>
             <Link className="nav-link" to="/" onClick={() => go('/')}>HOME</Link>
           </li>
 
-          {/* ABOUT */}
+          {/* ABOUT - Main dropdown with URL navigation */}
           <li
             className={`nav-item dropdown ${at('/about') ? 'active' : ''}`}
             onMouseLeave={reset}
@@ -319,22 +285,23 @@ const ThemeMainMenu = () => {
               <div className="mega-inner g2">
                 <div className="mega-col">
                   <p className="mega-heading">Who We Are</p>
-                  <button className="mega-item" onClick={() => { goAbout('what');    close('about'); }}>What is Naavi?</button>
-                  <button className="mega-item" onClick={() => { goAbout('vision');  close('about'); }}>Our Vision</button>
-                  <button className="mega-item" onClick={() => { goAbout('why');     close('about'); }}>Why Naavi</button>
-                  <button className="mega-item" onClick={() => { goAbout('mission'); close('about'); }}>Mission & Philosophy</button>
+                  {/* URLs: http://localhost:3000/about/what-is-naavi */}
+                  <Link className="mega-item" to="/about/what-is-naavi" onClick={() => close('about')}>What is Naavi?</Link>
+                  <Link className="mega-item" to="/about/our-vision" onClick={() => close('about')}>Our Vision</Link>
+                  <Link className="mega-item" to="/about/why-naavi" onClick={() => close('about')}>Why Naavi</Link>
+                  <Link className="mega-item" to="/about/mission-philosophy" onClick={() => close('about')}>Mission & Philosophy</Link>
                 </div>
                 <div className="mega-col">
                   <p className="mega-heading">Platform</p>
-                  <button className="mega-item" onClick={() => { goAbout('problem'); close('about'); }}>The Navigation Problem</button>
-                  <button className="mega-item" onClick={() => { goAbout('intel');   close('about'); }}>Pathway Intelligence</button>
-                  <button className="mega-item" onClick={() => { goAbout('verse');   close('about'); }}>Naaviverse</button>
+                  <Link className="mega-item" to="/about/navigation-problem" onClick={() => close('about')}>The Navigation Problem</Link>
+                  <Link className="mega-item" to="/about/pathway-intelligence" onClick={() => close('about')}>Pathway Intelligence</Link>
+                  <Link className="mega-item" to="/about/naaviverse" onClick={() => close('about')}>Naaviverse</Link>
                 </div>
               </div>
             </div>
           </li>
 
-          {/* TEAM */}
+          {/* TEAM - Main dropdown with URL navigation */}
           <li
             className={`nav-item dropdown ${at('/team') ? 'active' : ''}`}
             onMouseLeave={reset}
@@ -344,13 +311,17 @@ const ThemeMainMenu = () => {
               <div className="mega-inner g1">
                 <div className="mega-col">
                   <p className="mega-heading">Our People</p>
-                  <button className="mega-item" onClick={() => { goSection('founders'); close('team'); }}>Founders</button>
+                  {/* URL: http://localhost:3000/team/founders */}
+                  <Link className="mega-item" to="/team/founders" onClick={() => close('team')}>Founders</Link>
+                  {/* <Link className="mega-item" to="/team/leadership" onClick={() => close('team')}>Leadership</Link>
+                  <Link className="mega-item" to="/team/advisors" onClick={() => close('team')}>Advisors</Link>
+                  <Link className="mega-item" to="/team/careers" onClick={() => close('team')}>Careers</Link> */}
                 </div>
               </div>
             </div>
           </li>
 
-          {/* IMPACT */}
+          {/* IMPACT - Main dropdown with URL navigation */}
           <li
             className={`nav-item dropdown ${at('/impact') ? 'active' : ''}`}
             onMouseLeave={reset}
@@ -360,56 +331,59 @@ const ThemeMainMenu = () => {
               <div className="mega-inner g3">
                 <div className="mega-col">
                   <p className="mega-heading">The Problem</p>
-                  <button className="mega-item" onClick={() => { goImpact('skill-gap-problem');  close('impact'); }}>Skill Gap Problem</button>
-                  <button className="mega-item" onClick={() => { goImpact('future-workforce');    close('impact'); }}>Future Workforce</button>
-                  <button className="mega-item" onClick={() => { goImpact('human-potential');     close('impact'); }}>Human Potential</button>
+                  {/* URLs: http://localhost:3000/impact/skill-gap-problem */}
+                  <Link className="mega-item" to="/impact/skill-gap-problem" onClick={() => close('impact')}>Skill Gap Problem</Link>
+                  <Link className="mega-item" to="/impact/future-workforce" onClick={() => close('impact')}>Future Workforce</Link>
+                  <Link className="mega-item" to="/impact/human-potential" onClick={() => close('impact')}>Human Potential</Link>
                 </div>
                 <div className="mega-col">
                   <p className="mega-heading">Outcomes</p>
-                  <button className="mega-item" onClick={() => { goImpact('student-outcomes');          close('impact'); }}>Student Outcomes</button>
-                  <button className="mega-item" onClick={() => { goImpact('education-transformation');  close('impact'); }}>Education Transformation</button>
-                  <button className="mega-item" onClick={() => { goImpact('success-stories');           close('impact'); }}>Success Stories</button>
+                  <Link className="mega-item" to="/impact/student-outcomes" onClick={() => close('impact')}>Student Outcomes</Link>
+                  <Link className="mega-item" to="/impact/education-transformation" onClick={() => close('impact')}>Education Transformation</Link>
+                  <Link className="mega-item" to="/impact/success-stories" onClick={() => close('impact')}>Success Stories</Link>
                 </div>
                 <div className="mega-col">
                   <p className="mega-heading">Global Reach</p>
-                  <button className="mega-item" onClick={() => { goImpact('global-opportunity-access'); close('impact'); }}>Global Opportunity Access</button>
-                  <button className="mega-item" onClick={() => { goImpact('sdgs-social-impact');        close('impact'); }}>SDGs & Social Impact</button>
+                  <Link className="mega-item" to="/impact/global-opportunity-access" onClick={() => close('impact')}>Global Opportunity Access</Link>
+                  <Link className="mega-item" to="/impact/sdgs-social-impact" onClick={() => close('impact')}>SDGs & Social Impact</Link>
                 </div>
               </div>
             </div>
           </li>
 
-          {/* TECHNOLOGY */}
-          <li
-            className={`nav-item dropdown ${at('/technology') ? 'active' : ''}`}
-            onMouseLeave={reset}
-          >
-            <span className="nav-link">TECHNOLOGY <Chevron /></span>
-            <div className={`mega-menu ${fc('technology')}`}>
-              <div className="mega-inner g1">
-                <div className="mega-col">
-                  <p className="mega-heading">Core Tech</p>
-                  <button className="mega-item" onClick={() => { goTechnology('pathways');  close('technology'); }}>Pathways</button>
-                  <button className="mega-item" onClick={() => { goTechnology('llms-kgs'); close('technology'); }}>LLM's – KG's</button>
-                </div>
-              </div>
-            </div>
-          </li>
-
-         {/* MORE */}
+         {/* TECHNOLOGY */}
 <li
-  className={`nav-item dropdown ${location.pathname === '/contact' ? 'active' : ''}`}
+  className={`nav-item dropdown ${at('/technology') ? 'active' : ''}`}
   onMouseLeave={reset}
 >
-  <span className="nav-link">MORE <Chevron /></span>
-  <div className={`mega-menu align-right ${fc('more')}`}>
+  <span className="nav-link">TECHNOLOGY <Chevron /></span>
+  <div className={`mega-menu ${fc('technology')}`}>
     <div className="mega-inner g1">
       <div className="mega-col">
-        <p className="mega-heading">Get in Touch</p>
-<Link className="mega-item" to="/contact#contact-form" onClick={() => { close('more'); }}>Contact</Link>      </div>
+        <p className="mega-heading">Core Technology</p>
+        <Link className="mega-item" to="/technology/pathways-system" onClick={() => close('technology')}>Pathways</Link>
+        <Link className="mega-item" to="/technology/llms-knowledge-graphs" onClick={() => close('technology')}>LLMs & Knowledge Graphs</Link>
+      </div>
     </div>
   </div>
 </li>
+
+          {/* MORE */}
+          <li
+            className={`nav-item dropdown ${at('/contact') ? 'active' : ''}`}
+            onMouseLeave={reset}
+          >
+            <span className="nav-link">MORE <Chevron /></span>
+            <div className={`mega-menu align-right ${fc('more')}`}>
+              <div className="mega-inner g1">
+                <div className="mega-col">
+                  <p className="mega-heading">Get in Touch</p>
+                  <Link className="mega-item" to="/contact" onClick={() => close('more')}>Contact Us</Link>
+                 
+                </div>
+              </div>
+            </div>
+          </li>
 
         </ul>
 

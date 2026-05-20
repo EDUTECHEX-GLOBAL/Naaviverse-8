@@ -166,14 +166,17 @@ export default function Contact() {
                       onChange={(e) => setProduct(e.target.value)}
                       required
                     >
-                      <option value="">Select Inquiry Type</option>
-                      <option value="GENERAL">General Information</option>
-                      <option value="SUPPORT">Technical Support</option>
-                      <option value="PRICING">Pricing & Plans</option>
-                      <option value="DEMO">Request a Demo</option>
-                      <option value="PARTNERSHIP">Partnership Opportunity</option>
-                      <option value="FEEDBACK">Feedback & Suggestions</option>
-                      <option value="OTHER">Other Questions</option>
+                      <option value="">Select your question</option>
+<option value="WHAT_IS_NAAVI">What is Naavi and how does it work?</option>
+<option value="PATHWAY_ENGINE">How does the AI Pathway Engine generate my path?</option>
+<option value="SKILL_GAP">How does Naavi help bridge my skill gap?</option>
+<option value="MENTOR_CONNECT">How can I connect with mentors on Naavi?</option>
+<option value="NAAVIVERSE">What is the Naaviverse ecosystem?</option>
+<option value="CAREER_PATHS">Can Naavi help me switch careers or industries?</option>
+<option value="INSTITUTIONS">How can my institution partner with Naavi?</option>
+<option value="DEMO">I'd like to request a product demo</option>
+<option value="PARTNERSHIP">Explore a partnership opportunity</option>
+<option value="OTHER">Something else</option>
                     </select>
                   </div>
                 </div>

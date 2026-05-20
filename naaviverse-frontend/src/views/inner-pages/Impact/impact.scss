@@ -439,12 +439,14 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 .imp-story-image {
   width: 100%;
+  max-width: 520px;
   height: auto;
+  max-height: 360px;
   display: block;
   object-fit: contain;
+  border-radius: 0;
   filter: drop-shadow(0 18px 34px rgba(26, 26, 46, 0.08));
 }
-
 .imp-vis-glow {
   position: absolute;
   inset: -30px;
@@ -687,7 +689,8 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 .imp-hero-image {
   width: 100%;
-  max-width: 580px;
+  max-width: 780px;
+  min-width: 480px;
   height: auto;
   border-radius: 0;
   box-shadow: none;
@@ -696,5 +699,6 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
   @media(max-width: 900px) {
     max-width: 100%;
+    min-width: unset;
   }
 }

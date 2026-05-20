@@ -1,5 +1,5 @@
-// Technology.jsx
-import React, { Fragment } from 'react';
+import React, { Fragment, useEffect } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
 import {
   HiOutlineCpuChip,
   HiOutlineSparkles,
@@ -12,8 +12,9 @@ import {
 import './Technology.scss';
 import Footer from '../../../components/footernew/index';
 import technologyImg from './images/technology.png';
-// Import the image
 import solutionImage from '../../../assets/images/assets/solution.png';
+
+const HEADER_OFFSET = 80;
 
 const pathwayBullets = [
   "user decisions",
@@ -162,13 +163,46 @@ function GraphNodesVisual() {
 }
 
 const Technology = () => {
+  const { section } = useParams();
+  const location = useLocation();
+
+  // Map URL params to section IDs
+  const getSectionId = (sectionName) => {
+    const mapping = {
+      'pathways-system': 'pathways',
+      'llms-knowledge-graphs': 'llms-kgs',
+      'ai-matching': 'ai-matching',
+      'research': 'research',
+      'roadmap': 'roadmap',
+      'security': 'security'
+    };
+    return mapping[sectionName] || null;
+  };
+
+  // Scroll to section when URL param changes
+  useEffect(() => {
+    if (section) {
+      const sectionId = getSectionId(section);
+      if (sectionId) {
+        setTimeout(() => {
+          const element = document.getElementById(sectionId);
+          if (element) {
+            const top = element.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
+            window.scrollTo({ top, behavior: 'smooth' });
+          }
+        }, 120);
+      }
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [section, location.pathname]);
+
   return (
     <Fragment>
       {/* Pathways Section */}
       <section id="pathways" className="tech-section tech-pathways">
         <div className="tech-container">
           <div className="tech-section-header">
-          
             <h2 className="tech-section-title">Pathways Engine</h2>
             <p className="tech-section-desc">
               Transforming ambitions into intelligent, navigable journeys that evolve in real time.
@@ -215,9 +249,9 @@ const Technology = () => {
               </div>
 
               {/* Solution Image Banner */}
-          <div className="tech-solution-banner">
-            <img src={solutionImage} alt="Naavi Solution Architecture" className="tech-solution-image" />
-          </div>
+              <div className="tech-solution-banner">
+                <img src={solutionImage} alt="Naavi Solution Architecture" className="tech-solution-image" />
+              </div>
             </div>
           </div>
         </div>
@@ -227,7 +261,6 @@ const Technology = () => {
       <section id="llms-kgs" className="tech-section tech-llm-section">
         <div className="tech-container">
           <div className="tech-section-header">
-        
             <h2 className="tech-section-title">LLMs × Knowledge Graphs</h2>
             <p className="tech-section-desc">
               Naavi is powered by the powerful synergy between Large Language Models (LLMs) and Knowledge Graphs (KGs), combining reasoning intelligence with structured pathway understanding.
@@ -267,7 +300,7 @@ const Technology = () => {
 
           {/* Synergy Banner */}
           <div className="tech-synergy-banner">
-             <img src={technologyImg} alt="Technology Architecture" className="tech-graph-visual" />
+            <img src={technologyImg} alt="Technology Architecture" className="tech-graph-visual" />
 
             <div className="tech-synergy-content">
               <div className="tech-synergy-label">SYNERGY · LLM × KG</div>
@@ -278,11 +311,12 @@ const Technology = () => {
                 Naavi generates highly personalized, explainable, and future-aware navigation pathways. By integrating LLMs with Knowledge Graphs through advanced{' '}
                 <span className="tech-mint-bold">GraphRAG frameworks</span>, Naavi builds a continuously evolving intelligence ecosystem capable of understanding not just information — but relationships, possibilities, and human potential itself.
               </p>
-            
             </div>
           </div>
         </div>
       </section>
+
+    
 
       <Footer />
     </Fragment>

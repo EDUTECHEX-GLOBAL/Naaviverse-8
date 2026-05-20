@@ -1,5 +1,6 @@
 import React, { Fragment, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
+import { useParams, useLocation } from 'react-router-dom';
 import Footer from '../../../../components/footernew/index';
 import './AboutPage.scss';
 
@@ -10,6 +11,7 @@ import navigationProblemImg from './images/naavigation.png';
 import missionImg from './images/mission.png';
 
 const HEADER_OFFSET = 80;
+
 /* SVG Icons */
 const BrainIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -39,27 +41,41 @@ const ChartIcon = () => (
   </svg>
 );
 
-/* ════════════════════════════════════
-   ABOUT PAGE — Single Long Page
-════════════════════════════════════ */
-
 const AboutPage = () => {
-  // Scroll to section based on URL hash
+  const { section } = useParams();
+  const location = useLocation();
+
+  // Map URL params to section IDs
+  const getSectionId = (sectionName) => {
+    const mapping = {
+      'what-is-naavi': 'ab-what',
+      'our-vision': 'ab-vision',
+      'why-naavi': 'ab-why',
+      'navigation-problem': 'ab-problem',
+      'pathway-intelligence': 'ab-intel',
+      'mission-philosophy': 'ab-mission',
+      'naaviverse': 'ab-verse'
+    };
+    return mapping[sectionName] || null;
+  };
+
+  // Scroll to section when URL param changes
   useEffect(() => {
-    const hash = window.location.hash;
-    if (hash) {
-      const id = hash.replace('#', '');
-      setTimeout(() => {
-        const element = document.getElementById(id);
-       if (element) {
-          const top = element.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
-          window.scrollTo({ top, behavior: 'smooth' });
-        }
-      }, 120);
+    if (section) {
+      const sectionId = getSectionId(section);
+      if (sectionId) {
+        setTimeout(() => {
+          const element = document.getElementById(sectionId);
+          if (element) {
+            const top = element.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
+            window.scrollTo({ top, behavior: 'smooth' });
+          }
+        }, 120);
+      }
     } else {
-      window.scrollTo({ top: 0 });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, []);
+  }, [section, location.pathname]);
 
   return (
     <Fragment>
@@ -67,102 +83,16 @@ const AboutPage = () => {
         <title>About Naavi — AI-Powered Path Engine</title>
       </Helmet>
 
-     <div className="ab-page" style={{ paddingTop: '80px' }}>
-
-        {/* ── HERO ── */}
-        {/* <section className="ab-hero">
-          <svg className="ab-grid-bg" aria-hidden="true">
-            <defs>
-              <pattern id="abgrid" width="56" height="56" patternUnits="userSpaceOnUse">
-                <path d="M56 0L0 0 0 56" fill="none" stroke="rgba(45,182,125,0.07)" strokeWidth="1"/>
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#abgrid)" />
-          </svg>
-          <div className="ab-glow ab-glow-1" />
-          <div className="ab-glow ab-glow-2" />
-
-          <div className="ab-hero-inner">
-            <div className="ab-hero-text">
-              <nav className="ab-breadcrumb">
-                <Link to="/">Home</Link>
-                <span>/</span>
-                <span>About</span>
-              </nav>
-
-              <div className="ab-badge">
-                <span className="ab-pulse-dot" />
-                About Naavi
-              </div>
-
-              <h1>
-                The World's First<br />
-                <em>AI-Powered</em> <strong>Path Engine</strong>
-              </h1>
-
-              <p>
-                We don't just give you information — we give you <b>direction</b>.
-                Naavi transforms confusion into intelligent, personalized navigation.
-              </p>
-
-              <div className="ab-hero-btns">
-                <Link to="/login" className="ab-btn-green">Get Started Free</Link>
-                <button className="ab-btn-ghost" onClick={() => scrollTo('ab-what')}>
-                  Explore Our Story ↓
-                </button>
-              </div>
-            </div>
-
-            <div className="ab-hero-vis" aria-hidden="true">
-              <svg className="ab-path-svg" viewBox="0 0 420 220" fill="none">
-                <path d="M30 185C100 185 80 45 200 45C320 45 300 160 390 110"
-                  stroke="#2DB67D" strokeWidth="2.5" strokeDasharray="10 5" opacity="0.55"/>
-                <circle cx="30" cy="185" r="7" fill="#2DB67D"/>
-                <circle cx="200" cy="45" r="5" fill="#2DB67D" opacity="0.55"/>
-                <circle cx="390" cy="110" r="7" fill="#2DB67D"/>
-              </svg>
-
-              <div className="ab-fcard ab-fcard-1">
-                <span className="ab-fcdot" style={{background:'#2DB67D'}} />
-                <div>
-                  <p>Smart Career Path</p>
-                  <div className="ab-fcbar"><div style={{width:'78%',background:'#2DB67D'}} /></div>
-                </div>
-              </div>
-              <div className="ab-fcard ab-fcard-2">
-                <span className="ab-fcdot" style={{background:'#4DA6FF'}} />
-                <div>
-                  <p>Skill Roadmap</p>
-                  <div className="ab-fcbar"><div style={{width:'62%',background:'#4DA6FF'}} /></div>
-                </div>
-              </div>
-              <div className="ab-fcard ab-fcard-3">
-                <span className="ab-fcdot" style={{background:'#FF9500'}} />
-                <div>
-                  <p>Global Opportunities</p>
-                  <div className="ab-fcbar"><div style={{width:'91%',background:'#FF9500'}} /></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section> */}
+      <div className="ab-page" style={{ paddingTop: '80px' }}>
 
         {/* ── WHAT IS NAAVI ── */}
         <section id="ab-what" className="ab-section ab-alt-white">
           <div className="ab-container">
             <div className="ab-row">
               <div className="ab-col-vis">
-  <img
-    src={aboutWhatImg}
-    alt="What is Naavi"
-    className="ab-side-image"
-  />
-
-               
+                <img src={aboutWhatImg} alt="What is Naavi" className="ab-side-image" />
               </div>
-
               <div className="ab-col-txt">
-                
                 <h2>What is <span className="ab-green">Naavi?</span></h2>
                 <p className="ab-lead">
                   Naavi is the world's first AI-powered Path Engine that helps people navigate
@@ -184,30 +114,14 @@ const AboutPage = () => {
           <div className="ab-container">
             <div className="ab-row ab-vision-row">
               <div className="ab-col-txt">
-               
                 <h2>Our <span className="ab-green">Vision</span></h2>
                 <p className="ab-lead">
                   To build the intelligence layer for human growth — where every individual can
                   navigate toward their highest potential with clarity, purpose, and opportunity.
                 </p>
-               
-                
               </div>
-
-              {/* <div className="ab-col-vis">
-  <img
-    src={visionImg}
-    alt="Our Vision"
-    className="ab-side-image"
-  />
-               
-              </div> */}
               <div className="ab-col-vis">
-                <img
-                  src={visionImg}
-                  alt="Our Vision"
-                  className="ab-side-image ab-vision-image"
-                />
+                <img src={visionImg} alt="Our Vision" className="ab-side-image ab-vision-image" />
               </div>
             </div>
           </div>
@@ -217,7 +131,6 @@ const AboutPage = () => {
         <section id="ab-why" className="ab-section ab-alt-white">
           <div className="ab-container">
             <div className="ab-center-hd">
-             
               <h2>Why <span className="ab-green">Naavi</span></h2>
               <p>Because the world gives people information, but not direction. Naavi transforms confusion into intelligent navigation through AI-powered personalized pathways.</p>
             </div>
@@ -229,21 +142,13 @@ const AboutPage = () => {
           <div className="ab-container">
             <div className="ab-row">
               <div className="ab-col-txt">
-               
                 <h2>The Navigation <span className="ab-green">Problem</span></h2>
                 <p className="ab-lead">
-                 Millions of students and professionals make life-changing decisions with limited guidance, outdated systems, and fragmented information. Naavi solves this with dynamic pathway intelligence.
+                  Millions of students and professionals make life-changing decisions with limited guidance, outdated systems, and fragmented information. Naavi solves this with dynamic pathway intelligence.
                 </p>
-               
-                
               </div>
-
               <div className="ab-col-vis">
-                <img
-                  src={navigationProblemImg}
-                  alt="The Navigation Problem"
-                  className="ab-side-image ab-problem-image"
-                />
+                <img src={navigationProblemImg} alt="The Navigation Problem" className="ab-side-image ab-problem-image" />
               </div>
             </div>
           </div>
@@ -253,35 +158,29 @@ const AboutPage = () => {
         <section id="ab-intel" className="ab-section ab-alt-white">
           <div className="ab-container">
             <div className="ab-center-hd">
-             
               <h2>Pathway <span className="ab-green">Intelligence</span></h2>
               <p>
                 Naavi combines AI, Knowledge Graphs, and real-world human journeys to generate
                 adaptive pathways made of Macro, Micro, and Nano steps.
               </p>
             </div>
-
             <div className="ab-tech-row">
               <div className="ab-tech-card ab-tech-card--blue">
                 <div className="ab-tc-icon"><BrainIcon /></div>
                 <h4>Large Language Models</h4>
                 <p>Conversational intelligence for pathway generation, predictive reasoning, and guidance at scale.</p>
               </div>
-
               <div className="ab-tech-card ab-tech-card--green">
                 <div className="ab-tc-icon"><NetworkIcon /></div>
                 <h4>Knowledge Graphs</h4>
                 <p>Connecting skills, careers, universities, industries, mentors, and opportunities in living context.</p>
               </div>
-
               <div className="ab-tech-card ab-tech-card--orange">
                 <div className="ab-tc-icon"><ChartIcon /></div>
                 <h4>GraphRAG Framework</h4>
                 <p>Retrieval-augmented generation over knowledge graphs for explainable, future-aware pathways.</p>
               </div>
             </div>
-
-
           </div>
         </section>
 
@@ -296,13 +195,8 @@ const AboutPage = () => {
                   passion, skills, education, and opportunity into meaningful life journeys.
                 </p>
               </div>
-
               <div className="ab-col-vis">
-                <img
-                  src={missionImg}
-                  alt="Mission and Philosophy"
-                  className="ab-side-image ab-mission-image"
-                />
+                <img src={missionImg} alt="Mission and Philosophy" className="ab-side-image ab-mission-image" />
               </div>
             </div>
           </div>
@@ -313,23 +207,15 @@ const AboutPage = () => {
           <div className="ab-container">
             <div className="ab-row">
               <div className="ab-col-txt">
-                
                 <h2><span className="ab-green">Naaviverse</span></h2>
                 <p className="ab-lead">
                   The Naaviverse is a living ecosystem of pathways, people, skills, mentors,
                   institutions, and opportunities — continuously evolving through collective
                   human intelligence.
                 </p>
-               
-                
               </div>
-
               <div className="ab-col-vis">
-                <img
-                  src={naaviverseImg}
-                  alt="Naaviverse"
-                  className="ab-side-image"
-                />
+                <img src={naaviverseImg} alt="Naaviverse" className="ab-side-image" />
               </div>
             </div>
           </div>

@@ -48,6 +48,8 @@ $border-light: rgba(0, 0, 0, 0.06);
 
 .tech-pathways {
   background: $white;
+    margin-top: 80px;
+
 }
 
 .tech-llm-section {
@@ -91,6 +93,12 @@ $border-light: rgba(0, 0, 0, 0.06);
   grid-template-columns: 1fr 1fr;
   gap: 32px;
   align-items: start;
+}
+
+.tech-pathways-visual-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 @media (max-width: 900px) {
@@ -326,14 +334,13 @@ $border-light: rgba(0, 0, 0, 0.06);
 
 // Solution Image Banner
 .tech-solution-banner {
-  margin: 40px 0 48px;
+  margin: 16px 0 0;
   border-radius: 28px;
   overflow: hidden;
   background: $white;
   border: 1px solid $border-light;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
 }
-
 .tech-solution-image {
   width: 100%;
   height: auto;
