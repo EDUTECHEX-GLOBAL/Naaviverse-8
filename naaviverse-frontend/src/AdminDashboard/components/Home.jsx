@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-
 import axios from "axios";
 import {
   AreaChart,
@@ -13,14 +12,14 @@ import {
   Cell,
   Legend,
   CartesianGrid,
-  BarChart,
-  Bar
 } from "recharts";
 import CountUp from "react-countup";
 import { useMediaQuery } from 'react-responsive';
 import { FiTrendingUp, FiTrendingDown, FiUsers, FiMail, FiEye } from "react-icons/fi";
 import './Home.scss';
+
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const HomeDashboard = () => {
   const [counts, setCounts] = useState({
     contacts: 0,
@@ -30,44 +29,36 @@ const HomeDashboard = () => {
 
   const [loading, setLoading] = useState(true);
   const [trendData, setTrendData] = useState([]);
+  const isMobile = useMediaQuery({ maxWidth: 767 });
 
   useEffect(() => {
-  const fetchTrends = async () => {
-    try {
-      const res = await axios.get(`${BASE_URL}/api/admin-dashboard/overview`);
+    const fetchTrends = async () => {
+      try {
+        const res = await axios.get(`${BASE_URL}/api/admin-dashboard/overview`);
+        const { months, trends } = res.data;
+        const formatted = months.map((month, index) => ({
+          month,
+          contacts: trends.contacts[index] || 0,
+          visitors: trends.visitors[index] || 0,
+          subscribers: trends.subscribers[index] || 0,
+        }));
+        setTrendData(formatted);
+      } catch (error) {
+        console.error("Failed to load trend data", error);
+        setTrendData([]);
+      }
+    };
+    fetchTrends();
+  }, []);
 
-      const { months, trends } = res.data;
-
-      const formatted = months.map((month, index) => ({
-        month,
-        contacts: trends.contacts[index] || 0,
-        visitors: trends.visitors[index] || 0,
-        subscribers: trends.subscribers[index] || 0,
-      }));
-
-      setTrendData(formatted);
-    } catch (error) {
-      console.error("Failed to load trend data", error);
-      setTrendData([]);
-    }
-  };
-
-  fetchTrends();
-}, []);
-
-
-  // Media queries for responsive design
-  const isMobile = useMediaQuery({ maxWidth: 767 });
-  const isTablet = useMediaQuery({ minWidth: 768, maxWidth: 1024 });
-  
   useEffect(() => {
     const fetchCounts = async () => {
       try {
         setLoading(true);
         const [contactRes, visitorRes, subRes] = await Promise.all([
-          axios.get(`${BASE_URL}/api/admin-contact/count`, { headers: { "Cache-Control": "no-cache" } }),
-          axios.get(`${BASE_URL}/api/admin-visitors/count`, { headers: { "Cache-Control": "no-cache" } }),
-          axios.get(`${BASE_URL}/api/admin-subscribe/count`, { headers: { "Cache-Control": "no-cache" } }),
+          axios.get(`${BASE_URL}/api/admin-contact/count`),
+          axios.get(`${BASE_URL}/api/admin-visitors/count`),
+          axios.get(`${BASE_URL}/api/admin-subscribe/count`),
         ]);
 
         setCounts({
@@ -77,7 +68,6 @@ const HomeDashboard = () => {
         });
       } catch (err) {
         console.error("Failed to fetch counts:", err);
-        // Use sample data if API fails
         setCounts({
           contacts: 45,
           visitors: 128,
@@ -89,9 +79,6 @@ const HomeDashboard = () => {
     };
     fetchCounts();
   }, []);
-
-  // Sample data for charts (you can replace with real data later)
-
 
   const pieData = [
     { name: "Contacts", value: counts.contacts, color: '#667eea' },
@@ -128,78 +115,50 @@ const HomeDashboard = () => {
 
   return (
     <div className="home-dashboard">
-      {/* Header Section */}
+      {/* Header - Compact */}
       <div className="dashboard-header">
-        <div className="header-content">
-          <h1 className="dashboard-title">
-            Dashboard <span className="title-accent">Overview</span>
-          </h1>
-          <p className="dashboard-subtitle">
-            Real-time insights and analytics for your platform
-          </p>
-        </div>
+        <h1 className="dashboard-title">Dashboard <span>Overview</span></h1>
+        <p className="dashboard-subtitle">Real-time insights and analytics</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="stats-grid">
+      {/* Stats Cards - 3 in a row */}
+      <div className="stats-row">
         {statsCards.map((card, index) => (
-          <div 
-            key={card.name}
-            className="stat-card"
-            style={{ background: card.color }}
-          >
-            <div className="stat-card-content">
-              <div className="stat-icon-wrapper">
-                {card.icon}
-              </div>
-              
+          <div key={card.name} className="stat-card" style={{ background: card.color }}>
+            <div className="stat-card-inner">
+              <div className="stat-icon">{card.icon}</div>
               <div className="stat-info">
-                <div className="stat-category">{card.name}</div>
+                <div className="stat-name">{card.name}</div>
                 <div className="stat-value">
                   {!loading ? (
-                    <CountUp 
-                      end={card.value} 
-                      duration={2.5} 
-                      separator=","
-                    />
+                    <CountUp end={card.value} duration={2} separator="," />
                   ) : (
-                    <div className="loading-pulse">--</div>
+                    <span>--</span>
                   )}
                 </div>
-                
                 <div className="stat-trend">
-                  <div className={`trend-indicator ${card.trendUp ? 'up' : 'down'}`}>
+                  <span className={`trend-badge ${card.trendUp ? 'up' : 'down'}`}>
                     {card.trendUp ? <FiTrendingUp /> : <FiTrendingDown />}
-                    <span>{card.trend}%</span>
-                  </div>
-                  <span className="trend-label">
-                    {card.trendUp ? 'Increase' : 'Decrease'} from last month
+                    {card.trend}%
                   </span>
+                  <span className="trend-text">vs last month</span>
                 </div>
               </div>
-              
-              {/* Decorative elements */}
-              <div className="card-circle large"></div>
-              <div className="card-circle small"></div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Charts Section */}
-      <div className="charts-section">
-        {/* Area Chart - Trends */}
+      {/* Charts Section - Reduced Text Sizes */}
+      <div className="charts-row">
+        {/* Area Chart */}
         <div className="chart-card">
           <div className="chart-header">
-            <h3 className="chart-title">
-              <FiTrendingUp className="chart-icon" />
-              Category Trends
-            </h3>
-            <div className="chart-subtitle">Monthly growth across all categories</div>
+            <h3>Category Trends</h3>
+            <p>Monthly growth across all categories</p>
           </div>
-          
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
+          <div className="chart-wrapper">
+            <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={trendData}>
                 <defs>
                   <linearGradient id="contactsGradient" x1="0" y1="0" x2="0" y2="1">
@@ -215,184 +174,71 @@ const HomeDashboard = () => {
                     <stop offset="95%" stopColor="#fe9496" stopOpacity={0.1}/>
                   </linearGradient>
                 </defs>
-                
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                <XAxis 
-                  dataKey="month" 
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#64748b', fontSize: isMobile ? 11 : 13 }}
-                />
-                <YAxis 
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#64748b', fontSize: isMobile ? 11 : 13 }}
-                />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    border: '1px solid rgba(203, 213, 224, 0.5)',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                    backdropFilter: 'blur(4px)',
-                    padding: '12px',
-                    fontSize: isMobile ? '12px' : '14px'
-                  }}
-                />
-                <Legend 
-                  wrapperStyle={{
-                    paddingTop: '10px',
-                    fontSize: isMobile ? '11px' : '13px'
-                  }}
-                />
-                
-                <Area 
-                  type="monotone" 
-                  dataKey="contacts" 
-                  name="Contacts"
-                  stroke="#667eea"
-                  strokeWidth={2}
-                  fill="url(#contactsGradient)" 
-                  fillOpacity={1}
-                  activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
-                />
-                
-                <Area 
-                  type="monotone" 
-                  dataKey="visitors" 
-                  name="Visitors"
-                  stroke="#43e97b"
-                  strokeWidth={2}
-                  fill="url(#visitorsGradient)" 
-                  fillOpacity={1}
-                  activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
-                />
-                
-                <Area 
-                  type="monotone" 
-                  dataKey="subscribers" 
-                  name="Subscribers"
-                  stroke="#fe9496"
-                  strokeWidth={2}
-                  fill="url(#subscribersGradient)" 
-                  fillOpacity={1}
-                  activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
-                />
+                <XAxis dataKey="month" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ fontSize: '12px', borderRadius: '8px', padding: '8px 12px' }} />
+                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
+                <Area type="monotone" dataKey="contacts" name="Contacts" stroke="#667eea" strokeWidth={2} fill="url(#contactsGradient)" fillOpacity={1} />
+                <Area type="monotone" dataKey="visitors" name="Visitors" stroke="#43e97b" strokeWidth={2} fill="url(#visitorsGradient)" fillOpacity={1} />
+                <Area type="monotone" dataKey="subscribers" name="Subscribers" stroke="#fe9496" strokeWidth={2} fill="url(#subscribersGradient)" fillOpacity={1} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Pie Chart - Distribution */}
+        {/* Pie Chart */}
         <div className="chart-card">
           <div className="chart-header">
-            <h3 className="chart-title">
-              <FiUsers className="chart-icon" />
-              Category Distribution
-            </h3>
-            <div className="chart-subtitle">Current distribution across all categories</div>
+            <h3>Distribution</h3>
+            <p>Current breakdown by category</p>
           </div>
-          
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
+          <div className="chart-wrapper">
+            <ResponsiveContainer width="100%" height={280}>
               <PieChart>
                 <Pie
-  data={pieData}
-  dataKey="value"
-  nameKey="name"
-  cx={isMobile ? "50%" : "45%"}   // 👈 move pie left (KEY FIX)
-  cy="50%"
-  outerRadius={isMobile ? 70 : 90}
-  innerRadius={isMobile ? 40 : 60}
-  paddingAngle={2}
- label={({ name, percent, value, cx, cy, midAngle, outerRadius }) => {
-  if (value === 0) return null;
-
-  const RADIAN = Math.PI / 180;
-  const radius = outerRadius + 14; // 👈 controlled distance
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-  return (
-    <text
-      x={x}
-      y={y}
-      fill="#475569"
-      textAnchor={x > cx ? 'start' : 'end'}
-      dominantBaseline="central"
-      fontSize={13}
-      fontWeight={500}
-    >
-      {`${name}: ${Math.round(percent * 100)}%`}
-    </text>
-  );
-}}
-
-  labelLine={false}
->
-
+                  data={pieData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  innerRadius={50}
+                  label={({ name, percent }) => `${name}: ${Math.round(percent * 100)}%`}
+                  labelLine={false}
+                >
                   {pieData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.color}
-                      stroke="rgba(255,255,255,0.3)"
-                      strokeWidth={1}
-                    />
+                    <Cell key={`cell-${index}`} fill={entry.color} stroke="white" strokeWidth={2} />
                   ))}
                 </Pie>
-                <Legend 
-                  wrapperStyle={{
-                    paddingTop: '20px',
-                    fontSize: isMobile ? '11px' : '13px'
-                  }}
-                />
-                <Tooltip 
-                  formatter={(value, name, props) => [value, name]}
-                  contentStyle={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    border: '1px solid rgba(203, 213, 224, 0.5)',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                    backdropFilter: 'blur(4px)',
-                    padding: '12px',
-                    fontSize: isMobile ? '12px' : '14px'
-                  }}
-                />
+                <Tooltip contentStyle={{ fontSize: '12px', borderRadius: '8px', padding: '8px 12px' }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* Additional Info Section */}
-      <div className="info-section">
+      {/* Info Cards - Reduced Size */}
+      <div className="info-row">
         <div className="info-card">
-          <div className="info-icon">
-            <FiTrendingUp />
-          </div>
-          <div className="info-content">
-            <h4>Performance Insights</h4>
-            <p>Your platform is performing well with steady growth across all metrics.</p>
+          <FiTrendingUp className="info-icon" />
+          <div>
+            <h4>Performance</h4>
+            <p>Steady growth across all metrics</p>
           </div>
         </div>
-        
         <div className="info-card">
-          <div className="info-icon">
-            <FiUsers />
-          </div>
-          <div className="info-content">
-            <h4>User Engagement</h4>
-            <p>Visitor engagement has increased by 15% compared to last month.</p>
+          <FiUsers className="info-icon" />
+          <div>
+            <h4>Engagement</h4>
+            <p>15% increase in visitor activity</p>
           </div>
         </div>
-        
         <div className="info-card">
-          <div className="info-icon">
-            <FiMail />
-          </div>
-          <div className="info-content">
-            <h4>Communication Rate</h4>
-            <p>Contact submissions are up by 40%, indicating strong user interest.</p>
+          <FiMail className="info-icon" />
+          <div>
+            <h4>Communication</h4>
+            <p>40% rise in contact submissions</p>
           </div>
         </div>
       </div>

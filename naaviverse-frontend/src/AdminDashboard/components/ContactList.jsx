@@ -7,8 +7,9 @@ import 'antd/dist/reset.css';
 import dayjs from 'dayjs';
 import { FiDownload, FiFilter, FiCalendar, FiGrid } from 'react-icons/fi';
 import './ContactList.scss';
-const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const { Option } = Select;
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const ContactList = () => {
   const [contacts, setContacts] = useState([]);
@@ -19,7 +20,7 @@ const ContactList = () => {
   const [productFilter, setProductFilter] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
-  const contactsPerPage = 8;
+  const contactsPerPage = 10;
 
   useEffect(() => {
     const fetchContacts = async () => {
@@ -91,180 +92,145 @@ const ContactList = () => {
     setProductFilter('');
   };
 
+  const getProductColor = (product) => {
+    switch(product?.toLowerCase()) {
+      case 'defence': return 'product-defence';
+      case 'ground': return 'product-ground';
+      case 'space': return 'product-space';
+      default: return 'product-others';
+    }
+  };
+
   return (
-    <div className="contact-list-container">
-      {/* Header */}
-      <div className="contact-header">
-        <div className="header-left">
-          <h1 className="page-title">
-            <span className="title-gradient">Contact</span> List
-          </h1>
-          <p className="page-subtitle">Manage and analyze all contact submissions</p>
+    <div className="contact-list">
+      {/* Header Section - Compact, No Bell Icon */}
+      <div className="contact-list__header">
+        <div>
+          <h1 className="contact-list__title">Contact Submissions</h1>
+          <p className="contact-list__subtitle">Manage and analyze all inquiries</p>
         </div>
-        <div className="header-right">
-          <Button 
-            type="default" 
-            onClick={clearFilters}
-            className="clear-btn"
-            icon={<FiFilter />}
-          >
-            Clear Filters
+        <div className="contact-list__actions">
+          <Button onClick={clearFilters} icon={<FiFilter />} className="btn-outline">
+            Clear
           </Button>
-          <Button 
-            type="primary" 
-            onClick={exportData}
-            className="export-btn"
-            icon={<FiDownload />}
-          >
-            Export CSV
+          <Button onClick={exportData} icon={<FiDownload />} type="primary" className="btn-primary">
+            Export
           </Button>
         </div>
       </div>
 
-      {/* Filters Card */}
-      <div className="filters-card">
-        <div className="filters-header">
-          <FiFilter className="filter-icon" />
-          <h3>Filter Contacts</h3>
+      {/* Filters Section */}
+      <div className="contact-list__filters">
+        <div className="filter-item">
+          <div className="filter-label"><FiCalendar /> Start</div>
+          <DatePicker 
+            value={startDate} 
+            onChange={setStartDate} 
+            format="MMM DD, YYYY"
+            placeholder="Start date"
+            className="filter-date"
+            allowClear
+          />
         </div>
-        <div className="filters-grid">
-          <div className="filter-item">
-            <label className="filter-label">
-              <FiCalendar /> Start Date
-            </label>
-            <DatePicker 
-              value={startDate} 
-              onChange={setStartDate} 
-              format="MMM DD, YYYY"
-              placeholder="Select start date"
-              className="date-picker"
-            />
-          </div>
-          
-          <div className="filter-item">
-            <label className="filter-label">
-              <FiCalendar /> End Date
-            </label>
-            <DatePicker 
-              value={endDate} 
-              onChange={setEndDate} 
-              format="MMM DD, YYYY"
-              placeholder="Select end date"
-              className="date-picker"
-            />
-          </div>
-          
-          <div className="filter-item">
-            <label className="filter-label">
-              <FiGrid /> Product Category
-            </label>
-            <Select
-              value={productFilter}
-              onChange={value => setProductFilter(value)}
-              placeholder="All categories"
-              className="category-select"
-              allowClear
-            >
-              {productOptions.map((option, i) => (
-                <Option key={i} value={option}>{option}</Option>
-              ))}
-            </Select>
-          </div>
+        <div className="filter-item">
+          <div className="filter-label"><FiCalendar /> End</div>
+          <DatePicker 
+            value={endDate} 
+            onChange={setEndDate} 
+            format="MMM DD, YYYY"
+            placeholder="End date"
+            className="filter-date"
+            allowClear
+          />
         </div>
-      </div>
-
-      {/* Results Summary */}
-      <div className="results-summary">
-        <span className="results-count">
-          Showing {currentContacts.length} of {filteredContacts.length} contacts
-        </span>
-        {productFilter && productFilter !== "All" && (
-          <span className="active-filter">
-            Filtered by: <strong>{productFilter}</strong>
-          </span>
+        <div className="filter-item">
+          <div className="filter-label"><FiGrid /> Product</div>
+          <Select
+            value={productFilter}
+            onChange={setProductFilter}
+            placeholder="All"
+            className="filter-select"
+            allowClear
+          >
+            {productOptions.map(opt => (
+              <Option key={opt} value={opt}>{opt}</Option>
+            ))}
+          </Select>
+        </div>
+        {(startDate || endDate || productFilter) && (
+          <div className="filter-item filter-clear">
+            <Button onClick={clearFilters} icon={<FiFilter />} size="small" type="text">
+              Clear all
+            </Button>
+          </div>
         )}
       </div>
 
-      {/* Table Container */}
-      <div className="table-container">
+      {/* Stats Bar */}
+      <div className="contact-list__stats">
+        <span>{filteredContacts.length} contact{filteredContacts.length !== 1 ? 's' : ''}</span>
+        {productFilter && productFilter !== "All" && <span className="stats-badge">{productFilter}</span>}
+      </div>
+
+      {/* Table */}
+      <div className="contact-list__table-wrapper">
         {isLoading ? (
           <div className="loading-state">
             <div className="loading-spinner"></div>
-            <p>Loading contacts...</p>
           </div>
         ) : currentContacts.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">📭</div>
-            <h3>No contacts found</h3>
-            <p>
-              {contacts.length === 0 
-                ? "No contacts have been submitted yet." 
-                : "No contacts match your filters."}
-            </p>
+            <p>No submissions found</p>
             {contacts.length > 0 && (
-              <Button type="primary" onClick={clearFilters} ghost>
-                Clear filters to see all contacts
-              </Button>
+              <Button onClick={clearFilters} type="link">Clear filters</Button>
             )}
           </div>
         ) : (
           <div className="table-responsive">
-            <table className="contacts-table">
+            <table className="compact-table">
               <thead>
                 <tr>
-                  <th>S.NO</th>
-                  <th>FULL NAME</th>
-                  <th>EMAIL</th>
-                  <th>PRODUCT</th>
-                  <th>MOBILE</th>
-                  <th>MESSAGE</th>
-                  <th>CREATED ON</th>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Product</th>
+                  <th>Mobile</th>
+                  <th>Message</th>
+                  <th>Created</th>
                 </tr>
               </thead>
               <tbody>
-                {currentContacts.map((contact, index) => (
-                  <tr key={contact._id || index} className="table-row">
-                    <td className="serial-no">
-                      <span className="serial-badge">{indexOfFirst + index + 1}</span>
+                {currentContacts.map((contact, idx) => (
+                  <tr key={contact._id || idx}>
+                    <td className="col-sn">{indexOfFirst + idx + 1}</td>
+                    <td className="col-name">
+                      <div>
+                        <div>{contact.fullName}</div>
+                        <div className="text-muted small">{contact.email}</div>
+                      </div>
                     </td>
-                    <td className="name-cell">
-  <div className="user-info">
-    <div className="user-details">
-      <span className="user-name">{contact.fullName}</span>
-      <span className="user-email">{contact.email}</span>
-    </div>
-  </div>
-</td>
-                    <td>
+                    <td className="col-email">
                       <a href={`mailto:${contact.email}`} className="email-link">
                         {contact.email}
                       </a>
                     </td>
-                    <td>
-                      <span className={`product-tag ${contact.product?.toLowerCase()}`}>
-                        {contact.product}
+                    <td className="col-product">
+                      <span className={`product-badge ${getProductColor(contact.product)}`}>
+                        {contact.product || 'N/A'}
                       </span>
                     </td>
-                    <td>
-                      <div className="mobile-cell">
-                        <span className="mobile-number">{contact.mobile}</span>
+                    <td className="col-mobile">{contact.mobile}</td>
+                    <td className="col-message">
+                      <div className="message-truncate" title={contact.message}>
+                        {contact.message?.substring(0, 35) || '—'}
+                        {contact.message?.length > 35 ? '...' : ''}
                       </div>
                     </td>
-                    <td className="message-cell">
-                      {contact.message ? (
-                        <div className="message-content" title={contact.message}>
-                          {contact.message.length > 40 
-                            ? `${contact.message.substring(0, 40)}...` 
-                            : contact.message}
-                        </div>
-                      ) : (
-                        <span className="no-message">No message</span>
-                      )}
-                    </td>
-                    <td className="date-cell">
-                      <div className="date-content">
-                        <div className="date">{dayjs(contact.createdAt).format('MMM DD, YYYY')}</div>
-                        <div className="time">{dayjs(contact.createdAt).format('hh:mm A')}</div>
+                    <td className="col-date">
+                      <div className="date-compact">
+                        <span>{dayjs(contact.createdAt).format('MMM DD, YYYY')}</span>
+                        <span className="time">{dayjs(contact.createdAt).format('hh:mm A')}</span>
                       </div>
                     </td>
                   </tr>
@@ -277,15 +243,14 @@ const ContactList = () => {
 
       {/* Pagination */}
       {!isLoading && filteredContacts.length > contactsPerPage && (
-        <div className="pagination-wrapper">
+        <div className="contact-list__pagination">
           <Pagination
             current={currentPage}
             total={filteredContacts.length}
             pageSize={contactsPerPage}
-            onChange={page => setCurrentPage(page)}
+            onChange={setCurrentPage}
             showSizeChanger={false}
-            showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} items`}
-            className="custom-pagination"
+            size="small"
           />
         </div>
       )}

@@ -12,19 +12,17 @@ import {
   FiCalendar, 
   FiGlobe, 
   FiMapPin, 
-  FiMap, 
   FiUser,
   FiSearch,
   FiEye
 } from 'react-icons/fi';
-import { MdLocationCity, MdOutlineLocationOn } from 'react-icons/md';
 import './VisitorsList.scss';
 
-// Extend dayjs with plugins
 dayjs.extend(relativeTime);
 
 const { Option } = Select;
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const VisitorsList = () => {
   const [visitors, setVisitors] = useState([]);
   const [filteredVisitors, setFilteredVisitors] = useState([]);
@@ -51,7 +49,6 @@ const VisitorsList = () => {
         setVisitors(data);
         setFilteredVisitors(data);
         
-        // Calculate stats
         const today = dayjs().startOf('day');
         const todayCount = data.filter(visitor => 
           dayjs(visitor.createdAt).isSame(today, 'day')
@@ -76,7 +73,6 @@ const VisitorsList = () => {
   useEffect(() => {
     let filtered = [...visitors];
 
-    // Date filter
     if (startDate && endDate) {
       filtered = filtered.filter(visitor => {
         const created = dayjs(visitor.createdAt);
@@ -85,14 +81,12 @@ const VisitorsList = () => {
       });
     }
 
-    // Country filter
     if (countryFilter) {
       filtered = filtered.filter(visitor => 
         visitor.country?.toLowerCase() === countryFilter.toLowerCase()
       );
     }
 
-    // Search filter
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase().trim();
       filtered = filtered.filter(visitor => 
@@ -119,15 +113,12 @@ const VisitorsList = () => {
       Region: visitor.region,
       PostalCode: visitor.postalCode,
       Country: visitor.country,
-      CreatedOn: new Date(visitor.createdAt).toLocaleString(),
-      Date: dayjs(visitor.createdAt).format('YYYY-MM-DD'),
-      Time: dayjs(visitor.createdAt).format('HH:mm:ss')
+      VisitedOn: dayjs(visitor.createdAt).format('MMM DD, YYYY hh:mm A'),
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Visitors");
-
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const fileData = new Blob([excelBuffer], { type: 'application/octet-stream' });
     saveAs(fileData, `Visitors_${dayjs().format('YYYY-MM-DD')}.xlsx`);
@@ -141,279 +132,187 @@ const VisitorsList = () => {
   };
 
   const getCountryFlag = (countryCode) => {
-    if (!countryCode) return '🏳️';
-    
-    // Simple country to flag emoji mapping
-    const countryFlags = {
-      'US': '🇺🇸', 'IN': '🇮🇳', 'UK': '🇬🇧', 'GB': '🇬🇧', 'CA': '🇨🇦',
-      'AU': '🇦🇺', 'DE': '🇩🇪', 'FR': '🇫🇷', 'IT': '🇮🇹', 'ES': '🇪🇸',
-      'BR': '🇧🇷', 'JP': '🇯🇵', 'CN': '🇨🇳', 'RU': '🇷🇺', 'KR': '🇰🇷'
+    if (!countryCode) return '🌐';
+    const flags = {
+      'US': '🇺🇸', 'IN': '🇮🇳', 'GB': '🇬🇧', 'CA': '🇨🇦', 'AU': '🇦🇺',
+      'DE': '🇩🇪', 'FR': '🇫🇷', 'IT': '🇮🇹', 'ES': '🇪🇸', 'BR': '🇧🇷',
+      'JP': '🇯🇵', 'CN': '🇨🇳', 'RU': '🇷🇺', 'KR': '🇰🇷', 'MX': '🇲🇽'
     };
-    
-    return countryFlags[countryCode.toUpperCase()] || '🌐';
-  };
-
-  const getTimeAgo = (dateString) => {
-    try {
-      return dayjs(dateString).fromNow();
-    } catch (error) {
-      return 'recently';
-    }
+    return flags[countryCode.toUpperCase()] || '🌐';
   };
 
   const getUniqueCountries = () => {
-    const countries = visitors
-      .map(v => v.country)
-      .filter(Boolean)
-      .filter((value, index, self) => self.indexOf(value) === index);
-    
+    const countries = [...new Set(visitors.map(v => v.country).filter(Boolean))];
     return countries.sort();
   };
 
   return (
-    <div className="visitors-container">
-      {/* Header */}
-      <div className="visitors-header">
-        <div className="header-left">
-          <h1 className="page-title">
-            <span className="title-gradient">Website</span> Visitors
-          </h1>
-          <p className="page-subtitle">Track and analyze visitor traffic and locations</p>
+    <div className="visitors-list">
+      {/* Header - Compact */}
+      <div className="visitors-list__header">
+        <div>
+          <h1 className="visitors-list__title">Visitor Analytics</h1>
+          <p className="visitors-list__subtitle">Track and analyze website traffic</p>
         </div>
-        <div className="header-right">
-          <Button 
-            type="default" 
-            onClick={clearFilters}
-            className="clear-btn"
-            icon={<FiFilter />}
-          >
-            Clear Filters
+        <div className="visitors-list__actions">
+          <Button onClick={clearFilters} icon={<FiFilter />} className="btn-outline">
+            Clear
           </Button>
-          <Button 
-            type="primary" 
-            onClick={exportData}
-            className="export-btn"
-            icon={<FiDownload />}
-          >
-            Export CSV
+          <Button onClick={exportData} icon={<FiDownload />} type="primary" className="btn-primary">
+            Export
           </Button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="stats-grid">
-        <div className="stat-card total-card">
-          <div className="stat-icon">
-            <FiEye />
-          </div>
-          <div className="stat-content">
+      {/* Stats Cards - Compact */}
+      <div className="visitors-list__stats">
+        <div className="stat-card">
+          <FiEye className="stat-icon total" />
+          <div>
             <div className="stat-value">{stats.total}</div>
-            <div className="stat-label">Total Visitors</div>
+            <div className="stat-label">Total</div>
           </div>
         </div>
-        <div className="stat-card country-card">
-          <div className="stat-icon">
-            <FiGlobe />
-          </div>
-          <div className="stat-content">
+        <div className="stat-card">
+          <FiGlobe className="stat-icon countries" />
+          <div>
             <div className="stat-value">{stats.countries}</div>
             <div className="stat-label">Countries</div>
           </div>
         </div>
-        <div className="stat-card today-card">
-          <div className="stat-icon">
-            <FiCalendar />
-          </div>
-          <div className="stat-content">
+        <div className="stat-card">
+          <FiCalendar className="stat-icon today" />
+          <div>
             <div className="stat-value">{stats.today}</div>
             <div className="stat-label">Today</div>
           </div>
         </div>
       </div>
 
-      {/* Filters Card */}
-      <div className="filters-card">
-        <div className="filters-header">
-          <FiFilter className="filter-icon" />
-          <h3>Filter Visitors</h3>
+      {/* Filters - Minimal */}
+      <div className="visitors-list__filters">
+        <div className="filter-item">
+          <div className="filter-label"><FiCalendar /> Start</div>
+          <DatePicker 
+            value={startDate} 
+            onChange={setStartDate} 
+            format="MMM DD, YYYY"
+            placeholder="Start date"
+            className="filter-date"
+            allowClear
+          />
         </div>
-        <div className="filters-grid">
-          <div className="filter-item">
-            <label className="filter-label">
-              <FiCalendar /> Start Date
-            </label>
-            <DatePicker 
-              value={startDate} 
-              onChange={setStartDate} 
-              format="MMM DD, YYYY"
-              placeholder="Select start date"
-              className="date-picker"
-              allowClear
-            />
-          </div>
-          
-          <div className="filter-item">
-            <label className="filter-label">
-              <FiCalendar /> End Date
-            </label>
-            <DatePicker 
-              value={endDate} 
-              onChange={setEndDate} 
-              format="MMM DD, YYYY"
-              placeholder="Select end date"
-              className="date-picker"
-              allowClear
-            />
-          </div>
-          
-          <div className="filter-item">
-            <label className="filter-label">
-              <FiGlobe /> Country
-            </label>
-            <Select
-              value={countryFilter}
-              onChange={setCountryFilter}
-              placeholder="All countries"
-              className="country-select"
-              allowClear
-            >
-              {getUniqueCountries().map((country, index) => (
-                <Option key={index} value={country}>
-                  {getCountryFlag(country)} {country}
-                </Option>
-              ))}
-            </Select>
-          </div>
-          
-          <div className="filter-item">
-            <label className="filter-label">
-              <FiSearch /> Search
-            </label>
-            <Input
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search IP, city, region..."
-              prefix={<FiSearch style={{ color: '#9ca3af' }} />}
-              className="search-input"
-              allowClear
-            />
-          </div>
+        <div className="filter-item">
+          <div className="filter-label"><FiCalendar /> End</div>
+          <DatePicker 
+            value={endDate} 
+            onChange={setEndDate} 
+            format="MMM DD, YYYY"
+            placeholder="End date"
+            className="filter-date"
+            allowClear
+          />
         </div>
-      </div>
-
-      {/* Results Summary */}
-      <div className="results-summary">
-        <span className="results-count">
-          Showing {currentVisitors.length} of {filteredVisitors.length} visitors
-        </span>
+        <div className="filter-item">
+          <div className="filter-label"><FiGlobe /> Country</div>
+          <Select
+            value={countryFilter}
+            onChange={setCountryFilter}
+            placeholder="All"
+            className="filter-select"
+            allowClear
+          >
+            {getUniqueCountries().map((country, idx) => (
+              <Option key={idx} value={country}>
+                {getCountryFlag(country)} {country}
+              </Option>
+            ))}
+          </Select>
+        </div>
+        <div className="filter-item">
+          <div className="filter-label"><FiSearch /> Search</div>
+          <Input
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="IP, city, region..."
+            className="filter-search"
+            allowClear
+          />
+        </div>
         {(startDate || endDate || countryFilter || searchTerm) && (
-          <span className="active-filters">
-            Filters applied: 
-            {startDate && <span className="filter-tag">From {dayjs(startDate).format('MMM DD')}</span>}
-            {endDate && <span className="filter-tag">To {dayjs(endDate).format('MMM DD')}</span>}
-            {countryFilter && <span className="filter-tag">{getCountryFlag(countryFilter)} {countryFilter}</span>}
-            {searchTerm && <span className="filter-tag">Search: "{searchTerm}"</span>}
-          </span>
+          <div className="filter-item filter-clear">
+            <Button onClick={clearFilters} size="small" type="text">
+              Clear all
+            </Button>
+          </div>
         )}
       </div>
 
-      {/* Table Container */}
-      <div className="table-container">
+      {/* Results Summary */}
+      <div className="visitors-list__summary">
+        <span>{filteredVisitors.length} visitor{filteredVisitors.length !== 1 ? 's' : ''}</span>
+        {countryFilter && <span className="summary-badge">{getCountryFlag(countryFilter)} {countryFilter}</span>}
+        {(startDate || endDate) && <span className="summary-badge">Date range</span>}
+      </div>
+
+      {/* Table */}
+      <div className="visitors-list__table-wrapper">
         {isLoading ? (
           <div className="loading-state">
             <div className="loading-spinner"></div>
-            <p>Loading visitors...</p>
           </div>
         ) : currentVisitors.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">👥</div>
-            <h3>No visitors found</h3>
-            <p>
-              {visitors.length === 0 
-                ? "No visitors have been tracked yet." 
-                : "No visitors match your filters."}
-            </p>
+            <p>No visitors found</p>
             {visitors.length > 0 && (
-              <Button type="primary" onClick={clearFilters} ghost>
-                Clear filters to see all visitors
-              </Button>
+              <Button onClick={clearFilters} type="link">Clear filters</Button>
             )}
           </div>
         ) : (
           <div className="table-responsive">
-            <table className="visitors-table">
+            <table className="compact-table">
               <thead>
                 <tr>
-                  <th>S.NO</th>
-                  <th>LOCATION</th>
-                  <th>IP ADDRESS</th>
-                  <th>REGION</th>
-                  <th>POSTAL CODE</th>
-                  <th>VISITED</th>
+                  <th>#</th>
+                  <th>Location</th>
+                  <th>IP Address</th>
+                  <th>Region</th>
+                  <th>Visited</th>
                 </tr>
               </thead>
               <tbody>
-                {currentVisitors.map((visitor, index) => {
-                  const visitDate = visitor.createdAt ? dayjs(visitor.createdAt) : dayjs();
-                  return (
-                    <tr key={visitor._id || index} className="table-row">
-                      <td className="serial-no">
-                        <span className="serial-badge">{indexOfFirst + index + 1}</span>
-                      </td>
-                      <td className="location-cell">
-                        <div className="location-content">
-                          <div className="location-icon">
-                            <MdOutlineLocationOn />
-                          </div>
-                          <div className="location-details">
-                            <div className="city-country">
-                              <span className="city">{visitor.city || 'Unknown'}</span>
-                              <span className="country-flag">
-                                {getCountryFlag(visitor.country)} {visitor.country || 'Unknown'}
-                              </span>
-                            </div>
-                            <span className="visit-time">
-                              Visited {getTimeAgo(visitor.createdAt)}
-                            </span>
+                {currentVisitors.map((visitor, idx) => (
+                  <tr key={visitor._id || idx}>
+                    <td className="col-sn">{indexOfFirst + idx + 1}</td>
+                    <td className="col-location">
+                      <div className="location-cell">
+                        <FiMapPin className="location-icon" />
+                        <div>
+                          <div className="location-city">{visitor.city || 'Unknown'}</div>
+                          <div className="location-country">
+                            {getCountryFlag(visitor.country)} {visitor.country || 'Unknown'}
                           </div>
                         </div>
-                      </td>
-                      <td className="ip-cell">
-                        <div className="ip-content">
-                          <div className="ip-icon">
-                            <FiUser />
-                          </div>
-                          <div className="ip-details">
-                            <span className="ip-address">{visitor.ip || 'N/A'}</span>
-                            <span className="ip-label">IP Address</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="region-cell">
-                        <div className="region-content">
-                          <div className="region-icon">
-                            <FiMap />
-                          </div>
-                          <div className="region-details">
-                            <span className="region-name">{visitor.region || 'N/A'}</span>
-                            <span className="region-label">Region/State</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="postal-cell">
-                        <span className="postal-code">
-                          {visitor.postalCode || 'N/A'}
-                        </span>
-                      </td>
-                      <td className="date-cell">
-                        <div className="date-content">
-                          <div className="date-display">{visitDate.format('MMM DD, YYYY')}</div>
-                          <div className="time-display">{visitDate.format('hh:mm A')}</div>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                      </div>
+                    </td>
+                    <td className="col-ip">
+                      <div className="ip-cell">
+                        <FiUser className="ip-icon" />
+                        <span className="ip-address">{visitor.ip || 'N/A'}</span>
+                      </div>
+                    </td>
+                    <td className="col-region">
+                      <span className="region-badge">{visitor.region || 'N/A'}</span>
+                    </td>
+                    <td className="col-date">
+                      <div className="date-cell">
+                        <span>{dayjs(visitor.createdAt).format('MMM DD, YYYY')}</span>
+                        <span className="time">{dayjs(visitor.createdAt).format('hh:mm A')}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -422,15 +321,14 @@ const VisitorsList = () => {
 
       {/* Pagination */}
       {!isLoading && filteredVisitors.length > visitorsPerPage && (
-        <div className="pagination-wrapper">
+        <div className="visitors-list__pagination">
           <Pagination
             current={currentPage}
             total={filteredVisitors.length}
             pageSize={visitorsPerPage}
-            onChange={page => setCurrentPage(page)}
+            onChange={setCurrentPage}
             showSizeChanger={false}
-            showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} visitors`}
-            className="custom-pagination"
+            size="small"
           />
         </div>
       )}

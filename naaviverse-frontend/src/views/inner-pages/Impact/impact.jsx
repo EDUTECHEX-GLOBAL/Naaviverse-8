@@ -15,13 +15,13 @@ const HEADER_OFFSET = 140;
 
 const navTerms = [
   { num: '01', label: 'Skill Gap Problem',      id: 'skill-gap-problem',        accent: '#2DB67D' },
-  { num: '02', label: 'Future Workforce',       id: 'future-workforce',         accent: '#4DA6FF' },
-  { num: '03', label: 'Student Outcomes',       id: 'student-outcomes',         accent: '#FF9500' },
-  { num: '04', label: 'Education Transformation', id: 'education-transformation', accent: '#A259FF' },
-  { num: '05', label: 'Human Potential',        id: 'human-potential',          accent: '#2DB67D' },
+  { num: '02', label: 'Future Workforce',       id: 'future-workforce',        accent: '#FF9500' },
+  { num: '03', label: 'Student Outcomes',       id: 'student-outcomes',         accent: '#4DA6FF' },
+  { num: '04', label: 'Education Transformation', id: 'education-transformation',accent: '#2DB67D' },
+  { num: '05', label: 'Human Potential',        id: 'human-potential',          accent: '#FF9500' },
   { num: '06', label: 'Global Opportunity Access', id: 'global-opportunity-access',accent: '#4DA6FF' },
   { num: '07', label: 'SDGs & Social Impact',   id: 'sdgs-social-impact',       accent: '#FF9500' },
-  { num: '08', label: 'Success Stories',        id: 'success-stories',          accent: '#A259FF' },
+  { num: '08', label: 'Success Stories',        id: 'success-stories',          accent: '#2DB67D' },
 ];
 
 // ── 8 story sections ──
@@ -58,7 +58,7 @@ const stories = [
     id: 'education-transformation',
     title: ['Education', 'Transformation'],
     text: 'Education should evolve from standardized systems to personalized journeys. Naavi enables a new era of data-driven, adaptive, and learner-centric navigation.',
-    accent: '#A259FF',
+   accent: '#4DA6FF',
     visual: 'education',
     stat: '100%',
     statLabel: 'Learner-centric pathways',
@@ -85,7 +85,7 @@ const stories = [
     id: 'sdgs-social-impact',
     title: ['SDGs &', 'Social Impact'],
     text: 'Naavi contributes toward building inclusive, future-ready societies by supporting quality education, decent work, reduced inequalities, innovation, and lifelong learning.',
-    accent: '#FF9500',
+    accent: '#2DB67D',
     visual: 'sdgs',
     stat: 'SDG 4,8,9',
     statLabel: 'Education · Work · Equality',
@@ -94,7 +94,7 @@ const stories = [
     id: 'success-stories',
     title: ['Success', 'Stories'],
     text: 'Every pathway navigated through Naavi contributes to a growing ecosystem of real human journeys — inspiring future generations through collective intelligence and shared success.',
-    accent: '#A259FF',
+    accent: '#FF9500', 
     visual: 'stories',
     stat: '50K+',
     statLabel: 'Journeys navigated',
@@ -284,7 +284,7 @@ const Impact = () => {
       ══════════════════════════════ */}
       {stories.map((s, i) => {
         const isEven = i % 2 === 0;
-        const bg = i % 2 === 0 ? '#ffffff' : '#F7F9FC';
+       const bg = '#ffffff';
 
         return (
           <section
