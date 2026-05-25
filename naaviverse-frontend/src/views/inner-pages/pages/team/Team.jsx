@@ -27,12 +27,7 @@ const disciplines = [
   "Innovation Ecosystems",
 ];
 
-const beliefStack = [
-  "AI-powered reasoning",
-  "Pathway intelligence",
-  "Knowledge graphs",
-  "Real-world human journeys",
-];
+
 
 const drivers = [
   "Democratizing access to opportunity",
@@ -129,15 +124,7 @@ const Team = () => {
               We believe that every individual carries unique potential, but most people navigate life with fragmented guidance and accidental decisions.
             </p>
             <p className="team-body-text team-body-text--bold">Naavi was created to change that.</p>
-            <p className="team-body-text team-body-text--muted">By combining:</p>
-            <div className="team-belief-stack">
-              {beliefStack.map((b) => (
-                <div key={b} className="team-belief-item">
-                  <div className="team-belief-icon"><FiZap size={16} /></div>
-                  <span>{b}</span>
-                </div>
-              ))}
-            </div>
+           
             <p className="team-body-text">we aim to create a future where growth becomes intelligently navigable.</p>
           </div>
 
