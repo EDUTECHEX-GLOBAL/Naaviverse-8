@@ -58,32 +58,22 @@
   z-index: 10000;
 }
 
-// .side-panel-shape {
-//   height: 5px;
-//   background: #000;
-//   margin-bottom: 30px;
-//   width: 60px;
-// }
-
 .side-panel-logo img {
   width: 190px;
   margin-bottom: 30px;
 }
 
 .side-panel-box {
-  margin-bottom: 30px;
-  
+  margin-bottom: 20px;  // 👈 reduced from 30px
 }
 
 .side-panel-heading {
-  font-size: 24px;
+  font-size: 1.1rem;     // 👈 matches newsletter-subtitle
   font-weight: 600;
-  line-height: 1.4;
-  margin-bottom: 70px;
+  line-height: 1.6;
+  margin-bottom: 15px;  // 👈 reduced from 70px
   color: #222;
 }
-
-
 
 /* Newsletter container */
 .newsletter {
@@ -96,9 +86,9 @@
 .newsletter-form {
   display: flex;
   align-items: center;
-  background:white;
-  height: 56px;  
-  border: 0.5px solid black; 
+  background: white;
+  height: 56px;
+  border: 0.5px solid black;
   border-radius: 10px;
   padding: 0.5rem 0.5rem 0.5rem 1rem;
   max-width: 400px;
@@ -161,7 +151,8 @@
   font-weight: 500;
 }
 
-.contact-socials a{
+/* Social icons in footer */
+.contact-socials a {
   display: inline-block;
   margin-right: 10px;
   font-size: 20px;
@@ -175,3 +166,45 @@
   transition: background 0.3s;
 }
 
+/* Side panel content overrides */
+.side-panel-content {
+
+  // "Contact Us" & "Subscribe" titles
+  .widget-title {
+    font-size: 18px !important;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #222;
+  }
+
+  // Email text - match newsletter-subtitle
+  .contact-widget {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+    list-style: none !important;  // 👈 removes dot
+
+    li {
+      font-size: 1.1rem;          // 👈 matches subtitle
+      color: #000;
+      list-style: none !important; // 👈 removes dot
+      padding-left: 0;
+    }
+  }
+}
+
+/* Social icons - deactivated, keep styling */
+.contact-socials {
+  span.social-icon {
+    display: inline-block;
+    margin-right: 10px;
+    font-size: 20px;
+    color: #f8f8f8;
+    background: #000;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    border-radius: 50%;
+    cursor: default;
+  }
+}

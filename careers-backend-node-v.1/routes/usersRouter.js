@@ -4,7 +4,7 @@ const router = express.Router();
 const usersController = require("../controllers/user_controller");
 const userController = require("../controllers/user.controller");
 const { getAllUsers, getUserProfilePic } = require("../controllers/authControllers");
-const { getUserActivity } = require("../controllers/userActivity.controller"); // << ADD THIS
+const { getUserActivity } = require("../controllers/UserActivity.controller"); // << ADD THIS
 
 // User profile CRUD
 router.post("/add", usersController.addUserProfile);

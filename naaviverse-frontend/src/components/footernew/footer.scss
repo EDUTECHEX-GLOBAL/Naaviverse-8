@@ -80,7 +80,8 @@
   margin-top: 20px;
 }
 
-.footer-socials a {
+.footer-socials a,
+.footer-socials span.social-icon {
   display: inline-block;
   margin-right: 10px;
   font-size: 20px;
@@ -92,6 +93,7 @@
   text-align: center;
   border-radius: 50%;
   transition: background 0.3s;
+  cursor: default;  // 👈 no pointer cursor
 }
 
 .footer-socials a:hover {

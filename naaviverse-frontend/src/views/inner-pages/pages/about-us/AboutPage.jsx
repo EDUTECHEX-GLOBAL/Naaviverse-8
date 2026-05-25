@@ -4,40 +4,40 @@ import { useParams, useLocation } from 'react-router-dom';
 import Footer from '../../../../components/footernew/index';
 import './AboutPage.scss';
 
-import aboutWhatImg from './images/about-what.png';
-import naaviverseImg from './images/what.png';
-import visionImg from './images/vision.png';
-import navigationProblemImg from './images/naavigation.png';
-import missionImg from './images/mission.png';
+import whatImg from './images/What is naavi.png';
+import naaviverseImg from './images/Naaviverse.png';
+import visionImg from './images/Our Vision.png';
+import navigationProblemImg from './images/Navigation Problem.png';
+import missionImg from './images/Mission and Philosophy.png';
 
 const HEADER_OFFSET = 80;
 
 /* SVG Icons */
 const BrainIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 4C9.5 4 8 6 8 8C8 10 9.5 11 11 12C8.5 12.5 7 14 7 16.5C7 19 9 20 12 20C15 20 17 19 17 16.5C17 14 15.5 12.5 13 12C14.5 11 16 10 16 8C16 6 14.5 4 12 4Z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-    <path d="M12 8V12" stroke="currentColor" strokeWidth="1.5"/>
+    <path d="M12 4C9.5 4 8 6 8 8C8 10 9.5 11 11 12C8.5 12.5 7 14 7 16.5C7 19 9 20 12 20C15 20 17 19 17 16.5C17 14 15.5 12.5 13 12C14.5 11 16 10 16 8C16 6 14.5 4 12 4Z" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    <path d="M12 8V12" stroke="currentColor" strokeWidth="1.5" />
   </svg>
 );
 
 const NetworkIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="4" r="2" stroke="currentColor" strokeWidth="1.5"/>
-    <circle cx="4" cy="20" r="2" stroke="currentColor" strokeWidth="1.5"/>
-    <circle cx="20" cy="20" r="2" stroke="currentColor" strokeWidth="1.5"/>
-    <circle cx="12" cy="12" r="2" stroke="currentColor" strokeWidth="1.5"/>
-    <path d="M12 6V10" stroke="currentColor" strokeWidth="1.5"/>
-    <path d="M6 18L10 14" stroke="currentColor" strokeWidth="1.5"/>
-    <path d="M18 18L14 14" stroke="currentColor" strokeWidth="1.5"/>
+    <circle cx="12" cy="4" r="2" stroke="currentColor" strokeWidth="1.5" />
+    <circle cx="4" cy="20" r="2" stroke="currentColor" strokeWidth="1.5" />
+    <circle cx="20" cy="20" r="2" stroke="currentColor" strokeWidth="1.5" />
+    <circle cx="12" cy="12" r="2" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M12 6V10" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M6 18L10 14" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M18 18L14 14" stroke="currentColor" strokeWidth="1.5" />
   </svg>
 );
 
 const ChartIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M21 21H3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    <path d="M7 15V21" stroke="currentColor" strokeWidth="1.5"/>
-    <path d="M12 10V21" stroke="currentColor" strokeWidth="1.5"/>
-    <path d="M17 5V21" stroke="currentColor" strokeWidth="1.5"/>
+    <path d="M21 21H3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M7 15V21" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M12 10V21" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M17 5V21" stroke="currentColor" strokeWidth="1.5" />
   </svg>
 );
 
@@ -80,7 +80,7 @@ const AboutPage = () => {
   return (
     <Fragment>
       <Helmet>
-        <title>About Naavi — AI-Powered Path Engine</title>
+        <title>Naavi - AI Powered Path Engine</title>
       </Helmet>
 
       <div className="ab-page" style={{ paddingTop: '80px' }}>
@@ -90,7 +90,7 @@ const AboutPage = () => {
           <div className="ab-container">
             <div className="ab-row">
               <div className="ab-col-vis">
-                <img src={aboutWhatImg} alt="What is Naavi" className="ab-side-image" />
+                <img src={whatImg} alt="What is Naavi" className="ab-side-image" />
               </div>
               <div className="ab-col-txt">
                 <h2>What is <span className="ab-green">Naavi?</span></h2>
@@ -100,7 +100,7 @@ const AboutPage = () => {
                   and future potential.
                 </p>
                 <div className="ab-pills">
-                  {['Smart Path Guidance','Learning Roadmaps','Expert Insights','Real-time Adaptation'].map(t => (
+                  {['Smart Path Guidance', 'Learning Roadmaps', 'Expert Insights', 'Real-time Adaptation'].map(t => (
                     <span key={t} className="ab-pill">{t}</span>
                   ))}
                 </div>

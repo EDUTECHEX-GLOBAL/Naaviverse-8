@@ -7,6 +7,7 @@ export default function Newsletter({ title, subtitle, placeholder }) {
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+console.log("API BASE URL:", BASE_URL); 
   const handleSubscribe = async (e) => {
     e.preventDefault();
 

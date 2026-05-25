@@ -12,9 +12,10 @@ import {
 } from 'react-icons/fi';
 import './Team.scss';
 import Footer from '../../../../components/footernew/index';
-import buildingBeyondImg from './images/building beyond.png';
+import buildingBeyondImg from './images/Building.png';
 import teamVisionImage from '../../../../assets/images/assets/solution.png';
-import ndustryImg from './images/ndustry.png';
+import ndustryImg from './images/naavi_advisors.gif';
+import whatDrivesUsImg from './images/what drives us.png';
 const HEADER_OFFSET = 80;
 
 const disciplines = [
@@ -118,7 +119,7 @@ const Team = () => {
         </div>
       </section>
 
-          {/* Advisors Section */}
+      {/* Advisors Section */}
       <section id="team-advisors" className="team-section team-belief">
         <div className="team-container team-container--two-col">
           <div className="team-belief-text">
@@ -141,84 +142,53 @@ const Team = () => {
           </div>
 
           <div className="team-belief-visual">
-            <img 
-              src={ndustryImg} 
-              alt="Industry ecosystem" 
+            <img
+              src={ndustryImg}
+              alt="Industry ecosystem"
               className="team-ndustry-image"
             />
           </div>
         </div>
       </section>
 
-     {/* What Drives Us Section */}
-<section className="team-section team-drivers">
-  <div className="team-container">
-    <div className="team-drivers-layout">
-      <div className="team-drivers-left">
-        <span className="team-section-eyebrow">What Drives Us</span>
-        <h2 className="team-section-title">The forces that move Naavi forward</h2>
-        <div className="team-drivers-list">
-          {drivers.map((d, i) => (
-            <div key={d} className="team-driver-row">
-              <div className="team-driver-circle">{i + 1}</div>
-              <div className="team-driver-content">
-                <p className="team-driver-title">{d}</p>
+      {/* What Drives Us Section */}
+      <section className="team-section team-drivers">
+        <div className="team-container">
+          <div className="team-drivers-layout">
+            <div className="team-drivers-left">
+              <span className="team-section-eyebrow">What Drives Us</span>
+              <h2 className="team-section-title">The forces that move Naavi forward</h2>
+              <div className="team-drivers-list">
+                {drivers.map((d, i) => (
+                  <div key={d} className="team-driver-row">
+                    <div className="team-driver-circle">{i + 1}</div>
+                    <p className="team-driver-title">{d}</p>
+                  </div>
+
+                ))}
               </div>
             </div>
-          ))}
+            <div className="team-drivers-right">
+              <div className="team-drivers-vis" style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+              }}>
+                <img
+                  src={whatDrivesUsImg}
+                  alt="What drives us"
+                  style={{
+                    width: '100%',
+                    maxWidth: '550px',  // 👈 increased size
+                    height: 'auto',
+                  }}
+                />
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div className="team-drivers-right">
-        <div className="team-drivers-vis">
-          <div className="team-drivers-orb team-drivers-orb-1" />
-          <div className="team-drivers-orb team-drivers-orb-2" />
-          <svg viewBox="0 0 280 280" className="team-drivers-svg">
-            {/* Gears */}
-            <circle cx="160" cy="120" r="72" fill="#FFF9E5" stroke="#FFD166" strokeWidth="2"/>
-            <circle cx="160" cy="120" r="52" fill="none" stroke="#FFD166" strokeWidth="1.5" strokeDasharray="6 4"/>
-            <circle cx="160" cy="120" r="28" fill="#FFD166" opacity="0.3"/>
-            {/* Gear teeth */}
-            {[0,30,60,90,120,150,180,210,240,270,300,330].map((angle, i) => (
-              <rect
-                key={i}
-                x="155" y="43"
-                width="10" height="16"
-                rx="3"
-                fill="#FFD166"
-                transform={`rotate(${angle} 160 120)`}
-              />
-            ))}
-            {/* Lightbulb */}
-            <circle cx="160" cy="112" r="18" fill="none" stroke="#E05C5C" strokeWidth="1.8"/>
-            <path d="M152 120 Q152 132 160 136 Q168 132 168 120" fill="none" stroke="#E05C5C" strokeWidth="1.8"/>
-            <line x1="155" y1="138" x2="165" y2="138" stroke="#E05C5C" strokeWidth="1.8"/>
-            <line x1="156" y1="142" x2="164" y2="142" stroke="#E05C5C" strokeWidth="1.8"/>
-            {/* Small gear */}
-            <circle cx="84" cy="155" r="38" fill="#E8F4FF" stroke="#4DA6FF" strokeWidth="1.5"/>
-            <circle cx="84" cy="155" r="22" fill="none" stroke="#4DA6FF" strokeWidth="1" strokeDasharray="4 3"/>
-            {[0,45,90,135,180,225,270,315].map((angle, i) => (
-              <rect
-                key={i}
-                x="80" y="112"
-                width="8" height="12"
-                rx="2"
-                fill="#4DA6FF"
-                transform={`rotate(${angle} 84 155)`}
-              />
-            ))}
-            {/* Person */}
-            <circle cx="118" cy="205" r="12" fill="#2DB67D" opacity="0.8"/>
-            <path d="M106 240 Q118 220 130 240" fill="#2DB67D" opacity="0.6"/>
-            <line x1="118" y1="217" x2="118" y2="245" stroke="#2DB67D" strokeWidth="2.5" opacity="0.7"/>
-            <line x1="108" y1="228" x2="128" y2="228" stroke="#2DB67D" strokeWidth="2.5" opacity="0.7"/>
-            {/* Connecting line person to gear */}
-            <path d="M128 218 Q145 190 150 160" fill="none" stroke="#2DB67D" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.4"/>
-          </svg>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+      </section>
 
       {/* Building Beyond Section */}
       <section className="team-section team-beyond">
@@ -238,22 +208,6 @@ const Team = () => {
         </div>
       </section>
 
-      {/* Careers Section */}
-      <section id="team-careers" className="team-section team-naaviverse">
-        <div className="team-container team-container--center">
-          <span className="team-section-eyebrow">Careers at Naavi</span>
-          <h2 className="team-section-title">Join us in building a global ecosystem that connects:</h2>
-          <div className="team-ecosystem-tags">
-            {ecosystem.map((e) => (
-              <span key={e} className="team-ecosystem-tag">{e}</span>
-            ))}
-          </div>
-          <p className="team-naaviverse-outro">
-            into one intelligent, evolving universe —{' '}
-            <span className="team-naaviverse-highlight">the Naaviverse.</span>
-          </p>
-        </div>
-      </section>
 
       <Footer />
     </div>
@@ -261,3 +215,4 @@ const Team = () => {
 };
 
 export default Team;
+//changes//

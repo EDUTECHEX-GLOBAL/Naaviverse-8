@@ -424,24 +424,25 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 // ══════════════════════════════
 .imp-vis {
   position: relative;
-  width: 280px;
-  height: 240px;
+  width: 100%;          // ← change from 280px to 100%
+  height: auto;         // ← change from 240px to auto
   @include flex-center;
+
 
   @media(max-width: 480px) { width: 220px; height: 200px; }
 }
 
 .imp-vis-image-wrap {
   width: 100%;
-  max-width: 520px;
+  max-width: 100%;   // ← change from 520px to 100%
   height: auto;
 }
 
 .imp-story-image {
   width: 100%;
-  max-width: 520px;
+  max-width: 100%;      // ← change from 520px to 100%
   height: auto;
-  max-height: 360px;
+  max-height: 480px;    // ← increase from 360px to 480px (or remove entirely)
   display: block;
   object-fit: contain;
   border-radius: 0;

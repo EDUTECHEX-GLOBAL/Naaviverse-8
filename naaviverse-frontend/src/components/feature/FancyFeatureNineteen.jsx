@@ -1,18 +1,6 @@
 import React, { Fragment } from 'react';
 import "./fancyFeatureNineteen.scss";
-import img22 from '../../assets/images/assets/img_22.png';
-
-/* Commented unused illustration imports */
-/*
-import ils15 from "../../assets/images/assets/ils_15.svg";
-import ils15_1 from "../../assets/images/assets/ils_15_1.svg";
-import ils15_2 from "../../assets/images/assets/ils_15_2.svg";
-import ils15_3 from "../../assets/images/assets/ils_15_3.svg";
-import ils15_4 from "../../assets/images/assets/ils_15_4.svg";
-import ils15_5 from "../../assets/images/assets/ils_15_5.svg";
-import ils15_6 from "../../assets/images/assets/ils_15_6.svg";
-import ils15_7 from "../../assets/images/assets/ils_15_7.svg";
-*/
+import img22 from '../../assets/images/assets/img_27.png';
 
 const ProcessContent = [
   {
@@ -32,9 +20,16 @@ const ProcessContent = [
   {
     num: 3,
     className: 'numb tran3s',
-    heading: 'Connect to Mentors and Institutions',
+    heading: 'Explore Paths and Steps',
     desc: 'Curated pathway with precise navigation',
     dataDelay: '100'
+  },
+  {
+    num: 4,
+    className: 'numb tran3s',
+    heading: 'Marketplace of Mentors & Institutions',
+    desc: 'Will help you navigate the journey',
+    dataDelay: '150'
   }
 ];
 
@@ -49,7 +44,7 @@ const FancyFeatureNineteen = () => {
             <div className="block-style-thirteen" data-aos="fade-right">
               <div className="title-style-three pb-15">
                 <div className="sc-title">PERSONALIZED PATHWAYS</div>
-                <h2 className="main-title">
+                <h2 className="main-title" style={{ whiteSpace: 'nowrap' }}>
                   How Naavi <span>process</span> works
                 </h2>
               </div>
@@ -72,7 +67,7 @@ const FancyFeatureNineteen = () => {
               </ul>
             </div>
 
-            {/* RIGHT SIDE – ONLY img22 */}
+            {/* RIGHT SIDE – IMAGE */}
             <div className="illustration-holder" data-aos="fade-left">
               <img
                 src={img22}

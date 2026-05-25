@@ -2,13 +2,13 @@ import React, { Fragment, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import './impact.scss';
 import Footer from '../../../components/footernew/index';
-import skillGapProblemImg from './images/skill gap problem.png';
-import futureWorkforceImg from './images/second image.png';
-import studentOutcomesImg from './images/student.png';
-import educationTransformationImg from './images/education.png';
-import humanPotentialImg from './images/human.png';
-import globalOpportunityImg from './images/global.png';
-import sdgImpactImg from './images/SDG.png';
+import skillGapProblemImg from './images/skill_gap_problem.png';
+import futureWorkforceImg from './images/future_workforce.png';
+import studentOutcomesImg from './images/student_outcomes.png';
+import educationTransformationImg from './images/edu_transf.png';
+import humanPotentialImg from './images/human_potential.png';
+import globalOpportunityImg from './images/global_opportunity_access.png';
+import sdgImpactImg from './images/SDG_Social_Impact.png';
 import successStoriesImg from './images/successs.png';
 
 const HEADER_OFFSET = 140;
@@ -25,6 +25,7 @@ const navTerms = [
 ];
 
 // ── 8 story sections ──
+//success
 const stories = [
   {
     id: 'skill-gap-problem',

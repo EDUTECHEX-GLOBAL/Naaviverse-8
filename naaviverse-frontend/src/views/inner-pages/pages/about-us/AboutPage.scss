@@ -713,8 +713,8 @@ h5 { font-size: 14px; font-weight: 600; color: $navy; margin-bottom: 10px; }
 }
 
 .ab-problem-image {
-  max-width: 340px;
-  max-height: 260px;
+   width: 120%;       
+  max-width: 500px;   
   object-fit: contain;
 }
 .ab-mission-image {
