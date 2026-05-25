@@ -43,7 +43,15 @@ $border:   rgba(0,0,0,0.07);
 
 #ab-what {
   padding-top: 44px;
-  padding-bottom: 40px;
+  padding-bottom: 60px;
+  min-height: 580px;       // ← ADD this so section is tall enough
+  align-items: center;
+  display: flex;
+  .ab-row {
+    grid-template-columns: 1.6fr 1fr;  // ← was 1.4fr 1fr, give image even more
+    gap: 24px;                          // ← reduce gap
+    align-items: center;
+  }
 }
 
 #ab-vision {
@@ -53,8 +61,8 @@ $border:   rgba(0,0,0,0.07);
 // two-col layout
 .ab-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(40px, 5vw, 72px);
+   grid-template-columns: 1fr 1.3fr;   // ← image column gets 30% more space
+  gap: clamp(24px, 3vw, 48px);  
   align-items: center;
   @media(max-width:900px) {
     grid-template-columns: 1fr;
@@ -99,6 +107,7 @@ $border:   rgba(0,0,0,0.07);
 
   .ab-container {
     position: relative;
+    padding: 0 12px; 
     z-index: 1;
   }
 
@@ -673,8 +682,8 @@ h5 { font-size: 14px; font-weight: 600; color: $navy; margin-bottom: 10px; }
 
 .ab-side-image {
   width: 100%;
-  max-width: 530px;
-  max-height: 420px;
+   max-height: 800px;          // ← was 640px
+  min-width: 620px;        // ← was 420px
   height: auto;
   object-fit: contain;
   border-radius: 20px;
@@ -689,14 +698,21 @@ h5 { font-size: 14px; font-weight: 600; color: $navy; margin-bottom: 10px; }
 
 
 .ab-col-vis {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+ // ADD this:
+#ab-what .ab-col-vis {
+  justify-content: flex-start;   // ← image hugs left, uses full width
+  width: 100%;
+}
+
+#ab-what .ab-side-image {
+  max-width: 100%;               // ← fills entire left column
+  max-height: 640px;
+}
 }
 
 .ab-vision-row {
   .ab-col-vis {
-    justify-content: flex-end;
+    justify-content: center;
   }
 
   @media (max-width: 900px) {
@@ -707,8 +723,8 @@ h5 { font-size: 14px; font-weight: 600; color: $navy; margin-bottom: 10px; }
 }
 
 .ab-vision-image {
-  max-width: 380px;
-  max-height: 280px;
+ max-width: 580px;        // ← was 380px
+  max-height: 420px;   
   object-fit: contain;
 }
 

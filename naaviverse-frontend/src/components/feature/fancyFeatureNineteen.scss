@@ -11,7 +11,7 @@
   /* Grid layout */
   .feature-grid {
     display: grid;
-    grid-template-columns: 1fr 1.5fr; // 👉 give MORE space to image column
+    grid-template-columns: 1fr 1fr; // 👉 give MORE space to image column
     gap: 40px;
     align-items: center;
   }
@@ -23,17 +23,19 @@
     align-items: center;
     margin-top: 40px;
     position: relative;
-    width: 110%; // ← slightly wider than column
+    width: 100%;
+  margin-top: 0;        // ← remove top gap
+  height: 100%; // ← slightly wider than column
     overflow: visible;
   }
 
   /* Main illustration image */
   .main-illustration {
-    width: 100% !important;
-    max-width: 780px !important; // ← add a generous max-width cap
-    height: auto;
-    display: block;
-  }
+  width: 100% !important;
+   max-width: none !important;  // ← increase this, e.g. 900px or 1000px
+  height: auto;
+  display: block;
+}
 }
 
 /* ------------------------------
@@ -48,8 +50,11 @@
     }
 
     .main-illustration {
-      max-width: 320px; // smaller image on mobile
-    }
+ width: 100% !important;
+  max-width: 100% !important;   // ← fill entire column
+  min-height: 500px;             // ← force minimum height
+  height: auto;
+  object-fit: contain;    }
   }
 }
 

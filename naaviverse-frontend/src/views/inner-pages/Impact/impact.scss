@@ -294,7 +294,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   position: relative;
   padding: 88px 0;
   overflow: hidden;
-
+  background-color: #ffffff; 
   @media(max-width: 768px) { padding: 60px 0; }
 }
 
@@ -415,8 +415,11 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 // ── Visual wrapper ──
 .imp-story-vis-wrap {
-  @include flex-center;
+@include flex-center;
   min-height: 240px;
+  max-width: 460px;       // ← ADD this
+  width: 100%;
+  margin: 0 auto; 
 }
 
 // ══════════════════════════════
@@ -434,19 +437,21 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 .imp-vis-image-wrap {
   width: 100%;
-  max-width: 100%;   // ← change from 520px to 100%
+  max-width: 420px;       // ← limit wrapper width
   height: auto;
+  margin: 0 auto;
 }
 
 .imp-story-image {
   width: 100%;
-  max-width: 100%;      // ← change from 520px to 100%
+  max-width: 420px;       // ← ADD this to reduce width
   height: auto;
-  max-height: 480px;    // ← increase from 360px to 480px (or remove entirely)
+  max-height: 320px;      // ← was 480px, reduce height
   display: block;
   object-fit: contain;
   border-radius: 0;
-  filter: drop-shadow(0 18px 34px rgba(26, 26, 46, 0.08));
+background: transparent;     filter: drop-shadow(0 18px 34px rgba(26, 26, 46, 0.08));
+  margin: 0 auto;  
 }
 .imp-vis-glow {
   position: absolute;
