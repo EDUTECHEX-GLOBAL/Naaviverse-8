@@ -59,7 +59,7 @@ $border-light: rgba(0, 0, 0, 0.06);
 .tech-section-header {
   text-align: center;
   max-width: 700px;
-  margin: 0 auto 56px;
+  margin: 0 auto 40px;
   animation: tech-fade-up 0.6s ease both;
 }
 
@@ -92,13 +92,78 @@ $border-light: rgba(0, 0, 0, 0.06);
   line-height: 1.65;
 }
 
-// ── Pathways Grid ─────────────────────────────────────────
+// ── PREVIEW IMAGE BLOCK (new — appears right after header) ─
+// Reduced size: max 560px wide, centered, compact padding
+.tech-preview-image-block {
+  width: 100%;
+  max-width: 1000px;          // ← larger
+  margin: 0 auto 48px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: $white;
+  border: 1px solid $border-light;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 12px 36px rgba(0, 0, 0, 0.07);
+  animation: tech-fade-up 0.7s ease 0.15s both;
+
+  &:hover {
+    box-shadow:
+      0 4px 16px rgba(0, 0, 0, 0.06),
+      0 20px 52px rgba(0, 0, 0, 0.10);
+    transform: translateY(-2px);
+    transition: all 0.4s ease;
+  }
+}
+
+// Synergy image block — mint tint to match LLM section feel
+.tech-synergy-preview-block {
+  background: linear-gradient(160deg, #f8fffe 0%, #f4faf7 100%);
+  border-color: rgba(45, 182, 125, 0.12);
+}
+
+.tech-image-label {
+  font-size: 11px;              // ← bumped from 10px
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: $green;
+  text-transform: uppercase;
+  padding: 16px 24px 0;
+  opacity: 0.8;
+}
+
+.tech-preview-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  padding: 16px 24px 24px;
+  box-sizing: border-box;
+  max-height: 620px;            // ← taller, shows more detail
+}
+
+@media (max-width: 768px) {
+  .tech-preview-image-block {
+    max-width: 100%;
+    border-radius: 16px;
+  }
+
+  .tech-preview-img {
+    padding: 12px 16px 20px;
+    max-height: none;
+  }
+
+  .tech-image-label {
+    padding: 14px 16px 0;
+  }
+}
+
+// ── Pathways Grid (now below image) ──────────────────────
 .tech-pathways-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 28px;
   align-items: start;
-  margin-bottom: 40px;
 }
 
 @media (max-width: 900px) {
@@ -130,7 +195,7 @@ $border-light: rgba(0, 0, 0, 0.06);
 }
 
 .tech-card-label {
-  font-size: 10px;
+  font-size: 11px;              // ← bumped from 10px
   font-weight: 700;
   letter-spacing: 0.12em;
   color: $green;
@@ -227,100 +292,12 @@ $border-light: rgba(0, 0, 0, 0.06);
   color: $green;
 }
 
-// ── FULL WIDTH IMAGE BLOCK ─────────────────────────────────
-// This is the key section — makes images display large and prominent
-.tech-fullwidth-image-block {
-  width: 100%;
-  border-radius: 28px;
-  overflow: hidden;
-  background: $white;
-  border: 1px solid $border-light;
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    0 16px 48px rgba(0, 0, 0, 0.08);
-  margin-top: 16px;
-  animation: tech-fade-up 0.7s ease 0.2s both;
-
-  // Subtle shimmer on hover
-  &:hover {
-    box-shadow:
-      0 4px 16px rgba(0, 0, 0, 0.06),
-      0 24px 64px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
-    transition: all 0.4s ease;
-  }
-}
-
-.tech-image-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: $green;
-  text-transform: uppercase;
-  padding: 18px 28px 0;
-  opacity: 0.8;
-}
-
-.tech-fullwidth-img {
-  width: 100%;           // ← fills the full card width
-  height: auto;          // ← maintains aspect ratio
-  display: block;
-  object-fit: contain;   // ← never crops the image
-  padding: 20px 28px 28px; // ← breathing room around image
-  box-sizing: border-box;
-}
-
-// For the Pathways image — give it more vertical breathing room
-// The Path_Engine.png is landscape and detailed, show it large
-#pathways .tech-fullwidth-img {
-  padding: 16px 20px 24px;
-  max-height: 680px;     // ← prevents it from being TOO tall on wide screens
-  object-fit: contain;
-  margin: 0 auto;
-}
-
-// ── Synergy image block ───────────────────────────────────
-.tech-synergy-image-block {
-  background: linear-gradient(160deg, #f8fffe 0%, #f4faf7 100%);
-  border-color: rgba(45, 182, 125, 0.12);
-}
-
-// The Synergy_1.png is portrait-ish, so we constrain the max width
-// and center it so it doesn't stretch too wide
-#llms-kgs .tech-fullwidth-img {
-  max-width: 860px;      // ← stops it being absurdly wide on 1200px screens
-  margin: 0 auto;
-  padding: 16px 32px 28px;
-}
-
-.tech-synergy-caption {
-  padding: 0 32px 28px;
-  border-top: 1px solid rgba(45, 182, 125, 0.1);
-  margin-top: 8px;
-
-  p {
-    font-size: 14px;
-    line-height: 1.7;
-    color: $muted;
-    margin: 20px 0 0;
-    text-align: center;
-    max-width: 720px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-}
-
-.tech-mint-bold {
-  color: $green;
-  font-weight: 600;
-}
-
-// ── LLM Grid ─────────────────────────────────────────────
+// ── LLM Grid (now below image) ────────────────────────────
 .tech-llm-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 }
 
 @media (max-width: 768px) {
@@ -339,7 +316,7 @@ $border-light: rgba(0, 0, 0, 0.06);
 }
 
 .tech-module-label {
-  font-size: 10px;
+  font-size: 11px;              // ← bumped from 10px
   font-weight: 700;
   letter-spacing: 0.12em;
   color: $green;
@@ -401,36 +378,34 @@ $border-light: rgba(0, 0, 0, 0.06);
   }
 }
 
+// ── Synergy caption (plain text, no card) ────────────────
+.tech-synergy-caption-standalone {
+  margin-top: 24px;
+  text-align: center;
+
+  p {
+    font-size: 15px;
+    line-height: 1.75;
+    color: $muted;
+    margin: 0 auto;
+    max-width: 720px;
+  }
+}
+
+.tech-mint-bold {
+  color: $green;
+  font-weight: 600;
+}
+
 // ── Responsive ───────────────────────────────────────────
 @media (max-width: 768px) {
-  .tech-fullwidth-img {
-    padding: 12px 16px 20px;
-  }
-
-  #pathways .tech-fullwidth-img {
-    max-height: none;  // remove height cap on mobile
-  }
-
-  #llms-kgs .tech-fullwidth-img {
-    max-width: 100%;
-    padding: 12px 16px 20px;
-  }
-
-  .tech-synergy-caption {
-    padding: 0 20px 24px;
-  }
-
   .tech-card {
     padding: 24px;
   }
 }
 
 @media (max-width: 480px) {
-  .tech-fullwidth-image-block {
-    border-radius: 18px;
-  }
-
-  .tech-image-label {
-    padding: 14px 20px 0;
+  .tech-preview-image-block {
+    border-radius: 14px;
   }
 }

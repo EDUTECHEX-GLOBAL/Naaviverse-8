@@ -101,48 +101,9 @@ const UserAnalysis = () => {
                 <About /> {/* /.fancy-feature-eighteen */}
 
                 <div className="fancy-feature-nineteen position-relative pt-130 lg-pt-80">
-                    <div className="container">
-                        <div className="row">
-                            <div className="col-xxl-5 col-lg-6 col-md-7">
-                                <FancyFeatureNineteen />
-                                {/* /.block-style-thirteen */}
-                            </div>
-                        </div>
-                    </div>
-                    {/* /.container */}
-                    <div className="illustration-holder" data-aos="fade-left">
-                        <img src="images/assets/ils_15.svg" alt="" className="w-100 main-illustration" />
-                        <img src="images/assets/ils_15_1.svg" alt="" className="shapes shape-one" />
-                        <img src="images/assets/ils_15_2.svg" alt="" className="shapes shape-two" />
-                        <img src="images/assets/ils_15_3.svg" alt="" className="shapes shape-three" />
-                        <img src="images/assets/ils_15_4.svg" alt="" className="shapes shape-four" />
-                        <img
-                            src="images/assets/ils_15_5.svg"
-                            alt=""
-                            className="shapes shape-five"
-                            data-aos="fade-down"
-                            data-aos-delay={200}
-                            data-aos-duration={2000} />
-                        <img
-                            src="images/assets/ils_15_6.svg"
-                            alt=""
-                            className="shapes shape-six"
-                            data-aos="fade-down"
-                            data-aos-delay={100}
-                            data-aos-duration={2000} />
-                        <img
-                            src="images/assets/ils_15_7.svg"
-                            alt=""
-                            className="shapes shape-seven"
-                            data-aos="fade-down"
-                            data-aos-duration={2000} />
-                    </div>
-                    {/* /.illustration-holder */}
-                    <div className="shapes oval-one" />
-                    <div className="shapes oval-two" />
-                    <img src="images/shape/shape_35.svg" alt="" className="shapes bg-shape" />
+                    <FancyFeatureNineteen />
                 </div>
-                {/* /.fancy-feature-nineteen */}
+
 
                 <CounterOne />
 
@@ -172,7 +133,7 @@ const UserAnalysis = () => {
                         </div>
                     </div>
                     {/* /.container */}
-                    <img src="images/shape/shape_36.svg" alt="" className="shapes shape-one" />
+                    
                     <div className="shapes oval-one" />
                 </div>
                 {/* /.fancy-feature-twenty */}

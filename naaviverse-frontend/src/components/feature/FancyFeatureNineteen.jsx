@@ -36,7 +36,7 @@ const ProcessContent = [
 const FancyFeatureNineteen = () => {
   return (
     <Fragment>
-      <section className="fancy-feature-nineteen">
+     <section className="fancy-feature-nineteen">
         <div className="container">
           <div className="feature-grid">
 

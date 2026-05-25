@@ -4,7 +4,10 @@ import img11 from '../../assets/images/assets/img_24.png';
 const About = () => {
   return (
     <Fragment>
-      <div className="fancy-feature-eighteen position-relative pt-200 pb-225 lg-pt-130 md-pt-100 xl-pb-150 lg-pb-100">
+      <div className="fancy-feature-eighteen position-relative" style={{
+        paddingTop: '60px',
+        paddingBottom: '60px',
+      }}>
 
         <div className="container">
           <div style={{
@@ -25,7 +28,7 @@ const About = () => {
                 alt="Target Audience"
                 style={{
                   width: '100%',
-                  maxWidth: '620px',
+                  maxWidth: '520px',
                   height: 'auto',
                   display: 'block',
                 }}
@@ -36,11 +39,21 @@ const About = () => {
             <div className="block-style-two" data-aos="fade-left">
               <div className="title-style-three">
                 <div className="sc-title">Age Group 14 to 50+</div>
-                <h2 className="main-title">
+                <h2 className="main-title" style={{
+                  fontSize: '40px',
+                  lineHeight: '1.2',
+                  marginBottom: '16px',
+                }}>
                   Target <span>Audience</span> for Naavi
                 </h2>
               </div>
-              <p className="pt-20 pb-25 lg-pb-20">
+              <p style={{
+                paddingTop: '12px',
+                paddingBottom: '16px',
+                fontSize: '15px',
+                lineHeight: '1.7',
+                color: '#6B7A8D',
+              }}>
                 AI technology is perfect for best business solutions &amp; we
                 offer help to achieve your goals.
               </p>
@@ -63,23 +76,28 @@ const About = () => {
 
       {/* Responsive styles */}
       <style>{`
-  @media (max-width: 768px) {
-    .fancy-feature-eighteen .container > div {
-      grid-template-columns: 1fr !important;
-      gap: 24px !important;
-    }
-    .fancy-feature-eighteen img {
-      max-width: 100% !important;
-    }
-    /* Swap order on mobile */
-    .fancy-feature-eighteen .block-style-two {
-      order: -1 !important;   /* text first */
-    }
-    .fancy-feature-eighteen [data-aos="fade-right"] {
-      order: 0 !important;    /* image second */
-    }
-  }
-`}</style>
+        @media (max-width: 768px) {
+          .fancy-feature-eighteen .container > div {
+            grid-template-columns: 1fr !important;
+            gap: 24px !important;
+          }
+          .fancy-feature-eighteen img {
+            max-width: 100% !important;
+          }
+          .fancy-feature-eighteen .block-style-two {
+            order: -1 !important;
+          }
+          .fancy-feature-eighteen [data-aos="fade-right"] {
+            order: 0 !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .fancy-feature-eighteen .main-title {
+            font-size: 28px !important;
+          }
+        }
+      `}</style>
 
     </Fragment>
   );

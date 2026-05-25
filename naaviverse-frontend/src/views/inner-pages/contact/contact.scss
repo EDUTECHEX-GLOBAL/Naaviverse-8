@@ -117,40 +117,51 @@ $success: #27ae60;
   gap: 12px;
 }
 
+// ── FIXED: Icon left, title + detail stacked on right ────
 .contact-info-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 16px;
+  padding: 20px 18px;
   background: $soft-bg;
   border-radius: 14px;
   border: 1px solid $border-light;
-}
 
-.contact-info-icon {
-  width: 36px;
-  height: 36px;
-  background: rgba(45, 182, 125, 0.1);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: $green;
-  flex-shrink: 0;
-}
+  .contact-info-icon {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    background: rgba(45, 182, 125, 0.1);
+    border-radius: 12px;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: $green;
+    flex-shrink: 0;
+  }
 
-.contact-info-item h4 {
-  font-size: 13px;
-  font-weight: 700;
-  color: $navy;
-  margin: 0 0 2px;
-}
+  .contact-info-text {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px;
+    flex: 1;
 
-.contact-info-item p {
-  font-size: 12px;
-  line-height: 1.4;
-  color: $muted;
-  margin: 0;
+    h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: $navy;
+      margin: 0 !important;
+      line-height: 1.2;
+    }
+
+    p {
+      font-size: 13px;
+      line-height: 1.5;
+      color: $muted;
+      margin: 0 !important;
+    }
+  }
 }
 
 // Right Side - Form

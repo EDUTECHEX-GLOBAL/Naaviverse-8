@@ -94,7 +94,17 @@ const Technology = () => {
             </p>
           </div>
 
-          {/* Top row: text left, core capabilities right */}
+          {/* Path Engine image — now appears right after header, before cards */}
+          <div className="tech-preview-image-block">
+            <div className="tech-image-label">AI PATHWAYS ARCHITECTURE</div>
+            <img
+              src={PathEngineImg}
+              alt="Naavi AI Pathways Engine Architecture"
+              className="tech-preview-img"
+            />
+          </div>
+
+          {/* Cards below image */}
           <div className="tech-pathways-grid">
             <div className="tech-card tech-card-white">
               <p className="tech-body-text">
@@ -130,16 +140,6 @@ const Technology = () => {
             </div>
           </div>
 
-          {/* Full-width Path Engine image */}
-          <div className="tech-fullwidth-image-block">
-            <div className="tech-image-label">AI PATHWAYS ARCHITECTURE</div>
-            <img
-              src={PathEngineImg}
-              alt="Naavi AI Pathways Engine Architecture"
-              className="tech-fullwidth-img"
-            />
-          </div>
-
         </div>
       </section>
 
@@ -157,7 +157,17 @@ const Technology = () => {
             </p>
           </div>
 
-          {/* Two cards */}
+          {/* Synergy image — now appears right after header, before cards */}
+          <div className="tech-preview-image-block tech-synergy-preview-block">
+            <div className="tech-image-label">SYNERGY · LLM × KG</div>
+            <img
+              src={SynergyImg}
+              alt="LLM × Knowledge Graph Synergy Architecture"
+              className="tech-preview-img"
+            />
+          </div>
+
+          {/* Two cards below image */}
           <div className="tech-llm-grid">
             <div className="tech-card tech-card-white">
               <div className="tech-module-icon" style={{ background: 'linear-gradient(135deg, #2DB67D, #1a9e6a)' }}>
@@ -189,22 +199,14 @@ const Technology = () => {
             </div>
           </div>
 
-          {/* Full-width Synergy image */}
-          <div className="tech-fullwidth-image-block tech-synergy-image-block">
-            <div className="tech-image-label">SYNERGY · LLM × KG</div>
-            <img
-              src={SynergyImg}
-              alt="LLM × Knowledge Graph Synergy Architecture"
-              className="tech-fullwidth-img"
-            />
-            <div className="tech-synergy-caption">
-              <p>
-                By integrating LLMs with Knowledge Graphs through advanced{' '}
-                <span className="tech-mint-bold">GraphRAG frameworks</span>, Naavi builds a continuously
-                evolving intelligence ecosystem capable of understanding not just information —
-                but relationships, possibilities, and human potential itself.
-              </p>
-            </div>
+          {/* Caption below cards */}
+          <div className="tech-synergy-caption-standalone">
+            <p>
+              By integrating LLMs with Knowledge Graphs through advanced{' '}
+              <span className="tech-mint-bold">GraphRAG frameworks</span>, Naavi builds a continuously
+              evolving intelligence ecosystem capable of understanding not just information —
+              but relationships, possibilities, and human potential itself.
+            </p>
           </div>
 
         </div>

@@ -75,6 +75,7 @@ export default function Contact() {
       <section className="contact-form-section" ref={formRef}>
         <div className="contact-container">
           <div className="contact-grid">
+
             {/* Left Side - Contact Info */}
             <div className="contact-info">
               <span className="contact-info-eyebrow">REACH OUT</span>
@@ -85,36 +86,40 @@ export default function Contact() {
               </p>
 
               <div className="contact-info-details">
-                <div className="contact-info-item">
-                  <div className="contact-info-icon">
+
+                {/* Visit Us */}
+                <div className="contact-info-item" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px' }}>
+                  <div className="contact-info-icon" style={{ flexShrink: 0, minWidth: '44px' }}>
                     <Icon icon="carbon:location" width={22} />
                   </div>
-                  <div>
-                    <h4>Visit Us</h4>
-                    <p>T-Hub, 2nd Floor, SY.NO.83/1, Raidurg Village, Hyderabad, Telangana 500081</p>
+                  <div className="contact-info-text" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <h4 style={{ margin: 0 }}>Visit Us</h4>
+                    <p style={{ margin: 0 }}>T-Hub, 2nd Floor, SY.NO.83/1, Raidurg Village, Hyderabad, Telangana 500081</p>
                   </div>
                 </div>
 
-                <div className="contact-info-item">
-                  <div className="contact-info-icon">
+                {/* Email Us */}
+                <div className="contact-info-item" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px' }}>
+                  <div className="contact-info-icon" style={{ flexShrink: 0, minWidth: '44px' }}>
                     <Icon icon="carbon:email" width={22} />
                   </div>
-                  <div>
-                    <h4>Email Us</h4>
-                    <p>info@naavinetwork.ai</p>
-                   
+                  <div className="contact-info-text" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <h4 style={{ margin: 0 }}>Email Us</h4>
+                    <p style={{ margin: 0 }}>info@naavinetwork.ai</p>
                   </div>
                 </div>
 
-                <div className="contact-info-item">
-                  <div className="contact-info-icon">
+                {/* Call Us */}
+                <div className="contact-info-item" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px' }}>
+                  <div className="contact-info-icon" style={{ flexShrink: 0, minWidth: '44px' }}>
                     <Icon icon="carbon:phone" width={22} />
                   </div>
-                  <div>
-                    <h4>Call Us</h4>
-                    <p>+91 40 1234 5678</p>
+                  <div className="contact-info-text" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <h4 style={{ margin: 0 }}>Call Us</h4>
+                    <p style={{ margin: 0 }}>+91 40 1234 5678</p>
                   </div>
                 </div>
+
               </div>
             </div>
 
@@ -167,16 +172,16 @@ export default function Contact() {
                       required
                     >
                       <option value="">Select your question</option>
-<option value="WHAT_IS_NAAVI">What is Naavi and how does it work?</option>
-<option value="PATHWAY_ENGINE">How does the AI Pathway Engine generate my path?</option>
-<option value="SKILL_GAP">How does Naavi help bridge my skill gap?</option>
-<option value="MENTOR_CONNECT">How can I connect with mentors on Naavi?</option>
-<option value="NAAVIVERSE">What is the Naaviverse ecosystem?</option>
-<option value="CAREER_PATHS">Can Naavi help me switch careers or industries?</option>
-<option value="INSTITUTIONS">How can my institution partner with Naavi?</option>
-<option value="DEMO">I'd like to request a product demo</option>
-<option value="PARTNERSHIP">Explore a partnership opportunity</option>
-<option value="OTHER">Something else</option>
+                      <option value="WHAT_IS_NAAVI">What is Naavi and how does it work?</option>
+                      <option value="PATHWAY_ENGINE">How does the AI Pathway Engine generate my path?</option>
+                      <option value="SKILL_GAP">How does Naavi help bridge my skill gap?</option>
+                      <option value="MENTOR_CONNECT">How can I connect with mentors on Naavi?</option>
+                      <option value="NAAVIVERSE">What is the Naaviverse ecosystem?</option>
+                      <option value="CAREER_PATHS">Can Naavi help me switch careers or industries?</option>
+                      <option value="INSTITUTIONS">How can my institution partner with Naavi?</option>
+                      <option value="DEMO">I'd like to request a product demo</option>
+                      <option value="PARTNERSHIP">Explore a partnership opportunity</option>
+                      <option value="OTHER">Something else</option>
                     </select>
                   </div>
                 </div>
@@ -204,6 +209,7 @@ export default function Contact() {
                 )}
               </form>
             </div>
+
           </div>
         </div>
       </section>
