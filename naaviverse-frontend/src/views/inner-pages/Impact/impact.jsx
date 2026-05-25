@@ -3,7 +3,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import './impact.scss';
 import Footer from '../../../components/footernew/index';
 import skillGapProblemImg from './images/skill_gap_problem.png';
-import futureWorkforceImg from './images/future_workforce.png';
+import futureWorkforceImg from './images/future_workforce_U.png';
 import studentOutcomesImg from './images/student_outcomes.png';
 import educationTransformationImg from './images/edu_transf.png';
 import humanPotentialImg from './images/human_potential.png';
