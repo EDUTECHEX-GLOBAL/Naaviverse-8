@@ -66,7 +66,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 // ══════════════════════════════
 .imp-hero {
   position: relative;
-  padding: 40px 0 40px !important;  // ← reduce from 100px 0 80px
+  padding: 100px 0 80px;
   overflow: hidden;
   margin-top: 80px;
 }
@@ -85,15 +85,13 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: 1fr 1fr !important;
-  gap: 20px !important;
-  align-items: center;           // ← ensures vertical centering
-  min-height: 500px;             // ← gives enough height
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
 
   @media(max-width: 900px) {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
     gap: 36px;
-    min-height: unset;
   }
 }
 
@@ -197,13 +195,12 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 }
 
 .imp-hero-visual {
-  display: flex;
-  align-items: center !important;
-  justify-content: center !important;
-  height: 100%;
-  width: 100%;                  // ← fill the column
+  @include flex-center;
+  position: relative;
+  background: transparent;
 
-  @media(max-width: 900px) {
+  @media(max-width: 900px) { 
+    display: flex;
     margin-top: 20px;
   }
 }
@@ -295,10 +292,10 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 // ══════════════════════════════
 .imp-story {
   position: relative;
-  padding: 60px 0 !important;  // ← reduce from 88px
+  padding: 88px 0;
   overflow: hidden;
 
-  @media(max-width: 768px) { padding: 40px 0 !important; }
+  @media(max-width: 768px) { padding: 60px 0; }
 }
 
 .imp-story-glow {
@@ -309,17 +306,15 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 .imp-story-inner {
   display: grid;
-  grid-template-columns: 1fr 1.3fr !important;  // ← give image column MORE space
-  gap: 40px !important;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 60px;
   align-items: center;
   position: relative;
   z-index: 2;
-  min-height: 400px;                             // ← ensure enough height
 
   @media(max-width: 900px) {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
     gap: 36px;
-    min-height: unset;
   }
 }
 
@@ -376,7 +371,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   line-height: 1.8;
   color: $muted;
   margin: 0 0 24px;
-  max-width: 460px;
+  max-width: 100%;
   font-weight: 400;
 }
 
@@ -418,12 +413,12 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   animation: imp-bar-grow 1s ease forwards;
 }
 
+// ── Visual wrapper ──
 .imp-story-vis-wrap {
-  display: flex;
+  @include flex-center;
+  min-height: 420px;
   align-items: center;
-  justify-content: center;
   width: 100%;
-  height: 100%;
 }
 
 // ══════════════════════════════
@@ -431,35 +426,30 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 // ══════════════════════════════
 .imp-vis {
   position: relative;
-  width: 100% !important;
-  height: auto !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%;          // ← change from 280px to 100%
+  height: auto;         // ← change from 240px to auto
+  @include flex-center;
 
-  @media(max-width: 480px) {
-    width: 100% !important;   // ← fix mobile override
-    height: auto !important;
-  }
+
+  @media(max-width: 480px) { width: 220px; height: 200px; }
 }
 
 .imp-vis-image-wrap {
-  width: 100% !important;
-  max-width: 100% !important;
+  width: 100%;
+  max-width: 100%;   // ← change from 520px to 100%
   height: auto;
-  margin: 0 auto;
 }
 
 .imp-story-image {
-  width: 100% !important;
-  max-width: 100% !important;
-  height: auto !important;
+ width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: none;                  // ← remove height cap completely
+  min-height: 420px;   // ← increase from 360px to 480px (or remove entirely)
   display: block;
   object-fit: contain;
-  filter: drop-shadow(0 12px 24px rgba(26,26,46,0.07));
-  margin: 0 auto;
-  background: transparent !important;
-  mix-blend-mode: multiply;
+  border-radius: 0;
+  filter: drop-shadow(0 18px 34px rgba(26, 26, 46, 0.08));
 }
 .imp-vis-glow {
   position: absolute;
@@ -702,83 +692,17 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 }
 
 .imp-hero-image {
-  width: 130% !important;
-  max-width: none !important;
-  min-width: unset !important;
+  width: 100%;
+  max-width: 780px;
+  min-width: 480px;
   height: auto;
-  margin-left: -10% !important;
   border-radius: 0;
   box-shadow: none;
   animation: imp-float 6s ease-in-out infinite;
+  background: transparent;
 
   @media(max-width: 900px) {
-    width: 100% !important;
-    margin-left: 0 !important;
-  }
-}
-
-#skill-gap-problem {
-  background: #ffffff !important;
-
-  .imp-story-vis-wrap {
-    background: transparent !important;
-    border-radius: 0 !important;
-  }
-
-  .imp-vis.imp-vis-image-wrap {
-    background: transparent !important;
-    border-radius: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-
-  .imp-story-image {
-    background: transparent !important;
-    mix-blend-mode: normal !important;
-    border-radius: 0 !important;
-  }
-}
-
-#student-outcomes {
-  background: #F7F9FC !important;
-
-  .imp-story-vis-wrap {
-    background: transparent !important;
-    border-radius: 0 !important;
-  }
-
-  .imp-vis.imp-vis-image-wrap {
-    background: transparent !important;
-    border-radius: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-
-  .imp-story-image {
-    background: transparent !important;
-    mix-blend-mode: normal !important;
-    border-radius: 0 !important;
-  }
-}
-
-#human-potential {
-  background: #F7F9FC !important;
-
-  .imp-story-vis-wrap {
-    background: transparent !important;
-    border-radius: 0 !important;
-  }
-
-  .imp-vis.imp-vis-image-wrap {
-    background: transparent !important;
-    border-radius: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-
-  .imp-story-image {
-    background: transparent !important;
-    mix-blend-mode: normal !important;
-    border-radius: 0 !important;
+    max-width: 100%;
+    min-width: unset;
   }
 }

@@ -8,14 +8,15 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import { FiDownload, FiFilter, FiCalendar, FiMail, FiSearch, FiUsers } from 'react-icons/fi';
+import { FiDownload, FiFilter, FiCalendar, FiMail, FiSearch, FiUsers, FiClock } from 'react-icons/fi';
 import './SubscriptionList.scss';
 
-// Extend dayjs with plugins
 dayjs.extend(relativeTime);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
+
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const SubscriptionList = () => {
   const [subscriptions, setSubscriptions] = useState([]);
   const [filteredSubscriptions, setFilteredSubscriptions] = useState([]);
@@ -41,7 +42,6 @@ const SubscriptionList = () => {
         setSubscriptions(data);
         setFilteredSubscriptions(data);
         
-        // Calculate stats
         const today = dayjs().startOf('day');
         const recent = data.filter(sub => 
           dayjs(sub.createdAt).isAfter(today.subtract(7, 'day'))
@@ -50,10 +50,8 @@ const SubscriptionList = () => {
         const domains = new Set();
         data.forEach(sub => {
           if (sub.email) {
-            const emailParts = sub.email.split('@');
-            if (emailParts[1]) {
-              domains.add(emailParts[1].toLowerCase());
-            }
+            const domain = sub.email.split('@')[1];
+            if (domain) domains.add(domain.toLowerCase());
           }
         });
         
@@ -74,20 +72,18 @@ const SubscriptionList = () => {
   useEffect(() => {
     let filtered = [...subscriptions];
 
-    // Date filter
     if (startDate && endDate) {
-      filtered = filtered.filter(subscription => {
-        const created = dayjs(subscription.createdAt);
+      filtered = filtered.filter(sub => {
+        const created = dayjs(sub.createdAt);
         return created.isAfter(dayjs(startDate).subtract(1, 'day')) &&
                created.isBefore(dayjs(endDate).add(1, 'day'));
       });
     }
 
-    // Email search filter
     if (searchEmail.trim()) {
-      const searchTerm = searchEmail.toLowerCase().trim();
+      const term = searchEmail.toLowerCase().trim();
       filtered = filtered.filter(sub => 
-        sub.email?.toLowerCase().includes(searchTerm)
+        sub.email?.toLowerCase().includes(term)
       );
     }
 
@@ -103,15 +99,12 @@ const SubscriptionList = () => {
     const exportData = filteredSubscriptions.map((sub, i) => ({
       SNo: i + 1,
       Email: sub.email,
-      SubscribedOn: new Date(sub.createdAt).toLocaleString(),
-      Date: dayjs(sub.createdAt).format('YYYY-MM-DD'),
-      Time: dayjs(sub.createdAt).format('HH:mm:ss')
+      SubscribedOn: dayjs(sub.createdAt).format('MMM DD, YYYY hh:mm A'),
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Subscriptions");
-
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const fileData = new Blob([excelBuffer], { type: 'application/octet-stream' });
     saveAs(fileData, `Subscriptions_${dayjs().format('YYYY-MM-DD')}.xlsx`);
@@ -123,221 +116,153 @@ const SubscriptionList = () => {
     setSearchEmail('');
   };
 
-  const formatDomain = (email) => {
+  const getDomain = (email) => {
     if (!email) return '';
     const domain = email.split('@')[1];
-    return domain ? domain.split('.')[0].charAt(0).toUpperCase() + domain.split('.')[0].slice(1) : '';
-  };
-
-  const getTimeAgo = (dateString) => {
-    try {
-      return dayjs(dateString).fromNow();
-    } catch (error) {
-      return 'recently';
-    }
+    return domain ? domain.split('.')[0] : '';
   };
 
   return (
-    <div className="subscription-container">
-      {/* Header */}
-      <div className="subscription-header">
-        <div className="header-left">
-          <h1 className="page-title">
-            <span className="title-gradient">Subscribed</span> Emails
-          </h1>
-          <p className="page-subtitle">Manage and analyze email subscriptions</p>
+    <div className="subscription-list">
+      {/* Header - Compact */}
+      <div className="subscription-list__header">
+        <div>
+          <h1 className="subscription-list__title">Email Subscriptions</h1>
+          <p className="subscription-list__subtitle">Manage and analyze subscriber data</p>
         </div>
-        <div className="header-right">
-          <Button 
-            type="default" 
-            onClick={clearFilters}
-            className="clear-btn"
-            icon={<FiFilter />}
-          >
-            Clear Filters
+        <div className="subscription-list__actions">
+          <Button onClick={clearFilters} icon={<FiFilter />} className="btn-outline">
+            Clear
           </Button>
-          <Button 
-            type="primary" 
-            onClick={exportData}
-            className="export-btn"
-            icon={<FiDownload />}
-          >
-            Export CSV
+          <Button onClick={exportData} icon={<FiDownload />} type="primary" className="btn-primary">
+            Export
           </Button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="stats-grid">
-        <div className="stat-card total-card">
-          <div className="stat-icon">
-            <FiUsers />
-          </div>
-          <div className="stat-content">
+      {/* Stats Cards - Compact */}
+      <div className="subscription-list__stats">
+        <div className="stat-card">
+          <FiUsers className="stat-icon total" />
+          <div>
             <div className="stat-value">{stats.total}</div>
-            <div className="stat-label">Total Subscriptions</div>
+            <div className="stat-label">Total</div>
           </div>
         </div>
-        <div className="stat-card recent-card">
-          <div className="stat-icon">
-            <FiCalendar />
-          </div>
-          <div className="stat-content">
+        <div className="stat-card">
+          <FiCalendar className="stat-icon recent" />
+          <div>
             <div className="stat-value">{stats.recent}</div>
-            <div className="stat-label">Last 7 Days</div>
+            <div className="stat-label">Last 7 days</div>
           </div>
         </div>
-        <div className="stat-card domain-card">
-          <div className="stat-icon">
-            <FiMail />
-          </div>
-          <div className="stat-content">
+        <div className="stat-card">
+          <FiMail className="stat-icon domain" />
+          <div>
             <div className="stat-value">{stats.uniqueDomains}</div>
-            <div className="stat-label">Unique Domains</div>
+            <div className="stat-label">Domains</div>
           </div>
         </div>
       </div>
 
-      {/* Filters Card */}
-      <div className="filters-card">
-        <div className="filters-header">
-          <FiFilter className="filter-icon" />
-          <h3>Filter Subscriptions</h3>
+      {/* Filters - Minimal */}
+      <div className="subscription-list__filters">
+        <div className="filter-item">
+          <div className="filter-label"><FiCalendar /> Start</div>
+          <DatePicker 
+            value={startDate} 
+            onChange={setStartDate} 
+            format="MMM DD, YYYY"
+            placeholder="Start date"
+            className="filter-date"
+            allowClear
+          />
         </div>
-        <div className="filters-grid">
-          <div className="filter-item">
-            <label className="filter-label">
-              <FiCalendar /> Start Date
-            </label>
-            <DatePicker 
-              value={startDate} 
-              onChange={setStartDate} 
-              format="MMM DD, YYYY"
-              placeholder="Select start date"
-              className="date-picker"
-              allowClear
-            />
-          </div>
-          
-          <div className="filter-item">
-            <label className="filter-label">
-              <FiCalendar /> End Date
-            </label>
-            <DatePicker 
-              value={endDate} 
-              onChange={setEndDate} 
-              format="MMM DD, YYYY"
-              placeholder="Select end date"
-              className="date-picker"
-              allowClear
-            />
-          </div>
-          
-          <div className="filter-item">
-            <label className="filter-label">
-              <FiSearch /> Search Email
-            </label>
-            <Input
-              value={searchEmail}
-              onChange={(e) => setSearchEmail(e.target.value)}
-              placeholder="Search by email address..."
-              prefix={<FiSearch style={{ color: '#9ca3af' }} />}
-              className="search-input"
-              allowClear
-            />
-          </div>
+        <div className="filter-item">
+          <div className="filter-label"><FiCalendar /> End</div>
+          <DatePicker 
+            value={endDate} 
+            onChange={setEndDate} 
+            format="MMM DD, YYYY"
+            placeholder="End date"
+            className="filter-date"
+            allowClear
+          />
         </div>
-      </div>
-
-      {/* Results Summary */}
-      <div className="results-summary">
-        <span className="results-count">
-          Showing {currentSubscriptions.length} of {filteredSubscriptions.length} subscriptions
-        </span>
+        <div className="filter-item">
+          <div className="filter-label"><FiSearch /> Email</div>
+          <Input
+            value={searchEmail}
+            onChange={(e) => setSearchEmail(e.target.value)}
+            placeholder="Search email..."
+            className="filter-search"
+            allowClear
+          />
+        </div>
         {(startDate || endDate || searchEmail) && (
-          <span className="active-filters">
-            Filters applied: 
-            {startDate && <span className="filter-tag">From {dayjs(startDate).format('MMM DD')}</span>}
-            {endDate && <span className="filter-tag">To {dayjs(endDate).format('MMM DD')}</span>}
-            {searchEmail && <span className="filter-tag">Search: "{searchEmail}"</span>}
-          </span>
+          <div className="filter-item filter-clear">
+            <Button onClick={clearFilters} size="small" type="text">
+              Clear all
+            </Button>
+          </div>
         )}
       </div>
 
-      {/* Table Container */}
-      <div className="table-container">
+      {/* Results Summary */}
+      <div className="subscription-list__summary">
+        <span>{filteredSubscriptions.length} subscriber{filteredSubscriptions.length !== 1 ? 's' : ''}</span>
+        {searchEmail && <span className="summary-badge">Search: {searchEmail}</span>}
+        {(startDate || endDate) && <span className="summary-badge">Date range</span>}
+      </div>
+
+      {/* Table */}
+      <div className="subscription-list__table-wrapper">
         {isLoading ? (
           <div className="loading-state">
             <div className="loading-spinner"></div>
-            <p>Loading subscriptions...</p>
           </div>
         ) : currentSubscriptions.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">📧</div>
-            <h3>No subscriptions found</h3>
-            <p>
-              {subscriptions.length === 0 
-                ? "No email subscriptions yet." 
-                : "No subscriptions match your filters."}
-            </p>
+            <p>No subscriptions found</p>
             {subscriptions.length > 0 && (
-              <Button type="primary" onClick={clearFilters} ghost>
-                Clear filters to see all subscriptions
-              </Button>
+              <Button onClick={clearFilters} type="link">Clear filters</Button>
             )}
           </div>
         ) : (
           <div className="table-responsive">
-            <table className="subscriptions-table">
+            <table className="compact-table">
               <thead>
                 <tr>
-                  <th>S.NO</th>
-                  <th>EMAIL</th>
-                  <th>DOMAIN</th>
-                  <th>SUBSCRIBED ON</th>
-                  <th>TIME</th>
+                  <th>#</th>
+                  <th>Email</th>
+                  <th>Domain</th>
+                  <th>Subscribed</th>
                 </tr>
               </thead>
               <tbody>
-                {currentSubscriptions.map((sub, index) => {
-                  const subscribeDate = sub.createdAt ? dayjs(sub.createdAt) : dayjs();
-                  return (
-                    <tr key={sub._id || index} className="table-row">
-                      <td className="serial-no">
-                        <span className="serial-badge">{indexOfFirst + index + 1}</span>
-                      </td>
-                      <td className="email-cell">
-                        <div className="email-content">
-                          <div className="email-icon">
-                            <FiMail />
-                          </div>
-                          <div className="email-details">
-                            <a href={`mailto:${sub.email}`} className="email-address">
-                              {sub.email}
-                            </a>
-                            <span className="email-time">
-                              Added {getTimeAgo(sub.createdAt)}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="domain-cell">
-                        <span className="domain-tag">
-                          {formatDomain(sub.email)}
-                        </span>
-                      </td>
-                      <td className="date-cell">
-                        <div className="date-content">
-                          <div className="date-display">{subscribeDate.format('MMM DD, YYYY')}</div>
-                          <div className="day-display">{subscribeDate.format('dddd')}</div>
-                        </div>
-                      </td>
-                      <td className="time-cell">
-                        <span className="time-display">{subscribeDate.format('hh:mm A')}</span>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {currentSubscriptions.map((sub, idx) => (
+                  <tr key={sub._id || idx}>
+                    <td className="col-sn">{indexOfFirst + idx + 1}</td>
+                    <td className="col-email">
+                      <div className="email-cell">
+                        <FiMail className="email-icon" />
+                        <a href={`mailto:${sub.email}`} className="email-link">
+                          {sub.email}
+                        </a>
+                      </div>
+                    </td>
+                    <td className="col-domain">
+                      <span className="domain-badge">{getDomain(sub.email)}</span>
+                    </td>
+                    <td className="col-date">
+                      <div className="date-cell">
+                        <span>{dayjs(sub.createdAt).format('MMM DD, YYYY')}</span>
+                        <span className="time">{dayjs(sub.createdAt).format('hh:mm A')}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -346,15 +271,14 @@ const SubscriptionList = () => {
 
       {/* Pagination */}
       {!isLoading && filteredSubscriptions.length > subscriptionsPerPage && (
-        <div className="pagination-wrapper">
+        <div className="subscription-list__pagination">
           <Pagination
             current={currentPage}
             total={filteredSubscriptions.length}
             pageSize={subscriptionsPerPage}
-            onChange={page => setCurrentPage(page)}
+            onChange={setCurrentPage}
             showSizeChanger={false}
-            showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} emails`}
-            className="custom-pagination"
+            size="small"
           />
         </div>
       )}

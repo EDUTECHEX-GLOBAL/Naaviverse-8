@@ -99,11 +99,11 @@ const AboutPage = () => {
                   personalized education, skill, and career pathways aligned with their passion
                   and future potential.
                 </p>
-                <div className="ab-pills">
+                {/* <div className="ab-pills">
                   {['Smart Path Guidance', 'Learning Roadmaps', 'Expert Insights', 'Real-time Adaptation'].map(t => (
                     <span key={t} className="ab-pill">{t}</span>
                   ))}
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
