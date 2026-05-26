@@ -1,0 +1,28 @@
+.mobileMenuGrid{
+    display: grid;
+    grid-template-columns: 0.3fr 1fr;
+    height: 100vh;
+    .leftView{
+        // background-color: lightgray;
+        display: grid;
+        grid-auto-flow: column;
+        grid-template-rows: 5fr 0.5fr;
+        border-right: 0.5px solid #e7e7e7;
+       & > div{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+       }
+    }
+    .rightView{
+        // padding-top: 10px;
+        // background-color: yellow;
+        display: grid;
+        grid-auto-flow: column;
+        grid-template-rows: 0.5fr 4.4fr 0.5fr;
+        & > div{
+            display: flex;
+            flex-direction: column;
+           }
+    }
+}

@@ -1,0 +1,322 @@
+/* src/pages/Wallet/wallet.css */
+/* All classes prefixed wallet- to avoid collision with existing dashboard CSS */
+
+.wallet-page-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 28px 12px;
+  border-bottom: 0.5px solid #E5E5E5;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1;
+}
+.wallet-page-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+.wallet-container {
+  padding: 20px 28px 24px;
+  max-width: 680px;
+}
+.wallet-info-note {
+  margin-bottom: 0 !important;
+}
+
+
+/* Welcome banner */
+.wallet-welcome-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #edf9f3;
+  border: 1px solid #b6dfa0;
+  border-radius: 10px;
+  padding: 13px 16px;
+  margin-bottom: 20px;
+}
+.wallet-welcome-icon { font-size: 22px; flex-shrink: 0; line-height: 1.4; }
+.wallet-welcome-text { font-size: 13px; color: #27500a; line-height: 1.6; margin: 0; }
+.wallet-welcome-text strong { font-weight: 700; }
+
+.wallet-balance-card {
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.08) 0%, rgba(8, 145, 178, 0.06) 100%);
+  border: 1.5px solid rgba(13, 148, 136, 0.35);
+  border-radius: 16px;
+  padding: 28px 28px 24px;
+  color: #0f1f3d;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.wallet-balance-card::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  pointer-events: none;
+}
+.wallet-balance-card::after {
+  content: '';
+  position: absolute;
+  bottom: -20px; right: 60px;
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+  pointer-events: none;
+}
+.wallet-balance-badge {
+  position: absolute; top: 20px; right: 20px;
+  background: rgba(13, 148, 136, 0.12);
+  border-radius: 8px; padding: 5px 16px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.4px; color: #0d9488;
+}
+.wallet-balance-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+  opacity: 1; margin-bottom: 10px; color: #0d9488; font-weight: 700;
+}
+.wallet-balance-amount {
+  font-size: 27px; font-weight: 500; letter-spacing: -1.5px;
+  line-height: 1; color: #0f1f3d;
+}
+.wallet-balance-unit {
+  font-size: 15px; font-weight: 500; opacity: 0.6;
+  margin-left: 6px; color: #0f1f3d;
+}
+.wallet-balance-sub {
+  font-size: 12px; margin-top: 12px; color: #64748b;
+  opacity: 1; letter-spacing: 0.2px;
+}
+
+
+/* Section / day labels */
+.wallet-section-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.8px; color: #999; margin-bottom: 10px;
+}
+.wallet-day-label {
+  font-size: 12px; font-weight: 600; color: #aaa;
+  margin-top: 16px; margin-bottom: 6px; padding-left: 4px;
+}
+
+/* Transaction list */
+.wallet-tx-list {
+  border: 1px solid #ede8f5; border-radius: 12px;
+  overflow: hidden; margin-bottom: 8px; background: #fff;
+}
+.wallet-tx-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 16px; background: #fff;
+  border-bottom: 1px solid #f3eff9;
+  transition: background 0.12s;
+}
+.wallet-tx-row:last-child { border-bottom: none; }
+.wallet-tx-row:hover { background: #faf7ff; }
+.wallet-tx-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 14px; font-weight: 700;
+}
+.wallet-tx-info { flex: 1; }
+.wallet-tx-name { font-size: 13px; font-weight: 500; color: #1a1a2e; }
+.wallet-tx-date { font-size: 11px; color: #bbb; margin-top: 2px; }
+.wallet-tx-amount { font-size: 14px; font-weight: 600; }
+
+/* Empty / info */
+.wallet-empty-state {
+  text-align: center; padding: 40px 0; font-size: 13px; color: #bbb;
+  border: 1px dashed #e0d7f0; border-radius: 12px; margin-bottom: 16px;
+}
+.wallet-info-note {
+  display: flex; align-items: center; gap: 8px;
+  background: #f0eaff; border-radius: 10px; padding: 12px 16px;
+  font-size: 12px; color: #5b3fa0; line-height: 1.5; margin-top: 16px;
+}
+
+/* Modal */
+.wallet-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1000; display: flex; align-items: center; justify-content: center;
+}
+.wallet-modal {
+  background: #fff; border-radius: 16px; padding: 28px; width: 360px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+}
+.wallet-modal-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;
+}
+.wallet-modal-title { font-size: 16px; font-weight: 700; color: #1a1a2e; }
+.wallet-modal-close {
+  background: none; border: none; font-size: 16px; color: #aaa;
+  cursor: pointer; padding: 4px; transition: color 0.15s;
+}
+.wallet-modal-close:hover { color: #2d1b2e; }
+.wallet-modal-label {
+  display: block; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px; color: #888; margin-bottom: 6px;
+}
+.wallet-modal-input {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid #ddd0f0; border-radius: 8px;
+  font-size: 15px; font-weight: 600; color: #1a1a2e;
+  outline: none; margin-bottom: 18px;
+  transition: border-color 0.15s; font-family: inherit;
+}
+.wallet-modal-input:focus { border-color: #5b3fa0; }
+.wallet-modal-input::-webkit-outer-spin-button,
+.wallet-modal-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.wallet-modal-actions { display: flex; gap: 10px; }
+
+.wallet-page-wrapper {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.wallet-page-wrapper .dashboard-body {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.wallet-page-wrapper .dashboard-screens {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.wallet-page-wrapper .services-main {
+  height: calc(100vh - 70px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* ADD at bottom of wallet.css */
+.services-main {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* ── ADD THESE AT THE BOTTOM OF YOUR EXISTING wallet.css ── */
+
+/* Welcome banner expiry line */
+.wallet-welcome-expiry {
+  font-size: 12px;
+  color: #856404;
+  margin: 6px 0 0;
+  font-weight: 600;
+}
+
+.wallet-expired-banner {
+  font-size: 12px;
+  color: #856404;
+  font-weight: 500;
+  margin-bottom: 10px;
+  padding: 0;
+  background: none;
+  border: none;
+}
+
+/* Balance card sub-text warning state */
+.wallet-balance-sub--warning {
+  color: #b45309 !important;
+  font-weight: 600;
+}
+
+/* Expiry pill on transaction row */
+.wallet-tx-expiry-pill {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #e8f4fd;
+  color: #185FA5;
+  vertical-align: middle;
+  letter-spacing: 0.2px;
+}
+.wallet-tx-expiry-pill.warn {
+  background: #fff3cd;
+  color: #856404;
+}
+.wallet-tx-expiry-pill.expired {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Expired transaction row — dim it */
+.wallet-tx-row--expired {
+  background: #fafafa;
+}
+.wallet-tx-row--expired:hover {
+  background: #f5f5f5;
+}
+
+/* Small "expired" tag below the amount */
+.wallet-tx-expired-tag {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #bbb;
+  text-align: right;
+  margin-top: 2px;
+}
+
+/* ── Credit breakdown chips ──────────────────────────── */
+.wallet-credit-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.wallet-credit-row {
+  display: flex;
+  align-items: center;
+}
+
+.wallet-credit-chip {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.wallet-credit-chip--permanent {
+  background: #eaf3de;
+  color: #3B6D11;
+}
+
+.wallet-credit-chip--bonus {
+  background: #e8eeff;
+  color: #185FA5;
+}
+
+.wallet-credit-chip--bonus.warn {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.wallet-credit-chip--expired {
+  background: #fff0f0;
+  color: #999;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 500;
+  border: 1px solid #f5c6cb;
+}
+
+/* ── Never expires badge on txn rows ─────────────────── */
+.wallet-tx-expiry-pill.permanent {
+  background: #eaf3de;
+  color: #3B6D11;
+  border: none;
+}

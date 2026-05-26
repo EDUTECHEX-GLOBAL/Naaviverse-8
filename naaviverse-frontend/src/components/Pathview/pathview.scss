@@ -1,0 +1,451 @@
+/* ════════════════════════════════════════
+   PATHVIEW — WIDER CARD UI
+════════════════════════════════════════ */
+
+$brand:       #6c5ce7;
+$brand-light: #a29bfe;
+$brand-soft:  rgba(108, 92, 231, 0.08);
+$text-dark:   #1a1a2e;
+$text-mid:    #555577;
+$text-light:  #9090aa;
+$bg-page:     #f6f5ff;
+$bg-card:     #ffffff;
+$radius-card: 14px;
+$radius-tag:  40px;
+$shadow-card: 0 2px 10px rgba(108, 92, 231, 0.07);
+$shadow-hover:0 6px 24px rgba(108, 92, 231, 0.16);
+$transition:  all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+
+/* ─── Root ─── */
+.pathview-root {
+  width: 100%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  // Ensure background continues on scroll
+  background: $bg-page;
+  min-height: 100%;
+}
+
+/* ─── Top Bar ─── */
+.pathview-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 14px 0;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: $text-dark;
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+
+  &__count {
+    font-size: 0.74rem;
+    color: $text-light;
+    font-weight: 500;
+    background: $brand-soft;
+    padding: 2px 9px;
+    border-radius: $radius-tag;
+  }
+
+  /* Compact button — reduced height */
+  &__coords-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    // Smaller padding = smaller height
+    padding: 5px 12px;
+    background: $brand;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: $transition;
+    white-space: nowrap;
+    flex-shrink: 0;
+    line-height: 1;
+
+    svg { flex-shrink: 0; }
+
+    &:hover {
+      background: darken(#6c5ce7, 8%);
+      transform: translateY(-1px);
+      box-shadow: 0 3px 12px rgba(108, 92, 231, 0.3);
+    }
+
+    &:active { transform: translateY(0); }
+  }
+}
+
+/* ─── Grid — single column, FULL width ─── */
+.pathview-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  // No side padding — cards use full container width
+  width: 100%;
+}
+
+/* ─── Card ─── */
+.path-card {
+  background: $bg-card;
+  border-radius: $radius-card;
+  border: 1.5px solid rgba(108, 92, 231, 0.09);
+  box-shadow: $shadow-card;
+  cursor: default;
+  transition: $transition;
+  animation: cardFadeIn 0.35s ease both;
+  overflow: hidden;
+  // Full width — no side margins
+  width: 100%;
+
+  @keyframes cardFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  &:hover {
+    box-shadow: $shadow-hover;
+    border-color: rgba(108, 92, 231, 0.22);
+    transform: translateY(-2px);
+  }
+
+  &__inner {
+    padding: 16px 20px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  &__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+  &__tag {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: $brand;
+    background: $brand-soft;
+    padding: 3px 9px;
+    border-radius: $radius-tag;
+    letter-spacing: 0.01em;
+    max-width: 70%;
+    text-align: right;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  &__title {
+    font-size: 0.94rem;
+    font-weight: 600;
+    color: $text-dark;
+    margin: 0;
+    line-height: 1.35;
+  }
+
+  &__desc {
+    font-size: 0.78rem;
+    color: $text-mid;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  &__footer {
+    padding-top: 8px;
+    border-top: 1px solid rgba(108, 92, 231, 0.07);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  &__cta {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: $brand;
+    cursor: pointer;
+    transition: $transition;
+    padding: 2px 0;
+
+    &:hover {
+      letter-spacing: 0.04em;
+      opacity: 0.85;
+    }
+  }
+
+  &--skeleton {
+    pointer-events: none;
+    padding: 14px 16px;
+  }
+}
+
+/* ─── Empty state ─── */
+.pathview-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 20px;
+  color: $text-mid;
+
+  &__icon { font-size: 2rem; margin-bottom: 10px; }
+
+  p {
+    font-size: 0.88rem;
+    font-weight: 600;
+    margin: 0 0 4px;
+    color: $text-dark;
+  }
+
+  small { font-size: 0.74rem; color: $text-light; }
+}
+
+/* ─── Pagination ─── */
+.pathview-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 18px 0 4px;
+  flex-wrap: wrap;
+}
+
+.pag-pages {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pag-btn {
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: $transition;
+  border-radius: 8px;
+
+  &--nav {
+    padding: 6px 14px;
+    background: $bg-card;
+    color: $brand;
+    border: 1.5px solid rgba(108, 92, 231, 0.18);
+    font-size: 0.76rem;
+
+    &:hover:not(:disabled) {
+      background: $brand;
+      color: #fff;
+      border-color: $brand;
+    }
+
+    &:disabled {
+      color: $text-light;
+      border-color: #e5e5ef;
+      cursor: not-allowed;
+      background: #f9f9fb;
+    }
+  }
+
+  &--page {
+    width: 30px;
+    height: 30px;
+    font-size: 0.76rem;
+    background: $bg-card;
+    color: $text-mid;
+    border: 1.5px solid #e8e8f4;
+
+    &:hover {
+      background: $brand-soft;
+      color: $brand;
+      border-color: $brand-light;
+    }
+
+    &.active {
+      background: $brand;
+      color: #fff;
+      border-color: $brand;
+      box-shadow: 0 3px 10px rgba(108, 92, 231, 0.25);
+    }
+  }
+}
+
+
+/* ════════════════════════════════════════
+   PATHPAGE — Step Cards (PathPage component)
+════════════════════════════════════════ */
+
+.pathpage-root {
+  width: 100%;
+  min-height: 100vh;
+  background: $bg-page;
+  padding: 22px 26px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: 768px) {
+    padding: 16px 14px;
+  }
+}
+
+.pathpage-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pathpage-header-left {
+  .pathpage-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: $brand;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .pathpage-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: $text-dark;
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+}
+
+.pathpage-header-right {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.pathpage-back-btn {
+  padding: 7px 16px;
+  background: $bg-card;
+  color: $text-dark;
+  border: 1.5px solid #e0e0f0;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.78rem;
+  transition: $transition;
+
+  &:hover { border-color: $brand; color: $brand; }
+}
+
+.pathpage-create-btn {
+  padding: 7px 16px;
+  background: $brand;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: $transition;
+
+  &:hover {
+    background: darken(#6c5ce7, 8%);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 12px rgba(108, 92, 231, 0.28);
+  }
+}
+
+.pathpage-scroll-area { flex: 1; overflow-y: auto; }
+
+.pathpage-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.pathpage-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+
+.pathpage-step-card {
+  background: $bg-card;
+  border-radius: $radius-card;
+  padding: 18px;
+  border: 1.5px solid rgba(108, 92, 231, 0.1);
+  box-shadow: $shadow-card;
+  transition: $transition;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: $shadow-hover;
+    border-color: rgba(108, 92, 231, 0.25);
+  }
+}
+
+.pathpage-step-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $brand 0%, $brand-light 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.pathpage-step-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: 6px;
+  line-height: 1.35;
+}
+
+.pathpage-step-desc {
+  font-size: 0.76rem;
+  color: $text-mid;
+  line-height: 1.6;
+}
+
+.pathpage-error {
+  color: #e0003c;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 32px;
+}

@@ -1,0 +1,390 @@
+// ContactList.scss - Optimized, Clean, No Excess Spacing
+
+.contact-list {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 24px 40px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  background: #f5f7fb;
+  min-height: 100vh;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+
+  // Compact Header
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  &__title {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    color: #1a1f36;
+    letter-spacing: -0.3px;
+  }
+
+  &__subtitle {
+    font-size: 13px;
+    color: #5b677b;
+    margin: 0;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 10px;
+
+    .btn-outline {
+      border: 1px solid #d0d5dd;
+      background: white;
+      color: #344054;
+      font-size: 13px;
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 8px;
+      transition: all 0.2s;
+
+      &:hover {
+        border-color: #3b82f6;
+        color: #3b82f6;
+      }
+    }
+
+    .btn-primary {
+      background: #3b82f6;
+      border: none;
+      font-size: 13px;
+      height: 34px;
+      padding: 0 16px;
+      border-radius: 8px;
+      font-weight: 500;
+
+      &:hover {
+        background: #2563eb;
+      }
+    }
+  }
+
+  // Filters - Minimal & Compact
+  &__filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 16px;
+    background: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    border: 1px solid #eef2f6;
+
+    .filter-item {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+
+      .filter-label {
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        color: #6c7a91;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+
+        svg {
+          font-size: 12px;
+        }
+      }
+
+      .filter-date, .filter-select {
+        width: 150px;
+        
+        .ant-picker, .ant-select-selector {
+          border-radius: 8px;
+          border-color: #e2e8f0;
+          height: 34px;
+          font-size: 13px;
+        }
+      }
+
+      &.filter-clear {
+        justify-content: flex-end;
+        
+        button {
+          color: #8b5cf6;
+          font-size: 12px;
+          padding: 0 8px;
+          height: 34px;
+        }
+      }
+    }
+
+    @media (max-width: 640px) {
+      flex-direction: column;
+      align-items: stretch;
+
+      .filter-item {
+        .filter-date, .filter-select {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  // Stats Bar - Minimal
+  &__stats {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 0 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #475467;
+
+    .stats-badge {
+      background: #eef2ff;
+      color: #3b82f6;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+    }
+  }
+
+  // Table Wrapper
+  &__table-wrapper {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #eef2f6;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  }
+
+  // Pagination
+  &__pagination {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding: 4px 0;
+  }
+}
+
+// Compact Table Styles
+.compact-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 880px;
+
+  th {
+    text-align: left;
+    padding: 12px 16px;
+    background: #fafcfc;
+    color: #52607a;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border-bottom: 1px solid #edf2f7;
+  }
+
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f4f9;
+    vertical-align: middle;
+    color: #1e293b;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover td {
+    background: #fafcff;
+  }
+
+  .col-sn {
+    width: 50px;
+    color: #7c8ba0;
+    font-weight: 500;
+    font-size: 12px;
+  }
+
+  .col-name {
+    font-weight: 500;
+
+    .text-muted {
+      color: #6f7d95;
+      font-size: 11px;
+    }
+  }
+
+  .col-email {
+    .email-link {
+      color: #3b82f6;
+      text-decoration: none;
+      font-size: 12px;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .col-product {
+    .product-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+      background: #f1f5f9;
+      color: #334155;
+
+      &.product-defence {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+
+      &.product-ground {
+        background: #dcfce7;
+        color: #15803d;
+      }
+
+      &.product-space {
+        background: #e0f2fe;
+        color: #0369a1;
+      }
+
+      &.product-others {
+        background: #f3e8ff;
+        color: #7e22ce;
+      }
+    }
+  }
+
+  .col-mobile {
+    font-family: 'SF Mono', monospace;
+    font-size: 12px;
+    color: #334155;
+    letter-spacing: -0.2px;
+  }
+
+  .col-message {
+    .message-truncate {
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #5a6a85;
+      font-size: 12px;
+    }
+  }
+
+  .col-date {
+    .date-compact {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.4;
+      font-size: 11px;
+
+      .time {
+        font-size: 10px;
+        color: #7f8ea3;
+      }
+    }
+  }
+}
+
+// Loading State
+.loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px;
+
+  .loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 2px solid #e2e8f0;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// Empty State
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+
+  .empty-icon {
+    font-size: 48px;
+    opacity: 0.5;
+    margin-bottom: 12px;
+  }
+
+  p {
+    color: #6c7a91;
+    font-size: 14px;
+    margin: 0 0 12px;
+  }
+
+  button {
+    color: #3b82f6;
+    font-size: 13px;
+  }
+}
+
+// Responsive Adjustments
+@media (max-width: 768px) {
+  .contact-list {
+    padding: 12px;
+  }
+
+  .compact-table {
+    th, td {
+      padding: 8px 12px;
+    }
+  }
+}
+
+// Ant Design Overrides - Minimal
+.ant-picker-dropdown, .ant-select-dropdown {
+  font-size: 13px;
+}
+
+.ant-picker-cell-inner {
+  font-size: 12px;
+}
+
+.ant-pagination {
+  .ant-pagination-item {
+    min-width: 30px;
+    height: 30px;
+    line-height: 30px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+  
+  .ant-pagination-prev, .ant-pagination-next {
+    min-width: 30px;
+    height: 30px;
+    line-height: 30px;
+    border-radius: 8px;
+  }
+}
