@@ -1,58 +1,58 @@
 var express = require("express");
 var router = express.Router();
 
-const pathController = require("../controllers/paths.controller");
+const PathController = require("../controllers/Paths.Controller");
 const { verifyToken } = require("../middlewares/authJwt");
 
 // ADD NEW PATH
-router.post("/add", pathController.addPath);
-router.put("/submit", pathController.submitForApproval);
-router.patch("/edit", pathController.editPath);
+router.post("/add", PathController.addPath);
+router.put("/submit", PathController.submitForApproval);
+router.patch("/edit", PathController.editPath);
 
 // GET PATHS (general fetch)
-router.get("/get", pathController.getPath);
+router.get("/get", PathController.getPath);
 
 // GET PATHS (specific criteria)
-router.get("/get/specific", pathController.getPathSpecific);
+router.get("/get/specific", PathController.getPathSpecific);
 
 // POST BASED SEARCH
-router.post("/get", pathController.getPathNormal);
+router.post("/get", PathController.getPathNormal);
 
 // DELETE PATH
-router.delete("/delete/:id", pathController.deletePath);
+router.delete("/delete/:id", PathController.deletePath);
 
 // RESTORE PATH (requires token)
-router.put("/restore/:id", [verifyToken], pathController.restorePath);
+router.put("/restore/:id", [verifyToken], PathController.restorePath);
 
 // UPDATE MULTIPLE FIELDS
-router.put("/updateFields", pathController.updateFields);
+router.put("/updateFields", PathController.updateFields);
 
 // EDIT PATH
-router.put("/update/:id", pathController.updatePath);
+router.put("/update/:id", PathController.updatePath);
 
 
 // GET ACTIVE PATHS
-router.get("/active", pathController.getActivePaths);
+router.get("/active", PathController.getActivePaths);
 
 //FOR REACTIVATING PATHS
-router.put("/reactivate/:id", pathController.reactivatePath);
+router.put("/reactivate/:id", PathController.reactivatePath);
 
-router.put("/reactivate/:id", pathController.reactivateInactivePath);
+router.put("/reactivate/:id", PathController.reactivateInactivePath);
 
 
 // UPDATE PATH STATUS
-router.put("/updatepath/:id", pathController.updatePathStatus);
+router.put("/updatepath/:id", PathController.updatePathStatus);
 
-router.put("/requestchanges/:id", pathController.requestChanges);
+router.put("/requestchanges/:id", PathController.requestChanges);
 
-router.patch("/reply/:pathId/:changeRequestId", pathController.replyToChangeRequest);
+router.patch("/reply/:pathId/:changeRequestId", PathController.replyToChangeRequest);
 
-router.patch("/address/:pathId/:changeRequestId", pathController.markChangeRequestAddressed);
+router.patch("/address/:pathId/:changeRequestId", PathController.markChangeRequestAddressed);
 
 // ⭐ VIEW PATH BY MONGO ID (IMPORTANT for frontend View Page)
-router.get("/viewpath/:path_id", pathController.getPathById);
+router.get("/viewpath/:path_id", PathController.getPathById);
 
 // BULK UPLOAD PATHS
-router.post("/bulk", pathController.uploadBulkPaths);
+router.post("/bulk", PathController.uploadBulkPaths);
 
 module.exports = router;

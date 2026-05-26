@@ -11,7 +11,7 @@ const {
   // ── NEW ──
   checkStepUnlock,
   unlockStep,
-} = require("../controllers/subscription.controller");
+} = require("../controllers/Subscription.controller");
 
 // ── Existing routes (unchanged) ───────────────────────────────────
 router.post("/create",  createSubscription);

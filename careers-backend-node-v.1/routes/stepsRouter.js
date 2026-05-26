@@ -1,32 +1,32 @@
 var express = require("express");
 var router = express.Router();
 
-const stepsController = require("../controllers/steps.controller");
+const StepsController = require("../controllers/Steps.Controller");
 const { verifyToken } = require("../middlewares/authJwt");
 
-router.post("/add", stepsController.addStep);
-router.get("/get", stepsController.getSteps);
-router.put("/update/:id", stepsController.updateStep);
-router.delete("/delete/:id", stepsController.deleteStep);
-router.put("/restore/:id", [verifyToken], stepsController.restoreStep);
+router.post("/add", StepsController.addStep);
+router.get("/get", StepsController.getSteps);
+router.put("/update/:id", StepsController.updateStep);
+router.delete("/delete/:id", StepsController.deleteStep);
+router.put("/restore/:id", [verifyToken], StepsController.restoreStep);
 
-router.put("/detach/:stepId", stepsController.detachStepFromPath);
-router.put("/toggle-status/:stepId", stepsController.toggleStepStatus);
+router.put("/detach/:stepId", StepsController.detachStepFromPath);
+router.put("/toggle-status/:stepId", StepsController.toggleStepStatus);
 // ⭐ BULK UPLOAD (KEEP BEFORE dynamic routes)
-router.post("/bulk", stepsController.bulkUploadSteps);
-console.log("bulkUploadSteps =>", stepsController.bulkUploadSteps);
+router.post("/bulk", StepsController.bulkUploadSteps);
+console.log("bulkUploadSteps =>", StepsController.bulkUploadSteps);
  
 
 
 
 // ⭐ ADD THIS — MUST BE ABOVE /:id ⭐
-router.get("/partner", stepsController.getStepsByPartner);
+router.get("/partner", StepsController.getStepsByPartner);
 
-router.patch("/editstep", stepsController.editStep);
-router.post("/attachservice", stepsController.addServicesToStep);
-router.get("/getall/:step_id", stepsController.getServicesForStep);
-router.delete("/remove/:stepId/:serviceId", stepsController.removeServiceFromStep);
+router.patch("/editstep", StepsController.editStep);
+router.post("/attachservice", StepsController.addServicesToStep);
+router.get("/getall/:step_id", StepsController.getServicesForStep);
+router.delete("/remove/:stepId/:serviceId", StepsController.removeServiceFromStep);
 
-router.get("/:id", stepsController.getStepById);
+router.get("/:id", StepsController.getStepById);
 
 module.exports = router;

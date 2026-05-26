@@ -19,7 +19,7 @@ const {
   getActivityPartners,
   logActivity,
   logPartnerActivity,
-} = require("../controllers/Activity.controller");
+} = require("../controllers/Activity.Controller");
 
 // ── User activity ─────────────────────────────────────────────────────────
 router.get("/users",         getActivityUsers);

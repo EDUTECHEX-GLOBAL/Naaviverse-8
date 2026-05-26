@@ -14,8 +14,8 @@ const Path     = require("../models/path.model");
 const Step     = require("../models/steps.model");
 const UserPath = require("../models/userpaths.model");   // ← THE SOURCE OF TRUTH
 const Purchase = require("../models/purchase.model");    // ← For CRM clients
-const { getUserActivity } = require("../controllers/userActivity.controller");
-const { getUserPath, completeStep, failedStep } = require("../controllers/userPaths.controller");
+const { getUserActivity } = require("../controllers/UserActivity.Controller");
+const { getUserPath, completeStep, failedStep } = require("../controllers/UserPaths.Controller");
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SELECT A PATH FOR THE USER

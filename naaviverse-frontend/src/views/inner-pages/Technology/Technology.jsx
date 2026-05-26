@@ -11,8 +11,8 @@ import {
 } from "react-icons/hi2";
 import './Technology.scss';
 import Footer from '../../../components/footernew/index';
-import technologyImg from './images/technology.png';
-import solutionImage from '../../../assets/images/assets/solution.png';
+import PathEngineImg from './images/Path_Engine.png';
+import SynergyImg from './images/Synergy_1.png';
 
 const HEADER_OFFSET = 80;
 
@@ -261,7 +261,7 @@ const Technology = () => {
 
               {/* Solution Image Banner */}
               <div className="tech-solution-banner">
-                <img src={solutionImage} alt="Naavi Solution Architecture" className="tech-solution-image" />
+              
               </div>
             </div>
           </div>

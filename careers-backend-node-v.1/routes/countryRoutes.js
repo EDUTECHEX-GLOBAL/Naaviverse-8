@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const countryController = require('../controllers/country.controller');
+const countryController = require('../controllers/Country.Controller');
 
-router.get('/', countryController.getCountries);
-router.post('/', countryController.createCountry);
+router.get('/', CountryController.getCountries);
+router.post('/', CountryController.createCountry);
 
 module.exports = router;

@@ -1,7 +1,7 @@
 var express = require("express");
 var router = express.Router();
 
-const userPersonalityRouter = require("../controllers/userPersonality.controller");
+const userPersonalityRouter = require("../controllers/userPersonality.Controller");
 
 
 router.post("/add", userPersonalityRouter.addAnswer);

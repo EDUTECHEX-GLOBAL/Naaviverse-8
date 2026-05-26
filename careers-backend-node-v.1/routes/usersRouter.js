@@ -1,20 +1,20 @@
 const express = require("express");
 const router = express.Router();
 
-const usersController = require("../controllers/user_controller");
-const userController = require("../controllers/user.controller");
-const { getAllUsers, getUserProfilePic } = require("../controllers/authControllers");
-const { getUserActivity } = require("../controllers/UserActivity.controller"); // << ADD THIS
+const UsersController = require("../controllers/User_Controller");
+const UserController = require("../controllers/User.Controller");
+const { getAllUsers, getUserProfilePic } = require("../controllers/AuthControllers");
+const { getUserActivity } = require("../controllers/UserActivity.Controller"); // << ADD THIS
 
 // User profile CRUD
-router.post("/add", usersController.addUserProfile);
-router.put("/users/update/:profileDataId", usersController.updateUserProfile);
-router.get("/get/:email", usersController.getUserProfile);
-router.put("/update/:profileDataId", usersController.updateLevelTwoProfile);
-router.put("/addPersonality", usersController.addPersonality);
+router.post("/add", UsersController.addUserProfile);
+router.put("/users/update/:profileDataId", UsersController.updateUserProfile);
+router.get("/get/:email", UsersController.getUserProfile);
+router.put("/update/:profileDataId", UsersController.updateLevelTwoProfile);
+router.put("/addPersonality", UsersController.addPersonality);
 
 // Username check
-router.get('/check-username', userController.checkUsername);
+router.get('/check-username', UserController.checkUsername);
 
 // CRM Activity
 router.get("/activity", getUserActivity); // << ADD THIS
