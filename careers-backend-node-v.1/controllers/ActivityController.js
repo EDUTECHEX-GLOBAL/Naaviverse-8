@@ -10,8 +10,8 @@
 //   getActivityPartners ← HTTP GET  /api/activity/partners
 // ─────────────────────────────────────────────────────────────────────────────
 
-const Activity  = require("../models/Activity.model");
-const userModel = require("../models/users.model");
+const Activity  = require("../models/ActivityModel");
+const userModel = require("../models/UsersModel");
 const mongoose  = require("mongoose");
 
 // ─────────────────────────────────────────────────────────────────────────────

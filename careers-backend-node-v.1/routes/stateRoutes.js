@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const stateController = require('../controllers/State.Controller');
+const stateController = require('../controllers/StateController');
 
 router.get('/', stateController.getStates);
 router.post('/', stateController.createState);

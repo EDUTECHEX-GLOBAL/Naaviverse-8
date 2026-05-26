@@ -1,4 +1,4 @@
-const userModel = require('../models/users.model');
+const userModel = require('../models/UsersModel');
 const VaultTransaction = require('../models/VaultTransaction');
 // Controller to add or update profile data
 const addUserProfile = async (req, res) => {

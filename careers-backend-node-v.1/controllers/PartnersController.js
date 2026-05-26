@@ -6,8 +6,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const mongoose = require("mongoose");
-const Partner  = require("../models/partner.model");
-const Approval = require("../models/approval.model");
+const Partner  = require("../models/PartnerModel");
+const Approval = require("../models/ApprovalModel");
 require("dotenv").config({ path: ".env" });
 const jwt    = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -15,7 +15,7 @@ const bcrypt = require("bcrypt");
 const { generateOTP, sendNotificationMail } = require("../middlewares/verifySignUp");
 
 // ✅ Unified activity — replaces the old partneractivity.controller import
-const { logEvent } = require("./Activity.controller");
+const { logEvent } = require("./ActivityController");
 
 
 // ─────────────────────────────────────────────────────────────────────────────

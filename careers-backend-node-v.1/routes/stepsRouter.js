@@ -1,7 +1,7 @@
 var express = require("express");
 var router = express.Router();
 
-const StepsController = require("../controllers/Steps.Controller");
+const StepsController = require("../controllers/StepsController");
 const { verifyToken } = require("../middlewares/authJwt");
 
 router.post("/add", StepsController.addStep);

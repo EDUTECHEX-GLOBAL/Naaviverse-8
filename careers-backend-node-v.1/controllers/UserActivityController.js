@@ -5,9 +5,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const mongoose         = require("mongoose");
-const UserPath         = require("../models/userpaths.model");         // email + pathId + status// userEmail + pathId + steps
-const Payment          = require("../models/payment.model");           // userEmail + planTier + status
-const Path             = require("../models/path.model");              // _id + nameOfPath
+const UserPath         = require("../models/UserPathsModel");         // email + pathId + status// userEmail + pathId + steps
+const Payment          = require("../models/PaymentModel");           // userEmail + planTier + status
+const Path             = require("../models/PathModel");              // _id + nameOfPath
 
 const getUserActivity = async (req, res) => {
   try {

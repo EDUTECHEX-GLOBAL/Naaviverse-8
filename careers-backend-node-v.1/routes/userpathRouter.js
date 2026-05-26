@@ -9,13 +9,13 @@ const express  = require("express");
 const router   = express.Router();
 const mongoose = require("mongoose");
 
-const User     = require("../models/users.model");
-const Path     = require("../models/path.model");
-const Step     = require("../models/steps.model");
-const UserPath = require("../models/userpaths.model");   // ← THE SOURCE OF TRUTH
-const Purchase = require("../models/purchase.model");    // ← For CRM clients
-const { getUserActivity } = require("../controllers/UserActivity.Controller");
-const { getUserPath, completeStep, failedStep } = require("../controllers/UserPaths.Controller");
+const User     = require("../models/UsersModel");
+const Path     = require("../models/PathModel");
+const Step     = require("../models/StepsModel");
+const UserPath = require("../models/UserPathsModel");   // ← THE SOURCE OF TRUTH
+const Purchase = require("../models/PurchaseModel");    // ← For CRM clients
+const { getUserActivity } = require("../controllers/UserActivityController");
+const { getUserPath, completeStep, failedStep } = require("../controllers/UserPathsController");
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SELECT A PATH FOR THE USER

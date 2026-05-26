@@ -1,8 +1,8 @@
 // controllers/services.controller.js
 
-const serviceModel = require("../models/services.model");
+const serviceModel = require("../models/ServicesModel");
 const mongoose = require("mongoose");
-const stepModel = require("../models/steps.model"); 
+const stepModel = require("../models/StepsModel"); 
 /**
  * Add a new service
  */

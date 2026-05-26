@@ -1,5 +1,5 @@
 // controllers/universities.controller.js
-const universitiesModel = require("../models/universities.model");
+const universitiesModel = require("../models/UniversitiesModel");
 const axios = require("axios");
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 // helper wait function

@@ -4,7 +4,7 @@
 
 const express = require("express");
 const router = express.Router();
-const Universities = require("../models/universities.model");
+const Universities = require("../models/UniversitiesModel");
 
 // If Node < 18 → uncomment:
 // const fetch = (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args));

@@ -1,10 +1,10 @@
-const pathModel = require('../models/path.model');
-const stepModel = require('../models/steps.model');
-const userModel = require('../models/users.model');
+const pathModel = require('../models/PathModel');
+const stepModel = require('../models/StepsModel');
+const userModel = require('../models/UsersModel');
 const mongoose = require('mongoose');
 
 // ✅ FIXED: import logEvent (for partners) instead of logActivityInternal (users only)
-const { logEvent } = require('./Activity.controller');
+const { logEvent } = require('./ActivityController');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPER — fetch partner display info from email

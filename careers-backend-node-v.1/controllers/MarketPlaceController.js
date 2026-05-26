@@ -1,8 +1,8 @@
-const marketplaceModel = require("../models/marketplace.model");
-const stepModel = require("../models/steps.model");
+const marketplaceModel = require("../models/MarketPlaceModel");
+const stepModel = require("../models/StepsModel");
 
 // ✅ Activity logging
-const { logEvent } = require("./Activity.controller");
+const { logEvent } = require("./ActivityController");
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPER — fetch partner display info from email

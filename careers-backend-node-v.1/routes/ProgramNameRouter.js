@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const ProgramName = require('../models/programName.model');
+const ProgramName = require('../models/ProgramNameModel');
 
 // GET /api/programs/search?q=nursing
 // Search program names - same pattern as university search

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const ApprovalController = require("../controllers/Approval.Controller");
+const ApprovalController = require("../controllers/ApprovalController");
 
 router.post("/create", ApprovalController.createApproval);
 

@@ -11,12 +11,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const mongoose  = require("mongoose");
-const pathModel = require("../models/path.model");
+const pathModel = require("../models/PathModel");
 
 // ── Lazy-load to avoid circular deps ─────────────────────────────────────────
-const getUserPathModel  = () => require("../models/userpaths.model");
-const getPartnerModel   = () => require("../models/partner.model");
-const getUserModel      = () => require("../models/users.model");
+const getUserPathModel  = () => require("../models/UserPathsModel");
+const getPartnerModel   = () => require("../models/PartnerModel");
+const getUserModel      = () => require("../models/UsersModel");
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPER — week boundary (last 7 days)

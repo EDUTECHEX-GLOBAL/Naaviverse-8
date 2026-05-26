@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const StepController = require("../controllers/Steps.Controller");
+const StepController = require("../controllers/StepsController");
 
 // GET ALL STEPS
 router.get("/get", StepController.getSteps);

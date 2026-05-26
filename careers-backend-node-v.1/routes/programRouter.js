@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Program = require('../models/program.model');
-const University = require('../models/universities.model'); // ✅ correct import
+const Program = require('../models/ProgramModel');
+const University = require('../models/UniversitiesModel'); // ✅ correct import
 
 /**
  * ============================

@@ -7,7 +7,7 @@ const {
   restoreService,
   getServicesByStep,
   
-} = require("../controllers/Services.Controller");
+} = require("../controllers/ServicesController");
 
 // ==========================
 // CREATE SERVICE

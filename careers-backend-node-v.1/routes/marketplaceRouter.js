@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const MarketPlaceController = require("../controllers/MarketPlace.Controller");
+const MarketPlaceController = require("../controllers/MarketPlaceController");
 
 router.post("/add", MarketPlaceController.addMarketplaceItem);
 

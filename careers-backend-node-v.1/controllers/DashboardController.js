@@ -1,6 +1,6 @@
-const pathModel       = require("../models/path.model");
-const marketplaceModel = require("../models/marketplace.model");
-const Approval        = require("../models/approval.model");
+const pathModel       = require("../models/PathModel");
+const marketplaceModel = require("../models/MarketPlaceModel");
+const Approval        = require("../models/ApprovalModel");
 
 /**
  * GET /api/dashboard/stats

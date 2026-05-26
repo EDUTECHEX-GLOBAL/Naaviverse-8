@@ -1,4 +1,4 @@
-const userPersonalityModel = require("../models/userPersonalityAns.model");
+const userPersonalityModel = require("../models/UserPersonalityAnsModel");
 
 
 const addAnswer = async (req, res) => {

@@ -1,11 +1,11 @@
-const stepModel = require('../models/steps.model');
-const serviceModel = require('../models/services.model');
-const pathModel = require('../models/path.model');
+const stepModel = require('../models/StepsModel');
+const serviceModel = require('../models/ServicesModel');
+const pathModel = require('../models/PathModel');
 const axios = require('axios');
 const mongoose = require('mongoose');
 
 // ✅ Activity logging
-const { logEvent } = require('./Activity.controller');
+const { logEvent } = require('./ActivityController');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPER — fetch partner display info from email

@@ -1,5 +1,5 @@
-const preLoginModel = require("../models/preLogin.model")
-const userPathModel = require("../models/userpaths.model")
+const preLoginModel = require("../models/PreLoginModel")
+const userPathModel = require("../models/UserPathsModel")
 
 
 const storePreLogin = async (req, res) => {

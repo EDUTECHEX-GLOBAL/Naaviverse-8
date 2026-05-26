@@ -1,5 +1,5 @@
 // controllers/personalityQuestions.controller.js
-const PersonalityQuestion = require('../models/personalityQues.model'); // Adjust path as needed
+const PersonalityQuestion = require('../models/PersonalityQuesModel'); // Adjust path as needed
 
 // Controller function to fetch all questions from the database
 const getQuestions = async (req, res) => {

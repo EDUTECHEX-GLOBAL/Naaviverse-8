@@ -1,4 +1,4 @@
-const Approval = require("../models/approval.model");
+const Approval = require("../models/ApprovalModel");
 const { sendNotificationMail } = require("../middlewares/verifySignUp");
 
 exports.createApproval = async (req, res) => {

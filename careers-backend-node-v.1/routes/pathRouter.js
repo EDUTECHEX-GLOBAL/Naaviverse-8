@@ -1,8 +1,8 @@
 var express = require("express");
 var router = express.Router();
 
-const PathController = require("../controllers/Paths.Controller");
-const { verifyToken } = require("../middlewares/authJwt");
+const PathController = require("../controllers/PathsController");
+const { verifyToken } = require("../middlewares/authjwt");
 
 // ADD NEW PATH
 router.post("/add", PathController.addPath);

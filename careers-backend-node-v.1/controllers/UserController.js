@@ -1,5 +1,5 @@
 // controllers/user.controller.js
-const User = require("../models/users.model");
+const User = require("../models/UsersModel");
 
 exports.checkUsername = async (req, res) => {
   try {

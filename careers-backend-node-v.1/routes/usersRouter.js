@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 
 const UsersController = require("../controllers/User_Controller");
-const UserController = require("../controllers/User.Controller");
+const UserController = require("../controllers/UserController");
 const { getAllUsers, getUserProfilePic } = require("../controllers/AuthControllers");
-const { getUserActivity } = require("../controllers/UserActivity.Controller"); // << ADD THIS
+const { getUserActivity } = require("../controllers/UserActivityController"); // << ADD THIS
 
 // User profile CRUD
 router.post("/add", UsersController.addUserProfile);

@@ -4,10 +4,10 @@
 // Returns: pathsAdded, listings (marketplace), activeDeals (users on partner's paths)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const Path        = require("../models/path.model");
-const Marketplace = require("../models/marketplace.model");
-const UserPath    = require("../models/userpaths.model");
-const User        = require("../models/users.model");
+const Path        = require("../models/PathModel");
+const Marketplace = require("../models/MarketPlaceModel");
+const UserPath    = require("../models/UserPathsModel");
+const User        = require("../models/UsersModel");
 
 const getPartnerActivity = async (req, res) => {
   try {

@@ -1,14 +1,14 @@
 const mongoose = require("mongoose");
-const User = require("../models/users.model");
+const User = require("../models/UsersModel");
 require("dotenv").config({ path: ".env" });
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const UserPath = require("../models/userpaths.model"); // 👈 ADD THIS
+const UserPath = require("../models/UserPathsModel"); // 👈 ADD THIS
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const { generateOTP, sendOTP, sendNotificationMail } = require("../middlewares/verifySignUp");
 
 // ── Activity logger (non-blocking — never breaks login if it fails) ───────────
-const { logActivityInternal } = require("./Activity.controller");
+const { logActivityInternal } = require("./ActivityController");
 
 const signUp = async (req, res) => {
   try {

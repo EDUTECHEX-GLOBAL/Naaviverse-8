@@ -20,8 +20,8 @@ const {
   getPartnerByEmail,
   getPartnerProfilePic,
   verifyOtp,
-} = require("../controllers/Partners.Controller");
-const { getPartnerActivity } = require("../controllers/PartnerActivity.Controller");
+} = require("../controllers/PartnersController");
+const { getPartnerActivity } = require("../controllers/PartnerActivityController");
 // ── Authentication ────────────────────────────────────────────────────────
 router.post("/signup",              signUp);
 router.post("/login",               login);

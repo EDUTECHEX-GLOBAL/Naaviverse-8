@@ -4,9 +4,9 @@
 // Only blocks if the exact same path is already active (duplicate guard).
 // ─────────────────────────────────────────────────────────────────────────────
 
-const pathModel     = require('../models/path.model');
-const userPathModel = require('../models/userpaths.model');
-const userModel     = require('../models/users.model');
+const pathModel     = require('../models/PathModel');
+const userPathModel = require('../models/UserPathsModel');
+const userModel     = require('../models/UsersModel');
 const mongoose      = require('mongoose');
 
 // ─────────────────────────────────────────────────────────────────────────────

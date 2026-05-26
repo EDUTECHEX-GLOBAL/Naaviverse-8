@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const UniversityProgram = require('../models/Universityprogram.model');
+const UniversityProgram = require('../models/UniversityProgramModel');
 
 // GET /api/university-programs/search?q=stan
 // Search only universities that have mapped programs
