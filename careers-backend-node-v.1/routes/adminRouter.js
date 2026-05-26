@@ -3,7 +3,7 @@ const {
   login,
   
 
-} = require("../controllers/adminControllers");
+} = require("../controllers/AdminControllers");
 
 
 

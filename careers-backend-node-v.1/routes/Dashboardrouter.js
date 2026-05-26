@@ -1,7 +1,7 @@
 const express = require("express");
 const router  = express.Router();
 
-const { getDashboardStats } = require("../controllers/Dashboard.controller");
+const { getDashboardStats } = require("../controllers/Dashboard.Controller");
 
 // GET /api/dashboard/stats
 router.get("/stats", getDashboardStats);

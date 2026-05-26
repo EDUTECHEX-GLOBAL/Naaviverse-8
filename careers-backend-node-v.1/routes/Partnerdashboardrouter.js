@@ -9,7 +9,7 @@ const router = require("express").Router();
 const {
   getDashboardStats,
   getPathEnrolledUsers,
-} = require("../controllers/Partnerdashboard.controller");
+} = require("../controllers/PartnerDashboard.Controller");
 
 // GET /api/partner-dashboard/stats?email=partner@x.com
 // Returns: totalSelected, thisWeek, percentChange, paths[]

@@ -1,44 +1,41 @@
 const express = require("express");
 const router = express.Router();
 
-const servicesController = require("../controllers/services.controller");
-
+const ServicesController = require("../controllers/Services.Controller");
 /* ==========================
    CREATE SERVICE
 ========================== */
-router.post("/add", servicesController.addService);
+router.post("/add", ServicesController.addService);
 
-/* ==========================
-   GET SERVICES (BY CREATOR EMAIL)
-========================== */
-router.get("/getservices", servicesController.getServices);
-router.get("/steps-using/:serviceId", servicesController.getStepsUsingService);
+router.get("/getservices", ServicesController.getServices);
+
+router.get("/steps-using/:serviceId", ServicesController.getStepsUsingService);
 /* ==========================
    ADMIN: GET ALL SERVICES
 ========================== */
-router.get("/admin", servicesController.getAllServicesForAdmin);
+router.get("/admin", ServicesController.getAllServicesForAdmin);
 
 
 /* ==========================
    UPDATE SERVICE
 ========================== */
-router.put("/update/:id", servicesController.updateService);
+router.put("/update/:id", ServicesController.updateService);
 
 /* ==========================
    DELETE / RESTORE SERVICE
 ========================== */
-router.delete("/delete/:id", servicesController.deleteService);
-router.put("/restore/:id", servicesController.restoreService);
+router.delete("/delete/:id", ServicesController.deleteService);
+router.put("/restore/:id", ServicesController.restoreService);
 
 /* ==========================
    UPDATE SERVICE ICON
 ========================== */
-router.put("/icon/:serviceId", servicesController.updateServiceIcon);
+router.put("/icon/:serviceId", ServicesController.updateServiceIcon);
 
 /* ==========================
    BULK UPLOAD SERVICES
 ========================== */
-router.post("/bulk", servicesController.bulkUploadServices);
+router.post("/bulk", ServicesController.bulkUploadServices);
 
 /* ==========================
    GET SERVICES BY STEP
@@ -53,7 +50,7 @@ router.get(
     res.set("Surrogate-Control", "no-store");
     next();
   },
-  servicesController.getServicesByStep
+  ServicesController.getServicesByStep
 );
 
 module.exports = router;

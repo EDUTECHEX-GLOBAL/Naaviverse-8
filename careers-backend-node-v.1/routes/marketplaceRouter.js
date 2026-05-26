@@ -1,15 +1,15 @@
 const express = require("express");
 const router = express.Router();
 
-const marketplaceController = require("../controllers/marketplace.controller");
+const MarketPlaceController = require("../controllers/MarketPlace.Controller");
 
-router.post("/add", marketplaceController.addMarketplaceItem);
+router.post("/add", MarketPlaceController.addMarketplaceItem);
 
-router.get("/step/:step_id", marketplaceController.getMarketplaceItemsByStep);
+router.get("/step/:step_id", MarketPlaceController.getMarketplaceItemsByStep);
 
-router.get("/admin/get-all", marketplaceController.getAllMarketplaceItems);
+router.get("/admin/get-all", MarketPlaceController.getAllMarketplaceItems);
 
 // Single route for linking/unlinking a marketplace item to/from a step
-router.patch("/link-step", marketplaceController.linkMarketplaceToStep);
-router.put("/admin/update/:id", marketplaceController.updateMarketplaceItem);
+router.patch("/link-step", MarketPlaceController.linkMarketplaceToStep);
+router.put("/admin/update/:id", MarketPlaceController.updateMarketplaceItem);
 module.exports = router;

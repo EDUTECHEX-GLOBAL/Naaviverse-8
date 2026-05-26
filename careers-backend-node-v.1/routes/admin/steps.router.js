@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const controller = require("../../controllers/admin/steps.controller");
+const controller = require("../../controllers/admin/Steps.Controller");
 const { verifyToken, verifyAdmin } = require("../../middlewares/authJwt");
 
 

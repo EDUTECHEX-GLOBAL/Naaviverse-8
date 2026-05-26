@@ -13,7 +13,7 @@ const {
   getAllUsers,
   submitForgotPassword,
   getUserProfilePic   // <-- Add this
-} = require("../controllers/authControllers");
+} = require("../controllers/AuthControllers");
 
 
 // Auth routes
