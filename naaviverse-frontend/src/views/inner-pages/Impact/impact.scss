@@ -1,3 +1,5 @@
+
+
 // ══════════════════════════════════════════════
 //  Impact Page — Premium Light UI
 //  Brand: #2DB67D green | #1A1A2E navy
@@ -823,5 +825,66 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   @media(max-width: 900px) {
     max-width: 100%;
     min-width: unset;
+  }
+}
+
+// ══════════════════════════════
+//  PER-SECTION IMAGE SIZE CONTROL
+//  Adjust max-height for each section independently
+// ══════════════════════════════
+
+.imp-vis-image-wrap--gap {
+  .imp-story-image {
+    max-height: 720px;   // Skill Gap Problem
+    width: auto;
+    margin: 0 auto;
+  }
+}
+
+.imp-vis-image-wrap--workforce {
+  .imp-story-image {
+    max-height: 420px;   // Future Workforce
+    width: auto;
+    margin: 0 auto;
+  }
+}
+
+.imp-vis-image-wrap--outcomes {
+  .imp-story-image {
+    max-height: 340px;   // Student Outcomes
+    width: auto;
+    margin: 0 auto;
+  }
+}
+
+.imp-vis-image-wrap--education {
+  .imp-story-image {
+    max-height: 400px;   // Education Transformation
+    width: auto;
+    margin: 0 auto;
+  }
+}
+
+.imp-vis-image-wrap--potential {
+  .imp-story-image {
+    max-height: 400px;   // Human Potential
+    width: auto;
+    margin: 0 auto;
+  }
+}
+
+.imp-vis-image-wrap--global {
+  .imp-story-image {
+    max-height: 380px;   // Global Opportunity Access
+    width: auto;
+    margin: 0 auto;
+  }
+}
+
+.imp-vis-image-wrap--sdgs {
+  .imp-story-image {
+    max-height: 420px;   // SDGs & Social Impact
+    width: auto;
+    margin: 0 auto;
   }
 }

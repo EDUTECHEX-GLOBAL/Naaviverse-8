@@ -21,7 +21,7 @@ const navTerms = [
   { num: '05', label: 'Human Potential', id: 'human-potential', accent: '#FF9500' },
   { num: '06', label: 'Global Opportunity Access', id: 'global-opportunity-access', accent: '#4DA6FF' },
   { num: '07', label: 'SDGs & Social Impact', id: 'sdgs-social-impact', accent: '#FF9500' },
-  
+
 ];
 
 // ── 8 story sections ──
@@ -97,75 +97,48 @@ function SectionVisual({ type, accent }) {
   switch (type) {
     case 'gap':
       return (
-        <div className="imp-vis imp-vis-image-wrap">
-          <img
-            src={skillGapProblemImg}
-            alt="Skill gap problem"
-            className="imp-story-image"
-          />
+        <div className="imp-vis imp-vis-image-wrap imp-vis-image-wrap--gap">
+          <img src={skillGapProblemImg} alt="Skill gap problem" className="imp-story-image" />
         </div>
       );
     case 'workforce':
       return (
-        <div className="imp-vis imp-vis-image-wrap">
-          <img
-            src={futureWorkforceImg}
-            alt="Future workforce"
-            className="imp-story-image"
-          />
+        <div className="imp-vis imp-vis-image-wrap imp-vis-image-wrap--workforce">
+          <img src={futureWorkforceImg} alt="Future workforce" className="imp-story-image" />
         </div>
       );
     case 'outcomes':
       return (
-        <div className="imp-vis imp-vis-image-wrap">
-          <img
-            src={studentOutcomesImg}
-            alt="Student outcomes"
-            className="imp-story-image"
-          />
+        <div className="imp-vis imp-vis-image-wrap imp-vis-image-wrap--outcomes">
+          <img src={studentOutcomesImg} alt="Student outcomes" className="imp-story-image" />
         </div>
       );
     case 'education':
       return (
-        <div className="imp-vis imp-vis-image-wrap">
-          <img
-            src={educationTransformationImg}
-            alt="Education transformation"
-            className="imp-story-image"
-          />
+        <div className="imp-vis imp-vis-image-wrap imp-vis-image-wrap--education">
+          <img src={educationTransformationImg} alt="Education transformation" className="imp-story-image" />
         </div>
       );
     case 'potential':
       return (
-        <div className="imp-vis imp-vis-image-wrap">
-          <img
-            src={humanPotentialImg}
-            alt="Human potential"
-            className="imp-story-image"
-          />
+        <div className="imp-vis imp-vis-image-wrap imp-vis-image-wrap--potential">
+          <img src={humanPotentialImg} alt="Human potential" className="imp-story-image" />
         </div>
       );
     case 'global':
       return (
-        <div className="imp-vis imp-vis-image-wrap">
-          <img
-            src={globalOpportunityImg}
-            alt="Global opportunity access"
-            className="imp-story-image"
-          />
+        <div className="imp-vis imp-vis-image-wrap imp-vis-image-wrap--global">
+          <img src={globalOpportunityImg} alt="Global opportunity access" className="imp-story-image" />
         </div>
       );
     case 'sdgs':
       return (
-        <div className="imp-vis imp-vis-image-wrap">
-          <img
-            src={sdgImpactImg}
-            alt="SDGs and social impact"
-            className="imp-story-image"
-          />
+        <div className="imp-vis imp-vis-image-wrap imp-vis-image-wrap--sdgs">
+          <img src={sdgImpactImg} alt="SDGs and social impact" className="imp-story-image" />
         </div>
       );
-
+    default:
+      return null;
   }
 }
 

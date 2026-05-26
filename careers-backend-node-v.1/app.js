@@ -125,7 +125,7 @@ app.use("/api/users", usersRouter);
 app.use("/api/upload", uploadRouter);
 
 app.use("/api/services", servicesRouter);
-app.use("/admin/services", adminServicesRouter);
+app.use("/admin/services", AdminServicesRouter);
 
 app.use("/api/steps", stepsRouter);
 app.use("/api/marketplace", marketplaceRouter);
@@ -169,7 +169,7 @@ app.use("/api/perplexity", require("./routes/perplexity.route"));
 app.use("/api/regenerate", require("./routes/regenerateAll.route"));
 app.use("/api/crm", require("./routes/crmRoutes"));
 app.use("/api/regenerate", require("./routes/regenerateBatch.route"));
-app.use("/api/utils", require("./routes/addStepIds.route"));
+app.use("/api/utils", require("./routes/AddStepIdsRoute"));
 app.use("/api/stepviews", require("./routes/stepviews.route"));
 app.use("/api/wallet", require("./routes/vaultRouter"));
 app.use("/api/categories", require("./routes/categoriesRouter"));

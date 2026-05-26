@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const countryController = require('../controllers/Country.Controller');
+const CountryController = require('../controllers/Country.Controller');
 
 router.get('/', CountryController.getCountries);
 router.post('/', CountryController.createCountry);
