@@ -1,7 +1,7 @@
 var express = require("express");
 var router = express.Router();
 
-const preLoginController = require("../controllers/PreLogin.Controller");
+const PreLoginController = require("../controllers/PreLogin.Controller")
 const { verifyToken } = require("../middlewares/authJwt");
 
 router.post("/store", [verifyToken], preLoginController.storePreLogin);

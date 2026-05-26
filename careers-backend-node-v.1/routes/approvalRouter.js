@@ -1,7 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const ApprovalController = require("../controllers/Approval.Controller");
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/feature/lovable
 
 router.post("/create", ApprovalController.createApproval);
 
