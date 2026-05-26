@@ -108,7 +108,7 @@ const Team = () => {
               ))}
             </div>
             <p className="team-disciplines-outro">
-              the leadership team is building a next-generation intelligence platform designed to unlock human potential at scale.
+              The leadership team is building a next-generation intelligence platform designed to unlock human potential at scale.
             </p>
           </div>
         </div>
@@ -123,8 +123,8 @@ const Team = () => {
             <p className="team-body-text">
               We believe that every individual carries unique potential, but most people navigate life with fragmented guidance and accidental decisions.
             </p>
-<p className="team-body-text team-body-quote">Naavi was created to change that.</p>
-           
+            <p className="team-body-text team-body-quote">Naavi was created to change that.</p>
+
             <p className="team-body-text">we aim to create a future where growth becomes intelligently navigable.</p>
           </div>
 

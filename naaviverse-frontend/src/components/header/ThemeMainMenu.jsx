@@ -340,7 +340,7 @@ const ThemeMainMenu = () => {
                   <p className="mega-heading">Outcomes</p>
                   <Link className="mega-item" to="/impact/student-outcomes" onClick={() => close('impact')}>Student Outcomes</Link>
                   <Link className="mega-item" to="/impact/education-transformation" onClick={() => close('impact')}>Education Transformation</Link>
-                  <Link className="mega-item" to="/impact/success-stories" onClick={() => close('impact')}>Success Stories</Link>
+                 
                 </div>
                 <div className="mega-col">
                   <p className="mega-heading">Global Reach</p>

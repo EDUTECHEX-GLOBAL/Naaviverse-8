@@ -11,23 +11,25 @@
     padding: 0 28px;
   }
 
-.feature-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 60px;
-  align-items: center;
-  align-content: center;
-}
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    align-content: center;
+  }
 
-.illustration-holder {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  align-self: center;        /* ← forces vertical center in grid */
-  width: 100%;
-  height: auto !important;   /* ← remove fixed height */
-  overflow: visible;
-}
+  .illustration-holder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-self: center;
+    width: 100%;
+    height: auto !important;
+    overflow: visible;
+    margin-top: -80px !important; // ← move image UP
+  }
+
   .main-illustration {
     width: 120% !important;
     max-width: 120% !important;
@@ -48,7 +50,7 @@
     }
 
     .illustration-holder {
-      margin-top: 0;
+      margin-top: 0 !important; // ← reset on mobile
     }
 
     .main-illustration {

@@ -68,17 +68,18 @@ $border: rgba(0, 0, 0, 0.07);
 #ab-vision {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
+  overflow: hidden !important;
 
   .ab-vision-row {
-    align-items: stretch !important;  // ← key fix
-    min-height: 520px;
+    align-items: stretch !important;
+    min-height: 440px; // ← reduced
 
     .ab-col-txt {
       display: flex !important;
       flex-direction: column !important;
       justify-content: center !important;
       align-self: stretch !important;
-      padding: 60px 0;
+      padding: 48px 0;
     }
 
     .ab-col-vis {
@@ -86,8 +87,32 @@ $border: rgba(0, 0, 0, 0.07);
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
+      overflow: hidden !important;
     }
   }
+
+  // ← ADD THIS NESTED INSIDE #ab-vision
+  img.ab-vision-image {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 380px !important; // ← controls the size — adjust 360-400px to taste
+    height: auto !important;
+    object-fit: contain !important;
+    object-position: center center !important;
+    border-radius: 0 !important;
+    filter: none !important; // ← removes drop-shadow from .ab-side-image
+  }
+}
+
+// ← KEY CHANGE — add a max-height cap
+.ab-vision-image {
+  width: 100% !important;
+  max-width: 100% !important;
+  max-height: 420px !important; // ← ADD this cap to reduce size
+  height: auto !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  border-radius: 0;
 }
 
 // two-col layout
@@ -161,7 +186,7 @@ $border: rgba(0, 0, 0, 0.07);
 
   .ab-container {
     position: relative;
-    padding: 0 12px; 
+    padding: 0 12px;
     z-index: 1;
   }
 
@@ -1266,7 +1291,7 @@ h5 {
 
 .ab-side-image {
   width: 100%;
-  max-width: 100%; 
+  max-width: 100%;
   max-height: 500px; // ← increase from 420px
   height: auto;
   object-fit: contain;
@@ -1301,13 +1326,7 @@ h5 {
   }
 }
 
-.ab-vision-image {
-  max-width: 420px;
-  max-height: 320px;
-  width: 100%;
-  object-fit: contain;
-  border-radius: 0;
-}
+
 
 .ab-problem-image {
   width: 120%;
@@ -1326,7 +1345,7 @@ h5 {
   padding-bottom: 40px;
 
   .ab-row {
-    grid-template-columns: 1.5fr 1fr !important;  // ← image gets more space
+    grid-template-columns: 1.5fr 1fr !important; // ← image gets more space
     align-items: stretch !important;
     min-height: 480px;
 
@@ -1378,7 +1397,7 @@ h5 {
   padding-bottom: 0 !important;
 
   .ab-row {
-    grid-template-columns: 1fr 1.3fr !important;  // ← more space for image
+    grid-template-columns: 1fr 1.3fr !important; // ← more space for image
     align-items: stretch !important;
     min-height: 500px;
 
@@ -1420,7 +1439,7 @@ h5 {
   padding-bottom: 0 !important;
 
   .ab-row {
-    grid-template-columns: 1.3fr 1fr !important;  // ← image gets more space
+    grid-template-columns: 1.3fr 1fr !important; // ← image gets more space
     align-items: stretch !important;
     min-height: 500px;
 
@@ -1443,10 +1462,10 @@ h5 {
     align-items: center !important;
     justify-content: center !important;
     align-self: stretch !important;
-    order: -1 !important;          // ← image on LEFT
+    order: -1 !important; // ← image on LEFT
 
     @media (max-width: 900px) {
-      order: 2 !important;         // ← image below text on mobile
+      order: 2 !important; // ← image below text on mobile
     }
   }
 
@@ -1465,11 +1484,13 @@ h5 {
 #ab-verse {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
+  overflow: visible !important; // ← CHANGE from hidden to visible
 
   .ab-row {
-    grid-template-columns: 1fr 1.4fr !important;  // ← more space for image
+    grid-template-columns: 1fr 1.8fr !important; // ← give image even more column space
     align-items: stretch !important;
-    min-height: 500px;
+    min-height: 560px;
+    overflow: visible;
 
     @media (max-width: 900px) {
       grid-template-columns: 1fr !important;
@@ -1490,6 +1511,7 @@ h5 {
     align-items: center !important;
     justify-content: center !important;
     align-self: stretch !important;
+    overflow: visible !important; // ← CHANGE to visible — no clipping
 
     @media (max-width: 900px) {
       order: 2 !important;
@@ -1497,12 +1519,15 @@ h5 {
   }
 
   img.ab-side-image {
-    width: 100% !important;
-    max-width: none !important;
+    width: 100% !important; // ← back to 100%, no negative margin tricks
+    max-width: 100% !important;
     max-height: none !important;
     height: auto !important;
+    margin-left: 0 !important; // ← remove the -5% margin that caused clipping
+    object-fit: contain;
 
     @media (max-width: 900px) {
+      width: 100% !important;
       max-width: 100% !important;
     }
   }

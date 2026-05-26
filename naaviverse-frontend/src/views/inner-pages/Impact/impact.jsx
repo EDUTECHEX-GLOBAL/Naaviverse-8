@@ -3,25 +3,25 @@ import { useParams, useLocation } from 'react-router-dom';
 import './impact.scss';
 import Footer from '../../../components/footernew/index';
 import skillGapProblemImg from './images/skill_gap_problem.png';
-import futureWorkforceImg from './images/future_workforce_U.png';
+import futureWorkforceImg from './images/future_workforce_1.png';
 import studentOutcomesImg from './images/student_outcomes.png';
 import educationTransformationImg from './images/edu_transf.png';
 import humanPotentialImg from './images/human_potential.png';
 import globalOpportunityImg from './images/global_opportunity_access.png';
 import sdgImpactImg from './images/SDG_Social_Impact.png';
-import successStoriesImg from './images/successs.png';
+
 
 const HEADER_OFFSET = 140;
 
 const navTerms = [
-  { num: '01', label: 'Skill Gap Problem',      id: 'skill-gap-problem',        accent: '#2DB67D' },
-  { num: '02', label: 'Future Workforce',       id: 'future-workforce',        accent: '#FF9500' },
-  { num: '03', label: 'Student Outcomes',       id: 'student-outcomes',         accent: '#4DA6FF' },
-  { num: '04', label: 'Education Transformation', id: 'education-transformation',accent: '#2DB67D' },
-  { num: '05', label: 'Human Potential',        id: 'human-potential',          accent: '#FF9500' },
-  { num: '06', label: 'Global Opportunity Access', id: 'global-opportunity-access',accent: '#4DA6FF' },
-  { num: '07', label: 'SDGs & Social Impact',   id: 'sdgs-social-impact',       accent: '#FF9500' },
-  { num: '08', label: 'Success Stories',        id: 'success-stories',          accent: '#2DB67D' },
+  { num: '01', label: 'Skill Gap Problem', id: 'skill-gap-problem', accent: '#2DB67D' },
+  { num: '02', label: 'Future Workforce', id: 'future-workforce', accent: '#FF9500' },
+  { num: '03', label: 'Student Outcomes', id: 'student-outcomes', accent: '#4DA6FF' },
+  { num: '04', label: 'Education Transformation', id: 'education-transformation', accent: '#2DB67D' },
+  { num: '05', label: 'Human Potential', id: 'human-potential', accent: '#FF9500' },
+  { num: '06', label: 'Global Opportunity Access', id: 'global-opportunity-access', accent: '#4DA6FF' },
+  { num: '07', label: 'SDGs & Social Impact', id: 'sdgs-social-impact', accent: '#FF9500' },
+  
 ];
 
 // ── 8 story sections ──
@@ -58,7 +58,7 @@ const stories = [
     id: 'education-transformation',
     title: ['Education', 'Transformation'],
     text: 'Education should evolve from standardized systems to personalized journeys. Naavi enables a new era of data-driven, adaptive, and learner-centric navigation.',
-   accent: '#4DA6FF',
+    accent: '#4DA6FF',
     visual: 'education',
     stat: '100%',
     statLabel: 'Learner-centric pathways',
@@ -89,15 +89,6 @@ const stories = [
     visual: 'sdgs',
     stat: 'SDG 4,8,9',
     statLabel: 'Education · Work · Equality',
-  },
-  {
-    id: 'success-stories',
-    title: ['Success', 'Stories'],
-    text: 'Every pathway navigated through Naavi contributes to a growing ecosystem of real human journeys — inspiring future generations through collective intelligence and shared success.',
-    accent: '#FF9500', 
-    visual: 'stories',
-    stat: '50K+',
-    statLabel: 'Journeys navigated',
   },
 ];
 
@@ -174,17 +165,7 @@ function SectionVisual({ type, accent }) {
           />
         </div>
       );
-    case 'stories':
-    default:
-      return (
-        <div className="imp-vis imp-vis-image-wrap">
-          <img
-            src={successStoriesImg}
-            alt="Success stories"
-            className="imp-story-image"
-          />
-        </div>
-      );
+
   }
 }
 
@@ -234,57 +215,16 @@ const Impact = () => {
 
   return (
     <Fragment>
-      {/* ══════════════════════════════
-          HERO — with problem.webp image
-      ══════════════════════════════ */}
-      <div className="imp-hero">
-        <div className="imp-hero-bg" />
-        <div className="imp-container imp-hero-inner">
-          <div className="imp-hero-text">
-            <h1 className="imp-hero-title">
-              An intelligence layer for{' '}
-              <span className="imp-hero-accent">human navigation,</span>{' '}
-              mapped end-to-end.
-            </h1>
-            <p className="imp-hero-desc">
-              Eight interconnected dimensions — from the global skill gap to the real human stories that emerge — woven into one adaptive, AI-powered ecosystem.
-            </p>
-            <div className="imp-hero-btns">
-              <button className="imp-hero-btn-primary" onClick={() => scrollToSection('skill-gap-problem')}>
-                Explore the storyline →
-              </button>
-            </div>
-          </div>
-          <div className="imp-hero-visual">
-            <img 
-              src={require('../../../assets/images/assets/problem.webp')}
-              alt="Problem visualization"
-              className="imp-hero-image"
-            />
-          </div>
-        </div>
-      </div>
 
-      {/* ══════════════════════════════
-          MARQUEE SCROLL STRIP
-      ══════════════════════════════ */}
-      <div className="imp-marquee-strip">
-        <div className="imp-marquee-track">
-          {[...navTerms, ...navTerms].map((t, i) => (
-            <span key={i} className="imp-marquee-item">
-              <span className="imp-marquee-dot" />
-              {t.label.toUpperCase()}
-            </span>
-          ))}
-        </div>
-      </div>
+
+
 
       {/* ══════════════════════════════
           8 IMPACT SECTIONS
       ══════════════════════════════ */}
       {stories.map((s, i) => {
         const isEven = i % 2 === 0;
-       const bg = '#ffffff';
+        const bg = '#ffffff';
 
         return (
           <section

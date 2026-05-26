@@ -83,3 +83,31 @@
     }
   }
 }
+
+
+.fancy-feature-twenty {
+  margin-top: 40px !important;
+}
+
+// Override the framework lg-mt-100 class
+.lg-mt-100 {
+  margin-top: 40px !important;
+}
+
+// ── Fix space above FAQ section ──
+.counter-section-one,
+.counter-section,
+[class*="counter-section"] {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.fancy-feature-twenty {
+  margin-top: 0 !important;
+  padding-top: 60px !important;
+}
+
+// ── Fix the p tag margin inside FAQ left column ──
+.fancy-feature-twenty .block-style-five p {
+  margin-top: 0 !important;
+}

@@ -60,15 +60,15 @@ const FancyFeatureSeventeen = () => {
   }, []);
 
   return (
-    <Fragment> 
+    <Fragment>
       <div className="fancy-feature-seventeen-container" ref={containerRef}>
         <div className="fancy-feature-seventeen">
           <div className="features-grid">
             {ServiceContent.map((val, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className={`feature-card ${isVisible ? 'visible' : ''}`}
-                style={{ 
+                style={{
                   '--card-gradient': val.gradient,
                   '--card-color': val.color,
                   '--border-color': val.borderColor,
@@ -77,28 +77,28 @@ const FancyFeatureSeventeen = () => {
               >
                 <div className="card-inner">
                   <div className="icon-wrapper">
-                    <img 
-                      src={val.icon} 
-                      alt={val.title} 
+                    <img
+                      src={val.icon}
+                      alt={val.title}
                       className="icon-image"
                     />
                     <div className="icon-glow"></div>
                   </div>
-                  
+
                   <h3 className="card-title">
                     {val.title}
                   </h3>
-                  
+
                   <p className="card-description">{val.desc}</p>
-                  
+
                   <button className="action-button">
                     Explore Feature
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                      <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </button>
                 </div>
-                
+
                 <div className="card-shadow"></div>
                 <div className="card-highlight"></div>
               </div>
@@ -223,13 +223,14 @@ const FancyFeatureSeventeen = () => {
           animation: highlightSlide 2.5s ease-in-out infinite;
         }
 
-        .card-inner {
-          display: flex;
-          flex-direction: column;
-          height: 100%;
-          position: relative;
-          z-index: 1;
-        }
+.card-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  z-index: 1;
+  justify-content: flex-start;
+}
 
         .icon-wrapper {
   position: relative;
@@ -275,14 +276,17 @@ const FancyFeatureSeventeen = () => {
           animation: iconPulse 2.5s ease-in-out infinite;
         }
 
-        .card-title {
+.card-title {
   font-size: 1.4rem;
   font-weight: 600;
   color: #1a1f2e;
-  margin-bottom: 12px;  /* REDUCED: from 18px */
+  margin-bottom: 12px;
   line-height: 1.4;
   position: relative;
   letter-spacing: -0.01em;
+  min-height: 76px;        /* ← makes all titles same height */
+  display: flex;
+  align-items: flex-start;
 }
 
         .card-title::after {

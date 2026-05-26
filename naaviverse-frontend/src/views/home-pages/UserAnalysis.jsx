@@ -109,7 +109,9 @@ const UserAnalysis = () => {
 
 
                 <div
-                    className="fancy-feature-twenty position-relative mt-160 pb-100 lg-mt-100 lg-pb-70">
+                    className="fancy-feature-twenty position-relative pb-100 lg-pb-70"
+                    style={{ marginTop: '40px' }}>
+
                     <div className="container">
                         <div className="row">
                             <div className="col-lg-5">
@@ -133,7 +135,7 @@ const UserAnalysis = () => {
                         </div>
                     </div>
                     {/* /.container */}
-                    
+
                     <div className="shapes oval-one" />
                 </div>
                 {/* /.fancy-feature-twenty */}

@@ -4,53 +4,119 @@
 //  NO dark backgrounds. Clean white/light only.
 // ══════════════════════════════════════════════
 
-$green:        #2DB67D;
-$green-d:      #1E9966;
-$navy:         #1A1A2E;
-$blue:         #4DA6FF;
-$white:        #ffffff;
-$soft:         #F4FAF7;
-$soft2:        #F7F9FC;
-$muted:        #6B7A8D;
-$text:         #3D4A5C;
-$border:       rgba(0,0,0,0.07);
+$green: #2DB67D;
+$green-d: #1E9966;
+$navy: #1A1A2E;
+$blue: #4DA6FF;
+$white: #ffffff;
+$soft: #F4FAF7;
+$soft2: #F7F9FC;
+$muted: #6B7A8D;
+$text: #3D4A5C;
+$border: rgba(0, 0, 0, 0.07);
 $primary-grad: linear-gradient(135deg, $green, $green-d);
 
-@mixin flex-center { display:flex; align-items:center; justify-content:center; }
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 // ── Animations ──
 @keyframes imp-float {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-14px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-14px);
+  }
 }
+
 @keyframes imp-pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(45,182,125,0.55); }
-  70%  { box-shadow: 0 0 0 9px rgba(45,182,125,0); }
-  100% { box-shadow: 0 0 0 0 rgba(45,182,125,0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(45, 182, 125, 0.55);
+  }
+
+  70% {
+    box-shadow: 0 0 0 9px rgba(45, 182, 125, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(45, 182, 125, 0);
+  }
 }
+
 @keyframes imp-spin {
-  from { transform: translate(-50%,-50%) rotate(0deg); }
-  to   { transform: translate(-50%,-50%) rotate(360deg); }
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
+
 @keyframes imp-spin-rev {
-  from { transform: translate(-50%,-50%) rotate(0deg); }
-  to   { transform: translate(-50%,-50%) rotate(-360deg); }
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  to {
+    transform: translate(-50%, -50%) rotate(-360deg);
+  }
 }
+
 @keyframes imp-fade-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 @keyframes imp-node-bob {
-  0%, 100% { transform: translate(-50%,-50%) scale(1); }
-  50%       { transform: translate(-50%,-50%) scale(1.05); }
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.05);
+  }
 }
+
 @keyframes imp-glow-drift {
-  0%, 100% { transform: scale(1) translate(0,0); opacity: 0.6; }
-  50%       { transform: scale(1.12) translate(20px,-15px); opacity: 0.9; }
+
+  0%,
+  100% {
+    transform: scale(1) translate(0, 0);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: scale(1.12) translate(20px, -15px);
+    opacity: 0.9;
+  }
 }
+
 @keyframes imp-bar-grow {
-  from { transform: scaleX(0); transform-origin: left; }
-  to   { transform: scaleX(1); transform-origin: left; }
+  from {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  to {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
 }
 
 // ── Layout ──
@@ -75,8 +141,8 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 900px 600px at 10% -10%, rgba(45,182,125,0.09), transparent 60%),
-    radial-gradient(ellipse 700px 500px at 95% 0%, rgba(77,166,255,0.08), transparent 55%),
+    radial-gradient(ellipse 900px 600px at 10% -10%, rgba(45, 182, 125, 0.09), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 95% 0%, rgba(77, 166, 255, 0.08), transparent 55%),
     linear-gradient(180deg, #ffffff 0%, #f4f8ff 100%);
   pointer-events: none;
 }
@@ -95,7 +161,9 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   }
 }
 
-.imp-hero-text { max-width: 540px; }
+.imp-hero-text {
+  max-width: 540px;
+}
 
 .imp-hero-badge {
   display: inline-flex;
@@ -103,8 +171,8 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   gap: 8px;
   padding: 6px 16px;
   border-radius: 99px;
-  background: rgba(45,182,125,0.08);
-  border: 1px solid rgba(45,182,125,0.2);
+  background: rgba(45, 182, 125, 0.08);
+  border: 1px solid rgba(45, 182, 125, 0.2);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -156,8 +224,8 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   gap: 8px;
   padding: 6px 16px;
   border-radius: 99px;
-  background: rgba(45,182,125,0.08);
-  border: 1px solid rgba(45,182,125,0.2);
+  background: rgba(45, 182, 125, 0.08);
+  border: 1px solid rgba(45, 182, 125, 0.2);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -166,12 +234,12 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   text-transform: uppercase;
   cursor: pointer;
   font-family: inherit;
-  transition: none; 
+  transition: none;
 
-  &:hover {           
-    background: rgba(45,182,125,0.08);
+  &:hover {
+    background: rgba(45, 182, 125, 0.08);
     color: $green;
-    border-color: rgba(45,182,125,0.2);
+    border-color: rgba(45, 182, 125, 0.2);
   }
 }
 
@@ -179,7 +247,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   padding: 13px 24px;
   background: $white;
   color: $navy;
-  border: 1.5px solid rgba(26,26,46,0.15);
+  border: 1.5px solid rgba(26, 26, 46, 0.15);
   border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
@@ -199,7 +267,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   position: relative;
   background: transparent;
 
-  @media(max-width: 900px) { 
+  @media(max-width: 900px) {
     display: flex;
     margin-top: 20px;
   }
@@ -224,21 +292,30 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   pointer-events: none;
   animation: imp-glow-drift 10s ease-in-out infinite;
 }
+
 .imp-hero-orb-1 {
-  width: 260px; height: 260px;
-  top: -40px; left: -40px;
-  background: rgba(45,182,125,0.1);
+  width: 260px;
+  height: 260px;
+  top: -40px;
+  left: -40px;
+  background: rgba(45, 182, 125, 0.1);
 }
+
 .imp-hero-orb-2 {
-  width: 200px; height: 200px;
-  bottom: -20px; right: -20px;
-  background: rgba(77,166,255,0.1);
+  width: 200px;
+  height: 200px;
+  bottom: -20px;
+  right: -20px;
+  background: rgba(77, 166, 255, 0.1);
   animation-delay: 3.5s;
 }
+
 .imp-hero-orb-3 {
-  width: 140px; height: 140px;
-  top: 40%; left: 40%;
-  background: rgba(162,89,255,0.08);
+  width: 140px;
+  height: 140px;
+  top: 40%;
+  left: 40%;
+  background: rgba(162, 89, 255, 0.08);
   animation-delay: 7s;
 }
 
@@ -246,14 +323,19 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 //  MARQUEE SCROLL STRIP
 // ══════════════════════════════
 @keyframes imp-marquee {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .imp-marquee-strip {
   background: $white;
-  border-top: 1px solid rgba(0,0,0,0.05);
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   overflow: hidden;
   padding: 0;
 }
@@ -263,7 +345,9 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   width: max-content;
   animation: imp-marquee 28s linear infinite;
 
-  &:hover { animation-play-state: paused; }
+  &:hover {
+    animation-play-state: paused;
+  }
 }
 
 .imp-marquee-item {
@@ -292,10 +376,18 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 // ══════════════════════════════
 .imp-story {
   position: relative;
-  padding: 88px 0;
-  overflow: hidden;
+  padding: 40px 0;
+  overflow: visible;
+  scroll-margin-top: 140px;
 
-  @media(max-width: 768px) { padding: 60px 0; }
+  @media(max-width: 768px) {
+    padding: 24px 0;
+  }
+}
+
+// ← ADD THIS RIGHT AFTER
+.imp-story:first-of-type {
+  padding-top: 140px;
 }
 
 .imp-story-glow {
@@ -306,7 +398,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 .imp-story-inner {
   display: grid;
-  grid-template-columns: 1fr 1.5fr;
+  grid-template-columns: 1fr 1.5fr; // ← 2nd column (image) bigger
   gap: 60px;
   align-items: center;
   position: relative;
@@ -320,12 +412,30 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 // Flip layout — text right, visual left
 .imp-story-flip {
-  .imp-story-text  { order: 2; }
-  .imp-story-vis-wrap { order: 1; }
+  .imp-story-inner {
+    grid-template-columns: 1.5fr 1fr; // ← 1st column (image) bigger
+  }
+
+  .imp-story-text {
+    order: 2;
+  }
+
+  .imp-story-vis-wrap {
+    order: 1;
+  }
 
   @media(max-width: 900px) {
-    .imp-story-text     { order: 0; }
-    .imp-story-vis-wrap { order: 0; }
+    .imp-story-inner {
+      grid-template-columns: 1fr; // ← reset on mobile
+    }
+
+    .imp-story-text {
+      order: 0;
+    }
+
+    .imp-story-vis-wrap {
+      order: 0;
+    }
   }
 }
 
@@ -388,7 +498,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   border: 1px solid $border;
   border-left: 3px solid var(--accent);
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
 
 .imp-story-stat-val {
@@ -413,12 +523,12 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   animation: imp-bar-grow 1s ease forwards;
 }
 
-// ── Visual wrapper ──
 .imp-story-vis-wrap {
   @include flex-center;
   min-height: 420px;
   align-items: center;
   width: 100%;
+  overflow: visible;
 }
 
 // ══════════════════════════════
@@ -426,31 +536,37 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 // ══════════════════════════════
 .imp-vis {
   position: relative;
-  width: 100%;          // ← change from 280px to 100%
-  height: auto;         // ← change from 240px to auto
+  width: 100%; // ← change from 280px to 100%
+  height: auto; // ← change from 240px to auto
   @include flex-center;
 
 
-  @media(max-width: 480px) { width: 220px; height: 200px; }
+  @media(max-width: 480px) {
+    width: 220px;
+    height: 200px;
+  }
 }
 
 .imp-vis-image-wrap {
   width: 100%;
-  max-width: 100%;   // ← change from 520px to 100%
+  max-width: 100%;
   height: auto;
+  margin: 0;
 }
 
 .imp-story-image {
- width: 100%;
+  width: 100%;
   max-width: 100%;
   height: auto;
-  max-height: none;                  // ← remove height cap completely
-  min-height: 420px;   // ← increase from 360px to 480px (or remove entirely)
+  max-height: 420px;        // ← ADD THIS to cap the image height
+  min-height: unset;
   display: block;
   object-fit: contain;
   border-radius: 0;
+  transform: none;
   filter: drop-shadow(0 18px 34px rgba(26, 26, 46, 0.08));
 }
+
 .imp-vis-glow {
   position: absolute;
   inset: -30px;
@@ -486,7 +602,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   font-weight: 600;
   color: $navy;
   white-space: nowrap;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.07);
   animation: imp-node-bob 4s ease-in-out infinite;
   z-index: 2;
 }
@@ -501,7 +617,8 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 .imp-vis-ring {
   position: absolute;
-  top: 50%; left: 50%;
+  top: 50%;
+  left: 50%;
   border-radius: 50%;
   border: 1.5px dashed var(--accent);
   opacity: 0.28;
@@ -517,7 +634,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
 }
 
 .imp-vis-core-num {
@@ -530,7 +647,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 .imp-vis-core-lbl {
   font-size: 9px;
   font-weight: 600;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.75);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -563,7 +680,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
     border-radius: 9px;
     border: 1px solid $border;
     border-left: 3px solid var(--accent);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     flex: 1;
   }
 }
@@ -574,7 +691,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   border-radius: 50%;
   background: var(--accent);
   flex-shrink: 0;
-  box-shadow: 0 0 0 4px rgba(45,182,125,0.12);
+  box-shadow: 0 0 0 4px rgba(45, 182, 125, 0.12);
 }
 
 // Orbit
@@ -587,7 +704,8 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 .imp-vis-orbit {
   position: absolute;
-  top: 50%; left: 50%;
+  top: 50%;
+  left: 50%;
   border-radius: 50%;
   border: 1.5px dashed var(--accent);
   opacity: 0.22;
@@ -602,7 +720,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   border-radius: 50%;
   @include flex-center;
   font-size: 22px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
 .imp-vis-orbit-node {
@@ -616,7 +734,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   font-weight: 700;
   color: $navy;
   white-space: nowrap;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
   animation: imp-node-bob 3.5s ease-in-out infinite;
   z-index: 3;
 }
@@ -640,7 +758,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   background: $white;
   border-radius: 9px;
   border: 1px solid $border;
-  box-shadow: 0 2px 7px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.04);
   font-size: 12px;
   font-weight: 600;
   color: $navy;
@@ -666,7 +784,8 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 .imp-vis-circle {
   position: absolute;
-  top: 50%; left: 50%;
+  top: 50%;
+  left: 50%;
   border-radius: 50%;
   border: 1.5px solid;
   transform: translate(-50%, -50%);

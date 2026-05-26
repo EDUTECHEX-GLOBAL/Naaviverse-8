@@ -4,7 +4,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import Footer from '../../../../components/footernew/index';
 import './AboutPage.scss';
 
-import whatImg from './images/What is naavi.png';
+import whatImg from './images/What is Naavi_1.png';
 import naaviverseImg from './images/Naaviverse.png';
 import visionImg from './images/Our Vision.png';
 import navigationProblemImg from './images/Navigation Problem.png';

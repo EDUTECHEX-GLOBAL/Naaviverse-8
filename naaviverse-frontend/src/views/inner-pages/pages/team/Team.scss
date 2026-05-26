@@ -192,13 +192,19 @@ $border-light: rgba(0, 0, 0, 0.06);
   margin: 0 0 28px;
 }
 
-// REPLACE .team-disciplines-outro
-.team-disciplines-outro {
-  margin: 32px auto 0;
-  font-size: 15px;
-  color: $muted;
-  line-height: 1.8;
-  max-width: 640px;
+.team-disciplines-card {
+  text-align: center;        // ← this already exists, good
+
+  .team-disciplines-outro {
+    margin: 32px auto 0;
+    font-size: 16px;
+    color: $muted;
+    line-height: 1.7;
+    max-width: 560px;
+    text-align: center !important;   // ← force it with !important
+    display: block;                   // ← ensure it's a block element
+    width: 100%;                      // ← take full width before centering
+  }
 }
 
 // REPLACE .team-tags-grid
@@ -556,7 +562,9 @@ $tag-colors: (
   width: 100%;
   overflow: visible;
 
-  @media(max-width: 900px) { display: none; }
+  @media(max-width: 900px) {
+    display: none;
+  }
 }
 
 
@@ -569,10 +577,10 @@ $tag-colors: (
   margin-top: 40px;
 
   img {
-    width: 100% !important;       // 👈 force full width
-    max-width: none !important;   // 👈 remove max-width cap
+    width: 100% !important; // 👈 force full width
+    max-width: none !important; // 👈 remove max-width cap
     height: auto;
-    transform: scale(1.3);        // 👈 scale up visually
+    transform: scale(1.3); // 👈 scale up visually
     transform-origin: center;
   }
 }
@@ -925,10 +933,10 @@ $tag-colors: (
 }
 
 .team-body-quote {
-  font-size: 20px;              // ← bigger
+  font-size: 20px; // ← bigger
   font-weight: 700;
-  font-style: italic;           // ← cursive feel
-  color: $green;                // ← green color
+  font-style: italic; // ← cursive feel
+  color: $green; // ← green color
   border-left: 3px solid $green; // ← left accent line
   padding-left: 16px;
   margin: 8px 0 16px !important;

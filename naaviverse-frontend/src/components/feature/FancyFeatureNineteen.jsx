@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import "./fancyFeatureNineteen.scss";
-import img22 from '../../assets/images/assets/img_27.png';
+import img22 from '../../assets/images/assets/img_23.png';
 
 const ProcessContent = [
   {
