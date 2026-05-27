@@ -148,10 +148,9 @@ const Team = () => {
               <div className="team-drivers-list">
                 {drivers.map((d, i) => (
                   <div key={d} className="team-driver-row">
-                    <div className="team-driver-circle">{i + 1}</div>
+                    <div className="team-driver-circle" aria-hidden="true">{i + 1}</div>
                     <p className="team-driver-title">{d}</p>
                   </div>
-
                 ))}
               </div>
             </div>
