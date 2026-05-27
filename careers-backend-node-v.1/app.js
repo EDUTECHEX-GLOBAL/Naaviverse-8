@@ -84,7 +84,10 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:4545",
   "https://naaviverse-vercel-frontend-sigma.vercel.app",
-  "https://naaviverse-frontend-sepia.vercel.app"
+  "https://naaviverse-frontend-sepia.vercel.app",
+  "https://naavinetwork.ai",
+  "https://www.naavinetwork.ai"
+
 ];
 
 const corsOptions = {
