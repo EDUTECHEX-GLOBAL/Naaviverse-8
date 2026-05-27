@@ -266,7 +266,7 @@ $text-muted:         #9aa1b5;
   font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   table-layout: auto;
-  min-width: 520px;        // ← triggers horizontal scroll before this width
+  min-width: 750px;        // ← triggers horizontal scroll before this width
 
   thead tr { background: $pastel-lavender; }
 
@@ -308,11 +308,14 @@ $text-muted:         #9aa1b5;
   // Email — full text, table scrolls instead of clipping
   .col-email {
     width: auto;
+    min-width: 320px;      // ← prevents column from shrinking and cutting off email
 
     .email-cell {
       display: flex;
       align-items: center;
       gap: 8px;
+      max-width: none !important;     // ← override global Dashboard.scss max-width
+      overflow: visible !important;   // ← override global Dashboard.scss overflow: hidden
 
       .email-icon {
         font-size: 13px;
@@ -326,6 +329,9 @@ $text-muted:         #9aa1b5;
         text-decoration: none;
         font-size: 13px;
         white-space: nowrap;   // one line — table scrolls, no ellipsis
+        flex-shrink: 0;        // ← prevents flexbox from squishing the link text
+        max-width: none !important;     // ← override any global max-width
+        overflow: visible !important;   // ← override any global overflow: hidden
 
         &:hover { text-decoration: underline; }
       }
