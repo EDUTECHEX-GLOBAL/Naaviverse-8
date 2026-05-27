@@ -142,8 +142,10 @@ $border-light: rgba(0, 0, 0, 0.06);
   line-height: 1.7;
   color: $muted;
   margin: 0;
+  text-align: center;
+  hyphens: none;
+  word-spacing: normal;
 }
-
 // Disciplines Card
 .team-disciplines {
   background: $white;
@@ -307,6 +309,9 @@ $tag-colors: (
   line-height: 1.7;
   color: $muted;
   margin: 0 0 16px;
+  text-align: justify;
+  hyphens: none;
+  word-spacing: normal;
 
   &--bold {
     font-weight: 700;
@@ -769,11 +774,14 @@ $tag-colors: (
 }
 
 .team-beyond-body {
-  font-size: 15px;
+font-size: 15px;
   line-height: 1.75;
   color: $text-dark;
   margin: 0;
   max-width: 90%;
+  text-align: justify;
+  hyphens: none;
+  word-spacing: normal;
 }
 
 @media (max-width: 900px) {

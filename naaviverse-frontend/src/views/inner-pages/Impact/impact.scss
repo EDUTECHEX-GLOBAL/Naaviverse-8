@@ -479,12 +479,17 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 }
 
 .imp-story-desc {
-  font-size: 15.5px;
-  line-height: 1.8;
+  font-size: 15px;
+  line-height: 1.75;
   color: $muted;
   margin: 0 0 24px;
   max-width: 100%;
   font-weight: 400;
+  text-align: justify;
+  hyphens: none;
+  word-spacing: normal;
+  word-break: normal;
+  overflow-wrap: normal;
 }
 
 .imp-story-stat-row {

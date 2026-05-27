@@ -86,6 +86,9 @@ $border-light: rgba(0, 0, 0, 0.06);
   color: $muted;
   margin: 0;
   line-height: 1.6;
+  text-align: justify;
+  hyphens: none;
+  word-spacing: normal;
 }
 
 // ── PREVIEW IMAGE BLOCK (new — appears right after header) ─
@@ -206,6 +209,9 @@ $border-light: rgba(0, 0, 0, 0.06);
   line-height: 1.7;
   color: $text-dark;
   margin: 0 0 16px;
+  text-align: justify;
+  hyphens: none;
+  word-spacing: normal;
 }
 
 .tech-body-sub {
@@ -213,6 +219,9 @@ $border-light: rgba(0, 0, 0, 0.06);
   color: $muted;
   margin: 0 0 12px;
   font-weight: 500;
+  text-align: justify;
+  hyphens: none;
+  word-spacing: normal;
 }
 
 .tech-green {
@@ -408,10 +417,8 @@ $border-light: rgba(0, 0, 0, 0.06);
   }
 }
 
-// ── Synergy caption (plain text, no card) ────────────────
 .tech-synergy-caption-standalone {
   margin-top: 24px;
-  text-align: center;
 
   p {
     font-size: 15px;
@@ -419,6 +426,9 @@ $border-light: rgba(0, 0, 0, 0.06);
     color: $muted;
     margin: 0 auto;
     max-width: 720px;
+    text-align: justify;
+    hyphens: none;
+    word-spacing: normal;
   }
 }
 

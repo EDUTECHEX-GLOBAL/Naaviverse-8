@@ -57,7 +57,7 @@ const stories = [
   {
     id: 'education-transformation',
     title: ['Education', 'Transformation'],
-    text: 'Education should evolve from standardized systems to personalized journeys. Naavi enables a new era of data-driven, adaptive, and learner-centric navigation.',
+    text: 'Education should evolve from standardized systems to personalized journeys. Naavi enables a new era of data driven, adaptive, and learner-centric navigation.',
     accent: '#4DA6FF',
     visual: 'education',
     stat: '100%',

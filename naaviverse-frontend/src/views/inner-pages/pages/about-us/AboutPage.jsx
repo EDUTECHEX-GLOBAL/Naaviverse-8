@@ -4,7 +4,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import Footer from '../../../../components/footernew/index';
 import './AboutPage.scss';
 
-import whatImg from './images/What is Naavi_1.png';
+import whatImg from './images/What is naavi.png';
 import naaviverseImg from './images/Naaviverse.png';
 import visionImg from './images/Our Vision.png';
 import navigationProblemImg from './images/Navigation Problem.png';
@@ -80,7 +80,7 @@ const AboutPage = () => {
   return (
     <Fragment>
       <Helmet>
-        <title>Naavi Network- AI Path Engine</title>
+        <title>Naavi - AI Powered Path Engine</title>
       </Helmet>
 
       <div className="ab-page" style={{ paddingTop: '80px' }}>
@@ -144,7 +144,7 @@ const AboutPage = () => {
               <div className="ab-col-txt">
                 <h2>The Navigation <span className="ab-green">Problem</span></h2>
                 <p className="ab-lead">
-                  Millions of students and professionals make life-changing decisions with limited guidance, outdated systems, and fragmented information. Naavi solves this with dynamic pathway intelligence.
+                  Millions of students and professionals make life changing decisions with limited guidance, outdated systems, and fragmented information. Naavi solves this with dynamic pathway intelligence.
                 </p>
               </div>
               <div className="ab-col-vis">
@@ -166,17 +166,17 @@ const AboutPage = () => {
             </div>
             <div className="ab-tech-row">
               <div className="ab-tech-card ab-tech-card--blue">
-                <div className="ab-tc-icon">1</div>
+                <div className="ab-tc-icon"><BrainIcon /></div>
                 <h4>Large Language Models</h4>
                 <p>Conversational intelligence for pathway generation, predictive reasoning, and guidance at scale.</p>
               </div>
               <div className="ab-tech-card ab-tech-card--green">
-                <div className="ab-tc-icon">2</div>
+                <div className="ab-tc-icon"><NetworkIcon /></div>
                 <h4>Knowledge Graphs</h4>
                 <p>Connecting skills, careers, universities, industries, mentors, and opportunities in living context.</p>
               </div>
               <div className="ab-tech-card ab-tech-card--orange">
-                <div className="ab-tc-icon">4</div>
+                <div className="ab-tc-icon"><ChartIcon /></div>
                 <h4>GraphRAG Framework</h4>
                 <p>Retrieval-augmented generation over knowledge graphs for explainable, future-aware pathways.</p>
               </div>
@@ -210,7 +210,7 @@ const AboutPage = () => {
                 <h2><span className="ab-green">Naaviverse</span></h2>
                 <p className="ab-lead">
                   The Naaviverse is a living ecosystem of pathways, people, skills, mentors,
-                  institutions, and opportunities — continuously evolving through collective
+                  institutions, and opportunities continuously evolving through collective
                   human intelligence.
                 </p>
               </div>
