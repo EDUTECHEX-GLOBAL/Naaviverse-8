@@ -79,7 +79,7 @@ const TopNavFour = () => {
        
 
       {/* 🔴 SIDE PANEL — RENDER ONCE ONLY */}
-      <SideTogglePanel isOpen={isSidebarOpen} onClose={closeSidebar} />
+      <SideTogglePanel isOpen={isSidebarOpen} onClose={closeSidebar} isMobile={isMobile} />
     </Fragment>
   );
 };

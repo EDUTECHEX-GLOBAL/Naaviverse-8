@@ -28,7 +28,7 @@
 }
 // C:\Users\Dell\Naaviverse-8\naaviverse-frontend\src\components\header\topnav.scss
 
-.menu-icon-btn1 {
+.menu-icon-btn {
     background-color: #198754;
     width: 40px;
     height: 40px;
@@ -51,7 +51,7 @@
 
 /* Mobile menu toggle button positioning */
 @media (max-width: 991px) {
-  .menu-icon-btn1 {
+  .menu-icon-btn {
     margin-left: auto !important;
     margin-right: 15px !important;
   }

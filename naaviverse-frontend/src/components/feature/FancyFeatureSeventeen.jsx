@@ -157,7 +157,7 @@ const FancyFeatureSeventeen = () => {
   position: relative;
   background: var(--card-gradient);
   border-radius: 20px;
-  padding: 24px 24px;  /* REDUCED: from 32px 28px */
+  padding: 18px 20px;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   opacity: 0;
   transform: translateY(20px);
@@ -284,7 +284,7 @@ const FancyFeatureSeventeen = () => {
   line-height: 1.4;
   position: relative;
   letter-spacing: -0.01em;
-  min-height: 76px;        /* ← makes all titles same height */
+  min-height: 54px !important;
   display: flex;
   align-items: flex-start;
 }
@@ -309,7 +309,7 @@ const FancyFeatureSeventeen = () => {
   color: #2e3440;
   line-height: 1.65;
   font-size: 0.98rem;
-  margin-bottom: 20px;  /* REDUCED: from 30px */
+  margin-bottom: 12px;
   flex-grow: 1;
   opacity: 0.85;
   transition: opacity 0.3s ease;
@@ -407,6 +407,7 @@ const FancyFeatureSeventeen = () => {
   .card-title {
     font-size: 1.3rem;
     margin-bottom: 10px;  /* ADDED: consistent spacing */
+    min-height: auto !important;
   }
 
   .card-description {
@@ -443,6 +444,7 @@ const FancyFeatureSeventeen = () => {
   .card-title {
     font-size: 1.2rem;
     margin-bottom: 8px;  /* ADDED: consistent spacing */
+    min-height: auto !important;
   }
 
   .card-description {

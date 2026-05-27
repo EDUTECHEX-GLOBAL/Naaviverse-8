@@ -166,17 +166,17 @@ const AboutPage = () => {
             </div>
             <div className="ab-tech-row">
               <div className="ab-tech-card ab-tech-card--blue">
-                <div className="ab-tc-icon"><BrainIcon /></div>
+                <div className="ab-tc-icon">1</div>
                 <h4>Large Language Models</h4>
                 <p>Conversational intelligence for pathway generation, predictive reasoning, and guidance at scale.</p>
               </div>
               <div className="ab-tech-card ab-tech-card--green">
-                <div className="ab-tc-icon"><NetworkIcon /></div>
+                <div className="ab-tc-icon">2</div>
                 <h4>Knowledge Graphs</h4>
                 <p>Connecting skills, careers, universities, industries, mentors, and opportunities in living context.</p>
               </div>
               <div className="ab-tech-card ab-tech-card--orange">
-                <div className="ab-tc-icon"><ChartIcon /></div>
+                <div className="ab-tc-icon">4</div>
                 <h4>GraphRAG Framework</h4>
                 <p>Retrieval-augmented generation over knowledge graphs for explainable, future-aware pathways.</p>
               </div>

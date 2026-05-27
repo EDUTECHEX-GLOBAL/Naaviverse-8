@@ -5,6 +5,14 @@
     -moz-box-sizing: border-box;
     box-sizing: border-box;
 }
+
+/* ===== GLOBAL MOBILE HORIZONTAL OVERFLOW FIX ===== */
+@media (max-width: 991px) {
+    html, body {
+        overflow-x: hidden;
+        max-width: 100%;
+    }
+}
 a {
     text-decoration: none;
     display: inline-block;
@@ -97,6 +105,32 @@ ul.style-none {
     max-width: 140px; /* Example size, adjust as necessary */
     object-fit: contain;
 
+}
+
+@media (max-width: 768px) {
+    #partners-section {
+        padding-bottom: 60px !important;
+    }
+    .partners-heading {
+        font-size: 2rem !important;
+        margin-bottom: 30px !important;
+    }
+    #partners-section ul.style-none {
+        gap: 20px !important;
+    }
+    .partner-logo-block-one {
+        width: 130px !important;
+        height: 130px !important;
+    }
+    .brand-logo-img {
+        max-width: 90px !important;
+    }
+    .dst-logo {
+        max-width: 110px !important;
+    }
+    .thub {
+        max-width: 90px !important;
+    }
 }
 
 

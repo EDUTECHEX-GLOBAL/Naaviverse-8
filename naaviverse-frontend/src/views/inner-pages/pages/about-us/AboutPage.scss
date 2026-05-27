@@ -48,10 +48,10 @@ $border: rgba(0, 0, 0, 0.07);
 }
 
 .ab-section {
-  padding: 48px 0;
+  padding: 60px 0;  // ← reduced from 100px
 
   @media(max-width:768px) {
-    padding: 40px 0;
+    padding: 40px 0;  // ← reduced from 64px
   }
 }
 
@@ -66,24 +66,21 @@ $border: rgba(0, 0, 0, 0.07);
 
 
 #ab-vision {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
   overflow: hidden !important;
 
   .ab-vision-row {
-    align-items: stretch !important;
-    min-height: 440px; // ← reduced
+    align-items: center !important;
 
     .ab-col-txt {
       display: flex !important;
       flex-direction: column !important;
       justify-content: center !important;
-      align-self: stretch !important;
-      padding: 48px 0;
+      align-self: center !important;
+      padding: 16px 0;
     }
 
     .ab-col-vis {
-      align-self: stretch;
+      align-self: center;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
@@ -91,48 +88,56 @@ $border: rgba(0, 0, 0, 0.07);
     }
   }
 
-  // ← ADD THIS NESTED INSIDE #ab-vision
   img.ab-vision-image {
     width: 100% !important;
     max-width: 100% !important;
-    max-height: 380px !important; // ← controls the size — adjust 360-400px to taste
+    max-height: 380px !important;
     height: auto !important;
     object-fit: contain !important;
     object-position: center center !important;
     border-radius: 0 !important;
-    filter: none !important; // ← removes drop-shadow from .ab-side-image
+    filter: none !important;
+
+    @media (max-width: 768px) {
+      max-height: 180px !important;  // ← compact for two-column mobile
+      margin: 0 !important;
+    }
+
+    @media (max-width: 480px) {
+      max-height: 220px !important;
+      margin: 0 auto !important;
+    }
   }
 }
 
-// ← KEY CHANGE — add a max-height cap
 .ab-vision-image {
   width: 100% !important;
   max-width: 100% !important;
-  max-height: 420px !important; // ← ADD this cap to reduce size
+  max-height: 380px !important;
   height: auto !important;
   object-fit: contain !important;
   object-position: center center !important;
   border-radius: 0;
 }
 
+
 // two-col layout
 .ab-row {
   display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  gap: clamp(32px, 4vw, 56px);
+  grid-template-columns: 1fr 1fr;  // ← equal columns for mobile compatibility
+  gap: clamp(16px, 3vw, 48px);
   align-items: center !important;
-  min-height: 500px;
 
-  @media(max-width:900px) {
-    grid-template-columns: 1fr;
-    gap: 48px;
+  @media(max-width: 480px) {
+    grid-template-columns: 1fr;  // ← only stack on very small phones
+    gap: 16px;
   }
 
   &.ab-row-rev .ab-col-vis {
     order: -1;
   }
 
-  @media(max-width:900px) {
+  @media(max-width: 480px) {
     &.ab-row-rev .ab-col-vis {
       order: 0;
     }
@@ -142,9 +147,15 @@ $border: rgba(0, 0, 0, 0.07);
 .ab-col-txt {
   display: flex;
   flex-direction: column;
-  justify-content: center; // ← centers text vertically
+  justify-content: center;
   height: 100%;
-  padding: 40px 0;
+  padding: 16px 0;
+
+  @media(max-width: 480px) {
+    align-items: flex-start !important;
+    text-align: left !important;
+    padding: 8px 0;
+  }
 }
 
 .ab-col-vis {
@@ -156,21 +167,22 @@ $border: rgba(0, 0, 0, 0.07);
 // center heading
 .ab-center-hd {
   text-align: center;
-  max-width: 600px;
-  margin: 0 auto 60px;
+  max-width: 640px;
+  margin: 0 auto 28px;  // ← reduced bottom margin from 60px
 
   p {
-    font-size: 17px;
+    font-size: 15px;
     color: $muted;
-    margin-top: 12px;
-    text-align: center;
+    margin-top: 8px;
+    text-align: justify;  // ← justify
+    text-justify: inter-word;
     hyphens: none;
   }
 }
 
 #ab-why {
   position: relative;
-  min-height: 320px;
+  // removed min-height ← was causing large empty space
   display: flex;
   align-items: center;
   background: linear-gradient(135deg, #f0fdf8 0%, #e8f4ff 50%, #f5f0ff 100%);
@@ -198,19 +210,16 @@ $border: rgba(0, 0, 0, 0.07);
   }
 
   .ab-center-hd h2 {
-    margin-bottom: 24px;
+    margin-bottom: 16px;  // ← reduced from 24px
   }
 
    .ab-center-hd p {
     color: $text;
-    font-size: 18px;
-    line-height: 1.8;
-    text-align: center;
+    font-size: 16px;  // ← reduced from 18px
+    line-height: 1.72;
+    text-align: justify;  // ← justify, not center
+    text-justify: inter-word;
     hyphens: none;
-  }
-
-  @media(max-width:768px) {
-    min-height: 260px;
   }
 }
 
@@ -228,33 +237,57 @@ $border: rgba(0, 0, 0, 0.07);
   margin-bottom: 16px;
 }
 
-h2 {
-  font-size: clamp(26px, 3.5vw, 40px);
-  font-weight: 700;
-  line-height: 1.2;
-  color: $navy;
-  margin-bottom: 20px;
+.ab-page h2 {
+  font-size: 40px !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-weight: 500 !important;
+  line-height: 1.25 !important;
+  color: $navy !important;
+  margin-bottom: 14px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+
+  @media(max-width: 768px) {
+    font-size: 22px !important;  // ← smaller for two-column mobile layout
+    line-height: 1.3 !important;
+    margin-bottom: 10px;
+    text-align: left !important;  // ← left-aligned to match two-column layout
+  }
+
+  @media(max-width: 480px) {
+    font-size: 26px !important;  // ← single-column can be bigger
+    text-align: left !important;
+  }
 }
 
 .ab-lead {
-  font-size: 16px;
-  line-height: 1.8;
+  font-size: 15px;
+  line-height: 1.72;
   color: $navy;
   font-weight: 400;
-  margin-bottom: 16px;
+  margin-bottom: 0;
   text-align: justify;
   text-justify: inter-word;
   hyphens: none;
   word-break: normal;
   overflow-wrap: break-word;
+
+  @media(max-width: 768px) {
+    font-size: 12px;  // ← smaller to fit two-column mobile layout
+    line-height: 1.6;
+  }
+
+  @media(max-width: 480px) {
+    font-size: 14px;  // ← restore for single-column
+    line-height: 1.7;
+  }
 }
 
-// REPLACE WITH:
-p {
+.ab-page p {
   font-size: 15px;
   line-height: 1.72;
   color: $text;
-  margin: 0 0 14px;
+  margin: 0 0 10px;
   text-align: justify;
   text-justify: inter-word;
   hyphens: none;
@@ -264,16 +297,28 @@ p {
   &:last-child {
     margin: 0;
   }
+
+  @media(max-width: 768px) {
+    font-size: 12px;  // ← smaller font for two-column mobile
+    line-height: 1.6;
+    margin: 0 0 6px;
+  }
+
+  @media(max-width: 480px) {
+    font-size: 14px;  // ← restore for single-column
+    line-height: 1.7;
+    margin: 0 0 10px;
+  }
 }
 
-h4 {
+.ab-page h4 {
   font-size: 16px;
   font-weight: 600;
   color: $navy;
   margin-bottom: 8px;
 }
 
-h5 {
+.ab-page h5 {
   font-size: 14px;
   font-weight: 600;
   color: $navy;
@@ -909,94 +954,106 @@ h5 {
 
 .ab-tech-card {
   border-radius: 16px;
-  padding: 28px 22px;
-  border: none;
+  padding: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
   transition: transform .22s ease, box-shadow .22s ease;
   position: relative;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
 
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    border-radius: 16px 16px 0 0;
+  @media(max-width:768px) {
+    padding: 20px;
   }
 
   &:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
   }
 
   &--blue {
-    background: linear-gradient(145deg, #F0EAFF, #E8E0FF);
-    box-shadow: 0 4px 16px rgba(162, 89, 255, 0.08);
+    background: #F5F0FF;
+    border: 1px solid rgba(162, 89, 255, 0.15);
+    box-shadow: 0 4px 16px rgba(162, 89, 255, 0.04);
 
-    // &::after { background: linear-gradient(90deg, #A259FF, #7C3AED); }
     .ab-tc-icon {
-      color: #A259FF;
+      background: #A259FF;
     }
 
     h4 {
       color: #5B21B6;
     }
+
+    p {
+      color: #5B21B6;
+      opacity: 0.85;
+    }
   }
 
   &--green {
-    background: linear-gradient(145deg, #FFF0F5, #FFE4EE);
-    box-shadow: 0 4px 16px rgba(236, 72, 153, 0.08);
+    background: #FFF0F5;
+    border: 1px solid rgba(236, 72, 153, 0.15);
+    box-shadow: 0 4px 16px rgba(236, 72, 153, 0.04);
 
-    // &::after { background: linear-gradient(90deg, #EC4899, #DB2777); }
     .ab-tc-icon {
-      color: #EC4899;
+      background: #EC4899;
     }
 
     h4 {
       color: #9D174D;
     }
+
+    p {
+      color: #9D174D;
+      opacity: 0.85;
+    }
   }
 
   &--orange {
-    background: linear-gradient(145deg, #E8F6FF, #D6EDFF);
-    box-shadow: 0 4px 16px rgba(77, 166, 255, 0.08);
+    background: #E8F4FF;
+    border: 1px solid rgba(77, 166, 255, 0.15);
+    box-shadow: 0 4px 16px rgba(77, 166, 255, 0.04);
 
-    // &::after { background: linear-gradient(90deg, #4DA6FF, #2273E6); }
     .ab-tc-icon {
-      color: #2273E6;
+      background: #2273E6;
     }
 
     h4 {
       color: #1E40AF;
     }
+
+    p {
+      color: #1E40AF;
+      opacity: 0.85;
+    }
   }
 }
 
 .ab-tc-icon {
-  font-size: 28px;
-  margin-bottom: 14px;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff !important;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(4px);
+  margin-bottom: 16px;
 }
 
 .ab-tech-card h4 {
-  font-size: 15px;
-  font-weight: 500;
-  margin-bottom: 0px;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-family: 'Poppins', sans-serif;
 }
 
 .ab-tech-card p {
-  font-size: 14px;
-  color: $muted;
+  font-size: 13.5px;
   margin: 0;
-  line-height: 1.65;
+  line-height: 1.6;
 }
 
 .ab-pathway-strip {
@@ -1307,18 +1364,27 @@ h5 {
 .ab-side-image {
   width: 100%;
   max-width: 100%;
-  max-height: 500px; // ← increase from 420px
+  max-height: 380px;
   height: auto;
   object-fit: contain;
-  border-radius: 20px;
+  border-radius: 16px;
   display: block;
-  filter: drop-shadow(0 18px 34px rgba(26, 26, 46, 0.08));
+  filter: drop-shadow(0 12px 24px rgba(26, 26, 46, 0.07));
 
-  @media (max-width: 900px) {
-    max-width: min(100%, 480px); // ← increase from 380px
-    max-height: 320px; // ← increase from 260px
+  @media (max-width: 768px) {
+    max-width: 100%;
+    max-height: 180px;  // ← compact for two-column mobile layout
+    margin: 0 auto !important;
+  }
+
+  @media (max-width: 480px) {
+    max-width: min(100%, 320px);
+    max-height: 220px;  // ← slightly larger for single-column
+    margin: 0 auto !important;
   }
 }
+
+
 
 
 .ab-col-vis {
@@ -1412,8 +1478,6 @@ h5 {
 }
 
 #ab-problem {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
 
   .ab-row {
     display: grid;
@@ -1456,8 +1520,6 @@ h5 {
 }
 
 #ab-mission {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
 
   .ab-row {
     grid-template-columns: 1.3fr 1fr !important; // ← image gets more space
@@ -1503,8 +1565,6 @@ h5 {
 }
 
 #ab-verse {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
   overflow: visible !important; // ← CHANGE from hidden to visible
 
   .ab-row {

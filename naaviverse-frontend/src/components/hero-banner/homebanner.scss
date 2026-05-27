@@ -1,8 +1,8 @@
 .hero-badge-container {
     display: flex;
     align-items: center;
-    gap: 5px; /* consistent spacing */
-
+    gap: 5px;
+    flex-wrap: wrap;  // ← ADDED: badges wrap on small screens
 }
 
 .hero-badge {
@@ -52,6 +52,19 @@
     color: black;
     padding-top:25px;
     letter-spacing: 1px;
+
+    @media (max-width: 480px) {
+      font-size: 28px;
+      line-height: 42px;
+      width: 100%;
+      padding-top: 16px;
+    }
+
+    @media (min-width: 481px) and (max-width: 768px) {
+      font-size: 32px;
+      line-height: 48px;
+      width: 100%;
+    }
 }
 
 .home-text {
@@ -67,6 +80,18 @@
 
 .amber-text {
   color: #FFA600; /* Amber */
+}
+
+/* ===== GLOBAL MOBILE OVERFLOW FIX ===== */
+@media (max-width: 991px) {
+  .hero-banner-five {
+    overflow-x: hidden;
+    padding: 100px 0 60px;  // ← reduced top padding on mobile
+  }
+
+  .main-page-wrapper {
+    overflow-x: hidden;
+  }
 }
 
 @media (min-width: 300px)  and (max-width:400px){
@@ -166,34 +191,36 @@
 
 @media (max-width: 768px) {
   .home {
-    font-size:30px;
-    font-weight:600;
-    line-height:45px;
-    padding-left:5px;
-    width:90%;
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 42px;
+    padding-left: 5px;
+    width: 100%;  // ← full width on mobile, no overflow
     color: black;
-    padding-top:30px;
-    letter-spacing: 1px;
+    padding-top: 16px;
+    letter-spacing: 0.5px;
   }
 
   .home-text {
-    font-size: 0.95rem; /* ~15px */
+    font-size: 0.95rem;
     width: 100%;
     padding-right: 0;
     line-height: 25px;
     margin-top: 0.5rem;
     margin-bottom: 1.5rem;
-    padding-left:5px;
+    padding-left: 5px;
   }
 
   .hero-badge-container {
-    justify-content: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   .hero-badge {
-    font-size: 0.7rem;
-    padding: 0.3rem 0.8rem;
+    font-size: 0.68rem;
+    padding: 0.25rem 0.65rem;
     min-width: auto;
+    height: 24px;
   }
 }
 
