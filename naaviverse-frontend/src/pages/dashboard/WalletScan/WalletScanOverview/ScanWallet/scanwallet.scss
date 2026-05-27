@@ -1,0 +1,58 @@
+.account-selection {
+  width: 100%;
+  height: calc(100vh - 122px);
+  // background-color: #1f304f;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  .selection-back {
+    position: absolute;
+    left: 5%;
+    top: 5%;
+    background-color: transparent;
+    border: 0;
+    font-weight: 600;
+    color: #ffffff;
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.5);
+      transition: 0.3s;
+    }
+    &:disabled {
+      display: none;
+    }
+  }
+  .dual-theme-holder {
+    background-color: #ffffff;
+    position: fixed;
+    right: 5%;
+    top: calc(5% + 122px);
+    border: 0 solid #ffffff;
+    font-size: 85%;
+    padding: 5px 20px;
+    border-radius: 4px;
+    box-shadow: 5px 5px 10px rgba($color: #000000, $alpha: 0.2) inset;
+    &:hover {
+      transform: scale(1.1);
+      transition: 0.3s;
+      font-weight: 600;
+    }
+  }
+  .selection-area {
+    width: 40%;
+    min-height: 10vh;
+    border-radius: 35px;
+    background-color: #ffffff;
+    // box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+    animation: be-big 0.3s 1 linear;
+    border: 1px solid #e5e5e5;
+  }
+}
+@keyframes be-big {
+  from {
+    transform: scale(0.2);
+  }
+  to {
+    transform: scale(1);
+  }
+}

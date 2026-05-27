@@ -1,0 +1,917 @@
+@import "../../static/scss/colors";
+@import "../../static/scss/mixin";
+
+.GlobalDrawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 11;
+  border: 0.5px solid #E7E7E7;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #000000d0;
+  }
+
+  .sidebar {
+    position: absolute;
+    // top: 0;
+    right: 0;
+    bottom: 0;
+    width: 450px;
+    overflow: scroll;
+    // height: 100vh;
+    top: 132;
+    height: calc(100vh - 132px);
+    background: white;
+    display: flex;
+    flex-direction: column;
+    border-left: 0.5px solid #E7E7E7;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+    .header {
+      display: flex;
+      padding: 35px;
+
+      .content {
+        flex: 1;
+
+        .title {
+          font-size: 28px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+
+          img {
+            height: 28px;
+            width: 28px;
+            object-fit: contain;
+            margin-right: 6px;
+          }
+        }
+
+        .breadCrumbs {
+          span {
+            margin-top: 6px;
+            font-size: 14px;
+            cursor: pointer;
+
+            &:last-of-type {
+              font-weight: 600;
+              text-decoration: underline;
+            }
+
+            &:hover {
+              font-weight: 500;
+            }
+          }
+        }
+      }
+
+      .backBtn,
+      .closeBtn {
+        height: 50px;
+        width: 50px;
+        color: white;
+        font-size: 30px;
+        line-height: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: all 400ms ease;
+        // border: 1px solid $border-color;
+        background: $primary-color;
+        margin-left: 8px;
+
+        img {
+          height: 20px;
+          width: 20px;
+          transition: all 400ms ease;
+        }
+
+        &:hover {
+          img {
+            transform: scale(1.2);
+          }
+        }
+      }
+
+      .closeBtn {
+        background: rgba(75, 157, 220, 0.1);
+        border-radius: 10px;
+      }
+    }
+
+    .searchBox {
+      margin: 0 35px;
+      height: 60px;
+      flex: 0 0 60px;
+      border: 1px solid $border-color;
+      display: flex;
+      align-items: center;
+      border-radius: 10px;
+
+      input {
+        width: 0;
+        flex: 1;
+        border: none;
+        background: none;
+        outline: none;
+        padding: 0 20px;
+
+        &::placeholder {
+          text-transform: capitalize;
+        }
+      }
+    }
+
+    .verticalScrollBox {
+      height: 0;
+      // flex: 1;
+      margin-top: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      padding: 20px 35px;
+      justify-content: space-between;
+      align-items: flex-start;
+
+      .itemBox {
+        flex: 0 0 28%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 30px;
+        cursor: pointer;
+        transition: all 400ms ease;
+        height: fit-content;
+
+        // height: 300px;
+        .svgFrame {
+          width: 100%;
+          height: auto;
+
+          .iconWrap {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            img {
+              height: 50%;
+              width: auto;
+            }
+          }
+        }
+
+        .label {
+          margin-top: 5px;
+          font-weight: 500;
+          font-size: 15px;
+          text-align: center;
+        }
+
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+    }
+
+    .coinList {
+      height: 0 !important;
+      flex: 1;
+
+      >div {
+        display: flex;
+        flex-direction: column;
+        padding: 40px;
+
+        .coinItem {
+          height: 100px;
+          flex: 0 0 100px;
+          border: 1px solid $border-color;
+          display: flex;
+          margin-bottom: 20px;
+          align-items: center;
+          padding: 0 30px;
+          color: $primary-color;
+
+          .coin {
+            height: 25px;
+            width: 25px;
+            object-fit: contain;
+            margin-right: 10px;
+          }
+
+          span {
+            font-weight: 600;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: $primary-color;
+          }
+
+          .value {
+            margin-left: auto;
+          }
+
+          &:hover {
+            background: whitesmoke;
+
+            .nozoom {
+              transform: none !important;
+              zoom: 1 !important;
+            }
+          }
+
+          &.disable {
+            opacity: 0.4;
+          }
+        }
+
+        .name {
+          font-size: 19px;
+          font-weight: 500;
+        }
+
+        .inputWrap {
+          display: flex;
+          height: 60px;
+          border: 1px solid $border-color;
+          margin: 20px 0 50px 0;
+          position: relative;
+          flex: 0 0 60px;
+
+          .text {
+            width: 0;
+            flex: 1;
+            border: none;
+            padding: 0 30px;
+          }
+
+          .fileInp {
+            border-left: 1px solid $border-color;
+            width: 60px;
+            margin: 0;
+
+            img {
+              width: 100%;
+              height: 100%;
+              padding: 15px;
+
+              &:hover {
+                filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
+              }
+            }
+
+            input {
+              display: none;
+            }
+          }
+
+          .domain {
+            display: flex;
+            align-items: center;
+            border-left: 1px solid $border-color;
+            width: fit-content;
+            padding: 0 40px 0 20px;
+          }
+
+          &.options {
+            border: none;
+            justify-content: space-between;
+
+            .option {
+              cursor: pointer;
+              flex: 0 0 49%;
+              border: 1px solid $border-color;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+
+              &.true {
+                box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.75);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .btnSubmit,
+    .newField {
+      cursor: pointer;
+      margin-top: auto;
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      border: none;
+      background: $primary-color;
+      color: white;
+      font-weight: 600;
+      font-size: 22px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      &:disabled {
+        opacity: 0.6;
+      }
+
+      &:hover {
+        text-shadow: 2px 3px 4px rgba(255, 255, 255, 0.589);
+      }
+    }
+
+ 
+
+    .ftBtns {
+      height: 70px;
+      border-top: 1px solid $border-color;
+      display: flex;
+
+      .newField,
+      .btnSubmit {
+        flex: 0 0 50%;
+        background: white;
+        color: $primary-color;
+      }
+
+      .savebtn {
+        flex: 0 0 100%;
+        color: black;
+        font-weight: 700;
+        font-size: 20px;
+        border-left: 1px solid $border-color;
+        border-right: 1px solid $border-color;
+
+      }
+
+      .newField {}
+
+      .btnSubmit {
+        border-left: 1px solid $border-color;
+        @include btn-animate;
+      }
+
+    }
+
+    .titleOp {
+      margin: 30px 0;
+      font-weight: 600;
+      font-size: 21px;
+    }
+
+    .searchWrap {
+      height: 75px;
+      border: 1px solid $border-color;
+      display: flex;
+      margin: 0;
+
+      input {
+        flex: 1;
+        border: none;
+        background: none;
+        padding: 0 30px;
+      }
+    }
+
+    .searchList {
+      height: 0 !important;
+      width: unset !important;
+      flex: 1;
+      border: 1px solid $border-color;
+      border-style: none solid;
+      margin: 0;
+
+      >div {
+        display: flex;
+        flex-direction: column;
+
+        .user {
+          flex: 0 0 110px;
+          max-height: 110px;
+          border-bottom: 1px solid $border-color;
+          display: flex;
+          align-items: center;
+          padding: 0 30px;
+          cursor: pointer;
+
+          * {
+            transition: all 400ms ease;
+          }
+
+          img {
+            height: 44px;
+            width: 44px;
+            border-radius: 22px;
+          }
+
+          .userDetail {
+            margin-left: 15px;
+
+            .name {
+              font-size: 18px;
+              font-weight: 600;
+            }
+
+            .email {
+              font-size: 15px;
+            }
+          }
+
+          &:hover {
+            * {
+              transform: scale(1.03);
+            }
+          }
+
+          &.true {
+            background: whitesmoke;
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+.globalDrawerImg {
+  border-radius: 15px;
+  border: 2px solid #e7e7e780;
+  height: 110px;
+  width: 110px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  img {
+    width: 60%;
+    height: 60%;
+  }
+}
+
+
+@media only screen and (max-width: 600px) {
+
+  .globalDrawerImg {
+    border-radius: 15px;
+    border: 2px solid #e7e7e780;
+    height: 100px;
+    width: 24vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    img {
+      width: 60%;
+      height: 60%;
+    }
+  }
+
+  .GlobalDrawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #000000d0;
+    }
+
+    .sidebar {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      background: white;
+      display: flex;
+      flex-direction: column;
+
+      .header {
+        display: flex;
+        padding: 35px;
+
+        .content {
+          flex: 1;
+
+          .title {
+            font-size: 28px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+
+            img {
+              height: 28px;
+              width: 28px;
+              object-fit: contain;
+              margin-right: 6px;
+            }
+          }
+
+          .breadCrumbs {
+            span {
+              margin-top: 6px;
+              font-size: 14px;
+              cursor: pointer;
+
+              &:last-of-type {
+                font-weight: 600;
+                text-decoration: underline;
+              }
+
+              &:hover {
+                font-weight: 500;
+              }
+            }
+          }
+        }
+
+        .backBtn,
+        .closeBtn {
+          height: 50px;
+          width: 50px;
+          color: white;
+          font-size: 30px;
+          line-height: 1;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          cursor: pointer;
+          transition: all 400ms ease;
+          border: 1px solid $border-color;
+          background: $primary-color;
+          margin-left: 8px;
+
+          img {
+            height: 20px;
+            width: 20px;
+            transition: all 400ms ease;
+          }
+
+          &:hover {
+            img {
+              transform: scale(1.2);
+            }
+          }
+        }
+
+        .closeBtn {
+          background: $primary-red;
+        }
+      }
+
+      .searchBox {
+        margin: 0 35px;
+        height: 60px;
+        flex: 0 0 60px;
+        border: 1px solid $border-color;
+        display: flex;
+        align-items: center;
+        border-radius: 10px;
+
+        input {
+          width: 0;
+          flex: 1;
+          border: none;
+          background: none;
+          outline: none;
+          padding: 0 20px;
+
+          &::placeholder {
+            text-transform: capitalize;
+          }
+        }
+      }
+
+      .verticalScrollBox {
+        height: 0;
+        // flex: 1;
+        margin-top: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        padding: 20px 35px;
+        justify-content: space-between;
+        align-items: flex-start;
+
+        .itemBox {
+          flex: 0 0 28%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin-bottom: 30px;
+          cursor: pointer;
+          transition: all 400ms ease;
+          height: fit-content;
+          // height: 300px;
+
+          .svgFrame {
+            width: 100%;
+            height: auto;
+
+            .iconWrap {
+              height: 100%;
+              width: 100%;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+
+              img {
+                height: 50%;
+                width: auto;
+              }
+            }
+          }
+
+          .label {
+            margin-top: 5px;
+            font-weight: 500;
+            font-size: 15px;
+            text-align: center;
+          }
+
+          &:hover {
+            transform: scale(1.05);
+          }
+        }
+      }
+
+      .coinList {
+        height: 0 !important;
+        flex: 1;
+
+        >div {
+          display: flex;
+          flex-direction: column;
+          padding: 40px;
+
+          .coinItem {
+            height: 100px;
+            flex: 0 0 100px;
+            border: 1px solid $border-color;
+            display: flex;
+            margin-bottom: 20px;
+            align-items: center;
+            padding: 0 30px;
+            color: $primary-color;
+
+            .coin {
+              height: 25px;
+              width: 25px;
+              object-fit: contain;
+              margin-right: 10px;
+            }
+
+            span {
+              font-weight: 600;
+              flex: 1;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              color: $primary-color;
+            }
+
+            .value {
+              margin-left: auto;
+            }
+
+            &:hover {
+              background: whitesmoke;
+
+              .nozoom {
+                transform: none !important;
+                zoom: 1 !important;
+              }
+            }
+
+            &.disable {
+              opacity: 0.4;
+            }
+          }
+
+          .name {
+            font-size: 19px;
+            font-weight: 500;
+          }
+
+          .inputWrap {
+            display: flex;
+            height: 60px;
+            border: 1px solid $border-color;
+            margin: 20px 0 50px 0;
+            position: relative;
+            flex: 0 0 60px;
+
+            .text {
+              width: 0;
+              flex: 1;
+              border: none;
+              padding: 0 30px;
+            }
+
+            .fileInp {
+              border-left: 1px solid $border-color;
+              width: 60px;
+              margin: 0;
+
+              img {
+                width: 100%;
+                height: 100%;
+                padding: 15px;
+
+                &:hover {
+                  filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
+                }
+              }
+
+              input {
+                display: none;
+              }
+            }
+
+            .domain {
+              display: flex;
+              align-items: center;
+              border-left: 1px solid $border-color;
+              width: fit-content;
+              padding: 0 40px 0 20px;
+            }
+
+            &.options {
+              border: none;
+              justify-content: space-between;
+
+              .option {
+                cursor: pointer;
+                flex: 0 0 49%;
+                border: 1px solid $border-color;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                &.true {
+                  box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.75);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .btnSubmit,
+      .newField {
+        cursor: pointer;
+        margin-top: auto;
+        position: sticky;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 70px;
+        border: none;
+        background: $primary-color;
+        color: white;
+        font-weight: 600;
+        font-size: 22px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        &:disabled {
+          opacity: 0.6;
+        }
+
+        &:hover {
+          text-shadow: 2px 3px 4px rgba(255, 255, 255, 0.589);
+        }
+      }
+
+      .ftBtns {
+        height: 70px;
+        border-top: 1px solid $border-color;
+        display: flex;
+
+        .newField,
+        .btnSubmit {
+          flex: 0 0 50%;
+          background: white;
+          color: $primary-color;
+        }
+
+        .newField {}
+
+        .btnSubmit {
+          border-left: 1px solid $border-color;
+          @include btn-animate;
+        }
+
+        .savebtn {
+          flex: 0 0 100%;
+          color: black;
+          font-weight: 700;
+          font-size: 20px;
+          border-left: 1px solid $border-color;
+          border-right: 1px solid $border-color;
+
+        }
+
+      }
+
+      .titleOp {
+        margin: 30px 0;
+        font-weight: 600;
+        font-size: 21px;
+      }
+
+      .searchWrap {
+        height: 75px;
+        border: 1px solid $border-color;
+        display: flex;
+        margin: 0;
+
+        input {
+          flex: 1;
+          border: none;
+          background: none;
+          padding: 0 30px;
+        }
+      }
+
+      .searchList {
+        height: 0 !important;
+        width: unset !important;
+        flex: 1;
+        border: 1px solid $border-color;
+        border-style: none solid;
+        margin: 0;
+
+        >div {
+          display: flex;
+          flex-direction: column;
+
+          .user {
+            flex: 0 0 100px;
+            max-height: 100px;
+            border-bottom: 1px solid $border-color;
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            cursor: pointer;
+
+            * {
+              transition: all 400ms ease;
+            }
+
+            img {
+              height: 44px;
+              width: 44px;
+              border-radius: 22px;
+            }
+
+            .userDetail {
+              margin-left: 15px;
+
+              .name {
+                font-size: 20px;
+                font-weight: 600;
+              }
+
+              .email {
+                font-size: 17px;
+              }
+            }
+
+            &:hover {
+              * {
+                transform: scale(1.03);
+              }
+            }
+
+            &.true {
+              background: whitesmoke;
+            }
+          }
+        }
+      }
+    }
+  }
+
+}

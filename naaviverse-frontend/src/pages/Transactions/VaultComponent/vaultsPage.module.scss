@@ -1,0 +1,1122 @@
+.vaults {
+  height: 0;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+
+  .vaultssnavbar {
+    width: 100%;
+    height: 8%;
+    border-bottom: 0.5px solid #e7e7e7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 4rem 1rem 3rem;
+
+    .vaultssicon {
+      width: 10%;
+      height: 100%;
+      // border: 1px solid red;
+      img {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    .searchvaultss {
+      width: 55%;
+      height: 100%;
+      border: 0.5px solid #ededed;
+      background: white;
+      border-radius: 25px;
+      padding: 0.5rem 2rem;
+      display: flex;
+      align-items: center;
+      .all {
+        width: 32%;
+        height: 100%;
+        border-right: 3px solid #e7e7e7;
+        display: flex;
+        align-items: center;
+        font-size: 1rem;
+        color: #343c5b;
+        font-weight: 700;
+        opacity: 0.25;
+        /* grid-gap: 1rem; */
+        /* gap: 1rem; */
+        justify-content: space-between;
+        padding-right: 15px;
+        p {
+          margin-bottom: 0;
+        }
+        .arroww {
+          display: flex;
+          align-items: center;
+          img {
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+          }
+        }
+      }
+      .im {
+        width: 100%;
+        height: 100%;
+        // padding-left: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 1rem;
+        color: #343c5b;
+        font-weight: 700;
+        // opacity: 0.25;
+        gap: 1rem;
+        input {
+          border: none;
+          font-size: 1rem;
+          color: #343c5b;
+          font-weight: 700;
+          background: transparent;
+        }
+      }
+    }
+
+    .trackerBtn {
+      height: 100%;
+      padding: 0 2.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      background: linear-gradient(270deg, #81cbd7 0%, #3d4394 100%);
+      opacity: 0.9;
+      border-radius: 35px;
+      color: white;
+      font-weight: 500;
+      transition: all ease-in 0.2s;
+
+      &:hover {
+        scale: 1.05;
+      }
+    }
+
+    .righttop {
+      width: 30%;
+      height: 100%;
+      display: flex;
+      .divv {
+        // width: 50%;
+        height: 100%;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        p {
+          margin-bottom: 0;
+          font-size: 0.9rem;
+          color: #343c5b;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  .wspace {
+    width: 100%;
+    height: 4%;
+    padding: 0 4rem 0 3rem;
+    border-bottom: 0.5px solid #e7e7e7;
+    .optionss {
+      width: 30%;
+      height: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      .optionssdivider {
+        display: flex;
+        width: max-content;
+        gap: 1.5rem;
+        height: 100%;
+        align-items: center;
+        justify-content: space-between;
+        .eachoption {
+          height: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 10px 2rem;
+          border-radius: 25px;
+          white-space: nowrap;
+          p {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+          }
+          div {
+            display: flex;
+            gap: 5px;
+            transition: all ease 0.3s;
+            cursor: pointer;
+            &:hover {
+              scale: 1.1;
+            }
+          }
+        }
+      }
+      .lastoption {
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        div {
+          display: flex;
+          gap: 5px;
+          transition: all ease 0.3s;
+          font-size: 0.65rem;
+        }
+      }
+    }
+  }
+
+  .assetClassWrap {
+    height: 100px;
+    border-bottom: 1px solid #e5e5e5;
+    display: flex;
+    margin-bottom: 1rem;
+    .assetClass {
+      width: 0;
+      flex: 1;
+      display: flex;
+      overflow-x: scroll;
+      .assetClassCard {
+        display: flex;
+        align-items: center;
+        padding: 0 60px;
+        opacity: 0.25;
+        transition: all 400ms ease;
+        img {
+          transition: all 400ms ease;
+          height: 35%;
+          width: auto;
+          transform-origin: center center;
+        }
+        &:hover {
+          opacity: 0.7;
+          img {
+            transform: scale(1.05);
+          }
+        }
+        &.true {
+          opacity: 1;
+          img {
+            transform: scale(1.1);
+          }
+        }
+      }
+    }
+  }
+  .contentArea {
+    height: 0;
+    flex: 1;
+    padding: 55px 60px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+}
+
+.vaultHeader {
+  height: 60px;
+  display: flex;
+  margin-bottom: 1.6rem;
+  .vaultNbalance {
+    color: #1f304f;
+    line-height: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    .vault {
+      font-size: 17px;
+    }
+    .balance {
+      font-size: 37px;
+      font-weight: 600;
+      small {
+        cursor: pointer;
+        font-size: 22px;
+      }
+    }
+  }
+  .coinSelect {
+    display: flex;
+    margin-left: auto;
+    .coinWrap {
+      height: 60px;
+      width: 60px;
+      border-radius: 6px;
+      border: 1px solid #e5e5e5;
+      margin-left: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 400ms ease;
+      * {
+        transform-origin: center center;
+        transition: all 400ms ease;
+      }
+      &::before {
+        content: "";
+        background: #1F304F;
+        width: 200%;
+        top: 0;
+        bottom: 0;
+        position: absolute;
+        left: -220%;
+        transform-origin: center center;
+        transform: rotateZ(45deg);
+      }
+      &:hover {
+        * {
+          transform: scale(1.05);
+          transform-origin: 0;
+        }
+        &::before {
+          transition: all 0.6s ease;
+          left: 220%;
+        }
+      }
+      box-shadow: rgba(17, 17, 26, 0.1) 0px 2px 1px;
+      img {
+        width: 40px;
+        height: 40px;
+      }
+      &.true {
+        box-shadow: inset 0 0 0.5em rgba(0, 0, 0, 0.1),
+          0.2em 0.2em 0.5em rgba(0, 0, 0, 0.2);
+      }
+    }
+  }
+}
+
+.vaultFilter {
+  height: 50px;
+  display: flex;
+  margin-bottom: 1rem;
+  .appSelectWrap,
+  .allTxnWrap,
+  .allDirectionWrap {
+    width: max-content;
+    margin-right: 20px;
+    position: relative;
+    white-space: nowrap;
+    // padding: 0 20px;
+    .appSelected,
+    .txnSelected,
+    .dirSelected {
+      display: flex;
+      height: 100%;
+      border: 1px solid #e5e5e5;
+      padding: 0 10px;
+      align-items: center;
+      border-radius: 8px;
+      cursor: pointer;
+
+      .icon {
+        height: 60%;
+        margin-right: 8px;
+      }
+      .appName {
+        font-size: 17px;
+        font-weight: 600;
+      }
+      .label {
+        font-size: 15px;
+        font-weight: 400;
+      }
+      .caret {
+        margin-left: 12px;
+        height: 8px;
+      }
+      &:hover {
+        background: whitesmoke;
+      }
+    }
+
+    .dropDown {
+      // border: 1px solid red;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: max-content;
+      border: 1px solid #e5e5e5;
+      // border-radius: 0 0 8px 8px;
+      border-radius: 8px;
+      // border-top: none;
+      background: white;
+      z-index: 2;
+
+      & > div {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 15px 10px;
+        cursor: pointer;
+        // justify-content: space-between;
+        & > img {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+        }
+        font-size: 15px !important;
+        font-weight: 500 !important;
+      }
+    }
+  }
+  .searchWrap {
+    width: fit-content;
+    margin-left: auto;
+    .searchHead {
+      display: flex;
+      height: 100%;
+      border: 1px solid #e5e5e5;
+      padding: 0 20px;
+      align-items: center;
+      border-radius: 8px;
+      .searcInp {
+        width: 260px;
+        border: none;
+        background: none;
+      }
+      .searchIcon {
+        margin-left: 12px;
+        height: 60%;
+      }
+    }
+  }
+}
+
+.vaultsView {
+  height: 0;
+  flex: 1;
+  margin-top: 10px;
+  > div {
+    .day {
+      margin-top: 1rem;
+      font-size: 16px;
+      line-height: 1;
+      padding: 6px 0;
+      font-weight: 600;
+    }
+    .vaultItmWrap {
+      border: 1px solid transparent;
+      overflow: hidden;
+      .vaultsItm {
+        display: flex;
+        height: 100px;
+        align-items: center;
+        padding-right: 60px;
+        .img {
+          height: 40px;
+          width: 40px;
+          border-radius: 20px;
+          margin: auto 20px;
+        }
+        .nameDate {
+          height: 100%;
+          display: flex;
+          line-height: 1;
+          flex-direction: column;
+          justify-content: center;
+          margin-right: auto;
+          flex: 0 0 50%;
+          max-width: calc(45% - 40px);
+          overflow: hidden;
+          .name {
+            font-weight: 500;
+            font-size: 18px;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .date {
+            font-size: 11px;
+          }
+        }
+        .buttons {
+          flex: 1;
+          display: flex;
+          justify-content: center;
+          height: 35px;
+          .btnNotes,
+          .btnEdit,
+          .btnTxn,
+          .btnChat {
+            height: 35px;
+            border: 1px solid #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 400ms ease;
+            * {
+              transform-origin: center center;
+              transition: all 400ms ease;
+            }
+            &::before {
+              content: "";
+              background: #1F304F;
+              width: 200%;
+              top: 0;
+              bottom: 0;
+              position: absolute;
+              left: -220%;
+              transform-origin: center center;
+              transform: rotateZ(45deg);
+            }
+            &:hover {
+              * {
+                transform: scale(1.05);
+                transform-origin: 0;
+              }
+              &::before {
+                transition: all 0.6s ease;
+                left: 220%;
+              }
+            }
+          }
+          .btnNotes {
+            padding: 0 15px;
+            font-weight: 600;
+          }
+          .btnEdit,
+          .btnTxn,
+          .btnChat {
+            padding: 6px;
+            width: 35px;
+          }
+        }
+        .credit,
+        .debit,
+        .balance {
+          flex: 0 0 10%;
+          max-width: 10%;
+          display: flex;
+          justify-content: flex-end;
+          align-items: center;
+          font-size: 18px;
+          text-align: right;
+          .expand {
+            display: none;
+          }
+        }
+        .credit {
+          color: #3ea254;
+        }
+        .debit {
+          color: #ea0f0f;
+        }
+        .balance {
+          color: #1f304f;
+          font-weight: bold;
+        }
+      }
+      .vaultsExpand {
+        display: none;
+        padding: 0 60px 0 80px;
+        display: flex;
+        flex-direction: column;
+        .viewInAnother {
+          display: flex;
+          height: 100px;
+          align-items: center;
+          .viewCurrency {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            .view {
+              font-weight: 600;
+            }
+            .btnCoin {
+              height: 35px;
+              border: 1px solid #e5e5e5;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-right: 10px;
+              border-radius: 8px;
+              padding: 0 15px;
+              font-weight: 600;
+              margin: 0 15px;
+              cursor: pointer;
+              position: relative;
+              overflow: hidden;
+              transition: all 400ms ease;
+              * {
+                transform-origin: center center;
+                transition: all 400ms ease;
+              }
+              &::before {
+                content: "";
+                background: #1F304F;
+                width: 200%;
+                top: 0;
+                bottom: 0;
+                position: absolute;
+                left: -220%;
+                transform-origin: center center;
+                transform: rotateZ(45deg);
+              }
+              &:hover {
+                * {
+                  transform: scale(1.05);
+                  transform-origin: 0;
+                }
+                &::before {
+                  transition: all 0.6s ease;
+                  left: 220%;
+                }
+              }
+              .btnIcon {
+                height: 22px;
+                width: 22px;
+                margin-right: 8px;
+              }
+            }
+            .rateLiveHistorical {
+              display: flex;
+              align-items: center;
+              .false,
+              .true {
+                font-size: 15px;
+                font-weight: 400;
+                transition: all 400ms ease;
+              }
+              .true {
+                font-weight: 600;
+              }
+              .btnOutline {
+                height: 24px;
+                width: 40px;
+                border-radius: 12px;
+                border: 3px solid #1f304f;
+                margin: 0 8px;
+                display: flex;
+                align-items: center;
+                position: relative;
+                .btnBall {
+                  height: 16px;
+                  width: 16px;
+                  border-radius: 8px;
+                  background-color: #1f304f;
+                  position: absolute;
+                  left: 1px;
+                  top: 0;
+                  bottom: 0;
+                  margin: auto;
+                  transition: all 400ms ease;
+                  &.true {
+                    left: 17px;
+                  }
+                }
+              }
+            }
+          }
+          .credit,
+          .debit,
+          .balance {
+            flex: 0 0 12%;
+            max-width: calc(10% + 8px);
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            font-size: 18px;
+            text-align: right;
+            .expand {
+              display: none;
+            }
+          }
+          .credit {
+            color: #3ea254;
+          }
+          .debit {
+            color: #ea0f0f;
+          }
+          .balance {
+            color: #1f304f;
+            font-weight: bold;
+          }
+        }
+        .txnType {
+          height: 90px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          .text {
+            font-weight: 600;
+          }
+          .txnIcon {
+            height: 26%;
+            width: auto;
+          }
+        }
+        .from,
+        .to {
+          display: flex;
+          flex-direction: column;
+          margin: 30px 0;
+          .textFromTo {
+            font-size: 18px;
+            font-weight: 600;
+          }
+          .txnFromTo {
+            height: 60px;
+            display: flex;
+            margin: 10px 0;
+            .userCard {
+              border-radius: 10px;
+              border: 1px solid #e5e5e5;
+              margin-right: auto;
+              display: flex;
+              padding: 5px 0;
+              .user,
+              .liquidity,
+              .coin {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 0 30px;
+                font-size: 19px;
+                font-weight: 600;
+              }
+              .user {
+                line-height: 1;
+                .dp {
+                  height: 40px;
+                  width: 40px;
+                  border-radius: 20px;
+                  margin-right: 12px;
+                }
+                .nameAppCode {
+                  .name {
+                    font-size: 19px;
+                    font-weight: 600;
+                  }
+                  .appCode {
+                    font-size: 16px;
+                    font-weight: 400;
+                  }
+                }
+              }
+              .liquidity {
+                border: 1px #e5e5e5;
+                border-style: none solid;
+              }
+              .coin {
+                .coinIcon {
+                  height: 36px;
+                  width: 36px;
+                  margin-right: 10px;
+                }
+              }
+            }
+            .credit,
+            .debit,
+            .balance {
+              flex: 0 0 12%;
+              max-width: calc(10% + 8px);
+              display: flex;
+              justify-content: flex-end;
+              align-items: center;
+              font-size: 18px;
+              text-align: right;
+              .expand {
+                display: none;
+              }
+            }
+            .credit {
+              color: #3ea254;
+            }
+            .debit {
+              color: #ea0f0f;
+            }
+            .balance {
+              color: #1f304f;
+              font-weight: bold;
+            }
+          }
+        }
+      }
+      &:hover {
+        background: whitesmoke;
+      }
+      &.true {
+        border: 1px solid #e5e5e5;
+        border-radius: 16px;
+        .vaultsItm {
+          height: 100px;
+          .credit,
+          .debit,
+          .balance {
+            font-size: 19px;
+            font-weight: 600;
+          }
+        }
+        .vaultsExpand {
+          display: flex;
+          hr {
+            margin: 0;
+            border-color: #e5e5e5;
+          }
+        }
+      }
+    }
+  }
+}
+
+.trackerDetails {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 20px;
+  border-radius: 10px;
+  transition: all ease-in 0.4s;
+  cursor: pointer;
+  white-space: nowrap;
+  margin: 15px 0;
+  position: relative;
+
+  & > .clickableDiv {
+    position: absolute;
+    inset: 0;
+    background: transparent;
+    border-radius: 10px;
+  }
+
+  & > .eachSubDiv {
+    display: flex;
+    gap: 15px;
+    // flex: 1;
+
+    & > .roundedImg {
+      height: 50px;
+      width: 50px;
+      border-radius: 50%;
+      // margin: auto 20px;
+    }
+
+    & > .squareImg {
+      height: 50px;
+      width: 50px;
+      border-radius: 10px;
+      // margin: auto 20px;
+    }
+
+    & > div {
+      & > .heading {
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+
+      & > .date {
+        font-size: 12px;
+      }
+    }
+  }
+  & > .hashBtn {
+    position: relative;
+    z-index: 2;
+    background: #ffffff;
+    border: 0.5px solid #e5e5e5;
+    border-radius: 5px;
+    color: #343c5b;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 25px;
+    cursor: pointer;
+    transition: all ease-in 0.5s;
+  }
+
+  &:hover {
+    background: whitesmoke;
+
+    & > .hashBtn {
+      color: white;
+      background: #343c5b;
+    }
+  }
+
+  & > :nth-child(1) {
+    width: 25%;
+  }
+  & > :nth-child(2) {
+    width: 18%;
+  }
+  & > :nth-child(3) {
+    width: 18%;
+  }
+  & > :nth-child(4) {
+    width: 18%;
+  }
+
+  & > div {
+    & > div {
+      width: 100%;
+      overflow: hidden;
+      & > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis !important;
+      }
+    }
+  }
+}
+
+.trackerDetailsWithdraw {
+  & > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 20px;
+    border-radius: 10px;
+    transition: all ease-in 0.4s;
+    cursor: pointer;
+    white-space: nowrap;
+    margin: 15px 0;
+    position: relative;
+
+    & > .clickableDiv {
+      position: absolute;
+      inset: 0;
+      background: transparent;
+      border-radius: 10px;
+    }
+
+    & > .eachSubDiv {
+      display: flex;
+      gap: 15px;
+      // flex: 1;
+
+      & > .roundedImg {
+        height: 50px;
+        width: 50px;
+        border-radius: 50%;
+        // margin: auto 20px;
+      }
+
+      & > .squareImg {
+        height: 50px;
+        width: 50px;
+        border-radius: 10px;
+        // margin: auto 20px;
+      }
+
+      & > div {
+        & > .heading {
+          font-size: 17px;
+          font-weight: 700;
+          margin-bottom: 4px;
+        }
+
+        & > .date {
+          font-size: 12px;
+        }
+      }
+    }
+    & > .hashBtn {
+      position: relative;
+      z-index: 2;
+      background: #ffffff;
+      border: 0.5px solid #e5e5e5;
+      border-radius: 5px;
+      color: #343c5b;
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 25px;
+      cursor: pointer;
+      transition: all ease-in 0.5s;
+    }
+
+    &:hover {
+      background: whitesmoke;
+
+      & > .hashBtn {
+        color: white;
+        background: #343c5b;
+      }
+    }
+
+    & > :nth-child(1) {
+      width: 30%;
+    }
+    & > :nth-child(2) {
+      width: 27.5%;
+    }
+    & > :nth-child(3) {
+      width: 27.5%;
+    }
+    & > :nth-child(4) {
+      width: 15%;
+    }
+
+    & > div {
+      & > div {
+        width: 100%;
+        overflow: hidden;
+        & > div {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis !important;
+        }
+      }
+    }
+  }
+
+  & > .initialisedBtns {
+    display: flex;
+    padding: 20px;
+    margin: 5px 0;
+    justify-content: space-between;
+
+    & > .cancelBtn {
+      padding: 0.75rem 2rem;
+      background: #ea0f0f;
+      border: 0.5px solid #e5e5e5;
+      border-radius: 35px;
+      color: white;
+      width: max-content;
+      font-weight: 550;
+      cursor: pointer;
+      transition: all ease-in 0.2s;
+
+      &:hover {
+        scale: 1.05;
+      }
+    }
+  }
+}
+
+.trackerDetailsWithdrawSelected {
+  border: 0.5px solid #e5e5e5;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 15px;
+  margin-top: 5px;
+  // transition: all ease-in 0.4s;
+
+  &:hover {
+    background: whitesmoke;
+  }
+}
+
+.stakingControls {
+  width: 100%;
+  display: flex;
+  gap: 2rem;
+  color: #343c5b;
+  padding: 1rem 0;
+  position: relative;
+
+  & > div {
+    // padding: 0.5rem 1.5rem;
+    background: #ffffff;
+    border: 1px solid #ebebeb;
+    border-radius: 15px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all ease-in 0.4s;
+    white-space: nowrap;
+
+    // &:hover {
+    //   scale: 1.05;
+    // }
+  }
+
+  .borderLine {
+    padding: 0;
+    border-radius: 0;
+    position: absolute;
+    bottom: 0;
+    width: calc(100% + 120px);
+    left: -60px;
+    // right: 55px;
+    height: 1px;
+    background: #ebebeb;
+    border: none;
+    cursor: unset;
+
+    &:hover {
+      scale: 1;
+    }
+  }
+}
+
+.customDropdown {
+  width: 199px;
+  border: 1px solid #ebebeb;
+  border-radius: 15px;
+  color: #343c5b;
+  // padding: 5px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  position: relative;
+  background: white;
+  height: max-content;
+
+  & > .selectedDropdown {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1.5rem;
+
+    & > span {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      & > img {
+        width: 0.9rem;
+        height: 0.9rem;
+        rotate: 180deg;
+      }
+    }
+
+    & > :nth-child(1) {
+      padding: 5px 0;
+    }
+  }
+
+  & > .dropdown {
+    width: 100%;
+    // border: 1px solid #ebebeb;
+    border-top: none;
+    border-radius: 0 0 15px 15px;
+    // position: absolute;
+    left: 0px;
+    top: 38px;
+    background: white;
+    position: absolute;
+    border-left: 1px solid #ebebeb;
+    border-bottom: 1px solid #ebebeb;
+    border-right: 1px solid #ebebeb;
+    z-index: 5;
+
+    & > div {
+      padding: 0.8rem 1.5rem;
+      width: 100%;
+    }
+  }
+}

@@ -1,0 +1,1534 @@
+// ═══════════════════════════════════════════════
+//  Naavi — About Page Styles
+//  Brand: #2DB67D green | #1A1A2E navy
+//  Style: clean, premium, light SaaS
+//  NO dark black backgrounds
+// ═══════════════════════════════════════════════
+
+$green: #2DB67D;
+$green-d: #1E9966;
+$navy: #1A1A2E;
+$navy-l: #2C2C4E;
+$blue: #4DA6FF;
+$white: #FFFFFF;
+$soft: #F4FAF7; // very light green-tinted white
+$soft2: #F7F9FC; // cool light grey-white
+$text: #3D4A5C;
+$muted: #6B7A8D;
+$border: rgba(0, 0, 0, 0.07);
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin container {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+// ═══════════════════════════════════════════════
+//  BASE
+// ═══════════════════════════════════════════════
+.ab-page {
+  font-family: 'Poppins', sans-serif;
+  color: $navy;
+  background: $white;
+  overflow-x: clip; // ← change hidden to clip
+}
+
+.ab-container {
+  @include container;
+}
+
+.ab-green {
+  color: $green;
+}
+
+.ab-section {
+  padding: 48px 0;
+
+  @media(max-width:768px) {
+    padding: 40px 0;
+  }
+}
+
+.ab-alt-white {
+  background: $white;
+}
+
+.ab-alt-soft {
+  background: $soft2;
+}
+
+
+
+#ab-vision {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  overflow: hidden !important;
+
+  .ab-vision-row {
+    align-items: stretch !important;
+    min-height: 440px; // ← reduced
+
+    .ab-col-txt {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-self: stretch !important;
+      padding: 48px 0;
+    }
+
+    .ab-col-vis {
+      align-self: stretch;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      overflow: hidden !important;
+    }
+  }
+
+  // ← ADD THIS NESTED INSIDE #ab-vision
+  img.ab-vision-image {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 380px !important; // ← controls the size — adjust 360-400px to taste
+    height: auto !important;
+    object-fit: contain !important;
+    object-position: center center !important;
+    border-radius: 0 !important;
+    filter: none !important; // ← removes drop-shadow from .ab-side-image
+  }
+}
+
+// ← KEY CHANGE — add a max-height cap
+.ab-vision-image {
+  width: 100% !important;
+  max-width: 100% !important;
+  max-height: 420px !important; // ← ADD this cap to reduce size
+  height: auto !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  border-radius: 0;
+}
+
+// two-col layout
+.ab-row {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: clamp(32px, 4vw, 56px);
+  align-items: center !important;
+  min-height: 500px;
+
+  @media(max-width:900px) {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+
+  &.ab-row-rev .ab-col-vis {
+    order: -1;
+  }
+
+  @media(max-width:900px) {
+    &.ab-row-rev .ab-col-vis {
+      order: 0;
+    }
+  }
+}
+
+.ab-col-txt {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; // ← centers text vertically
+  height: 100%;
+  padding: 40px 0;
+}
+
+.ab-col-vis {
+  justify-content: center;
+  overflow: visible;
+  height: 100%;
+}
+
+// center heading
+.ab-center-hd {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 60px;
+
+  p {
+    font-size: 17px;
+    color: $muted;
+    margin-top: 12px;
+  }
+}
+
+#ab-why {
+  position: relative;
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #f0fdf8 0%, #e8f4ff 50%, #f5f0ff 100%);
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 600px 300px at 10% 50%, rgba(45, 182, 125, 0.07), transparent 60%),
+      radial-gradient(ellipse 500px 300px at 90% 50%, rgba(77, 166, 255, 0.07), transparent 60%);
+    z-index: 0;
+  }
+
+  .ab-container {
+    position: relative;
+    padding: 0 12px;
+    z-index: 1;
+  }
+
+  .ab-center-hd {
+    max-width: 720px;
+    margin-bottom: 0;
+  }
+
+  .ab-center-hd h2 {
+    margin-bottom: 24px;
+  }
+
+  .ab-center-hd p {
+    color: $text;
+    font-size: 18px;
+    line-height: 1.8;
+  }
+
+  @media(max-width:768px) {
+    min-height: 260px;
+  }
+}
+
+// section label
+.ab-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: $green;
+  background: rgba(45, 182, 125, 0.1);
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 100px;
+  margin-bottom: 16px;
+}
+
+h2 {
+  font-size: clamp(26px, 3.5vw, 40px);
+  font-weight: 700;
+  line-height: 1.2;
+  color: $navy;
+  margin-bottom: 20px;
+}
+
+.ab-lead {
+  font-size: 17px;
+  line-height: 1.75;
+  color: $navy;
+  font-weight: 400;
+  margin-bottom: 16px;
+}
+
+p {
+  font-size: 15px;
+  line-height: 1.72;
+  color: $text;
+  margin: 0 0 14px;
+
+  &:last-child {
+    margin: 0;
+  }
+}
+
+h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: $navy;
+  margin-bottom: 8px;
+}
+
+h5 {
+  font-size: 14px;
+  font-weight: 600;
+  color: $navy;
+  margin-bottom: 10px;
+}
+
+// ═══════════════════════════════════════════════
+//  HERO
+// ═══════════════════════════════════════════════
+.ab-hero {
+  position: relative;
+  background: $navy;
+  min-height: 88vh;
+  display: grid;
+  align-items: center;
+  overflow: hidden;
+  padding-top: 80px; // offset for fixed navbar
+}
+
+.ab-grid-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.ab-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+
+  &.ab-glow-1 {
+    width: 480px;
+    height: 480px;
+    background: rgba(45, 182, 125, 0.18);
+    top: -80px;
+    left: -80px;
+    animation: glow-pulse 14s ease-in-out infinite;
+  }
+
+  &.ab-glow-2 {
+    width: 360px;
+    height: 360px;
+    background: rgba(77, 166, 255, 0.12);
+    bottom: -40px;
+    right: 260px;
+    animation: glow-pulse 18s ease-in-out infinite reverse;
+  }
+}
+
+@keyframes glow-pulse {
+
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+
+  50% {
+    transform: scale(1.08) translateY(-20px);
+  }
+}
+
+.ab-hero-inner {
+  @include container;
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 480px;
+  gap: 48px;
+  align-items: center;
+  padding-top: 40px;
+  padding-bottom: 60px;
+
+  @media(max-width:1100px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ab-hero-text {
+  max-width: 580px;
+
+  h1 {
+    font-size: clamp(38px, 5.5vw, 64px);
+    font-weight: 800;
+    line-height: 1.1;
+    color: $white;
+    margin: 16px 0 20px;
+
+    em {
+      font-style: italic;
+      color: $green;
+      font-family: 'Georgia', serif;
+    }
+
+    strong {
+      color: $green;
+      font-weight: 800;
+    }
+  }
+
+  p {
+    font-size: 17px;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.65);
+
+    b {
+      color: $white;
+      font-weight: 600;
+    }
+
+    margin-bottom: 32px;
+  }
+}
+
+.ab-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 20px;
+
+  a {
+    color: rgba(255, 255, 255, 0.45);
+    text-decoration: none;
+
+    &:hover {
+      color: $green;
+    }
+  }
+}
+
+.ab-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(45, 182, 125, 0.15);
+  border: 1px solid rgba(45, 182, 125, 0.3);
+  color: $green;
+  padding: 7px 18px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ab-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: $green;
+  animation: pdot 2s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(45, 182, 125, 0.5);
+}
+
+@keyframes pdot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(45, 182, 125, 0.5);
+  }
+
+  70% {
+    box-shadow: 0 0 0 8px rgba(45, 182, 125, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(45, 182, 125, 0);
+  }
+}
+
+.ab-hero-btns {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.ab-btn-green {
+  background: $green;
+  color: $white;
+  padding: 13px 30px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  box-shadow: 0 6px 22px rgba(45, 182, 125, 0.35);
+  transition: all .22s ease;
+
+  &:hover {
+    background: $green-d;
+    transform: translateY(-2px);
+    color: $white;
+    box-shadow: 0 10px 28px rgba(45, 182, 125, 0.4);
+  }
+}
+
+.ab-btn-ghost {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 13px 26px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: all .22s ease;
+  backdrop-filter: blur(6px);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+  }
+}
+
+// floating cards
+.ab-hero-vis {
+  position: relative;
+  height: 340px;
+  width: 100%;
+
+  @media(max-width:1100px) {
+    display: none;
+  }
+}
+
+.ab-path-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 420px;
+  height: 220px;
+}
+
+.ab-fcard {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 220px;
+  backdrop-filter: blur(10px);
+
+  p {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+    margin: 0 0 8px;
+  }
+
+  &.ab-fcard-1 {
+    top: 40px;
+    right: 0;
+    animation: fc-float 6s ease-in-out infinite;
+  }
+
+  &.ab-fcard-2 {
+    top: 150px;
+    right: 20px;
+    animation: fc-float 7.5s ease-in-out infinite 1s;
+  }
+
+  &.ab-fcard-3 {
+    top: 256px;
+    right: 5px;
+    animation: fc-float 5.5s ease-in-out infinite 0.5s;
+  }
+}
+
+@keyframes fc-float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.ab-fcdot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ab-fcbar {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+  overflow: hidden;
+
+  div {
+    height: 100%;
+    border-radius: 3px;
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  WHAT IS NAAVI — path-card
+// ═══════════════════════════════════════════════
+.ab-path-card {
+  width: 300px;
+  background: $white;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(26, 26, 46, 0.12);
+  border: 1px solid $border;
+
+  @media(max-width:900px) {
+    width: 100%;
+    max-width: 340px;
+  }
+}
+
+.ab-pc-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 16px 20px;
+  background: $soft;
+  border-bottom: 1px solid $border;
+  font-size: 13px;
+  font-weight: 600;
+  color: $navy;
+}
+
+.ab-pc-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: $green;
+  animation: pdot 2s infinite;
+}
+
+.ab-pc-live {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  color: $green;
+  background: rgba(45, 182, 125, 0.1);
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.08em;
+}
+
+.ab-pc-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 20px;
+  font-size: 13px;
+  color: $muted;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  transition: background .15s;
+
+  &.done {
+    color: $text;
+
+    .ab-pc-circle {
+      background: $green;
+    }
+  }
+
+  &.active {
+    background: rgba(45, 182, 125, 0.05);
+    color: $navy;
+    font-weight: 500;
+
+    .ab-pc-circle {
+      background: $green;
+      box-shadow: 0 0 0 4px rgba(45, 182, 125, 0.18);
+    }
+  }
+}
+
+.ab-pc-circle {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.12);
+  flex-shrink: 0;
+}
+
+.ab-checkmark {
+  color: $green;
+  font-weight: 700;
+  margin-left: auto;
+  font-size: 13px;
+}
+
+.ab-ping {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: $green;
+  margin-left: auto;
+  animation: pdot 2s infinite;
+}
+
+.ab-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 24px;
+}
+
+.ab-pill {
+  background: rgba(45, 182, 125, 0.08);
+  color: $green;
+  border: 1px solid rgba(45, 182, 125, 0.2);
+  padding: 7px 16px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+// ═══════════════════════════════════════════════
+//  OUR VISION — rings
+// ═══════════════════════════════════════════════
+.ab-rings {
+  width: 280px;
+  height: 280px;
+  position: relative;
+  @include flex-center;
+}
+
+.ab-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px dashed;
+
+  &.ab-r1 {
+    width: 100%;
+    height: 100%;
+    border-color: rgba(45, 182, 125, 0.2);
+    animation: spin-cw 22s linear infinite;
+  }
+
+  &.ab-r2 {
+    width: 65%;
+    height: 65%;
+    border-color: rgba(77, 166, 255, 0.2);
+    animation: spin-cw 15s linear infinite reverse;
+  }
+}
+
+@keyframes spin-cw {
+  from {
+    transform: rotate(0)
+  }
+
+  to {
+    transform: rotate(360deg)
+  }
+}
+
+.ab-ring-core {
+  @include flex-center;
+  flex-direction: column;
+  gap: 4px;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: $navy;
+  z-index: 2;
+  box-shadow: 0 6px 24px rgba(26, 26, 46, 0.18);
+
+  span {
+    font-size: 24px;
+  }
+
+  p {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.75);
+    text-align: center;
+    margin: 0;
+    line-height: 1.3;
+  }
+}
+
+.ab-quote {
+  border-left: 3px solid $green;
+  padding-left: 18px;
+  margin: 20px 0 24px;
+  font-size: 16px;
+  font-style: italic;
+  color: $navy;
+  line-height: 1.65;
+}
+
+.ab-vision-chips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ab-vchip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(45, 182, 125, 0.08);
+  border: 1px solid rgba(45, 182, 125, 0.18);
+  color: $green;
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+// ═══════════════════════════════════════════════
+//  WHY NAAVI — 6-card grid
+// ═══════════════════════════════════════════════
+.ab-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+
+  @media(max-width:900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media(max-width:580px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ab-feature-card {
+  background: $white;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 28px 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border-top: 3px solid $green;
+  transition: transform .22s ease, box-shadow .22s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.09);
+  }
+
+  h4 {
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 14px;
+    color: $muted;
+    margin: 0;
+  }
+}
+
+.ab-fc-icon {
+  font-size: 28px;
+  margin-bottom: 14px;
+}
+
+// ═══════════════════════════════════════════════
+//  THE NAVIGATION PROBLEM — stat grid
+// ═══════════════════════════════════════════════
+.ab-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media(max-width:480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ab-stat-box {
+  background: $white;
+  border-radius: 14px;
+  padding: 24px 20px;
+  border: 1px solid $border;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  border-left: 4px solid $green;
+  transition: transform .2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+  }
+
+  strong {
+    font-size: 28px;
+    font-weight: 800;
+    color: $green;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  p {
+    font-size: 13px;
+    color: $muted;
+    margin: 0;
+  }
+}
+
+.ab-link-cta {
+  display: inline-block;
+  margin-top: 24px;
+  color: $green;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  PATHWAY INTELLIGENCE — tech cards + demo
+// ═══════════════════════════════════════════════
+.ab-tech-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 40px;
+
+  @media(max-width:900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ab-tech-card {
+  border-radius: 16px;
+  padding: 28px 22px;
+  border: none;
+  transition: transform .22s ease, box-shadow .22s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+  }
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
+  }
+
+  &--blue {
+    background: linear-gradient(145deg, #F0EAFF, #E8E0FF);
+    box-shadow: 0 4px 16px rgba(162, 89, 255, 0.08);
+
+    // &::after { background: linear-gradient(90deg, #A259FF, #7C3AED); }
+    .ab-tc-icon {
+      color: #A259FF;
+    }
+
+    h4 {
+      color: #5B21B6;
+    }
+  }
+
+  &--green {
+    background: linear-gradient(145deg, #FFF0F5, #FFE4EE);
+    box-shadow: 0 4px 16px rgba(236, 72, 153, 0.08);
+
+    // &::after { background: linear-gradient(90deg, #EC4899, #DB2777); }
+    .ab-tc-icon {
+      color: #EC4899;
+    }
+
+    h4 {
+      color: #9D174D;
+    }
+  }
+
+  &--orange {
+    background: linear-gradient(145deg, #E8F6FF, #D6EDFF);
+    box-shadow: 0 4px 16px rgba(77, 166, 255, 0.08);
+
+    // &::after { background: linear-gradient(90deg, #4DA6FF, #2273E6); }
+    .ab-tc-icon {
+      color: #2273E6;
+    }
+
+    h4 {
+      color: #1E40AF;
+    }
+  }
+}
+
+.ab-tc-icon {
+  font-size: 28px;
+  margin-bottom: 14px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.ab-tech-card h4 {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 0px;
+}
+
+.ab-tech-card p {
+  font-size: 14px;
+  color: $muted;
+  margin: 0;
+  line-height: 1.65;
+}
+
+.ab-pathway-strip {
+  background: $navy;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(26, 26, 46, 0.15);
+}
+
+.ab-ps-label {
+  padding: 14px 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.ab-ps-steps {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ab-ps-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 9px;
+
+  span:last-of-type:not(.ab-ps-badge):not(.ab-ps-dot) {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.45);
+    flex: 1;
+  }
+
+  &.active {
+    background: rgba(45, 182, 125, 0.1);
+
+    span:last-of-type:not(.ab-ps-badge):not(.ab-ps-dot) {
+      color: $white;
+      font-weight: 500;
+    }
+
+    .ab-ps-badge {
+      background: rgba(45, 182, 125, 0.2);
+      color: $green;
+    }
+  }
+}
+
+.ab-ps-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+  min-width: 44px;
+  text-align: center;
+}
+
+.ab-ps-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: $green;
+  flex-shrink: 0;
+  margin-left: auto;
+  animation: pdot 2s infinite;
+}
+
+// ═══════════════════════════════════════════════
+//  MISSION & PHILOSOPHY — orbit
+// ═══════════════════════════════════════════════
+.ab-orbit-wrap {
+  width: 300px;
+  height: 300px;
+  position: relative;
+  @include flex-center;
+
+  @media(max-width:900px) {
+    width: 260px;
+    height: 260px;
+  }
+}
+
+.ab-orbit-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px dashed;
+
+  &.ab-or1 {
+    width: 100%;
+    height: 100%;
+    border-color: rgba(45, 182, 125, 0.18);
+    animation: spin-cw 24s linear infinite;
+  }
+
+  &.ab-or2 {
+    width: 62%;
+    height: 62%;
+    border-color: rgba(77, 166, 255, 0.18);
+    animation: spin-cw 16s linear infinite reverse;
+  }
+}
+
+.ab-orbit-core {
+  @include flex-center;
+  flex-direction: column;
+  gap: 4px;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: $navy;
+  z-index: 2;
+  box-shadow: 0 6px 24px rgba(26, 26, 46, 0.18);
+
+  span {
+    font-size: 24px;
+  }
+
+  p {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.75);
+    text-align: center;
+    margin: 0;
+    line-height: 1.3;
+  }
+}
+
+.ab-orbit-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  @include flex-center;
+  flex-direction: column;
+  gap: 3px;
+  background: $white;
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 8px 12px;
+  z-index: 3;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  animation: node-bob 3s ease-in-out infinite;
+
+  span {
+    font-size: 16px;
+  }
+
+  p {
+    font-size: 10px;
+    font-weight: 600;
+    color: $navy;
+    margin: 0;
+    white-space: nowrap;
+  }
+}
+
+@keyframes node-bob {
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}
+
+.ab-belief-list {
+  margin-top: 24px;
+  background: rgba(45, 182, 125, 0.06);
+  border: 1px solid rgba(45, 182, 125, 0.15);
+  border-radius: 12px;
+  padding: 20px 22px;
+
+  h5 {
+    font-size: 13px;
+    font-weight: 700;
+    color: $green;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      font-size: 14px;
+      color: $text;
+      padding: 5px 0 5px 20px;
+      position: relative;
+
+      &::before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: $green;
+        font-weight: 700;
+      }
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  NAAVIVERSE — orbit map
+// ═══════════════════════════════════════════════
+.ab-verse-wrap {
+  width: 320px;
+  height: 320px;
+  position: relative;
+  @include flex-center;
+
+  @media(max-width:900px) {
+    width: 280px;
+    height: 280px;
+  }
+}
+
+.ab-verse-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: $green;
+  color: $white;
+  font-size: 12px;
+  font-weight: 700;
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  @include flex-center;
+  text-align: center;
+  z-index: 3;
+  box-shadow: 0 6px 24px rgba(45, 182, 125, 0.35);
+}
+
+.ab-verse-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: $white;
+  border: 1px solid $border;
+  border-radius: 100px;
+  padding: 7px 13px;
+  font-size: 12px;
+  font-weight: 600;
+  color: $navy;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+  white-space: nowrap;
+  z-index: 2;
+  animation: node-bob 4s ease-in-out infinite;
+}
+
+.ab-verse-ring {
+  position: absolute;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1.5px dashed;
+
+  &.ab-vr1 {
+    width: 76%;
+    height: 76%;
+    border-color: rgba(45, 182, 125, 0.18);
+    animation: spin-cw 20s linear infinite;
+  }
+
+  &.ab-vr2 {
+    width: 100%;
+    height: 100%;
+    border-color: rgba(45, 182, 125, 0.09);
+    animation: spin-cw 32s linear infinite reverse;
+  }
+}
+
+.ab-eco-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.ab-eco-tag {
+  background: $navy;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 7px 16px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+// ─────────────────────────────────────────
+// SIDE IMAGES
+// ─────────────────────────────────────────
+
+.ab-side-image {
+  width: 100%;
+  max-width: 100%;
+  max-height: 500px; // ← increase from 420px
+  height: auto;
+  object-fit: contain;
+  border-radius: 20px;
+  display: block;
+  filter: drop-shadow(0 18px 34px rgba(26, 26, 46, 0.08));
+
+  @media (max-width: 900px) {
+    max-width: min(100%, 480px); // ← increase from 380px
+    max-height: 320px; // ← increase from 260px
+  }
+}
+
+
+.ab-col-vis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  overflow: visible;
+}
+
+.ab-vision-row {
+  .ab-col-vis {
+    justify-content: center !important;
+  }
+
+  @media (max-width: 900px) {
+    .ab-col-vis {
+      justify-content: center;
+    }
+  }
+}
+
+
+
+.ab-problem-image {
+  width: 120%;
+  max-width: 500px;
+  object-fit: contain;
+}
+
+.ab-mission-image {
+  max-width: 340px;
+  max-height: 260px;
+  object-fit: contain;
+}
+
+#ab-what {
+  padding-top: 44px;
+  padding-bottom: 40px;
+
+  .ab-row {
+    grid-template-columns: 1.5fr 1fr !important; // ← image gets more space
+    align-items: stretch !important;
+    min-height: 480px;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr !important;
+      min-height: unset;
+    }
+  }
+
+  .ab-col-vis {
+    order: -1 !important;
+
+    @media (max-width: 900px) {
+      order: 2 !important;
+      width: 100% !important;
+    }
+  }
+
+  .ab-col-txt {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    order: 1 !important;
+    padding: 0 !important;
+
+    @media (max-width: 900px) {
+      order: 1 !important;
+    }
+  }
+
+  // Override global .ab-side-image constraints
+  img.ab-side-image {
+    width: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    height: auto !important;
+    border-radius: 0 !important;
+
+    @media (max-width: 900px) {
+      max-width: 100% !important;
+      margin: 0 auto;
+      display: block;
+    }
+  }
+}
+
+#ab-problem {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+
+  .ab-row {
+    grid-template-columns: 1fr 1.3fr !important; // ← more space for image
+    align-items: stretch !important;
+    min-height: 500px;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr !important;
+      min-height: unset;
+    }
+  }
+
+  .ab-col-txt {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-self: stretch !important;
+    padding: 0 !important;
+  }
+
+  .ab-col-vis {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    align-self: stretch !important;
+  }
+
+  img.ab-problem-image {
+    width: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    height: auto !important;
+
+    @media (max-width: 900px) {
+      max-width: 100% !important;
+    }
+  }
+}
+
+#ab-mission {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+
+  .ab-row {
+    grid-template-columns: 1.3fr 1fr !important; // ← image gets more space
+    align-items: stretch !important;
+    min-height: 500px;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr !important;
+      min-height: unset;
+    }
+  }
+
+  .ab-col-txt {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-self: stretch !important;
+    padding: 40px 0 !important;
+  }
+
+  .ab-col-vis {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    align-self: stretch !important;
+    order: -1 !important; // ← image on LEFT
+
+    @media (max-width: 900px) {
+      order: 2 !important; // ← image below text on mobile
+    }
+  }
+
+  img.ab-mission-image {
+    width: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    height: auto !important;
+
+    @media (max-width: 900px) {
+      max-width: 100% !important;
+    }
+  }
+}
+
+#ab-verse {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  overflow: visible !important; // ← CHANGE from hidden to visible
+
+  .ab-row {
+    grid-template-columns: 1fr 1.8fr !important; // ← give image even more column space
+    align-items: stretch !important;
+    min-height: 560px;
+    overflow: visible;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr !important;
+      min-height: unset;
+    }
+  }
+
+  .ab-col-txt {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-self: stretch !important;
+    padding: 60px 0 !important;
+  }
+
+  .ab-col-vis {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    align-self: stretch !important;
+    overflow: visible !important; // ← CHANGE to visible — no clipping
+
+    @media (max-width: 900px) {
+      order: 2 !important;
+    }
+  }
+
+  img.ab-side-image {
+    width: 100% !important; // ← back to 100%, no negative margin tricks
+    max-width: 100% !important;
+    max-height: none !important;
+    height: auto !important;
+    margin-left: 0 !important; // ← remove the -5% margin that caused clipping
+    object-fit: contain;
+
+    @media (max-width: 900px) {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+  }
+}

@@ -1,0 +1,963 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+$font-display: 'Sora', sans-serif;
+$font-body:    'DM Sans', sans-serif;
+$text:    #0f172a;
+$muted:   #64748b;
+$border:  #e8ecf0;
+$blue:    #3b82f6;
+$blue-bg: #eff6ff;
+$green:   #10b981;
+$green-bg:#ecfdf5;
+$red:     #ef4444;
+$red-bg:  #fef2f2;
+$teal:    #14b8a6;
+$teal-bg: #f0fdfa;
+$amber:   #f59e0b;
+$bg:      #f8fafc;
+$primary: #ec4899;
+$primary-bg: #fdf2f8;
+$pink-soft: rgba(99, 102, 241, 0.05);
+
+// ─── Base Container ─────────────────────────────────────────────
+.admin-steps-container {
+  width: 100%;
+  height: 100%;
+  font-family: $font-body;
+  display: flex;
+  flex-direction: column;
+  background: $pink-soft;
+  // No overflow:clip here — let the browser handle scrolling naturally
+}
+
+// ─── Topbar ─────────────────────────────────────────────────────
+// Mobile: tabs on first row, search on second row (stacked)
+// Desktop (≥600px): everything on one row
+.admin-steps-topbar {
+  // NOT sticky/fixed — just a normal block element
+  background: $pink-soft;
+  border-bottom: none;
+  padding: 12px 12px 8px;
+
+  // Mobile default: stack tabs above search
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// ── Tabs row ──
+.admin-steps-menu {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  flex-wrap: nowrap;
+
+  &::-webkit-scrollbar { display: none; }
+
+  .admin-steps-menu-item {
+    padding: 6px 18px;
+    border-radius: 50px;
+    font-weight: 500;
+    font-size: 0.78rem;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: opacity 0.15s ease;
+    background: rgba(255, 255, 255, 0.75);
+    color: $muted;
+    border: 1.5px solid rgba(255,255,255,0.6);
+
+    &:hover:not(.active-tab) { opacity: 0.72; }
+
+    &.active-tab {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    }
+  }
+}
+
+// ── Search row ──
+.admin-steps-search-row {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-steps-search-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1.5px solid rgba(236, 72, 153, 0.18);
+  border-radius: 50px;
+  width: 100%; // full width on mobile since it's its own row
+  transition: all 0.15s;
+  color: #64748b;
+  box-sizing: border-box;
+
+  &:focus-within {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.08);
+  }
+
+  input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 0.76rem;
+    color: $text;
+    outline: none;
+    min-width: 0;
+    &::placeholder { color: #b0bec5; }
+  }
+}
+
+// ─── Desktop: topbar becomes single row ─────────────────────────
+@media (min-width: 600px) {
+  .admin-steps-topbar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+
+  .admin-steps-menu {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .admin-steps-search-row {
+    flex-shrink: 0;
+  }
+
+  .admin-steps-search-input {
+    width: 150px; // fixed width on desktop since tabs are alongside
+  }
+}
+
+// ─── Content ────────────────────────────────────────────────────
+.admin-steps-content {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: $pink-soft;
+  // No overflow:hidden — let it scroll naturally
+}
+
+// ─── Steps list ─────────────────────────────────────────────────
+.admin-steps-list {
+  flex: 1;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+}
+
+// ─── Step Card — mobile-first stacked ───────────────────────────
+.admin-step-card {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: box-shadow 0.18s ease, transform 0.14s ease, border-color 0.15s ease;
+  padding: 14px 16px;
+  gap: 8px;
+
+  &:hover {
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.09);
+    transform: translateY(-1px);
+    border-color: rgba(236, 72, 153, 0.2);
+  }
+
+  .admin-step-name {
+     display: flex;
+  align-items: center;
+  gap: 8px;
+
+    .admin-step-name-text {
+      font-size: 0.82rem;
+      font-weight: 580;
+      color: #1e293b;
+      line-height: 1.4;
+      letter-spacing: -0.01em;
+    }
+  }
+
+  .admin-step-desc {
+    display: flex;
+    flex-direction: column;
+
+    .admin-step-desc-text {
+      font-size: 0.82rem;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    .admin-step-desc-empty {
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      font-style: italic;
+    }
+  }
+
+  .admin-step-right {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .admin-step-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+
+    .admin-step-date {
+      font-size: 0.67rem;
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+
+   
+    
+  }
+}
+
+// ─── Desktop: horizontal card layout ────────────────────────────
+@media (min-width: 600px) {
+  .admin-step-card {
+    flex-direction: row;
+    align-items: stretch;
+    padding: 0;
+    gap: 0;
+
+    .admin-step-name {
+      width: 200px;
+      min-width: 160px;
+      flex-shrink: 0;
+      padding: 12px 12px 12px 16px;
+      align-items: center;
+      border-right: 1px solid #f1f5f9;
+    }
+
+    .admin-step-desc {
+      flex: 1;
+      padding: 12px 12px 12px 14px;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .admin-step-right {
+      flex-shrink: 0;
+      width: 170px;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 12px 14px 12px 8px;
+    }
+
+    .admin-step-meta {
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 3px;
+
+      .admin-step-date { text-align: right; }
+    }
+  }
+}
+
+// ─── Actions Pill ────────────────────────────────────────────────
+.admin-step-actions-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 14px;
+  background: rgba(236, 72, 153, 0.08);
+  border: 1.5px solid rgba(236, 72, 153, 0.25);
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #db2777;
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  transition: background 0.14s ease, border-color 0.14s ease;
+
+  &:hover {
+    background: rgba(236, 72, 153, 0.14);
+    border-color: rgba(236, 72, 153, 0.4);
+  }
+}
+
+// ─── OVERLAY ─────────────────────────────────────────────────────
+.sm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 9998;
+  animation: smFade 0.2s ease;
+}
+
+// ─── MODAL — Desktop: centered dialog ────────────────────────────
+// Key fix: use transform centering with explicit max-height so it
+// never overflows the viewport and is always fully visible.
+.sm-modal {
+  position: fixed;
+  // Center point — then shift back by 50% of own size
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: 520px;
+  max-width: calc(100vw - 32px);
+
+  // Use svh/dvh with a safe cap. On desktop this gives a comfortable dialog.
+  // On mobile the bottom-sheet override below takes over.
+  max-height: min(82vh, 600px);
+
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 24px 56px -10px rgba(0, 0, 0, 0.22);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: smSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+// ─── MODAL — Mobile: bottom sheet anchored to bottom of screen ───
+// Crucially: we do NOT set top/transform here so it never goes
+// off-screen at the top. Bottom sheet slides up from the bottom.
+@media (max-width: 599px) {
+  .sm-modal {
+    // Reset the centered positioning
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: none; // remove the -50% shift
+
+    width: 100%;
+    max-width: 100%;
+    // Allow up to 80% of the visible viewport height — no more
+    max-height: 80dvh;
+
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.14);
+    animation: smSlideSheet 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+// ─── MODAL HEADER ────────────────────────────────────────────────
+.sm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid $border;
+  flex-shrink: 0;
+  background: #fff;
+  // NOT sticky — just a normal flex child at the top of the modal
+}
+
+.sm-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.sm-title {
+  font-family: $font-display;
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sm-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1.5px solid $border;
+  border-radius: 50px;
+  background: #fff;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: $muted;
+  cursor: pointer;
+  transition: all 0.14s;
+  outline: none;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  &:hover { border-color: $blue; color: $blue; background: $blue-bg; }
+}
+
+.sm-close-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid $border;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $muted;
+  transition: all 0.14s;
+  outline: none;
+  flex-shrink: 0;
+
+  &:hover { background: $red-bg; border-color: $red; color: $red; }
+}
+
+// ─── STEP CHIP ───────────────────────────────────────────────────
+.sm-chip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 18px;
+  background: $bg;
+  border-bottom: 1px solid $border;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $text;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+.sm-chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: $blue;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+// ─── MODAL BODY ──────────────────────────────────────────────────
+// This is the ONLY scrollable part of the modal
+.sm-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 18px 18px;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: #dde3ea; border-radius: 4px; }
+}
+
+// ─── OPTION LIST ─────────────────────────────────────────────────
+.sm-option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sm-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1.5px solid $border;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.14s;
+  background: #fff;
+
+  &:hover { border-color: $blue; background: $blue-bg; }
+  &--danger:hover { border-color: $red; background: $red-bg; }
+
+  .sm-option-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .sm-option-content {
+    flex: 1;
+    min-width: 0;
+    strong {
+      display: block;
+      font-size: 0.87rem;
+      font-weight: 600;
+      color: $text;
+      margin-bottom: 2px;
+    }
+    span { font-size: 0.74rem; color: $muted; }
+  }
+}
+
+// ─── FORM ────────────────────────────────────────────────────────
+.sm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sm-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sm-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 420px) { grid-template-columns: 1fr; }
+}
+
+.sm-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.02em;
+}
+
+.sm-input {
+  padding: 9px 12px;
+  border: 1.5px solid #e8ecf0;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: $text;
+  background: #fff;
+  outline: none;
+  font-family: $font-body;
+  transition: border-color 0.14s;
+  width: 100%;
+  box-sizing: border-box;
+
+  &::placeholder { color: #b8c4d0; }
+  &:focus { border-color: $blue; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08); }
+}
+
+.sm-textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.6;
+}
+
+// ─── BUTTONS ─────────────────────────────────────────────────────
+.sm-btn-primary {
+  padding: 11px 22px;
+  background: $blue;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.87rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: $font-body;
+  transition: all 0.15s;
+  margin-top: 4px;
+  width: 100%;
+
+  &:hover { background: #2563eb; box-shadow: 0 6px 14px rgba(59, 130, 246, 0.3); transform: translateY(-1px); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+}
+
+.sm-btn-danger {
+  padding: 10px 22px;
+  background: $red;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.87rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: $font-body;
+  transition: all 0.15s;
+
+  &:hover { background: #dc2626; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.sm-btn-ghost {
+  padding: 10px 22px;
+  background: $bg;
+  color: $muted;
+  border: 1.5px solid $border;
+  border-radius: 50px;
+  font-size: 0.87rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: $font-body;
+  transition: all 0.15s;
+
+  &:hover { background: #e2e8f0; color: $text; }
+}
+
+// ─── CONFIRM ─────────────────────────────────────────────────────
+.sm-confirm {
+  text-align: center;
+  padding: 8px 0;
+
+  .sm-confirm-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: $red-bg;
+    border: 1.5px solid #fecdd3;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  h3 { font-size: 1.05rem; font-weight: 700; color: $text; margin: 0 0 8px; }
+
+  p {
+    font-size: 0.85rem;
+    color: $muted;
+    margin: 0 0 20px;
+    line-height: 1.6;
+    strong { color: $text; }
+  }
+
+  .sm-confirm-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+// ─── SUCCESS ─────────────────────────────────────────────────────
+.sm-success {
+  text-align: center;
+  padding: 36px 0;
+
+  .sm-success-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: $green-bg;
+    border: 1.5px solid #a7f3d0;
+    margin: 0 auto 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  h3 { font-size: 1.05rem; font-weight: 700; color: $text; margin: 0 0 6px; }
+  p  { font-size: 0.85rem; color: $muted; margin: 0; }
+}
+
+// ─── LOADING OVERLAY ─────────────────────────────────────────────
+.sm-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.85);
+  z-index: 10;
+  border-radius: inherit;
+}
+
+// ─── VIEW STEP LAYER TABS ─────────────────────────────────────────
+.sm-view-step {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sm-layer-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  background: $bg;
+  border-radius: 12px;
+  border: 1px solid $border;
+}
+
+.sm-layer-tab {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 9px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $muted;
+  cursor: pointer;
+  font-family: $font-body;
+  transition: all 0.16s ease;
+
+  &:hover:not(.active) { background: #fff; color: $text; border-color: $border; }
+  &.active { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); }
+}
+
+.sm-layer-card {
+  border-radius: 14px;
+  border: 1.5px solid $border;
+  overflow: hidden;
+
+  &--macro { border-color: #e9d5ff; background: #faf5ff; }
+  &--micro { border-color: #a5f3fc; background: #ecfeff; }
+  &--nano  { border-color: #fde68a; background: #fffbeb; }
+}
+
+.sm-layer-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  &:last-child { border-bottom: none; }
+}
+
+.sm-layer-key {
+  width: 100px;
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-top: 2px;
+}
+
+.sm-layer-val {
+  flex: 1;
+  font-size: 0.84rem;
+  color: $text;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.sm-layer-empty {
+  padding: 28px 16px;
+  text-align: center;
+  font-size: 0.83rem;
+  color: $muted;
+  font-style: italic;
+}
+
+// ─── Marketplace ─────────────────────────────────────────────────
+.admin-pp-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-pp-section-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin: 0 0 8px 0;
+  display: block;
+}
+
+.admin-pp-market-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1.5px solid $border;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  background: #fff;
+}
+
+.admin-pp-market-item-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    strong {
+      display: block;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: $text;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    span {
+      display: block;
+      font-size: 0.72rem;
+      color: $muted;
+    }
+  }
+}
+
+.admin-pp-market-emoji {
+  width: 34px;
+  height: 34px;
+  background: #f8fafc;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.admin-pp-market-remove-btn {
+  padding: 5px 12px;
+  border-radius: 50px;
+  border: 1.5px solid rgba($red, 0.3);
+  background: rgba($red, 0.07);
+  color: $red;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+.admin-pp-market-attach-btn {
+  padding: 5px 12px;
+  border-radius: 50px;
+  border: 1.5px solid rgba($teal, 0.3);
+  background: rgba($teal, 0.07);
+  color: $teal;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+.admin-pp-create-btn {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  color: $teal;
+  border: 1.5px dashed rgba($teal, 0.4);
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.83rem;
+  cursor: pointer;
+}
+
+.admin-pp-btn {
+  padding: 9px 20px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  transition: all 0.15s;
+
+  &--blue {
+    background: $blue;
+    color: #fff;
+
+    &:hover { background: #2563eb; }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+}
+
+.admin-pp-empty {
+  padding: 22px;
+  text-align: center;
+  font-size: 0.83rem;
+  color: #94a3b8;
+  background: $bg;
+  border-radius: 12px;
+  border: 2px dashed $border;
+}
+
+// ─── Show all btn ────────────────────────────────────────────────
+.show-all-btn {
+  padding: 7px 16px;
+  border-radius: 50px;
+  border: 1.5px solid $border;
+  background: #fff;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: $muted;
+  cursor: pointer;
+  transition: all 0.14s;
+  align-self: flex-start;
+
+  &:hover { border-color: $blue; color: $blue; background: $blue-bg; }
+}
+
+// ─── Body lock — prevent page scroll when modal is open ──────────
+// This is fine on scroll-behind; the page doesn't shift.
+body.admin-popup-open { overflow: hidden; }
+
+// ─── Animations ──────────────────────────────────────────────────
+@keyframes smFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+// Desktop: slides up and fades in from center
+@keyframes smSlideUp {
+  from { opacity: 0; transform: translate(-50%, -46%); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+// Mobile bottom sheet: slides up from bottom edge
+@keyframes smSlideSheet {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes smSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.admin-icon-box {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}

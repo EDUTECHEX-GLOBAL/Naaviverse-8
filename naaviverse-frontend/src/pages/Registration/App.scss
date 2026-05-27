@@ -1,0 +1,206 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+
+* {
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* ===== MAIN LAYOUT ===== */
+.regContainer {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+}
+
+/* ===== LEFT IMAGE ===== */
+.regleftside {
+  width: 60%;
+  height: 100vh;
+  background-image: url("./assets/images/regnaavi1.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+/* ===== RIGHT FORM ===== */
+.regrightside {
+  width: 40%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #ffffff;
+}
+
+.regrightside > div {
+  width: 420px;
+}
+
+/* ===== LOGO ===== */
+.logoimg {
+  width: 70px;
+  margin-bottom: 20px;
+}
+
+/* ===== TITLE ===== */
+h2 {
+  margin-bottom: 25px;
+  font-weight: 700;
+}
+
+/* ===== INPUTS ===== */
+.input1,
+.input2,
+.partnerTypeDropdown {
+  width: 100%;
+  height: 56px;
+  border: 1px solid #2c7cb2;
+  border-radius: 10px;
+  padding: 0 15px;
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.input1 input,
+.input2 input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+}
+
+/* ===== PASSWORD ROW ===== */
+.passwordWrapper {
+  flex-direction: column; /* was row → now stacks vertically */
+  gap: 0;
+}
+
+.passwordWrapper .input2 {
+  width: 100%;
+}
+
+/* ===== PASSWORD REQUIREMENTS ===== */
+.passreq {
+  font-size: 14px;
+  margin-bottom: 15px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* ===== NEXT BUTTON ===== */
+.nextStep {
+  width: 100%;
+  height: 56px;
+  background: #2c7cb2;
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* ===== OTP INPUT ===== */
+.input2 input[type="text"] {
+  letter-spacing: 4px;
+  text-align: center;
+}
+
+/* ===== PASSWORD CARD ===== */
+.passreqCard {
+  background: #fffbec;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 900px) {
+  .regleftside {
+    display: none;
+  }
+
+  .regrightside {
+    width: 100%;
+  }
+}
+
+
+@media (max-width: 768px) {
+
+  .regrightside {
+    align-items: flex-start;
+    padding: 30px 20px;
+    overflow-y: auto;
+    height: 100vh;
+  }
+
+  .regrightside > div {
+    width: 100%;
+  }
+
+  /* ── Stack password fields vertically ── */
+  .passwordWrapper {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .passwordWrapper .input2 {
+    width: 100%;
+  }
+
+  /* ── Inputs full width ── */
+  .input1,
+  .input2,
+  .partnerTypeDropdown {
+    height: 52px;
+    font-size: 14px;
+    margin-bottom: 14px;
+  }
+
+  /* ── Button ── */
+  .nextStep {
+    height: 52px;
+    font-size: 16px;
+  }
+
+  h2 {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+
+  .logoimg {
+    width: 52px;
+    margin-bottom: 14px;
+  }
+}
+
+@media (max-width: 400px) {
+
+  .regrightside {
+    padding: 20px 14px;
+  }
+
+  .input1,
+  .input2,
+  .partnerTypeDropdown {
+    height: 48px;
+    font-size: 13px;
+  }
+
+  .nextStep {
+    height: 48px;
+    font-size: 15px;
+  }
+
+  h2 {
+    font-size: 24px;
+  }
+}

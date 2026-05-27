@@ -1,0 +1,207 @@
+.stepViewPage {
+  width: 100%;
+  height: calc(100% - 3rem);
+
+  .stepviewNav {
+    width: 100%;
+    height: 3.5rem;
+    border-bottom: 0.5px solid #e5e5e5;
+    display: flex;
+
+    .step-name-div {
+      width: 30%;
+      display: flex;
+      align-items: flex-end;
+      padding-bottom: 0.5rem;
+      padding-left: 35px;
+      font-weight: 400;
+      font-size: 0.8rem;
+    }
+
+    .step-description-div {
+      width: 70%;
+      display: flex;
+      align-items:flex-end ;
+      padding-bottom: 0.5rem;
+      padding-left: 35px;
+      font-weight: 400;
+      font-size: 0.8rem;
+    }
+  }
+
+  .stepviewContent {
+    width: 100%;
+    height: calc(100% - 3.5rem);
+    overflow-y: scroll;
+
+    .each-sv-data {
+      width: 100%;
+      border-bottom: 0.5px solid #e5e5e5;
+      display: flex;
+      font-size: 0.8rem;
+      //   cursor: pointer;
+      transition: all ease 0.2s;
+
+      .each-sv-name {
+        width: 30%;
+        padding: 2rem 0 2rem 35px;
+        line-height: 1.6;
+      }
+
+      .each-sv-desc {
+        width: 70%;
+        padding: 2rem 0 2rem 0;
+        font-weight: 300;
+        padding-left: 35px;
+        line-height: 1.6;
+        text-transform: none;
+        padding-right: 1rem;
+      }
+
+      &:hover {
+        background: rgba(237, 237, 237, 0.368627451);
+      }
+    }
+  }
+}
+
+/* Center Modal for Payment */
+.payment-center-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  
+  .payment-modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      
+      h2 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 1.5rem;
+      }
+      
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #7f8c8d;
+        
+        &:hover {
+          color: #2c3e50;
+        }
+      }
+    }
+  }
+}
+
+
+
+/* When using center modal, hide the right drawer */
+.accept-offer-overlay.center-modal-active .right-divv-cs {
+  display: none;
+}
+
+/* Center Payment Modal */
+.payment-center-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  
+  .payment-modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      
+      h2 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 1.5rem;
+      }
+      
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #7f8c8d;
+        
+        &:hover {
+          color: #2c3e50;
+        }
+      }
+    }
+  }
+}
+
+/* Button styles for center modal */
+.buttonss-cs {
+  display: flex;
+  gap: 10px;
+  
+  .share-btn-cs, .buy-btn-cs {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .share-btn-cs {
+    background: #f8f9fa;
+    color: #2c3e50;
+    
+    &:hover {
+      background: #e9ecef;
+    }
+  }
+  
+  .buy-btn-cs {
+    background: #3498db;
+    color: white;
+    
+    &:hover {
+      background: #2980b9;
+    }
+  }
+}
