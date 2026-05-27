@@ -163,6 +163,8 @@ $border: rgba(0, 0, 0, 0.07);
     font-size: 17px;
     color: $muted;
     margin-top: 12px;
+    text-align: center;
+    hyphens: none;
   }
 }
 
@@ -199,10 +201,12 @@ $border: rgba(0, 0, 0, 0.07);
     margin-bottom: 24px;
   }
 
-  .ab-center-hd p {
+   .ab-center-hd p {
     color: $text;
     font-size: 18px;
     line-height: 1.8;
+    text-align: center;
+    hyphens: none;
   }
 
   @media(max-width:768px) {
@@ -233,18 +237,29 @@ h2 {
 }
 
 .ab-lead {
-  font-size: 17px;
-  line-height: 1.75;
+  font-size: 16px;
+  line-height: 1.8;
   color: $navy;
   font-weight: 400;
   margin-bottom: 16px;
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: none;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
+// REPLACE WITH:
 p {
   font-size: 15px;
   line-height: 1.72;
   color: $text;
   margin: 0 0 14px;
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: none;
+  word-break: normal;
+  overflow-wrap: break-word;
 
   &:last-child {
     margin: 0;
@@ -1364,12 +1379,16 @@ h5 {
     }
   }
 
-  .ab-col-txt {
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    order: 1 !important;
-    padding: 0 !important;
+ .ab-col-txt {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  padding: 40px 0;
+  max-width: 100%;
+  word-break: normal;
+  overflow-wrap: break-word;
+
 
     @media (max-width: 900px) {
       order: 1 !important;
@@ -1397,9 +1416,11 @@ h5 {
   padding-bottom: 0 !important;
 
   .ab-row {
-    grid-template-columns: 1fr 1.3fr !important; // ← more space for image
-    align-items: stretch !important;
-    min-height: 500px;
+    display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(40px, 5vw, 72px);
+  align-items: center !important;
+  min-height: 500px;
 
     @media (max-width: 900px) {
       grid-template-columns: 1fr !important;

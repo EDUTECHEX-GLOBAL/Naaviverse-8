@@ -33,7 +33,7 @@ const UserAnalysis = () => {
 
 
                 <Helmet>
-                    <title>Naavi - AI Powered Path Engine</title>
+                    <title>Naavi Network- AI Path Engine</title>
                 </Helmet>
                 {/* helmet end */}
 

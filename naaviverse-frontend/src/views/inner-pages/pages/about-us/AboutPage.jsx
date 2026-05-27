@@ -80,7 +80,7 @@ const AboutPage = () => {
   return (
     <Fragment>
       <Helmet>
-        <title>Naavi - AI Powered Path Engine</title>
+        <title>Naavi Network- AI Path Engine</title>
       </Helmet>
 
       <div className="ab-page" style={{ paddingTop: '80px' }}>
