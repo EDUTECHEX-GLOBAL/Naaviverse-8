@@ -6,12 +6,12 @@ import { DatePicker, Button, Pagination, Input, Select } from 'antd';
 import 'antd/dist/reset.css';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { 
-  FiDownload, 
-  FiFilter, 
-  FiCalendar, 
-  FiGlobe, 
-  FiMapPin, 
+import {
+  FiDownload,
+  FiFilter,
+  FiCalendar,
+  FiGlobe,
+  FiMapPin,
   FiUser,
   FiSearch,
   FiEye
@@ -32,11 +32,7 @@ const VisitorsList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [countryFilter, setCountryFilter] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState({
-    total: 0,
-    countries: 0,
-    today: 0
-  });
+  const [stats, setStats] = useState({ total: 0, countries: 0, today: 0 });
 
   const visitorsPerPage = 10;
 
@@ -48,19 +44,12 @@ const VisitorsList = () => {
         const data = res.data || [];
         setVisitors(data);
         setFilteredVisitors(data);
-        
+
         const today = dayjs().startOf('day');
-        const todayCount = data.filter(visitor => 
-          dayjs(visitor.createdAt).isSame(today, 'day')
-        ).length;
-        
+        const todayCount = data.filter(v => dayjs(v.createdAt).isSame(today, 'day')).length;
         const countries = new Set(data.map(v => v.country).filter(Boolean));
-        
-        setStats({
-          total: data.length,
-          countries: countries.size,
-          today: todayCount
-        });
+
+        setStats({ total: data.length, countries: countries.size, today: todayCount });
       } catch (err) {
         console.error("Error fetching visitors", err);
       } finally {
@@ -74,26 +63,26 @@ const VisitorsList = () => {
     let filtered = [...visitors];
 
     if (startDate && endDate) {
-      filtered = filtered.filter(visitor => {
-        const created = dayjs(visitor.createdAt);
+      filtered = filtered.filter(v => {
+        const created = dayjs(v.createdAt);
         return created.isAfter(dayjs(startDate).subtract(1, 'day')) &&
                created.isBefore(dayjs(endDate).add(1, 'day'));
       });
     }
 
     if (countryFilter) {
-      filtered = filtered.filter(visitor => 
-        visitor.country?.toLowerCase() === countryFilter.toLowerCase()
+      filtered = filtered.filter(v =>
+        v.country?.toLowerCase() === countryFilter.toLowerCase()
       );
     }
 
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase().trim();
-      filtered = filtered.filter(visitor => 
-        visitor.ip?.toLowerCase().includes(term) ||
-        visitor.city?.toLowerCase().includes(term) ||
-        visitor.region?.toLowerCase().includes(term) ||
-        visitor.country?.toLowerCase().includes(term)
+      filtered = filtered.filter(v =>
+        v.ip?.toLowerCase().includes(term) ||
+        v.city?.toLowerCase().includes(term) ||
+        v.region?.toLowerCase().includes(term) ||
+        v.country?.toLowerCase().includes(term)
       );
     }
 
@@ -106,17 +95,16 @@ const VisitorsList = () => {
   const currentVisitors = filteredVisitors.slice(indexOfFirst, indexOfLast);
 
   const exportData = () => {
-    const exportData = filteredVisitors.map((visitor, i) => ({
+    const data = filteredVisitors.map((v, i) => ({
       SNo: i + 1,
-      IP: visitor.ip,
-      City: visitor.city,
-      Region: visitor.region,
-      PostalCode: visitor.postalCode,
-      Country: visitor.country,
-      VisitedOn: dayjs(visitor.createdAt).format('MMM DD, YYYY hh:mm A'),
+      IP: v.ip,
+      City: v.city,
+      Region: v.region,
+      PostalCode: v.postalCode,
+      Country: v.country,
+      VisitedOn: dayjs(v.createdAt).format('MMM DD, YYYY hh:mm A'),
     }));
-
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Visitors");
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
@@ -142,60 +130,57 @@ const VisitorsList = () => {
   };
 
   const getUniqueCountries = () => {
-    const countries = [...new Set(visitors.map(v => v.country).filter(Boolean))];
-    return countries.sort();
+    return [...new Set(visitors.map(v => v.country).filter(Boolean))].sort();
   };
+
+  const hasFilters = startDate || endDate || countryFilter || searchTerm;
 
   return (
     <div className="visitors-list">
-      {/* Header - Compact */}
+      {/* Header */}
       <div className="visitors-list__header">
         <div>
           <h1 className="visitors-list__title">Visitor Analytics</h1>
           <p className="visitors-list__subtitle">Track and analyze website traffic</p>
         </div>
         <div className="visitors-list__actions">
-          <Button onClick={clearFilters} icon={<FiFilter />} className="btn-outline">
-            Clear
-          </Button>
+          {hasFilters && (
+            <Button onClick={clearFilters} icon={<FiFilter />} className="btn-outline">
+              Clear
+            </Button>
+          )}
           <Button onClick={exportData} icon={<FiDownload />} type="primary" className="btn-primary">
             Export
           </Button>
         </div>
       </div>
 
-      {/* Stats Cards - Compact */}
+      {/* Stat Pills */}
       <div className="visitors-list__stats">
-        <div className="stat-card">
-          <FiEye className="stat-icon total" />
-          <div>
-            <div className="stat-value">{stats.total}</div>
-            <div className="stat-label">Total</div>
-          </div>
+        <div className="stat-pill stat-pill--green">
+          <FiEye className="stat-pill__icon" />
+          <span className="stat-pill__value">{stats.total}</span>
+          <span className="stat-pill__label">Total</span>
         </div>
-        <div className="stat-card">
-          <FiGlobe className="stat-icon countries" />
-          <div>
-            <div className="stat-value">{stats.countries}</div>
-            <div className="stat-label">Countries</div>
-          </div>
+        <div className="stat-pill stat-pill--blue">
+          <FiGlobe className="stat-pill__icon" />
+          <span className="stat-pill__value">{stats.countries}</span>
+          <span className="stat-pill__label">Countries</span>
         </div>
-        <div className="stat-card">
-          <FiCalendar className="stat-icon today" />
-          <div>
-            <div className="stat-value">{stats.today}</div>
-            <div className="stat-label">Today</div>
-          </div>
+        <div className="stat-pill stat-pill--cyan">
+          <FiCalendar className="stat-pill__icon" />
+          <span className="stat-pill__value">{stats.today}</span>
+          <span className="stat-pill__label">Today</span>
         </div>
       </div>
 
-      {/* Filters - Minimal */}
+      {/* Filters */}
       <div className="visitors-list__filters">
         <div className="filter-item">
           <div className="filter-label"><FiCalendar /> Start</div>
-          <DatePicker 
-            value={startDate} 
-            onChange={setStartDate} 
+          <DatePicker
+            value={startDate}
+            onChange={setStartDate}
             format="MMM DD, YYYY"
             placeholder="Start date"
             className="filter-date"
@@ -204,9 +189,9 @@ const VisitorsList = () => {
         </div>
         <div className="filter-item">
           <div className="filter-label"><FiCalendar /> End</div>
-          <DatePicker 
-            value={endDate} 
-            onChange={setEndDate} 
+          <DatePicker
+            value={endDate}
+            onChange={setEndDate}
             format="MMM DD, YYYY"
             placeholder="End date"
             className="filter-date"
@@ -239,16 +224,9 @@ const VisitorsList = () => {
             allowClear
           />
         </div>
-        {(startDate || endDate || countryFilter || searchTerm) && (
-          <div className="filter-item filter-clear">
-            <Button onClick={clearFilters} size="small" type="text">
-              Clear all
-            </Button>
-          </div>
-        )}
       </div>
 
-      {/* Results Summary */}
+      {/* Summary */}
       <div className="visitors-list__summary">
         <span>{filteredVisitors.length} visitor{filteredVisitors.length !== 1 ? 's' : ''}</span>
         {countryFilter && <span className="summary-badge">{getCountryFlag(countryFilter)} {countryFilter}</span>}
@@ -270,52 +248,50 @@ const VisitorsList = () => {
             )}
           </div>
         ) : (
-          <div className="table-responsive">
-            <table className="compact-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Location</th>
-                  <th>IP Address</th>
-                  <th>Region</th>
-                  <th>Visited</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentVisitors.map((visitor, idx) => (
-                  <tr key={visitor._id || idx}>
-                    <td className="col-sn">{indexOfFirst + idx + 1}</td>
-                    <td className="col-location">
-                      <div className="location-cell">
-                        <FiMapPin className="location-icon" />
-                        <div>
-                          <div className="location-city">{visitor.city || 'Unknown'}</div>
-                          <div className="location-country">
-                            {getCountryFlag(visitor.country)} {visitor.country || 'Unknown'}
-                          </div>
+          <table className="visitors-table">
+            <thead>
+              <tr>
+                <th className="col-sn">#</th>
+                <th className="col-location">Location</th>
+                <th className="col-ip">IP Address</th>
+                <th className="col-region">Region</th>
+                <th className="col-date">Visited</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentVisitors.map((visitor, idx) => (
+                <tr key={visitor._id || idx}>
+                  <td className="col-sn">{indexOfFirst + idx + 1}</td>
+                  <td className="col-location">
+                    <div className="location-cell">
+                      <FiMapPin className="location-icon" />
+                      <div>
+                        <div className="location-city">{visitor.city || 'Unknown'}</div>
+                        <div className="location-country">
+                          {getCountryFlag(visitor.country)} {visitor.country || 'Unknown'}
                         </div>
                       </div>
-                    </td>
-                    <td className="col-ip">
-                      <div className="ip-cell">
-                        <FiUser className="ip-icon" />
-                        <span className="ip-address">{visitor.ip || 'N/A'}</span>
-                      </div>
-                    </td>
-                    <td className="col-region">
-                      <span className="region-badge">{visitor.region || 'N/A'}</span>
-                    </td>
-                    <td className="col-date">
-                      <div className="date-cell">
-                        <span>{dayjs(visitor.createdAt).format('MMM DD, YYYY')}</span>
-                        <span className="time">{dayjs(visitor.createdAt).format('hh:mm A')}</span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  </td>
+                  <td className="col-ip">
+                    <div className="ip-cell">
+                      <FiUser className="ip-icon" />
+                      <span className="ip-address">{visitor.ip || 'N/A'}</span>
+                    </div>
+                  </td>
+                  <td className="col-region">
+                    <span className="region-badge">{visitor.region || 'N/A'}</span>
+                  </td>
+                  <td className="col-date">
+                    <div className="date-wrap">
+                      <span className="date">{dayjs(visitor.createdAt).format('MMM DD, YYYY')}</span>
+                      <span className="time">{dayjs(visitor.createdAt).format('hh:mm A')}</span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
 

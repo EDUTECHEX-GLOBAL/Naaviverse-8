@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { DatePicker, Select, Pagination, Button } from 'antd';
+import { DatePicker, Pagination, Button } from 'antd';
 import 'antd/dist/reset.css';
 import dayjs from 'dayjs';
-import { FiDownload, FiFilter, FiCalendar, FiGrid } from 'react-icons/fi';
+import { FiDownload, FiFilter, FiCalendar } from 'react-icons/fi';
 import './ContactList.scss';
 
-const { Option } = Select;
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const ContactList = () => {
@@ -17,7 +16,6 @@ const ContactList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [productFilter, setProductFilter] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   const contactsPerPage = 10;
@@ -49,15 +47,9 @@ const ContactList = () => {
       });
     }
 
-    if (productFilter && productFilter !== "All") {
-      filtered = filtered.filter(contact =>
-        contact.product?.toLowerCase().trim() === productFilter.toLowerCase().trim()
-      );
-    }
-
     setFilteredContacts(filtered);
     setCurrentPage(1);
-  }, [startDate, endDate, productFilter, contacts]);
+  }, [startDate, endDate, contacts]);
 
   const totalPages = Math.ceil(filteredContacts.length / contactsPerPage);
   const indexOfLast = currentPage * contactsPerPage;
@@ -65,17 +57,16 @@ const ContactList = () => {
   const currentContacts = filteredContacts.slice(indexOfFirst, indexOfLast);
 
   const exportData = () => {
-    const exportData = filteredContacts.map((c, i) => ({
+    const data = filteredContacts.map((c, i) => ({
       SNo: i + 1,
       Name: c.fullName,
       Email: c.email,
-      Product: c.product,
       Mobile: c.mobile,
       Message: c.message,
       CreatedOn: new Date(c.createdAt).toLocaleString(),
     }));
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Contacts");
 
@@ -84,48 +75,40 @@ const ContactList = () => {
     saveAs(fileData, `Contact_List_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
-  const productOptions = ["All", "Defence", "Ground", "Space", "Others"];
-
   const clearFilters = () => {
     setStartDate(null);
     setEndDate(null);
-    setProductFilter('');
   };
 
-  const getProductColor = (product) => {
-    switch(product?.toLowerCase()) {
-      case 'defence': return 'product-defence';
-      case 'ground': return 'product-ground';
-      case 'space': return 'product-space';
-      default: return 'product-others';
-    }
-  };
+  const hasFilters = startDate || endDate;
 
   return (
     <div className="contact-list">
-      {/* Header Section - Compact, No Bell Icon */}
+      {/* Header */}
       <div className="contact-list__header">
         <div>
           <h1 className="contact-list__title">Contact Submissions</h1>
           <p className="contact-list__subtitle">Manage and analyze all inquiries</p>
         </div>
         <div className="contact-list__actions">
-          <Button onClick={clearFilters} icon={<FiFilter />} className="btn-outline">
-            Clear
-          </Button>
+          {hasFilters && (
+            <Button onClick={clearFilters} icon={<FiFilter />} className="btn-outline">
+              Clear
+            </Button>
+          )}
           <Button onClick={exportData} icon={<FiDownload />} type="primary" className="btn-primary">
             Export
           </Button>
         </div>
       </div>
 
-      {/* Filters Section */}
+      {/* Filters - Date only */}
       <div className="contact-list__filters">
         <div className="filter-item">
           <div className="filter-label"><FiCalendar /> Start</div>
-          <DatePicker 
-            value={startDate} 
-            onChange={setStartDate} 
+          <DatePicker
+            value={startDate}
+            onChange={setStartDate}
             format="MMM DD, YYYY"
             placeholder="Start date"
             className="filter-date"
@@ -134,42 +117,20 @@ const ContactList = () => {
         </div>
         <div className="filter-item">
           <div className="filter-label"><FiCalendar /> End</div>
-          <DatePicker 
-            value={endDate} 
-            onChange={setEndDate} 
+          <DatePicker
+            value={endDate}
+            onChange={setEndDate}
             format="MMM DD, YYYY"
             placeholder="End date"
             className="filter-date"
             allowClear
           />
         </div>
-        <div className="filter-item">
-          <div className="filter-label"><FiGrid /> Product</div>
-          <Select
-            value={productFilter}
-            onChange={setProductFilter}
-            placeholder="All"
-            className="filter-select"
-            allowClear
-          >
-            {productOptions.map(opt => (
-              <Option key={opt} value={opt}>{opt}</Option>
-            ))}
-          </Select>
-        </div>
-        {(startDate || endDate || productFilter) && (
-          <div className="filter-item filter-clear">
-            <Button onClick={clearFilters} icon={<FiFilter />} size="small" type="text">
-              Clear all
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* Stats Bar */}
       <div className="contact-list__stats">
         <span>{filteredContacts.length} contact{filteredContacts.length !== 1 ? 's' : ''}</span>
-        {productFilter && productFilter !== "All" && <span className="stats-badge">{productFilter}</span>}
       </div>
 
       {/* Table */}
@@ -187,57 +148,39 @@ const ContactList = () => {
             )}
           </div>
         ) : (
-          <div className="table-responsive">
-            <table className="compact-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Product</th>
-                  <th>Mobile</th>
-                  <th>Message</th>
-                  <th>Created</th>
+          <table className="contact-table">
+            <thead>
+              <tr>
+                <th className="col-sn">#</th>
+                <th className="col-name">Name</th>
+                <th className="col-email">Email</th>
+                <th className="col-mobile">Mobile</th>
+                <th className="col-message">Message</th>
+                <th className="col-date">Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentContacts.map((contact, idx) => (
+                <tr key={contact._id || idx}>
+                  <td className="col-sn">{indexOfFirst + idx + 1}</td>
+                  <td className="col-name">{contact.fullName}</td>
+                  <td className="col-email">
+                    <a href={`mailto:${contact.email}`} className="email-link">
+                      {contact.email}
+                    </a>
+                  </td>
+                  <td className="col-mobile">{contact.mobile}</td>
+                  <td className="col-message">{contact.message || '—'}</td>
+                  <td className="col-date">
+                    <div className="date-wrap">
+                      <span className="date">{dayjs(contact.createdAt).format('MMM DD, YYYY')}</span>
+                      <span className="time">{dayjs(contact.createdAt).format('hh:mm A')}</span>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {currentContacts.map((contact, idx) => (
-                  <tr key={contact._id || idx}>
-                    <td className="col-sn">{indexOfFirst + idx + 1}</td>
-                    <td className="col-name">
-                      <div>
-                        <div>{contact.fullName}</div>
-                        <div className="text-muted small">{contact.email}</div>
-                      </div>
-                    </td>
-                    <td className="col-email">
-                      <a href={`mailto:${contact.email}`} className="email-link">
-                        {contact.email}
-                      </a>
-                    </td>
-                    <td className="col-product">
-                      <span className={`product-badge ${getProductColor(contact.product)}`}>
-                        {contact.product || 'N/A'}
-                      </span>
-                    </td>
-                    <td className="col-mobile">{contact.mobile}</td>
-                    <td className="col-message">
-                      <div className="message-truncate" title={contact.message}>
-                        {contact.message?.substring(0, 35) || '—'}
-                        {contact.message?.length > 35 ? '...' : ''}
-                      </div>
-                    </td>
-                    <td className="col-date">
-                      <div className="date-compact">
-                        <span>{dayjs(contact.createdAt).format('MMM DD, YYYY')}</span>
-                        <span className="time">{dayjs(contact.createdAt).format('hh:mm A')}</span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
 
