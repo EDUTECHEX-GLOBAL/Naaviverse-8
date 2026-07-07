@@ -12,6 +12,10 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
+// Override default DNS servers to prevent ECONNREFUSED issues on MongoDB Atlas
+const dns = require("dns");
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
 var axios = require("axios");
 const AWS = require("aws-sdk");
 const cors = require("cors");
@@ -57,6 +61,7 @@ const currencyRoutes = require("./routes/CurrencyRouter");
 const countryRoutes = require("./routes/CountryRouter");
 const stateRoutes = require("./routes/StateRouter");
 const cityRoutes = require("./routes/CityRouter");
+const agentPathsRouter = require("./routes/AgentPathsRouter");
 
 // ── Super Admin — newsletter/landing page email subscriptions ──────────────
 const adminNewsletterRoutes = require("./Admin/routes/SubscriptionRouter");
@@ -167,6 +172,9 @@ app.use("/api/cities", cityRoutes);
 
 // ── Platform subscription routes (paid plans — monthly/annual) ────────────
 app.use("/api/subscriptions", platformSubscriptionRoutes);
+
+// ── AI Agent published paths (fetched from HuggingFace) ───────────────────
+app.use("/api/agent-paths", agentPathsRouter);
 
 app.use("/api/perplexity", require("./routes/PerplexityRouter"));
 app.use("/api/regenerate", require("./routes/RegenerateAllRouter"));

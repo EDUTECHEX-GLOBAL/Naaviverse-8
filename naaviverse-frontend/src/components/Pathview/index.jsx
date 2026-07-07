@@ -15,11 +15,12 @@ const Pathview = ({ paths, loading, onAdjustCoordinates, onViewPath }) => {
 
   const formattedData = useMemo(() => {
     return (paths || []).map((p) => ({
-      _id:         p._id,
-      pathName:    p.nameOfPath    || "Untitled Path",
-      program:     p.program       || "-",
-      description: p.description   || "-",
-      raw:         p,
+      _id: p._id,
+      pathName: p.nameOfPath || "Untitled Path",
+      program: p.program || "-",
+      description: p.description || "-",
+      source: p.source || "platform",   // 'agent' | 'platform'
+      raw: p,
     }));
   }, [paths]);
 
@@ -28,7 +29,7 @@ const Pathview = ({ paths, loading, onAdjustCoordinates, onViewPath }) => {
     const term = searchTerm.toLowerCase();
     return formattedData.filter((item) =>
       item.pathName.toLowerCase().includes(term) ||
-      item.program.toLowerCase().includes(term)  ||
+      item.program.toLowerCase().includes(term) ||
       item.description.toLowerCase().includes(term)
     );
   }, [formattedData, searchTerm]);
@@ -85,12 +86,12 @@ const Pathview = ({ paths, loading, onAdjustCoordinates, onViewPath }) => {
           onClick={onAdjustCoordinates}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="4" y1="6" x2="20" y2="6"/>
-            <line x1="4" y1="12" x2="20" y2="12"/>
-            <line x1="4" y1="18" x2="20" y2="18"/>
-            <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"/>
-            <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/>
-            <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/>
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="18" x2="20" y2="18" />
+            <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none" />
+            <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none" />
+            <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none" />
           </svg>
           Adjust Coordinates
         </button>
@@ -107,15 +108,15 @@ const Pathview = ({ paths, loading, onAdjustCoordinates, onViewPath }) => {
               key={row._id}
               style={{ animationDelay: `${index * 0.05}s` }}
             >
-      <div className="path-card__inner">
-  <div className="path-card__header">
-    <div className="path-card__icon">
-      <img src={pathIcon} alt="path" style={{ width: "18px", height: "18px", objectFit: "contain" }} />
-    </div>
-    {getProgramTag(row.program)}
-  </div>
+              <div className="path-card__inner">
+                <div className="path-card__header">
+                  <div className="path-card__icon">
+                    <img src={pathIcon} alt="path" style={{ width: "18px", height: "18px", objectFit: "contain" }} />
+                  </div>
+                  {getProgramTag(row.program)}
+                </div>
 
-  <h3 className="path-card__title">{row.pathName}</h3>
+                <h3 className="path-card__title">{row.pathName}</h3>
 
                 {row.description !== "-" && (
                   <p className="path-card__desc">{row.description}</p>
@@ -131,6 +132,7 @@ const Pathview = ({ paths, loading, onAdjustCoordinates, onViewPath }) => {
                 </div>
               </div>
             </div>
+
           ))
         ) : (
           <div className="pathview-empty">

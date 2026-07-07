@@ -90,6 +90,35 @@ const MapsPage = () => {
   const [preLoginPathId, setPreLoginPathId] = useState();
   const [isStoring, setIsStoring] = useState(false);
 
+  // ── Fetch both platform + agent paths and merge them ────────────────────
+  const fetchAllPaths = async (filterParams = {}) => {
+    setLoading1(true);
+    try {
+      const [platformRes, agentRes] = await Promise.allSettled([
+        axios.get(`${BASE_URL}/api/paths/active`, { params: filterParams }),
+        axios.get(`${BASE_URL}/api/agent-paths`, { params: filterParams }),
+      ]);
+
+      const platformPaths =
+        platformRes.status === "fulfilled"
+          ? platformRes.value?.data?.data || []
+          : [];
+
+      const agentPaths =
+        agentRes.status === "fulfilled"
+          ? agentRes.value?.data?.data || []
+          : [];
+
+      // Merge: platform paths first, then agent paths
+      setPreLoginPathViewData([...platformPaths, ...agentPaths]);
+    } catch (error) {
+      console.error("Error fetching paths:", error);
+      setPreLoginPathViewData([]);
+    } finally {
+      setLoading1(false);
+    }
+  };
+
   const handleAddContainer = () => {
     const lastContainer = containers[containers.length - 1];
     const newContainerId = lastContainer.id + 1;
@@ -223,22 +252,11 @@ const MapsPage = () => {
     />
   );
 
+  // Initial load — fetch platform paths + agent paths in parallel
   useEffect(() => {
-    setLoading1(true);
-    axios
-      .get(`${BASE_URL}/api/userpaths/programs`)
-      .then((response) => {
-        let result = response?.data?.data;
-        // console.log(result, "path view result");
-        setPreLoginPathViewData(result);
-        setLoading1(false);
-      })
-      .catch((error) => {
-        console.log(error, "error in getting pre-login path view result");
-        setPreLoginPathViewData([]);
-        setLoading1(false);
-      });
+    fetchAllPaths();
   }, []);
+
 
 useEffect(() => {
   if (pathname.includes("/maps")) {
@@ -298,27 +316,16 @@ useEffect(() => {
   };
 
 const handleFilter = async () => {
-  try {
-    setLoading1(true);
+  const params = {};
+  if (grade.length > 0)        params.grade = grade;
+  if (stream.length > 0)       params.stream = stream;
+  if (curriculum.length > 0)   params.curriculum = curriculum;
+  if (gradeAvg.length > 0)     params.performance = gradeAvg;
+  if (finance.length > 0)      params.financialSituation = finance;
 
-    const params = {};
-
-    if (grade.length > 0) params.grade = grade;
-    if (stream.length > 0) params.stream = stream;
-    if (curriculum.length > 0) params.curriculum = curriculum;
-    if (gradeAvg.length > 0) params.performance = gradeAvg;
-    if (finance.length > 0) params.financialSituation = finance;
-
-    const res = await axios.get(`${BASE_URL}/api/paths/active`, { params });
-
-    setPreLoginPathViewData(res.data.data || []);
-  } catch (error) {
-    console.log("error in getting filtered paths", error);
-    setPreLoginPathViewData([]);
-  } finally {
-    setLoading1(false);
-  }
+  await fetchAllPaths(params);
 };
+
 
 
   const myTimeout = () => {

@@ -701,6 +701,14 @@ const updateFields = async (req, res) => {
 
 const getActivePaths = async (req, res) => {
   try {
+    // ── Sync agent paths on-the-fly to local DB ──
+    try {
+      const { syncAgentPaths } = require('./AgentPathsController');
+      await syncAgentPaths();
+    } catch (syncErr) {
+      console.error("[AgentSync] background sync failed:", syncErr.message);
+    }
+
     const query = { status: "active" };
     if (req.query.grade) query.grade = { $in: [req.query.grade] };
     if (req.query.curriculum) query.curriculum = { $in: [req.query.curriculum] };
