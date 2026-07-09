@@ -60,6 +60,59 @@ const PLAN_FEATS = {
 };
 
 /* ─── Skeletons ─────────────────────────────────────────────────── */
+const FEEDBACK_ACTIONS = [
+  { key: "helpful", label: "Helpful" },
+  { key: "notRelevant", label: "Not Relevant" },
+  { key: "comment", label: "Comment" },
+  { key: "skip", label: "Skip" },
+];
+
+const FeedbackStrip = ({ value = {}, onChange }) => {
+  const selected = value.action || "";
+  const showComment = selected === "comment";
+
+  const handleAction = (action) => {
+    onChange({
+      ...value,
+      action,
+      skipped: action === "skip",
+    });
+  };
+
+  return (
+    <div className="feedback-strip">
+      <div className="feedback-strip__label">Feedback</div>
+      <div className="feedback-strip__actions">
+        {FEEDBACK_ACTIONS.map(({ key, label }) => (
+          <button
+            key={key}
+            type="button"
+            className={`feedback-btn ${selected === key ? "active" : ""}`}
+            onClick={() => handleAction(key)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {showComment && (
+        <textarea
+          className="feedback-comment"
+          placeholder="Add a short comment..."
+          value={value.comment || ""}
+          onChange={(e) => onChange({ ...value, action: "comment", comment: e.target.value })}
+        />
+      )}
+      {selected && selected !== "comment" && (
+        <div className="feedback-note">
+          {selected === "helpful" && "Marked helpful."}
+          {selected === "notRelevant" && "Marked not relevant."}
+          {selected === "skip" && "Skipped for now."}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const SkeletonBar = ({ width = "100%", height = "14px", style = {} }) => (
   <div className="sk-bar" style={{ width, height, borderRadius: "6px", ...style }} />
 );
@@ -346,6 +399,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   const [popupDetails, setPopupDetails] = useState("");
   const [selectedCard, setSelectedCard] = useState(0);
   const [acceptOffer, setAcceptOffer] = useState(false);
+  const [stepFeedback, setStepFeedback] = useState({});
 
   const {
     currentStepData, setCurrentStepData,
@@ -360,6 +414,13 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     mallCoindata, setfilteredcoins,
     index, setIndex,
   } = useStore();
+
+  const updateStepFeedback = (key, nextValue) => {
+    setStepFeedback(prev => ({
+      ...prev,
+      [key]: nextValue,
+    }));
+  };
 
   const getMicroText = (mv) => {
     if (!mv) return null;
@@ -836,6 +897,10 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                   ? <div className="vc-desc">{macroDesc}</div>
                   : <div className="vc-desc vc-empty">No macro view available yet.</div>}
               </div>
+              <FeedbackStrip
+                value={stepFeedback.macro}
+                onChange={(nextValue) => updateStepFeedback("macro", nextValue)}
+              />
               <div className="vc-foot">
                 <button className="vc-btn bMacro" onClick={() => {
                   setsideNav("Market Place");
@@ -885,6 +950,10 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                       : "Unlock with 2 credits or subscribe to access structured guidance."}
                   </div>}
               </div>
+              <FeedbackStrip
+                value={stepFeedback.micro}
+                onChange={(nextValue) => updateStepFeedback("micro", nextValue)}
+              />
               <div className="vc-foot">
                 {hasMicro ? (
                   <button className="vc-btn bMicro" onClick={() => {
@@ -936,6 +1005,10 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                       : "Unlock with 4 credits or subscribe to access expert sessions."}
                   </div>}
               </div>
+              <FeedbackStrip
+                value={stepFeedback.nano}
+                onChange={(nextValue) => updateStepFeedback("nano", nextValue)}
+              />
               <div className="vc-foot">
                 {hasNano ? (
                   <button className="vc-btn bNano" onClick={() => {

@@ -19,11 +19,83 @@ const LAYER_ICON = {
 };
 const TIME_SLOTS = ["10:00 AM", "12:00 PM", "2:00 PM", "4:00 PM", "6:00 PM", "8:00 PM"];
 const LAYER_PILLS = [
-  { key: "all", label: "All" },
   { key: "macro", label: "Macro" },
   { key: "micro", label: "Micro" },
   { key: "nano", label: "Nano" },
 ];
+const CATEGORY_PILLS = [
+  { key: "all", label: "All" },
+  { key: "vendor", label: "Vendors" },
+  { key: "mentor", label: "Mentors" },
+  { key: "distributor", label: "Distributors" },
+  { key: "institution", label: "Institutions" },
+];
+
+const getItemCategory = (item) => {
+  const raw = `${item?.category || ""} ${item?.role || ""}`.toLowerCase();
+  if (raw.includes("mentor")) return "mentor";
+  if (raw.includes("vendor")) return "vendor";
+  if (raw.includes("distributor")) return "distributor";
+  if (raw.includes("institution") || raw.includes("university") || raw.includes("school")) return "institution";
+  return "vendor";
+};
+
+const FEEDBACK_ACTIONS = [
+  { key: "helpful", label: "Helpful" },
+  { key: "notRelevant", label: "Not Relevant" },
+  { key: "comment", label: "Comment" },
+  { key: "skip", label: "Skip" },
+];
+
+const FeedbackStrip = ({ value = {}, onChange }) => {
+  const selected = value.action || "";
+  const showComment = selected === "comment";
+
+  const handleAction = (action) => {
+    onChange({
+      ...value,
+      action,
+      skipped: action === "skip",
+    });
+  };
+
+  return (
+    <div className="feedback-strip">
+      <div className="feedback-strip__label">Feedback</div>
+      <div className="feedback-strip__actions">
+        {FEEDBACK_ACTIONS.map(({ key, label }) => (
+          <button
+            key={key}
+            type="button"
+            className={`feedback-btn ${selected === key ? "active" : ""}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAction(key);
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {showComment && (
+        <textarea
+          className="feedback-comment"
+          placeholder="Add a short comment..."
+          value={value.comment || ""}
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => onChange({ ...value, action: "comment", comment: e.target.value })}
+        />
+      )}
+      {selected && selected !== "comment" && (
+        <div className="feedback-note">
+          {selected === "helpful" && "Marked helpful."}
+          {selected === "notRelevant" && "Marked not relevant."}
+          {selected === "skip" && "Skipped for now."}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const isFreeItem = (s) => {
   if (!s.cost) return true;
@@ -52,7 +124,7 @@ const genOrderId = () => `#NV-${Math.floor(100000 + Math.random() * 900000)}`;
 const fmtDate = (d) => d.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 
 // ─── Service Card ─────────────────────────────────────────────────────────────
-const ServiceCard = ({ item, inCart, onToggleCart, onCardView }) => {
+const ServiceCard = ({ item, inCart, onToggleCart, onCardView, feedback, onFeedbackChange }) => {
   const layer = item.layer?.toLowerCase() || "macro";
   const meta = LAYER_META[layer] || LAYER_META.macro;
   const free = isFreeItem(item);
@@ -76,6 +148,7 @@ const ServiceCard = ({ item, inCart, onToggleCart, onCardView }) => {
           {item.features && <div className="svc-detail-row"><span className="svc-detail-lbl">Features:</span><span>{item.features}</span></div>}
         </div>
       </div>
+      <FeedbackStrip value={feedback} onChange={onFeedbackChange} />
       <div className="svc-bot">
         <div className="svc-price-wrap">
           <div className={`svc-price ${free ? "free-price" : ""}`}>{getCostDisplay(item)}</div>
@@ -352,9 +425,9 @@ const UserMarketplace = ({ onStepChange }) => {
   const [activeLayer, setActiveLayer] = useState(
     location.state?.defaultTab?.toLowerCase() ||
     location.state?.view?.toLowerCase() ||
-    "all"
+    "macro"
   );
-  const [activeRole, setActiveRole] = useState("All");
+  const [activeCategory, setActiveCategory] = useState("all");
   const [searchQ, setSearchQ] = useState("");
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
@@ -362,6 +435,7 @@ const UserMarketplace = ({ onStepChange }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [orderInfo, setOrderInfo] = useState(null);
+  const [marketplaceFeedback, setMarketplaceFeedback] = useState({});
 
   const marketLoggedRef = useRef(false);
 
@@ -369,6 +443,15 @@ const UserMarketplace = ({ onStepChange }) => {
   useEffect(() => {
     if (location.state?.view) setActiveLayer(location.state.view.toLowerCase());
   }, [location.state?.view]);
+
+  useEffect(() => {
+    if (activeLayer === "micro" && !hasMicro) {
+      setActiveLayer("macro");
+    }
+    if (activeLayer === "nano" && !hasNano) {
+      setActiveLayer("macro");
+    }
+  }, [activeLayer, hasMicro, hasNano]);
 
   // Fetch services for the current step
   useEffect(() => {
@@ -378,7 +461,9 @@ const UserMarketplace = ({ onStepChange }) => {
         const stepId = localStorage.getItem("selectedStepId");
         if (!stepId) { setError("No step selected."); setLoading(false); return; }
 
-        const res = await axios.get(`${BASE_URL}/api/marketplace/step/${stepId}`);
+        const res = await axios.get(`${BASE_URL}/api/marketplace/step/${stepId}`, {
+          params: { layer: activeLayer },
+        });
         if (res?.data?.status && Array.isArray(res.data.data)) {
           setItems(res.data.data);
 
@@ -406,7 +491,7 @@ const UserMarketplace = ({ onStepChange }) => {
       }
     };
     fetchItems();
-  }, []);
+  }, [activeLayer]);
 
   // Layer item counts (for reference / future UI use)
   const layerCounts = useMemo(() => ({
@@ -417,7 +502,7 @@ const UserMarketplace = ({ onStepChange }) => {
   }), [items]);
 
   // ── FIX 1: filter respects credit unlocks, not just subscription ───────────
-  const filtered = useMemo(() => {
+  const categoryBaseItems = useMemo(() => {
     const q = searchQ.toLowerCase();
     return items.filter(s => {
       // Gate each layer individually
@@ -429,15 +514,33 @@ const UserMarketplace = ({ onStepChange }) => {
 
       return (
         layerAllowed &&
-        (activeLayer === "all" || s.layer === activeLayer) &&
-        (activeRole === "All" || s.role === activeRole) &&
+        s.layer === activeLayer &&
         (!q ||
           s.name?.toLowerCase().includes(q) ||
           s.partner_email?.toLowerCase().includes(q) ||
-          s.goal?.toLowerCase().includes(q))
+          s.goal?.toLowerCase().includes(q) ||
+          s.role?.toLowerCase().includes(q))
       );
     });
-  }, [items, activeLayer, activeRole, searchQ, hasMicro, hasNano]);
+  }, [items, activeLayer, searchQ, hasMicro, hasNano]);
+
+  const filtered = useMemo(() => (
+    activeCategory === "all"
+      ? categoryBaseItems
+      : categoryBaseItems.filter(s => getItemCategory(s) === activeCategory)
+  ), [categoryBaseItems, activeCategory]);
+
+  const categoryCounts = useMemo(() => {
+    const counts = CATEGORY_PILLS.reduce((acc, pill) => ({ ...acc, [pill.key]: 0 }), {});
+    categoryBaseItems.forEach((item) => {
+      const category = getItemCategory(item);
+      counts[category] = (counts[category] || 0) + 1;
+      counts.all += 1;
+    });
+    return counts;
+  }, [categoryBaseItems]);
+
+  const availableCategoryPills = CATEGORY_PILLS;
 
   // Cart helpers
   const toggleCart = (item) => {
@@ -487,8 +590,56 @@ const UserMarketplace = ({ onStepChange }) => {
   const inCart = (id) => cart.some(s => s._id === id);
   const handleConfirm = (info) => { setOrderInfo(info); setPage("confirmed"); setShowCart(false); };
   const currentPageKey = page === "marketplace" ? "marketplace" : page === "checkout" ? "checkout" : "confirmed";
+  const updateMarketplaceFeedback = (itemId, nextValue) => {
+    setMarketplaceFeedback(prev => ({
+      ...prev,
+      [itemId]: nextValue,
+    }));
+  };
 
   // ── FIX 2: renderServices uses hasMicro/hasNano, not isSubscribed ──────────
+  const renderServiceGroup = (groupItems) => (
+    <div className="svc-grid">
+      {groupItems.map(s => (
+        <ServiceCard
+          key={s._id}
+          item={s}
+          inCart={inCart(s._id)}
+          onToggleCart={toggleCart}
+          onCardView={handleCardView}
+          feedback={marketplaceFeedback[s._id]}
+          onFeedbackChange={(nextValue) => updateMarketplaceFeedback(s._id, nextValue)}
+        />
+      ))}
+    </div>
+  );
+
+  const renderPartnerGroups = (groupItems) => {
+    if (activeCategory !== "all") {
+      return renderServiceGroup(groupItems);
+    }
+
+    return CATEGORY_PILLS
+      .filter(({ key }) => key !== "all")
+      .map(({ key, label }) => {
+        const partnerItems = groupItems.filter(s => getItemCategory(s) === key);
+        if (!partnerItems.length) return null;
+
+        return (
+          <div className="partner-group" key={key}>
+            <div className="partner-group-head">
+              <span className="partner-group-title">{label}</span>
+              <div className="partner-group-line" />
+              <span className="partner-group-count">
+                {partnerItems.length} service{partnerItems.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            {renderServiceGroup(partnerItems)}
+          </div>
+        );
+      });
+  };
+
   const renderServices = () => {
     if (error) return (
       <div className="mkt-status-box">
@@ -515,17 +666,7 @@ const UserMarketplace = ({ onStepChange }) => {
             <div className="vsh-line" />
             <span className="vsh-cnt">{filtered.length} service{filtered.length !== 1 ? "s" : ""}</span>
           </div>
-          <div className="svc-grid">
-            {filtered.map(s => (
-              <ServiceCard
-                key={s._id}
-                item={s}
-                inCart={inCart(s._id)}
-                onToggleCart={toggleCart}
-                onCardView={handleCardView}
-              />
-            ))}
-          </div>
+          {renderPartnerGroups(filtered)}
         </>
       );
     }
@@ -548,17 +689,7 @@ const UserMarketplace = ({ onStepChange }) => {
             <div className="vsh-line" />
             <span className="vsh-cnt">{group.length} service{group.length !== 1 ? "s" : ""}</span>
           </div>
-          <div className="svc-grid">
-            {group.map(s => (
-              <ServiceCard
-                key={s._id}
-                item={s}
-                inCart={inCart(s._id)}
-                onToggleCart={toggleCart}
-                onCardView={handleCardView}
-              />
-            ))}
-          </div>
+          {renderPartnerGroups(group)}
         </React.Fragment>
       );
     });
@@ -602,7 +733,6 @@ const UserMarketplace = ({ onStepChange }) => {
                 {/* ── FIX 3: Layer pills — show all accessible layers, not just the active one */}
                 <div className="vpills">
                   {LAYER_PILLS.filter(({ key }) => {
-                    if (key === "all") return true;          // always show "All"
                     if (key === "macro") return true;          // macro always free
                     if (key === "micro") return hasMicro;      // micro: sub or credit unlock
                     if (key === "nano") return hasNano;       // nano:  sub or credit unlock
@@ -611,7 +741,10 @@ const UserMarketplace = ({ onStepChange }) => {
                     <button
                       key={key}
                       className={`vpill vpill--${key} ${activeLayer === key ? "active" : ""}`}
-                      onClick={() => setActiveLayer(key)}
+                      onClick={() => {
+                        setActiveLayer(key);
+                        setActiveCategory("all");
+                      }}
                     >
                       <span className="vpill-label">{label}</span>
                     </button>
@@ -630,6 +763,21 @@ const UserMarketplace = ({ onStepChange }) => {
                   <span>Cart</span>
                   {cart.length > 0 && <span className="cart-top-badge">{cart.length}</span>}
                 </button>
+              </div>
+
+              <div className="mkt-filter-row">
+                <div className="category-pills">
+                  {availableCategoryPills.map(({ key, label }) => (
+                    <button
+                      key={key}
+                      className={`category-pill ${activeCategory === key ? "active" : ""}`}
+                      onClick={() => setActiveCategory(key)}
+                    >
+                      <span>{label}</span>
+                      <span className="category-pill-count">{categoryCounts[key] || 0}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="services-container">

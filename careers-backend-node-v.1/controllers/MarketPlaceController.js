@@ -30,7 +30,7 @@ const addMarketplaceItem = async (req, res) => {
   try {
     const {
       name, role, layer, step_id, path_id, partner_email,
-      access, cost, goal, outcomes, duration, iterations, discount, features
+      category, access, cost, goal, outcomes, duration, iterations, discount, features
     } = req.body;
 
     if (!step_id || !layer) {
@@ -39,7 +39,7 @@ const addMarketplaceItem = async (req, res) => {
 
     const item = await marketplaceModel.create({
       name, role, layer, step_id, path_id, partner_email,
-      access, cost, goal, outcomes, duration, iterations,
+      category, access, cost, goal, outcomes, duration, iterations,
       discount, features, status: "active"
     });
 
@@ -76,9 +76,10 @@ const addMarketplaceItem = async (req, res) => {
 const getMarketplaceItemsByStep = async (req, res) => {
   try {
     const { step_id } = req.params;
-    const { layer } = req.query;
+    const { layer, category } = req.query;
     const filter = { step_id, status: "active" };
     if (layer) filter.layer = layer;
+    if (category) filter.category = category;
     const items = await marketplaceModel.find(filter);
     res.json({ status: true, data: items });
   } catch (err) {
@@ -94,6 +95,7 @@ const getAllMarketplaceItems = async (req, res) => {
   try {
     const filter = { status: "active" };
     if (req.query.layer) filter.layer = req.query.layer;
+    if (req.query.category) filter.category = req.query.category;
     const items = await marketplaceModel.find(filter).sort({ createdAt: -1 });
     res.json({ status: true, data: items });
   } catch (err) {

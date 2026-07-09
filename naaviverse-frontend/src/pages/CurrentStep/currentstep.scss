@@ -433,6 +433,78 @@ $proplus-btn-hover:   #fad6b0;
   font-size: 12px;
 }
 
+.feedback-strip {
+  margin: 0 16px 12px;
+  padding: 10px;
+  border: 1px solid $gray200;
+  border-radius: 10px;
+  background: $gray50;
+}
+
+.feedback-strip__label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: $gray400;
+  margin-bottom: 8px;
+}
+
+.feedback-strip__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.feedback-btn {
+  border: 1px solid $gray200;
+  background: #fff;
+  color: $gray600;
+  border-radius: 8px;
+  padding: 6px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: $gray300;
+    color: $navy;
+  }
+
+  &.active {
+    background: $navy;
+    border-color: $navy;
+    color: #fff;
+  }
+}
+
+.feedback-comment {
+  width: 100%;
+  min-height: 62px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid $gray200;
+  border-radius: 8px;
+  resize: vertical;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  color: $navy;
+  outline: none;
+
+  &:focus {
+    border-color: $teal;
+  }
+}
+
+.feedback-note {
+  margin-top: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  color: $teal;
+}
+
 // Card Footer
 .vc-foot {
   padding: 0 16px 16px;

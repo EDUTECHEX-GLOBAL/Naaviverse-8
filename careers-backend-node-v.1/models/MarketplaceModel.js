@@ -21,6 +21,11 @@ const MarketplaceSchema = new mongoose.Schema(
   },
 
   role: { type: String },
+  category: {
+    type: String,
+    enum: ["mentor", "vendor", "distributor", "institution", "resource"],
+    default: "vendor"
+  },
   name: { type: String },
 
   access: { type: String },

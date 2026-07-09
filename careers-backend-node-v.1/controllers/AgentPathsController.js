@@ -73,10 +73,19 @@ function cleanFinancial(finStr) {
 // ─────────────────────────────────────────────────────────────────────────────
 // MARKETPLACE PARSER: Normalize AI recommended items into main schema
 // ─────────────────────────────────────────────────────────────────────────────
+function normalizeMarketplaceCategory(value) {
+  const normalized = (value || '').toString().toLowerCase();
+  if (normalized.includes('mentor')) return 'mentor';
+  if (normalized.includes('vendor')) return 'vendor';
+  if (normalized.includes('distributor')) return 'distributor';
+  if (normalized.includes('institution') || normalized.includes('university') || normalized.includes('school')) return 'institution';
+  return 'vendor';
+}
+
 function extractMarketplaceItems(step, stepObjectId, pathObjectId, partnerEmail) {
   const items = [];
 
-  const normalizeAndPush = (raw, layer) => {
+  const normalizeAndPush = (raw, layer, categoryHint) => {
     if (!raw || !raw.name) return;
     
     // Normalize cost/price string
@@ -85,12 +94,16 @@ function extractMarketplaceItems(step, stepObjectId, pathObjectId, partnerEmail)
       costVal = 'free';
     }
 
+    const roleVal = raw.type || raw.role || (layer === 'nano' ? 'Mentor' : 'Resource');
+    const category = normalizeMarketplaceCategory(categoryHint || roleVal);
+
     items.push({
       partner_email: partnerEmail,
       path_id: pathObjectId,
       step_id: stepObjectId,
       layer: layer, // "macro" | "micro" | "nano"
-      role: raw.type || raw.role || (layer === 'nano' ? 'Mentor' : 'Resource'),
+      category,
+      role: roleVal,
       name: raw.name,
       access: costVal.toString().toLowerCase() === 'free' ? 'free' : 'paid',
       cost: costVal,
@@ -113,7 +126,7 @@ function extractMarketplaceItems(step, stepObjectId, pathObjectId, partnerEmail)
       cats.forEach(cat => {
         const arr = view.marketplace[cat];
         if (Array.isArray(arr)) {
-          arr.forEach(item => normalizeAndPush(item, layer));
+          arr.forEach(item => normalizeAndPush(item, layer, cat));
         }
       });
     }
@@ -412,4 +425,4 @@ module.exports = {
   getAgentPathById,
   syncAgentPaths,
 };
-//just created to connect the backend 
+//just created to connect the backend
