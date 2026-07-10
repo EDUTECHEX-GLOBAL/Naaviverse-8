@@ -299,4 +299,234 @@ router.get("/invoice/:paymentId", async (req, res) => {
   }
 });
 
+// ═════════════════════════════════════════
+//   MARKETPLACE — CREATE RAZORPAY ORDER
+//   POST /api/payment/marketplace-order
+// ═════════════════════════════════════════
+router.post("/marketplace-order", async (req, res) => {
+  try {
+    const { userEmail, items = [], total, currency = "INR" } = req.body;
+
+    if (!userEmail || !total || total <= 0) {
+      return res.status(400).json({ success: false, error: "userEmail and total are required" });
+    }
+
+    // Determine tier (nano > micro > macro)
+    const layers = items.map(i => (i.layer || "macro").toLowerCase());
+    const tier = layers.includes("nano") ? "nano" : layers.includes("micro") ? "micro" : "macro";
+
+    // Create a combined payment record
+    const payment = await Payment.create({
+      userEmail,
+      productId:     "naavi-marketplace",
+      productName:   `Marketplace — ${items.map(i => i.name).join(", ")}`,
+      billingMethod: "monthly",
+      amount:        total,
+      currency,
+      tier:          tier === "macro" ? "micro" : tier,
+      planTier:      "standard",
+      status:        "pending",
+    });
+
+    const order = await razorpay.orders.create({
+      amount:   total * 100,
+      currency,
+      receipt:  "mkt_" + payment._id,
+      notes:    { userEmail, tier, productId: "naavi-marketplace" },
+    });
+
+    payment.razorpayOrderId = order.id;
+    await payment.save();
+
+    console.log(`✅ Marketplace order created: ${order.id} | ₹${total} | ${tier}`);
+    return res.json({ success: true, order, paymentId: payment._id });
+
+  } catch (err) {
+    console.error("❌ Marketplace Order Error:", err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ═════════════════════════════════════════
+//   MARKETPLACE — VERIFY RAZORPAY PAYMENT
+//   POST /api/payment/marketplace-verify
+// ═════════════════════════════════════════
+router.post("/marketplace-verify", async (req, res) => {
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      items = [],
+      userEmail,
+    } = req.body;
+
+    // 1. Verify signature
+    const sign = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSig = crypto
+      .createHmac("sha256", process.env.RAZORPAY_SECRET_KEY)
+      .update(sign)
+      .digest("hex");
+
+    if (expectedSig !== razorpay_signature) {
+      await Payment.findOneAndUpdate(
+        { razorpayOrderId: razorpay_order_id },
+        { status: "failed" }
+      );
+      return res.status(400).json({ success: false, message: "Invalid payment signature" });
+    }
+
+    // 2. Mark payment as paid
+    const payment = await Payment.findOneAndUpdate(
+      { razorpayOrderId: razorpay_order_id },
+      {
+        status:            "paid",
+        razorpayPaymentId: razorpay_payment_id,
+        razorpaySignature: razorpay_signature,
+      },
+      { new: true }
+    );
+
+    if (!payment) {
+      return res.status(404).json({ success: false, message: "Payment record not found" });
+    }
+
+    // 3. Determine tier (nano > micro > macro)
+    const layers = items.map(i => (i.layer || "macro").toLowerCase());
+    const tier = layers.includes("nano") ? "nano" : layers.includes("micro") ? "micro" : null;
+
+    // 4. Activate subscription for micro/nano
+    if (tier) {
+      const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      await Subscription.findOneAndUpdate(
+        { userEmail: payment.userEmail, productId: "naavi-marketplace" },
+        {
+          $set: {
+            userEmail:     payment.userEmail,
+            productId:     "naavi-marketplace",
+            productName:   "Naaviverse Marketplace",
+            billingMethod: "monthly",
+            tier,
+            planTier:      "standard",
+            startDate:     new Date(),
+            endDate,
+            status:        "active",
+          },
+        },
+        { upsert: true, new: true }
+      );
+      console.log(`✅ Marketplace subscription activated: ${payment.userEmail} — ${tier}`);
+    }
+
+    // 5. Credit wallet tokens
+    try {
+      const credits = tier === "nano" ? 10 : tier === "micro" ? 5 : 2;
+      await VaultTransaction.create({
+        email:       payment.userEmail,
+        type:        "credit",
+        amount:      credits,
+        description: `Marketplace purchase reward`,
+        paymentId:   razorpay_payment_id,
+        expiresAt:   new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+      });
+    } catch (e) {
+      console.warn("Wallet credit failed:", e.message);
+    }
+
+    console.log(`✅ Marketplace payment verified: ${razorpay_payment_id}`);
+    return res.json({
+      success: true,
+      message: "Payment verified & confirmed",
+      tier,
+      razorpayPaymentId: razorpay_payment_id,
+    });
+
+  } catch (err) {
+    console.error("❌ Marketplace Verify Error:", err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ═════════════════════════════════════════
+//   MOCK PURCHASE (Marketplace Test Payment)
+//   POST /api/payment/mock-purchase
+// ═════════════════════════════════════════
+router.post("/mock-purchase", async (req, res) => {
+  try {
+    const {
+      userEmail,
+      items = [],        // Array of { name, layer, cost, _id }
+      total,             // Total amount in INR
+      orderId,           // Frontend-generated order ID e.g. #NV-123456
+      stepId,
+      pathId,
+    } = req.body;
+
+    if (!userEmail) {
+      return res.status(400).json({ success: false, message: "userEmail is required" });
+    }
+
+    // Determine the highest-tier layer purchased (nano > micro > macro)
+    const layers = items.map(i => (i.layer || "macro").toLowerCase());
+    const tier = layers.includes("nano") ? "nano" : layers.includes("micro") ? "micro" : null;
+
+    // Save a payment record for each item
+    const paymentRecords = [];
+    for (const item of items) {
+      const itemLayer = (item.layer || "macro").toLowerCase();
+      const amount = Math.round(parseFloat(String(item.cost || "0").replace(/[^0-9.]/g, "")) || 0);
+      const rec = await Payment.create({
+        userEmail,
+        productId: item._id ? String(item._id) : `marketplace-${Date.now()}`,
+        productName: item.name || "Marketplace Item",
+        billingMethod: "monthly",
+        amount,
+        currency: "INR",
+        tier: itemLayer === "macro" ? "micro" : itemLayer,
+        planTier: "standard",
+        status: "paid",
+        razorpayOrderId: orderId || `MOCK-${Date.now()}`,
+        razorpayPaymentId: `MOCK_PAY_${Date.now()}`,
+        razorpaySignature: "mock_signature",
+      });
+      paymentRecords.push(rec);
+    }
+
+    // Activate subscription if micro/nano items were purchased
+    if (tier) {
+      const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+      await Subscription.findOneAndUpdate(
+        { userEmail, productId: "naavi-marketplace" },
+        {
+          $set: {
+            userEmail,
+            productId: "naavi-marketplace",
+            productName: "Naaviverse Marketplace",
+            billingMethod: "monthly",
+            tier,
+            planTier: "standard",
+            startDate: new Date(),
+            endDate,
+            status: "active",
+          },
+        },
+        { upsert: true, new: true }
+      );
+      console.log(`✅ Mock marketplace subscription activated: ${userEmail} — ${tier}`);
+    }
+
+    return res.json({
+      success: true,
+      message: "Mock purchase recorded & subscription activated",
+      orderId,
+      tier,
+      paymentCount: paymentRecords.length,
+    });
+
+  } catch (err) {
+    console.error("❌ Mock purchase error:", err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;

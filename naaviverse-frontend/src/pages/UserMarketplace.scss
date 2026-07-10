@@ -666,3 +666,241 @@ $shadow-lg:  0 8px 32px rgba(15,31,61,0.13);
   cursor: pointer; transition: background 0.14s;
   &:hover { background: $teal; }
 }
+
+/* -- Mock Payment Modal ------------------------------------------------------- */
+.mock-payment-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+.mock-payment-modal {
+  background: #fff;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  overflow: hidden;
+  animation: slideDown 0.3s ease;
+}
+.mp-header {
+  background: #111827;
+  color: #fff;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.mp-logo {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+.mp-amt {
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+.mp-body {
+  padding: 24px;
+  text-align: center;
+  color: #4b5563;
+}
+.mp-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+.mp-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+.mp-success {
+  background: #10b981;
+  color: #fff;
+}
+.mp-success:hover {
+  background: #059669;
+}
+.mp-fail {
+  background: #ef4444;
+  color: #fff;
+}
+.mp-fail:hover {
+  background: #dc2626;
+}
+
+/* -- Mock Payment Enhancements ------------------------------------------------- */
+.mock-error-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ef4444;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  z-index: 10001;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.mp-processing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 24px !important;
+}
+.mp-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #10b981;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.mp-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.mp-item-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+.mp-layer-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+.mp-layer-macro { background: #ede9fe; color: #6366f1; }
+.mp-layer-micro { background: #ccfbf1; color: #0d9488; }
+.mp-layer-nano  { background: #fef3c7; color: #d97706; }
+.mp-item-name { flex: 1; font-size: 0.9rem; color: #374151; font-weight: 500; }
+.mp-item-price { font-size: 0.9rem; font-weight: 700; color: #111827; flex-shrink: 0; }
+.mp-divider { height: 1px; background: #e2e8f0; margin: 12px 0; }
+.mp-notice {
+  font-size: 0.8rem;
+  color: #6b7280;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+/* -- Razorpay Button Styles ------------------------------------------------- */
+.rzp-pay-note {
+  display: flex;
+  align-items: flex-start;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 0.875rem;
+  color: #166534;
+  margin-bottom: 8px;
+}
+.rzp-pay-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  color: #dc2626;
+  margin-top: 8px;
+}
+.rzp-pay-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.rzp-btn-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+.rzp-badge {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255,255,255,0.2);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.rzp-mini-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+.rzp-secure-text {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* -- Checkout Form Validation Styles ------------------------------------------ */
+.req-note {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: normal;
+  margin-left: 8px;
+}
+.req-star {
+  color: #ef4444;
+  margin-left: 2px;
+}
+.chk-field.field-error label {
+  color: #dc2626;
+}
+.chk-field input.input-err {
+  border-color: #fca5a5;
+  background-color: #fef2f2;
+}
+.chk-field input.input-err:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+.err-msg {
+  display: block;
+  font-size: 0.75rem;
+  color: #dc2626;
+  margin-top: 4px;
+  font-weight: 500;
+}

@@ -73,39 +73,37 @@ function cleanFinancial(finStr) {
 // ─────────────────────────────────────────────────────────────────────────────
 // MARKETPLACE PARSER: Normalize AI recommended items into main schema
 // ─────────────────────────────────────────────────────────────────────────────
-function normalizeMarketplaceCategory(value) {
-  const normalized = (value || '').toString().toLowerCase();
-  if (normalized.includes('mentor')) return 'mentor';
-  if (normalized.includes('vendor')) return 'vendor';
-  if (normalized.includes('distributor')) return 'distributor';
-  if (normalized.includes('institution') || normalized.includes('university') || normalized.includes('school')) return 'institution';
-  return 'vendor';
-}
-
 function extractMarketplaceItems(step, stepObjectId, pathObjectId, partnerEmail) {
   const items = [];
 
-  const normalizeAndPush = (raw, layer, categoryHint) => {
+  const normalizeAndPush = (raw, layer, category) => {
     if (!raw || !raw.name) return;
-    
+
     // Normalize cost/price string
     let costVal = raw.cost || raw.price || 'free';
     if (costVal.toString().trim() === '') {
       costVal = 'free';
     }
 
-    const roleVal = raw.type || raw.role || (layer === 'nano' ? 'Mentor' : 'Resource');
-    const category = normalizeMarketplaceCategory(categoryHint || roleVal);
+    const isFree = costVal.toString().toLowerCase() === 'free';
+
+    // ── AUTO-CORRECT LAYER BASED ON ACCESS ─────────────────────────────────
+    // Rule: Macro = Free items only | Micro & Nano = Paid items only
+    // If the AI agent places a free item in micro/nano, move it to macro.
+    let correctedLayer = layer;
+    if (isFree && (layer === 'micro' || layer === 'nano')) {
+      correctedLayer = 'macro';
+    }
 
     items.push({
       partner_email: partnerEmail,
       path_id: pathObjectId,
       step_id: stepObjectId,
-      layer: layer, // "macro" | "micro" | "nano"
-      category,
-      role: roleVal,
+      layer: correctedLayer, // corrected: free items always go to macro
+      role: raw.type || raw.role || (correctedLayer === 'nano' ? 'Mentor' : 'Resource'),
+      category: category || 'vendor',
       name: raw.name,
-      access: costVal.toString().toLowerCase() === 'free' ? 'free' : 'paid',
+      access: isFree ? 'free' : 'paid',
       cost: costVal,
       goal: raw.why || raw.value || raw.goal || '',
       outcomes: raw.expected_outcomes || raw.value || raw.outcomes || '',
@@ -126,7 +124,14 @@ function extractMarketplaceItems(step, stepObjectId, pathObjectId, partnerEmail)
       cats.forEach(cat => {
         const arr = view.marketplace[cat];
         if (Array.isArray(arr)) {
-          arr.forEach(item => normalizeAndPush(item, layer, cat));
+          arr.forEach(item => {
+            let mappedCat = 'vendor';
+            if (cat === 'mentors') mappedCat = 'mentor';
+            if (cat === 'vendors') mappedCat = 'vendor';
+            if (cat === 'institutions') mappedCat = 'institution';
+            if (cat === 'distributors') mappedCat = 'distributor';
+            normalizeAndPush(item, layer, mappedCat);
+          });
         }
       });
     }
@@ -143,7 +148,27 @@ function extractMarketplaceItems(step, stepObjectId, pathObjectId, partnerEmail)
       const arr = step.marketplace[key];
       const layer = mappings[key];
       if (Array.isArray(arr)) {
-        arr.forEach(item => normalizeAndPush(item, layer));
+        arr.forEach(item => {
+          let mappedCat = 'vendor';
+
+          // 1. Trust explicit category from agent data
+          const explicitCat = (item.category || '').toLowerCase().trim();
+          if (['mentor', 'vendor', 'distributor', 'institution', 'resource'].includes(explicitCat)) {
+            mappedCat = explicitCat === 'resource' ? 'vendor' : explicitCat;
+          } else {
+            // 2. Fallback: keyword match on type and role
+            const typeLower = `${item.type || ""} ${item.role || ""}`.toLowerCase();
+            if (typeLower.includes('mentor') || typeLower.includes('tutor') || typeLower.includes('advisor') || typeLower.includes('coach')) {
+              mappedCat = 'mentor';
+            } else if (typeLower.includes('university') || typeLower.includes('school') || typeLower.includes('college') || typeLower.includes('institute') || typeLower.includes('institution')) {
+              mappedCat = 'institution';
+            } else if (typeLower.includes('distributor')) {
+              mappedCat = 'distributor';
+            }
+            // items with type 'Expert', 'Course', 'Subscription', 'Tool' etc. stay as 'vendor'
+          }
+          normalizeAndPush(item, layer, mappedCat);
+        });
       }
     });
   }
@@ -190,7 +215,7 @@ async function syncAgentPaths() {
       const roadmap = fullAgentPath.roadmap_data || {};
       const original = fullAgentPath.original_roadmap_data || {};
       const profile = fullAgentPath.profile || {};
-      
+
       // Look in roadmap.steps, original_roadmap_data.steps, or roadmap.macro_path from full detail JSON
       const steps = roadmap.steps || original.steps || roadmap.macro_path || [];
 
@@ -244,11 +269,11 @@ async function syncAgentPaths() {
           step_order: stepOrder,
           path_id: pathObjectId,
           status: 'active',
-          
+
           macro_name: step.title || `Step ${stepOrder}`,
           macro_description: macroDesc || step.description || '',
           macro_length: step.duration || '',
-          
+
           micro_name: step.title || `Step ${stepOrder}`,
           micro_description: microDesc || step.description || '',
           micro_length: step.duration || '',
@@ -312,44 +337,44 @@ async function syncAgentPaths() {
 // TRANSFORM: Convert Agent path JSON → Platform path shape (UI fallback)
 // ─────────────────────────────────────────────────────────────────────────────
 function transformAgentPath(agentPath) {
-  const roadmap  = agentPath.roadmap_data  || {};
+  const roadmap = agentPath.roadmap_data || {};
   const original = agentPath.original_roadmap_data || {};
-  const profile  = agentPath.profile       || {};
-  const steps    = roadmap.steps           || original.steps || roadmap.macro_path || [];
+  const profile = agentPath.profile || {};
+  const steps = roadmap.steps || original.steps || roadmap.macro_path || [];
 
   return {
-    _id:               agentPath.id || agentPath._id,
-    source:            'agent',
-    nameOfPath:        roadmap.path_title        || agentPath.target_goal || 'AI Generated Path',
-    description:       roadmap.path_description  || '',
-    target_goal:       agentPath.target_goal     || '',
-    current_position:  agentPath.current_position || '',
-    grade:             profile.grade            ? [profile.grade]             : [],
-    curriculum:        profile.curriculum       ? [profile.curriculum]        : [],
-    stream:            profile.stream           ? [profile.stream]            : [],
+    _id: agentPath.id || agentPath._id,
+    source: 'agent',
+    nameOfPath: roadmap.path_title || agentPath.target_goal || 'AI Generated Path',
+    description: roadmap.path_description || '',
+    target_goal: agentPath.target_goal || '',
+    current_position: agentPath.current_position || '',
+    grade: profile.grade ? [profile.grade] : [],
+    curriculum: profile.curriculum ? [profile.curriculum] : [],
+    stream: profile.stream ? [profile.stream] : [],
     financialSituation: profile.financialSituation ? [profile.financialSituation] : [],
-    personality:       profile.personality      || '',
-    country:           profile.country          || '',
-    city:              profile.city             || '',
-    readiness_score:   roadmap.readiness_score  || 0,
-    readiness_label:   roadmap.readiness_label  || '',
-    total_duration:    roadmap.total_duration   || '',
-    blind_spots:       roadmap.blind_spots      || [],
+    personality: profile.personality || '',
+    country: profile.country || '',
+    city: profile.city || '',
+    readiness_score: roadmap.readiness_score || 0,
+    readiness_label: roadmap.readiness_label || '',
+    total_duration: roadmap.total_duration || '',
+    blind_spots: roadmap.blind_spots || [],
     the_ids: steps.map((step, idx) => ({
-      step_id:          null,
-      stepName:         step.title         || `Step ${idx + 1}`,
-      stepDescription:  step.description   || '',
-      duration:         step.duration      || '',
-      macro_view:       typeof step.macro_view === 'object' ? step.macro_view?.description || '' : step.macro_view || '',
-      micro_view:       typeof step.micro_view === 'object' ? step.micro_view?.description || '' : step.micro_view || '',
-      nano_view:        typeof step.nano_view === 'object' ? step.nano_view?.description || '' : step.nano_view || '',
-      marketplace:      step.marketplace   || {},
-      micro_steps:      step.micro_steps   || [],
+      step_id: null,
+      stepName: step.title || `Step ${idx + 1}`,
+      stepDescription: step.description || '',
+      duration: step.duration || '',
+      macro_view: typeof step.macro_view === 'object' ? step.macro_view?.description || '' : step.macro_view || '',
+      micro_view: typeof step.micro_view === 'object' ? step.micro_view?.description || '' : step.micro_view || '',
+      nano_view: typeof step.nano_view === 'object' ? step.nano_view?.description || '' : step.nano_view || '',
+      marketplace: step.marketplace || {},
+      micro_steps: step.micro_steps || [],
       learning_objectives: step.learning_objectives || [],
     })),
-    status:           'active',
-    published_at:     agentPath.published_at || agentPath.created_at,
-    createdAt:        agentPath.created_at,
+    status: 'active',
+    published_at: agentPath.published_at || agentPath.created_at,
+    createdAt: agentPath.created_at,
   };
 }
 
@@ -365,28 +390,28 @@ const getAgentPaths = async (req, res) => {
     const query = { status: "active" };
     const { grade, curriculum, stream, personality, financialSituation } = req.query;
 
-    if (grade)              query.grade = { $in: [grade] };
-    if (curriculum)         query.curriculum = { $in: [curriculum] };
-    if (stream)             query.stream = { $in: [stream] };
+    if (grade) query.grade = { $in: [grade] };
+    if (curriculum) query.curriculum = { $in: [curriculum] };
+    if (stream) query.stream = { $in: [stream] };
     if (financialSituation) query.financialSituation = { $in: [financialSituation] };
-    if (personality)        query.personality = personality;
+    if (personality) query.personality = personality;
 
     const matchedPaths = await Path.find(query).lean();
 
     return res.status(200).json({
-      status:  true,
-      total:   matchedPaths.length,
+      status: true,
+      total: matchedPaths.length,
       message: 'Agent paths retrieved successfully',
-      data:    matchedPaths,
+      data: matchedPaths,
     });
 
   } catch (error) {
     console.error('[AgentPaths] Error:', error.message);
     return res.status(200).json({
-      status:  true,
-      total:   0,
+      status: true,
+      total: 0,
       message: 'Error fetching agent paths.',
-      data:    [],
+      data: [],
     });
   }
 };
@@ -400,21 +425,21 @@ const getAgentPathById = async (req, res) => {
     const path = await Path.findById(agentPathId).lean();
     if (!path) {
       return res.status(404).json({
-        status:  false,
+        status: false,
         message: 'Path not found',
       });
     }
 
     return res.status(200).json({
-      status:  true,
+      status: true,
       message: 'Path fetched successfully',
-      data:    path,
+      data: path,
     });
 
   } catch (error) {
     console.error('[AgentPaths] Error:', error.message);
     return res.status(404).json({
-      status:  false,
+      status: false,
       message: 'Path not found',
     });
   }

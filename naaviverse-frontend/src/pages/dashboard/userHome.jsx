@@ -73,9 +73,6 @@ const Ring = ({ pct, size = 52, stroke = 4, color = "#60a5fa", bg = "rgba(96,165
 };
 
 // ── Static data ────────────────────────────────────────────────────────────────
-const PURCHASES = [
-  { id: 1, name: "AI for Finance", type: "Path", plan: "Premium", credits: 4, date: "Apr 2, 2026", status: "active" },
-];
 
 const MENTORS = [
   { id: 1, name: "Dr. Priya Sharma", role: "CS Career Coach", initials: "PS", color: "#3b82f6", date: "Apr 10, 2026", time: "4:00 PM IST", status: "upcoming", rating: 4.9, sessions: 3, speciality: "US CS applications" },
@@ -113,6 +110,8 @@ export default function UserHome() {
   const [explorePaths, setExplorePaths] = useState([]);
   const [pathLoading, setPathLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [purchases, setPurchases] = useState([]);
+  const [purchasesLoading, setPurchasesLoading] = useState(true);
 
   const notifRef = useRef(null);
   const detailCardRef = useRef(null); 
@@ -214,6 +213,55 @@ export default function UserHome() {
     };
 
     fetchWallet();
+  }, [user?.email]);
+
+  // ── Fetch paid marketplace purchases ────────────────────────────────────────
+  useEffect(() => {
+    if (!user?.email) return;
+
+    const fetchPurchases = async () => {
+      try {
+        setPurchasesLoading(true);
+        const { data } = await axios.get(`${BASE_URL}/api/payment/transactions`, {
+          params: { email: user.email }
+        });
+        if (data?.success) {
+          // Filter to show only paid items where productId is NOT "naavi-platform"
+          const filtered = data.data.filter(t => 
+            t.status?.toLowerCase() === "paid" && 
+            t.productId !== "naavi-platform"
+          ).map(t => {
+            // Strip "Marketplace — " prefix if present
+            const cleanName = t.productName.startsWith("Marketplace — ")
+              ? t.productName.replace("Marketplace — ", "")
+              : t.productName;
+
+            return {
+              id: t._id,
+              name: cleanName,
+              type: t.tier ? (t.tier.charAt(0).toUpperCase() + t.tier.slice(1)) : "Marketplace",
+              plan: t.planTier ? (t.planTier.charAt(0).toUpperCase() + t.planTier.slice(1)) : "Standard",
+              cost: `₹${t.amount.toLocaleString("en-IN")}`,
+              amount: t.amount,
+              date: new Date(t.createdAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric"
+              }),
+              status: "active",
+              icon: "🛍️"
+            };
+          });
+          setPurchases(filtered);
+        }
+      } catch (err) {
+        console.error("❌ Purchases fetch error:", err);
+      } finally {
+        setPurchasesLoading(false);
+      }
+    };
+
+    fetchPurchases();
   }, [user?.email]);
 
  // ── Fetch path data ──────────────────────────────────────────────────────────
@@ -511,26 +559,38 @@ fetchMyPath();
   const PurchasesPanel = () => (
     <div className="uh-panel">
       <div className="uh-section-title">All Marketplace Purchases</div>
-      <div className="uh-purchases-list">
-        {PURCHASES.map(m => (
-          <div key={m.id} className="uh-purchase-row">
-            <div className="uh-purchase-emoji">{m.icon}</div>
-            <div className="uh-purchase-info">
-              <span className="uh-purchase-name">{m.name}</span>
-              <span className="uh-purchase-meta">{m.type} · Purchased {m.date}</span>
-            </div>
-            <div className="uh-purchase-right">
-              <span className={`uh-plan-tag p-${m.plan.toLowerCase()}`}>{m.plan}</span>
-              <span className="uh-purchase-cr">{m.credits} cr</span>
-            </div>
-            <span className={`uh-status-dot s-${m.status}`}>{m.status === "active" ? "Active" : "Done"}</span>
+      {purchasesLoading ? (
+        <div className="uh-loading">Loading purchases…</div>
+      ) : purchases.length === 0 ? (
+        <div className="uh-no-purchases" style={{ padding: "40px 20px", textAlign: "center", color: "#64748b" }}>
+          <div style={{ fontSize: "2rem", marginBottom: "8px" }}>🛍️</div>
+          <strong>No purchases found</strong>
+          <p style={{ margin: "4px 0 0", fontSize: "0.85rem" }}>Paid marketplace items will show up here once purchased.</p>
+        </div>
+      ) : (
+        <>
+          <div className="uh-purchases-list">
+            {purchases.map(m => (
+              <div key={m.id} className="uh-purchase-row">
+                <div className="uh-purchase-emoji">{m.icon}</div>
+                <div className="uh-purchase-info">
+                  <span className="uh-purchase-name">{m.name}</span>
+                  <span className="uh-purchase-meta">{m.type} · Purchased {m.date}</span>
+                </div>
+                <div className="uh-purchase-right">
+                  <span className={`uh-plan-tag p-${m.plan.toLowerCase()}`}>{m.plan}</span>
+                  <span className="uh-purchase-cr" style={{ color: "#0d9488", fontWeight: "bold" }}>{m.cost}</span>
+                </div>
+                <span className={`uh-status-dot s-active`}>Paid</span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <div className="uh-purchases-total">
-        <span>Total spent</span>
-        <strong>{PURCHASES.reduce((s, p) => s + p.credits, 0)} credits</strong>
-      </div>
+          <div className="uh-purchases-total">
+            <span>Total spent</span>
+            <strong>₹{purchases.reduce((s, p) => s + (p.amount || 0), 0).toLocaleString("en-IN")}</strong>
+          </div>
+        </>
+      )}
     </div>
   );
 
@@ -856,7 +916,7 @@ fetchMyPath();
         </div>
         <div className="uh-bs-div" />
         <div className="uh-bs-item" onClick={() => setActiveTab("purchases")}>
-          <span className="uh-bs-num">{PURCHASES.length}</span>
+          <span className="uh-bs-num">{purchases.length}</span>
           <span className="uh-bs-label">Purchases</span>
           <Icon type="arrow-r" size={11} color="#3b82f6" />
         </div>

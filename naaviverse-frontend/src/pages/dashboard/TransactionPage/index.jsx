@@ -35,7 +35,16 @@ const TransactionPage = ({
     const email = userDetails?.user?.email || userDetails?.email;
 
     axios.get(`${BASE_URL}/api/payment/transactions`, { params: { email } })
-      .then(({ data }) => { if (data?.success) setTxnData(data.data); })
+      .then(({ data }) => {
+        if (data?.success) {
+          // Filter: only Naavi Platform Subscriptions (productId = "naavi-platform") and EXCLUDE pending payments
+          const subs = data.data.filter(t => 
+            t.productId === "naavi-platform" &&
+            t.status?.toLowerCase() !== "pending"
+          );
+          setTxnData(subs);
+        }
+      })
       .catch(err => console.error("❌ Transaction fetch error:", err))
       .finally(() => setIsTxnLoading(false));
   }, []);
@@ -65,7 +74,7 @@ const TransactionPage = ({
     }
   };
 
-  const tabs = ['All', 'Paid', 'Pending', 'Failed'];
+  const tabs = ['All', 'Paid', 'Failed'];
 
   const filteredData = activeTab === 'All'
     ? txnData

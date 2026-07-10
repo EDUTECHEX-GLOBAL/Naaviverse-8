@@ -13,9 +13,9 @@ const LAYER_META = {
   nano: { label: "NANO VIEW — 1-ON-1 SESSIONS", sub: "Book a personalised expert session.", badgeCls: "vsh-nano", cardCls: "vNano" },
 };
 const LAYER_ICON = {
-  macro: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
-  micro: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>,
-  nano:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 6 3 6 3s6-1 6-3v-5"/></svg>,
+  macro: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>,
+  micro: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>,
+  nano: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c0 2 6 3 6 3s6-1 6-3v-5" /></svg>,
 };
 const TIME_SLOTS = ["10:00 AM", "12:00 PM", "2:00 PM", "4:00 PM", "6:00 PM", "8:00 PM"];
 const LAYER_PILLS = [
@@ -32,11 +32,19 @@ const CATEGORY_PILLS = [
 ];
 
 const getItemCategory = (item) => {
-  const raw = `${item?.category || ""} ${item?.role || ""}`.toLowerCase();
-  if (raw.includes("mentor")) return "mentor";
-  if (raw.includes("vendor")) return "vendor";
-  if (raw.includes("distributor")) return "distributor";
-  if (raw.includes("institution") || raw.includes("university") || raw.includes("school")) return "institution";
+  // ✅ ALWAYS trust the stored category from the database first
+  const stored = (item?.category || "").toLowerCase().trim();
+  if (stored === "mentor") return "mentor";
+  if (stored === "vendor") return "vendor";
+  if (stored === "distributor") return "distributor";
+  if (stored === "institution") return "institution";
+  if (stored === "resource") return "vendor"; // map 'resource' to vendor bucket
+
+  // Fallback: keyword match role only when category is missing/unrecognized
+  const role = (item?.role || "").toLowerCase();
+  if (role.includes("mentor") || role.includes("tutor") || role.includes("advisor") || role.includes("coach")) return "mentor";
+  if (role.includes("institution") || role.includes("university") || role.includes("school") || role.includes("college") || role.includes("institute")) return "institution";
+  if (role.includes("distributor")) return "distributor";
   return "vendor";
 };
 
@@ -108,15 +116,25 @@ const itemPrice = (s) => {
   const raw = String(s.cost).trim();
   const match = raw.match(/[\d,]+\.?\d*/);
   if (!match) return 0;
-  return parseFloat(match[0].replace(/,/g, "")) || 0;
+  let num = parseFloat(match[0].replace(/,/g, "")) || 0;
+  
+  if (raw.includes("$")) num = Math.round(num * 83.5);
+  else if (raw.includes("€")) num = Math.round(num * 90);
+  else if (raw.includes("£")) num = Math.round(num * 105);
+  
+  return num;
 };
 
 const getCostDisplay = (s) => {
   if (isFreeItem(s)) return "Free";
+  const num = itemPrice(s);
+  if (num === 0) return "Free";
+  
   const raw = String(s.cost).trim();
-  if (/[a-zA-Z$]/.test(raw)) return raw;
-  const num = parseFloat(raw.replace(/[^\d.]/g, ""));
-  return isNaN(num) ? raw : `₹${num.toLocaleString("en-IN")}`;
+  const suffixMatch = raw.match(/\/[a-zA-Z]+/);
+  const suffix = suffixMatch ? suffixMatch[0] : "";
+  
+  return `₹${num.toLocaleString("en-IN")}${suffix}`;
 };
 
 const fmtPrice = (n) => n === 0 ? "Free" : `₹${n.toLocaleString()}`;
@@ -135,8 +153,8 @@ const ServiceCard = ({ item, inCart, onToggleCart, onCardView, feedback, onFeedb
           {item.role && <span className="svc-tag role-tag">{item.role}</span>}
         </div>
         <span className="svc-ico" style={{ color: layer === "macro" ? "#6366f1" : layer === "micro" ? "#0d9488" : "#d97706" }}>
-  {LAYER_ICON[layer]}
-</span>
+          {LAYER_ICON[layer]}
+        </span>
         <div className="svc-name">{item.name || "Unnamed Service"}</div>
         <div className="svc-by">by {item.partner_email || ""}</div>
         {item.goal && <div className="svc-desc">{item.goal}</div>}
@@ -175,24 +193,24 @@ const CartDrawer = ({ cart, onRemove, onClose, onCheckout }) => {
       <div className="cart-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="cd-header">
           <h2>
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: 8, verticalAlign: "middle"}}>
-    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-    <line x1="3" y1="6" x2="21" y2="6"/>
-    <path d="M16 10a4 4 0 01-8 0"/>
-  </svg>
-  Your Cart
-</h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8, verticalAlign: "middle" }}>
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <path d="M16 10a4 4 0 01-8 0" />
+            </svg>
+            Your Cart
+          </h2>
           <button className="cd-close" onClick={onClose}>✕</button>
         </div>
         {cart.length === 0 ? (
           <div className="cd-empty">
             <div className="cd-empty-icon">
-  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-    <line x1="3" y1="6" x2="21" y2="6"/>
-    <path d="M16 10a4 4 0 01-8 0"/>
-  </svg>
-</div>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <path d="M16 10a4 4 0 01-8 0" />
+              </svg>
+            </div>
             <p className="cd-empty-title">Cart is empty</p>
             <p className="cd-empty-sub">Browse the marketplace to add services.</p>
           </div>
@@ -203,9 +221,9 @@ const CartDrawer = ({ cart, onRemove, onClose, onCheckout }) => {
                 const layer = s.layer?.toLowerCase() || "macro";
                 return (
                   <div className="cart-item" key={s._id}>
-                  <div className="ci-ico" style={{ color: layer === "macro" ? "#6366f1" : layer === "micro" ? "#0d9488" : "#d97706" }}>
-  {LAYER_ICON[layer]}
-</div>
+                    <div className="ci-ico" style={{ color: layer === "macro" ? "#6366f1" : layer === "micro" ? "#0d9488" : "#d97706" }}>
+                      {LAYER_ICON[layer]}
+                    </div>
                     <div className="ci-inf">
                       <div className="ci-name">{s.name}</div>
                       <div className="ci-meta">
@@ -268,6 +286,16 @@ const StepBar = ({ currentPage, onStepChange }) => {
 };
 
 // ─── Checkout Page ────────────────────────────────────────────────────────────
+const loadRazorpayScript = () =>
+  new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+
 const CheckoutPage = ({ cart, onConfirm, onBack }) => {
   const userRaw = (() => { try { return JSON.parse(localStorage.getItem("user")); } catch { return null; } })();
   const userEmail = userRaw?.user?.email || userRaw?.email || "";
@@ -278,52 +306,176 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
   const [phone, setPhone] = useState("");
   const [prefDate, setPrefDate] = useState("");
   const [timeSlot, setTimeSlot] = useState("10:00 AM");
-  const [payMethod, setPayMethod] = useState("Card");
-  const [cardNum, setCardNum] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [upiId, setUpiId] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [payError, setPayError] = useState("");
 
   const subtotal = cart.reduce((a, s) => a + itemPrice(s), 0);
   const tax = Math.round(subtotal * 0.18);
   const total = subtotal + tax;
 
-  const handlePay = async () => {
-    setSubmitting(true);
-    await new Promise(r => setTimeout(r, 1000));
-    const orderId = genOrderId();
-    const stepId = localStorage.getItem("selectedStepId") || "";
-    const stepName = localStorage.getItem("selectedStepName") || "";
-    const pathId = localStorage.getItem("selectedPathId") || "";
-    const pathName = localStorage.getItem("selectedPathName") || "";
+  const handlePaymentSuccess = async ({ razorpay_order_id, razorpay_payment_id, razorpay_signature }) => {
+    try {
+      const stepId = localStorage.getItem("selectedStepId") || "";
+      const stepName = localStorage.getItem("selectedStepName") || "";
+      const pathId = localStorage.getItem("selectedPathId") || "";
+      const pathName = localStorage.getItem("selectedPathName") || "";
 
-    cart.forEach((item) => {
-      logActivity({
-        type: "market",
-        title: `Purchased: ${item.name}`,
-        desc: `Bought "${item.name}" · Order ${orderId}`,
-        pathId, pathName, stepId, stepName,
-        itemName: item.name || "",
-        itemCost: isFreeItem(item) ? "Free" : `₹${Number(item.cost).toLocaleString()}`,
-        status: "completed",
+      // Verify with backend
+      await axios.post(`${BASE_URL}/api/payment/marketplace-verify`, {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+        userEmail: email,
+        items: cart.map(i => ({ _id: i._id, name: i.name, layer: i.layer })),
       });
-    });
 
-    onConfirm({ orderId, total, itemCount: cart.length, date: new Date() });
-    setSubmitting(false);
+      // Log activity
+      cart.forEach((item) => {
+        logActivity({
+          type: "market",
+          title: `Purchased: ${item.name}`,
+          desc: `Bought "${item.name}" via Razorpay · ${razorpay_payment_id}`,
+          pathId, pathName, stepId, stepName,
+          itemName: item.name || "",
+          itemCost: `₹${itemPrice(item).toLocaleString()}`,
+          status: "completed",
+        });
+      });
+
+      const orderId = `#NV-${razorpay_payment_id.slice(-6).toUpperCase()}`;
+      onConfirm({ orderId, total, itemCount: cart.length, date: new Date() });
+
+    } catch (err) {
+      console.error("Verification error:", err);
+      setPayError("Payment received but confirmation failed. Contact support.");
+    }
   };
-  
+
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  const handlePayClick = async () => {
+    // ── Validate all required fields ──────────────────────────────
+    const errors = {};
+    if (!fullName.trim()) errors.fullName = "Full name is required";
+    if (!email.trim()) errors.email = "Email address is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Enter a valid email address";
+    if (!phone.trim()) errors.phone = "Phone number is required";
+    else if (!/^[+\d][\d\s\-]{7,}$/.test(phone.trim())) errors.phone = "Enter a valid phone number";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setPayError("Please fill in all required fields before proceeding.");
+      return;
+    }
+
+    setFieldErrors({});
+    setPayError("");
+    setSubmitting(true);
+
+    try {
+      // Load Razorpay SDK
+      const loaded = await loadRazorpayScript();
+      if (!loaded) {
+        setPayError("Could not load Razorpay. Please check your internet connection.");
+        setSubmitting(false);
+        return;
+      }
+
+      // Create order on backend
+      const res = await axios.post(`${BASE_URL}/api/payment/marketplace-order`, {
+        userEmail: email,
+        items: cart.map(i => ({ _id: i._id, name: i.name, layer: i.layer, cost: itemPrice(i) })),
+        total,
+        currency: "INR",
+      });
+
+      if (!res.data?.success) {
+        setPayError(res.data?.error || "Failed to create order. Please try again.");
+        setSubmitting(false);
+        return;
+      }
+
+      const order = res.data.order;
+
+      // Open Razorpay checkout
+      const options = {
+        key:         process.env.REACT_APP_RAZORPAY_KEY_ID,
+        amount:      order.amount,
+        currency:    order.currency,
+        name:        "Naavi Marketplace",
+        description: cart.map(i => i.name).join(", "),
+        order_id:    order.id,
+        prefill: {
+          email:   email,
+          name:    fullName,
+          contact: phone,
+        },
+        theme: { color: "#5c62ec" },
+        handler: async (response) => {
+          setSubmitting(false);
+          await handlePaymentSuccess(response);
+        },
+        modal: {
+          ondismiss: () => {
+            setSubmitting(false);
+            setPayError("Payment was cancelled.");
+            setTimeout(() => setPayError(""), 4000);
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", (response) => {
+        setSubmitting(false);
+        setPayError(`Payment failed: ${response.error?.description || "Unknown error"}. Please try again.`);
+        setTimeout(() => setPayError(""), 5000);
+      });
+      rzp.open();
+
+    } catch (err) {
+      console.error("Payment error:", err);
+      setPayError(err?.response?.data?.error || "Payment failed. Please try again.");
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="checkout-page">
       <div className="chk-layout">
         <div className="chk-left">
           <h1 className="chk-title">Checkout</h1>
           <div className="chk-section">
-            <div className="chk-section-lbl">Personal Details</div>
-            <div className="chk-field"><label>Full Name</label><input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name" /></div>
-            <div className="chk-field"><label>Email Address</label><input value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com" /></div>
-            <div className="chk-field"><label>Phone Number</label><input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+91 98765 43210" /></div>
+            <div className="chk-section-lbl">Personal Details <span className="req-note">* All fields required</span></div>
+            <div className={`chk-field ${fieldErrors.fullName ? "field-error" : ""}`}>
+              <label>Full Name <span className="req-star">*</span></label>
+              <input
+                value={fullName}
+                onChange={e => { setFullName(e.target.value); setFieldErrors(p => ({ ...p, fullName: "" })); }}
+                placeholder="Your full name"
+                className={fieldErrors.fullName ? "input-err" : ""}
+              />
+              {fieldErrors.fullName && <span className="err-msg">{fieldErrors.fullName}</span>}
+            </div>
+            <div className={`chk-field ${fieldErrors.email ? "field-error" : ""}`}>
+              <label>Email Address <span className="req-star">*</span></label>
+              <input
+                value={email}
+                onChange={e => { setEmail(e.target.value); setFieldErrors(p => ({ ...p, email: "" })); }}
+                placeholder="your@email.com"
+                className={fieldErrors.email ? "input-err" : ""}
+              />
+              {fieldErrors.email && <span className="err-msg">{fieldErrors.email}</span>}
+            </div>
+            <div className={`chk-field ${fieldErrors.phone ? "field-error" : ""}`}>
+              <label>Phone Number <span className="req-star">*</span></label>
+              <input
+                value={phone}
+                onChange={e => { setPhone(e.target.value); setFieldErrors(p => ({ ...p, phone: "" })); }}
+                placeholder="+91 98765 43210"
+                className={fieldErrors.phone ? "input-err" : ""}
+              />
+              {fieldErrors.phone && <span className="err-msg">{fieldErrors.phone}</span>}
+            </div>
           </div>
           <div className="chk-section">
             <div className="chk-section-lbl">Schedule Session</div>
@@ -336,26 +488,14 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
             </div>
           </div>
           <div className="chk-section">
-            <div className="chk-section-lbl">Payment Method</div>
-            <div className="pay-methods">
-              {["Card", "UPI", "Net Banking"].map(m => (
-                <div key={m} className={`pay-method ${payMethod === m ? "active" : ""}`} onClick={() => setPayMethod(m)}>
-                  {m === "Card" && " "}{m === "UPI" && ""}{m === "Net Banking" && ""}{m}
-                </div>
-              ))}
+            <div className="chk-section-lbl">Payment</div>
+            <div className="rzp-pay-note">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:6,verticalAlign:'middle',flexShrink:0}}>
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              Secured by Razorpay. Choose UPI, Cards, EMI or Net Banking in the next step.
             </div>
-            {payMethod === "Card" && (
-              <>
-                <div className="chk-field"><label>Card Number</label><input value={cardNum} onChange={e => setCardNum(e.target.value)} placeholder="4242 4242 4242 4242" maxLength={19} /></div>
-                <div className="chk-row2">
-                  <div className="chk-field"><label>Expiry</label><input value={expiry} onChange={e => setExpiry(e.target.value)} placeholder="MM / YY" /></div>
-                  <div className="chk-field"><label>CVV</label><input value={cvv} onChange={e => setCvv(e.target.value)} placeholder="•••" maxLength={3} type="password" /></div>
-                </div>
-              </>
-            )}
-            {payMethod === "UPI" && (
-              <div className="chk-field"><label>UPI ID</label><input value={upiId} onChange={e => setUpiId(e.target.value)} placeholder="yourname@upi" /></div>
-            )}
+            {payError && <div className="rzp-pay-error">{payError}</div>}
           </div>
         </div>
         <div className="chk-right">
@@ -364,9 +504,10 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
             <div className="os-items">
               {cart.map(s => (
                 <div className="os-row" key={s._id}>
-<span className="os-ico" style={{ color: s.layer === "macro" ? "#6366f1" : s.layer === "micro" ? "#0d9488" : "#d97706" }}>
-  {LAYER_ICON[s.layer?.toLowerCase() || "macro"]}
-</span>                  <span className="os-name">{s.name}</span>
+                  <span className="os-ico" style={{ color: s.layer === "macro" ? "#6366f1" : s.layer === "micro" ? "#0d9488" : "#d97706" }}>
+                    {LAYER_ICON[s.layer?.toLowerCase() || "macro"]}
+                  </span>
+                  <span className="os-name">{s.name}</span>
                   <span className="os-price">{getCostDisplay(s)}</span>
                 </div>
               ))}
@@ -374,9 +515,27 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
             <div className="os-divider" />
             <div className="os-sum-row"><span>GST (18%)</span><span>₹{tax === 0 ? "0" : tax.toLocaleString()}</span></div>
             <div className="os-sum-row os-total"><span>Total</span><span>₹{total === 0 ? "0" : total.toLocaleString()}</span></div>
-            <button className="os-pay-btn" onClick={handlePay} disabled={submitting}>
-              {submitting ? "Processing…" : `Pay ₹${total === 0 ? "0" : total.toLocaleString()} →`}
+            <button className="os-pay-btn rzp-pay-btn" onClick={handlePayClick} disabled={submitting}>
+              {submitting ? (
+                <span className="rzp-btn-inner">
+                  <span className="rzp-mini-spinner" /> Opening Razorpay…
+                </span>
+              ) : (
+                <span className="rzp-btn-inner">
+                  Pay ₹{total === 0 ? "0" : total.toLocaleString()}
+                  <span className="rzp-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{marginRight:4}}><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                    Razorpay
+                  </span>
+                </span>
+              )}
             </button>
+            <p className="rzp-secure-text">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:4,verticalAlign:'middle'}}>
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              100% Secure. Encrypted by Razorpay.
+            </p>
           </div>
         </div>
       </div>
@@ -415,10 +574,11 @@ const UserMarketplace = ({ onStepChange }) => {
   //   • they have an active micro or nano subscription, OR
   //   • they credit-unlocked micro on this step, OR
   //   • they credit-unlocked nano (nano unlock implies micro access)
-  // FIXED — isSubscribed alone doesn't grant access; only credit unlocks do
-  // ✅ FIXED — subscription also grants access
-  const hasMicro = creditUnlocked.micro || isSubscribed;
-  const hasNano = creditUnlocked.nano || (isSubscribed && (subTier === "nano" || subTier === "platinum"));
+  // Mirror exact access logic from CurrentStep/index.jsx lines 432-433
+  // micro: subscription with tier "micro" or "nano", OR credit-unlocked micro
+  // nano:  subscription with tier "nano" only, OR credit-unlocked nano
+  const hasMicro = (isSubscribed && (subTier === "micro" || subTier === "nano")) || creditUnlocked.micro;
+  const hasNano  = (isSubscribed && subTier === "nano") || creditUnlocked.nano;
 
   // ── Component state ────────────────────────────────────────────────────────
   const [page, setPage] = useState("marketplace");
@@ -501,16 +661,26 @@ const UserMarketplace = ({ onStepChange }) => {
     nano: items.filter(s => s.layer === "nano").length,
   }), [items]);
 
-  // ── FIX 1: filter respects credit unlocks, not just subscription ───────────
+  // ── Filter respects credit unlocks + strict free/paid layer enforcement ─────
   const categoryBaseItems = useMemo(() => {
     const q = searchQ.toLowerCase();
     return items.filter(s => {
-      // Gate each layer individually
+      const isItemFree = isFreeItem(s);
+
+      // ── STRICT LAYER-ACCESS RULE ─────────────────────────────────────────────
+      // Macro  → ONLY free items  (paid items must NOT appear here)
+      // Micro  → ONLY paid items  (free items must NOT appear here)
+      // Nano   → ONLY paid items  (free items must NOT appear here)
+      if (s.layer === "macro" && !isItemFree) return false;     // paid item in macro → hide
+      if (s.layer === "micro" && isItemFree)  return false;     // free item in micro → hide
+      if (s.layer === "nano"  && isItemFree)  return false;     // free item in nano  → hide
+
+      // Gate subscription/credit access for paid layers
       const layerAllowed =
-        s.layer === "macro" ? true :   // macro always free
-          s.layer === "micro" ? hasMicro :   // micro: sub OR credit unlock
-            s.layer === "nano" ? hasNano :   // nano:  sub OR credit unlock
-              true;                               // unknown layers: show
+        s.layer === "macro" ? true :
+          s.layer === "micro" ? hasMicro :
+            s.layer === "nano"  ? hasNano :
+              true;
 
       return (
         layerAllowed &&
