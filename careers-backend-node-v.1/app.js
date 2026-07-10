@@ -62,6 +62,7 @@ const countryRoutes = require("./routes/CountryRouter");
 const stateRoutes = require("./routes/StateRouter");
 const cityRoutes = require("./routes/CityRouter");
 const agentPathsRouter = require("./routes/AgentPathsRouter");
+const feedbackRouter = require("./routes/FeedbackRouter");
 
 // ── Super Admin — newsletter/landing page email subscriptions ──────────────
 const adminNewsletterRoutes = require("./Admin/routes/SubscriptionRouter");
@@ -175,6 +176,9 @@ app.use("/api/subscriptions", platformSubscriptionRoutes);
 
 // ── AI Agent published paths (fetched from HuggingFace) ───────────────────
 app.use("/api/agent-paths", agentPathsRouter);
+
+// ── Student Feedback routes (forwarded to Naav Agent) ─────────────────────
+app.use("/api/feedback", feedbackRouter);
 
 app.use("/api/perplexity", require("./routes/PerplexityRouter"));
 app.use("/api/regenerate", require("./routes/RegenerateAllRouter"));

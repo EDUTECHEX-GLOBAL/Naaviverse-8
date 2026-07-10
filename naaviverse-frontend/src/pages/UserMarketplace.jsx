@@ -48,15 +48,45 @@ const FEEDBACK_ACTIONS = [
 ];
 
 const FeedbackStrip = ({ value = {}, onChange }) => {
-  const selected = value.action || "";
+  const [selected, setSelected] = useState(value.action || "");
+  const [commentText, setCommentText] = useState(value.comment || "");
   const showComment = selected === "comment";
 
+  // Sync with parent props if they change externally (e.g. state reset or navigation)
+  useEffect(() => {
+    if (value.action !== undefined) {
+      if (value.action === "comment" && selected === "comment_submitted") {
+        // Keep the submitted visual state intact
+      } else {
+        setSelected(value.action);
+      }
+    }
+    if (value.comment !== undefined && selected !== "comment_submitted") {
+      setCommentText(value.comment);
+    }
+  }, [value.action, value.comment]);
+
   const handleAction = (action) => {
+    if (action === "comment") {
+      setSelected("comment");
+    } else {
+      setSelected(action);
+      onChange({
+        action,
+        comment: "",
+        skipped: action === "skip",
+      });
+    }
+  };
+
+  const handleSubmitComment = (e) => {
+    e.stopPropagation();
     onChange({
-      ...value,
-      action,
-      skipped: action === "skip",
+      action: "comment",
+      comment: commentText,
+      skipped: false,
     });
+    setSelected("comment_submitted");
   };
 
   return (
@@ -78,19 +108,40 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
         ))}
       </div>
       {showComment && (
-        <textarea
-          className="feedback-comment"
-          placeholder="Add a short comment..."
-          value={value.comment || ""}
-          onClick={(e) => e.stopPropagation()}
-          onChange={(e) => onChange({ ...value, action: "comment", comment: e.target.value })}
-        />
+        <div className="feedback-comment-wrapper" style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }} onClick={(e) => e.stopPropagation()}>
+          <textarea
+            className="feedback-comment"
+            placeholder="Add a short comment..."
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            style={{ width: "100%", minHeight: 60, padding: 8, borderRadius: 6, border: "1px solid #ddd" }}
+          />
+          <button
+            type="button"
+            className="feedback-submit-btn"
+            onClick={handleSubmitComment}
+            style={{
+              alignSelf: "flex-end",
+              padding: "6px 12px",
+              background: "#1e293b",
+              color: "#fff",
+              border: "none",
+              borderRadius: 4,
+              fontSize: "12px",
+              fontWeight: 600,
+              cursor: "pointer"
+            }}
+          >
+            Submit Comment
+          </button>
+        </div>
       )}
       {selected && selected !== "comment" && (
         <div className="feedback-note">
           {selected === "helpful" && "Marked helpful."}
           {selected === "notRelevant" && "Marked not relevant."}
           {selected === "skip" && "Skipped for now."}
+          {selected === "comment_submitted" && "Comment submitted."}
         </div>
       )}
     </div>
@@ -590,11 +641,38 @@ const UserMarketplace = ({ onStepChange }) => {
   const inCart = (id) => cart.some(s => s._id === id);
   const handleConfirm = (info) => { setOrderInfo(info); setPage("confirmed"); setShowCart(false); };
   const currentPageKey = page === "marketplace" ? "marketplace" : page === "checkout" ? "checkout" : "confirmed";
-  const updateMarketplaceFeedback = (itemId, nextValue) => {
+  const updateMarketplaceFeedback = async (itemId, nextValue) => {
     setMarketplaceFeedback(prev => ({
       ...prev,
       [itemId]: nextValue,
     }));
+
+    try {
+      const raw = localStorage.getItem("user");
+      const user = raw ? JSON.parse(raw) : null;
+      const email = user?.email || "guest@naaviverse.com";
+
+      const pathId = localStorage.getItem("selectedPathId") || "";
+      const stepId = localStorage.getItem("selectedStepId") || "";
+
+      // Find the specific marketplace item to get its name and role
+      const item = items.find(i => i._id === itemId);
+      if (!item) return;
+
+      await axios.post(`${BASE_URL}/api/feedback`, {
+        type: "marketplace",
+        studentEmail: email,
+        pathId,
+        stepId,
+        providerName: item.name || "",
+        providerType: item.role || "vendor",
+        action: nextValue.action || "",
+        comment: nextValue.comment || "",
+      });
+      console.log("Marketplace feedback submitted successfully for item:", itemId);
+    } catch (err) {
+      console.error("Error submitting marketplace feedback:", err);
+    }
   };
 
   // ── FIX 2: renderServices uses hasMicro/hasNano, not isSubscribed ──────────
