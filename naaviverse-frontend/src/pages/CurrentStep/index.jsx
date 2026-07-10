@@ -68,15 +68,45 @@ const FEEDBACK_ACTIONS = [
 ];
 
 const FeedbackStrip = ({ value = {}, onChange }) => {
-  const selected = value.action || "";
+  const [selected, setSelected] = useState(value.action || "");
+  const [commentText, setCommentText] = useState(value.comment || "");
   const showComment = selected === "comment";
 
+  // Sync with parent props if they change externally (e.g. state reset or navigation)
+  useEffect(() => {
+    if (value.action !== undefined) {
+      if (value.action === "comment" && selected === "comment_submitted") {
+        // Keep the submitted visual state intact
+      } else {
+        setSelected(value.action);
+      }
+    }
+    if (value.comment !== undefined && selected !== "comment_submitted") {
+      setCommentText(value.comment);
+    }
+  }, [value.action, value.comment]);
+
   const handleAction = (action) => {
+    if (action === "comment") {
+      setSelected("comment");
+    } else {
+      setSelected(action);
+      onChange({
+        action,
+        comment: "",
+        skipped: action === "skip",
+      });
+    }
+  };
+
+  const handleSubmitComment = (e) => {
+    e.stopPropagation();
     onChange({
-      ...value,
-      action,
-      skipped: action === "skip",
+      action: "comment",
+      comment: commentText,
+      skipped: false,
     });
+    setSelected("comment_submitted");
   };
 
   return (
@@ -88,25 +118,50 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
             key={key}
             type="button"
             className={`feedback-btn ${selected === key ? "active" : ""}`}
-            onClick={() => handleAction(key)}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAction(key);
+            }}
           >
             {label}
           </button>
         ))}
       </div>
       {showComment && (
-        <textarea
-          className="feedback-comment"
-          placeholder="Add a short comment..."
-          value={value.comment || ""}
-          onChange={(e) => onChange({ ...value, action: "comment", comment: e.target.value })}
-        />
+        <div className="feedback-comment-wrapper" style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }} onClick={(e) => e.stopPropagation()}>
+          <textarea
+            className="feedback-comment"
+            placeholder="Add a short comment..."
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            style={{ width: "100%", minHeight: 60, padding: 8, borderRadius: 6, border: "1px solid #ddd" }}
+          />
+          <button
+            type="button"
+            className="feedback-submit-btn"
+            onClick={handleSubmitComment}
+            style={{
+              alignSelf: "flex-end",
+              padding: "6px 12px",
+              background: "#1e293b",
+              color: "#fff",
+              border: "none",
+              borderRadius: 4,
+              fontSize: "12px",
+              fontWeight: 600,
+              cursor: "pointer"
+            }}
+          >
+            Submit Comment
+          </button>
+        </div>
       )}
       {selected && selected !== "comment" && (
         <div className="feedback-note">
           {selected === "helpful" && "Marked helpful."}
           {selected === "notRelevant" && "Marked not relevant."}
           {selected === "skip" && "Skipped for now."}
+          {selected === "comment_submitted" && "Comment submitted."}
         </div>
       )}
     </div>
@@ -415,11 +470,33 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     index, setIndex,
   } = useStore();
 
-  const updateStepFeedback = (key, nextValue) => {
+  const updateStepFeedback = async (key, nextValue) => {
     setStepFeedback(prev => ({
       ...prev,
       [key]: nextValue,
     }));
+
+    try {
+      const raw = localStorage.getItem("user");
+      const user = raw ? JSON.parse(raw) : null;
+      const email = user?.email || userEmail || "guest@naaviverse.com";
+
+      const pathId = selectedPathId || localStorage.getItem("selectedPathId") || "";
+      const stepId = localStorage.getItem("selectedStepId") || "";
+
+      await axios.post(`${BASE_URL}/api/feedback`, {
+        type: "step",
+        studentEmail: email,
+        pathId,
+        stepId,
+        viewType: key, // macro, micro, or nano
+        action: nextValue.action || "",
+        comment: nextValue.comment || "",
+      });
+      console.log(`Step feedback for ${key} view submitted successfully.`);
+    } catch (err) {
+      console.error("Error submitting step feedback:", err);
+    }
   };
 
   const getMicroText = (mv) => {
