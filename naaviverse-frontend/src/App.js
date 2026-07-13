@@ -91,6 +91,8 @@ function App() {
           <Route path="/dashboard/users/my-journey" element={<Dashboard />} />
           <Route path="/dashboard/users/current-step" element={<Dashboard />} />
           <Route path="/dashboard/users/transactions" element={<Dashboard />} />
+          <Route path="/dashboard/users/purchases" element={<Dashboard />} />
+          <Route path="/dashboard/users/mentors" element={<Dashboard />} />
           <Route path="/dashboard/users/wallet" element={<Wallet />} />
           <Route path="/dashboard/users/home" element={<Dashboard />} />
 

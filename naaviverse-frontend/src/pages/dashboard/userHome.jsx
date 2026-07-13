@@ -46,6 +46,7 @@ const Icon = ({ type, size = 16, color = "currentColor" }) => {
     case "mentor": return <svg {...p}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" /></svg>;
     case "bell": return <svg {...p}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>;
     case "arrow-r": return <svg {...p}><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>;
+    case "arrow-l": return <svg {...p}><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>;
     case "check": return <svg {...p}><polyline points="20 6 9 17 4 12" /></svg>;
     case "calendar": return <svg {...p}><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>;
     case "activity": return <svg {...p}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>;
@@ -114,7 +115,7 @@ export default function UserHome() {
   const [purchasesLoading, setPurchasesLoading] = useState(true);
 
   const notifRef = useRef(null);
-  const detailCardRef = useRef(null); 
+  const detailCardRef = useRef(null);
   const unread = notifications.filter(n => !n.read).length;
   const creditPct = credits
     ? Math.round((credits.available / (credits.total || 50)) * 100)
@@ -226,12 +227,10 @@ export default function UserHome() {
           params: { email: user.email }
         });
         if (data?.success) {
-          // Filter to show only paid items where productId is NOT "naavi-platform"
-          const filtered = data.data.filter(t => 
-            t.status?.toLowerCase() === "paid" && 
+          const filtered = data.data.filter(t =>
+            t.status?.toLowerCase() === "paid" &&
             t.productId !== "naavi-platform"
           ).map(t => {
-            // Strip "Marketplace — " prefix if present
             const cleanName = t.productName.startsWith("Marketplace — ")
               ? t.productName.replace("Marketplace — ", "")
               : t.productName;
@@ -264,188 +263,181 @@ export default function UserHome() {
     fetchPurchases();
   }, [user?.email]);
 
- // ── Fetch path data ──────────────────────────────────────────────────────────
-useEffect(() => {
-  if (!user?.email) return;
+  // ── Fetch path data ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!user?.email) return;
 
-  const fetchMyPath = async () => {
-    try {
-      setPathLoading(true);
+    const fetchMyPath = async () => {
+      try {
+        setPathLoading(true);
 
-      // First fetch user paths to validate selectedPathId
-      const userPathRes = await axios.get(`${BASE_URL}/api/userpaths`, {
-        params: { email: user.email, status: "active" }
-      });
+        const userPathRes = await axios.get(`${BASE_URL}/api/userpaths`, {
+          params: { email: user.email, status: "active" }
+        });
 
-      const userPaths = userPathRes.data?.data || [];
-      
-      // Validate selectedPathId belongs to THIS user
-      let selectedPathId = localStorage.getItem("selectedPathId");
-      if (selectedPathId) {
-        const belongsToUser = userPaths.some(
-          (p) => p.pathId?.toString() === selectedPathId
-        );
-        if (!belongsToUser) {
-          // Stale key from previous user — clear it
-          localStorage.removeItem("selectedPathId");
-           localStorage.removeItem("selectedPathOwner"); 
-          localStorage.removeItem("selectedStepId");
-          localStorage.removeItem("selectedStepNumber");
-          selectedPathId = null;
-        }
-      }
+        const userPaths = userPathRes.data?.data || [];
 
-      // If still no selectedPathId, try to fetch from API
-      if (!selectedPathId) {
-        try {
-          const selRes = await axios.get(`${BASE_URL}/api/userpaths/selected`, {
-            params: { email: user.email },
-          });
-          if (selRes.data?.status && selRes.data?.pathId) {
-            selectedPathId = selRes.data.pathId;
-            localStorage.setItem("selectedPathId", selectedPathId);
-            localStorage.setItem("selectedPathOwner", user.email);
+        let selectedPathId = localStorage.getItem("selectedPathId");
+        if (selectedPathId) {
+          const belongsToUser = userPaths.some(
+            (p) => p.pathId?.toString() === selectedPathId
+          );
+          if (!belongsToUser) {
+            localStorage.removeItem("selectedPathId");
+            localStorage.removeItem("selectedPathOwner");
+            localStorage.removeItem("selectedStepId");
+            localStorage.removeItem("selectedStepNumber");
+            selectedPathId = null;
           }
-        } catch (_) {}
-      }
+        }
 
-      if (!userPaths.length) { 
-        setMyPath(null); 
-        setPathLoading(false); 
-        return; 
-      }
+        if (!selectedPathId) {
+          try {
+            const selRes = await axios.get(`${BASE_URL}/api/userpaths/selected`, {
+              params: { email: user.email },
+            });
+            if (selRes.data?.status && selRes.data?.pathId) {
+              selectedPathId = selRes.data.pathId;
+              localStorage.setItem("selectedPathId", selectedPathId);
+              localStorage.setItem("selectedPathOwner", user.email);
+            }
+          } catch (_) { }
+        }
 
-      const enrolledPathIds = new Set(userPaths.map(p => p.pathId?.toString()));
+        if (!userPaths.length) {
+          setMyPath(null);
+          setPathLoading(false);
+          return;
+        }
 
-      // Prefer the path the user is currently working on
-      let activePath = selectedPathId
-        ? userPaths.find(p =>
+        const enrolledPathIds = new Set(userPaths.map(p => p.pathId?.toString()));
+
+        let activePath = selectedPathId
+          ? userPaths.find(p =>
             p.pathId?.toString() === selectedPathId ||
             p.PathDetails?.[0]?._id?.toString() === selectedPathId
           )
-        : null;
+          : null;
 
-      // Fallback to most recently enrolled
-      if (!activePath) {
-        activePath = [...userPaths].sort((a, b) =>
-          new Date(b.createdAt) - new Date(a.createdAt)
-        )[0];
+        if (!activePath) {
+          activePath = [...userPaths].sort((a, b) =>
+            new Date(b.createdAt) - new Date(a.createdAt)
+          )[0];
+        }
+
+        const pathId = activePath?.pathId?.toString() ||
+          activePath?.PathDetails?.[0]?._id?.toString();
+
+        if (!pathId) {
+          setMyPath(null);
+          setPathLoading(false);
+          return;
+        }
+
+        const freshPathRes = await axios.get(`${BASE_URL}/api/userpaths`, {
+          params: { email: user.email, status: "active", _t: Date.now() }
+        });
+        const freshPaths = freshPathRes.data?.data || [];
+        const rawDoc = freshPaths.find(p => p.pathId?.toString() === pathId);
+
+        const completedStepIds = (rawDoc?.completedSteps || []).map(id => id.toString());
+        const currentStep = rawDoc?.currentStep?.toString() || null;
+
+        const stepsRes = await axios.get(`${BASE_URL}/api/userpaths/steps`, {
+          params: { pathId }
+        });
+
+        const pathData = stepsRes.data?.data;
+
+        const steps = (pathData?.steps || [])
+          .sort((a, b) => (a.step_order || 0) - (b.step_order || 0))
+          .map(s => ({
+            id: s._id,
+            title: s.macro_name || s.name || "Step",
+            desc: s.macro_description || s.description || "",
+            duration: s.macro_length ? parseDuration(s.macro_length) : null,
+            status: completedStepIds.includes(s._id.toString())
+              ? "done"
+              : currentStep === s._id.toString()
+                ? "active"
+                : "locked",
+          }));
+
+        const doneCount = steps.filter(s => s.status === "done").length;
+        const progress = steps.length ? Math.round((doneCount / steps.length) * 100) : 0;
+
+        setMyPath({
+          name: pathData?.name || pathData?.nameOfPath || "—",
+          goal: pathData?.description || "",
+          progress,
+          steps,
+          doneCount,
+          totalSteps: steps.length,
+          enrolledOn: activePath?.createdAt
+            ? new Date(activePath.createdAt).toLocaleDateString("en-IN", {
+              day: "numeric", month: "short", year: "numeric"
+            })
+            : "—",
+          studentInfo: null,
+        });
+
+        try {
+          const profileRes = await axios.get(`${BASE_URL}/api/users/get/${user.email}`);
+          const pd = profileRes.data?.data;
+          if (pd) {
+            setMyPath(prev => ({
+              ...prev,
+              studentInfo: {
+                grade: pd.grade || "",
+                curriculum: pd.curriculum || "",
+                stream: pd.stream || "",
+                school: pd.school || "",
+              }
+            }));
+          }
+        } catch (_) { }
+
+        try {
+          const pathsRes = await axios.get(`${BASE_URL}/api/paths/active`);
+          const allPaths = pathsRes.data?.data || [];
+          setExplorePaths(allPaths.map(p => ({
+            id: p._id,
+            icon: p.country ? p.country.slice(0, 2).toUpperCase() : "🌍",
+            name: p.nameOfPath || p.name,
+            desc: p.description || "",
+            steps: p.total_steps || p.the_ids?.length || 0,
+            match: Math.floor(Math.random() * 20) + 75,
+            enrolled: enrolledPathIds.has(p._id.toString()),
+          })));
+        } catch (e) {
+          console.error("Explore paths fetch failed", e);
+        }
+
+      } catch (err) {
+        console.error("MyPath fetch failed:", err);
+        setMyPath(null);
+      } finally {
+        setPathLoading(false);
       }
+    };
 
-      const pathId = activePath?.pathId?.toString() ||
-        activePath?.PathDetails?.[0]?._id?.toString();
-
-      if (!pathId) { 
-        setMyPath(null); 
-        setPathLoading(false); 
-        return; 
-      }
-
-      // Make a FRESH API call for completedSteps
-      const freshPathRes = await axios.get(`${BASE_URL}/api/userpaths`, {
-        params: { email: user.email, status: "active", _t: Date.now() }
-      });
-      const freshPaths = freshPathRes.data?.data || [];
-      const rawDoc = freshPaths.find(p => p.pathId?.toString() === pathId);
-
-      console.log("✅ rawDoc completedSteps:", rawDoc?.completedSteps);
-      console.log("✅ rawDoc currentStep:", rawDoc?.currentStep);
-
-      const completedStepIds = (rawDoc?.completedSteps || []).map(id => id.toString());
-      const currentStep = rawDoc?.currentStep?.toString() || null;
-
-      const stepsRes = await axios.get(`${BASE_URL}/api/userpaths/steps`, {
-        params: { pathId }
-      });
-
-      const pathData = stepsRes.data?.data;
-
-      const steps = (pathData?.steps || [])
-        .sort((a, b) => (a.step_order || 0) - (b.step_order || 0))
-        .map(s => ({
-          id: s._id,
-          title: s.macro_name || s.name || "Step",
-          desc: s.macro_description || s.description || "",
-          duration: s.macro_length ? parseDuration(s.macro_length) : null,
-          status: completedStepIds.includes(s._id.toString())
-            ? "done"
-            : currentStep === s._id.toString()
-              ? "active"
-              : "locked",
-        }));
-
-      const doneCount = steps.filter(s => s.status === "done").length;
-      const progress = steps.length ? Math.round((doneCount / steps.length) * 100) : 0;
-
-   setMyPath({
-  name: pathData?.name || pathData?.nameOfPath || "—",
-  goal: pathData?.description || "",
-  progress,
-  steps,
-  doneCount,
-  totalSteps: steps.length,
-  enrolledOn: activePath?.createdAt
-    ? new Date(activePath.createdAt).toLocaleDateString("en-IN", {
-        day: "numeric", month: "short", year: "numeric"
-      })
-    : "—",
-  studentInfo: null,
-});
-
-// Fetch student profile info
-try {
-  const profileRes = await axios.get(`${BASE_URL}/api/users/get/${user.email}`);
-  const pd = profileRes.data?.data;
-  if (pd) {
-    setMyPath(prev => ({
-      ...prev,
-      studentInfo: {
-        grade: pd.grade || "",
-        curriculum: pd.curriculum || "",
-        stream: pd.stream || "",
-        school: pd.school || "",
-      }
-    }));
-  }
-} catch (_) {}
-
-// Fetch explore paths
-try {
-  const pathsRes = await axios.get(`${BASE_URL}/api/paths/active`);
-  const allPaths = pathsRes.data?.data || [];
-  setExplorePaths(allPaths.map(p => ({
-    id: p._id,
-    icon: p.country ? p.country.slice(0, 2).toUpperCase() : "🌍",
-    name: p.nameOfPath || p.name,
-    desc: p.description || "",
-    steps: p.total_steps || p.the_ids?.length || 0,
-    match: Math.floor(Math.random() * 20) + 75,
-    enrolled: enrolledPathIds.has(p._id.toString()),
-  })));
-} catch (e) {
-  console.error("Explore paths fetch failed", e);
-}
-
-} catch (err) {
-  console.error("MyPath fetch failed:", err);
-  setMyPath(null);
-} finally {
-  setPathLoading(false);
-}
-};
-
-fetchMyPath();
-}, [user?.email, refreshKey]);
+    fetchMyPath();
+  }, [user?.email, refreshKey]);
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
   const markRead = (id) => setNotifications(ns => ns.map(n => n.id === id ? { ...n, read: true } : n));
   const markAll = () => setNotifications(ns => ns.map(n => ({ ...n, read: true })));
 
-  // ── Panels ──────────────────────────────────────────────────────────────────
+  // ── Panels (dashboard = preview only, View All always navigates out) ────────
   const WalletPanel = () => {
     const bonusTxn = activity.find(a => a.type === "bonus");
     const totalCredits = activity.filter(a => a.delta > 0).reduce((s, a) => s + a.delta, 0);
     const totalDebits = activity.filter(a => a.delta < 0).reduce((s, a) => s + Math.abs(a.delta), 0);
+    const stepCredits = activity.filter(a => a.type === "step" && a.delta > 0);
+
+    const maxStepsToShow = bonusTxn ? 2 : 3;
+    const displayedSteps = stepCredits.slice(0, maxStepsToShow);
+    const hasMore = stepCredits.length > maxStepsToShow;
 
     return (
       <div className="uh-panel">
@@ -485,15 +477,22 @@ fetchMyPath();
               <span className="uh-wallet-bar-pct">{creditPct}% remaining · {credits?.plan ?? ""} Plan</span>
             </div>
 
-            <div className="uh-section-title">Credit Breakdown</div>
+            <div className="uh-panel-header">
+              <div className="uh-section-title">Credit Breakdown</div>
+              {hasMore && (
+                <button className="uh-section-view-all" onClick={() => navigate("/dashboard/users/wallet")}>
+                  View All →
+                </button>
+              )}
+            </div>
             <div className="uh-wallet-analytics">
               {bonusTxn && (
                 <div className="uh-analytics-card uh-analytics-bonus">
-                 <div className="uh-analytics-icon">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-  </svg>
-</div>
+                  <div className="uh-analytics-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
+                  </div>
                   <div className="uh-analytics-info">
                     <span className="uh-analytics-title">Welcome Bonus</span>
                     <span className="uh-analytics-sub">50 credits · Given on signup</span>
@@ -509,15 +508,15 @@ fetchMyPath();
                 </div>
               )}
 
-              {activity.filter(a => a.type === "step" && a.delta > 0).map(a => (
+              {displayedSteps.map(a => (
                 <div key={a.id} className="uh-analytics-card uh-analytics-sub">
                   <div className="uh-analytics-icon">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="5" width="20" height="14" rx="2"/>
-    <line x1="2" y1="10" x2="22" y2="10"/>
-    <circle cx="18" cy="15" r="1" fill="#3b82f6"/>
-  </svg>
-</div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="5" width="20" height="14" rx="2" />
+                      <line x1="2" y1="10" x2="22" y2="10" />
+                      <circle cx="18" cy="15" r="1" fill="#3b82f6" />
+                    </svg>
+                  </div>
                   <div className="uh-analytics-info">
                     <span className="uh-analytics-title">{a.action}</span>
                     <span className="uh-analytics-sub">{a.time}</span>
@@ -556,115 +555,151 @@ fetchMyPath();
     );
   };
 
-  const PurchasesPanel = () => (
-    <div className="uh-panel">
-      <div className="uh-section-title">All Marketplace Purchases</div>
-      {purchasesLoading ? (
-        <div className="uh-loading">Loading purchases…</div>
-      ) : purchases.length === 0 ? (
-        <div className="uh-no-purchases" style={{ padding: "40px 20px", textAlign: "center", color: "#64748b" }}>
-          <div style={{ fontSize: "2rem", marginBottom: "8px" }}>🛍️</div>
-          <strong>No purchases found</strong>
-          <p style={{ margin: "4px 0 0", fontSize: "0.85rem" }}>Paid marketplace items will show up here once purchased.</p>
+  const PurchasesPanel = () => {
+    const displayedPurchases = purchases.slice(0, 3);
+    const hasMore = purchases.length > 3;
+
+    return (
+      <div className="uh-panel">
+        <div className="uh-panel-header">
+          <div className="uh-section-title">Recent Purchases</div>
+          {hasMore && (
+            <button className="uh-section-view-all" onClick={() => navigate("/dashboard/users/purchases")}>
+              View All →
+            </button>
+          )}
         </div>
-      ) : (
-        <>
-          <div className="uh-purchases-list">
-            {purchases.map(m => (
-              <div key={m.id} className="uh-purchase-row">
-                <div className="uh-purchase-emoji">{m.icon}</div>
-                <div className="uh-purchase-info">
-                  <span className="uh-purchase-name">{m.name}</span>
-                  <span className="uh-purchase-meta">{m.type} · Purchased {m.date}</span>
+        {purchasesLoading ? (
+          <div className="uh-loading">Loading purchases…</div>
+        ) : purchases.length === 0 ? (
+          <div className="uh-no-purchases" style={{ padding: "40px 20px", textAlign: "center", color: "#64748b" }}>
+            <div style={{ fontSize: "2rem", marginBottom: "8px" }}>🛍️</div>
+            <strong>No purchases found</strong>
+            <p style={{ margin: "4px 0 0", fontSize: "0.85rem" }}>Paid marketplace items will show up here once purchased.</p>
+          </div>
+        ) : (
+          <>
+            <div className="uh-purchases-list">
+              {displayedPurchases.map(m => (
+                <div key={m.id} className="uh-purchase-row">
+                  <div className="uh-purchase-emoji">{m.icon}</div>
+                  <div className="uh-purchase-info">
+                    <span className="uh-purchase-name">{m.name}</span>
+                    <span className="uh-purchase-meta">{m.type} · Purchased {m.date}</span>
+                  </div>
+                  <div className="uh-purchase-right">
+                    <span className={`uh-plan-tag p-${m.plan.toLowerCase()}`}>{m.plan}</span>
+                    <span className="uh-purchase-cr" style={{ color: "#0d9488", fontWeight: "bold" }}>{m.cost}</span>
+                  </div>
+                  <span className={`uh-status-dot s-active`}>Paid</span>
                 </div>
-                <div className="uh-purchase-right">
-                  <span className={`uh-plan-tag p-${m.plan.toLowerCase()}`}>{m.plan}</span>
-                  <span className="uh-purchase-cr" style={{ color: "#0d9488", fontWeight: "bold" }}>{m.cost}</span>
+              ))}
+            </div>
+            <div className="uh-purchases-total">
+              <span>Total spent</span>
+              <strong>₹{purchases.reduce((s, p) => s + (p.amount || 0), 0).toLocaleString("en-IN")}</strong>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  const ExplorePanel = () => {
+    const displayedPaths = explorePaths.slice(0, 3);
+    const hasMore = explorePaths.length > 3;
+
+    return (
+      <div className="uh-panel">
+        <div className="uh-panel-header">
+          <div className="uh-section-title">Paths You've Explored</div>
+          {hasMore && (
+            <button className="uh-section-view-all" onClick={() => navigate("/dashboard/users/paths")}>
+              View All →
+            </button>
+          )}
+        </div>
+        {explorePaths.length === 0 ? (
+          <div className="uh-loading">Loading paths…</div>
+        ) : (
+          <div className="uh-explore-list">
+            {displayedPaths.map(p => (
+              <div key={p.id} className={`uh-explore-row ${p.enrolled ? "enrolled" : ""}`}>
+                <div className="uh-explore-icon">
+                  <img src={pathIcon} alt="path icon" className="uh-path-icon" />
                 </div>
-                <span className={`uh-status-dot s-active`}>Paid</span>
+                <div className="uh-explore-info">
+                  <span className="uh-explore-name">{p.name}</span>
+                  <span className="uh-explore-desc">{p.desc}</span>
+                  <span className="uh-explore-steps">{p.steps} steps</span>
+                </div>
+                <div className="uh-explore-right">
+                  <div className="uh-match-ring">
+                    <Ring
+                      pct={p.match}
+                      size={40}
+                      stroke={3}
+                      color={p.match >= 85 ? "#22c55e" : p.match >= 75 ? "#3b82f6" : "#94a3b8"}
+                      bg="rgba(148,163,184,.15)"
+                    />
+                    <span className="uh-match-pct">{p.match}%</span>
+                  </div>
+                  {p.enrolled
+                    ? <span className="uh-enr-tag">Enrolled</span>
+                    : <button className="uh-explore-btn" onClick={() => navigate("/dashboard/users/paths")}>Explore</button>
+                  }
+                </div>
               </div>
             ))}
           </div>
-          <div className="uh-purchases-total">
-            <span>Total spent</span>
-            <strong>₹{purchases.reduce((s, p) => s + (p.amount || 0), 0).toLocaleString("en-IN")}</strong>
-          </div>
-        </>
-      )}
-    </div>
-  );
+        )}
+      </div>
+    );
+  };
 
-  const ExplorePanel = () => (
-    <div className="uh-panel">
-      <div className="uh-section-title">Paths You've Explored</div>
-      {explorePaths.length === 0 ? (
-        <div className="uh-loading">Loading paths…</div>
-      ) : (
-        <div className="uh-explore-list">
-          {explorePaths.map(p => (
-            <div key={p.id} className={`uh-explore-row ${p.enrolled ? "enrolled" : ""}`}>
-              <div className="uh-explore-icon">
-  <img src={pathIcon} alt="path icon" className="uh-path-icon" />
-</div>
-              <div className="uh-explore-info">
-                <span className="uh-explore-name">{p.name}</span>
-                <span className="uh-explore-desc">{p.desc}</span>
-                <span className="uh-explore-steps">{p.steps} steps</span>
-              </div>
-              <div className="uh-explore-right">
-                <div className="uh-match-ring">
-                  <Ring
-                    pct={p.match}
-                    size={40}
-                    stroke={3}
-                    color={p.match >= 85 ? "#22c55e" : p.match >= 75 ? "#3b82f6" : "#94a3b8"}
-                    bg="rgba(148,163,184,.15)"
-                  />
-                  <span className="uh-match-pct">{p.match}%</span>
+  const MentorsPanel = () => {
+    const displayedMentors = MENTORS.slice(0, 3);
+    const hasMore = MENTORS.length > 3;
+
+    return (
+      <div className="uh-panel">
+        <div className="uh-panel-header">
+          <div className="uh-section-title">Your Mentor Sessions</div>
+          {hasMore && (
+            <button className="uh-section-view-all" onClick={() => navigate("/dashboard/users/mentors")}>
+              View All →
+            </button>
+          )}
+        </div>
+        <div className="uh-mentors-full">
+          {displayedMentors.map(m => (
+            <div key={m.id} className={`uh-mentor-full-row s-${m.status}`}>
+              <div className="uh-mentor-av" style={{ background: m.color }}>{m.initials}</div>
+              <div className="uh-mentor-full-info">
+                <span className="uh-mentor-name">{m.name}</span>
+                <span className="uh-mentor-role">{m.role}</span>
+                <span className="uh-mentor-spec">· {m.speciality}</span>
+                <div className="uh-mentor-when">
+                  <Icon type="calendar" size={10} color="#94a3b8" />
+                  {m.date} · {m.time}
                 </div>
-                {p.enrolled
-                  ? <span className="uh-enr-tag">Enrolled</span>
-                  : <button className="uh-explore-btn" onClick={() => navigate("/dashboard/users/paths")}>Explore</button>
-                }
+              </div>
+              <div className="uh-mentor-full-right">
+                <div className="uh-mentor-rating">★ {m.rating}</div>
+                <span className="uh-mentor-sessions">{m.sessions} session{m.sessions > 1 ? "s" : ""}</span>
+                <span className={`uh-session-tag st-${m.status}`}>
+                  {m.status === "upcoming" ? "Upcoming" : "Completed"}
+                </span>
               </div>
             </div>
           ))}
         </div>
-      )}
-    </div>
-  );
-
-  const MentorsPanel = () => (
-    <div className="uh-panel">
-      <div className="uh-section-title">Your Mentor Sessions</div>
-      <div className="uh-mentors-full">
-        {MENTORS.map(m => (
-          <div key={m.id} className={`uh-mentor-full-row s-${m.status}`}>
-            <div className="uh-mentor-av" style={{ background: m.color }}>{m.initials}</div>
-            <div className="uh-mentor-full-info">
-              <span className="uh-mentor-name">{m.name}</span>
-              <span className="uh-mentor-role">{m.role}</span>
-              <span className="uh-mentor-spec">· {m.speciality}</span>
-              <div className="uh-mentor-when">
-                <Icon type="calendar" size={10} color="#94a3b8" />
-                {m.date} · {m.time}
-              </div>
-            </div>
-            <div className="uh-mentor-full-right">
-              <div className="uh-mentor-rating">★ {m.rating}</div>
-              <span className="uh-mentor-sessions">{m.sessions} session{m.sessions > 1 ? "s" : ""}</span>
-              <span className={`uh-session-tag st-${m.status}`}>
-                {m.status === "upcoming" ? "Upcoming" : "Completed"}
-              </span>
-            </div>
-          </div>
-        ))}
+        <button className="uh-book-btn" onClick={() => navigate("/dashboard/users/Marketplace")}>
+          <Icon type="mentor" size={13} color="#fff" /> Book a New Session
+        </button>
       </div>
-      <button className="uh-book-btn" onClick={() => navigate("/dashboard/users/Marketplace")}>
-        <Icon type="mentor" size={13} color="#fff" /> Book a New Session
-      </button>
-    </div>
-  );
+    );
+  };
 
   const MyPathPanel = () => {
     if (pathLoading) return <div className="uh-loading">Loading path…</div>;
@@ -681,58 +716,35 @@ fetchMyPath();
       </div>
     );
 
+    const displayedSteps = myPath.steps.slice(0, 3);
+    const hasMore = myPath.steps.length > 3;
+
     return (
       <div className="uh-panel">
-        <div className="uh-path-header">
-    <div className="uh-path-meta">
-  <span className="uh-path-tag">Selected Path</span>
-  <div className="uh-path-name-row">
-    <img src={pathIcon} alt="path icon" className="uh-path-icon" />
-    <h3 className="uh-path-name">{myPath.name}</h3>
-  </div>
-  <p className="uh-path-goal">{myPath.goal}</p>
-  {myPath.studentInfo && (
-    <div className="uh-student-strip">
-      {myPath.studentInfo.grade && (
-        <div className="uh-student-chip">
-                    <div>
-            <span className="uh-student-chip-label">Currently Studying</span>
-            <span className="uh-student-chip-val">{myPath.studentInfo.grade}{myPath.studentInfo.curriculum ? ` · ${myPath.studentInfo.curriculum}` : ""}</span>
-          </div>
-        </div>
-      )}
-      {myPath.studentInfo.stream && (
-        <div className="uh-student-chip">
-        
-          <div>
-            <span className="uh-student-chip-label">Stream</span>
-            <span className="uh-student-chip-val">{myPath.studentInfo.stream}</span>
-          </div>
-        </div>
-      )}
-      {myPath.studentInfo.school && (
-        <div className="uh-student-chip">
-          <div>
-            <span className="uh-student-chip-label">School</span>
-            <span className="uh-student-chip-val">{myPath.studentInfo.school}</span>
-          </div>
-        </div>
-      )}
-    </div>
-  )}
-</div>
-          <div className="uh-path-stats">
-            <div className="uh-ps-item">
-              <span>{myPath.doneCount}/{myPath.totalSteps}</span>
-              <span>Steps</span>
+        <div className="uh-path-header-compact">
+          <div className="uh-path-title-section">
+            <div className="uh-path-name-row">
+              <img src={pathIcon} alt="path icon" className="uh-path-icon" />
+              <h3 className="uh-path-name">{myPath.name}</h3>
             </div>
-            <div className="uh-ps-item">
-              <span>{myPath.progress}%</span>
-              <span>Progress</span>
+            <p className="uh-path-goal">{myPath.goal}</p>
+            {myPath.studentInfo && (
+              <div className="uh-path-student-mini">
+                <span>Studying: </span>
+                {myPath.studentInfo.grade && <span>{myPath.studentInfo.grade}{myPath.studentInfo.curriculum ? ` · ${myPath.studentInfo.curriculum}` : ""}</span>}
+                {myPath.studentInfo.stream && <span> · {myPath.studentInfo.stream}</span>}
+                {myPath.studentInfo.school && <span> · {myPath.studentInfo.school}</span>}
+              </div>
+            )}
+          </div>
+          <div className="uh-path-stats-row">
+            <div className="uh-path-stat-chip">
+              <span className="uh-stat-val">{myPath.doneCount}/{myPath.totalSteps}</span>
+              <span className="uh-stat-lbl">Steps</span>
             </div>
-            <div className="uh-ps-item">
-              <span>{myPath.enrolledOn}</span>
-              <span>Enrolled</span>
+            <div className="uh-path-stat-chip">
+              <span className="uh-stat-val">{myPath.progress}%</span>
+              <span className="uh-stat-lbl">Progress</span>
             </div>
           </div>
         </div>
@@ -744,16 +756,24 @@ fetchMyPath();
           <span>{myPath.progress}% complete</span>
         </div>
 
-        <div className="uh-section-title" style={{ marginTop: 20 }}>Steps</div>
+        <div className="uh-panel-header" style={{ marginTop: 15 }}>
+          <div className="uh-section-title">Recent Steps</div>
+          {hasMore && (
+            <button className="uh-section-view-all" onClick={() => navigate("/dashboard/users/my-journey")}>
+              View All →
+            </button>
+          )}
+        </div>
+
         <div className="uh-steps-list">
-          {myPath.steps.map((s, i) => (
+          {displayedSteps.map((s, i) => (
             <div key={s.id} className={`uh-step-row s-${s.status}`}>
               <div className="uh-step-num">
-  {s.status === "locked"
-    ? <Icon type="lock" size={11} color="#94a3b8" />
-    : <img src={stepIcon} alt="step" style={{ width: "14px", height: "14px", objectFit: "contain", opacity: s.status === "done" ? 1 : 0.7 }} />
-  }
-</div>
+                {s.status === "locked"
+                  ? <Icon type="lock" size={11} color="#94a3b8" />
+                  : <img src={stepIcon} alt="step" style={{ width: "14px", height: "14px", objectFit: "contain", opacity: s.status === "done" ? 1 : 0.7 }} />
+                }
+              </div>
               <div className="uh-step-info">
                 <span className="uh-step-title">{s.title}</span>
                 <span className="uh-step-desc">{s.desc}</span>
@@ -881,10 +901,10 @@ fetchMyPath();
               </div>
             ))}
           </div>
-          <button className="uh-card-cta" onClick={() => setActiveTab("wallet")}>View all →</button>
+          <button className="uh-card-cta" onClick={() => navigate("/dashboard/users/wallet")}>View all →</button>
         </div>
 
-        {/* Detail panel */}
+        {/* Detail panel — preview only, each View All routes out */}
         <div className="uh-card uh-card-detail" ref={detailCardRef}>
           <div className="uh-tab-bar">
             {TABS.map(t => (

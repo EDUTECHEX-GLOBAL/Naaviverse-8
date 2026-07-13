@@ -34,6 +34,8 @@ import VaultTransactions from "../VaultTransactions/index.jsx";
 import TransactionPage from "./TransactionPage/index.jsx";
 import UserHome from "./userHome.jsx"; 
 import UserMarketplace from "../UserMarketplace.jsx";
+import UserPurchasesPage from "./UserPurchasesPage.jsx";
+import UserMentorsPage from "./UserMentorsPage.jsx";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -43,6 +45,8 @@ const URL_TO_SIDENAV = {
   "/dashboard/users/current-step": "Current Step",
   "/dashboard/users/my-journey": "My Journey",
   "/dashboard/users/transactions": "Transactions",
+  "/dashboard/users/purchases": "PurchasesPage",
+  "/dashboard/users/mentors": "MentorsPage",
   "/dashboard/users/paths": "Paths",
   "/dashboard/users": "Home",
 };
@@ -338,6 +342,18 @@ const Dashboard = () => {
 
   <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
     <CurrentStep productDataArray={productDataArray} />
+  </div>
+
+) : activePage === "PurchasesPage" ? (
+
+  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+    <UserPurchasesPage />
+  </div>
+
+) : activePage === "MentorsPage" ? (
+
+  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+    <UserMentorsPage />
   </div>
 
 ) : activePage === "Transactions" ? (
