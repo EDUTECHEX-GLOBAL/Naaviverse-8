@@ -1,8 +1,11 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import "./UserMarketplace.scss";
-
+import axios from "axios";
 import logActivity from "../utils/activityLogger";
+
+// Use the same API pattern as Feedbacks.jsx
+const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:8001" : "");
 
 const LAYER_META = {
   macro: { label: "MACRO VIEW — FREE TOOLS", sub: "Free tools to get started.", badgeCls: "vsh-macro", cardCls: "vMacro" },
@@ -355,8 +358,8 @@ const ServiceCard = ({ item, inCart, onToggleCart, onCardView, feedback, onFeedb
   const isExternal = item.checkoutType === "external";
 
   return (
-    <div 
-      className={`svc-card ${meta.cardCls} ${isExternal ? "svc-card--external" : ""}`} 
+    <div
+      className={`svc-card ${meta.cardCls} ${isExternal ? "svc-card--external" : ""}`}
       onClick={() => onCardView && onCardView(item)}
     >
       {isExternal && (
@@ -376,7 +379,7 @@ const ServiceCard = ({ item, inCart, onToggleCart, onCardView, feedback, onFeedb
         <div className="svc-name">{item.name || "Unnamed Service"}</div>
         <div className="svc-by">by {item.partner_email || ""}</div>
         {item.goal && <div className="svc-desc">{item.goal}</div>}
-        
+
         <div className="svc-details">
           {item.outcomes && <div className="svc-detail-row"><span className="svc-detail-lbl">Outcomes:</span><span>{item.outcomes}</span></div>}
           {item.duration && <div className="svc-detail-row"><span className="svc-detail-lbl">Duration:</span><span>{item.duration}</span></div>}
@@ -402,7 +405,7 @@ const ServiceCard = ({ item, inCart, onToggleCart, onCardView, feedback, onFeedb
           <div className={`svc-price ${free ? "free-price" : ""} ${isExternal ? "external-price" : ""}`}>{getCostDisplay(item)}</div>
           <div className="svc-billing">{free ? "No cost" : (item.access || "")}</div>
         </div>
-        
+
         {isExternal ? (
           <a
             href={item.websiteUrl || "#"}
@@ -626,8 +629,8 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
           <div className="chk-section">
             <div className="chk-section-lbl">Payment</div>
             <div className="rzp-pay-note">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:6,verticalAlign:'middle',flexShrink:0}}>
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6, verticalAlign: 'middle', flexShrink: 0 }}>
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
               Secured Checkout Simulation. Choose pay button below to proceed.
             </div>
@@ -696,7 +699,7 @@ const UserMarketplace = ({ onStepChange }) => {
 
   // ── Access flags (Forced to true for mockup testing) ─────────────────────
   const hasMicro = true;
-  const hasNano  = true;
+  const hasNano = true;
 
   // ── Component state ────────────────────────────────────────────────────────
   const [page, setPage] = useState("marketplace");
@@ -726,7 +729,7 @@ const UserMarketplace = ({ onStepChange }) => {
     return items.filter(s => {
       // Gate subscription/credit access for paid layers (always allowed in mock mode)
       const isLayerMatched = s.layer === activeLayer;
-      
+
       const isSearchMatched = !q ||
         s.name?.toLowerCase().includes(q) ||
         s.partner_email?.toLowerCase().includes(q) ||
@@ -821,22 +824,19 @@ const UserMarketplace = ({ onStepChange }) => {
   const handleConfirm = (info) => { setOrderInfo(info); setPage("confirmed"); setShowCart(false); };
   const currentPageKey = page === "marketplace" ? "marketplace" : page === "checkout" ? "checkout" : "confirmed";
 
-  const updateMarketplaceFeedback = (itemId, nextValue) => {
+  const updateMarketplaceFeedback = async (itemId, nextValue) => {
     setMarketplaceFeedback(prev => ({
       ...prev,
       [itemId]: nextValue,
     }));
-<<<<<<< HEAD
-    console.log("Feedback captured locally:", itemId, nextValue);
-=======
 
     try {
       const raw = localStorage.getItem("user");
       const user = raw ? JSON.parse(raw) : null;
       const email = user?.email || "guest@naaviverse.com";
 
-      const pathId   = localStorage.getItem("selectedPathId")   || "";
-      const stepId   = localStorage.getItem("selectedStepId")   || "";
+      const pathId = localStorage.getItem("selectedPathId") || "";
+      const stepId = localStorage.getItem("selectedStepId") || "";
       const pathName = localStorage.getItem("selectedPathName") || "";
       const stepName = localStorage.getItem("selectedStepName") || "";
 
@@ -844,24 +844,24 @@ const UserMarketplace = ({ onStepChange }) => {
       const item = items.find(i => i._id === itemId);
       if (!item) return;
 
-      await axios.post(`${BASE_URL}/api/feedback`, {
-        type:         "marketplace",
+      // Use the API variable instead of BASE_URL
+      await axios.post(`${API}/api/feedback`, {
+        type: "marketplace",
         studentEmail: email,
         pathId,
         stepId,
-        pathName,                             // ← actual path name for PATHWAY column
-        stepName,                             // ← current step for MILESTONE STEP column
-        providerName: item.name || "",        // ← item name for PROVIDER column
-        providerType: item.category || item.role || "vendor", // ← item category sub-label
-        action:       nextValue.action || "",
-        comment:      nextValue.comment || "",
+        pathName,
+        stepName,
+        providerName: item.name || "",
+        providerType: item.category || item.role || "vendor",
+        action: nextValue.action || "",
+        comment: nextValue.comment || "",
       });
       console.log("Marketplace feedback submitted for item:", item.name);
     } catch (err) {
       console.error("Error submitting marketplace feedback:", err);
     }
 
->>>>>>> f335e45452d59ebd2eea7e78a33c5f5a1fff162d
   };
 
   const renderServiceGroup = (groupItems) => (

@@ -80,6 +80,11 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const [vcrOpenThreads, setVcrOpenThreads] = useState({});
   const [vcrSelectedRequest, setVcrSelectedRequest] = useState(null);
 
+  // ─── Agent vs Manual path source ────────────────────────────
+  const AGENT_EMAIL = "pathengine.admin@gmail.com";
+  const isAgentGenerated = (path) =>
+    (path?.email || "").trim().toLowerCase() === AGENT_EMAIL;
+
   // ─── layerConfig — reads actual names/descriptions from the step document ───
   const getLayerConfig = (stepData) => ({
     macro: {
@@ -881,11 +886,16 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                   <div className="pending-path-card" key={i}>
                     <div className="pending-card-top">
                       <div className="pending-card-left">
-  <div className="admin-icon-box">
-    <img src={pathIcon} alt="path" style={{ width: "14px", height: "14px", objectFit: "contain" }} />
-  </div>
-  <span className="pending-path-name">{path?.nameOfPath}</span>
-</div>
+                        <div className="admin-icon-box">
+                          <img src={pathIcon} alt="path" style={{ width: "14px", height: "14px", objectFit: "contain" }} />
+                        </div>
+                        <span className="pending-path-name">{path?.nameOfPath}</span>
+                        {isAgentGenerated(path) ? (
+                          <span className="path-source-pill path-source-pill--agent">AI Generated</span>
+                        ) : (
+                          <span className="path-source-pill path-source-pill--manual">Manual</span>
+                        )}
+                      </div>
                       <span className="pending-date">
                         {path?.createdAt ? new Date(path.createdAt).toLocaleString("en-IN", {
                           day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
@@ -946,12 +956,17 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                       const res = await axios.get(`${BASE_URL}/api/paths/viewpath/${path?._id}`);
                       if (res.data?.data) setSelectedPath(res.data.data);
                     }}>
-<div className="paths-col-name">
-  <div className="admin-icon-box">
-    <img src={pathIcon} alt="path" style={{ width: "16px", height: "16px", objectFit: "contain" }} />
-  </div>
-  <span className="path-name-text">{path?.nameOfPath}</span>
-</div>                <div className="paths-col-desc" onClick={ev => ev.stopPropagation()}>
+                    <div className="paths-col-name">
+                      <div className="admin-icon-box">
+                        <img src={pathIcon} alt="path" style={{ width: "16px", height: "16px", objectFit: "contain" }} />
+                      </div>
+                      <span className="path-name-text">{path?.nameOfPath}</span>
+                      {isAgentGenerated(path) ? (
+                        <span className="path-source-pill path-source-pill--agent">AI Generated</span>
+                      ) : (
+                        <span className="path-source-pill path-source-pill--manual">Manual</span>
+                      )}
+                    </div>                <div className="paths-col-desc" onClick={ev => ev.stopPropagation()}>
                       <span className="path-desc-text">
                         {expandedRows[path?._id] ? path?.description : (path?.description?.length > 120 ? path?.description?.substring(0, 120) + "..." : path?.description)}
                       </span>
@@ -1011,61 +1026,61 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
 
             <div className="pp-body">
 
-            {/* ── STEP 1: MAIN ACTIONS — ACTIVE / INACTIVE ── */}
-{pathActionStep === 1 && editPaths === "default" && mypathsMenu !== "Pending Paths" && (
-  <div className="pp-cards-grid">
-    {/* For Inactive Paths: only show Review and Reactivate */}
-    {mypathsMenu === "Inactive Paths" ? (
-      <>
-        <ActionCard
-          color="green"
-          icon={<IconCheck />}
-          title="Reactivate Path"
-          desc="Restore this path to active"
-          onClick={() => setPathActionStep(2)}
-        />
-        <ActionCard
-          color="purple"
-          icon={<IconPencil />}
-          title="Review Path"
-          desc="Open the complete path page"
-          onClick={() => { localStorage.setItem("selectedPathId", selectedPathId); navigate(`/dashboard/path/${selectedPathId}`); }}
-        />
-      </>
-    ) : (
-      <>
-        <ActionCard
-          color="blue"
-          icon={<IconPencil />}
-          title="Edit Path"
-          desc="Modify steps, metadata, or structure"
-          onClick={() => setPathActionStep(4)}
-        />
-        <ActionCard
-          color="red"
-          icon={<IconTrash />}
-          title="Delete Path"
-          desc="Permanently remove this path"
-          onClick={() => setPathActionStep(2)}
-        />
-        <ActionCard
-          color="purple"
-          icon={<IconPencil />}
-          title="Review Path"
-          desc="Open the complete path page"
-          onClick={() => { localStorage.setItem("selectedPathId", selectedPathId); navigate(`/dashboard/path/${selectedPathId}`); }}
-        />
-        <ActionCard
-          color="teal"
-          icon={<IconShop />}
-          title="Marketplace"
-          desc="Attach services to steps"
-          onClick={() => setEditPaths("marketplace_steps")}
-        />
-      </>
-    )}
-  </div>
-)}
+              {/* ── STEP 1: MAIN ACTIONS — ACTIVE / INACTIVE ── */}
+              {pathActionStep === 1 && editPaths === "default" && mypathsMenu !== "Pending Paths" && (
+                <div className="pp-cards-grid">
+                  {/* For Inactive Paths: only show Review and Reactivate */}
+                  {mypathsMenu === "Inactive Paths" ? (
+                    <>
+                      <ActionCard
+                        color="green"
+                        icon={<IconCheck />}
+                        title="Reactivate Path"
+                        desc="Restore this path to active"
+                        onClick={() => setPathActionStep(2)}
+                      />
+                      <ActionCard
+                        color="purple"
+                        icon={<IconPencil />}
+                        title="Review Path"
+                        desc="Open the complete path page"
+                        onClick={() => { localStorage.setItem("selectedPathId", selectedPathId); navigate(`/dashboard/path/${selectedPathId}`); }}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <ActionCard
+                        color="blue"
+                        icon={<IconPencil />}
+                        title="Edit Path"
+                        desc="Modify steps, metadata, or structure"
+                        onClick={() => setPathActionStep(4)}
+                      />
+                      <ActionCard
+                        color="red"
+                        icon={<IconTrash />}
+                        title="Delete Path"
+                        desc="Permanently remove this path"
+                        onClick={() => setPathActionStep(2)}
+                      />
+                      <ActionCard
+                        color="purple"
+                        icon={<IconPencil />}
+                        title="Review Path"
+                        desc="Open the complete path page"
+                        onClick={() => { localStorage.setItem("selectedPathId", selectedPathId); navigate(`/dashboard/path/${selectedPathId}`); }}
+                      />
+                      <ActionCard
+                        color="teal"
+                        icon={<IconShop />}
+                        title="Marketplace"
+                        desc="Attach services to steps"
+                        onClick={() => setEditPaths("marketplace_steps")}
+                      />
+                    </>
+                  )}
+                </div>
+              )}
 
               {/* ── STEP 2: DELETE / REACTIVATE CONFIRM ── */}
               {pathActionStep === 2 && (
@@ -1852,70 +1867,70 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                             );
                           })}
 
-                       {/* Reply input */}
-<div className="vcr-reply-box">
-  <textarea
-    className="vcr-reply-input"
-    rows={1}
-    placeholder="Reply to partner…"
-    value={adminReplyTexts[cr._id] || ""}
-    onChange={(e) => {
-      setAdminReplyTexts(prev => ({ ...prev, [cr._id]: e.target.value }));
-      e.target.style.height = "auto";
-      e.target.style.height = Math.min(e.target.scrollHeight, 90) + "px";
-    }}
-    onKeyDown={(e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendAdminReply(pendingPopup?.pathId, cr._id);
-      }
-    }}
-  />
-  <button
-    className={`vcr-send-btn ${adminReplyTexts[cr._id]?.trim() ? "active" : ""}`}
-    disabled={!adminReplyTexts[cr._id]?.trim() || adminReplyLoading[cr._id]}
-    onClick={() => sendAdminReply(pendingPopup?.pathId, cr._id)}
-  >
-    {adminReplyLoading[cr._id] ? (
-      <span className="vcr-send-spinner" />
-    ) : (
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z" />
-      </svg>
-    )}
-  </button>
-</div>
+                          {/* Reply input */}
+                          <div className="vcr-reply-box">
+                            <textarea
+                              className="vcr-reply-input"
+                              rows={1}
+                              placeholder="Reply to partner…"
+                              value={adminReplyTexts[cr._id] || ""}
+                              onChange={(e) => {
+                                setAdminReplyTexts(prev => ({ ...prev, [cr._id]: e.target.value }));
+                                e.target.style.height = "auto";
+                                e.target.style.height = Math.min(e.target.scrollHeight, 90) + "px";
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                  e.preventDefault();
+                                  sendAdminReply(pendingPopup?.pathId, cr._id);
+                                }
+                              }}
+                            />
+                            <button
+                              className={`vcr-send-btn ${adminReplyTexts[cr._id]?.trim() ? "active" : ""}`}
+                              disabled={!adminReplyTexts[cr._id]?.trim() || adminReplyLoading[cr._id]}
+                              onClick={() => sendAdminReply(pendingPopup?.pathId, cr._id)}
+                            >
+                              {adminReplyLoading[cr._id] ? (
+                                <span className="vcr-send-spinner" />
+                              ) : (
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M2 21l21-9L2 3v7l15 2-15 2v7z" />
+                                </svg>
+                              )}
+                            </button>
+                          </div>
 
-{/* ── MARK AS ADDRESSED BUTTON ── */}
-{cr.status !== "addressed" && (
-  <button
-    onClick={async () => {
-      try {
-        setActionLoading(true);
-        await axios.patch(
-          `${BASE_URL}/api/paths/address/${pendingPopup?.pathId}/${cr._id}`
-        );
-        // Refresh the change requests
-        const { data } = await axios.get(
-          `${BASE_URL}/api/paths/viewpath/${pendingPopup?.pathId}`
-        );
-        if (data?.status) {
-          setPathChangeRequests(prev => ({
-            ...prev,
-            [pendingPopup?.pathId]: data.data?.changeRequests || [],
-          }));
-        }
-        setActionLoading(false);
-      } catch (err) {
-        console.error("Address error:", err);
-        setActionLoading(false);
-      }
-    }}
-    className="vcr-address-btn"
-  >
-    ✓ Mark as Addressed
-  </button>
-)}
+                          {/* ── MARK AS ADDRESSED BUTTON ── */}
+                          {cr.status !== "addressed" && (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  setActionLoading(true);
+                                  await axios.patch(
+                                    `${BASE_URL}/api/paths/address/${pendingPopup?.pathId}/${cr._id}`
+                                  );
+                                  // Refresh the change requests
+                                  const { data } = await axios.get(
+                                    `${BASE_URL}/api/paths/viewpath/${pendingPopup?.pathId}`
+                                  );
+                                  if (data?.status) {
+                                    setPathChangeRequests(prev => ({
+                                      ...prev,
+                                      [pendingPopup?.pathId]: data.data?.changeRequests || [],
+                                    }));
+                                  }
+                                  setActionLoading(false);
+                                } catch (err) {
+                                  console.error("Address error:", err);
+                                  setActionLoading(false);
+                                }
+                              }}
+                              className="vcr-address-btn"
+                            >
+                              ✓ Mark as Addressed
+                            </button>
+                          )}
                         </div>
                       </div>
                     );
