@@ -4,8 +4,8 @@ import "./UserMarketplace.scss";
 import axios from "axios";
 import logActivity from "../utils/activityLogger";
 
-// Use the same API pattern as Feedbacks.jsx
-const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:8001" : "");
+// Use process.env for Create React App
+const API = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === "development" ? "http://127.0.0.1:8001" : "");
 
 const LAYER_META = {
   macro: { label: "MACRO VIEW — FREE TOOLS", sub: "Free tools to get started.", badgeCls: "vsh-macro", cardCls: "vMacro" },
@@ -844,7 +844,7 @@ const UserMarketplace = ({ onStepChange }) => {
       const item = items.find(i => i._id === itemId);
       if (!item) return;
 
-      // Use the API variable instead of BASE_URL
+      // Use API variable for the endpoint
       await axios.post(`${API}/api/feedback`, {
         type: "marketplace",
         studentEmail: email,
