@@ -626,7 +626,11 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         if (!Array.isArray(steps)) return;
         setTotalStepsCount(steps.length);
         const step = steps.find((s) => s?._id === stepId || s?.step_id === stepId);
-        if (step) { setCurrentStepPageData(step); setCurrentStepPagePathId(pathId); }
+        if (step) {
+          setCurrentStepPageData(step);
+          setCurrentStepPagePathId(pathId);
+          localStorage.setItem("selectedStepName", step.name || "");
+        }
       })
       .catch((err) => console.error("Error fetching path steps:", err))
       .finally(() => setStepLoading(false));

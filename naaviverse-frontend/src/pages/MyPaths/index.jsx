@@ -705,6 +705,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                           setSelectedPathId(e?._id);
                           setSelectedPath(e);
                           localStorage.setItem("selectedPathId", e?._id);
+                          localStorage.setItem("selectedPathName", e?.nameOfPath || e?.name || "");
 
                           if (e?.status === "draft" || e?.status === "changesrequested") {
                             navigate(`/dashboard/accountants/path/${e._id}`);

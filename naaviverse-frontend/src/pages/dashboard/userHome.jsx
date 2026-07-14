@@ -366,8 +366,11 @@ export default function UserHome() {
         const doneCount = steps.filter(s => s.status === "done").length;
         const progress = steps.length ? Math.round((doneCount / steps.length) * 100) : 0;
 
+        const pName = pathData?.name || pathData?.nameOfPath || "";
+        localStorage.setItem("selectedPathName", pName);
+
         setMyPath({
-          name: pathData?.name || pathData?.nameOfPath || "—",
+          name: pName || "—",
           goal: pathData?.description || "",
           progress,
           steps,

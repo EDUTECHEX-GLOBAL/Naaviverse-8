@@ -822,27 +822,32 @@ const UserMarketplace = ({ onStepChange }) => {
       const user = raw ? JSON.parse(raw) : null;
       const email = user?.email || "guest@naaviverse.com";
 
-      const pathId = localStorage.getItem("selectedPathId") || "";
-      const stepId = localStorage.getItem("selectedStepId") || "";
+      const pathId   = localStorage.getItem("selectedPathId")   || "";
+      const stepId   = localStorage.getItem("selectedStepId")   || "";
+      const pathName = localStorage.getItem("selectedPathName") || "";
+      const stepName = localStorage.getItem("selectedStepName") || "";
 
-      // Find the specific marketplace item to get its name and role
+      // Find the specific marketplace item to get its name and category
       const item = items.find(i => i._id === itemId);
       if (!item) return;
 
       await axios.post(`${BASE_URL}/api/feedback`, {
-        type: "marketplace",
+        type:         "marketplace",
         studentEmail: email,
         pathId,
         stepId,
-        providerName: item.name || "",
-        providerType: item.role || "vendor",
-        action: nextValue.action || "",
-        comment: nextValue.comment || "",
+        pathName,                             // ← actual path name for PATHWAY column
+        stepName,                             // ← current step for MILESTONE STEP column
+        providerName: item.name || "",        // ← item name for PROVIDER column
+        providerType: item.category || item.role || "vendor", // ← item category sub-label
+        action:       nextValue.action || "",
+        comment:      nextValue.comment || "",
       });
-      console.log("Marketplace feedback submitted successfully for item:", itemId);
+      console.log("Marketplace feedback submitted for item:", item.name);
     } catch (err) {
       console.error("Error submitting marketplace feedback:", err);
     }
+
   };
 
   // ── FIX 2: renderServices uses hasMicro/hasNano, not isSubscribed ──────────
