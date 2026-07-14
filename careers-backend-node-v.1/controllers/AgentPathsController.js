@@ -14,7 +14,11 @@ const Path = require('../models/PathModel');
 const Step = require('../models/StepsModel');
 const MarketplaceItem = require('../models/MarketplaceModel');
 
-const AGENT_API_URL = process.env.AGENT_API_URL || 'https://naaviverse-naaviverse-path.hf.space';
+// ── Agent URL — set AGENT_API_URL in .env per environment ────────────────────
+// Local dev  → AGENT_API_URL=http://localhost:8001
+// Production → AGENT_API_URL=https://naaviverse-naaviverse-path.hf.space
+const AGENT_API_URL = process.env.AGENT_API_URL || 'http://localhost:8001';
+console.log(`[AgentConfig] Agent URL → ${AGENT_API_URL}`);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DATA CLEANERS: Ensure incoming values match strict Mongoose enums
