@@ -1,28 +1,29 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import axios from "axios";
 import "./UserMarketplace.scss";
 
 import logActivity from "../utils/activityLogger";
-
-const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const LAYER_META = {
   macro: { label: "MACRO VIEW — FREE TOOLS", sub: "Free tools to get started.", badgeCls: "vsh-macro", cardCls: "vMacro" },
   micro: { label: "MICRO VIEW — SUBSCRIPTIONS", sub: "Structured progress tracking.", badgeCls: "vsh-micro", cardCls: "vMicro" },
   nano: { label: "NANO VIEW — 1-ON-1 SESSIONS", sub: "Book a personalised expert session.", badgeCls: "vsh-nano", cardCls: "vNano" },
 };
+
 const LAYER_ICON = {
   macro: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>,
   micro: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>,
   nano: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c0 2 6 3 6 3s6-1 6-3v-5" /></svg>,
 };
+
 const TIME_SLOTS = ["10:00 AM", "12:00 PM", "2:00 PM", "4:00 PM", "6:00 PM", "8:00 PM"];
+
 const LAYER_PILLS = [
   { key: "macro", label: "Macro" },
   { key: "micro", label: "Micro" },
   { key: "nano", label: "Nano" },
 ];
+
 const CATEGORY_PILLS = [
   { key: "all", label: "All" },
   { key: "vendor", label: "Vendors" },
@@ -31,58 +32,227 @@ const CATEGORY_PILLS = [
   { key: "institution", label: "Institutions" },
 ];
 
-const getItemCategory = (item) => {
-  // ✅ ALWAYS trust the stored category from the database first
-  const stored = (item?.category || "").toLowerCase().trim();
-  if (stored === "mentor") return "mentor";
-  if (stored === "vendor") return "vendor";
-  if (stored === "distributor") return "distributor";
-  if (stored === "institution") return "institution";
-  if (stored === "resource") return "vendor"; // map 'resource' to vendor bucket
-
-  // Fallback: keyword match role only when category is missing/unrecognized
-  const role = (item?.role || "").toLowerCase();
-  if (role.includes("mentor") || role.includes("tutor") || role.includes("advisor") || role.includes("coach")) return "mentor";
-  if (role.includes("institution") || role.includes("university") || role.includes("school") || role.includes("college") || role.includes("institute")) return "institution";
-  if (role.includes("distributor")) return "distributor";
-  return "vendor";
-};
-
-const FEEDBACK_ACTIONS = [
-  { key: "helpful", label: "Helpful" },
-  { key: "notRelevant", label: "Not Relevant" },
-  { key: "comment", label: "Comment" },
-  { key: "skip", label: "Skip" },
+// ~11 Mock services spanning categories and internal/external partner types
+const MOCK_SERVICES = [
+  // MACRO VIEW (Free Tools)
+  {
+    _id: "macro-1",
+    layer: "macro",
+    role: "Course",
+    category: "vendor",
+    name: "Khan Academy Standardized Test Prep",
+    partner_email: "Pathangia.Admin@Gmail.Com",
+    goal: "Excellent Free Resource For SAT Math And Reading Diagnostics.",
+    features: "Complete Full-length SAT Mock tests, custom practice.",
+    cost: "Free",
+    access: "No Cost",
+    checkoutType: "internal"
+  },
+  {
+    _id: "macro-2",
+    layer: "macro",
+    role: "Platform",
+    category: "vendor",
+    name: "Albert.io AP Practice Modules",
+    partner_email: "Pathangia.Admin@Gmail.Com",
+    goal: "Free Diagnostic Exams And Curriculum Alignment Guides.",
+    features: "Sign Up And Complete The Algebra and Science reviews.",
+    cost: "Free",
+    access: "Free · External",
+    checkoutType: "external",
+    websiteUrl: "https://albert.io"
+  },
+  {
+    _id: "macro-3",
+    layer: "macro",
+    role: "Mentor",
+    category: "mentor",
+    name: "University Admissions Q&A Circle",
+    partner_email: "Pathangia.Admin@Gmail.Com",
+    goal: "Free Q&A Sessions With International Admissions Advisors.",
+    features: "Register For The Monthly Webinar and live consulting.",
+    cost: "Free",
+    access: "No Cost",
+    checkoutType: "internal"
+  },
+  {
+    _id: "macro-4",
+    layer: "macro",
+    role: "Mentor",
+    category: "mentor",
+    name: "Peer Cohort Study Group",
+    partner_email: "Pathangia.Admin@Gmail.Com",
+    goal: "Free Study Groups Led By Senior Students Who Cleared Admissions.",
+    features: "Join The Weekly Study Code sessions and peer review.",
+    cost: "Free",
+    access: "No Cost",
+    checkoutType: "internal"
+  },
+  {
+    _id: "macro-5",
+    layer: "macro",
+    role: "Book",
+    category: "distributor",
+    name: "College Board Official SAT Study Guide",
+    partner_email: "Pathangia.Admin@Gmail.Com",
+    goal: "Contains 8 Official Practice Tests And Detailed Scoring Guides.",
+    features: "Purchase For Online Standard Adm. Test preparation.",
+    cost: "Free",
+    access: "Free · External",
+    checkoutType: "external",
+    websiteUrl: "https://collegeboard.org"
+  },
+  {
+    _id: "macro-6",
+    layer: "macro",
+    role: "Library",
+    category: "distributor",
+    name: "Academic Excellence Open Access Library",
+    partner_email: "Pathangia.Admin@Gmail.Com",
+    goal: "Free Access To Research Publications And High School Research Journals.",
+    features: "Search Archives For STEM Topics and citations.",
+    cost: "Free",
+    access: "No Cost",
+    checkoutType: "internal"
+  },
+  {
+    _id: "macro-7",
+    layer: "macro",
+    role: "University",
+    category: "institution",
+    name: "Stanford Online Free High School Seminars",
+    partner_email: "Pathangia.Admin@Gmail.Com",
+    goal: "Empathy-Led Courses On Modern Logic And STEM Research Methods.",
+    features: "Audit Sociology Modules online on Stanford Lagunita.",
+    cost: "Free",
+    access: "No Cost",
+    checkoutType: "internal"
+  },
+  {
+    _id: "macro-8",
+    layer: "macro",
+    role: "University",
+    category: "institution",
+    name: "MIT OpenCourseWare Calculus",
+    partner_email: "Pathangia.Admin@Gmail.Com",
+    goal: "In-Depth Lectures To Build Rigorous Mathematical Foundation.",
+    features: "Watch Lectures And Solve Problem Set 1 and exams.",
+    cost: "Free",
+    access: "No Cost",
+    checkoutType: "internal"
+  },
+  // MICRO VIEW (Subscriptions)
+  {
+    _id: "micro-1",
+    layer: "micro",
+    role: "Institution",
+    category: "institution",
+    name: "ElitePrep Learning Solutions",
+    partner_email: "Sunkarachaitanya98@Gmail.Com",
+    goal: "Teach Programming Basics",
+    outcomes: "Students Can Build Simple Programs",
+    duration: "1 Month",
+    iterations: 3,
+    discount: "0%",
+    features: "Structured Python Course With Assignments.",
+    cost: "2999",
+    access: "Paid · Internal checkout",
+    checkoutType: "internal"
+  },
+  {
+    _id: "micro-2",
+    layer: "micro",
+    role: "Platform",
+    category: "vendor",
+    name: "GATEPrep Pro",
+    partner_email: "gateprep.com",
+    goal: "GATE Exam Preparation — Full Course",
+    outcomes: "Crack GATE with 95+ percentile",
+    duration: "3 Months",
+    iterations: 24,
+    discount: "10%",
+    features: "Mock tests, doubt sessions, rank predictor.",
+    cost: "8000",
+    access: "Paid · Partner gateway",
+    checkoutType: "external",
+    websiteUrl: "https://gateprep.com"
+  },
+  // NANO VIEW (1-on-1 Sessions)
+  {
+    _id: "nano-1",
+    layer: "nano",
+    role: "Mentor",
+    category: "mentor",
+    name: "Ankit Sharma",
+    partner_email: "Sunkarachaitanya98@Gmail.Com",
+    goal: "Improve Coding Skills",
+    outcomes: "Better Coding Confidence",
+    duration: "1 Month",
+    iterations: 3,
+    discount: "0%",
+    features: "Live Sessions With Real-Time Coding Practice.",
+    cost: "5000",
+    access: "Paid · Internal checkout",
+    checkoutType: "internal"
+  }
 ];
 
+const getItemCategory = (item) => {
+  return (item?.category || "vendor").toLowerCase();
+};
+
+const isFreeItem = (s) => {
+  if (!s.cost) return true;
+  const val = String(s.cost).trim().toLowerCase();
+  return val === "0" || val === "free" || val === "";
+};
+
+const itemPrice = (s) => {
+  if (isFreeItem(s)) return 0;
+  const raw = String(s.cost).replace(/[^0-9]/g, "");
+  return parseInt(raw, 10) || 0;
+};
+
+const getCostDisplay = (s) => {
+  if (isFreeItem(s)) return "Free";
+  const price = itemPrice(s);
+  return `₹${price.toLocaleString("en-IN")}`;
+};
+
+const fmtPrice = (n) => n === 0 ? "Free" : `₹${n.toLocaleString()}`;
+const genOrderId = () => `#NV-${Math.floor(100000 + Math.random() * 900000)}`;
+const fmtDate = (d) => d.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+
+// ─── Compact Feedback Strip ──────────────────────────────────────────────────
 const FeedbackStrip = ({ value = {}, onChange }) => {
   const [selected, setSelected] = useState(value.action || "");
   const [commentText, setCommentText] = useState(value.comment || "");
-  const showComment = selected === "comment";
+  const [showComment, setShowComment] = useState(false);
 
-  // Sync with parent props if they change externally (e.g. state reset or navigation)
   useEffect(() => {
     if (value.action !== undefined) {
-      if (value.action === "comment" && selected === "comment_submitted") {
-        // Keep the submitted visual state intact
-      } else {
-        setSelected(value.action);
+      setSelected(value.action);
+      if (value.action === "comment") {
+        setShowComment(true);
       }
     }
-    if (value.comment !== undefined && selected !== "comment_submitted") {
+    if (value.comment !== undefined) {
       setCommentText(value.comment);
     }
   }, [value.action, value.comment]);
 
   const handleAction = (action) => {
     if (action === "comment") {
-      setSelected("comment");
+      setShowComment(!showComment);
     } else {
-      setSelected(action);
+      const isSelected = selected === action;
+      const nextAction = isSelected ? "" : action;
+      setSelected(nextAction);
+      setShowComment(false);
       onChange({
-        action,
+        action: nextAction,
         comment: "",
-        skipped: action === "skip",
+        skipped: nextAction === "skip",
       });
     }
   };
@@ -95,113 +265,110 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
       skipped: false,
     });
     setSelected("comment_submitted");
+    setShowComment(false);
+  };
+
+  const clearFeedback = (e) => {
+    e.stopPropagation();
+    setSelected("");
+    setCommentText("");
+    setShowComment(false);
+    onChange({ action: "", comment: "", skipped: false });
   };
 
   return (
-    <div className="feedback-strip">
-      <div className="feedback-strip__label">Feedback</div>
-      <div className="feedback-strip__actions">
-        {FEEDBACK_ACTIONS.map(({ key, label }) => (
+    <div className="feedback-compact-container" onClick={(e) => e.stopPropagation()}>
+      <div className="feedback-compact-row">
+        <span className="feedback-prompt">Helpful?</span>
+        <div className="feedback-actions">
           <button
-            key={key}
             type="button"
-            className={`feedback-btn ${selected === key ? "active" : ""}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleAction(key);
-            }}
+            className={`feedback-icon-btn ${selected === "helpful" ? "active active--helpful" : ""}`}
+            onClick={() => handleAction("helpful")}
+            title="Mark Helpful"
           >
-            {label}
+            👍
           </button>
-        ))}
+          <button
+            type="button"
+            className={`feedback-icon-btn ${selected === "notRelevant" ? "active active--not-relevant" : ""}`}
+            onClick={() => handleAction("notRelevant")}
+            title="Mark Not Relevant"
+          >
+            👎
+          </button>
+          <button
+            type="button"
+            className={`feedback-icon-btn ${selected === "comment" || selected === "comment_submitted" ? "active active--comment" : ""}`}
+            onClick={() => handleAction("comment")}
+            title="Add Comment"
+          >
+            💬
+          </button>
+          {(selected || commentText) && (
+            <button
+              type="button"
+              className="feedback-clear-btn"
+              onClick={clearFeedback}
+              title="Clear Feedback"
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
+
       {showComment && (
-        <div className="feedback-comment-wrapper" style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }} onClick={(e) => e.stopPropagation()}>
+        <div className="feedback-comment-input-area">
           <textarea
-            className="feedback-comment"
-            placeholder="Add a short comment..."
+            className="feedback-comment-textarea"
+            placeholder="Type your feedback..."
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            style={{ width: "100%", minHeight: 60, padding: 8, borderRadius: 6, border: "1px solid #ddd" }}
           />
           <button
             type="button"
-            className="feedback-submit-btn"
+            className="feedback-comment-submit-btn"
             onClick={handleSubmitComment}
-            style={{
-              alignSelf: "flex-end",
-              padding: "6px 12px",
-              background: "#1e293b",
-              color: "#fff",
-              border: "none",
-              borderRadius: 4,
-              fontSize: "12px",
-              fontWeight: 600,
-              cursor: "pointer"
-            }}
           >
-            Submit Comment
+            Submit
           </button>
         </div>
       )}
-      {selected && selected !== "comment" && (
-        <div className="feedback-note">
-          {selected === "helpful" && "Marked helpful."}
-          {selected === "notRelevant" && "Marked not relevant."}
-          {selected === "skip" && "Skipped for now."}
-          {selected === "comment_submitted" && "Comment submitted."}
+
+      {selected && selected !== "comment" && !showComment && (
+        <div className="feedback-note-inline">
+          {selected === "helpful" && "Marked as helpful"}
+          {selected === "notRelevant" && "Marked as not relevant"}
+          {selected === "comment_submitted" && "Comment submitted"}
         </div>
       )}
     </div>
   );
 };
 
-const isFreeItem = (s) => {
-  if (!s.cost) return true;
-  const val = String(s.cost).trim().toLowerCase();
-  return val === "0" || val === "free" || val === "";
-};
-
-const itemPrice = (s) => {
-  if (isFreeItem(s)) return 0;
-  const raw = String(s.cost).trim();
-  const match = raw.match(/[\d,]+\.?\d*/);
-  if (!match) return 0;
-  let num = parseFloat(match[0].replace(/,/g, "")) || 0;
-  
-  if (raw.includes("$")) num = Math.round(num * 83.5);
-  else if (raw.includes("€")) num = Math.round(num * 90);
-  else if (raw.includes("£")) num = Math.round(num * 105);
-  
-  return num;
-};
-
-const getCostDisplay = (s) => {
-  if (isFreeItem(s)) return "Free";
-  const num = itemPrice(s);
-  if (num === 0) return "Free";
-  
-  const raw = String(s.cost).trim();
-  const suffixMatch = raw.match(/\/[a-zA-Z]+/);
-  const suffix = suffixMatch ? suffixMatch[0] : "";
-  
-  return `₹${num.toLocaleString("en-IN")}${suffix}`;
-};
-
-const fmtPrice = (n) => n === 0 ? "Free" : `₹${n.toLocaleString()}`;
-const genOrderId = () => `#NV-${Math.floor(100000 + Math.random() * 900000)}`;
-const fmtDate = (d) => d.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
-
 // ─── Service Card ─────────────────────────────────────────────────────────────
 const ServiceCard = ({ item, inCart, onToggleCart, onCardView, feedback, onFeedbackChange }) => {
   const layer = item.layer?.toLowerCase() || "macro";
   const meta = LAYER_META[layer] || LAYER_META.macro;
   const free = isFreeItem(item);
+  const isExternal = item.checkoutType === "external";
+
   return (
-    <div className={`svc-card ${meta.cardCls}`} onClick={() => onCardView && onCardView(item)}>
+    <div 
+      className={`svc-card ${meta.cardCls} ${isExternal ? "svc-card--external" : ""}`} 
+      onClick={() => onCardView && onCardView(item)}
+    >
+      {isExternal && (
+        <div className="svc-external-top-badge">External</div>
+      )}
       <div className="svc-top">
         <div className="svc-tags">
-          {item.role && <span className="svc-tag role-tag">{item.role}</span>}
+          {item.role && (
+            <span className={`svc-tag role-tag ${isExternal ? "role-tag--external" : ""}`}>
+              {item.role}
+            </span>
+          )}
         </div>
         <span className="svc-ico" style={{ color: layer === "macro" ? "#6366f1" : layer === "micro" ? "#0d9488" : "#d97706" }}>
           {LAYER_ICON[layer]}
@@ -209,6 +376,7 @@ const ServiceCard = ({ item, inCart, onToggleCart, onCardView, feedback, onFeedb
         <div className="svc-name">{item.name || "Unnamed Service"}</div>
         <div className="svc-by">by {item.partner_email || ""}</div>
         {item.goal && <div className="svc-desc">{item.goal}</div>}
+        
         <div className="svc-details">
           {item.outcomes && <div className="svc-detail-row"><span className="svc-detail-lbl">Outcomes:</span><span>{item.outcomes}</span></div>}
           {item.duration && <div className="svc-detail-row"><span className="svc-detail-lbl">Duration:</span><span>{item.duration}</span></div>}
@@ -216,19 +384,46 @@ const ServiceCard = ({ item, inCart, onToggleCart, onCardView, feedback, onFeedb
           {item.discount && <div className="svc-detail-row"><span className="svc-detail-lbl">Discount:</span><span>{item.discount}</span></div>}
           {item.features && <div className="svc-detail-row"><span className="svc-detail-lbl">Features:</span><span>{item.features}</span></div>}
         </div>
+
+        {isExternal && (
+          <div className="svc-redirect-alert-box">
+            <span className="alert-emoji">⚠️</span>
+            <span className="alert-message">
+              You will be redirected to the partner's website to complete payment. A secure tracking token will be generated.
+            </span>
+          </div>
+        )}
       </div>
+
       <FeedbackStrip value={feedback} onChange={onFeedbackChange} />
+
       <div className="svc-bot">
         <div className="svc-price-wrap">
-          <div className={`svc-price ${free ? "free-price" : ""}`}>{getCostDisplay(item)}</div>
+          <div className={`svc-price ${free ? "free-price" : ""} ${isExternal ? "external-price" : ""}`}>{getCostDisplay(item)}</div>
           <div className="svc-billing">{free ? "No cost" : (item.access || "")}</div>
         </div>
-        <button
-          className={`svc-add ${inCart ? "added" : ""}`}
-          onClick={(e) => { e.stopPropagation(); onToggleCart(item); }}
-        >
-          {inCart ? "✓ Added" : "+ Add"}
-        </button>
+        
+        {isExternal ? (
+          <a
+            href={item.websiteUrl || "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="svc-external-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onCardView) onCardView(item);
+            }}
+          >
+            → Visit Site
+          </a>
+        ) : (
+          <button
+            className={`svc-add ${inCart ? "added" : ""}`}
+            onClick={(e) => { e.stopPropagation(); onToggleCart(item); }}
+          >
+            {inCart ? "✓ Added" : "+ Add"}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -337,20 +532,10 @@ const StepBar = ({ currentPage, onStepChange }) => {
 };
 
 // ─── Checkout Page ────────────────────────────────────────────────────────────
-const loadRazorpayScript = () =>
-  new Promise((resolve) => {
-    if (window.Razorpay) return resolve(true);
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
-
 const CheckoutPage = ({ cart, onConfirm, onBack }) => {
   const userRaw = (() => { try { return JSON.parse(localStorage.getItem("user")); } catch { return null; } })();
-  const userEmail = userRaw?.user?.email || userRaw?.email || "";
-  const userName = userRaw?.user?.displayName || userRaw?.displayName || "";
+  const userEmail = userRaw?.user?.email || userRaw?.email || "guest@naaviverse.com";
+  const userName = userRaw?.user?.displayName || userRaw?.displayName || "Guest User";
 
   const [fullName, setFullName] = useState(userName);
   const [email, setEmail] = useState(userEmail);
@@ -359,59 +544,18 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
   const [timeSlot, setTimeSlot] = useState("10:00 AM");
   const [submitting, setSubmitting] = useState(false);
   const [payError, setPayError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const subtotal = cart.reduce((a, s) => a + itemPrice(s), 0);
   const tax = Math.round(subtotal * 0.18);
   const total = subtotal + tax;
 
-  const handlePaymentSuccess = async ({ razorpay_order_id, razorpay_payment_id, razorpay_signature }) => {
-    try {
-      const stepId = localStorage.getItem("selectedStepId") || "";
-      const stepName = localStorage.getItem("selectedStepName") || "";
-      const pathId = localStorage.getItem("selectedPathId") || "";
-      const pathName = localStorage.getItem("selectedPathName") || "";
-
-      // Verify with backend
-      await axios.post(`${BASE_URL}/api/payment/marketplace-verify`, {
-        razorpay_order_id,
-        razorpay_payment_id,
-        razorpay_signature,
-        userEmail: email,
-        items: cart.map(i => ({ _id: i._id, name: i.name, layer: i.layer })),
-      });
-
-      // Log activity
-      cart.forEach((item) => {
-        logActivity({
-          type: "market",
-          title: `Purchased: ${item.name}`,
-          desc: `Bought "${item.name}" via Razorpay · ${razorpay_payment_id}`,
-          pathId, pathName, stepId, stepName,
-          itemName: item.name || "",
-          itemCost: `₹${itemPrice(item).toLocaleString()}`,
-          status: "completed",
-        });
-      });
-
-      const orderId = `#NV-${razorpay_payment_id.slice(-6).toUpperCase()}`;
-      onConfirm({ orderId, total, itemCount: cart.length, date: new Date() });
-
-    } catch (err) {
-      console.error("Verification error:", err);
-      setPayError("Payment received but confirmation failed. Contact support.");
-    }
-  };
-
-  const [fieldErrors, setFieldErrors] = useState({});
-
-  const handlePayClick = async () => {
-    // ── Validate all required fields ──────────────────────────────
+  const handlePayClick = () => {
     const errors = {};
     if (!fullName.trim()) errors.fullName = "Full name is required";
     if (!email.trim()) errors.email = "Email address is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Enter a valid email address";
     if (!phone.trim()) errors.phone = "Phone number is required";
-    else if (!/^[+\d][\d\s\-]{7,}$/.test(phone.trim())) errors.phone = "Enter a valid phone number";
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
@@ -423,71 +567,12 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
     setPayError("");
     setSubmitting(true);
 
-    try {
-      // Load Razorpay SDK
-      const loaded = await loadRazorpayScript();
-      if (!loaded) {
-        setPayError("Could not load Razorpay. Please check your internet connection.");
-        setSubmitting(false);
-        return;
-      }
-
-      // Create order on backend
-      const res = await axios.post(`${BASE_URL}/api/payment/marketplace-order`, {
-        userEmail: email,
-        items: cart.map(i => ({ _id: i._id, name: i.name, layer: i.layer, cost: itemPrice(i) })),
-        total,
-        currency: "INR",
-      });
-
-      if (!res.data?.success) {
-        setPayError(res.data?.error || "Failed to create order. Please try again.");
-        setSubmitting(false);
-        return;
-      }
-
-      const order = res.data.order;
-
-      // Open Razorpay checkout
-      const options = {
-        key:         process.env.REACT_APP_RAZORPAY_KEY_ID,
-        amount:      order.amount,
-        currency:    order.currency,
-        name:        "Naavi Marketplace",
-        description: cart.map(i => i.name).join(", "),
-        order_id:    order.id,
-        prefill: {
-          email:   email,
-          name:    fullName,
-          contact: phone,
-        },
-        theme: { color: "#5c62ec" },
-        handler: async (response) => {
-          setSubmitting(false);
-          await handlePaymentSuccess(response);
-        },
-        modal: {
-          ondismiss: () => {
-            setSubmitting(false);
-            setPayError("Payment was cancelled.");
-            setTimeout(() => setPayError(""), 4000);
-          },
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.on("payment.failed", (response) => {
-        setSubmitting(false);
-        setPayError(`Payment failed: ${response.error?.description || "Unknown error"}. Please try again.`);
-        setTimeout(() => setPayError(""), 5000);
-      });
-      rzp.open();
-
-    } catch (err) {
-      console.error("Payment error:", err);
-      setPayError(err?.response?.data?.error || "Payment failed. Please try again.");
+    // Simulate mock payment processing for 1.5 seconds
+    setTimeout(() => {
       setSubmitting(false);
-    }
+      const orderId = genOrderId();
+      onConfirm({ orderId, total, itemCount: cart.length, date: new Date() });
+    }, 1500);
   };
 
   return (
@@ -544,7 +629,7 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:6,verticalAlign:'middle',flexShrink:0}}>
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
-              Secured by Razorpay. Choose UPI, Cards, EMI or Net Banking in the next step.
+              Secured Checkout Simulation. Choose pay button below to proceed.
             </div>
             {payError && <div className="rzp-pay-error">{payError}</div>}
           </div>
@@ -569,23 +654,16 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
             <button className="os-pay-btn rzp-pay-btn" onClick={handlePayClick} disabled={submitting}>
               {submitting ? (
                 <span className="rzp-btn-inner">
-                  <span className="rzp-mini-spinner" /> Opening Razorpay…
+                  <span className="rzp-mini-spinner" /> Processing Mock Payment…
                 </span>
               ) : (
                 <span className="rzp-btn-inner">
                   Pay ₹{total === 0 ? "0" : total.toLocaleString()}
-                  <span className="rzp-badge">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{marginRight:4}}><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
-                    Razorpay
-                  </span>
                 </span>
               )}
             </button>
             <p className="rzp-secure-text">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:4,verticalAlign:'middle'}}>
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-              100% Secure. Encrypted by Razorpay.
+              100% Secure. Mock checkout processor active.
             </p>
           </div>
         </div>
@@ -616,20 +694,9 @@ const ConfirmedPage = ({ orderInfo, onBackToJourney }) => (
 const UserMarketplace = ({ onStepChange }) => {
   const location = useLocation();
 
-  // ── Access flags ───────────────────────────────────────────────────────────
-  const isSubscribed = location.state?.subscribed ?? false;
-  const creditUnlocked = location.state?.creditUnlocked || { micro: false, nano: false };
-  const subTier = location.state?.subTier || null;
-
-  // A user can see micro if:
-  //   • they have an active micro or nano subscription, OR
-  //   • they credit-unlocked micro on this step, OR
-  //   • they credit-unlocked nano (nano unlock implies micro access)
-  // Mirror exact access logic from CurrentStep/index.jsx lines 432-433
-  // micro: subscription with tier "micro" or "nano", OR credit-unlocked micro
-  // nano:  subscription with tier "nano" only, OR credit-unlocked nano
-  const hasMicro = (isSubscribed && (subTier === "micro" || subTier === "nano")) || creditUnlocked.micro;
-  const hasNano  = (isSubscribed && subTier === "nano") || creditUnlocked.nano;
+  // ── Access flags (Forced to true for mockup testing) ─────────────────────
+  const hasMicro = true;
+  const hasNano  = true;
 
   // ── Component state ────────────────────────────────────────────────────────
   const [page, setPage] = useState("marketplace");
@@ -642,108 +709,33 @@ const UserMarketplace = ({ onStepChange }) => {
   const [searchQ, setSearchQ] = useState("");
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState(MOCK_SERVICES);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [orderInfo, setOrderInfo] = useState(null);
   const [marketplaceFeedback, setMarketplaceFeedback] = useState({});
-
-  const marketLoggedRef = useRef(false);
 
   // Sync active layer if location state changes
   useEffect(() => {
     if (location.state?.view) setActiveLayer(location.state.view.toLowerCase());
   }, [location.state?.view]);
 
-  useEffect(() => {
-    if (activeLayer === "micro" && !hasMicro) {
-      setActiveLayer("macro");
-    }
-    if (activeLayer === "nano" && !hasNano) {
-      setActiveLayer("macro");
-    }
-  }, [activeLayer, hasMicro, hasNano]);
-
-  // Fetch services for the current step
-  useEffect(() => {
-    const fetchItems = async () => {
-      setLoading(true); setError("");
-      try {
-        const stepId = localStorage.getItem("selectedStepId");
-        if (!stepId) { setError("No step selected."); setLoading(false); return; }
-
-        const res = await axios.get(`${BASE_URL}/api/marketplace/step/${stepId}`, {
-          params: { layer: activeLayer },
-        });
-        if (res?.data?.status && Array.isArray(res.data.data)) {
-          setItems(res.data.data);
-
-          if (!marketLoggedRef.current) {
-            marketLoggedRef.current = true;
-            const stepName = localStorage.getItem("selectedStepName") || "";
-            const pathName = localStorage.getItem("selectedPathName") || "";
-            const pathId = localStorage.getItem("selectedPathId") || "";
-            logActivity({
-              type: "market",
-              title: "Browsing marketplace",
-              desc: `User opened Marketplace${stepName ? ` for step "${stepName}"` : ""}`,
-              pathId, pathName, stepId, stepName,
-              status: "viewed",
-            });
-          }
-        } else {
-          setItems([]);
-        }
-      } catch (err) {
-        console.error("❌ Marketplace fetch error:", err);
-        setError("Failed to load services. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchItems();
-  }, [activeLayer]);
-
-  // Layer item counts (for reference / future UI use)
-  const layerCounts = useMemo(() => ({
-    all: items.length,
-    macro: items.filter(s => s.layer === "macro").length,
-    micro: items.filter(s => s.layer === "micro").length,
-    nano: items.filter(s => s.layer === "nano").length,
-  }), [items]);
-
-  // ── Filter respects credit unlocks + strict free/paid layer enforcement ─────
+  // Filter respects category and search
   const categoryBaseItems = useMemo(() => {
-    const q = searchQ.toLowerCase();
+    const q = searchQ.toLowerCase().trim();
     return items.filter(s => {
-      const isItemFree = isFreeItem(s);
+      // Gate subscription/credit access for paid layers (always allowed in mock mode)
+      const isLayerMatched = s.layer === activeLayer;
+      
+      const isSearchMatched = !q ||
+        s.name?.toLowerCase().includes(q) ||
+        s.partner_email?.toLowerCase().includes(q) ||
+        s.goal?.toLowerCase().includes(q) ||
+        s.role?.toLowerCase().includes(q);
 
-      // ── STRICT LAYER-ACCESS RULE ─────────────────────────────────────────────
-      // Macro  → ONLY free items  (paid items must NOT appear here)
-      // Micro  → ONLY paid items  (free items must NOT appear here)
-      // Nano   → ONLY paid items  (free items must NOT appear here)
-      if (s.layer === "macro" && !isItemFree) return false;     // paid item in macro → hide
-      if (s.layer === "micro" && isItemFree)  return false;     // free item in micro → hide
-      if (s.layer === "nano"  && isItemFree)  return false;     // free item in nano  → hide
-
-      // Gate subscription/credit access for paid layers
-      const layerAllowed =
-        s.layer === "macro" ? true :
-          s.layer === "micro" ? hasMicro :
-            s.layer === "nano"  ? hasNano :
-              true;
-
-      return (
-        layerAllowed &&
-        s.layer === activeLayer &&
-        (!q ||
-          s.name?.toLowerCase().includes(q) ||
-          s.partner_email?.toLowerCase().includes(q) ||
-          s.goal?.toLowerCase().includes(q) ||
-          s.role?.toLowerCase().includes(q))
-      );
+      return isLayerMatched && isSearchMatched;
     });
-  }, [items, activeLayer, searchQ, hasMicro, hasNano]);
+  }, [items, activeLayer, searchQ]);
 
   const filtered = useMemo(() => (
     activeCategory === "all"
@@ -760,8 +752,6 @@ const UserMarketplace = ({ onStepChange }) => {
     });
     return counts;
   }, [categoryBaseItems]);
-
-  const availableCategoryPills = CATEGORY_PILLS;
 
   // Cart helpers
   const toggleCart = (item) => {
@@ -788,11 +778,30 @@ const UserMarketplace = ({ onStepChange }) => {
   };
 
   const handleCardView = (item) => {
+    // Navigate or log redirection for external checkout type
+    if (item.checkoutType === "external") {
+      console.log(`[Redirect] Opening external site: ${item.websiteUrl}`);
+      logActivity({
+        type: "market",
+        title: `Redirect to External Site: ${item.name}`,
+        desc: `User redirected to third-party website: ${item.websiteUrl}`,
+        pathId: localStorage.getItem("selectedPathId") || "",
+        pathName: localStorage.getItem("selectedPathName") || "",
+        stepId: localStorage.getItem("selectedStepId") || "",
+        stepName: localStorage.getItem("selectedStepName") || "",
+        itemName: item.name || "",
+        itemCost: getCostDisplay(item),
+        status: "redirected",
+      });
+      return;
+    }
+
     const layerLabel =
       item.layer === "macro" ? "Macro (Free Tools)" :
         item.layer === "micro" ? "Micro (Subscriptions)" :
           item.layer === "nano" ? "Nano (1-on-1 Sessions)" :
             item.layer || "";
+
     logActivity({
       type: "market",
       title: `Browsed ${layerLabel}: ${item.name}`,
@@ -811,41 +820,15 @@ const UserMarketplace = ({ onStepChange }) => {
   const inCart = (id) => cart.some(s => s._id === id);
   const handleConfirm = (info) => { setOrderInfo(info); setPage("confirmed"); setShowCart(false); };
   const currentPageKey = page === "marketplace" ? "marketplace" : page === "checkout" ? "checkout" : "confirmed";
-  const updateMarketplaceFeedback = async (itemId, nextValue) => {
+
+  const updateMarketplaceFeedback = (itemId, nextValue) => {
     setMarketplaceFeedback(prev => ({
       ...prev,
       [itemId]: nextValue,
     }));
-
-    try {
-      const raw = localStorage.getItem("user");
-      const user = raw ? JSON.parse(raw) : null;
-      const email = user?.email || "guest@naaviverse.com";
-
-      const pathId = localStorage.getItem("selectedPathId") || "";
-      const stepId = localStorage.getItem("selectedStepId") || "";
-
-      // Find the specific marketplace item to get its name and role
-      const item = items.find(i => i._id === itemId);
-      if (!item) return;
-
-      await axios.post(`${BASE_URL}/api/feedback`, {
-        type: "marketplace",
-        studentEmail: email,
-        pathId,
-        stepId,
-        providerName: item.name || "",
-        providerType: item.role || "vendor",
-        action: nextValue.action || "",
-        comment: nextValue.comment || "",
-      });
-      console.log("Marketplace feedback submitted successfully for item:", itemId);
-    } catch (err) {
-      console.error("Error submitting marketplace feedback:", err);
-    }
+    console.log("Feedback captured locally:", itemId, nextValue);
   };
 
-  // ── FIX 2: renderServices uses hasMicro/hasNano, not isSubscribed ──────────
   const renderServiceGroup = (groupItems) => (
     <div className="svc-grid">
       {groupItems.map(s => (
@@ -899,48 +882,23 @@ const UserMarketplace = ({ onStepChange }) => {
     if (filtered.length === 0) return (
       <div className="mkt-status-box">
         <div style={{ fontSize: 36 }}>🔍</div>
-        <p>No services found for this step yet.</p>
+        <p>No services found matching the criteria.</p>
       </div>
     );
 
-    // Single-layer view (user clicked a specific pill)
-    if (activeLayer !== "all") {
-      const meta = LAYER_META[activeLayer];
-      return (
-        <>
-          <div className="vsh">
-            <span className={`vsh-badge ${meta.badgeCls}`}>{meta.label}</span>
-            <span className="vsh-sub">{meta.sub}</span>
-            <div className="vsh-line" />
-            <span className="vsh-cnt">{filtered.length} service{filtered.length !== 1 ? "s" : ""}</span>
-          </div>
-          {renderPartnerGroups(filtered)}
-        </>
-      );
-    }
-
-    // "All" view — show only layers the user has access to
-    // macro is always shown; micro/nano depend on subscription or credit unlock
-    const visibleLayers = ["macro"];
-    if (hasMicro) visibleLayers.push("micro");
-    if (hasNano) visibleLayers.push("nano");
-
-    return visibleLayers.map(layer => {
-      const group = filtered.filter(s => s.layer === layer);
-      if (!group.length) return null;
-      const meta = LAYER_META[layer];
-      return (
-        <React.Fragment key={layer}>
-          <div className="vsh">
-            <span className={`vsh-badge ${meta.badgeCls}`}>{meta.label}</span>
-            <span className="vsh-sub">{meta.sub}</span>
-            <div className="vsh-line" />
-            <span className="vsh-cnt">{group.length} service{group.length !== 1 ? "s" : ""}</span>
-          </div>
-          {renderPartnerGroups(group)}
-        </React.Fragment>
-      );
-    });
+    // Single-layer view (Macro, Micro, or Nano tab)
+    const meta = LAYER_META[activeLayer];
+    return (
+      <>
+        <div className="vsh">
+          <span className={`vsh-badge ${meta.badgeCls}`}>{meta.label}</span>
+          <span className="vsh-sub">{meta.sub}</span>
+          <div className="vsh-line" />
+          <span className="vsh-cnt">{filtered.length} service{filtered.length !== 1 ? "s" : ""}</span>
+        </div>
+        {renderPartnerGroups(filtered)}
+      </>
+    );
   };
 
   return (
@@ -978,14 +936,9 @@ const UserMarketplace = ({ onStepChange }) => {
 
                 <div className="mkt-div" />
 
-                {/* ── FIX 3: Layer pills — show all accessible layers, not just the active one */}
+                {/* Layer pills */}
                 <div className="vpills">
-                  {LAYER_PILLS.filter(({ key }) => {
-                    if (key === "macro") return true;          // macro always free
-                    if (key === "micro") return hasMicro;      // micro: sub or credit unlock
-                    if (key === "nano") return hasNano;       // nano:  sub or credit unlock
-                    return false;
-                  }).map(({ key, label }) => (
+                  {LAYER_PILLS.map(({ key, label }) => (
                     <button
                       key={key}
                       className={`vpill vpill--${key} ${activeLayer === key ? "active" : ""}`}
@@ -1015,7 +968,7 @@ const UserMarketplace = ({ onStepChange }) => {
 
               <div className="mkt-filter-row">
                 <div className="category-pills">
-                  {availableCategoryPills.map(({ key, label }) => (
+                  {CATEGORY_PILLS.map(({ key, label }) => (
                     <button
                       key={key}
                       className={`category-pill ${activeCategory === key ? "active" : ""}`}
