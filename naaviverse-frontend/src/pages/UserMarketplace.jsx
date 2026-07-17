@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./UserMarketplace.scss";
 import axios from "axios";
 import logActivity from "../utils/activityLogger";
@@ -351,7 +351,7 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
 };
 
 // ─── Service Card ─────────────────────────────────────────────────────────────
-const ServiceCard = ({ item, inCart, onToggleCart, onCardView, feedback, onFeedbackChange }) => {
+const ServiceCard = ({ item, inCart, onToggleCart, onCardView, onVisitSite, feedback, onFeedbackChange }) => {
   const layer = item.layer?.toLowerCase() || "macro";
   const meta = LAYER_META[layer] || LAYER_META.macro;
   const free = isFreeItem(item);
@@ -407,18 +407,15 @@ const ServiceCard = ({ item, inCart, onToggleCart, onCardView, feedback, onFeedb
         </div>
 
         {isExternal ? (
-          <a
-            href={item.websiteUrl || "#"}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
             className="svc-external-btn"
             onClick={(e) => {
               e.stopPropagation();
-              if (onCardView) onCardView(item);
+              if (onVisitSite) onVisitSite(item);
             }}
           >
             → Visit Site
-          </a>
+          </button>
         ) : (
           <button
             className={`svc-add ${inCart ? "added" : ""}`}
@@ -696,6 +693,7 @@ const ConfirmedPage = ({ orderInfo, onBackToJourney }) => (
 // ─── Main Component ───────────────────────────────────────────────────────────
 const UserMarketplace = ({ onStepChange }) => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   // ── Access flags (Forced to true for mockup testing) ─────────────────────
   const hasMicro = true;
@@ -717,11 +715,42 @@ const UserMarketplace = ({ onStepChange }) => {
   const [error, setError] = useState("");
   const [orderInfo, setOrderInfo] = useState(null);
   const [marketplaceFeedback, setMarketplaceFeedback] = useState({});
+  const [exclusiveSuccessToast, setExclusiveSuccessToast] = useState(null);
 
   // Sync active layer if location state changes
   useEffect(() => {
     if (location.state?.view) setActiveLayer(location.state.view.toLowerCase());
   }, [location.state?.view]);
+
+  // Detect return from NaaviExclusive checkout (same-tab fallback via location.state)
+  useEffect(() => {
+    if (location.state?.exclusiveSuccess) {
+      setExclusiveSuccessToast({
+        orderId: location.state.orderId || "",
+        itemName: location.state.purchasedItem?.name || "Service",
+      });
+      const t = setTimeout(() => setExclusiveSuccessToast(null), 8000);
+      return () => clearTimeout(t);
+    }
+  }, [location.state?.exclusiveSuccess]);
+
+  // Poll sessionStorage for success written by the new-tab exclusive checkout
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const raw = sessionStorage.getItem("naaviExclusiveSuccess");
+      if (raw) {
+        try {
+          const data = JSON.parse(raw);
+          setExclusiveSuccessToast({ orderId: data.orderId || "", itemName: data.itemName || "Service" });
+          sessionStorage.removeItem("naaviExclusiveSuccess");
+          const t = setTimeout(() => setExclusiveSuccessToast(null), 8000);
+          // Clear timer when component unmounts
+          return () => clearTimeout(t);
+        } catch (e) { /* ignore */ }
+      }
+    }, 800); // poll every 800ms
+    return () => clearInterval(interval);
+  }, []);
 
   // Filter respects category and search
   const categoryBaseItems = useMemo(() => {
@@ -778,6 +807,28 @@ const UserMarketplace = ({ onStepChange }) => {
         status: "in_progress",
       });
     }
+  };
+
+  const handleVisitSite = (item) => {
+    // Log the redirect activity
+    logActivity({
+      type: "market",
+      title: `External Checkout: ${item.name}`,
+      desc: `User navigated to NaaviExclusive checkout for: ${item.websiteUrl}`,
+      pathId: localStorage.getItem("selectedPathId") || "",
+      pathName: localStorage.getItem("selectedPathName") || "",
+      stepId: localStorage.getItem("selectedStepId") || "",
+      stepName: localStorage.getItem("selectedStepName") || "",
+      itemName: item.name || "",
+      itemCost: getCostDisplay(item),
+      status: "exclusive-checkout",
+    });
+    // ── Store item in sessionStorage so the new tab can read it ──────────────
+    // (window.open cannot carry React Router state across tabs)
+    sessionStorage.setItem("naaviExclusiveItem", JSON.stringify(item));
+    sessionStorage.setItem("naaviExclusiveReturnPath", "/dashboard/users/Marketplace");
+    // Open NaaviExclusive in a NEW tab
+    window.open("/naavi-exclusive", "_blank", "noopener,noreferrer");
   };
 
   const handleCardView = (item) => {
@@ -873,6 +924,7 @@ const UserMarketplace = ({ onStepChange }) => {
           inCart={inCart(s._id)}
           onToggleCart={toggleCart}
           onCardView={handleCardView}
+          onVisitSite={handleVisitSite}
           feedback={marketplaceFeedback[s._id]}
           onFeedbackChange={(nextValue) => updateMarketplaceFeedback(s._id, nextValue)}
         />
@@ -946,6 +998,46 @@ const UserMarketplace = ({ onStepChange }) => {
           else if (key === "marketplace") setPage("marketplace");
         }}
       />
+
+      {/* ── Exclusive Checkout Success Banner ───────────────────────────────── */}
+      {exclusiveSuccessToast && (
+        <div style={{
+          margin: "16px 24px",
+          background: "linear-gradient(135deg, rgba(16,185,129,.12) 0%, rgba(99,102,241,.1) 100%)",
+          border: "1px solid rgba(16,185,129,.35)",
+          borderRadius: 12,
+          padding: "14px 20px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 16,
+          animation: "fadeInDown 0.4s ease",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 22 }}>✅</span>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "#f0f4ff" }}>
+                Marketplace Enrollment Successful!
+              </div>
+              <div style={{ fontSize: "0.78rem", color: "#8b9abf", marginTop: 2 }}>
+                <strong style={{ color: "#10b981" }}>{exclusiveSuccessToast.itemName}</strong> has been activated.
+                {exclusiveSuccessToast.orderId && (
+                  <> &nbsp;·&nbsp; Order: <span style={{ color: "#6366f1" }}>{exclusiveSuccessToast.orderId}</span></>
+                )}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => setExclusiveSuccessToast(null)}
+            style={{
+              background: "none", border: "none", color: "#4a5578",
+              cursor: "pointer", fontSize: "1.1rem", padding: "2px 6px",
+              lineHeight: 1,
+            }}
+            title="Dismiss"
+          >✕</button>
+        </div>
+      )}
 
       {page === "marketplace" && (
         <div className="mkt-body">

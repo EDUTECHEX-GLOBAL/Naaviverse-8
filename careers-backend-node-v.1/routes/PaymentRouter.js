@@ -67,21 +67,37 @@ router.post("/create-order", async (req, res) => {
 
     console.log("📦 productName:", productName, "| planTierFromBody:", planTierFromBody, "| tierFromBody:", tierFromBody);
 
-    const { planTier, tier } = derivePlanFields(productName, planTierFromBody, tierFromBody);
+    const isMarketplace = productId?.startsWith("micro-") || productId?.startsWith("nano-") || productId?.startsWith("macro-") || billingMethod === "lifetime";
+    
+    let planTier = "standard";
+    let tier = tierFromBody || ((productName || "").toLowerCase().includes("nano") ? "nano" : "micro");
 
-    if (!planTier) {
-      console.error("❌ Cannot derive planTier. productName:", productName, "planTierFromBody:", planTierFromBody);
-      return res.status(400).json({
-        success: false,
-        error: `Invalid plan selected. Received productName="${productName}", planTier="${planTierFromBody}"`,
-      });
-    }
+    if (!isMarketplace) {
+      const derived = derivePlanFields(productName, planTierFromBody, tierFromBody);
+      planTier = derived.planTier;
+      tier = derived.tier;
 
-    if (!billingMethod || !["monthly", "annual"].includes(billingMethod)) {
-      return res.status(400).json({
-        success: false,
-        error: `Invalid billingMethod "${billingMethod}". Must be "monthly" or "annual".`,
-      });
+      if (!planTier) {
+        console.error("❌ Cannot derive planTier. productName:", productName, "planTierFromBody:", planTierFromBody);
+        return res.status(400).json({
+          success: false,
+          error: `Invalid plan selected. Received productName="${productName}", planTier="${planTierFromBody}"`,
+        });
+      }
+
+      if (!billingMethod || !["monthly", "annual"].includes(billingMethod)) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid billingMethod "${billingMethod}". Must be "monthly" or "annual".`,
+        });
+      }
+    } else {
+      if (!billingMethod || !["monthly", "annual", "lifetime"].includes(billingMethod)) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid billingMethod "${billingMethod}". Must be "monthly", "annual", or "lifetime".`,
+        });
+      }
     }
 
     console.log(`✅ Derived: planTier=${planTier}, tier=${tier}`);
@@ -95,7 +111,7 @@ router.post("/create-order", async (req, res) => {
       amount,
       currency,
       tier,
-      planTier,
+      planTier: planTier || undefined,
       status: "pending",
     });
     console.log("✅ Payment record created:", payment._id, "| tier:", tier, "| planTier:", planTier);
@@ -176,7 +192,7 @@ router.post("/verify", async (req, res) => {
     }
 
     // ── 4. Resolve tier/planTier from saved payment record ────────
-    const resolvedPlanTier = payment.planTier || "standard";
+    const resolvedPlanTier = payment.planTier || null;
     const resolvedTier     = payment.tier     || "micro";
 
     console.log(`✅ Resolved: planTier=${resolvedPlanTier}, tier=${resolvedTier}`);
@@ -201,31 +217,27 @@ router.post("/verify", async (req, res) => {
       { upsert: true, new: true }
     );
     console.log(`✅ Subscription upserted: ${payment.userEmail} — ${resolvedPlanTier}/${resolvedTier}`);
-
-    // ── 6. Credit wallet — DIRECT DB INSERT (no self-HTTP) ────────
-    // ✅ FIX: was axios.post to self which silently failed when
-    //         APP_BASE_URL was undefined or wrong port.
-    //         Now writes directly to VaultTransaction collection.
-    const credits = PLAN_CREDITS[resolvedPlanTier] || 100;
-    try {
-      await VaultTransaction.create({
-        email:  payment.userEmail,
-        type:   "credit",
-        amount: credits,
-        metadata: {
-          description: `${resolvedPlanTier} Plan subscription credits`,
-          source:      "subscription",
-          planTier:    resolvedPlanTier,
-          tier:        resolvedTier,
-          paymentId:   razorpay_payment_id,
-        },
-      });
-      console.log(`✅ Wallet credited: ${credits} credits → ${payment.userEmail}`);
-    } catch (walletErr) {
-      // Log as error (not warn) — credits missing is a real problem
-      console.error("❌ Wallet credit failed:", walletErr.message);
-      // Still return success to frontend (payment is confirmed)
-      // but alert yourself via logs to fix manually if needed
+    // ── 6. Credit wallet if standard plan tier exists (skip for marketplace) ──
+    const isMkt = payment.productId?.startsWith("micro-") || payment.productId?.startsWith("nano-") || payment.productId?.startsWith("macro-") || payment.billingMethod === "lifetime";
+    if (!isMkt && resolvedPlanTier && PLAN_CREDITS[resolvedPlanTier]) {
+      const credits = PLAN_CREDITS[resolvedPlanTier] || 100;
+      try {
+        await VaultTransaction.create({
+          email:  payment.userEmail,
+          type:   "credit",
+          amount: credits,
+          metadata: {
+            description: `${resolvedPlanTier} Plan subscription credits`,
+            source:      "subscription",
+            planTier:    resolvedPlanTier,
+            tier:        resolvedTier,
+            paymentId:   razorpay_payment_id,
+          },
+        });
+        console.log(`✅ Wallet credited: ${credits} credits → ${payment.userEmail}`);
+      } catch (walletErr) {
+        console.error("❌ Wallet credit failed:", walletErr.message);
+      }
     }
 
     // ── 7. Send invoice email (non-blocking) ──────────────────────

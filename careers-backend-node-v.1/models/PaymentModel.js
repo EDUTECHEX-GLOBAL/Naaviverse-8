@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 
 const PaymentSchema = new mongoose.Schema(
   {
-    userEmail:   { type: String, required: true },
-    profileId:   { type: String },
-    productId:   { type: String, required: true },
+    userEmail: { type: String, required: true },
+    profileId: { type: String },
+    productId: { type: String, required: true },
     productName: { type: String, required: true },
 
     billingMethod: {
@@ -28,7 +28,7 @@ const PaymentSchema = new mongoose.Schema(
       default: null,
     },
 
-    amount:   { type: Number, required: true },
+    amount: { type: Number, required: true },
     currency: { type: String, default: "INR" },
 
     status: {
@@ -37,7 +37,7 @@ const PaymentSchema = new mongoose.Schema(
       default: "pending",
     },
 
-    razorpayOrderId:   { type: String },
+    razorpayOrderId: { type: String },
     razorpayPaymentId: { type: String },
     razorpaySignature: { type: String },
   },

@@ -50,7 +50,7 @@ export default function UserPurchasesPage() {
               id: t._id,
               name: cleanName,
               type: t.tier ? (t.tier.charAt(0).toUpperCase() + t.tier.slice(1)) : "Marketplace",
-              plan: t.planTier ? (t.planTier.charAt(0).toUpperCase() + t.planTier.slice(1)) : "Standard",
+              plan: (t.planTier && t.productId === "naavi-platform") ? (t.planTier.charAt(0).toUpperCase() + t.planTier.slice(1)) : "Marketplace",
               cost: `₹${t.amount.toLocaleString("en-IN")}`,
               amount: t.amount,
               date: new Date(t.createdAt).toLocaleDateString("en-US", {
