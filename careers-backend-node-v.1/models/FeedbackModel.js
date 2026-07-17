@@ -46,6 +46,15 @@ const FeedbackSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    path_source: {
+      type: String,
+      enum: ["AI", "PARTNER"],
+      default: "AI",
+    },
+    owner_id: {
+      type: String,
+      default: "",
+    },
     status: {
       type: String,
       enum: ["pending", "synced", "failed"],

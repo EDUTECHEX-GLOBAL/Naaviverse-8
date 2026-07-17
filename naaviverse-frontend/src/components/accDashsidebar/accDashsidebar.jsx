@@ -11,6 +11,7 @@ const ROUTE_MAP = {
   Paths: "/dashboard/accountants/paths",
   Steps: "/dashboard/accountants/steps",
   Marketplace: "/dashboard/accountants/marketplace",
+  Feedback: "/dashboard/accountants/feedback",
   Profile: "/dashboard/accountants/profile",
 };
 
@@ -72,6 +73,12 @@ const NavIcon = ({ type, isActive }) => {
           <path d="M16 10a4 4 0 0 1-8 0" />
         </svg>
       );
+    case "feedback":
+      return (
+        <svg {...iconProps}>
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      );
     case "profile":
       return (
         <svg {...iconProps}>
@@ -85,11 +92,12 @@ const NavIcon = ({ type, isActive }) => {
 };
 
 const sidebarMenu = [
-  { id: 0, display: "Home", title: "Home", icon: "home", click: true, path: "/dashboard/accountants/home" },
-  { id: 1, display: "CRM", title: "CRM", icon: "crm", click: true, path: "/dashboard/accountants" },
+  { id: 1, display: "Home", title: "Home", icon: "home", click: true, path: "/dashboard/accountants/home" },
+  { id: 1.5, display: "CRM", title: "CRM", icon: "crm", click: true, path: "/dashboard/accountants/crm" },
   { id: 2, display: "My Paths", title: "Paths", icon: "paths", click: true, path: "/dashboard/accountants/paths" },
   { id: 3, display: "My Steps", title: "Steps", icon: "steps", click: true, path: "/dashboard/accountants/steps" },
   { id: 4, display: "Marketplace", title: "Marketplace", icon: "marketplace", click: true, path: "/dashboard/accountants/marketplace" },
+  { id: 5, display: "Feedback", title: "Feedback", icon: "feedback", click: true, path: "/dashboard/accountants/feedback" },
 ];
 
 const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, accStatus, isOpen, onClose }) => {

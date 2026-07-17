@@ -36,6 +36,7 @@ import CreateNewService from './CreateNewService';
 import "./CreateNewPath.scss";
 import PartnerHome from "./partnerHome";
 import CRMPage from './partnercrm';
+import PartnerFeedback from './PartnerFeedback';
 import MenuNav from "../../components/MenuNav/index.jsx";
 import {
   GetFollowersPerAccount,
@@ -2154,6 +2155,10 @@ useEffect(() => {
                   loading={loading}
                   setLoading={setLoading}
                 />
+              ) : accsideNav === "Feedback" ? (
+                <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+                  <PartnerFeedback />
+                </div>
               ) : (
                 <div className="services-main">Coming Soon</div>
               )}

@@ -92,6 +92,18 @@ const getRoleConf = (role) =>
 
 const formatPrice = (cost) => (!cost || cost === "0" || cost === 0 ? "Free" : `$${cost}`);
 
+const getMarketplaceStarRating = (item) => {
+  const avg = Number(item?.average_rating || item?.analytics?.average_rating || 0);
+  if (avg > 0) return Math.min(5, Math.max(1, avg)).toFixed(1);
+
+  const score = Number(item?.marketplace_score || item?.analytics?.marketplace_score || 0);
+  if (score > 0) {
+    return Math.min(5, Math.max(3.5, 3.5 + (score / 100) * 1.5)).toFixed(1);
+  }
+
+  return "4.0";
+};
+
 const parseFeatures = (features) => {
   if (!features) return [];
   if (Array.isArray(features)) return features;
@@ -305,6 +317,7 @@ const AdminMarketplace = () => {
                   <th>Name</th>
                   <th>Partner Email</th>
                   <th>Goal</th>
+                  <th>Rating</th>
                   <th>Access</th>
                   <th></th>
                 </tr>
@@ -320,6 +333,12 @@ const AdminMarketplace = () => {
                     </td>
                     <td className="adm-row__email">{item.partner_email || <span className="adm-nil">—</span>}</td>
                     <td className="adm-row__goal">{item.goal || <span className="adm-nil">—</span>}</td>
+                    <td>
+                      <span className="adm-rating-badge">
+                        <span className="adm-rating-stars">★★★★★</span>
+                        <span>{getMarketplaceStarRating(item)}</span>
+                      </span>
+                    </td>
                     <td>
                       <span className={`adm-access ${!item.cost || item.cost === "0" || item.cost === 0 ? "adm-access--free" : "adm-access--paid"}`}>
                         {!item.cost || item.cost === "0" || item.cost === 0 ? "Free" : "Paid"}
@@ -408,6 +427,13 @@ const AdminMarketplace = () => {
 
                 {/* Chip row */}
                 <div className="adm-chips">
+                  <div className="adm-chip">
+                    <span className="adm-chip__label">Rating</span>
+                    <span className="adm-rating-badge adm-rating-badge--modal">
+                      <span className="adm-rating-stars">★★★★★</span>
+                      <span>{getMarketplaceStarRating(selectedItem)}</span>
+                    </span>
+                  </div>
                   <div className="adm-chip">
                     <span className="adm-chip__label">Access</span>
                     {!isEditing ? (
