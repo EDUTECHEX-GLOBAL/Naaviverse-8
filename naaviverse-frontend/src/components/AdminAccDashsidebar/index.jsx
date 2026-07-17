@@ -13,6 +13,7 @@ const ROUTE_MAP = {
   Paths:         "/admin/dashboard/paths?tab=active",
   Steps:         "/admin/dashboard/steps?tab=active",
   Marketplace:   "/admin/dashboard/marketplace",
+  Feedback:      "/admin/dashboard/feedback",
 };
 
 // ── Icons ──────────────────────────────────────────────────────────────────
@@ -64,6 +65,11 @@ const Icons = {
       <path d="M16 10a4 4 0 0 1-8 0" />
     </svg>
   ),
+  Feedback: ({ color }) => (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  ),
   "My Services": ({ color }) => (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
@@ -97,6 +103,7 @@ const sidebarMenu2 = [
   { id: 3, display: "Paths",          title: "Paths",          click: true },
   { id: 4, display: "Steps",          title: "Steps",          click: true },
   { id: 5, display: "Marketplace",    title: "Marketplace",    click: true },
+  { id: 6, display: "Feedback",       title: "Feedback",       click: true },
 ];
 
 const sidebarMenu3 = [];

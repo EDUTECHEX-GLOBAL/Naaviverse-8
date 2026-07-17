@@ -1,5 +1,10 @@
 const marketplaceModel = require("../models/MarketplaceModel");
 const stepModel = require("../models/StepsModel");
+const {
+  getRankedMarketplaceItems,
+  trackMarketplaceEvent,
+  recalculateAllMarketplaceScores,
+} = require("../services/MarketplaceRankingService");
 
 // ✅ Activity logging
 const { logEvent } = require("./ActivityController");
@@ -80,7 +85,7 @@ const getMarketplaceItemsByStep = async (req, res) => {
     const filter = { step_id, status: "active" };
     if (layer) filter.layer = layer;
     if (category) filter.category = category;
-    const items = await marketplaceModel.find(filter);
+    const items = await getRankedMarketplaceItems(filter);
     res.json({ status: true, data: items });
   } catch (err) {
     console.error("getMarketplaceItemsByStep error:", err);
@@ -96,7 +101,7 @@ const getAllMarketplaceItems = async (req, res) => {
     const filter = { status: "active" };
     if (req.query.layer) filter.layer = req.query.layer;
     if (req.query.category) filter.category = req.query.category;
-    const items = await marketplaceModel.find(filter).sort({ createdAt: -1 });
+    const items = await getRankedMarketplaceItems(filter);
     res.json({ status: true, data: items });
   } catch (err) {
     console.error("getAllMarketplaceItems error:", err);
@@ -203,10 +208,80 @@ const updateMarketplaceItem = async (req, res) => {
   }
 };
 
+// GET /api/marketplace/rankings?layer=macro|micro|nano&category=mentor
+const getMarketplaceRankings = async (req, res) => {
+  try {
+    const filter = { status: "active" };
+    if (req.query.step_id) filter.step_id = req.query.step_id;
+    if (req.query.layer) filter.layer = req.query.layer;
+    if (req.query.category) filter.category = req.query.category;
+
+    const items = await getRankedMarketplaceItems(filter);
+    return res.json({ status: true, data: items });
+  } catch (err) {
+    console.error("getMarketplaceRankings error:", err);
+    return res.status(500).json({ status: false, message: err.message });
+  }
+};
+
+// POST /api/marketplace/analytics
+const updateMarketplaceAnalytics = async (req, res) => {
+  try {
+    const {
+      service_id,
+      serviceId,
+      marketplaceItemId,
+      action,
+      value,
+      rating,
+      partner_email,
+    } = req.body;
+
+    const itemId = service_id || serviceId || marketplaceItemId;
+    if (!itemId || !action) {
+      return res.status(400).json({
+        status: false,
+        message: "service_id and action are required",
+      });
+    }
+
+    const analytics = await trackMarketplaceEvent({
+      serviceId: itemId,
+      action,
+      value,
+      rating,
+      partnerEmail: partner_email,
+    });
+
+    if (!analytics) {
+      return res.status(404).json({ status: false, message: "Marketplace item not found" });
+    }
+
+    return res.json({ status: true, data: analytics });
+  } catch (err) {
+    console.error("updateMarketplaceAnalytics error:", err);
+    return res.status(500).json({ status: false, message: err.message });
+  }
+};
+
+// POST /api/marketplace/recalculate
+const recalculateMarketplaceRankings = async (req, res) => {
+  try {
+    const rankedItems = await recalculateAllMarketplaceScores();
+    return res.json({ status: true, data: rankedItems });
+  } catch (err) {
+    console.error("recalculateMarketplaceRankings error:", err);
+    return res.status(500).json({ status: false, message: err.message });
+  }
+};
+
 module.exports = {
   addMarketplaceItem,
   getMarketplaceItemsByStep,
   getAllMarketplaceItems,
+  getMarketplaceRankings,
+  updateMarketplaceAnalytics,
+  recalculateMarketplaceRankings,
   linkMarketplaceToStep,
   updateMarketplaceItem, // ✅ Export the new function
 };

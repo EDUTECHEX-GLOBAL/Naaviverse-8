@@ -119,6 +119,7 @@ function App() {
             <Route path="paths" element={<AccDashboard />} />
             <Route path="steps" element={<AccDashboard />} />
             <Route path="marketplace" element={<AccDashboard />} />
+            <Route path="feedback" element={<AccDashboard />} />
             <Route path="path/:id/create-step" element={<NewStep1 />} />
             <Route path="path/:id" element={<PathPage />} />
           </Route>
@@ -137,6 +138,7 @@ function App() {
           <Route path="/admin/dashboard/steps" element={<AdminAccDashbaoard />} />
           <Route path="/admin/dashboard/marketplace" element={<AdminAccDashbaoard />} />
           <Route path="/admin/dashboard/subscriptions" element={<AdminAccDashbaoard />} />
+          <Route path="/admin/dashboard/feedback" element={<AdminAccDashbaoard />} />
           {/* ================= SUPER ADMIN ================= */}
           <Route path="/admin-login" element={<SuperAdminLogin />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />}>

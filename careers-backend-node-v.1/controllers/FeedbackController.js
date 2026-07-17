@@ -3,6 +3,9 @@ const mongoose = require("mongoose");
 const Feedback = require("../models/FeedbackModel");
 const Path = require("../models/PathModel");
 const Step = require("../models/StepsModel");
+const Partner = require("../models/PartnerModel");
+const User = require("../models/UsersModel");
+const { trackMarketplaceEvent } = require("../services/MarketplaceRankingService");
 
 const AGENT_API_URL = process.env.AGENT_API_URL || "http://localhost:8001";
 
@@ -35,6 +38,8 @@ const createFeedback = async (req, res) => {
       providerType,
       action,
       comment,
+      marketplaceItemId,
+      service_id,
     } = req.body;
 
     if (!type || !studentEmail || !action) {
@@ -44,34 +49,103 @@ const createFeedback = async (req, res) => {
       });
     }
 
+    const isValidPathId = pathId && mongoose.Types.ObjectId.isValid(pathId);
+    const isValidStepId = stepId && mongoose.Types.ObjectId.isValid(stepId);
+
+    // Fetch path and step details
+    let pathDoc = null;
+    let stepDoc = null;
+    let isPartner = false;
+    let pathSource = "AI";
+    let ownerId = "path_engine_admin";
+
+    if (isValidPathId) {
+      pathDoc = await Path.findById(pathId).lean();
+      if (pathDoc) {
+        const creatorEmail = (pathDoc.email || "").toLowerCase().trim();
+        if (creatorEmail && creatorEmail !== "pathengine.admin@gmail.com") {
+          isPartner = true;
+          pathSource = "PARTNER";
+          ownerId = creatorEmail;
+        }
+      }
+    }
+
+    if (isValidStepId) {
+      stepDoc = await Step.findById(stepId).lean();
+    }
+
     // ── MARKETPLACE FEEDBACK ─────────────────────────────────────────────────
-    // Fields: student | path name | step context | item name (provider) | action
     if (type === "marketplace") {
       const payload = {
         student_email: studentEmail,
         path_id:       pathId   || "direct",
-        path_name:     req.body.pathName || "Marketplace",             // PATHWAY column
+        path_name:     req.body.pathName || "Marketplace",
         step_id:       0,
-        step_title:    req.body.stepName || "Marketplace",             // MILESTONE STEP column (step context)
-        provider_name: providerName || "Resource",                    // PROVIDER column (item name)
-        provider_type: providerType || "vendor",                      // PROVIDER sub  (item category)
+        step_title:    req.body.stepName || "Marketplace",
+        provider_name: providerName || "Resource",
+        provider_type: providerType || "vendor",
         action:        mapActionLabel(action, comment),
       };
 
-      console.log(`[FeedbackSync] Marketplace feedback → agent:`, payload);
+      console.log(`[FeedbackSync] Marketplace feedback [source=${pathSource}] → agent:`, payload);
 
-      try {
-        await axios.post(`${AGENT_API_URL}/api/marketplace-feedback`, payload, { timeout: 10000 });
-        return res.json({ status: true, message: "Marketplace feedback logged successfully" });
-      } catch (err) {
-        console.error("Error forwarding marketplace feedback to agent:", err.message);
-        return res.status(500).json({ status: false, message: "Failed to forward to agent" });
+      // Save locally if we have valid path and step IDs
+      let localFeedback = null;
+      if (isValidPathId && isValidStepId) {
+        localFeedback = new Feedback({
+          studentEmail,
+          type,
+          pathId: new mongoose.Types.ObjectId(pathId),
+          stepId: new mongoose.Types.ObjectId(stepId),
+          viewType: viewType || null,
+          providerName: providerName || "",
+          providerType: providerType || "",
+          action,
+          comment: comment || "",
+          path_source: pathSource,
+          owner_id: ownerId,
+          status: "pending",
+        });
+        await localFeedback.save();
+      }
+
+      const analyticsServiceId = marketplaceItemId || service_id;
+      if (analyticsServiceId) {
+        const analyticsAction = comment ? "comment" : action;
+        trackMarketplaceEvent({
+          serviceId: analyticsServiceId,
+          action: analyticsAction,
+        }).catch(err => console.error("Marketplace feedback analytics error:", err.message));
+      }
+
+      // Forwarding rule: Only forward to Agent if NOT a partner path
+      if (!isPartner) {
+        try {
+          await axios.post(`${AGENT_API_URL}/api/marketplace-feedback`, payload, { timeout: 10000 });
+          if (localFeedback) {
+            localFeedback.status = "synced";
+            await localFeedback.save();
+          }
+          return res.json({ status: true, message: "Marketplace feedback logged and synced successfully" });
+        } catch (err) {
+          console.error("Error forwarding marketplace feedback to agent:", err.message);
+          if (localFeedback) {
+            localFeedback.status = "failed";
+            await localFeedback.save();
+          }
+          return res.status(500).json({ status: false, message: "Failed to forward to agent" });
+        }
+      } else {
+        if (localFeedback) {
+          localFeedback.status = "synced";
+          await localFeedback.save();
+        }
+        return res.json({ status: true, message: "Marketplace feedback logged successfully for partner" });
       }
     }
 
-
     // ── STEP FEEDBACK ────────────────────────────────────────────────────────
-    // Requires valid pathId + stepId for DB lookup
     if (!pathId || !stepId) {
       return res.status(400).json({
         status: false,
@@ -79,14 +153,22 @@ const createFeedback = async (req, res) => {
       });
     }
 
-    if (!mongoose.Types.ObjectId.isValid(pathId) || !mongoose.Types.ObjectId.isValid(stepId)) {
+    if (!isValidPathId || !isValidStepId) {
       return res.status(400).json({
         status: false,
         message: "Invalid pathId or stepId format",
       });
     }
 
-    // 1. Save local feedback record
+    if (!pathDoc) {
+      return res.status(404).json({ status: false, message: "Path not found" });
+    }
+
+    if (!stepDoc) {
+      return res.status(404).json({ status: false, message: "Step not found" });
+    }
+
+    // Save local feedback record
     const feedback = new Feedback({
       studentEmail,
       type,
@@ -97,30 +179,26 @@ const createFeedback = async (req, res) => {
       providerType: providerType || "",
       action,
       comment: comment || "",
+      path_source: pathSource,
+      owner_id: ownerId,
       status: "pending",
     });
     await feedback.save();
 
-    // 2. Fetch path and step details
-    const pathDoc = await Path.findById(feedback.pathId).lean();
-    const stepDoc = await Step.findById(feedback.stepId).lean();
-
-    if (!pathDoc) {
-      feedback.status = "failed";
+    // If it's a partner path, we do not sync it to the HuggingFace AI agent
+    if (isPartner) {
+      feedback.status = "synced";
       await feedback.save();
-      return res.status(404).json({ status: false, message: "Path not found" });
+      return res.json({
+        status: true,
+        message: "Feedback logged successfully for partner",
+        data: { id: feedback._id, syncStatus: feedback.status },
+      });
     }
 
-    if (!stepDoc) {
-      feedback.status = "failed";
-      await feedback.save();
-      return res.status(404).json({ status: false, message: "Step not found" });
-    }
-
-    // 3. Build payloads for Agent
+    // AI path sync to Agent
     const pathCreatorEmail = pathDoc.email || "agent@naaviverse.com";
 
-    // Payload for /api/feedbacks (AI curation memory)
     const feedbacksPayload = {
       admin_email: pathCreatorEmail,
       target_goal: pathDoc.nameOfPath || pathDoc.name || "AI Path",
@@ -136,8 +214,6 @@ const createFeedback = async (req, res) => {
       path_id: pathId.toString(),
     };
 
-    // Payload for /api/marketplace-feedback (Student Clicks table)
-    // MILESTONE STEP = step name | PROVIDER = which view (Macro View / Micro View / Nano View)
     const viewLabelReadable = `${(viewType || "macro").charAt(0).toUpperCase() + (viewType || "macro").slice(1)} View`;
     const stepName = stepDoc.name || `Step ${stepDoc.step_order || 1}`;
 
@@ -146,15 +222,14 @@ const createFeedback = async (req, res) => {
       path_id:       pathId.toString(),
       path_name:     pathDoc.nameOfPath || pathDoc.name || "AI Path",
       step_id:       typeof stepDoc.step_order === "number" ? stepDoc.step_order : 1,
-      step_title:    stepName,          // MILESTONE STEP → actual step name
-      provider_name: viewLabelReadable, // PROVIDER top   → "Macro View" / "Micro View" / "Nano View"
-      provider_type: "step",            // PROVIDER sub   → "step"
+      step_title:    stepName,
+      provider_name: viewLabelReadable,
+      provider_type: "step",
       action:        mapActionLabel(action, comment),
     };
 
     console.log(`[FeedbackSync] Forwarding step feedback to Agent (feedbacks + marketplace-feedback)`);
 
-    // 4. Forward to Agent
     try {
       await Promise.all([
         axios.post(`${AGENT_API_URL}/api/feedbacks`, feedbacksPayload, { timeout: 10000 }),
@@ -170,7 +245,7 @@ const createFeedback = async (req, res) => {
 
     return res.json({
       status: true,
-      message: "Feedback logged successfully",
+      message: "Feedback logged and synced successfully",
       data: { id: feedback._id, syncStatus: feedback.status },
     });
 
@@ -184,6 +259,110 @@ const createFeedback = async (req, res) => {
   }
 };
 
+const getFeedbackForPath = async (req, res) => {
+  try {
+    const { pathId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(pathId)) {
+      return res.status(400).json({ status: false, message: "Invalid pathId format" });
+    }
+    const feedbacks = await Feedback.find({ pathId }).sort({ createdAt: -1 }).lean();
+    return res.json({ status: true, data: feedbacks });
+  } catch (err) {
+    console.error("getFeedbackForPath error:", err);
+    return res.status(500).json({ status: false, message: "Error fetching feedback", error: err.message });
+  }
+};
+
+const getPartnerFeedbacks = async (req, res) => {
+  try {
+    const email = req.query.email || req.query.partnerEmail;
+    if (!email) {
+      return res.status(400).json({ status: false, message: "Email query param is required" });
+    }
+
+    const feedbacks = await Feedback.find({
+      owner_id: email.toLowerCase(),
+      path_source: "PARTNER"
+    }).sort({ createdAt: -1 }).lean();
+
+    const populatedFeedbacks = await Promise.all(feedbacks.map(async (fb) => {
+      const pathDoc = await Path.findById(fb.pathId).select("nameOfPath name").lean();
+      const stepDoc = await Step.findById(fb.stepId).select("name step_order").lean();
+      const userDoc = await User.findOne({ email: fb.studentEmail?.toLowerCase() }).select("name username phoneNumber country").lean();
+      return {
+        ...fb,
+        pathName: pathDoc?.nameOfPath || pathDoc?.name || "Unknown Path",
+        stepName: stepDoc?.name || `Step ${stepDoc?.step_order || 1}`,
+        studentName: userDoc?.name || userDoc?.username || "Student",
+        studentPhone: userDoc?.phoneNumber || "",
+        studentCountry: userDoc?.country || ""
+      };
+    }));
+
+    return res.json({ status: true, data: populatedFeedbacks });
+  } catch (err) {
+    console.error("getPartnerFeedbacks error:", err);
+    return res.status(500).json({ status: false, message: "Error fetching partner feedback", error: err.message });
+  }
+};
+
+const getPathEngineFeedbacks = async (req, res) => {
+  try {
+    const feedbacks = await Feedback.find({
+      path_source: "AI"
+    }).sort({ createdAt: -1 }).lean();
+
+    const populatedFeedbacks = await Promise.all(feedbacks.map(async (fb) => {
+      const pathDoc = await Path.findById(fb.pathId).select("nameOfPath name").lean();
+      const stepDoc = await Step.findById(fb.stepId).select("name step_order").lean();
+      const userDoc = await User.findOne({ email: fb.studentEmail?.toLowerCase() }).select("name username phoneNumber country").lean();
+      return {
+        ...fb,
+        pathName: pathDoc?.nameOfPath || pathDoc?.name || "AI Path",
+        stepName: stepDoc?.name || `Step ${stepDoc?.step_order || 1}`,
+        studentName: userDoc?.name || userDoc?.username || "Student",
+        studentPhone: userDoc?.phoneNumber || "",
+        studentCountry: userDoc?.country || ""
+      };
+    }));
+
+    return res.json({ status: true, data: populatedFeedbacks });
+  } catch (err) {
+    console.error("getPathEngineFeedbacks error:", err);
+    return res.status(500).json({ status: false, message: "Error fetching AI feedback", error: err.message });
+  }
+};
+
+const getAdminFeedbacks = async (req, res) => {
+  try {
+    const feedbacks = await Feedback.find({}).sort({ createdAt: -1 }).lean();
+
+    const populatedFeedbacks = await Promise.all(feedbacks.map(async (fb) => {
+      const pathDoc = await Path.findById(fb.pathId).select("nameOfPath name email").lean();
+      const stepDoc = await Step.findById(fb.stepId).select("name step_order").lean();
+      const userDoc = await User.findOne({ email: fb.studentEmail?.toLowerCase() }).select("name username phoneNumber country").lean();
+      return {
+        ...fb,
+        pathName: pathDoc?.nameOfPath || pathDoc?.name || "Path",
+        stepName: stepDoc?.name || `Step ${stepDoc?.step_order || 1}`,
+        pathCreatorEmail: pathDoc?.email || "",
+        studentName: userDoc?.name || userDoc?.username || "Student",
+        studentPhone: userDoc?.phoneNumber || "",
+        studentCountry: userDoc?.country || ""
+      };
+    }));
+
+    return res.json({ status: true, data: populatedFeedbacks });
+  } catch (err) {
+    console.error("getAdminFeedbacks error:", err);
+    return res.status(500).json({ status: false, message: "Error fetching admin feedback", error: err.message });
+  }
+};
+
 module.exports = {
   createFeedback,
+  getFeedbackForPath,
+  getPartnerFeedbacks,
+  getPathEngineFeedbacks,
+  getAdminFeedbacks,
 };

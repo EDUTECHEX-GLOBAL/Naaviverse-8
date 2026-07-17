@@ -1,0 +1,481 @@
+// PartnerFeedback.scss — Premium feedback dashboard styles
+
+.pf-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #f8fafc;
+  overflow-y: auto;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+// ── Header ──────────────────────────────────────────────────────────────────
+.pf-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 32px 0;
+  flex-shrink: 0;
+}
+
+.pf-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pf-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.pf-subtitle {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.pf-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+// ── Stats Row ───────────────────────────────────────────────────────────────
+.pf-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 24px 32px 0;
+  flex-shrink: 0;
+}
+
+.pf-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px 20px;
+  transition: all 0.25s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.pf-stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pf-stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pf-stat-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.pf-stat-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+// ── Filter + Search Controls ────────────────────────────────────────────────
+.pf-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px 0;
+  flex-shrink: 0;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pf-filter-pills {
+  display: flex;
+  gap: 6px;
+}
+
+.pf-pill {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #f1f5f9;
+    color: #334155;
+  }
+
+  &.active {
+    background: #2273E6;
+    color: #fff;
+    border-color: #2273E6;
+    box-shadow: 0 2px 8px rgba(34, 115, 230, 0.25);
+  }
+}
+
+.pf-search-wrap {
+  position: relative;
+  min-width: 240px;
+}
+
+.pf-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.pf-search-input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.8rem;
+  color: #334155;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &::placeholder {
+    color: #94a3b8;
+  }
+
+  &:focus {
+    border-color: #2273E6;
+    box-shadow: 0 0 0 3px rgba(34, 115, 230, 0.08);
+  }
+}
+
+// ── Content Area ────────────────────────────────────────────────────────────
+.pf-content {
+  padding: 20px 32px 40px;
+  flex: 1;
+  min-height: 0;
+}
+
+// ── Loading ─────────────────────────────────────────────────────────────────
+.pf-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 80px 0;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.pf-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #2273E6;
+  border-radius: 50%;
+  animation: pfSpin 0.7s linear infinite;
+}
+
+@keyframes pfSpin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Error ───────────────────────────────────────────────────────────────────
+.pf-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 0;
+  text-align: center;
+
+  p {
+    color: #64748b;
+    font-size: 0.85rem;
+    margin: 0;
+  }
+
+  button {
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 1px solid #2273E6;
+    background: #2273E6;
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #1d5fc4;
+    }
+  }
+}
+
+// ── Empty State ─────────────────────────────────────────────────────────────
+.pf-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 80px 0;
+  text-align: center;
+
+  h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #475569;
+    margin: 0;
+  }
+
+  p {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    margin: 0;
+    max-width: 320px;
+    line-height: 1.5;
+  }
+}
+
+// ── Path Group ──────────────────────────────────────────────────────────────
+.pf-path-group {
+  margin-bottom: 24px;
+}
+
+.pf-path-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  margin-bottom: 8px;
+}
+
+.pf-path-group-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pf-path-group-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.pf-path-group-count {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  background: #f1f5f9;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+// ── Feedback List ───────────────────────────────────────────────────────────
+.pf-feedback-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pf-feedback-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px 20px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  }
+}
+
+.pf-fb-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.pf-fb-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pf-fb-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.pf-fb-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.pf-fb-email {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #334155;
+}
+
+.pf-fb-time {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.pf-action-badge {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.pf-fb-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.pf-fb-step-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.pf-fb-view-tag {
+  font-size: 0.72rem;
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.pf-fb-comment {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-top: 4px;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #475569;
+    font-style: italic;
+    line-height: 1.5;
+  }
+}
+
+// ── Responsive ──────────────────────────────────────────────────────────────
+@media (max-width: 900px) {
+  .pf-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 20px 16px 0;
+  }
+  .pf-header, .pf-controls, .pf-content {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .pf-stats-row {
+    grid-template-columns: 1fr;
+  }
+  .pf-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .pf-search-wrap {
+    min-width: unset;
+  }
+  .pf-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}

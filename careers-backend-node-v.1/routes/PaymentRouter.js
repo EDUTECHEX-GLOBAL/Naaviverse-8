@@ -7,6 +7,7 @@ const Payment          = require("../models/PaymentModel");
 const Subscription     = require("../models/SubscriptionModel");
 const VaultTransaction = require("../models/VaultTransactionModel");          // ✅ ADDED
 const { sendInvoiceEmail } = require("../utils/sendInvoiceEmail");
+const { trackMarketplaceEvent } = require("../services/MarketplaceRankingService");
 
 console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 console.log("🔑 KEY_ID :", process.env.RAZORPAY_KEY_ID);
@@ -446,6 +447,13 @@ router.post("/marketplace-verify", async (req, res) => {
     }
 
     console.log(`✅ Marketplace payment verified: ${razorpay_payment_id}`);
+    for (const item of items) {
+      await trackMarketplaceEvent({
+        serviceId: item._id || item.service_id,
+        action: "purchase",
+      });
+    }
+
     return res.json({
       success: true,
       message: "Payment verified & confirmed",
@@ -502,6 +510,10 @@ router.post("/mock-purchase", async (req, res) => {
         razorpaySignature: "mock_signature",
       });
       paymentRecords.push(rec);
+      await trackMarketplaceEvent({
+        serviceId: item._id || item.service_id,
+        action: "purchase",
+      });
     }
 
     // Activate subscription if micro/nano items were purchased

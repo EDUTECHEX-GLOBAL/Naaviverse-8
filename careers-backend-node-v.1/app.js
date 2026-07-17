@@ -178,6 +178,15 @@ app.use("/api/subscriptions", platformSubscriptionRoutes);
 app.use("/api/agent-paths", agentPathsRouter);
 
 // ── Student Feedback routes (forwarded to Naav Agent) ─────────────────────
+const {
+  getPartnerFeedbacks,
+  getPathEngineFeedbacks,
+  getAdminFeedbacks
+} = require("./controllers/FeedbackController");
+
+app.get("/api/partner/feedbacks", getPartnerFeedbacks);
+app.get("/api/path-engine/feedbacks", getPathEngineFeedbacks);
+app.get("/api/admin/feedbacks", getAdminFeedbacks);
 app.use("/api/feedback", feedbackRouter);
 
 app.use("/api/perplexity", require("./routes/PerplexityRouter"));

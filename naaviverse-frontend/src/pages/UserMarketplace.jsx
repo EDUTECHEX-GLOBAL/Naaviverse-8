@@ -1,11 +1,12 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./UserMarketplace.scss";
 import axios from "axios";
 import logActivity from "../utils/activityLogger";
 
 // Use process.env for Create React App
-const API = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === "development" ? "http://127.0.0.1:8001" : "");
+const API = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || (process.env.NODE_ENV === "development" ? "http://127.0.0.1:8001" : "");
+const MONGO_ID_RE = /^[a-f\d]{24}$/i;
 
 const LAYER_META = {
   macro: { label: "MACRO VIEW — FREE TOOLS", sub: "Free tools to get started.", badgeCls: "vsh-macro", cardCls: "vMacro" },
@@ -223,6 +224,17 @@ const getCostDisplay = (s) => {
 };
 
 const fmtPrice = (n) => n === 0 ? "Free" : `₹${n.toLocaleString()}`;
+const getMarketplaceStarRating = (item) => {
+  const avg = Number(item?.average_rating || item?.analytics?.average_rating || 0);
+  if (avg > 0) return Math.min(5, Math.max(1, avg)).toFixed(1);
+
+  const score = Number(item?.marketplace_score || item?.analytics?.marketplace_score || 0);
+  if (score > 0) {
+    return Math.min(5, Math.max(3.5, 3.5 + (score / 100) * 1.5)).toFixed(1);
+  }
+
+  return "4.0";
+};
 const genOrderId = () => `#NV-${Math.floor(100000 + Math.random() * 900000)}`;
 const fmtDate = (d) => d.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 
@@ -372,6 +384,10 @@ const ServiceCard = ({ item, inCart, onToggleCart, onCardView, onVisitSite, feed
               {item.role}
             </span>
           )}
+          <span className="svc-rating-badge" title="Marketplace rating">
+            <span className="svc-rating-stars">★★★★★</span>
+            <span>{getMarketplaceStarRating(item)}</span>
+          </span>
         </div>
         <span className="svc-ico" style={{ color: layer === "macro" ? "#6366f1" : layer === "micro" ? "#0d9488" : "#d97706" }}>
           {LAYER_ICON[layer]}
@@ -716,6 +732,19 @@ const UserMarketplace = ({ onStepChange }) => {
   const [orderInfo, setOrderInfo] = useState(null);
   const [marketplaceFeedback, setMarketplaceFeedback] = useState({});
   const [exclusiveSuccessToast, setExclusiveSuccessToast] = useState(null);
+  const trackedViewsRef = useRef(new Set());
+
+  const trackMarketplaceAnalytics = async (item, action) => {
+    if (!item?._id || !MONGO_ID_RE.test(String(item._id))) return;
+    try {
+      await axios.post(`${API}/api/marketplace/analytics`, {
+        service_id: item._id,
+        action,
+      });
+    } catch (err) {
+      console.error("Marketplace analytics update failed:", err);
+    }
+  };
 
   // Sync active layer if location state changes
   useEffect(() => {
@@ -785,11 +814,22 @@ const UserMarketplace = ({ onStepChange }) => {
     return counts;
   }, [categoryBaseItems]);
 
+  useEffect(() => {
+    filtered.forEach((item) => {
+      if (!item?._id || !MONGO_ID_RE.test(String(item._id))) return;
+      const key = `${activeLayer}:${activeCategory}:${item._id}`;
+      if (trackedViewsRef.current.has(key)) return;
+      trackedViewsRef.current.add(key);
+      trackMarketplaceAnalytics(item, "view");
+    });
+  }, [filtered, activeLayer, activeCategory]);
+
   // Cart helpers
   const toggleCart = (item) => {
     const alreadyIn = cart.some(s => s._id === item._id);
     setCart(prev => alreadyIn ? prev.filter(s => s._id !== item._id) : [...prev, item]);
     if (!alreadyIn) {
+      trackMarketplaceAnalytics(item, "cart_addition");
       const layerLabel =
         item.layer === "macro" ? "Macro" :
           item.layer === "micro" ? "Micro" :
@@ -810,6 +850,7 @@ const UserMarketplace = ({ onStepChange }) => {
   };
 
   const handleVisitSite = (item) => {
+    trackMarketplaceAnalytics(item, "click");
     // Log the redirect activity
     logActivity({
       type: "market",
@@ -832,6 +873,7 @@ const UserMarketplace = ({ onStepChange }) => {
   };
 
   const handleCardView = (item) => {
+    trackMarketplaceAnalytics(item, "click");
     // Navigate or log redirection for external checkout type
     if (item.checkoutType === "external") {
       console.log(`[Redirect] Opening external site: ${item.websiteUrl}`);
@@ -905,6 +947,7 @@ const UserMarketplace = ({ onStepChange }) => {
         stepName,
         providerName: item.name || "",
         providerType: item.category || item.role || "vendor",
+        marketplaceItemId: item._id,
         action: nextValue.action || "",
         comment: nextValue.comment || "",
       });
