@@ -1,661 +1,849 @@
-/* ──────────────────────────────────────────────────────────────────────────────
-   NaaviExclusive Page — Premium External Partner Checkout
-   ────────────────────────────────────────────────────────────────────────────── */
+/*
+  NaaviExclusive Page - Premium External Partner Checkout
+*/
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 
-// ─── Tokens ───────────────────────────────────────────────────────────────────
-$bg-dark:    #0a0d14;
-$bg-panel:   #111622;
-$bg-card:    #161d2e;
-$bg-input:   #1c253a;
-$border:     rgba(255, 255, 255, 0.07);
-$border-act: rgba(99, 102, 241, 0.5);
-$purple:     #6366f1;
-$purple-lg:  linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-$teal:       #14b8a6;
-$gold:       #f59e0b;
-$text-pri:   #f0f4ff;
-$text-sec:   #8b9abf;
-$text-dim:   #4a5578;
-$green:      #10b981;
-$red:        #f43f5e;
-$radius:     14px;
-$radius-sm:  8px;
-$shadow:     0 8px 32px rgba(0, 0, 0, 0.4);
-$shadow-lg:  0 24px 64px rgba(0, 0, 0, 0.5);
+$bg: #05070c;
+$panel: rgba(15, 20, 32, 0.82);
+$panel-strong: rgba(18, 25, 41, 0.94);
+$panel-soft: rgba(255, 255, 255, 0.045);
+$input: rgba(25, 34, 54, 0.96);
+$line: rgba(255, 255, 255, 0.09);
+$line-strong: rgba(255, 255, 255, 0.16);
+$violet: #7775ff;
+$iris: #9c6cff;
+$teal: #20d6b1;
+$gold: #e8b75a;
+$green: #16d39a;
+$red: #ff5f7c;
+$text: #f7f8ff;
+$muted: #a8b4d6;
+$dim: #657195;
+$radius: 8px;
+$shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
 
-// ─── Base ─────────────────────────────────────────────────────────────────────
 .ne-root {
-  font-family: 'Inter', system-ui, sans-serif;
-  background: $bg-dark;
   min-height: 100vh;
-  color: $text-pri;
-  position: relative;
   overflow-x: hidden;
+  position: relative;
+  color: $text;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:
+    linear-gradient(180deg, rgba(10, 14, 25, 0.98) 0%, $bg 48%, #070a11 100%);
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  &::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(110deg, rgba(119, 117, 255, 0.16), transparent 32%),
+      linear-gradient(250deg, rgba(32, 214, 177, 0.1), transparent 30%),
+      linear-gradient(180deg, transparent, rgba(5, 7, 12, 0.72));
+    z-index: 0;
+  }
 }
 
-// ─── Background Blobs ─────────────────────────────────────────────────────────
-.ne-bg-blob {
+.ne-grid-bg {
   position: fixed;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
+  inset: 0;
   z-index: 0;
-
-  &.ne-blob-1 {
-    width: 520px; height: 520px;
-    background: radial-gradient(circle, rgba(99,102,241,.18) 0%, transparent 70%);
-    top: -120px; left: -120px;
-  }
-  &.ne-blob-2 {
-    width: 400px; height: 400px;
-    background: radial-gradient(circle, rgba(20,184,166,.14) 0%, transparent 70%);
-    top: 40%; right: -100px;
-  }
-  &.ne-blob-3 {
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(245,158,11,.1) 0%, transparent 70%);
-    bottom: 60px; left: 30%;
-  }
+  pointer-events: none;
+  opacity: 0.32;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent 78%);
 }
 
-// ─── Header ───────────────────────────────────────────────────────────────────
+.ne-light-beam {
+  position: fixed;
+  top: -22%;
+  left: 7%;
+  width: 86%;
+  height: 44%;
+  z-index: 0;
+  pointer-events: none;
+  transform: rotate(-8deg);
+  background: linear-gradient(90deg, transparent, rgba(232, 183, 90, 0.13), rgba(119, 117, 255, 0.1), transparent);
+  filter: blur(34px);
+  animation: ne-beam 12s ease-in-out infinite alternate;
+}
+
 .ne-header {
   position: sticky;
   top: 0;
-  z-index: 100;
-  background: rgba(10, 13, 20, 0.85);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid $border;
+  z-index: 20;
   padding: 0 32px;
+  border-bottom: 1px solid $line;
+  background: rgba(5, 7, 12, 0.74);
+  backdrop-filter: blur(24px);
 
   .ne-header-inner {
-    max-width: 1200px;
+    max-width: 1320px;
+    height: 78px;
     margin: 0 auto;
-    height: 64px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 20px;
   }
 }
 
 .ne-logo {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font-size: 1.3rem;
-  font-weight: 800;
-  letter-spacing: -0.5px;
+  gap: 12px;
+  font-size: 1.45rem;
+  font-weight: 900;
 
   .ne-logo-icon {
-    color: $purple;
-    font-size: 1.5rem;
-    animation: pulse-icon 2.5s ease-in-out infinite;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: $gold;
+    border: 1px solid rgba($gold, 0.32);
+    border-radius: 50%;
+    background: rgba($gold, 0.09);
+    box-shadow: 0 0 28px rgba($gold, 0.22);
+    animation: ne-pulse-icon 2.8s ease-in-out infinite;
   }
 
-  .ne-logo-text { color: $text-pri; }
-  .ne-logo-accent {
-    background: $purple-lg;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .ne-logo-text {
+    color: $text;
   }
+
+  .ne-logo-accent {
+    color: $violet;
+    text-shadow: 0 0 28px rgba($violet, 0.45);
+  }
+}
+
+.ne-header-tag,
+.ne-kicker,
+.ne-sc-badge,
+.ne-mini-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border: 1px solid rgba($violet, 0.34);
+  border-radius: 999px;
+  background: rgba($violet, 0.11);
+  color: #aaa7ff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .ne-header-tag {
-  background: rgba(99,102,241,.15);
-  border: 1px solid rgba(99,102,241,.3);
-  color: $purple;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 5px 14px;
-  border-radius: 50px;
+  padding: 10px 18px;
 }
 
-// ─── Main Layout ─────────────────────────────────────────────────────────────
 .ne-main {
   position: relative;
   z-index: 1;
-  padding: 40px 24px 80px;
+  padding: 46px 28px 82px;
 }
 
-.ne-layout {
-  max-width: 1140px;
-  margin: 0 auto;
+.ne-intro {
+  max-width: 1320px;
+  margin: 0 auto 28px;
   display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 32px;
-  align-items: start;
+  grid-template-columns: minmax(0, 720px) minmax(260px, 1fr);
+  align-items: end;
+  gap: 28px;
+  animation: ne-rise 0.65s ease both;
 
-  @media (max-width: 860px) {
-    grid-template-columns: 1fr;
+  .ne-kicker {
+    padding: 8px 13px;
+    margin-bottom: 16px;
+    border-color: rgba($gold, 0.36);
+    background: rgba($gold, 0.1);
+    color: #ffd98c;
+  }
+
+  h1 {
+    font-size: 2.38rem;
+    line-height: 1.08;
+    font-weight: 900;
+    max-width: 700px;
+  }
+
+  p {
+    color: $muted;
+    line-height: 1.7;
+    max-width: 440px;
+    justify-self: end;
   }
 }
 
-// ─── Sidebar ──────────────────────────────────────────────────────────────────
+.ne-layout {
+  max-width: 1320px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(290px, 360px) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
 .ne-sidebar {
   position: sticky;
-  top: 88px;
+  top: 102px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  animation: ne-rise 0.7s 0.08s ease both;
+}
+
+.ne-summary-card,
+.ne-trust-badges,
+.ne-steps,
+.ne-step-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid $line;
+  border-radius: $radius;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025)),
+    $panel;
+  box-shadow: $shadow;
+  backdrop-filter: blur(20px);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(120deg, rgba(255, 255, 255, 0.16), transparent 24%, transparent 72%, rgba(32, 214, 177, 0.12));
+    opacity: 0.7;
+  }
 }
 
 .ne-summary-card {
-  background: $bg-panel;
-  border: 1px solid $border;
-  border-radius: $radius;
-  padding: 24px;
-  box-shadow: $shadow;
+  padding: 26px;
+  min-height: 370px;
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.ne-summary-orbit {
+  position: absolute;
+  right: -80px;
+  top: -70px;
+  width: 220px;
+  height: 220px;
+  border: 1px solid rgba($gold, 0.16);
+  border-radius: 50%;
+  animation: ne-slow-rotate 18s linear infinite;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 28px;
+    border: 1px solid rgba($violet, 0.18);
+    border-radius: 50%;
+  }
+
+  &::after {
+    inset: 62px;
+    border-color: rgba($teal, 0.2);
+  }
+}
+
+.ne-sc-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .ne-sc-badge {
-  display: inline-block;
-  background: rgba(99,102,241,.15);
-  border: 1px solid rgba(99,102,241,.3);
-  color: $purple;
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 3px 10px;
-  border-radius: 50px;
-  margin-bottom: 14px;
+  padding: 8px 12px;
+}
+
+.ne-sc-signal {
+  color: $teal;
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .ne-sc-name {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: $text-pri;
-  line-height: 1.35;
-  margin-bottom: 4px;
+  font-size: 1.35rem;
+  line-height: 1.28;
+  font-weight: 850;
+  color: $text;
+  margin-bottom: 8px;
 }
 
 .ne-sc-by {
-  font-size: 0.78rem;
-  color: $text-sec;
-  margin-bottom: 12px;
+  font-size: 0.84rem;
+  color: $muted;
+  margin-bottom: 18px;
+  word-break: break-word;
 }
 
 .ne-sc-goal {
-  font-size: 0.82rem;
-  color: $text-sec;
-  line-height: 1.5;
-  background: rgba(255,255,255,.04);
-  border-left: 2px solid rgba(99,102,241,.4);
-  padding: 8px 12px;
-  border-radius: 0 $radius-sm $radius-sm 0;
+  position: relative;
+  padding: 14px 15px;
   margin-bottom: 4px;
+  border: 1px solid rgba($violet, 0.16);
+  border-left: 3px solid $gold;
+  border-radius: $radius;
+  background: rgba(255, 255, 255, 0.055);
+  color: #c2ccee;
+  font-size: 0.9rem;
+  line-height: 1.55;
 }
 
 .ne-sc-divider {
   height: 1px;
-  background: $border;
-  margin: 16px 0;
+  margin: 20px 0;
+  background: linear-gradient(90deg, transparent, $line-strong, transparent);
 }
 
-.ne-sc-meta-grid { display: flex; flex-direction: column; gap: 8px; }
+.ne-sc-meta-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
 
 .ne-sc-meta-row {
   display: flex;
   justify-content: space-between;
+  gap: 20px;
   align-items: center;
-  font-size: 0.8rem;
+  font-size: 0.86rem;
 
-  .ne-sc-lbl { color: $text-dim; }
-  .ne-sc-val { color: $text-sec; font-weight: 500; }
+  .ne-sc-lbl {
+    color: $dim;
+  }
+
+  .ne-sc-val {
+    color: $muted;
+    font-weight: 700;
+    text-align: right;
+  }
+
   .ne-sc-link {
+    max-width: 170px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     color: $teal;
     text-decoration: none;
-    font-size: 0.76rem;
-    &:hover { text-decoration: underline; }
+    font-size: 0.82rem;
+    font-weight: 700;
+
+    &:hover {
+      color: #75f5d9;
+    }
   }
 }
 
 .ne-sc-price-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  font-size: 0.85rem;
-  color: $text-sec;
+  align-items: flex-end;
+  gap: 20px;
+  color: $muted;
+  font-weight: 700;
 
   .ne-sc-total {
-    font-size: 1.4rem;
-    font-weight: 800;
-    color: $purple;
-    &.free { color: $green; }
+    color: $gold;
+    font-size: 2rem;
+    line-height: 1;
+    font-weight: 900;
+    text-shadow: 0 0 26px rgba($gold, 0.25);
+
+    &.free {
+      color: $green;
+      text-shadow: 0 0 26px rgba($green, 0.25);
+    }
   }
 }
 
+.ne-sc-footnote {
+  margin-top: 14px;
+  color: $dim;
+  font-size: 0.78rem;
+}
+
 .ne-trust-badges {
-  background: $bg-panel;
-  border: 1px solid $border;
-  border-radius: $radius;
-  padding: 18px 20px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .ne-trust-item {
-  display: flex;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 32px 1fr;
   align-items: center;
-  gap: 10px;
-  font-size: 0.8rem;
-  color: $text-sec;
-  span { font-size: 1rem; }
+  gap: 12px;
+  color: $muted;
+  font-size: 0.86rem;
+
+  span {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba($teal, 0.24);
+    border-radius: 50%;
+    background: rgba($teal, 0.08);
+    color: $teal;
+    font-size: 0.68rem;
+    font-weight: 900;
+  }
 }
 
-// ─── Content Panel ────────────────────────────────────────────────────────────
-.ne-content { display: flex; flex-direction: column; gap: 20px; }
+.ne-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: ne-rise 0.7s 0.14s ease both;
+}
 
-// ─── Step Indicator ───────────────────────────────────────────────────────────
 .ne-steps {
   display: flex;
   align-items: center;
   gap: 0;
-  background: $bg-panel;
-  border: 1px solid $border;
-  border-radius: $radius;
-  padding: 20px 28px;
+  padding: 24px 30px;
 }
 
 .ne-step {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-shrink: 0;
 
   .ne-step-circle {
-    width: 32px;
-    height: 32px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
-    border: 2px solid $text-dim;
-    background: transparent;
+    border: 1px solid rgba($dim, 0.65);
+    background: rgba(255, 255, 255, 0.035);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: $text-dim;
-    transition: all 0.3s;
+    color: $dim;
+    font-size: 0.86rem;
+    font-weight: 900;
+    transition: all 0.3s ease;
   }
 
   .ne-step-label {
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: $text-dim;
+    color: $dim;
     white-space: nowrap;
-    transition: color 0.3s;
+    font-size: 0.9rem;
+    font-weight: 800;
+    transition: color 0.3s ease;
   }
 
   &.active {
     .ne-step-circle {
-      background: $purple;
-      border-color: $purple;
       color: #fff;
-      box-shadow: 0 0 0 3px rgba(99,102,241,.25);
+      border-color: rgba($violet, 0.7);
+      background: linear-gradient(135deg, $violet, $iris);
+      box-shadow: 0 0 0 5px rgba($violet, 0.16), 0 12px 32px rgba($violet, 0.28);
+      animation: ne-step-glow 2.2s ease-in-out infinite;
     }
-    .ne-step-label { color: $text-pri; font-weight: 600; }
+
+    .ne-step-label {
+      color: $text;
+    }
   }
 
   &.done {
     .ne-step-circle {
-      background: rgba($green, .15);
+      color: #03110d;
       border-color: $green;
+      background: $green;
+    }
+
+    .ne-step-label {
       color: $green;
     }
-    .ne-step-label { color: $green; }
   }
 }
 
 .ne-step-line {
   flex: 1;
-  height: 2px;
-  background: $border;
-  margin: 0 12px;
-  transition: background 0.4s;
-  &.done { background: rgba($green, .5); }
+  height: 1px;
+  min-width: 44px;
+  margin: 0 14px;
+  background: linear-gradient(90deg, $line-strong, rgba($violet, 0.18));
+  transition: background 0.35s ease;
+
+  &.done {
+    background: linear-gradient(90deg, $green, rgba($green, 0.18));
+  }
 }
 
-// ─── Step Panel ───────────────────────────────────────────────────────────────
 .ne-step-panel {
-  background: $bg-panel;
-  border: 1px solid $border;
-  border-radius: $radius;
-  padding: 32px;
-  box-shadow: $shadow;
+  padding: 34px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 26px;
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 .ne-panel-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
 
   h2 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: $text-pri;
-    margin-bottom: 4px;
+    color: $text;
+    font-size: 1.45rem;
+    line-height: 1.2;
+    font-weight: 900;
+    margin-bottom: 8px;
   }
 
-  p { font-size: 0.83rem; color: $text-sec; }
+  p {
+    color: $muted;
+    font-size: 0.94rem;
+    line-height: 1.55;
+  }
 }
 
 .ne-panel-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
-  background: rgba(99,102,241,.12);
-  border: 1px solid rgba(99,102,241,.25);
+  width: 52px;
+  height: 52px;
+  border-radius: $radius;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: $purple;
-  flex-shrink: 0;
+  color: $gold;
+  border: 1px solid rgba($gold, 0.28);
+  background: linear-gradient(145deg, rgba($gold, 0.14), rgba($violet, 0.08));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 16px 32px rgba(0, 0, 0, 0.25);
 }
 
-// ─── Fields Grid ─────────────────────────────────────────────────────────────
 .ne-fields-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-
-  @media (max-width: 560px) { grid-template-columns: 1fr; }
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 20px;
 }
 
 .ne-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 
-  &.full-width { grid-column: 1 / -1; }
-
-  label {
-    font-size: 0.78rem;
-    font-weight: 500;
-    color: $text-sec;
-    letter-spacing: 0.02em;
+  &.full-width {
+    grid-column: 1 / -1;
   }
 
-  input, textarea, select {
-    background: $bg-input;
-    border: 1px solid $border;
-    border-radius: $radius-sm;
-    color: $text-pri;
-    font-family: inherit;
-    font-size: 0.9rem;
-    padding: 10px 14px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    resize: none;
+  label {
+    color: #aeb9da;
+    font-size: 0.82rem;
+    font-weight: 800;
+  }
 
-    &::placeholder { color: $text-dim; }
+  input,
+  textarea,
+  select {
+    width: 100%;
+    min-height: 52px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: $radius;
+    outline: none;
+    background: $input;
+    color: $text;
+    font-family: inherit;
+    font-size: 0.96rem;
+    font-weight: 650;
+    padding: 13px 16px;
+    resize: vertical;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease;
+
+    &::placeholder {
+      color: rgba($dim, 0.78);
+    }
+
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.18);
+      background: rgba(30, 40, 63, 0.98);
+    }
 
     &:focus {
-      border-color: rgba($purple, .6);
-      box-shadow: 0 0 0 3px rgba($purple, .12);
+      border-color: rgba($gold, 0.58);
+      box-shadow: 0 0 0 4px rgba($gold, 0.11), 0 16px 34px rgba(0, 0, 0, 0.18);
+      transform: translateY(-1px);
     }
 
     &.error {
-      border-color: rgba($red, .5);
-      &:focus { box-shadow: 0 0 0 3px rgba($red, .12); }
+      border-color: rgba($red, 0.6);
     }
+  }
+
+  textarea {
+    min-height: 132px;
   }
 }
 
 .ne-err {
-  font-size: 0.73rem;
   color: $red;
+  font-size: 0.76rem;
+  font-weight: 700;
 }
 
-// ─── Free Notice ──────────────────────────────────────────────────────────────
-.ne-free-notice {
+.ne-free-notice,
+.ne-error-alert {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba($green, .1);
-  border: 1px solid rgba($green, .25);
-  border-radius: $radius-sm;
-  padding: 16px 20px;
-  font-size: 0.9rem;
-  color: lighten($green, 10%);
-
-  svg { color: $green; flex-shrink: 0; }
-  strong { font-weight: 700; }
+  border-radius: $radius;
+  padding: 16px 18px;
+  font-size: 0.92rem;
+  line-height: 1.5;
 }
 
-// ─── Payment Method Tabs ──────────────────────────────────────────────────────
-.ne-pay-method-tabs {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
+.ne-free-notice {
+  color: #95ffe2;
+  border: 1px solid rgba($green, 0.28);
+  background: linear-gradient(135deg, rgba($green, 0.13), rgba($teal, 0.05));
 
-.ne-method-tab {
-  background: $bg-input;
-  border: 1px solid $border;
-  border-radius: 50px;
-  color: $text-sec;
-  font-family: inherit;
-  font-size: 0.82rem;
-  font-weight: 500;
-  padding: 8px 18px;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover { border-color: rgba($purple,.4); color: $text-pri; }
-
-  &.active {
-    background: rgba($purple,.15);
-    border-color: rgba($purple,.5);
-    color: $purple;
-    font-weight: 600;
+  svg {
+    color: $green;
+    flex-shrink: 0;
   }
 }
 
-// ─── Virtual Card ────────────────────────────────────────────────────────────
-.ne-virtual-card {
-  background: linear-gradient(135deg, #1a1f3c 0%, #0e1428 40%, #1a2654 100%);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 16px;
-  padding: 22px 24px;
-  min-height: 150px;
+.ne-error-alert {
+  color: #ff91a5;
+  border: 1px solid rgba($red, 0.26);
+  background: rgba($red, 0.1);
+}
+
+.ne-payment-preview {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.95fr) minmax(260px, 1fr);
+  align-items: center;
+  gap: 24px;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: $radius;
+  background:
+    linear-gradient(135deg, rgba(119, 117, 255, 0.1), transparent 42%),
+    rgba(255, 255, 255, 0.035);
+}
+
+.ne-payment-card {
   position: relative;
   overflow: hidden;
-  margin-bottom: 8px;
-
-  &::before {
-    content: "";
-    position: absolute;
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    background: rgba(99,102,241,.12);
-    top: -80px;
-    right: -60px;
-  }
-
-  .ne-vc-chip { margin-bottom: 18px; }
-
-  .ne-vc-number {
-    font-size: 1.15rem;
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    color: rgba(255,255,255,.85);
-    font-family: 'Courier New', monospace;
-    margin-bottom: 16px;
-  }
-
-  .ne-vc-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-  }
-
-  .ne-vc-name {
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    color: rgba(255,255,255,.6);
-  }
-
-  .ne-vc-exp {
-    font-size: 0.82rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    color: rgba(255,255,255,.7);
-  }
+  min-height: 210px;
+  border-radius: $radius;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background:
+    linear-gradient(135deg, rgba(232, 183, 90, 0.2), transparent 34%),
+    linear-gradient(145deg, #151b2f, #0b0f1c 58%, #1c1840);
+  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transform: perspective(900px) rotateX(0deg) rotateY(-4deg);
+  animation: ne-card-float 5s ease-in-out infinite;
 }
 
-// ─── UPI ─────────────────────────────────────────────────────────────────────
-.ne-upi-apps {
-  grid-column: 1 / -1;
+.ne-payment-card-shine {
+  position: absolute;
+  inset: -80% -30%;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.16) 48%, transparent 58%);
+  animation: ne-shine 5.5s ease-in-out infinite;
+}
+
+.ne-payment-card-head,
+.ne-payment-meta {
+  position: relative;
+  z-index: 1;
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.ne-upi-app {
-  background: $bg-input;
-  border: 1px solid $border;
-  border-radius: $radius-sm;
-  padding: 8px 16px;
-  font-size: 0.8rem;
-  color: $text-sec;
-  cursor: pointer;
-  transition: all 0.2s;
-  &:hover {
-    border-color: rgba($teal,.4);
-    color: $teal;
-  }
-}
-
-// ─── Net Banking ─────────────────────────────────────────────────────────────
-.ne-netbanking-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  @media (max-width: 480px) { grid-template-columns: repeat(2, 1fr); }
-}
-
-.ne-bank-btn {
-  background: $bg-input;
-  border: 1px solid $border;
-  border-radius: $radius-sm;
-  color: $text-sec;
-  font-family: inherit;
-  font-size: 0.83rem;
-  font-weight: 600;
-  padding: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    border-color: rgba($purple,.4);
-    color: $purple;
-    background: rgba($purple,.08);
-  }
-}
-
-// ─── Security Badges ─────────────────────────────────────────────────────────
-.ne-security-badges {
-  display: flex;
+  justify-content: space-between;
   gap: 16px;
-  flex-wrap: wrap;
-  background: rgba(255,255,255,.03);
-  border: 1px solid $border;
-  border-radius: $radius-sm;
-  padding: 10px 16px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.ne-payment-chip {
+  position: relative;
+  z-index: 1;
+  width: 46px;
+  height: 34px;
+  margin: 36px 0 24px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #ffe7a8, #b9822f);
+  box-shadow: 0 8px 22px rgba($gold, 0.2);
+}
+
+.ne-payment-number {
+  position: relative;
+  z-index: 1;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: "Courier New", monospace;
+  font-size: 1.08rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.ne-payment-meta {
+  align-items: flex-end;
+  text-transform: none;
 
   span {
-    font-size: 0.76rem;
-    color: $text-dim;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    color: $gold;
+    font-size: 1.2rem;
   }
 }
 
-// ─── Action Buttons ───────────────────────────────────────────────────────────
+.ne-payment-copy {
+  h3 {
+    margin: 14px 0 8px;
+    color: $text;
+    font-size: 1.22rem;
+    font-weight: 900;
+  }
+
+  p {
+    max-width: 420px;
+    color: $muted;
+    font-size: 0.93rem;
+    line-height: 1.65;
+  }
+}
+
+.ne-mini-badge {
+  padding: 7px 11px;
+  border-color: rgba($teal, 0.34);
+  background: rgba($teal, 0.09);
+  color: #7ff1d8;
+  font-size: 0.66rem;
+}
+
+.ne-payment-assurance {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+
+  span {
+    padding: 8px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: #cbd5f4;
+    font-size: 0.76rem;
+    font-weight: 800;
+  }
+}
+
 .ne-pay-actions {
   display: flex;
   gap: 12px;
   align-items: center;
 }
 
-.ne-primary-btn {
+.ne-primary-btn,
+.ne-ghost-btn {
+  min-height: 52px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: $purple-lg;
-  border: none;
-  border-radius: 10px;
-  color: #fff;
+  justify-content: center;
+  gap: 10px;
+  border-radius: $radius;
   cursor: pointer;
   font-family: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 12px 24px;
-  transition: all 0.25s;
+  font-size: 0.94rem;
+  font-weight: 900;
   text-decoration: none;
-  box-shadow: 0 4px 16px rgba($purple, .35);
-
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba($purple, .45);
-  }
-
-  &:active:not(:disabled) { transform: translateY(0); }
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease;
 
   &:disabled {
-    opacity: 0.65;
+    opacity: 0.62;
     cursor: not-allowed;
+  }
+}
+
+.ne-primary-btn {
+  width: 100%;
+  border: 0;
+  padding: 14px 24px;
+  color: #fff;
+  background: linear-gradient(135deg, #6c70ff, #915cff 52%, #bc68ff);
+  box-shadow: 0 18px 42px rgba($violet, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 24px 52px rgba($violet, 0.44), 0 0 0 4px rgba($violet, 0.1);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
   }
 
   &.loading {
-    background: linear-gradient(135deg, #4a4d9e 0%, #6b4fa0 100%);
+    background: linear-gradient(135deg, #4f54c7, #7445cc);
   }
 }
 
 .ne-ghost-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  border: 1px solid $border;
-  border-radius: 10px;
-  color: $text-sec;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 0.88rem;
-  font-weight: 500;
-  padding: 12px 20px;
-  transition: all 0.2s;
+  flex: 0 0 auto;
+  padding: 14px 22px;
+  color: $muted;
+  border: 1px solid $line-strong;
+  background: rgba(255, 255, 255, 0.035);
 
   &:hover:not(:disabled) {
-    border-color: rgba(255,255,255,.18);
-    color: $text-pri;
+    color: $text;
+    border-color: rgba($gold, 0.34);
+    background: rgba($gold, 0.07);
   }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
-// ─── Spinner ─────────────────────────────────────────────────────────────────
 .ne-spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255,255,255,.3);
+  border: 2px solid rgba(255, 255, 255, 0.34);
   border-top-color: #fff;
   border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+  animation: ne-spin 0.72s linear infinite;
 }
 
-// ─── Success Panel ────────────────────────────────────────────────────────────
 .ne-success-panel {
   align-items: center;
   text-align: center;
@@ -663,8 +851,8 @@ $shadow-lg:  0 24px 64px rgba(0, 0, 0, 0.5);
 
 .ne-success-animation {
   position: relative;
-  width: 96px;
-  height: 96px;
+  width: 106px;
+  height: 106px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -675,101 +863,308 @@ $shadow-lg:  0 24px 64px rgba(0, 0, 0, 0.5);
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 3px solid rgba($green,.3);
-  animation: ring-grow 0.6s ease forwards;
+  border: 2px solid rgba($green, 0.35);
+  animation: ne-ring-grow 0.65s ease forwards;
 }
 
 .ne-success-checkmark {
-  width: 68px;
-  height: 68px;
+  width: 74px;
+  height: 74px;
   border-radius: 50%;
-  background: rgba($green,.12);
-  border: 2px solid rgba($green,.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: $green;
-  animation: check-pop 0.5s 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  color: #04130f;
+  background: linear-gradient(135deg, #7cffd8, $green);
+  box-shadow: 0 18px 44px rgba($green, 0.26);
+  animation: ne-check-pop 0.54s 0.16s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
 }
 
 .ne-success-title {
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: $text-pri;
   margin-top: 8px;
+  color: $text;
+  font-size: 2rem;
+  line-height: 1.15;
+  font-weight: 900;
 }
 
 .ne-success-sub {
-  font-size: 0.9rem;
-  color: $text-sec;
-  max-width: 420px;
+  max-width: 500px;
+  color: $muted;
+  font-size: 0.96rem;
+  line-height: 1.65;
 
-  strong { color: $text-pri; }
+  strong {
+    color: $text;
+  }
 }
 
 .ne-receipt-card {
-  background: $bg-card;
-  border: 1px solid $border;
-  border-radius: $radius;
-  padding: 24px;
   width: 100%;
-  max-width: 460px;
+  max-width: 520px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  padding: 24px;
+  border: 1px solid $line;
+  border-radius: $radius;
+  background: rgba(255, 255, 255, 0.045);
 }
 
 .ne-receipt-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.84rem;
+  gap: 18px;
+  color: $muted;
+  font-size: 0.88rem;
 
-  span { color: $text-sec; }
-  strong { color: $text-pri; font-weight: 600; font-size: 0.86rem; }
+  strong {
+    min-width: 0;
+    color: $text;
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
 
-  .ne-green { color: $green; }
+  .ne-green {
+    color: $green;
+  }
 }
 
 .ne-countdown-text {
-  font-size: 0.85rem;
-  color: $text-dim;
-  strong { color: $purple; }
+  color: $dim;
+  font-size: 0.88rem;
+
+  strong {
+    color: $gold;
+  }
 }
 
-// ─── Footer ───────────────────────────────────────────────────────────────────
 .ne-footer {
   position: relative;
   z-index: 1;
-  text-align: center;
-  padding: 20px 24px 36px;
-  font-size: 0.76rem;
-  color: $text-dim;
+  padding: 16px 24px 36px;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   flex-wrap: wrap;
+  color: rgba($muted, 0.48);
+  font-size: 0.78rem;
 
-  .ne-footer-dot { color: rgba(255,255,255,.1); }
+  .ne-footer-dot {
+    color: rgba(255, 255, 255, 0.14);
+  }
 }
 
-// ─── Animations ───────────────────────────────────────────────────────────────
-@keyframes spin {
-  to { transform: rotate(360deg); }
+@keyframes ne-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-@keyframes ring-grow {
-  from { transform: scale(0.6); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+@keyframes ne-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-@keyframes check-pop {
-  from { transform: scale(0); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+@keyframes ne-beam {
+  from {
+    transform: translateX(-2%) rotate(-8deg);
+    opacity: 0.54;
+  }
+  to {
+    transform: translateX(4%) rotate(-8deg);
+    opacity: 0.9;
+  }
 }
 
-@keyframes pulse-icon {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+@keyframes ne-pulse-icon {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 24px rgba($gold, 0.2);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 38px rgba($gold, 0.36);
+  }
+}
+
+@keyframes ne-step-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 5px rgba($violet, 0.14), 0 12px 32px rgba($violet, 0.26);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba($violet, 0.1), 0 18px 42px rgba($violet, 0.36);
+  }
+}
+
+@keyframes ne-slow-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ne-card-float {
+  0%,
+  100% {
+    transform: perspective(900px) rotateX(0deg) rotateY(-4deg) translateY(0);
+  }
+  50% {
+    transform: perspective(900px) rotateX(1deg) rotateY(-2deg) translateY(-6px);
+  }
+}
+
+@keyframes ne-shine {
+  0%,
+  58% {
+    transform: translateX(-45%);
+    opacity: 0;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(45%);
+    opacity: 0;
+  }
+}
+
+@keyframes ne-ring-grow {
+  from {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes ne-check-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.38);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 980px) {
+  .ne-intro {
+    grid-template-columns: 1fr;
+
+    p {
+      justify-self: start;
+    }
+  }
+
+  .ne-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .ne-sidebar {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .ne-header {
+    padding: 0 18px;
+
+    .ne-header-inner {
+      height: auto;
+      min-height: 76px;
+      align-items: flex-start;
+      flex-direction: column;
+      justify-content: center;
+      padding: 14px 0;
+    }
+  }
+
+  .ne-logo {
+    font-size: 1.22rem;
+  }
+
+  .ne-header-tag {
+    padding: 8px 12px;
+    font-size: 0.66rem;
+  }
+
+  .ne-main {
+    padding: 30px 16px 58px;
+  }
+
+  .ne-intro {
+    h1 {
+      font-size: 1.82rem;
+    }
+  }
+
+  .ne-steps {
+    padding: 18px;
+    overflow-x: auto;
+  }
+
+  .ne-step-line {
+    min-width: 34px;
+  }
+
+  .ne-step-panel,
+  .ne-summary-card {
+    padding: 22px;
+  }
+
+  .ne-fields-grid,
+  .ne-payment-preview {
+    grid-template-columns: 1fr;
+  }
+
+  .ne-payment-card {
+    transform: none;
+    animation: none;
+  }
+
+  .ne-pay-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .ne-ghost-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 440px) {
+  .ne-panel-header {
+    grid-template-columns: 1fr;
+  }
+
+  .ne-step {
+    .ne-step-label {
+      font-size: 0.78rem;
+    }
+  }
+
+  .ne-receipt-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+
+    strong {
+      text-align: left;
+    }
+  }
 }

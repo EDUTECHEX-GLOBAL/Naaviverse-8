@@ -64,9 +64,13 @@ const ItemSummaryCard = ({ item }) => {
   const isFree = !item.cost || item.cost === "Free";
   return (
     <div className="ne-summary-card">
-      <div className="ne-sc-badge">External Partner</div>
+      <div className="ne-summary-orbit" />
+      <div className="ne-sc-topline">
+        <div className="ne-sc-badge">External Partner</div>
+        <span className="ne-sc-signal">Verified</span>
+      </div>
       <div className="ne-sc-name">{item.name || "Service"}</div>
-      <div className="ne-sc-by">by {item.partner_email || "Partner"}</div>
+      <div className="ne-sc-by">Curated by {item.partner_email || "Partner"}</div>
       {item.goal && <div className="ne-sc-goal">{item.goal}</div>}
       <div className="ne-sc-divider" />
       <div className="ne-sc-meta-grid">
@@ -109,6 +113,7 @@ const ItemSummaryCard = ({ item }) => {
           {isFree ? "Free" : formatPrice(item.cost)}
         </span>
       </div>
+      <div className="ne-sc-footnote">Partner access unlocks after confirmation.</div>
     </div>
   );
 };
@@ -307,7 +312,7 @@ const PaymentStep = ({ item, studentForm, onBack, onSuccess }) => {
     }
   };
   return (
-    <div className="ne-step-panel">
+    <div className="ne-step-panel ne-payment-panel">
       <div className="ne-panel-header">
         <div className="ne-panel-icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -329,45 +334,35 @@ const PaymentStep = ({ item, studentForm, onBack, onSuccess }) => {
           This is a <strong>free service</strong>. No payment required.
         </div>
       ) : (
-        <div style={{
-          background: "rgba(255, 255, 255, 0.02)",
-          border: "1px dashed rgba(255,255,255,0.08)",
-          borderRadius: 12,
-          padding: 24,
-          textAlign: "center"
-        }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>💳</div>
-          <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: "#fff", marginBottom: 6 }}>
-            Razorpay Secure Checkout
-          </h3>
-          <p style={{ fontSize: "0.82rem", color: "#8b9abf", lineHeight: 1.5, maxWidth: 360, margin: "0 auto 16px" }}>
-            Accepting Credit/Debit Cards, UPI (GPay, PhonePe, Paytm), Net Banking, and Secure Mobile Wallets.
-          </p>
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 12,
-            flexWrap: "wrap",
-            opacity: 0.65,
-            fontSize: "0.74rem"
-          }}>
-            <span>🔒 256-Bit SSL Protection</span>
-            <span>•</span>
-            <span>🛡️ Certified PCI-DSS Secure</span>
+        <div className="ne-payment-preview">
+          <div className="ne-payment-card">
+            <div className="ne-payment-card-shine" />
+            <div className="ne-payment-card-head">
+              <span>NaaviExclusive</span>
+              <span>Razorpay</span>
+            </div>
+            <div className="ne-payment-chip" />
+            <div className="ne-payment-number">••••  ••••  ••••  {studentForm.phone?.slice(-4) || "2026"}</div>
+            <div className="ne-payment-meta">
+              <span>{studentForm.fullName || "Student Name"}</span>
+              <strong>{formatPrice(item.cost)}</strong>
+            </div>
+          </div>
+          <div className="ne-payment-copy">
+            <span className="ne-mini-badge">Encrypted checkout</span>
+            <h3>Razorpay Secure Checkout</h3>
+            <p>Cards, UPI, net banking, and mobile wallets are handled through a protected payment gateway.</p>
+            <div className="ne-payment-assurance">
+              <span>256-bit SSL</span>
+              <span>PCI-DSS</span>
+              <span>Instant receipt</span>
+            </div>
           </div>
         </div>
       )}
 
       {errorMsg && (
-        <div style={{
-          background: "rgba(244, 63, 94, 0.1)",
-          border: "1px solid rgba(244, 63, 94, 0.25)",
-          borderRadius: 8,
-          padding: "12px 16px",
-          color: "#f43f5e",
-          fontSize: "0.82rem"
-        }}>
+        <div className="ne-error-alert">
           ⚠️ {errorMsg}
         </div>
       )}
@@ -549,9 +544,8 @@ const NaaviExclusivePage = () => {
 
   return (
     <div className="ne-root">
-      <div className="ne-bg-blob ne-blob-1" />
-      <div className="ne-bg-blob ne-blob-2" />
-      <div className="ne-bg-blob ne-blob-3" />
+      <div className="ne-grid-bg" />
+      <div className="ne-light-beam" />
 
       <header className="ne-header">
         <div className="ne-header-inner">
@@ -566,13 +560,21 @@ const NaaviExclusivePage = () => {
       </header>
 
       <main className="ne-main">
+        <section className="ne-intro">
+          <span className="ne-kicker">Private partner gateway</span>
+          <h1>Complete your exclusive partner access</h1>
+          <p>
+            A premium, secure checkout flow for trusted external services inside Naaviverse.
+          </p>
+        </section>
+
         <div className="ne-layout">
           <aside className="ne-sidebar">
             <ItemSummaryCard item={item} />
             <div className="ne-trust-badges">
-              <div className="ne-trust-item"><span>🔒</span> Secure 256-bit SSL</div>
-              <div className="ne-trust-item"><span>📧</span> Email confirmation sent</div>
-              <div className="ne-trust-item"><span>↩️</span> Easy cancellation policy</div>
+              <div className="ne-trust-item"><span>01</span> Secure 256-bit SSL</div>
+              <div className="ne-trust-item"><span>02</span> Email confirmation sent</div>
+              <div className="ne-trust-item"><span>03</span> Easy cancellation policy</div>
             </div>
           </aside>
 
