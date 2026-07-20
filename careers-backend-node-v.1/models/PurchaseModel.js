@@ -12,6 +12,7 @@ const purchaseSchema = new mongoose.Schema({
 
   billingFrequency: { type: String, default: "One-Time" },
   status: { type: String, default: "Pending" },   // 👈 ADD THIS
+  partnerId: { type: String, default: null },
 
   date: { type: Date, default: Date.now }
 }, { timestamps: true });

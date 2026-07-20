@@ -1,0 +1,786 @@
+// Naavi Exclusive Partner Dashboard Styling
+// ─────────────────────────────────────────────────────────────────────────────
+
+$bg-color: #0b0e14;
+$sidebar-bg: #07090d;
+$card-bg: rgba(17, 24, 39, 0.6);
+$card-border: rgba(255, 255, 255, 0.08);
+$text-primary: #f3f4f6;
+$text-secondary: #9ca3af;
+$text-muted: #6b7280;
+
+$teal-glow: #0d9488;
+$blue-glow: #2273e6;
+$amber-glow: #f59e0b;
+$red-glow: #ef4444;
+
+.px-db-root {
+  display: flex;
+  background-color: $bg-color;
+  color: $text-primary;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+  position: relative;
+
+  // Background blur blobs
+  .px-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.15;
+  }
+  .px-blob-1 {
+    width: 400px;
+    height: 400px;
+    background-color: $teal-glow;
+    top: -100px;
+    left: -100px;
+  }
+  .px-blob-2 {
+    width: 500px;
+    height: 500px;
+    background-color: $blue-glow;
+    bottom: -150px;
+    right: -100px;
+  }
+}
+
+// ── Sidebar Styling ──────────────────────────────────────────────────────────
+.px-sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, $sidebar-bg 0%, #050608 100%);
+  border-right: 1px solid $card-border;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  z-index: 10;
+  flex-shrink: 0;
+
+  .px-sidebar-brand {
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+
+    .px-brand-icon {
+      font-size: 1.4rem;
+      background: linear-gradient(135deg, $teal-glow 0%, $blue-glow 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 2px 8px rgba(13, 148, 136, 0.3));
+    }
+    .px-brand-text {
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -0.5px;
+      color: #fff;
+      .px-brand-accent {
+        color: $teal-glow;
+      }
+    }
+  }
+
+  .px-sidebar-nav {
+    flex: 1;
+    padding: 20px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .px-nav-item {
+      background: transparent;
+      border: none;
+      color: $text-secondary;
+      padding: 12px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 0.92rem;
+      font-weight: 500;
+      transition: all 0.25s ease;
+      text-align: left;
+      width: 100%;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.03);
+        color: #fff;
+      }
+
+      &.active {
+        background: rgba(13, 148, 136, 0.12);
+        color: $teal-glow;
+        border: 1px solid rgba(13, 148, 136, 0.2);
+        box-shadow: 0 4px 20px rgba(13, 148, 136, 0.05);
+      }
+
+      .px-nav-icon {
+        font-size: 1.1rem;
+      }
+    }
+  }
+
+  .px-sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+
+    .px-logout-btn {
+      width: 100%;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.88rem;
+      transition: all 0.25s ease;
+
+      &:hover {
+        background: rgba(239, 68, 68, 0.15);
+        color: #fff;
+      }
+    }
+  }
+}
+
+// ── Main Content Area ────────────────────────────────────────────────────────
+.px-main-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.px-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid $card-border;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+
+  .px-header-title {
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin: 0 0 4px 0;
+      color: #fff;
+    }
+    .px-partner-badge {
+      font-size: 0.8rem;
+      color: $text-secondary;
+      margin: 0;
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  .px-header-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .px-user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, $teal-glow 0%, $blue-glow 100%);
+      color: #fff;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid $card-border;
+      box-shadow: 0 0 15px rgba(34, 115, 230, 0.2);
+    }
+
+    .px-user-info {
+      display: flex;
+      flex-direction: column;
+      .px-username {
+        font-weight: 600;
+        font-size: 0.88rem;
+        color: #fff;
+      }
+      .px-userrole {
+        font-size: 0.75rem;
+        color: $text-muted;
+      }
+    }
+  }
+}
+
+.px-content-wrapper {
+  flex: 1;
+  padding: 32px;
+  overflow-y: auto;
+}
+
+// Animations
+.px-view-fade {
+  animation: pxFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pxFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ── Metrics Row ──────────────────────────────────────────────────────────────
+.px-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.px-metric-card {
+  background: $card-bg;
+  border: 1px solid $card-border;
+  border-radius: 16px;
+  padding: 24px;
+  backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .px-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+
+    .px-card-label {
+      font-size: 0.88rem;
+      color: $text-secondary;
+      font-weight: 500;
+    }
+    .px-card-more {
+      color: $text-muted;
+      cursor: pointer;
+    }
+  }
+
+  .px-card-value {
+    font-size: 2.1rem;
+    font-weight: 700;
+    letter-spacing: -1px;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+
+  .px-card-sub {
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+
+    &.text-success { color: #10b981; }
+    &.text-teal { color: #0d9488; }
+    &.text-muted { color: $text-muted; }
+  }
+
+  // Sparkline Chart & Bar Chart sizes
+  .px-chart-wrapper {
+    height: 45px;
+    margin-top: 10px;
+    position: relative;
+  }
+  .px-sparkline, .px-barchart {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  // Circular Donut position
+  .px-donut-chart-wrapper {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    width: 50px;
+    height: 50px;
+
+    .px-donutchart {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+  }
+}
+
+// ── General Card Section ─────────────────────────────────────────────────────
+.px-section-card {
+  background: $card-bg;
+  border: 1px solid $card-border;
+  border-radius: 16px;
+  padding: 28px;
+  backdrop-filter: blur(16px);
+  margin-bottom: 32px;
+
+  .px-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin: 0;
+      color: #fff;
+    }
+
+    .px-view-all-btn {
+      background: transparent;
+      border: none;
+      color: $teal-glow;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+
+    .px-export-btn {
+      background: rgba(34, 115, 230, 0.1);
+      border: 1px solid rgba(34, 115, 230, 0.25);
+      color: #60a5fa;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        background: rgba(34, 115, 230, 0.25);
+        color: #fff;
+      }
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+// ── Table Styling ───────────────────────────────────────────────────────────
+.px-table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.px-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+
+  th {
+    padding: 14px 16px;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    color: $text-muted;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  td {
+    padding: 16px;
+    font-size: 0.88rem;
+    color: $text-secondary;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    vertical-align: middle;
+
+    .px-tbl-email {
+      font-weight: 600;
+      color: #f3f4f6;
+    }
+    .px-tbl-type {
+      color: $text-muted;
+      font-size: 0.8rem;
+    }
+    &.px-tbl-comment {
+      font-style: italic;
+      color: $text-muted;
+      font-size: 0.82rem;
+      max-width: 220px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  tr:hover {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+  }
+
+  tr:hover td {
+    background-color: transparent !important;
+    color: #ffffff !important;
+
+    .px-tbl-email {
+      color: #ffffff !important;
+    }
+  }
+}
+
+// Badges
+.px-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+
+  &.badge-paid {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+  &.badge-pending {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+  &.badge-failed {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+}
+
+// Filter Toolbar
+.px-filter-toolbar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  .px-filter-input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid $card-border;
+    border-radius: 8px;
+    padding: 10px 16px;
+    color: #fff;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+
+    &:focus {
+      border-color: $teal-glow;
+    }
+  }
+
+  .px-filter-select {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid $card-border;
+    border-radius: 8px;
+    padding: 10px 16px;
+    color: #fff;
+    font-size: 0.88rem;
+    outline: none;
+    cursor: pointer;
+
+    option {
+      background: $bg-color;
+      color: #fff;
+    }
+  }
+}
+
+// ── Feedbacks Tab ────────────────────────────────────────────────────────────
+.px-feedback-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.px-feedback-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid $card-border;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .px-fb-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    .px-fb-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .px-fb-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        color: #fff;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .px-fb-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        .px-fb-email {
+          font-weight: 600;
+          font-size: 0.85rem;
+          color: #fff;
+        }
+        .px-fb-product {
+          font-size: 0.75rem;
+          color: $text-muted;
+        }
+      }
+    }
+
+    .px-fb-rating {
+      color: #f59e0b;
+      font-size: 0.85rem;
+    }
+  }
+
+  .px-fb-body {
+    p {
+      margin: 0;
+      font-size: 0.88rem;
+      color: $text-secondary;
+      line-height: 1.5;
+      font-style: italic;
+    }
+  }
+
+  .px-fb-footer {
+    display: flex;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: $text-muted;
+  }
+}
+
+// ── Settings Tab ─────────────────────────────────────────────────────────────
+.px-settings-layout {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr;
+  gap: 32px;
+}
+
+.px-settings-section {
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid $card-border;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+    color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 12px;
+  }
+
+  .px-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .px-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    label {
+      font-size: 0.8rem;
+      color: $text-secondary;
+      font-weight: 500;
+    }
+    input, textarea {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid $card-border;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+      &:focus {
+        border-color: $teal-glow;
+      }
+    }
+  }
+
+  .px-save-settings-btn {
+    background: $teal-glow;
+    border: none;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    align-self: flex-start;
+    transition: filter 0.2s ease;
+    &:hover {
+      filter: brightness(1.15);
+    }
+  }
+
+  .px-integration-status {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 12px 4px;
+
+    .px-status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-top: 5px;
+      flex-shrink: 0;
+
+      &.glow-green {
+        background-color: #10b981;
+        box-shadow: 0 0 10px #10b981;
+      }
+    }
+
+    p {
+      margin: 0 0 4px 0;
+      font-size: 0.88rem;
+      color: #fff;
+      &.subtext {
+        font-size: 0.78rem;
+        color: $text-muted;
+        line-height: 1.4;
+      }
+    }
+  }
+}
+
+// ── Support Tab ──────────────────────────────────────────────────────────────
+.px-support-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 2fr;
+  gap: 32px;
+
+  .px-support-info {
+    h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0 0 16px 0;
+    }
+    .px-faq-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+
+      li {
+        strong {
+          display: block;
+          font-size: 0.88rem;
+          color: #fff;
+          margin-bottom: 6px;
+        }
+        p {
+          margin: 0;
+          font-size: 0.82rem;
+          color: $text-secondary;
+          line-height: 1.4;
+        }
+      }
+    }
+  }
+
+  .px-support-form {
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid $card-border;
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0 0 6px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 12px;
+    }
+  }
+}
+
+// ── Loading and Status states ────────────────────────────────────────────────
+.px-loading-container, .px-error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 0;
+  color: $text-secondary;
+  gap: 16px;
+
+  .px-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.05);
+    border-top: 3px solid $teal-glow;
+    border-radius: 50%;
+    animation: pxSpin 1s linear infinite;
+  }
+}
+
+.px-error-container span {
+  font-size: 2.2rem;
+}
+
+@keyframes pxSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

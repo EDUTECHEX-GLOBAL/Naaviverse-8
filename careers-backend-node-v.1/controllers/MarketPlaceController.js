@@ -275,6 +275,86 @@ const recalculateMarketplaceRankings = async (req, res) => {
   }
 };
 
+// GET /api/marketplace/:id
+const getMarketplaceItemById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ status: false, message: "Invalid ID format" });
+    }
+    const item = await marketplaceModel.findById(id).lean();
+    if (!item) {
+      return res.status(404).json({ status: false, message: "Marketplace item not found" });
+    }
+    
+    // Enrich with dynamic checkoutType based on registered partner
+    const Partner = require("../models/PartnerModel");
+    if (item.partner_email) {
+      const partner = await Partner.findOne({ email: item.partner_email.trim() }).select("partnerId").lean();
+      if (partner) {
+        item.checkoutType = "external";
+        item.partnerId = partner.partnerId;
+      } else {
+        item.checkoutType = "internal";
+      }
+    } else {
+      item.checkoutType = "internal";
+    }
+    
+    return res.json({ status: true, data: item });
+  } catch (err) {
+    console.error("getMarketplaceItemById error:", err);
+    return res.status(500).json({ status: false, message: err.message });
+  }
+};
+
+// GET /api/marketplace/partner/:partnerId
+const getMarketplaceByPartnerId = async (req, res) => {
+  try {
+    const { partnerId } = req.params;
+    if (!partnerId) {
+      return res.status(400).json({ status: false, message: "partnerId is required" });
+    }
+
+    const Partner = require("../models/PartnerModel");
+    const partner = await Partner.findOne({ partnerId: partnerId.trim() }).lean();
+    if (!partner) {
+      return res.status(404).json({ status: false, message: "Partner not found" });
+    }
+
+    // Find all active marketplace items for this partner
+    const items = await marketplaceModel.find({
+      partner_email: partner.email,
+      status: "active"
+    }).lean();
+
+    // Enrich all items with dynamic fields
+    const enrichedItems = items.map(item => {
+      return {
+        ...item,
+        checkoutType: "external",
+        partnerId: partner.partnerId
+      };
+    });
+
+    return res.json({
+      status: true,
+      partner: {
+        partnerId: partner.partnerId,
+        businessName: partner.businessName || partner.username,
+        email: partner.email,
+        website: partner.website,
+        firstName: partner.firstName,
+        lastName: partner.lastName
+      },
+      data: enrichedItems
+    });
+  } catch (err) {
+    console.error("getMarketplaceByPartnerId error:", err);
+    return res.status(500).json({ status: false, message: err.message });
+  }
+};
+
 module.exports = {
   addMarketplaceItem,
   getMarketplaceItemsByStep,
@@ -284,4 +364,6 @@ module.exports = {
   recalculateMarketplaceRankings,
   linkMarketplaceToStep,
   updateMarketplaceItem, // ✅ Export the new function
+  getMarketplaceItemById,
+  getMarketplaceByPartnerId,
 };

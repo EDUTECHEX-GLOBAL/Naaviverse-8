@@ -160,7 +160,7 @@ const MOCK_SERVICES = [
     discount: "0%",
     features: "Structured Python Course With Assignments.",
     cost: "2999",
-    access: "Paid · Internal checkout",
+    access: "Paid",
     checkoutType: "internal"
   },
   {
@@ -177,7 +177,7 @@ const MOCK_SERVICES = [
     discount: "10%",
     features: "Mock tests, doubt sessions, rank predictor.",
     cost: "8000",
-    access: "Paid · Partner gateway",
+    access: "Paid",
     checkoutType: "external",
     websiteUrl: "https://gateprep.com"
   },
@@ -196,7 +196,7 @@ const MOCK_SERVICES = [
     discount: "0%",
     features: "Live Sessions With Real-Time Coding Practice.",
     cost: "5000",
-    access: "Paid · Internal checkout",
+    access: "Paid",
     checkoutType: "internal"
   }
 ];
@@ -374,9 +374,6 @@ const ServiceCard = ({ item, inCart, onToggleCart, onCardView, onVisitSite, feed
       className={`svc-card ${meta.cardCls} ${isExternal ? "svc-card--external" : ""}`}
       onClick={() => onCardView && onCardView(item)}
     >
-      {isExternal && (
-        <div className="svc-external-top-badge">External</div>
-      )}
       <div className="svc-top">
         <div className="svc-tags">
           {item.role && (
@@ -419,27 +416,15 @@ const ServiceCard = ({ item, inCart, onToggleCart, onCardView, onVisitSite, feed
       <div className="svc-bot">
         <div className="svc-price-wrap">
           <div className={`svc-price ${free ? "free-price" : ""} ${isExternal ? "external-price" : ""}`}>{getCostDisplay(item)}</div>
-          <div className="svc-billing">{free ? "No cost" : (item.access || "")}</div>
+          <div className="svc-billing">{free ? "No cost" : "Paid"}</div>
         </div>
 
-        {isExternal ? (
-          <button
-            className="svc-external-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              if (onVisitSite) onVisitSite(item);
-            }}
-          >
-            → Visit Site
-          </button>
-        ) : (
-          <button
-            className={`svc-add ${inCart ? "added" : ""}`}
-            onClick={(e) => { e.stopPropagation(); onToggleCart(item); }}
-          >
-            {inCart ? "✓ Added" : "+ Add"}
-          </button>
-        )}
+        <button
+          className={`svc-add ${inCart ? "added" : ""}`}
+          onClick={(e) => { e.stopPropagation(); onToggleCart(item); }}
+        >
+          {inCart ? "✓ Added" : "+ Add"}
+        </button>
       </div>
     </div>
   );
@@ -581,6 +566,29 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
 
     setFieldErrors({});
     setPayError("");
+
+    // Check if there is an external partner item in the cart (non-admin partner)
+    const externalItem = cart.find(item => item.checkoutType === "external");
+
+    if (externalItem) {
+      // Prefill details in naavi-exclusive
+      sessionStorage.setItem("naaviExclusiveItem", JSON.stringify(externalItem));
+      sessionStorage.setItem("naaviExclusiveReturnPath", "/dashboard/users/Marketplace");
+      sessionStorage.setItem("naaviExclusiveStudentDetails", JSON.stringify({
+        fullName,
+        email,
+        phone
+      }));
+
+      // Open NaaviExclusive in a new tab
+      localStorage.setItem("naaviExclusiveItemId", externalItem._id);
+      window.open(`/naavi-exclusive/${externalItem.partnerId || ""}`, "_blank");
+
+      // Reset cart and go back to marketplace
+      onBack();
+      return;
+    }
+
     setSubmitting(true);
 
     // Simulate mock payment processing for 1.5 seconds
@@ -758,27 +766,66 @@ const UserMarketplace = ({ onStepChange }) => {
         orderId: location.state.orderId || "",
         itemName: location.state.purchasedItem?.name || "Service",
       });
+      setCart([]); // Clear cart on success
       const t = setTimeout(() => setExclusiveSuccessToast(null), 8000);
       return () => clearTimeout(t);
     }
   }, [location.state?.exclusiveSuccess]);
 
-  // Poll sessionStorage for success written by the new-tab exclusive checkout
   useEffect(() => {
-    const interval = setInterval(() => {
-      const raw = sessionStorage.getItem("naaviExclusiveSuccess");
-      if (raw) {
-        try {
-          const data = JSON.parse(raw);
-          setExclusiveSuccessToast({ orderId: data.orderId || "", itemName: data.itemName || "Service" });
-          sessionStorage.removeItem("naaviExclusiveSuccess");
-          const t = setTimeout(() => setExclusiveSuccessToast(null), 8000);
-          // Clear timer when component unmounts
-          return () => clearTimeout(t);
-        } catch (e) { /* ignore */ }
+    const handleSuccess = (raw) => {
+      try {
+        const data = JSON.parse(raw);
+        setExclusiveSuccessToast({ orderId: data.orderId || "", itemName: data.itemName || "Service" });
+        setCart([]); // Clear cart on success
+        localStorage.removeItem("naaviExclusiveSuccess");
+        setTimeout(() => setExclusiveSuccessToast(null), 8000);
+      } catch (e) { /* ignore */ }
+    };
+
+    // 1. Storage Event Listener (instant cross-tab update)
+    const onStorage = (e) => {
+      if (e.key === "naaviExclusiveSuccess" && e.newValue) {
+        handleSuccess(e.newValue);
       }
-    }, 800); // poll every 800ms
-    return () => clearInterval(interval);
+    };
+    window.addEventListener("storage", onStorage);
+
+    // 2. Interval polling (fallback check)
+    const interval = setInterval(() => {
+      const raw = localStorage.getItem("naaviExclusiveSuccess");
+      if (raw) {
+        handleSuccess(raw);
+      }
+    }, 500);
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      clearInterval(interval);
+    };
+  }, []);
+
+  // ── Fetch real marketplace items from DB when a step is selected ──────────
+  useEffect(() => {
+    const stepId = localStorage.getItem("selectedStepId") || "";
+    if (!stepId || !MONGO_ID_RE.test(stepId)) {
+      // No real step selected — keep MOCK_SERVICES
+      setItems(MOCK_SERVICES);
+      return;
+    }
+    setLoading(true);
+    axios.get(`${process.env.REACT_APP_API_BASE_URL || "http://localhost:4545"}/api/marketplace/step/${stepId}`)
+      .then(res => {
+        const fetched = res.data?.data || [];
+        if (fetched.length > 0) {
+          setItems(fetched);
+        } else {
+          // Step has no marketplace items yet — show MOCK_SERVICES
+          setItems(MOCK_SERVICES);
+        }
+      })
+      .catch(() => setItems(MOCK_SERVICES))
+      .finally(() => setLoading(false));
   }, []);
 
   // Filter respects category and search
@@ -1180,7 +1227,18 @@ const UserMarketplace = ({ onStepChange }) => {
           cart={cart}
           onRemove={removeFromCart}
           onClose={() => setShowCart(false)}
-          onCheckout={() => { setShowCart(false); setPage("checkout"); }}
+          onCheckout={() => {
+            setShowCart(false);
+            const externalItem = cart.find(item => item.checkoutType === "external");
+            if (externalItem) {
+              sessionStorage.setItem("naaviExclusiveItem", JSON.stringify(externalItem));
+              sessionStorage.setItem("naaviExclusiveReturnPath", "/dashboard/users/Marketplace");
+              localStorage.setItem("naaviExclusiveItemId", externalItem._id);
+              window.open(`/naavi-exclusive/${externalItem.partnerId || ""}`, "_blank");
+              return;
+            }
+            setPage("checkout");
+          }}
         />
       )}
 

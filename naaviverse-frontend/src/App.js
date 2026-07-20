@@ -50,6 +50,7 @@ import VisitorsList from "./AdminDashboard/components/VisitorsList";
 import PurchaseSuccess from "./pages/PurchaseSuccess";
 import RoutePage from "./pages/RoutePage/routepage";
 import NaaviExclusivePage from "./pages/NaaviExclusive/NaaviExclusivePage";
+import PartnerExclusiveDashboard from "./pages/NaaviExclusive/PartnerExclusiveDashboard";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -153,6 +154,8 @@ function App() {
 
           {/* ================= NAAVI EXCLUSIVE (External Partner Checkout) ================= */}
           <Route path="/naavi-exclusive" element={<NaaviExclusivePage />} />
+          <Route path="/naavi-exclusive/:partnerId" element={<NaaviExclusivePage />} />
+          <Route path="/partner/exclusive-dashboard" element={<PartnerExclusiveDashboard />} />
 
           {/* ================= FALLBACK ================= */}
           <Route path="/*" element={<AppRouter />} />

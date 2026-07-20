@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import "./NaaviExclusivePage.scss";
 
@@ -251,6 +251,7 @@ const PaymentStep = ({ item, studentForm, onBack, onSuccess }) => {
         currency: "INR",
         planTier: undefined,
         tier: itemLayer === "nano" ? "nano" : "micro",
+        partnerId: item.partnerId || null,
       };
 
       const res = await axios.post(`${BASE_URL}/api/payment/create-order`, payload);
@@ -463,27 +464,69 @@ const NaaviExclusivePage = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // ── Read item: try location.state first, then localStorage (new-tab mode) ──
-  const item = (() => {
+  const [item, setItem] = useState(() => {
     if (location.state?.item) return location.state.item;
     try {
-      const stored = localStorage.getItem("naaviExclusiveItem");
+      const stored = sessionStorage.getItem("naaviExclusiveItem") || localStorage.getItem("naaviExclusiveItem");
       if (stored) return JSON.parse(stored);
     } catch (e) { /* ignore */ }
-    // Fallback demo
-    return {
-      _id: "demo",
-      name: "Demo External Service",
-      partner_email: "partner@example.com",
-      goal: "Demo service for testing the exclusive checkout flow.",
-      layer: "macro",
-      cost: "Free",
-      websiteUrl: "https://example.com",
-    };
-  })();
+    return null;
+  });
+
+  const [loading, setLoading] = useState(!item);
+
+  const { partnerId: pathPartnerId } = useParams();
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const partnerId = pathPartnerId || queryParams.get("partnerId");
+    const itemId = localStorage.getItem("naaviExclusiveItemId") || queryParams.get("itemId") || queryParams.get("id");
+
+    if (!partnerId) {
+      if (!item) {
+        // Fallback demo
+        setItem({
+          _id: "demo",
+          name: "Demo External Service",
+          partner_email: "partner@example.com",
+          goal: "Demo service for testing the exclusive checkout flow.",
+          layer: "macro",
+          cost: "Free",
+          websiteUrl: "https://example.com",
+        });
+        setLoading(false);
+      }
+      return;
+    }
+
+    setLoading(true);
+    axios.get(`${BASE_URL}/api/marketplace/partner/${partnerId}`)
+      .then(res => {
+        if (res.data?.status && res.data?.data) {
+          const itemsList = res.data.data;
+          const partnerInfo = res.data.partner;
+          
+          // Try to find the matching item in the partner's marketplace items
+          const matched = itemsList.find(i => String(i._id) === String(itemId)) || itemsList[0];
+          if (matched) {
+            // Attach partner business name and website to the checkout item for card UI
+            setItem({
+              ...matched,
+              partner_email: partnerInfo.email,
+              businessName: partnerInfo.businessName,
+              websiteUrl: partnerInfo.website,
+              partnerId: partnerInfo.partnerId
+            });
+          }
+        }
+      })
+      .catch(err => console.error("Error fetching partner exclusive items:", err))
+      .finally(() => setLoading(false));
+  }, [location.search]);
 
   const returnPath =
     location.state?.returnPath ||
+    sessionStorage.getItem("naaviExclusiveReturnPath") ||
     localStorage.getItem("naaviExclusiveReturnPath") ||
     "/dashboard/users/Marketplace";
 
@@ -500,10 +543,18 @@ const NaaviExclusivePage = () => {
     }
   })();
 
+  // Try to load prefilled student details from sessionStorage
+  const prefilled = (() => {
+    try {
+      const raw = sessionStorage.getItem("naaviExclusiveStudentDetails");
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  })();
+
   const [form, setForm] = useState({
-    fullName: userObj.name || localStorage.getItem("userName") || "",
-    email: userObj.email || localStorage.getItem("loginEmail") || "",
-    phone: userObj.phone || userObj.phoneNumber || "",
+    fullName: prefilled?.fullName || userObj.name || localStorage.getItem("userName") || "",
+    email: prefilled?.email || userObj.email || localStorage.getItem("loginEmail") || "",
+    phone: prefilled?.phone || userObj.phone || userObj.phoneNumber || "",
     dob: userObj.dob || "",
     institution: userObj.institution || userObj.schoolName || "",
     notes: "",
@@ -514,16 +565,19 @@ const NaaviExclusivePage = () => {
   };
 
   const handleReturn = () => {
-    // Clear localStorage after successful checkout
+    // Clear storage after successful checkout
+    sessionStorage.removeItem("naaviExclusiveItem");
+    sessionStorage.removeItem("naaviExclusiveReturnPath");
+    sessionStorage.removeItem("naaviExclusiveStudentDetails");
     localStorage.removeItem("naaviExclusiveItem");
     localStorage.removeItem("naaviExclusiveReturnPath");
+    localStorage.removeItem("naaviExclusiveItemId");
 
-    // Write success status to localStorage so the opener tab can pick it up
+    // Write success status to sessionStorage & localStorage so the opener tab can pick it up
     try {
-      localStorage.setItem(
-        "naaviExclusiveSuccess",
-        JSON.stringify({ orderId, itemName: item.name })
-      );
+      const successData = JSON.stringify({ orderId, itemName: item.name });
+      sessionStorage.setItem("naaviExclusiveSuccess", successData);
+      localStorage.setItem("naaviExclusiveSuccess", successData);
     } catch (e) { /* ignore */ }
 
     // If this page was opened in a new tab (via window.open), close it.
@@ -560,17 +614,18 @@ const NaaviExclusivePage = () => {
       </header>
 
       <main className="ne-main">
-        <section className="ne-intro">
-          <span className="ne-kicker">Private partner gateway</span>
-          <h1>Complete your exclusive partner access</h1>
-          <p>
-            A premium, secure checkout flow for trusted external services inside Naaviverse.
-          </p>
-        </section>
-
-        <div className="ne-layout">
-          <aside className="ne-sidebar">
-            <ItemSummaryCard item={item} />
+        {loading ? (
+          <div className="ne-loading-container" style={{
+            display: "flex", flexDirection: "column", alignItems: "center",
+            justifyContent: "center", padding: "100px 0", color: "#fff", gap: 16
+          }}>
+            <span className="ne-spinner" style={{ width: 36, height: 36 }} />
+            <p style={{ fontSize: "0.88rem", color: "#8b9abf" }}>Loading external checkout details...</p>
+          </div>
+        ) : (
+          <div className="ne-layout">
+            <aside className="ne-sidebar">
+              {item && <ItemSummaryCard item={item} />}
             <div className="ne-trust-badges">
               <div className="ne-trust-item"><span>01</span> Secure 256-bit SSL</div>
               <div className="ne-trust-item"><span>02</span> Email confirmation sent</div>
@@ -591,7 +646,8 @@ const NaaviExclusivePage = () => {
               <SuccessStep item={item} form={form} orderId={orderId} onReturnToNaaviverse={handleReturn} />
             )}
           </section>
-        </div>
+          </div>
+        )}
       </main>
 
       <footer className="ne-footer">

@@ -114,6 +114,7 @@ router.post("/create-order", async (req, res) => {
       tier,
       planTier: planTier || undefined,
       status: "pending",
+      partnerId: req.body.partnerId || null,
     });
     console.log("✅ Payment record created:", payment._id, "| tier:", tier, "| planTier:", planTier);
 
@@ -508,6 +509,7 @@ router.post("/mock-purchase", async (req, res) => {
         razorpayOrderId: orderId || `MOCK-${Date.now()}`,
         razorpayPaymentId: `MOCK_PAY_${Date.now()}`,
         razorpaySignature: "mock_signature",
+        partnerId: item.partnerId || null,
       });
       paymentRecords.push(rec);
       await trackMarketplaceEvent({
