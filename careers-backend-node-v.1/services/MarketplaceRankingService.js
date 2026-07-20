@@ -181,7 +181,27 @@ async function attachAnalyticsToItems(items = []) {
 
 async function getRankedMarketplaceItems(filter = {}) {
   const items = await MarketplaceItem.find(filter).lean();
-  const withAnalytics = await attachAnalyticsToItems(items);
+  
+  // Enrich items with dynamic checkoutType based on whether the partner email is registered in partners collection
+  const Partner = require("../models/PartnerModel");
+  const enrichedItems = [];
+  for (const item of items) {
+    const enriched = { ...item };
+    if (item.partner_email) {
+      const partner = await Partner.findOne({ email: item.partner_email.trim() }).select("partnerId").lean();
+      if (partner) {
+        enriched.checkoutType = "external";
+        enriched.partnerId = partner.partnerId;
+      } else {
+        enriched.checkoutType = "internal";
+      }
+    } else {
+      enriched.checkoutType = "internal";
+    }
+    enrichedItems.push(enriched);
+  }
+
+  const withAnalytics = await attachAnalyticsToItems(enrichedItems);
   return withAnalytics.sort((a, b) => {
     if ((b.marketplace_score || 0) !== (a.marketplace_score || 0)) {
       return (b.marketplace_score || 0) - (a.marketplace_score || 0);

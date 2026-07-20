@@ -58,6 +58,15 @@ const LAYER_COLORS = {
 
 const getRoleConf   = (role) => CATEGORY_CONFIG[role?.toLowerCase()] || { color: "#94a3b8", colorLight: "#f1f5f9", Icon: () => null, label: "Unknown" };
 const formatPrice   = (cost) => (!cost ? "Free" : cost.toString());
+
+// Clean access label — show only 'Free' or 'Paid', never 'Internal Checkout' / 'External'
+const formatAccess = (access) => {
+  if (!access) return "Free";
+  const lower = access.toLowerCase();
+  if (lower.includes("free")) return "Free";
+  return "Paid";
+};
+
 const getBillingInfo = (bc = {}) => {
   if (bc?.monthly?.price  !== undefined) return { price: bc.monthly.price };
   if (bc?.annual?.price   !== undefined) return { price: bc.annual.price };
@@ -276,8 +285,8 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                     </td>
                     <td className="mp-row__goal">{item.goal || <span className="mp-nil">—</span>}</td>
                     <td>
-                      <span className={`mp-access ${item.access?.toLowerCase() === "free" ? "mp-access--free" : "mp-access--paid"}`}>
-                        {item.access || "Free"}
+                      <span className={`mp-access ${formatAccess(item.access) === "Free" ? "mp-access--free" : "mp-access--paid"}`}>
+                        {formatAccess(item.access)}
                       </span>
                     </td>
                     <td>
@@ -328,8 +337,8 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                   <div className="mp-chip">
                     <span className="mp-chip__label">Access</span>
                     <span className="mp-chip__val"
-                      style={{ color: selectedItem.access?.toLowerCase() === "free" ? "#059669" : "#E11D48" }}>
-                      {selectedItem.access || "Free"}
+                      style={{ color: formatAccess(selectedItem.access) === "Free" ? "#059669" : "#E11D48" }}>
+                      {formatAccess(selectedItem.access)}
                     </span>
                   </div>
                   <div className="mp-chip">

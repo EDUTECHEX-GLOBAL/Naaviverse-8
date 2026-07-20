@@ -13,6 +13,7 @@ const ROUTE_MAP = {
   Marketplace: "/dashboard/accountants/marketplace",
   Feedback: "/dashboard/accountants/feedback",
   Profile: "/dashboard/accountants/profile",
+  Payments: "/partner/exclusive-dashboard",
 };
 
 const NavIcon = ({ type, isActive }) => {
@@ -86,6 +87,13 @@ const NavIcon = ({ type, isActive }) => {
           <circle cx="12" cy="7" r="4" />
         </svg>
       );
+    case "payments":
+      return (
+        <svg {...iconProps}>
+          <line x1="12" y1="1" x2="12" y2="23" />
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </svg>
+      );
     default:
       return <svg {...iconProps}><circle cx="12" cy="12" r="10" /></svg>;
   }
@@ -98,6 +106,7 @@ const sidebarMenu = [
   { id: 3, display: "My Steps", title: "Steps", icon: "steps", click: true, path: "/dashboard/accountants/steps" },
   { id: 4, display: "Marketplace", title: "Marketplace", icon: "marketplace", click: true, path: "/dashboard/accountants/marketplace" },
   { id: 5, display: "Feedback", title: "Feedback", icon: "feedback", click: true, path: "/dashboard/accountants/feedback" },
+  { id: 6, display: "Exclusive Payments", title: "Payments", icon: "payments", click: true, path: "/partner/exclusive-dashboard" },
 ];
 
 const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, accStatus, isOpen, onClose }) => {
@@ -121,6 +130,10 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
 
   const handleNavClick = (each) => {
     if (!each.click || isLocked) return;
+    if (each.path === "/partner/exclusive-dashboard") {
+      window.open(each.path, "_blank");
+      return;
+    }
     setaccsideNav(each.title);
     if (each.path) navigate(each.path);
     if (handleChangeAccDashsidebar) handleChangeAccDashsidebar();

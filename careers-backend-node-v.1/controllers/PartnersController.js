@@ -49,6 +49,18 @@ const signUp = async (req, res) => {
     await temporalPartner.save();
     console.log("✅ Partner saved. OTP:", OTP);
 
+    // Auto-generate unique partnerId
+    const prefix = "NVP";
+    const cleanUser = (username || email).replace(/[^a-zA-Z0-9]/g, "");
+    const code = cleanUser.slice(0, 3).toUpperCase();
+    const year = new Date().getFullYear();
+    const shortId = temporalPartner._id.toString().slice(-6).toUpperCase();
+    const partnerId = `${prefix}-${code}-${year}-${shortId}`;
+
+    temporalPartner.partnerId = partnerId;
+    await temporalPartner.save();
+    console.log("✅ Partner unique partnerId generated:", partnerId);
+
     sendNotificationMail(
       email,
       "Naavi Registration Confirmation OTP",
@@ -63,6 +75,7 @@ const signUp = async (req, res) => {
       token,
       partner: {
         id:          temporalPartner._id,
+        partnerId:   temporalPartner.partnerId,
         username:    temporalPartner.username,
         email:       temporalPartner.email,
         partnerType: temporalPartner.partnerType,

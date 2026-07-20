@@ -659,6 +659,23 @@ if (view==="marketplace" && !selectedItem) {
 
       </div>
 
+      {/* ── EXCLUSIVE DASHBOARD BANNER ── */}
+      <div className="ph-banner-card">
+        <div className="ph-banner-left">
+          <span className="ph-banner-badge">NEW</span>
+          <h3>Exclusive Payments &amp; Transactions Dashboard</h3>
+          <p>
+            Track Razorpay checkout events, verify student transaction comments, request refunds, 
+            and set up payout methods under a secure dark-themed analytical panel.
+          </p>
+        </div>
+        <div className="ph-banner-right">
+          <button className="ph-banner-btn" onClick={() => window.open("/partner/exclusive-dashboard", "_blank")}>
+            Access Payments Dashboard ➔
+          </button>
+        </div>
+      </div>
+
       {/* ── MID ROW ── */}
       <div className="ph-mid-row">
         <div className="ph-card ph-activity-card">
