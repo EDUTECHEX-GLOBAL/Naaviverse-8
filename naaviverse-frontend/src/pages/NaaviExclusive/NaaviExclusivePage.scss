@@ -1,53 +1,61 @@
 /*
-  NaaviExclusive Page - Premium External Partner Checkout
+  NaaviExclusive — External Partner Checkout
+  Design concept: a "boarding pass" for exclusive access — perforated stub,
+  a slim gate-progress rail instead of a step wizard, brass wax-seal
+  confirmation. Obsidian ground, brass signature, restrained violet for action.
 */
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,440;0,9..144,560;0,9..144,650;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap");
 
-$bg: #05070c;
-$panel: rgba(15, 20, 32, 0.82);
-$panel-strong: rgba(18, 25, 41, 0.94);
-$panel-soft: rgba(255, 255, 255, 0.045);
-$input: rgba(25, 34, 54, 0.96);
-$line: rgba(255, 255, 255, 0.09);
-$line-strong: rgba(255, 255, 255, 0.16);
-$violet: #7775ff;
-$iris: #9c6cff;
-$teal: #20d6b1;
-$gold: #e8b75a;
-$green: #16d39a;
-$red: #ff5f7c;
-$text: #f7f8ff;
-$muted: #a8b4d6;
-$dim: #657195;
-$radius: 8px;
-$shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+$obsidian: #05060a;
+$panel: rgba(13, 15, 21, 0.86);
+$panel-2: rgba(255, 255, 255, 0.03);
+$input: rgba(20, 23, 33, 0.9);
+$line: rgba(255, 255, 255, 0.08);
+$line-soft: rgba(255, 255, 255, 0.05);
+
+$brass: #c6a15b;
+$brass-bright: #e7c988;
+$violet: #7c6ff2;
+$violet-deep: #5b4fd6;
+$success: #46d3a3;
+$danger: #ef6b7c;
+
+$ink: #f4f2ea;
+$mist: #97a0b8;
+$faint: #565d78;
+
+$radius: 5px;
+$radius-lg: 7px;
+$serif: "Fraunces", Georgia, serif;
+$sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+$mono: "Space Mono", "Courier New", monospace;
+
+@mixin perforation($bg: $obsidian) {
+  background-image: radial-gradient(circle, $bg 5px, transparent 5.5px);
+  background-size: 16px 16px;
+  background-position: -8px center;
+  background-repeat: repeat-x;
+  height: 12px;
+}
 
 .ne-root {
   min-height: 100vh;
-  overflow-x: hidden;
   position: relative;
-  color: $text;
-  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background:
-    linear-gradient(180deg, rgba(10, 14, 25, 0.98) 0%, $bg 48%, #070a11 100%);
+  overflow-x: hidden;
+  color: $ink;
+  font-family: $sans;
+  background: radial-gradient(ellipse 1200px 600px at 18% -8%, rgba(124, 111, 242, 0.1), transparent 60%),
+    radial-gradient(ellipse 900px 500px at 100% 0%, rgba(198, 161, 91, 0.08), transparent 55%),
+    $obsidian;
 
   * {
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
   }
 
-  &::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background:
-      linear-gradient(110deg, rgba(119, 117, 255, 0.16), transparent 32%),
-      linear-gradient(250deg, rgba(32, 214, 177, 0.1), transparent 30%),
-      linear-gradient(180deg, transparent, rgba(5, 7, 12, 0.72));
-    z-index: 0;
+  ::selection {
+    background: rgba($brass, 0.28);
+    color: $ink;
   }
 }
 
@@ -56,303 +64,281 @@ $shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.32;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent 78%);
+  opacity: 0.5;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent 70%);
 }
 
 .ne-light-beam {
   position: fixed;
-  top: -22%;
-  left: 7%;
-  width: 86%;
-  height: 44%;
+  top: -30%;
+  left: 4%;
+  width: 70%;
+  height: 46%;
   z-index: 0;
   pointer-events: none;
-  transform: rotate(-8deg);
-  background: linear-gradient(90deg, transparent, rgba(232, 183, 90, 0.13), rgba(119, 117, 255, 0.1), transparent);
-  filter: blur(34px);
-  animation: ne-beam 12s ease-in-out infinite alternate;
+  transform: rotate(-6deg);
+  background: linear-gradient(90deg, transparent, rgba($brass, 0.08), rgba($violet, 0.06), transparent);
+  filter: blur(50px);
+  animation: ne-drift 16s ease-in-out infinite alternate;
 }
 
+// ── Header ─────────────────────────────────────────────────
 .ne-header {
   position: sticky;
   top: 0;
   z-index: 20;
-  padding: 0 32px;
-  border-bottom: 1px solid $line;
-  background: rgba(5, 7, 12, 0.74);
-  backdrop-filter: blur(24px);
+  padding: 0 28px;
+  border-bottom: 1px solid $line-soft;
+  background: rgba(5, 6, 10, 0.72);
+  backdrop-filter: blur(18px);
 
   .ne-header-inner {
-    max-width: 1320px;
-    height: 78px;
+    max-width: 1180px;
+    height: 62px;
     margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
+    gap: 16px;
   }
 }
 
 .ne-logo {
   display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 1.45rem;
-  font-weight: 900;
+  align-items: baseline;
+  gap: 9px;
+  font-family: $serif;
+  font-size: 1.28rem;
+  font-weight: 560;
+  letter-spacing: 0.01em;
 
   .ne-logo-icon {
-    width: 34px;
-    height: 34px;
+    width: 24px;
+    height: 24px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: $gold;
-    border: 1px solid rgba($gold, 0.32);
+    font-size: 0.8rem;
+    align-self: center;
+    color: $brass;
+    border: 1px solid rgba($brass, 0.4);
     border-radius: 50%;
-    background: rgba($gold, 0.09);
-    box-shadow: 0 0 28px rgba($gold, 0.22);
-    animation: ne-pulse-icon 2.8s ease-in-out infinite;
+    animation: ne-glow-soft 3.4s ease-in-out infinite;
   }
 
   .ne-logo-text {
-    color: $text;
+    color: $ink;
   }
 
   .ne-logo-accent {
-    color: $violet;
-    text-shadow: 0 0 28px rgba($violet, 0.45);
+    font-style: italic;
+    color: $brass-bright;
   }
-}
-
-.ne-header-tag,
-.ne-kicker,
-.ne-sc-badge,
-.ne-mini-badge {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  border: 1px solid rgba($violet, 0.34);
-  border-radius: 999px;
-  background: rgba($violet, 0.11);
-  color: #aaa7ff;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
 }
 
 .ne-header-tag {
-  padding: 10px 18px;
+  padding: 7px 13px;
+  border: 1px solid rgba($violet, 0.3);
+  border-radius: 999px;
+  background: rgba($violet, 0.08);
+  color: #b7b0ff;
+  font-family: $mono;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
+// ── Main layout ────────────────────────────────────────────
 .ne-main {
   position: relative;
   z-index: 1;
-  padding: 46px 28px 82px;
+  padding: 40px 24px 64px;
 }
 
-.ne-intro {
-  max-width: 1320px;
-  margin: 0 auto 28px;
-  display: grid;
-  grid-template-columns: minmax(0, 720px) minmax(260px, 1fr);
-  align-items: end;
-  gap: 28px;
-  animation: ne-rise 0.65s ease both;
-
-  .ne-kicker {
-    padding: 8px 13px;
-    margin-bottom: 16px;
-    border-color: rgba($gold, 0.36);
-    background: rgba($gold, 0.1);
-    color: #ffd98c;
-  }
-
-  h1 {
-    font-size: 2.38rem;
-    line-height: 1.08;
-    font-weight: 900;
-    max-width: 700px;
-  }
-
-  p {
-    color: $muted;
-    line-height: 1.7;
-    max-width: 440px;
-    justify-self: end;
-  }
+.ne-loading-container {
+  color: $mist !important;
 }
 
 .ne-layout {
-  max-width: 1320px;
+  max-width: 1180px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(290px, 360px) minmax(0, 1fr);
-  gap: 32px;
+  grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
+  gap: 22px;
   align-items: start;
 }
 
 .ne-sidebar {
   position: sticky;
-  top: 102px;
+  top: 86px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  animation: ne-rise 0.7s 0.08s ease both;
+  gap: 14px;
+  animation: ne-rise 0.5s ease both;
 }
 
-.ne-summary-card,
-.ne-trust-badges,
-.ne-steps,
-.ne-step-panel {
-  position: relative;
-  overflow: hidden;
-  border: 1px solid $line;
-  border-radius: $radius;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025)),
-    $panel;
-  box-shadow: $shadow;
-  backdrop-filter: blur(20px);
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    border-radius: inherit;
-    background: linear-gradient(120deg, rgba(255, 255, 255, 0.16), transparent 24%, transparent 72%, rgba(32, 214, 177, 0.12));
-    opacity: 0.7;
-  }
-}
-
+// ── Ticket / summary card ─────────────────────────────────
 .ne-summary-card {
-  padding: 26px;
-  min-height: 370px;
-
-  > * {
-    position: relative;
-    z-index: 1;
-  }
+  position: relative;
+  border: 1px solid $line;
+  border-radius: $radius-lg;
+  background: linear-gradient(178deg, rgba(255, 255, 255, 0.05), transparent 40%), $panel;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
 }
 
 .ne-summary-orbit {
-  position: absolute;
-  right: -80px;
-  top: -70px;
-  width: 220px;
-  height: 220px;
-  border: 1px solid rgba($gold, 0.16);
-  border-radius: 50%;
-  animation: ne-slow-rotate 18s linear infinite;
+  display: none;
+}
 
-  &::before,
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 28px;
-    border: 1px solid rgba($violet, 0.18);
-    border-radius: 50%;
-  }
-
-  &::after {
-    inset: 62px;
-    border-color: rgba($teal, 0.2);
-  }
+.ne-sc-stub-top {
+  padding: 20px 22px 16px;
 }
 
 .ne-sc-topline {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
-.ne-sc-badge {
-  padding: 8px 12px;
+.ne-sc-badge,
+.ne-mini-badge {
+  padding: 5px 10px;
+  border: 1px solid rgba($brass, 0.35);
+  border-radius: 999px;
+  background: rgba($brass, 0.08);
+  color: $brass-bright;
+  font-family: $mono;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .ne-sc-signal {
-  color: $teal;
-  font-size: 0.72rem;
-  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: $success;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+
+  &::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: $success;
+    box-shadow: 0 0 8px rgba($success, 0.7);
+  }
 }
 
 .ne-sc-name {
-  font-size: 1.35rem;
-  line-height: 1.28;
-  font-weight: 850;
-  color: $text;
-  margin-bottom: 8px;
+  font-family: $serif;
+  font-size: 1.28rem;
+  font-weight: 560;
+  line-height: 1.22;
+  color: $ink;
+  margin-bottom: 5px;
 }
 
 .ne-sc-by {
-  font-size: 0.84rem;
-  color: $muted;
-  margin-bottom: 18px;
+  font-size: 0.76rem;
+  color: $mist;
+  margin-bottom: 14px;
   word-break: break-word;
 }
 
 .ne-sc-goal {
   position: relative;
-  padding: 14px 15px;
-  margin-bottom: 4px;
-  border: 1px solid rgba($violet, 0.16);
-  border-left: 3px solid $gold;
-  border-radius: $radius;
-  background: rgba(255, 255, 255, 0.055);
-  color: #c2ccee;
-  font-size: 0.9rem;
+  padding: 11px 13px;
+  border: 1px solid $line;
+  border-left: 2px solid $brass;
+  border-radius: 3px;
+  background: $panel-2;
+  color: #c4cadf;
+  font-size: 0.82rem;
   line-height: 1.55;
 }
 
-.ne-sc-divider {
-  height: 1px;
-  margin: 20px 0;
-  background: linear-gradient(90deg, transparent, $line-strong, transparent);
+// perforation seam — the signature element
+.ne-sc-seam {
+  position: relative;
+  @include perforation($obsidian);
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: $obsidian;
+  }
+
+  &::before {
+    left: -7px;
+  }
+
+  &::after {
+    right: -7px;
+  }
+}
+
+.ne-sc-stub-bottom {
+  padding: 16px 22px 20px;
 }
 
 .ne-sc-meta-grid {
   display: flex;
   flex-direction: column;
-  gap: 13px;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .ne-sc-meta-row {
   display: flex;
   justify-content: space-between;
-  gap: 20px;
+  gap: 16px;
   align-items: center;
-  font-size: 0.86rem;
+  font-size: 0.8rem;
 
   .ne-sc-lbl {
-    color: $dim;
+    color: $faint;
+    font-family: $mono;
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
   .ne-sc-val {
-    color: $muted;
-    font-weight: 700;
+    color: $mist;
+    font-weight: 600;
     text-align: right;
   }
 
   .ne-sc-link {
-    max-width: 170px;
+    max-width: 160px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: $teal;
+    color: $brass-bright;
     text-decoration: none;
-    font-size: 0.82rem;
-    font-weight: 700;
+    font-size: 0.78rem;
+    font-weight: 600;
 
     &:hover {
-      color: #75f5d9;
+      text-decoration: underline;
     }
   }
 }
@@ -361,323 +347,343 @@ $shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  gap: 20px;
-  color: $muted;
-  font-weight: 700;
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed $line;
+  color: $mist;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 
   .ne-sc-total {
-    color: $gold;
-    font-size: 2rem;
+    font-family: $mono;
+    color: $brass-bright;
+    font-size: 1.5rem;
     line-height: 1;
-    font-weight: 900;
-    text-shadow: 0 0 26px rgba($gold, 0.25);
+    font-weight: 700;
 
     &.free {
-      color: $green;
-      text-shadow: 0 0 26px rgba($green, 0.25);
+      color: $success;
     }
   }
 }
 
-.ne-sc-footnote {
+.ne-sc-barcode {
+  height: 20px;
   margin-top: 14px;
-  color: $dim;
-  font-size: 0.78rem;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.32) 0,
+    rgba(255, 255, 255, 0.32) 1px,
+    transparent 1px,
+    transparent 3px,
+    rgba(255, 255, 255, 0.32) 3px,
+    rgba(255, 255, 255, 0.32) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  opacity: 0.5;
+}
+
+.ne-sc-footnote {
+  margin-top: 10px;
+  color: $faint;
+  font-size: 0.72rem;
 }
 
 .ne-trust-badges {
-  padding: 20px;
+  padding: 15px 18px;
+  border: 1px solid $line;
+  border-radius: $radius-lg;
+  background: $panel;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .ne-trust-item {
-  position: relative;
-  z-index: 1;
   display: grid;
-  grid-template-columns: 32px 1fr;
+  grid-template-columns: 16px 1fr;
   align-items: center;
-  gap: 12px;
-  color: $muted;
-  font-size: 0.86rem;
+  gap: 10px;
+  color: $mist;
+  font-size: 0.78rem;
 
   span {
-    width: 32px;
-    height: 32px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba($teal, 0.24);
-    border-radius: 50%;
-    background: rgba($teal, 0.08);
-    color: $teal;
-    font-size: 0.68rem;
-    font-weight: 900;
+    color: $brass;
+    font-family: $mono;
+    font-size: 0.62rem;
+    font-weight: 700;
   }
 }
 
+// ── Content column ─────────────────────────────────────────
 .ne-content {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  animation: ne-rise 0.7s 0.14s ease both;
+  gap: 16px;
+  animation: ne-rise 0.55s 0.06s ease both;
 }
 
+// gate-progress rail — replaces the old bulky circle wizard
 .ne-steps {
+  position: relative;
+  padding: 18px 24px;
+  border: 1px solid $line;
+  border-radius: $radius-lg;
+  background: $panel;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 0;
-  padding: 24px 30px;
+}
+
+.ne-steps::before {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 50%;
+  height: 1px;
+  background: $line;
 }
 
 .ne-step {
   position: relative;
   z-index: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
+  gap: 7px;
+  background: $panel;
+  padding: 0 4px;
 
   .ne-step-circle {
-    width: 38px;
-    height: 38px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    border: 1px solid rgba($dim, 0.65);
-    background: rgba(255, 255, 255, 0.035);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: $dim;
-    font-size: 0.86rem;
-    font-weight: 900;
+    background: $faint;
     transition: all 0.3s ease;
   }
 
   .ne-step-label {
-    color: $dim;
-    white-space: nowrap;
-    font-size: 0.9rem;
-    font-weight: 800;
+    color: $faint;
+    font-family: $mono;
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     transition: color 0.3s ease;
   }
 
   &.active {
     .ne-step-circle {
-      color: #fff;
-      border-color: rgba($violet, 0.7);
-      background: linear-gradient(135deg, $violet, $iris);
-      box-shadow: 0 0 0 5px rgba($violet, 0.16), 0 12px 32px rgba($violet, 0.28);
-      animation: ne-step-glow 2.2s ease-in-out infinite;
+      width: 10px;
+      height: 10px;
+      background: $brass-bright;
+      box-shadow: 0 0 0 4px rgba($brass, 0.18);
     }
 
     .ne-step-label {
-      color: $text;
+      color: $brass-bright;
     }
   }
 
   &.done {
     .ne-step-circle {
-      color: #03110d;
-      border-color: $green;
-      background: $green;
+      background: $success;
     }
 
     .ne-step-label {
-      color: $green;
+      color: $success;
     }
   }
 }
 
 .ne-step-line {
-  flex: 1;
-  height: 1px;
-  min-width: 44px;
-  margin: 0 14px;
-  background: linear-gradient(90deg, $line-strong, rgba($violet, 0.18));
-  transition: background 0.35s ease;
-
-  &.done {
-    background: linear-gradient(90deg, $green, rgba($green, 0.18));
-  }
+  display: none;
 }
 
+// ── Step panels ─────────────────────────────────────────────
 .ne-step-panel {
-  padding: 34px;
+  padding: 26px 28px;
   display: flex;
   flex-direction: column;
-  gap: 26px;
-
-  > * {
-    position: relative;
-    z-index: 1;
-  }
+  gap: 20px;
+  border: 1px solid $line;
+  border-radius: $radius-lg;
+  background: linear-gradient(178deg, rgba(255, 255, 255, 0.04), transparent 36%), $panel;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.36);
+  backdrop-filter: blur(16px);
+  animation: ne-rise 0.45s ease both;
 }
 
 .ne-panel-header {
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr);
+  grid-template-columns: 40px minmax(0, 1fr);
   align-items: start;
-  gap: 18px;
+  gap: 14px;
 
   h2 {
-    color: $text;
-    font-size: 1.45rem;
+    font-family: $serif;
+    color: $ink;
+    font-size: 1.24rem;
     line-height: 1.2;
-    font-weight: 900;
-    margin-bottom: 8px;
+    font-weight: 560;
+    margin-bottom: 4px;
   }
 
   p {
-    color: $muted;
-    font-size: 0.94rem;
-    line-height: 1.55;
+    color: $mist;
+    font-size: 0.82rem;
+    line-height: 1.5;
   }
 }
 
 .ne-panel-icon {
-  width: 52px;
-  height: 52px;
+  width: 40px;
+  height: 40px;
   border-radius: $radius;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: $gold;
-  border: 1px solid rgba($gold, 0.28);
-  background: linear-gradient(145deg, rgba($gold, 0.14), rgba($violet, 0.08));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 16px 32px rgba(0, 0, 0, 0.25);
+  color: $brass;
+  border: 1px solid rgba($brass, 0.28);
+  background: rgba($brass, 0.07);
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 .ne-fields-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px 20px;
+  gap: 14px 16px;
 }
 
 .ne-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 
   &.full-width {
     grid-column: 1 / -1;
   }
 
   label {
-    color: #aeb9da;
-    font-size: 0.82rem;
-    font-weight: 800;
+    color: $mist;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
   }
 
   input,
   textarea,
   select {
     width: 100%;
-    min-height: 52px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: 40px;
+    border: 1px solid $line;
     border-radius: $radius;
     outline: none;
     background: $input;
-    color: $text;
-    font-family: inherit;
-    font-size: 0.96rem;
-    font-weight: 650;
-    padding: 13px 16px;
+    color: $ink;
+    font-family: $sans;
+    font-size: 0.86rem;
+    font-weight: 500;
+    padding: 9px 12px;
     resize: vertical;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 
     &::placeholder {
-      color: rgba($dim, 0.78);
+      color: $faint;
     }
 
     &:hover {
       border-color: rgba(255, 255, 255, 0.18);
-      background: rgba(30, 40, 63, 0.98);
     }
 
     &:focus {
-      border-color: rgba($gold, 0.58);
-      box-shadow: 0 0 0 4px rgba($gold, 0.11), 0 16px 34px rgba(0, 0, 0, 0.18);
-      transform: translateY(-1px);
+      border-color: rgba($brass, 0.55);
+      box-shadow: 0 0 0 3px rgba($brass, 0.12);
     }
 
     &.error {
-      border-color: rgba($red, 0.6);
+      border-color: rgba($danger, 0.6);
     }
   }
 
   textarea {
-    min-height: 132px;
+    min-height: 88px;
   }
 }
 
 .ne-err {
-  color: $red;
-  font-size: 0.76rem;
-  font-weight: 700;
+  color: $danger;
+  font-size: 0.7rem;
+  font-weight: 600;
 }
 
 .ne-free-notice,
 .ne-error-alert {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   border-radius: $radius;
-  padding: 16px 18px;
-  font-size: 0.92rem;
+  padding: 12px 14px;
+  font-size: 0.84rem;
   line-height: 1.5;
 }
 
 .ne-free-notice {
-  color: #95ffe2;
-  border: 1px solid rgba($green, 0.28);
-  background: linear-gradient(135deg, rgba($green, 0.13), rgba($teal, 0.05));
+  color: #a4f5df;
+  border: 1px solid rgba($success, 0.28);
+  background: rgba($success, 0.08);
 
   svg {
-    color: $green;
+    color: $success;
     flex-shrink: 0;
+    width: 18px;
+    height: 18px;
   }
 }
 
 .ne-error-alert {
-  color: #ff91a5;
-  border: 1px solid rgba($red, 0.26);
-  background: rgba($red, 0.1);
+  color: #ffb1bf;
+  border: 1px solid rgba($danger, 0.28);
+  background: rgba($danger, 0.08);
 }
 
+// ── Payment card ──────────────────────────────────────────
 .ne-payment-preview {
   display: grid;
-  grid-template-columns: minmax(250px, 0.95fr) minmax(260px, 1fr);
+  grid-template-columns: minmax(230px, 0.95fr) minmax(230px, 1fr);
   align-items: center;
-  gap: 24px;
-  padding: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: $radius;
-  background:
-    linear-gradient(135deg, rgba(119, 117, 255, 0.1), transparent 42%),
-    rgba(255, 255, 255, 0.035);
+  gap: 20px;
+  padding: 18px;
+  border: 1px solid $line;
+  border-radius: $radius-lg;
+  background: $panel-2;
 }
 
 .ne-payment-card {
   position: relative;
   overflow: hidden;
-  min-height: 210px;
-  border-radius: $radius;
-  padding: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background:
-    linear-gradient(135deg, rgba(232, 183, 90, 0.2), transparent 34%),
-    linear-gradient(145deg, #151b2f, #0b0f1c 58%, #1c1840);
-  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  transform: perspective(900px) rotateX(0deg) rotateY(-4deg);
-  animation: ne-card-float 5s ease-in-out infinite;
+  min-height: 168px;
+  border-radius: $radius-lg;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(150deg, rgba($brass, 0.16), transparent 40%), linear-gradient(160deg, #12141f, #0a0b12 55%, #171331);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  animation: ne-card-float 6s ease-in-out infinite;
 }
 
 .ne-payment-card-shine {
   position: absolute;
   inset: -80% -30%;
-  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.16) 48%, transparent 58%);
-  animation: ne-shine 5.5s ease-in-out infinite;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.14) 49%, transparent 58%);
+  animation: ne-shine 6s ease-in-out infinite;
 }
 
 .ne-payment-card-head,
@@ -686,32 +692,34 @@ $shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
   z-index: 1;
   display: flex;
   justify-content: space-between;
-  gap: 16px;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 0.78rem;
-  font-weight: 850;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.66);
+  font-family: $mono;
+  font-size: 0.66rem;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .ne-payment-chip {
   position: relative;
   z-index: 1;
-  width: 46px;
-  height: 34px;
-  margin: 36px 0 24px;
-  border-radius: 7px;
-  background: linear-gradient(135deg, #ffe7a8, #b9822f);
-  box-shadow: 0 8px 22px rgba($gold, 0.2);
+  width: 36px;
+  height: 27px;
+  margin: 26px 0 18px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, $brass-bright, #92702f);
 }
 
 .ne-payment-number {
   position: relative;
   z-index: 1;
-  color: rgba(255, 255, 255, 0.9);
-  font-family: "Courier New", monospace;
-  font-size: 1.08rem;
+  color: rgba(255, 255, 255, 0.88);
+  font-family: $mono;
+  font-size: 0.92rem;
   font-weight: 700;
-  margin-bottom: 24px;
+  letter-spacing: 0.06em;
+  margin-bottom: 18px;
 }
 
 .ne-payment-meta {
@@ -723,93 +731,96 @@ $shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-family: $sans;
   }
 
   strong {
-    color: $gold;
-    font-size: 1.2rem;
+    color: $brass-bright;
+    font-family: $mono;
+    font-size: 1rem;
   }
 }
 
 .ne-payment-copy {
   h3 {
-    margin: 14px 0 8px;
-    color: $text;
-    font-size: 1.22rem;
-    font-weight: 900;
+    margin: 10px 0 6px;
+    font-family: $serif;
+    color: $ink;
+    font-size: 1.06rem;
+    font-weight: 560;
   }
 
   p {
-    max-width: 420px;
-    color: $muted;
-    font-size: 0.93rem;
-    line-height: 1.65;
+    max-width: 380px;
+    color: $mist;
+    font-size: 0.82rem;
+    line-height: 1.6;
   }
-}
-
-.ne-mini-badge {
-  padding: 7px 11px;
-  border-color: rgba($teal, 0.34);
-  background: rgba($teal, 0.09);
-  color: #7ff1d8;
-  font-size: 0.66rem;
 }
 
 .ne-payment-assurance {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
-  margin-top: 18px;
+  margin-top: 14px;
 
   span {
-    padding: 8px 10px;
+    padding: 6px 9px;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.04);
-    color: #cbd5f4;
-    font-size: 0.76rem;
-    font-weight: 800;
+    border: 1px solid $line;
+    background: $panel-2;
+    color: #b6bcd4;
+    font-family: $mono;
+    font-size: 0.64rem;
+    font-weight: 700;
   }
 }
 
 .ne-pay-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
 }
 
+// ── Buttons ───────────────────────────────────────────────
 .ne-primary-btn,
 .ne-ghost-btn {
-  min-height: 52px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   border-radius: $radius;
   cursor: pointer;
-  font-family: inherit;
-  font-size: 0.94rem;
-  font-weight: 900;
+  font-family: $sans;
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   text-decoration: none;
-  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 
   &:disabled {
-    opacity: 0.62;
+    opacity: 0.6;
     cursor: not-allowed;
+  }
+
+  svg {
+    width: 15px;
+    height: 15px;
   }
 }
 
 .ne-primary-btn {
   width: 100%;
   border: 0;
-  padding: 14px 24px;
+  padding: 11px 20px;
   color: #fff;
-  background: linear-gradient(135deg, #6c70ff, #915cff 52%, #bc68ff);
-  box-shadow: 0 18px 42px rgba($violet, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  background: linear-gradient(120deg, $violet-deep, $violet 60%, #9b7cf5);
+  box-shadow: 0 12px 30px rgba($violet, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 24px 52px rgba($violet, 0.44), 0 0 0 4px rgba($violet, 0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 16px 36px rgba($violet, 0.4);
   }
 
   &:active:not(:disabled) {
@@ -817,33 +828,34 @@ $shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
   }
 
   &.loading {
-    background: linear-gradient(135deg, #4f54c7, #7445cc);
+    background: linear-gradient(120deg, #443fa0, #5c3fa8);
   }
 }
 
 .ne-ghost-btn {
   flex: 0 0 auto;
-  padding: 14px 22px;
-  color: $muted;
-  border: 1px solid $line-strong;
-  background: rgba(255, 255, 255, 0.035);
+  padding: 11px 18px;
+  color: $mist;
+  border: 1px solid $line;
+  background: $panel-2;
 
   &:hover:not(:disabled) {
-    color: $text;
-    border-color: rgba($gold, 0.34);
-    background: rgba($gold, 0.07);
+    color: $ink;
+    border-color: rgba($brass, 0.35);
+    background: rgba($brass, 0.06);
   }
 }
 
 .ne-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.34);
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.32);
   border-top-color: #fff;
   border-radius: 50%;
-  animation: ne-spin 0.72s linear infinite;
+  animation: ne-spin 0.7s linear infinite;
 }
 
+// ── Success step — wax-seal medallion ───────────────────────
 .ne-success-panel {
   align-items: center;
   text-align: center;
@@ -851,9 +863,9 @@ $shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
 
 .ne-success-animation {
   position: relative;
-  width: 106px;
-  height: 106px;
-  margin: 0 auto;
+  width: 76px;
+  height: 76px;
+  margin: 4px auto 2px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -863,102 +875,119 @@ $shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 2px solid rgba($green, 0.35);
-  animation: ne-ring-grow 0.65s ease forwards;
+  border: 1px solid rgba($brass, 0.4);
+  animation: ne-ring-grow 0.5s ease forwards;
 }
 
 .ne-success-checkmark {
-  width: 74px;
-  height: 74px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #04130f;
-  background: linear-gradient(135deg, #7cffd8, $green);
-  box-shadow: 0 18px 44px rgba($green, 0.26);
-  animation: ne-check-pop 0.54s 0.16s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+  color: #101418;
+  background: radial-gradient(circle at 32% 28%, $brass-bright, $brass 70%);
+  box-shadow: 0 14px 32px rgba($brass, 0.32), inset 0 -3px 6px rgba(0, 0, 0, 0.22);
+  animation: ne-stamp 0.6s 0.1s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+
+  svg {
+    width: 26px;
+    height: 26px;
+  }
 }
 
 .ne-success-title {
-  margin-top: 8px;
-  color: $text;
-  font-size: 2rem;
+  margin-top: 4px;
+  font-family: $serif;
+  color: $ink;
+  font-size: 1.5rem;
   line-height: 1.15;
-  font-weight: 900;
+  font-weight: 560;
 }
 
 .ne-success-sub {
-  max-width: 500px;
-  color: $muted;
-  font-size: 0.96rem;
-  line-height: 1.65;
+  max-width: 440px;
+  color: $mist;
+  font-size: 0.86rem;
+  line-height: 1.6;
 
   strong {
-    color: $text;
+    color: $ink;
   }
 }
 
 .ne-receipt-card {
   width: 100%;
-  max-width: 520px;
+  max-width: 440px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 24px;
+  gap: 11px;
+  padding: 18px 20px;
   border: 1px solid $line;
-  border-radius: $radius;
-  background: rgba(255, 255, 255, 0.045);
+  border-radius: $radius-lg;
+  background: $panel-2;
 }
 
 .ne-receipt-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 18px;
-  color: $muted;
-  font-size: 0.88rem;
+  gap: 14px;
+  color: $mist;
+  font-size: 0.78rem;
+
+  span {
+    font-family: $mono;
+    font-size: 0.66rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: $faint;
+  }
 
   strong {
     min-width: 0;
-    color: $text;
-    font-size: 0.9rem;
-    font-weight: 800;
+    color: $ink;
+    font-size: 0.82rem;
+    font-weight: 700;
     text-align: right;
     overflow-wrap: anywhere;
   }
 
   .ne-green {
-    color: $green;
+    color: $success;
   }
 }
 
 .ne-countdown-text {
-  color: $dim;
-  font-size: 0.88rem;
+  color: $faint;
+  font-size: 0.8rem;
 
   strong {
-    color: $gold;
+    color: $brass-bright;
+    font-family: $mono;
   }
 }
 
+// ── Footer ────────────────────────────────────────────────
 .ne-footer {
   position: relative;
   z-index: 1;
-  padding: 16px 24px 36px;
+  padding: 14px 20px 30px;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   flex-wrap: wrap;
-  color: rgba($muted, 0.48);
-  font-size: 0.78rem;
+  color: rgba($mist, 0.5);
+  font-size: 0.72rem;
 
   .ne-footer-dot {
     color: rgba(255, 255, 255, 0.14);
   }
 }
 
+// ── Keyframes ─────────────────────────────────────────────
 @keyframes ne-spin {
   to {
     transform: rotate(360deg);
@@ -968,7 +997,7 @@ $shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
 @keyframes ne-rise {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -976,62 +1005,44 @@ $shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
   }
 }
 
-@keyframes ne-beam {
+@keyframes ne-drift {
   from {
-    transform: translateX(-2%) rotate(-8deg);
-    opacity: 0.54;
+    transform: translateX(-2%) rotate(-6deg);
+    opacity: 0.5;
   }
   to {
-    transform: translateX(4%) rotate(-8deg);
-    opacity: 0.9;
+    transform: translateX(3%) rotate(-6deg);
+    opacity: 0.85;
   }
 }
 
-@keyframes ne-pulse-icon {
+@keyframes ne-glow-soft {
   0%,
   100% {
-    transform: scale(1);
-    box-shadow: 0 0 24px rgba($gold, 0.2);
+    box-shadow: 0 0 0 rgba($brass, 0);
   }
   50% {
-    transform: scale(1.06);
-    box-shadow: 0 0 38px rgba($gold, 0.36);
-  }
-}
-
-@keyframes ne-step-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 0 5px rgba($violet, 0.14), 0 12px 32px rgba($violet, 0.26);
-  }
-  50% {
-    box-shadow: 0 0 0 8px rgba($violet, 0.1), 0 18px 42px rgba($violet, 0.36);
-  }
-}
-
-@keyframes ne-slow-rotate {
-  to {
-    transform: rotate(360deg);
+    box-shadow: 0 0 12px rgba($brass, 0.4);
   }
 }
 
 @keyframes ne-card-float {
   0%,
   100% {
-    transform: perspective(900px) rotateX(0deg) rotateY(-4deg) translateY(0);
+    transform: translateY(0);
   }
   50% {
-    transform: perspective(900px) rotateX(1deg) rotateY(-2deg) translateY(-6px);
+    transform: translateY(-4px);
   }
 }
 
 @keyframes ne-shine {
   0%,
-  58% {
+  60% {
     transform: translateX(-45%);
     opacity: 0;
   }
-  70% {
+  72% {
     opacity: 1;
   }
   100% {
@@ -1043,7 +1054,7 @@ $shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
 @keyframes ne-ring-grow {
   from {
     opacity: 0;
-    transform: scale(0.72);
+    transform: scale(0.7);
   }
   to {
     opacity: 1;
@@ -1051,26 +1062,36 @@ $shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
   }
 }
 
-@keyframes ne-check-pop {
+@keyframes ne-stamp {
   from {
     opacity: 0;
-    transform: scale(0.38);
+    transform: scale(0.5) rotate(-18deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.08) rotate(4deg);
   }
   to {
-    opacity: 1;
-    transform: scale(1);
+    transform: scale(1) rotate(0deg);
   }
 }
 
-@media (max-width: 980px) {
-  .ne-intro {
-    grid-template-columns: 1fr;
-
-    p {
-      justify-self: start;
-    }
+@media (prefers-reduced-motion: reduce) {
+  .ne-light-beam,
+  .ne-logo-icon,
+  .ne-payment-card,
+  .ne-payment-card-shine,
+  .ne-success-ring,
+  .ne-success-checkmark,
+  .ne-sidebar,
+  .ne-content,
+  .ne-step-panel {
+    animation: none !important;
   }
+}
 
+// ── Responsive ────────────────────────────────────────────
+@media (max-width: 980px) {
   .ne-layout {
     grid-template-columns: 1fr;
   }
@@ -1082,49 +1103,30 @@ $shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
 
 @media (max-width: 720px) {
   .ne-header {
-    padding: 0 18px;
-
-    .ne-header-inner {
-      height: auto;
-      min-height: 76px;
-      align-items: flex-start;
-      flex-direction: column;
-      justify-content: center;
-      padding: 14px 0;
-    }
-  }
-
-  .ne-logo {
-    font-size: 1.22rem;
-  }
-
-  .ne-header-tag {
-    padding: 8px 12px;
-    font-size: 0.66rem;
+    padding: 0 16px;
   }
 
   .ne-main {
-    padding: 30px 16px 58px;
-  }
-
-  .ne-intro {
-    h1 {
-      font-size: 1.82rem;
-    }
+    padding: 26px 14px 48px;
   }
 
   .ne-steps {
-    padding: 18px;
-    overflow-x: auto;
+    padding: 14px 16px;
   }
 
-  .ne-step-line {
-    min-width: 34px;
+  .ne-steps::before {
+    left: 16px;
+    right: 16px;
+  }
+
+  .ne-step-label {
+    display: none;
   }
 
   .ne-step-panel,
-  .ne-summary-card {
-    padding: 22px;
+  .ne-sc-stub-top,
+  .ne-sc-stub-bottom {
+    padding: 18px;
   }
 
   .ne-fields-grid,
@@ -1133,7 +1135,6 @@ $shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
   }
 
   .ne-payment-card {
-    transform: none;
     animation: none;
   }
 
@@ -1152,16 +1153,10 @@ $shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
     grid-template-columns: 1fr;
   }
 
-  .ne-step {
-    .ne-step-label {
-      font-size: 0.78rem;
-    }
-  }
-
   .ne-receipt-row {
     align-items: flex-start;
     flex-direction: column;
-    gap: 5px;
+    gap: 3px;
 
     strong {
       text-align: left;

@@ -1597,13 +1597,13 @@ table {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, #ffffff 0%, #f0f4fb 100%);
+  border: 1px solid var(--ph-slate-200);
   border-radius: 14px;
   padding: 24px 30px;
   margin-bottom: 24px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  color: #fff;
+  box-shadow: var(--ph-shadow-md);
+  color: var(--ph-slate-800);
 
   .ph-banner-left {
     flex: 1;
@@ -1613,24 +1613,25 @@ table {
       display: inline-block;
       font-size: 9px;
       font-weight: 800;
-      background: #0d9488;
-      color: #fff;
+      background: var(--ph-teal-100);
+      color: var(--ph-teal-600);
       padding: 3px 8px;
       border-radius: var(--ph-r-full, 50px);
       letter-spacing: 0.8px;
       margin-bottom: 10px;
+      border: 1px solid var(--ph-teal-200);
     }
 
     h3 {
       font-size: 1.15rem;
       font-weight: 700;
       margin: 0 0 6px 0;
-      color: #fff;
+      color: var(--ph-slate-900);
     }
 
     p {
       font-size: 0.82rem;
-      color: #94a3b8;
+      color: var(--ph-slate-600);
       line-height: 1.45;
       margin: 0;
     }
@@ -1640,7 +1641,7 @@ table {
     flex-shrink: 0;
 
     .ph-banner-btn {
-      background: #0d9488;
+      background: var(--ph-teal-600);
       border: none;
       color: #fff;
       padding: 10px 18px;
@@ -1650,11 +1651,11 @@ table {
       cursor: pointer;
       font-family: var(--ph-font);
       transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);
+      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25);
 
       &:hover {
-        background: #115e59;
-        box-shadow: 0 4px 18px rgba(13, 148, 136, 0.5);
+        background: var(--ph-teal-700);
+        box-shadow: 0 4px 18px rgba(13, 148, 136, 0.4);
       }
     }
   }

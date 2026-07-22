@@ -363,7 +363,7 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
 };
 
 // ─── Service Card ─────────────────────────────────────────────────────────────
-const ServiceCard = ({ item, inCart, onToggleCart, onCardView, onVisitSite, feedback, onFeedbackChange }) => {
+const ServiceCard = ({ item, inCart, onToggleCart, onCardView, onVisitSite, feedback, onFeedbackChange, isPurchased }) => {
   const layer = item.layer?.toLowerCase() || "macro";
   const meta = LAYER_META[layer] || LAYER_META.macro;
   const free = isFreeItem(item);
@@ -371,7 +371,7 @@ const ServiceCard = ({ item, inCart, onToggleCart, onCardView, onVisitSite, feed
 
   return (
     <div
-      className={`svc-card ${meta.cardCls} ${isExternal ? "svc-card--external" : ""}`}
+      className={`svc-card ${meta.cardCls} ${isExternal ? "svc-card--external" : ""} ${isPurchased ? "svc-card--purchased" : ""}`}
       onClick={() => onCardView && onCardView(item)}
     >
       <div className="svc-top">
@@ -401,14 +401,6 @@ const ServiceCard = ({ item, inCart, onToggleCart, onCardView, onVisitSite, feed
           {item.features && <div className="svc-detail-row"><span className="svc-detail-lbl">Features:</span><span>{item.features}</span></div>}
         </div>
 
-        {isExternal && (
-          <div className="svc-redirect-alert-box">
-            <span className="alert-emoji">⚠️</span>
-            <span className="alert-message">
-              You will be redirected to the partner's website to complete payment. A secure tracking token will be generated.
-            </span>
-          </div>
-        )}
       </div>
 
       <FeedbackStrip value={feedback} onChange={onFeedbackChange} />
@@ -419,12 +411,19 @@ const ServiceCard = ({ item, inCart, onToggleCart, onCardView, onVisitSite, feed
           <div className="svc-billing">{free ? "No cost" : "Paid"}</div>
         </div>
 
-        <button
-          className={`svc-add ${inCart ? "added" : ""}`}
-          onClick={(e) => { e.stopPropagation(); onToggleCart(item); }}
-        >
-          {inCart ? "✓ Added" : "+ Add"}
-        </button>
+        {isPurchased ? (
+          <div className="svc-purchased-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+            <span>Purchased</span>
+          </div>
+        ) : (
+          <button
+            className={`svc-add ${inCart ? "added" : ""}`}
+            onClick={(e) => { e.stopPropagation(); onToggleCart(item); }}
+          >
+            {inCart ? "✓ Added" : "+ Add"}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -591,12 +590,43 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
 
     setSubmitting(true);
 
-    // Simulate mock payment processing for 1.5 seconds
-    setTimeout(() => {
+    // Call backend API to record the mock purchase
+    axios.post(`${process.env.REACT_APP_API_BASE_URL || ""}/api/payment/mock-purchase`, {
+      userEmail: email,
+      items: cart.map(item => ({
+        _id: item._id,
+        name: item.name,
+        layer: item.layer,
+        cost: item.cost,
+        partnerId: item.partnerId || null,
+        partner_email: item.partner_email || null
+      })),
+      total,
+      orderId: genOrderId()
+    })
+    .then((res) => {
       setSubmitting(false);
-      const orderId = genOrderId();
-      onConfirm({ orderId, total, itemCount: cart.length, date: new Date() });
-    }, 1500);
+      onConfirm({
+        orderId: res.data?.orderId || genOrderId(),
+        total,
+        itemCount: cart.length,
+        date: new Date(),
+        studentEmail: email,
+        item: cart[0]
+      });
+    })
+    .catch((err) => {
+      console.error("Mock purchase API failed:", err);
+      setSubmitting(false);
+      onConfirm({
+        orderId: genOrderId(),
+        total,
+        itemCount: cart.length,
+        date: new Date(),
+        studentEmail: email,
+        item: cart[0]
+      });
+    });
   };
 
   return (
@@ -740,6 +770,7 @@ const UserMarketplace = ({ onStepChange }) => {
   const [orderInfo, setOrderInfo] = useState(null);
   const [marketplaceFeedback, setMarketplaceFeedback] = useState({});
   const [exclusiveSuccessToast, setExclusiveSuccessToast] = useState(null);
+  const [purchasedIds, setPurchasedIds] = useState(new Set());
   const trackedViewsRef = useRef(new Set());
 
   const trackMarketplaceAnalytics = async (item, action) => {
@@ -803,6 +834,20 @@ const UserMarketplace = ({ onStepChange }) => {
       window.removeEventListener("storage", onStorage);
       clearInterval(interval);
     };
+  }, []);
+
+  // ── Fetch user's existing purchases ──────────────────────────────────────
+  useEffect(() => {
+    const raw = localStorage.getItem("user");
+    const user = raw ? (() => { try { return JSON.parse(raw); } catch { return null; } })() : null;
+    const email = user?.user?.email || user?.email;
+    if (!email) return;
+    axios.get(`${API}/api/payment/user-purchases`, { params: { email } })
+      .then(res => {
+        const purchases = res.data?.purchases || [];
+        setPurchasedIds(new Set(purchases.map(p => p.productId)));
+      })
+      .catch(err => console.error("Failed to load user purchases:", err));
   }, []);
 
   // ── Fetch real marketplace items from DB when a step is selected ──────────
@@ -961,7 +1006,16 @@ const UserMarketplace = ({ onStepChange }) => {
 
   const removeFromCart = (id) => setCart(prev => prev.filter(s => s._id !== id));
   const inCart = (id) => cart.some(s => s._id === id);
-  const handleConfirm = (info) => { setOrderInfo(info); setPage("confirmed"); setShowCart(false); };
+  const handleConfirm = (info) => {
+    navigate("/purchase/success", {
+      state: {
+        orderId: info.orderId,
+        purchasedItem: info.item || null,
+        studentEmail: info.studentEmail || ""
+      }
+    });
+    setCart([]); // Clear cart
+  };
   const currentPageKey = page === "marketplace" ? "marketplace" : page === "checkout" ? "checkout" : "confirmed";
 
   const updateMarketplaceFeedback = async (itemId, nextValue) => {
@@ -1017,6 +1071,7 @@ const UserMarketplace = ({ onStepChange }) => {
           onVisitSite={handleVisitSite}
           feedback={marketplaceFeedback[s._id]}
           onFeedbackChange={(nextValue) => updateMarketplaceFeedback(s._id, nextValue)}
+          isPurchased={purchasedIds.has(String(s._id))}
         />
       ))}
     </div>
