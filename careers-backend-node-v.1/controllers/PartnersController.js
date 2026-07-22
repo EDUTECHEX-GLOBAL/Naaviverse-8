@@ -333,6 +333,13 @@ const updatePartnerProfile = async (req, res) => {
     const partner = await Partner.findOne({ email });
     if (!partner) return res.status(404).json({ success: false, message: "Partner not found" });
 
+    if (req.body.logo && req.body.logo.length > 500000) {
+      return res.status(400).json({
+        success: false,
+        message: "Logo image file is too large (max 500KB). Please upload a smaller image or image URL."
+      });
+    }
+
     const updatedFields = {
       firstName:    req.body.firstName,
       lastName:     req.body.lastName,
