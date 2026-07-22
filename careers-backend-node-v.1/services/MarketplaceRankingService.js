@@ -182,24 +182,30 @@ async function attachAnalyticsToItems(items = []) {
 async function getRankedMarketplaceItems(filter = {}) {
   const items = await MarketplaceItem.find(filter).lean();
   
-  // Enrich items with dynamic checkoutType based on whether the partner email is registered in partners collection
+  // Gather all unique partner emails
+  const partnerEmails = [...new Set(items.map(it => it.partner_email?.trim()).filter(Boolean))];
+  
+  // Query all matching partners in ONE SINGLE QUERY
   const Partner = require("../models/PartnerModel");
-  const enrichedItems = [];
-  for (const item of items) {
+  const partners = await Partner.find({ email: { $in: partnerEmails } }).select("email partnerId").lean();
+  
+  // Create a map for constant-time lookup
+  const partnerMap = new Map();
+  partners.forEach(p => {
+    if (p.email) partnerMap.set(p.email.toLowerCase().trim(), p.partnerId);
+  });
+  
+  const enrichedItems = items.map(item => {
     const enriched = { ...item };
-    if (item.partner_email) {
-      const partner = await Partner.findOne({ email: item.partner_email.trim() }).select("partnerId").lean();
-      if (partner) {
-        enriched.checkoutType = "external";
-        enriched.partnerId = partner.partnerId;
-      } else {
-        enriched.checkoutType = "internal";
-      }
+    const emailKey = item.partner_email?.toLowerCase().trim();
+    if (emailKey && partnerMap.has(emailKey)) {
+      enriched.checkoutType = "external";
+      enriched.partnerId = partnerMap.get(emailKey);
     } else {
       enriched.checkoutType = "internal";
     }
-    enrichedItems.push(enriched);
-  }
+    return enriched;
+  });
 
   const withAnalytics = await attachAnalyticsToItems(enrichedItems);
   return withAnalytics.sort((a, b) => {

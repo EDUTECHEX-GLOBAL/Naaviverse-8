@@ -101,6 +101,7 @@ const getAllMarketplaceItems = async (req, res) => {
     const filter = { status: "active" };
     if (req.query.layer) filter.layer = req.query.layer;
     if (req.query.category) filter.category = req.query.category;
+    if (req.query.partner_email) filter.partner_email = req.query.partner_email.trim();
     const items = await getRankedMarketplaceItems(filter);
     res.json({ status: true, data: items });
   } catch (err) {

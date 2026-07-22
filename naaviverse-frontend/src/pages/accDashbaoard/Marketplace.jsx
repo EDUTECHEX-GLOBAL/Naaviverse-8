@@ -95,7 +95,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
       const [servicesRes, stepsRes, marketplaceRes] = await Promise.allSettled([
         axios.get(`${BASE_URL}/api/services/getservices`, { params: { productcreatoremail: email } }),
         axios.get(`${BASE_URL}/api/steps/partner`,        { params: { email } }),
-        axios.get(`${BASE_URL}/api/marketplace/admin/get-all`),
+        axios.get(`${BASE_URL}/api/marketplace/accountant/get-all`, { params: { partner_email: email } }),
       ]);
 
       const services = servicesRes.status === "fulfilled" ? servicesRes.value.data?.data || [] : [];
