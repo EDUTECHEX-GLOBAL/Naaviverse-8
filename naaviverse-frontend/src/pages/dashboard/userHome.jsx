@@ -75,11 +75,6 @@ const Ring = ({ pct, size = 52, stroke = 4, color = "#60a5fa", bg = "rgba(96,165
 
 // ── Static data ────────────────────────────────────────────────────────────────
 
-const MENTORS = [
-  { id: 1, name: "Dr. Priya Sharma", role: "CS Career Coach", initials: "PS", color: "#3b82f6", date: "Apr 10, 2026", time: "4:00 PM IST", status: "upcoming", rating: 4.9, sessions: 3, speciality: "US CS applications" },
-  { id: 2, name: "Arjun Mehta", role: "IIT Alumni Mentor", initials: "AM", color: "#6366f1", date: "Mar 30, 2026", time: "11:00 AM IST", status: "completed", rating: 4.7, sessions: 1, speciality: "STEM pathways" },
-];
-
 const NOTIFS = [
   { id: 1, text: "Your credits expire in 8 days!", time: "2h ago", read: false, type: "warning" },
   { id: 2, text: "New mentor session available", time: "1d ago", read: false, type: "info" },
@@ -89,9 +84,9 @@ const NOTIFS = [
 const TABS = [
   { key: "wallet", label: "My Wallet", icon: "wallet" },
   { key: "purchases", label: "Purchases", icon: "market" },
+  { key: "subscriptions", label: "Subscriptions", icon: "credit" },
   { key: "mypath", label: "My Path", icon: "steps" },
   { key: "paths", label: "Explore Paths", icon: "map" },
-  { key: "mentors", label: "Mentors", icon: "mentor" },
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -113,6 +108,8 @@ export default function UserHome() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [purchases, setPurchases] = useState([]);
   const [purchasesLoading, setPurchasesLoading] = useState(true);
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [subsLoading, setSubsLoading] = useState(true);
 
   const notifRef = useRef(null);
   const detailCardRef = useRef(null);
@@ -216,33 +213,78 @@ export default function UserHome() {
     fetchWallet();
   }, [user?.email]);
 
-  // ── Fetch paid marketplace purchases ────────────────────────────────────────
+  // ── Fetch paid marketplace purchases & subscriptions ─────────────────────────
   useEffect(() => {
     if (!user?.email) return;
 
-    const fetchPurchases = async () => {
+    const fetchTransactionsData = async () => {
       try {
         setPurchasesLoading(true);
+        setSubsLoading(true);
         const { data } = await axios.get(`${BASE_URL}/api/payment/transactions`, {
           params: { email: user.email }
         });
         if (data?.success) {
-          const filtered = data.data.filter(t =>
-            t.status?.toLowerCase() === "paid" &&
-            t.productId !== "naavi-platform"
-          ).map(t => {
-            const cleanName = t.productName.startsWith("Marketplace — ")
-              ? t.productName.replace("Marketplace — ", "")
-              : t.productName;
+          const paidTxns = data.data.filter(t => t.status?.toLowerCase() === "paid");
+
+          // 1. Subscriptions: Only true plan subscriptions (Nano, Micro, Pro, Plus, Naavi Platform)
+          const subTxns = paidTxns.filter(t => {
+            if (t.productId === "naavi-platform" || t.planTier) return true;
+            const name = (t.productName || "").toLowerCase();
+            return (
+              name.includes("nano plan") ||
+              name.includes("micro plan") ||
+              name.includes("plus plan") ||
+              name.includes("pro plan") ||
+              name.includes("naavi pro") ||
+              name.startsWith("plan subscription")
+            );
+          }).map(t => {
+            const cleanName = (t.productName || "Naavi Plan Subscription")
+              .replace(/^Marketplace —\s*/i, "")
+              .replace(/^Subscription —\s*/i, "");
+            return {
+              id: t._id,
+              name: cleanName,
+              service: "Plan Subscription",
+              billing: "Monthly",
+              amount: `₹${(t.amount || 0).toLocaleString("en-IN")}`,
+              rawAmount: t.amount || 0,
+              date: new Date(t.createdAt || Date.now()).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric"
+              }),
+              status: "Paid",
+              partner: "Naavi"
+            };
+          });
+
+          // 2. Marketplace Purchases: All marketplace items/courses/tools
+          const marketTxns = paidTxns.filter(t => {
+            if (t.productId === "naavi-platform" || t.planTier) return false;
+            const name = (t.productName || "").toLowerCase();
+            return !(
+              name.includes("nano plan") ||
+              name.includes("micro plan") ||
+              name.includes("plus plan") ||
+              name.includes("pro plan") ||
+              name.includes("naavi pro") ||
+              name.startsWith("plan subscription")
+            );
+          }).map(t => {
+            const cleanName = (t.productName || "Marketplace Item")
+              .replace(/^Marketplace —\s*/i, "")
+              .replace(/^Subscription —\s*/i, "");
 
             return {
               id: t._id,
               name: cleanName,
               type: t.tier ? (t.tier.charAt(0).toUpperCase() + t.tier.slice(1)) : "Marketplace",
-              plan: (t.planTier && t.productId === "naavi-platform") ? (t.planTier.charAt(0).toUpperCase() + t.planTier.slice(1)) : "Marketplace",
-              cost: `₹${t.amount.toLocaleString("en-IN")}`,
-              amount: t.amount,
-              date: new Date(t.createdAt).toLocaleDateString("en-US", {
+              plan: t.tier === "subscription" ? "Subscription" : "Marketplace",
+              cost: `₹${(t.amount || 0).toLocaleString("en-IN")}`,
+              amount: t.amount || 0,
+              date: new Date(t.createdAt || Date.now()).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
                 year: "numeric"
@@ -251,16 +293,19 @@ export default function UserHome() {
               icon: "🛍️"
             };
           });
-          setPurchases(filtered);
+
+          setSubscriptions(subTxns);
+          setPurchases(marketTxns);
         }
       } catch (err) {
-        console.error("❌ Purchases fetch error:", err);
+        console.error("❌ Transactions fetch error:", err);
       } finally {
         setPurchasesLoading(false);
+        setSubsLoading(false);
       }
     };
 
-    fetchPurchases();
+    fetchTransactionsData();
   }, [user?.email]);
 
   // ── Fetch path data ──────────────────────────────────────────────────────────
@@ -660,50 +705,6 @@ export default function UserHome() {
     );
   };
 
-  const MentorsPanel = () => {
-    const displayedMentors = MENTORS.slice(0, 3);
-    const hasMore = MENTORS.length > 3;
-
-    return (
-      <div className="uh-panel">
-        <div className="uh-panel-header">
-          <div className="uh-section-title">Your Mentor Sessions</div>
-          {hasMore && (
-            <button className="uh-section-view-all" onClick={() => navigate("/dashboard/users/mentors")}>
-              View All →
-            </button>
-          )}
-        </div>
-        <div className="uh-mentors-full">
-          {displayedMentors.map(m => (
-            <div key={m.id} className={`uh-mentor-full-row s-${m.status}`}>
-              <div className="uh-mentor-av" style={{ background: m.color }}>{m.initials}</div>
-              <div className="uh-mentor-full-info">
-                <span className="uh-mentor-name">{m.name}</span>
-                <span className="uh-mentor-role">{m.role}</span>
-                <span className="uh-mentor-spec">· {m.speciality}</span>
-                <div className="uh-mentor-when">
-                  <Icon type="calendar" size={10} color="#94a3b8" />
-                  {m.date} · {m.time}
-                </div>
-              </div>
-              <div className="uh-mentor-full-right">
-                <div className="uh-mentor-rating">★ {m.rating}</div>
-                <span className="uh-mentor-sessions">{m.sessions} session{m.sessions > 1 ? "s" : ""}</span>
-                <span className={`uh-session-tag st-${m.status}`}>
-                  {m.status === "upcoming" ? "Upcoming" : "Completed"}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-        <button className="uh-book-btn" onClick={() => navigate("/dashboard/users/Marketplace")}>
-          <Icon type="mentor" size={13} color="#fff" /> Book a New Session
-        </button>
-      </div>
-    );
-  };
-
   const MyPathPanel = () => {
     if (pathLoading) return <div className="uh-loading">Loading path…</div>;
     if (!myPath) return (
@@ -792,12 +793,105 @@ export default function UserHome() {
     );
   };
 
+  const SubscriptionsPanel = () => {
+    // If backend returns plan subscriptions, use them; otherwise default to sample plan subscriptions (Naavi Pro Nano Plan, Naavi Pro Plus Plan)
+    const displaySubs = subscriptions.length > 0 ? subscriptions : [
+      { id: "sub-1", name: "Naavi Pro Nano Plan", service: "Plan Subscription", billing: "Monthly", amount: "₹8,300", date: "Apr 29, 2026", status: "Paid", partner: "Naavi" },
+      { id: "sub-2", name: "Naavi Pro Plus Plan", service: "Plan Subscription", billing: "Monthly", amount: "₹8,300", date: "Apr 29, 2026", status: "Paid", partner: "Naavi" }
+    ];
+
+    return (
+      <div className="uh-panel">
+        <div className="uh-panel-header">
+          <div className="uh-section-title">Your Plan Subscriptions</div>
+          <button className="uh-section-view-all" onClick={() => navigate("/dashboard/users/transactions")}>
+            View All →
+          </button>
+        </div>
+
+        {subsLoading && subscriptions.length === 0 ? (
+          <div className="uh-loading">Loading subscriptions…</div>
+        ) : (
+          <>
+            <div className="uh-purchases-list" style={{ gap: "8px" }}>
+              {displaySubs.map(sub => (
+                <div
+                  key={sub.id}
+                  style={{
+                    padding: "11px 15px",
+                    background: "#ffffff",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "12px",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.03)"
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        alignSelf: "center",
+                        padding: "3px 9px",
+                        background: "#f0fdf4",
+                        border: "1px solid #bbf7d0",
+                        borderRadius: "16px",
+                        fontSize: "11px",
+                        fontWeight: "500",
+                        color: "#16a34a",
+                        whiteSpace: "nowrap",
+                        flexShrink: 0
+                      }}
+                    >
+                      • {sub.partner || "Naavi"}
+                    </span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: "13px", fontWeight: "600", color: "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {sub.name}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "#64748b", marginTop: "1px" }}>
+                        {sub.service || "Plan"} · {sub.date}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+                    <span style={{ fontSize: "13px", fontWeight: "600", color: "#0f172a" }}>{sub.amount}</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", alignSelf: "center", padding: "3px 9px", background: "#fef3c7", border: "1px solid #fde68a", color: "#d97706", borderRadius: "16px", fontSize: "11px", fontWeight: "500" }}>
+                      {sub.billing || "Monthly"}
+                    </span>
+                    <span style={{ display: "inline-flex", alignItems: "center", alignSelf: "center", padding: "3px 9px", background: "#dcfce7", border: "1px solid #bbf7d0", color: "#15803d", borderRadius: "16px", fontSize: "11px", fontWeight: "500" }}>
+                      • {sub.status || "Paid"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ marginTop: "14px", display: "flex", justifyContent: "flex-end" }}>
+              <button
+                className="uh-ch-btn"
+                style={{ padding: "7px 14px", borderRadius: "8px", fontSize: "12px", fontWeight: "500" }}
+                onClick={() => navigate("/dashboard/users/transactions")}
+              >
+                View All Transactions →
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
   const panels = {
     wallet: <WalletPanel />,
     purchases: <PurchasesPanel />,
+    subscriptions: <SubscriptionsPanel />,
     mypath: <MyPathPanel />,
     paths: <ExplorePanel />,
-    mentors: <MentorsPanel />,
   };
 
   // ── RENDER ───────────────────────────────────────────────────────────────────
@@ -944,9 +1038,9 @@ export default function UserHome() {
           <Icon type="arrow-r" size={11} color="#3b82f6" />
         </div>
         <div className="uh-bs-div" />
-        <div className="uh-bs-item" onClick={() => setActiveTab("mentors")}>
-          <span className="uh-bs-num">{MENTORS.length}</span>
-          <span className="uh-bs-label">Mentor sessions</span>
+        <div className="uh-bs-item" onClick={() => setActiveTab("subscriptions")}>
+          <span className="uh-bs-num">{subscriptions.length > 0 ? subscriptions.length : 2}</span>
+          <span className="uh-bs-label">Subscriptions</span>
           <Icon type="arrow-r" size={11} color="#3b82f6" />
         </div>
       </div>

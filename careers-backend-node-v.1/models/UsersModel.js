@@ -44,7 +44,7 @@ selectedPath: { type: mongoose.Schema.Types.ObjectId, ref: "paths", default: nul
 // Normalize username fields before save
 userSchema.pre("save", async function (next) {
   // normalize username
-  if (this.isModified("username") && this.username) {
+  if (this.username) {
     this.username = this.username.trim();
     this.usernameLower = this.username.toLowerCase();
   }

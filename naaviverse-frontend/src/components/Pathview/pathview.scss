@@ -16,15 +16,13 @@ $shadow-card: 0 2px 10px rgba(108, 92, 231, 0.07);
 $shadow-hover:0 6px 24px rgba(108, 92, 231, 0.16);
 $transition:  all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 
-/* ─── Root ─── */
 .pathview-root {
   width: 100%;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
-  // Ensure background continues on scroll
-  background: $bg-page;
+  gap: 16px;
+  background: transparent;
   min-height: 100%;
 }
 

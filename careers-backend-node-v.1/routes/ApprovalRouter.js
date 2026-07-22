@@ -13,5 +13,11 @@ router.get("/status", ApprovalController.getApprovalByEmail);
 
 // UPDATE approval status by id
 router.put("/update/:id", ApprovalController.updateApproval);
-//exports 
+
+// DEACTIVATE user/partner approval by id
+router.put("/deactivate/:id", ApprovalController.deactivateApproval);
+
+// DELETE user/partner approval and DB user/partner by id
+router.delete("/delete/:id", ApprovalController.deleteApproval);
+
 module.exports = router;

@@ -1,12 +1,53 @@
-// PartnerFeedback.scss — Premium feedback dashboard styles
+// PartnerFeedback.scss — pastel-forward pass over the same markup.
+// Idea: instead of one blue accent on white, give every zone its own quiet
+// pastel wash so the eye can scan by color (lavender = volume, mint =
+// helpful, blush = not relevant, cream = rate) — and let the feedback
+// meta-chips cycle through a small pastel palette so each row reads as a
+// little colored strip rather than gray tags on white.
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+$primary: #4f6ef7;
+$primary-soft: #eef1ff;
+$primary-line: #dfe3fb;
+$dark: #1a2f42;
+$muted: #64748b;
+$faint: #94a3b8;
+$border: #e6e9f0;
+
+// pastel family — each tone gets a soft/line/ink triplet
+$lav-soft: #f2f3ff;
+$lav-line: #dfe1fb;
+$lav-ink: #5b5fc7;
+$mint-soft: #eefaf3;
+$mint-line: #d3f0e1;
+$mint-ink: #12b76a;
+$blush-soft: #fdf1f1;
+$blush-line: #f6d9d9;
+$blush-ink: #e5484d;
+$cream-soft: #fdf6e8;
+$cream-line: #f3e2ba;
+$cream-ink: #b9791f;
+$sky-soft: #eef7fd;
+$sky-line: #d5ecf8;
+$sky-ink: #2f88c2;
 
 .pf-root {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #f8fafc;
   overflow-y: auto;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: $dark;
+  background:
+    radial-gradient(560px 320px at 6% 0%, rgba(95, 99, 220, 0.055), transparent 60%),
+    radial-gradient(520px 300px at 96% 8%, rgba(18, 183, 106, 0.05), transparent 60%),
+    radial-gradient(600px 340px at 50% 100%, rgba(233, 158, 46, 0.045), transparent 60%),
+    #fbfbfe;
+
+  * {
+    box-sizing: border-box;
+  }
 }
 
 // ── Header ──────────────────────────────────────────────────────────────────
@@ -14,47 +55,48 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 28px 32px 0;
+  padding: 26px 28px 0;
   flex-shrink: 0;
 }
 
 .pf-header-left {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .pf-title {
-  font-size: 1.5rem;
+  font-size: 1.32rem;
   font-weight: 700;
-  color: #0f172a;
+  color: $dark;
   margin: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 .pf-subtitle {
-  font-size: 0.85rem;
-  color: #64748b;
+  font-size: 0.82rem;
+  color: $muted;
   margin: 0;
+  font-weight: 400;
 }
 
 .pf-refresh-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
-  border: 1px solid #e2e8f0;
+  padding: 7px 14px;
+  border: 1px solid $primary-line;
   border-radius: 8px;
-  background: #fff;
-  color: #475569;
-  font-size: 0.8rem;
-  font-weight: 500;
+  background: $primary-soft;
+  color: $primary;
+  font-size: 0.78rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.18s ease;
 
   &:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
+    background: #fff;
+    border-color: $primary;
   }
 
   &:disabled {
@@ -67,59 +109,114 @@
   }
 }
 
-// ── Stats Row ───────────────────────────────────────────────────────────────
+// ── Stats Row — each card carries its own pastel identity ───────────────────
 .pf-stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  padding: 24px 32px 0;
+  gap: 12px;
+  padding: 18px 28px 0;
   flex-shrink: 0;
 }
 
 .pf-stat-card {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 11px;
   background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  padding: 18px 20px;
-  transition: all 0.25s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 12px 14px;
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+  }
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 8px 20px rgba(26, 47, 66, 0.06);
+  }
+
+  // Total Feedbacks — lavender
+  &:nth-child(1) {
+    background: linear-gradient(180deg, $lav-soft 0%, #fff 62%);
+    border-color: $lav-line;
+
+    &::before {
+      background: $lav-ink;
+    }
+  }
+
+  // Helpful — mint
+  &:nth-child(2) {
+    background: linear-gradient(180deg, $mint-soft 0%, #fff 62%);
+    border-color: $mint-line;
+
+    &::before {
+      background: $mint-ink;
+    }
+  }
+
+  // Not Relevant — blush
+  &:nth-child(3) {
+    background: linear-gradient(180deg, $blush-soft 0%, #fff 62%);
+    border-color: $blush-line;
+
+    &::before {
+      background: $blush-ink;
+    }
+  }
+
+  // Helpful Rate — cream
+  &:nth-child(4) {
+    background: linear-gradient(180deg, $cream-soft 0%, #fff 62%);
+    border-color: $cream-line;
+
+    &::before {
+      background: $cream-ink;
+    }
   }
 }
 
 .pf-stat-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+
+  svg {
+    width: 15px;
+    height: 15px;
+  }
 }
 
 .pf-stat-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
+  min-width: 0;
 }
 
 .pf-stat-value {
-  font-size: 1.35rem;
+  font-size: 1.12rem;
   font-weight: 700;
-  color: #0f172a;
-  line-height: 1;
+  color: $dark;
+  line-height: 1.25;
 }
 
 .pf-stat-label {
-  font-size: 0.75rem;
-  color: #94a3b8;
+  font-size: 0.7rem;
+  color: $muted;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 // ── Filter + Search Controls ────────────────────────────────────────────────
@@ -127,9 +224,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 32px 0;
+  padding: 18px 28px 0;
   flex-shrink: 0;
-  gap: 16px;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
@@ -139,37 +236,37 @@
 }
 
 .pf-pill {
-  padding: 7px 16px;
+  padding: 6px 14px;
   border-radius: 20px;
-  border: 1px solid #e2e8f0;
-  background: #fff;
-  color: #64748b;
-  font-size: 0.78rem;
+  border: 1px solid $primary-line;
+  background: $primary-soft;
+  color: $lav-ink;
+  font-size: 0.76rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.18s ease;
 
   &:hover {
-    background: #f1f5f9;
-    color: #334155;
+    background: #fff;
+    border-color: $primary;
   }
 
   &.active {
-    background: #2273E6;
+    background: linear-gradient(135deg, $primary, #7c8ef9);
     color: #fff;
-    border-color: #2273E6;
-    box-shadow: 0 2px 8px rgba(34, 115, 230, 0.25);
+    border-color: transparent;
+    box-shadow: 0 6px 16px rgba(79, 110, 247, 0.28);
   }
 }
 
 .pf-search-wrap {
   position: relative;
-  min-width: 240px;
+  min-width: 230px;
 }
 
 .pf-search-icon {
   position: absolute;
-  left: 12px;
+  left: 11px;
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
@@ -177,28 +274,29 @@
 
 .pf-search-input {
   width: 100%;
-  padding: 8px 12px 8px 36px;
-  border: 1px solid #e2e8f0;
+  padding: 7px 12px 7px 34px;
+  border: 1px solid $border;
   border-radius: 8px;
   background: #fff;
-  font-size: 0.8rem;
-  color: #334155;
+  font-family: inherit;
+  font-size: 0.78rem;
+  color: $dark;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
 
   &::placeholder {
-    color: #94a3b8;
+    color: $faint;
   }
 
   &:focus {
-    border-color: #2273E6;
-    box-shadow: 0 0 0 3px rgba(34, 115, 230, 0.08);
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.1);
   }
 }
 
 // ── Content Area ────────────────────────────────────────────────────────────
 .pf-content {
-  padding: 20px 32px 40px;
+  padding: 18px 28px 36px;
   flex: 1;
   min-height: 0;
 }
@@ -209,23 +307,25 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 80px 0;
-  color: #64748b;
-  font-size: 0.85rem;
+  gap: 14px;
+  padding: 70px 0;
+  color: $muted;
+  font-size: 0.82rem;
 }
 
 .pf-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid #e2e8f0;
-  border-top-color: #2273E6;
+  width: 28px;
+  height: 28px;
+  border: 3px solid $primary-line;
+  border-top-color: $primary;
   border-radius: 50%;
   animation: pfSpin 0.7s linear infinite;
 }
 
 @keyframes pfSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 // ── Error ───────────────────────────────────────────────────────────────────
@@ -234,29 +334,33 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 60px 0;
+  gap: 10px;
+  padding: 56px 0;
   text-align: center;
+  background: $blush-soft;
+  border: 1px solid $blush-line;
+  border-radius: 12px;
 
   p {
-    color: #64748b;
-    font-size: 0.85rem;
+    color: $muted;
+    font-size: 0.82rem;
     margin: 0;
   }
 
   button {
-    padding: 8px 20px;
+    padding: 7px 18px;
     border-radius: 8px;
-    border: 1px solid #2273E6;
-    background: #2273E6;
+    border: 1px solid $blush-ink;
+    background: $blush-ink;
     color: #fff;
-    font-size: 0.8rem;
+    font-family: inherit;
+    font-size: 0.78rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: filter 0.18s ease;
 
     &:hover {
-      background: #1d5fc4;
+      filter: brightness(1.08);
     }
   }
 }
@@ -267,196 +371,249 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 80px 0;
+  gap: 10px;
+  padding: 70px 0;
   text-align: center;
+  background: $lav-soft;
+  border: 1px dashed $lav-line;
+  border-radius: 12px;
 
   h3 {
-    font-size: 1.05rem;
+    font-size: 1rem;
     font-weight: 600;
-    color: #475569;
+    color: $dark;
     margin: 0;
   }
 
   p {
-    font-size: 0.82rem;
-    color: #94a3b8;
+    font-size: 0.8rem;
+    color: $faint;
     margin: 0;
-    max-width: 320px;
+    max-width: 300px;
     line-height: 1.5;
+    font-weight: 400;
   }
 }
 
 // ── Path Group ──────────────────────────────────────────────────────────────
 .pf-path-group {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .pf-path-group-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 0;
+  gap: 9px;
+  padding: 8px 12px;
   margin-bottom: 8px;
+  background: $lav-soft;
+  border: 1px solid $lav-line;
+  border-radius: 8px;
+  width: fit-content;
 }
 
 .pf-path-group-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: rgba(99, 102, 241, 0.08);
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
 
-.pf-path-group-name {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.pf-path-group-count {
-  font-size: 0.72rem;
-  color: #94a3b8;
-  background: #f1f5f9;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-weight: 500;
-}
-
-// ── Feedback List ───────────────────────────────────────────────────────────
-.pf-feedback-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.pf-feedback-card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 18px 20px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  svg {
+    width: 12px;
+    height: 12px;
   }
 }
 
-.pf-fb-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
+.pf-path-group-name {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: $dark;
 }
 
-.pf-fb-user {
+.pf-path-group-count {
+  font-size: 0.68rem;
+  color: $lav-ink;
+  background: #fff;
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+// ── Feedback list — one soft container, rows on hairlines ───────────────────
+.pf-feedback-list {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(26, 47, 66, 0.03);
+}
+
+.pf-feedback-row {
+  display: flex;
+  align-items: flex-start;
   gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid $border;
+  border-left: 3px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  // gentle zebra so long lists still scan easily on a light page
+  &:nth-child(even) {
+    background: #fbfbfe;
+  }
+
+  &:hover {
+    background: $primary-soft;
+    border-left-color: $primary;
+  }
 }
 
 .pf-fb-avatar {
-  width: 34px;
-  height: 34px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #818cf8);
+  background: linear-gradient(135deg, $primary, #a78bfa);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 600;
   flex-shrink: 0;
+  margin-top: 1px;
 }
 
-.pf-fb-user-info {
+.pf-fb-main {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 4px;
 }
 
-.pf-fb-email {
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: #334155;
-}
-
-.pf-fb-time {
-  font-size: 0.7rem;
-  color: #94a3b8;
-}
-
-.pf-action-badge {
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-.pf-fb-meta {
+.pf-fb-line1 {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 8px;
-  margin-bottom: 8px;
   flex-wrap: wrap;
 }
 
-.pf-fb-step-tag {
+.pf-fb-email {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: $dark;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.pf-fb-step-inline {
+  font-size: 0.72rem;
+  color: $faint;
+  font-weight: 400;
+
+  &::before {
+    content: "·";
+    margin-right: 8px;
+    color: $border;
+  }
+}
+
+.pf-fb-line2 {
   display: flex;
   align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+// meta chips cycle through the pastel family instead of one flat gray tag —
+// gives each row's second line a bit of color without needing per-type markup
+.pf-fb-chip {
+  display: inline-flex;
+  align-items: center;
   gap: 4px;
-  font-size: 0.72rem;
-  color: #64748b;
-  background: #f1f5f9;
-  padding: 3px 10px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
   border-radius: 6px;
-  font-weight: 500;
-}
-
-.pf-fb-view-tag {
-  font-size: 0.72rem;
-  color: #6366f1;
-  background: rgba(99, 102, 241, 0.08);
-  padding: 3px 10px;
-  border-radius: 6px;
-  font-weight: 500;
-}
-
-.pf-fb-comment {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  background: #f8fafc;
-  border-radius: 8px;
-  padding: 10px 14px;
-  margin-top: 4px;
+  white-space: nowrap;
+  background: $lav-soft;
+  color: $lav-ink;
+  border: 1px solid $lav-line;
 
   svg {
+    width: 10px;
+    height: 10px;
     flex-shrink: 0;
-    margin-top: 2px;
   }
 
-  p {
-    margin: 0;
-    font-size: 0.8rem;
-    color: #475569;
-    font-style: italic;
-    line-height: 1.5;
+  &:nth-of-type(2) {
+    background: $mint-soft;
+    color: $mint-ink;
+    border-color: $mint-line;
   }
+
+  &:nth-of-type(3) {
+    background: $sky-soft;
+    color: $sky-ink;
+    border-color: $sky-line;
+  }
+}
+
+.pf-fb-comment-inline {
+  font-size: 0.78rem;
+  color: $muted;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.pf-fb-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.pf-fb-time {
+  font-size: 0.68rem;
+  color: $faint;
+  white-space: nowrap;
+}
+
+.pf-action-badge {
+  padding: 2px 9px;
+  border-radius: 12px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
 // ── Responsive ──────────────────────────────────────────────────────────────
 @media (max-width: 900px) {
   .pf-stats-row {
     grid-template-columns: repeat(2, 1fr);
-    padding: 20px 16px 0;
+    padding: 16px 16px 0;
   }
-  .pf-header, .pf-controls, .pf-content {
+
+  .pf-header,
+  .pf-controls,
+  .pf-content {
     padding-left: 16px;
     padding-right: 16px;
   }
@@ -466,16 +623,27 @@
   .pf-stats-row {
     grid-template-columns: 1fr;
   }
+
   .pf-controls {
     flex-direction: column;
     align-items: stretch;
   }
+
   .pf-search-wrap {
     min-width: unset;
   }
+
   .pf-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 10px;
+  }
+
+  .pf-fb-right {
+    align-items: flex-start;
+  }
+
+  .pf-feedback-row {
+    flex-wrap: wrap;
   }
 }

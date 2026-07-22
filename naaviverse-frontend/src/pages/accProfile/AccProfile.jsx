@@ -1753,46 +1753,127 @@ const AccProfile = () => {
 
       {/* ── Create Brand Profile Modal ── */}
       {createBrandProfile && (
-        <div className="popularS" style={{ padding: createBrandProfileStep === 2 ? "1rem 0rem 2rem" : "1rem 3rem 2rem" }}>
-          {createBrandProfileStep === 1 && (
-            <>
-              <div className="head-txt" style={{ height: "4rem" }}>
-                <div>Create Partner</div>
-                <div onClick={() => { setCreateBrandProfile(false); setUserName(""); setLastName(""); setFirstName(""); setProfilePicture(""); }} className="close-div">
-                  <img src={close} alt="" />
+        <>
+          {/* Backdrop overlay */}
+          <div
+            onClick={() => setCreateBrandProfile(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              background: "rgba(15, 23, 42, 0.45)",
+              zIndex: 999,
+              transition: "all 0.3s ease"
+            }}
+          />
+
+          <div className="popularS" style={{ padding: "1.8rem 2.2rem" }}>
+            {createBrandProfileStep === 1 && (
+              <>
+                <div className="head-txt" style={{ margin: 0, paddingBottom: "1rem" }}>
+                  <div>
+                    <div style={{ fontSize: "1.35rem", fontWeight: "700", color: "#1e293b" }}>Create Partner Profile</div>
+                    <div style={{ fontSize: "0.82rem", fontWeight: "400", color: "#64748b", marginTop: "2px" }}>
+                      Fill in your business details to complete partner onboarding
+                    </div>
+                  </div>
+                  <div
+                    onClick={() => { setCreateBrandProfile(false); setUserName(""); setLastName(""); setFirstName(""); setProfilePicture(""); }}
+                    className="close-div"
+                  >
+                    <img src={close} alt="close" style={{ width: "14px", height: "14px" }} />
+                  </div>
                 </div>
-              </div>
-              <div className="overall-div" style={{ overflowY: "auto", overflowX: "hidden" }}>                <InputDivsCreatePartner placeholderText="Business name...." setFunc={setBusinessName} funcValue={businessName} />
-                <InputDivsTextAreaPartner placeholderText="Business description...." setFunc={setBusinessDesc} funcValue={businessDesc} />
-                <InputDivsCreatePartner placeholderText="Website...." setFunc={setWebsite} funcValue={website} />
-                <InputDivsCreatePartner placeholderText="Type of business...." setFunc={setBusinessType} funcValue={businessType} />
-                <div className={styles.imgContainer}>
-                  <ImageUploadDivProfilePic setFunc={setBusinessLogo} funcValue={businessLogo} />
-                  <div className={styles.logoText}>Upload Logo *</div>
+
+                <div className="overall-div" style={{ padding: "10px 4px 10px 0" }}>
+                  
+                  {/* Section 1: Business Details */}
+                  <div style={{ marginBottom: "22px" }}>
+                    <div style={{ fontSize: "0.82rem", fontWeight: "700", color: "#2c7cb2", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "14px", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <BuildingIcon /> Business Details
+                    </div>
+
+                    <InputDivsCreatePartner placeholderText="Business Name (e.g. Acme EdTech Inc.)" setFunc={setBusinessName} funcValue={businessName} />
+                    <InputDivsTextAreaPartner placeholderText="Short Business Description & Overview..." setFunc={setBusinessDesc} funcValue={businessDesc} />
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "10px" }}>
+                      <InputDivsCreatePartner placeholderText="Website (e.g. https://example.com)" setFunc={setWebsite} funcValue={website} />
+                      <InputDivsCreatePartner placeholderText="Business Type (e.g. Vendor, Institution)" setFunc={setBusinessType} funcValue={businessType} />
+                    </div>
+
+                    <div className={styles.imgContainer} style={{ marginTop: "14px", background: "#f8fafc", border: "1.5px dashed #cbd5e1", borderRadius: "12px", padding: "16px", display: "flex", alignItems: "center", gap: "16px" }}>
+                      <ImageUploadDivProfilePic setFunc={setBusinessLogo} funcValue={businessLogo} />
+                      <div>
+                        <div style={{ fontSize: "0.88rem", fontWeight: "600", color: "#1e293b" }}>Company Logo *</div>
+                        <div style={{ fontSize: "0.76rem", color: "#64748b", marginTop: "2px" }}>Upload PNG, JPG or SVG (Max 5MB)</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section 2: Business Address */}
+                  <div style={{ marginBottom: "22px" }}>
+                    <div style={{ fontSize: "0.82rem", fontWeight: "700", color: "#2c7cb2", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "14px", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <MapPinIcon /> Business Address
+                    </div>
+
+                    <InputDivsCreatePartner placeholderText="Street Address..." setFunc={setStreet} funcValue={street} />
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "10px" }}>
+                      <InputDivsCreatePartner placeholderText="City..." setFunc={setCity} funcValue={city} />
+                      <InputDivsCreatePartner placeholderText="Pincode / Postal Code..." setFunc={setPinCode} funcValue={pinCode} />
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "10px" }}>
+                      <InputDivsCreatePartner placeholderText="State / Province..." setFunc={setBusinessState} funcValue={businessState} />
+                      <div className={styles.inputDivs} style={{ border: '1.5px solid #e2e8f0', borderRadius: '10px', fontSize: "14px", fontWeight: "500", paddingLeft: '0px', marginTop: '0px', background: '#fff' }}>
+                        <select name="country" id="country" style={{ border: "none", padding: '0.75rem 1rem', width: '100%', fontSize: "14px", outline: "none", background: "transparent", color: businessCountry ? "#1e293b" : "#94a3b8" }} onChange={(e) => setBusinessCountry(e.target.value)}>
+                          <option value="">Select Country *</option>
+                          {countryApiValue?.map((item) => (
+                            <option key={item.cca2} value={item?.name?.common}>{item?.name?.common}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section 3: Contact Person */}
+                  <div style={{ marginBottom: "24px" }}>
+                    <div style={{ fontSize: "0.82rem", fontWeight: "700", color: "#2c7cb2", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "14px", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <MailIcon /> Contact Information
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                      <InputDivsCreatePartner placeholderText="First Name..." setFunc={setFirstName} funcValue={firstName} />
+                      <InputDivsCreatePartner placeholderText="Last Name..." setFunc={setLastName} funcValue={lastName} />
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      <InputDivsCreatePartner placeholderText="Your Designation / Position (e.g. Director, Partner)" setFunc={setPosition} funcValue={position} />
+                    </div>
+                  </div>
+
+                  {/* Submit Button */}
+                  <div
+                    style={{
+                      background: allSelected ? "linear-gradient(135deg, #2c7cb2 0%, #1a5a8a 100%)" : "#cbd5e1",
+                      color: "#ffffff",
+                      borderRadius: "12px",
+                      padding: "14px",
+                      fontSize: "0.95rem",
+                      fontWeight: "700",
+                      textAlign: "center",
+                      cursor: allSelected ? "pointer" : "not-allowed",
+                      transition: "all 0.2s ease",
+                      boxShadow: allSelected ? "0 4px 14px rgba(44, 124, 178, 0.35)" : "none",
+                      marginTop: "10px"
+                    }}
+                    onClick={() => allSelected && createPartnerProfile()}
+                  >
+                    Become a Partner →
+                  </div>
                 </div>
-                <div className={styles.labelClass} style={{ paddingTop: "30px" }}>Business address *</div>
-                <InputDivsCreatePartner placeholderText="street...." setFunc={setStreet} funcValue={street} />
-                <InputDivsCreatePartner placeholderText="city...." setFunc={setCity} funcValue={city} />
-                <InputDivsCreatePartner placeholderText="pincode...." setFunc={setPinCode} funcValue={pinCode} />
-                <InputDivsCreatePartner placeholderText="state...." setFunc={setBusinessState} funcValue={businessState} />
-                <div className={styles.inputDivs} style={{ border: '1px solid #2c7cb2', borderRadius: '4px', fontSize: "13px", fontWeight: "500", paddingLeft: '0px', marginTop: '0px' }}>
-                  <select name="country" id="country" style={{ border: "none", padding: '1rem', width: '90%', fontSize: "16px" }} onChange={(e) => setBusinessCountry(e.target.value)}>
-                    <option value="">Click to Select</option>
-                    {countryApiValue?.map((item) => (
-                      <option key={item.cca2} value={item?.name?.common}>{item?.name?.common}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className={styles.labelClass} style={{ paddingTop: "30px" }}>Your information *</div>
-                <InputDivsCreatePartner placeholderText="First name...." setFunc={setFirstName} funcValue={firstName} />
-                <InputDivsCreatePartner placeholderText="Last name...." setFunc={setLastName} funcValue={lastName} />
-                <InputDivsCreatePartner placeholderText="Your position......." setFunc={setPosition} funcValue={position} />
-                <div className={styles.submitBtn} style={{ opacity: allSelected ? 1 : 0.4 }} onClick={() => allSelected && createPartnerProfile()}>
-                  Become a partner
-                </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
 
           {createBrandProfileStep === 2 && (
             <>
@@ -1843,6 +1924,7 @@ const AccProfile = () => {
             <div className="successMsg">You Have Successfully Created Your Naavi Profile.</div>
           )}
         </div>
+      </>
       )}
 
       {/* ── Edit Modals (unchanged) ── */}

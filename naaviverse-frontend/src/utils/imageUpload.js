@@ -1,29 +1,4 @@
-import axios from 'axios';
-import * as jose from 'jose';
-import { predefinedToast } from './toast';
-import AWS from 'aws-sdk';
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
-const secret = 'uyrw7826^&(896GYUFWE&*#GBjkbuaf'; // secret not to be disclosed anywhere.
-const emailDev = 'pavithran@inr.group'; // email of the developer.
-
-function renameFile(originalFile, newName) {
-  return new File([originalFile], newName, {
-    type: originalFile.type,
-    lastModified: originalFile.lastModified,
-  });
-}
-const signJwt = async (fileName, emailDev, secret) => {
-  try {
-    const jwts = await new jose.SignJWT({ name: fileName, email: emailDev })
-      .setProtectedHeader({ alg: 'HS512' })
-      .setIssuer('gxjwtenchs512')
-      .setExpirationTime('10m')
-      .sign(new TextEncoder().encode(secret));
-    return jwts;
-  } catch (error) {
-    console.log(error, 'kjbedkjwebdw');
-  }
-};
 
 
 

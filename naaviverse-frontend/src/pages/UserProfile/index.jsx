@@ -75,8 +75,12 @@ const UserProfile = () => {
   const fetchProfileData = async () => {
     setIsLoading(true);
     try {
-      const email    = userDetails?.email;
-      const response = await axios.get(`${BASE_URL}/api/users/get/${email}`);
+      const email = userDetails?.email || getUserFromStorage()?.email;
+      if (!email) {
+        setIsLoading(false);
+        return;
+      }
+      const response = await axios.get(`${BASE_URL}/api/users/get/${encodeURIComponent(email)}`);
       const result   = response.data;
 
       if (result?.status && result?.data) {

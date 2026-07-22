@@ -10,7 +10,7 @@ const { getUserActivity } = require("../controllers/UserActivityController"); //
 router.post("/add", UsersController.addUserProfile);
 router.put("/users/update/:profileDataId", UsersController.updateUserProfile);
 router.get("/get/:email", UsersController.getUserProfile);
-router.put("/update/:profileDataId", UsersController.updateLevelTwoProfile);
+router.put("/update/:profileDataId", UsersController.updateUserProfile);
 router.put("/addPersonality", UsersController.addPersonality);
 
 // Username check

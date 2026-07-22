@@ -37,14 +37,24 @@ const Pathview = ({ paths, loading, onAdjustCoordinates, onViewPath }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
 
+  const pathsLength = paths?.length || 0;
+
   useEffect(() => {
     setCurrentPage(1);
-  }, [paths, searchTerm]);
+  }, [pathsLength, searchTerm]);
 
   const paginatedData = filteredData.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    const container = document.querySelector(".pathview-root");
+    if (container) {
+      container.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  };
 
   // "View Path →" click — open modal popup via parent
   const handleViewPath = (e, row) => {
@@ -55,11 +65,14 @@ const Pathview = ({ paths, loading, onAdjustCoordinates, onViewPath }) => {
   };
 
   const renderSkeletons = () =>
-    Array(4).fill("").map((_, i) => (
+    Array(6).fill("").map((_, i) => (
       <div className="path-card path-card--skeleton" key={i}>
-        <Skeleton width={120} height={14} style={{ marginBottom: 8 }} />
-        <Skeleton width={80} height={12} style={{ marginBottom: 10 }} />
-        <Skeleton count={2} height={11} />
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+          <Skeleton width={32} height={32} borderRadius={9} />
+          <Skeleton width={70} height={18} borderRadius={12} />
+        </div>
+        <Skeleton width={180} height={16} style={{ marginBottom: 8 }} />
+        <Skeleton count={2} height={12} style={{ marginBottom: 6 }} />
       </div>
     ));
 
@@ -149,7 +162,7 @@ const Pathview = ({ paths, loading, onAdjustCoordinates, onViewPath }) => {
           <button
             className="pag-btn pag-btn--nav"
             disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => p - 1)}
+            onClick={() => handlePageChange(currentPage - 1)}
           >
             ← Prev
           </button>
@@ -159,7 +172,7 @@ const Pathview = ({ paths, loading, onAdjustCoordinates, onViewPath }) => {
               <button
                 key={page}
                 className={`pag-btn pag-btn--page ${currentPage === page ? "active" : ""}`}
-                onClick={() => setCurrentPage(page)}
+                onClick={() => handlePageChange(page)}
               >
                 {page}
               </button>
@@ -169,7 +182,7 @@ const Pathview = ({ paths, loading, onAdjustCoordinates, onViewPath }) => {
           <button
             className="pag-btn pag-btn--nav"
             disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => p + 1)}
+            onClick={() => handlePageChange(currentPage + 1)}
           >
             Next →
           </button>

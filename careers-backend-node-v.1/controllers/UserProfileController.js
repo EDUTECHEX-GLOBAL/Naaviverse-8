@@ -135,11 +135,26 @@ const updateUserProfile = async (req, res) => {
         const allowedFields = [
             'name', 'country', 'state', 'city',
             'postalCode', 'profilePicture', 'username',
-            'phoneNumber', 'userType'
+            'phoneNumber', 'userType',
+            'financialSituation', 'school', 'performance',
+            'curriculum', 'stream', 'grade', 'linkedin',
+            'personality'
         ];
 
-        // ✅ Use find + save so pre("save") hook fires and usernameLower gets updated
-        const user = await userModel.findById(profileDataId);
+        const mongoose = require('mongoose');
+        let user = null;
+
+        if (profileDataId && mongoose.Types.ObjectId.isValid(profileDataId)) {
+            user = await userModel.findById(profileDataId);
+        }
+
+        if (!user && req.body.email) {
+            const rawEmail = (req.body.email || "").trim();
+            user = await userModel.findOne({
+                email: { $regex: new RegExp(`^${rawEmail}$`, "i") }
+            });
+        }
+
         if (!user) return res.json({ status: false, message: "User not found" });
 
         // ✅ Check for username conflict BEFORE saving
@@ -161,9 +176,38 @@ const updateUserProfile = async (req, res) => {
             }
         });
 
+        if (user.username) {
+            user.username = user.username.trim();
+            user.usernameLower = user.username.toLowerCase();
+        }
+
+        if (req.body.school || req.body.grade || req.body.financialSituation) {
+            if ((user.user_level || 0) < 2) user.user_level = 2;
+        }
+
         await user.save(); // ✅ Triggers pre("save") → usernameLower synced
 
-        return res.json({ status: true, message: "Profile updated", data: user });
+        // ✅ Sync approval record if present so Admin dashboard stays updated
+        try {
+            const ApprovalModel = require('../models/ApprovalsModel');
+            if (user.email) {
+                await ApprovalModel.findOneAndUpdate(
+                    { email: { $regex: new RegExp(`^${user.email.trim()}$`, "i") }, role: "User" },
+                    {
+                        $set: {
+                            businessName: user.name || "",
+                            firstName: user.name || "",
+                            country: user.country || "",
+                            type: user.userType || "Student"
+                        }
+                    }
+                );
+            }
+        } catch (e) {
+            console.warn("Could not sync approval record:", e.message);
+        }
+
+        return res.json({ status: true, message: "Profile updated successfully", data: user });
     } catch (err) {
         console.error("Error in updateUserProfile:", err);
         if (err.code === 11000 && err.keyPattern?.usernameLower) {
@@ -172,10 +216,14 @@ const updateUserProfile = async (req, res) => {
         return res.status(500).json({ status: false, message: "Update failed" });
     }
 };
+
 // Controller to fetch user profile details
 const getUserProfile = async (req, res) => {
     try {
-        const user = await userModel.findOne({ email: req.params.email });
+        const rawEmail = (req.params.email || "").trim();
+        const user = await userModel.findOne({
+            email: { $regex: new RegExp(`^${rawEmail}$`, "i") }
+        });
 
         if (!user) {
             return res.status(404).json({
@@ -216,75 +264,7 @@ const getUserProfile = async (req, res) => {
 };
 
 const updateLevelTwoProfile = async (req, res) => {
-    try {
-        // Extract the user ID from the request parameters
-        const { profileDataId } = req.params;
-
-        // Extract Level 2 fields from the request body
-        const {
-            financialSituation,
-            school,
-            performance,
-            curriculum,
-            stream,
-            grade,
-            linkedin,
-        } = req.body;
-
-        // Find the user by ID
-        const user = await userModel.findById(profileDataId);
-
-        if (!user) {
-            return res.status(404).json({
-                status: false,
-                message: "User not found",
-            });
-        }
-
-        // Update Level 2 fields
-        let profileUpdated = false;
-
-        const levelTwoFields = {
-            financialSituation,
-            school,
-            performance,
-            curriculum,
-            stream,
-            grade,
-            linkedin,
-        };
-
-        Object.keys(levelTwoFields).forEach((field) => {
-            if (levelTwoFields[field] && user[field] !== levelTwoFields[field]) {
-                user[field] = levelTwoFields[field];
-                profileUpdated = true;
-            }
-        });
-
-        // If Level 2 fields are updated, set user_level to 2
-        if (profileUpdated) {
-            user.user_level = 2; // Update the user level to 2
-            await user.save();
-
-            return res.json({
-                status: true,
-                message: "Level 2 details updated successfully",
-                data: user,
-            });
-        }
-
-        return res.json({
-            status: true,
-            message: "No changes detected for Level 2 details",
-            data: user,
-        });
-    } catch (error) {
-        console.error("Error in updateLevelTwoProfile:", error);
-        return res.status(500).json({
-            status: false,
-            message: "Error in updating Level 2 details",
-        });
-    }
+    return updateUserProfile(req, res);
 };
 
 const addPersonality = async (req, res) => {

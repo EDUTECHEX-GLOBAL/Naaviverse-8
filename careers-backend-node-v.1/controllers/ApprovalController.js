@@ -75,7 +75,10 @@ exports.getApprovalByEmail = async (req, res) => {
   }
 };
 
-// ✅ UPDATE approval status — role-aware email notification
+const User = require("../models/UsersModel");
+const Partner = require("../models/PartnerModel");
+
+// ✅ UPDATE approval status — role-aware email notification & DB status sync
 exports.updateApproval = async (req, res) => {
   try {
     const { id } = req.params;
@@ -100,17 +103,88 @@ exports.updateApproval = async (req, res) => {
         `Naaviverse ${roleLabel} Approval`,
         `${greeting},<br>Your account has been approved by the admin.<br>You can now login to the platform.`
       );
+      if (isUser) {
+        await User.findOneAndUpdate({ email: approval.email }, { status: "active", isBlocked: false });
+      } else {
+        await Partner.findOneAndUpdate({ email: approval.email }, { status: true, isBlocked: false });
+      }
     } else if (status === "rejected") {
       sendNotificationMail(
         approval.email,
         `Naaviverse ${roleLabel} Application Update`,
         `${greeting},<br>Unfortunately your application was not approved.<br>${reason ? `Reason: ${reason}` : "Please contact support for more information."}`
       );
+    } else if (status === "deactivated") {
+      if (isUser) {
+        await User.findOneAndUpdate({ email: approval.email }, { status: "inactive", isBlocked: true });
+      } else {
+        await Partner.findOneAndUpdate({ email: approval.email }, { status: false, isBlocked: true });
+      }
     }
 
     res.json({ status: true, data: approval });
   } catch (err) {
     console.error("updateApproval error:", err);
     res.status(500).json({ status: false, message: "Error updating approval" });
+  }
+};
+
+// ✅ DEACTIVATE approval & mark user/partner deactivated in DB
+exports.deactivateApproval = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const approval = await Approval.findByIdAndUpdate(
+      id,
+      { status: "deactivated" },
+      { new: true }
+    );
+
+    if (!approval) {
+      return res.status(404).json({ status: false, message: "Approval record not found" });
+    }
+
+    const isUser = approval.role?.toLowerCase() === "user";
+    if (isUser) {
+      await User.findOneAndUpdate(
+        { email: approval.email },
+        { status: "inactive", isBlocked: true }
+      );
+    } else {
+      await Partner.findOneAndUpdate(
+        { email: approval.email },
+        { status: false, isBlocked: true }
+      );
+    }
+
+    res.json({ status: true, data: approval, message: "Record deactivated in DB successfully" });
+  } catch (err) {
+    console.error("deactivateApproval error:", err);
+    res.status(500).json({ status: false, message: "Error deactivating record" });
+  }
+};
+
+// ✅ DELETE approval & delete user/partner from DB
+exports.deleteApproval = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const approval = await Approval.findByIdAndDelete(id);
+
+    if (!approval) {
+      return res.status(404).json({ status: false, message: "Approval record not found" });
+    }
+
+    const isUser = approval.role?.toLowerCase() === "user";
+    if (isUser) {
+      await User.findOneAndDelete({ email: approval.email });
+    } else {
+      await Partner.findOneAndDelete({ email: approval.email });
+    }
+
+    res.json({ status: true, message: "Record deleted from database successfully", id });
+  } catch (err) {
+    console.error("deleteApproval error:", err);
+    res.status(500).json({ status: false, message: "Error deleting record" });
   }
 };

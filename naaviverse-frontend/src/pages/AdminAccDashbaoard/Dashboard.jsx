@@ -334,6 +334,28 @@ export default function Dashboard() {
     });
   };
 
+  const deactivate = (id) => {
+    if (!window.confirm("Are you sure you want to deactivate this account? The user/partner status will be set to inactive in DB.")) return;
+    axios.put(`${BASE_URL}/api/approvals/deactivate/${id}`).then((res) => {
+      if (res.data.status) {
+        setPartnerData((prev) => prev.map((i) => (i._id === id ? { ...i, status: "deactivated" } : i)));
+        setUserData((prev) => prev.map((i) => (i._id === id ? { ...i, status: "deactivated" } : i)));
+        if (selected?._id === id) setSelected((p) => ({ ...p, status: "deactivated" }));
+      }
+    }).catch((err) => console.error("Deactivate error:", err));
+  };
+
+  const deleteApproval = (id) => {
+    if (!window.confirm("Are you sure you want to permanently delete this user/partner from DB? This action cannot be undone.")) return;
+    axios.delete(`${BASE_URL}/api/approvals/delete/${id}`).then((res) => {
+      if (res.data.status) {
+        setPartnerData((prev) => prev.filter((i) => i._id !== id));
+        setUserData((prev) => prev.filter((i) => i._id !== id));
+        if (selected?._id === id) setSelected(null);
+      }
+    }).catch((err) => console.error("Delete error:", err));
+  };
+
   // ── ALL_STAT_CARDS ─────────────────────────────────────────────────────────
   const ALL_STAT_CARDS = [
     {
@@ -1296,7 +1318,7 @@ export default function Dashboard() {
               <div className="details-hero-top">
                 <h2>{selected.businessName}</h2>
                 <span className={`status-pill ${selected.status}`}>
-                  {selected.status === "approved" ? "✓ Verified" : selected.status === "rejected" ? "✗ Rejected" : "⏳ Pending"}
+                  {selected.status === "approved" ? "✓ Verified" : selected.status === "rejected" ? "✗ Rejected" : selected.status === "deactivated" ? "🚫 Deactivated" : "⏳ Pending"}
                 </span>
               </div>
               <span className={`role-chip ${isPartner ? "partner" : "user"}`}>
@@ -1383,16 +1405,22 @@ export default function Dashboard() {
             </>
           )}
 
-          {!isPending && (
-            <div style={{ marginTop: "32px", padding: "16px 20px", borderRadius: "12px", background: selected.status === "approved" ? "#E6F4EA" : "#FDE8E8", color: selected.status === "approved" ? "#1E7E34" : "#C0392B", fontSize: "14px", fontWeight: "500", display: "flex", alignItems: "center", gap: "10px" }}>
-           {selected.status === "approved" ? (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E7E34" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-) : (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C0392B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-)}
-              This {isPartner ? "partner" : "user"} has already been <strong>{selected.status}</strong>. No further action required.
-            </div>
-          )}
+          <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid var(--slate-100)", display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap", alignItems: "center" }}>
+            {selected.status !== "deactivated" && (
+              <button
+                style={{ background: "#fff7ed", color: "#c2410c", border: "1px solid #ffedd5", padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+                onClick={() => deactivate(selected._id)}
+              >
+                Deactivate
+              </button>
+            )}
+            <button
+              style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fee2e2", padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+              onClick={() => deleteApproval(selected._id)}
+            >
+              Delete
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -1456,10 +1484,11 @@ export default function Dashboard() {
         </div>
 
         <div className="tab-btn-group">
-          <button className={`tab-btn ${tab === "all"      ? "active" : ""}`} onClick={() => setTab("all")}>All</button>
-          <button className={`tab-btn ${tab === "pending"  ? "active" : ""}`} onClick={() => setTab("pending")}>Pending</button>
-          <button className={`tab-btn ${tab === "approved" ? "active" : ""}`} onClick={() => setTab("approved")}>Approved</button>
-          <button className={`tab-btn ${tab === "rejected" ? "active" : ""}`} onClick={() => setTab("rejected")}>Rejected</button>
+          <button className={`tab-btn ${tab === "all"         ? "active" : ""}`} onClick={() => setTab("all")}>All</button>
+          <button className={`tab-btn ${tab === "pending"     ? "active" : ""}`} onClick={() => setTab("pending")}>Pending</button>
+          <button className={`tab-btn ${tab === "approved"    ? "active" : ""}`} onClick={() => setTab("approved")}>Approved</button>
+          <button className={`tab-btn ${tab === "rejected"    ? "active" : ""}`} onClick={() => setTab("rejected")}>Rejected</button>
+          <button className={`tab-btn ${tab === "deactivated" ? "active" : ""}`} onClick={() => setTab("deactivated")}>Deactivated</button>
         </div>
 
         <div className="table-wrapper">
@@ -1488,7 +1517,51 @@ export default function Dashboard() {
                       <td><span className="type-badge">{item.type || "—"}</span></td>
                       <td className="email-cell">{item.email}</td>
                       <td className="date-cell">{item.date}</td>
-                      <td><button className="view-btn" onClick={() => setSelected(item)}>View</button></td>
+                      <td style={{ whiteSpace: "nowrap" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <button className="view-btn" onClick={() => setSelected(item)}>View</button>
+                          {item.status !== "deactivated" ? (
+                            <button
+                              style={{
+                                background: "#fff7ed",
+                                color: "#c2410c",
+                                border: "1px solid #ffedd5",
+                                padding: "5px 10px",
+                                borderRadius: 6,
+                                fontSize: 12,
+                                fontWeight: 600,
+                                cursor: "pointer",
+                                transition: "all 0.15s"
+                              }}
+                              onClick={(e) => { e.stopPropagation(); deactivate(item._id); }}
+                              title="Deactivate account in DB"
+                            >
+                              Deactivate
+                            </button>
+                          ) : (
+                            <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b", background: "#f1f5f9", padding: "4px 8px", borderRadius: 6 }}>
+                              Deactivated
+                            </span>
+                          )}
+                          <button
+                            style={{
+                              background: "#fef2f2",
+                              color: "#dc2626",
+                              border: "1px solid #fee2e2",
+                              padding: "5px 10px",
+                              borderRadius: 6,
+                              fontSize: 12,
+                              fontWeight: 600,
+                              cursor: "pointer",
+                              transition: "all 0.15s"
+                            }}
+                            onClick={(e) => { e.stopPropagation(); deleteApproval(item._id); }}
+                            title="Delete record & account from DB"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 ) : (

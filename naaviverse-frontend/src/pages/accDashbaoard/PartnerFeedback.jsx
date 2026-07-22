@@ -4,15 +4,15 @@ import "./PartnerFeedback.scss";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-// ── Star Rating Display ─────────────────────────────────────────────────────
+// ── Action Badge ─────────────────────────────────────────────────────────────
 const ActionBadge = ({ action }) => {
   const map = {
-    helpful:     { label: "Helpful",      color: "#10b981", bg: "rgba(16,185,129,0.1)" },
-    notRelevant: { label: "Not Relevant", color: "#ef4444", bg: "rgba(239,68,68,0.1)" },
-    comment:     { label: "Comment",      color: "#6366f1", bg: "rgba(99,102,241,0.1)" },
-    skip:        { label: "Skipped",      color: "#94a3b8", bg: "rgba(148,163,184,0.1)" },
+    helpful: { label: "Helpful", color: "#12b76a", bg: "#e7f9f1" },
+    notRelevant: { label: "Not Relevant", color: "#f04438", bg: "#fdecea" },
+    comment: { label: "Comment", color: "#4f6ef7", bg: "#eef1ff" },
+    skip: { label: "Skipped", color: "#94a3b8", bg: "#f1f5f9" },
   };
-  const info = map[action] || { label: action, color: "#64748b", bg: "rgba(100,116,139,0.1)" };
+  const info = map[action] || { label: action, color: "#64748b", bg: "#f1f5f9" };
   return (
     <span
       className="pf-action-badge"
@@ -22,6 +22,14 @@ const ActionBadge = ({ action }) => {
     </span>
   );
 };
+
+// ── Small inline icons (replaces emoji) ────────────────────────────────────
+const PhoneIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+);
+const PinIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+);
 
 // ── Time Ago Helper ─────────────────────────────────────────────────────────
 const timeAgo = (dateStr) => {
@@ -125,7 +133,7 @@ export default function PartnerFeedback() {
           <p className="pf-subtitle">See what students are saying about your paths</p>
         </div>
         <button className="pf-refresh-btn" onClick={fetchFeedbacks} disabled={loading}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="23 4 23 10 17 10" />
             <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
           </svg>
@@ -133,11 +141,11 @@ export default function PartnerFeedback() {
         </button>
       </div>
 
-      {/* ── Stats Cards ────────────────────────────────────────────────── */}
+      {/* ── Stats Row ────────────────────────────────────────────────────── */}
       <div className="pf-stats-row">
         <div className="pf-stat-card">
-          <div className="pf-stat-icon" style={{ background: "linear-gradient(135deg, #6366f1, #818cf8)" }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+          <div className="pf-stat-icon" style={{ background: "#eef1ff", color: "#4f6ef7" }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
           </div>
           <div className="pf-stat-info">
             <span className="pf-stat-value">{stats.total}</span>
@@ -145,8 +153,8 @@ export default function PartnerFeedback() {
           </div>
         </div>
         <div className="pf-stat-card">
-          <div className="pf-stat-icon" style={{ background: "linear-gradient(135deg, #10b981, #34d399)" }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" /></svg>
+          <div className="pf-stat-icon" style={{ background: "#e7f9f1", color: "#12b76a" }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" /></svg>
           </div>
           <div className="pf-stat-info">
             <span className="pf-stat-value">{stats.helpful}</span>
@@ -154,8 +162,8 @@ export default function PartnerFeedback() {
           </div>
         </div>
         <div className="pf-stat-card">
-          <div className="pf-stat-icon" style={{ background: "linear-gradient(135deg, #ef4444, #f87171)" }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><path d="M10 15V19a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17" /></svg>
+          <div className="pf-stat-icon" style={{ background: "#fdecea", color: "#f04438" }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 15V19a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17" /></svg>
           </div>
           <div className="pf-stat-info">
             <span className="pf-stat-value">{stats.notRelevant}</span>
@@ -163,8 +171,8 @@ export default function PartnerFeedback() {
           </div>
         </div>
         <div className="pf-stat-card">
-          <div className="pf-stat-icon" style={{ background: "linear-gradient(135deg, #f59e0b, #fbbf24)" }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+          <div className="pf-stat-icon" style={{ background: "#fff6e5", color: "#f59e0b" }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
           </div>
           <div className="pf-stat-info">
             <span className="pf-stat-value">{stats.helpfulRate}%</span>
@@ -192,7 +200,7 @@ export default function PartnerFeedback() {
           ))}
         </div>
         <div className="pf-search-wrap">
-          <svg className="pf-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+          <svg className="pf-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
           <input
             className="pf-search-input"
             type="text"
@@ -212,13 +220,13 @@ export default function PartnerFeedback() {
           </div>
         ) : error ? (
           <div className="pf-error">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#f04438" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
             <p>{error}</p>
             <button onClick={fetchFeedbacks}>Retry</button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="pf-empty">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
             <h3>No feedbacks yet</h3>
             <p>When students interact with your paths, their feedback will appear here.</p>
           </div>
@@ -227,56 +235,48 @@ export default function PartnerFeedback() {
             <div key={gi} className="pf-path-group">
               <div className="pf-path-group-header">
                 <div className="pf-path-group-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#4f6ef7" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
                 </div>
                 <span className="pf-path-group-name">{group.pathName}</span>
                 <span className="pf-path-group-count">{group.feedbacks.length} feedback{group.feedbacks.length !== 1 ? "s" : ""}</span>
               </div>
 
+              {/* Compact notification-style rows instead of stacked cards */}
               <div className="pf-feedback-list">
                 {group.feedbacks.map((fb, fi) => (
-                  <div key={fi} className="pf-feedback-card">
-                    <div className="pf-fb-top">
-                      <div className="pf-fb-user">
-                        <div className="pf-fb-avatar">
-                          {(fb.studentEmail || "S").charAt(0).toUpperCase()}
-                        </div>
-                        <div className="pf-fb-user-info">
-                          <span className="pf-fb-email">{fb.studentName ? `${fb.studentName} (${fb.studentEmail})` : fb.studentEmail}</span>
-                          <span className="pf-fb-time">{timeAgo(fb.createdAt)}</span>
-                        </div>
+                  <div key={fi} className="pf-feedback-row">
+                    <div className="pf-fb-avatar">
+                      {(fb.studentEmail || "S").charAt(0).toUpperCase()}
+                    </div>
+
+                    <div className="pf-fb-main">
+                      <div className="pf-fb-line1">
+                        <span className="pf-fb-email">
+                          {fb.studentName ? `${fb.studentName} (${fb.studentEmail})` : fb.studentEmail}
+                        </span>
+                        {fb.stepName && <span className="pf-fb-step-inline">{fb.stepName}</span>}
                       </div>
+
+                      <div className="pf-fb-line2">
+                        {fb.viewType && (
+                          <span className="pf-fb-chip">{fb.viewType.charAt(0).toUpperCase() + fb.viewType.slice(1)} View</span>
+                        )}
+                        {fb.studentPhone && (
+                          <span className="pf-fb-chip"><PhoneIcon /> {fb.studentPhone}</span>
+                        )}
+                        {fb.studentCountry && (
+                          <span className="pf-fb-chip"><PinIcon /> {fb.studentCountry}</span>
+                        )}
+                        {fb.comment && (
+                          <span className="pf-fb-comment-inline">"{fb.comment}"</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="pf-fb-right">
+                      <span className="pf-fb-time">{timeAgo(fb.createdAt)}</span>
                       <ActionBadge action={fb.action} />
                     </div>
-
-                    <div className="pf-fb-meta">
-                      <span className="pf-fb-step-tag">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-                        {fb.stepName || "Step"}
-                      </span>
-                      {fb.viewType && (
-                        <span className="pf-fb-view-tag">
-                          {fb.viewType.charAt(0).toUpperCase() + fb.viewType.slice(1)} View
-                        </span>
-                      )}
-                      {fb.studentPhone && (
-                        <span className="pf-fb-step-tag" style={{ color: "#059669", background: "rgba(5,150,105,0.06)" }}>
-                          📞 {fb.studentPhone}
-                        </span>
-                      )}
-                      {fb.studentCountry && (
-                        <span className="pf-fb-step-tag" style={{ color: "#3b82f6", background: "rgba(59,130,246,0.06)" }}>
-                          📍 {fb.studentCountry}
-                        </span>
-                      )}
-                    </div>
-
-                    {fb.comment && (
-                      <div className="pf-fb-comment">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-                        <p>"{fb.comment}"</p>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>

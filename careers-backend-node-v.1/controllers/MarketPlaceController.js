@@ -356,6 +356,113 @@ const getMarketplaceByPartnerId = async (req, res) => {
   }
 };
 
+// GET /api/marketplace/purchases or /api/purchases
+const getAllPurchases = async (req, res) => {
+  try {
+    const Purchase = require("../models/PurchaseModel");
+    const Payment = require("../models/PaymentModel");
+
+    // Fetch from both collections
+    const [rawPurchases, rawPayments] = await Promise.all([
+      Purchase.find().sort({ createdAt: -1 }).lean(),
+      Payment.find().sort({ createdAt: -1 }).lean()
+    ]);
+
+    const formattedList = [];
+
+    // Map PurchaseModel records
+    rawPurchases.forEach(p => {
+      const clientName = p.clientName || p.creatorEmail || "User";
+      const initials = clientName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() || "U";
+      const dt = new Date(p.date || p.createdAt);
+      const isToday = new Date().toDateString() === dt.toDateString();
+      const formattedDate = isToday 
+        ? `Today, ${dt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`
+        : dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+
+      formattedList.push({
+        id: p._id.toString(),
+        user: clientName,
+        email: p.clientEmail || p.creatorEmail || "N/A",
+        initials,
+        item: p.productName || "Marketplace Item",
+        type: p.billingFrequency || "One-Time",
+        plan: "Bundle",
+        marketplace: p.partnerId ? `Partner (${p.partnerId})` : "Naaviverse Core",
+        amount: `₹${p.amount || 0}`,
+        amountVal: p.amount || 0,
+        date: formattedDate,
+        rawDate: dt,
+        status: (p.status || "completed").toLowerCase() === "completed" || (p.status || "completed").toLowerCase() === "paid" ? "completed" : "pending",
+        microLessons: 1,
+        steps: 1,
+        duration: "Self-Paced"
+      });
+    });
+
+    // Map PaymentModel records
+    rawPayments.forEach(p => {
+      const emailName = p.userEmail ? p.userEmail.split("@")[0] : "User";
+      const user = emailName.charAt(0).toUpperCase() + emailName.slice(1);
+      const initials = user.slice(0, 2).toUpperCase();
+      const dt = new Date(p.createdAt);
+      const isToday = new Date().toDateString() === dt.toDateString();
+      const formattedDate = isToday 
+        ? `Today, ${dt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`
+        : dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+
+      const planName = p.planTier ? p.planTier.charAt(0).toUpperCase() + p.planTier.slice(1) : (p.tier ? p.tier.charAt(0).toUpperCase() + p.tier.slice(1) : "Standard");
+
+      formattedList.push({
+        id: p._id.toString(),
+        user,
+        email: p.userEmail,
+        initials,
+        item: p.productName || "Marketplace Subscription",
+        type: p.billingMethod ? (p.billingMethod.charAt(0).toUpperCase() + p.billingMethod.slice(1)) : "Subscription",
+        plan: planName,
+        marketplace: p.partnerEmail ? p.partnerEmail : "Naaviverse Platform",
+        amount: `₹${p.amount || 0}`,
+        amountVal: p.amount || 0,
+        date: formattedDate,
+        rawDate: dt,
+        status: p.status === "paid" || p.status === "completed" ? "completed" : "pending",
+        microLessons: p.tier === "nano" ? 5 : 20,
+        steps: 4,
+        duration: p.billingMethod === "annual" ? "1 Year" : "1 Month"
+      });
+    });
+
+    // Sort combined list descending by rawDate
+    formattedList.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+
+    // Calculate metrics
+    const totalCount = formattedList.length;
+    const todayCount = formattedList.filter(p => p.date.startsWith("Today")).length;
+    const pendingCount = formattedList.filter(p => p.status === "pending").length;
+    const completedCount = formattedList.filter(p => p.status === "completed").length;
+    const totalRevenue = formattedList.reduce((sum, p) => sum + (p.amountVal || 0), 0);
+
+    const stats = {
+      total: totalCount,
+      today: todayCount,
+      pending: pendingCount,
+      completed: completedCount,
+      revenue: `₹${totalRevenue.toLocaleString("en-IN")}`,
+      revenuePaise: totalRevenue * 100
+    };
+
+    return res.json({
+      status: true,
+      data: formattedList,
+      stats
+    });
+  } catch (err) {
+    console.error("getAllPurchases error:", err);
+    return res.status(500).json({ status: false, message: err.message });
+  }
+};
+
 module.exports = {
   addMarketplaceItem,
   getMarketplaceItemsByStep,
@@ -367,4 +474,5 @@ module.exports = {
   updateMarketplaceItem, // ✅ Export the new function
   getMarketplaceItemById,
   getMarketplaceByPartnerId,
+  getAllPurchases,
 };

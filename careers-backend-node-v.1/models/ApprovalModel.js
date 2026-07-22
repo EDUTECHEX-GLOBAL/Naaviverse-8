@@ -21,7 +21,7 @@ country:String,
 
 status:{
 type:String,
-enum:["pending","approved","rejected"],
+enum:["pending","approved","rejected","deactivated"],
 default:"pending"
 },
 

@@ -375,9 +375,12 @@ const LevelOneModal = ({
               required
             >
               <option value="">Select Country</option>
+              {formData.country && !countries.some((c) => c.name?.common === formData.country) && (
+                <option value={formData.country}>{formData.country}</option>
+              )}
               {countries.map((c) => (
-                <option key={c.cca2} value={c.name.common}>
-                  {c.name.common}
+                <option key={c.cca2 || c.name?.common} value={c.name?.common}>
+                  {c.name?.common}
                 </option>
               ))}
             </select>
@@ -393,6 +396,9 @@ const LevelOneModal = ({
               required
             >
               <option value="">Select State</option>
+              {formData.state && !states.some((s) => s.name === formData.state) && (
+                <option value={formData.state}>{formData.state}</option>
+              )}
               {states.map((s) => (
                 <option key={s._id || s.name} value={s.name}>
                   {s.name}
