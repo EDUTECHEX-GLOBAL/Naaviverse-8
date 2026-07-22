@@ -333,18 +333,18 @@ const updatePartnerProfile = async (req, res) => {
     const partner = await Partner.findOne({ email });
     if (!partner) return res.status(404).json({ success: false, message: "Partner not found" });
 
-    if (req.body.logo && req.body.logo.length > 500000) {
-      return res.status(400).json({
-        success: false,
-        message: "Logo image file is too large (max 500KB). Please upload a smaller image or image URL."
-      });
+    let logoData = req.body.logo;
+    // Automatically sanitize oversized raw base64 strings (>200KB) to prevent DB bloat and Compass UI crashes
+    if (logoData && typeof logoData === "string" && logoData.length > 200000) {
+      console.warn(`[PartnersController] Base64 logo size (${logoData.length} chars) is too large for inline DB storage. Preserving existing logo.`);
+      logoData = partner.logo || "";
     }
 
     const updatedFields = {
       firstName:    req.body.firstName,
       lastName:     req.body.lastName,
       businessName: req.body.businessName,
-      logo:         req.body.logo,
+      logo:         logoData,
       street:       req.body.street,
       city:         req.body.city,
       state:        req.body.state,
