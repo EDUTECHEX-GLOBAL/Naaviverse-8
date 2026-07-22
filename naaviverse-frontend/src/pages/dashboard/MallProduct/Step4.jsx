@@ -47,14 +47,16 @@ const Step4 = ({ setAcceptOffer }) => {
 
       const body = {
         userEmail: userDetails?.user?.email,
-        productId: index?.product_id,
-        productName: index?.product_name,
+        productId: index?.product_id || index?._id || "",
+        productName: index?.product_name || index?.name || "",
         billingMethod:
           index?.lifetime ? "lifetime" :
           index?.monthly ? "monthly" : "annual",
         profileId: profileId,
         amount: index?.amount || 1,
         currency: "INR",
+        partnerEmail: index?.productcreatoremail || index?.partner_email || index?.partnerEmail || null,
+        partnerId: index?.partnerId || null,
       };
 
       console.log("📌 ORDER PAYLOAD:", body);

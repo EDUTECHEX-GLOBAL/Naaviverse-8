@@ -156,6 +156,7 @@ function App() {
           <Route path="/naavi-exclusive" element={<NaaviExclusivePage />} />
           <Route path="/naavi-exclusive/:partnerId" element={<NaaviExclusivePage />} />
           <Route path="/partner/exclusive-dashboard" element={<PartnerExclusiveDashboard />} />
+          <Route path="/partner/exclusive-dashboard/:tab" element={<PartnerExclusiveDashboard />} />
 
           {/* ================= FALLBACK ================= */}
           <Route path="/*" element={<AppRouter />} />

@@ -237,13 +237,100 @@ const getDashboardStats = async (req, res) => {
     // Sort by enrolled desc
     paths.sort((a, b) => b.usersEnrolled - a.usersEnrolled);
 
+    // ── 9. Resolve partner profile for businessName ─────────────────────────
+    const Partner = getPartnerModel();
+    const partnerDoc = await Partner.findOne({ email: email.toLowerCase() })
+      .select("businessName username partnerId")
+      .lean();
+    const partnerName = partnerDoc?.businessName || partnerDoc?.username || "Partner";
+
+    // ── 10. Marketplace items owned by this partner ─────────────────────────
+    const MarketplaceItem = require("../models/MarketplaceModel");
+    const Payment = require("../models/PaymentModel");
+    const Purchase = require("../models/PurchaseModel");
+
+    const mktItems = await MarketplaceItem.find({
+      partner_email: { $regex: new RegExp("^" + email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i") }
+    }).lean();
+
+    const mktItemIds = mktItems.map(it => String(it._id));
+
+    // Count purchases & revenue per item from Payment collection
+    const paymentAgg = await Payment.aggregate([
+      { $match: { productId: { $in: mktItemIds }, status: "paid" } },
+      { $group: { _id: "$productId", count: { $sum: 1 }, revenue: { $sum: "$amount" } } }
+    ]);
+    const paymentMap = Object.fromEntries(
+      paymentAgg.map(x => [x._id, { count: x.count, revenue: x.revenue }])
+    );
+
+    // Count purchases & revenue per item from Purchase collection
+    const purchaseAgg = await Purchase.aggregate([
+      { $match: { productId: { $in: mktItemIds }, status: { $in: ["Paid", "paid"] } } },
+      { $group: { _id: "$productId", count: { $sum: 1 }, revenue: { $sum: "$amount" } } }
+    ]);
+    const purchaseMap = Object.fromEntries(
+      purchaseAgg.map(x => [x._id, { count: x.count, revenue: x.revenue }])
+    );
+
+    // Fetch all payments for this partner to calculate exact total purchases & revenue
+    const allPartnerPayments = await Payment.find({
+      $or: [
+        { partnerEmail: email.toLowerCase() },
+        { productId: { $in: mktItemIds } }
+      ],
+      status: "paid"
+    }).lean();
+
+    const allPartnerPurchases = await Purchase.find({
+      $or: [
+        { creatorEmail: email.toLowerCase() },
+        { productId: { $in: mktItemIds } }
+      ],
+      status: { $in: ["Paid", "paid"] }
+    }).lean();
+
+    let totalMarketplacePurchases = allPartnerPayments.length + allPartnerPurchases.length;
+    let totalMarketplaceRevenue = allPartnerPayments.reduce((s, p) => s + (p.amount || 0), 0) +
+                                  allPartnerPurchases.reduce((s, p) => s + (p.amount || 0), 0);
+
+    // Build marketplace items with real data
+    const marketplaceItems = mktItems.map(item => {
+      const itemId = String(item._id);
+      const payData = paymentMap[itemId] || { count: 0, revenue: 0 };
+      const purData = purchaseMap[itemId] || { count: 0, revenue: 0 };
+      const purchases = payData.count + purData.count;
+      const revenue = payData.revenue + purData.revenue;
+
+      // Derive type from layer/category
+      const typeMap = { macro: "Course", micro: "Bundle", nano: "Session" };
+      const planMap = { macro: "Micro", micro: "Nano", nano: "Premium" };
+
+      return {
+        _id: itemId,
+        name: item.name || "Marketplace Item",
+        type: item.role || typeMap[item.layer] || "Course",
+        plan: planMap[item.layer] || "Micro",
+        layer: item.layer,
+        category: item.category,
+        purchases,
+        revenue,
+        status: item.status || "active",
+        cost: item.cost || "Free"
+      };
+    });
+
     return res.status(200).json({
       status: true,
       data: {
+        partnerName,
         totalSelected,
         thisWeek,
         percentChange,
         paths,
+        marketplaceItems,
+        totalMarketplacePurchases,
+        totalMarketplaceRevenue,
       },
     });
   } catch (err) {
@@ -427,10 +514,11 @@ const getExclusiveDashboardStats = async (req, res) => {
     const items = await MarketplaceItem.find({ partner_email: partnerEmail }).lean();
     const itemIds = items.map(it => String(it._id));
 
-    // 3. Query all payments (Razorpay checkout) associated with partnerId or itemIds
+    // 3. Query all payments (Razorpay checkout) associated with partnerId, partnerEmail, or itemIds
     const payments = await Payment.find({
       $or: [
         { partnerId: partner.partnerId },
+        { partnerEmail: partnerEmail.toLowerCase() },
         { productId: { $in: itemIds } }
       ]
     }).lean();
@@ -443,27 +531,59 @@ const getExclusiveDashboardStats = async (req, res) => {
       ]
     }).lean();
 
+    // 4.5. Query all student feedbacks associated with this partner
+    const Feedback = require("../models/FeedbackModel");
+    const Path = require("../models/PathModel");
+    const Step = require("../models/StepsModel");
+    const User = require("../models/UsersModel");
+
+    const feedbacks = await Feedback.find({
+      $or: [
+        { owner_id: partnerEmail.toLowerCase() },
+        { owner_id: String(partner._id) }
+      ]
+    }).sort({ createdAt: -1 }).lean();
+
+    const populatedFeedbacks = await Promise.all(feedbacks.map(async (fb) => {
+      const pathDoc = await Path.findById(fb.pathId).select("nameOfPath name").lean();
+      const stepDoc = await Step.findById(fb.stepId).select("name step_order").lean();
+      const userDoc = await User.findOne({ email: fb.studentEmail?.toLowerCase() }).select("name username").lean();
+
+      // Derive rating from action type
+      const actionRatingMap = { helpful: 5, comment: 4, skip: 3, notRelevant: 2 };
+      const rating = actionRatingMap[fb.action] || 3;
+
+      return {
+        _id: fb._id,
+        studentEmail: fb.studentEmail || "—",
+        studentName: userDoc?.name || userDoc?.username || fb.studentEmail || "Student",
+        service: pathDoc?.nameOfPath || pathDoc?.name || stepDoc?.name || "Career Path Session",
+        comment: fb.comment || (fb.action === "helpful" ? "Helpful session" : fb.action === "notRelevant" ? "Not relevant" : "Left evaluation"),
+        action: fb.action || "helpful",
+        rating,
+        type: fb.type || "marketplace",
+        date: fb.createdAt || new Date()
+      };
+    }));
+
     // 5. Unify and normalize transactions
     const combined = [];
     const uniqueEmails = new Set();
     let totalEarnings = 0;
 
-    // Default mock comments for beautiful dashboard representation
-    const comments = [
-      "Great experience!",
-      "Very helpful...",
-      "Excellent tutor...",
-      "Highly recommended session",
-      "Very interactive and informative",
-      "Helped clear all my doubts"
-    ];
-
-    payments.forEach((pay, index) => {
+    payments.forEach((pay) => {
       const isPaid = pay.status === "paid";
       if (isPaid) {
         totalEarnings += pay.amount || 0;
         if (pay.userEmail) uniqueEmails.add(pay.userEmail.toLowerCase());
       }
+
+      // Try to find matching feedback comment from student for this path/step
+      const matchingFb = feedbacks.find(
+        fb => String(fb.studentEmail || "").toLowerCase().trim() === String(pay.userEmail || "").toLowerCase().trim() &&
+              (String(fb.pathId) === String(pay.productId) || String(fb.stepId) === String(pay.productId))
+      );
+
       combined.push({
         _id: pay._id,
         studentEmail: pay.userEmail || "—",
@@ -472,16 +592,22 @@ const getExclusiveDashboardStats = async (req, res) => {
         amount: pay.amount || 0,
         date: pay.createdAt || new Date(),
         type: "Online Payment",
-        feedback: isPaid ? (comments[index % comments.length]) : "—"
+        feedback: matchingFb ? (matchingFb.comment || "Left evaluation") : "—"
       });
     });
 
-    purchases.forEach((pur, index) => {
+    purchases.forEach((pur) => {
       const isPaid = pur.status === "Paid" || pur.status === "paid";
       if (isPaid) {
         totalEarnings += pur.amount || 0;
         if (pur.clientEmail) uniqueEmails.add(pur.clientEmail.toLowerCase());
       }
+
+      const matchingFb = feedbacks.find(
+        fb => String(fb.studentEmail || "").toLowerCase().trim() === String(pur.clientEmail || "").toLowerCase().trim() &&
+              (String(fb.pathId) === String(pur.productId) || String(fb.stepId) === String(pur.productId))
+      );
+
       combined.push({
         _id: pur._id,
         studentEmail: pur.clientEmail || "—",
@@ -490,7 +616,7 @@ const getExclusiveDashboardStats = async (req, res) => {
         amount: pur.amount || 0,
         date: pur.date || pur.createdAt || new Date(),
         type: "Direct Purchase",
-        feedback: isPaid ? (comments[(index + 3) % comments.length]) : "—"
+        feedback: matchingFb ? (matchingFb.comment || "Left evaluation") : "—"
       });
     });
 
@@ -517,35 +643,6 @@ const getExclusiveDashboardStats = async (req, res) => {
         }
       }
     });
-
-    // 4.5. Query all student feedbacks associated with this partner
-    const Feedback = require("../models/FeedbackModel");
-    const Path = require("../models/PathModel");
-    const Step = require("../models/StepsModel");
-    const User = require("../models/UsersModel");
-
-    const feedbacks = await Feedback.find({
-      $or: [
-        { owner_id: partnerEmail.toLowerCase() },
-        { owner_id: String(partner._id) }
-      ]
-    }).sort({ createdAt: -1 }).lean();
-
-    const populatedFeedbacks = await Promise.all(feedbacks.map(async (fb) => {
-      const pathDoc = await Path.findById(fb.pathId).select("nameOfPath name").lean();
-      const stepDoc = await Step.findById(fb.stepId).select("name step_order").lean();
-      const userDoc = await User.findOne({ email: fb.studentEmail?.toLowerCase() }).select("name username").lean();
-      return {
-        _id: fb._id,
-        studentEmail: fb.studentEmail || "—",
-        studentName: userDoc?.name || userDoc?.username || fb.studentEmail || "Student",
-        service: pathDoc?.nameOfPath || pathDoc?.name || stepDoc?.name || "Career Path Session",
-        comment: fb.comment || (fb.action === "helpful" ? "Helpful session" : fb.action === "notRelevant" ? "Not relevant" : "Left evaluation"),
-        action: fb.action || "helpful",
-        type: fb.type || "marketplace",
-        date: fb.createdAt || new Date()
-      };
-    }));
 
     return res.status(200).json({
       status: true,

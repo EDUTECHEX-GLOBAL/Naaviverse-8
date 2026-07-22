@@ -106,7 +106,6 @@ const sidebarMenu = [
   { id: 3, display: "My Steps", title: "Steps", icon: "steps", click: true, path: "/dashboard/accountants/steps" },
   { id: 4, display: "Marketplace", title: "Marketplace", icon: "marketplace", click: true, path: "/dashboard/accountants/marketplace" },
   { id: 5, display: "Feedback", title: "Feedback", icon: "feedback", click: true, path: "/dashboard/accountants/feedback" },
-  { id: 6, display: "Exclusive Payments", title: "Payments", icon: "payments", click: true, path: "/partner/exclusive-dashboard" },
 ];
 
 const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, accStatus, isOpen, onClose }) => {

@@ -115,8 +115,9 @@ router.post("/create-order", async (req, res) => {
       planTier: planTier || undefined,
       status: "pending",
       partnerId: req.body.partnerId || null,
+      partnerEmail: req.body.partnerEmail ? String(req.body.partnerEmail).toLowerCase().trim() : null,
     });
-    console.log("✅ Payment record created:", payment._id, "| tier:", tier, "| planTier:", planTier);
+    console.log("✅ Payment record created:", payment._id, "| tier:", tier, "| planTier:", planTier, "| partnerEmail:", payment.partnerEmail);
 
     const order = await razorpay.orders.create({
       amount:   amount * 100,
@@ -139,8 +140,9 @@ router.post("/create-order", async (req, res) => {
     return res.json({ success: true, order });
 
   } catch (err) {
-    console.error("❌ Create Order Error:", err.message);
-    return res.status(500).json({ success: false, error: err.message });
+    const errorMsg = err.message || (err.error && err.error.description) || String(err);
+    console.error("❌ Create Order Error:", errorMsg, err);
+    return res.status(500).json({ success: false, error: errorMsg });
   }
 });
 
@@ -510,6 +512,7 @@ router.post("/mock-purchase", async (req, res) => {
         razorpayPaymentId: `MOCK_PAY_${Date.now()}`,
         razorpaySignature: "mock_signature",
         partnerId: item.partnerId || null,
+        partnerEmail: (item.partner_email || item.partnerEmail) ? String(item.partner_email || item.partnerEmail).toLowerCase().trim() : null,
       });
       paymentRecords.push(rec);
       await trackMarketplaceEvent({
@@ -551,6 +554,27 @@ router.post("/mock-purchase", async (req, res) => {
 
   } catch (err) {
     console.error("❌ Mock purchase error:", err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ═════════════════════════════════════════
+//   GET /api/payment/user-purchases
+//   Returns list of productIds the user has purchased (status=paid)
+// ═════════════════════════════════════════
+router.get("/user-purchases", async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ success: false, message: "email query param is required" });
+    }
+    const payments = await Payment.find(
+      { userEmail: email.toLowerCase().trim(), status: "paid" },
+      { productId: 1, productName: 1, amount: 1, createdAt: 1, _id: 0 }
+    ).lean();
+    return res.json({ success: true, purchases: payments });
+  } catch (err) {
+    console.error("❌ User purchases fetch error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });

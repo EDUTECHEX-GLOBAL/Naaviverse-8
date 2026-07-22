@@ -1,57 +1,81 @@
 // Naavi Exclusive Partner Dashboard Styling
+// Palette continues the NaaviExclusive brand: brass + violet on a warm slate
+// ground — lighter than pure obsidian so tables and long text stay easy to read.
 // ─────────────────────────────────────────────────────────────────────────────
 
-$bg-color: #0b0e14;
-$sidebar-bg: #07090d;
-$card-bg: rgba(17, 24, 39, 0.6);
-$card-border: rgba(255, 255, 255, 0.08);
-$text-primary: #f3f4f6;
-$text-secondary: #9ca3af;
-$text-muted: #6b7280;
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,440;0,9..144,560;0,9..144,650&family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap");
 
-$teal-glow: #0d9488;
-$blue-glow: #2273e6;
-$amber-glow: #f59e0b;
-$red-glow: #ef4444;
+$bg-color: #14161f;
+$bg-color-2: #191c27;
+$sidebar-bg: #101219;
+$card-bg: rgba(255, 255, 255, 0.035);
+$card-bg-hover: rgba(255, 255, 255, 0.05);
+$card-border: rgba(255, 255, 255, 0.09);
+
+$text-primary: #f2f1ea;
+$text-secondary: #a6ade0;
+$text-secondary-2: #99a2c2;
+$text-muted: #656d8c;
+
+$brass: #c6a15b;
+$brass-bright: #e7c988;
+$violet: #7c6ff2;
+$violet-soft: #9b90f7;
+$amber: #dba552;
+$rose: #e28b98;
+$success: #4fd3a4;
+
+$serif: "Fraunces", Georgia, serif;
+$sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+$mono: "Space Mono", "Courier New", monospace;
+
+$radius: 10px;
+$radius-sm: 7px;
 
 .px-db-root {
   display: flex;
   background-color: $bg-color;
+  background-image: radial-gradient(ellipse 900px 500px at 10% -10%, rgba($violet, 0.07), transparent 60%),
+    radial-gradient(ellipse 800px 460px at 100% 0%, rgba($brass, 0.06), transparent 55%);
   color: $text-primary;
   min-height: 100vh;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: $sans;
   overflow: hidden;
   position: relative;
 
-  // Background blur blobs
+  * {
+    box-sizing: border-box;
+  }
+
+  // Background blur blobs — kept quiet, not neon
   .px-blob {
     position: absolute;
     border-radius: 50%;
-    filter: blur(120px);
+    filter: blur(130px);
     z-index: 1;
     pointer-events: none;
-    opacity: 0.15;
+    opacity: 0.1;
   }
   .px-blob-1 {
-    width: 400px;
-    height: 400px;
-    background-color: $teal-glow;
-    top: -100px;
+    width: 420px;
+    height: 420px;
+    background-color: $brass;
+    top: -120px;
     left: -100px;
   }
   .px-blob-2 {
-    width: 500px;
-    height: 500px;
-    background-color: $blue-glow;
-    bottom: -150px;
+    width: 520px;
+    height: 520px;
+    background-color: $violet;
+    bottom: -160px;
     right: -100px;
   }
 }
 
 // ── Sidebar Styling ──────────────────────────────────────────────────────────
 .px-sidebar {
-  width: 260px;
-  background: linear-gradient(180deg, $sidebar-bg 0%, #050608 100%);
+  width: 234px;
+  background: linear-gradient(180deg, $sidebar-bg 0%, #0a0b10 100%);
   border-right: 1px solid $card-border;
   display: flex;
   flex-direction: column;
@@ -60,51 +84,56 @@ $red-glow: #ef4444;
   flex-shrink: 0;
 
   .px-sidebar-brand {
-    padding: 24px;
+    padding: 20px 22px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 9px;
     cursor: pointer;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 
     .px-brand-icon {
-      font-size: 1.4rem;
-      background: linear-gradient(135deg, $teal-glow 0%, $blue-glow 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 2px 8px rgba(13, 148, 136, 0.3));
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      color: $brass;
+      border: 1px solid rgba($brass, 0.4);
+      border-radius: 50%;
     }
     .px-brand-text {
-      font-weight: 800;
-      font-size: 1.15rem;
-      letter-spacing: -0.5px;
+      font-family: $serif;
+      font-weight: 560;
+      font-size: 1.08rem;
       color: #fff;
       .px-brand-accent {
-        color: $teal-glow;
+        font-style: italic;
+        color: $brass-bright;
       }
     }
   }
 
   .px-sidebar-nav {
     flex: 1;
-    padding: 20px 14px;
+    padding: 16px 12px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 3px;
 
     .px-nav-item {
       background: transparent;
-      border: none;
-      color: $text-secondary;
-      padding: 12px 16px;
-      border-radius: 10px;
+      border: 1px solid transparent;
+      color: $text-secondary-2;
+      padding: 10px 13px;
+      border-radius: $radius-sm;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 14px;
-      font-size: 0.92rem;
+      gap: 11px;
+      font-size: 0.86rem;
       font-weight: 500;
-      transition: all 0.25s ease;
+      transition: all 0.2s ease;
       text-align: left;
       width: 100%;
 
@@ -114,40 +143,52 @@ $red-glow: #ef4444;
       }
 
       &.active {
-        background: rgba(13, 148, 136, 0.12);
-        color: $teal-glow;
-        border: 1px solid rgba(13, 148, 136, 0.2);
-        box-shadow: 0 4px 20px rgba(13, 148, 136, 0.05);
+        background: rgba($brass, 0.1);
+        color: $brass-bright;
+        border-color: rgba($brass, 0.22);
       }
 
       .px-nav-icon {
-        font-size: 1.1rem;
+        display: inline-flex;
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+
+        svg {
+          width: 100%;
+          height: 100%;
+        }
       }
     }
   }
 
   .px-sidebar-footer {
-    padding: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
 
     .px-logout-btn {
       width: 100%;
-      background: rgba(239, 68, 68, 0.08);
-      border: 1px solid rgba(239, 68, 68, 0.15);
-      color: #f87171;
-      padding: 10px;
-      border-radius: 8px;
+      background: rgba($rose, 0.08);
+      border: 1px solid rgba($rose, 0.2);
+      color: $rose;
+      padding: 9px;
+      border-radius: $radius-sm;
       cursor: pointer;
       font-weight: 600;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      font-size: 0.88rem;
-      transition: all 0.25s ease;
+      gap: 7px;
+      font-size: 0.82rem;
+      transition: all 0.2s ease;
+
+      svg {
+        width: 14px;
+        height: 14px;
+      }
 
       &:hover {
-        background: rgba(239, 68, 68, 0.15);
+        background: rgba($rose, 0.16);
         color: #fff;
       }
     }
@@ -165,7 +206,7 @@ $red-glow: #ef4444;
 }
 
 .px-header {
-  padding: 24px 32px;
+  padding: 20px 30px;
   border-bottom: 1px solid $card-border;
   display: flex;
   justify-content: space-between;
@@ -174,41 +215,68 @@ $red-glow: #ef4444;
 
   .px-header-title {
     h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      margin: 0 0 4px 0;
+      font-family: $serif;
+      font-size: 1.28rem;
+      font-weight: 560;
+      margin: 0 0 5px 0;
       color: #fff;
     }
     .px-partner-badge {
-      font-size: 0.8rem;
-      color: $text-secondary;
+      font-family: $mono;
+      font-size: 0.7rem;
+      letter-spacing: 0.03em;
+      color: $text-secondary-2;
       margin: 0;
       display: inline-block;
       background: rgba(255, 255, 255, 0.04);
       padding: 3px 8px;
       border-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .px-refresh-btn {
+      font-family: $mono;
+      font-size: 0.7rem;
+      letter-spacing: 0.03em;
+      color: $text-secondary-2;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 3px 10px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.15);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
     }
   }
 
   .px-header-user {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 11px;
 
     .px-user-avatar {
-      width: 38px;
-      height: 38px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
-      background: linear-gradient(135deg, $teal-glow 0%, $blue-glow 100%);
-      color: #fff;
-      font-weight: 700;
+      background: linear-gradient(135deg, $brass 0%, $violet 100%);
+      color: #14161f;
+      font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: center;
       border: 2px solid $card-border;
-      box-shadow: 0 0 15px rgba(34, 115, 230, 0.2);
     }
 
     .px-user-info {
@@ -216,11 +284,11 @@ $red-glow: #ef4444;
       flex-direction: column;
       .px-username {
         font-weight: 600;
-        font-size: 0.88rem;
+        font-size: 0.84rem;
         color: #fff;
       }
       .px-userrole {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         color: $text-muted;
       }
     }
@@ -229,7 +297,7 @@ $red-glow: #ef4444;
 
 .px-content-wrapper {
   flex: 1;
-  padding: 32px;
+  padding: 28px 30px;
   overflow-y: auto;
 }
 
@@ -241,7 +309,7 @@ $red-glow: #ef4444;
 @keyframes pxFadeIn {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -253,35 +321,36 @@ $red-glow: #ef4444;
 .px-metrics-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  margin-bottom: 32px;
+  gap: 18px;
+  margin-bottom: 26px;
 }
 
 .px-metric-card {
-  background: $card-bg;
+  background: linear-gradient(178deg, rgba(255, 255, 255, 0.04), transparent 45%), $card-bg;
   border: 1px solid $card-border;
-  border-radius: 16px;
-  padding: 24px;
-  backdrop-filter: blur(16px);
+  border-radius: $radius;
+  padding: 20px;
+  backdrop-filter: blur(14px);
   position: relative;
   overflow: hidden;
-  transition: transform 0.3s ease, border-color 0.3s ease;
+  transition: transform 0.25s ease, border-color 0.25s ease;
 
   &:hover {
-    transform: translateY(-4px);
-    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-3px);
+    border-color: rgba(255, 255, 255, 0.16);
   }
 
   .px-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 
     .px-card-label {
-      font-size: 0.88rem;
-      color: $text-secondary;
-      font-weight: 500;
+      font-size: 0.78rem;
+      color: $text-secondary-2;
+      font-weight: 600;
+      letter-spacing: 0.01em;
     }
     .px-card-more {
       color: $text-muted;
@@ -290,27 +359,26 @@ $red-glow: #ef4444;
   }
 
   .px-card-value {
-    font-size: 2.1rem;
+    font-family: $mono;
+    font-size: 1.7rem;
     font-weight: 700;
-    letter-spacing: -1px;
     color: #fff;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
   }
 
   .px-card-sub {
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     font-weight: 600;
-    margin-bottom: 15px;
+    margin-bottom: 13px;
 
-    &.text-success { color: #10b981; }
-    &.text-teal { color: #0d9488; }
+    &.text-success { color: $success; }
+    &.text-teal { color: $brass-bright; }
     &.text-muted { color: $text-muted; }
   }
 
-  // Sparkline Chart & Bar Chart sizes
   .px-chart-wrapper {
-    height: 45px;
-    margin-top: 10px;
+    height: 40px;
+    margin-top: 8px;
     position: relative;
   }
   .px-sparkline, .px-barchart {
@@ -319,13 +387,12 @@ $red-glow: #ef4444;
     overflow: visible;
   }
 
-  // Circular Donut position
   .px-donut-chart-wrapper {
     position: absolute;
-    right: 24px;
-    bottom: 24px;
-    width: 50px;
-    height: 50px;
+    right: 20px;
+    bottom: 20px;
+    width: 44px;
+    height: 44px;
 
     .px-donutchart {
       width: 100%;
@@ -337,22 +404,23 @@ $red-glow: #ef4444;
 
 // ── General Card Section ─────────────────────────────────────────────────────
 .px-section-card {
-  background: $card-bg;
+  background: linear-gradient(178deg, rgba(255, 255, 255, 0.03), transparent 40%), $card-bg;
   border: 1px solid $card-border;
-  border-radius: 16px;
-  padding: 28px;
-  backdrop-filter: blur(16px);
-  margin-bottom: 32px;
+  border-radius: $radius;
+  padding: 22px;
+  backdrop-filter: blur(14px);
+  margin-bottom: 26px;
 
   .px-section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 
     h2 {
-      font-size: 1.15rem;
-      font-weight: 700;
+      font-family: $serif;
+      font-size: 1.04rem;
+      font-weight: 560;
       margin: 0;
       color: #fff;
     }
@@ -360,9 +428,9 @@ $red-glow: #ef4444;
     .px-view-all-btn {
       background: transparent;
       border: none;
-      color: $teal-glow;
-      font-weight: 600;
-      font-size: 0.88rem;
+      color: $brass-bright;
+      font-weight: 700;
+      font-size: 0.8rem;
       cursor: pointer;
       transition: opacity 0.2s ease;
       &:hover {
@@ -371,18 +439,26 @@ $red-glow: #ef4444;
     }
 
     .px-export-btn {
-      background: rgba(34, 115, 230, 0.1);
-      border: 1px solid rgba(34, 115, 230, 0.25);
-      color: #60a5fa;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba($violet, 0.1);
+      border: 1px solid rgba($violet, 0.28);
+      color: $violet-soft;
+      padding: 8px 14px;
+      border-radius: $radius-sm;
+      font-size: 0.8rem;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.2s ease;
 
+      svg {
+        width: 13px;
+        height: 13px;
+      }
+
       &:hover:not(:disabled) {
-        background: rgba(34, 115, 230, 0.25);
+        background: rgba($violet, 0.2);
         color: #fff;
       }
       &:disabled {
@@ -405,33 +481,36 @@ $red-glow: #ef4444;
   text-align: left;
 
   th {
-    padding: 14px 16px;
-    font-size: 0.78rem;
+    padding: 11px 14px;
+    font-family: $mono;
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: $text-muted;
     font-weight: 700;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   }
 
   td {
-    padding: 16px;
-    font-size: 0.88rem;
-    color: $text-secondary;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 13px 14px;
+    font-size: 0.83rem;
+    color: $text-secondary-2;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.045);
     vertical-align: middle;
+    transition: color 0.15s ease;
 
     .px-tbl-email {
       font-weight: 600;
-      color: #f3f4f6;
+      color: $text-primary;
     }
     .px-tbl-type {
       color: $text-muted;
-      font-size: 0.8rem;
+      font-size: 0.76rem;
     }
     &.px-tbl-comment {
       font-style: italic;
       color: $text-muted;
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       max-width: 220px;
       white-space: nowrap;
       overflow: hidden;
@@ -440,7 +519,7 @@ $red-glow: #ef4444;
   }
 
   tr:hover {
-    background-color: rgba(255, 255, 255, 0.06) !important;
+    background-color: rgba(255, 255, 255, 0.035) !important;
   }
 
   tr:hover td {
@@ -456,63 +535,69 @@ $red-glow: #ef4444;
 // Badges
 .px-badge {
   display: inline-block;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
+  padding: 3px 9px;
+  border-radius: 5px;
+  font-family: $mono;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.03em;
 
   &.badge-paid {
-    background: rgba(16, 185, 129, 0.12);
-    color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.2);
+    background: rgba($success, 0.12);
+    color: $success;
+    border: 1px solid rgba($success, 0.24);
   }
   &.badge-pending {
-    background: rgba(245, 158, 11, 0.12);
-    color: #f59e0b;
-    border: 1px solid rgba(245, 158, 11, 0.2);
+    background: rgba($amber, 0.12);
+    color: $amber;
+    border: 1px solid rgba($amber, 0.26);
   }
   &.badge-failed {
-    background: rgba(239, 68, 68, 0.12);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    background: rgba($rose, 0.12);
+    color: $rose;
+    border: 1px solid rgba($rose, 0.26);
   }
 }
 
 // Filter Toolbar
 .px-filter-toolbar {
   display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 20px;
 
   .px-filter-input {
     flex: 1;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.035);
     border: 1px solid $card-border;
-    border-radius: 8px;
-    padding: 10px 16px;
+    border-radius: $radius-sm;
+    padding: 9px 14px;
     color: #fff;
-    font-size: 0.88rem;
+    font-size: 0.84rem;
     outline: none;
     transition: border-color 0.2s ease;
 
+    &::placeholder {
+      color: $text-muted;
+    }
+
     &:focus {
-      border-color: $teal-glow;
+      border-color: rgba($brass, 0.5);
     }
   }
 
   .px-filter-select {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.035);
     border: 1px solid $card-border;
-    border-radius: 8px;
-    padding: 10px 16px;
+    border-radius: $radius-sm;
+    padding: 9px 14px;
     color: #fff;
-    font-size: 0.88rem;
+    font-size: 0.84rem;
     outline: none;
     cursor: pointer;
 
     option {
-      background: $bg-color;
+      background: $bg-color-2;
       color: #fff;
     }
   }
@@ -522,17 +607,17 @@ $red-glow: #ef4444;
 .px-feedback-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  gap: 16px;
 }
 
 .px-feedback-card {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid $card-border;
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: $radius-sm;
+  padding: 17px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 13px;
 
   .px-fb-header {
     display: flex;
@@ -542,17 +627,18 @@ $red-glow: #ef4444;
     .px-fb-user {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
 
       .px-fb-avatar {
-        width: 36px;
-        height: 36px;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
-        color: #fff;
-        font-weight: 700;
+        color: #14161f;
+        font-weight: 800;
         display: flex;
         align-items: center;
         justify-content: center;
+        font-size: 0.8rem;
       }
       .px-fb-info {
         display: flex;
@@ -560,36 +646,38 @@ $red-glow: #ef4444;
         gap: 2px;
         .px-fb-email {
           font-weight: 600;
-          font-size: 0.85rem;
+          font-size: 0.82rem;
           color: #fff;
         }
         .px-fb-product {
-          font-size: 0.75rem;
+          font-size: 0.72rem;
           color: $text-muted;
         }
       }
     }
 
     .px-fb-rating {
-      color: #f59e0b;
-      font-size: 0.85rem;
+      color: $brass-bright;
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
     }
   }
 
   .px-fb-body {
     p {
       margin: 0;
-      font-size: 0.88rem;
-      color: $text-secondary;
-      line-height: 1.5;
+      font-size: 0.84rem;
+      color: $text-secondary-2;
+      line-height: 1.55;
       font-style: italic;
     }
   }
 
   .px-fb-footer {
     display: flex;
-    gap: 8px;
-    font-size: 0.75rem;
+    gap: 7px;
+    font-family: $mono;
+    font-size: 0.68rem;
     color: $text-muted;
   }
 }
@@ -598,101 +686,104 @@ $red-glow: #ef4444;
 .px-settings-layout {
   display: grid;
   grid-template-columns: 2fr 1.2fr;
-  gap: 32px;
+  gap: 24px;
 }
 
 .px-settings-section {
-  background: rgba(255, 255, 255, 0.015);
+  background: rgba(255, 255, 255, 0.018);
   border: 1px solid $card-border;
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: $radius-sm;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 17px;
 
   h3 {
-    font-size: 0.95rem;
-    font-weight: 700;
-    margin: 0 0 6px 0;
+    font-family: $serif;
+    font-size: 0.92rem;
+    font-weight: 560;
+    margin: 0 0 5px 0;
     color: #fff;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 11px;
   }
 
   .px-form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    gap: 14px;
   }
 
   .px-form-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 
     label {
-      font-size: 0.8rem;
-      color: $text-secondary;
-      font-weight: 500;
+      font-size: 0.76rem;
+      color: $text-secondary-2;
+      font-weight: 600;
     }
     input, textarea {
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(255, 255, 255, 0.035);
       border: 1px solid $card-border;
-      border-radius: 8px;
-      padding: 10px 14px;
+      border-radius: $radius-sm;
+      padding: 9px 13px;
       color: #fff;
-      font-size: 0.88rem;
+      font-size: 0.84rem;
       outline: none;
       transition: border-color 0.2s ease;
       &:focus {
-        border-color: $teal-glow;
+        border-color: rgba($brass, 0.5);
       }
     }
   }
 
   .px-save-settings-btn {
-    background: $teal-glow;
+    background: linear-gradient(120deg, $violet, #9585fb);
     border: none;
     color: #fff;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.88rem;
+    padding: 10px 20px;
+    border-radius: $radius-sm;
+    font-weight: 700;
+    font-size: 0.83rem;
     cursor: pointer;
     align-self: flex-start;
-    transition: filter 0.2s ease;
+    box-shadow: 0 8px 20px rgba($violet, 0.25);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
     &:hover {
-      filter: brightness(1.15);
+      transform: translateY(-1px);
+      box-shadow: 0 12px 26px rgba($violet, 0.32);
     }
   }
 
   .px-integration-status {
     display: flex;
-    gap: 16px;
+    gap: 14px;
     align-items: flex-start;
-    padding: 12px 4px;
+    padding: 10px 4px;
 
     .px-status-dot {
-      width: 10px;
-      height: 10px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
       margin-top: 5px;
       flex-shrink: 0;
 
       &.glow-green {
-        background-color: #10b981;
-        box-shadow: 0 0 10px #10b981;
+        background-color: $success;
+        box-shadow: 0 0 9px rgba($success, 0.7);
       }
     }
 
     p {
       margin: 0 0 4px 0;
-      font-size: 0.88rem;
+      font-size: 0.84rem;
       color: #fff;
       &.subtext {
-        font-size: 0.78rem;
+        font-size: 0.75rem;
         color: $text-muted;
-        line-height: 1.4;
+        line-height: 1.5;
       }
     }
   }
@@ -702,14 +793,15 @@ $red-glow: #ef4444;
 .px-support-grid {
   display: grid;
   grid-template-columns: 1.5fr 2fr;
-  gap: 32px;
+  gap: 24px;
 
   .px-support-info {
     h3 {
-      font-size: 0.95rem;
-      font-weight: 700;
+      font-family: $serif;
+      font-size: 0.92rem;
+      font-weight: 560;
       color: #fff;
-      margin: 0 0 16px 0;
+      margin: 0 0 14px 0;
     }
     .px-faq-list {
       list-style: none;
@@ -717,41 +809,42 @@ $red-glow: #ef4444;
       margin: 0;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
 
       li {
         strong {
           display: block;
-          font-size: 0.88rem;
+          font-size: 0.84rem;
           color: #fff;
-          margin-bottom: 6px;
+          margin-bottom: 5px;
         }
         p {
           margin: 0;
-          font-size: 0.82rem;
-          color: $text-secondary;
-          line-height: 1.4;
+          font-size: 0.78rem;
+          color: $text-secondary-2;
+          line-height: 1.5;
         }
       }
     }
   }
 
   .px-support-form {
-    background: rgba(255, 255, 255, 0.015);
+    background: rgba(255, 255, 255, 0.018);
     border: 1px solid $card-border;
-    border-radius: 12px;
-    padding: 24px;
+    border-radius: $radius-sm;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
 
     h3 {
-      font-size: 0.95rem;
-      font-weight: 700;
+      font-family: $serif;
+      font-size: 0.92rem;
+      font-weight: 560;
       color: #fff;
-      margin: 0 0 6px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      padding-bottom: 12px;
+      margin: 0 0 5px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 11px;
     }
   }
 }
@@ -762,25 +855,34 @@ $red-glow: #ef4444;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 100px 0;
-  color: $text-secondary;
-  gap: 16px;
+  padding: 90px 0;
+  color: $text-secondary-2;
+  gap: 14px;
 
   .px-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(255, 255, 255, 0.05);
-    border-top: 3px solid $teal-glow;
+    width: 34px;
+    height: 34px;
+    border: 3px solid rgba(255, 255, 255, 0.06);
+    border-top: 3px solid $brass;
     border-radius: 50%;
-    animation: pxSpin 1s linear infinite;
+    animation: pxSpin 0.9s linear infinite;
   }
 }
 
-.px-error-container span {
-  font-size: 2.2rem;
+.px-error-container svg {
+  width: 30px;
+  height: 30px;
+  color: $rose;
 }
 
 @keyframes pxSpin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .px-view-fade,
+  .px-spinner {
+    animation: none !important;
+  }
 }

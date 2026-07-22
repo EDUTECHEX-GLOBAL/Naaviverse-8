@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useNavigate, Navigate, useParams } from "react-router-dom";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import "./PartnerExclusiveDashboard.scss";
@@ -21,8 +21,40 @@ const formatDate = (dateStr) => {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 };
 
+// ─── Small inline icon set (replaces emoji for a consistent, elegant mark) ────
+const Icon = {
+  Overview: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 3v18h18" /><path d="M7 15l4-5 3 3 5-7" /></svg>
+  ),
+  Transactions: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
+  ),
+  Refunds: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 10h11a5 5 0 0 1 0 10H9" /><polyline points="7 5 3 10 7 15" /></svg>
+  ),
+  Feedbacks: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+  ),
+  Settings: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+  ),
+  Support: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M9.1 9a3 3 0 0 1 5.82 1c0 2-3 2-3 4" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+  ),
+  Logout: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+  ),
+  Download: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+  ),
+  Alert: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+  ),
+};
+
 export default function PartnerExclusiveDashboard() {
   const navigate = useNavigate();
+  const { tab } = useParams();
 
   // 1. Authorization check
   const partner = useMemo(() => {
@@ -35,13 +67,32 @@ export default function PartnerExclusiveDashboard() {
     }
   }, []);
 
-  const [activeMenu, setActiveMenu] = useState("Overview");
+  const activeMenu = useMemo(() => {
+    if (!tab) return "Overview";
+    const mapping = {
+      overview: "Overview",
+      transactions: "Transactions",
+      refunds: "Refunds",
+      feedback: "Feedbacks",
+      feedbacks: "Feedbacks",
+      settings: "Settings",
+      support: "Support",
+    };
+    return mapping[tab.toLowerCase()] || "Overview";
+  }, [tab]);
+
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all"); // 'all', 'online', 'direct'
   const [filterStatus, setFilterStatus] = useState("all"); // 'all', 'Paid', 'Pending', 'Failed'
+  const [feedbackView, setFeedbackView] = useState("cards"); // 'cards' or 'table'
+
+  const feedbacksList = useMemo(() => {
+    return stats?.feedbacks || [];
+  }, [stats]);
 
   // Settings states
   const [payoutForm, setPayoutForm] = useState({
@@ -51,41 +102,40 @@ export default function PartnerExclusiveDashboard() {
     holderName: partner?.businessName || partner?.username || "John Doe",
   });
 
-  useEffect(() => {
+  const fetchStats = useCallback(async (isManual = false) => {
     if (!partner || (!partner.partnerId && !partner.email)) return;
-
-    const fetchStats = async () => {
-      try {
-        setLoading(true);
-        setErrorMsg("");
-        const res = await axios.get(`${BASE_URL}/api/partner-dashboard/exclusive-stats`, {
-          params: {
-            partnerId: partner?.partnerId || "",
-            email: partner?.email || ""
-          }
-        });
-        if (res.data?.status && res.data?.data) {
-          setStats(res.data.data);
-          // If partnerId was resolved by backend and is missing locally, save it!
-          if (res.data.partner?.partnerId && !partner.partnerId) {
-            const updated = { ...partner, partnerId: res.data.partner.partnerId };
-            localStorage.setItem("partner", JSON.stringify(updated));
-          }
-        } else {
-          setErrorMsg(res.data?.message || "Failed to load dashboard data.");
+    try {
+      if (isManual) setRefreshing(true);
+      else setLoading(true);
+      setErrorMsg("");
+      const res = await axios.get(`${BASE_URL}/api/partner-dashboard/exclusive-stats`, {
+        params: {
+          partnerId: partner?.partnerId || "",
+          email: partner?.email || ""
         }
-      } catch (err) {
-        console.error("Dashboard fetch error:", err);
-        setErrorMsg("Failed to connect to stats service.");
-      } finally {
-        setLoading(false);
+      });
+      if (res.data?.status && res.data?.data) {
+        setStats(res.data.data);
+        // If partnerId was resolved by backend and is missing locally, save it!
+        if (res.data.partner?.partnerId && !partner.partnerId) {
+          const updated = { ...partner, partnerId: res.data.partner.partnerId };
+          localStorage.setItem("partner", JSON.stringify(updated));
+        }
+      } else {
+        setErrorMsg(res.data?.message || "Failed to load dashboard data.");
       }
-    };
-
-    const intervalId = setInterval(fetchStats, 5000); // refresh dashboard stats every 5s
-    fetchStats();
-    return () => clearInterval(intervalId);
+    } catch (err) {
+      console.error("Dashboard fetch error:", err);
+      setErrorMsg("Failed to connect to stats service.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, [partner]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
 
   const handleLogout = () => {
@@ -134,12 +184,12 @@ export default function PartnerExclusiveDashboard() {
 
   // Sidebar Menu Items
   const sidebarMenu = [
-    { key: "Overview", label: "Overview", icon: "📊" },
-    { key: "Transactions", label: "Transactions", icon: "💸" },
-    { key: "Refunds", label: "Refunds", icon: "↩️" },
-    { key: "Feedbacks", label: "Feedbacks", icon: "💬" },
-    { key: "Settings", label: "Settings", icon: "⚙️" },
-    { key: "Support", label: "Support", icon: "❔" }
+    { key: "Overview", label: "Overview", icon: <Icon.Overview /> },
+    { key: "Transactions", label: "Transactions", icon: <Icon.Transactions /> },
+    { key: "Refunds", label: "Refunds", icon: <Icon.Refunds /> },
+    { key: "Feedbacks", label: "Feedbacks", icon: <Icon.Feedbacks /> },
+    { key: "Settings", label: "Settings", icon: <Icon.Settings /> },
+    { key: "Support", label: "Support", icon: <Icon.Support /> }
   ];
 
   return (
@@ -159,7 +209,18 @@ export default function PartnerExclusiveDashboard() {
             <button
               key={menu.key}
               className={`px-nav-item ${activeMenu === menu.key ? "active" : ""}`}
-              onClick={() => setActiveMenu(menu.key)}
+              onClick={() => {
+                const mapKeyToPath = {
+                  Overview: "",
+                  Transactions: "transactions",
+                  Refunds: "refunds",
+                  Feedbacks: "feedback",
+                  Settings: "settings",
+                  Support: "support",
+                };
+                const subPath = mapKeyToPath[menu.key] || "";
+                navigate(`/partner/exclusive-dashboard${subPath ? "/" + subPath : ""}`);
+              }}
             >
               <span className="px-nav-icon">{menu.icon}</span>
               <span className="px-nav-label">{menu.label}</span>
@@ -168,7 +229,7 @@ export default function PartnerExclusiveDashboard() {
         </nav>
         <div className="px-sidebar-footer">
           <button className="px-logout-btn" onClick={handleLogout}>
-            <span>🚪</span> Logout
+            <Icon.Logout /> Logout
           </button>
         </div>
       </aside>
@@ -179,7 +240,16 @@ export default function PartnerExclusiveDashboard() {
         <header className="px-header">
           <div className="px-header-title">
             <h1>Naavi Exclusive Partner Dashboard</h1>
-            <p className="px-partner-badge">Partner ID: {partner.partnerId}</p>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "4px" }}>
+              <p className="px-partner-badge">Partner ID: {partner.partnerId}</p>
+              <button
+                className="px-refresh-btn"
+                onClick={() => fetchStats(true)}
+                disabled={loading || refreshing}
+              >
+                {refreshing ? "⏳ Loading..." : "↻ Refresh"}
+              </button>
+            </div>
           </div>
           <div className="px-header-user">
             <div className="px-user-avatar">
@@ -201,7 +271,7 @@ export default function PartnerExclusiveDashboard() {
             </div>
           ) : errorMsg ? (
             <div className="px-error-container">
-              <span>⚠️</span>
+              <Icon.Alert />
               <p>{errorMsg}</p>
             </div>
           ) : (
@@ -219,14 +289,14 @@ export default function PartnerExclusiveDashboard() {
                       </div>
                       <div className="px-card-value">{formatCurrency(stats?.totalEarnings || 0)}</div>
                       <div className="px-card-sub text-success">+12.5% vs last month</div>
-                      
+
                       {/* SVG Line Sparkline Chart */}
                       <div className="px-chart-wrapper">
                         <svg className="px-sparkline" viewBox="0 0 100 30">
                           <defs>
                             <linearGradient id="glowGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="#0d9488" stopOpacity="0.4" />
-                              <stop offset="100%" stopColor="#0d9488" stopOpacity="0" />
+                              <stop offset="0%" stopColor="#c6a15b" stopOpacity="0.4" />
+                              <stop offset="100%" stopColor="#c6a15b" stopOpacity="0" />
                             </linearGradient>
                           </defs>
                           <path
@@ -236,7 +306,7 @@ export default function PartnerExclusiveDashboard() {
                           <path
                             d="M0,25 Q15,10 30,18 T60,5 T90,12 L100,8"
                             fill="none"
-                            stroke="#0d9488"
+                            stroke="#e7c988"
                             strokeWidth="2"
                             strokeLinecap="round"
                           />
@@ -256,13 +326,13 @@ export default function PartnerExclusiveDashboard() {
                       {/* SVG Bar Chart */}
                       <div className="px-chart-wrapper">
                         <svg className="px-barchart" viewBox="0 0 100 30">
-                          <rect x="5" y="10" width="8" height="20" rx="2" fill="rgba(34,115,230,0.4)" />
-                          <rect x="18" y="5" width="8" height="25" rx="2" fill="rgba(34,115,230,0.4)" />
-                          <rect x="31" y="12" width="8" height="18" rx="2" fill="rgba(34,115,230,0.4)" />
-                          <rect x="44" y="8" width="8" height="22" rx="2" fill="rgba(34,115,230,0.4)" />
-                          <rect x="57" y="18" width="8" height="12" rx="2" fill="#2273e6" />
-                          <rect x="70" y="4" width="8" height="26" rx="2" fill="#2273e6" />
-                          <rect x="83" y="10" width="8" height="20" rx="2" fill="#2273e6" />
+                          <rect x="5" y="10" width="8" height="20" rx="2" fill="rgba(124,111,242,0.35)" />
+                          <rect x="18" y="5" width="8" height="25" rx="2" fill="rgba(124,111,242,0.35)" />
+                          <rect x="31" y="12" width="8" height="18" rx="2" fill="rgba(124,111,242,0.35)" />
+                          <rect x="44" y="8" width="8" height="22" rx="2" fill="rgba(124,111,242,0.35)" />
+                          <rect x="57" y="18" width="8" height="12" rx="2" fill="#7c6ff2" />
+                          <rect x="70" y="4" width="8" height="26" rx="2" fill="#7c6ff2" />
+                          <rect x="83" y="10" width="8" height="20" rx="2" fill="#7c6ff2" />
                         </svg>
                       </div>
                     </div>
@@ -283,14 +353,14 @@ export default function PartnerExclusiveDashboard() {
                             className="px-donut-ring"
                             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                             fill="none"
-                            stroke="#1E293B"
+                            stroke="#252838"
                             strokeWidth="3.5"
                           />
                           <path
                             className="px-donut-segment"
                             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                             fill="none"
-                            stroke="#F59E0B"
+                            stroke="#dba552"
                             strokeWidth="3.5"
                             strokeDasharray={`${stats?.refundRate || 1.2}, 100`}
                           />
@@ -303,8 +373,8 @@ export default function PartnerExclusiveDashboard() {
                   <div className="px-section-card">
                     <div className="px-section-header">
                       <h2>Recent Transactions</h2>
-                      <button className="px-view-all-btn" onClick={() => setActiveMenu("Transactions")}>
-                        View All Transactions ➔
+                      <button className="px-view-all-btn" onClick={() => navigate("/partner/exclusive-dashboard/transactions")}>
+                        View All Transactions →
                       </button>
                     </div>
                     <div className="px-table-responsive">
@@ -316,7 +386,6 @@ export default function PartnerExclusiveDashboard() {
                             <th>Payment Status</th>
                             <th>Type</th>
                             <th>Date</th>
-                            <th>Feedback</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -332,12 +401,11 @@ export default function PartnerExclusiveDashboard() {
                                 </td>
                                 <td><span className="px-tbl-type">{tx.type}</span></td>
                                 <td>{formatDate(tx.date)}</td>
-                                <td className="px-tbl-comment">"{tx.feedback}"</td>
                               </tr>
                             ))
                           ) : (
                             <tr>
-                              <td colSpan="6" style={{ textAlign: "center", padding: "40px 0" }}>
+                              <td colSpan="5" style={{ textAlign: "center", padding: "40px 0" }}>
                                 No recent transactions recorded yet.
                               </td>
                             </tr>
@@ -356,7 +424,7 @@ export default function PartnerExclusiveDashboard() {
                     <div className="px-section-header">
                       <h2>All Payments & Transactions</h2>
                       <button className="px-export-btn" onClick={handleExportExcel} disabled={!stats?.allTransactions?.length}>
-                        📥 Export to Excel
+                        <Icon.Download /> Export to Excel
                       </button>
                     </div>
 
@@ -485,64 +553,134 @@ export default function PartnerExclusiveDashboard() {
               {activeMenu === "Feedbacks" && (
                 <div className="px-view-fade">
                   <div className="px-section-card">
-                    <div className="px-section-header">
+                    <div className="px-section-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <h2>Student Feedbacks & Reviews</h2>
+                      
+                      {/* View Toggles */}
+                      <div className="px-feedback-tabs" style={{ display: "flex", gap: "4px", background: "rgba(255,255,255,0.04)", padding: "4px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.08)" }}>
+                        <button
+                          className={`px-feedback-tab-btn ${feedbackView === "cards" ? "active" : ""}`}
+                          onClick={() => setFeedbackView("cards")}
+                          style={{
+                            background: feedbackView === "cards" ? "#7c6ff2" : "transparent",
+                            border: "none",
+                            color: feedbackView === "cards" ? "#fff" : "#a6ade0",
+                            padding: "6px 12px",
+                            borderRadius: "6px",
+                            fontSize: "0.8rem",
+                            fontWeight: "600",
+                            cursor: "pointer",
+                            transition: "all 0.2s ease"
+                          }}
+                        >
+                          Grid View
+                        </button>
+                        <button
+                          className={`px-feedback-tab-btn ${feedbackView === "table" ? "active" : ""}`}
+                          onClick={() => setFeedbackView("table")}
+                          style={{
+                            background: feedbackView === "table" ? "#7c6ff2" : "transparent",
+                            border: "none",
+                            color: feedbackView === "table" ? "#fff" : "#a6ade0",
+                            padding: "6px 12px",
+                            borderRadius: "6px",
+                            fontSize: "0.8rem",
+                            fontWeight: "600",
+                            cursor: "pointer",
+                            transition: "all 0.2s ease"
+                          }}
+                        >
+                          Tabular View
+                        </button>
+                      </div>
                     </div>
-                    <div className="px-feedback-list">
-                      {stats?.feedbacks?.length ? (
-                        stats.feedbacks.map((fb, idx) => (
-                          <div className="px-feedback-card" key={fb._id || idx}>
-                            <div className="px-fb-header">
-                              <div className="px-fb-user">
-                                <div className="px-fb-avatar" style={{ backgroundColor: `hsl(${(idx * 65) % 360}, 60%, 45%)` }}>
-                                  {fb.studentEmail.charAt(0).toUpperCase()}
+
+                    {feedbackView === "table" ? (
+                      <div className="px-table-responsive">
+                        <table className="px-table">
+                          <thead>
+                            <tr>
+                              <th>Student</th>
+                              <th>Service / Pathway</th>
+                              <th>Rating</th>
+                              <th>Action</th>
+                              <th>Comment / Full Feedback</th>
+                              <th>Date</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {feedbacksList.length ? (
+                              feedbacksList.map((fb, idx) => (
+                                <tr key={fb._id || idx}>
+                                  <td>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                      <div className="px-fb-avatar" style={{ width: "24px", height: "24px", borderRadius: "50%", color: "#14161f", fontWeight: "800", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", backgroundColor: idx % 2 === 0 ? "#c6a15b" : "#7c6ff2", flexShrink: 0 }}>
+                                        {(fb.studentName || fb.studentEmail || "S").charAt(0).toUpperCase()}
+                                      </div>
+                                      <span className="px-tbl-email">{fb.studentName || fb.studentEmail}</span>
+                                    </div>
+                                  </td>
+                                  <td>{fb.service}</td>
+                                  <td style={{ color: "#e7c988", fontSize: "0.85rem", letterSpacing: "0.04em" }}>
+                                    {"★".repeat(fb.rating || 3)}{"☆".repeat(5 - (fb.rating || 3))}
+                                  </td>
+                                  <td>
+                                    <span className={`px-badge badge-${fb.action === "helpful" ? "paid" : fb.action === "notRelevant" ? "failed" : "pending"}`} style={{ fontSize: "0.65rem", padding: "2px 6px" }}>
+                                      {fb.action}
+                                    </span>
+                                  </td>
+                                  <td style={{ color: "#f2f1ea", fontSize: "0.82rem", whiteSpace: "normal", wordBreak: "break-word", lineHeight: "1.4" }}>
+                                    "{fb.comment}"
+                                  </td>
+                                  <td>{formatDate(fb.date)}</td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan="6" style={{ textAlign: "center", padding: "40px 0" }}>
+                                  No feedbacks recorded yet.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="px-feedback-list">
+                        {feedbacksList.length ? (
+                          feedbacksList.map((fb, idx) => (
+                            <div className="px-feedback-card" key={fb._id || idx}>
+                              <div className="px-fb-header">
+                                <div className="px-fb-user">
+                                  <div className="px-fb-avatar" style={{ backgroundColor: idx % 2 === 0 ? "#c6a15b" : "#7c6ff2" }}>
+                                    {(fb.studentEmail || fb.studentName || "S").charAt(0).toUpperCase()}
+                                  </div>
+                                  <div className="px-fb-info">
+                                    <span className="px-fb-email">{fb.studentName || fb.studentEmail}</span>
+                                    <span className="px-fb-product">Service: {fb.service}</span>
+                                  </div>
                                 </div>
-                                <div className="px-fb-info">
-                                  <span className="px-fb-email">{fb.studentName}</span>
-                                  <span className="px-fb-product">Service: {fb.service}</span>
+                                <div className="px-fb-rating">
+                                  {"★".repeat(fb.rating || 3)}{"☆".repeat(5 - (fb.rating || 3))}
                                 </div>
                               </div>
-                              <div className="px-fb-rating">
-                                {fb.action === "notRelevant" ? "★★" : "★★★★★"}
+                              <div className="px-fb-body">
+                                <p>"{fb.comment}"</p>
+                              </div>
+                              <div className="px-fb-footer">
+                                <span>Action: {fb.action}</span>
+                                <span>•</span>
+                                <span>{formatDate(fb.date)}</span>
                               </div>
                             </div>
-                            <div className="px-fb-body">
-                              <p>"{fb.comment}"</p>
-                            </div>
-                            <div className="px-fb-footer">
-                              <span>Action: {fb.action}</span>
-                              <span>•</span>
-                              <span>{formatDate(fb.date)}</span>
-                            </div>
+                          ))
+                        ) : (
+                          <div style={{ textAlign: "center", padding: "40px 0", color: "#656d8c", gridColumn: "span 2" }}>
+                            No feedbacks recorded yet.
                           </div>
-                        ))
-                      ) : stats?.allTransactions?.filter(t => t.status === "Paid").map((tx, idx) => (
-                        <div className="px-feedback-card" key={tx._id || idx}>
-                          <div className="px-fb-header">
-                            <div className="px-fb-user">
-                              <div className="px-fb-avatar" style={{ backgroundColor: `hsl(${(idx * 60) % 360}, 50%, 50%)` }}>
-                                {tx.studentEmail.charAt(0).toUpperCase()}
-                              </div>
-                              <div className="px-fb-info">
-                                <span className="px-fb-email">{tx.studentEmail}</span>
-                                <span className="px-fb-product">Service: {tx.service}</span>
-                              </div>
-                            </div>
-                            <div className="px-fb-rating">
-                              {"★".repeat(5)}
-                            </div>
-                          </div>
-                          <div className="px-fb-body">
-                            <p>"{tx.feedback}"</p>
-                          </div>
-                          <div className="px-fb-footer">
-                            <span>Logged via: {tx.type}</span>
-                            <span>•</span>
-                            <span>{formatDate(tx.date)}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -554,7 +692,7 @@ export default function PartnerExclusiveDashboard() {
                     <div className="px-section-header">
                       <h2>Payout & Integration Settings</h2>
                     </div>
-                    
+
                     <div className="px-settings-layout">
                       <div className="px-settings-section">
                         <h3>Bank Account Details (For Monthly Payouts)</h3>
