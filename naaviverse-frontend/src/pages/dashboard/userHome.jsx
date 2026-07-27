@@ -227,19 +227,30 @@ export default function UserHome() {
         if (data?.success) {
           const paidTxns = data.data.filter(t => t.status?.toLowerCase() === "paid");
 
-          // 1. Subscriptions: Only true plan subscriptions (Nano, Micro, Pro, Plus, Naavi Platform)
-          const subTxns = paidTxns.filter(t => {
-            if (t.productId === "naavi-platform" || t.planTier) return true;
-            const name = (t.productName || "").toLowerCase();
-            return (
-              name.includes("nano plan") ||
-              name.includes("micro plan") ||
-              name.includes("plus plan") ||
-              name.includes("pro plan") ||
-              name.includes("naavi pro") ||
-              name.startsWith("plan subscription")
-            );
-          }).map(t => {
+          const isPlatformSubscription = (t) => {
+            if (t.partnerId || t.partnerEmail) return false;
+            const rawName = (t.productName || "").trim();
+            const nameLower = rawName.toLowerCase();
+            if (rawName.startsWith("Marketplace —")) return false;
+            if (t.productId === "naavi-platform") return true;
+
+            const isExplicitPlan =
+              nameLower.includes("nano plan") ||
+              nameLower.includes("micro plan") ||
+              nameLower.includes("plus plan") ||
+              nameLower.includes("pro plan") ||
+              nameLower.includes("proplus plan") ||
+              nameLower.includes("pro plus plan") ||
+              nameLower.includes("naavi pro") ||
+              nameLower.includes("platform subscription") ||
+              nameLower.startsWith("plan subscription") ||
+              nameLower.endsWith("plan subscription");
+
+            return isExplicitPlan;
+          };
+
+          // 1. Subscriptions: Only true platform plan subscriptions (Nano, Micro, Pro, Plus, Naavi Platform)
+          const subTxns = paidTxns.filter(isPlatformSubscription).map(t => {
             const cleanName = (t.productName || "Naavi Plan Subscription")
               .replace(/^Marketplace —\s*/i, "")
               .replace(/^Subscription —\s*/i, "");
@@ -260,19 +271,8 @@ export default function UserHome() {
             };
           });
 
-          // 2. Marketplace Purchases: All marketplace items/courses/tools
-          const marketTxns = paidTxns.filter(t => {
-            if (t.productId === "naavi-platform" || t.planTier) return false;
-            const name = (t.productName || "").toLowerCase();
-            return !(
-              name.includes("nano plan") ||
-              name.includes("micro plan") ||
-              name.includes("plus plan") ||
-              name.includes("pro plan") ||
-              name.includes("naavi pro") ||
-              name.startsWith("plan subscription")
-            );
-          }).map(t => {
+          // 2. Marketplace Purchases: All marketplace items, courses, mentoring, tools & partner services
+          const marketTxns = paidTxns.filter(t => !isPlatformSubscription(t)).map(t => {
             const cleanName = (t.productName || "Marketplace Item")
               .replace(/^Marketplace —\s*/i, "")
               .replace(/^Subscription —\s*/i, "");

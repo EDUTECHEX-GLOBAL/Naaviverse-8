@@ -5,14 +5,27 @@ const path = require("path");
 // ── Logo path ─────────────────────────────────────────────────
 const LOGO_PATH = path.join(__dirname, "naavi_final_logo2.png");
 
-// ── Transporter ───────────────────────────────────────────────
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_SERVICE_USER,
-    pass: process.env.EMAIL_SERVICE_PASS,
-  },
-});
+// ── Transporter (Supports Brevo SMTP & Gmail fallback) ────────
+const createTransporter = () => {
+  if (process.env.BREVO_API_KEY) {
+    return nodemailer.createTransport({
+      host: "smtp-relay.brevo.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.BREVO_USER || "b31b04001@smtp-brevo.com",
+        pass: process.env.BREVO_API_KEY,
+      },
+    });
+  }
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_SERVICE_USER,
+      pass: process.env.EMAIL_SERVICE_PASS,
+    },
+  });
+};
 
 // ── Helpers ───────────────────────────────────────────────────
 function formatAmount(n) {
@@ -263,7 +276,7 @@ async function sendInvoiceEmail(payment) {
     ],
   };
 
-  await transporter.sendMail(mailOptions);
+  await createTransporter().sendMail(mailOptions);
   console.log(`✅ Invoice email sent → ${payment.userEmail}  [${invNo}]`);
 }
 

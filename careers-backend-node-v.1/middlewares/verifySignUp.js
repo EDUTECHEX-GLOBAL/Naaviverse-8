@@ -1,33 +1,33 @@
 // =========================================
-//  📧 SENDGRID + AUTH CONTROLLER (FINAL)
+//  📧 BREVO (SENDINBLUE) EMAIL CONTROLLER
 // =========================================
 
 const User = require("../models/UsersModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const sgMail = require("@sendgrid/mail");
+const axios = require("axios");
+const nodemailer = require("nodemailer");
 
 
 // =========================================
-// SENDGRID CONFIG
+// BREVO CONFIG
 // =========================================
 
-// ✅ Validate ENV first (prevents silent failures)
-if (!process.env.SENDGRID_API_KEY) {
-  console.error("❌ SENDGRID_API_KEY missing in environment");
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const BREVO_USER = process.env.BREVO_USER || "b31b04001@smtp-brevo.com";
+
+if (!BREVO_API_KEY) {
+  console.error("⚠️ BREVO_API_KEY missing in environment variables (.env)");
 }
 
 if (!process.env.EMAIL_SERVICE_USER) {
-  console.error("❌ EMAIL_SERVICE_USER missing in environment");
+  console.error("⚠️ EMAIL_SERVICE_USER missing in environment variables (.env)");
 }
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-const userEmail = process.env.EMAIL_SERVICE_USER;
-
 console.log(
-  "📧 SendGrid Config:",
-  process.env.SENDGRID_API_KEY ? "Key Loaded ✅" : "Key Missing ❌"
+  "📧 Brevo Email Config:",
+  process.env.BREVO_API_KEY ? "Key Loaded ✅" : "Key Missing ❌",
+  `| Login: ${BREVO_USER}`
 );
 
 
@@ -42,32 +42,38 @@ const generateOTP = () => {
 
 
 // =========================================
-// SEND MAIL USING SENDGRID
+// SEND MAIL USING BREVO
 // =========================================
 const sendNotificationMail = async (email, subject, message) => {
+  const apiKey = process.env.BREVO_API_KEY || process.env.SENDGRID_API_KEY;
+
+  if (!apiKey) {
+    console.error("❌ BREVO_API_KEY missing in environment");
+    return false;
+  }
+
   try {
-    const msg = {
-      to: email,
-      from: {
-        email: process.env.EMAIL_SERVICE_USER,
-        name: "Naavi Platform"
+    const transporter = nodemailer.createTransport({
+      host: "smtp-relay.brevo.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: BREVO_USER,
+        pass: apiKey,
       },
+    });
+
+    const info = await transporter.sendMail({
+      from: `"Naavi Platform" <${process.env.EMAIL_SERVICE_USER || "praneethsunkara3@gmail.com"}>`,
+      to: email,
       subject: subject || "Notification",
-      html: `<p>${message}</p>`,
-      trackingSettings: {
-        clickTracking: { enable: false },
-        openTracking: { enable: false }
-      }
-    };
+      html: message.startsWith("<") ? message : `<p>${message}</p>`,
+    });
 
-    const response = await sgMail.send(msg);
-
-    console.log("✅ SendGrid Status:", response[0].statusCode);
-
+    console.log("✅ Brevo Email Sent Successfully:", info.messageId);
     return true;
-
   } catch (error) {
-    console.error("❌ SendGrid FULL Error:", error);
+    console.error("❌ Brevo Email Delivery Error:", error.message);
     return false;
   }
 };
