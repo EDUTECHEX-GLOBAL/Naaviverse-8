@@ -3,7 +3,7 @@
 // ground — lighter than pure obsidian so tables and long text stay easy to read.
 // ─────────────────────────────────────────────────────────────────────────────
 
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,440;0,9..144,560;0,9..144,650&family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
 
 $bg-color: #14161f;
 $bg-color-2: #191c27;
@@ -25,9 +25,10 @@ $amber: #dba552;
 $rose: #e28b98;
 $success: #4fd3a4;
 
-$serif: "Fraunces", Georgia, serif;
-$sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-$mono: "Space Mono", "Courier New", monospace;
+$poppins: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+$serif: $poppins;
+$sans: $poppins;
+$mono: $poppins;
 
 $radius: 10px;
 $radius-sm: 7px;
@@ -39,12 +40,13 @@ $radius-sm: 7px;
     radial-gradient(ellipse 800px 460px at 100% 0%, rgba($brass, 0.06), transparent 55%);
   color: $text-primary;
   min-height: 100vh;
-  font-family: $sans;
+  font-family: $poppins;
   overflow: hidden;
   position: relative;
 
   * {
     box-sizing: border-box;
+    font-family: inherit;
   }
 
   // Background blur blobs — kept quiet, not neon
@@ -206,90 +208,95 @@ $radius-sm: 7px;
 }
 
 .px-header {
-  padding: 20px 30px;
+  padding: 14px 28px;
   border-bottom: 1px solid $card-border;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
+  background: rgba($sidebar-bg, 0.4);
+  backdrop-filter: blur(10px);
 
   .px-header-title {
     h1 {
-      font-family: $serif;
-      font-size: 1.28rem;
-      font-weight: 560;
-      margin: 0 0 5px 0;
-      color: #fff;
-    }
-    .px-partner-badge {
-      font-family: $mono;
-      font-size: 0.7rem;
-      letter-spacing: 0.03em;
-      color: $text-secondary-2;
+      font-family: $poppins;
+      font-size: 1.18rem;
+      font-weight: 600;
       margin: 0;
-      display: inline-block;
-      background: rgba(255, 255, 255, 0.04);
-      padding: 3px 8px;
-      border-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.07);
-    }
-    .px-refresh-btn {
-      font-family: $mono;
-      font-size: 0.7rem;
-      letter-spacing: 0.03em;
-      color: $text-secondary-2;
-      background: rgba(255, 255, 255, 0.04);
-      padding: 3px 10px;
-      border-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.2s ease;
-
-      &:hover:not(:disabled) {
-        background: rgba(255, 255, 255, 0.08);
-        color: #fff;
-        border-color: rgba(255, 255, 255, 0.15);
-      }
-
-      &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
+      color: #fff;
+      letter-spacing: -0.01em;
     }
   }
 
-  .px-header-user {
+  .px-header-right {
     display: flex;
     align-items: center;
-    gap: 11px;
+    gap: 14px;
 
-    .px-user-avatar {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, $brass 0%, $violet 100%);
-      color: #14161f;
-      font-weight: 800;
-      display: flex;
+    .px-partner-badge {
+      font-family: $poppins;
+      font-size: 0.76rem;
+      color: $text-secondary-2;
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      border: 2px solid $card-border;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+
+      .px-partner-label {
+        color: $text-muted;
+        font-weight: 500;
+      }
+
+      .px-partner-id {
+        color: $brass-bright;
+        font-weight: 600;
+      }
     }
 
-    .px-user-info {
+    .px-header-user {
       display: flex;
-      flex-direction: column;
-      .px-username {
-        font-weight: 600;
-        font-size: 0.84rem;
-        color: #fff;
+      align-items: center;
+      gap: 10px;
+      padding-left: 14px;
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+
+      .px-user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, $brass 0%, $violet 100%);
+        color: #14161f;
+        font-weight: 700;
+        font-size: 0.88rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       }
-      .px-userrole {
-        font-size: 0.7rem;
-        color: $text-muted;
+
+      .px-user-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        .px-username {
+          font-family: $poppins;
+          font-weight: 600;
+          font-size: 0.84rem;
+          color: #fff;
+          line-height: 1.2;
+        }
+        .px-userrole {
+          font-family: $poppins;
+          font-size: 0.7rem;
+          color: $text-muted;
+          line-height: 1.2;
+          margin-top: 2px;
+        }
       }
     }
   }

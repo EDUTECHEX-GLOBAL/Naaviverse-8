@@ -47,16 +47,17 @@ $font: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-se
 // ── Header ──────────────────────────────────────────────────────────────────
 .af-header {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 2px;
     padding: 24px 28px 0;
     flex-shrink: 0;
 }
 
-.af-header-left {
+.af-header-top {
     display: flex;
-    flex-direction: column;
-    gap: 3px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 .af-title {
@@ -87,6 +88,8 @@ $font: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-se
     font-weight: 600;
     cursor: pointer;
     transition: all 0.15s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
 
     &:hover {
         border-color: $blue;
@@ -426,6 +429,25 @@ $font: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-se
 }
 
 // ── Table / rows ──────────────────────────────────────────────────────────
+.af-table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 10px;
+
+    &::-webkit-scrollbar {
+        height: 5px;
+    }
+    &::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.03);
+        border-radius: 3px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: $line-strong;
+        border-radius: 3px;
+    }
+}
+
 .af-table {
     display: flex;
     flex-direction: column;
@@ -433,6 +455,7 @@ $font: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-se
     border: 1px solid $line;
     border-radius: 10px;
     overflow: hidden;
+    min-width: 620px;
 }
 
 .af-row {
@@ -602,21 +625,37 @@ $font: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-se
         align-items: stretch;
     }
 
+    .af-filter-pills {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 4px;
+        max-width: 100%;
+        -webkit-overflow-scrolling: touch;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
     .af-search-wrap {
         min-width: unset;
+        width: 100%;
     }
 
     .af-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
+        padding: 16px 16px 0;
     }
 
-    .af-row-right {
-        align-items: flex-start;
+    .af-title {
+        font-size: 1.12rem;
     }
 
-    .af-row {
-        flex-wrap: wrap;
+    .af-subtitle {
+        font-size: 0.74rem;
+    }
+
+    .af-refresh-btn {
+        padding: 6px 10px;
+        font-size: 0.72rem;
     }
 }
