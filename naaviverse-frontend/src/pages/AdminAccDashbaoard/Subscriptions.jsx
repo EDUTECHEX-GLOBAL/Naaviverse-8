@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import "./Subscriptions.scss";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -76,32 +77,16 @@ const IconChevron = () => (
 
 /* ── Stat Card ───────────────────────────────────────────────────── */
 const StatCard = ({ label, value, accent, bg, iconPath }) => (
-  <div style={{
-    background: bg,
-    borderRadius: "14px",
-    padding: "14px 16px",
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    flex: "1 1 calc(25% - 8px)",
-    minWidth: "70px",
-  }}>
-    <div style={{
-      width: "40px", height: "40px", borderRadius: "10px",
-      background: accent, display: "flex", alignItems: "center",
-      justifyContent: "center", flexShrink: 0,
-    }}>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+  <div className="subs-stat-card" style={{ background: bg }}>
+    <div className="stat-icon-wrapper" style={{ background: accent }}>
+      <svg viewBox="0 0 24 24" fill="none"
         stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
         {iconPath}
       </svg>
     </div>
-    <div>
-      <div style={{ fontSize: "10px", fontWeight: 700, color: accent,
-        textTransform: "uppercase", letterSpacing: "0.06em",
-        opacity: 0.8, marginBottom: "2px" }}>{label}</div>
-      <div style={{ fontSize: "1.25rem", fontWeight: 500,
-        color: accent, lineHeight: 1 }}>{value}</div>
+    <div className="stat-info">
+      <div className="stat-label" style={{ color: accent }}>{label}</div>
+      <div className="stat-value" style={{ color: accent }}>{value}</div>
     </div>
   </div>
 );
@@ -174,74 +159,40 @@ export default function Subscriptions() {
   );
 
   return (
-    <div
-      style={{
-        padding: "16px",
-        minHeight: "100vh",
-        background: "#f5f7fb",
-        fontFamily: "'DM Sans', sans-serif",
-        boxSizing: "border-box",
-      }}
-      onClick={() => setStatusDropOpen(false)}
-    >
+    <div className="subs-container" onClick={() => setStatusDropOpen(false)}>
 
       {/* ── Header ── */}
-      <div style={{ marginBottom: "14px" }}>
-        <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#0f172a", margin: 0 }}>
-          Subscriptions
-        </h2>
-        <p style={{ color: "#94a3b8", fontSize: "11px", marginTop: "2px", fontWeight: 500 }}>
-          All user plan data · {normalized.length} total
-        </p>
+      <div className="subs-header">
+        <h2>Subscriptions</h2>
+        <p>All user plan data · {normalized.length} total</p>
       </div>
 
-      {/* ── Stat strip — always 1 row, 4 equal cards ── */}
-      <div style={{
-        display: "flex",
-        gap: "8px",
-        marginBottom: "14px",
-        flexWrap: "nowrap",   /* force single row */
-      }}>
-       <StatCard label="Active"    value={activeCount}       accent="#2563eb" bg="#dbeafe"
-  iconPath={<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>} />
-<StatCard label="Expired"   value={expiredCount}      accent="#ef4444" bg="#fee2e2"
-  iconPath={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />
-<StatCard label="Cancelled" value={cancelCount}       accent="#64748b" bg="#e2e8f0"
-  iconPath={<><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></>} />
-<StatCard label="Total"     value={normalized.length} accent="#7c3aed" bg="#ede9fe"
-  iconPath={<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>} />
+      {/* ── Stat strip — responsive grid (4 on desktop, 2x2 on mobile) ── */}
+      <div className="subs-stats-grid">
+        <StatCard label="Active"    value={activeCount}       accent="#2563eb" bg="#dbeafe"
+          iconPath={<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>} />
+        <StatCard label="Expired"   value={expiredCount}      accent="#ef4444" bg="#fee2e2"
+          iconPath={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />
+        <StatCard label="Cancelled" value={cancelCount}       accent="#64748b" bg="#e2e8f0"
+          iconPath={<><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></>} />
+        <StatCard label="Total"     value={normalized.length} accent="#7c3aed" bg="#ede9fe"
+          iconPath={<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>} />
       </div>
 
       {/* ── Filter bar ── */}
-      <div style={{ marginBottom: "12px" }}>
+      <div className="subs-filter-section">
 
         {/* Row 1: Plan pills — single scrollable row */}
-        <div style={{
-          display: "flex",
-          gap: "6px",
-          overflowX: "auto",
-          paddingBottom: "4px",
-          marginBottom: "8px",
-          WebkitOverflowScrolling: "touch",
-          scrollbarWidth: "none",
-        }}>
+        <div className="subs-pills-row">
           {["All", "Standard", "Pro", "Pro Plus"].map((p) => {
             const active = planFilter === p;
             const meta   = PLAN_META[p] || {};
             return (
               <button
                 key={p}
+                className="subs-pill-btn"
                 onClick={() => setPlanFilter(p)}
                 style={{
-                  padding: "5px 12px",
-                  borderRadius: "20px",
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  border: "1.5px solid",
-                  whiteSpace: "nowrap",   /* never wrap */
-                  flexShrink: 0,
-                  transition: "all 0.15s",
                   background:   active ? (meta.bg     || "#e2e8f0") : "#fff",
                   color:        active ? (meta.color  || "#475569") : "#64748b",
                   borderColor:  active ? (meta.border || "#e2e8f0") : "#e2e8f0",
@@ -252,30 +203,18 @@ export default function Subscriptions() {
         </div>
 
         {/* Row 2: Status dropdown + Search */}
-        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+        <div className="subs-controls-row">
 
           {/* Status dropdown */}
-          <div style={{ position: "relative", flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+          <div className="subs-status-dropdown" onClick={e => e.stopPropagation()}>
             <button
+              className="subs-dropdown-btn"
               onClick={() => setStatusDropOpen(o => !o)}
-              style={{
-                display: "flex", alignItems: "center", gap: "6px",
-                padding: "7px 12px", borderRadius: "9px",
-                border: "1.5px solid #e2e8f0", background: "#fff",
-                fontSize: "11px", fontWeight: 600, color: "#475569",
-                cursor: "pointer", fontFamily: "inherit",
-                whiteSpace: "nowrap",
-              }}
             >
               {statusLabel} <IconChevron />
             </button>
             {statusDropOpen && (
-              <div style={{
-                position: "absolute", top: "calc(100% + 4px)", left: 0,
-                background: "#fff", border: "1px solid #e2e8f0",
-                borderRadius: "10px", boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
-                zIndex: 50, minWidth: "160px", overflow: "hidden",
-              }}>
+              <div className="subs-dropdown-menu">
                 {[
                   { label: `All (${normalized.length})`, value: "All" },
                   { label: `Active (${activeCount})`,    value: "Active" },
@@ -283,15 +222,8 @@ export default function Subscriptions() {
                   { label: `Cancelled (${cancelCount})`, value: "Cancelled" },
                 ].map((t) => (
                   <div key={t.value}
+                    className={`dropdown-item ${statusFilter === t.value ? "active" : ""}`}
                     onClick={() => { setStatusFilter(t.value); setStatusDropOpen(false); }}
-                    style={{
-                      padding: "9px 14px", fontSize: "12px", fontWeight: 500,
-                      cursor: "pointer",
-                      color:      statusFilter === t.value ? "#2563eb" : "#475569",
-                      background: statusFilter === t.value ? "#eff6ff" : "transparent",
-                    }}
-                    onMouseEnter={e => { if (statusFilter !== t.value) e.currentTarget.style.background = "#f8fafc"; }}
-                    onMouseLeave={e => { if (statusFilter !== t.value) e.currentTarget.style.background = "transparent"; }}
                   >
                     {t.label}
                   </div>
@@ -301,66 +233,32 @@ export default function Subscriptions() {
           </div>
 
           {/* Search — takes remaining space */}
-          <div style={{
-            display: "flex", alignItems: "center", gap: "7px",
-            background: "#fff", border: "1.5px solid #e2e8f0",
-            padding: "6px 10px", borderRadius: "9px", flex: 1,
-            minWidth: 0,
-          }}>
+          <div className="subs-search-box">
             <IconSearch />
             <input
               type="text"
-              placeholder="Search…"
+              placeholder="Search user email or plan…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{
-                border: "none", outline: "none", background: "transparent",
-                fontSize: "12px", color: "#1e293b", width: "100%",
-                fontFamily: "inherit",
-              }}
             />
           </div>
         </div>
       </div>
 
       {/* ── Table — horizontal scroll wrapper ── */}
-      <div style={{
-        background: "#fff",
-        borderRadius: "14px",
-        border: "1px solid #e2e8f0",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-        overflowX: "auto",              /* horizontal scroll on mobile */
-        WebkitOverflowScrolling: "touch",
-        /* thin scrollbar */
-        scrollbarWidth: "thin",
-        scrollbarColor: "#cbd5e1 transparent",
-      }}>
-        <table style={{
-          width: "100%",
-          minWidth: "680px",            /* forces scroll before squish */
-          borderCollapse: "collapse",
-          fontSize: "13px",
-        }}>
+      <div className="subs-table-wrap">
+        <table className="subs-table">
           <thead>
-            <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+            <tr>
               {["User", "Plan", "Layer", "Amount", "Billing", "Date", "Status"].map(h => (
-                <th key={h} style={{
-                  padding: "10px 14px", textAlign: "left",
-                  fontSize: "10px", fontWeight: 700,
-                  color: "#94a3b8", textTransform: "uppercase",
-                  letterSpacing: "0.06em", fontFamily: "inherit",
-                  whiteSpace: "nowrap",
-                }}>{h}</th>
+                <th key={h}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={7} style={{
-                  padding: "48px", textAlign: "center",
-                  color: "#cbd5e1", fontSize: "13px",
-                }}>
+                <td colSpan={7} style={{ padding: "48px", textAlign: "center", color: "#cbd5e1" }}>
                   No subscriptions found.
                 </td>
               </tr>
@@ -370,16 +268,9 @@ export default function Subscriptions() {
               const bm = BILLING_META[s.billing] || BILLING_META.Monthly;
               const pm = PLAN_META[s.plan]       || PLAN_META.Standard;
               return (
-                <tr key={s.id}
-                  style={{
-                    borderBottom: i < filtered.length - 1 ? "1px solid #f1f5f9" : "none",
-                    transition: "background 0.12s",
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = "#fafbff"}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                >
+                <tr key={s.id}>
                   {/* User */}
-                  <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                  <td>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <div style={{
                         width: "30px", height: "30px", borderRadius: "8px",
@@ -395,7 +286,7 @@ export default function Subscriptions() {
                   </td>
 
                   {/* Plan */}
-                  <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                  <td>
                     <span style={{
                       padding: "3px 9px", borderRadius: "20px",
                       fontSize: "10px", fontWeight: 600,
@@ -405,7 +296,7 @@ export default function Subscriptions() {
                   </td>
 
                   {/* Layer */}
-                  <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                  <td>
                     <span style={{
                       fontSize: "10px", fontWeight: 700,
                       padding: "3px 9px", borderRadius: "7px",
@@ -423,12 +314,12 @@ export default function Subscriptions() {
                   </td>
 
                   {/* Amount */}
-                  <td style={{ padding: "10px 14px", fontWeight: 600, color: "#0f172a", fontSize: "12px", whiteSpace: "nowrap" }}>
+                  <td style={{ fontWeight: 600, color: "#0f172a", fontSize: "12px" }}>
                     {fmt(s.amount)}
                   </td>
 
                   {/* Billing */}
-                  <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                  <td>
                     <span style={{
                       padding: "3px 9px", borderRadius: "20px",
                       fontSize: "10px", fontWeight: 600,
@@ -437,13 +328,13 @@ export default function Subscriptions() {
                   </td>
 
                   {/* Date */}
-                  <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                  <td>
                     <div style={{ fontSize: "11px", color: "#475569", fontWeight: 600 }}>{s.date}</div>
                     <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "1px" }}>{s.time}</div>
                   </td>
 
                   {/* Status */}
-                  <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                  <td>
                     <span style={{
                       display: "inline-flex", alignItems: "center", gap: "5px",
                       padding: "3px 9px", borderRadius: "20px",
@@ -466,7 +357,7 @@ export default function Subscriptions() {
       </div>
 
       {/* Footer */}
-      <div style={{ marginTop: "10px", fontSize: "11px", color: "#94a3b8", textAlign: "right", fontWeight: 500 }}>
+      <div className="subs-footer">
         Showing {filtered.length} of {normalized.length} subscriptions
       </div>
     </div>

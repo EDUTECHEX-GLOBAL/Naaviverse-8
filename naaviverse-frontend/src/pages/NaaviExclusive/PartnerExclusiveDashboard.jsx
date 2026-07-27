@@ -83,7 +83,6 @@ export default function PartnerExclusiveDashboard() {
 
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all"); // 'all', 'online', 'direct'
@@ -102,11 +101,10 @@ export default function PartnerExclusiveDashboard() {
     holderName: partner?.businessName || partner?.username || "John Doe",
   });
 
-  const fetchStats = useCallback(async (isManual = false) => {
+  const fetchStats = useCallback(async (isSilent = false) => {
     if (!partner || (!partner.partnerId && !partner.email)) return;
     try {
-      if (isManual) setRefreshing(true);
-      else setLoading(true);
+      if (!isSilent) setLoading(true);
       setErrorMsg("");
       const res = await axios.get(`${BASE_URL}/api/partner-dashboard/exclusive-stats`, {
         params: {
@@ -122,19 +120,23 @@ export default function PartnerExclusiveDashboard() {
           localStorage.setItem("partner", JSON.stringify(updated));
         }
       } else {
-        setErrorMsg(res.data?.message || "Failed to load dashboard data.");
+        if (!isSilent) setErrorMsg(res.data?.message || "Failed to load dashboard data.");
       }
     } catch (err) {
       console.error("Dashboard fetch error:", err);
-      setErrorMsg("Failed to connect to stats service.");
+      if (!isSilent) setErrorMsg("Failed to connect to stats service.");
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   }, [partner]);
 
   useEffect(() => {
-    fetchStats();
+    fetchStats(false);
+    // Auto-refresh stats every 10 seconds so newly added fields/transactions reflect automatically
+    const intervalId = setInterval(() => {
+      fetchStats(true);
+    }, 10000);
+    return () => clearInterval(intervalId);
   }, [fetchStats]);
 
 
@@ -240,24 +242,20 @@ export default function PartnerExclusiveDashboard() {
         <header className="px-header">
           <div className="px-header-title">
             <h1>Naavi Exclusive Partner Dashboard</h1>
-            <div style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "4px" }}>
-              <p className="px-partner-badge">Partner ID: {partner.partnerId}</p>
-              <button
-                className="px-refresh-btn"
-                onClick={() => fetchStats(true)}
-                disabled={loading || refreshing}
-              >
-                {refreshing ? "⏳ Loading..." : "↻ Refresh"}
-              </button>
-            </div>
           </div>
-          <div className="px-header-user">
-            <div className="px-user-avatar">
-              {(partner.businessName || partner.username || "P").charAt(0).toUpperCase()}
+          <div className="px-header-right">
+            <div className="px-partner-badge">
+              <span className="px-partner-label">Partner ID:</span>
+              <span className="px-partner-id">{partner.partnerId || "N/A"}</span>
             </div>
-            <div className="px-user-info">
-              <span className="px-username">{partner.businessName || partner.username}</span>
-              <span className="px-userrole">Verified Partner</span>
+            <div className="px-header-user">
+              <div className="px-user-avatar">
+                {(partner.businessName || partner.username || "P").charAt(0).toUpperCase()}
+              </div>
+              <div className="px-user-info">
+                <span className="px-username">{partner.businessName || partner.username}</span>
+                <span className="px-userrole">Verified Partner</span>
+              </div>
             </div>
           </div>
         </header>

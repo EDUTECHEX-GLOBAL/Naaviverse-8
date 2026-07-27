@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import axios from "axios";
 import "./PartnerFeedback.scss";
 
@@ -60,16 +60,7 @@ export default function PartnerFeedback() {
     } catch { return ""; }
   })();
 
-  useEffect(() => {
-    if (!partnerEmail) {
-      setLoading(false);
-      setError("Partner email not found. Please log in again.");
-      return;
-    }
-    fetchFeedbacks();
-  }, [partnerEmail]);
-
-  const fetchFeedbacks = async () => {
+  const fetchFeedbacks = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -83,7 +74,16 @@ export default function PartnerFeedback() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [partnerEmail]);
+
+  useEffect(() => {
+    if (!partnerEmail) {
+      setLoading(false);
+      setError("Partner email not found. Please log in again.");
+      return;
+    }
+    fetchFeedbacks();
+  }, [partnerEmail, fetchFeedbacks]);
 
   // ── Stats ───────────────────────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -128,17 +128,17 @@ export default function PartnerFeedback() {
     <div className="pf-root">
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <div className="pf-header">
-        <div className="pf-header-left">
+        <div className="pf-header-top">
           <h1 className="pf-title">Student Feedback</h1>
-          <p className="pf-subtitle">See what students are saying about your paths</p>
+          <button className="pf-refresh-btn" onClick={fetchFeedbacks} disabled={loading}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="23 4 23 10 17 10" />
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+            </svg>
+            Refresh
+          </button>
         </div>
-        <button className="pf-refresh-btn" onClick={fetchFeedbacks} disabled={loading}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="23 4 23 10 17 10" />
-            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-          </svg>
-          Refresh
-        </button>
+        <p className="pf-subtitle">See what students are saying about your paths</p>
       </div>
 
       {/* ── Stats Row ────────────────────────────────────────────────────── */}
@@ -241,44 +241,46 @@ export default function PartnerFeedback() {
                 <span className="pf-path-group-count">{group.feedbacks.length} feedback{group.feedbacks.length !== 1 ? "s" : ""}</span>
               </div>
 
-              {/* Compact notification-style rows instead of stacked cards */}
-              <div className="pf-feedback-list">
-                {group.feedbacks.map((fb, fi) => (
-                  <div key={fi} className="pf-feedback-row">
-                    <div className="pf-fb-avatar">
-                      {(fb.studentEmail || "S").charAt(0).toUpperCase()}
-                    </div>
-
-                    <div className="pf-fb-main">
-                      <div className="pf-fb-line1">
-                        <span className="pf-fb-email">
-                          {fb.studentName ? `${fb.studentName} (${fb.studentEmail})` : fb.studentEmail}
-                        </span>
-                        {fb.stepName && <span className="pf-fb-step-inline">{fb.stepName}</span>}
+              {/* Compact notification-style rows with mobile horizontal scroll */}
+              <div className="pf-table-responsive">
+                <div className="pf-feedback-list">
+                  {group.feedbacks.map((fb, fi) => (
+                    <div key={fi} className="pf-feedback-row">
+                      <div className="pf-fb-avatar">
+                        {(fb.studentEmail || "S").charAt(0).toUpperCase()}
                       </div>
 
-                      <div className="pf-fb-line2">
-                        {fb.viewType && (
-                          <span className="pf-fb-chip">{fb.viewType.charAt(0).toUpperCase() + fb.viewType.slice(1)} View</span>
-                        )}
-                        {fb.studentPhone && (
-                          <span className="pf-fb-chip"><PhoneIcon /> {fb.studentPhone}</span>
-                        )}
-                        {fb.studentCountry && (
-                          <span className="pf-fb-chip"><PinIcon /> {fb.studentCountry}</span>
-                        )}
-                        {fb.comment && (
-                          <span className="pf-fb-comment-inline">"{fb.comment}"</span>
-                        )}
+                      <div className="pf-fb-main">
+                        <div className="pf-fb-line1">
+                          <span className="pf-fb-email">
+                            {fb.studentName ? `${fb.studentName} (${fb.studentEmail})` : fb.studentEmail}
+                          </span>
+                          {fb.stepName && <span className="pf-fb-step-inline">{fb.stepName}</span>}
+                        </div>
+
+                        <div className="pf-fb-line2">
+                          {fb.viewType && (
+                            <span className="pf-fb-chip">{fb.viewType.charAt(0).toUpperCase() + fb.viewType.slice(1)} View</span>
+                          )}
+                          {fb.studentPhone && (
+                            <span className="pf-fb-chip"><PhoneIcon /> {fb.studentPhone}</span>
+                          )}
+                          {fb.studentCountry && (
+                            <span className="pf-fb-chip"><PinIcon /> {fb.studentCountry}</span>
+                          )}
+                          {fb.comment && (
+                            <span className="pf-fb-comment-inline">"{fb.comment}"</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="pf-fb-right">
+                        <span className="pf-fb-time">{timeAgo(fb.createdAt)}</span>
+                        <ActionBadge action={fb.action} />
                       </div>
                     </div>
-
-                    <div className="pf-fb-right">
-                      <span className="pf-fb-time">{timeAgo(fb.createdAt)}</span>
-                      <ActionBadge action={fb.action} />
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           ))
