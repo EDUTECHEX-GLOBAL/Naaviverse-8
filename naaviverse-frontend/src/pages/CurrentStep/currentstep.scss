@@ -433,23 +433,108 @@ $proplus-btn-hover:   #fad6b0;
   font-size: 12px;
 }
 
+// =============================================================================
+// FEEDBACK STRIP — collapsible, compact
+// =============================================================================
 .feedback-strip {
-  margin: 0 16px 12px;
-  padding: 10px;
-  border: 1px solid $gray200;
-  border-radius: 10px;
-  background: $gray50;
+  margin: 0 16px 10px;
 }
 
-.feedback-strip__label {
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
+// ── Collapsed trigger: tiny inline link ──
+.feedback-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid $gray200;
+  border-radius: 20px;
+  background: #fff;
   color: $gray400;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  svg { opacity: 0.6; transition: opacity 0.2s; }
+
+  &:hover {
+    color: $navy;
+    border-color: $gray300;
+    background: $gray50;
+    svg { opacity: 1; }
+  }
+}
+
+// ── Submitted result badge ──
+.feedback-result {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.feedback-result__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(15, 31, 61, 0.06);
+  color: $navy;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+}
+
+.feedback-result__edit {
+  font-size: 10px;
+  font-weight: 500;
+  color: $gray400;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s;
+
+  &:hover { color: $navy; }
+}
+
+// ── Expanded panel ──
+.feedback-expanded {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: $gray50;
+  border: 1px solid $gray200;
+}
+
+.feedback-expanded__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 8px;
 }
 
+.feedback-expanded__label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: $gray400;
+}
+
+.feedback-expanded__close {
+  background: none;
+  border: none;
+  color: $gray400;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  transition: color 0.15s;
+  &:hover { color: $navy; }
+}
+
+// ── Action pills (shared) ──
 .feedback-strip__actions {
   display: flex;
   flex-wrap: wrap;
@@ -457,20 +542,24 @@ $proplus-btn-hover:   #fad6b0;
 }
 
 .feedback-btn {
+  display: inline-flex;
+  align-items: center;
   border: 1px solid $gray200;
   background: #fff;
   color: $gray600;
-  border-radius: 8px;
-  padding: 6px 9px;
+  border-radius: 16px;
+  padding: 4px 12px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   font-family: 'Poppins', sans-serif;
-  transition: all 0.15s ease;
+  transition: all 0.18s ease;
+  white-space: nowrap;
 
   &:hover {
     border-color: $gray300;
     color: $navy;
+    background: #fff;
   }
 
   &.active {
@@ -478,12 +567,24 @@ $proplus-btn-hover:   #fad6b0;
     border-color: $navy;
     color: #fff;
   }
+
+  @media (max-width: 600px) {
+    padding: 4px 10px;
+    font-size: 10.5px;
+  }
+}
+
+// ── Comment area ──
+.feedback-comment-wrapper {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .feedback-comment {
   width: 100%;
-  min-height: 62px;
-  margin-top: 8px;
+  min-height: 48px;
   padding: 8px 10px;
   border: 1px solid $gray200;
   border-radius: 8px;
@@ -491,18 +592,30 @@ $proplus-btn-hover:   #fad6b0;
   font-family: 'Poppins', sans-serif;
   font-size: 12px;
   color: $navy;
+  background: #fff;
   outline: none;
+  transition: border-color 0.2s;
 
-  &:focus {
-    border-color: $teal;
-  }
+  &::placeholder { color: $gray300; }
+  &:focus { border-color: $navy; }
 }
 
-.feedback-note {
-  margin-top: 7px;
+.feedback-submit-btn {
+  align-self: flex-end;
+  padding: 5px 14px;
+  background: $navy;
+  color: #fff;
+  border: none;
+  border-radius: 16px;
   font-size: 11px;
   font-weight: 600;
-  color: $teal;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: lighten($navy, 8%);
+  }
 }
 
 // Card Footer

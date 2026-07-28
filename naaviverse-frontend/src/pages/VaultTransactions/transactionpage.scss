@@ -84,26 +84,62 @@
     // ── Color themes — different from CRM ────────────────────
     &.blue {
       background: #e0f2fe;
-      .sc-icon  { background: #0284c7; }
-      .s-label  { color: #0369a1; }
-      .s-value  { color: #0c4a6e; }
-      .s-sub    { color: #0284c7; }
+
+      .sc-icon {
+        background: #0284c7;
+      }
+
+      .s-label {
+        color: #0369a1;
+      }
+
+      .s-value {
+        color: #0c4a6e;
+      }
+
+      .s-sub {
+        color: #0284c7;
+      }
     }
 
     &.green {
       background: #fce7f3;
-      .sc-icon  { background: #db2777; }
-      .s-label  { color: #be185d; }
-      .s-value  { color: #9d174d; }
-      .s-sub    { color: #db2777; }
+
+      .sc-icon {
+        background: #db2777;
+      }
+
+      .s-label {
+        color: #be185d;
+      }
+
+      .s-value {
+        color: #9d174d;
+      }
+
+      .s-sub {
+        color: #db2777;
+      }
     }
 
     &.amber {
       background: #ccfbf1;
-      .sc-icon  { background: #0d9488; }
-      .s-label  { color: #0f766e; }
-      .s-value  { color: #134e4a; }
-      .s-sub    { color: #0d9488; }
+
+      .sc-icon {
+        background: #0d9488;
+      }
+
+      .s-label {
+        color: #0f766e;
+      }
+
+      .s-value {
+        color: #134e4a;
+      }
+
+      .s-sub {
+        color: #0d9488;
+      }
     }
   }
 
@@ -117,9 +153,14 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    &::-webkit-scrollbar { display: none; }
 
-    @media (max-width: 600px) { padding: 0 12px; }
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      padding: 0 12px;
+    }
   }
 
   .txn-tab {
@@ -165,6 +206,13 @@
     }
   }
 
+  // ─── SCROLL CONTAINER (mobile: horizontal scroll instead of stacking) ────────
+  .txn-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
   // ─── DESKTOP HEADER ───────────────────────────────────────────────────────────
   .txn-header-row {
     display: grid;
@@ -180,12 +228,21 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: #94a3b8;
+      white-space: nowrap;
     }
 
-    @media (max-width: 768px) { display: none; }
+    @media (max-width: 768px) {
+      min-width: 720px; // keeps header aligned with scrollable body, stays visible
+    }
   }
 
-  .txn-body { width: 100%; }
+  .txn-body {
+    width: 100%;
+
+    @media (max-width: 768px) {
+      min-width: 720px;
+    }
+  }
 
   // ─── DATA ROW ─────────────────────────────────────────────────────────────────
   .txn-row {
@@ -197,15 +254,12 @@
     transition: background 0.15s ease;
     cursor: pointer;
 
-    &:last-child { border-bottom: none; }
-    &:hover { background: #f0f9ff; }
+    &:last-child {
+      border-bottom: none;
+    }
 
-    @media (max-width: 768px) {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-      padding: 12px 14px 10px;
-      border-bottom: 1px solid #f1f5f9;
+    &:hover {
+      background: #f0f9ff;
     }
   }
 
@@ -218,19 +272,30 @@
     border-bottom: 1px solid #f1f5f9;
     align-items: center;
 
-    &:last-child { border-bottom: none; }
+    &:last-child {
+      border-bottom: none;
+    }
 
     @media (max-width: 768px) {
-      grid-template-columns: 1fr 1fr;
-      padding: 12px 14px;
-      gap: 8px;
+      min-width: 720px;
     }
   }
 
   // ─── CELL TYPES ───────────────────────────────────────────────────────────────
   .date-cell {
-    .date-main { font-size: 12px; font-weight: 500; color: #1e293b; }
-    .date-time  { font-size: 9.5px; color: #94a3b8; margin-top: 1px; }
+    .date-main {
+      font-size: 12px;
+      font-weight: 500;
+      color: #1e293b;
+      white-space: nowrap;
+    }
+
+    .date-time {
+      font-size: 9.5px;
+      color: #94a3b8;
+      margin-top: 1px;
+      white-space: nowrap;
+    }
   }
 
   .partner-badge {
@@ -241,57 +306,126 @@
     border-radius: 6px;
     padding: 3px 8px;
     border: 1px solid #bae6fd;
+    white-space: nowrap;
 
-    .partner-dot { width: 5px; height: 5px; border-radius: 50%; background: #0284c7; flex-shrink: 0; }
-    span { font-size: 11px; font-weight: 600; color: #0284c7; }
+    .partner-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #0284c7;
+      flex-shrink: 0;
+    }
+
+    span {
+      font-size: 11px;
+      font-weight: 600;
+      color: #0284c7;
+    }
   }
 
   .service-name {
-    font-size: 12px; font-weight: 600; color: #1e293b;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-
-    @media (max-width: 768px) { font-size: 13px; font-weight: 700; white-space: normal; }
+    font-size: 12px;
+    font-weight: 600;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .service-sub { font-size: 9px; color: #94a3b8; margin-top: 1px; }
+  .service-sub {
+    font-size: 9px;
+    color: #94a3b8;
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
   .amount-cell {
     font-family: 'Poppins', sans-serif;
     font-size: 12px;
     font-weight: 600;
     color: #1e293b;
-
-    @media (max-width: 768px) { font-size: 14px; font-weight: 700; }
+    white-space: nowrap;
   }
 
   .billing-pill {
     display: inline-block;
-    font-size: 9.5px; font-weight: 600;
-    padding: 2px 9px; border-radius: 20px;
-    background: #ecfdf5; color: #059669;
+    font-size: 9.5px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 20px;
+    background: #ecfdf5;
+    color: #059669;
     border: 1px solid #d1fae5;
+    white-space: nowrap;
 
     &.monthly {
-      background: #fffbeb; color: #d97706; border-color: #fef3c7;
+      background: #fffbeb;
+      color: #d97706;
+      border-color: #fef3c7;
     }
   }
 
   %status-base {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-size: 10.5px; font-weight: 600;
-    padding: 2px 9px; border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
 
     &::before {
       content: '';
-      width: 5px; height: 5px;
-      border-radius: 50%; display: inline-block; flex-shrink: 0;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
     }
   }
 
-  .status-paid    { @extend %status-base; background: #ecfdf5; color: #059669; &::before { background: #059669; } }
-  .status-pending { @extend %status-base; background: #fffbeb; color: #d97706; &::before { background: #fbbf24; } }
-  .status-failed  { @extend %status-base; background: #fef2f2; color: #e11d48; &::before { background: #fb7185; } }
-  .status-default { @extend %status-base; background: #f8fafc; color: #94a3b8; &::before { background: #cbd5e1; } }
+  .status-paid {
+    @extend %status-base;
+    background: #ecfdf5;
+    color: #059669;
+
+    &::before {
+      background: #059669;
+    }
+  }
+
+  .status-pending {
+    @extend %status-base;
+    background: #fffbeb;
+    color: #d97706;
+
+    &::before {
+      background: #fbbf24;
+    }
+  }
+
+  .status-failed {
+    @extend %status-base;
+    background: #fef2f2;
+    color: #e11d48;
+
+    &::before {
+      background: #fb7185;
+    }
+  }
+
+  .status-default {
+    @extend %status-base;
+    background: #f8fafc;
+    color: #94a3b8;
+
+    &::before {
+      background: #cbd5e1;
+    }
+  }
 
   .invoice-btn {
     display: inline-flex;
@@ -300,7 +434,7 @@
     padding: 3px 8px;
     border-radius: 6px;
     border: 1px solid rgba(2, 132, 199, 0.25);
-    background: linear-gradient(135deg, rgba(2,132,199,.08), rgba(2,132,199,.02));
+    background: linear-gradient(135deg, rgba(2, 132, 199, .08), rgba(2, 132, 199, .02));
     color: #0284c7;
     font-size: 9.5px;
     font-weight: 600;
@@ -309,7 +443,12 @@
     transition: all 0.15s ease;
     white-space: nowrap;
 
-    svg { width: 12px; height: 12px; stroke: #0284c7; fill: none; }
+    svg {
+      width: 12px;
+      height: 12px;
+      stroke: #0284c7;
+      fill: none;
+    }
 
     &:hover {
       background: #e0f2fe;
@@ -317,58 +456,35 @@
     }
   }
 
-  .invoice-na { font-size: 12px; color: #c8d0e0; font-weight: 500; }
+  .invoice-na {
+    font-size: 12px;
+    color: #c8d0e0;
+    font-weight: 500;
+    white-space: nowrap;
+  }
 
   // ─── EMPTY STATE ──────────────────────────────────────────────────────────────
   .txn-empty {
     padding: 2.5rem 2rem;
     text-align: center;
 
-    .empty-icon  { margin-bottom: 0.6rem; opacity: 0.5; display: flex; justify-content: center; }
-    .empty-title { font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
-    .empty-sub   { font-size: 11px; color: #94a3b8; }
-  }
-
-  // ─── MOBILE CARD OVERRIDES ────────────────────────────────────────────────────
-  @media (max-width: 768px) {
-    .txn-row {
+    .empty-icon {
+      margin-bottom: 0.6rem;
+      opacity: 0.5;
       display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
+      justify-content: center;
+    }
 
-      .service-name {
-        order: 1; width: 100%;
-        font-size: 13px; font-weight: 700;
-        white-space: normal; margin-bottom: 2px;
-      }
+    .empty-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 4px;
+    }
 
-      .service-sub {
-        order: 2; width: 100%; font-size: 10px;
-        color: #94a3b8; margin-top: -2px; margin-bottom: 4px;
-      }
-
-      .date-cell {
-        order: 3; flex: 1; min-width: 0;
-        .date-main { font-size: 11px; color: #5a6a8a; }
-        .date-time  { font-size: 10px; }
-      }
-
-      .amount-cell {
-        order: 4; flex-shrink: 0;
-        font-size: 15px; font-weight: 700; text-align: right;
-      }
-
-      .partner-badge { order: 5; flex: 1; margin-top: 4px; }
-
-      .status-paid, .status-pending, .status-failed, .status-default {
-        order: 6; flex-shrink: 0; margin-top: 4px; text-align: right;
-      }
-
-      .billing-pill  { order: 7; margin-top: 4px; }
-
-      .invoice-btn, .invoice-na {
-        order: 8; margin-left: auto; margin-top: 4px;
-      }
+    .empty-sub {
+      font-size: 11px;
+      color: #94a3b8;
     }
   }
 }

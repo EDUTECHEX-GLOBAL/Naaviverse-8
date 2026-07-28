@@ -65,6 +65,9 @@ const PathComponent = () => {
     } catch { return null; }
   });
 
+  // ── Stable identity for userProfile to prevent object-ref re-renders ──
+  const userProfileId = userProfile?._id || userProfile?.email || null;
+
   const exploreLoggedRef = useRef(false);
 
   const user = (() => {
@@ -79,8 +82,17 @@ const PathComponent = () => {
         if (!email) return;
         const res = await axios.get(`${BASE_URL}/api/users/get/${email}`);
         if (res.data.status) {
-          setUserProfile(res.data.data);
-          localStorage.setItem("userProfile", JSON.stringify(res.data.data));
+          const newProfile = res.data.data;
+          // Only update state if profile actually changed (prevents re-render cascade)
+          setUserProfile((prev) => {
+            const prevId = prev?._id || prev?.email;
+            const newId = newProfile?._id || newProfile?.email;
+            if (prevId === newId && JSON.stringify(prev) === JSON.stringify(newProfile)) {
+              return prev; // same reference — no re-render
+            }
+            return newProfile;
+          });
+          localStorage.setItem("userProfile", JSON.stringify(newProfile));
         }
       } catch (err) {
         console.error("Failed to load user profile:", err);
@@ -100,6 +112,8 @@ const PathComponent = () => {
   }, []);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchApprovedPaths = async () => {
       try {
         setLoading(true);
@@ -111,21 +125,29 @@ const PathComponent = () => {
         if (financialToggle && userProfile?.financialSituation) params.financial = userProfile.financialSituation;
         if (personalityToggle && userProfile?.personality) params.personality = userProfile.personality;
 
-        const res = await axios.get(`${BASE_URL}/api/paths/active`, { params });
+        const res = await axios.get(`${BASE_URL}/api/paths/active`, {
+          params,
+          signal: controller.signal,
+        });
         setApprovedPaths(res.data.data || []);
       } catch (err) {
+        if (axios.isCancel?.(err) || err?.name === "CanceledError") return; // aborted — ignore
         console.error("Failed to load approved paths:", err);
         setApprovedPaths([]);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
     fetchApprovedPaths();
+
+    return () => controller.abort(); // cancel stale request on re-trigger
   }, [
     refetchPaths,
     gradeToggle, curriculumToggle, streamToggle,
     performanceToggle, financialToggle, personalityToggle,
-    userProfile,
+    userProfileId,  // ← stable string instead of object reference
   ]);
 
   // ── Open "View Path" modal ────────────────────────────────────

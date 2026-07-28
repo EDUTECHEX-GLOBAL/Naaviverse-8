@@ -68,11 +68,11 @@ const FEEDBACK_ACTIONS = [
 ];
 
 const FeedbackStrip = ({ value = {}, onChange }) => {
+  const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(value.action || "");
   const [commentText, setCommentText] = useState(value.comment || "");
   const showComment = selected === "comment";
 
-  // Sync with parent props if they change externally (e.g. state reset or navigation)
   useEffect(() => {
     if (value.action !== undefined) {
       if (value.action === "comment" && selected === "comment_submitted") {
@@ -91,6 +91,7 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
       setSelected("comment");
     } else {
       setSelected(action);
+      setOpen(false); // collapse after selection
       onChange({
         action,
         comment: "",
@@ -107,61 +108,84 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
       skipped: false,
     });
     setSelected("comment_submitted");
+    setOpen(false); // collapse after submit
   };
+
+  // Already submitted feedback — show compact badge
+  const hasResult = selected && selected !== "comment";
+  const resultLabel =
+    selected === "helpful" ? "Helpful" :
+    selected === "notRelevant" ? "Not Relevant" :
+    selected === "skip" ? "Skipped" :
+    selected === "comment_submitted" ? "Comment Sent" : "";
 
   return (
     <div className="feedback-strip">
-      <div className="feedback-strip__label">Feedback</div>
-      <div className="feedback-strip__actions">
-        {FEEDBACK_ACTIONS.map(({ key, label }) => (
-          <button
-            key={key}
-            type="button"
-            className={`feedback-btn ${selected === key ? "active" : ""}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleAction(key);
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-      {showComment && (
-        <div className="feedback-comment-wrapper" style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }} onClick={(e) => e.stopPropagation()}>
-          <textarea
-            className="feedback-comment"
-            placeholder="Add a short comment..."
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            style={{ width: "100%", minHeight: 60, padding: 8, borderRadius: 6, border: "1px solid #ddd" }}
-          />
-          <button
-            type="button"
-            className="feedback-submit-btn"
-            onClick={handleSubmitComment}
-            style={{
-              alignSelf: "flex-end",
-              padding: "6px 12px",
-              background: "#1e293b",
-              color: "#fff",
-              border: "none",
-              borderRadius: 4,
-              fontSize: "12px",
-              fontWeight: 600,
-              cursor: "pointer"
-            }}
-          >
-            Submit Comment
-          </button>
+      {/* ── Collapsed state: just a trigger ── */}
+      {!open && !hasResult && (
+        <button
+          type="button"
+          className="feedback-trigger"
+          onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          Give Feedback
+        </button>
+      )}
+
+      {/* ── Submitted badge ── */}
+      {!open && hasResult && (
+        <div className="feedback-result" onClick={(e) => { e.stopPropagation(); setOpen(true); }}>
+          <span className="feedback-result__badge">✓ {resultLabel}</span>
+          <span className="feedback-result__edit">Change</span>
         </div>
       )}
-      {selected && selected !== "comment" && (
-        <div className="feedback-note">
-          {selected === "helpful" && "Marked helpful."}
-          {selected === "notRelevant" && "Marked not relevant."}
-          {selected === "skip" && "Skipped for now."}
-          {selected === "comment_submitted" && "Comment submitted."}
+
+      {/* ── Expanded state: action pills ── */}
+      {open && (
+        <div className="feedback-expanded">
+          <div className="feedback-expanded__head">
+            <span className="feedback-expanded__label">Feedback</span>
+            <button
+              type="button"
+              className="feedback-expanded__close"
+              onClick={(e) => { e.stopPropagation(); setOpen(false); }}
+            >✕</button>
+          </div>
+          <div className="feedback-strip__actions">
+            {FEEDBACK_ACTIONS.map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                className={`feedback-btn ${selected === key ? "active" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAction(key);
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {showComment && (
+            <div className="feedback-comment-wrapper" onClick={(e) => e.stopPropagation()}>
+              <textarea
+                className="feedback-comment"
+                placeholder="Add a short comment..."
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+              />
+              <button
+                type="button"
+                className="feedback-submit-btn"
+                onClick={handleSubmitComment}
+              >
+                Submit
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

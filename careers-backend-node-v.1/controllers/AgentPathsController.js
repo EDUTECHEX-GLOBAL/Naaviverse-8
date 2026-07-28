@@ -382,13 +382,20 @@ function transformAgentPath(agentPath) {
   };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GET /api/agent-paths
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Cooldown guard for agent-paths endpoint ──
+let _agentSyncLastTime = 0;
+const _AGENT_SYNC_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
 const getAgentPaths = async (req, res) => {
   try {
-    // Run synchronization check first
-    await syncAgentPaths();
+    // Fire-and-forget background sync with cooldown (non-blocking)
+    const now = Date.now();
+    if (now - _agentSyncLastTime > _AGENT_SYNC_COOLDOWN_MS) {
+      _agentSyncLastTime = now;
+      syncAgentPaths().catch((err) => {
+        console.error('[AgentSync] background sync failed:', err.message);
+      });
+    }
 
     // Now query them from our local database so we are 100% consistent
     const query = { status: "active" };

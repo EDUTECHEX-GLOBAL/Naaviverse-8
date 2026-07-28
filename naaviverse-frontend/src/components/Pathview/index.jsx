@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, memo } from "react";
 import Skeleton from "react-loading-skeleton";
 import { useCoinContextData } from "../../context/CoinContext";
 import "./pathview.scss";
 import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
 const ITEMS_PER_PAGE = 6;
 
-const Pathview = ({ paths, loading, onAdjustCoordinates, onViewPath }) => {
+const Pathview = memo(({ paths, loading, onAdjustCoordinates, onViewPath }) => {
   const {
     setPathItemSelected,
     setPathItemStep,
@@ -190,6 +190,8 @@ const Pathview = ({ paths, loading, onAdjustCoordinates, onViewPath }) => {
       )}
     </div>
   );
-};
+});
+
+Pathview.displayName = "Pathview";
 
 export default Pathview;
