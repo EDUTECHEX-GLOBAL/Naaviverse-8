@@ -699,14 +699,25 @@ const updateFields = async (req, res) => {
   return res.json({ status: true, message: 'Details updated', data: updateAll });
 };
 
+// ── Cooldown guard: sync agent paths at most once every 5 minutes ──
+let _lastSyncTime = 0;
+const SYNC_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
 const getActivePaths = async (req, res) => {
   try {
-    // ── Sync agent paths on-the-fly to local DB ──
-    try {
-      const { syncAgentPaths } = require('./AgentPathsController');
-      await syncAgentPaths();
-    } catch (syncErr) {
-      console.error("[AgentSync] background sync failed:", syncErr.message);
+    // ── Fire-and-forget background sync (non-blocking) with cooldown ──
+    const now = Date.now();
+    if (now - _lastSyncTime > SYNC_COOLDOWN_MS) {
+      _lastSyncTime = now; // set early to prevent concurrent triggers
+      try {
+        const { syncAgentPaths } = require('./AgentPathsController');
+        // Do NOT await — let it run in the background
+        syncAgentPaths().catch((syncErr) => {
+          console.error("[AgentSync] background sync failed:", syncErr.message);
+        });
+      } catch (syncErr) {
+        console.error("[AgentSync] background sync failed:", syncErr.message);
+      }
     }
 
     const query = { status: "active" };
@@ -717,7 +728,7 @@ const getActivePaths = async (req, res) => {
     if (req.query.performance) query.grade_avg = { $in: [req.query.performance] };
     if (req.query.personality) query.personality = req.query.personality;
 
-    const activePaths = await pathModel.find(query);
+    const activePaths = await pathModel.find(query).lean();
     return res.status(200).json({ success: true, total: activePaths.length, data: activePaths });
   } catch (error) {
     console.error("Error fetching active paths:", error);
