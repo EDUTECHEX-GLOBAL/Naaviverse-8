@@ -36,170 +36,8 @@ const CATEGORY_PILLS = [
   { key: "institution", label: "Institutions" },
 ];
 
-// ~11 Mock services spanning categories and internal/external partner types
-const MOCK_SERVICES = [
-  // MACRO VIEW (Free Tools)
-  {
-    _id: "macro-1",
-    layer: "macro",
-    role: "Course",
-    category: "vendor",
-    name: "Khan Academy Standardized Test Prep",
-    partner_email: "Pathangia.Admin@Gmail.Com",
-    goal: "Excellent Free Resource For SAT Math And Reading Diagnostics.",
-    features: "Complete Full-length SAT Mock tests, custom practice.",
-    cost: "Free",
-    access: "No Cost",
-    checkoutType: "internal"
-  },
-  {
-    _id: "macro-2",
-    layer: "macro",
-    role: "Platform",
-    category: "vendor",
-    name: "Albert.io AP Practice Modules",
-    partner_email: "Pathangia.Admin@Gmail.Com",
-    goal: "Free Diagnostic Exams And Curriculum Alignment Guides.",
-    features: "Sign Up And Complete The Algebra and Science reviews.",
-    cost: "Free",
-    access: "Free · External",
-    checkoutType: "external",
-    websiteUrl: "https://albert.io"
-  },
-  {
-    _id: "macro-3",
-    layer: "macro",
-    role: "Mentor",
-    category: "mentor",
-    name: "University Admissions Q&A Circle",
-    partner_email: "Pathangia.Admin@Gmail.Com",
-    goal: "Free Q&A Sessions With International Admissions Advisors.",
-    features: "Register For The Monthly Webinar and live consulting.",
-    cost: "Free",
-    access: "No Cost",
-    checkoutType: "internal"
-  },
-  {
-    _id: "macro-4",
-    layer: "macro",
-    role: "Mentor",
-    category: "mentor",
-    name: "Peer Cohort Study Group",
-    partner_email: "Pathangia.Admin@Gmail.Com",
-    goal: "Free Study Groups Led By Senior Students Who Cleared Admissions.",
-    features: "Join The Weekly Study Code sessions and peer review.",
-    cost: "Free",
-    access: "No Cost",
-    checkoutType: "internal"
-  },
-  {
-    _id: "macro-5",
-    layer: "macro",
-    role: "Book",
-    category: "distributor",
-    name: "College Board Official SAT Study Guide",
-    partner_email: "Pathangia.Admin@Gmail.Com",
-    goal: "Contains 8 Official Practice Tests And Detailed Scoring Guides.",
-    features: "Purchase For Online Standard Adm. Test preparation.",
-    cost: "Free",
-    access: "Free · External",
-    checkoutType: "external",
-    websiteUrl: "https://collegeboard.org"
-  },
-  {
-    _id: "macro-6",
-    layer: "macro",
-    role: "Library",
-    category: "distributor",
-    name: "Academic Excellence Open Access Library",
-    partner_email: "Pathangia.Admin@Gmail.Com",
-    goal: "Free Access To Research Publications And High School Research Journals.",
-    features: "Search Archives For STEM Topics and citations.",
-    cost: "Free",
-    access: "No Cost",
-    checkoutType: "internal"
-  },
-  {
-    _id: "macro-7",
-    layer: "macro",
-    role: "University",
-    category: "institution",
-    name: "Stanford Online Free High School Seminars",
-    partner_email: "Pathangia.Admin@Gmail.Com",
-    goal: "Empathy-Led Courses On Modern Logic And STEM Research Methods.",
-    features: "Audit Sociology Modules online on Stanford Lagunita.",
-    cost: "Free",
-    access: "No Cost",
-    checkoutType: "internal"
-  },
-  {
-    _id: "macro-8",
-    layer: "macro",
-    role: "University",
-    category: "institution",
-    name: "MIT OpenCourseWare Calculus",
-    partner_email: "Pathangia.Admin@Gmail.Com",
-    goal: "In-Depth Lectures To Build Rigorous Mathematical Foundation.",
-    features: "Watch Lectures And Solve Problem Set 1 and exams.",
-    cost: "Free",
-    access: "No Cost",
-    checkoutType: "internal"
-  },
-  // MICRO VIEW (Subscriptions)
-  {
-    _id: "micro-1",
-    layer: "micro",
-    role: "Institution",
-    category: "institution",
-    name: "ElitePrep Learning Solutions",
-    partner_email: "Sunkarachaitanya98@Gmail.Com",
-    goal: "Teach Programming Basics",
-    outcomes: "Students Can Build Simple Programs",
-    duration: "1 Month",
-    iterations: 3,
-    discount: "0%",
-    features: "Structured Python Course With Assignments.",
-    cost: "2999",
-    access: "Paid",
-    checkoutType: "internal"
-  },
-  {
-    _id: "micro-2",
-    layer: "micro",
-    role: "Platform",
-    category: "vendor",
-    name: "GATEPrep Pro",
-    partner_email: "gateprep.com",
-    goal: "GATE Exam Preparation — Full Course",
-    outcomes: "Crack GATE with 95+ percentile",
-    duration: "3 Months",
-    iterations: 24,
-    discount: "10%",
-    features: "Mock tests, doubt sessions, rank predictor.",
-    cost: "8000",
-    access: "Paid",
-    checkoutType: "external",
-    websiteUrl: "https://gateprep.com"
-  },
-  // NANO VIEW (1-on-1 Sessions)
-  {
-    _id: "nano-1",
-    layer: "nano",
-    role: "Mentor",
-    category: "mentor",
-    name: "Ankit Sharma",
-    partner_email: "Sunkarachaitanya98@Gmail.Com",
-    goal: "Improve Coding Skills",
-    outcomes: "Better Coding Confidence",
-    duration: "1 Month",
-    iterations: 3,
-    discount: "0%",
-    features: "Live Sessions With Real-Time Coding Practice.",
-    cost: "5000",
-    access: "Paid",
-    checkoutType: "internal"
-  }
-];
+// Mock services fallback disabled - real database/step items rendered dynamically
+const MOCK_SERVICES = [];
 
 const getItemCategory = (item) => {
   return (item?.category || "vendor").toLowerCase();
@@ -764,7 +602,7 @@ const UserMarketplace = ({ onStepChange }) => {
   const [searchQ, setSearchQ] = useState("");
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
-  const [items, setItems] = useState(MOCK_SERVICES);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [orderInfo, setOrderInfo] = useState(null);
@@ -854,22 +692,16 @@ const UserMarketplace = ({ onStepChange }) => {
   useEffect(() => {
     const stepId = localStorage.getItem("selectedStepId") || "";
     if (!stepId || !MONGO_ID_RE.test(stepId)) {
-      // No real step selected — keep MOCK_SERVICES
-      setItems(MOCK_SERVICES);
+      setItems([]);
       return;
     }
     setLoading(true);
     axios.get(`${process.env.REACT_APP_API_BASE_URL || "http://localhost:4545"}/api/marketplace/step/${stepId}`)
       .then(res => {
         const fetched = res.data?.data || [];
-        if (fetched.length > 0) {
-          setItems(fetched);
-        } else {
-          // Step has no marketplace items yet — show MOCK_SERVICES
-          setItems(MOCK_SERVICES);
-        }
+        setItems(fetched);
       })
-      .catch(() => setItems(MOCK_SERVICES))
+      .catch(() => setItems([]))
       .finally(() => setLoading(false));
   }, []);
 

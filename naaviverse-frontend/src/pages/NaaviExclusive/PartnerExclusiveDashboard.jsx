@@ -88,6 +88,7 @@ export default function PartnerExclusiveDashboard() {
   const [filterType, setFilterType] = useState("all"); // 'all', 'online', 'direct'
   const [filterStatus, setFilterStatus] = useState("all"); // 'all', 'Paid', 'Pending', 'Failed'
   const [feedbackView, setFeedbackView] = useState("cards"); // 'cards' or 'table'
+  const [currentPartner, setCurrentPartner] = useState(partner);
 
   const feedbacksList = useMemo(() => {
     return stats?.feedbacks || [];
@@ -98,7 +99,7 @@ export default function PartnerExclusiveDashboard() {
     bankName: "HDFC Bank",
     accountNumber: "•••• •••• 9876",
     ifsc: "HDFC0001234",
-    holderName: partner?.businessName || partner?.username || "John Doe",
+    holderName: currentPartner?.businessName || currentPartner?.username || partner?.businessName || partner?.username || "John Doe",
   });
 
   const fetchStats = useCallback(async (isSilent = false) => {
@@ -108,15 +109,15 @@ export default function PartnerExclusiveDashboard() {
       setErrorMsg("");
       const res = await axios.get(`${BASE_URL}/api/partner-dashboard/exclusive-stats`, {
         params: {
-          partnerId: partner?.partnerId || "",
-          email: partner?.email || ""
+          partnerId: partner?.partnerId || currentPartner?.partnerId || "",
+          email: partner?.email || currentPartner?.email || ""
         }
       });
       if (res.data?.status && res.data?.data) {
         setStats(res.data.data);
-        // If partnerId was resolved by backend and is missing locally, save it!
-        if (res.data.partner?.partnerId && !partner.partnerId) {
-          const updated = { ...partner, partnerId: res.data.partner.partnerId };
+        if (res.data.partner) {
+          const updated = { ...partner, ...res.data.partner };
+          setCurrentPartner(updated);
           localStorage.setItem("partner", JSON.stringify(updated));
         }
       } else {
@@ -128,7 +129,7 @@ export default function PartnerExclusiveDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [partner]);
+  }, [partner, currentPartner?.partnerId, currentPartner?.email]);
 
   useEffect(() => {
     fetchStats(false);
@@ -159,7 +160,7 @@ export default function PartnerExclusiveDashboard() {
     })));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Transactions");
-    XLSX.writeFile(wb, `${partner?.partnerId || "partner"}_Transactions.xlsx`);
+    XLSX.writeFile(wb, `${currentPartner?.partnerId || partner?.partnerId || "partner"}_Transactions.xlsx`);
   };
 
   // Filtered transactions for Transactions tab
@@ -217,6 +218,7 @@ export default function PartnerExclusiveDashboard() {
                   Transactions: "transactions",
                   Refunds: "refunds",
                   Feedbacks: "feedback",
+                  FeedbacksTable: "feedback",
                   Settings: "settings",
                   Support: "support",
                 };
@@ -246,14 +248,14 @@ export default function PartnerExclusiveDashboard() {
           <div className="px-header-right">
             <div className="px-partner-badge">
               <span className="px-partner-label">Partner ID:</span>
-              <span className="px-partner-id">{partner.partnerId || "N/A"}</span>
+              <span className="px-partner-id">{currentPartner?.partnerId || partner?.partnerId || "N/A"}</span>
             </div>
             <div className="px-header-user">
               <div className="px-user-avatar">
-                {(partner.businessName || partner.username || "P").charAt(0).toUpperCase()}
+                {(currentPartner?.businessName || currentPartner?.username || partner?.businessName || partner?.username || "P").charAt(0).toUpperCase()}
               </div>
               <div className="px-user-info">
-                <span className="px-username">{partner.businessName || partner.username}</span>
+                <span className="px-username">{currentPartner?.businessName || currentPartner?.username || partner?.businessName || partner?.username}</span>
                 <span className="px-userrole">Verified Partner</span>
               </div>
             </div>

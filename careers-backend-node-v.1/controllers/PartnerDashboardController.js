@@ -508,6 +508,14 @@ const getExclusiveDashboardStats = async (req, res) => {
       return res.status(404).json({ status: false, message: "Partner not found" });
     }
 
+    if (!partner.partnerId) {
+      const pType = (partner.partnerType || "GEN").slice(0, 4).toUpperCase();
+      const shortId = String(partner._id).slice(-4).toUpperCase();
+      const generatedId = `NVP-${pType}-${new Date().getFullYear()}-${shortId}`;
+      await Partner.findByIdAndUpdate(partner._id, { partnerId: generatedId });
+      partner.partnerId = generatedId;
+    }
+
     const partnerEmail = partner.email;
 
     // 2. Resolve items owned by partner

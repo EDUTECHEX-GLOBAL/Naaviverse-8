@@ -127,13 +127,23 @@ await logEvent({
   desc:        `${partner.businessName || partner.username || email} signed in to the portal`,
 }).catch(err => console.error("Partner login activity log error:", err));
 
+    // Ensure partnerId exists on the partner document
+    if (!partner.partnerId) {
+      const pType = (partner.partnerType || "GEN").slice(0, 4).toUpperCase();
+      const shortId = String(partner._id).slice(-4).toUpperCase();
+      partner.partnerId = `NVP-${pType}-${new Date().getFullYear()}-${shortId}`;
+      await partner.save();
+    }
+
     return res.status(200).json({
       success: true,
       message: "Login successful",
       token,
       partner: {
         id:             partner._id,
+        partnerId:      partner.partnerId,
         username:       partner.username,
+        businessName:   partner.businessName || partner.username,
         email:          partner.email,
         partnerType:    partner.partnerType,
         profileCreated,
