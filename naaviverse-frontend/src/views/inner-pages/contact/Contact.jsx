@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { Icon } from "@iconify/react";
+import { Helmet } from "react-helmet-async";
 import "./contact.scss";
 import Footer from '../../../components/footernew/index';
 
@@ -55,6 +56,70 @@ export default function Contact() {
 
   return (
     <>
+      <Helmet>
+        <title>
+          Contact Naavi Network | AI Powered Path Engine
+        </title>
+
+        <meta
+          name="description"
+          content="Get in touch with Naavi Network for product demos, partnerships, career guidance, institutional collaborations, or questions about our AI Powered Path Engine."
+        />
+
+        <meta
+          name="keywords"
+          content="Contact Naavi Network, Contact AI Path Engine, Education Technology, AI Career Guidance, Partnership, Product Demo, Naaviverse, Hyderabad"
+        />
+
+        <meta
+          name="robots"
+          content="index, follow"
+        />
+
+        <link
+          rel="canonical"
+          href="https://naavinetwork.ai/contact"
+        />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Naavi Network" />
+        <meta
+          property="og:title"
+          content="Contact Naavi Network"
+        />
+        <meta
+          property="og:description"
+          content="Connect with the Naavi Network team for partnerships, demos, support, and AI-powered education and career navigation."
+        />
+        <meta
+          property="og:url"
+          content="https://naavinetwork.ai/contact"
+        />
+        <meta
+          property="og:image"
+          content="https://naavinetwork.ai/logo512.png"
+        />
+
+        {/* Twitter */}
+        <meta
+          name="twitter:card"
+          content="summary_large_image"
+        />
+        <meta
+          name="twitter:title"
+          content="Contact Naavi Network"
+        />
+        <meta
+          name="twitter:description"
+          content="Reach out to Naavi Network for product demos, partnerships, or support."
+        />
+        <meta
+          name="twitter:image"
+          content="https://naavinetwork.ai/logo512.png"
+        />
+      </Helmet>
+
       {/* Hero Section */}
       <section className="contact-hero">
         <div className="contact-container">

@@ -1,5 +1,6 @@
 import React, { Fragment, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
+import { Helmet } from "react-helmet-async";
 import './impact.scss';
 import Footer from '../../../components/footernew/index';
 import skillGapProblemImg from './images/skill_gap_problem.png';
@@ -188,9 +189,69 @@ const Impact = () => {
 
   return (
     <Fragment>
+      <Helmet>
+        <title>
+          Impact | Naavi Network - AI Powered Path Engine
+        </title>
 
+        <meta
+          name="description"
+          content="Explore how Naavi Network is transforming education, workforce readiness and global career opportunities through AI-powered personalized pathways, future workforce intelligence and human potential development."
+        />
 
+        <meta
+          name="keywords"
+          content="Naavi Impact, Student Outcomes, Future Workforce, Skill Gap, Education Transformation, Human Potential, Global Opportunities, AI Education Platform"
+        />
 
+        <meta
+          name="robots"
+          content="index, follow"
+        />
+
+        <link
+          rel="canonical"
+          href="https://naavinetwork.ai/impact"
+        />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Naavi Network" />
+        <meta
+          property="og:title"
+          content="Impact | Naavi Network"
+        />
+        <meta
+          property="og:description"
+          content="See how Naavi Network is helping bridge skill gaps, improve student outcomes and enable future-ready career navigation through AI."
+        />
+        <meta
+          property="og:url"
+          content="https://naavinetwork.ai/impact"
+        />
+        <meta
+          property="og:image"
+          content="https://naavinetwork.ai/logo512.png"
+        />
+
+        {/* Twitter */}
+        <meta
+          name="twitter:card"
+          content="summary_large_image"
+        />
+        <meta
+          name="twitter:title"
+          content="Impact | Naavi Network"
+        />
+        <meta
+          name="twitter:description"
+          content="Discover Naavi Network's impact on education, careers and global opportunity through AI-powered pathway intelligence."
+        />
+        <meta
+          name="twitter:image"
+          content="https://naavinetwork.ai/logo512.png"
+        />
+      </Helmet>
 
       {/* ══════════════════════════════
           8 IMPACT SECTIONS

@@ -619,6 +619,29 @@ const getPath = async (req, res) => {
           ],
           as: "StepDetails"
         }
+      },
+      {
+        $lookup: {
+          from: "naavi_partners",
+          localField: "email",
+          foreignField: "email",
+          pipeline: [
+            {
+              $project: {
+                password: 0,
+                OTP: 0,
+                OTPCreatedTime: 0,
+                OTPAttempts: 0,
+              }
+            }
+          ],
+          as: "partnerDetails"
+        }
+      },
+      {
+        $addFields: {
+          partnerDetails: { $arrayElemAt: ["$partnerDetails", 0] }
+        }
       }
     ]);
 
@@ -754,6 +777,29 @@ const getPathById = async (req, res) => {
           as: "StepDetails",
         },
       },
+      {
+        $lookup: {
+          from: "naavi_partners",
+          localField: "email",
+          foreignField: "email",
+          pipeline: [
+            {
+              $project: {
+                password: 0,
+                OTP: 0,
+                OTPCreatedTime: 0,
+                OTPAttempts: 0,
+              }
+            }
+          ],
+          as: "partnerDetails"
+        }
+      },
+      {
+        $addFields: {
+          partnerDetails: { $arrayElemAt: ["$partnerDetails", 0] }
+        }
+      }
     ]);
 
     if (!result || result.length === 0) return res.status(404).json({ status: false, message: "Path not found" });

@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
 import "./static/master.scss";
 import "./assets/main.scss";
@@ -42,9 +43,11 @@ root.render(
                 <GlobalContexProvider1>
                   <ContextProvider>
                     <React.StrictMode>
-                      <Provider store={store}>
-                        <App />
-                      </Provider>
+                      <HelmetProvider>
+                        <Provider store={store}>
+                          <App />
+                        </Provider>
+                      </HelmetProvider>
                     </React.StrictMode>
                   </ContextProvider>
                 </GlobalContexProvider1>

@@ -79,11 +79,21 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const [vcrActiveTab, setVcrActiveTab] = useState("all");
   const [vcrOpenThreads, setVcrOpenThreads] = useState({});
   const [vcrSelectedRequest, setVcrSelectedRequest] = useState(null);
+  const [creatorModalPath, setCreatorModalPath] = useState(null);
 
   // ─── Agent vs Manual path source ────────────────────────────
   const AGENT_EMAIL = "pathengine.admin@gmail.com";
   const isAgentGenerated = (path) =>
     (path?.email || "").trim().toLowerCase() === AGENT_EMAIL;
+
+  const getCreatorLabel = (path) => {
+    if (isAgentGenerated(path)) {
+      return "AI Generated";
+    }
+    const pd = path?.partnerDetails;
+    const name = pd?.businessName || pd?.username || (pd?.firstName ? `${pd.firstName} ${pd.lastName || ''}`.trim() : "") || path?.email;
+    return name ? `Manual • ${name}` : "Manual";
+  };
 
   // ─── layerConfig — reads actual names/descriptions from the step document ───
   const getLayerConfig = (stepData) => ({
@@ -890,11 +900,16 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                           <img src={pathIcon} alt="path" style={{ width: "14px", height: "14px", objectFit: "contain" }} />
                         </div>
                         <span className="pending-path-name">{path?.nameOfPath}</span>
-                        {isAgentGenerated(path) ? (
-                          <span className="path-source-pill path-source-pill--agent">AI Generated</span>
-                        ) : (
-                          <span className="path-source-pill path-source-pill--manual">Manual</span>
-                        )}
+                        <span
+                          className={`path-source-pill ${isAgentGenerated(path) ? "path-source-pill--agent" : "path-source-pill--manual"} clickable`}
+                          onClick={(ev) => {
+                            ev.stopPropagation();
+                            setCreatorModalPath(path);
+                          }}
+                          title="Click to view creator & partner details"
+                        >
+                          {getCreatorLabel(path)}
+                        </span>
                       </div>
                       <span className="pending-date">
                         {path?.createdAt ? new Date(path.createdAt).toLocaleString("en-IN", {
@@ -961,11 +976,16 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                         <img src={pathIcon} alt="path" style={{ width: "16px", height: "16px", objectFit: "contain" }} />
                       </div>
                       <span className="path-name-text">{path?.nameOfPath}</span>
-                      {isAgentGenerated(path) ? (
-                        <span className="path-source-pill path-source-pill--agent">AI Generated</span>
-                      ) : (
-                        <span className="path-source-pill path-source-pill--manual">Manual</span>
-                      )}
+                      <span
+                        className={`path-source-pill ${isAgentGenerated(path) ? "path-source-pill--agent" : "path-source-pill--manual"} clickable`}
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          setCreatorModalPath(path);
+                        }}
+                        title="Click to view creator & partner details"
+                      >
+                        {getCreatorLabel(path)}
+                      </span>
                     </div>                <div className="paths-col-desc" onClick={ev => ev.stopPropagation()}>
                       <span className="path-desc-text">
                         {expandedRows[path?._id] ? path?.description : (path?.description?.length > 120 ? path?.description?.substring(0, 120) + "..." : path?.description)}
@@ -2089,6 +2109,101 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 <img className="admin-popularlogoimg" src={lg1} alt="" />
               </div>
             )}
+          </div>
+        </>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════
+          CREATOR & PARTNER DETAILS MODAL
+      ══════════════════════════════════════════════════════════ */}
+      {creatorModalPath && (
+        <>
+          <div className="pp-overlay" onClick={() => setCreatorModalPath(null)} />
+          <div className="creator-details-modal">
+            <div className="creator-modal-header">
+              <div className="creator-modal-title-box">
+                <div className={`creator-modal-badge ${isAgentGenerated(creatorModalPath) ? "agent" : "manual"}`}>
+                  {isAgentGenerated(creatorModalPath) ? "⚡ AI Generated Path" : "👤 Partner Manual Path"}
+                </div>
+                <h3 className="creator-modal-heading">Creator & Partner Details</h3>
+                <p className="creator-modal-sub">Path: {creatorModalPath.nameOfPath}</p>
+              </div>
+              <button className="pp-close-btn" onClick={() => setCreatorModalPath(null)}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="creator-modal-body">
+              {isAgentGenerated(creatorModalPath) ? (
+                <div className="creator-info-grid">
+                  <div className="creator-info-item">
+                    <span className="creator-info-label">Creation Source</span>
+                    <span className="creator-info-val">Automated AI Path Engine</span>
+                  </div>
+                  <div className="creator-info-item">
+                    <span className="creator-info-label">Creator Email</span>
+                    <span className="creator-info-val email-highlight">pathengine.admin@gmail.com</span>
+                  </div>
+                  <div className="creator-info-item">
+                    <span className="creator-info-label">System Role</span>
+                    <span className="creator-info-val">Naavi AI System Generator</span>
+                  </div>
+                  <div className="creator-info-item full-width">
+                    <span className="creator-info-label">Description</span>
+                    <span className="creator-info-val text-desc">This pathway was generated automatically using Naavi's AI Path Engine.</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="creator-info-grid">
+                  <div className="creator-info-item">
+                    <span className="creator-info-label">Creator Email</span>
+                    <span className="creator-info-val email-highlight">{creatorModalPath.email || "—"}</span>
+                  </div>
+                  <div className="creator-info-item">
+                    <span className="creator-info-label">Business Name</span>
+                    <span className="creator-info-val">{creatorModalPath.partnerDetails?.businessName || "—"}</span>
+                  </div>
+                  <div className="creator-info-item">
+                    <span className="creator-info-label">Partner Category / Type</span>
+                    <span className="creator-info-val type-badge">{creatorModalPath.partnerDetails?.partnerType || "Partner"}</span>
+                  </div>
+                  <div className="creator-info-item">
+                    <span className="creator-info-label">Contact Person</span>
+                    <span className="creator-info-val">
+                      {[creatorModalPath.partnerDetails?.firstName, creatorModalPath.partnerDetails?.lastName].filter(Boolean).join(" ") || creatorModalPath.partnerDetails?.username || "—"}
+                    </span>
+                  </div>
+                  {creatorModalPath.partnerDetails?.website && (
+                    <div className="creator-info-item">
+                      <span className="creator-info-label">Website</span>
+                      <a href={creatorModalPath.partnerDetails.website.startsWith("http") ? creatorModalPath.partnerDetails.website : `https://${creatorModalPath.partnerDetails.website}`} target="_blank" rel="noopener noreferrer" className="creator-info-link">
+                        {creatorModalPath.partnerDetails.website}
+                      </a>
+                    </div>
+                  )}
+                  {(creatorModalPath.partnerDetails?.city || creatorModalPath.partnerDetails?.country) && (
+                    <div className="creator-info-item">
+                      <span className="creator-info-label">Location</span>
+                      <span className="creator-info-val">
+                        {[creatorModalPath.partnerDetails?.city, creatorModalPath.partnerDetails?.state, creatorModalPath.partnerDetails?.country].filter(Boolean).join(", ")}
+                      </span>
+                    </div>
+                  )}
+                  {creatorModalPath.partnerDetails?.description && (
+                    <div className="creator-info-item full-width">
+                      <span className="creator-info-label">About Partner</span>
+                      <span className="creator-info-val text-desc">{creatorModalPath.partnerDetails.description}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="creator-modal-footer">
+              <button className="pp-btn pp-btn--ghost" onClick={() => setCreatorModalPath(null)}>Close</button>
+            </div>
           </div>
         </>
       )}

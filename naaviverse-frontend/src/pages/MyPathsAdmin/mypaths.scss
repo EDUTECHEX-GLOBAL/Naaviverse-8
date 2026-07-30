@@ -314,27 +314,194 @@ $grad-active: linear-gradient(135deg, #6366f1 0%, #8b5cf6 40%, #a78bfa 90%);
 .path-source-pill {
   display: inline-flex;
   align-items: center;
-  padding: 2px 9px;
+  padding: 3px 10px;
   border-radius: 50px;
-  font-size: 0.62rem;
+  font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   white-space: nowrap;
   flex-shrink: 0;
-  line-height: 1.6;
+  line-height: 1.5;
+  transition: all 0.18s ease;
+
+  &.clickable {
+    cursor: pointer;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.09);
+    }
+  }
 
   &--agent {
     background: $orange-bg;
     color: #c2410c;
     border: 1.3px solid rgba($orange, 0.35);
+
+    &.clickable:hover {
+      background: #ffedd5;
+      border-color: #f97316;
+    }
   }
 
   &--manual {
     background: #f1f5f9;
-    color: #64748b;
-    border: 1.3px solid #e2e8f0;
+    color: #334155;
+    border: 1.3px solid #cbd5e1;
+
+    &.clickable:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+      color: #0f172a;
+    }
   }
 }
+
+// ─── CREATOR & PARTNER DETAILS MODAL ─────────────────────────────
+.creator-details-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 520px;
+  max-width: calc(100vw - 28px);
+  max-height: min(85vh, 580px);
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.22);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: ppSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  .creator-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid #f1f5f9;
+
+    .creator-modal-title-box {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .creator-modal-badge {
+      align-self: flex-start;
+      padding: 3px 10px;
+      border-radius: 50px;
+      font-size: 0.68rem;
+      font-weight: 700;
+
+      &.agent {
+        background: #fff7ed;
+        color: #c2410c;
+        border: 1px solid #fed7aa;
+      }
+
+      &.manual {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+      }
+    }
+
+    .creator-modal-heading {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 2px 0 0;
+    }
+
+    .creator-modal-sub {
+      font-size: 0.76rem;
+      color: #64748b;
+      margin: 0;
+    }
+  }
+
+  .creator-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 22px;
+
+    .creator-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .creator-info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      &.full-width {
+        grid-column: 1 / -1;
+      }
+    }
+
+    .creator-info-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+    }
+
+    .creator-info-val {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: #1e293b;
+      word-break: break-word;
+
+      &.email-highlight {
+        color: #2563eb;
+        font-family: monospace;
+        font-size: 0.84rem;
+      }
+
+      &.type-badge {
+        display: inline-block;
+        align-self: flex-start;
+        padding: 2px 8px;
+        background: #f1f5f9;
+        border-radius: 6px;
+        font-size: 0.78rem;
+        color: #475569;
+      }
+
+      &.text-desc {
+        font-weight: 400;
+        font-size: 0.82rem;
+        line-height: 1.5;
+        color: #475569;
+      }
+    }
+
+    .creator-info-link {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #2563eb;
+      text-decoration: underline;
+
+      &:hover {
+        color: #1d4ed8;
+      }
+    }
+  }
+
+  .creator-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px 22px 16px;
+    border-top: 1px solid #f1f5f9;
+    background: #fafafa;
+  }
+}
+
 
 // ─── OVERLAY ────────────────────────────────────────────────────
 .pp-overlay {
