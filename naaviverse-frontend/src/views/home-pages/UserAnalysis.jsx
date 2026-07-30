@@ -1,11 +1,9 @@
 import React, { Fragment, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from "react-helmet-async";
 import { Link } from 'react-router-dom';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
-import { Helmet } from "react-helmet-async";
-import { Link } from 'react-router-dom';
 
 import HeroBannerFive from '../../components/hero-banner/HeroBannerFive';
 import FancyFeatureSeventeen from '../../components/feature/FancyFeatureSeventeen';

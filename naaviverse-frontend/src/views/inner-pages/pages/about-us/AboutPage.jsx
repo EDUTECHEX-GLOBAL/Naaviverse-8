@@ -1,9 +1,5 @@
 import React, { Fragment, useEffect } from 'react';
-<<<<<<< HEAD
-import { Helmet } from 'react-helmet';
-=======
 import { Helmet } from "react-helmet-async";
->>>>>>> origin/feature/sitemaps
 import { useParams, useLocation } from 'react-router-dom';
 import Footer from '../../../../components/footernew/index';
 import './AboutPage.scss';

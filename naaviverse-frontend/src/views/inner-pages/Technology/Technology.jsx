@@ -1,5 +1,6 @@
 import React, { Fragment, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
+import { Helmet } from "react-helmet-async";
 import {
   HiOutlineCpuChip,
   HiOutlineSparkles,
@@ -199,6 +200,70 @@ const Technology = () => {
 
   return (
     <Fragment>
+      <Helmet>
+        <title>
+          Technology | Naavi Network - AI Powered Path Engine
+        </title>
+
+        <meta
+          name="description"
+          content="Discover the technology behind Naavi Network. Learn how LLMs, Knowledge Graphs, AI matching algorithms, and pathway intelligence power personalized education, career, and life navigation."
+        />
+
+        <meta
+          name="keywords"
+          content="Naavi Technology, AI Path Engine, LLMs, Knowledge Graphs, Pathway Intelligence, Machine Learning, Education Tech Architecture, Naavi Network"
+        />
+
+        <meta
+          name="robots"
+          content="index, follow"
+        />
+
+        <link
+          rel="canonical"
+          href="https://naavinetwork.ai/technology"
+        />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Naavi Network" />
+        <meta
+          property="og:title"
+          content="Technology | Naavi Network"
+        />
+        <meta
+          property="og:description"
+          content="Explore the AI pathways architecture, LLMs + Knowledge Graphs synergy, and predictive reasoning powering Naavi Network."
+        />
+        <meta
+          property="og:url"
+          content="https://naavinetwork.ai/technology"
+        />
+        <meta
+          property="og:image"
+          content="https://naavinetwork.ai/logo512.png"
+        />
+
+        {/* Twitter */}
+        <meta
+          name="twitter:card"
+          content="summary_large_image"
+        />
+        <meta
+          name="twitter:title"
+          content="Technology | Naavi Network"
+        />
+        <meta
+          name="twitter:description"
+          content="Discover how AI LLMs and Knowledge Graphs power Naavi Network's personalized pathway platform."
+        />
+        <meta
+          name="twitter:image"
+          content="https://naavinetwork.ai/logo512.png"
+        />
+      </Helmet>
+
       {/* Pathways Section */}
       <section id="pathways" className="tech-section tech-pathways">
         <div className="tech-container">
