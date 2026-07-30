@@ -1,0 +1,32 @@
+@import "../../static/scss/colors";
+@import "../../static/scss/mixin";
+
+.loadingAnimation {
+  background-color: #fff8;
+  position: absolute;
+  left: 50;
+  right: 50;
+  top: 50;
+  bottom: 50;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  > div {
+    height: 100%;
+    width: 100%;
+  }
+  .logo {
+    width: 50%;
+  }
+}
+.animation{
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  // position: absolute;
+  // top: 20%;
+  // right: 5%;
+}

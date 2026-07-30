@@ -1,0 +1,334 @@
+.nodesPage {
+  width: 100%;
+  height: 100%;
+  overflow-y: hidden;
+
+  .nodespage-content {
+    width: 100%;
+    height: calc(100% - 5rem);
+    background: rgba(237, 237, 237, 0.37);
+
+    .top-div {
+      width: 100%;
+      height: 8rem;
+      padding: 0 8rem;
+      position: sticky;
+      top: 5rem;
+      background: rgba(237, 237, 237, 0.37);
+      z-index: 3;
+      transition: all ease 0.2s;
+
+      .hiding-div {
+        width: 100%;
+        height: calc(60% + 4rem);
+        position: sticky;
+        top: 5px;
+        // background: rgba(237, 237, 237, 0.37);
+        transition: all ease 0.2s;
+
+        .static-div {
+          width: 100%;
+          height: calc(100% - 4rem);
+          background: linear-gradient(90deg, #47B4D5 0.02%, #29449D 119.26%);
+          display: flex;
+          color: #ffffff;
+          justify-content: center;
+          align-items: center;
+          font-size: 62px;
+          font-weight: 500;
+          border-bottom-left-radius: 35px;
+          border-bottom-right-radius: 35px;
+
+          div {
+            visibility: hidden;
+          }
+        }
+
+        .search-container {
+          position: absolute;
+          width: 50%;
+          transform: translate(-50%, -50%);
+          left: 50%;
+          border: 0.5px solid #e5e5e5;
+          border-radius: 35px;
+          background: #ffffff;
+          display: flex;
+          justify-content: space-between;
+          height: 4rem;
+          padding: 0.5rem;
+          box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+
+          input {
+            border: none;
+            height: 100%;
+            width: 75%;
+            padding-left: 1rem;
+            font-size: 1rem;
+            border-top-left-radius: 35px;
+            border-bottom-left-radius: 35px;
+
+            &::placeholder {
+              color: #65686d;
+              opacity: 0.5;
+              font-weight: 500;
+            }
+          }
+
+          .search-btn {
+            background: linear-gradient(to bottom, #59a2dd 0%, #186ab4 100%);
+            border-radius: 35px;
+            width: 20%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all ease 0.2s;
+
+            img {
+              width: 50%;
+            }
+
+            &:hover {
+              img {
+                transform: scale(1.02);
+              }
+            }
+          }
+        }
+      }
+
+      .sort-div {
+        display: flex;
+        width: 50%;
+        margin: auto;
+        height: 4rem;
+        gap: 1rem;
+        align-items: center;
+
+        .sort-txt {
+          font-size: 15px;
+          font-weight: 500;
+        }
+
+        .options {
+          display: flex;
+          gap: 1rem;
+          height: 75%;
+
+          div {
+            background: rgba(237, 237, 237, 0.37);
+            font-size: 15px;
+            padding: 0.5rem 1.5rem;
+            border-radius: 35px;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+          }
+        }
+      }
+    }
+
+    .bottom-div {
+      width: 100%;
+      height: calc(100% - 8rem);
+      background: rgba(237, 237, 237, 0.37);
+      padding: 1rem 6vw 0;
+
+      .directory-scroll-div {
+        width: 100%;
+        height: 100%;
+        overflow-y: scroll;
+        padding: 0 1vw 2rem 1vw;
+
+        .acc-txt {
+          font-size: 30px;
+          color: #1f304f;
+          font-weight: 500;
+          height: 2rem;
+          margin-bottom: 1rem;
+        }
+
+        .accountants-div {
+          width: 100%;
+          // height: calc(100% - 2rem);
+          display: flex;
+          flex-wrap: wrap;
+          gap: 2.75%;
+
+          .each-accountant {
+            display: flex;
+            flex-direction: column;
+            margin-top: 1.75rem;
+            justify-content: flex-start;
+            width: 31.5%;
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 0 0 35px 0;
+            cursor: pointer;
+            transition: all ease 0.2s;
+            border: 0.5px solid #e5e5e5;
+
+            &:hover {
+              box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+            }
+
+            .cover-pic {
+              width: 100%;
+              height: 7rem;
+              position: relative;
+              border-top-left-radius: 15px;
+              border-top-right-radius: 15px;
+            }
+
+            .account-img-box {
+              display: flex;
+              height: 108px;
+              justify-content: center;
+              margin-top: -50px;
+              z-index: 2;
+
+              .account-img {
+                border-radius: 50%;
+                height: 108px;
+                width: 108px;
+              }
+            }
+
+            .account-name {
+              font-size: 25px;
+              font-weight: 600;
+              line-height: 30px;
+              margin-top: 20px;
+              color: #1f304f;
+              display: flex;
+              justify-content: center;
+              padding: 0 35px;
+            }
+
+            .account-work {
+              color: #1f304f;
+              display: flex;
+              justify-content: center;
+              font-size: 16px;
+              font-weight: 300;
+              line-height: 25px;
+              min-height: 4rem;
+              padding-top: 7px;
+              text-align: center;
+              padding: 7px 35px 0;
+            }
+
+            .account-country {
+              color: #1f304f;
+              font-size: 15px;
+              font-weight: 400;
+              line-height: 18px;
+              margin-bottom: 15px;
+              margin-top: 35px;
+              padding: 0 35px;
+            }
+
+            .account-countries-all {
+              display: flex;
+              margin-bottom: 25px;
+              width: 100%;
+              padding: 0 35px;
+
+              .account-countries-each {
+                background: hsla(0, 0%, 100%, 0.25);
+                border: 0.5px solid #e5e5e5;
+                border-radius: 35px;
+                color: #1f304f;
+                cursor: pointer;
+                display: flex;
+                font-size: 13px;
+                font-weight: 400;
+                justify-content: center;
+                line-height: 16px;
+                overflow: hidden;
+                padding: 15px 1.5rem;
+                position: relative;
+                transition: all 0.4s ease-in-out;
+                width: unset;
+              }
+            }
+
+            .account-speaclities {
+              color: #1f304f;
+              font-size: 15px;
+              font-weight: 400;
+              line-height: 18px;
+              margin-bottom: 15px;
+              margin-top: 35px;
+              padding: 0 35px;
+            }
+
+            .account-speaclities-all {
+              display: flex;
+              flex-wrap: wrap;
+              justify-content: space-between;
+              margin-bottom: 0;
+              width: 100%;
+              padding: 0 35px;
+
+              .account-speaclities-each {
+                background: hsla(0, 0%, 100%, 0.25);
+                border: 0.5px solid #e5e5e5;
+                border-radius: 35px;
+                color: #1f304f;
+                cursor: pointer;
+                display: flex;
+                font-size: 13px;
+                font-weight: 400;
+                justify-content: center;
+                line-height: 16px;
+                margin-bottom: 20px;
+                overflow: hidden;
+                padding: 15px 1.5rem;
+                position: relative;
+                transition: all 0.4s ease-in-out;
+                width: unset;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .nodesPage {
+    .nodespage-content {
+      .top-div {
+        padding: 0;
+        .hiding-div {
+          .search-container {
+            width: 93%;
+            .search-btn {
+              display: none;
+            }
+          }
+        }
+      }
+      .bottom-div {
+        padding: 0 6vw;
+        .directory-scroll-div {
+          .acc-txt {
+            display: none;
+          }
+          .accountants-div {
+            .each-accountant {
+              min-width: 100%;
+              .account-name {
+                text-align: center;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

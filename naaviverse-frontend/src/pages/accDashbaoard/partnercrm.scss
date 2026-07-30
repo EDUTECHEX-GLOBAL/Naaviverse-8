@@ -1,0 +1,671 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+
+.crm-page {
+  width: 100%;
+  min-height: calc(100% - 63px);
+  height: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-family: 'DM Sans', 'Inter', sans-serif;
+  background: #f5f7fb;
+  color: #1e2a45;
+
+  // ─── SUMMARY CARDS ──────────────────────────────────────────────────────────
+  .crm-summary-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 0.4rem 28px 0;
+    margin-bottom: 0.75rem;
+  }
+
+  .crm-summary-card {
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
+  }
+
+  // ── Icon box ──────────────────────────────────────────────
+  .cs-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg {
+      width: 15px;
+      height: 15px;
+      stroke: #fff;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+  }
+
+  // ── Text ──────────────────────────────────────────────────
+  .cs-label {
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1px;
+  }
+
+  .cs-value {
+    font-size: 1.15rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 1px;
+  }
+
+  .cs-sub {
+    font-size: 8px;
+    font-weight: 500;
+  }
+
+  // ── Color themes ──────────────────────────────────────────
+  &.blue {
+    background: #e0e7ff;
+    .cs-icon    { background: #6366f1; }
+    .cs-label   { color: #4338ca; }
+    .cs-value   { color: #3730a3; }
+    .cs-sub     { color: #6366f1; }
+  }
+
+  &.orange {
+    background: #fce7f3;
+    .cs-icon    { background: #ec4899; }
+    .cs-label   { color: #be185d; }
+    .cs-value   { color: #9d174d; }
+    .cs-sub     { color: #ec4899; }
+  }
+
+  &.emerald {
+    background: #d1fae5;
+    .cs-icon    { background: #10b981; }
+    .cs-label   { color: #065f46; }
+    .cs-value   { color: #064e3b; }
+    .cs-sub     { color: #10b981; }
+  }
+
+  &.teal {
+    background: #ccfbf1;
+    .cs-icon    { background: #14b8a6; }
+    .cs-label   { color: #0f766e; }
+    .cs-value   { color: #134e4a; }
+    .cs-sub     { color: #14b8a6; }
+  }
+
+&.violet {
+  background: #ede9fe;
+  .cs-icon  { background: #7c3aed; }
+  .cs-label { color: #5b21b6; }
+  .cs-value { color: #4c1d95; }
+  .cs-sub   { color: #7c3aed; }
+}
+
+  &.violet {
+    background: #ede9fe;
+    .cs-icon    { background: #7c3aed; }
+    .cs-label   { color: #5b21b6; }
+    .cs-value   { color: #4c1d95; }
+    .cs-sub     { color: #7c3aed; }
+  }
+
+  &.rose {
+    background: #ffe4e6;
+    .cs-icon    { background: #f43f5e; }
+    .cs-label   { color: #be123c; }
+    .cs-value   { color: #9f1239; }
+    .cs-sub     { color: #f43f5e; }
+  }
+}
+
+    .cs-label {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      opacity: 1;
+    }
+
+    .cs-value {
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 3px;
+      letter-spacing: -0.02em;
+    }
+
+    .cs-sub {
+      font-size: 8px;
+      opacity: 0.82;
+      font-weight: 500;
+    }
+  }
+
+  // ─── TOP TABS ────────────────────────────────────────────────────────────────
+  .crm-top-tabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 28px;
+    margin-bottom: 0.6rem;
+  }
+
+  .crm-top-tab {
+    padding: 4px 14px;
+    border-radius: 24px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    color: #64748b;
+    background: #eef2f6;
+    user-select: none;
+  }
+
+  // ─── PURCHASE FILTER TABS ────────────────────────────────────────────────────
+  .purchase-filter-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 28px;
+    margin-bottom: 0.6rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  .purchase-filter-tab {
+    padding: 3px 12px;
+    border-radius: 24px;
+    font-size: 10.5px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    color: #64748b;
+    background: #ffffff;
+    user-select: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+
+    &:hover {
+      border-color: #c4b5fd;
+      color: #8b5cf6;
+      background: #faf9ff;
+    }
+
+    &.active {
+      background: #f5f3ff;
+      color: #8b5cf6;
+      border-color: #ddd6fe;
+      font-weight: 600;
+    }
+  }
+
+  // ─── TABLE WRAPPER ───────────────────────────────────────────────────────────
+  .crm-table-wrap {
+    margin: 0 28px 1.5rem;
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid #eef2f6;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  }
+
+  // ─── GRID LAYOUTS ────────────────────────────────────────────────────────────
+  .clients-grid {
+    display: grid;
+    grid-template-columns: 2fr 1.6fr 1.2fr 0.9fr 1fr 0.7fr;
+  }
+
+  .purchases-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1.4fr 1.2fr 0.9fr 0.9fr 0.8fr;
+  }
+
+  // ─── TABLE HEADER ────────────────────────────────────────────────────────────
+  .crm-table-header {
+    padding: 0.55rem 1.2rem;
+    background: #fafbfc;
+    border-bottom: 1px solid #f1f5f9;
+    align-items: center;
+
+    span {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+  }
+
+  // ─── TABLE BODY ──────────────────────────────────────────────────────────────
+  .crm-table-body { width: 100%; }
+
+  // ─── DATA ROW ────────────────────────────────────────────────────────────────
+  .crm-data-row {
+    padding: 0.55rem 1.2rem;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.2s ease;
+    cursor: pointer;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: #faf9fe; }
+  }
+
+  // ─── SKELETON ROW ────────────────────────────────────────────────────────────
+  .crm-skeleton-row {
+    padding: 0.55rem 1.2rem;
+    gap: 0.8rem;
+    border-bottom: 1px solid #f1f5f9;
+    align-items: center;
+    &:last-child { border-bottom: none; }
+  }
+
+  // ─── CLIENT NAME CELL ────────────────────────────────────────────────────────
+  .client-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0; // allows text-overflow to work inside flex
+  }
+
+  .client-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+
+    &.small {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      font-size: 9px;
+    }
+  }
+
+  .client-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .client-sub {
+    font-size: 9.5px;
+    color: #94a3b8;
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // ─── GENERIC CELL ────────────────────────────────────────────────────────────
+  .crm-cell {
+    font-size: 11.5px;
+    color: #334155;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &.mono {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+    }
+
+    &.amount-cell {
+      font-weight: 600;
+      color: #1e293b;
+      font-size: 12px;
+    }
+  }
+
+  // ─── DATE CELL ───────────────────────────────────────────────────────────────
+  .date-cell-wrap {
+    .date-main {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: #1e293b;
+    }
+    .date-time {
+      font-size: 9px;
+      color: #94a3b8;
+      margin-top: 1px;
+      font-family: 'DM Mono', monospace;
+    }
+  }
+
+  .date-main {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #1e293b;
+  }
+
+  // ─── PRODUCT CELL ────────────────────────────────────────────────────────────
+  .product-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .product-sub {
+    font-size: 9px;
+    color: #94a3b8;
+    margin-top: 1px;
+  }
+
+  // ─── PURCHASE COUNT BADGE ────────────────────────────────────────────────────
+  .purchase-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 700;
+
+    &.has-purchases {
+      background: #f5f3ff;
+      color: #8b5cf6;
+      border: 1px solid #e9d5ff;
+    }
+
+    &.no-purchases {
+      background: #f8fafc;
+      color: #cbd5e1;
+      border: 1px solid #eef2f6;
+    }
+  }
+
+  // ─── BILLING PILL ────────────────────────────────────────────────────────────
+  .billing-pill {
+    display: inline-block;
+    font-size: 9.5px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 20px;
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #d1fae5;
+
+    &.monthly {
+      background: #fffbeb;
+      color: #d97706;
+      border-color: #fef3c7;
+    }
+  }
+
+  // ─── STATUS INDICATORS ───────────────────────────────────────────────────────
+  %status-base {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 20px;
+
+    &::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+  }
+
+  .status-paid    { @extend %status-base; background: #ecfdf5; color: #059669; &::before { background: #059669; } }
+  .status-pending { @extend %status-base; background: #fffbeb; color: #d97706; &::before { background: #fbbf24; } }
+  .status-failed  { @extend %status-base; background: #fef2f2; color: #e11d48; &::before { background: #fb7185; } }
+  .status-default { @extend %status-base; background: #f8fafc; color: #94a3b8; &::before { background: #cbd5e1; } }
+
+  // ─── EMPTY STATE ─────────────────────────────────────────────────────────────
+  .crm-empty {
+    padding: 2.5rem 2rem;
+    text-align: center;
+
+    .empty-icon  { font-size: 28px; margin-bottom: 0.6rem; opacity: 0.4; }
+    .empty-title { font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+    .empty-sub   { font-size: 11px; color: #94a3b8; }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  RESPONSIVE — 1024px: hide less important columns
+  // ═══════════════════════════════════════════════════════════════════════════
+  @media (max-width: 1024px) {
+    .clients-grid {
+      grid-template-columns: 2fr 1.4fr 1fr 0.8fr;
+
+      // Hide Country (4th) and Purchases (6th) header spans
+      span:nth-child(4),
+      span:nth-child(6) { display: none; }
+
+      // Hide Country (4th) and Purchases (6th) data cells
+      .crm-data-row > *:nth-child(4),
+      .crm-data-row > *:nth-child(6) { display: none; }
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  RESPONSIVE — 768px: strip down further, compact padding
+  // ═══════════════════════════════════════════════════════════════════════════
+  @media (max-width: 768px) {
+    .crm-summary-strip {
+      grid-template-columns: 1fr;
+      padding: 0.75rem 16px 0;
+      gap: 8px;
+    }
+
+    .crm-top-tabs,
+    .purchase-filter-tabs { padding: 0 16px; }
+
+    .crm-table-wrap { margin: 0 16px 1.5rem; }
+
+    .clients-grid {
+      grid-template-columns: 1.8fr 1fr;
+
+      span:nth-child(n+3),
+      span:nth-child(n+3) { display: none; }
+    }
+
+    .purchases-grid {
+      grid-template-columns: 1.6fr 1fr 0.9fr;
+
+      span:nth-child(3),
+      span:nth-child(5) { display: none; }
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  RESPONSIVE — 480px: CARD-BASED LAYOUT (replaces table grid entirely)
+  //  Each row becomes a self-contained card with labeled key-value pairs.
+  // ═══════════════════════════════════════════════════════════════════════════
+  @media (max-width: 480px) {
+    .crm-summary-strip {
+      grid-template-columns: 1fr;
+      padding: 0.6rem 12px 0;
+      gap: 8px;
+    }
+
+    .crm-summary-card {
+      padding: 0.6rem 1rem;
+      .cs-value { font-size: 20px; }
+    }
+
+    .crm-top-tabs,
+    .purchase-filter-tabs { padding: 0 12px; }
+
+    .crm-table-wrap {
+      margin: 0 12px 1.5rem;
+      border-radius: 12px;
+    }
+
+    // ── Hide the desktop table header entirely on mobile ──────────────────
+    .crm-table-header { display: none !important; }
+
+    // ── Clients: card layout ──────────────────────────────────────────────
+    .crm-data-row.clients-grid {
+      display: flex;
+      flex-direction: column;
+      padding: 0.75rem 1rem;
+      gap: 0;
+      border-bottom: 1px solid #f1f5f9;
+
+      &:last-child { border-bottom: none; }
+      &:hover { background: #faf9fe; }
+
+      // Show ALL children as flex rows
+      > * { display: flex !important; }
+
+      // ── Top row: avatar + name (full width) ──────────────────────────
+      .client-name-cell {
+        width: 100%;
+        margin-bottom: 8px;
+
+        .client-name  { font-size: 13px; }
+        .client-sub   { font-size: 10px; }
+      }
+
+      // ── Detail rows: label left, value right ─────────────────────────
+      // We use data-label added via CSS counters approach — instead we
+      // piggyback on the existing crm-cell elements and show them as
+      // full-width key-value rows using ::before pseudo labels.
+      .crm-cell {
+        width: 100%;
+        justify-content: space-between;
+        align-items: center;
+        padding: 3px 0;
+        font-size: 11.5px;
+        color: #475569;
+        border-bottom: 1px dashed #f1f5f9;
+
+        &:last-child { border-bottom: none; }
+
+        // Value side
+        text-align: right;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+      }
+
+      // Email cell (2nd child in clients-grid)
+      > *:nth-child(2)::before { content: 'Email'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+
+      // Phone cell (3rd)
+      > *:nth-child(3)::before { content: 'Phone'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+
+      // Country cell (4th)
+      > *:nth-child(4)::before { content: 'Country'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+
+      // Joined cell (5th)
+      > *:nth-child(5)::before { content: 'Joined'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+
+      // Purchases cell (6th)
+      > *:nth-child(6) {
+        border-bottom: none;
+        &::before { content: 'Purchases'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+      }
+    }
+
+    // Skeleton rows on mobile
+    .crm-skeleton-row.clients-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 0.75rem 1rem;
+    }
+
+    // ── Purchases: card layout ────────────────────────────────────────────
+    .crm-data-row.purchases-grid {
+      display: flex;
+      flex-direction: column;
+      padding: 0.75rem 1rem;
+      gap: 0;
+      border-bottom: 1px solid #f1f5f9;
+
+      &:last-child { border-bottom: none; }
+      &:hover { background: #faf9fe; }
+
+      > * { display: flex !important; }
+
+      // Client cell (1st — name-cell)
+      .client-name-cell {
+        width: 100%;
+        margin-bottom: 8px;
+        .client-name { font-size: 13px; }
+        .client-sub  { font-size: 10px; }
+      }
+
+      // Shared detail row style
+      > *:nth-child(n+2) {
+        width: 100%;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 0;
+        font-size: 11.5px;
+        color: #475569;
+        border-bottom: 1px dashed #f1f5f9;
+
+        &:last-child { border-bottom: none; }
+      }
+
+      // Product (2nd)
+      > *:nth-child(2) {
+        flex-direction: row;
+        &::before { content: 'Product'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+        .product-name { font-size: 11.5px; text-align: right; }
+        .product-sub  { display: none; }
+      }
+
+      // Date (3rd)
+      > *:nth-child(3)::before { content: 'Date'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+
+      // Amount (4th)
+      > *:nth-child(4)::before { content: 'Amount'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+
+      // Billing (5th)
+      > *:nth-child(5)::before { content: 'Billing'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+
+      // Status (6th)
+      > *:nth-child(6) {
+        border-bottom: none;
+        &::before { content: 'Status'; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+      }
+    }
+  }
+

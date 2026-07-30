@@ -1,0 +1,31 @@
+.map-component {
+  width: 50%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  border-left: 1px solid #e5e5e5;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    vertical-align: middle;
+  }
+
+  .abs-div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+
+    .path-count {
+      font-size: 2rem;
+      font-weight: 500;
+      padding: 2rem 0;
+    }
+  }
+}

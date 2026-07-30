@@ -1,0 +1,98 @@
+@import "../../static/scss/mixin.scss";
+.tabInterface {
+    display: grid;
+    grid-template-columns: 6fr 2.5fr;
+    // background-color: red;
+    height: 70px;
+    border-bottom: 1px solid #e7e7e780;
+
+}
+
+.filterRow {
+    // background-color: yellowgreen;
+    border-bottom: 1px solid #e7e7e780;
+    height: 50px;
+}
+.addDrawerBtn{
+    &:hover{
+        transform: scale(1.1);
+    }
+    padding: 25px;
+}
+
+.refreshBtn{
+    &:hover{
+        transform: scale(1.1);
+    }
+}
+
+
+.tabsWrapper {
+    display: flex;
+    overflow-x: scroll;
+
+    .tabs {
+        position: relative;
+        // flex: 0 0 240px;
+        height: 70px;
+        background-color: white;
+        border-right: 1px solid #e7e7e780;
+        display: flex;
+        align-items: center;
+        padding: 25px;
+        cursor: pointer;
+
+        .tabIcon {
+            width: 30px;
+        }
+
+        .tabName {
+            font-family: 'Montserrat';
+            font-style: normal;
+            font-weight: 700;
+            font-size: 20px;
+            padding-left: 10px;
+            color: #2E2D2D;
+        }
+
+        .cross {
+            position: absolute;
+            top: 5px;
+            right: 15px;
+            width: 9px;
+            height: 9px;
+            cursor: pointer;
+           
+        }
+    }
+}
+
+.addNew {
+    // position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 120px;
+    height: 35px;
+    color: white;
+
+    background: #78C92E;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+.vault-button {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 120px;
+    height: 35px;
+    color: #18191D;
+    font-weight: 700;
+    border: 1px solid #E7E7E7;
+    border-radius: 15px;
+    cursor: pointer;
+
+
+}
