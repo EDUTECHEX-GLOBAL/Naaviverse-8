@@ -2,6 +2,9 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, Navigate, useParams } from "react-router-dom";
 import axios from "axios";
 import * as XLSX from "xlsx";
+// Adjust this relative path to match where this file actually sits in src/.
+// Source: src/logos/naavi_final_logo2.png
+import naaviLogo from "../../logos/naavi_final_logo2.png";
 import "./PartnerExclusiveDashboard.scss";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
@@ -20,6 +23,32 @@ const formatDate = (dateStr) => {
   const d = new Date(dateStr);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 };
+
+// ─── Static placeholder data for the Support tab ──────────────────────────────
+// Swap this out once the "contact super admin" endpoint exists on the backend.
+const STATIC_SUPPORT_TICKETS = [
+  {
+    id: "TCK-3391",
+    subject: "Payout not credited for June cycle",
+    status: "Resolved",
+    priority: "High",
+    date: "2026-07-18"
+  },
+  {
+    id: "TCK-3402",
+    subject: "Need help adding a new marketplace listing",
+    status: "In Progress",
+    priority: "Medium",
+    date: "2026-07-23"
+  },
+  {
+    id: "TCK-3417",
+    subject: "Razorpay merchant node verification query",
+    status: "Open",
+    priority: "Medium",
+    date: "2026-07-27"
+  }
+];
 
 // ─── Small inline icon set (replaces emoji for a consistent, elegant mark) ────
 const Icon = {
@@ -50,6 +79,24 @@ const Icon = {
   Alert: () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
   ),
+  Mail: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 6l-10 7L2 6" /></svg>
+  ),
+  Phone: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+  ),
+  Ticket: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 9a2 2 0 0 0 2-2V6a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v1a2 2 0 0 0 0 4v1a2 2 0 0 0 0 4v1a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-1a2 2 0 0 0-2-2z" /></svg>
+  ),
+  Send: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
+  ),
+};
+
+const ticketBadgeClass = (status) => {
+  if (status === "Resolved") return "badge-resolved";
+  if (status === "In Progress") return "badge-inprogress";
+  return "badge-open";
 };
 
 export default function PartnerExclusiveDashboard() {
@@ -89,6 +136,11 @@ export default function PartnerExclusiveDashboard() {
   const [filterStatus, setFilterStatus] = useState("all"); // 'all', 'Paid', 'Pending', 'Failed'
   const [feedbackView, setFeedbackView] = useState("cards"); // 'cards' or 'table'
   const [currentPartner, setCurrentPartner] = useState(partner);
+
+  // Support tab local state
+  const [ticketSubject, setTicketSubject] = useState("");
+  const [ticketMessage, setTicketMessage] = useState("");
+  const [ticketSubmitted, setTicketSubmitted] = useState(false);
 
   const feedbacksList = useMemo(() => {
     return stats?.feedbacks || [];
@@ -163,6 +215,15 @@ export default function PartnerExclusiveDashboard() {
     XLSX.writeFile(wb, `${currentPartner?.partnerId || partner?.partnerId || "partner"}_Transactions.xlsx`);
   };
 
+  const handleTicketSubmit = () => {
+    if (!ticketSubject.trim() || !ticketMessage.trim()) return;
+    // Static/placeholder flow until the "contact super admin" endpoint exists.
+    setTicketSubmitted(true);
+    setTicketSubject("");
+    setTicketMessage("");
+    setTimeout(() => setTicketSubmitted(false), 4000);
+  };
+
   // Filtered transactions for Transactions tab
   const filteredTransactions = useMemo(() => {
     if (!stats?.allTransactions) return [];
@@ -197,15 +258,10 @@ export default function PartnerExclusiveDashboard() {
 
   return (
     <div className="px-db-root">
-      {/* Background blobs */}
-      <div className="px-blob px-blob-1" />
-      <div className="px-blob px-blob-2" />
-
       {/* Sidebar */}
       <aside className="px-sidebar">
         <div className="px-sidebar-brand" onClick={() => navigate("/dashboard/accountants")}>
-          <span className="px-brand-icon">✦</span>
-          <span className="px-brand-text">Naavi<span className="px-brand-accent">Exclusive</span></span>
+          <img src={naaviLogo} alt="naavi" className="px-brand-logo" />
         </div>
         <nav className="px-sidebar-nav">
           {sidebarMenu.map(menu => (
@@ -218,7 +274,6 @@ export default function PartnerExclusiveDashboard() {
                   Transactions: "transactions",
                   Refunds: "refunds",
                   Feedbacks: "feedback",
-                  FeedbacksTable: "feedback",
                   Settings: "settings",
                   Support: "support",
                 };
@@ -233,7 +288,7 @@ export default function PartnerExclusiveDashboard() {
         </nav>
         <div className="px-sidebar-footer">
           <button className="px-logout-btn" onClick={handleLogout}>
-            <Icon.Logout /> Logout
+            <Icon.Logout /> <span>Logout</span>
           </button>
         </div>
       </aside>
@@ -282,7 +337,7 @@ export default function PartnerExclusiveDashboard() {
                   {/* Metrics row */}
                   <div className="px-metrics-grid">
                     {/* Card 1: Total Earnings */}
-                    <div className="px-metric-card">
+                    <div className="px-metric-card card-green">
                       <div className="px-card-header">
                         <span className="px-card-label">Total Earnings</span>
                         <span className="px-card-more">•••</span>
@@ -290,13 +345,12 @@ export default function PartnerExclusiveDashboard() {
                       <div className="px-card-value">{formatCurrency(stats?.totalEarnings || 0)}</div>
                       <div className="px-card-sub text-success">+12.5% vs last month</div>
 
-                      {/* SVG Line Sparkline Chart */}
                       <div className="px-chart-wrapper">
                         <svg className="px-sparkline" viewBox="0 0 100 30">
                           <defs>
                             <linearGradient id="glowGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="#c6a15b" stopOpacity="0.4" />
-                              <stop offset="100%" stopColor="#c6a15b" stopOpacity="0" />
+                              <stop offset="0%" stopColor="#1FA655" stopOpacity="0.35" />
+                              <stop offset="100%" stopColor="#1FA655" stopOpacity="0" />
                             </linearGradient>
                           </defs>
                           <path
@@ -306,7 +360,7 @@ export default function PartnerExclusiveDashboard() {
                           <path
                             d="M0,25 Q15,10 30,18 T60,5 T90,12 L100,8"
                             fill="none"
-                            stroke="#e7c988"
+                            stroke="#1FA655"
                             strokeWidth="2"
                             strokeLinecap="round"
                           />
@@ -315,7 +369,7 @@ export default function PartnerExclusiveDashboard() {
                     </div>
 
                     {/* Card 2: Active Students */}
-                    <div className="px-metric-card">
+                    <div className="px-metric-card card-blue">
                       <div className="px-card-header">
                         <span className="px-card-label">Active Students</span>
                         <span className="px-card-more">•••</span>
@@ -323,22 +377,21 @@ export default function PartnerExclusiveDashboard() {
                       <div className="px-card-value">{stats?.activeStudents || 0}</div>
                       <div className="px-card-sub text-teal">+8% this week</div>
 
-                      {/* SVG Bar Chart */}
                       <div className="px-chart-wrapper">
                         <svg className="px-barchart" viewBox="0 0 100 30">
-                          <rect x="5" y="10" width="8" height="20" rx="2" fill="rgba(124,111,242,0.35)" />
-                          <rect x="18" y="5" width="8" height="25" rx="2" fill="rgba(124,111,242,0.35)" />
-                          <rect x="31" y="12" width="8" height="18" rx="2" fill="rgba(124,111,242,0.35)" />
-                          <rect x="44" y="8" width="8" height="22" rx="2" fill="rgba(124,111,242,0.35)" />
-                          <rect x="57" y="18" width="8" height="12" rx="2" fill="#7c6ff2" />
-                          <rect x="70" y="4" width="8" height="26" rx="2" fill="#7c6ff2" />
-                          <rect x="83" y="10" width="8" height="20" rx="2" fill="#7c6ff2" />
+                          <rect x="5" y="10" width="8" height="20" rx="2" fill="rgba(62,123,250,0.28)" />
+                          <rect x="18" y="5" width="8" height="25" rx="2" fill="rgba(62,123,250,0.28)" />
+                          <rect x="31" y="12" width="8" height="18" rx="2" fill="rgba(62,123,250,0.28)" />
+                          <rect x="44" y="8" width="8" height="22" rx="2" fill="rgba(62,123,250,0.28)" />
+                          <rect x="57" y="18" width="8" height="12" rx="2" fill="#3E7BFA" />
+                          <rect x="70" y="4" width="8" height="26" rx="2" fill="#3E7BFA" />
+                          <rect x="83" y="10" width="8" height="20" rx="2" fill="#3E7BFA" />
                         </svg>
                       </div>
                     </div>
 
                     {/* Card 3: Refund Rate */}
-                    <div className="px-metric-card">
+                    <div className="px-metric-card card-amber">
                       <div className="px-card-header">
                         <span className="px-card-label">Refund Rate</span>
                         <span className="px-card-more">•••</span>
@@ -346,21 +399,20 @@ export default function PartnerExclusiveDashboard() {
                       <div className="px-card-value">{stats?.refundRate || 1.2}%</div>
                       <div className="px-card-sub text-muted">-0.5% lower risk</div>
 
-                      {/* SVG Donut Chart */}
                       <div className="px-donut-chart-wrapper">
                         <svg className="px-donutchart" viewBox="0 0 36 36">
                           <path
                             className="px-donut-ring"
                             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                             fill="none"
-                            stroke="#252838"
+                            stroke="#F0F3F6"
                             strokeWidth="3.5"
                           />
                           <path
                             className="px-donut-segment"
                             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                             fill="none"
-                            stroke="#dba552"
+                            stroke="#F5B324"
                             strokeWidth="3.5"
                             strokeDasharray={`${stats?.refundRate || 1.2}, 100`}
                           />
@@ -374,16 +426,16 @@ export default function PartnerExclusiveDashboard() {
                     <div className="px-section-header">
                       <h2>Recent Transactions</h2>
                       <button className="px-view-all-btn" onClick={() => navigate("/partner/exclusive-dashboard/transactions")}>
-                        View All Transactions →
+                        View all →
                       </button>
                     </div>
                     <div className="px-table-responsive">
-                      <table className="px-table">
+                      <table className="px-table px-table--transactions">
                         <thead>
                           <tr>
-                            <th>Student Email</th>
                             <th>Service</th>
-                            <th>Payment Status</th>
+                            <th>Student Email</th>
+                            <th>Status</th>
                             <th>Type</th>
                             <th>Date</th>
                           </tr>
@@ -392,8 +444,8 @@ export default function PartnerExclusiveDashboard() {
                           {stats?.recentTransactions?.length ? (
                             stats.recentTransactions.map((tx) => (
                               <tr key={tx._id}>
-                                <td><span className="px-tbl-email">{tx.studentEmail}</span></td>
                                 <td>{tx.service}</td>
+                                <td><span className="px-tbl-email">{tx.studentEmail}</span></td>
                                 <td>
                                   <span className={`px-badge badge-${tx.status.toLowerCase()}`}>
                                     {tx.status}
@@ -405,7 +457,7 @@ export default function PartnerExclusiveDashboard() {
                             ))
                           ) : (
                             <tr>
-                              <td colSpan="5" style={{ textAlign: "center", padding: "40px 0" }}>
+                              <td colSpan="5" className="px-table-empty">
                                 No recent transactions recorded yet.
                               </td>
                             </tr>
@@ -422,17 +474,14 @@ export default function PartnerExclusiveDashboard() {
                 <div className="px-view-fade">
                   <div className="px-section-card">
                     <div className="px-section-header">
-                      <h2>All Payments & Transactions</h2>
-                      <button className="px-export-btn" onClick={handleExportExcel} disabled={!stats?.allTransactions?.length}>
-                        <Icon.Download /> Export to Excel
-                      </button>
+                      <h2>All Payments &amp; Transactions</h2>
                     </div>
 
-                    {/* Filter toolbar */}
+                    {/* Filter toolbar — compact, export lives here */}
                     <div className="px-filter-toolbar">
                       <input
                         type="text"
-                        placeholder="Search student email or service name..."
+                        placeholder="Search email or service..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="px-filter-input"
@@ -442,42 +491,44 @@ export default function PartnerExclusiveDashboard() {
                         onChange={(e) => setFilterType(e.target.value)}
                         className="px-filter-select"
                       >
-                        <option value="all">All Methods</option>
-                        <option value="online">Online Checkout</option>
-                        <option value="direct">Direct Purchase</option>
+                        <option value="all">All methods</option>
+                        <option value="online">Online checkout</option>
+                        <option value="direct">Direct purchase</option>
                       </select>
                       <select
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value)}
                         className="px-filter-select"
                       >
-                        <option value="all">All Statuses</option>
-                        <option value="Paid">Paid Only</option>
-                        <option value="Pending">Pending Only</option>
-                        <option value="Failed">Failed Only</option>
+                        <option value="all">All statuses</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Failed">Failed</option>
                       </select>
+                      <button className="px-export-btn" onClick={handleExportExcel} disabled={!stats?.allTransactions?.length}>
+                        <Icon.Download /> Export
+                      </button>
                     </div>
 
                     <div className="px-table-responsive">
-                      <table className="px-table">
+                      <table className="px-table px-table--transactions">
                         <thead>
                           <tr>
+                            <th>Service</th>
                             <th>Student Email</th>
-                            <th>Service Name</th>
                             <th>Amount</th>
                             <th>Method</th>
                             <th>Status</th>
-                            <th>Transaction Date</th>
-                            <th>Feedback Log</th>
+                            <th>Date</th>
                           </tr>
                         </thead>
                         <tbody>
                           {filteredTransactions.length ? (
                             filteredTransactions.map((tx) => (
-                              <tr key={tx._id}>
-                                <td><span className="px-tbl-email">{tx.studentEmail}</span></td>
+                              <tr key={tx._id} title={tx.feedback ? `Feedback: ${tx.feedback}` : undefined}>
                                 <td>{tx.service}</td>
-                                <td><strong>{formatCurrency(tx.amount)}</strong></td>
+                                <td><span className="px-tbl-email">{tx.studentEmail}</span></td>
+                                <td><span className="px-tbl-amount">{formatCurrency(tx.amount)}</span></td>
                                 <td><span className="px-tbl-type">{tx.type}</span></td>
                                 <td>
                                   <span className={`px-badge badge-${tx.status.toLowerCase()}`}>
@@ -485,12 +536,11 @@ export default function PartnerExclusiveDashboard() {
                                   </span>
                                 </td>
                                 <td>{formatDate(tx.date)}</td>
-                                <td className="px-tbl-comment">"{tx.feedback}"</td>
                               </tr>
                             ))
                           ) : (
                             <tr>
-                              <td colSpan="7" style={{ textAlign: "center", padding: "60px 0" }}>
+                              <td colSpan="6" className="px-table-empty">
                                 No matching transactions found.
                               </td>
                             </tr>
@@ -510,34 +560,31 @@ export default function PartnerExclusiveDashboard() {
                       <h2>Refund Requests</h2>
                     </div>
                     <div className="px-table-responsive">
-                      <table className="px-table">
+                      <table className="px-table px-table--refunds">
                         <thead>
                           <tr>
-                            <th>Refund ID</th>
+                            <th>Service</th>
                             <th>Student Email</th>
-                            <th>Product/Service</th>
-                            <th>Refund Amount</th>
+                            <th>Amount</th>
                             <th>Reason</th>
                             <th>Status</th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr>
-                            <td>#REF-9812A</td>
-                            <td><span className="px-tbl-email">lisa.wong@email.com</span></td>
                             <td>Skills Workshop</td>
-                            <td>₹499</td>
+                            <td><span className="px-tbl-email">lisa.wong@email.com</span></td>
+                            <td><span className="px-tbl-amount">₹499</span></td>
                             <td>Accidental double billing</td>
                             <td>
-                              <span className="px-badge badge-pending">Pending Approval</span>
+                              <span className="px-badge badge-pending">Pending</span>
                             </td>
                           </tr>
                           <tr>
-                            <td>#REF-9482A</td>
-                            <td><span className="px-tbl-email">sarah.jones@email.com</span></td>
                             <td>Online Tutoring</td>
-                            <td>₹2,000</td>
-                            <td>Student requested reschedule and cancellation</td>
+                            <td><span className="px-tbl-email">sarah.jones@email.com</span></td>
+                            <td><span className="px-tbl-amount">₹2,000</span></td>
+                            <td>Reschedule &amp; cancellation</td>
                             <td>
                               <span className="px-badge badge-paid">Processed</span>
                             </td>
@@ -553,58 +600,35 @@ export default function PartnerExclusiveDashboard() {
               {activeMenu === "Feedbacks" && (
                 <div className="px-view-fade">
                   <div className="px-section-card">
-                    <div className="px-section-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <h2>Student Feedbacks & Reviews</h2>
-                      
-                      {/* View Toggles */}
-                      <div className="px-feedback-tabs" style={{ display: "flex", gap: "4px", background: "rgba(255,255,255,0.04)", padding: "4px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.08)" }}>
+                    <div className="px-section-header px-section-header--split">
+                      <h2>Student Feedbacks &amp; Reviews</h2>
+
+                      <div className="px-feedback-tabs">
                         <button
                           className={`px-feedback-tab-btn ${feedbackView === "cards" ? "active" : ""}`}
                           onClick={() => setFeedbackView("cards")}
-                          style={{
-                            background: feedbackView === "cards" ? "#7c6ff2" : "transparent",
-                            border: "none",
-                            color: feedbackView === "cards" ? "#fff" : "#a6ade0",
-                            padding: "6px 12px",
-                            borderRadius: "6px",
-                            fontSize: "0.8rem",
-                            fontWeight: "600",
-                            cursor: "pointer",
-                            transition: "all 0.2s ease"
-                          }}
                         >
-                          Grid View
+                          Grid
                         </button>
                         <button
                           className={`px-feedback-tab-btn ${feedbackView === "table" ? "active" : ""}`}
                           onClick={() => setFeedbackView("table")}
-                          style={{
-                            background: feedbackView === "table" ? "#7c6ff2" : "transparent",
-                            border: "none",
-                            color: feedbackView === "table" ? "#fff" : "#a6ade0",
-                            padding: "6px 12px",
-                            borderRadius: "6px",
-                            fontSize: "0.8rem",
-                            fontWeight: "600",
-                            cursor: "pointer",
-                            transition: "all 0.2s ease"
-                          }}
                         >
-                          Tabular View
+                          Table
                         </button>
                       </div>
                     </div>
 
                     {feedbackView === "table" ? (
                       <div className="px-table-responsive">
-                        <table className="px-table">
+                        <table className="px-table px-table--feedback">
                           <thead>
                             <tr>
+                              <th>Service</th>
                               <th>Student</th>
-                              <th>Service / Pathway</th>
                               <th>Rating</th>
                               <th>Action</th>
-                              <th>Comment / Full Feedback</th>
+                              <th>Comment</th>
                               <th>Date</th>
                             </tr>
                           </thead>
@@ -612,32 +636,30 @@ export default function PartnerExclusiveDashboard() {
                             {feedbacksList.length ? (
                               feedbacksList.map((fb, idx) => (
                                 <tr key={fb._id || idx}>
+                                  <td>{fb.service}</td>
                                   <td>
-                                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                      <div className="px-fb-avatar" style={{ width: "24px", height: "24px", borderRadius: "50%", color: "#14161f", fontWeight: "800", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", backgroundColor: idx % 2 === 0 ? "#c6a15b" : "#7c6ff2", flexShrink: 0 }}>
+                                    <div className="px-fb-cell">
+                                      <div className="px-fb-avatar">
                                         {(fb.studentName || fb.studentEmail || "S").charAt(0).toUpperCase()}
                                       </div>
-                                      <span className="px-tbl-email">{fb.studentName || fb.studentEmail}</span>
+                                      <span>{fb.studentName || fb.studentEmail}</span>
                                     </div>
                                   </td>
-                                  <td>{fb.service}</td>
-                                  <td style={{ color: "#e7c988", fontSize: "0.85rem", letterSpacing: "0.04em" }}>
+                                  <td className="px-fb-stars">
                                     {"★".repeat(fb.rating || 3)}{"☆".repeat(5 - (fb.rating || 3))}
                                   </td>
                                   <td>
-                                    <span className={`px-badge badge-${fb.action === "helpful" ? "paid" : fb.action === "notRelevant" ? "failed" : "pending"}`} style={{ fontSize: "0.65rem", padding: "2px 6px" }}>
+                                    <span className={`px-badge badge-${fb.action === "helpful" ? "paid" : fb.action === "notRelevant" ? "failed" : "pending"}`}>
                                       {fb.action}
                                     </span>
                                   </td>
-                                  <td style={{ color: "#f2f1ea", fontSize: "0.82rem", whiteSpace: "normal", wordBreak: "break-word", lineHeight: "1.4" }}>
-                                    "{fb.comment}"
-                                  </td>
+                                  <td className="px-fb-comment-cell">{fb.comment}</td>
                                   <td>{formatDate(fb.date)}</td>
                                 </tr>
                               ))
                             ) : (
                               <tr>
-                                <td colSpan="6" style={{ textAlign: "center", padding: "40px 0" }}>
+                                <td colSpan="6" className="px-table-empty">
                                   No feedbacks recorded yet.
                                 </td>
                               </tr>
@@ -652,32 +674,27 @@ export default function PartnerExclusiveDashboard() {
                             <div className="px-feedback-card" key={fb._id || idx}>
                               <div className="px-fb-header">
                                 <div className="px-fb-user">
-                                  <div className="px-fb-avatar" style={{ backgroundColor: idx % 2 === 0 ? "#c6a15b" : "#7c6ff2" }}>
+                                  <div className="px-fb-avatar">
                                     {(fb.studentEmail || fb.studentName || "S").charAt(0).toUpperCase()}
                                   </div>
                                   <div className="px-fb-info">
                                     <span className="px-fb-email">{fb.studentName || fb.studentEmail}</span>
-                                    <span className="px-fb-product">Service: {fb.service}</span>
+                                    <span className="px-fb-product">{fb.service}</span>
                                   </div>
                                 </div>
                                 <div className="px-fb-rating">
                                   {"★".repeat(fb.rating || 3)}{"☆".repeat(5 - (fb.rating || 3))}
                                 </div>
                               </div>
-                              <div className="px-fb-body">
-                                <p>"{fb.comment}"</p>
-                              </div>
+                              <p className="px-fb-body">{fb.comment}</p>
                               <div className="px-fb-footer">
-                                <span>Action: {fb.action}</span>
-                                <span>•</span>
+                                <span className="px-fb-action">{fb.action}</span>
                                 <span>{formatDate(fb.date)}</span>
                               </div>
                             </div>
                           ))
                         ) : (
-                          <div style={{ textAlign: "center", padding: "40px 0", color: "#656d8c", gridColumn: "span 2" }}>
-                            No feedbacks recorded yet.
-                          </div>
+                          <div className="px-feedback-empty">No feedbacks recorded yet.</div>
                         )}
                       </div>
                     )}
@@ -690,15 +707,15 @@ export default function PartnerExclusiveDashboard() {
                 <div className="px-view-fade">
                   <div className="px-section-card">
                     <div className="px-section-header">
-                      <h2>Payout & Integration Settings</h2>
+                      <h2>Payout &amp; Integration Settings</h2>
                     </div>
 
                     <div className="px-settings-layout">
                       <div className="px-settings-section">
-                        <h3>Bank Account Details (For Monthly Payouts)</h3>
+                        <h3>Bank account details</h3>
                         <div className="px-form-grid">
                           <div className="px-form-group">
-                            <label>Account Holder Name</label>
+                            <label>Account holder name</label>
                             <input
                               type="text"
                               value={payoutForm.holderName}
@@ -706,7 +723,7 @@ export default function PartnerExclusiveDashboard() {
                             />
                           </div>
                           <div className="px-form-group">
-                            <label>Bank Name</label>
+                            <label>Bank name</label>
                             <input
                               type="text"
                               value={payoutForm.bankName}
@@ -714,7 +731,7 @@ export default function PartnerExclusiveDashboard() {
                             />
                           </div>
                           <div className="px-form-group">
-                            <label>Account Number</label>
+                            <label>Account number</label>
                             <input
                               type="text"
                               value={payoutForm.accountNumber}
@@ -722,7 +739,7 @@ export default function PartnerExclusiveDashboard() {
                             />
                           </div>
                           <div className="px-form-group">
-                            <label>IFSC Code</label>
+                            <label>IFSC code</label>
                             <input
                               type="text"
                               value={payoutForm.ifsc}
@@ -730,18 +747,18 @@ export default function PartnerExclusiveDashboard() {
                             />
                           </div>
                         </div>
-                        <button className="px-save-settings-btn" onClick={() => alert("Payout settings updated successfully!")}>
-                          Save Payout Settings
+                        <button className="px-btn-primary" onClick={() => alert("Payout settings updated successfully!")}>
+                          Save changes
                         </button>
                       </div>
 
-                      <div className="px-settings-section">
-                        <h3>Razorpay Integration status</h3>
+                      <div className="px-settings-section settings-integration">
+                        <h3>Razorpay integration</h3>
                         <div className="px-integration-status">
                           <span className="px-status-dot glow-green" />
                           <div>
-                            <p><strong>Razorpay Gateway Linked</strong></p>
-                            <p className="subtext">Payments from students on NaaviExclusive checkout are automatically routed to your verified merchant node.</p>
+                            <p><strong>Gateway linked</strong></p>
+                            <p className="subtext">Payments from students on the NaaviExclusive checkout route automatically to your verified merchant node.</p>
                           </div>
                         </div>
                       </div>
@@ -753,13 +770,35 @@ export default function PartnerExclusiveDashboard() {
               {/* ──────────────── SUPPORT VIEW ──────────────── */}
               {activeMenu === "Support" && (
                 <div className="px-view-fade">
-                  <div className="px-section-card">
-                    <div className="px-section-header">
-                      <h2>Partner Support Center</h2>
+                  {/* Quick contact channels */}
+                  <div className="px-support-top">
+                    <div className="px-support-channel channel-email">
+                      <div className="px-channel-icon"><Icon.Mail /></div>
+                      <div>
+                        <div className="px-channel-label">Email support</div>
+                        <div className="px-channel-value">partnersupport@naavi.com</div>
+                      </div>
                     </div>
+                    <div className="px-support-channel channel-call">
+                      <div className="px-channel-icon"><Icon.Phone /></div>
+                      <div>
+                        <div className="px-channel-label">Partner helpline</div>
+                        <div className="px-channel-value">+91 90000 12345</div>
+                      </div>
+                    </div>
+                    <div className="px-support-channel channel-admin">
+                      <div className="px-channel-icon"><Icon.Ticket /></div>
+                      <div>
+                        <div className="px-channel-label">Avg. response</div>
+                        <div className="px-channel-value">Under 24 hrs</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="px-section-card">
                     <div className="px-support-grid">
                       <div className="px-support-info">
-                        <h3>Frequently Asked Questions</h3>
+                        <h3>Frequently asked questions</h3>
                         <ul className="px-faq-list">
                           <li>
                             <strong>When do payouts get settled?</strong>
@@ -767,28 +806,78 @@ export default function PartnerExclusiveDashboard() {
                           </li>
                           <li>
                             <strong>How do I challenge a refund request?</strong>
-                            <p>You can flag the request directly from the Refunds list or email us at partnersupport@naavi.com with proof of service completion.</p>
+                            <p>Flag it directly from the Refunds list, or email partnersupport@naavi.com with proof of service completion.</p>
                           </li>
                           <li>
                             <strong>Can I configure custom pricing per session?</strong>
-                            <p>Yes, you can edit your active offerings directly from the Marketplace settings tab in your accountant workspace dashboard.</p>
+                            <p>Yes — edit your active offerings from the Marketplace settings tab in your accountant workspace.</p>
                           </li>
                         </ul>
                       </div>
 
                       <div className="px-support-form">
-                        <h3>Create a Support Ticket</h3>
+                        <h3>Raise a request</h3>
                         <div className="px-form-group">
                           <label>Subject</label>
-                          <input type="text" placeholder="e.g. payout delay, merchant node update..." />
+                          <input
+                            type="text"
+                            placeholder="e.g. payout delay, merchant node update..."
+                            value={ticketSubject}
+                            onChange={(e) => setTicketSubject(e.target.value)}
+                          />
                         </div>
                         <div className="px-form-group">
                           <label>Message details</label>
-                          <textarea rows="5" placeholder="Tell us what we can help with..." />
+                          <textarea
+                            rows="3"
+                            placeholder="Tell us what we can help with..."
+                            value={ticketMessage}
+                            onChange={(e) => setTicketMessage(e.target.value)}
+                          />
                         </div>
-                        <button className="px-save-settings-btn" onClick={() => alert("Ticket submitted successfully! Support will reply via email shortly.")}>
-                          Submit Ticket
+                        <button
+                          className="px-btn-primary px-btn-send"
+                          onClick={handleTicketSubmit}
+                          disabled={!ticketSubject.trim() || !ticketMessage.trim()}
+                        >
+                          <Icon.Send /> {ticketSubmitted ? "Sent ✓" : "Send to super admin"}
                         </button>
+                      </div>
+                    </div>
+
+                    {/* Ticket history — static placeholder until the backend endpoint exists */}
+                    <div className="px-ticket-history">
+                      <div className="px-section-header">
+                        <h2>Your requests</h2>
+                      </div>
+                      <div className="px-table-responsive">
+                        <table className="px-table px-table--tickets">
+                          <thead>
+                            <tr>
+                              <th>Subject</th>
+                              <th>Priority</th>
+                              <th>Status</th>
+                              <th>Raised on</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {STATIC_SUPPORT_TICKETS.map((t) => (
+                              <tr key={t.id}>
+                                <td>
+                                  <span className="px-ticket-row-subject">{t.subject}</span>
+                                  <span className="px-ticket-row-id">{t.id}</span>
+                                </td>
+                                <td><span className="px-tbl-type">{t.priority}</span></td>
+                                <td>
+                                  <span className={`px-badge ${ticketBadgeClass(t.status)}`}>
+                                    {t.status}
+                                  </span>
+                                </td>
+                                <td>{formatDate(t.date)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   </div>

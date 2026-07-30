@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
+import { Helmet } from "react-helmet-async";
 import {
   FiZap,
   FiSun,
@@ -80,7 +81,72 @@ const Team = () => {
   }, [section, location.pathname]);
 
   return (
-    <div className="team-page">
+    <>
+      <Helmet>
+        <title>
+          Meet the Team | Naavi Network - AI Powered Path Engine
+        </title>
+
+        <meta
+          name="description"
+          content="Meet the founders, leadership team and advisors behind Naavi Network. Learn how our multidisciplinary experts are building the world's AI Powered Path Engine for education, careers and human potential."
+        />
+
+        <meta
+          name="keywords"
+          content="Naavi Team, Naavi Founders, Leadership Team, AI Experts, Education Technology, Career Navigation, Artificial Intelligence, Naavi Network"
+        />
+
+        <meta
+          name="robots"
+          content="index, follow"
+        />
+
+        <link
+          rel="canonical"
+          href="https://naavinetwork.ai/team"
+        />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Naavi Network" />
+        <meta
+          property="og:title"
+          content="Meet the Team | Naavi Network"
+        />
+        <meta
+          property="og:description"
+          content="Discover the founders, leadership and advisors building Naavi Network's AI Powered Path Engine."
+        />
+        <meta
+          property="og:url"
+          content="https://naavinetwork.ai/team"
+        />
+        <meta
+          property="og:image"
+          content="https://naavinetwork.ai/logo512.png"
+        />
+
+        {/* Twitter */}
+        <meta
+          name="twitter:card"
+          content="summary_large_image"
+        />
+        <meta
+          name="twitter:title"
+          content="Meet the Team | Naavi Network"
+        />
+        <meta
+          name="twitter:description"
+          content="Meet the multidisciplinary team building AI-powered personalized navigation for education and careers."
+        />
+        <meta
+          name="twitter:image"
+          content="https://naavinetwork.ai/logo512.png"
+        />
+      </Helmet>
+
+      <div className="team-page">
       {/* Hero Section - Founders Section */}
       <section id="team-founders" className="team-section team-hero">
         <div className="team-container">
@@ -197,7 +263,8 @@ const Team = () => {
 
 
       <Footer />
-    </div>
+      </div>
+    </>
   );
 };
 

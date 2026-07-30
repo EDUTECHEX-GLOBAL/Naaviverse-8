@@ -1,6 +1,6 @@
 // ✅ CORRECTED App.js
 import React, { Fragment, useEffect } from "react";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";

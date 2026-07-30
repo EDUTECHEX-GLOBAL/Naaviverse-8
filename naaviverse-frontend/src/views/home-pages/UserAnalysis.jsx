@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect } from 'react';
 
-import { Helmet } from 'react-helmet';
+import { Helmet } from "react-helmet-async";
 import { Link } from 'react-router-dom';
 
 import HeroBannerFive from '../../components/hero-banner/HeroBannerFive';
@@ -16,7 +16,7 @@ import globe from '../../assets/images/assets/naavi-icon4.webp';
 import car from '../../assets/images/assets/naavi-icon2.webp';
 import route from '../../assets/images/assets/naavi-icon3.webp';
 import './useranalysis.scss';
-import useranalysis from '../../assets/images/assets/useranalysis2.webp';
+import useranalysis from '../../assets/images/assets/useranalysis3.png';
 
 import BrandTwo from '../../components/brand/BrandTwo';
 import Footer from '../../components/footernew/index';
@@ -33,9 +33,68 @@ const UserAnalysis = () => {
 
 
                 <Helmet>
-                    <title>Naavi Network- AI Path Engine</title>
-                </Helmet>
-                {/* helmet end */}
+    <title>
+        Naavi Network | AI Powered Path Engine for Education, Career & Life Navigation
+    </title>
+
+    <meta
+        name="description"
+        content="Naavi Network is an AI Powered Path Engine that helps students, professionals and institutions discover personalized education, career and life pathways through intelligent AI-driven Macro, Micro and Nano navigation."
+    />
+
+    <meta
+        name="keywords"
+        content="Naavi Network, AI Powered Path Engine, AI Career Guidance, AI Education Platform, Career Navigation, Personalized Learning, Student Career Planning, Education Pathways, Macro Micro Nano Steps, Future Career Planning, AI Roadmap Generator"
+    />
+
+    <meta
+        name="robots"
+        content="index, follow, max-image-preview:large"
+    />
+
+    <link
+        rel="canonical"
+        href="https://naavinetwork.ai/"
+    />
+
+    {/* Open Graph */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Naavi Network" />
+    <meta
+        property="og:title"
+        content="Naavi Network | AI Powered Path Engine"
+    />
+    <meta
+        property="og:description"
+        content="Discover personalized education, career and life pathways powered by AI with intelligent Macro, Micro and Nano navigation."
+    />
+    <meta
+        property="og:url"
+        content="https://naavinetwork.ai/"
+    />
+    <meta
+        property="og:image"
+        content="https://naavinetwork.ai/logo512.png"
+    />
+
+    {/* Twitter */}
+    <meta
+        name="twitter:card"
+        content="summary_large_image"
+    />
+    <meta
+        name="twitter:title"
+        content="Naavi Network | AI Powered Path Engine"
+    />
+    <meta
+        name="twitter:description"
+        content="Navigate your education, career and future using AI-powered personalized pathways."
+    />
+    <meta
+        name="twitter:image"
+        content="https://naavinetwork.ai/logo512.png"
+    />
+</Helmet>
 
                 <HeroBannerFive />
                 {/* {Herobanner End} */}

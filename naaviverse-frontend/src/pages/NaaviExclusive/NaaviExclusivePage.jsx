@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+// Adjust this relative path to match where this file actually sits in src/.
+// Source: src/logos/naavi_final_logo2.png
+import naaviLogo from "../../logos/naavi_final_logo2.png";
 import "./NaaviExclusivePage.scss";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -33,16 +36,17 @@ const loadScript = (src) => {
   });
 };
 
-// ─── Step Indicator (gate-progress rail) ──────────────────────────────────────
+// ─── Step Indicator (a little "path" — stops joined by the route line) ────────
 const StepIndicator = ({ step }) => (
   <div className="ne-steps">
+    <div className="ne-steps-line" />
     {["Details", "Payment", "Confirmation"].map((label, i) => {
       const idx = i + 1;
       const done = step > idx;
       const active = step === idx;
       return (
         <div key={label} className={`ne-step ${active ? "active" : ""} ${done ? "done" : ""}`}>
-          <div className="ne-step-circle" />
+          <div className="ne-step-circle">{done ? "✓" : idx}</div>
           <span className="ne-step-label">{label}</span>
         </div>
       );
@@ -50,14 +54,14 @@ const StepIndicator = ({ step }) => (
   </div>
 );
 
-// ─── Item Summary Card (boarding-pass stub) ───────────────────────────────────
+// ─── Item Summary Card ─────────────────────────────────────────────────────────
 const ItemSummaryCard = ({ item }) => {
   const isFree = !item.cost || item.cost === "Free";
   return (
     <div className="ne-summary-card">
-      <div className="ne-sc-stub-top">
+      <div className="ne-sc-top">
         <div className="ne-sc-topline">
-          <div className="ne-sc-badge">External Partner</div>
+          <span className="ne-sc-badge">External Partner</span>
           <span className="ne-sc-signal">Verified</span>
         </div>
         <div className="ne-sc-name">{item.name || "Service"}</div>
@@ -65,9 +69,9 @@ const ItemSummaryCard = ({ item }) => {
         {item.goal && <div className="ne-sc-goal">{item.goal}</div>}
       </div>
 
-      <div className="ne-sc-seam" />
+      <div className="ne-sc-divider" />
 
-      <div className="ne-sc-stub-bottom">
+      <div className="ne-sc-bottom">
         <div className="ne-sc-meta-grid">
           {item.layer && (
             <div className="ne-sc-meta-row">
@@ -89,7 +93,7 @@ const ItemSummaryCard = ({ item }) => {
           )}
           {item.websiteUrl && (
             <div className="ne-sc-meta-row">
-              <span className="ne-sc-lbl">Provider Site</span>
+              <span className="ne-sc-lbl">Provider site</span>
               <a
                 href={item.websiteUrl}
                 target="_blank"
@@ -108,8 +112,7 @@ const ItemSummaryCard = ({ item }) => {
             {isFree ? "Free" : formatPrice(item.cost)}
           </span>
         </div>
-        <div className="ne-sc-barcode" />
-        <div className="ne-sc-footnote">Partner access unlocks after confirmation.</div>
+        <div className="ne-sc-footnote">Partner access unlocks right after confirmation.</div>
       </div>
     </div>
   );
@@ -138,8 +141,8 @@ const DetailsStep = ({ form, onChange, onNext }) => {
   return (
     <div className="ne-step-panel">
       <div className="ne-panel-header">
-        <div className="ne-panel-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <div className="ne-panel-icon icon-blue">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
@@ -152,7 +155,7 @@ const DetailsStep = ({ form, onChange, onNext }) => {
 
       <div className="ne-fields-grid">
         <div className="ne-field">
-          <label htmlFor="ne-fullname">Full Name *</label>
+          <label htmlFor="ne-fullname">Full name *</label>
           <input id="ne-fullname" name="fullName" placeholder="John Doe"
             value={form.fullName} onChange={onChange}
             className={errors.fullName ? "error" : ""} />
@@ -160,7 +163,7 @@ const DetailsStep = ({ form, onChange, onNext }) => {
         </div>
 
         <div className="ne-field">
-          <label htmlFor="ne-email">Email Address *</label>
+          <label htmlFor="ne-email">Email address *</label>
           <input id="ne-email" name="email" type="email" placeholder="john@example.com"
             value={form.email} onChange={onChange}
             className={errors.email ? "error" : ""} />
@@ -168,7 +171,7 @@ const DetailsStep = ({ form, onChange, onNext }) => {
         </div>
 
         <div className="ne-field">
-          <label htmlFor="ne-phone">Phone Number *</label>
+          <label htmlFor="ne-phone">Phone number *</label>
           <input id="ne-phone" name="phone" type="tel" placeholder="9876543210"
             value={form.phone} onChange={onChange} maxLength={10}
             className={errors.phone ? "error" : ""} />
@@ -176,7 +179,7 @@ const DetailsStep = ({ form, onChange, onNext }) => {
         </div>
 
         <div className="ne-field">
-          <label htmlFor="ne-dob">Date of Birth *</label>
+          <label htmlFor="ne-dob">Date of birth *</label>
           <input id="ne-dob" name="dob" type="date"
             value={form.dob} onChange={onChange}
             className={errors.dob ? "error" : ""} />
@@ -184,23 +187,23 @@ const DetailsStep = ({ form, onChange, onNext }) => {
         </div>
 
         <div className="ne-field full-width">
-          <label htmlFor="ne-institution">School / Institution (optional)</label>
+          <label htmlFor="ne-institution">School / institution (optional)</label>
           <input id="ne-institution" name="institution"
             placeholder="e.g., Delhi Public School"
             value={form.institution} onChange={onChange} />
         </div>
 
         <div className="ne-field full-width">
-          <label htmlFor="ne-notes">Additional Notes (optional)</label>
+          <label htmlFor="ne-notes">Additional notes (optional)</label>
           <textarea id="ne-notes" name="notes"
             placeholder="Any specific requirements or context..."
-            value={form.notes} onChange={onChange} rows={3} />
+            value={form.notes} onChange={onChange} rows={2} />
         </div>
       </div>
 
       <button id="ne-next-details" className="ne-primary-btn" onClick={handleNext}>
-        Continue to Payment
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        Continue to payment
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <line x1="5" y1="12" x2="19" y2="12" />
           <polyline points="12 5 19 12 12 19" />
         </svg>
@@ -353,7 +356,7 @@ const PaymentStep = ({ item, studentForm, onBack, onSuccess }) => {
           contact: studentForm.phone,
         },
         theme: {
-          color: "#7c6ff2"
+          color: "#1FA655"
         },
         modal: {
           ondismiss: function () {
@@ -374,21 +377,21 @@ const PaymentStep = ({ item, studentForm, onBack, onSuccess }) => {
   return (
     <div className="ne-step-panel ne-payment-panel">
       <div className="ne-panel-header">
-        <div className="ne-panel-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <div className="ne-panel-icon icon-green">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
             <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
             <line x1="1" y1="10" x2="23" y2="10" />
           </svg>
         </div>
         <div>
-          <h2>Secure Payment Gateway</h2>
+          <h2>Secure Payment</h2>
           <p>Complete your payment securely via Razorpay</p>
         </div>
       </div>
 
       {isFree ? (
         <div className="ne-free-notice">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="20 6 9 17 4 12" />
           </svg>
           This is a <strong>free service</strong>. No payment required.
@@ -396,7 +399,6 @@ const PaymentStep = ({ item, studentForm, onBack, onSuccess }) => {
       ) : (
         <div className="ne-payment-preview">
           <div className="ne-payment-card">
-            <div className="ne-payment-card-shine" />
             <div className="ne-payment-card-head">
               <span>NaaviExclusive</span>
               <span>Razorpay</span>
@@ -410,7 +412,7 @@ const PaymentStep = ({ item, studentForm, onBack, onSuccess }) => {
           </div>
           <div className="ne-payment-copy">
             <span className="ne-mini-badge">Encrypted checkout</span>
-            <h3>Razorpay Secure Checkout</h3>
+            <h3>Razorpay secure checkout</h3>
             <p>Cards, UPI, net banking, and mobile wallets are handled through a protected payment gateway.</p>
             <div className="ne-payment-assurance">
               <span>256-bit SSL</span>
@@ -423,13 +425,13 @@ const PaymentStep = ({ item, studentForm, onBack, onSuccess }) => {
 
       {errorMsg && (
         <div className="ne-error-alert">
-          ⚠️ {errorMsg}
+          {errorMsg}
         </div>
       )}
 
       <div className="ne-pay-actions">
         <button id="ne-back-payment" className="ne-ghost-btn" onClick={onBack} disabled={processing}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <line x1="19" y1="12" x2="5" y2="12" />
             <polyline points="12 19 5 12 12 5" />
           </svg>
@@ -438,11 +440,11 @@ const PaymentStep = ({ item, studentForm, onBack, onSuccess }) => {
         <button id="ne-confirm-pay" className={`ne-primary-btn ${processing ? "loading" : ""}`}
           onClick={handlePay} disabled={processing}>
           {processing ? (
-            <><span className="ne-spinner" /> Launching Checkout...</>
+            <><span className="ne-spinner" /> Launching checkout...</>
           ) : (
             <>
-              {isFree ? "Confirm Enrollment" : `Pay ${formatPrice(item.cost)} via Razorpay`}
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              {isFree ? "Confirm enrollment" : `Pay ${formatPrice(item.cost)}`}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
             </>
@@ -474,16 +476,13 @@ const SuccessStep = ({ item, form, orderId, onReturnToNaaviverse }) => {
 
   return (
     <div className="ne-step-panel ne-success-panel">
-      <div className="ne-success-animation">
-        <div className="ne-success-ring" />
-        <div className="ne-success-checkmark">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </div>
+      <div className="ne-success-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
       </div>
 
-      <h2 className="ne-success-title">Payment Successful!</h2>
+      <h2 className="ne-success-title">Payment successful!</h2>
       <p className="ne-success-sub">
         You have successfully enrolled in <strong>{item.name}</strong>
       </p>
@@ -494,12 +493,12 @@ const SuccessStep = ({ item, form, orderId, onReturnToNaaviverse }) => {
         <div className="ne-receipt-row"><span>Email</span><strong>{form.email}</strong></div>
         <div className="ne-receipt-row"><span>Service</span><strong>{item.name}</strong></div>
         <div className="ne-receipt-row">
-          <span>Amount Paid</span>
+          <span>Amount paid</span>
           <strong className="ne-green">{!item.cost || item.cost === "Free" ? "₹0 (Free)" : formatPrice(item.cost)}</strong>
         </div>
         <div className="ne-receipt-row">
           <span>Status</span>
-          <strong className="ne-green">✅ Confirmed</strong>
+          <strong className="ne-green">Confirmed</strong>
         </div>
       </div>
 
@@ -508,8 +507,8 @@ const SuccessStep = ({ item, form, orderId, onReturnToNaaviverse }) => {
       </p>
 
       <button id="ne-return-now" className="ne-primary-btn" onClick={() => { clearInterval(timerRef.current); onReturnToNaaviverse(); }}>
-        Return to Naaviverse Now
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        Return to Naaviverse now
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <line x1="5" y1="12" x2="19" y2="12" />
           <polyline points="12 5 19 12 12 19" />
         </svg>
@@ -657,16 +656,10 @@ const NaaviExclusivePage = () => {
 
   return (
     <div className="ne-root">
-      <div className="ne-grid-bg" />
-      <div className="ne-light-beam" />
-
       <header className="ne-header">
         <div className="ne-header-inner">
           <div className="ne-logo">
-            <span className="ne-logo-icon">✦</span>
-            <span className="ne-logo-text">
-              Naavi<span className="ne-logo-accent">Exclusive</span>
-            </span>
+            <img src={naaviLogo} alt="naavi" className="ne-logo-img" />
           </div>
           <div className="ne-header-tag">External Partner Checkout</div>
         </div>
@@ -674,21 +667,18 @@ const NaaviExclusivePage = () => {
 
       <main className="ne-main">
         {loading ? (
-          <div className="ne-loading-container" style={{
-            display: "flex", flexDirection: "column", alignItems: "center",
-            justifyContent: "center", padding: "80px 0", gap: 14
-          }}>
-            <span className="ne-spinner" style={{ width: 30, height: 30 }} />
-            <p style={{ fontSize: "0.82rem" }}>Loading external checkout details...</p>
+          <div className="ne-loading-container">
+            <span className="ne-spinner ne-spinner-lg" />
+            <p>Loading external checkout details...</p>
           </div>
         ) : (
           <div className="ne-layout">
             <aside className="ne-sidebar">
               {item && <ItemSummaryCard item={item} />}
               <div className="ne-trust-badges">
-                <div className="ne-trust-item"><span>01</span> Secure 256-bit SSL</div>
-                <div className="ne-trust-item"><span>02</span> Email confirmation sent</div>
-                <div className="ne-trust-item"><span>03</span> Easy cancellation policy</div>
+                <div className="ne-trust-item"><span>1</span> Secure 256-bit SSL</div>
+                <div className="ne-trust-item"><span>2</span> Email confirmation sent</div>
+                <div className="ne-trust-item"><span>3</span> Easy cancellation policy</div>
               </div>
             </aside>
 
@@ -712,7 +702,7 @@ const NaaviExclusivePage = () => {
       <footer className="ne-footer">
         <span>© {new Date().getFullYear()} Naaviverse Platform. All rights reserved.</span>
         <span className="ne-footer-dot">·</span>
-        <span>Powered by NaaviExclusive™</span>
+        <span>Powered by NaaviExclusive</span>
       </footer>
     </div>
   );

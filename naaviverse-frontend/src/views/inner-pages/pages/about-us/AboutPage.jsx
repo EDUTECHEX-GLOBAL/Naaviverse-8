@@ -1,5 +1,5 @@
 import React, { Fragment, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from "react-helmet-async";
 import { useParams, useLocation } from 'react-router-dom';
 import Footer from '../../../../components/footernew/index';
 import './AboutPage.scss';
@@ -80,8 +80,68 @@ const AboutPage = () => {
   return (
     <Fragment>
       <Helmet>
-        <title>Naavi - AI Powered Path Engine</title>
-      </Helmet>
+    <title>
+        About Naavi Network | AI Powered Path Engine
+    </title>
+
+    <meta
+        name="description"
+        content="Learn about Naavi Network, the world's AI Powered Path Engine helping students and professionals navigate personalized education, career and life pathways using artificial intelligence."
+    />
+
+    <meta
+        name="keywords"
+        content="About Naavi Network, AI Path Engine, Education Technology, Career Guidance, AI Navigation Platform, Personalized Career Paths, Naaviverse"
+    />
+
+    <meta
+        name="robots"
+        content="index, follow"
+    />
+
+    <link
+        rel="canonical"
+        href="https://naavinetwork.ai/about"
+    />
+
+    {/* Open Graph */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Naavi Network" />
+    <meta
+        property="og:title"
+        content="About Naavi Network | AI Powered Path Engine"
+    />
+    <meta
+        property="og:description"
+        content="Discover the vision, mission and technology behind Naavi Network's AI-powered personalized pathway platform."
+    />
+    <meta
+        property="og:url"
+        content="https://naavinetwork.ai/about"
+    />
+    <meta
+        property="og:image"
+        content="https://naavinetwork.ai/logo512.png"
+    />
+
+    {/* Twitter */}
+    <meta
+        name="twitter:card"
+        content="summary_large_image"
+    />
+    <meta
+        name="twitter:title"
+        content="About Naavi Network | AI Powered Path Engine"
+    />
+    <meta
+        name="twitter:description"
+        content="Learn how Naavi Network is transforming education and career navigation using AI-powered pathway intelligence."
+    />
+    <meta
+        name="twitter:image"
+        content="https://naavinetwork.ai/logo512.png"
+    />
+</Helmet>
 
       <div className="ab-page" style={{ paddingTop: '80px' }}>
 
