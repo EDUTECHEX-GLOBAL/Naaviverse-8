@@ -1,8 +1,25 @@
 import React, {Fragment, useEffect, useState} from "react";
+import { useLocation } from "react-router-dom";
+import AOS from "aos";
 
 export default function ScrollToTop() {
     const [isVisible,
         setIsVisible] = useState(false);
+    const location = useLocation();
+
+    // Re-initialize AOS on every route change so all data-aos elements become visible
+    useEffect(() => {
+        window.scrollTo(0, 0);
+        // Short delay lets React finish rendering all components before AOS scans the DOM
+        setTimeout(() => {
+            AOS.init({
+                duration: 1200,
+                once: false,
+                disable: false,
+            });
+            AOS.refreshHard();
+        }, 300);
+    }, [location.pathname]);
 
     // Top: 0 takes us all the way back to the top of the page Behavior: smooth
     // keeps it smooth!

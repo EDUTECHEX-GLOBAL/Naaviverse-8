@@ -93,7 +93,9 @@ const AboutPage = () => {
                 <img src={whatImg} alt="What is Naavi" className="ab-side-image" />
               </div>
               <div className="ab-col-txt">
-                <h2>What is <span className="ab-green">Naavi?</span></h2>
+                <h2 style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>
+                  What is <span className="ab-green" style={{ color: '#2DB67D' }}>Naavi?</span>
+                </h2>
                 <p className="ab-lead">
                   Naavi is the world's first AI-powered Path Engine that helps people navigate
                   personalized education, skill, and career pathways aligned with their passion
@@ -114,7 +116,9 @@ const AboutPage = () => {
           <div className="ab-container">
             <div className="ab-row ab-vision-row">
               <div className="ab-col-txt">
-                <h2>Our <span className="ab-green">Vision</span></h2>
+                <h2 style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>
+                  Our <span className="ab-green" style={{ color: '#2DB67D' }}>Vision</span>
+                </h2>
                 <p className="ab-lead">
                   To build the intelligence layer for human growth where every individual can
                   navigate toward their highest potential with clarity, purpose, and opportunity.
@@ -131,7 +135,9 @@ const AboutPage = () => {
         <section id="ab-why" className="ab-section ab-alt-white">
           <div className="ab-container">
             <div className="ab-center-hd">
-              <h2>Why <span className="ab-green">Naavi</span></h2>
+              <h2 style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>
+                Why <span className="ab-green" style={{ color: '#2DB67D' }}>Naavi</span>
+              </h2>
               <p>Because the world gives people information, but not direction. Naavi transforms confusion into intelligent navigation through AI-powered personalized pathways.</p>
             </div>
           </div>
@@ -142,7 +148,9 @@ const AboutPage = () => {
           <div className="ab-container">
             <div className="ab-row">
               <div className="ab-col-txt">
-                <h2>The Navigation <span className="ab-green">Problem</span></h2>
+                <h2 style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>
+                  The Navigation <span className="ab-green" style={{ color: '#2DB67D' }}>Problem</span>
+                </h2>
                 <p className="ab-lead">
                   Millions of students and professionals make life changing decisions with limited guidance, outdated systems, and fragmented information. Naavi solves this with dynamic pathway intelligence.
                 </p>
@@ -158,7 +166,9 @@ const AboutPage = () => {
         <section id="ab-intel" className="ab-section ab-alt-white">
           <div className="ab-container">
             <div className="ab-center-hd">
-              <h2>Pathway <span className="ab-green">Intelligence</span></h2>
+              <h2 style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>
+                Pathway <span className="ab-green" style={{ color: '#2DB67D' }}>Intelligence</span>
+              </h2>
               <p>
                 Naavi combines AI, Knowledge Graphs, and real-world human journeys to generate
                 adaptive pathways made of Macro, Micro, and Nano steps.
@@ -189,7 +199,9 @@ const AboutPage = () => {
           <div className="ab-container">
             <div className="ab-row ab-row-rev">
               <div className="ab-col-txt">
-                <h2>Mission &amp; <span className="ab-green">Philosophy</span></h2>
+                <h2 style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>
+                  Mission &amp; <span className="ab-green" style={{ color: '#2DB67D' }}>Philosophy</span>
+                </h2>
                 <p className="ab-lead">
                   We believe human potential should never be accidental. Naavi exists to align
                   passion, skills, education, and opportunity into meaningful life journeys.
@@ -207,7 +219,9 @@ const AboutPage = () => {
           <div className="ab-container">
             <div className="ab-row">
               <div className="ab-col-txt">
-                <h2><span className="ab-green">Naaviverse</span></h2>
+                <h2 style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>
+                  <span className="ab-green" style={{ color: '#2DB67D' }}>Naaviverse</span>
+                </h2>
                 <p className="ab-lead">
                   The Naaviverse is a living ecosystem of pathways, people, skills, mentors,
                   institutions, and opportunities continuously evolving through collective

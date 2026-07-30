@@ -43,8 +43,12 @@ const About = () => {
                   fontSize: '40px',
                   lineHeight: '1.2',
                   marginBottom: '16px',
+                  color: '#010d4c',
+                  opacity: 1,
+                  display: 'block',
+                  visibility: 'visible',
                 }}>
-                  Target <span>Audience</span> for Naavi
+                  Target <span style={{ color: '#198754' }}>Audience</span> for Naavi
                 </h2>
               </div>
               <p style={{

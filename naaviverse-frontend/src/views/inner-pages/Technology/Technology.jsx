@@ -203,7 +203,7 @@ const Technology = () => {
       <section id="pathways" className="tech-section tech-pathways">
         <div className="tech-container">
           <div className="tech-section-header">
-            <h2 className="tech-section-title">Pathways Engine</h2>
+            <h2 className="tech-section-title" style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>Pathways Engine</h2>
             <p className="tech-section-desc">
               Transforming ambitions into intelligent, navigable journeys that evolve in real time.
             </p>
@@ -272,7 +272,7 @@ const Technology = () => {
       <section id="llms-kgs" className="tech-section tech-llm-section">
         <div className="tech-container">
           <div className="tech-section-header">
-            <h2 className="tech-section-title">LLMs × Knowledge Graphs</h2>
+            <h2 className="tech-section-title" style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>LLMs × Knowledge Graphs</h2>
             <p className="tech-section-desc">
               Naavi is powered by the powerful synergy between Large Language Models (LLMs) and Knowledge Graphs (KGs), combining reasoning intelligence with structured pathway understanding.
             </p>

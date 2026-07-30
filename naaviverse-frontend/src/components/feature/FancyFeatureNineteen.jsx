@@ -44,8 +44,8 @@ const FancyFeatureNineteen = () => {
             <div className="block-style-thirteen" data-aos="fade-right">
               <div className="title-style-three pb-15">
                 <div className="sc-title">PERSONALIZED PATHWAYS</div>
-                <h2 className="main-title">
-                  How Naavi <span>process</span> works
+                <h2 className="main-title" style={{ color: '#010d4c', opacity: 1, display: 'block', visibility: 'visible' }}>
+                  How Naavi <span style={{ color: '#198754' }}>process</span> works
                 </h2>
               </div>
 

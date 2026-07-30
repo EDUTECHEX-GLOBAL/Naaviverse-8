@@ -213,9 +213,9 @@ const Impact = () => {
             <div className="imp-container imp-story-inner">
               {/* Text */}
               <div className="imp-story-text">
-                <h2 className="imp-story-title">
+                <h2 className="imp-story-title" style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>
                   {s.title[0]}<br />
-                  <span style={{ color: s.accent }}>{s.title[1]}</span>
+                  <span style={{ color: s.accent, opacity: 1, display: 'inline', visibility: 'visible' }}>{s.title[1]}</span>
                 </h2>
                 <p className="imp-story-desc">{s.text}</p>
                 <div className="imp-story-stat-row">

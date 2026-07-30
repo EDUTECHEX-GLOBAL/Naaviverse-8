@@ -119,7 +119,7 @@ const Team = () => {
         <div className="team-container team-container--two-col">
           <div className="team-belief-text">
             <span className="team-section-eyebrow">Our Advisors</span>
-            <h2 className="team-section-title">Guided by industry experts</h2>
+            <h2 className="team-section-title" style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>Guided by industry experts</h2>
             <p className="team-body-text">
               We believe that every individual carries unique potential, but most people navigate life with fragmented guidance and accidental decisions.
             </p>
@@ -144,7 +144,7 @@ const Team = () => {
           <div className="team-drivers-layout">
             <div className="team-drivers-left">
               <span className="team-section-eyebrow">What Drives Us</span>
-              <h2 className="team-section-title">The forces that move Naavi forward</h2>
+              <h2 className="team-section-title" style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>The forces that move Naavi forward</h2>
               <div className="team-drivers-list">
                 {drivers.map((d, i) => (
                   <div key={d} className="team-driver-row">
@@ -182,7 +182,7 @@ const Team = () => {
         <div className="team-container team-container--two-col">
           <div className="team-beyond-text">
             <span className="team-beyond-badge">BUILDING BEYOND EDTECH</span>
-            <h2 className="team-beyond-title">Naavi is not just a platform.</h2>
+            <h2 className="team-beyond-title" style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>Naavi is not just a platform.</h2>
             <p className="team-beyond-sub">It is the foundation of a new category:</p>
             <p className="team-beyond-highlight">AI-powered human navigation infrastructure.</p>
             <p className="team-beyond-body">

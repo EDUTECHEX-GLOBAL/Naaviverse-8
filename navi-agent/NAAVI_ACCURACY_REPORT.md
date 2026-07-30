@@ -18,18 +18,26 @@
 
 ## 🔍 WHAT THE SYSTEM CURRENTLY CHECKS (Built-in Accuracy Controls)
 
-### ✅ 1. Readiness Score (Rule-Based — Accurate)
-The readiness score is **not AI** — it's calculated by fixed rules:
+### ✅ 1. Readiness Score (Rule-Based & Algorithmic)
+The readiness score ($0 - 100$) is calculated dynamically using profile signals:
 
-| Grade | Readiness Score | Label |
-|---|---|---|
-| Grade 12 | **80** | Advanced Starter |
-| Grade 11 | **65** | Intermediate Starter |
-| Grade 10 | **55** | Intermediate Starter |
-| Grade 9 or below | **35** | Early Starter |
-| Competitive Goal | −10 to −15 points deducted | |
+$$\text{Readiness Score} = \text{Clamp}_{5}^{95}\Big( \big( \text{Base Score} + \text{Boosts} - \text{Penalties} \big) \times \text{Competitive Multiplier} + \text{Variant Offset} \Big)$$
 
-**Accuracy: ~90%** — Very reliable since it's rule-based, not AI guesswork.
+#### A. Base Score by Performance ($P_{\text{cat}}$)
+- **Academic Path:** High = 55, Medium = 35, Low = 20
+- **Practical Path:** High = 50, Medium = 40, Low = 30
+- **Jobs Path:** High = 45, Medium = 35, Low = 25
+- **Non-Academic Support:** High = 45, Medium = 38, Low = 30
+
+#### B. Signal Boosts & Penalties
+- **Academic:** Curriculum Match (`CBSE`/`IB`/`ICSE`/`IGCSE`): **+10** | Stream (`Science`/`Commerce`): **+8** | Degree Match: **+7** | Low Perf + Competitive Goal: **-15**
+- **Practical:** Tech/Engineering Goal: **+12** | Hands-on Personality: **+8** | Financial/Scholarship Support: **+5** | Science Stream: **+5**
+- **Jobs:** Career Goal: **+12** | Leadership/Comm. Personality: **+10** | Commerce/Business Stream: **+8** | Employed Status: **+5**
+
+#### C. Competitive Penalty & Offset
+- **Competitive Goal Multiplier:** $\text{Base Score} = \lfloor \text{Base Score} \times 0.70 \rfloor$ (30% reduction if target is highly competitive)
+- **Variant Offset:** Research/Portfolio (+3), Test Prep (-4), Applied/Resume (+1)
+- **Final Label:** $\ge 70 \Rightarrow \text{Advanced Starter} \quad|\quad 50-69 \Rightarrow \text{Intermediate Starter} \quad|\quad 30-49 \Rightarrow \text{Early Starter} \quad|\quad <30 \Rightarrow \text{Beginner}$
 
 ---
 
@@ -179,8 +187,35 @@ Average input  → 60–70% accuracy
 Detailed input → 80–90% accuracy
 ```
 
-The more specific your Current Position + Goal + Profile,
-the more accurate and useful the generated pathway will be.
+---
+
+## 📐 MATHEMATICAL FORMULA FOR PATH ACCURACY SCORE
+
+The overall **Path Accuracy Score** ($0 - 100$) is computed via a 3-dimension mathematical model:
+
+$$\text{Accuracy Score} = \min\left(100, \text{round}\left( 100 \times \left( 0.30 \cdot S_{\text{steps}} + 0.40 \cdot S_{\text{info}} + 0.30 \cdot S_{\text{market}} \right) \right)\right)$$
+
+### 1. Step Count Structure Score ($S_{\text{steps}}$)
+Gaussian decay model centered on expected step count ($N_{\text{exp}}$):
+$$S_{\text{steps}} = \exp\left( -\frac{(N_{\text{actual}} - N_{\text{exp}})^2}{2 \sigma^2} \right) \quad (\sigma = 2.0)$$
+- **Grade 10:** $N_{\text{exp}} = 12$ | **Grade 11:** $N_{\text{exp}} = 10$ | **Grade 12:** $N_{\text{exp}} = 8$
+
+### 2. Information Density Score ($S_{\text{info}}$)
+$$I_i = \frac{D_{\text{desc}} + D_{\text{macro}} + D_{\text{micro}} + D_{\text{nano}} + C_{\text{objs}} + C_{\text{msteps}}}{6.0}, \quad S_{\text{info}} = \frac{\sum I_i}{N_{\text{actual}}}$$
+
+### 💡 Simple English Breakdown of the Formulas:
+
+#### 1. Readiness Score (How prepared is the student?)
+Think of this like a **Fitness Score before a marathon**:
+1. **Starting Points:** Students with high marks start with **50-55 points**, average marks start with **35-40 points**.
+2. **Bonus Points:** You get extra points (+5 to +12) if your stream (Science/Commerce), curriculum (CBSE/IB), or skills match your target goal.
+3. **Hard Destination Penalty:** If you aim for top-tier competitive goals (like Ivy League), your score drops by **30%** because the bar is much higher.
+
+#### 2. Accuracy Score (How good is the AI output?)
+Think of this like a **Teacher grading an assignment** (Total = 100 Points):
+- **30 Points (Step Count):** Are there enough steps for the student's grade? (e.g., 10-12 steps for Grade 10).
+- **40 Points (Detail & Length):** Are the step descriptions deep and detailed (Macro/Micro/Nano views), or just lazy 1-line text?
+- **30 Points (Marketplace Match):** Do the recommended courses, platforms, and mentor sessions actually match the topic of that step?
 
 ---
 
@@ -195,6 +230,13 @@ These are features that **could be built** in the future:
 | Step Logic Checker | Verifies steps are in correct learning order |
 | Duration Benchmark | Compares timeline to real university prep benchmarks |
 | Community Rating | Let users rate each step for relevance |
+
+---
+
+## 📘 ADDITIONAL REFERENCES
+
+For a simple guide explaining all 5 ways to calculate AI pathway accuracy for team meetings, see:
+👉 [ACCURACY_CALCULATION_METHODS.md](file:///c:/Users/ADMIN/Desktop/Naaviverse-8/navi-agent/ACCURACY_CALCULATION_METHODS.md)
 
 ---
 

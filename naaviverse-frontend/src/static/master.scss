@@ -27,12 +27,42 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
-/* 🔥 IMAGE + ICON FIX (VERY IMPORTANT) */
+/* 🔥 IMAGE + ICON + CONTENT FIX (VERY IMPORTANT) */
 img,
 svg {
   opacity: 1 !important;
   filter: none !important;
   mix-blend-mode: normal !important;
+}
+
+/* 🔥 AOS ANIMATION FIX: Prevent headings and sections from staying invisible (opacity: 0) */
+[data-aos] {
+  opacity: 1 !important;
+  transform: none !important;
+  visibility: visible !important;
+}
+
+/* 🔥 GLOBAL INNER PAGES HEADING FIX */
+h1, h2, h3, h4, h5, h6,
+.main-title,
+.tech-section-title,
+.team-section-title,
+.team-beyond-title,
+.imp-story-title,
+.ab-section h2 {
+  opacity: 1 !important;
+  visibility: visible !important;
+  color: #1A1A2E;
+}
+
+h1 span, h2 span, h3 span, h4 span,
+.main-title span,
+.tech-section-title span,
+.team-section-title span,
+.imp-story-title span,
+.ab-section h2 span {
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 /* FIX DULL FEATURE ICONS */

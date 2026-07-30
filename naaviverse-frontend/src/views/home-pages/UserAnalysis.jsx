@@ -1,7 +1,8 @@
 import React, { Fragment, useEffect } from 'react';
-
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 import HeroBannerFive from '../../components/hero-banner/HeroBannerFive';
 import FancyFeatureSeventeen from '../../components/feature/FancyFeatureSeventeen';
@@ -25,6 +26,13 @@ import Footer from '../../components/footernew/index';
 
 
 const UserAnalysis = () => {
+    useEffect(() => {
+        AOS.init({
+            duration: 1200,
+            once: true
+        });
+        AOS.refresh();
+    }, []);
 
 
     return (
@@ -77,17 +85,17 @@ const UserAnalysis = () => {
                 <div className="fancy-feature-seventeen position-relative mt-160 xl-mt-50">
                     <div className="container">
                         <div className="row align-items-center">
-                            <div className="col-xl-6 col-lg-5" data-aos="fade-right">
+                            <div className="col-xl-6 col-lg-5">
                                 <div className="title-style-three text-center text-lg-start">
-                                    <h2 className="main-title">
-                                        <span> Personalized</span> Pathways </h2>
+                                    <h2 className="main-title" style={{ color: '#010d4c', opacity: 1, display: 'block', visibility: 'visible' }}>
+                                        <span style={{ color: '#198754' }}>Personalized</span> Pathways
+                                    </h2>
                                 </div>
                                 {/* /.title-style-three */}
                             </div>
-                            <div className="col-xl-6 col-lg-7" data-aos="fade-left">
-                                <p className="m0 text-center text-lg-start md-pt-30"><p className="m0 text-center text-lg-start md-pt-30">
+                            <div className="col-xl-6 col-lg-7">
+                                <p className="m0 text-center text-lg-start md-pt-30">
                                     At Naaviverse, we build AI-powered ecosystems that transform potential into opportunity
-                                </p>
                                 </p>
                             </div>
                         </div>
@@ -120,7 +128,9 @@ const UserAnalysis = () => {
                                     data-aos="fade-right">
                                     <div className="title-style-three">
                                         <div className="sc-title">QUESTIONS &amp; ANSWERS</div>
-                                        <h2 className="main-title"><span style={{ color: '#000' }}>FAQ's</span></h2>
+                                        <h2 className="main-title" style={{ color: '#010d4c', opacity: 1, display: 'block', visibility: 'visible' }}>
+                                            <span style={{ color: '#000' }}>FAQ's</span>
+                                        </h2>
                                     </div>
                                     {/* /.title-style-three */}
                                     <p className="pt-20 pb-15">Don’t find your answer here? just send us a message for any query.
