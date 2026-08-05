@@ -266,7 +266,7 @@ $text-muted:         #9aa1b5;
   font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   table-layout: auto;
-  min-width: 520px;        // ← triggers horizontal scroll before this width
+  min-width: 680px;        // ← ensures full table width so email never cuts off
 
   thead tr { background: $pastel-lavender; }
 
@@ -305,14 +305,16 @@ $text-muted:         #9aa1b5;
   }
   th.col-sn { text-align: center; }
 
-  // Email — full text, table scrolls instead of clipping
+  // Email — full text, no truncation or clipping
   .col-email {
+    min-width: 280px;
     width: auto;
 
     .email-cell {
       display: flex;
       align-items: center;
       gap: 8px;
+      overflow: visible;
 
       .email-icon {
         font-size: 13px;
@@ -325,7 +327,8 @@ $text-muted:         #9aa1b5;
         color: #4f46e5;
         text-decoration: none;
         font-size: 13px;
-        white-space: nowrap;   // one line — table scrolls, no ellipsis
+        white-space: nowrap;
+        word-break: normal;
 
         &:hover { text-decoration: underline; }
       }

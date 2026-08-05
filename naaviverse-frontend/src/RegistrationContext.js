@@ -12,7 +12,7 @@ const RegistrationContextProvider = (props) => {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
 
-  const [partnerType, setPartnerType] = useState("");   // ⭐ NEW FIELD
+  const [partnerType, setPartnerType] = useState("");   
 
   const [pin, setPin] = useState("");
   const [pinMisMatch, setPinMisMatch] = useState(false);

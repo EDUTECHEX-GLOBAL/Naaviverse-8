@@ -243,7 +243,7 @@ const Team = () => {
         </div>
       </section>
 
-      {/* Building Beyond Section */}
+    
       <section className="team-section team-beyond">
         <div className="team-container team-container--two-col">
           <div className="team-beyond-text">
@@ -262,7 +262,7 @@ const Team = () => {
       </section>
 
 
-      <Footer />
+     <Footer />
       </div>
     </>
   );

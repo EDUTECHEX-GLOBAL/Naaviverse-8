@@ -17,17 +17,21 @@ $success: #27ae60;
   margin: 0 auto;
   padding: 0 28px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .contact-hero {
   background: linear-gradient(180deg, $white 0%, $soft-bg 100%);
   padding: 40px 0 30px;
   margin-top: 80px;
+  overflow: hidden;
 }
 .contact-hero-content {
   max-width: 700px;
   margin: 0 auto;
   text-align: center;
+  padding: 0 16px;
+  box-sizing: border-box;
 }
 
 .contact-hero-tag {
@@ -45,12 +49,13 @@ $success: #27ae60;
 }
 
 .contact-hero-title {
-  font-size: clamp(32px, 4vw, 48px);
+  font-size: clamp(26px, 4vw, 48px);
   font-weight: 600;
   line-height: 1.2;
   color: $navy;
   margin: 0 0 16px;
   letter-spacing: -0.02em;
+  word-break: break-word;
 }
 
 .contact-accent {
@@ -59,15 +64,17 @@ $success: #27ae60;
 }
 
 .contact-hero-desc {
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.6;
   color: $muted;
   margin: 0;
+  word-break: break-word;
 }
 
 .contact-form-section {
   padding: 32px 0 48px;
   background: $white;
+  overflow: hidden;
 }
 
 .contact-grid {
@@ -80,11 +87,15 @@ $success: #27ae60;
 @media (max-width: 900px) {
   .contact-grid {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 32px;
   }
 }
 
 // Left Side - Contact Info
+.contact-info {
+  min-width: 0; // prevent grid blowout
+}
+
 .contact-info-eyebrow {
   font-size: 11px;
   font-weight: 700;
@@ -102,6 +113,7 @@ $success: #27ae60;
   margin: 0 0 12px;
   letter-spacing: -0.02em;
   line-height: 1.2;
+  word-break: break-word;
 }
 
 .contact-info-desc {
@@ -109,6 +121,7 @@ $success: #27ae60;
   line-height: 1.6;
   color: $muted;
   margin: 0 0 28px;
+  word-break: break-word;
 }
 
 .contact-info-details {
@@ -127,6 +140,8 @@ $success: #27ae60;
   background: $soft-bg;
   border-radius: 14px;
   border: 1px solid $border-light;
+  min-width: 0; // prevent overflow
+  overflow: hidden;
 
   .contact-info-icon {
     width: 44px;
@@ -146,6 +161,7 @@ $success: #27ae60;
     flex-direction: column !important;
     gap: 4px;
     flex: 1;
+    min-width: 0; // allow text to shrink and wrap
 
     h4 {
       font-size: 14px;
@@ -160,6 +176,8 @@ $success: #27ae60;
       line-height: 1.5;
       color: $muted;
       margin: 0 !important;
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
   }
 }
@@ -170,6 +188,8 @@ $success: #27ae60;
   border-radius: 24px;
   padding: 32px;
   border: 1px solid $border-light;
+  min-width: 0; // prevent grid blowout
+  box-sizing: border-box;
 }
 
 .contact-form {
@@ -195,6 +215,7 @@ $success: #27ae60;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0; // prevent input overflow
 }
 
 .contact-form-full {
@@ -224,6 +245,8 @@ $success: #27ae60;
   color: $text-dark;
   font-family: inherit;
   transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .contact-form-group input:focus,
@@ -298,18 +321,57 @@ $success: #27ae60;
   display: block;
 }
 
-// Responsive
+// ── Mobile Responsive ─────────────────────────────────────
 @media (max-width: 768px) {
   .contact-hero {
-    padding: 60px 0 40px;
+    padding: 24px 0 20px;
+    margin-top: 70px;
+  }
+
+  .contact-hero-title {
+    font-size: 28px;
+  }
+
+  .contact-hero-desc {
+    font-size: 14px;
   }
 
   .contact-form-section {
-    padding: 40px 0;
+    padding: 24px 0 32px;
+  }
+
+  .contact-container {
+    padding: 0 16px;
   }
 
   .contact-form-wrapper {
-    padding: 24px;
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+
+  .contact-info-title {
+    font-size: 24px;
+  }
+
+  .contact-info-desc {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .contact-info-item {
+    padding: 16px 14px;
+    gap: 12px;
+
+    .contact-info-icon {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+    }
+
+    .contact-info-text {
+      h4 { font-size: 13px; }
+      p { font-size: 12px; }
+    }
   }
 
   .contact-submit-btn {
@@ -319,15 +381,28 @@ $success: #27ae60;
 }
 
 @media (max-width: 480px) {
+  .contact-hero {
+    margin-top: 60px;
+    padding: 20px 0 16px;
+  }
+
+  .contact-hero-title {
+    font-size: 24px;
+  }
+
   .contact-container {
-    padding: 0 20px;
+    padding: 0 14px;
   }
 
   .contact-form-wrapper {
-    padding: 20px;
+    padding: 16px 12px;
   }
-  
+
   .contact-info-title {
-    font-size: 28px;
+    font-size: 22px;
+  }
+
+  .contact-grid {
+    gap: 24px;
   }
 }

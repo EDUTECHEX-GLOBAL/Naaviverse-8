@@ -300,13 +300,36 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
               </ul>
 
               <div className="mobile-cta-box">
-                <Link
-                  to="/login"
-                  onClick={onClose}
+                <button
+                  onClick={() => {
+                    const subBox = document.getElementById("mobile-subscribe-section");
+                    if (subBox) {
+                      subBox.scrollIntoView({ behavior: "smooth" });
+                    }
+                  }}
                   className="mobile-get-started-btn"
                 >
                   Get Started
-                </Link>
+                </button>
+              </div>
+
+              {/* 📱 MOBILE SUBSCRIBE & CONTACT SECTION */}
+              <div id="mobile-subscribe-section" className="mt-4 pt-3 border-top">
+                <div className="side-panel-box">
+                  <ContactInfoWidget title="Contact Us" withIcon />
+                </div>
+
+                <div className="side-panel-box">
+                  <Newsletter
+                    title="Subscribe"
+                    subtitle="Subscribe to the list to get pilot access to the platform and updates"
+                    placeholder="example@gmail.com"
+                  />
+                </div>
+
+                <div className="side-panel-box">
+                  <SocialWidget />
+                </div>
               </div>
             </div>
           ) : (
@@ -325,7 +348,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
               <div className="side-panel-box">
                 <Newsletter
                   title="Subscribe"
-                  subtitle="Subscribe to our newsletters to get the latest news and updates"
+                  subtitle="Subscribe to the list to get pilot access to the platform and updates"
                   placeholder="example@gmail.com"
                 />
               </div>

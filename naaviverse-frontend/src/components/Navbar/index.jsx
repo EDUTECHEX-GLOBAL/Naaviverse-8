@@ -95,12 +95,7 @@ const Navbar = () => {
           </div> */}
         </div>
         <div className="btns-div">
-          <div
-            className="gs-Btn"
-            onClick={() => {
-              navigate("/login");
-            }}
-          >
+          <div className="gs-Btn" onClick={() => window.dispatchEvent(new Event("openSidebar"))}>
             Get Started
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { Icon } from '@iconify/react';
 import './footer.scss';
 import Logo from "../../assets/images/logo/naavi_footer_logo.png";
 
@@ -7,7 +8,8 @@ const Footer = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
-  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL || "https://naaviverse-render.onrender.com";
+  const cleanBaseUrl = BASE_URL.replace(/\/+$/, '');
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
@@ -17,14 +19,23 @@ const Footer = () => {
       return;
     }
     try {
-      const res = await axios.post(`${BASE_URL}/api/admin-subscribe`, { email });
+      const res = await axios.post(`${cleanBaseUrl}/api/admin-subscribe`, { email });
       if (res.status === 201) {
         setMessage("Subscription successful!");
         setIsSuccess(true);
         setEmail("");
       }
     } catch (err) {
-      setMessage("Error subscribing. Please try again later.");
+      const serverMsg = err.response?.data?.message;
+      if (
+        err.response?.status === 400 ||
+        err.response?.status === 409 ||
+        (serverMsg && (serverMsg.toLowerCase().includes("already") || serverMsg.toLowerCase().includes("exist")))
+      ) {
+        setMessage("You have already used this email, please use a different email.");
+      } else {
+        setMessage(serverMsg || "You have already used this email, please use a different email.");
+      }
       setIsSuccess(false);
       console.error(err);
     }
@@ -47,10 +58,16 @@ const Footer = () => {
                 </p>
               </div>
               <div className="footer-socials">
-                <span className="social-icon" aria-label="LinkedIn"><i className="fab fa-linkedin-in"></i></span>
-                <span className="social-icon" aria-label="Instagram"><i className="fab fa-instagram"></i></span>
-                <span className="social-icon" aria-label="Facebook"><i className="fab fa-facebook-f"></i></span>
-                <span className="social-icon" aria-label="Twitter"><i className="fab fa-twitter"></i></span>
+                <span className="social-icon" aria-label="X (Twitter)"><Icon icon="fa6-brands:x-twitter" /></span>
+                <a
+                  href="https://www.linkedin.com/company/naavi-network/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-icon"
+                  aria-label="LinkedIn"
+                >
+                  <Icon icon="fa6-brands:linkedin-in" />
+                </a>
               </div>
             </div>
 
@@ -82,7 +99,7 @@ const Footer = () => {
                   {message}
                 </p>
               )}
-              <p className="footer-subtext">Subscribe to our newsletters to get the latest news and updates</p>
+              <p className="footer-subtext">Subscribe to the list to get pilot access to the platform and updates</p>
             </div>
           </div>
         </div>

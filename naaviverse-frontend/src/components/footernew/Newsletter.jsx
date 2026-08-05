@@ -6,8 +6,9 @@ export default function Newsletter({ title, subtitle, placeholder }) {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
-const BASE_URL = process.env.REACT_APP_API_BASE_URL;
-console.log("API BASE URL:", BASE_URL); 
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL || "https://naaviverse-render.onrender.com";
+  const cleanBaseUrl = BASE_URL.replace(/\/+$/, '');
+
   const handleSubscribe = async (e) => {
     e.preventDefault();
 
@@ -18,7 +19,7 @@ console.log("API BASE URL:", BASE_URL);
     }
 
     try {
-      const res = await axios.post(`${BASE_URL}/api/admin-subscribe`, { email });
+      const res = await axios.post(`${cleanBaseUrl}/api/admin-subscribe`, { email });
 
       if (res.status === 201) {
         setMessage("Subscription successful!");
@@ -26,7 +27,16 @@ console.log("API BASE URL:", BASE_URL);
         setEmail("");
       }
     } catch (err) {
-      setMessage("Error subscribing. Please try again later.");
+      const serverMsg = err.response?.data?.message;
+      if (
+        err.response?.status === 400 ||
+        err.response?.status === 409 ||
+        (serverMsg && (serverMsg.toLowerCase().includes("already") || serverMsg.toLowerCase().includes("exist")))
+      ) {
+        setMessage("You have already used this email, please use a different email.");
+      } else {
+        setMessage(serverMsg || "You have already used this email, please use a different email.");
+      }
       setIsSuccess(false);
       console.error(err);
     }

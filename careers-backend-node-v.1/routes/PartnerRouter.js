@@ -20,6 +20,12 @@ const {
   getPartnerByEmail,
   getPartnerProfilePic,
   verifyOtp,
+  createInternalPartner,
+  getAllInternalPartners,
+  updateInternalPartner,
+  toggleInternalPartnerStatus,
+  resetInternalPartnerPassword,
+  changePartnerPassword,
 } = require("../controllers/PartnersController");
 const { getPartnerActivity } = require("../controllers/PartnerActivityController");
 // ── Authentication ────────────────────────────────────────────────────────
@@ -40,8 +46,13 @@ router.put("/add",                  updatePartnerProfile);
 router.get("/get",                  getPartnerByEmail);
 router.get("/get-profile-pic",      getPartnerProfilePic);
 router.get("/activity", getPartnerActivity); 
-// ── NOTE ──────────────────────────────────────────────────────────────────
-// Activity routes previously here have been removed.
-// Use /api/activity/partners and /api/activity/partners/log instead.
+
+// ── Internal Partners Management (Super Admin) ───────────────────────────
+router.post("/internal/create",          createInternalPartner);
+router.get("/internal/all",              getAllInternalPartners);
+router.put("/internal/update/:id",       updateInternalPartner);
+router.patch("/internal/status/:id",     toggleInternalPartnerStatus);
+router.post("/internal/reset-password",  resetInternalPartnerPassword);
+router.post("/internal/change-password", changePartnerPassword);
 
 module.exports = router;

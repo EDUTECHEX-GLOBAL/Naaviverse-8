@@ -29,11 +29,33 @@ const partnerSchema = new mongoose.Schema({
   // ❌ OLD generic field: type
   // type: { type: String },
 
-  // ✅ NEW correct field: partner category
+  // ✅ Partner Category & Type
   partnerType: {
     type: String,
-    enum: ["Distributor", "Vendor", "Mentor", "Institution"],
-    required: true
+    default: "Distributor"
+  },
+
+  // ✅ Internal Partner management fields
+  creationSource: {
+    type: String,
+    enum: ["self_registered", "admin_created"],
+    default: "self_registered"
+  },
+
+  mustChangePassword: {
+    type: Boolean,
+    default: false
+  },
+
+  createdBy: {
+    type: String,
+    default: "Super Admin"
+  },
+
+  accountStatus: {
+    type: String,
+    enum: ["active", "inactive"],
+    default: "active"
   },
 
   yourPosition: { type: String }

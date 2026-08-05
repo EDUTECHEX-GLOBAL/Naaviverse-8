@@ -77,6 +77,9 @@ const SubscriptionList = () => {
       filtered = filtered.filter(sub => sub.email?.toLowerCase().includes(term));
     }
 
+    // Sort latest first (descending order)
+    filtered.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
     setFilteredSubscriptions(filtered);
     setCurrentPage(1);
   }, [startDate, endDate, searchEmail, subscriptions]);

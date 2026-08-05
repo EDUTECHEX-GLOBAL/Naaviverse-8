@@ -204,7 +204,7 @@ const Technology = () => {
         <title>
           Technology | Naavi Network - AI Powered Path Engine
         </title>
-
+                 
         <meta
           name="description"
           content="Discover the technology behind Naavi Network. Learn how LLMs, Knowledge Graphs, AI matching algorithms, and pathway intelligence power personalized education, career, and life navigation."
@@ -225,7 +225,8 @@ const Technology = () => {
           href="https://naavinetwork.ai/technology"
         />
 
-        {/* Open Graph */}
+
+    
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Naavi Network" />
         <meta

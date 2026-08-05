@@ -64,6 +64,7 @@ import MenuNav from "../../components/MenuNav/index.jsx";
 import EditServiceForm from "./EditServices";
 import Subscriptions from "./Subscriptions.jsx";
 import AdminFeedback from "./AdminFeedback.jsx";
+import InternalPartners from "./InternalPartners/InternalPartners.jsx";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -1301,6 +1302,11 @@ const AccDashboard = () => {
                     <AdminFeedback />
                   )}
 
+                  {/* INTERNAL PARTNERS SECTION */}
+                  {accsideNav === "Internal Partners" && (
+                    <InternalPartners />
+                  )}
+
                   {/* ── COMING SOON FALLBACK ──────────────────────────────────
                       FIX: Added "Dashboard" to this list so it never shows
                       "Coming Soon" when the default nav loads on first visit  */}
@@ -1317,6 +1323,7 @@ const AccDashboard = () => {
                     "Universities",
                     "Steps",
                     "Feedback",
+                    "Internal Partners",
                   ].includes(accsideNav) && (
                       <div
                         style={{

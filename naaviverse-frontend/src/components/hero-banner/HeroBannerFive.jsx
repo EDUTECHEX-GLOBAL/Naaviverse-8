@@ -4,6 +4,15 @@ import bannerimage from '../../assets/images/assets/naavi_banner6.webp';
 import './homebanner.scss';
 
 const HeroBannerFive = () => {
+    const handleGenerateClick = (e) => {
+        e.preventDefault();
+        window.dispatchEvent(new Event("openSidebar"));
+        const toggleBtn = document.querySelector(".menu-icon-btn");
+        if (toggleBtn) {
+            toggleBtn.click();
+        }
+    };
+
     return (
         <Fragment>
             <ModalVideos isOpen={false} onClick={() => {}} />
@@ -29,13 +38,14 @@ const HeroBannerFive = () => {
                             </div>
                             <ul className="style-none button-group d-flex align-items-center">
                                 <li className="me-4">
-                                    <a
-                                        href="https://generate.naavinetwork.ai"
-                                        target="_blank"
+                                    <button
+                                        type="button"
+                                        onClick={handleGenerateClick}
                                         className="ripple-btn btn-one"
+                                        style={{ border: 'none', cursor: 'pointer' }}
                                     >
                                         Generate
-                                    </a>
+                                    </button>
                                 </li>
                             </ul>
                         </div>

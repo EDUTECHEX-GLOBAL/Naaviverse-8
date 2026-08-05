@@ -31,6 +31,13 @@ const TopNavFour = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Listen for openSidebar custom event
+  useEffect(() => {
+    const handleCustomOpen = () => setSidebarOpen(true);
+    window.addEventListener("openSidebar", handleCustomOpen);
+    return () => window.removeEventListener("openSidebar", handleCustomOpen);
+  }, []);
+
   const openSidebar = () => setSidebarOpen(true);
   const closeSidebar = () => setSidebarOpen(false);
   const closeModal = () => setIsOpen(false);

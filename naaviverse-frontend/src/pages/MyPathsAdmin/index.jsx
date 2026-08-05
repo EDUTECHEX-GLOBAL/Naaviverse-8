@@ -2150,6 +2150,14 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                     <span className="creator-info-label">System Role</span>
                     <span className="creator-info-val">Naavi AI System Generator</span>
                   </div>
+                  <div className="creator-info-item">
+                    <span className="creator-info-label">Path Created Date</span>
+                    <span className="creator-info-val">
+                      {creatorModalPath.createdAt ? new Date(creatorModalPath.createdAt).toLocaleString("en-IN", {
+                        day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
+                      }) : "—"}
+                    </span>
+                  </div>
                   <div className="creator-info-item full-width">
                     <span className="creator-info-label">Description</span>
                     <span className="creator-info-val text-desc">This pathway was generated automatically using Naavi's AI Path Engine.</span>
@@ -2159,21 +2167,41 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 <div className="creator-info-grid">
                   <div className="creator-info-item">
                     <span className="creator-info-label">Creator Email</span>
-                    <span className="creator-info-val email-highlight">{creatorModalPath.email || "—"}</span>
+                    <span className="creator-info-val email-highlight">{creatorModalPath.email || creatorModalPath.partnerDetails?.email || "—"}</span>
                   </div>
                   <div className="creator-info-item">
                     <span className="creator-info-label">Business Name</span>
-                    <span className="creator-info-val">{creatorModalPath.partnerDetails?.businessName || "—"}</span>
+                    <span className="creator-info-val">{creatorModalPath.partnerDetails?.businessName || creatorModalPath.partnerDetails?.username || "—"}</span>
                   </div>
                   <div className="creator-info-item">
-                    <span className="creator-info-label">Partner Category / Type</span>
-                    <span className="creator-info-val type-badge">{creatorModalPath.partnerDetails?.partnerType || "Partner"}</span>
+                    <span className="creator-info-label">Joined Platform Date</span>
+                    <span className="creator-info-val highlight-date">
+                      {creatorModalPath.partnerDetails?.createdAt ? new Date(creatorModalPath.partnerDetails.createdAt).toLocaleString("en-IN", {
+                        day: "2-digit", month: "short", year: "numeric"
+                      }) : (creatorModalPath.createdAt ? new Date(creatorModalPath.createdAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—")}
+                    </span>
+                  </div>
+                  <div className="creator-info-item">
+                    <span className="creator-info-label">Partner ID</span>
+                    <span className="creator-info-val font-mono">{creatorModalPath.partnerDetails?.partnerId || "—"}</span>
                   </div>
                   <div className="creator-info-item">
                     <span className="creator-info-label">Contact Person</span>
                     <span className="creator-info-val">
                       {[creatorModalPath.partnerDetails?.firstName, creatorModalPath.partnerDetails?.lastName].filter(Boolean).join(" ") || creatorModalPath.partnerDetails?.username || "—"}
                     </span>
+                  </div>
+                  <div className="creator-info-item">
+                    <span className="creator-info-label">Position / Role</span>
+                    <span className="creator-info-val">{creatorModalPath.partnerDetails?.yourPosition || "Internal Partner"}</span>
+                  </div>
+                  <div className="creator-info-item">
+                    <span className="creator-info-label">Category / Business Type</span>
+                    <span className="creator-info-val type-badge">{creatorModalPath.partnerDetails?.partnerType || creatorModalPath.partnerDetails?.type || "Partner"}</span>
+                  </div>
+                  <div className="creator-info-item">
+                    <span className="creator-info-label">Phone Number</span>
+                    <span className="creator-info-val">{creatorModalPath.partnerDetails?.phone || "—"}</span>
                   </div>
                   {creatorModalPath.partnerDetails?.website && (
                     <div className="creator-info-item">
@@ -2183,11 +2211,11 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                       </a>
                     </div>
                   )}
-                  {(creatorModalPath.partnerDetails?.city || creatorModalPath.partnerDetails?.country) && (
+                  {(creatorModalPath.partnerDetails?.city || creatorModalPath.partnerDetails?.country || creatorModalPath.partnerDetails?.street) && (
                     <div className="creator-info-item">
-                      <span className="creator-info-label">Location</span>
+                      <span className="creator-info-label">Location / Address</span>
                       <span className="creator-info-val">
-                        {[creatorModalPath.partnerDetails?.city, creatorModalPath.partnerDetails?.state, creatorModalPath.partnerDetails?.country].filter(Boolean).join(", ")}
+                        {[creatorModalPath.partnerDetails?.street, creatorModalPath.partnerDetails?.city, creatorModalPath.partnerDetails?.state, creatorModalPath.partnerDetails?.country, creatorModalPath.partnerDetails?.pincode].filter(Boolean).join(", ")}
                       </span>
                     </div>
                   )}

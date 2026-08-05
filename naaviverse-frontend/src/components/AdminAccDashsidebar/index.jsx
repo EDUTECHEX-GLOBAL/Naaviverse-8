@@ -7,13 +7,14 @@ import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
 import stepIcon from '../../assets/images/assets/naavi-icon1.webp';
 // ✅ URL map for each section
 const ROUTE_MAP = {
-  Overview:      "/admin/dashboard/accountants",
-  CRM:           "/admin/dashboard/crm",
-  Subscriptions: "/admin/dashboard/subscriptions",
-  Paths:         "/admin/dashboard/paths?tab=active",
-  Steps:         "/admin/dashboard/steps?tab=active",
-  Marketplace:   "/admin/dashboard/marketplace",
-  Feedback:      "/admin/dashboard/feedback",
+  Overview:          "/admin/dashboard/accountants",
+  CRM:               "/admin/dashboard/crm",
+  Subscriptions:     "/admin/dashboard/subscriptions",
+  Paths:             "/admin/dashboard/paths?tab=active",
+  Steps:             "/admin/dashboard/steps?tab=active",
+  Marketplace:       "/admin/dashboard/marketplace",
+  Feedback:          "/admin/dashboard/feedback",
+  "Internal Partners": "/admin/dashboard/internal-partners",
 };
 
 // ── Icons ──────────────────────────────────────────────────────────────────
@@ -70,6 +71,14 @@ const Icons = {
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
   ),
+  "Internal Partners": ({ color }) => (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  ),
   "My Services": ({ color }) => (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
@@ -97,13 +106,14 @@ const sidebarMenu1 = [
 ];
 
 const sidebarMenu2 = [
-  { id: 0, display: "Overview",       title: "Overview",       click: true },
-  { id: 1, display: "CRM",            title: "CRM",            click: true },
-  { id: 2, display: "Subscriptions",  title: "Subscriptions",  click: true },
-  { id: 3, display: "Paths",          title: "Paths",          click: true },
-  { id: 4, display: "Steps",          title: "Steps",          click: true },
-  { id: 5, display: "Marketplace",    title: "Marketplace",    click: true },
-  { id: 6, display: "Feedback",       title: "Feedback",       click: true },
+  { id: 0, display: "Overview",          title: "Overview",          click: true },
+  { id: 1, display: "CRM",               title: "CRM",               click: true },
+  { id: 2, display: "Subscriptions",     title: "Subscriptions",     click: true },
+  { id: 3, display: "Paths",             title: "Paths",             click: true },
+  { id: 4, display: "Steps",             title: "Steps",             click: true },
+  { id: 5, display: "Marketplace",       title: "Marketplace",       click: true },
+  { id: 6, display: "Internal Partners", title: "Internal Partners", click: true },
+  { id: 7, display: "Feedback",          title: "Feedback",          click: true },
 ];
 
 const sidebarMenu3 = [];

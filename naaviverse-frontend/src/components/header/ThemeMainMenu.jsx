@@ -389,7 +389,7 @@ const ThemeMainMenu = () => {
 
         {/* CTA */}
         <div className="nav-auth-buttons">
-          <button className="get-started-btn" onClick={() => go('/login')}>
+          <button className="get-started-btn" onClick={() => window.dispatchEvent(new Event("openSidebar"))}>
             Get Started
           </button>
         </div>

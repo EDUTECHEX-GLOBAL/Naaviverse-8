@@ -46,9 +46,17 @@ const PartnerToggleIcon = () => (
     </svg>
 );
 
-const Loginpage = () => {
+const EyeIcon = ({ open }) => (
+    open ? (
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 3l18 18M10.6 10.6a2.5 2.5 0 0 0 3.5 3.5M6.6 6.7C4.5 8.1 3 10 2.5 12c1.3 4.2 5.3 7 9.5 7 1.6 0 3.1-.4 4.4-1.1M9.9 4.2A10.6 10.6 0 0 1 12 4c4.2 0 8.2 2.8 9.5 7-.4 1.3-1 2.5-1.9 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+    ) : (
+        <svg viewBox="0 0 24 24" fill="none"><path d="M2.5 12C3.8 7.8 7.8 5 12 5s8.2 2.8 9.5 7c-1.3 4.2-5.3 7-9.5 7s-8.2-2.8-9.5-7Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.6" /></svg>
+    )
+);
+
+const Loginpage = ({ initialType }) => {
     const navigate = useNavigate();
-    const { accsideNav, setaccsideNav, loginType, setLoginType } = useStore();
+    const { loginType, setLoginType } = useStore();
     const [email, setemail] = useState("");
     const [password, setpassword] = useState("");
     const [eye, seteye] = useState(false);
@@ -61,6 +69,26 @@ const Loginpage = () => {
     const [newPassword2, setNewPassword2] = useState("");
     const [passwordResetMsg, setPasswordResetMsg] = useState("");
     const [loading, setLoading] = useState(false);
+
+    // Force Password Update States (when mustChangePassword is true)
+    const [mustChangePasswordMode, setMustChangePasswordMode] = useState(false);
+    const [forceNewPassword, setForceNewPassword] = useState("");
+    const [forceConfirmPassword, setForceConfirmPassword] = useState("");
+    const [forcePasswordLoading, setForcePasswordLoading] = useState(false);
+    const [forcePasswordError, setForcePasswordError] = useState("");
+    const [forceEye1, setForceEye1] = useState(false);
+    const [forceEye2, setForceEye2] = useState(false);
+    const [partnerContext, setPartnerContext] = useState(null);
+
+    useEffect(() => {
+        if (
+            initialType === "Partner" ||
+            window.location.pathname.includes("/partner/login") ||
+            new URLSearchParams(window.location.search).get("type") === "partner"
+        ) {
+            setLoginType("Accountants");
+        }
+    }, [initialType, setLoginType]);
 
     const getProfilePic = async (email, loginType) => {
         try {
@@ -171,16 +199,19 @@ const Loginpage = () => {
                 }
 
                 let profileData = {};
+                let rawMustChange = false;
                 try {
                     const profileRes = await axios.get(
                         `${BASE_URL}/api/partner/get?email=${emailToStore}`
                     );
                     const raw = profileRes.data?.data || {};
-                    if (raw?.businessName) {
+                    if (raw) {
+                        rawMustChange = raw.mustChangePassword === true || raw.mustChangePassword === "true";
                         profileData = {
                             firstName: raw.firstName,
                             lastName: raw.lastName,
                             businessName: raw.businessName,
+                            mustChangePassword: rawMustChange,
                         };
                         console.log("✅ Partner profile fetched at login:", profileData.businessName);
                     }
@@ -188,14 +219,37 @@ const Loginpage = () => {
                     console.warn("Could not fetch partner profile at login:", profileErr?.message);
                 }
 
+                const mustChange =
+                    partnerData?.mustChangePassword === true ||
+                    partnerData?.mustChangePassword === "true" ||
+                    result?.partner?.mustChangePassword === true ||
+                    result?.partner?.mustChangePassword === "true" ||
+                    result?.mustChangePassword === true ||
+                    result?.mustChangePassword === "true" ||
+                    rawMustChange;
+
                 const enrichedPartner = {
                     ...partnerData,
                     approvalStatus,
                     ...profileData,
+                    mustChangePassword: mustChange,
                 };
                 localStorage.setItem("partner", JSON.stringify(enrichedPartner));
 
-                console.log("✅ Partner saved to localStorage with approvalStatus:", approvalStatus);
+                console.log("✅ Partner saved to localStorage. mustChangePassword:", mustChange);
+
+                // Check if internal partner must update temporary password
+                if (mustChange) {
+                    console.log("🔒 Partner must change temporary password before dashboard access");
+                    setPartnerContext({
+                        partnerData: enrichedPartner,
+                        emailToStore,
+                        profileData,
+                    });
+                    setMustChangePasswordMode(true);
+                    setIsLoading(false);
+                    return;
+                }
 
                 if (profileData?.businessName) {
                     navigate("/dashboard/accountants/home");
@@ -212,6 +266,55 @@ const Loginpage = () => {
             setiserror(true);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleForcePasswordUpdate = async (e) => {
+        if (e) e.preventDefault();
+        if (!forceNewPassword || !forceConfirmPassword) {
+            setForcePasswordError("Please enter and confirm your new password.");
+            return;
+        }
+        if (forceNewPassword.length < 6) {
+            setForcePasswordError("Password must be at least 6 characters long.");
+            return;
+        }
+        if (forceNewPassword !== forceConfirmPassword) {
+            setForcePasswordError("New passwords do not match.");
+            return;
+        }
+
+        try {
+            setForcePasswordLoading(true);
+            setForcePasswordError("");
+            const res = await axios.post(`${BASE_URL}/api/partner/internal/change-password`, {
+                email: partnerContext?.emailToStore || email,
+                oldPassword: password,
+                newPassword: forceNewPassword,
+            });
+
+            if (res.data && res.data.success) {
+                // Update partner object in localStorage so mustChangePassword is false
+                const stored = JSON.parse(localStorage.getItem("partner") || "{}");
+                localStorage.setItem("partner", JSON.stringify({
+                    ...stored,
+                    mustChangePassword: false,
+                }));
+
+                // Proceed to partner dashboard
+                if (partnerContext?.profileData?.businessName) {
+                    navigate("/dashboard/accountants/home");
+                } else {
+                    navigate("/dashboard/accountants/profile");
+                }
+            } else {
+                setForcePasswordError(res.data?.message || "Error updating password.");
+            }
+        } catch (err) {
+            console.error("Force password update error:", err);
+            setForcePasswordError(err.response?.data?.message || "Failed to update password. Please try again.");
+        } finally {
+            setForcePasswordLoading(false);
         }
     };
 
@@ -494,6 +597,75 @@ const Loginpage = () => {
         return null;
     };
 
+    // ── RENDER: FORCE PASSWORD CHANGE FORM (Internal Partner First Login) ──
+    const renderForcePasswordChange = () => (
+        <div className="login-box">
+            <div className="full-logo-box">
+                <img className="full-logo" src={logo} alt="Naaviverse" />
+            </div>
+
+            <div className="login-welcome">
+                <div className="welcome-title" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span>Set Permanent Password</span>
+                </div>
+                <div className="welcome-subtitle">
+                    You are logging in with a temporary password. Please set your new permanent password to secure your partner account.
+                </div>
+            </div>
+
+            {forcePasswordError && (
+                <div className="prompt-div" style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", padding: "10px 14px", borderRadius: "8px", fontSize: "0.82rem", marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span>⚠️ {forcePasswordError}</span>
+                </div>
+            )}
+
+            <div className="input-box password-box">
+                <LockIcon />
+                <input
+                    className="input-inp"
+                    type={forceEye1 ? "text" : "password"}
+                    placeholder="New Password (min. 6 characters)"
+                    value={forceNewPassword}
+                    onChange={(e) => {
+                        setForcePasswordError("");
+                        setForceNewPassword(e.target.value);
+                    }}
+                />
+                <div className="eye-icon" onClick={() => setForceEye1(!forceEye1)}>
+                    <EyeIcon open={forceEye1} />
+                </div>
+            </div>
+
+            <div className="input-box password-box" style={{ marginTop: "12px" }}>
+                <LockIcon />
+                <input
+                    className="input-inp"
+                    type={forceEye2 ? "text" : "password"}
+                    placeholder="Confirm New Password"
+                    value={forceConfirmPassword}
+                    onChange={(e) => {
+                        setForcePasswordError("");
+                        setForceConfirmPassword(e.target.value);
+                    }}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") handleForcePasswordUpdate(e);
+                    }}
+                />
+                <div className="eye-icon" onClick={() => setForceEye2(!forceEye2)}>
+                    <EyeIcon open={forceEye2} />
+                </div>
+            </div>
+
+            <div
+                className={`login-btn ${forcePasswordLoading || !forceNewPassword || !forceConfirmPassword ? "disabled" : ""}`}
+                style={{ marginTop: "20px" }}
+                onClick={handleForcePasswordUpdate}
+            >
+                {forcePasswordLoading ? "Updating Password..." : "Set Password & Continue"}
+            </div>
+        </div>
+    );
+
     // ── RENDER: MAIN LOGIN FORM ──
     const renderLoginForm = () => (
         <div className="login-box">
@@ -640,7 +812,11 @@ const Loginpage = () => {
 
             {/* ── RIGHT FORM PANEL ── */}
             <div className="login-form-panel">
-                {forgotPassword ? renderForgotPassword() : renderLoginForm()}
+                {mustChangePasswordMode
+                    ? renderForcePasswordChange()
+                    : forgotPassword
+                    ? renderForgotPassword()
+                    : renderLoginForm()}
             </div>
 
             {/* ── LOADING OVERLAY ── */}

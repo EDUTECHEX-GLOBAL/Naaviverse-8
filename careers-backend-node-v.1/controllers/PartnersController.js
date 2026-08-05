@@ -109,23 +109,29 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, message: "Invalid password" });
     }
 
+    if (partner.isBlocked || partner.accountStatus === "inactive") {
+      return res.status(403).json({
+        success: false,
+        message: "Your account is currently inactive. Please contact administrator.",
+      });
+    }
+
     const approval       = await Approval.findOne({ email: partner.email });
     const profileCreated = !!approval;
-    const approvalStatus = approval ? approval.status : "not_submitted";
+    const approvalStatus = (partner.creationSource === "admin_created" || partner.status) ? "approved" : (approval ? approval.status : "not_submitted");
 
     const token = jwt.sign({ id: partner._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
 
     // ✅ Fire-and-forget activity log — never blocks the login response
-   // ✅ Correct (non-blocking with error handling)
-await logEvent({
-  role:        "partner",
-  email:       partner.email,
-  displayName: partner.businessName || partner.username || email,
-  partnerType: partner.partnerType  || "",
-  eventType:   "login",
-  title:       "Partner Logged In",
-  desc:        `${partner.businessName || partner.username || email} signed in to the portal`,
-}).catch(err => console.error("Partner login activity log error:", err));
+    await logEvent({
+      role:        "partner",
+      email:       partner.email,
+      displayName: partner.businessName || partner.username || email,
+      partnerType: partner.partnerType  || "",
+      eventType:   "login",
+      title:       "Partner Logged In",
+      desc:        `${partner.businessName || partner.username || email} signed in to the portal`,
+    }).catch(err => console.error("Partner login activity log error:", err));
 
     // Ensure partnerId exists on the partner document
     if (!partner.partnerId) {
@@ -139,15 +145,19 @@ await logEvent({
       success: true,
       message: "Login successful",
       token,
+      mustChangePassword: partner.mustChangePassword === true || partner.mustChangePassword === "true",
       partner: {
-        id:             partner._id,
-        partnerId:      partner.partnerId,
-        username:       partner.username,
-        businessName:   partner.businessName || partner.username,
-        email:          partner.email,
-        partnerType:    partner.partnerType,
+        id:                 partner._id,
+        partnerId:          partner.partnerId,
+        username:           partner.username,
+        businessName:       partner.businessName || partner.username,
+        email:              partner.email,
+        partnerType:        partner.partnerType,
+        creationSource:     partner.creationSource || "self_registered",
+        mustChangePassword: partner.mustChangePassword === true || partner.mustChangePassword === "true",
+        accountStatus:      partner.isBlocked ? "inactive" : (partner.accountStatus || "active"),
         profileCreated,
-        status:         approvalStatus,
+        status:             approvalStatus,
       },
     });
   } catch (error) {
@@ -467,6 +477,394 @@ const getPartnerProfilePic = async (req, res) => {
 };
 
 
+// ─────────────────────────────────────────────────────────────────────────────
+// INTERNAL PARTNERS MANAGEMENT (SUPER ADMIN CONTROLLED)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// CREATE INTERNAL PARTNER
+const createInternalPartner = async (req, res) => {
+  try {
+    const {
+      partnerName,
+      organizationName,
+      contactPerson,
+      lastName,
+      email,
+      phone,
+      category,
+      website,
+      yourPosition,
+      street,
+      city,
+      state,
+      pincode,
+      country,
+      description,
+      tempPassword,
+      accountStatus,
+    } = req.body;
+
+    if (!partnerName || !email || !contactPerson || !tempPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Partner name, contact person, email, and temporary password are required",
+      });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const existingPartner = await Partner.findOne({ email: cleanEmail });
+    if (existingPartner) {
+      return res.status(400).json({ success: false, message: "A partner with this email already exists" });
+    }
+
+    // Auto-generate partnerId
+    const prefix = "NVP";
+    const cleanUser = (partnerName || cleanEmail).replace(/[^a-zA-Z0-9]/g, "");
+    const code = cleanUser.slice(0, 3).toUpperCase() || "INT";
+    const year = new Date().getFullYear();
+    const tempObjId = new mongoose.Types.ObjectId();
+    const shortId = tempObjId.toString().slice(-6).toUpperCase();
+    const partnerId = `${prefix}-${code}-${year}-${shortId}`;
+
+    const newPartner = new Partner({
+      _id: tempObjId,
+      partnerId,
+      username: partnerName,
+      businessName: organizationName || partnerName || "Naaviverse Internal",
+      firstName: contactPerson,
+      lastName: lastName || "",
+      email: cleanEmail,
+      password: tempPassword, // pre-save hook will hash password!
+      phone: phone || "",
+      type: category || "Education & Learning",
+      partnerType: category || "Education & Learning",
+      website: website || "",
+      yourPosition: yourPosition || "Internal Partner",
+      street: street || "",
+      city: city || "",
+      state: state || "",
+      pincode: pincode || "",
+      country: country || "India",
+      creationSource: "admin_created",
+      mustChangePassword: true, // ALWAYS true upon admin creation
+      accountStatus: accountStatus || "active",
+      isBlocked: accountStatus === "inactive",
+      OTPverified: true,
+      status: true, // Auto-approved for internal partners!
+      createdBy: "Super Admin",
+      description: description || "Internal partner account.",
+    });
+
+    await newPartner.save();
+
+    // Also auto-create approved record in Approval collection so internal partners bypass approval check
+    await Approval.create({
+      role: "Partner",
+      businessName: newPartner.businessName,
+      type: newPartner.partnerType,
+      email: cleanEmail,
+      firstName: contactPerson,
+      date: new Date().toDateString(),
+      status: "approved",
+    }).catch(err => console.log("Approval record auto-creation notice:", err.message));
+
+    // Log activity
+    await logEvent({
+      role: "admin",
+      email: "admin@naaviverse.com",
+      displayName: "Super Admin",
+      eventType: "partner_creation",
+      title: "Internal Partner Created",
+      desc: `Super Admin created internal partner: ${partnerName} (${cleanEmail})`,
+    }).catch(() => {});
+
+    // Send Welcome Email with Login Credentials
+    const mailBody = `
+      <div style="font-family: Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 28px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; color: #1e293b;">
+        <h2 style="color: #2563eb; margin-top: 0;">Welcome to Naaviverse Partner Network!</h2>
+        <p>Dear <strong>${contactPerson}</strong>,</p>
+        <p>An internal partner account has been created for <strong>${partnerName}</strong> (${organizationName || "Naaviverse Internal"}).</p>
+        
+        <div style="background: #f8fafc; border-left: 4px solid #2563eb; border-radius: 6px; padding: 16px 20px; margin: 20px 0;">
+          <h4 style="margin: 0 0 10px 0; color: #0f172a; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">Your Account Credentials:</h4>
+          <p style="margin: 6px 0; font-size: 14px;"><strong>Login Email:</strong> ${cleanEmail}</p>
+          <p style="margin: 6px 0; font-size: 14px;"><strong>Temporary Password:</strong> <span style="background: #e2e8f0; padding: 3px 8px; border-radius: 4px; font-family: monospace; font-size: 14px; font-weight: bold; color: #d97706;">${tempPassword}</span></p>
+          <p style="margin: 10px 0 0 0; font-size: 12px; color: #64748b;">(Note: You will be prompted to update this password when you log in.)</p>
+        </div>
+
+        <p>Log in using the link below to access your partner dashboard and manage your offerings:</p>
+        <p style="text-align: center; margin: 24px 0;">
+          <a href="${process.env.PARTNER_LOGIN_URL || "http://localhost:3000/login?type=partner"}" style="background: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Log In to Partner Portal</a>
+        </p>
+        
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+        <p style="font-size: 12px; color: #94a3b8; text-align: center; margin: 0;">This is an automated invitation email from Naaviverse Super Admin.</p>
+      </div>
+    `;
+
+    await sendNotificationMail(
+      cleanEmail,
+      "Welcome to Naaviverse — Your Partner Account Credentials",
+      mailBody
+    ).catch((err) => console.error("Internal Partner email delivery error:", err.message));
+
+    return res.status(201).json({
+      success: true,
+      message: `Internal Partner "${partnerName}" created successfully`,
+      data: {
+        id: newPartner._id,
+        partnerId: newPartner.partnerId,
+        partnerName: newPartner.username,
+        organizationName: newPartner.businessName,
+        contactPerson: newPartner.firstName,
+        email: newPartner.email,
+        phone: newPartner.phone,
+        category: newPartner.partnerType,
+        description: newPartner.description,
+        partnerType: "internal",
+        creationSource: newPartner.creationSource,
+        accountStatus: newPartner.accountStatus,
+        mustChangePassword: newPartner.mustChangePassword,
+        createdBy: newPartner.createdBy,
+        createdAt: newPartner.createdAt ? new Date(newPartner.createdAt).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+        lastLogin: "Never",
+        totalOfferings: 0,
+        totalRevenue: "₹0",
+      },
+    });
+  } catch (error) {
+    console.error("createInternalPartner Error:", error);
+    return res.status(500).json({ success: false, message: "Error creating internal partner", error: error.message });
+  }
+};
+
+// GET ALL INTERNAL PARTNERS
+const getAllInternalPartners = async (req, res) => {
+  try {
+    const internalPartners = await Partner.find({
+      $or: [
+        { creationSource: "admin_created" },
+        { partnerType: /^internal$/i }
+      ]
+    }).sort({ createdAt: -1 }).lean();
+
+    const formatted = internalPartners.map(p => ({
+      id: p._id,
+      partnerId: p.partnerId,
+      partnerName: p.username || p.businessName || "Unnamed Partner",
+      organizationName: p.businessName || "Naaviverse Internal",
+      contactPerson: p.firstName || p.username || "—",
+      firstName: p.firstName || "",
+      lastName: p.lastName || "",
+      email: p.email,
+      phone: p.phone || "—",
+      category: p.partnerType || "Education & Learning",
+      website: p.website || "",
+      yourPosition: p.yourPosition || "",
+      street: p.street || "",
+      city: p.city || "",
+      state: p.state || "",
+      pincode: p.pincode || "",
+      country: p.country || "India",
+      description: p.description || "",
+      partnerType: "internal",
+      creationSource: p.creationSource || "admin_created",
+      accountStatus: p.isBlocked ? "inactive" : (p.accountStatus || "active"),
+      mustChangePassword: !!p.mustChangePassword,
+      createdBy: p.createdBy || "Super Admin",
+      createdAt: p.createdAt ? new Date(p.createdAt).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+      lastLogin: p.updatedAt ? new Date(p.updatedAt).toLocaleString() : "Never",
+      totalOfferings: 0,
+      totalRevenue: "₹0",
+    }));
+
+    return res.status(200).json({ success: true, count: formatted.length, data: formatted });
+  } catch (error) {
+    console.error("getAllInternalPartners Error:", error);
+    return res.status(500).json({ success: false, message: "Error fetching internal partners" });
+  }
+};
+
+// UPDATE INTERNAL PARTNER
+const updateInternalPartner = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      partnerName,
+      organizationName,
+      contactPerson,
+      phone,
+      category,
+      description,
+      accountStatus,
+      mustChangePassword,
+    } = req.body;
+
+    const partner = await Partner.findById(id);
+    if (!partner) {
+      return res.status(404).json({ success: false, message: "Internal Partner not found" });
+    }
+
+    if (partnerName) partner.username = partnerName;
+    if (organizationName) partner.businessName = organizationName;
+    if (contactPerson) partner.firstName = contactPerson;
+    if (phone !== undefined) partner.phone = phone;
+    if (category) partner.partnerType = category;
+    if (description !== undefined) partner.description = description;
+    if (accountStatus) {
+      partner.accountStatus = accountStatus;
+      partner.isBlocked = (accountStatus === "inactive");
+    }
+    if (mustChangePassword !== undefined) partner.mustChangePassword = mustChangePassword;
+
+    await partner.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Internal Partner updated successfully",
+      data: {
+        id: partner._id,
+        partnerId: partner.partnerId,
+        partnerName: partner.username,
+        organizationName: partner.businessName,
+        contactPerson: partner.firstName,
+        email: partner.email,
+        phone: partner.phone,
+        category: partner.partnerType,
+        description: partner.description,
+        partnerType: "internal",
+        creationSource: partner.creationSource || "admin_created",
+        accountStatus: partner.isBlocked ? "inactive" : (partner.accountStatus || "active"),
+        mustChangePassword: partner.mustChangePassword,
+        createdBy: partner.createdBy || "Super Admin",
+        createdAt: partner.createdAt ? new Date(partner.createdAt).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+      }
+    });
+  } catch (error) {
+    console.error("updateInternalPartner Error:", error);
+    return res.status(500).json({ success: false, message: "Error updating internal partner" });
+  }
+};
+
+// TOGGLE PARTNER STATUS (active / inactive)
+const toggleInternalPartnerStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const partner = await Partner.findById(id);
+    if (!partner) {
+      return res.status(404).json({ success: false, message: "Partner not found" });
+    }
+
+    const currentStatus = partner.isBlocked ? "inactive" : (partner.accountStatus || "active");
+    const newStatus = currentStatus === "active" ? "inactive" : "active";
+    partner.accountStatus = newStatus;
+    partner.isBlocked = (newStatus === "inactive");
+
+    await partner.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Partner status changed to ${newStatus}`,
+      accountStatus: newStatus,
+    });
+  } catch (error) {
+    console.error("toggleInternalPartnerStatus Error:", error);
+    return res.status(500).json({ success: false, message: "Error toggling status" });
+  }
+};
+
+// RESET PARTNER PASSWORD
+const resetInternalPartnerPassword = async (req, res) => {
+  try {
+    const { partnerId, newTempPassword } = req.body;
+    if (!partnerId || !newTempPassword) {
+      return res.status(400).json({ success: false, message: "partnerId and newTempPassword are required" });
+    }
+
+    const partner = await Partner.findOne({
+      $or: [
+        { _id: mongoose.Types.ObjectId.isValid(partnerId) ? partnerId : null },
+        { email: partnerId }
+      ]
+    });
+
+    if (!partner) {
+      return res.status(404).json({ success: false, message: "Partner not found" });
+    }
+
+    partner.password = newTempPassword; // pre-save hook will hash password!
+    partner.mustChangePassword = true;
+    await partner.save();
+
+    // Send Password Reset Email
+    const resetMailBody = `
+      <div style="font-family: Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 28px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; color: #1e293b;">
+        <h2 style="color: #2563eb; margin-top: 0;">Password Reset — Naaviverse Partner Account</h2>
+        <p>Dear <strong>${partner.firstName || partner.username || "Partner"}</strong>,</p>
+        <p>Your password for internal partner account <strong>${partner.username || partner.businessName}</strong> has been reset by the Super Admin.</p>
+        
+        <div style="background: #f8fafc; border-left: 4px solid #2563eb; border-radius: 6px; padding: 16px 20px; margin: 20px 0;">
+          <h4 style="margin: 0 0 10px 0; color: #0f172a; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">New Temporary Credentials:</h4>
+          <p style="margin: 6px 0; font-size: 14px;"><strong>Login Email:</strong> ${partner.email}</p>
+          <p style="margin: 6px 0; font-size: 14px;"><strong>New Temporary Password:</strong> <span style="background: #e2e8f0; padding: 3px 8px; border-radius: 4px; font-family: monospace; font-size: 14px; font-weight: bold; color: #d97706;">${newTempPassword}</span></p>
+          <p style="margin: 10px 0 0 0; font-size: 12px; color: #64748b;">(Note: You will be required to update this temporary password upon login.)</p>
+        </div>
+
+        <p style="text-align: center; margin: 24px 0;">
+          <a href="${process.env.PARTNER_LOGIN_URL || "http://localhost:3000/login?type=partner"}" style="background: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Log In Now</a>
+        </p>
+        
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+        <p style="font-size: 12px; color: #94a3b8; text-align: center; margin: 0;">This is an automated notification from Naaviverse Super Admin.</p>
+      </div>
+    `;
+
+    await sendNotificationMail(
+      partner.email,
+      "Password Reset Notice — Naaviverse Partner Credentials",
+      resetMailBody
+    ).catch((err) => console.error("Password reset email delivery error:", err.message));
+
+    return res.status(200).json({
+      success: true,
+      message: `Password reset successfully for ${partner.username || partner.email}`,
+    });
+  } catch (error) {
+    console.error("resetInternalPartnerPassword Error:", error);
+    return res.status(500).json({ success: false, message: "Error resetting password" });
+  }
+};
+
+// CHANGE PARTNER PASSWORD
+const changePartnerPassword = async (req, res) => {
+  try {
+    const { email, oldPassword, newPassword } = req.body;
+    if (!email || !oldPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
+    }
+
+    const partner = await Partner.findOne({ email: email.toLowerCase() });
+    if (!partner) {
+      return res.status(404).json({ success: false, message: "Partner not found" });
+    }
+
+    const isMatch = await partner.matchPassword(oldPassword);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: "Current password is incorrect" });
+    }
+
+    partner.password = newPassword; // pre-save hook will hash it!
+    partner.mustChangePassword = false;
+    await partner.save();
+
+    return res.status(200).json({ success: true, message: "Password updated successfully!" });
+  } catch (error) {
+    console.error("changePartnerPassword Error:", error);
+    return res.status(500).json({ success: false, message: "Error updating password" });
+  }
+};
+
+
 module.exports = {
   signUp,
   forgotPassword,
@@ -481,4 +879,11 @@ module.exports = {
   updatePartnerProfile,
   getPartnerByEmail,
   getPartnerProfilePic,
+  createInternalPartner,
+  getAllInternalPartners,
+  updateInternalPartner,
+  toggleInternalPartnerStatus,
+  resetInternalPartnerPassword,
+  changePartnerPassword,
 };
+

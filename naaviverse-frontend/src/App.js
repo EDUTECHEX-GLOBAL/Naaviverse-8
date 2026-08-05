@@ -83,6 +83,7 @@ function App() {
 
           {/* ================= PUBLIC ================= */}
           <Route path="/login" element={<Loginpage />} />
+          <Route path="/partner/login" element={<Loginpage initialType="Partner" />} />
           <Route path="/register" element={<NewHomePage />} />
           <Route path="/maps" element={<MapsPage />} />
 
@@ -140,6 +141,7 @@ function App() {
           <Route path="/admin/dashboard/marketplace" element={<AdminAccDashbaoard />} />
           <Route path="/admin/dashboard/subscriptions" element={<AdminAccDashbaoard />} />
           <Route path="/admin/dashboard/feedback" element={<AdminAccDashbaoard />} />
+          <Route path="/admin/dashboard/internal-partners" element={<AdminAccDashbaoard />} />
           {/* ================= SUPER ADMIN ================= */}
           <Route path="/admin-login" element={<SuperAdminLogin />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />}>

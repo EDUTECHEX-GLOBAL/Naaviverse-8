@@ -2,6 +2,7 @@
 //  📧 BREVO (SENDINBLUE) EMAIL CONTROLLER
 // =========================================
 
+require("dotenv").config();
 const User = require("../models/UsersModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -40,42 +41,92 @@ const generateOTP = () => {
   return otp;
 };
 
+// =========================================
+// SEND MAIL (MULTIPLE SERVICE SUPPORT)
+// =========================================
 
-// =========================================
-// SEND MAIL USING BREVO
-// =========================================
+// Build list of available transporters in priority order
+const getTransporters = () => {
+  const transporters = [];
+
+  // 1. Brevo (highest priority if key exists)
+  if (process.env.BREVO_API_KEY) {
+    transporters.push({
+      name: "Brevo",
+      transporter: nodemailer.createTransport({
+        host: "smtp-relay.brevo.com",
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.BREVO_USER || "b31b04001@smtp-brevo.com",
+          pass: process.env.BREVO_API_KEY,
+        },
+      }),
+    });
+  }
+
+  // 2. SendGrid
+  if (process.env.SENDGRID_API_KEY) {
+    transporters.push({
+      name: "SendGrid",
+      transporter: nodemailer.createTransport({
+        host: "smtp.sendgrid.net",
+        port: 587,
+        secure: false,
+        auth: {
+          user: "apikey",
+          pass: process.env.SENDGRID_API_KEY,
+        },
+      }),
+    });
+  }
+
+  // 3. Gmail (fallback)
+  if (process.env.EMAIL_SERVICE_USER && process.env.EMAIL_SERVICE_PASS) {
+    transporters.push({
+      name: "Gmail",
+      transporter: nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_SERVICE_USER.trim(),
+          pass: process.env.EMAIL_SERVICE_PASS.trim(),
+        },
+      }),
+    });
+  }
+
+  return transporters;
+};
+
 const sendNotificationMail = async (email, subject, message) => {
-  const apiKey = process.env.BREVO_API_KEY || process.env.SENDGRID_API_KEY;
+  const transporters = getTransporters();
 
-  if (!apiKey) {
-    console.error("❌ BREVO_API_KEY missing in environment");
+  if (transporters.length === 0) {
+    console.error("❌ No email service configuration found in .env (need BREVO_API_KEY, SENDGRID_API_KEY, or EMAIL_SERVICE_USER/PASS)");
     return false;
   }
 
-  try {
-    const transporter = nodemailer.createTransport({
-      host: "smtp-relay.brevo.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: BREVO_USER,
-        pass: apiKey,
-      },
-    });
+  const fromUser = process.env.EMAIL_SERVICE_USER || "naaviplatform@gmail.com";
+  const mailOptions = {
+    from: `"Naavi Platform" <${fromUser}>`,
+    to: email,
+    subject: subject || "Notification",
+    html: message.startsWith("<") ? message : `<p>${message}</p>`,
+  };
 
-    const info = await transporter.sendMail({
-      from: `"Naavi Platform" <${process.env.EMAIL_SERVICE_USER || "praneethsunkara3@gmail.com"}>`,
-      to: email,
-      subject: subject || "Notification",
-      html: message.startsWith("<") ? message : `<p>${message}</p>`,
-    });
-
-    console.log("✅ Brevo Email Sent Successfully:", info.messageId);
-    return true;
-  } catch (error) {
-    console.error("❌ Brevo Email Delivery Error:", error.message);
-    return false;
+  // Try each transporter in order until one succeeds
+  for (const { name, transporter } of transporters) {
+    try {
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`✅ Email sent via ${name} to ${email}: ${info.messageId}`);
+      return true;
+    } catch (error) {
+      console.warn(`⚠️ ${name} failed: ${error.message} — trying next...`);
+    }
   }
+
+  console.error("❌ All email services failed. Could not deliver email to:", email);
+  return false;
 };
 
 

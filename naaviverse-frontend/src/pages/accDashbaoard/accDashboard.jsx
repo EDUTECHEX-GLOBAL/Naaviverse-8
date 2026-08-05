@@ -111,6 +111,71 @@ const AccDashboard = () => {
   // const [isPurchaseLoading, setIsPurchaseLoading] = useState(false);
   const [isCatoading, setIsCatLoading] = useState(false);
   const [isUploadLoading, setIsUploadLoading] = useState(false);
+
+  // Force Password Change Modal state for Internal Partners
+  const [showForcePasswordModal, setShowForcePasswordModal] = useState(false);
+  const [dashNewPassword, setDashNewPassword] = useState("");
+  const [dashConfirmPassword, setDashConfirmPassword] = useState("");
+  const [dashPasswordLoading, setDashPasswordLoading] = useState(false);
+  const [dashPasswordError, setDashPasswordError] = useState("");
+
+  useEffect(() => {
+    const currentPartner = getPartner();
+    if (
+      currentPartner &&
+      (currentPartner.mustChangePassword === true || currentPartner.mustChangePassword === "true")
+    ) {
+      setShowForcePasswordModal(true);
+    }
+  }, []);
+
+  const handleDashForcePasswordSubmit = async (e) => {
+    if (e) e.preventDefault();
+    if (!dashNewPassword || !dashConfirmPassword) {
+      setDashPasswordError("Please enter and confirm your new password.");
+      return;
+    }
+    if (dashNewPassword.length < 6) {
+      setDashPasswordError("Password must be at least 6 characters long.");
+      return;
+    }
+    if (dashNewPassword !== dashConfirmPassword) {
+      setDashPasswordError("Passwords do not match.");
+      return;
+    }
+
+    try {
+      setDashPasswordLoading(true);
+      setDashPasswordError("");
+      const currentPartner = getPartner();
+      const userEmail = currentPartner.email || localStorage.getItem("loginEmail");
+
+      const res = await axios.post(`${BASE_URL}/api/partner/internal/change-password`, {
+        email: userEmail,
+        newPassword: dashNewPassword,
+      });
+
+      if (res.data && res.data.success) {
+        localStorage.setItem(
+          "partner",
+          JSON.stringify({
+            ...currentPartner,
+            mustChangePassword: false,
+          })
+        );
+        setShowForcePasswordModal(false);
+        toast.success("Password updated successfully! Use your new password for future logins.");
+      } else {
+        setDashPasswordError(res.data?.message || "Failed to update password");
+      }
+    } catch (err) {
+      console.error("Dashboard password update error:", err);
+      setDashPasswordError(err.response?.data?.message || "Error updating password");
+    } finally {
+      setDashPasswordLoading(false);
+    }
+  };
+
   const [followCount, setfollowCount] = useState(0);
   const [followData, setfollowData] = useState([]);
   const [coverImageS3url, setCoverImageS3url] = useState("");
@@ -3356,8 +3421,124 @@ useEffect(() => {
       )}
 
 
-      {/* Keep all your other modal code (coinActionEnabled, serviceActionEnabled, addCompPlan) exactly as is */}
-      {/* ... */}
+      {/* ── FORCE PASSWORD CHANGE MODAL FOR INTERNAL PARTNERS ── */}
+      {showForcePasswordModal && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(15, 23, 42, 0.8)",
+          backdropFilter: "blur(8px)",
+          zIndex: 999999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "20px",
+        }}>
+          <div style={{
+            background: "#ffffff",
+            borderRadius: "16px",
+            maxWidth: "460px",
+            width: "100%",
+            padding: "32px 28px",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            border: "1px solid #e2e8f0",
+          }}>
+            <div style={{ textAlign: "center", marginBottom: "20px" }}>
+              <div style={{
+                width: "52px",
+                height: "52px",
+                background: "#eff6ff",
+                color: "#2563eb",
+                borderRadius: "50%",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: "14px",
+              }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </div>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: "700", color: "#0f172a", margin: "0 0 6px 0" }}>Create Your Permanent Password</h2>
+              <p style={{ fontSize: "0.85rem", color: "#64748b", margin: 0, lineHeight: "1.4" }}>
+                You logged in using a temporary password. Please set your permanent password to secure your account.
+              </p>
+            </div>
+
+            {dashPasswordError && (
+              <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", padding: "10px 14px", borderRadius: "8px", fontSize: "0.82rem", marginBottom: "16px" }}>
+                ⚠️ {dashPasswordError}
+              </div>
+            )}
+
+            <form onSubmit={handleDashForcePasswordSubmit}>
+              <div style={{ marginBottom: "14px" }}>
+                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: "600", color: "#475569", marginBottom: "6px", textTransform: "uppercase" }}>New Password</label>
+                <input
+                  type="password"
+                  placeholder="Enter new password (min. 6 characters)"
+                  value={dashNewPassword}
+                  onChange={(e) => {
+                    setDashPasswordError("");
+                    setDashNewPassword(e.target.value);
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    borderRadius: "8px",
+                    border: "1px solid #cbd5e1",
+                    fontSize: "0.9rem",
+                    outline: "none",
+                  }}
+                  required
+                />
+              </div>
+
+              <div style={{ marginBottom: "24px" }}>
+                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: "600", color: "#475569", marginBottom: "6px", textTransform: "uppercase" }}>Confirm New Password</label>
+                <input
+                  type="password"
+                  placeholder="Re-enter new password"
+                  value={dashConfirmPassword}
+                  onChange={(e) => {
+                    setDashPasswordError("");
+                    setDashConfirmPassword(e.target.value);
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    borderRadius: "8px",
+                    border: "1px solid #cbd5e1",
+                    fontSize: "0.9rem",
+                    outline: "none",
+                  }}
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={dashPasswordLoading || !dashNewPassword || !dashConfirmPassword}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "8px",
+                  fontWeight: "600",
+                  fontSize: "0.92rem",
+                  cursor: "pointer",
+                  opacity: (dashPasswordLoading || !dashNewPassword || !dashConfirmPassword) ? 0.7 : 1,
+                }}
+              >
+                {dashPasswordLoading ? "Updating Password..." : "Set Password & Continue"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       <ToastContainer />
     </div>
