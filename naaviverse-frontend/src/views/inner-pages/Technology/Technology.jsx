@@ -5,17 +5,13 @@ import {
   HiOutlineCpuChip,
   HiOutlineSparkles,
   HiOutlineShare,
-  HiOutlineBolt,
-  HiOutlineGlobeAlt,
-  HiOutlineChartBar,
-  HiOutlineUserGroup,
 } from "react-icons/hi2";
 import './Technology.scss';
 import Footer from '../../../components/footernew/index';
 import PathEngineImg from './images/Path_Engine.png';
 import SynergyImg from './images/Synergy_1.png';
 
-const HEADER_OFFSET = 80;
+const HEADER_OFFSET = 110;
 
 const pathwayBullets = [
   "user decisions",
@@ -50,124 +46,10 @@ const kgNodes = [
   "and human pathways.",
 ];
 
-// Macro/Micro/Nano visual component
-function PathwayStepsVisual() {
-  return (
-    <div className="tech-pathway-visual">
-      <svg viewBox="0 0 300 140" className="tech-pathway-svg">
-        <path
-          d="M 30 70 L 100 70 L 140 35 L 180 35 L 250 35"
-          fill="none"
-          stroke="#2DB67D"
-          strokeWidth="1.5"
-          strokeDasharray="6 4"
-          opacity="0.5"
-        />
-        <circle cx="30" cy="70" r="7" fill="#2DB67D">
-          <animate attributeName="r" values="5;9;5" dur="3s" repeatCount="indefinite" />
-        </circle>
-        <text x="15" y="58" fontSize="10" fill="#2DB67D" fontWeight="600">Macro</text>
-
-        <circle cx="100" cy="70" r="7" fill="#4DA6FF">
-          <animate attributeName="r" values="5;9;5" dur="3s" begin="0.5s" repeatCount="indefinite" />
-        </circle>
-        <text x="85" y="58" fontSize="10" fill="#4DA6FF" fontWeight="600">Micro</text>
-
-        <circle cx="180" cy="35" r="7" fill="#FF9500">
-          <animate attributeName="r" values="5;9;5" dur="3s" begin="1s" repeatCount="indefinite" />
-        </circle>
-        <text x="165" y="23" fontSize="10" fill="#FF9500" fontWeight="600">Nano</text>
-
-        <circle cx="250" cy="35" r="5" fill="#2DB67D" />
-        <circle cx="250" cy="35" r="14" fill="none" stroke="#2DB67D" strokeWidth="1" opacity="0.5">
-          <animate attributeName="r" values="10;22;10" dur="2.5s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="0.5;0;0.5" dur="2.5s" repeatCount="indefinite" />
-        </circle>
-        <text x="240" y="25" fontSize="9" fill="#2DB67D" fontWeight="600">Goal</text>
-      </svg>
-    </div>
-  );
-}
-
-// LLM + KG synergy visual
-function SynergyVisual() {
-  return (
-    <div className="tech-synergy-visual">
-      <svg viewBox="0 0 300 160" className="tech-synergy-svg">
-        <circle cx="75" cy="80" r="38" fill="none" stroke="#2DB67D" strokeWidth="1.5" opacity="0.3">
-          <animate attributeName="r" values="36;42;36" dur="4s" repeatCount="indefinite" />
-        </circle>
-        <circle cx="75" cy="80" r="24" fill="rgba(45,182,125,0.06)" stroke="#2DB67D" strokeWidth="1" />
-        <text x="75" y="76" textAnchor="middle" fontSize="11" fill="#2DB67D" fontWeight="700">LLM</text>
-        <text x="75" y="90" textAnchor="middle" fontSize="8" fill="#6B7A8D">Reasoning</text>
-
-        <circle cx="225" cy="80" r="38" fill="none" stroke="#4DA6FF" strokeWidth="1.5" opacity="0.3">
-          <animate attributeName="r" values="36;42;36" dur="4s" begin="0.5s" repeatCount="indefinite" />
-        </circle>
-        <circle cx="225" cy="80" r="24" fill="rgba(77,166,255,0.06)" stroke="#4DA6FF" strokeWidth="1" />
-        <text x="225" y="76" textAnchor="middle" fontSize="11" fill="#4DA6FF" fontWeight="700">KG</text>
-        <text x="225" y="90" textAnchor="middle" fontSize="8" fill="#6B7A8D">Structure</text>
-
-        <line x1="99" y1="80" x2="201" y2="80" stroke="url(#grad-llm-kg)" strokeWidth="1.8" strokeDasharray="4 3" opacity="0.5">
-          <animate attributeName="stroke-dashoffset" values="0;14" dur="1.5s" repeatCount="indefinite" />
-        </line>
-
-        <circle cx="150" cy="80" r="16" fill="rgba(45,182,125,0.12)">
-          <animate attributeName="r" values="13;19;13" dur="3s" repeatCount="indefinite" />
-        </circle>
-        <text x="150" y="84" textAnchor="middle" fontSize="10" fill="#2DB67D" fontWeight="800">×</text>
-
-        <defs>
-          <linearGradient id="grad-llm-kg" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#2DB67D" />
-            <stop offset="100%" stopColor="#4DA6FF" />
-          </linearGradient>
-        </defs>
-      </svg>
-    </div>
-  );
-}
-
-// Graph nodes visual
-function GraphNodesVisual() {
-  return (
-    <div className="tech-graph-visual">
-      <svg viewBox="0 0 260 160" className="tech-graph-svg">
-        {[
-          { x: 35, y: 80, label: "Skills", color: "#2DB67D" },
-          { x: 100, y: 35, label: "Careers", color: "#4DA6FF" },
-          { x: 165, y: 60, label: "Universities", color: "#FF9500" },
-          { x: 220, y: 110, label: "Mentors", color: "#A259FF" },
-          { x: 65, y: 130, label: "Opportunities", color: "#2DB67D" },
-          { x: 135, y: 135, label: "Pathways", color: "#4DA6FF" },
-        ].map((node, i) => (
-          <g key={i}>
-            <circle cx={node.x} cy={node.y} r="7" fill={node.color} opacity="0.6">
-              <animate attributeName="r" values="5;9;5" dur={`${3 + i * 0.3}s`} repeatCount="indefinite" />
-            </circle>
-            <text x={node.x} y={node.y - 9} textAnchor="middle" fontSize="8" fill="#1A1A2E" fontWeight="600">{node.label}</text>
-          </g>
-        ))}
-        <path
-          d="M 35 80 L 100 35 L 165 60 L 220 110 M 165 60 L 135 135 M 100 35 L 65 130 M 65 130 L 135 135"
-          fill="none"
-          stroke="#2DB67D"
-          strokeWidth="0.7"
-          opacity="0.25"
-          strokeDasharray="3 3"
-        >
-          <animate attributeName="stroke-dashoffset" values="0;12" dur="2s" repeatCount="indefinite" />
-        </path>
-      </svg>
-    </div>
-  );
-}
-
 const Technology = () => {
   const { section } = useParams();
   const location = useLocation();
 
-  // Map URL params to section IDs
   const getSectionId = (sectionName) => {
     const mapping = {
       'pathways-system': 'pathways',
@@ -180,102 +62,72 @@ const Technology = () => {
     return mapping[sectionName] || null;
   };
 
-  // Scroll to section when URL param changes
   useEffect(() => {
     if (section) {
       const sectionId = getSectionId(section);
       if (sectionId) {
-        setTimeout(() => {
+        const scrollToTarget = () => {
           const element = document.getElementById(sectionId);
           if (element) {
             const top = element.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
             window.scrollTo({ top, behavior: 'smooth' });
           }
-        }, 120);
+        };
+        const timer1 = setTimeout(scrollToTarget, 80);
+        const timer2 = setTimeout(scrollToTarget, 300);
+        return () => {
+          clearTimeout(timer1);
+          clearTimeout(timer2);
+        };
       }
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [section, location.pathname]);
+  }, [section, location.pathname, location.key]);
 
   return (
     <Fragment>
       <Helmet>
-        <title>
-          Technology | Naavi Network - AI Powered Path Engine
-        </title>
-                 
+        <title>Technology | Naavi Network - AI Powered Path Engine</title>
         <meta
           name="description"
           content="Discover the technology behind Naavi Network. Learn how LLMs, Knowledge Graphs, AI matching algorithms, and pathway intelligence power personalized education, career, and life navigation."
         />
-
         <meta
           name="keywords"
           content="Naavi Technology, AI Path Engine, LLMs, Knowledge Graphs, Pathway Intelligence, Machine Learning, Education Tech Architecture, Naavi Network"
         />
-
-        <meta
-          name="robots"
-          content="index, follow"
-        />
-
-        <link
-          rel="canonical"
-          href="https://naavinetwork.ai/technology"
-        />
-
-
-    
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://naavinetwork.ai/technology" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Naavi Network" />
-        <meta
-          property="og:title"
-          content="Technology | Naavi Network"
-        />
+        <meta property="og:title" content="Technology | Naavi Network" />
         <meta
           property="og:description"
           content="Explore the AI pathways architecture, LLMs + Knowledge Graphs synergy, and predictive reasoning powering Naavi Network."
         />
-        <meta
-          property="og:url"
-          content="https://naavinetwork.ai/technology"
-        />
-        <meta
-          property="og:image"
-          content="https://naavinetwork.ai/logo512.png"
-        />
-
-        {/* Twitter */}
-        <meta
-          name="twitter:card"
-          content="summary_large_image"
-        />
-        <meta
-          name="twitter:title"
-          content="Technology | Naavi Network"
-        />
+        <meta property="og:url" content="https://naavinetwork.ai/technology" />
+        <meta property="og:image" content="https://naavinetwork.ai/logo512.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Technology | Naavi Network" />
         <meta
           name="twitter:description"
           content="Discover how AI LLMs and Knowledge Graphs power Naavi Network's personalized pathway platform."
         />
-        <meta
-          name="twitter:image"
-          content="https://naavinetwork.ai/logo512.png"
-        />
+        <meta name="twitter:image" content="https://naavinetwork.ai/logo512.png" />
       </Helmet>
 
       {/* Pathways Section */}
       <section id="pathways" className="tech-section tech-pathways">
         <div className="tech-container">
           <div className="tech-section-header">
-            <h2 className="tech-section-title" style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>Pathways Engine</h2>
+            <h2 className="tech-section-title">Pathways Engine</h2>
             <p className="tech-section-desc">
               Transforming ambitions into intelligent, navigable journeys that evolve in real time.
             </p>
           </div>
 
-          {/* Path Engine image — now appears right after header, before cards */}
+          {/* Path Engine preview image card */}
           <div className="tech-preview-image-block">
             <div className="tech-image-label">AI PATHWAYS ARCHITECTURE</div>
             <img
@@ -306,7 +158,7 @@ const Technology = () => {
                   ))}
                 </div>
 
-                <p className="tech-body-text" style={{ marginTop: '24px' }}>
+                <p className="tech-body-text" style={{ marginTop: '20px' }}>
                   The platform intelligently adapts navigation in real time — similar to how GPS systems optimize routes during travel. Whether the goal is higher education, skill development, entrepreneurship, global careers, or future industries, Naavi creates personalized pathways designed around each individual's unique potential.
                 </p>
               </div>
@@ -324,11 +176,6 @@ const Technology = () => {
                   ))}
                 </div>
               </div>
-
-              {/* Solution Image Banner */}
-              <div className="tech-solution-banner">
-              
-              </div>
             </div>
           </div>
         </div>
@@ -338,13 +185,13 @@ const Technology = () => {
       <section id="llms-kgs" className="tech-section tech-llm-section">
         <div className="tech-container">
           <div className="tech-section-header">
-            <h2 className="tech-section-title" style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>LLMs × Knowledge Graphs</h2>
+            <h2 className="tech-section-title">LLMs × Knowledge Graphs</h2>
             <p className="tech-section-desc">
               Naavi is powered by the powerful synergy between Large Language Models (LLMs) and Knowledge Graphs (KGs), combining reasoning intelligence with structured pathway understanding.
             </p>
           </div>
 
-          {/* Synergy image — now appears right after header, before cards */}
+          {/* Synergy image card */}
           <div className="tech-preview-image-block tech-synergy-preview-block">
             <div className="tech-image-label">SYNERGY · LLM × KG</div>
             <img
@@ -397,8 +244,6 @@ const Technology = () => {
           </div>
         </div>
       </section>
-
-    
 
       <Footer />
     </Fragment>

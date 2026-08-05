@@ -28,6 +28,7 @@ export default function Contact() {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("");
   const [statusType, setStatusType] = useState("");
+  const [toastVisible, setToastVisible] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +37,7 @@ export default function Contact() {
 
     try {
       await axios.post(`${BASE_URL}/api/admin-contact`, contactData);
-      setStatus("Thank you for reaching out! Our team will get back to you shortly.");
+      setStatus("Message sent successfully! We'll reach out to you soon.");
       setStatusType("success");
       setFullName("");
       setEmail("");
@@ -48,76 +49,47 @@ export default function Contact() {
       setStatusType("error");
     }
 
+    setToastVisible(true);
+
     setTimeout(() => {
-      setStatus("");
-      setStatusType("");
+      setToastVisible(false);
+      setTimeout(() => {
+        setStatus("");
+        setStatusType("");
+      }, 400);
     }, 5000);
   };
 
   return (
     <>
       <Helmet>
-        <title>
-          Contact Naavi Network | AI Powered Path Engine
-        </title>
-
+        <title>Contact Naavi Network | AI Powered Path Engine</title>
         <meta
           name="description"
           content="Get in touch with Naavi Network for product demos, partnerships, career guidance, institutional collaborations, or questions about our AI Powered Path Engine."
         />
-
         <meta
           name="keywords"
           content="Contact Naavi Network, Contact AI Path Engine, Education Technology, AI Career Guidance, Partnership, Product Demo, Naaviverse, Hyderabad"
         />
-
-        <meta
-          name="robots"
-          content="index, follow"
-        />
-
-        <link
-          rel="canonical"
-          href="https://naavinetwork.ai/contact"
-        />
-
-        {/* Open Graph */}
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://naavinetwork.ai/contact" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Naavi Network" />
-        <meta
-          property="og:title"
-          content="Contact Naavi Network"
-        />
+        <meta property="og:title" content="Contact Naavi Network" />
         <meta
           property="og:description"
           content="Connect with the Naavi Network team for partnerships, demos, support, and AI-powered education and career navigation."
         />
-        <meta
-          property="og:url"
-          content="https://naavinetwork.ai/contact"
-        />
-        <meta
-          property="og:image"
-          content="https://naavinetwork.ai/logo512.png"
-        />
-
-        {/* Twitter */}
-        <meta
-          name="twitter:card"
-          content="summary_large_image"
-        />
-        <meta
-          name="twitter:title"
-          content="Contact Naavi Network"
-        />
+        <meta property="og:url" content="https://naavinetwork.ai/contact" />
+        <meta property="og:image" content="https://naavinetwork.ai/logo512.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Contact Naavi Network" />
         <meta
           name="twitter:description"
           content="Reach out to Naavi Network for product demos, partnerships, or support."
         />
-        <meta
-          name="twitter:image"
-          content="https://naavinetwork.ai/logo512.png"
-        />
+        <meta name="twitter:image" content="https://naavinetwork.ai/logo512.png" />
       </Helmet>
 
       {/* Hero Section */}
@@ -129,7 +101,7 @@ export default function Contact() {
               Let's talk about <span className="contact-accent">the future</span>
             </h1>
             <p className="contact-hero-desc">
-              Have questions about Naavi? Want to explore partnership opportunities? 
+              Have questions about Naavi? Want to explore partnership opportunities?
               We'd love to hear from you.
             </p>
           </div>
@@ -141,55 +113,52 @@ export default function Contact() {
         <div className="contact-container">
           <div className="contact-grid">
 
-            {/* Left Side - Contact Info */}
-            <div className="contact-info">
+            {/* Left Side - Contact Info Card */}
+            <div className="contact-info-card">
               <span className="contact-info-eyebrow">REACH OUT</span>
-              <h2 className="contact-info-title">How can we help you?</h2>
               <p className="contact-info-desc">
-                Whether you're curious about features, want to request a demo, 
+                Whether you're curious about features, want to request a demo,
                 or explore partnership opportunities — our team is ready to assist.
               </p>
 
               <div className="contact-info-details">
-
                 {/* Visit Us */}
-                <div className="contact-info-item" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px' }}>
-                  <div className="contact-info-icon" style={{ flexShrink: 0, minWidth: '44px' }}>
-                    <Icon icon="carbon:location" width={22} />
+                <div className="contact-info-item">
+                  <div className="contact-info-icon">
+                    <Icon icon="carbon:location" width={20} />
                   </div>
-                  <div className="contact-info-text" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <h4 style={{ margin: 0 }}>Visit Us</h4>
-                    <p style={{ margin: 0 }}>T-Hub, 2nd Floor, SY.NO.83/1, Raidurg Village, Hyderabad, Telangana 500081</p>
+                  <div className="contact-info-text">
+                    <h4>Visit Us</h4>
+                    <p>T-Hub, 2nd Floor, SY.NO.83/1, Raidurg Village, Hyderabad, Telangana 500081</p>
                   </div>
                 </div>
 
                 {/* Email Us */}
-                <div className="contact-info-item" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px' }}>
-                  <div className="contact-info-icon" style={{ flexShrink: 0, minWidth: '44px' }}>
-                    <Icon icon="carbon:email" width={22} />
+                <div className="contact-info-item">
+                  <div className="contact-info-icon">
+                    <Icon icon="carbon:email" width={20} />
                   </div>
-                  <div className="contact-info-text" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <h4 style={{ margin: 0 }}>Email Us</h4>
-                    <p style={{ margin: 0 }}>info@naavinetwork.ai</p>
+                  <div className="contact-info-text">
+                    <h4>Email Us</h4>
+                    <p>info@naavinetwork.ai</p>
                   </div>
                 </div>
 
                 {/* Call Us */}
-                <div className="contact-info-item" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px' }}>
-                  <div className="contact-info-icon" style={{ flexShrink: 0, minWidth: '44px' }}>
-                    <Icon icon="carbon:phone" width={22} />
+                <div className="contact-info-item">
+                  <div className="contact-info-icon">
+                    <Icon icon="carbon:phone" width={20} />
                   </div>
-                  <div className="contact-info-text" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <h4 style={{ margin: 0 }}>Call Us</h4>
-                    <p style={{ margin: 0 }}>+91 40 1234 5678</p>
+                  <div className="contact-info-text">
+                    <h4>Call Us</h4>
+                    <p>+91 40 1234 5678</p>
                   </div>
                 </div>
-
               </div>
             </div>
 
-            {/* Right Side - Form */}
-            <div className="contact-form-wrapper">
+            {/* Right Side - Form Card */}
+            <div className="contact-form-card">
               <form onSubmit={handleSubmit} className="contact-form">
                 <div className="contact-form-row">
                   <div className="contact-form-group">
@@ -268,9 +237,13 @@ export default function Contact() {
                 </button>
 
                 {status && (
-                  <p className={`contact-status contact-status--${statusType}`}>
-                    {status}
-                  </p>
+                  <div className={`contact-toast contact-toast--${statusType} ${toastVisible ? 'contact-toast--visible' : ''}`}>
+                    <Icon
+                      icon={statusType === 'success' ? 'carbon:checkmark-filled' : 'carbon:warning-filled'}
+                      width={18}
+                    />
+                    <span>{status}</span>
+                  </div>
                 )}
               </form>
             </div>

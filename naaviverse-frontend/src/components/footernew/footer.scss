@@ -1,484 +1,227 @@
-.footer {
-  font-family: 'gorditaregular';
-  background: linear-gradient(0deg, rgba(248, 253, 255, 0) 0%, rgba(241, 252, 255, 0.51782) 48.22%, #f6fdff 100%);
-}
-.footer-head{
-  font-size:16px;
-  color: rgba(0, 40, 78, 0.8);
-  margin-top:0px;
-  // margin-left:35px;
+// ═══════════════════════════════════════════════
+//  Footer Styles — Enhanced Typography & Alignment
+// ═══════════════════════════════════════════════
 
+.footer {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(0deg, rgba(248, 253, 255, 0) 0%, rgba(241, 252, 255, 0.51) 48%, #f6fdff 100%);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .footer-main {
-  padding: 40px 0;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 px;
+  padding: 36px 0 28px !important;
 }
 
 .footer-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
-}
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1.3fr;
+  gap: 40px;
+  align-items: flex-start;
 
-.contact-socials {
-  position: relative;
-  z-index: 10;
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
 }
 
 .footer-col {
-  flex: 1 1 250px;
-  min-width: 250px;
-  margin-top:-10px;
-  margin-left:-20px;
-}
-.footer-col3 {
-  flex: 1 1 250px;
-  min-width: 250px;
-  margin-top:-10px;
-  margin-left:-20px;
+  display: flex;
+  flex-direction: column;
 }
 
-.footer-col1 {
-  flex: 1 1 250px;
-  min-width: 250px;
-  margin-top:-10px;
-  margin-left:-20px;
-}
+// ── Logo & Address ──
+.footer-logo {
+  margin-bottom: 4px !important;
+  padding-bottom: 0 !important;
 
-.footer-col2 {
-  flex: 1 1 250px;
-  min-width: 250px;
-  margin-top:-10px;
-  margin-left:-20px;
-}
-
-.footer-logo img {
-  margin-top:0px;
-  max-width: 100px;
-  margin-bottom: -6px;
-  // margin-left:20px;
-  // margin-left:60px;
-
+  img {
+    max-width: 110px;
+    height: auto;
+    display: block;
+    margin-bottom: 0 !important;
+  }
 }
 
 .footer-address {
-  font-size: 17px;
+  font-size: 15px;
   line-height: 1.6;
-  color: rgba(0, 40, 78, 0.8);
-  margin-top:-25px ;
-  width:260px;
-  
+  color: #5B6A7D;
+  margin: 0 0 10px 0 !important;
+  padding: 0 !important;
+
+  .footer-head {
+    font-size: 15px;
+    color: #5B6A7D;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.6;
+
+    strong {
+      color: #1A1A2E;
+      font-weight: 700;
+      font-size: 15.5px;
+      letter-spacing: 0.02em;
+    }
+  }
 }
 
 .footer-socials {
-  margin-top: 20px;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 12px !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+
+  .social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #000000;
+    color: #ffffff;
+    font-size: 16px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: #198754;
+      transform: translateY(-2px);
+    }
+  }
 }
 
-.footer-socials a.social-icon,
-.footer-socials span.social-icon {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 50% !important;
-  background-color: #000000 !important;
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
-  color: #ffffff !important;
-  font-size: 18px !important;
-  text-decoration: none !important;
-  transition: all 0.25s ease !important;
-  box-sizing: border-box !important;
+// ── Headings & Contact ──
+.footer-heading {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  margin: 0 0 8px 0 !important;
+  padding: 0 !important;
+  color: #1A1A2E;
+  letter-spacing: -0.01em;
+  line-height: 1.2 !important;
+}
+
+.footer-contact {
+  font-size: 16px;
+  color: #2273E6;
   margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.5;
+  font-weight: 500;
 }
 
-.footer-socials span.social-icon {
-  cursor: default !important;
-}
+// ── Subscribe Box (Enhanced Size & Radius) ──
+.footer-subscribe {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 340px;
+  height: 46px;
+  border: 1px solid rgba(0, 40, 78, 0.35);
+  border-radius: 10px;
+  padding: 3px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+  margin-bottom: 3px;
 
-.footer-socials a.social-icon {
-  cursor: pointer !important;
+  input {
+    flex: 1;
+    height: 100%;
+    border: none !important;
+    background: transparent !important;
+    padding: 0 14px !important;
+    font-size: 15px;
+    color: #1A1A2E;
+    outline: none !important;
+    min-width: 0;
 
-  &:hover {
-    border-color: #ffffff !important;
-    background-color: #1a1a1a !important;
-    color: #ffffff !important;
-    opacity: 0.9 !important;
+    &::placeholder {
+      color: #99AAB8;
+      font-size: 15px;
+    }
+  }
+
+  button {
+    height: 100%;
+    background-color: #198754;
+    color: #ffffff;
+    border: none !important;
+    padding: 0 22px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+
+    &:hover {
+      background-color: #146c43;
+    }
   }
 }
 
-.footer-heading {
-  font-size: 24px;
-  margin-bottom: 15px;
-  color: #000000;
-}
-
-.footer-links {
-  list-style: none;
-  color: #00284ECC;
-  padding: 0;
-  margin: 0;
-}
-
-.footer-links li {
-  margin-bottom: 10px;
-  font-size: 16px;
-}
-
-.footer-contact {
-  font-size: 16px;
-  color: #00284ECC;
-  margin-top:-5px !important;
-}
-
-.footer-subscribe {
-  display: flex;
-  margin-bottom: 10px;
-  width:100%;
-  border: 1px solid black; /* Corrected border definition */
-  border-radius: 10px;
-  overflow: hidden; /* Ensures child elements like input/button stay inside the rounded border */
-}
-
-
-.footer-subscribe input {
-  padding: 10px;
-  flex-grow: 1;
-  border: none;
-  border-radius: 25px;
-  margin-right:-25px;
-}
-
-.footer-subscribe button {
-  background-color: #198754;
-  color: white;
-  border: none;
-  padding: 0px 20px;
-  border-radius: 15px;
-  margin:3px;
-  margin-left:-30px;
-  cursor: pointer;
-}
-
+// Subtext — 15px text, clean alignment, no wide gaps
 .footer-subtext {
-  font-size: 17px;
-  color: #00284ECC;
-  line-height:22px;
+  font-size: 15px;
+  color: #5B6A7D;
+  line-height: 1.55;
+  margin: 6px 0 0 0 !important;
+  max-width: 340px;
+  text-align: left;
+  word-spacing: normal;
+  letter-spacing: normal;
+  hyphens: none;
 }
 
+// Message toggle below box
+.footer-msg {
+  max-width: 340px;
+  font-size: 14.5px !important;
+  font-weight: 600 !important;
+}
+
+// ── Footer Bottom ──
 .footer-bottom {
-  border-top: 1px solid #ccc;
-  padding: 20px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 16px 0 !important;
 }
 
 .footer-bottom-inner {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
   font-size: 14px;
-  margin-top:-6px;
-  color: #00284ECC;
-}
+  color: #5B6A7D;
 
-.footer-copy {
-  color: #00284ECC;
-  margin: 0 8px;
-  text-decoration: none;
-
-}
-
-.footer-policy-links a {
-  color: #00284ECC;
-  margin: 0 8px;
-  text-decoration: none;
-}
-
-.footer-policy-links span {
-  color: #888;
-}
-
-/* Mobile */
-@media (max-width: 750px) {
-  .footer-grid {
+  @media (max-width: 600px) {
     flex-direction: column;
-    padding-left:20px;
+    gap: 8px;
+    text-align: center;
+  }
+}
+
+.footer-copy {
+  color: #5B6A7D;
+}
+
+.footer-policy-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  a {
+    color: #5B6A7D;
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #198754;
+    }
   }
 
-  .footer-contact {
-  font-size: 16px;
-  color: #00284ECC;
-  margin-top:-5px !important;
-}
-
-  .footer-subscribe {
-  display: flex;
-  padding-top:-20px;
-  margin-bottom: 10px;
-  width:100%;
-  border: 1px solid black; /* Corrected border definition */
-  border-radius: 10px;
-  overflow: hidden; /* Ensures child elements like input/button stay inside the rounded border */
-}
-
-.footer-heading {
-  font-size: 24px;
- 
-  color: #000000;
-}
-
-
-.footer-subscribe input {
-  padding: 10px;
-  flex-grow: 1;
-  border: none;
-  border-radius: 25px;
-  margin-right:-25px;
-}
-
-.footer-subscribe button {
-  background-color: #198754;
-  color: white;
-  border: none;
-  padding: 0px 20px;
-  border-radius: 15px;
-  margin:3px;
-  margin-left:-30px;
-  cursor: pointer;
-}
-
-.footer-subtext {
-  font-size: 17px;
-  color: #00284ECC;
-  line-height:22px;
-}
-
-.footer-bottom {
-  border-top: 1px solid #ccc;
-  padding: 0px 2px;
-  height:16%;
-}
-
-.footer-bottom-inner {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  font-size: 14px;
-  margin-top:-6px;
-  color: #00284ECC;
-}
-
-.footer-copy {
-  color: #00284ECC;
-  margin: 5px 8px;
-  padding-left:35px;
-  text-align: center;
-
-}
-
-.footer-policy-links  {
-  color: #00284ECC;
-  margin: 0 8px;
-  margin-top:-20px;
-  padding-left:38px;
-  text-align:center;
-  
-}
-
-.footer-policy-links span {
-  color: #888;
-}
-
-
-.footer-col1 {
-  flex: 1 1 0px;
-  min-width: 250px;
-  margin-top:-10px;
-  margin-left:-20px;
-  height:10%;
-}
-
-.footer-col2 {
-  flex: 1 1 250px;
-  min-width: 250px;
-  margin-top:-10px;
-  margin-left:-20px;
-}
-}
-
-@media(min-width:1024px){
- .footer {
-  font-family: 'gorditaregular';
-  background: linear-gradient(0deg, rgba(248, 253, 255, 0) 0%, rgba(241, 252, 255, 0.51782) 48.22%, #f6fdff 100%);
-}
-.footer-head{
-  font-size:16px;
-  color: rgba(0, 40, 78, 0.8);
-  margin-top:0px;
-  // margin-left:35px;
-
-}
-
-.footer-main {
-  padding: 40px 0;
-}
-
-// .container {
-//   max-width: 1200px;
-//   margin: 0 auto;
-//   padding: 0 15px;
-// }
-
-.footer-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
-  
-}
-
-.footer-col {
-  flex: 1 1 250px;
-  min-width: 250px;
-  margin-top:-10px;
-  margin-left:-20px;
-}
-
-.footer-col3 {
-  flex: 1 1 250px;
-  min-width: 250px;
-  margin-top:-10px;
-  margin-left:-280px;
-}
-
-.footer-col1 {
-  flex: 1 1 250px;
-  min-width: 250px;
-  margin-top:-10px;
-  margin-left:-340px;
-}
-
-.footer-col2 {
-  flex: 1 1 0px;
-  min-width: 20px;
-  margin-top:-10px;
-  margin-left:-340px;
-}
-
-.footer-logo img {
-  margin-top:0px;
-  max-width: 100px;
-  margin-bottom: -6px;
-  // margin-left:20px;
-  // margin-left:60px;
-
-}
-
-.footer-address {
-  font-size: 17px;
-  line-height: 1.6;
-  color: rgba(0, 40, 78, 0.8);
-  margin-top:-25px ;
-  width:260px;
-  
-}
-
-
-.footer-heading {
-  font-size: 24px;
-  margin-bottom: 15px;
-  color: #000000;
-}
-
-.footer-links {
-  list-style: none;
-  color: #00284ECC;
-  padding: 0;
-  margin: 0;
-}
-
-.footer-links li {
-  margin-bottom: 10px;
-  font-size: 16px;
-}
-
-.footer-contact {
-  font-size: 16px;
-  color: #00284ECC;
-  margin-top:-5px !important;
-}
-
-.footer-subscribe {
-  display: flex;
-  margin-bottom: 10px;
-  width:100%;
-  border: 1px solid black; /* Corrected border definition */
-  border-radius: 10px;
-  overflow: hidden; /* Ensures child elements like input/button stay inside the rounded border */
-}
-
-
-.footer-subscribe input {
-  padding: 10px;
-  flex-grow: 1;
-  border: none;
-  border-radius: 25px;
-  margin-right:-25px;
-}
-
-.footer-subscribe button {
-  background-color: #198754;
-  color: white;
-  border: none;
-  padding: 0px 20px;
-  border-radius: 15px;
-  margin:3px;
-  margin-left:-30px;
-  cursor: pointer;
-}
-
-.footer-subtext {
-  font-size: 17px;
-  color: #00284ECC;
-  line-height:22px;
-}
-
-.footer-bottom {
-  border-top: 1px solid #ccc;
-  padding: 20px 0;
-}
-
-.footer-bottom-inner {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  font-size: 14px;
-  margin-top:-6px;
-  color: #00284ECC;
-}
-
-.footer-copy {
-  color: #00284ECC;
-  margin: 0 8px;
-  text-decoration: none;
-
-}
-
-.footer-policy-links a {
-  color: #00284ECC;
-  margin: 0 8px;
-  text-decoration: none;
-}
-
-.footer-policy-links span {
-  color: #888;
-}
+  span {
+    color: rgba(0, 0, 0, 0.25);
+  }
 }

@@ -11,22 +11,8 @@ import humanPotentialImg from './images/human_potential.png';
 import globalOpportunityImg from './images/global_opportunity_access.png';
 import sdgImpactImg from './images/SDG_Social_Impact.png';
 
+const HEADER_OFFSET = 180;
 
-const HEADER_OFFSET = 140;
-
-const navTerms = [
-  { num: '01', label: 'Skill Gap Problem', id: 'skill-gap-problem', accent: '#2DB67D' },
-  { num: '02', label: 'Future Workforce', id: 'future-workforce', accent: '#FF9500' },
-  { num: '03', label: 'Student Outcomes', id: 'student-outcomes', accent: '#4DA6FF' },
-  { num: '04', label: 'Education Transformation', id: 'education-transformation', accent: '#2DB67D' },
-  { num: '05', label: 'Human Potential', id: 'human-potential', accent: '#FF9500' },
-  { num: '06', label: 'Global Opportunity Access', id: 'global-opportunity-access', accent: '#4DA6FF' },
-  { num: '07', label: 'SDGs & Social Impact', id: 'sdgs-social-impact', accent: '#FF9500' },
-
-];
-
-// ── 8 story sections ──
-//success
 const stories = [
   {
     id: 'skill-gap-problem',
@@ -93,8 +79,7 @@ const stories = [
   },
 ];
 
-// ── Section visuals ──
-function SectionVisual({ type, accent }) {
+function SectionVisual({ type }) {
   switch (type) {
     case 'gap':
       return (
@@ -111,7 +96,7 @@ function SectionVisual({ type, accent }) {
     case 'outcomes':
       return (
         <div className="imp-vis imp-vis-image-wrap imp-vis-image-wrap--outcomes">
-          <img src={studentOutcomesImg} alt="Student outcomes" className="imp-story-image" />
+          <img src={studentOutcomesImg} alt="Student outcomes" className="imp-story-image imp-story-image--card" />
         </div>
       );
     case 'education':
@@ -123,7 +108,7 @@ function SectionVisual({ type, accent }) {
     case 'potential':
       return (
         <div className="imp-vis imp-vis-image-wrap imp-vis-image-wrap--potential">
-          <img src={humanPotentialImg} alt="Human potential" className="imp-story-image" />
+          <img src={humanPotentialImg} alt="Human potential" className="imp-story-image imp-story-image--card" />
         </div>
       );
     case 'global':
@@ -147,7 +132,6 @@ const Impact = () => {
   const { section } = useParams();
   const location = useLocation();
 
-  // Map URL params to section IDs
   const getSectionId = (sectionName) => {
     const mapping = {
       'skill-gap-problem': 'skill-gap-problem',
@@ -162,99 +146,58 @@ const Impact = () => {
     return mapping[sectionName] || null;
   };
 
-  const scrollToSection = (id) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const top = el.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
-    window.scrollTo({ top, behavior: 'smooth' });
-  };
-
-  // Scroll to section when URL param changes
   useEffect(() => {
     if (section) {
       const sectionId = getSectionId(section);
       if (sectionId) {
-        setTimeout(() => {
+        const scrollToTarget = () => {
           const element = document.getElementById(sectionId);
           if (element) {
             const top = element.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
             window.scrollTo({ top, behavior: 'smooth' });
           }
-        }, 120);
+        };
+
+        const timer1 = setTimeout(scrollToTarget, 80);
+        const timer2 = setTimeout(scrollToTarget, 300);
+        return () => {
+          clearTimeout(timer1);
+          clearTimeout(timer2);
+        };
       }
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [section, location.pathname]);
+  }, [section, location.pathname, location.key]);
 
   return (
     <Fragment>
       <Helmet>
-        <title>
-          Impact | Naavi Network - AI Powered Path Engine
-        </title>
-
+        <title>Impact | Naavi Network - AI Powered Path Engine</title>
         <meta
           name="description"
           content="Explore how Naavi Network is transforming education, workforce readiness and global career opportunities through AI-powered personalized pathways, future workforce intelligence and human potential development."
         />
-
         <meta
           name="keywords"
           content="Naavi Impact, Student Outcomes, Future Workforce, Skill Gap, Education Transformation, Human Potential, Global Opportunities, AI Education Platform"
         />
-
-        <meta
-          name="robots"
-          content="index, follow"
-        />
-
-        <link
-          rel="canonical"
-          href="https://naavinetwork.ai/impact"
-        />
-
-        {/* Open Graph */}
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://naavinetwork.ai/impact" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Naavi Network" />
-        <meta
-          property="og:title"
-          content="Impact | Naavi Network"
-        />
-        <meta
-          property="og:description"
-          content="See how Naavi Network is helping bridge skill gaps, improve student outcomes and enable future-ready career navigation through AI."
-        />
-        <meta
-          property="og:url"
-          content="https://naavinetwork.ai/impact"
-        />
-        <meta
-          property="og:image"
-          content="https://naavinetwork.ai/logo512.png"
-        />
-
-        {/* Twitter */}
-        <meta
-          name="twitter:card"
-          content="summary_large_image"
-        />
-        <meta
-          name="twitter:title"
-          content="Impact | Naavi Network"
-        />
-        <meta
-          name="twitter:description"
-          content="Discover Naavi Network's impact on education, careers and global opportunity through AI-powered pathway intelligence."
-        />
-        <meta
-          name="twitter:image"
-          content="https://naavinetwork.ai/logo512.png"
-        />
+        <meta property="og:title" content="Impact | Naavi Network" />
+        <meta property="og:description" content="See how Naavi Network is helping bridge skill gaps, improve student outcomes and enable future-ready career navigation through AI." />
+        <meta property="og:url" content="https://naavinetwork.ai/impact" />
+        <meta property="og:image" content="https://naavinetwork.ai/logo512.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Impact | Naavi Network" />
+        <meta name="twitter:description" content="Discover Naavi Network's impact on education, careers and global opportunity through AI-powered pathway intelligence." />
+        <meta name="twitter:image" content="https://naavinetwork.ai/logo512.png" />
       </Helmet>
 
       {/* ══════════════════════════════
-          8 IMPACT SECTIONS
+          7 IMPACT SECTIONS
       ══════════════════════════════ */}
       {stories.map((s, i) => {
         const isEven = i % 2 === 0;
@@ -274,9 +217,8 @@ const Impact = () => {
             <div className="imp-container imp-story-inner">
               {/* Text */}
               <div className="imp-story-text">
-                <h2 className="imp-story-title" style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>
-                  {s.title[0]}<br />
-                  <span style={{ color: s.accent, opacity: 1, display: 'inline', visibility: 'visible' }}>{s.title[1]}</span>
+                <h2 className="imp-story-title">
+                  {s.title[0]} <span style={{ color: s.accent }}>{s.title[1]}</span>
                 </h2>
                 <p className="imp-story-desc">{s.text}</p>
                 <div className="imp-story-stat-row">
@@ -290,7 +232,7 @@ const Impact = () => {
 
               {/* Visual */}
               <div className="imp-story-vis-wrap">
-                <SectionVisual type={s.visual} accent={s.accent} />
+                <SectionVisual type={s.visual} />
               </div>
             </div>
           </section>

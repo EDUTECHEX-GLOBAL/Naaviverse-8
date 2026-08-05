@@ -21,7 +21,7 @@ const Footer = () => {
     try {
       const res = await axios.post(`${cleanBaseUrl}/api/admin-subscribe`, { email });
       if (res.status === 201) {
-        setMessage("Subscription successful!");
+        setMessage("Thanks for subscribing!");
         setIsSuccess(true);
         setEmail("");
       }
@@ -46,7 +46,7 @@ const Footer = () => {
       <div className="footer-main">
         <div className="container">
           <div className="footer-grid">
-            <div className="footer-col">
+            <div className="footer-col footer-col-info">
               <div className="footer-logo">
                 <img src={Logo} alt="Logo" />
               </div>
@@ -71,14 +71,13 @@ const Footer = () => {
               </div>
             </div>
 
-            <div className="footer-col1">
+            <div className="footer-col footer-col-contact">
               <h4 className="footer-heading">Contact Us</h4>
               <p className="footer-contact">info@naavinetwork.ai</p>
             </div>
 
-            <div className="footer-col2">
+            <div className="footer-col footer-col-subscribe">
               <h4 className="footer-heading">Subscribe</h4>
-              {/* 👇 NOW WIRED UP */}
               <form className="footer-subscribe" onSubmit={handleSubscribe}>
                 <input
                   type="email"
@@ -89,17 +88,24 @@ const Footer = () => {
                 />
                 <button type="submit">Send</button>
               </form>
-              {/* 👇 SUCCESS/ERROR MESSAGE */}
+
+              {/* Toggle Success/Error Message in green directly below send box */}
               {message && (
-                <p style={{
-                  color: isSuccess ? 'green' : 'red',
-                  fontSize: '13px',
-                  marginTop: '6px'
+                <p className="footer-msg" style={{
+                  color: isSuccess ? '#198754' : '#e53e3e',
+                  fontSize: '13.5px',
+                  fontWeight: '600',
+                  marginTop: '8px',
+                  marginBottom: '8px',
+                  textAlign: 'left'
                 }}>
                   {message}
                 </p>
               )}
-              <p className="footer-subtext">Subscribe to the list to get pilot access to the platform and updates</p>
+
+              <p className="footer-subtext">
+                Subscribe to the list to get pilot access to the platform and updates
+              </p>
             </div>
           </div>
         </div>

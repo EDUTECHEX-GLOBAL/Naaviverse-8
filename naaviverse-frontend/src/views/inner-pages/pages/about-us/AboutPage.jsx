@@ -80,92 +80,51 @@ const AboutPage = () => {
   return (
     <Fragment>
       <Helmet>
-        <title>
-          About Naavi Network | AI Powered Path Engine
-        </title>
-
+        <title>About Naavi Network | AI Powered Path Engine</title>
         <meta
           name="description"
           content="Learn about Naavi Network, the world's AI Powered Path Engine helping students and professionals navigate personalized education, career and life pathways using artificial intelligence."
         />
-
         <meta
           name="keywords"
           content="About Naavi Network, AI Path Engine, Education Technology, Career Guidance, AI Navigation Platform, Personalized Career Paths, Naaviverse"
         />
-
-        <meta
-          name="robots"
-          content="index, follow"
-        />
-
-        <link
-          rel="canonical"
-          href="https://naavinetwork.ai/about"
-        />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://naavinetwork.ai/about" />
 
         {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Naavi Network" />
-        <meta
-          property="og:title"
-          content="About Naavi Network | AI Powered Path Engine"
-        />
-        <meta
-          property="og:description"
-          content="Discover the vision, mission and technology behind Naavi Network's AI-powered personalized pathway platform."
-        />
-        <meta
-          property="og:url"
-          content="https://naavinetwork.ai/about"
-        />
-        <meta
-          property="og:image"
-          content="https://naavinetwork.ai/logo512.png"
-        />
+        <meta property="og:title" content="About Naavi Network | AI Powered Path Engine" />
+        <meta property="og:description" content="Discover the vision, mission and technology behind Naavi Network's AI-powered personalized pathway platform." />
+        <meta property="og:url" content="https://naavinetwork.ai/about" />
+        <meta property="og:image" content="https://naavinetwork.ai/logo512.png" />
 
         {/* Twitter */}
-        <meta
-          name="twitter:card"
-          content="summary_large_image"
-        />
-        <meta
-          name="twitter:title"
-          content="About Naavi Network | AI Powered Path Engine"
-        />
-        <meta
-          name="twitter:description"
-          content="Learn how Naavi Network is transforming education and career navigation using AI-powered pathway intelligence."
-        />
-        <meta
-          name="twitter:image"
-          content="https://naavinetwork.ai/logo512.png"
-        />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="About Naavi Network | AI Powered Path Engine" />
+        <meta name="twitter:description" content="Learn how Naavi Network is transforming education and career navigation using AI-powered pathway intelligence." />
+        <meta name="twitter:image" content="https://naavinetwork.ai/logo512.png" />
       </Helmet>
 
-      <div className="ab-page" style={{ paddingTop: '80px' }}>
+      <div className="ab-page">
 
         {/* ── WHAT IS NAAVI ── */}
         <section id="ab-what" className="ab-section ab-alt-white">
           <div className="ab-container">
-            <div className="ab-row">
-              <div className="ab-col-vis">
-                <img src={whatImg} alt="What is Naavi" className="ab-side-image" />
+            <div className="ab-grid ab-grid--img-left">
+              <div className="ab-grid__visual">
+                <img src={whatImg} alt="What is Naavi" className="ab-img" />
               </div>
-              <div className="ab-col-txt">
-                <h2 style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>
-                  What is <span className="ab-green" style={{ color: '#2DB67D' }}>Naavi?</span>
+              <div className="ab-grid__text">
+                <h2 className="ab-heading">
+                  What is <span className="ab-green">Naavi?</span>
                 </h2>
-                <p className="ab-lead">
+                <p className="ab-body">
                   Naavi is the world's first AI-powered Path Engine that helps people navigate
                   personalized education, skill, and career pathways aligned with their passion
                   and future potential.
                 </p>
-                {/* <div className="ab-pills">
-                  {['Smart Path Guidance', 'Learning Roadmaps', 'Expert Insights', 'Real-time Adaptation'].map(t => (
-                    <span key={t} className="ab-pill">{t}</span>
-                  ))}
-                </div> */}
               </div>
             </div>
           </div>
@@ -174,31 +133,34 @@ const AboutPage = () => {
         {/* ── OUR VISION ── */}
         <section id="ab-vision" className="ab-section ab-alt-soft">
           <div className="ab-container">
-            <div className="ab-row ab-vision-row">
-              <div className="ab-col-txt">
-                <h2 style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>
-                  Our <span className="ab-green" style={{ color: '#2DB67D' }}>Vision</span>
+            <div className="ab-grid ab-grid--img-right">
+              <div className="ab-grid__text">
+                <h2 className="ab-heading">
+                  Our <span className="ab-green">Vision</span>
                 </h2>
-                <p className="ab-lead">
+                <p className="ab-body">
                   To build the intelligence layer for human growth where every individual can
                   navigate toward their highest potential with clarity, purpose, and opportunity.
                 </p>
               </div>
-              <div className="ab-col-vis">
-                <img src={visionImg} alt="Our Vision" className="ab-side-image ab-vision-image" />
+              <div className="ab-grid__visual">
+                <img src={visionImg} alt="Our Vision" className="ab-img ab-img--vision" />
               </div>
             </div>
           </div>
         </section>
 
         {/* ── WHY NAAVI ── */}
-        <section id="ab-why" className="ab-section ab-alt-white">
+        <section id="ab-why" className="ab-section ab-section--why">
           <div className="ab-container">
-            <div className="ab-center-hd">
-              <h2 style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>
-                Why <span className="ab-green" style={{ color: '#2DB67D' }}>Naavi</span>
+            <div className="ab-center-block">
+              <h2 className="ab-heading ab-heading--center">
+                Why <span className="ab-green">Naavi</span>
               </h2>
-              <p>Because the world gives people information, but not direction. Naavi transforms confusion into intelligent navigation through AI-powered personalized pathways.</p>
+              <p className="ab-body ab-body--center">
+                Because the world gives people information, but not direction. Naavi transforms
+                confusion into intelligent navigation through AI-powered personalized pathways.
+              </p>
             </div>
           </div>
         </section>
@@ -206,17 +168,17 @@ const AboutPage = () => {
         {/* ── THE NAVIGATION PROBLEM ── */}
         <section id="ab-problem" className="ab-section ab-alt-soft">
           <div className="ab-container">
-            <div className="ab-row">
-              <div className="ab-col-txt">
-                <h2 style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>
-                  The Navigation <span className="ab-green" style={{ color: '#2DB67D' }}>Problem</span>
+            <div className="ab-grid ab-grid--img-right">
+              <div className="ab-grid__text">
+                <h2 className="ab-heading">
+                  The Navigation <span className="ab-green">Problem</span>
                 </h2>
-                <p className="ab-lead">
+                <p className="ab-body">
                   Millions of students and professionals make life changing decisions with limited guidance, outdated systems, and fragmented information. Naavi solves this with dynamic pathway intelligence.
                 </p>
               </div>
-              <div className="ab-col-vis">
-                <img src={navigationProblemImg} alt="The Navigation Problem" className="ab-side-image ab-problem-image" />
+              <div className="ab-grid__visual">
+                <img src={navigationProblemImg} alt="The Navigation Problem" className="ab-img ab-img--problem" />
               </div>
             </div>
           </div>
@@ -225,11 +187,11 @@ const AboutPage = () => {
         {/* ── PATHWAY INTELLIGENCE ── */}
         <section id="ab-intel" className="ab-section ab-alt-white">
           <div className="ab-container">
-            <div className="ab-center-hd">
-              <h2 style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>
-                Pathway <span className="ab-green" style={{ color: '#2DB67D' }}>Intelligence</span>
+            <div className="ab-center-block">
+              <h2 className="ab-heading ab-heading--center">
+                Pathway <span className="ab-green">Intelligence</span>
               </h2>
-              <p>
+              <p className="ab-body ab-body--center">
                 Naavi combines AI, Knowledge Graphs, and real-world human journeys to generate
                 adaptive pathways made of Macro, Micro, and Nano steps.
               </p>
@@ -257,18 +219,18 @@ const AboutPage = () => {
         {/* ── MISSION & PHILOSOPHY ── */}
         <section id="ab-mission" className="ab-section ab-alt-soft">
           <div className="ab-container">
-            <div className="ab-row ab-row-rev">
-              <div className="ab-col-txt">
-                <h2 style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>
-                  Mission &amp; <span className="ab-green" style={{ color: '#2DB67D' }}>Philosophy</span>
+            <div className="ab-grid ab-grid--img-left">
+              <div className="ab-grid__visual">
+                <img src={missionImg} alt="Mission and Philosophy" className="ab-img ab-img--mission" />
+              </div>
+              <div className="ab-grid__text">
+                <h2 className="ab-heading">
+                  Mission &amp; <span className="ab-green">Philosophy</span>
                 </h2>
-                <p className="ab-lead">
+                <p className="ab-body">
                   We believe human potential should never be accidental. Naavi exists to align
                   passion, skills, education, and opportunity into meaningful life journeys.
                 </p>
-              </div>
-              <div className="ab-col-vis">
-                <img src={missionImg} alt="Mission and Philosophy" className="ab-side-image ab-mission-image" />
               </div>
             </div>
           </div>
@@ -277,19 +239,19 @@ const AboutPage = () => {
         {/* ── NAAVIVERSE ── */}
         <section id="ab-verse" className="ab-section ab-alt-white">
           <div className="ab-container">
-            <div className="ab-row">
-              <div className="ab-col-txt">
-                <h2 style={{ color: '#1A1A2E', opacity: 1, display: 'block', visibility: 'visible' }}>
-                  <span className="ab-green" style={{ color: '#2DB67D' }}>Naaviverse</span>
+            <div className="ab-grid ab-grid--img-right">
+              <div className="ab-grid__text">
+                <h2 className="ab-heading">
+                  <span className="ab-green">Naaviverse</span>
                 </h2>
-                <p className="ab-lead">
+                <p className="ab-body">
                   The Naaviverse is a living ecosystem of pathways, people, skills, mentors,
                   institutions, and opportunities continuously evolving through collective
                   human intelligence.
                 </p>
               </div>
-              <div className="ab-col-vis">
-                <img src={naaviverseImg} alt="Naaviverse" className="ab-side-image" />
+              <div className="ab-grid__visual">
+                <img src={naaviverseImg} alt="Naaviverse" className="ab-img" />
               </div>
             </div>
           </div>

@@ -22,7 +22,7 @@ export default function Newsletter({ title, subtitle, placeholder }) {
       const res = await axios.post(`${cleanBaseUrl}/api/admin-subscribe`, { email });
 
       if (res.status === 201) {
-        setMessage("Subscription successful!");
+        setMessage("Thanks for subscribing!");
         setIsSuccess(true);
         setEmail("");
       }
@@ -59,15 +59,25 @@ export default function Newsletter({ title, subtitle, placeholder }) {
             <span>Send</span>
           </button>
         </form>
-        <Div className="newsletter-subtitle">{subtitle}</Div>
+        
+        {/* Toggle Success/Error Message directly below send box */}
         {message && (
           <div
-            className="message"
-            style={{ color: isSuccess ? "#00B5F9ff" : "red" }}
+            className="newsletter-msg"
+            style={{
+              color: isSuccess ? "#198754" : "#e53e3e",
+              fontSize: "13.5px",
+              fontWeight: "600",
+              marginTop: "8px",
+              marginBottom: "8px",
+              textAlign: "left"
+            }}
           >
             {message}
           </div>
         )}
+
+        <Div className="newsletter-subtitle">{subtitle}</Div>
       </Div>
     </>
   );

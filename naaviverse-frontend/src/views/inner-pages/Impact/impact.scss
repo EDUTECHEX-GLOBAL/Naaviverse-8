@@ -1,10 +1,8 @@
-
-
 // ══════════════════════════════════════════════
 //  Impact Page — Premium Light UI
 //  Brand: #2DB67D green | #1A1A2E navy
-//  NO dark backgrounds. Clean white/light only.
-// ══════════════════════════════════════════════
+//  Clean white/light UI
+// ══════════════════════════════
 
 $green: #2DB67D;
 $green-d: #1E9966;
@@ -26,12 +24,9 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 // ── Animations ──
 @keyframes imp-float {
-
-  0%,
-  100% {
+  0%, 100% {
     transform: translateY(0px);
   }
-
   50% {
     transform: translateY(-14px);
   }
@@ -41,11 +36,9 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   0% {
     box-shadow: 0 0 0 0 rgba(45, 182, 125, 0.55);
   }
-
   70% {
     box-shadow: 0 0 0 9px rgba(45, 182, 125, 0);
   }
-
   100% {
     box-shadow: 0 0 0 0 rgba(45, 182, 125, 0);
   }
@@ -55,7 +48,6 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   from {
     transform: translate(-50%, -50%) rotate(0deg);
   }
-
   to {
     transform: translate(-50%, -50%) rotate(360deg);
   }
@@ -65,7 +57,6 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   from {
     transform: translate(-50%, -50%) rotate(0deg);
   }
-
   to {
     transform: translate(-50%, -50%) rotate(-360deg);
   }
@@ -76,7 +67,6 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
     opacity: 0;
     transform: translateY(16px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -84,25 +74,19 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 }
 
 @keyframes imp-node-bob {
-
-  0%,
-  100% {
+  0%, 100% {
     transform: translate(-50%, -50%) scale(1);
   }
-
   50% {
     transform: translate(-50%, -50%) scale(1.05);
   }
 }
 
 @keyframes imp-glow-drift {
-
-  0%,
-  100% {
+  0%, 100% {
     transform: scale(1) translate(0, 0);
     opacity: 0.6;
   }
-
   50% {
     transform: scale(1.12) translate(20px, -15px);
     opacity: 0.9;
@@ -114,7 +98,6 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
     transform: scaleX(0);
     transform-origin: left;
   }
-
   to {
     transform: scaleX(1);
     transform-origin: left;
@@ -328,7 +311,6 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   0% {
     transform: translateX(0);
   }
-
   100% {
     transform: translateX(-50%);
   }
@@ -374,22 +356,21 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 }
 
 // ══════════════════════════════
-//  IMPACT STORY SECTIONS
+//  IMPACT STORY SECTIONS (60px gap)
 // ══════════════════════════════
 .imp-story {
   position: relative;
-  padding: 40px 0;
+  padding: 60px 0;
   overflow: visible;
-  scroll-margin-top: 140px;
+  scroll-margin-top: 180px;
 
   @media(max-width: 768px) {
-    padding: 24px 0;
+    padding: 48px 0;
   }
 }
 
-// ← ADD THIS RIGHT AFTER
 .imp-story:first-of-type {
-  padding-top: 140px;
+  padding-top: 180px;
 }
 
 .imp-story-glow {
@@ -400,22 +381,23 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 .imp-story-inner {
   display: grid;
-  grid-template-columns: 1fr 1.5fr; // ← 2nd column (image) bigger
-  gap: 60px;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 40px;
   align-items: center;
   position: relative;
   z-index: 2;
 
   @media(max-width: 900px) {
     grid-template-columns: 1fr;
-    gap: 36px;
+    gap: 28px;
   }
 }
 
 // Flip layout — text right, visual left
 .imp-story-flip {
   .imp-story-inner {
-    grid-template-columns: 1.5fr 1fr; // ← 1st column (image) bigger
+    grid-template-columns: 1.25fr 1fr;
+    align-items: center;
   }
 
   .imp-story-text {
@@ -428,7 +410,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
   @media(max-width: 900px) {
     .imp-story-inner {
-      grid-template-columns: 1fr; // ← reset on mobile
+      grid-template-columns: 1fr;
     }
 
     .imp-story-text {
@@ -442,6 +424,11 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 }
 
 // ── Story text ──
+.imp-story-text {
+  margin: 0;
+  padding: 0;
+}
+
 .imp-story-meta {
   display: flex;
   align-items: center;
@@ -470,23 +457,34 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 }
 
 .imp-story-title {
-  font-size: clamp(26px, 3vw, 40px);
-  font-weight: 600;
-  line-height: 1.18;
+  font-size: clamp(24px, 2.8vw, 38px);
+  font-weight: 700;
+  line-height: 1.15;
   color: $navy;
   letter-spacing: -0.02em;
-  margin: 0 0 18px;
+  margin: 0 0 16px 0;
+  padding: 0;
+  display: block;
+  visibility: visible;
+  opacity: 1;
+
+  span {
+    display: inline-block;
+  }
 }
 
 .imp-story-desc {
-  font-size: 15px;
-  line-height: 1.75;
+  font-size: clamp(14.5px, 1.1vw, 16px);
+  line-height: 1.72;
   color: $muted;
-  margin: 0 0 24px;
+  margin: 0 0 20px;
   max-width: 100%;
   font-weight: 400;
   text-align: justify;
+  text-justify: inter-word;
   hyphens: none;
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
   word-spacing: normal;
   word-break: normal;
   overflow-wrap: normal;
@@ -531,11 +529,14 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 }
 
 .imp-story-vis-wrap {
-  @include flex-center;
-  min-height: 420px;
+  display: flex;
   align-items: center;
+  justify-content: center;
+  min-height: auto;
   width: 100%;
   overflow: visible;
+  margin: 0;
+  padding: 0;
 }
 
 // ══════════════════════════════
@@ -543,14 +544,17 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 // ══════════════════════════════
 .imp-vis {
   position: relative;
-  width: 100%; // ← change from 280px to 100%
-  height: auto; // ← change from 240px to auto
-  @include flex-center;
-
+  width: 100%;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
 
   @media(max-width: 480px) {
-    width: 220px;
-    height: 200px;
+    width: 100%;
+    height: auto;
   }
 }
 
@@ -559,19 +563,33 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   max-width: 100%;
   height: auto;
   margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .imp-story-image {
   width: 100%;
   max-width: 100%;
   height: auto;
-  max-height: 420px;        // ← ADD THIS to cap the image height
+  max-height: 420px;
   min-height: unset;
   display: block;
   object-fit: contain;
   border-radius: 0;
   transform: none;
+  margin: 0 auto;
   filter: drop-shadow(0 18px 34px rgba(26, 26, 46, 0.08));
+}
+
+// Premium Card style for Student Outcomes & Human Potential images
+.imp-story-image--card {
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(26, 26, 46, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  filter: none !important;
+  display: block;
 }
 
 .imp-vis-glow {
@@ -684,7 +702,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
     color: $navy;
     padding: 8px 16px;
     background: $white;
-    border-radius: 9px;
+    border-radius: 99px;
     border: 1px solid $border;
     border-left: 3px solid var(--accent);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -763,7 +781,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   gap: 10px;
   padding: 8px 14px;
   background: $white;
-  border-radius: 9px;
+  border-radius: 99px;
   border: 1px solid $border;
   box-shadow: 0 2px 7px rgba(0, 0, 0, 0.04);
   font-size: 12px;
@@ -835,12 +853,10 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 // ══════════════════════════════
 //  PER-SECTION IMAGE SIZE CONTROL
-//  Adjust max-height for each section independently
 // ══════════════════════════════
-
 .imp-vis-image-wrap--gap {
   .imp-story-image {
-    max-height: 720px;   // Skill Gap Problem
+    max-height: 720px;
     width: auto;
     margin: 0 auto;
   }
@@ -848,7 +864,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 .imp-vis-image-wrap--workforce {
   .imp-story-image {
-    max-height: 420px;   // Future Workforce
+    max-height: 420px;
     width: auto;
     margin: 0 auto;
   }
@@ -856,7 +872,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 .imp-vis-image-wrap--outcomes {
   .imp-story-image {
-    max-height: 340px;   // Student Outcomes
+    max-height: 340px;
     width: auto;
     margin: 0 auto;
   }
@@ -864,7 +880,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 .imp-vis-image-wrap--education {
   .imp-story-image {
-    max-height: 400px;   // Education Transformation
+    max-height: 400px;
     width: auto;
     margin: 0 auto;
   }
@@ -872,7 +888,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 .imp-vis-image-wrap--potential {
   .imp-story-image {
-    max-height: 400px;   // Human Potential
+    max-height: 400px;
     width: auto;
     margin: 0 auto;
   }
@@ -880,7 +896,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 .imp-vis-image-wrap--global {
   .imp-story-image {
-    max-height: 380px;   // Global Opportunity Access
+    max-height: 380px;
     width: auto;
     margin: 0 auto;
   }
@@ -888,7 +904,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 .imp-vis-image-wrap--sdgs {
   .imp-story-image {
-    max-height: 420px;   // SDGs & Social Impact
+    max-height: 420px;
     width: auto;
     margin: 0 auto;
   }
