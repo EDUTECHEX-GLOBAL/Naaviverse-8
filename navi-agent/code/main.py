@@ -2101,29 +2101,85 @@ def calculate_path_accuracy_score(roadmap: dict, profile: dict, current: str = "
     sigma = 2.0
     S_steps = math.exp(-((actual_steps - expected_steps)**2) / (2 * sigma**2))
     
-    # ── 2. Information Density Model (S_info) ──
-    total_I = 0.0
-    T_desc, T_macro, T_micro, T_nano = 100, 200, 200, 200
+    # ── 2. Information Density / Content Quality Model (S_info) ──
+    # Measures how rich and meaningful the content is using:
+    # 1. Word Count (via Logistic Sigmoid curve, centering target threshold at 60%)
+    # 2. Lexical Density (ratio of content-carrying words to functional grammar words)
+    # Hitting a Lexical Density of >= 45% is considered a perfect professional score.
+    # The final step quality is the harmonic mean of density and length.
     
+    FUNCTIONAL_WORDS = {
+        "am", "is", "are", "was", "were", "be", "been", "being",
+        "have", "has", "had", "having", "do", "does", "did", "doing",
+        "a", "an", "the", "and", "but", "if", "or", "because", "as",
+        "until", "while", "of", "at", "by", "for", "with", "about",
+        "against", "between", "into", "through", "during", "before",
+        "after", "above", "below", "to", "from", "up", "down", "in",
+        "out", "on", "off", "over", "under", "again", "further", "then",
+        "once", "here", "there", "when", "where", "why", "how", "all",
+        "any", "both", "each", "few", "more", "most", "other", "some",
+        "such", "no", "nor", "not", "only", "own", "same", "so", "than",
+        "too", "very", "s", "t", "can", "will", "just", "don", "should",
+        "now", "i", "me", "my", "myself", "we", "our", "ours", "ourselves",
+        "you", "your", "yours", "yourself", "yourselves", "he", "him",
+        "his", "himself", "she", "her", "hers", "herself", "it", "its",
+        "itself", "they", "them", "their", "theirs", "themselves",
+        "what", "which", "who", "whom", "this", "that", "these", "those"
+    }
+
+    SIGMOID_K = 10.0  # steepness
+
+    def sigmoid_score(val: float, threshold: float, center_fraction: float = 0.6) -> float:
+        """Logistic sigmoid saturation. Center is placed at center_fraction * threshold
+        so that reaching the target threshold gets close to 100% score."""
+        if threshold <= 0:
+            return 1.0 if val > 0 else 0.0
+        center = center_fraction * threshold
+        x = (val / center) - 1.0
+        return 1.0 / (1.0 + math.exp(-SIGMOID_K * x))
+
+    def content_quality_score(text: str, target_words: float) -> float:
+        """Combines word count and lexical density to measure content information quality."""
+        # 1. Clean text and split into words
+        raw_words = re.findall(r"[a-zA-Z0-9]+", str(text or "").lower())
+        total_words = len(raw_words)
+        if total_words == 0:
+            return 0.0
+        
+        # Word Count score
+        word_count_score = sigmoid_score(total_words, target_words, center_fraction=0.6)
+        
+        # Lexical Density score
+        content_words = [w for w in raw_words if w not in FUNCTIONAL_WORDS]
+        lexical_density = len(content_words) / total_words
+        # Scale lexical density (45% content words is considered fully professional density)
+        density_score = min(1.0, lexical_density / 0.45)
+        
+        # Combine using harmonic mean: requires both decent word count and high lexical density
+        if word_count_score + density_score == 0:
+            return 0.0
+        return 2.0 * (word_count_score * density_score) / (word_count_score + density_score)
+
+    # Word Count Targets (e.g. 15 words for description, 30 words for views)
+    T_desc, T_macro, T_micro, T_nano = 15, 30, 30, 30
+    total_I = 0.0
+
     for step in steps:
-        l_desc = len(str(step.get("description") or ""))
-        l_macro = len(get_view_description(step, "macro_view"))
-        l_micro = len(get_view_description(step, "micro_view"))
-        l_nano = len(get_view_description(step, "nano_view"))
-        
-        D_desc = min(1.0, l_desc / T_desc)
-        D_macro = min(1.0, l_macro / T_macro)
-        D_micro = min(1.0, l_micro / T_micro)
-        D_nano = min(1.0, l_nano / T_nano)
-        
+        # Evaluate text elements
+        D_desc = content_quality_score(step.get("description"), T_desc)
+        D_macro = content_quality_score(get_view_description(step, "macro_view"), T_macro)
+        D_micro = content_quality_score(get_view_description(step, "micro_view"), T_micro)
+        D_nano = content_quality_score(get_view_description(step, "nano_view"), T_nano)
+
+        # Completeness check for structured lists (using count sigmoid)
         objs = step.get("learning_objectives") or []
-        msteps = step.get("micro_steps") or []
-        C_objs = min(1.0, len(objs) / 3.0) if isinstance(objs, list) else 0.0
-        C_msteps = min(1.0, len(msteps) / 3.0) if isinstance(msteps, list) else 0.0
-        
+        msteps_list = step.get("micro_steps") or []
+        C_objs = sigmoid_score(len(objs) if isinstance(objs, list) else 0, 3.0, center_fraction=0.6)
+        C_msteps = sigmoid_score(len(msteps_list) if isinstance(msteps_list, list) else 0, 3.0, center_fraction=0.6)
+
         I_i = (D_desc + D_macro + D_micro + D_nano + C_objs + C_msteps) / 6.0
         total_I += I_i
-        
+
     S_info = total_I / actual_steps
     
     # ── 3. Marketplace Completeness Model (S_market) ──
@@ -2203,14 +2259,33 @@ def calculate_path_accuracy_score(roadmap: dict, profile: dict, current: str = "
                 present += 1
         return present / len(required_fields)
 
-    def item_relevance_score(step_tokens: set, item: dict) -> float:
-        item_tokens = collect_item_tokens(item)
-        if not step_tokens or not item_tokens:
+    # ── Jaccard Similarity Index ──
+    # Measures the true set-overlap between step keywords and item keywords.
+    # Formula: J(A,B) = |A ∩ B| / |A ∪ B|
+    def jaccard_similarity(tokens_a: set, tokens_b: set) -> float:
+        """Jaccard Index: ratio of shared keywords to total unique keywords."""
+        if not tokens_a or not tokens_b:
             return 0.0
-        overlap = step_tokens & item_tokens
-        item_coverage = len(overlap) / max(1, min(len(item_tokens), 6))
-        step_coverage = len(overlap) / max(1, min(len(step_tokens), 10))
-        return min(1.0, (0.70 * item_coverage) + (0.30 * step_coverage))
+        intersection = len(tokens_a & tokens_b)
+        union = len(tokens_a | tokens_b)
+        return intersection / union if union > 0 else 0.0
+
+    # ── Harmonic Mean (F1-Score) ──
+    # Requires BOTH completeness AND relevance to be high for a good score.
+    # If either is 0, the entire score is 0 — prevents false positives.
+    # Formula: F1 = 2 * (P * R) / (P + R)
+    def harmonic_f1(completeness: float, relevance: float) -> float:
+        """Harmonic mean of completeness and relevance (F1-Score)."""
+        if completeness + relevance == 0:
+            return 0.0
+        return 2.0 * (completeness * relevance) / (completeness + relevance)
+
+    def item_relevance_score(step_tokens: set, item: dict) -> float:
+        """Keyword-based validation using Jaccard Similarity Index, scaled to real-world overlaps."""
+        item_tokens = collect_item_tokens(item)
+        raw_jaccard = jaccard_similarity(step_tokens, item_tokens)
+        # In real-world text, a 15% keyword overlap is considered an excellent semantic match.
+        return min(1.0, raw_jaccard / 0.15)
 
     marketplace_sections = {
         "macro_free": ["name", "type", "why", "next_step"],
@@ -2236,13 +2311,20 @@ def calculate_path_accuracy_score(roadmap: dict, profile: dict, current: str = "
             for section, required_fields in marketplace_sections.items():
                 items = marketplace_items_for_section(market, section)
 
-                count_score = min(1.0, len(items) / 2.0)
+                # Presence: sigmoid-based count scoring (consistent with Section 2)
+                count_score = sigmoid_score(len(items), 2.0)
+                # Quality: field completeness ratio per item
                 field_scores = [item_field_score(item, required_fields) for item in items if isinstance(item, dict)]
+                # Relevance: Jaccard keyword similarity per item
                 relevance_scores = [item_relevance_score(step_tokens, item) for item in items if isinstance(item, dict)]
                 field_score = sum(field_scores) / len(field_scores) if field_scores else 0.0
                 relevance_score = sum(relevance_scores) / len(relevance_scores) if relevance_scores else 0.0
 
-                section_score = (0.25 * count_score) + (0.25 * field_score) + (0.50 * relevance_score)
+                # Harmonic F1-Score: requires BOTH quality AND relevance
+                # If irrelevant courses are present, F1 pulls score to 0.
+                quality_relevance_f1 = harmonic_f1(field_score, relevance_score)
+                # Final section score: presence gates the F1 quality-relevance score
+                section_score = harmonic_f1(count_score, quality_relevance_f1)
                 step_market_score += section_score
                 step_presence_score += count_score
                 step_quality_score += field_score
@@ -2299,7 +2381,8 @@ def calculate_path_accuracy_score(roadmap: dict, profile: dict, current: str = "
             "s_market_presence": round(S_market_presence, 3),
             "s_market_field_quality": round(S_market_quality, 3),
             "s_market_relevance": round(S_market_relevance, 3),
-            "market_formula": "0.25 presence + 0.25 field quality + 0.50 step relevance"
+            "info_formula": "Harmonic F1-Score(Sigmoid Word Count, Normalized Lexical Density)",
+            "market_formula": "Harmonic F1-Score(Sigmoid Presence, F1(Field Quality, Jaccard Relevance))"
         }
     }
 
