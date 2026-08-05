@@ -1,0 +1,487 @@
+// VisitorsList.scss — Mobile-first, Premium Pastel
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+$pastel-bg:       #f0f4ff;
+$pastel-white:    #ffffff;
+$pastel-lavender: #f5f3ff;
+$border:          #e8edf5;
+$text-primary:    #1e2435;
+$text-secondary:  #5a6481;
+$text-muted:      #9aa1b5;
+
+// ── Root ──────────────────────────────────────────────────
+.visitors-list {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 16px 48px;
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: $pastel-bg;
+  min-height: 100vh;
+
+  @media (min-width: 768px) {
+    padding: 28px 28px 48px;
+  }
+
+  // ── Header ────────────────────────────────────────────
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 18px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    font-size: 18px;
+    font-weight: 600;
+    color: $text-primary;
+    margin: 0 0 3px;
+    letter-spacing: -0.3px;
+
+    @media (min-width: 768px) { font-size: 22px; }
+  }
+
+  &__subtitle {
+    font-size: 12px;
+    color: $text-secondary;
+    margin: 0;
+
+    @media (min-width: 768px) { font-size: 13px; }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+
+    .btn-outline {
+      border: 1.5px solid $border;
+      background: $pastel-white;
+      color: $text-secondary;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 10px;
+      transition: all 0.18s;
+
+      &:hover {
+        border-color: #6ee7b7;
+        color: #065f46;
+        background: #d1fae5;
+      }
+    }
+
+    .btn-primary {
+      background: #6366f1;
+      border: none;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      height: 34px;
+      padding: 0 16px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+      transition: background 0.18s;
+
+      &:hover { background: #4f46e5; }
+    }
+  }
+
+  // ── Stat Pills ────────────────────────────────────────
+  &__stats {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .stat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 12px 6px 9px;
+    border-radius: 40px;
+    border: 1px solid transparent;
+    font-family: 'DM Sans', sans-serif;
+
+    &__icon {
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    &__value {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1;
+      color: $text-primary;
+    }
+
+    &__label {
+      font-size: 10px;
+      font-weight: 500;
+      color: $text-secondary;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    &--green {
+      background: #d1fae5;
+      border-color: #a7f3d0;
+      .stat-pill__icon { color: #065f46; }
+    }
+
+    &--blue {
+      background: #dbeafe;
+      border-color: #bfdbfe;
+      .stat-pill__icon { color: #1d4ed8; }
+    }
+
+    &--cyan {
+      background: #cffafe;
+      border-color: #a5f3fc;
+      .stat-pill__icon { color: #0e7490; }
+    }
+  }
+
+  // ── Filters ───────────────────────────────────────────
+  &__filters {
+    display: flex;
+    flex-direction: row;        // horizontal even on mobile
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+    background: $pastel-white;
+    padding: 12px 16px;
+    border-radius: 14px;
+    margin-bottom: 16px;
+    border: 1px solid $border;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+
+    .filter-item {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      flex: 1;
+      min-width: 120px;
+      max-width: 200px;
+
+      .filter-label {
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: $text-muted;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        svg { font-size: 10px; }
+      }
+
+      .filter-date,
+      .filter-select,
+      .filter-search {
+        width: 100%;
+
+        // Ant Design internals
+        .ant-picker,
+        .ant-input-affix-wrapper {
+          width: 100%;
+          border-radius: 9px;
+          border-color: $border;
+          height: 34px;
+          font-size: 12px;
+          font-family: 'DM Sans', sans-serif;
+          background: $pastel-lavender;
+
+          &:hover, &-focused { border-color: #a5b4fc; }
+        }
+
+        // Select needs selector targeting
+        &.ant-select {
+          .ant-select-selector {
+            border-radius: 9px !important;
+            border-color: $border !important;
+            height: 34px !important;
+            font-size: 12px;
+            font-family: 'DM Sans', sans-serif;
+            background: $pastel-lavender !important;
+            align-items: center;
+
+            &:hover { border-color: #a5b4fc !important; }
+          }
+        }
+      }
+    }
+  }
+
+  // ── Summary ───────────────────────────────────────────
+  &__summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 0 2px;
+    font-size: 11px;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    flex-wrap: wrap;
+
+    .summary-badge {
+      background: #d1fae5;
+      color: #065f46;
+      padding: 2px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+  }
+
+  // ── Table Wrapper — horizontal scroll on mobile ───────
+  &__table-wrapper {
+    border-radius: 16px;
+    border: 1px solid $border;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    overflow-x: auto;                       // ← KEY: horizontal scroll
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;      // smooth iOS scroll
+
+    // scroll shadow hint on edges
+    background:
+      linear-gradient(to right, $pastel-white 30%, rgba(255,255,255,0)),
+      linear-gradient(to right, rgba(255,255,255,0), $pastel-white 70%) 100% 0,
+      radial-gradient(farthest-side at 0% 50%, rgba(0,0,0,0.08), transparent),
+      radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,0.08), transparent) 100% 0;
+    background-repeat: no-repeat;
+    background-color: $pastel-white;
+    background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+    background-attachment: local, local, scroll, scroll;
+  }
+
+  // ── Pagination ────────────────────────────────────────
+  &__pagination {
+    display: flex;
+    justify-content: center;      // center on mobile
+    margin-top: 20px;
+
+    @media (min-width: 768px) {
+      justify-content: flex-end;
+    }
+  }
+}
+
+// ── Table ─────────────────────────────────────────────────
+.visitors-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  table-layout: auto;
+  min-width: 620px;       // ← triggers horizontal scroll before this width
+
+  thead tr { background: $pastel-lavender; }
+
+  th {
+    padding: 11px 14px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: $text-muted;
+    border-bottom: 1px solid $border;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #f1f5fb;
+    color: $text-primary;
+    vertical-align: middle;
+    line-height: 1.5;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: $pastel-lavender; transition: background 0.12s; }
+  tbody tr:nth-child(even) td { background: #fafbff; }
+  tbody tr:nth-child(even):hover td { background: $pastel-lavender; }
+
+  // S.No
+  .col-sn {
+    width: 44px;
+    text-align: center;
+    color: $text-muted;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  th.col-sn { text-align: center; }
+
+  // Location
+  .col-location {
+    width: auto;
+
+    .location-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      .location-icon {
+        font-size: 14px;
+        color: #10b981;
+        opacity: 0.8;
+        flex-shrink: 0;
+      }
+
+      .location-city {
+        font-weight: 600;
+        font-size: 13px;
+        color: $text-primary;
+        white-space: nowrap;
+      }
+
+      .location-country {
+        font-size: 11px;
+        color: $text-muted;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  // IP — monospace, no truncation
+  .col-ip {
+    width: 150px;
+
+    .ip-cell {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+
+      .ip-icon {
+        font-size: 12px;
+        color: #6366f1;
+        flex-shrink: 0;
+      }
+
+      .ip-address {
+        font-family: 'DM Mono', monospace;
+        font-size: 12px;
+        color: #334155;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  // Region badge
+  .col-region {
+    width: 130px;
+
+    .region-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #cffafe;
+      color: #0e7490;
+      border: 1px solid #a5f3fc;
+      white-space: nowrap;
+    }
+  }
+
+  // Date
+  .col-date {
+    width: 110px;
+    white-space: nowrap;
+
+    .date-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .date {
+        font-size: 12px;
+        font-weight: 500;
+        color: $text-primary;
+      }
+
+      .time {
+        font-size: 11px;
+        color: $text-muted;
+      }
+    }
+  }
+}
+
+// ── Loading ───────────────────────────────────────────────
+.loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px;
+
+  .loading-spinner {
+    width: 28px;
+    height: 28px;
+    border: 2.5px solid $border;
+    border-top-color: #6366f1;
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+  }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Empty ─────────────────────────────────────────────────
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+
+  .empty-icon {
+    font-size: 40px;
+    opacity: 0.45;
+    margin-bottom: 10px;
+  }
+
+  p {
+    color: $text-secondary;
+    font-size: 14px;
+    margin: 0 0 10px;
+  }
+}
+
+// ── Ant Design overrides ──────────────────────────────────
+.ant-picker-dropdown,
+.ant-select-dropdown {
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.ant-pagination {
+  .ant-pagination-item {
+    min-width: 28px;
+    height: 28px;
+    line-height: 28px;
+    font-size: 12px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .ant-pagination-item-active {
+    background: #d1fae5;
+    border-color: #6ee7b7;
+    a { color: #065f46; }
+  }
+
+  .ant-pagination-prev,
+  .ant-pagination-next {
+    min-width: 28px;
+    height: 28px;
+    line-height: 28px;
+    border-radius: 8px;
+  }
+}

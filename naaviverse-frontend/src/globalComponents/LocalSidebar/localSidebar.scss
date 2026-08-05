@@ -1,0 +1,287 @@
+.localsidebar {
+  width: 280px !important;
+  // height: 60vh !important;
+  display: flex;
+  flex-direction: column;
+  border-right: solid 1px #e7e7e7;
+  background: #f5f5f5;
+}
+
+
+.menuIcon {
+  width: 28px;
+}
+
+.menuName {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 160%;
+  /* or 22px */
+
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.002em;
+  // padding-left: 15px;
+
+  color: #18191D;
+}
+
+.menuItem1 {
+  display: flex;
+  align-items: center;
+  /* padding-top: 45px; */
+  /* background-color: lightgray; */
+  padding: 0px 30px;
+  height: 11%;
+  opacity: 0.3;
+}
+
+.menuItem1:hover {
+  display: flex;
+  align-items: center;
+  padding: 23px 30px;
+  /* background-color: #eceaea;; */
+  cursor: pointer;
+  opacity: 1;
+}
+
+
+
+.menuItem {
+  // padding:10px;
+  // padding-bottom: 60px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* padding-top: 45px; */
+  /* background-color: lightgray; */
+  /* padding: 0px 30px; */
+  // padding-left: 30px;
+  height: 80px;
+  margin: 10px 5px 0px;
+  justify-content: center;
+}
+
+.menuItem2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* padding-top: 45px; */
+  /* background-color: lightgray; */
+  /* padding: 0px 30px; */
+  padding-left: 27px;
+  height: 77px;
+  cursor: pointer;
+}
+
+.menuItem:hover {
+  background: #FFFFFF;
+  border: 0.5px solid #E7E7E7;
+  // box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  cursor: pointer;
+  justify-content: center
+}
+
+
+.menuItem00 {
+
+  padding-left: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  height: 60px;
+  margin: 10px 10px 0px;
+
+  &:hover {
+
+    background: #FFFFFF;
+    // border: 0.5px solid #E7E7E7;
+    // box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
+    border-radius: 35px;
+    cursor: pointer;
+  }
+}
+
+.menuActive {
+  background: #FFFFFF;
+  // border: 0.5px solid #E7E7E7;
+  // box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
+  border-radius: 35px;
+  cursor: pointer;
+  /* transform: matrix(-1, 0, 0, 1, 0, 0); */
+  // margin: 0px 10px;
+}
+
+.menuCollapseActive {
+  background: #FFFFFF;
+  border: 0.5px solid #E7E7E7;
+  // box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  cursor: pointer;
+  justify-content: center
+}
+
+.name {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 160%;
+  /* or 26px */
+
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.002em;
+
+  color: #212529;
+
+}
+
+.email {
+
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 300;
+  font-size: 9px;
+  line-height: 160%;
+  /* or 14px */
+
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.002em;
+
+  color: #18191D;
+}
+
+/* Context menu css */
+
+nav.react-contextmenu {
+  position: fixed;
+  width: 200px;
+  left: 0;
+  top: calc(100% + 10px);
+  border-radius: 4px;
+  background-color: #fff;
+  padding: 10px 0;
+  z-index: 99;
+  box-shadow: 0 0 20px rgba(0, 0, 0, .2);
+}
+
+.react-contextmenu .react-contextmenu-item:hover {
+  background: #cccccc;
+}
+
+.react-contextmenu-item:hover:not(.react-contextmenu-item--disabled) {
+  background-color: #f1f1f1;
+}
+
+.react-contextmenu .react-contextmenu-item {
+  font-size: 14px;
+  display: block;
+  text-decoration: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  user-select: none;
+  transition: .2s;
+  position: relative;
+  margin-bottom: 2px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  outline: none;
+}
+
+.react-contextmenu-item span {
+  margin-left: 10px;
+}
+
+.react-contextmenu-item svg {
+  font-size: 14px;
+}
+
+.react-contextmenu-item .copy {
+  color: skyblue
+}
+
+.react-contextmenu-item .delete {
+  color: red
+}
+
+.react-contextmenu-item .send {
+  color: blue
+}
+
+.react-contextmenu-item .share {
+  color: green
+}
+
+.react-contextmenu-item .watchlist {
+  color: rebeccapurple
+}
+
+.selected {
+
+  width: 5px;
+  height: 35px;
+  background: #4B9DDC;
+  ;
+  /* left:0;
+  position: absolute */
+}
+
+.selected1 {
+  background: #78C92E;
+  width: 5px;
+  height: 35px;
+  float: right;
+  /* right:0;
+  right: 0;
+  position: relative */
+}
+
+.shadowHover {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &:hover {
+    border-radius: 50%;
+    background: #e0e0e0;
+    box-shadow: 11px 11px 22px #8b8b8b,
+      -11px -11px 22px #ffffff;
+
+    -ms-transform: scale(1.05);
+    /* IE 9 */
+    -webkit-transform: scale(1.05);
+    /* Safari 3-8 */
+    transform: scale(1.05);
+    transition: 0.3s all ease-in-out;
+  }
+}
+
+.localSidebarLogo {
+  height: 80px;
+  // background: "red",
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0px 30px;
+  // border-bottom: solid 1px #e7e7e7;
+}
+
+.localSidebarText {
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 160%;
+  display: flex;
+  align-items: center;
+  color: #212529;
+}

@@ -1,0 +1,79 @@
+/* editStepFormStyles.css */
+.editStepForm_edit-step-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 35px;
+    color: #1f304f;
+    overflow-y: auto;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+}
+
+.editStepForm_form-group {
+    margin-bottom: 20px;
+}
+
+.editStepForm_form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #1f304f;
+}
+
+.editStepForm_form-group input[type="text"],
+.editStepForm_form-group textarea,
+.editStepForm_form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+    color: #1f304f;
+}
+
+.editStepForm_form-group textarea {
+    height: 100px;
+    line-height: 1.8;
+    font-weight: 300;
+}
+
+.editStepForm_button-container {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.editStepForm_button-container button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 0 10px;
+    transition: all ease 0.2s;
+}
+
+.editStepForm_button-container button:hover {
+    transform: scale(1.05);
+}
+
+/* Add these styles for the specific buttons */
+.editStepForm_cancel-button {
+    background: linear-gradient(90deg, #17234e 0.02%, #17234e 119.26%);
+    color: white;
+    border: none;
+}
+
+.editStepForm_save-button {
+    background: linear-gradient(90deg, #47b4d5 0.02%, #29449d 119.26%);
+    color: white;
+    border: none;
+}
+
+.editStepForm_message-page {
+    text-align: center;
+    padding: 20px;
+    font-size: 18px;
+    color: #1f304f;
+}

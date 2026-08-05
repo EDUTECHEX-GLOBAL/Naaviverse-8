@@ -1,0 +1,27 @@
+name: Deploy Frontend to Server
+
+on:
+  push:
+    branches:
+      - 13/03/25 # Branch triggering the workflow
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Run deployment script
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@www.naaviverse.com << 'EOF'
+            set -e  # Exit immediately if any command fails
+            cd /home/ubuntu/Naaviverse-8
+            ./deploy.sh 13/03/25 # Execute the deployment script
+          EOF

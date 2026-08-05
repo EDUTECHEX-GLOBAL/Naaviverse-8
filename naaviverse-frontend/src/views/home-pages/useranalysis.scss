@@ -1,0 +1,113 @@
+.featureSection {
+  padding: 60px 0;
+  background-color: white;
+
+  .row {
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .col-md-4 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  @media (max-width: 539px) {
+    padding: 10px 0;
+  }
+
+  @media (min-width: 540px) and (max-width: 768px) {
+    padding: 40px 0;
+  }
+}
+
+.featureIcon {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  margin: 0 auto 16px auto;
+  display: block;
+}
+
+.featureTitle {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  margin-top: 8px;
+  color: #222;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    font-size: 18px;
+  }
+}
+
+.featureText {
+  font-size: 15px;
+  color: #6B7A8D;
+  line-height: 1.6;
+  max-width: 240px;
+  margin: 0 auto;
+  margin-top: 4px !important;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
+}
+
+.map-visual-wrapper {
+  background-color: #f9f9f9;
+  padding: 0rem 0rem;
+  text-align: center;
+
+  .map-visual-img {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    
+    transition: all 0.3s ease-in-out;
+  }
+
+  @media (min-width: 1200px) {
+    .map-visual-img {
+      width: 100%;
+    }
+  }
+
+  @media (min-width: 1600px) {
+    .map-visual-img {
+      width: 100%;
+    }
+  }
+}
+
+
+.fancy-feature-twenty {
+  margin-top: 40px !important;
+}
+
+// Override the framework lg-mt-100 class
+.lg-mt-100 {
+  margin-top: 40px !important;
+}
+
+// ── Fix space above FAQ section ──
+.counter-section-one,
+.counter-section,
+[class*="counter-section"] {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.fancy-feature-twenty {
+  margin-top: 0 !important;
+  padding-top: 60px !important;
+}
+
+// ── Fix the p tag margin inside FAQ left column ──
+.fancy-feature-twenty .block-style-five p {
+  margin-top: 0 !important;
+}

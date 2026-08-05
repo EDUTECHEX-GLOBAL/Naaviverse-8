@@ -1,0 +1,120 @@
+.grid-cap {
+    position: relative;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 0.2fr 1fr 10.8fr;
+    // grid-template-columns: 0.2fr 1fr 6fr;
+}
+
+.grid-cap-collapsed {
+    position: relative;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 0.2fr 6fr;
+}
+
+.tabInterface {
+    display: flex;
+    grid-template-columns: 2fr 4fr 2fr;
+    justify-content: space-between;
+    align-items: center;
+    // background-color: red;
+    height: 80px;
+    border-bottom: 1px solid #e7e7e780;
+
+}
+
+.searchGlobal{
+    width: calc(100vw - 724px);
+    border: none;
+    border-right: 1px solid #e7e7e780;
+    height: 79px;
+    position: relative;
+}
+
+.greySearch{
+    position: absolute;
+    left: 20px;
+    top: 30px;
+
+}
+
+.inputGlobal{
+    width:-webkit-fill-available;
+    border: none;
+    align-items: center;
+    display: flex;
+    height: 79px;
+    padding-left: 50px;
+}
+
+.filterRow {
+    // background-color: yellowgreen;
+    border-bottom: 1px solid #e7e7e780;
+    height: 50px;
+}
+
+.tabsWrapper {
+    display: flex;
+    overflow-x: scroll;
+    width: 240px;
+
+    .tabs {
+        position: relative;
+        // flex: 0 0 290px;
+        height: 79px;
+        background-color: white;
+        border-right: 1px solid #e7e7e780;
+        display: flex;
+        align-items: center;
+        padding: 30px;
+        cursor: pointer;
+        min-width: 240px;
+        // justify-content: center;
+
+        .tabIcon {
+            width: 30px;
+        }
+
+        .tabName {
+            font-family: 'Montserrat';
+            font-style: normal;
+            font-weight: 700;
+            font-size: 20px;
+            padding-left: 10px;
+            color: #100F0D;
+        }
+
+        .cross {
+            position: absolute;
+            top: 5px;
+            right: 15px;
+            width: 9px;
+            height: 9px;
+            cursor: pointer;
+        }
+    }
+}
+
+.addNew {
+    // position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 121px;
+    height: 36.41px;
+    color: white;
+
+    background: #78C92E;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+
+.ant-typography-copy {
+    color: gray;
+}
+
+div.ant-typography {
+    margin-bottom: 0px;
+}

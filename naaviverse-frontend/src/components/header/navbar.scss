@@ -1,0 +1,269 @@
+// .navbar-nav .nav-link {
+//   color: #002244; /* or your preferred dark blue/navy color */
+//   font-weight: 600;
+//   font-size: 1.2rem;
+//   background: none;
+//   border: none;
+//   transition: color 0.2s;
+// }
+
+// .navbar-nav .nav-link.active,
+// .navbar-nav .nav-link:focus,
+// .navbar-nav .nav-link:hover {
+//   color: #00b5f9; /* Highlight color for active/hover */
+// }
+
+// .navbar-nav .dropdown-toggle {
+//   color: #002244; /* Make sure ABOUT uses the same color */
+// }
+// C:\Users\Dell\Naaviverse-8\naaviverse-frontend\src\components\header\navbar.scss
+
+/* Main Header Navigation Styles */
+.navbar-nav.desktop-menu-only {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  gap: 15px !important;
+  margin: 0 auto !important;
+  padding: 0 20px !important;
+}
+
+.navbar-nav .nav-item {
+  position: relative;
+  margin: 0 5px !important;
+}
+
+.navbar-nav .nav-link {
+  color: #2273E6 !important; 
+  font-weight: 600 !important;
+  font-size: 1.1rem !important;
+  background: none !important;
+  border: none !important;
+  transition: color 0.2s !important;
+  padding: 8px 12px !important;
+  text-align: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.navbar-nav .nav-link.active,
+.navbar-nav .nav-link:focus,
+.navbar-nav .nav-link:hover {
+  color: #2273E6 !important;;
+}
+
+/* Dropdown styles */
+.navbar-nav .dropdown-toggle {
+  color: #2273E6 !important;
+  display: flex !important;
+  align-items: center !important;
+  cursor: pointer !important;
+}
+
+.navbar-nav .dropdown-toggle .inline-flex {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+/* Dropdown menu positioning - CRITICAL FIX */
+.navbar-nav .dropdown-menu {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  min-width: 200px !important;
+  background: white !important;
+  border: 1px solid #ddd !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  z-index: 1000 !important;
+  padding: 10px 0 !important;
+  margin-top: 5px !important;
+  display: none !important;
+}
+
+.navbar-nav .dropdown:hover .dropdown-menu {
+  display: block !important;
+}
+
+.navbar-nav .dropdown-item {
+  padding: 8px 20px !important;
+  color: #333 !important;
+  text-decoration: none !important;
+  display: block !important;
+  transition: background 0.2s !important;
+}
+
+.navbar-nav .dropdown-item:hover {
+  background: #f8f9fa !important;
+  color: #198754 !important;
+}
+
+/* Center the entire navbar content */
+.navbar-collapse {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-grow: 1 !important;
+}
+
+/* Container for centered navigation */
+.navbar > .container,
+.navbar > .container-fluid {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+/* Logo positioning */
+.navbar-brand {
+  margin-right: auto !important;
+}
+
+/* Green menu button positioning */
+.menu-icon-btn1 {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 991px) {
+  .desktop-menu-only {
+    display: none !important;
+  }
+  
+  .navbar-collapse {
+    justify-content: flex-start !important;
+  }
+}
+
+/* For larger screens - ensure proper centering */
+@media (min-width: 992px) {
+  .navbar-nav.desktop-menu-only {
+    position: relative !important;
+    left: 0 !important;
+    transform: none !important;
+    justify-content: center !important;
+  }
+  
+  /* Force all nav items to be visible */
+  .navbar-nav .nav-item {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Fix for yellow line issue in dropdowns */
+.navbar-nav .dropdown-toggle::after {
+  display: none !important; /* Hide default Bootstrap arrow */
+}
+
+/* Custom chevron alignment */
+.navbar-nav .dropdown-toggle svg {
+  margin-left: 4px !important;
+  transition: transform 0.3s !important;
+}
+
+.navbar-nav .dropdown:hover .dropdown-toggle svg {
+  transform: rotate(180deg) !important;
+}
+
+/* If there's a specific yellow line issue, add this */
+.navbar-nav .nav-link:not(.dropdown-toggle) {
+  position: relative !important;
+}
+
+/* Change it to this: */
+.navbar-nav .nav-item.active .nav-link::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: -8px !important; /* ← MOVED DOWN 8px */
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 25px !important;
+  height: 3px !important;
+  background-color: #FFD700 !important;
+  border-radius: 2px !important;
+  z-index: 1 !important; /* ← Added to ensure it stays behind */
+}
+
+/* Ensure no text overlap with yellow line */
+.navbar-nav .nav-link {
+  padding-bottom: 10px !important;
+  margin-bottom: 3px !important;
+} 
+
+
+/* ===============================
+   AUTH BUTTONS (RIGHT SIDE)
+   =============================== */
+
+.nav-auth-buttons {
+  margin-left: auto !important; /* pushes to right */
+  display: flex !important;
+  align-items: center !important;
+  gap: 18px !important;
+}
+
+/* Login = plain text */
+.login-text {
+   color: #2273E6 !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: color 0.2s ease !important;
+}
+
+.login-text:hover {
+  color: #2273E6 !important;
+}
+
+
+/* Get Started = colored box */
+.get-started-btn {
+  background: #0f9b8b !important;
+  color: white !important;
+  border: none !important;
+  padding: 10px 22px !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.25s ease !important;
+}
+
+.get-started-btn:hover {
+  background: #009bd6 !important;
+}
+/* Container for the entire navbar content */
+.navbar > .container,
+.navbar > .container-fluid {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  padding: 0 20px !important;
+}
+
+/* Logo stays on left */
+.navbar-brand {
+  margin-right: auto !important;
+}
+
+/* Center the main nav menu */
+.navbar-collapse {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-grow: 1 !important;
+}
+
+/* Auth buttons on the right */
+.nav-auth-buttons {
+  margin-left: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 18px !important;
+  padding-right: 10px !important;
+}
