@@ -141,13 +141,14 @@ const Technology = () => {
           <div className="tech-pathways-grid">
             <div className="tech-pathways-content">
               <div className="tech-card tech-card-white">
-                <p className="tech-body-text">
+                <div className="tech-card-label" style={{ marginBottom: '12px' }}>DYNAMIC PATHWAYS</div>
+                <p className="tech-body-text" style={{ marginBottom: '12px' }}>
                   Naavi's AI Pathways Engine dynamically generates interconnected{' '}
                   <strong className="tech-green">Macro</strong>,{' '}
                   <strong className="tech-green">Micro</strong>, and{' '}
                   <strong className="tech-green">Nano</strong> steps that guide users from their present coordinates to future aspirations.
                 </p>
-                <p className="tech-body-sub">Unlike static roadmaps, Naavi pathways continuously evolve based on:</p>
+                <p className="tech-body-sub" style={{ marginBottom: '12px' }}>Unlike static roadmaps, Naavi pathways continuously evolve based on:</p>
 
                 <div className="tech-bullet-grid">
                   {pathwayBullets.map((b) => (
@@ -158,7 +159,7 @@ const Technology = () => {
                   ))}
                 </div>
 
-                <p className="tech-body-text" style={{ marginTop: '20px' }}>
+                <p className="tech-body-text" style={{ marginTop: '12px' }}>
                   The platform intelligently adapts navigation in real time — similar to how GPS systems optimize routes during travel. Whether the goal is higher education, skill development, entrepreneurship, global careers, or future industries, Naavi creates personalized pathways designed around each individual's unique potential.
                 </p>
               </div>

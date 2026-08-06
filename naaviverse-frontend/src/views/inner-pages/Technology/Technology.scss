@@ -190,7 +190,14 @@ $border-light: rgba(0, 0, 0, 0.06);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 28px;
-  align-items: flex-start;
+  align-items: start;
+}
+
+.tech-pathways-content,
+.tech-pathways-visual-side {
+  display: flex;
+  flex-direction: column;
+  align-self: start;
 }
 
 @media (max-width: 900px) {
@@ -207,6 +214,10 @@ $border-light: rgba(0, 0, 0, 0.06);
   border-radius: 18px;
   padding: 28px;
   transition: all 0.3s ease;
+
+  > *:first-child {
+    margin-top: 0;
+  }
 }
 
 .tech-card-white {
@@ -228,7 +239,9 @@ $border-light: rgba(0, 0, 0, 0.06);
   letter-spacing: 0.12em;
   color: $green;
   text-transform: uppercase;
-  margin-bottom: 18px;
+  margin-top: 0 !important;
+  margin-bottom: 12px !important;
+  line-height: 1;
 }
 
 .tech-label-green {
@@ -240,9 +253,9 @@ $border-light: rgba(0, 0, 0, 0.06);
 // ══════════════════════════════
 .tech-body-text {
   font-size: clamp(14.5px, 1.1vw, 15px);
-  line-height: 1.7;
+  line-height: 1.6;
   color: $text-dark;
-  margin: 0 0 14px;
+  margin: 0 0 12px !important;
   text-align: justify;
   text-justify: inter-word;
   hyphens: none;
@@ -256,7 +269,7 @@ $border-light: rgba(0, 0, 0, 0.06);
 .tech-body-sub {
   font-size: 14px;
   color: $muted;
-  margin: 0 0 12px;
+  margin: 0 0 12px !important;
   font-weight: 500;
   text-align: justify;
   text-justify: inter-word;
