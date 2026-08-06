@@ -1,0 +1,540 @@
+// ============================================
+// MyPaths Page - Compact Card Layout with Pastel Background
+// ============================================
+
+.mypaths {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #e9f2fa;
+  overflow: hidden;
+
+
+  // ----- Main Content Area -----
+  .mypaths-content {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    padding: 1.2rem 1.5rem;
+    padding-bottom: 3rem;
+    overflow-y: auto;
+    background: #e9f2fa; // Light pastel blue background
+
+    // ----- Filter Tabs -----
+    .filter-tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.2rem;
+
+      .filter-tab {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 30px;
+        padding: 0.2rem 1.1rem;
+        font-weight: 500;
+        font-size: 0.85rem;
+        color: #4a5568;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+
+        &.active {
+          background: #0d6b6e;
+          border-color: #0d6b6e;
+          color: white;
+
+          // Active tab ignores hover — stays solid green
+          &:hover {
+            background: #0d6b6e;
+            border-color: #0d6b6e;
+            color: white;
+            opacity: 1;
+          }
+        }
+
+        &:hover {
+          background: #edf2f7;
+        }
+      }
+    }
+
+    // ----- Paths Grid -----
+    .paths-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding-bottom: 2rem;
+    }
+
+    // ----- Individual Path Card -----
+    .path-card {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid #e6edf4;
+     padding: 1rem 1.2rem 0.75rem 1.2rem; 
+      box-shadow: 0 3px 8px rgba(13, 107, 110, 0.05);
+      transition: all 0.15s ease;
+      cursor: pointer;
+
+      &:hover {
+        box-shadow: 0 6px 12px rgba(13, 107, 110, 0.1);
+        border-color: #0d6b6e04;
+      }
+
+      // Card Header
+      .path-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+
+        .path-title {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+
+          h3 {
+            font-size: 1rem;
+            font-weight: 530;
+            color: #0a1c2a;
+            margin: 0;
+            letter-spacing: -0.01em;
+          }
+        }
+
+        .path-date {
+          font-size: 0.8rem;
+          color: #5e6f7e;
+          background: #f0f7fa;
+          padding: 0.2rem 0.8rem;
+          border-radius: 20px;
+          white-space: nowrap;
+          font-weight: 400;
+        }
+      }
+
+      // Description
+      .path-description {
+        color: #2d3e4f;
+        font-size: 0.88rem; 
+        line-height: 1.5;
+        margin-bottom: 0.6rem;
+        word-break: break-word;
+        font-weight: 400;
+
+        .read-more-btn {
+          color: #0d6b6e;
+          font-weight: 600;
+          font-size: 0.85rem;
+          cursor: pointer;
+          margin-left: 0.3rem;
+          white-space: nowrap;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+
+      // Stats Row - Single Line with Button
+      .path-stats-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 0.6rem; 
+        border-top: 1px solid #edf2f7;
+
+.stats-group {
+  .stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: #e6f3f4;
+    color: #0d6b6e;
+    font-size: 0.78rem;      // ← shrink from default large size
+    font-weight: 600;
+    padding: 0.25rem 0.9rem;
+    border-radius: 20px;
+    border: 1px solid #b2dfe0;
+    line-height: 1;
+
+    &::before {
+      content: '◈';           // ← small decorative icon
+      font-size: 0.7rem;
+      opacity: 0.7;
+    }
+  }
+
+
+          .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.85rem;
+            color: #2d3e4f;
+
+            strong {
+              color: #0d6b6e;
+              font-weight: 700;
+              margin-right: 0.2rem;
+              font-size: 0.9rem;
+            }
+
+            .stat-icon {
+              font-size: 1rem;
+              margin-right: 0.2rem;
+              opacity: 0.8;
+            }
+          }
+        }
+
+        .view-steps-btn {
+          background: #e6f3f4; // Light pastel green interior
+          border: 1px solid #0d6b6e;
+          border-radius: 30px;
+          padding: 0.3rem 1.2rem;
+          font-size: 0.8rem;
+          font-weight: 500;
+          color: #0d6b6e;
+          cursor: pointer;
+          transition: all 0.15s;
+          white-space: nowrap;
+
+          &:hover {
+            background: #0d6b6e;
+            border-color: #0d6b6e;
+            color: white;
+          }
+        }
+      }
+
+      // Approve button (only when needed)
+      .approve-btn {
+        background: #0d6b6e;
+        border: none;
+        border-radius: 30px;
+        padding: 0.3rem 1.2rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: white;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+
+        &:hover {
+          background: #0b5a5c;
+        }
+      }
+    }
+
+    // ----- Empty State -----
+    .empty-state {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      color: #718096;
+      font-size: 0.9rem;
+      background: white;
+      border-radius: 16px;
+      border: 1px dashed #cbd5e0;
+    }
+  }
+}
+
+// ============================================
+// View Path Details Section
+// ============================================
+.viewpath-container {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  color: #1f304f;
+  overflow-y: auto;
+
+  .viewpath-top-area {
+    width: 100%;
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.2rem;
+    border: 1px solid #e6edf4;
+    box-shadow: 0 3px 8px rgba(13, 107, 110, 0.05);
+    position: relative;
+
+    .viewpath-bold-text {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #0a1c2a;
+      margin: 0.5rem 0;
+    }
+
+    .viewpath-des {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: #2d3e4f;
+    }
+
+    .viewpath-goBack-div {
+      position: absolute;
+      top: 1.2rem;
+      right: 1.2rem;
+      font-weight: 500;
+      font-size: 0.85rem;
+      color: #0d6b6e;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  }
+
+  .viewpath-steps-area {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    .viewpath-each-j-step {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid #e6edf4;
+      padding: 1.2rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+
+      &:hover {
+        border-color: #0d6b6e;
+        box-shadow: 0 4px 10px rgba(13, 107, 110, 0.08);
+      }
+
+      .step-number {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #0d6b6e;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+      }
+
+      .step-content {
+        flex: 1;
+
+        .step-title {
+          font-size: 1rem;
+          font-weight: 600;
+          color: #0a1c2a;
+          margin-bottom: 0.2rem;
+        }
+
+        .step-desc {
+          font-size: 0.85rem;
+          color: #4a5568;
+          line-height: 1.4;
+        }
+      }
+
+      .step-amount {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #0d6b6e;
+        background: #e6f3f4;
+        padding: 0.2rem 0.8rem;
+        border-radius: 30px;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+// ============================================
+// Popup / Modal Styles
+// ============================================
+.acc-popular1 {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 380px;
+  overflow-y: auto;
+  background: white;
+  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  padding: 1.5rem;
+
+  .acc-popular-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    .acc-popular-head {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #1a2b3c;
+    }
+
+    .acc-popular-img-box {
+      cursor: pointer;
+      padding: 0.3rem;
+
+      img {
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+
+  .acc-mt-div {
+    margin-top: 0.5rem;
+  }
+
+  .acc-scroll-div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 1rem 0;
+  }
+
+  .acc-step-box4 {
+    padding: 0.8rem 1.2rem;
+    border: 1px solid #edf2f7;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #1a2b3c;
+
+    &:hover {
+      border-color: #0d6b6e;
+      background: #f0fafb;
+    }
+  }
+
+  .acc-step-box4-selected {
+    padding: 0.8rem 1.2rem;
+    border: 2px solid #0d6b6e;
+    border-radius: 12px;
+    cursor: pointer;
+    background: #e6f3f4;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  //   .goBack3 {
+  //   color: #0d6b6e;
+  //   cursor: pointer;
+  //   margin-top: 1rem;
+  //   font-size: 0.9rem;
+  //   font-weight: 500;
+
+  //   &:hover {
+  //     text-decoration: underline;
+  //   }
+  // }
+
+  .success-box1 {
+    text-align: center;
+    padding: 1.5rem;
+    color: #047857;
+    font-weight: 500;
+    font-size: 1rem;
+  }
+
+  .popularlogo {
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem;
+
+    img {
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  .acc-sub-text {
+    color: #4a5568;
+    margin-bottom: 1.2rem;
+    font-size: 0.9rem;
+  }
+
+  .acc-step-box {
+    padding: 0.8rem 1.2rem;
+    border: 1px solid #edf2f7;
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+
+    &:hover {
+      background: #f7fafc;
+    }
+  }
+
+  .goBack2 {
+    color: #0d6b6e;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
+  .save-Btn {
+    background: #0d6b6e;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    margin: 1rem 0;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Draft Arrow Button
+.draft-arrow-btn {
+  background: #e6f3f4;
+  border: 1px solid #0d6b6e;
+  border-radius: 30px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #0d6b6e;
+  padding: 0;
+
+  &:hover {
+    background: #0d6b6e;
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(13, 107, 110, 0.2);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}

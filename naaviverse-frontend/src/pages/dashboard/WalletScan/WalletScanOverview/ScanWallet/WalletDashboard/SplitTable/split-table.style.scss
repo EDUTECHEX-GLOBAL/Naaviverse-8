@@ -1,0 +1,122 @@
+.split-table-main {
+  width: 100%;
+  height: 100%;
+  border-left: 1px solid #e5e5e5;
+  .split-asset-header {
+    height: 40px;
+    width: 100%;
+    background-color: #1f304f;
+    display: flex;
+    padding: 0 4vh;
+    h6 {
+      margin: 0;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      width: calc(100% / 4);
+      font-size: 85%;
+      font-weight: 600;
+      color: #ffffff;
+      &:nth-child(3) {
+        justify-content: center;
+      }
+      &:last-child {
+        justify-content: center;
+      }
+    }
+  }
+  .split-asset-body {
+    height: calc(100vh - 350px);
+    width: 100%;
+    overflow: auto;
+    &::-webkit-scrollbar {
+      width: 0;
+    }
+    .empty-list {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .single-transaction {
+      height: 70px;
+      width: 100%;
+      display: flex;
+      padding: 0 4vh;
+      border-bottom: 1px solid #e5e5e5;
+      cursor: pointer;
+      h6 {
+        font-size: 90%;
+        width: calc(100% / 4);
+        display: flex;
+        align-items: center;
+
+        img {
+          height: 20px;
+          width: 20px;
+          margin-right: 10px;
+          border-radius: 50%;
+        }
+        button {
+          font-size: 80%;
+          display: flex;
+          align-items: center;
+          padding: 5px 10px;
+          background-color: #f1f1f1;
+          border: 0;
+          font-weight: 500;
+          img {
+            height: 18px;
+            width: 18px;
+          }
+        }
+        &:nth-child(2) {
+          button {
+            margin-left: 10px;
+            font-size: 65%;
+            background-color: transparent;
+            border: 1px solid #e5e5e5;
+            &:hover {
+              transform: scale(1.1);
+              transition: 0.3s;
+            }
+          }
+        }
+        &:nth-child(3) {
+          justify-content: center;
+        }
+        &:last-child {
+          justify-content: center;
+        }
+      }
+    }
+  }
+  .split-asset-footer {
+    background-color: #1f304f;
+    height: 50px;
+    display: flex;
+    padding: 0 4vh;
+    padding-right: 0;
+    align-items: center;
+    justify-content: space-between;
+    h6 {
+      color: #ffffff;
+      margin-bottom: 0;
+      margin-top: 0;
+      &:last-child {
+        height: 100%;
+      }
+    }
+    button {
+      background-color: transparent;
+      border: 0;
+      width: 80px;
+      height: 50px;
+      img {
+        height: 20px;
+        width: 20px;
+      }
+    }
+  }
+}

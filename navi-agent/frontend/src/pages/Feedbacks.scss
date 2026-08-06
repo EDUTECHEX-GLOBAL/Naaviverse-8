@@ -1,0 +1,691 @@
+// Feedbacks.scss
+$teal: #0f766e;
+$teal-soft: #e6f5f3;
+$teal-deep: #0b5550;
+$ink: #1a2f42;
+$muted: #6b7a8d;
+$border: #e7ebf0;
+$bg-card: #ffffff;
+$danger: #e2574c;
+$danger-soft: #fdeceb;
+$success: #1f9d6e;
+$success-soft: #e9f9f1;
+
+$cat-resources: #5b8def;
+$cat-academics: #9b6bd6;
+$cat-timeline: #e09b3d;
+$cat-general: #6b7a8d;
+
+@mixin card-base {
+    background: $bg-card;
+    border: 1px solid $border;
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(20, 30, 50, 0.04);
+}
+
+@mixin truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.feedbacks-page-root {
+    padding: 28px 32px 60px;
+    color: $ink;
+    font-family: "Poppins", sans-serif;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    .fb-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 22px;
+
+        .display-title {
+            font-size: 28px;
+            margin: 10px 0 0;
+        }
+
+        .fb-header-sub {
+            margin-top: 6px;
+            color: $muted;
+            font-size: 14px;
+            max-width: 560px;
+            line-height: 1.5;
+        }
+    }
+
+    .fb-alert {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-size: 13.5px;
+        margin-bottom: 16px;
+        animation: fbSlideIn 0.25s ease;
+
+        &--success {
+            background: $success-soft;
+            color: $success;
+            border: 1px solid rgba(31, 157, 110, 0.25);
+        }
+
+        &--error {
+            background: $danger-soft;
+            color: $danger;
+            border: 1px solid rgba(226, 87, 76, 0.25);
+        }
+
+        .alert-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: $success;
+            flex-shrink: 0;
+        }
+    }
+
+    // ---------- Layout ----------
+    // minmax(0, 1fr) is the key fix: a plain `1fr` track refuses to shrink
+    // below the intrinsic (min-content) width of what's inside it, so a wide
+    // table used to blow the main pane out past the viewport and shove the
+    // side panel + tabs off-screen. minmax(0, 1fr) lets the track shrink and
+    // the table's own overflow-x:auto takes over instead.
+    .fb-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 22px;
+        align-items: start;
+        width: 100%;
+
+        @media (max-width: 1080px) {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    .card {
+        @include card-base;
+    }
+
+    .fb-main-pane {
+        min-width: 0; // grid item shrink fix
+        width: 100%;
+    }
+
+    // ---------- Controls bar ----------
+    .fb-controls-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 18px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+
+        .fb-search-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f7f9fb;
+            border: 1px solid $border;
+            border-radius: 10px;
+            padding: 8px 12px;
+            flex: 1 1 220px;
+            min-width: 200px;
+            max-width: 320px;
+            color: $muted;
+
+            svg {
+                flex-shrink: 0;
+            }
+
+            input {
+                border: none;
+                outline: none;
+                background: transparent;
+                font-size: 13.5px;
+                width: 100%;
+                min-width: 0;
+                color: $ink;
+                font-family: inherit;
+
+                &::placeholder {
+                    color: #a3afbd;
+                }
+            }
+        }
+
+        .fb-tabs {
+            display: flex;
+            gap: 6px;
+            background: #f1f4f7;
+            padding: 4px;
+            border-radius: 10px;
+            flex-shrink: 0;
+        }
+
+        .fb-tab-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            background: transparent;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: $muted;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+
+            &:hover {
+                color: $ink;
+            }
+
+            &.active {
+                background: $bg-card;
+                color: $teal-deep;
+                box-shadow: 0 1px 4px rgba(20, 30, 50, 0.08);
+            }
+        }
+
+        .fb-tab-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 5px;
+            border-radius: 999px;
+            background: rgba(15, 118, 110, 0.1);
+            color: $teal-deep;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .fb-tab-btn:not(.active) .fb-tab-count {
+            background: rgba(107, 122, 141, 0.12);
+            color: $muted;
+        }
+    }
+
+    // ---------- Loading / Empty ----------
+    .fb-loading,
+    .fb-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 60px 30px;
+        color: $muted;
+        gap: 10px;
+
+        svg {
+            color: #c7d0db;
+            margin-bottom: 6px;
+        }
+
+        h3 {
+            font-size: 15.5px;
+            color: $ink;
+            margin: 0;
+        }
+
+        p {
+            font-size: 13px;
+            margin: 0;
+            max-width: 320px;
+            line-height: 1.5;
+        }
+    }
+
+    .pulse-dots {
+        display: flex;
+        gap: 6px;
+
+        span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: $teal;
+            animation: fbPulse 1.2s infinite ease-in-out;
+
+            &:nth-child(2) {
+                animation-delay: 0.15s;
+            }
+
+            &:nth-child(3) {
+                animation-delay: 0.3s;
+            }
+        }
+    }
+
+    // ---------- Table (student tab) ----------
+    .fb-table-card {
+        overflow: hidden;
+        min-width: 0;
+    }
+
+    .fb-table-container {
+        overflow-x: auto;
+        max-width: 100%;
+    }
+
+    .fb-table {
+        width: 100%;
+        min-width: 780px; // below this, horizontal scroll kicks in — never the whole page
+        table-layout: fixed;
+        border-collapse: collapse;
+        font-size: 13px;
+
+        .col-student { width: 16%; }
+        .col-path { width: 17%; }
+        .col-milestone { width: 20%; }
+        .col-provider { width: 17%; }
+        .col-action { width: 12%; }
+        .col-time { width: 14%; }
+        .col-del { width: 40px; }
+
+        thead th {
+            text-align: left;
+            padding: 12px 16px;
+            background: #f7f9fb;
+            color: $muted;
+            font-weight: 600;
+            font-size: 11.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            border-bottom: 1px solid $border;
+            white-space: nowrap;
+        }
+
+        tbody td {
+            padding: 13px 16px;
+            border-bottom: 1px solid $border;
+            vertical-align: middle;
+            color: $ink;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr {
+            transition: background 0.15s ease;
+        }
+
+        tbody tr:hover {
+            background: #fafbfc;
+        }
+    }
+
+    .truncate-cell {
+        @include truncate;
+        max-width: 100%;
+    }
+
+    .font-small {
+        font-size: 12.5px;
+    }
+
+    .font-semibold {
+        font-weight: 600;
+    }
+
+    .text-muted {
+        color: $muted;
+    }
+
+    .provider-cell {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        gap: 2px;
+
+        .prov-name {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .prov-type {
+            font-size: 11px;
+            color: $muted;
+        }
+    }
+
+    // ---------- Pill badges ----------
+    .pill-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
+
+        &.badge-enroll {
+            background: $success-soft;
+            color: $success;
+        }
+
+        &.badge-save {
+            background: #eaf1fd;
+            color: #3b6fd6;
+        }
+
+        // ── Step feedback action badges ───────────────────────────────────
+        &.badge-helpful {
+            background: #e6f9f0;
+            color: #16a34a;
+        }
+
+        &.badge-not-relevant,
+        &.badge-not_relevant {
+            background: $danger-soft;
+            color: $danger;
+        }
+
+        &.badge-skip {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        &.badge-comment {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+
+        &.badge-unknown {
+            background: #f1f5f9;
+            color: #94a3b8;
+        }
+
+        &.badge-cat-resources {
+            background: rgba(91, 141, 239, 0.12);
+            color: $cat-resources;
+        }
+
+        &.badge-cat-academics {
+            background: rgba(155, 107, 214, 0.12);
+            color: $cat-academics;
+        }
+
+        &.badge-cat-timeline {
+            background: rgba(224, 155, 61, 0.14);
+            color: $cat-timeline;
+        }
+
+        &.badge-cat-general {
+            background: rgba(107, 122, 141, 0.12);
+            color: $cat-general;
+        }
+    }
+
+    .btn-trash {
+        border: none;
+        background: transparent;
+        color: #b7c0cc;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        transition: all 0.15s ease;
+
+        &:hover {
+            background: $danger-soft;
+            color: $danger;
+        }
+    }
+
+    // ---------- Admin learnings grid (tab 2) ----------
+    .fb-admin-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
+    }
+
+    .fb-admin-card {
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-width: 0;
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+        &:hover {
+            box-shadow: 0 6px 18px rgba(20, 30, 50, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .fb-admin-card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fb-text {
+            font-size: 13.5px;
+            line-height: 1.5;
+            color: $ink;
+            font-style: italic;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .fb-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            border-top: 1px solid $border;
+            padding-top: 10px;
+            min-width: 0;
+
+            .meta-item {
+                display: flex;
+                gap: 4px;
+                font-size: 12px;
+                color: $muted;
+                min-width: 0;
+
+                strong {
+                    color: $ink;
+                    font-weight: 600;
+                    flex-shrink: 0;
+                }
+
+                span {
+                    min-width: 0;
+                }
+
+                span.truncate-cell {
+                    flex: 1;
+                }
+            }
+
+            .meta-footer {
+                display: flex;
+                justify-content: space-between;
+                gap: 10px;
+                margin-top: 4px;
+                color: #a3afbd;
+                min-width: 0;
+
+                span:first-child {
+                    @include truncate;
+                    min-width: 0;
+                }
+
+                span:last-child {
+                    flex-shrink: 0;
+                }
+            }
+        }
+    }
+
+    // ---------- Side pane / form ----------
+    .fb-side-pane {
+        position: sticky;
+        top: 20px;
+        min-width: 0;
+    }
+
+    .fb-form-card {
+        padding: 22px;
+        background: linear-gradient(160deg, #ffffff 0%, $teal-soft 130%);
+        backdrop-filter: blur(6px);
+
+        .fb-form-title {
+            font-size: 16px;
+            margin: 0 0 4px;
+            color: $teal-deep;
+        }
+
+        .fb-form-desc {
+            font-size: 12.5px;
+            color: $muted;
+            margin: 0 0 18px;
+            line-height: 1.45;
+        }
+    }
+
+    .form-group {
+        margin-bottom: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 0;
+
+        label {
+            font-size: 12px;
+            font-weight: 600;
+            color: $ink;
+        }
+
+        input,
+        select,
+        textarea {
+            border: 1px solid $border;
+            border-radius: 10px;
+            padding: 9px 12px;
+            font-size: 13px;
+            font-family: inherit;
+            color: $ink;
+            background: #fff;
+            outline: none;
+            width: 100%;
+            min-width: 0;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+            resize: vertical;
+
+            &:focus {
+                border-color: $teal;
+                box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+            }
+
+            &::placeholder {
+                color: #a3afbd;
+            }
+        }
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .field-hint {
+        font-size: 11px;
+        color: #a3afbd;
+        line-height: 1.4;
+    }
+
+    .btn-primary.fb-submit-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: $teal-deep;
+        color: #fff;
+        border: none;
+        padding: 11px 0;
+        border-radius: 10px;
+        font-size: 13.5px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 6px;
+        transition: background 0.2s ease, transform 0.15s ease;
+
+        &:hover {
+            background: $teal;
+            transform: translateY(-1px);
+        }
+    }
+
+    // ---------- Small screens ----------
+    @media (max-width: 640px) {
+        padding: 20px 16px 40px;
+
+        .fb-controls-bar {
+            flex-direction: column;
+            align-items: stretch;
+
+            .fb-search-wrap {
+                max-width: none;
+            }
+
+            .fb-tabs {
+                width: 100%;
+
+                .fb-tab-btn {
+                    flex: 1;
+                    justify-content: center;
+                }
+            }
+        }
+    }
+}             
+@keyframes fbPulse {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0.6);
+        opacity: 0.4;
+    }
+
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes fbSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+     
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

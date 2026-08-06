@@ -1,0 +1,108 @@
+.card-skeleton {
+  width: 100%;
+  height: 100%;
+  border-radius: 35px;
+  img {
+    height: 20px;
+  }
+  .card-user {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 6vh 0;
+    button {
+      height: 12vh;
+      width: 12vh;
+      border: 0;
+      color: #e5e5e5;
+      border-radius: 50%;
+      background-color: #e5e5e5;
+      animation: glow-dim 1.5s infinite;
+    }
+    h4 {
+      font-weight: 700;
+      margin: 1vh 0;
+      color: #e5e5e5;
+      background-color: #e5e5e5;
+      animation: glow-dim 1.5s infinite;
+    }
+    p {
+      margin: 0;
+      color: #e5e5e5;
+      background-color: #e5e5e5;
+      animation: glow-dim 1.5s infinite;
+    }
+  }
+  .cards-wrapper {
+    height: 35vh;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    overflow: auto;
+    padding: 0 12%;
+    &::-webkit-scrollbar {
+      width: 0;
+    }
+    .card-wrapper-single {
+      width: calc(100% / 3);
+      display: flex;
+      margin-bottom: 3vh;
+      &:nth-child(3n + 1) {
+        justify-content: flex-start;
+      }
+      &:nth-child(3n + 2) {
+        justify-content: center;
+      }
+      &:nth-child(3n + 3) {
+        justify-content: flex-end;
+      }
+      .card-wrapper {
+        width: 70%;
+        div {
+          width: 100%;
+          border: 1px solid #e5e5e5;
+          aspect-ratio: 1;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          border-radius: 15px;
+          margin-bottom: 10px;
+          cursor: pointer;
+          button {
+            height: 6vh;
+            width: 6vh;
+            border: 0;
+            background-color: #e5e5e5;
+            animation: glow-dim 1.5s infinite;
+          }
+          &:hover {
+            background-color: #f1f1f1;
+            img {
+              transform: scale(1.2);
+              transition: 0.3s;
+            }
+          }
+        }
+        p {
+          font-size: 75%;
+          color: #e5e5e5;
+          background-color: #e5e5e5;
+          animation: glow-dim 1.5s infinite;
+        }
+      }
+    }
+  }
+}
+
+@keyframes glow-dim {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}

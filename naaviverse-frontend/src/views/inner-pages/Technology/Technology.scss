@@ -1,0 +1,548 @@
+// Technology.scss
+// Premium Technology Page — Clean white/light UI only
+
+$green: #2DB67D;
+$green-dark: #1E9966;
+$navy: #1A1A2E;
+$blue: #4DA6FF;
+$white: #ffffff;
+$soft-mint: #F4FAF7;
+$soft-blue: #F7F9FC;
+$muted: #6B7A8D;
+$text-dark: #3D4A5C;
+$border-light: rgba(0, 0, 0, 0.06);
+
+// ── Animations ──
+@keyframes tech-fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes tech-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+@keyframes tech-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+// ── Base Container ──
+.tech-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 28px;
+  width: 100%;
+}
+
+// ══════════════════════════════
+//  SECTIONS — consistent 60px vertical spacing
+// ══════════════════════════════
+.tech-section {
+  padding: 60px 0;
+  position: relative;
+  scroll-margin-top: 110px;
+}
+
+.tech-pathways {
+  background: $white;
+  padding-top: 160px; // clear fixed header + logo shape
+}
+
+.tech-llm-section {
+  background: $soft-blue;
+}
+
+@media (max-width: 768px) {
+  .tech-section {
+    padding: 48px 0;
+  }
+
+  .tech-pathways {
+    padding-top: 130px;
+  }
+}
+
+// ══════════════════════════════
+//  SECTION HEADER
+// ══════════════════════════════
+.tech-section-header {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 40px;
+  animation: tech-fade-up 0.6s ease both;
+}
+
+.tech-section-tag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: $green;
+  text-transform: uppercase;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.tech-section-title {
+  font-size: clamp(26px, 3.2vw, 42px);
+  font-weight: 600;
+  color: $navy;
+  margin: 0 0 16px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  display: block;
+  opacity: 1;
+  visibility: visible;
+}
+
+.tech-section-desc {
+  font-size: clamp(14.5px, 1.1vw, 16px);
+  color: $muted;
+  margin: 0;
+  line-height: 1.7;
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: none;
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
+  word-spacing: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+// ══════════════════════════════
+//  PREVIEW IMAGE BLOCK — premium card
+// ══════════════════════════════
+.tech-preview-image-block {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto 40px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: $white;
+  border: 1px solid $border-light;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.04),
+    0 12px 36px rgba(26, 26, 46, 0.08);
+  animation: tech-fade-up 0.7s ease 0.15s both;
+  transition: box-shadow 0.35s ease, transform 0.35s ease;
+
+  &:hover {
+    box-shadow:
+      0 6px 20px rgba(0, 0, 0, 0.06),
+      0 20px 48px rgba(26, 26, 46, 0.11);
+    transform: translateY(-2px);
+  }
+}
+
+.tech-synergy-preview-block {
+  background: linear-gradient(160deg, #f8fffe 0%, #f4faf7 100%);
+  border-color: rgba(45, 182, 125, 0.12);
+}
+
+.tech-image-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: $green;
+  text-transform: uppercase;
+  padding: 16px 24px 0;
+  opacity: 0.8;
+}
+
+.tech-preview-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  padding: 16px 24px 24px;
+  box-sizing: border-box;
+  max-height: 620px;
+}
+
+@media (max-width: 768px) {
+  .tech-preview-image-block {
+    max-width: 100%;
+    border-radius: 16px;
+  }
+
+  .tech-preview-img {
+    padding: 12px 16px 20px;
+    max-height: none;
+  }
+
+  .tech-image-label {
+    padding: 14px 16px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .tech-preview-image-block {
+    border-radius: 14px;
+  }
+}
+
+// ══════════════════════════════
+//  PATHWAYS GRID (below image)
+// ══════════════════════════════
+.tech-pathways-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.tech-pathways-content,
+.tech-pathways-visual-side {
+  display: flex;
+  flex-direction: column;
+  align-self: start;
+}
+
+@media (max-width: 900px) {
+  .tech-pathways-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+// ══════════════════════════════
+//  CARDS — uniform padding + radius
+// ══════════════════════════════
+.tech-card {
+  border-radius: 18px;
+  padding: 28px;
+  transition: all 0.3s ease;
+
+  > *:first-child {
+    margin-top: 0;
+  }
+}
+
+.tech-card-white {
+  background: $white;
+  border: 1px solid $border-light;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.tech-card-light {
+  background: $soft-mint;
+  border: 1px solid rgba(45, 182, 125, 0.12);
+  border-radius: 18px;
+  padding: 28px;
+}
+
+.tech-card-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: $green;
+  text-transform: uppercase;
+  margin-top: 0 !important;
+  margin-bottom: 12px !important;
+  line-height: 1;
+}
+
+.tech-label-green {
+  color: $green;
+}
+
+// ══════════════════════════════
+//  BODY TEXT — justified, no hyphens
+// ══════════════════════════════
+.tech-body-text {
+  font-size: clamp(14.5px, 1.1vw, 15px);
+  line-height: 1.6;
+  color: $text-dark;
+  margin: 0 0 12px !important;
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: none;
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
+  word-spacing: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.tech-body-sub {
+  font-size: 14px;
+  color: $muted;
+  margin: 0 0 12px !important;
+  font-weight: 500;
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: none;
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
+  word-spacing: normal;
+}
+
+.tech-green {
+  color: $green;
+  font-weight: 600;
+}
+
+// ══════════════════════════════
+//  BULLET GRID
+// ══════════════════════════════
+.tech-bullet-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 14px 0 8px;
+}
+
+@media (max-width: 640px) {
+  .tech-bullet-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tech-bullet-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: $soft-mint;
+  border-radius: 12px;
+  border: 1px solid rgba(45, 182, 125, 0.12);
+  font-size: 13px;
+  font-weight: 500;
+  color: $navy;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    border-color: rgba(45, 182, 125, 0.3);
+    transform: translateX(2px);
+  }
+}
+
+.tech-bullet-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: $green;
+  flex-shrink: 0;
+}
+
+// ══════════════════════════════
+//  CORE LIST (Light version)
+// ══════════════════════════════
+.tech-core-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tech-core-item-light {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: $white;
+  border-radius: 14px;
+  border: 1px solid $border-light;
+  font-size: 13px;
+  font-weight: 500;
+  color: $text-dark;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    border-color: $green;
+    transform: translateX(4px);
+  }
+}
+
+.tech-core-num-light {
+  font-family: monospace;
+  font-size: 11px;
+  color: $green;
+  font-weight: 700;
+}
+
+// ══════════════════════════════
+//  LLM GRID (below image)
+// ══════════════════════════════
+.tech-llm-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 768px) {
+  .tech-llm-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tech-module-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: $white;
+}
+
+.tech-module-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: $green;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.tech-module-title-light {
+  font-size: 16px;
+  font-weight: 600;
+  color: $navy;
+  margin: 0 0 18px;
+  line-height: 1.4;
+}
+
+// ══════════════════════════════
+//  CAPABILITY LIST
+// ══════════════════════════════
+.tech-capability-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tech-capability-item-light {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: $soft-mint;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: $text-dark;
+  border: 1px solid transparent;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    border-color: rgba(45, 182, 125, 0.2);
+    transform: translateX(2px);
+  }
+}
+
+.tech-capability-icon-light {
+  color: $green;
+  flex-shrink: 0;
+}
+
+// ══════════════════════════════
+//  TAGS (KG nodes)
+// ══════════════════════════════
+.tech-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tech-tag-light {
+  padding: 8px 18px;
+  background: $soft-mint;
+  border: 1px solid rgba(45, 182, 125, 0.2);
+  border-radius: 40px;
+  font-size: 13px;
+  font-weight: 500;
+  color: $navy;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(45, 182, 125, 0.1);
+    border-color: $green;
+    transform: translateY(-1px);
+  }
+}
+
+// ══════════════════════════════
+//  SOLUTION IMAGE BANNER
+// ══════════════════════════════
+.tech-solution-banner {
+  margin: 16px 0 0;
+  border-radius: 18px;
+  overflow: hidden;
+  background: $white;
+  border: 1px solid $border-light;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+
+.tech-solution-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+// ══════════════════════════════
+//  SYNERGY BANNER
+// ══════════════════════════════
+.tech-synergy-banner {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 40px;
+  align-items: center;
+  background: $white;
+  border-radius: 18px;
+  padding: 36px;
+  border: 1px solid $border-light;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  margin-top: 24px;
+}
+
+@media (max-width: 900px) {
+  .tech-synergy-banner {
+    grid-template-columns: 1fr;
+    padding: 28px;
+  }
+}
+
+// ══════════════════════════════
+//  SYNERGY CAPTION
+// ══════════════════════════════
+.tech-synergy-caption-standalone {
+  margin-top: 0;
+
+  p {
+    font-size: clamp(14.5px, 1.1vw, 15px);
+    line-height: 1.72;
+    color: $muted;
+    margin: 0 auto;
+    max-width: 720px;
+    text-align: justify;
+    text-justify: inter-word;
+    hyphens: none;
+    -webkit-hyphens: none;
+    -ms-hyphens: none;
+    word-spacing: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+}
+
+.tech-mint-bold {
+  color: $green;
+  font-weight: 600;
+}
+
+// ══════════════════════════════
+//  RESPONSIVE — mobile card padding
+// ══════════════════════════════
+@media (max-width: 768px) {
+  .tech-card {
+    padding: 22px;
+  }
+
+  .tech-card-light {
+    padding: 22px;
+  }
+}

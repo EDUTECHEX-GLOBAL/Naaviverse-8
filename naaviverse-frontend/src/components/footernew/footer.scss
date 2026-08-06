@@ -1,0 +1,227 @@
+// ═══════════════════════════════════════════════
+//  Footer Styles — Enhanced Typography & Alignment
+// ═══════════════════════════════════════════════
+
+.footer {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(0deg, rgba(248, 253, 255, 0) 0%, rgba(241, 252, 255, 0.51) 48%, #f6fdff 100%);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.footer-main {
+  padding: 36px 0 28px !important;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1.3fr;
+  gap: 40px;
+  align-items: flex-start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Logo & Address ──
+.footer-logo {
+  margin-bottom: 4px !important;
+  padding-bottom: 0 !important;
+
+  img {
+    max-width: 110px;
+    height: auto;
+    display: block;
+    margin-bottom: 0 !important;
+  }
+}
+
+.footer-address {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #5B6A7D;
+  margin: 0 0 10px 0 !important;
+  padding: 0 !important;
+
+  .footer-head {
+    font-size: 15px;
+    color: #5B6A7D;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.6;
+
+    strong {
+      color: #1A1A2E;
+      font-weight: 700;
+      font-size: 15.5px;
+      letter-spacing: 0.02em;
+    }
+  }
+}
+
+.footer-socials {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+
+  .social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #000000;
+    color: #ffffff;
+    font-size: 16px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: #198754;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+// ── Headings & Contact ──
+.footer-heading {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  margin: 0 0 8px 0 !important;
+  padding: 0 !important;
+  color: #1A1A2E;
+  letter-spacing: -0.01em;
+  line-height: 1.2 !important;
+}
+
+.footer-contact {
+  font-size: 16px;
+  color: #2273E6;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+// ── Subscribe Box (Enhanced Size & Radius) ──
+.footer-subscribe {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 340px;
+  height: 46px;
+  border: 1px solid rgba(0, 40, 78, 0.35);
+  border-radius: 10px;
+  padding: 3px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+  margin-bottom: 3px;
+
+  input {
+    flex: 1;
+    height: 100%;
+    border: none !important;
+    background: transparent !important;
+    padding: 0 14px !important;
+    font-size: 15px;
+    color: #1A1A2E;
+    outline: none !important;
+    min-width: 0;
+
+    &::placeholder {
+      color: #99AAB8;
+      font-size: 15px;
+    }
+  }
+
+  button {
+    height: 100%;
+    background-color: #198754;
+    color: #ffffff;
+    border: none !important;
+    padding: 0 22px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+
+    &:hover {
+      background-color: #146c43;
+    }
+  }
+}
+
+// Subtext — 15px text, clean alignment, no wide gaps
+.footer-subtext {
+  font-size: 15px;
+  color: #5B6A7D;
+  line-height: 1.55;
+  margin: 6px 0 0 0 !important;
+  max-width: 340px;
+  text-align: left;
+  word-spacing: normal;
+  letter-spacing: normal;
+  hyphens: none;
+}
+
+// Message toggle below box
+.footer-msg {
+  max-width: 340px;
+  font-size: 14.5px !important;
+  font-weight: 600 !important;
+}
+
+// ── Footer Bottom ──
+.footer-bottom {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 16px 0 !important;
+}
+
+.footer-bottom-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #5B6A7D;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+}
+
+.footer-copy {
+  color: #5B6A7D;
+}
+
+.footer-policy-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  a {
+    color: #5B6A7D;
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #198754;
+    }
+  }
+
+  span {
+    color: rgba(0, 0, 0, 0.25);
+  }
+}

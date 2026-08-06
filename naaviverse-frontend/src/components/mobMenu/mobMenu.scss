@@ -1,0 +1,62 @@
+.mob-menu{
+    padding: 20px 5vw 20px 5vw;
+    height: calc(100vh - 4.5rem);
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: #FFFFFF;
+}
+
+.each-mob-title{
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 22px;
+    color: #100F0D;
+    padding: 15px;
+    margin: 15px 0px;
+    cursor: pointer;
+    border-radius: 35px;
+    padding-left: 35px;
+}
+
+.mob-buttons{
+    width: 90vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.mob-started{
+    background: linear-gradient(90deg, #59A2DD 4.23%, #186AB4 100%);
+    border-radius: 35px;
+    width: 80vw;
+    padding: 15px 0px;
+    text-align: center;
+    font-weight: 500;
+    font-size: 19px;
+    color: #FFFFFF;
+    cursor: pointer;
+    margin-top: 20px;
+    &:hover{
+        transform: scale(1.1);
+        transition: all ease 0.3s;
+    }
+}
+
+.mob-accountants{
+    background: #1F304F;
+    border-radius: 35px;
+    width: 80vw;
+    padding: 15px 0px;
+    text-align: center;
+    font-weight: 500;
+    font-size: 19px;
+    color: #FFFFFF;
+    cursor: pointer;
+    margin-top: 20px;
+    &:hover{
+        transform: scale(1.1);
+        transition: all ease 0.3s;
+    }
+}

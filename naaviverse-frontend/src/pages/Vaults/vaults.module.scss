@@ -1,0 +1,39 @@
+.vaultsMain {
+  height: 88%;
+
+  & > .headTab {
+    display: flex;
+    font-size: 0.85rem;
+    font-weight: 550;
+    color: #1f304f;
+    height: 5%;
+    padding: 0 3rem;
+    background: #e5e5e540;
+    border-bottom: 0.5px solid #e7e7e7;
+
+    & > div {
+      display: flex;
+      align-items: center;
+    }
+
+    //each child differs
+
+    & > :nth-child(1) {
+      width: 25%;
+    }
+    & > :nth-child(2) {
+      width: 22.5%;
+    }
+    & > :nth-child(3) {
+      width: 22.5%;
+    }
+    & > :nth-child(4) {
+      width: 30%;
+    }
+  }
+
+  & > .bodyContainer {
+    height: 95%;
+    overflow-y: scroll;
+  }
+}

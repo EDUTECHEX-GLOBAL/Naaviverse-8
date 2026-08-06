@@ -1,0 +1,205 @@
+@import "../../static/scss/colors";
+@import "../../static/scss/mixin";
+
+.drawernav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.sidebarSelect {
+    overflow-y: scroll;
+    height: calc(100vh - 385px);
+}
+
+.menuItems{
+    width: 100%;
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    height: 60px;
+    border: 1px solid rgba(231, 231, 231, 1);
+    margin: 20px 0 5px 0;
+    position: relative;
+    width: 100%;
+    cursor: pointer;
+}
+
+.draw-title {
+    font-weight: 600;
+    font-size: 24px;
+    color: #212224;
+}
+
+.subnavtitle {
+    display: flex;
+    width: 50%;
+    padding-top: 15px;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 0.5px solid #E7E7E7;
+
+    &.active {
+        background-color: #F5F5F5;
+    }
+
+    &.left {
+        border-right: 0.5px solid #E7E7E7;
+    }
+
+    &.right {
+        border-left: 0.5px solid #E7E7E7;
+    }
+}
+
+.close-img {
+    background: #4B9DDC;;
+    border-radius: 5px
+}
+
+.subdrawercontent__header {
+    display: flex;
+    padding: 30px 20px;
+}
+
+.drawCard {
+    background: #FFFFFF;
+    border: 0.5px solid #E7E7E7;
+    border-radius: 10px;
+    padding: 30px 25px;
+    margin-top: 30px;
+    font-weight: 500;
+    font-size: 15px;
+    color: #212224;
+
+    &:hover {
+        cursor: pointer;
+        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        border-radius: 10px;
+    }
+}
+
+.cardActive{
+    cursor: pointer;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+}
+
+.crumbs_data {
+    font-size: 15px;
+    text-decoration: underline;
+}
+
+.subdrawercontent__header__title {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0px;
+}
+
+.article_title {
+    margin: 0px;
+}
+
+.drawer_img {
+    border-radius: 25px;
+    border: 0.5px solid #E7E7E7;
+    height: 50px;
+    width: 50px;
+}
+
+.sidebarQuestionBox {
+    border: 0.5px solid #E7E7E7;
+    padding: 20px;
+    font-weight: 500;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+    position: relative;
+    border-radius: 5px;
+}
+
+.inputBox {
+    width: 100%;
+}
+
+.optionBtn {
+    width: 46px;
+    height: 36px;
+    margin-left: 10px;
+    background: transparent;
+    border: 0.5px solid #E7E7E7;
+    border-radius: 3px;
+    color: #E7E7E7;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.sidebarChoiceList {
+    height: calc(100vh - 491px);
+    overflow-y: scroll;
+}
+
+.inputWrap {
+    position: relative;
+
+    .text {
+        border: 0.5px solid #E7E7E7;
+        padding: 30px;
+        font-weight: 500;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        // margin-top: 20px;
+        position: relative;
+        width: 100%;
+    }
+
+    .plusImg1 {
+        position: absolute;
+        top: 30px;
+        right: 30px;
+        opacity: 0.5;
+        cursor: pointer;
+    }
+}
+
+.selectDropDown {
+    padding: 0px;
+    height: calc(100vh - 339px);
+    margin-top: 10px;
+}
+
+.metaFields {
+    margin-top: 50px;
+    margin-bottom: 20px;
+
+    .metaField {
+        position: relative;
+        border: 0.5px solid #E7E7E7;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        float: left;
+        display: inline;
+        margin-right: 20px;
+
+        .metaTitle {
+            font-size: 14px;
+            font-weight: 500;
+            color: #000000;
+            padding: 10px 20px;
+        }
+
+        .metaClose {
+            position: absolute;
+            right: -10px;
+            top: -10px;
+            cursor: pointer;
+        }
+    }
+}
+
+.category-scroll {
+    height: calc(100vh - 400px);
+    overflow: scroll;
+}

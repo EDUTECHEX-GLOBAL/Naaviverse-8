@@ -1,0 +1,281 @@
+.malls {
+  width: 80vw;
+  overflow-y: hidden;
+  // position: absolute;
+  inset: 0;
+}
+
+.malls-products {
+  width: 100%;
+  height: 100%;
+
+  .content-area {
+    width: 100%;
+    height: 100%;
+    // padding: 3rem 6rem 0rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    background: #e5e5e5;
+    .left-divv {
+      width: 65%;
+      height: 100%;
+      background: #ffffff;
+      border-right: 0.5px solid #e5e5e5;
+      .productt-det {
+        width: 100%;
+        height: 22%;
+        display: flex;
+        gap: 2rem;
+        padding: 2rem 3rem;
+        align-items: center;
+        border-bottom: 0.5px solid #e5e5e5;
+        .pro-name {
+          p {
+            margin-bottom: 0;
+          }
+        }
+      }
+      .about-section {
+        width: 88%;
+        padding: 2rem 0 3rem;
+        border-bottom: 0.5px solid #e5e5e5;
+        margin: auto;
+      }
+      .price-section {
+        width: 100%;
+        height: 78%;
+        overflow-y: scroll;
+        padding: 2rem 0;
+        .price-divv {
+          width: 88%;
+          margin: auto;
+          padding-top: 2rem;
+          padding-bottom: 2rem;
+          border-bottom: 0.5px solid #e5e5e5;
+          .pricing {
+            display: flex;
+            width: 100%;
+            // border: 1px solid;
+            padding: 1rem 0;
+            align-items: center;
+            .billing-txt {
+              width: 58%;
+            }
+            .pricing-btns {
+              width: 42%;
+              display: flex;
+              justify-content: space-between;
+              .onetym-btn {
+                width: 48.5%;
+                border: none;
+                border-radius: 35px;
+                padding: 1rem 0;
+                color: #1f304f;
+                font-weight: 600;
+              }
+            }
+          }
+        }
+      }
+    }
+    .right-divv {
+      width: 35%;
+      height: 100%;
+      background: #ffffff;
+      position: relative;
+      .amount-details {
+        width: 100%;
+        height: 20%;
+        display: flex;
+        padding: 2rem;
+        border-bottom: 0.5px solid #e5e5e5;
+        .left-amnt {
+          width: 50%;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: flex-start;
+          p {
+            margin-bottom: 0;
+          }
+          .amnt-font {
+            font-weight: 600;
+            color: #1f304f;
+            font-size: 25px;
+          }
+          .text-font {
+            font-weight: 700;
+            color: #1f304f;
+            font-size: 1rem;
+            opacity: 0.5;
+          }
+        }
+        .left-amnt1 {
+          width: 50%;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: flex-end;
+          p {
+            margin-bottom: 0;
+          }
+          .amnt-font {
+            font-weight: 600;
+            color: #1f304f;
+            font-size: 25px;
+          }
+          .text-font {
+            font-weight: 700;
+            color: #1f304f;
+            font-size: 1rem;
+            opacity: 0.5;
+          }
+        }
+      }
+      .billing {
+        width: 100%;
+        padding: 2rem;
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid #e5e5e5;
+        div {
+          font-weight: 700;
+          color: #1f304f;
+          font-size: 1rem;
+          opacity: 0.5;
+        }
+      }
+      .buttonss {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        bottom: 5%;
+        left: 0;
+        justify-content: space-between;
+        padding: 0 2rem;
+        gap: 1rem;
+        .buy-btn {
+          color: #ffffff;
+          font-weight: 500;
+          font-size: 15rpx;
+          background: #59a2dd;
+          border: none;
+          border-radius: 35px;
+          width: 100%;
+          max-height: 3.5rem;
+          padding: 1rem 2rem;
+          transition: all ease 0.3s;
+          cursor: pointer;
+          &:hover {
+            scale: 1.1;
+          }
+        }
+        .share-btn {
+          color: white;
+          font-weight: 500;
+          font-size: 15px;
+          background: #1f304f;
+          border: none;
+          border-radius: 35px;
+          width: 100%;
+          max-height: 3.5rem;
+          padding: 1rem 2rem;
+          transition: all ease 0.3s;
+          cursor: pointer;
+          &:hover {
+            scale: 1.1;
+          }
+        }
+      }
+      .buy-step1 {
+        width: 100%;
+        height: 100%;
+        padding: 2.5rem 2rem 2rem;
+        .searchh {
+          width: 100%;
+          height: 4rem;
+          // margin-top: 2rem;
+          border: 0.5px solid #e5e5e5;
+          border-radius: 35px;
+          input {
+            border: none;
+            font-size: 1rem;
+            color: #1f304f;
+            font-weight: 600;
+            width: 100%;
+            padding: 1rem 2rem;
+            height: 100%;
+            opacity: 0.25;
+          }
+        }
+        .coin-options {
+          width: 100%;
+          height: 70%;
+          overflow-y: scroll;
+          padding: 1rem 0;
+          .coin-comp {
+            margin-top: 1rem;
+            width: 100%;
+            height: 5rem;
+            border: 0.5px solid #e5e5e5;
+            border-radius: 35px;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            .coinnamee {
+              width: 50%;
+              padding-left: 10px;
+              font-size: 1rem;
+              color: #1f304f;
+              font-weight: 500;
+            }
+            .coinvaluee {
+              width: 44%;
+              display: flex;
+              justify-content: flex-end;
+              font-size: 1rem;
+              color: #1f304f;
+              font-weight: 500;
+            }
+          }
+        }
+        .boxx {
+          width: 100%;
+          height: 4rem;
+          margin-top: 3rem;
+          border: 0.5px solid #e5e5e5;
+          border-radius: 35px;
+          font-size: 0.95rem;
+          font-weight: 500;
+          padding-left: 1.5rem;
+          color: #1f304f;
+          display: flex;
+          align-items: center;
+          transition: all ease 0.3s;
+          cursor: pointer;
+          &:hover {
+            scale: 1.08;
+          }
+        }
+        .bottom-textt {
+          position: absolute;
+          transform: translate(-50%, -50%);
+          left: 47%;
+          bottom: 5%;
+          color: #1f304f;
+          font-size: 1.25rem;
+          font-weight: 600;
+        }
+        .success-text {
+          color: #1f304f;
+          font-size: 1.25rem;
+          font-weight: 500;
+          /* text-align: center; */
+          /* margin-top: 2rem; */
+        }
+      }
+    }
+  }
+}
