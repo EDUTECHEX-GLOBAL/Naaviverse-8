@@ -18,7 +18,7 @@ import globe from '../../assets/images/assets/naavi-icon4.webp';
 import car from '../../assets/images/assets/naavi-icon2.webp';
 import route from '../../assets/images/assets/naavi-icon3.webp';
 import './useranalysis.scss';
-import useranalysis from '../../assets/images/assets/useranalysis3.png';
+import useranalysis from '../../assets/images/assets/useranalysis3.webp';
 
 import BrandTwo from '../../components/brand/BrandTwo';
 import Footer from '../../components/footernew/index';
@@ -86,7 +86,7 @@ const UserAnalysis = () => {
                         content="https://naavinetwork.ai/logo512.png"
                     />
 
-                
+                    {/* Twitter */}
                     <meta
                         name="twitter:card"
                         content="summary_large_image"

@@ -8,8 +8,8 @@ import {
 } from "react-icons/hi2";
 import './Technology.scss';
 import Footer from '../../../components/footernew/index';
-import PathEngineImg from './images/Path_Engine.png';
-import SynergyImg from './images/Synergy_1.png';
+import PathEngineImg from './images/Path_Engine.webp';
+import SynergyImg from './images/Synergy_1.webp';
 
 const HEADER_OFFSET = 110;
 
@@ -69,12 +69,12 @@ const Technology = () => {
         const scrollToTarget = () => {
           const element = document.getElementById(sectionId);
           if (element) {
-            const top = element.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
-            window.scrollTo({ top, behavior: 'smooth' });
+            // scrollIntoView is scroll-container-agnostic; header offset via scroll-margin-top in CSS
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         };
         const timer1 = setTimeout(scrollToTarget, 80);
-        const timer2 = setTimeout(scrollToTarget, 300);
+        const timer2 = setTimeout(scrollToTarget, 400);
         return () => {
           clearTimeout(timer1);
           clearTimeout(timer2);

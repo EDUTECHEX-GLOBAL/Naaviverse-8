@@ -10,7 +10,11 @@ import {
   FaTimes,
 } from 'react-icons/fa';
 
+<<<<<<< HEAD
 import assessalogo from "../../assets/images/logo/naavi_final_logo2.png";
+=======
+import assessalogo from "../../assets/images/logo/naavi_final_logo2.webp";
+>>>>>>> 4fc9065f1b106bc8b5cb41573fe4a5ea6ca58935
 import { useState } from "react";
 import "./AdminStyles.scss";
 

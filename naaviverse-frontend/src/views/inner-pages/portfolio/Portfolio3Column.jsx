@@ -6,7 +6,7 @@ import 'aos/dist/aos.css';
 
 import TopNavFour from '../../../components/header/TopNavFour';
 import Footer from '../../../components/footernew/index';
-import SolutionImage from '../../../assets/images/assets/solution.png';
+import SolutionImage from '../../../assets/images/assets/solution.webp';
 
 const Portfolio3Column = () => {
     useEffect(() => {
