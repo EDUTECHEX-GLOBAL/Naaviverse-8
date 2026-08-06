@@ -410,8 +410,8 @@ $success: #27ae60;
 // ══════════════════════════════
 @media (max-width: 768px) {
   .contact-hero {
-    padding: 32px 0 20px;
-    margin-top: 70px;
+    margin-top: 140px !important;
+    padding: 0 0 20px !important;
   }
 
   .contact-hero-title {
@@ -469,8 +469,8 @@ $success: #27ae60;
 
 @media (max-width: 480px) {
   .contact-hero {
-    margin-top: 60px;
-    padding: 24px 0 16px;
+    margin-top: 140px !important;
+    padding: 0 0 16px !important;
   }
 
   .contact-hero-title {

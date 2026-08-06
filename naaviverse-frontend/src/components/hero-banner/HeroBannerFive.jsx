@@ -6,11 +6,24 @@ import './homebanner.scss';
 const HeroBannerFive = () => {
     const handleGenerateClick = (e) => {
         e.preventDefault();
-        window.dispatchEvent(new Event("openSidebar"));
+        window.dispatchEvent(new CustomEvent("openSidebar", { detail: { scrollToSubscribe: true } }));
         const toggleBtn = document.querySelector(".menu-icon-btn");
         if (toggleBtn) {
             toggleBtn.click();
         }
+
+        // Scroll inside the sidebar drawer to the Subscribe / Contact Us section
+        const scrollDrawer = () => {
+            const subBox = document.getElementById("mobile-subscribe-section") ||
+                           document.querySelector(".side-panel .newsletter") ||
+                           document.querySelector(".side-panel-box:nth-child(3)");
+            if (subBox) {
+                subBox.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        };
+
+        setTimeout(scrollDrawer, 100);
+        setTimeout(scrollDrawer, 350);
     };
 
     return (

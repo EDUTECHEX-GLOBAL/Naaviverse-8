@@ -3,13 +3,13 @@ import { useParams, useLocation } from 'react-router-dom';
 import { Helmet } from "react-helmet-async";
 import './impact.scss';
 import Footer from '../../../components/footernew/index';
-import skillGapProblemImg from './images/skill_gap_problem.png';
-import futureWorkforceImg from './images/future_workforce_1.png';
-import studentOutcomesImg from './images/student_outcomes.png';
-import educationTransformationImg from './images/edu_transf.png';
-import humanPotentialImg from './images/human_potential.png';
-import globalOpportunityImg from './images/global_opportunity_access.png';
-import sdgImpactImg from './images/SDG_Social_Impact.png';
+import skillGapProblemImg from './images/skill_gap_problem.webp';
+import futureWorkforceImg from './images/future_workforce_1.webp';
+import studentOutcomesImg from './images/student_outcomes.webp';
+import educationTransformationImg from './images/edu_transf.webp';
+import humanPotentialImg from './images/human_potential.webp';
+import globalOpportunityImg from './images/global_opportunity_access.webp';
+import sdgImpactImg from './images/SDG_Social_Impact.webp';
 
 const HEADER_OFFSET = 180;
 
@@ -153,13 +153,12 @@ const Impact = () => {
         const scrollToTarget = () => {
           const element = document.getElementById(sectionId);
           if (element) {
-            const top = element.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
-            window.scrollTo({ top, behavior: 'smooth' });
+            // scrollIntoView is scroll-container-agnostic; header offset via scroll-margin-top in CSS
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         };
-
         const timer1 = setTimeout(scrollToTarget, 80);
-        const timer2 = setTimeout(scrollToTarget, 300);
+        const timer2 = setTimeout(scrollToTarget, 400);
         return () => {
           clearTimeout(timer1);
           clearTimeout(timer2);

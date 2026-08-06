@@ -14,18 +14,41 @@ $border-light: rgba(0, 0, 0, 0.06);
 
 // ── Animations ──
 @keyframes tech-fade-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes tech-pulse {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.2); opacity: 0.8; }
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
 }
 
 @keyframes tech-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 // ── Base Container ──
@@ -215,7 +238,7 @@ $border-light: rgba(0, 0, 0, 0.06);
   padding: 28px;
   transition: all 0.3s ease;
 
-  > *:first-child {
+  >*:first-child {
     margin-top: 0;
   }
 }

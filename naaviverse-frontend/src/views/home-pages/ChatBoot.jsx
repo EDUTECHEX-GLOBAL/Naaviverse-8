@@ -97,37 +97,37 @@ const ChatBoot = () => {
                                         style={{
                                         width: '200px',
                                         height: '200px'
-                                    }}><img src="images/logo/Plogo-16.png" alt=""/></div>
+                                    }}><img src="images/logo/Plogo-16.webp" alt=""/></div>
                                     <div
                                         className="round-bg d-flex align-items-center justify-content-center shapes logo-one"
                                         style={{
                                         width: '70px',
                                         height: '70px'
-                                    }}><img src="images/logo/Plogo-17.png" alt=""/></div>
+                                    }}><img src="images/logo/Plogo-17.webp" alt=""/></div>
                                     <div
                                         className="round-bg d-flex align-items-center justify-content-center shapes logo-two"
                                         style={{
                                         width: '115px',
                                         height: '115px'
-                                    }}><img src="images/logo/Plogo-18.png" alt=""/></div>
+                                    }}><img src="images/logo/Plogo-18.webp" alt=""/></div>
                                     <div
                                         className="round-bg d-flex align-items-center justify-content-center shapes logo-three"
                                         style={{
                                         width: '89px',
                                         height: '89px'
-                                    }}><img src="images/logo/Plogo-19.png" alt=""/></div>
+                                    }}><img src="images/logo/Plogo-19.webp" alt=""/></div>
                                     <div
                                         className="round-bg d-flex align-items-center justify-content-center shapes logo-four"
                                         style={{
                                         width: '162px',
                                         height: '162px'
-                                    }}><img src="images/logo/Plogo-20.png" alt=""/></div>
+                                    }}><img src="images/logo/Plogo-20.webp" alt=""/></div>
                                     <div
                                         className="round-bg d-flex align-items-center justify-content-center shapes logo-five"
                                         style={{
                                         width: '115px',
                                         height: '115px'
-                                    }}><img src="images/logo/Plogo-21.png" alt=""/></div>
+                                    }}><img src="images/logo/Plogo-21.webp" alt=""/></div>
                                 </div>
                             </div>
                         </div>
@@ -154,8 +154,8 @@ const ChatBoot = () => {
                     {/* /.container */}
                     <img src="images/shape/shape_20.svg" alt="" className="shapes shape-one"/>
                     <img src="images/shape/shape_21.svg" alt="" className="shapes shape-two"/>
-                    <img src="images/shape/shape_22.png" alt="" className="shapes shape-three"/>
-                    <img src="images/shape/shape_23.png" alt="" className="shapes shape-four"/>
+                    <img src="images/shape/shape_22.webp" alt="" className="shapes shape-three"/>
+                    <img src="images/shape/shape_23.webp" alt="" className="shapes shape-four"/>
                 </div>
                 {/* /.fancy-feature-eleven */}
 
@@ -243,9 +243,9 @@ const ChatBoot = () => {
                             <BannerTwo/>
                         </div>
                         {/* /.container */}
-                        <img src="images/shape/shape_27.png" alt="" className="shapes shape-one"/>
-                        <img src="images/shape/shape_28.png" alt="" className="shapes shape-two"/>
-                        <img src="images/shape/shape_29.png" alt="" className="shapes shape-three"/>
+                        <img src="images/shape/shape_27.webp" alt="" className="shapes shape-one"/>
+                        <img src="images/shape/shape_28.webp" alt="" className="shapes shape-two"/>
+                        <img src="images/shape/shape_29.webp" alt="" className="shapes shape-three"/>
                     </div>
                     {/* /.bg-wrapper */}
                 </div>
@@ -279,9 +279,9 @@ const ChatBoot = () => {
                 {/* /.address-section-one */}
 
                 <div className="footer-style-three theme-basic-footer">
-                    <img src="images/shape/shape_30.png" alt="" className="shapes shape-one"/>
-                    <img src="images/shape/shape_28.png" alt="" className="shapes shape-two"/>
-                    <img src="images/shape/shape_29.png" alt="" className="shapes shape-three"/>
+                    <img src="images/shape/shape_30.webp" alt="" className="shapes shape-one"/>
+                    <img src="images/shape/shape_28.webp" alt="" className="shapes shape-two"/>
+                    <img src="images/shape/shape_29.webp" alt="" className="shapes shape-three"/>
                     <div className="container">
                         <div className="inner-wrapper">
                             <Footer />

@@ -4,11 +4,11 @@ import { useParams, useLocation } from 'react-router-dom';
 import Footer from '../../../../components/footernew/index';
 import './AboutPage.scss';
 
-import whatImg from './images/What is naavi.png';
-import naaviverseImg from './images/Naaviverse.png';
-import visionImg from './images/Our Vision.png';
-import navigationProblemImg from './images/Navigation Problem.png';
-import missionImg from './images/Mission and Philosophy.png';
+import whatImg from './images/What is naavi.webp';
+import naaviverseImg from './images/Naaviverse.webp';
+import visionImg from './images/Our Vision.webp';
+import navigationProblemImg from './images/Navigation Problem.webp';
+import missionImg from './images/Mission and Philosophy.webp';
 
 const HEADER_OFFSET = 80;
 
@@ -59,23 +59,30 @@ const AboutPage = () => {
     return mapping[sectionName] || null;
   };
 
-  // Scroll to section when URL param changes
+  // Scroll to section when URL param changes (scrollIntoView is scroll-container-agnostic)
   useEffect(() => {
     if (section) {
       const sectionId = getSectionId(section);
       if (sectionId) {
-        setTimeout(() => {
+        const scrollToTarget = () => {
           const element = document.getElementById(sectionId);
           if (element) {
-            const top = element.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
-            window.scrollTo({ top, behavior: 'smooth' });
+            // scrollIntoView works regardless of which element is the scroll container.
+            // Header offset is applied via scroll-margin-top in master.scss
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
-        }, 120);
+        };
+        const timer1 = setTimeout(scrollToTarget, 80);
+        const timer2 = setTimeout(scrollToTarget, 400);
+        return () => {
+          clearTimeout(timer1);
+          clearTimeout(timer2);
+        };
       }
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [section, location.pathname]);
+  }, [section, location.pathname, location.key]);
 
   return (
     <Fragment>

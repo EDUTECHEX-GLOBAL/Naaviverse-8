@@ -33,7 +33,19 @@ const TopNavFour = () => {
 
   // Listen for openSidebar custom event
   useEffect(() => {
-    const handleCustomOpen = () => setSidebarOpen(true);
+    const handleCustomOpen = (e) => {
+      setSidebarOpen(true);
+      if (e?.detail?.scrollToSubscribe) {
+        setTimeout(() => {
+          const subBox = document.getElementById("mobile-subscribe-section") ||
+                         document.querySelector(".side-panel .newsletter") ||
+                         document.querySelector(".side-panel-box:nth-child(3)");
+          if (subBox) {
+            subBox.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 350);
+      }
+    };
     window.addEventListener("openSidebar", handleCustomOpen);
     return () => window.removeEventListener("openSidebar", handleCustomOpen);
   }, []);

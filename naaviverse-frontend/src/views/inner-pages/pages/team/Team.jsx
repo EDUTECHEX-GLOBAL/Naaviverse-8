@@ -4,9 +4,9 @@ import { Helmet } from "react-helmet-async";
 import { HiOutlineUserGroup } from "react-icons/hi2";
 import './Team.scss';
 import Footer from '../../../../components/footernew/index';
-import buildingBeyondImg from './images/Building.png';
+import buildingBeyondImg from './images/Building.webp';
 import ndustryImg from './images/naavi_advisors.gif';
-import whatDrivesUsImg from './images/what drives us.png';
+import whatDrivesUsImg from './images/what drives us.webp';
 
 const HEADER_OFFSET = 100;
 
@@ -48,12 +48,12 @@ const Team = () => {
         const scrollToTarget = () => {
           const element = document.getElementById(sectionId);
           if (element) {
-            const top = element.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
-            window.scrollTo({ top, behavior: 'smooth' });
+            // scrollIntoView is scroll-container-agnostic; header offset via scroll-margin-top in CSS
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         };
         const timer1 = setTimeout(scrollToTarget, 80);
-        const timer2 = setTimeout(scrollToTarget, 300);
+        const timer2 = setTimeout(scrollToTarget, 400);
         return () => {
           clearTimeout(timer1);
           clearTimeout(timer2);

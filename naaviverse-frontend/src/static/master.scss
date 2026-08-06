@@ -43,7 +43,12 @@ svg {
 }
 
 /* 🔥 GLOBAL INNER PAGES HEADING FIX */
-h1, h2, h3, h4, h5, h6,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
 .main-title,
 .tech-section-title,
 .team-section-title,
@@ -55,7 +60,10 @@ h1, h2, h3, h4, h5, h6,
   color: #1A1A2E;
 }
 
-h1 span, h2 span, h3 span, h4 span,
+h1 span,
+h2 span,
+h3 span,
+h4 span,
 .main-title span,
 .tech-section-title span,
 .team-section-title span,
@@ -83,4 +91,63 @@ h1 span, h2 span, h3 span, h4 span,
   inset: 0;
   z-index: 4;
   background: rgba(0, 0, 0, 0.8);
+}
+
+/* ── SECTION SCROLL OFFSET ──
+   scrollIntoView() respects scroll-margin-top, which offsets the fixed header.
+   Applied globally to every anchored section across all inner pages.
+   Set to 120px so text headings are pulled down with clean breathing space below the header. */
+.ab-section,
+.tech-section,
+.team-section,
+.imp-story,
+[id^="ab-"],
+[id^="team-"],
+[id^="pathways"],
+[id^="llms"],
+[id^="ai-matching"],
+[id^="research"],
+[id^="roadmap"],
+[id^="security"],
+[id="skill-gap-problem"],
+[id="future-workforce"],
+[id="student-outcomes"],
+[id="education-transformation"],
+[id="human-potential"],
+[id="global-opportunity-access"],
+[id="sdgs-social-impact"],
+[id="success-stories"] {
+  scroll-margin-top: 120px;
+}
+
+/* ── MOBILE INNER PAGE OFFSET (UNIFORM 140PX ALIGNMENT) ──
+   Standardized 140px top clearance for the first section of ALL inner pages on mobile. */
+@media (max-width: 991px) {
+
+  /* About Page first section ("What is Naavi?") */
+  .ab-page {
+    padding-top: 0 !important;
+  }
+
+  section#ab-what {
+    padding-top: 140px !important;
+  }
+
+  /* Technology Page first section ("Pathways Engine") */
+  section#pathways,
+  .tech-pathways {
+    padding-top: 140px !important;
+  }
+
+  /* Impact Page first section ("Skill Gap Problem") */
+  section#skill-gap-problem,
+  .imp-story:first-of-type {
+    padding-top: 140px !important;
+  }
+
+  /* Team Page first section ("MEET THE FOUNDERS") */
+  section#team-founders,
+  .team-hero {
+    padding-top: 140px !important;
+  }
 }

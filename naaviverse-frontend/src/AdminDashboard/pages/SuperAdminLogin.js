@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./AdminStyles.scss";
-import logo from "../../assets/images/logo/naavi_final_logo2.png";
+import logo from "../../assets/images/logo/naavi_final_logo2.webp";
 import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
