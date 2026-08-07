@@ -1,183 +1,207 @@
-// VisitorsList.scss — Mobile-first, Premium Pastel
+// VisitorsList.scss — Compact, Naavi brand colors
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
-$pastel-bg:       #f0f4ff;
-$pastel-white:    #ffffff;
-$pastel-lavender: #f5f3ff;
-$border:          #e8edf5;
-$text-primary:    #1e2435;
-$text-secondary:  #5a6481;
-$text-muted:      #9aa1b5;
+// ── Naavi brand palette ────────────────────────────────────
+$brand-green:   #1FA655;
+$brand-blue:    #3E7BFA;
+$brand-yellow:  #F5B324;
+$brand-red:     #E5473C;
+
+$green-bg:      #D8F3E5;
+$green-border:  #9EE4B5;
+$green-text:    #16a34a;
+
+$blue-bg:       #DBE8FF;
+$blue-border:   #A4C2FF;
+$blue-text:     #2563eb;
+
+$yellow-bg:     #FEEAC4;
+$yellow-border: #FCD080;
+$yellow-text:   #d97706;
+
+$red-bg:        #FCDCDC;
+$red-border:    #F7A8A2;
+$red-text:      #dc2626;
+
+$page-bg:       #f4f7fb;
+$surface:       #ffffff;
+$border:        #e7ebf1;
+$text-primary:  #1a2233;
+$text-secondary:#6b7385;
+$text-muted:    #9aa1b5;
 
 // ── Root ──────────────────────────────────────────────────
 .visitors-list {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px 16px 48px;
+  padding: 0 2px 14px;
   font-family: 'DM Sans', -apple-system, sans-serif;
-  background: $pastel-bg;
+  background: $page-bg;
   min-height: 100vh;
+  font-size: 12px;
 
   @media (min-width: 768px) {
-    padding: 28px 28px 48px;
+    padding: 0 2px 14px;
   }
 
   // ── Header ────────────────────────────────────────────
   &__header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 18px;
-    gap: 10px;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 8px;
     flex-wrap: wrap;
   }
 
   &__title {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 16px;
+    font-weight: 700;
     color: $text-primary;
-    margin: 0 0 3px;
-    letter-spacing: -0.3px;
+    margin: 0 0 1px;
+    letter-spacing: -0.2px;
 
-    @media (min-width: 768px) { font-size: 22px; }
+    @media (min-width: 768px) { font-size: 18px; }
   }
 
   &__subtitle {
-    font-size: 12px;
+    font-size: 11px;
     color: $text-secondary;
     margin: 0;
-
-    @media (min-width: 768px) { font-size: 13px; }
   }
 
   &__actions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-shrink: 0;
 
+    .ant-btn { display: inline-flex; align-items: center; gap: 5px; }
+
     .btn-outline {
-      border: 1.5px solid $border;
-      background: $pastel-white;
+      border: 1px solid $border;
+      background: $surface;
       color: $text-secondary;
-      font-size: 13px;
+      font-size: 12px;
+      font-weight: 600;
       font-family: 'DM Sans', sans-serif;
-      height: 34px;
-      padding: 0 14px;
-      border-radius: 10px;
-      transition: all 0.18s;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 8px;
+      transition: all 0.15s;
 
       &:hover {
-        border-color: #6ee7b7;
-        color: #065f46;
-        background: #d1fae5;
+        border-color: $brand-red;
+        color: $red-text;
+        background: $red-bg;
       }
     }
 
     .btn-primary {
-      background: #6366f1;
+      background: $brand-blue;
       border: none;
-      font-size: 13px;
+      font-size: 12px;
       font-family: 'DM Sans', sans-serif;
-      font-weight: 500;
-      height: 34px;
-      padding: 0 16px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
-      transition: background 0.18s;
+      font-weight: 600;
+      height: 28px;
+      padding: 0 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(62, 123, 250, 0.28);
+      transition: background 0.15s;
 
-      &:hover { background: #4f46e5; }
+      &:hover { background: darken($brand-blue, 8%); }
     }
   }
 
   // ── Stat Pills ────────────────────────────────────────
   &__stats {
     display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
+    gap: 6px;
+    margin-bottom: 8px;
     flex-wrap: wrap;
   }
 
   .stat-pill {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    padding: 6px 12px 6px 9px;
-    border-radius: 40px;
+    gap: 5px;
+    padding: 4px 10px 4px 8px;
+    border-radius: 30px;
     border: 1px solid transparent;
     font-family: 'DM Sans', sans-serif;
 
-    &__icon {
-      font-size: 12px;
-      flex-shrink: 0;
-    }
+    &__icon { font-size: 11px; flex-shrink: 0; }
 
     &__value {
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 700;
       line-height: 1;
       color: $text-primary;
     }
 
     &__label {
-      font-size: 10px;
-      font-weight: 500;
+      font-size: 9px;
+      font-weight: 600;
       color: $text-secondary;
       text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.3px;
     }
 
     &--green {
-      background: #d1fae5;
-      border-color: #a7f3d0;
-      .stat-pill__icon { color: #065f46; }
+      background: $green-bg;
+      border-color: $green-border;
+      .stat-pill__icon { color: #15803d; }
+      .stat-pill__value { color: #15803d !important; }
     }
 
     &--blue {
-      background: #dbeafe;
-      border-color: #bfdbfe;
+      background: $blue-bg;
+      border-color: $blue-border;
       .stat-pill__icon { color: #1d4ed8; }
+      .stat-pill__value { color: #1d4ed8 !important; }
     }
 
-    &--cyan {
-      background: #cffafe;
-      border-color: #a5f3fc;
-      .stat-pill__icon { color: #0e7490; }
+    &--yellow {
+      background: $yellow-bg;
+      border-color: $yellow-border;
+      .stat-pill__icon { color: #b45309; }
+      .stat-pill__value { color: #b45309 !important; }
     }
   }
 
   // ── Filters ───────────────────────────────────────────
   &__filters {
     display: flex;
-    flex-direction: row;        // horizontal even on mobile
+    flex-direction: row;
     flex-wrap: wrap;
     align-items: flex-end;
-    gap: 12px;
-    background: $pastel-white;
-    padding: 12px 16px;
-    border-radius: 14px;
-    margin-bottom: 16px;
+    gap: 8px;
+    background: $surface;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
     border: 1px solid $border;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
 
     .filter-item {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 3px;
       flex: 1;
-      min-width: 120px;
-      max-width: 200px;
+      min-width: 110px;
+      max-width: 170px;
 
       .filter-label {
-        font-size: 10px;
-        font-weight: 600;
+        font-size: 9px;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.4px;
         color: $text-muted;
         display: flex;
         align-items: center;
-        gap: 4px;
-        svg { font-size: 10px; }
+        gap: 3px;
+        svg { font-size: 9px; }
       }
 
       .filter-date,
@@ -185,32 +209,41 @@ $text-muted:      #9aa1b5;
       .filter-search {
         width: 100%;
 
-        // Ant Design internals
         .ant-picker,
-        .ant-input-affix-wrapper {
+        .ant-input-affix-wrapper,
+        .ant-input {
           width: 100%;
-          border-radius: 9px;
+          border-radius: 7px;
           border-color: $border;
-          height: 34px;
-          font-size: 12px;
+          height: 28px;
+          font-size: 11px;
           font-family: 'DM Sans', sans-serif;
-          background: $pastel-lavender;
+          background: #fbfcfe;
 
-          &:hover, &-focused { border-color: #a5b4fc; }
+          &:hover, &-focused { border-color: $brand-blue; }
         }
 
-        // Select needs selector targeting
         &.ant-select {
           .ant-select-selector {
-            border-radius: 9px !important;
+            border-radius: 7px !important;
             border-color: $border !important;
-            height: 34px !important;
-            font-size: 12px;
+            height: 28px !important;
+            font-size: 11px;
             font-family: 'DM Sans', sans-serif;
-            background: $pastel-lavender !important;
+            background: #fbfcfe !important;
             align-items: center;
 
-            &:hover { border-color: #a5b4fc !important; }
+            .ant-select-selection-item,
+            .ant-select-selection-placeholder {
+              line-height: 26px;
+              font-size: 11px;
+            }
+
+            &:hover { border-color: $brand-blue !important; }
+          }
+          &.ant-select-focused .ant-select-selector {
+            border-color: $brand-blue !important;
+            box-shadow: 0 0 0 2px rgba(62, 123, 250, 0.15) !important;
           }
         }
       }
@@ -221,53 +254,43 @@ $text-muted:      #9aa1b5;
   &__summary {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: 6px;
+    margin-bottom: 10px;
     padding: 0 2px;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     color: $text-muted;
     text-transform: uppercase;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.3px;
     flex-wrap: wrap;
 
     .summary-badge {
-      background: #d1fae5;
-      color: #065f46;
-      padding: 2px 9px;
+      background: $green-bg;
+      color: $green-text;
+      padding: 2px 8px;
       border-radius: 20px;
-      font-size: 11px;
+      font-size: 10px;
       text-transform: none;
       letter-spacing: 0;
     }
   }
 
-  // ── Table Wrapper — horizontal scroll on mobile ───────
+  // ── Table Wrapper ──────────────────────────────────────
   &__table-wrapper {
-    border-radius: 16px;
+    border-radius: 12px;
     border: 1px solid $border;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-    overflow-x: auto;                       // ← KEY: horizontal scroll
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    overflow-x: auto;
     overflow-y: visible;
-    -webkit-overflow-scrolling: touch;      // smooth iOS scroll
-
-    // scroll shadow hint on edges
-    background:
-      linear-gradient(to right, $pastel-white 30%, rgba(255,255,255,0)),
-      linear-gradient(to right, rgba(255,255,255,0), $pastel-white 70%) 100% 0,
-      radial-gradient(farthest-side at 0% 50%, rgba(0,0,0,0.08), transparent),
-      radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,0.08), transparent) 100% 0;
-    background-repeat: no-repeat;
-    background-color: $pastel-white;
-    background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
-    background-attachment: local, local, scroll, scroll;
+    -webkit-overflow-scrolling: touch;
+    background: $surface;
   }
 
   // ── Pagination ────────────────────────────────────────
   &__pagination {
     display: flex;
-    justify-content: center;      // center on mobile
-    margin-top: 20px;
+    justify-content: center;
+    margin-top: 14px;
 
     @media (min-width: 768px) {
       justify-content: flex-end;
@@ -280,137 +303,132 @@ $text-muted:      #9aa1b5;
   width: 100%;
   border-collapse: collapse;
   font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  table-layout: auto;
-  min-width: 620px;       // ← triggers horizontal scroll before this width
+  font-size: 12px;
+  table-layout: fixed;
+  min-width: 820px;
 
-  thead tr { background: $pastel-lavender; }
+  thead tr { background: #f8fafc; }
 
   th {
-    padding: 11px 14px;
+    padding: 8px 12px;
     text-align: left;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
     color: $text-muted;
     border-bottom: 1px solid $border;
     white-space: nowrap;
   }
 
   td {
-    padding: 12px 14px;
+    padding: 8px 12px;
     border-bottom: 1px solid #f1f5fb;
     color: $text-primary;
     vertical-align: middle;
-    line-height: 1.5;
+    line-height: 1.4;
   }
 
   tr:last-child td { border-bottom: none; }
-  tr:hover td { background: $pastel-lavender; transition: background 0.12s; }
+  tr:hover td { background: $blue-bg; transition: background 0.12s; }
   tbody tr:nth-child(even) td { background: #fafbff; }
-  tbody tr:nth-child(even):hover td { background: $pastel-lavender; }
+  tbody tr:nth-child(even):hover td { background: $blue-bg; }
 
-  // S.No
   .col-sn {
-    width: 44px;
+    width: 56px;
     text-align: center;
     color: $text-muted;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
   }
   th.col-sn { text-align: center; }
 
-  // Location
   .col-location {
-    width: auto;
+    width: 46%;
 
     .location-cell {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 7px;
 
       .location-icon {
-        font-size: 14px;
-        color: #10b981;
-        opacity: 0.8;
+        font-size: 12px;
+        color: $brand-green;
+        opacity: 0.85;
         flex-shrink: 0;
       }
 
       .location-city {
-        font-weight: 600;
-        font-size: 13px;
+        font-weight: 700;
+        font-size: 12px;
         color: $text-primary;
         white-space: nowrap;
       }
 
       .location-country {
-        font-size: 11px;
+        font-size: 10px;
         color: $text-muted;
         white-space: nowrap;
       }
     }
   }
 
-  // IP — monospace, no truncation
   .col-ip {
-    width: 150px;
+    width: 190px;
 
     .ip-cell {
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 5px;
 
       .ip-icon {
-        font-size: 12px;
-        color: #6366f1;
+        font-size: 11px;
+        color: $brand-blue;
         flex-shrink: 0;
       }
 
       .ip-address {
         font-family: 'DM Mono', monospace;
-        font-size: 12px;
+        font-size: 11px;
         color: #334155;
         white-space: nowrap;
       }
     }
   }
 
-  // Region badge
   .col-region {
-    width: 130px;
+    width: 180px;
 
     .region-badge {
       display: inline-block;
-      padding: 3px 10px;
+      padding: 2px 8px;
       border-radius: 20px;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
-      background: #cffafe;
-      color: #0e7490;
-      border: 1px solid #a5f3fc;
+      background: $blue-bg;
+      color: $blue-text;
+      border: 1px solid $blue-border;
       white-space: nowrap;
     }
   }
 
-  // Date
   .col-date {
-    width: 110px;
+    width: 170px;
     white-space: nowrap;
 
     .date-wrap {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 1px;
 
       .date {
-        font-size: 12px;
-        font-weight: 500;
+        font-size: 11px;
+        font-weight: 600;
         color: $text-primary;
       }
 
       .time {
-        font-size: 11px;
+        font-size: 10px;
         color: $text-muted;
       }
     }
@@ -422,13 +440,13 @@ $text-muted:      #9aa1b5;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 60px 20px;
+  padding: 48px 16px;
 
   .loading-spinner {
-    width: 28px;
-    height: 28px;
-    border: 2.5px solid $border;
-    border-top-color: #6366f1;
+    width: 22px;
+    height: 22px;
+    border: 2px solid $border;
+    border-top-color: $brand-blue;
     border-radius: 50%;
     animation: spin 0.75s linear infinite;
   }
@@ -439,49 +457,206 @@ $text-muted:      #9aa1b5;
 // ── Empty ─────────────────────────────────────────────────
 .empty-state {
   text-align: center;
-  padding: 60px 20px;
+  padding: 48px 16px;
 
   .empty-icon {
-    font-size: 40px;
+    font-size: 32px;
     opacity: 0.45;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   p {
     color: $text-secondary;
-    font-size: 14px;
-    margin: 0 0 10px;
+    font-size: 12px;
+    margin: 0 0 8px;
   }
 }
 
-// ── Ant Design overrides ──────────────────────────────────
+// ── AntD overrides — compact inputs & SMALL calendar panel ──
 .ant-picker-dropdown,
 .ant-select-dropdown {
-  font-size: 13px;
+  font-size: 11px;
   font-family: 'DM Sans', sans-serif;
+}
+
+// This is the actual fix for the oversized calendar popup —
+// size="small" on the input does NOT shrink the panel by itself.
+.ant-picker-panel-container {
+  font-size: 11px;
+
+  .ant-picker-panel {
+    .ant-picker-header {
+      padding: 0 6px;
+      height: 28px;
+      line-height: 28px;
+
+      button { font-size: 11px; line-height: 28px; }
+    }
+
+    .ant-picker-body { padding: 6px 8px; }
+
+    .ant-picker-content {
+      th { font-size: 9px; padding-bottom: 2px; }
+
+      td {
+        padding: 1px 0;
+
+        .ant-picker-cell-inner {
+          width: 22px;
+          height: 22px;
+          line-height: 22px;
+          font-size: 11px;
+          border-radius: 6px;
+        }
+      }
+    }
+
+    .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner {
+      background: $brand-blue;
+    }
+
+    .ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner::before {
+      border-color: $brand-blue;
+    }
+
+    .ant-picker-footer { min-width: 0; }
+  }
+
+  .ant-picker-date-panel,
+  .ant-picker-month-panel,
+  .ant-picker-year-panel {
+    width: 220px;
+  }
+}
+
+.ant-select-item {
+  font-size: 11px;
+  min-height: 26px;
+  padding: 4px 10px;
+
+  &-option-selected { background: $blue-bg; color: $blue-text; font-weight: 600; }
 }
 
 .ant-pagination {
   .ant-pagination-item {
-    min-width: 28px;
-    height: 28px;
-    line-height: 28px;
-    font-size: 12px;
-    border-radius: 8px;
+    min-width: 24px;
+    height: 24px;
+    line-height: 24px;
+    font-size: 11px;
+    border-radius: 6px;
     font-family: 'DM Sans', sans-serif;
+    border-color: $border;
+
+    a { color: $text-secondary; }
   }
 
   .ant-pagination-item-active {
-    background: #d1fae5;
-    border-color: #6ee7b7;
-    a { color: #065f46; }
+    background: $green-bg;
+    border-color: $brand-green;
+    a { color: $green-text; font-weight: 700; }
   }
 
   .ant-pagination-prev,
   .ant-pagination-next {
-    min-width: 28px;
-    height: 28px;
-    line-height: 28px;
-    border-radius: 8px;
+    min-width: 24px;
+    height: 24px;
+    line-height: 24px;
+    border-radius: 6px;
+  }
+
+  .ant-pagination-item-ellipsis { font-size: 11px; }
+}
+
+@media (max-width: 480px) {
+  .visitors-list {
+    &__filters { gap: 6px; padding: 8px; }
+    .filter-item { min-width: 47%; max-width: 47%; }
+  }
+}
+
+/* Cross-device admin responsiveness */
+.visitors-list {
+  box-sizing: border-box;
+  max-width: none;
+  overflow-x: hidden;
+}
+
+@media (min-width: 1200px) {
+  .visitors-list {
+    padding: 0 18px 24px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .visitors-list {
+    padding-inline: 20px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .visitors-list {
+    padding: 0 14px 20px;
+
+    &__filters {
+      align-items: stretch;
+    }
+
+    .filter-item {
+      min-width: 160px;
+      max-width: none;
+    }
+  }
+}
+
+@media (min-width: 768px) {
+  .visitors-list__header {
+    align-items: center;
+  }
+}
+
+@media (max-width: 767px) {
+  .visitors-list {
+    min-height: auto;
+    padding: 12px;
+
+    &__header {
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    &__actions {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    &__stats {
+      gap: 6px;
+    }
+
+    &__filters {
+      gap: 8px;
+      padding: 10px;
+    }
+
+    .filter-item {
+      flex: 1 1 calc(50% - 4px);
+      min-width: 0;
+      max-width: none;
+    }
+
+    &__table-wrapper {
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+}
+
+@media (max-width: 360px) {
+  .visitors-list {
+    padding: 10px 8px;
+
+    .filter-item {
+      flex-basis: 100%;
+    }
   }
 }

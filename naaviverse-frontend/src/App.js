@@ -3,7 +3,7 @@ import React, { Fragment, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import axios from "axios";
 import ScrollToTop from "./components/ScrollToTop";
 import MyStepsAdmin from "./pages/AdminAccDashbaoard/MyStepsAdmin";
@@ -54,18 +54,31 @@ import PartnerExclusiveDashboard from "./pages/NaaviExclusive/PartnerExclusiveDa
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
+function VisitorLogger() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const isAdminRoute =
+      location.pathname.startsWith("/admin") ||
+      location.pathname.startsWith("/admin-dashboard") ||
+      location.pathname.startsWith("/admin-login");
+
+    if (isAdminRoute) return;
+
+    axios
+      .post(`${BASE_URL}/api/admin-visitors/admin-visitor`)
+      .catch(() => { });
+  }, [location.pathname]);
+
+  return null;
+}
+
 function App() {
   useEffect(() => {
     AOS.init({
       duration: 1200,
       once: false,
     });
-  }, []);
-
-  useEffect(() => {
-    axios
-      .post(`${BASE_URL}/api/admin-visitors/admin-visitor`)
-      .catch(() => { });
   }, []);
 
   return (
@@ -75,6 +88,7 @@ function App() {
       </Helmet>
 
       <BrowserRouter>
+        <VisitorLogger />
         <ScrollToTop />
 
         <Routes>

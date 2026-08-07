@@ -394,6 +394,29 @@ h2, .ab-heading {
 }
 
 // ═══════════════════════════════════════════════
+// Desktop viewport normalization for common macOS widths.
+// Keeps wider Windows desktop untouched while reducing side gutters and locking
+// the existing desktop rhythm on 1024px-1440px desktop browser views.
+@media (min-width: 1024px) and (max-width: 1440px) {
+  .ab-container {
+    max-width: 1200px;
+  }
+
+  .ab-grid {
+    align-items: center;
+    gap: 56px;
+  }
+
+  .ab-grid__text,
+  .ab-grid__visual {
+    align-self: center;
+  }
+
+  .ab-heading {
+    font-size: 36px;
+  }
+}
+
 //  RESPONSIVE FINE-TUNING FOR ALL MOBILE TIERS
 // ═══════════════════════════════════════════════
 

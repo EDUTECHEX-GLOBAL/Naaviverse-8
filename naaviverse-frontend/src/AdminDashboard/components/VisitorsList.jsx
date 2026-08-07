@@ -140,16 +140,15 @@ const VisitorsList = () => {
       {/* Header */}
       <div className="visitors-list__header">
         <div>
-          <h1 className="visitors-list__title">Visitor Analytics</h1>
           <p className="visitors-list__subtitle">Track and analyze website traffic</p>
         </div>
         <div className="visitors-list__actions">
           {hasFilters && (
-            <Button onClick={clearFilters} icon={<FiFilter />} className="btn-outline">
+            <Button size="small" onClick={clearFilters} icon={<FiFilter size={12} />} className="btn-outline">
               Clear
             </Button>
           )}
-          <Button onClick={exportData} icon={<FiDownload />} type="primary" className="btn-primary">
+          <Button size="small" onClick={exportData} icon={<FiDownload size={12} />} type="primary" className="btn-primary">
             Export
           </Button>
         </div>
@@ -167,7 +166,7 @@ const VisitorsList = () => {
           <span className="stat-pill__value">{stats.countries}</span>
           <span className="stat-pill__label">Countries</span>
         </div>
-        <div className="stat-pill stat-pill--cyan">
+        <div className="stat-pill stat-pill--yellow">
           <FiCalendar className="stat-pill__icon" />
           <span className="stat-pill__value">{stats.today}</span>
           <span className="stat-pill__label">Today</span>
@@ -179,6 +178,7 @@ const VisitorsList = () => {
         <div className="filter-item">
           <div className="filter-label"><FiCalendar /> Start</div>
           <DatePicker
+            size="small"
             value={startDate}
             onChange={setStartDate}
             format="MMM DD, YYYY"
@@ -190,6 +190,7 @@ const VisitorsList = () => {
         <div className="filter-item">
           <div className="filter-label"><FiCalendar /> End</div>
           <DatePicker
+            size="small"
             value={endDate}
             onChange={setEndDate}
             format="MMM DD, YYYY"
@@ -201,6 +202,7 @@ const VisitorsList = () => {
         <div className="filter-item">
           <div className="filter-label"><FiGlobe /> Country</div>
           <Select
+            size="small"
             value={countryFilter}
             onChange={setCountryFilter}
             placeholder="All"
@@ -217,6 +219,7 @@ const VisitorsList = () => {
         <div className="filter-item">
           <div className="filter-label"><FiSearch /> Search</div>
           <Input
+            size="small"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="IP, city, region..."
@@ -244,7 +247,7 @@ const VisitorsList = () => {
             <div className="empty-icon">👥</div>
             <p>No visitors found</p>
             {visitors.length > 0 && (
-              <Button onClick={clearFilters} type="link">Clear filters</Button>
+              <Button size="small" onClick={clearFilters} type="link">Clear filters</Button>
             )}
           </div>
         ) : (
