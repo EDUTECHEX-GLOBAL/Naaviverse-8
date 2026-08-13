@@ -15,6 +15,9 @@ const CATEGORIES = [
   "Internal Core Team",
 ];
 
+// 5 pastel avatar families defined in InternalPartners.scss (.fam-0 … .fam-4)
+const FAMILY_COUNT = 5;
+
 const InternalPartners = () => {
   // Main State
   const [partners, setPartners] = useState([]);
@@ -56,17 +59,7 @@ const InternalPartners = () => {
       setLoading(true);
       const res = await axios.get(`${BASE_URL}/api/partner/internal/all`);
       if (res.data && res.data.success && Array.isArray(res.data.data)) {
-        const gradients = [
-          "linear-gradient(135deg, #6366f1, #4f46e5)",
-          "linear-gradient(135deg, #0ea5e9, #0284c7)",
-          "linear-gradient(135deg, #ec4899, #d946ef)",
-          "linear-gradient(135deg, #10b981, #059669)",
-        ];
-        const list = res.data.data.map((p, idx) => ({
-          ...p,
-          avatarBg: p.avatarBg || gradients[idx % gradients.length],
-        }));
-        setPartners(list);
+        setPartners(res.data.data);
       } else {
         setPartners([]);
       }
@@ -92,12 +85,26 @@ const InternalPartners = () => {
     return pass;
   };
 
+  // Stable pastel family per partner, based on position in the full list
+  // (so a given partner keeps the same color across searches/filters/views).
+  const getFamilyClass = (partnerId) => {
+    const idx = partners.findIndex((x) => x.id === partnerId);
+    const safeIdx = idx >= 0 ? idx : 0;
+    return `fam-${safeIdx % FAMILY_COUNT}`;
+  };
+
+  // Phone numbers sometimes arrive under different keys depending on the
+  // source (manual create vs imported record) — check the common variants
+  // before falling back to an em dash.
+  const getPhoneValue = (partner) =>
+    partner?.phone || partner?.phoneNumber || partner?.mobile || partner?.contactNumber || "—";
+
   const handleOpenCreateModal = () => {
     setIsEditing(false);
     setFormData({
       id: "",
       partnerName: "",
-      organizationName: "Naaviverse Internal",
+      // organizationName: "Naaviverse Internal",
       contactPerson: "",
       lastName: "",
       email: "",
@@ -128,7 +135,7 @@ const InternalPartners = () => {
       contactPerson: partner.contactPerson || partner.firstName || "",
       lastName: partner.lastName || "",
       email: partner.email,
-      phone: partner.phone,
+      phone: getPhoneValue(partner) === "—" ? "" : getPhoneValue(partner),
       category: partner.category,
       website: partner.website || "",
       yourPosition: partner.yourPosition || "",
@@ -273,17 +280,15 @@ const InternalPartners = () => {
 
   return (
     <div className="internal-partners-minimal">
-      {/* ── MINIMAL CLEAN HEADER BAR ── */}
+      {/* ── COMPACT HEADER ── */}
       <div className="ip-top-bar">
         <div className="ip-header-info">
           <div className="title-row">
             <h2>Internal Partners</h2>
-            <span className="admin-chip">Super Admin</span>
           </div>
           <p className="sub-title">Manage internal Naaviverse partners, accounts & direct revenue offerings.</p>
         </div>
 
-        {/* OPTIMIZED SLEEK CREATE BUTTON */}
         <button className="ip-btn-primary" onClick={handleOpenCreateModal}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -293,32 +298,8 @@ const InternalPartners = () => {
         </button>
       </div>
 
-      {/* ── COMPACT METRICS STRIP ── */}
-      <div className="ip-metrics-row">
-        <div className="metric-card">
-          <span className="m-label">Total Partners</span>
-          <span className="m-val">{stats.total}</span>
-        </div>
-
-        <div className="metric-card">
-          <span className="m-label">Active</span>
-          <span className="m-val active-color">{stats.active}</span>
-        </div>
-
-        <div className="metric-card">
-          <span className="m-label">Pending First Pass</span>
-          <span className="m-val warn-color">{stats.tempPassCount}</span>
-        </div>
-
-        <div className="metric-card">
-          <span className="m-label">Direct Revenue</span>
-          <span className="m-val rev-color">₹17.75L</span>
-        </div>
-      </div>
-
-      {/* ── UNIFIED TOOLBAR ── */}
+      {/* ── TOOLBAR ── */}
       <div className="ip-compact-toolbar">
-        {/* Search */}
         <div className="ip-search-inline">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
             <circle cx="11" cy="11" r="8" />
@@ -333,23 +314,13 @@ const InternalPartners = () => {
           {search && <button className="clear-btn" onClick={() => setSearch("")}>✕</button>}
         </div>
 
-        {/* Status Pills */}
         <div className="ip-segment-pills">
-          <button className={`seg-btn ${statusFilter === "all" ? "active" : ""}`} onClick={() => setStatusFilter("all")}>
-            All ({partners.length})
-          </button>
-          <button className={`seg-btn ${statusFilter === "active" ? "active" : ""}`} onClick={() => setStatusFilter("active")}>
-            Active ({stats.active})
-          </button>
-          <button className={`seg-btn ${statusFilter === "inactive" ? "active" : ""}`} onClick={() => setStatusFilter("inactive")}>
-            Inactive ({stats.inactive})
-          </button>
-          <button className={`seg-btn ${statusFilter === "tempPass" ? "active" : ""}`} onClick={() => setStatusFilter("tempPass")}>
-            Temp ({stats.tempPassCount})
-          </button>
+          <button className={`seg-btn ${statusFilter === "all" ? "active" : ""}`} onClick={() => setStatusFilter("all")}>All</button>
+          <button className={`seg-btn ${statusFilter === "active" ? "active" : ""}`} onClick={() => setStatusFilter("active")}>Active</button>
+          <button className={`seg-btn ${statusFilter === "inactive" ? "active" : ""}`} onClick={() => setStatusFilter("inactive")}>Inactive</button>
+          <button className={`seg-btn ${statusFilter === "tempPass" ? "active" : ""}`} onClick={() => setStatusFilter("tempPass")}>Temp</button>
         </div>
 
-        {/* Category Select */}
         <select
           className="ip-select-compact"
           value={categoryFilter}
@@ -360,24 +331,15 @@ const InternalPartners = () => {
           ))}
         </select>
 
-        {/* View Toggle */}
         <div className="ip-view-switch">
-          <button
-            className={`v-btn ${viewMode === "table" ? "active" : ""}`}
-            onClick={() => setViewMode("table")}
-            title="List View"
-          >
+          <button className={`v-btn ${viewMode === "table" ? "active" : ""}`} onClick={() => setViewMode("table")} title="List view">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="3" y1="6" x2="21" y2="6" />
               <line x1="3" y1="12" x2="21" y2="12" />
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
-          <button
-            className={`v-btn ${viewMode === "grid" ? "active" : ""}`}
-            onClick={() => setViewMode("grid")}
-            title="Grid View"
-          >
+          <button className={`v-btn ${viewMode === "grid" ? "active" : ""}`} onClick={() => setViewMode("grid")} title="Grid view">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="3" width="7" height="7" />
               <rect x="14" y="3" width="7" height="7" />
@@ -388,7 +350,7 @@ const InternalPartners = () => {
         </div>
       </div>
 
-      {/* ── HIGH-DENSITY DATA TABLE / GRID ── */}
+      {/* ── TABLE / GRID ── */}
       {filteredPartners.length === 0 ? (
         <div className="ip-empty-compact">
           <p>No partners match the selected filter criteria.</p>
@@ -405,26 +367,18 @@ const InternalPartners = () => {
                 <th>Category</th>
                 <th>Contact</th>
                 <th>Status</th>
-                <th>Security</th>
+                {/* <th>Security</th> */}
                 <th>Offerings</th>
-                <th className="th-actions" style={{ textAlign: "right", minWidth: "150px" }}>Actions</th>
+                <th className="th-actions">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredPartners.map((p) => (
-                <tr key={p.id} onClick={() => handleViewDetails(p)}>
+                <tr key={p.id} className={getFamilyClass(p.id)} onClick={() => handleViewDetails(p)}>
                   <td>
                     <div className="partner-compact-cell">
-                      <div className="avatar-sm" style={{ background: p.avatarBg }}>
-                        {getInitials(p.partnerName)}
-                      </div>
-                      <div className="p-meta">
-                        <div className="name-line">
-                          <span className="p-title">{p.partnerName}</span>
-                          <span className="badge-int">INT</span>
-                        </div>
-                        <span className="p-org">{p.organizationName}</span>
-                      </div>
+                      <div className="avatar-sm">{getInitials(p.partnerName)}</div>
+                      <span className="p-title">{p.partnerName}</span>
                     </div>
                   </td>
 
@@ -446,13 +400,13 @@ const InternalPartners = () => {
                     </span>
                   </td>
 
-                  <td>
+                  {/* <td>
                     {p.mustChangePassword ? (
-                      <span className="chip-sec temp">Temp Pass</span>
+                      <span className="chip-sec temp">Temp pass</span>
                     ) : (
                       <span className="chip-sec ok">Secured</span>
                     )}
-                  </td>
+                  </td> */}
 
                   <td>
                     <div className="offering-compact">
@@ -461,33 +415,33 @@ const InternalPartners = () => {
                     </div>
                   </td>
 
-                  <td className="td-actions" style={{ textAlign: "right", minWidth: "150px" }} onClick={(e) => e.stopPropagation()}>
+                  <td className="td-actions" onClick={(e) => e.stopPropagation()}>
                     <div className="actions-inline">
-                      {/* View Button */}
-                      <button className="act-btn view-btn" title="View Partner Details" onClick={() => handleViewDetails(p)}>
+                      <button className="act-btn view-btn" title="View partner details" onClick={() => handleViewDetails(p)}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                           <circle cx="12" cy="12" r="3" />
                         </svg>
                       </button>
 
-                      {/* Edit Button */}
-                      <button className="act-btn edit-btn" title="Edit Partner" onClick={(e) => handleOpenEditModal(p, e)}>
+                      <button className="act-btn edit-btn" title="Edit partner" onClick={(e) => handleOpenEditModal(p, e)}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                         </svg>
                       </button>
 
-                      {/* Reset Password Button */}
-                      <button className="act-btn key-btn" title="Reset Password" onClick={(e) => handleOpenResetModal(p, e)}>
+                      <button className="act-btn key-btn" title="Reset password" onClick={(e) => handleOpenResetModal(p, e)}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.778-7.778zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
                         </svg>
                       </button>
 
-                      {/* Status Toggle Button */}
-                      <button className={`act-btn status-btn ${p.accountStatus}`} title={p.accountStatus === "active" ? "Deactivate Partner" : "Activate Partner"} onClick={(e) => handleToggleStatus(p, e)}>
+                      <button
+                        className={`act-btn status-btn ${p.accountStatus}`}
+                        title={p.accountStatus === "active" ? "Deactivate partner" : "Activate partner"}
+                        onClick={(e) => handleToggleStatus(p, e)}
+                      >
                         {p.accountStatus === "active" ? (
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <rect x="6" y="4" width="4" height="16" />
@@ -509,19 +463,17 @@ const InternalPartners = () => {
       ) : (
         <div className="ip-grid-compact">
           {filteredPartners.map((p) => (
-            <div key={p.id} className="grid-item-card" onClick={() => handleViewDetails(p)}>
+            <div key={p.id} className={`grid-item-card ${getFamilyClass(p.id)}`} onClick={() => handleViewDetails(p)}>
               <div className="g-top">
-                <div className="avatar-sm" style={{ background: p.avatarBg }}>
-                  {getInitials(p.partnerName)}
-                </div>
-                <div className="g-tags">
-                  <span className="badge-int">INT</span>
-                  <span className={`badge-status ${p.accountStatus}`}>{p.accountStatus}</span>
-                </div>
+                <div className="avatar-sm">{getInitials(p.partnerName)}</div>
+                <span className={`badge-status ${p.accountStatus}`}>
+                  <span className="dot"></span>
+                  {p.accountStatus === "active" ? "Active" : "Inactive"}
+                </span>
               </div>
 
               <h4 className="g-title">{p.partnerName}</h4>
-              <p className="g-sub">{p.organizationName}</p>
+              <p className="g-sub">{p.contactPerson}</p>
 
               <div className="g-mid">
                 <span className="chip-cat">{p.category}</span>
@@ -531,8 +483,23 @@ const InternalPartners = () => {
               <div className="g-footer" onClick={(e) => e.stopPropagation()}>
                 <span className="g-email">{p.email}</span>
                 <div className="g-actions">
-                  <button className="btn-sm" onClick={(e) => handleOpenEditModal(p, e)}>Edit</button>
-                  <button className="btn-sm primary" onClick={(e) => handleOpenResetModal(p, e)}>Reset</button>
+                  <button className="icon-sm-btn" title="View" onClick={() => handleViewDetails(p)}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </button>
+                  <button className="icon-sm-btn" title="Edit" onClick={(e) => handleOpenEditModal(p, e)}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </button>
+                  <button className="icon-sm-btn amber-hover" title="Reset password" onClick={(e) => handleOpenResetModal(p, e)}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.778-7.778zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
@@ -556,7 +523,7 @@ const InternalPartners = () => {
               <div className="m-form-scroll">
                 <div className="m-row">
                   <div className="m-field">
-                    <label>Partner Name *</label>
+                    <label>Business Name *</label>
                     <input
                       type="text"
                       required
@@ -710,11 +677,7 @@ const InternalPartners = () => {
                         value={formData.tempPassword}
                         onChange={(e) => setFormData({ ...formData, tempPassword: e.target.value })}
                       />
-                      <button
-                        type="button"
-                        className="btn-opt"
-                        onClick={() => setShowPasswordText(!showPasswordText)}
-                      >
+                      <button type="button" className="btn-opt" onClick={() => setShowPasswordText(!showPasswordText)}>
                         {showPasswordText ? "Hide" : "Show"}
                       </button>
                       <button
@@ -788,11 +751,7 @@ const InternalPartners = () => {
                     value={newTempPassword}
                     onChange={(e) => setNewTempPassword(e.target.value)}
                   />
-                  <button
-                    type="button"
-                    className="btn-opt highlight"
-                    onClick={() => setNewTempPassword(generateStrongPassword())}
-                  >
+                  <button type="button" className="btn-opt highlight" onClick={() => setNewTempPassword(generateStrongPassword())}>
                     Generate
                   </button>
                 </div>
@@ -815,16 +774,14 @@ const InternalPartners = () => {
         </div>
       )}
 
-      {/* ── MINIMAL SLIDE DRAWER ── */}
+      {/* ── DETAIL DRAWER ── */}
       {isDetailDrawerOpen && selectedPartner && (
         <>
           <div className="ip-drawer-mask" onClick={() => setIsDetailDrawerOpen(false)} />
-          <div className="ip-drawer-clean">
+          <div className={`ip-drawer-clean ${getFamilyClass(selectedPartner.id)}`}>
             <div className="d-head">
               <div className="d-user">
-                <div className="avatar-sm" style={{ background: selectedPartner.avatarBg }}>
-                  {getInitials(selectedPartner.partnerName)}
-                </div>
+                <div className="avatar-sm">{getInitials(selectedPartner.partnerName)}</div>
                 <div>
                   <h3>{selectedPartner.partnerName}</h3>
                   <span className="d-sub">{selectedPartner.organizationName}</span>
@@ -844,7 +801,7 @@ const InternalPartners = () => {
                 <div className="d-grid-info">
                   <div className="d-cell"><span className="lbl">Contact</span><span className="val">{selectedPartner.contactPerson}</span></div>
                   <div className="d-cell"><span className="lbl">Email</span><span className="val">{selectedPartner.email}</span></div>
-                  <div className="d-cell"><span className="lbl">Phone</span><span className="val">{selectedPartner.phone}</span></div>
+                  <div className="d-cell"><span className="lbl">Phone</span><span className="val">{getPhoneValue(selectedPartner)}</span></div>
                   <div className="d-cell"><span className="lbl">Category</span><span className="val">{selectedPartner.category}</span></div>
                   <div className="d-cell"><span className="lbl">Created Date</span><span className="val">{selectedPartner.createdAt}</span></div>
                   <div className="d-cell"><span className="lbl">Created By</span><span className="val">{selectedPartner.createdBy}</span></div>

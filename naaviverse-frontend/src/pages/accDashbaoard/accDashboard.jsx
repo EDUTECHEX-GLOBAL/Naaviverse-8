@@ -262,6 +262,10 @@ const AccDashboard = () => {
       setaccsideNav("Steps");
     } else if (path.includes('/dashboard/accountants/marketplace')) {
       setaccsideNav("Marketplace");
+    } else if (path.includes('/dashboard/accountants/feedback')) {
+      setaccsideNav("Feedback");
+    } else if (path.includes('/dashboard/accountants/profile')) {
+      setaccsideNav("Profile");
     } else if (path.includes('/dashboard/accountants/crm')) {
       setaccsideNav("CRM");
     } else if (path.includes('/dashboard/accountants/home')) {

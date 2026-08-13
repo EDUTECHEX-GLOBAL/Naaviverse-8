@@ -21,11 +21,73 @@ const toPlainAnalytics = (analytics) => {
   return analytics;
 };
 
+/**
+ * Calculates the Bayesian Weighted Average Rating for an item.
+ * Formula: Bayesian Average = (v * R + m * C) / (v + m)
+ * 
+ * @param {number} v - Rating count / volume
+ * @param {number} R - Sample average rating (1.0 - 5.0)
+ * @param {number} m - Confidence threshold weight (default = 5)
+ * @param {number} C - Platform prior global mean (default = 4.0)
+ */
+function calculateBayesianAverage(v = 0, R = 0, m = 5, C = 4.0) {
+  const count = Number(v) || 0;
+  const avg = Number(R) || C;
+  if (count <= 0) return Math.round(C * 100) / 100;
+  const score = (count * avg + m * C) / (count + m);
+  return Math.round(score * 100) / 100;
+}
+
+/**
+ * Calculates 3-Pillars Composite Score (Stage Alignment, Relevance, Prominence)
+ */
+function calculateThreePillarScore(item = {}, studentContext = {}) {
+  const analytics = toPlainAnalytics(item.analytics || item) || {};
+
+  // Pillar 1: Stage Alignment (Proximity) — 35%
+  let S_alignment = 80; // default benchmark
+  if (studentContext.currentStepOrder && item.step_order) {
+    const stepDiff = Math.abs(studentContext.currentStepOrder - item.step_order);
+    S_alignment = clamp(100 - stepDiff * 20);
+  }
+
+  // Pillar 2: Relevance (Skill & Domain Match) — 35%
+  let S_relevance = 85; // default benchmark
+  if (studentContext.domain && item.category) {
+    const isExactDomain = String(item.category).toLowerCase().includes(String(studentContext.domain).toLowerCase());
+    S_relevance = isExactDomain ? 100 : 60;
+  }
+
+  // Pillar 3: Prominence (Bayesian Quality & Reliability) — 30%
+  const bayesRating = calculateBayesianAverage(analytics.rating_count, analytics.average_rating);
+  const bayesPct = clamp((bayesRating / 5) * 100);
+  const completionPct = clamp(pct(analytics.completion_count, analytics.purchase_count));
+  const conversionPct = clamp(pct(analytics.purchase_count, Math.max(analytics.views, analytics.clicks, 1)));
+  const refundPenalty = ((analytics.refund_count || 0) + (analytics.complaint_count || 0)) * 10;
+
+  const S_prominence = clamp((bayesPct * 0.40) + (completionPct * 0.30) + (conversionPct * 0.30) - refundPenalty);
+
+  // Master 3-Pillars Score calculation
+  const masterScore = (0.35 * S_alignment) + (0.35 * S_relevance) + (0.30 * S_prominence);
+
+  return {
+    master_score: Math.round(clamp(masterScore) * 100) / 100,
+    pillars: {
+      alignment: Math.round(S_alignment * 100) / 100,
+      relevance: Math.round(S_relevance * 100) / 100,
+      prominence: Math.round(S_prominence * 100) / 100,
+      bayesian_rating: bayesRating,
+    }
+  };
+}
+
 function calculateMarketplaceScore(input = {}) {
   const analytics = toPlainAnalytics(input) || {};
-  const ratings = analytics.rating_count > 0
-    ? clamp((analytics.average_rating / 5) * 100)
-    : 0;
+  
+  // Calculate Bayesian Rating score component
+  const bayesRating = calculateBayesianAverage(analytics.rating_count, analytics.average_rating);
+  const ratings = clamp((bayesRating / 5) * 100);
+
   const completion = clamp(pct(analytics.completion_count, analytics.purchase_count));
   const purchaseSuccess = clamp(pct(analytics.purchase_count, Math.max(analytics.views, analytics.clicks, 1)));
   const feedbackTotal = (analytics.helpful_feedback || 0) + (analytics.not_relevant_feedback || 0);
@@ -53,6 +115,7 @@ function calculateMarketplaceScore(input = {}) {
 
   const breakdown = {
     ratings,
+    bayesian_rating: bayesRating,
     completion,
     purchaseSuccess,
     feedback,
@@ -227,6 +290,8 @@ async function recalculateAllMarketplaceScores() {
 
 module.exports = {
   SCORE_WEIGHTS,
+  calculateBayesianAverage,
+  calculateThreePillarScore,
   calculateMarketplaceScore,
   trackMarketplaceEvent,
   attachAnalyticsToItems,

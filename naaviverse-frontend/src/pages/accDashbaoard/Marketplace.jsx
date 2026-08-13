@@ -43,28 +43,25 @@ const IconDistributor = () => (
   </svg>
 );
 
+// ── Config ────────────────────────────────────────────────
 const CATEGORY_CONFIG = {
-  institution: { color: "#6C5CE7", colorLight: "#EDEBFF", colorMid: "#B2ABED", Icon: IconInstitution, label: "Institutions" },
-  mentor:      { color: "#0EA5E9", colorLight: "#E0F5FF", colorMid: "#7DD3FC", Icon: IconMentor,      label: "Mentors" },
-  vendor:      { color: "#F43F5E", colorLight: "#FFE4EA", colorMid: "#FDA4AF", Icon: IconVendor,      label: "Vendors" },
-  distributor: { color: "#F59E0B", colorLight: "#FEF3C7", colorMid: "#FCD34D", Icon: IconDistributor, label: "Distributors" },
+  institution: { color: "#3E7BFA", colorLight: "#EFF6FF", Icon: IconInstitution, label: "Institutions" },
+  mentor:      { color: "#059669", colorLight: "#ECFDF5", Icon: IconMentor,      label: "Mentors" },
+  vendor:      { color: "#E11D48", colorLight: "#FFF1F2", Icon: IconVendor,      label: "Vendors" },
+  distributor: { color: "#D97706", colorLight: "#FFFBEB", Icon: IconDistributor, label: "Distributors" },
 };
 
 const LAYER_COLORS = {
-  NANO:  { bg: "#EEF2FF", color: "#4338CA" },
-  MICRO: { bg: "#F0FDF4", color: "#15803D" },
-  MACRO: { bg: "#FFF7ED", color: "#C2410C" },
+  NANO:  { bg: "#EFF6FF", color: "#2563EB" },
+  MICRO: { bg: "#ECFDF5", color: "#059669" },
+  MACRO: { bg: "#FFFBEB", color: "#D97706" },
 };
 
 const getRoleConf   = (role) => CATEGORY_CONFIG[role?.toLowerCase()] || { color: "#94a3b8", colorLight: "#f1f5f9", Icon: () => null, label: "Unknown" };
 const formatPrice   = (cost) => (!cost ? "Free" : cost.toString());
-
-// Clean access label — show only 'Free' or 'Paid', never 'Internal Checkout' / 'External'
-const formatAccess = (access) => {
+const formatAccess  = (access) => {
   if (!access) return "Free";
-  const lower = access.toLowerCase();
-  if (lower.includes("free")) return "Free";
-  return "Paid";
+  return access.toLowerCase().includes("free") ? "Free" : "Paid";
 };
 
 const getBillingInfo = (bc = {}) => {
@@ -74,6 +71,7 @@ const getBillingInfo = (bc = {}) => {
   return { price: 0 };
 };
 
+// ── Main Component ────────────────────────────────────────
 const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearchChange }) => {
   const [items,          setItems]          = useState([]);
   const [loading,        setLoading]        = useState(true);
@@ -205,25 +203,19 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
         {!loading && <span className="mp-header__badge">{items.length} Total Items</span>}
       </div>
 
-      {/* Category Cards */}
-      <div className="mp-cat-grid">
+      {/* Category Tabs — clean with colored icon circles */}
+      <div className="mp-cat-tabs">
         {Object.entries(CATEGORY_CONFIG).map(([key, conf]) => {
           const { Icon } = conf;
           return (
             <div
               key={key}
-              className={`mp-cat-card ${activeCategory === key ? "mp-cat-card--active" : ""}`}
-              style={{ "--cc": conf.color, "--cl": conf.colorLight, "--cm": conf.colorMid }}
+              className={`mp-cat-tab ${activeCategory === key ? "mp-cat-tab--active" : ""}`}
+              style={{ "--cc": conf.color, "--cl": conf.colorLight }}
               onClick={() => handleCategoryClick(key)}
             >
-              <div className="mp-cat-card__top">
-                <div className="mp-cat-card__icon-wrap"><Icon /></div>
-                <span className="mp-cat-card__count">
-                  {loading ? "—" : (categoryCounts[key] || 0)}
-                </span>
-              </div>
-              <div className="mp-cat-card__label">{conf.label}</div>
-              <div className="mp-cat-card__glow" />
+              <span className="mp-cat-tab__icon"><Icon /></span>
+              <span className="mp-cat-tab__label">{conf.label}</span>
             </div>
           );
         })}
@@ -235,10 +227,9 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
           <div className="mp-panel__bar-left">
             <span className="mp-panel__dot" style={{ background: ac.color }} />
             <span className="mp-panel__title">{ac.label}</span>
-          
           </div>
           <div className="mp-search">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
               <circle cx="11" cy="11" r="8" /><path d="M21 21L16.65 16.65" strokeLinecap="round" />
             </svg>
             <input type="text" placeholder="Search..." value={localSearch}
@@ -255,7 +246,7 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                   <Skeleton height={11} width={130} />
                   <Skeleton height={11} width={90} />
                   <Skeleton height={18} width={40} borderRadius={20} />
-                  <Skeleton height={22} width={60} borderRadius={20} />
+                  <Skeleton height={22} width={50} borderRadius={6} />
                 </div>
               ))}
             </div>
@@ -269,7 +260,6 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
               <thead>
                 <tr>
                   <th>Name</th>
-                  <th>Goal</th>
                   <th>Access</th>
                   <th></th>
                 </tr>
@@ -281,9 +271,11 @@ const Marketplace = ({ search = "", selectedRole = "all", onRoleChange, onSearch
                       <span className="mp-row__icon" style={{ background: ac.colorLight, color: ac.color }}>
                         <ac.Icon />
                       </span>
-                      <span className="mp-row__name">{item.name || "Untitled"}</span>
+                      <span className="mp-row__name-text">
+                        <span className="mp-row__name">{item.name || "Untitled"}</span>
+                        {item.goal && <span className="mp-row__goal-sub">{item.goal}</span>}
+                      </span>
                     </td>
-                    <td className="mp-row__goal">{item.goal || <span className="mp-nil">—</span>}</td>
                     <td>
                       <span className={`mp-access ${formatAccess(item.access) === "Free" ? "mp-access--free" : "mp-access--paid"}`}>
                         {formatAccess(item.access)}

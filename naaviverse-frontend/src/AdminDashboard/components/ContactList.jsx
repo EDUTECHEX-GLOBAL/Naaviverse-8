@@ -90,16 +90,15 @@ const ContactList = () => {
       {/* Header */}
       <div className="contact-list__header">
         <div>
-          <h1 className="contact-list__title">Contact Submissions</h1>
           <p className="contact-list__subtitle">Manage and analyze all inquiries</p>
         </div>
         <div className="contact-list__actions">
           {hasFilters && (
-            <Button onClick={clearFilters} icon={<FiFilter />} className="btn-outline">
+            <Button size="small" onClick={clearFilters} icon={<FiFilter size={12} />} className="btn-outline">
               Clear
             </Button>
           )}
-          <Button onClick={exportData} icon={<FiDownload />} type="primary" className="btn-primary">
+          <Button size="small" onClick={exportData} icon={<FiDownload size={12} />} type="primary" className="btn-primary">
             Export
           </Button>
         </div>
@@ -110,6 +109,7 @@ const ContactList = () => {
         <div className="filter-item">
           <div className="filter-label"><FiCalendar /> Start</div>
           <DatePicker
+            size="small"
             value={startDate}
             onChange={setStartDate}
             format="MMM DD, YYYY"
@@ -121,6 +121,7 @@ const ContactList = () => {
         <div className="filter-item">
           <div className="filter-label"><FiCalendar /> End</div>
           <DatePicker
+            size="small"
             value={endDate}
             onChange={setEndDate}
             format="MMM DD, YYYY"
@@ -147,7 +148,7 @@ const ContactList = () => {
             <div className="empty-icon">📭</div>
             <p>No submissions found</p>
             {contacts.length > 0 && (
-              <Button onClick={clearFilters} type="link">Clear filters</Button>
+              <Button size="small" onClick={clearFilters} type="link">Clear filters</Button>
             )}
           </div>
         ) : (

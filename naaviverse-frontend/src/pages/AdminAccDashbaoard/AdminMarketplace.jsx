@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./AdminMarketplace.scss";
 import Skeleton from "react-loading-skeleton";
 import axios from "axios";
@@ -47,6 +47,12 @@ const IconEdit = () => (
   </svg>
 );
 
+const IconChevronDown = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9"/>
+  </svg>
+);
+
 // ── Stat icons ────────────────────────────────────────────
 const StatListings = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -72,23 +78,16 @@ const StatPartners = () => (
   </svg>
 );
 
-// ── Config ────────────────────────────────────────────────
+// ── Config (single-color system — no per-category palettes) ─
 const CATEGORY_CONFIG = {
-  institution: { color: "#6C5CE7", colorLight: "#EDEBFF", colorMid: "#B2ABED", Icon: IconInstitution, label: "Institutions" },
-  mentor:      { color: "#0EA5E9", colorLight: "#E0F5FF", colorMid: "#7DD3FC", Icon: IconMentor,      label: "Mentors" },
-  vendor:      { color: "#F43F5E", colorLight: "#FFE4EA", colorMid: "#FDA4AF", Icon: IconVendor,      label: "Vendors" },
-  distributor: { color: "#F59E0B", colorLight: "#FEF3C7", colorMid: "#FCD34D", Icon: IconDistributor, label: "Distributors" },
-};
-
-const LAYER_COLORS = {
-  NANO:       { bg: "#EEF2FF", color: "#4338CA" },
-  MICRO:      { bg: "#F0FDF4", color: "#15803D" },
-  MACRO:      { bg: "#FFF7ED", color: "#C2410C" },
-  FOUNDATION: { bg: "#F8FAFC", color: "#475569" },
+  institution: { Icon: IconInstitution, label: "Institutions" },
+  mentor:      { Icon: IconMentor,      label: "Mentors" },
+  vendor:      { Icon: IconVendor,      label: "Vendors" },
+  distributor: { Icon: IconDistributor, label: "Distributors" },
 };
 
 const getRoleConf = (role) =>
-  CATEGORY_CONFIG[role?.toLowerCase()] || { color: "#94a3b8", colorLight: "#f1f5f9", colorMid: "#e2e8f0", Icon: () => null, label: "Unknown" };
+  CATEGORY_CONFIG[role?.toLowerCase()] || { Icon: () => null, label: "Unknown" };
 
 const formatPrice = (cost) => (!cost || cost === "0" || cost === 0 ? "Free" : `$${cost}`);
 
@@ -120,10 +119,13 @@ const AdminMarketplace = () => {
   const [selectedItem,   setSelectedItem]   = useState(null);
   const [isEditing,      setIsEditing]      = useState(false);
   const [tableKey,       setTableKey]       = useState(0);
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const [editFormData,   setEditFormData]   = useState({
     name: "", access: "", cost: "", discount: "", layer: "",
     duration: "", goal: "", features: "", outcomes: "", iterations: "", partner_email: "",
   });
+
+  const dropdownRef = useRef(null);
 
   const fetchMarketplaceItems = useCallback(async () => {
     setLoading(true);
@@ -140,7 +142,19 @@ const AdminMarketplace = () => {
 
   useEffect(() => { fetchMarketplaceItems(); }, [fetchMarketplaceItems]);
 
+  // Close the category dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setCatDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleCategoryClick = (cat) => {
+    setCatDropdownOpen(false);
     if (cat === activeCategory) return;
     setTableKey((k) => k + 1);
     setActiveCategory(cat);
@@ -187,10 +201,10 @@ const AdminMarketplace = () => {
     }
   };
 
-  const handleCancel    = () => { setIsEditing(false); setEditFormData({}); };
+  const handleCancel     = () => { setIsEditing(false); setEditFormData({}); };
   const handleCloseModal = () => { setSelectedItem(null); setIsEditing(false); };
 
-  // Counts per category (no email/name filter for summary cards)
+  // Counts per category (no email/name filter — used in the dropdown menu)
   const categoryCounts = Object.keys(CATEGORY_CONFIG).reduce((acc, cat) => {
     acc[cat] = items.filter((i) => i.role?.toLowerCase() === cat).length;
     return acc;
@@ -216,21 +230,15 @@ const AdminMarketplace = () => {
   return (
     <div className="adm-root">
 
-      {/* Header */}
-      <div className="adm-header">
-        <h1 className="adm-header__title">Marketplace</h1>
-        {!loading && <span className="adm-header__badge">{items.length} Total Items</span>}
-      </div>
-
       {/* Stat Cards */}
       <div className="adm-stats">
         {[
-          { label: "Total Listings", value: totalItems,     Icon: StatListings, cls: "adm-stat--teal"   },
-          { label: "Paid Items",     value: paidItems,      Icon: StatPaid,     cls: "adm-stat--purple" },
-          { label: "Free Items",     value: freeItems,      Icon: StatFree,     cls: "adm-stat--green"  },
-          { label: "Partners",       value: uniquePartners, Icon: StatPartners, cls: "adm-stat--amber"  },
-        ].map(({ label, value, Icon, cls }) => (
-          <div className={`adm-stat ${cls}`} key={label}>
+          { label: "Total Listings", value: totalItems,     Icon: StatListings },
+          { label: "Paid Items",     value: paidItems,      Icon: StatPaid     },
+          { label: "Free Items",     value: freeItems,      Icon: StatFree     },
+          { label: "Partners",       value: uniquePartners, Icon: StatPartners },
+        ].map(({ label, value, Icon }) => (
+          <div className="adm-stat" key={label}>
             <div className="adm-stat__icon"><Icon /></div>
             <div className="adm-stat__body">
               <span className="adm-stat__label">{label}</span>
@@ -240,37 +248,43 @@ const AdminMarketplace = () => {
         ))}
       </div>
 
-      {/* Category Cards */}
-      <div className="adm-cat-grid">
-        {Object.entries(CATEGORY_CONFIG).map(([key, conf]) => {
-          const { Icon } = conf;
-          return (
-            <div
-              key={key}
-              className={`adm-cat-card ${activeCategory === key ? "adm-cat-card--active" : ""}`}
-              style={{ "--cc": conf.color, "--cl": conf.colorLight, "--cm": conf.colorMid }}
-              onClick={() => handleCategoryClick(key)}
-            >
-              <div className="adm-cat-card__top">
-                <div className="adm-cat-card__icon-wrap"><Icon /></div>
-                <span className="adm-cat-card__count">
-                  {loading ? "—" : (categoryCounts[key] || 0)}
-                </span>
-              </div>
-              <div className="adm-cat-card__label">{conf.label}</div>
-              <div className="adm-cat-card__glow" />
-            </div>
-          );
-        })}
-      </div>
-
       {/* Table Panel */}
       <div className="adm-panel">
         <div className="adm-panel__bar">
           <div className="adm-panel__bar-left">
-           
-            <span className="adm-panel__title">{ac.label}</span>
-           
+            <div className="adm-cat-dropdown" ref={dropdownRef}>
+              <button
+                type="button"
+                className={`adm-cat-dropdown__btn ${catDropdownOpen ? "adm-cat-dropdown__btn--open" : ""}`}
+                onClick={() => setCatDropdownOpen((o) => !o)}
+              >
+                <span className="adm-cat-dropdown__icon"><ac.Icon /></span>
+                <span className="adm-panel__title">{ac.label}</span>
+                <span className="adm-cat-dropdown__count">{loading ? "—" : (categoryCounts[activeCategory] || 0)}</span>
+                <span className="adm-cat-dropdown__chevron"><IconChevronDown /></span>
+              </button>
+
+              {catDropdownOpen && (
+                <div className="adm-cat-dropdown__menu">
+                  {Object.entries(CATEGORY_CONFIG).map(([key, conf]) => {
+                    const ItemIcon = conf.Icon;
+                    return (
+                      <div
+                        key={key}
+                        className={`adm-cat-dropdown__item ${activeCategory === key ? "adm-cat-dropdown__item--active" : ""}`}
+                        onClick={() => handleCategoryClick(key)}
+                      >
+                        <span className="adm-cat-dropdown__item-icon"><ItemIcon /></span>
+                        <span className="adm-cat-dropdown__item-label">{conf.label}</span>
+                        <span className="adm-cat-dropdown__item-count">
+                          {loading ? "—" : (categoryCounts[key] || 0)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
           <div className="adm-panel__bar-right">
             <div className="adm-search">
@@ -307,7 +321,7 @@ const AdminMarketplace = () => {
             </div>
           ) : filteredItems.length === 0 ? (
             <div className="adm-empty">
-              <div className="adm-empty__icon" style={{ color: ac.color }}><ac.Icon /></div>
+              <div className="adm-empty__icon"><ac.Icon /></div>
               <p className="adm-empty__text">No {ac.label.toLowerCase()} found</p>
             </div>
           ) : (
@@ -316,7 +330,6 @@ const AdminMarketplace = () => {
                 <tr>
                   <th>Name</th>
                   <th>Partner Email</th>
-                  <th>Goal</th>
                   <th>Rating</th>
                   <th>Access</th>
                   <th></th>
@@ -326,20 +339,23 @@ const AdminMarketplace = () => {
                 {filteredItems.map((item) => (
                   <tr key={item._id} className="adm-row" onClick={() => setSelectedItem(item)}>
                     <td className="adm-row__name-td">
-                      <span className="adm-row__icon" style={{ background: ac.colorLight, color: ac.color }}>
-                        <ac.Icon />
-                      </span>
-                      <span className="adm-row__name">{item.name || "Untitled"}</span>
+                      <div className="adm-row__name-wrap">
+                        <span className="adm-row__icon">
+                          <ac.Icon />
+                        </span>
+                        <span className="adm-row__name">{item.name || "Untitled"}</span>
+                      </div>
                     </td>
-                    <td className="adm-row__email">{item.partner_email || <span className="adm-nil">—</span>}</td>
-                    <td className="adm-row__goal">{item.goal || <span className="adm-nil">—</span>}</td>
-                    <td>
+                    <td className="adm-row__email" data-label="Email">
+                      {item.partner_email || <span className="adm-nil">—</span>}
+                    </td>
+                    <td data-label="Rating">
                       <span className="adm-rating-badge">
                         <span className="adm-rating-stars">★★★★★</span>
                         <span>{getMarketplaceStarRating(item)}</span>
                       </span>
                     </td>
-                    <td>
+                    <td data-label="Access">
                       <span className={`adm-access ${!item.cost || item.cost === "0" || item.cost === 0 ? "adm-access--free" : "adm-access--paid"}`}>
                         {!item.cost || item.cost === "0" || item.cost === 0 ? "Free" : "Paid"}
                       </span>
@@ -347,7 +363,6 @@ const AdminMarketplace = () => {
                     <td>
                       <button
                         className="adm-view-btn"
-                        style={{ "--bc": ac.color, "--bl": ac.colorLight }}
                         onClick={(e) => { e.stopPropagation(); setSelectedItem(item); }}
                       >
                         View
@@ -366,7 +381,6 @@ const AdminMarketplace = () => {
         const rc = getRoleConf(selectedItem.role);
         const RcIcon = rc.Icon;
         const layer  = selectedItem.layer?.toUpperCase();
-        const ls     = LAYER_COLORS[layer] || { bg: "#f1f5f9", color: "#475569" };
         const featureList = parseFeatures(selectedItem.features);
 
         return (
@@ -381,7 +395,7 @@ const AdminMarketplace = () => {
               </button>
 
               {/* Head */}
-              <div className="adm-modal__head" style={{ "--rc": rc.color, "--rl": rc.colorLight }}>
+              <div className="adm-modal__head">
                 <div className="adm-modal__avatar"><RcIcon /></div>
                 <div className="adm-modal__head-text">
                   {!isEditing ? (
@@ -406,9 +420,7 @@ const AdminMarketplace = () => {
                   )}
                 </div>
                 <div className="adm-modal__head-right">
-                  <span className="adm-modal__role-tag" style={{ background: rc.colorLight, color: rc.color }}>
-                    {rc.label}
-                  </span>
+                  <span className="adm-modal__role-tag">{rc.label}</span>
                   {!isEditing ? (
                     <button className="adm-modal__edit-btn" onClick={handleEditClick} title="Edit">
                       <IconEdit />
@@ -437,8 +449,7 @@ const AdminMarketplace = () => {
                   <div className="adm-chip">
                     <span className="adm-chip__label">Access</span>
                     {!isEditing ? (
-                      <span className="adm-chip__val"
-                        style={{ color: (!selectedItem.cost || selectedItem.cost === "0") ? "#059669" : "#E11D48" }}>
+                      <span className={`adm-chip__val ${(!selectedItem.cost || selectedItem.cost === "0") ? "adm-chip__val--free" : "adm-chip__val--paid"}`}>
                         {selectedItem.access || "Free"}
                       </span>
                     ) : (
@@ -457,7 +468,7 @@ const AdminMarketplace = () => {
                     <div className="adm-chip">
                       <span className="adm-chip__label">Discount</span>
                       {!isEditing ? (
-                        <span className="adm-chip__val" style={{ color: "#E11D48" }}>{selectedItem.discount}</span>
+                        <span className="adm-chip__val adm-chip__val--paid">{selectedItem.discount}</span>
                       ) : (
                         <input name="discount" value={editFormData.discount} onChange={handleInputChange} className="adm-chip__input" />
                       )}
@@ -467,7 +478,7 @@ const AdminMarketplace = () => {
                     <div className="adm-chip">
                       <span className="adm-chip__label">Layer</span>
                       {!isEditing ? (
-                        <span className="adm-layer-pill" style={{ background: ls.bg, color: ls.color }}>{layer}</span>
+                        <span className="adm-layer-pill">{layer}</span>
                       ) : (
                         <select name="layer" value={editFormData.layer} onChange={handleInputChange} className="adm-chip__input">
                           <option value="">—</option>
@@ -531,8 +542,7 @@ const AdminMarketplace = () => {
                       featureList.length > 0 ? (
                         <div className="adm-feature-chips">
                           {featureList.map((f, i) => (
-                            <span key={i} className="adm-feature-chip"
-                              style={{ background: rc.colorLight, color: rc.color }}>{f}</span>
+                            <span key={i} className="adm-feature-chip">{f}</span>
                           ))}
                         </div>
                       ) : (

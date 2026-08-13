@@ -560,6 +560,28 @@ $border-light: rgba(0, 0, 0, 0.06);
 // ══════════════════════════════
 //  RESPONSIVE — mobile card padding & multi-tier layout
 // ══════════════════════════════
+// Mac desktop container normalization only.
+// Keeps the approved Windows desktop and mobile layouts untouched while
+// centering every Technology section on common 16:10 macOS viewports.
+@media (min-width: 1200px) and (max-width: 1680px) and (max-aspect-ratio: 17 / 10) {
+  .tech-container {
+    width: min(100% - 144px, 1120px);
+    max-width: none;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+
+  .tech-preview-image-block,
+  .tech-pathways-grid,
+  .tech-llm-grid,
+  .tech-synergy-caption-standalone {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
 @media (max-width: 900px) {
   .tech-container {
     padding: 0 20px;
@@ -661,5 +683,40 @@ $border-light: rgba(0, 0, 0, 0.06);
   .tech-card,
   .tech-card-light {
     padding: 16px 12px !important;
+  }
+}
+
+// Mobile typography polish only: technical paragraphs stay justified without loose gaps.
+@media (max-width: 576px) {
+  .tech-section-desc,
+  .tech-body-text,
+  .tech-body-sub,
+  .tech-synergy-caption-standalone p {
+    font-size: 13.2px !important;
+    line-height: 1.66 !important;
+    text-align: justify !important;
+    text-align-last: left;
+    text-justify: inter-word;
+    hyphens: none !important;
+    -webkit-hyphens: none !important;
+    -ms-hyphens: none !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    white-space: normal;
+    word-spacing: -0.08em !important;
+    letter-spacing: -0.003em;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .tech-section-desc,
+  .tech-body-text,
+  .tech-body-sub,
+  .tech-synergy-caption-standalone p {
+    font-size: 12.85px !important;
+    line-height: 1.62 !important;
+    word-spacing: -0.09em !important;
   }
 }

@@ -18,20 +18,17 @@ export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="d-flex vh-100 bg-light">
+    <div className="admin-dashboard-shell">
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       {/* Main Content */}
-      <div className="flex-grow-1 p-3 overflow-auto">
+      <div className="admin-main-shell">
         {/* Header */}
-        <div className="d-flex flex-wrap justify-content-between align-items-center mb-4">
-          <button className="btn btn-outline-secondary d-md-none" onClick={() => setSidebarOpen(true)}>
+        <div className="admin-topbar">
+          <button className="admin-menu-toggle d-md-none" onClick={() => setSidebarOpen(true)}>
             <FaBars />
           </button>
-          <div className="d-flex align-items-center gap-3 ms-auto">
-            <FaBell size={24} />
-          </div>
         </div>
 
         {/* Outlet for nested routes */}
@@ -43,7 +40,7 @@ export default function AdminDashboard() {
 
 function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
+    localStorage.removeItem('superAdminToken');
     window.location.href = '/admin-login';
   };
 
@@ -76,7 +73,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
           <NavItem icon={FaUserPlus} label="Subscribe" path="/admin-dashboard/admin-subscribe" setSidebarOpen={setSidebarOpen} />
           <NavItem icon={FaUsers} label="Visitors" path="/admin-dashboard/admin-visitors" setSidebarOpen={setSidebarOpen} />
           <div
-            className="nav-link d-flex align-items-center gap-2 text-danger"
+            className="admin-nav-link admin-nav-link--logout"
             style={{ cursor: 'pointer' }}
             onClick={handleLogout}
           >
@@ -95,7 +92,7 @@ function NavItem({ icon: Icon, label, path, setSidebarOpen }) {
   return (
     <Link
       to={path}
-      className={`nav-link d-flex align-items-center gap-2 ${isActive ? 'fw-bold text-primary' : 'text-dark'}`}
+      className={`admin-nav-link ${isActive ? 'active' : ''}`}
       onClick={() => setSidebarOpen(false)}
     >
       <Icon /> {label}

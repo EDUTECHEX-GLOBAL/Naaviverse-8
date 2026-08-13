@@ -50,258 +50,249 @@ $sky-ink: #2f88c2;
   }
 }
 
-// ── Header ──────────────────────────────────────────────────────────────────
+// ── Header & Subtitle ────────────────────────────────────────────────────────
 .pf-header {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 26px 28px 0;
+  padding: 20px 28px 0;
   flex-shrink: 0;
 }
 
-.pf-header-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
 .pf-title {
-  font-size: 1.32rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  color: $dark;
-  margin: 0;
+  color: #0f172a;
+  margin: 0 0 2px 0;
   letter-spacing: -0.01em;
 }
 
 .pf-subtitle {
-  font-size: 0.82rem;
-  color: $muted;
+  font-size: 0.8rem;
+  color: #64748b;
   margin: 0;
   font-weight: 400;
 }
 
-.pf-refresh-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  border: 1px solid $primary-line;
-  border-radius: 8px;
-  background: $primary-soft;
-  color: $primary;
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.18s ease;
-  white-space: nowrap;
-  flex-shrink: 0;
-
-  &:hover {
-    background: #fff;
-    border-color: $primary;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  svg {
-    flex-shrink: 0;
-  }
-}
-
-// ── Stats Row — each card carries its own pastel identity ───────────────────
-.pf-stats-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  padding: 18px 28px 0;
-  flex-shrink: 0;
-}
-
-.pf-stat-card {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  background: #fff;
-  border: 1px solid $border;
-  border-radius: 10px;
-  padding: 12px 14px;
-  overflow: hidden;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 3px;
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(26, 47, 66, 0.06);
-  }
-
-  // Total Feedbacks — lavender
-  &:nth-child(1) {
-    background: linear-gradient(180deg, $lav-soft 0%, #fff 62%);
-    border-color: $lav-line;
-
-    &::before {
-      background: $lav-ink;
-    }
-  }
-
-  // Helpful — mint
-  &:nth-child(2) {
-    background: linear-gradient(180deg, $mint-soft 0%, #fff 62%);
-    border-color: $mint-line;
-
-    &::before {
-      background: $mint-ink;
-    }
-  }
-
-  // Not Relevant — blush
-  &:nth-child(3) {
-    background: linear-gradient(180deg, $blush-soft 0%, #fff 62%);
-    border-color: $blush-line;
-
-    &::before {
-      background: $blush-ink;
-    }
-  }
-
-  // Helpful Rate — cream
-  &:nth-child(4) {
-    background: linear-gradient(180deg, $cream-soft 0%, #fff 62%);
-    border-color: $cream-line;
-
-    &::before {
-      background: $cream-ink;
-    }
-  }
-}
-
-.pf-stat-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  svg {
-    width: 15px;
-    height: 15px;
-  }
-}
-
-.pf-stat-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  min-width: 0;
-}
-
-.pf-stat-value {
-  font-size: 1.12rem;
-  font-weight: 700;
-  color: $dark;
-  line-height: 1.25;
-}
-
-.pf-stat-label {
-  font-size: 0.7rem;
-  color: $muted;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-// ── Filter + Search Controls ────────────────────────────────────────────────
+// ── Toolbar: Search + Filter Select Dropdown ───────────────────────────────
 .pf-controls {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 28px 0;
+  padding: 14px 28px 0;
   flex-shrink: 0;
-  gap: 14px;
+  gap: 12px;
   flex-wrap: wrap;
-}
-
-.pf-filter-pills {
-  display: flex;
-  gap: 6px;
-}
-
-.pf-pill {
-  padding: 6px 14px;
-  border-radius: 20px;
-  border: 1px solid $primary-line;
-  background: $primary-soft;
-  color: $lav-ink;
-  font-size: 0.76rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.18s ease;
-
-  &:hover {
-    background: #fff;
-    border-color: $primary;
-  }
-
-  &.active {
-    background: linear-gradient(135deg, $primary, #7c8ef9);
-    color: #fff;
-    border-color: transparent;
-    box-shadow: 0 6px 16px rgba(79, 110, 247, 0.28);
-  }
 }
 
 .pf-search-wrap {
   position: relative;
-  min-width: 230px;
+  width: 280px;
 }
 
 .pf-search-icon {
   position: absolute;
-  left: 11px;
+  left: 10px;
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
+  color: #94a3b8;
 }
 
 .pf-search-input {
   width: 100%;
-  padding: 7px 12px 7px 34px;
-  border: 1px solid $border;
-  border-radius: 8px;
-  background: #fff;
+  padding: 6px 12px 6px 30px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
   font-family: inherit;
   font-size: 0.78rem;
-  color: $dark;
+  color: #0f172a;
   outline: none;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  transition: all 0.15s ease;
 
   &::placeholder {
-    color: $faint;
+    color: #94a3b8;
   }
 
   &:focus {
-    border-color: $primary;
-    box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.1);
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+  }
+}
+
+.pf-filter-select-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pf-filter-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.pf-filter-select {
+  padding: 6px 28px 6px 10px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #0f172a;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+
+  &:hover, &:focus {
+    border-color: #2563eb;
   }
 }
 
 // ── Content Area ────────────────────────────────────────────────────────────
 .pf-content {
-  padding: 18px 28px 36px;
+  padding: 14px 28px 28px;
   flex: 1;
   min-height: 0;
+}
+
+// ── Path Section Headers (NO background boxes) ──────────────────────────────
+.pf-path-group {
+  margin-bottom: 20px;
+}
+
+.pf-path-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+.pf-path-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.pf-path-count {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 400;
+}
+
+// ── Feedback List Rows (NO pill boxes) ──────────────────────────────────────
+.pf-feedback-list {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.pf-feedback-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.12s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: #f8fafc;
+  }
+}
+
+.pf-fb-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.pf-fb-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pf-fb-top-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pf-fb-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.pf-fb-email-sub {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 400;
+}
+
+.pf-fb-step-name {
+  font-size: 0.75rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+.pf-fb-comment {
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 0.8rem;
+  color: #1e293b;
+  font-style: normal;
+  margin: 4px 0;
+  line-height: 1.4;
+}
+
+.pf-fb-meta-line {
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 400;
+}
+
+.pf-fb-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.pf-action-text {
+  font-size: 0.76rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pf-fb-time {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  white-space: nowrap;
 }
 
 // ── Loading ─────────────────────────────────────────────────────────────────
@@ -340,31 +331,26 @@ $sky-ink: #2f88c2;
   gap: 10px;
   padding: 56px 0;
   text-align: center;
-  background: $blush-soft;
-  border: 1px solid $blush-line;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
   border-radius: 12px;
 
   p {
-    color: $muted;
+    color: #be123c;
     font-size: 0.82rem;
     margin: 0;
   }
 
   button {
-    padding: 7px 18px;
-    border-radius: 8px;
-    border: 1px solid $blush-ink;
-    background: $blush-ink;
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: none;
+    background: #e11d48;
     color: #fff;
     font-family: inherit;
     font-size: 0.78rem;
     font-weight: 500;
     cursor: pointer;
-    transition: filter 0.18s ease;
-
-    &:hover {
-      filter: brightness(1.08);
-    }
   }
 }
 
@@ -374,266 +360,29 @@ $sky-ink: #2f88c2;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 70px 0;
+  gap: 8px;
+  padding: 60px 0;
   text-align: center;
-  background: $lav-soft;
-  border: 1px dashed $lav-line;
-  border-radius: 12px;
 
   h3 {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
-    color: $dark;
+    color: #0f172a;
     margin: 0;
   }
 
   p {
     font-size: 0.8rem;
-    color: $faint;
+    color: #64748b;
     margin: 0;
-    max-width: 300px;
+    max-width: 320px;
     line-height: 1.5;
     font-weight: 400;
   }
 }
 
-// ── Path Group ──────────────────────────────────────────────────────────────
-.pf-path-group {
-  margin-bottom: 20px;
-}
-
-.pf-path-group-header {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 8px 12px;
-  margin-bottom: 8px;
-  background: $lav-soft;
-  border: 1px solid $lav-line;
-  border-radius: 8px;
-  width: fit-content;
-}
-
-.pf-path-group-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  svg {
-    width: 12px;
-    height: 12px;
-  }
-}
-
-.pf-path-group-name {
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: $dark;
-}
-
-.pf-path-group-count {
-  font-size: 0.68rem;
-  color: $lav-ink;
-  background: #fff;
-  padding: 2px 9px;
-  border-radius: 10px;
-  font-weight: 600;
-}
-
-// ── Feedback list — one soft container, rows on hairlines ───────────────────
-.pf-table-responsive {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  border-radius: 12px;
-
-  &::-webkit-scrollbar {
-    height: 5px;
-  }
-  &::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.03);
-    border-radius: 3px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: $primary-line;
-    border-radius: 3px;
-  }
-}
-
-.pf-feedback-list {
-  display: flex;
-  flex-direction: column;
-  background: #fff;
-  border: 1px solid $border;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(26, 47, 66, 0.03);
-  min-width: 620px;
-}
-
-.pf-feedback-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px 14px;
-  border-bottom: 1px solid $border;
-  border-left: 3px solid transparent;
-  transition: background 0.15s ease, border-color 0.15s ease;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  // gentle zebra so long lists still scan easily on a light page
-  &:nth-child(even) {
-    background: #fbfbfe;
-  }
-
-  &:hover {
-    background: $primary-soft;
-    border-left-color: $primary;
-  }
-}
-
-.pf-fb-avatar {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, $primary, #a78bfa);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: 600;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.pf-fb-main {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.pf-fb-line1 {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.pf-fb-email {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: $dark;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
-}
-
-.pf-fb-step-inline {
-  font-size: 0.72rem;
-  color: $faint;
-  font-weight: 400;
-
-  &::before {
-    content: "·";
-    margin-right: 8px;
-    color: $border;
-  }
-}
-
-.pf-fb-line2 {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-// meta chips cycle through the pastel family instead of one flat gray tag —
-// gives each row's second line a bit of color without needing per-type markup
-.pf-fb-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.68rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 6px;
-  white-space: nowrap;
-  background: $lav-soft;
-  color: $lav-ink;
-  border: 1px solid $lav-line;
-
-  svg {
-    width: 10px;
-    height: 10px;
-    flex-shrink: 0;
-  }
-
-  &:nth-of-type(2) {
-    background: $mint-soft;
-    color: $mint-ink;
-    border-color: $mint-line;
-  }
-
-  &:nth-of-type(3) {
-    background: $sky-soft;
-    color: $sky-ink;
-    border-color: $sky-line;
-  }
-}
-
-.pf-fb-comment-inline {
-  font-size: 0.78rem;
-  color: $muted;
-  font-style: italic;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
-}
-
-.pf-fb-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 5px;
-  flex-shrink: 0;
-}
-
-.pf-fb-time {
-  font-size: 0.68rem;
-  color: $faint;
-  white-space: nowrap;
-}
-
-.pf-action-badge {
-  padding: 2px 9px;
-  border-radius: 12px;
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-}
-
 // ── Responsive ──────────────────────────────────────────────────────────────
 @media (max-width: 900px) {
-  .pf-stats-row {
-    grid-template-columns: repeat(2, 1fr);
-    padding: 16px 16px 0;
-  }
-
   .pf-header,
   .pf-controls,
   .pf-content {
@@ -643,32 +392,13 @@ $sky-ink: #2f88c2;
 }
 
 @media (max-width: 600px) {
-  .pf-stats-row {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    padding: 12px 12px 0;
-  }
-
   .pf-controls {
     flex-direction: column;
     align-items: stretch;
     padding: 14px 12px 0;
   }
 
-  .pf-filter-pills {
-    overflow-x: auto;
-    white-space: nowrap;
-    padding-bottom: 4px;
-    max-width: 100%;
-    -webkit-overflow-scrolling: touch;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
-
   .pf-search-wrap {
-    min-width: unset;
     width: 100%;
   }
 
@@ -682,11 +412,6 @@ $sky-ink: #2f88c2;
 
   .pf-subtitle {
     font-size: 0.74rem;
-  }
-
-  .pf-refresh-btn {
-    padding: 6px 10px;
-    font-size: 0.72rem;
   }
 
   .pf-content {

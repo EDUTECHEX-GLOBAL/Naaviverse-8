@@ -20,11 +20,11 @@ body {
   flex-direction: column;
 }
 
-/* GLOBAL RESET */
-* {
+/* GLOBAL RESET - ENFORCE POPPINS EVERYWHERE */
+*, *::before, *::after, input, button, select, textarea {
   box-sizing: border-box;
   outline: none;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Poppins', sans-serif !important;
 }
 
 /* 🔥 IMAGE + ICON + CONTENT FIX (VERY IMPORTANT) */

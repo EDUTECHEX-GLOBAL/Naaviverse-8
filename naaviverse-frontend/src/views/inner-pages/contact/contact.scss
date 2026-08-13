@@ -13,7 +13,7 @@ $success: #27ae60;
 
 // ── Container ──
 .contact-container {
-  max-width: 1100px;
+  max-width: 1160px;
   margin: 0 auto;
   padding: 0 28px;
   width: 100%;
@@ -408,6 +408,23 @@ $success: #27ae60;
 // ══════════════════════════════
 //  RESPONSIVE
 // ══════════════════════════════
+// Mac desktop container normalization only.
+// Keeps mobile untouched while widening and centering the Contact page content
+// on common 16:10 macOS desktop viewports.
+@media (min-width: 1200px) and (max-width: 1680px) and (max-aspect-ratio: 17 / 10) {
+  .contact-container,
+  .footer-main > .container,
+  .footer-bottom > .container {
+    width: min(100% - 144px, 1240px);
+    max-width: none;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 28px;
+    padding-right: 28px;
+    box-sizing: border-box;
+  }
+}
+
 @media (max-width: 768px) {
   .contact-hero {
     margin-top: 140px !important;
@@ -448,7 +465,6 @@ $success: #27ae60;
   .contact-info-item {
     padding: 12px 10px !important;
     gap: 10px !important;
-
     .contact-info-icon {
       width: 36px !important;
       height: 36px !important;
@@ -531,6 +547,37 @@ $success: #27ae60;
 
   .contact-hero-desc {
     font-size: 13.5px !important;
+  }
+}
+
+// Mobile typography polish only: cleaner justified paragraph copy.
+@media (max-width: 576px) {
+  .contact-hero-desc,
+  .contact-info-desc {
+    font-size: 13.25px !important;
+    line-height: 1.66 !important;
+    text-align: justify !important;
+    text-align-last: left;
+    text-justify: inter-word;
+    hyphens: none !important;
+    -webkit-hyphens: none !important;
+    -ms-hyphens: none !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    white-space: normal;
+    word-spacing: -0.08em !important;
+    letter-spacing: -0.003em;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .contact-hero-desc,
+  .contact-info-desc {
+    font-size: 12.9px !important;
+    line-height: 1.62 !important;
+    word-spacing: -0.09em !important;
   }
 }
 

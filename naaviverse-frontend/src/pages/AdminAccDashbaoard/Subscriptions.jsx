@@ -161,23 +161,9 @@ export default function Subscriptions() {
   return (
     <div className="subs-container" onClick={() => setStatusDropOpen(false)}>
 
-      {/* ── Header ── */}
-      <div className="subs-header">
-        <h2>Subscriptions</h2>
-        <p>All user plan data · {normalized.length} total</p>
-      </div>
+    
 
-      {/* ── Stat strip — responsive grid (4 on desktop, 2x2 on mobile) ── */}
-      <div className="subs-stats-grid">
-        <StatCard label="Active"    value={activeCount}       accent="#2563eb" bg="#dbeafe"
-          iconPath={<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>} />
-        <StatCard label="Expired"   value={expiredCount}      accent="#ef4444" bg="#fee2e2"
-          iconPath={<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>} />
-        <StatCard label="Cancelled" value={cancelCount}       accent="#64748b" bg="#e2e8f0"
-          iconPath={<><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></>} />
-        <StatCard label="Total"     value={normalized.length} accent="#7c3aed" bg="#ede9fe"
-          iconPath={<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>} />
-      </div>
+    
 
       {/* ── Filter bar ── */}
       <div className="subs-filter-section">

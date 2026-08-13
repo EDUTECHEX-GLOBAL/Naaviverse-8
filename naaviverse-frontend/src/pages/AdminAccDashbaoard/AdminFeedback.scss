@@ -382,31 +382,89 @@ $font: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-se
 
 // ── Path group ──────────────────────────────────────────────────────────────
 .af-group {
-    margin-bottom: 18px;
+    margin-bottom: 10px;
 }
 
 .af-group-bar {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 8px 13px;
-    margin-bottom: 7px;
+    width: 100%;
+    padding: 13px 16px;
+    margin-bottom: 0;
     background: $card;
     border: 1px solid $line;
+    border-radius: 10px;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
+
+    &:hover {
+        border-color: $line-strong;
+        background: #fbfcff;
+        box-shadow: 0 8px 18px rgba(26, 35, 64, 0.04);
+    }
+}
+
+.af-group.is-open .af-group-bar {
+    border-radius: 10px 10px 0 0;
+    border-color: $line-strong;
+    background: #fbfcff;
+}
+
+.af-group-chevron {
+    width: 26px;
+    height: 26px;
     border-radius: 8px;
+    background: $blue-soft;
+    color: $blue;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.16s ease;
+
+    svg {
+        width: 15px;
+        height: 15px;
+    }
+}
+
+.af-group.is-open .af-group-chevron {
+    transform: rotate(90deg);
+}
+
+.af-group-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
 }
 
 .af-group-name {
     font-size: 0.84rem;
     font-weight: 600;
     color: $ink;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.af-group-meta {
+    font-size: 0.7rem;
+    color: $slate-300;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .af-group-count {
-    margin-left: auto;
     font-size: 0.72rem;
     color: $slate-500;
-    font-weight: 500;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
 .af-source-tag {
@@ -433,18 +491,14 @@ $font: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-se
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    border-radius: 10px;
+    border-radius: 0 0 10px 10px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 
     &::-webkit-scrollbar {
-        height: 5px;
-    }
-    &::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.03);
-        border-radius: 3px;
-    }
-    &::-webkit-scrollbar-thumb {
-        background: $line-strong;
-        border-radius: 3px;
+        width: 0;
+        height: 0;
+        display: none;
     }
 }
 
@@ -453,7 +507,8 @@ $font: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-se
     flex-direction: column;
     background: $card;
     border: 1px solid $line;
-    border-radius: 10px;
+    border-top: 0;
+    border-radius: 0 0 10px 10px;
     overflow: hidden;
     min-width: 620px;
 }

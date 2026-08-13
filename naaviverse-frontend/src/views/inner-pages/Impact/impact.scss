@@ -929,6 +929,58 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 // ═══════════════════════════════════════════════
 //  RESPONSIVE FINE-TUNING FOR ALL MOBILE TIERS
 // ═══════════════════════════════════════════════
+// Mac desktop viewport normalization only.
+// Keeps Windows desktop and all mobile breakpoints unchanged.
+@media (min-width: 1200px) and (max-width: 1680px) and (max-aspect-ratio: 17 / 10) {
+  .imp-container {
+    width: calc(100% - 160px);
+    max-width: 1180px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+
+  .imp-story {
+    overflow-x: clip;
+  }
+
+  .imp-story-inner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .imp-story-flip .imp-story-inner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .imp-story-inner,
+  .imp-story-flip .imp-story-inner {
+    align-items: start;
+    gap: 40px;
+  }
+
+  .imp-story-text,
+  .imp-story-vis-wrap {
+    align-self: start;
+    min-width: 0;
+  }
+
+  .imp-story-vis-wrap,
+  .imp-vis,
+  .imp-vis-image-wrap {
+    align-items: flex-start;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .imp-story-title,
+  .imp-story-desc,
+  .imp-story-stat-row {
+    max-width: 100%;
+    overflow: visible;
+  }
+}
+
 @media (max-width: 900px) {
   .imp-story-inner {
     grid-template-columns: 1fr !important;
@@ -1020,5 +1072,34 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
   .imp-story-image {
     max-height: 220px !important;
+  }
+}
+
+// Mobile typography polish only: Impact paragraphs stay justified without loose gaps.
+@media (max-width: 576px) {
+  .imp-story-desc {
+    font-size: 13.2px !important;
+    line-height: 1.66 !important;
+    text-align: justify !important;
+    text-align-last: left;
+    text-justify: inter-word;
+    hyphens: none !important;
+    -webkit-hyphens: none !important;
+    -ms-hyphens: none !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    white-space: normal;
+    word-spacing: -0.08em !important;
+    letter-spacing: -0.003em;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .imp-story-desc {
+    font-size: 12.85px !important;
+    line-height: 1.62 !important;
+    word-spacing: -0.09em !important;
   }
 }

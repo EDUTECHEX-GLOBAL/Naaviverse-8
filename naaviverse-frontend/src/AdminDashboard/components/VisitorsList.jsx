@@ -11,7 +11,6 @@ import {
   FiFilter,
   FiCalendar,
   FiGlobe,
-  FiMapPin,
   FiUser,
   FiSearch,
   FiEye
@@ -22,6 +21,10 @@ dayjs.extend(relativeTime);
 
 const { Option } = Select;
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
+// Fallback used whenever a value isn't present on the visitor/contact record
+const EMPTY = '—';
+const val = (v) => (v === undefined || v === null || v === '' ? EMPTY : v);
 
 const VisitorsList = () => {
   const [visitors, setVisitors] = useState([]);
@@ -82,7 +85,11 @@ const VisitorsList = () => {
         v.ip?.toLowerCase().includes(term) ||
         v.city?.toLowerCase().includes(term) ||
         v.region?.toLowerCase().includes(term) ||
-        v.country?.toLowerCase().includes(term)
+        v.country?.toLowerCase().includes(term) ||
+        v.fullName?.toLowerCase().includes(term) ||
+        v.name?.toLowerCase().includes(term) ||
+        v.email?.toLowerCase().includes(term) ||
+        v.organization?.toLowerCase().includes(term)
       );
     }
 
@@ -94,14 +101,33 @@ const VisitorsList = () => {
   const indexOfFirst = indexOfLast - visitorsPerPage;
   const currentVisitors = filteredVisitors.slice(indexOfFirst, indexOfLast);
 
+  // Detect localhost/local visitors so we never show two separate
+  // "location" style names (e.g. "localhost" + "Local") in one row.
+  const isLocalVisitor = (v) =>
+    v.ip === '127.0.0.1' || v.ip === '::1' ||
+    v.city?.toLowerCase() === 'localhost' ||
+    v.country?.toLowerCase() === 'local';
+
+  const getCity = (v) => (isLocalVisitor(v) ? 'Local' : val(v.city));
+  const getRegion = (v) => (isLocalVisitor(v) ? EMPTY : val(v.region));
+  const getPostal = (v) => (isLocalVisitor(v) ? EMPTY : val(v.postalCode));
+  const getCountry = (v) => (isLocalVisitor(v) ? EMPTY : val(v.country));
+
   const exportData = () => {
     const data = filteredVisitors.map((v, i) => ({
       SNo: i + 1,
-      IP: v.ip,
-      City: v.city,
-      Region: v.region,
-      PostalCode: v.postalCode,
-      Country: v.country,
+      IPAddress: v.ip,
+      City: getCity(v),
+      Region: getRegion(v),
+      PostalCode: getPostal(v),
+      Country: getCountry(v),
+      FullName: v.fullName || v.name,
+      Email: v.email,
+      Organization: v.organization,
+      AreaOfInterest: v.areaOfInterest,
+      ProjectStage: v.projectStage,
+      Phone: v.phone,
+      Message: v.message,
       VisitedOn: dayjs(v.createdAt).format('MMM DD, YYYY hh:mm A'),
     }));
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -140,16 +166,15 @@ const VisitorsList = () => {
       {/* Header */}
       <div className="visitors-list__header">
         <div>
-          <h1 className="visitors-list__title">Visitor Analytics</h1>
           <p className="visitors-list__subtitle">Track and analyze website traffic</p>
         </div>
         <div className="visitors-list__actions">
           {hasFilters && (
-            <Button onClick={clearFilters} icon={<FiFilter />} className="btn-outline">
+            <Button size="small" onClick={clearFilters} icon={<FiFilter size={12} />} className="btn-outline">
               Clear
             </Button>
           )}
-          <Button onClick={exportData} icon={<FiDownload />} type="primary" className="btn-primary">
+          <Button size="small" onClick={exportData} icon={<FiDownload size={12} />} type="primary" className="btn-primary">
             Export
           </Button>
         </div>
@@ -167,7 +192,7 @@ const VisitorsList = () => {
           <span className="stat-pill__value">{stats.countries}</span>
           <span className="stat-pill__label">Countries</span>
         </div>
-        <div className="stat-pill stat-pill--cyan">
+        <div className="stat-pill stat-pill--yellow">
           <FiCalendar className="stat-pill__icon" />
           <span className="stat-pill__value">{stats.today}</span>
           <span className="stat-pill__label">Today</span>
@@ -179,6 +204,7 @@ const VisitorsList = () => {
         <div className="filter-item">
           <div className="filter-label"><FiCalendar /> Start</div>
           <DatePicker
+            size="small"
             value={startDate}
             onChange={setStartDate}
             format="MMM DD, YYYY"
@@ -190,6 +216,7 @@ const VisitorsList = () => {
         <div className="filter-item">
           <div className="filter-label"><FiCalendar /> End</div>
           <DatePicker
+            size="small"
             value={endDate}
             onChange={setEndDate}
             format="MMM DD, YYYY"
@@ -201,6 +228,7 @@ const VisitorsList = () => {
         <div className="filter-item">
           <div className="filter-label"><FiGlobe /> Country</div>
           <Select
+            size="small"
             value={countryFilter}
             onChange={setCountryFilter}
             placeholder="All"
@@ -217,6 +245,7 @@ const VisitorsList = () => {
         <div className="filter-item">
           <div className="filter-label"><FiSearch /> Search</div>
           <Input
+            size="small"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="IP, city, region..."
@@ -244,7 +273,7 @@ const VisitorsList = () => {
             <div className="empty-icon">👥</div>
             <p>No visitors found</p>
             {visitors.length > 0 && (
-              <Button onClick={clearFilters} type="link">Clear filters</Button>
+              <Button size="small" onClick={clearFilters} type="link">Clear filters</Button>
             )}
           </div>
         ) : (
@@ -252,36 +281,30 @@ const VisitorsList = () => {
             <thead>
               <tr>
                 <th className="col-sn">#</th>
-                <th className="col-location">Location</th>
                 <th className="col-ip">IP Address</th>
+                <th className="col-city">City</th>
                 <th className="col-region">Region</th>
-                <th className="col-date">Visited</th>
+                <th className="col-postal">Postal Code</th>
+                <th className="col-country">Country</th>
+                <th className="col-date">Visited On</th>
               </tr>
             </thead>
             <tbody>
               {currentVisitors.map((visitor, idx) => (
                 <tr key={visitor._id || idx}>
                   <td className="col-sn">{indexOfFirst + idx + 1}</td>
-                  <td className="col-location">
-                    <div className="location-cell">
-                      <FiMapPin className="location-icon" />
-                      <div>
-                        <div className="location-city">{visitor.city || 'Unknown'}</div>
-                        <div className="location-country">
-                          {getCountryFlag(visitor.country)} {visitor.country || 'Unknown'}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
                   <td className="col-ip">
                     <div className="ip-cell">
                       <FiUser className="ip-icon" />
                       <span className="ip-address">{visitor.ip || 'N/A'}</span>
                     </div>
                   </td>
+                  <td className="col-city">{getCity(visitor)}</td>
                   <td className="col-region">
-                    <span className="region-badge">{visitor.region || 'N/A'}</span>
+                    <span className="region-badge">{getRegion(visitor)}</span>
                   </td>
+                  <td className="col-postal">{getPostal(visitor)}</td>
+                  <td className="col-country">{getCountry(visitor)}</td>
                   <td className="col-date">
                     <div className="date-wrap">
                       <span className="date">{dayjs(visitor.createdAt).format('MMM DD, YYYY')}</span>
