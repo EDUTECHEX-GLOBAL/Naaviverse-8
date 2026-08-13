@@ -1,0 +1,518 @@
+// ContactList.scss — Compact, Naavi brand colors
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+// ── Naavi brand palette ────────────────────────────────────
+$brand-green:   #1FA655;
+$brand-blue:    #3E7BFA;
+$brand-yellow:  #F5B324;
+$brand-red:     #E5473C;
+
+$green-bg:      #E7F7ED;
+$green-border:  #BEEBCC;
+$green-text:    #147a3d;
+
+$blue-bg:       #E9F0FF;
+$blue-border:   #C4D9FF;
+$blue-text:     #2857c9;
+
+$red-bg:        #FDEBEA;
+$red-border:    #F8C9C5;
+$red-text:      #b8352c;
+
+$page-bg:       #f4f7fb;
+$surface:       #ffffff;
+$border:        #e7ebf1;
+$text-primary:  #1a2233;
+$text-secondary:#6b7385;
+$text-muted:    #9aa1b5;
+
+// ── Root ──────────────────────────────────────────────────
+.contact-list {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2px 14px;
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: $page-bg;
+  min-height: 100vh;
+  font-size: 12px;
+
+  @media (min-width: 768px) {
+    padding: 0 2px 14px;
+  }
+
+  // ── Header ────────────────────────────────────────────
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: $text-primary;
+    margin: 0 0 1px;
+    letter-spacing: -0.2px;
+
+    @media (min-width: 768px) { font-size: 18px; }
+  }
+
+  &__subtitle {
+    font-size: 11px;
+    color: $text-secondary;
+    margin: 0;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+
+    .ant-btn { display: inline-flex; align-items: center; gap: 5px; }
+
+    .btn-outline {
+      border: 1px solid $border;
+      background: $surface;
+      color: $text-secondary;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 8px;
+      transition: all 0.15s;
+
+      &:hover {
+        border-color: $brand-red;
+        color: $red-text;
+        background: $red-bg;
+      }
+    }
+
+    .btn-primary {
+      background: $brand-blue;
+      border: none;
+      font-size: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      height: 28px;
+      padding: 0 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(62, 123, 250, 0.28);
+      transition: background 0.15s;
+
+      &:hover { background: darken($brand-blue, 8%); }
+    }
+  }
+
+  // ── Filters ───────────────────────────────────────────
+  &__filters {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px;
+    background: $surface;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    border: 1px solid $border;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+
+    .filter-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+      min-width: 110px;
+      max-width: 170px;
+
+      .filter-label {
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: $text-muted;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        svg { font-size: 9px; }
+      }
+
+      .filter-date {
+        width: 100%;
+
+        .ant-picker {
+          width: 100%;
+          border-radius: 7px;
+          border-color: $border;
+          height: 28px;
+          font-size: 11px;
+          font-family: 'DM Sans', sans-serif;
+          background: #fbfcfe;
+
+          &:hover, &-focused { border-color: $brand-blue; }
+        }
+      }
+    }
+  }
+
+  // ── Stats Bar ─────────────────────────────────────────
+  &__stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 0 2px;
+    font-size: 10px;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  // ── Table Wrapper ──────────────────────────────────────
+  &__table-wrapper {
+    background: $surface;
+    border-radius: 12px;
+    border: 1px solid $border;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  // ── Pagination ────────────────────────────────────────
+  &__pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 14px;
+
+    @media (min-width: 768px) {
+      justify-content: flex-end;
+    }
+  }
+}
+
+// ── Table ─────────────────────────────────────────────────
+.contact-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  table-layout: auto;
+  min-width: 640px;
+
+  thead tr { background: #f8fafc; }
+
+  th {
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: $text-muted;
+    border-bottom: 1px solid $border;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f1f5fb;
+    color: $text-primary;
+    vertical-align: middle;
+    line-height: 1.4;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: $blue-bg; transition: background 0.12s; }
+  tbody tr:nth-child(even) td { background: #fafbff; }
+  tbody tr:nth-child(even):hover td { background: $blue-bg; }
+
+  .col-sn {
+    width: 30px;
+    text-align: center;
+    color: $text-muted;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  th.col-sn { text-align: center; }
+
+  .col-name {
+    width: 110px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .col-email {
+    width: auto;
+
+    .email-link {
+      color: $blue-text;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+
+      &:hover { text-decoration: underline; }
+    }
+  }
+
+  .col-mobile {
+    width: 100px;
+    white-space: nowrap;
+    font-size: 11.5px;
+    color: $text-secondary;
+  }
+
+  .col-message {
+    min-width: 160px;
+    max-width: 280px;
+    font-size: 11.5px;
+    color: $text-secondary;
+    line-height: 1.4;
+    white-space: normal !important;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .col-date {
+    width: 100px;
+    min-width: 100px;
+    white-space: nowrap;
+
+    .date-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+
+      .date {
+        font-size: 11px;
+        font-weight: 600;
+        color: $text-primary;
+      }
+
+      .time {
+        font-size: 10px;
+        color: $text-muted;
+      }
+    }
+  }
+}
+
+// ── Loading ───────────────────────────────────────────────
+.loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 16px;
+
+  .loading-spinner {
+    width: 22px;
+    height: 22px;
+    border: 2px solid $border;
+    border-top-color: $brand-blue;
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+  }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Empty ─────────────────────────────────────────────────
+.empty-state {
+  text-align: center;
+  padding: 48px 16px;
+
+  .empty-icon {
+    font-size: 32px;
+    opacity: 0.45;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: $text-secondary;
+    font-size: 12px;
+    margin: 0 0 8px;
+  }
+}
+
+// ── AntD overrides — compact inputs & SMALL calendar panel ──
+.ant-picker-dropdown {
+  font-size: 11px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.ant-picker-panel-container {
+  font-size: 11px;
+
+  .ant-picker-panel {
+    .ant-picker-header {
+      padding: 0 6px;
+      height: 28px;
+      line-height: 28px;
+
+      button { font-size: 11px; line-height: 28px; }
+    }
+
+    .ant-picker-body { padding: 6px 8px; }
+
+    .ant-picker-content {
+      th { font-size: 9px; padding-bottom: 2px; }
+
+      td {
+        padding: 1px 0;
+
+        .ant-picker-cell-inner {
+          width: 22px;
+          height: 22px;
+          line-height: 22px;
+          font-size: 11px;
+          border-radius: 6px;
+        }
+      }
+    }
+
+    .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner {
+      background: $brand-blue;
+    }
+
+    .ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner::before {
+      border-color: $brand-blue;
+    }
+
+    .ant-picker-footer { min-width: 0; }
+  }
+
+  .ant-picker-date-panel,
+  .ant-picker-month-panel,
+  .ant-picker-year-panel {
+    width: 220px;
+  }
+}
+
+.ant-pagination {
+  .ant-pagination-item {
+    min-width: 24px;
+    height: 24px;
+    line-height: 24px;
+    font-size: 11px;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    border-color: $border;
+
+    a { color: $text-secondary; }
+  }
+
+  .ant-pagination-item-active {
+    background: $green-bg;
+    border-color: $brand-green;
+    a { color: $green-text; font-weight: 700; }
+  }
+
+  .ant-pagination-prev,
+  .ant-pagination-next {
+    min-width: 24px;
+    height: 24px;
+    line-height: 24px;
+    border-radius: 6px;
+  }
+
+  .ant-pagination-item-ellipsis { font-size: 11px; }
+}
+
+@media (max-width: 480px) {
+  .contact-list {
+    &__filters { gap: 6px; padding: 8px; }
+    .filter-item { min-width: 47%; max-width: 47%; }
+  }
+}
+
+/* Cross-device admin responsiveness */
+.contact-list {
+  box-sizing: border-box;
+  max-width: none;
+  overflow-x: hidden;
+}
+
+@media (min-width: 1200px) {
+  .contact-list {
+    padding: 0 18px 24px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .contact-list {
+    padding-inline: 20px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .contact-list {
+    padding: 0 14px 20px;
+
+    &__filters {
+      align-items: stretch;
+    }
+
+    .filter-item {
+      min-width: 160px;
+      max-width: none;
+    }
+  }
+}
+
+@media (min-width: 768px) {
+  .contact-list__header {
+    align-items: center;
+  }
+}
+
+@media (max-width: 767px) {
+  .contact-list {
+    min-height: auto;
+    padding: 12px;
+
+    &__header {
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    &__actions {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    &__filters {
+      gap: 8px;
+      padding: 10px;
+    }
+
+    .filter-item {
+      flex: 1 1 calc(50% - 4px);
+      min-width: 0;
+      max-width: none;
+    }
+
+    &__table-wrapper {
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+}
+
+@media (max-width: 360px) {
+  .contact-list {
+    padding: 10px 8px;
+
+    .filter-item {
+      flex-basis: 100%;
+    }
+  }
+}

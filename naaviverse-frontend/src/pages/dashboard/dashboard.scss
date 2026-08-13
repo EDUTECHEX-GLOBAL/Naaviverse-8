@@ -1,0 +1,700 @@
+@import "../../static/scss/colors";
+@import "../../static/scss/mixin";
+
+.dashboard-body {
+  height: calc(100vh);
+  width: 100vw;
+  display: flex;
+  text-transform: capitalize !important;
+  overflow: hidden;
+}
+
+.dashboard-screens {
+  /* Desktop: takes remaining space beside the 260px sidebar */
+  width: calc(100vw - 260px);
+  height: 100vh;
+  overflow-y: auto;
+  flex: 1;
+  min-width: 0; /* prevents flex blowout */
+  position: relative;
+
+  .row-1 {
+    display: flex;
+    height: calc(55% - 0.5px);
+    border-bottom: 0.5px solid #e5e5e5;
+  }
+
+  .box-1 {
+    width: 37vw;
+    height: 100%;
+  }
+
+  .box-2 {
+    border-left: 0.5px solid #e5e5e5;
+    width: calc(43vw - 0.5px);
+    height: 100%;
+  }
+
+  .row-2 {
+    display: flex;
+    height: calc(45% - 0.5px);
+    border-bottom: 0.5px solid #e5e5e5;
+  }
+
+  .box-3 {
+    width: 25vw;
+    height: 100%;
+  }
+
+  .box-4 {
+    border-left: 0.5px solid #e5e5e5;
+    width: calc(55vw - 0.5px);
+    height: 100%;
+  }
+}
+
+.account-container {
+  display: flex;
+  width: 100%;
+  height: calc(100vh);
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+.account-left {
+  width: 100%;
+  height: calc(100vh);
+  background-color: #ffffff;
+  padding: 0px 40px 40px 30px;
+}
+
+.account-right {
+  border-left: 0.5px solid #e5e5e5;
+  width: 20vw;
+  height: calc(100vh);
+  background-color: #ffffff;
+}
+
+.filter-actions-box {
+  display: flex;
+  margin: 25px 0px;
+}
+
+.filter-action1,
+.filter-action2 {
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  margin-right: 25px;
+  padding: 16px 45px;
+  font-weight: 500;
+  font-size: 15px;
+  color: #1f304f;
+  cursor: pointer;
+  @include btn-animate(#1f304f);
+}
+
+.all-account {
+  height: 87%;
+  overflow-y: scroll;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding-bottom: 40px;
+}
+
+.each-account {
+  width: 48%;
+  padding: 35px;
+  border: 1px solid #e5e5e5;
+  border-radius: 15px;
+  margin-bottom: 30px;
+}
+
+.account-img-box {
+  display: flex;
+  justify-content: center;
+  height: 108px;
+}
+
+.account-img {
+  height: 108px;
+  width: 108px;
+  border-radius: 50%;
+}
+
+.account-name {
+  font-weight: 600;
+  font-size: 25px;
+  line-height: 30px;
+  margin-top: 20px;
+  color: #1f304f;
+  display: flex;
+  justify-content: center;
+}
+
+.account-work {
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 25px;
+  padding-top: 7px;
+  color: #1f304f;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+.account-see-more {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 15px;
+  border-radius: 10px;
+  background: #59a2dd;
+  border: 0.5px solid #59a2dd;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 22px;
+  color: #ffffff;
+  cursor: pointer;
+  @include btn-animate(#ffffff);
+}
+
+.service-container {
+  display: flex;
+  overflow-x: hidden;
+}
+
+.service-main {
+  width: 100%;
+  overflow-x: scroll;
+  height: calc(100vh);
+  background-color: #ffffff;
+  padding: 40px 0px 20px 35px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* CHANGE .services-main in dashboard.scss: */
+.services-main {
+  width: 100%;
+  height: auto;              /* ← KEY CHANGE: let content define height */
+  min-height: 100%;          /* ← fills viewport when content is short */
+   background-color: transparent;
+  overflow-y: visible;       /* ← let dashboard-screens handle scroll */
+  overflow-x: hidden;
+
+  .accsideNav-CREATE_PATH {
+  .services-main {
+    background: transparent;  // ← CHANGE from #ffffff to transparent
+  }
+}
+}
+
+.services-all-menu {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 35px;
+  height: 70px;
+  background: #ffffff;
+}
+
+.services-each-menu {
+  padding: 10px 25px;
+  border-radius: 35px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1f304f;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(31, 48, 79, 0.05);
+  }
+}
+
+.serviceby-allbox {
+  display: -webkit-inline-box;
+  overflow-x: scroll;
+  height: 31vh;
+}
+
+.check {
+  border: 0.5px solid #e5e5e5;
+  border-radius: 5px;
+  padding: 6px 6px 2px 6px;
+}
+
+.pagemask {
+  position: fixed !important;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 11;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.75);
+  overflow: hidden !important;
+}
+
+.endbox {
+  background-color: #ffffff;
+  border-radius: 25px;
+  padding: 80px;
+  width: fit-content;
+  text-align: center;
+}
+
+.full-box {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+}
+
+.follow-text {
+  font-weight: 600;
+  font-size: 23px;
+  line-height: 45px;
+  margin-top: 30px;
+  color: #1f304f;
+}
+
+.each-service {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  cursor: pointer;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  padding: 20px;
+  margin-right: 35px;
+  width: 400px;
+  height: 31vh;
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+}
+
+.all-follow {
+  padding: 20px 35px;
+  background: #ffffff;
+  border: 0.5px solid #ededed;
+  position: fixed;
+  top: 0px;
+  right: 0%;
+  z-index: 22;
+  width: 460px;
+  height: calc(100vh);
+  -webkit-animation: righttoleft 0.15s ease-in forwards;
+  animation: righttoleft 0.15s ease-in forwards;
+}
+
+@keyframes righttoleft {
+  0%   { transform: translateX(100px); }
+  25%  { transform: translateX(75px);  }
+  50%  { transform: translateX(50px);  }
+  75%  { transform: translateX(25px);  }
+  100% { transform: translateX(0px);   }
+}
+
+.follow-icon {
+  width: 47px;
+  height: 47px;
+  border-radius: 50%;
+}
+
+.m-each {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0px;
+  font-weight: 500;
+  font-size: 15px;
+  color: #1f304f;
+  cursor: pointer;
+
+  &:hover {
+    transform: scale(1.1);
+    transition: all ease 0.2s;
+  }
+}
+
+.m-left {
+  display: flex;
+}
+
+.m-left-text {
+  margin-left: 7px;
+}
+
+.all-follow-head-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+  font-size: 22px;
+  color: #1f304f;
+}
+
+.follow-current {
+  margin: 35px 0px;
+}
+
+.follow-current-head {
+  font-weight: 400;
+  font-size: 14px;
+  margin-bottom: 20px;
+  color: #1f304f;
+}
+
+.scrollable-follow {
+  height: calc(100vh - 150px);
+  overflow-y: scroll;
+}
+
+.each-follow {
+  width: 100%;
+  padding: 20px;
+  align-items: center;
+  background: #ffffff;
+  border: 0.5px solid #e5e5e5;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: all ease 0.3s;
+
+  &:hover {
+    border: 0.5px solid #1f304f;
+  }
+}
+
+.follow-details {
+  display: flex;
+}
+
+.follow-name-box {
+  margin-left: 20px;
+}
+
+.follow-pop-name {
+  font-weight: 500;
+  font-size: 19px;
+  line-height: 23px;
+  color: #1f304f;
+}
+
+.follow-pop-time {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 15px;
+  color: #1f304f;
+}
+
+.follow-button-box {
+  margin-top: 20px;
+  display: flex;
+}
+
+.unfollow-btn {
+  width: fit-content;
+  padding: 10px 30px;
+  background: #fe2c55;
+  border-radius: 35px;
+  margin-right: 15px;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 15px;
+  color: #ffffff;
+  cursor: pointer;
+  @include btn-animate(#ffffff);
+}
+
+.profilebtn {
+  width: fit-content;
+  padding: 10px 30px;
+  background: #1f304f;
+  border-radius: 35px;
+  margin-right: 15px;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 15px;
+  color: #ffffff;
+  cursor: pointer;
+  @include btn-animate(#ffffff);
+}
+
+/* ── Coin action drawer ── */
+.acc-popular {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 400px;
+  height: 100vh;
+  background: #ffffff;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  padding: 20px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0);    }
+}
+
+.acc-popular-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.acc-popular-head {
+  font-weight: 600;
+  font-size: 20px;
+  color: #1f304f;
+}
+
+.acc-popular-img-box {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.acc-popular-img {
+  width: 20px;
+  height: 20px;
+}
+
+.acc-step-text1 {
+  font-weight: 500;
+  font-size: 16px;
+  color: #1f304f;
+  margin-bottom: 20px;
+}
+
+.acc-step-box2 {
+  border: 1px solid #e7e7e7;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #182542;
+  }
+}
+
+.acc-step-box3 {
+  border: 1px solid #e7e7e7;
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.coin-details-div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+  }
+}
+
+.amount-details-div {
+  input {
+    border: none;
+    outline: none;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: right;
+    width: 120px;
+  }
+}
+
+.scroll-box {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.back-next-btns {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+  position: absolute;
+  bottom: 30px;
+  right: 20px;
+  left: 20px;
+}
+
+.back-Btn {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #1f304f;
+  border-radius: 35px;
+  text-align: center;
+  color: #1f304f;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f5f5f5;
+  }
+}
+
+.next-Btn {
+  flex: 1;
+  padding: 12px;
+  background: #1f304f;
+  border-radius: 35px;
+  text-align: center;
+  color: #ffffff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #2a3f66;
+  }
+}
+
+/* ══════════════════════════════════
+   MOBILE BREAKPOINT  ≤ 768px
+══════════════════════════════════ */
+@media (max-width: 768px) {
+
+  .dashboard-body {
+    /* Sidebar is a fixed overlay on mobile — body is just the content area */
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .dashboard-screens {
+    /* Full viewport width — sidebar is fixed overlay, not in flow */
+    width: 100vw !important;
+    height: 100vh;
+    padding-top: 64px; /* clear the hamburger button */
+    overflow-y: auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .services-main {
+    width: 100% !important;
+    padding-top: 0;
+    height: calc(100vh - 64px);
+  }
+
+  .service-main {
+    width: 100% !important;
+    padding: 20px 16px;
+  }
+
+  .account-container {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .account-left {
+    width: 100%;
+    height: auto;
+    padding: 16px;
+    overflow-y: auto;
+  }
+
+  .account-right {
+    width: 100%;
+    border-left: none;
+    border-top: 0.5px solid #e5e5e5;
+    height: auto;
+  }
+
+  .all-account {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .each-account {
+    width: 100%;
+    padding: 20px;
+  }
+
+  .services-all-menu {
+    padding: 14px 16px;
+    height: auto;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Follow panel: full width on mobile */
+  .all-follow {
+    width: 100%;
+    padding: 20px 16px;
+  }
+
+  /* Coin action drawer: full width on mobile */
+  .acc-popular {
+    width: 100%;
+  }
+
+  /* Endbox confirmation: smaller padding */
+  .endbox {
+    padding: 40px 24px;
+    border-radius: 16px;
+  }
+
+  .follow-text {
+    font-size: 18px;
+    line-height: 32px;
+  }
+}
+
+/* ══════════════════════════════════
+   SMALL PHONES  ≤ 480px
+══════════════════════════════════ */
+@media (max-width: 480px) {
+
+  .services-all-menu {
+    padding: 12px;
+  }
+
+  .services-each-menu {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  .acc-step-text1 {
+    font-size: 14px;
+  }
+
+  .back-next-btns {
+    bottom: 16px;
+    right: 12px;
+    left: 12px;
+  }
+}

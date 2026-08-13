@@ -1,0 +1,249 @@
+@import '../../static/scss/colours';
+@import '../../static/scss/mixin';
+
+.vaultControllPanelForex {
+  flex: 0 0 22%;
+  border-right: 0.5px solid $border-color;
+  background: white;
+  top: 0;
+  left: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  .toggle {
+    background: $primary-color;
+    color: white;
+    z-index: 2;
+    height: 28px;
+    width: 28px;
+    position: absolute;
+    top: 72px;
+    right: 0;
+    margin: auto;
+    border-radius: 50%;
+    border: 1px solid $border-color;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transform: translateX(50%);
+    transform-origin: center;
+    transition: all 400ms ease;
+    &:hover {
+      transform: translateX(50%) scale(1.2);
+    }
+  }
+  .header {
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    .title {
+      font-size: 30px;
+      font-weight: bold;
+    }
+    .breadCrumbs {
+      display: flex;
+      color: $primary-color;
+      align-items: center;
+      flex-direction: row-reverse;
+      font-size: 14px;
+      line-height: 1;
+      overflow: scroll;
+      span {
+        font-size: 16px;
+        margin-right: 3px;
+        font-weight: 500;
+        cursor: pointer;
+        &:last-child,
+        &:hover {
+          font-weight: 700;
+        }
+      }
+      .prevArea {
+        display: flex;
+        align-items: center;
+        width: fit-content;
+        span {
+          font-weight: 500;
+          &:hover {
+            font-weight: 700;
+          }
+        }
+      }
+      .showArea {
+        flex: 0 0 100%;
+        min-width: 100%;
+        display: flex;
+        align-items: center;
+      }
+    }
+  }
+  .listTitle {
+    font-size: 20px;
+    font-weight: 600;
+    padding: 15px 40px;
+  }
+  .scrollList {
+    height: 0;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    .vaultItem {
+      flex: 0 0 100px;
+      background: white;
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      transition: all 400ms ease;
+      cursor: pointer;
+      .icon {
+        height: 25px;
+        width: 25px;
+        margin-right: 10px;
+      }
+      span {
+        font-size: 19px;
+        font-weight: bold;
+      }
+      &:hover {
+        background-color: #f2f2f280;
+      }
+    }
+    .subTitle {
+      font-size: 18px;
+      font-weight: 500;
+      padding: 5px 40px;
+      margin-bottom: 10px;
+      margin-top: 40px;
+    }
+    .spacer {
+      height: 40px;
+    }
+    .inpCoin {
+      flex: 0 0 70px;
+      display: flex;
+      margin: 0 40px;
+      border: 1px solid $border-color;
+      border-radius: 20px;
+      .coin {
+        flex: 0 0 35%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-right: 1px solid $border-color;
+        img {
+          height: 22px;
+          width: auto;
+          margin-right: 4px;
+        }
+        span {
+          font-size: 20px;
+          font-weight: bold;
+        }
+      }
+      .input {
+        width: 0;
+        border: none;
+        background: none;
+        flex: 1;
+        padding: 0 40px;
+        font-size: 22px;
+        -moz-appearance: textfield;
+        text-align: right;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        font-weight: 600;
+        color: $primary-color;
+        &::-webkit-outer-spin-button,
+        &::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        &::placeholder {
+          font-weight: 600;
+          text-align-last: right;
+        }
+      }
+    }
+    .inputWrap {
+      display: flex;
+      flex-direction: column;
+      margin: 0 40px;
+      border: 1px solid $border-color;
+      border-radius: 20px;
+      .inpCoin {
+        margin: 0;
+        border-radius: 0;
+        border: none;
+        .coin {
+          border: none;
+        }
+        &:first-of-type {
+          border-bottom: 1px solid $border-color;
+        }
+      }
+    }
+    .percents {
+      display: flex;
+      height: 60px;
+      padding: 10px 40px;
+      .percent {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0 20px;
+        border: 1px solid $border-color;
+        border-radius: 8px;
+        margin-right: 10px;
+        @include btn-animate;
+      }
+    }
+  }
+  .btnFooter {
+    height: 70px;
+    background: $app-color;
+    color: white;
+    font-size: 20px;
+    font-weight: 600;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    @include btn-animate(white);
+    .icon {
+      margin-left: 6px;
+      height: 20px;
+      width: 20px;
+      path {
+        fill: white;
+      }
+    }
+    &:disabled {
+      opacity: 0.4;
+      background: white;
+      color: $primary-color;
+      .icon {
+        path {
+          fill: $primary-color;
+        }
+      }
+    }
+  }
+  .loadingAnim {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    > div {
+      width: 100% !important;
+      height: auto !important;
+    }
+  }
+}

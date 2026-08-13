@@ -1,0 +1,17 @@
+{
+  "name": "naaviverse-workspace",
+  "version": "1.0.0",
+  "description": "Naaviverse Unified Development Workspace",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install --prefix naaviverse-frontend && npm install --prefix careers-backend-node-v.1 && npm install --prefix navi-agent/frontend",
+    "dev:frontend": "npm start --prefix naaviverse-frontend",
+    "dev:backend": "npm run dev --prefix careers-backend-node-v.1",
+    "dev:agent-api": "python -m uvicorn main:app --reload --port 8001",
+    "dev:agent-ui": "npm run dev --prefix navi-agent/frontend",
+    "start": "concurrently --kill-others \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:agent-ui\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

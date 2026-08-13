@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import "../../static/scss/colors";
+@import "../../static/scss/mixin";
+
+.dashboard-sidebar {
+    font-family: 'Poppins', sans-serif !important;
+    height: 100vh;
+    padding: 30px 2vw 0px 2vw;
+    overflow-y: scroll;
+    width: 20vw;
+    background: #ededed5e;
+
+    .dashboard-left{
+      width: calc(100%);
+      // margin: auto;
+    }
+  
+    .each-sidenav {
+      border-radius: 5px;
+      height: 43px;
+      width: calc(100%);
+      display: flex;
+      align-items: center;
+      font-weight: 450;
+      font-size: 17px;
+      line-height: 21px;
+      color: #100F0D;
+      cursor: pointer;
+      margin: 15px auto;
+      &:hover{
+        transform: scale(1.05);
+        transition: all ease .2s;
+        font-weight: 600;
+        
+      }
+    }
+  
+    .sidebar-line{
+      padding-right: 2vw;
+      margin: 30px 0px;
+      height: 1px;
+      width: 100%;
+      margin-left: -20px;
+    }
+  }
+
+  .dashboard-logo{
+    width: 14vw;
+  }
+
+  .side-btn{
+    cursor: pointer;
+    @include btn-animate(#FFF);
+  }
+
+  /* Add these styles to your existing accDashsidebar.scss */
+
+.dashboard-sidebar {
+  position: relative;
+  background: white;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.03);
+}
+
+/* Scrollbar styling */
+.sidebar-menu-scrollable {
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+    
+    &:hover {
+      background: #94a3b8;
+    }
+  }
+}
+
+/* Logout button styling */
+.logout-btn {
+  margin: 0;
+  font-weight: 500;
+  
+  img {
+    transition: transform 0.2s;
+  }
+  
+  &:hover {
+    img {
+      transform: translateX(2px);
+    }
+  }
+}
+
+/* Ensure the sidebar takes full height */
+.dashboard-sidebar {
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  left: 0;
+}
+
+.dashboard-sidebar {
+  width: 240px; /* MATCH THE INLINE STYLE */
+  background: #ffffff;
+  border-right: none; /* REMOVE ANY BORDER THAT MIGHT CAUSE WHITE LINE */
+  box-shadow: none; /* REMOVE ANY SHADOW */
+  position: relative;
+  z-index: 100;
+  
+  /* Ensure no pseudo-elements create white lines */
+  &::before,
+  &::after {
+    display: none;
+  }
+}
+
+.each-sidenav {
+  &:hover {
+    background: rgba(34, 115, 230, 0.08) !important; // soft blue
+    color: #2273E6 !important;
+  }
+}
+.each-sidenav.active,
+.each-sidenav.selected {
+  background: rgba(34, 115, 230, 0.12); // slightly stronger than hover
+  color: #2273E6;
+  font-weight: 600;
+}
+/* When popup is open, ensure sidebar doesn't get any blur or overlay */
+body.admin-popup-open .dashboard-sidebar {
+  backdrop-filter: none;
+  background: #ffffff;
+  position: relative;
+  z-index: 100;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dashboard-sidebar * {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Super admin sidebar polish: keep the sidebar, hide the visible scrollbar */
+.sidebar-desktop.dashboard-sidebar,
+.sidebar-mobile-drawer,
+.sidebar-menu-scrollable,
+.dashboard-screens {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+}

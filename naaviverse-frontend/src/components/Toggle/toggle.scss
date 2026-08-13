@@ -1,0 +1,60 @@
+.tgl1[type="checkbox"] {
+  height: 0;
+  width: 0;
+  visibility: hidden;
+}
+
+.tgl2 {
+  border: 3px solid #e5e5e5;
+  cursor: pointer;
+  text-indent: -9999px;
+  width: 30px;
+  height: 18px;
+  background: white;
+  display: block;
+  border-radius: 100px;
+  position: relative;
+}
+
+.tgl2:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 26%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+  background: #1f304f;
+  border-radius: 90px;
+  transition: 0.3s;
+}
+
+.tgl1:checked + .tgl2 {
+  background: white;
+}
+
+.tgl1:checked + .tgl2:after {
+  left: auto;
+  right: -26%;
+  // transform: translateX(-100%);
+}
+
+.tgl2:active:after {
+  width: 20px;
+}
+.togglecomp {
+  display: flex;
+  align-items: center;
+  p {
+    color: #100F0D;
+    font-size: 10px;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+}
+
+.toggle-div {
+  margin-left: 10px;
+  margin-top: -15px;
+}

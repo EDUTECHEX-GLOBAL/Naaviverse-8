@@ -1,0 +1,540 @@
+// SubscriptionList.scss — Compact, Naavi brand colors
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+// ── Naavi brand palette ────────────────────────────────────
+$brand-green:   #1FA655;
+$brand-blue:    #3E7BFA;
+$brand-yellow:  #F5B324;
+$brand-red:     #E5473C;
+
+$green-bg:      #D8F3E5;
+$green-border:  #9EE4B5;
+$green-text:    #16a34a;
+
+$blue-bg:       #DBE8FF;
+$blue-border:   #A4C2FF;
+$blue-text:     #2563eb;
+
+$yellow-bg:     #FEEAC4;
+$yellow-border: #FCD080;
+$yellow-text:   #d97706;
+
+$red-bg:        #FCDCDC;
+$red-border:    #F7A8A2;
+$red-text:      #dc2626;
+
+$page-bg:       #f4f7fb;
+$surface:       #ffffff;
+$border:        #e7ebf1;
+$text-primary:  #1a2233;
+$text-secondary:#6b7385;
+$text-muted:    #9aa1b5;
+
+// ── Root ──────────────────────────────────────────────────
+.subscription-list {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2px 14px;
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: $page-bg;
+  min-height: 100vh;
+  font-size: 12px;
+
+  @media (min-width: 768px) {
+    padding: 0 2px 14px;
+  }
+
+  // ── Header ────────────────────────────────────────────
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: $text-primary;
+    margin: 0 0 1px;
+    letter-spacing: -0.2px;
+
+    @media (min-width: 768px) { font-size: 18px; }
+  }
+
+  &__subtitle {
+    font-size: 11px;
+    color: $text-secondary;
+    margin: 0;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+
+    .ant-btn { display: inline-flex; align-items: center; gap: 5px; }
+
+    .btn-outline {
+      border: 1px solid $border;
+      background: $surface;
+      color: $text-secondary;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 8px;
+      transition: all 0.15s;
+
+      &:hover {
+        border-color: $brand-red;
+        color: $red-text;
+        background: $red-bg;
+      }
+    }
+
+    .btn-primary {
+      background: $brand-blue;
+      border: none;
+      font-size: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      height: 28px;
+      padding: 0 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(62, 123, 250, 0.28);
+      transition: background 0.15s;
+
+      &:hover { background: darken($brand-blue, 8%); }
+    }
+  }
+
+  // ── Stat Pills ────────────────────────────────────────
+  &__stats {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .stat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px 4px 8px;
+    border-radius: 30px;
+    border: 1px solid transparent;
+    font-family: 'DM Sans', sans-serif;
+
+    &__icon { font-size: 11px; flex-shrink: 0; }
+
+    &__value {
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      color: $text-primary;
+    }
+
+    &__label {
+      font-size: 9px;
+      font-weight: 600;
+      color: $text-secondary;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    &--blue {
+      background: $blue-bg;
+      border-color: $blue-border;
+      .stat-pill__icon { color: #1d4ed8; }
+      .stat-pill__value { color: #1d4ed8 !important; }
+    }
+
+    &--yellow {
+      background: $yellow-bg;
+      border-color: $yellow-border;
+      .stat-pill__icon { color: #b45309; }
+      .stat-pill__value { color: #b45309 !important; }
+    }
+
+    &--green {
+      background: $green-bg;
+      border-color: $green-border;
+      .stat-pill__icon { color: #15803d; }
+      .stat-pill__value { color: #15803d !important; }
+    }
+  }
+
+  // ── Filters ───────────────────────────────────────────
+  &__filters {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px;
+    background: $surface;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    border: 1px solid $border;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+
+    .filter-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+      min-width: 110px;
+      max-width: 170px;
+
+      .filter-label {
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: $text-muted;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        svg { font-size: 9px; }
+      }
+
+      .filter-date,
+      .filter-search {
+        width: 100%;
+
+        .ant-picker,
+        .ant-input-affix-wrapper,
+        .ant-input {
+          width: 100%;
+          border-radius: 7px;
+          border-color: $border;
+          height: 28px;
+          font-size: 11px;
+          font-family: 'DM Sans', sans-serif;
+          background: #fbfcfe;
+
+          &:hover, &-focused { border-color: $brand-blue; }
+        }
+      }
+    }
+  }
+
+  // ── Summary ───────────────────────────────────────────
+  &__summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    padding: 0 2px;
+    font-size: 10px;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    flex-wrap: wrap;
+
+    .summary-badge {
+      background: $blue-bg;
+      color: $blue-text;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+    }
+  }
+
+  // ── Table Wrapper ──────────────────────────────────────
+  &__table-wrapper {
+    border-radius: 12px;
+    border: 1px solid $border;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background: $surface;
+
+    &::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+      display: none;
+    }
+  }
+
+  // ── Pagination ────────────────────────────────────────
+  &__pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 14px;
+
+    @media (min-width: 768px) {
+      justify-content: flex-end;
+    }
+  }
+}
+
+// ── Table ─────────────────────────────────────────────────
+.subscription-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  table-layout: fixed;
+
+  thead tr { background: #f8fafc; }
+
+  th {
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: $text-muted;
+    border-bottom: 1px solid $border;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f1f5fb;
+    color: $text-primary;
+    vertical-align: middle;
+    line-height: 1.4;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: $blue-bg; transition: background 0.12s; }
+  tbody tr:nth-child(even) td { background: #fafbff; }
+  tbody tr:nth-child(even):hover td { background: $blue-bg; }
+
+  .col-sn {
+    width: 56px;
+    text-align: center;
+    color: $text-muted;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  th.col-sn { text-align: center; }
+
+  // Email stays on one line and uses the available table width
+  .col-email {
+    width: 56%;
+
+    .email-cell {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      overflow: visible;
+
+      .email-icon {
+        font-size: 12px;
+        color: #1d4ed8;
+        opacity: 0.8;
+        flex-shrink: 0;
+      }
+
+      .email-link {
+        color: $blue-text;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: visible;
+        text-overflow: clip;
+        word-break: normal;
+        line-height: 1.3;
+        max-width: none;
+
+        &:hover { text-decoration: underline; }
+      }
+    }
+  }
+
+  .col-domain {
+    width: 150px;
+    white-space: nowrap;
+
+    .domain-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      background: $green-bg;
+      color: #15803d;
+      border: 1px solid $green-border;
+      text-transform: lowercase;
+      white-space: nowrap;
+    }
+  }
+
+  .col-date {
+    width: 190px;
+    white-space: nowrap;
+
+    .date-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+
+      .date {
+        font-size: 11px;
+        font-weight: 600;
+        color: $text-primary;
+      }
+
+      .time {
+        font-size: 10px;
+        color: $text-muted;
+      }
+    }
+  }
+}
+
+// ── Loading ───────────────────────────────────────────────
+.loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 16px;
+
+  .loading-spinner {
+    width: 22px;
+    height: 22px;
+    border: 2px solid $border;
+    border-top-color: $brand-blue;
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+  }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Empty ─────────────────────────────────────────────────
+.empty-state {
+  text-align: center;
+  padding: 48px 16px;
+
+  .empty-icon {
+    font-size: 32px;
+    opacity: 0.45;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: $text-secondary;
+    font-size: 12px;
+    margin: 0 0 8px;
+  }
+}
+
+// ── AntD overrides — compact inputs & SMALL calendar panel ──
+.ant-picker-dropdown,
+.ant-select-dropdown {
+  font-size: 11px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.ant-picker-panel-container {
+  font-size: 11px;
+
+  .ant-picker-panel {
+    .ant-picker-header {
+      padding: 0 6px;
+      height: 28px;
+      line-height: 28px;
+
+      button { font-size: 11px; line-height: 28px; }
+    }
+
+    .ant-picker-body { padding: 6px 8px; }
+
+    .ant-picker-content {
+      th { font-size: 9px; padding-bottom: 2px; }
+
+      td {
+        padding: 1px 0;
+
+        .ant-picker-cell-inner {
+          width: 22px;
+          height: 22px;
+          line-height: 22px;
+          font-size: 11px;
+          border-radius: 6px;
+        }
+      }
+    }
+
+    .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner {
+      background: $brand-blue;
+    }
+
+    .ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner::before {
+      border-color: $brand-blue;
+    }
+
+    .ant-picker-footer { min-width: 0; }
+  }
+
+  .ant-picker-date-panel,
+  .ant-picker-month-panel,
+  .ant-picker-year-panel {
+    width: 220px;
+  }
+}
+
+.ant-pagination {
+  .ant-pagination-item {
+    min-width: 24px;
+    height: 24px;
+    line-height: 24px;
+    font-size: 11px;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    border-color: $border;
+
+    a { color: $text-secondary; }
+  }
+
+  .ant-pagination-item-active {
+    background: $green-bg;
+    border-color: $brand-green;
+    a { color: $green-text; font-weight: 700; }
+  }
+
+  .ant-pagination-prev,
+  .ant-pagination-next {
+    min-width: 24px;
+    height: 24px;
+    line-height: 24px;
+    border-radius: 6px;
+  }
+
+  .ant-pagination-item-ellipsis { font-size: 11px; }
+}
+
+@media (max-width: 480px) {
+  .subscription-list {
+    &__filters { gap: 6px; padding: 8px; }
+    .filter-item { min-width: 47%; max-width: 47%; }
+  }
+}
+
+@media (min-width: 768px) {
+  .subscription-list {
+    padding-top: 0;
+
+    &__header {
+      align-items: center;
+    }
+  }
+}

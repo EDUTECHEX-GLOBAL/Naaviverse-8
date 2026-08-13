@@ -1,0 +1,57 @@
+.vaultsContent {
+  display: flex;
+  padding: 3rem;
+  font-size: 1.2rem;
+  font-weight: 500;
+  border-bottom: 0.5px solid #e7e7e7;
+  transition: all ease-in-out 0.2s;
+
+  & > div {
+    display: flex;
+    align-items: center;
+  }
+
+  //each child differs
+
+  & > :nth-child(1) {
+    width: 25%;
+    display: flex;
+    gap: 0.5rem;
+
+    & > img {
+      height: 30px;
+      width: 30px;
+    }
+  }
+  & > :nth-child(2) {
+    width: 22.5%;
+  }
+  & > :nth-child(3) {
+    width: 22.5%;
+  }
+  & > :nth-child(4) {
+    width: 30%;
+    justify-content: flex-end;
+    font-size: 1rem;
+    font-weight: 600;
+    gap: 1rem;
+
+    & > div {
+      background: rgba(255, 255, 255, 0.37);
+      border: 1px solid #ededed;
+      border-radius: 35px;
+      padding: 0.55rem 2rem;
+      transition: all ease-in 0.2s;
+      cursor: pointer;
+
+      &:hover {
+        background: #1f304f;
+        color: white;
+      }
+    }
+  }
+
+  &:hover {
+    background: #f3f3f3;
+  }
+}

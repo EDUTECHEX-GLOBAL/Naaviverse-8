@@ -1,0 +1,102 @@
+/* ═══════════════════════════════════════════════
+   Header & Menu Icon Button Styles
+   Compact green menu button (36px x 36px square)
+   ═══════════════════════════════════════════════ */
+
+.menu-icon-btn,
+.menu-icon-btn1 {
+  background-color: #198754 !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  aspect-ratio: 1 / 1 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin-left: 16px !important;
+  margin-right: 0 !important;
+  cursor: pointer !important;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box !important;
+  flex-shrink: 0 !important;
+  transition: background-color 0.2s ease, transform 0.15s ease !important;
+
+  &:hover {
+    background-color: #146c43 !important;
+    transform: scale(1.04);
+  }
+}
+
+.menu-icon-custom {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3.5px !important;
+  width: 16px !important;
+  height: 14px !important;
+  margin: 0 auto !important;
+
+  .bar {
+    width: 15px !important;
+    height: 2px !important;
+    background-color: #ffffff !important;
+    border-radius: 2px !important;
+    display: block !important;
+    margin: 0 !important;
+  }
+}
+
+/* Ensure navbar has proper spacing */
+.navbar {
+  padding: 12px 0 !important;
+}
+
+/* Mobile menu toggle button positioning */
+@media (max-width: 991px) {
+
+  .menu-icon-btn,
+  .menu-icon-btn1 {
+    margin-left: auto !important;
+    margin-right: 0 !important;
+  }
+}
+
+/* 🔥 HARD BLOCK DESKTOP MENU ON MOBILE */
+@media (max-width: 991px) {
+  .desktop-menu-only {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .navbar-nav.desktop-menu-only {
+    display: none !important;
+  }
+}
+
+/* ── MOBILE HEADER: ALWAYS FIXED ──────────────────────────
+   On desktop, the header starts as position:absolute and becomes
+   position:fixed after scrolling 68px (via JS .fixed class).
+   On mobile, we ALWAYS fix it at the top so the hamburger toggle
+   is never scrolled out of view when scrollIntoView() jumps the
+   page to a deep section instantly. */
+@media (max-width: 991px) {
+  .theme-main-menu.sticky-menu {
+    
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 990 !important;
+    background: #ffffff !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+}
