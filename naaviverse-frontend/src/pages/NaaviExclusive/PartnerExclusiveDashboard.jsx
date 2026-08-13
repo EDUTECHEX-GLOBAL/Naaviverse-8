@@ -597,57 +597,8 @@ export default function PartnerExclusiveDashboard() {
               )}
 
               {/* ──────────────── FEEDBACKS VIEW ──────────────── */}
-              {/* ──────────────── FEEDBACKS VIEW ──────────────── */}
               {activeMenu === "Feedbacks" && (
                 <div className="px-view-fade">
-                  {/* Bayesian Overall Summary Banner */}
-                  <div className="px-bayesian-banner" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justify: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: '16px',
-                    background: 'linear-gradient(135deg, #ffffff, #f8fafc)',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '16px',
-                    padding: '20px 24px',
-                    marginBottom: '24px',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)'
-                  }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '220px' }}>
-                      <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b', fontWeight: '700' }}>
-                        Partner Quality Overview
-                      </span>
-                      <h3 style={{ margin: 0, fontSize: '18px', color: '#0f172a', fontWeight: '700' }}>
-                        Bayesian Performance Engine
-                      </h3>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-                      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '10px 18px', borderRadius: '12px', textAlign: 'center', minWidth: '130px' }}>
-                        <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', marginBottom: '2px' }}>Bayesian Rating</div>
-                        <div style={{ fontSize: '20px', fontWeight: '800', color: '#d97706', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
-                          <span>★ {stats?.bayesianRating ? Number(stats.bayesianRating).toFixed(2) : "4.00"}</span>
-                          <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '500' }}>/ 5.0</span>
-                        </div>
-                      </div>
-
-                      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '10px 18px', borderRadius: '12px', textAlign: 'center', minWidth: '130px' }}>
-                        <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', marginBottom: '2px' }}>Marketplace Score</div>
-                        <div style={{ fontSize: '20px', fontWeight: '800', color: '#059669' }}>
-                          {stats?.marketplaceScore ? Number(stats.marketplaceScore).toFixed(1) : "80.0"} <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '500' }}>/ 100</span>
-                        </div>
-                      </div>
-
-                      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '10px 18px', borderRadius: '12px', textAlign: 'center', minWidth: '110px' }}>
-                        <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', marginBottom: '2px' }}>Total Reviews</div>
-                        <div style={{ fontSize: '20px', fontWeight: '800', color: '#4f46e5' }}>
-                          {stats?.totalFeedbackCount || stats?.feedbacks?.length || 0} <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '500' }}>valid</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
                   <div className="px-section-card">
                     <div className="px-section-header px-section-header--split">
                       <h2>Student Feedbacks &amp; Reviews</h2>
@@ -685,18 +636,7 @@ export default function PartnerExclusiveDashboard() {
                             {feedbacksList.length ? (
                               feedbacksList.map((fb, idx) => (
                                 <tr key={fb._id || idx}>
-                                  <td>
-                                    <div style={{ fontWeight: '600', color: '#1e293b' }}>{fb.service}</div>
-                                    {fb.type === "marketplace" || fb.providerName ? (
-                                      <span style={{ fontSize: '10px', background: '#eef2ff', color: '#4f46e5', padding: '2px 7px', borderRadius: '4px', fontWeight: '600', display: 'inline-block', marginTop: '3px' }}>
-                                        🛒 Marketplace
-                                      </span>
-                                    ) : (
-                                      <span style={{ fontSize: '10px', background: '#f1f5f9', color: '#64748b', padding: '2px 7px', borderRadius: '4px', fontWeight: '600', display: 'inline-block', marginTop: '3px' }}>
-                                        📌 Step View
-                                      </span>
-                                    )}
-                                  </td>
+                                  <td>{fb.service}</td>
                                   <td>
                                     <div className="px-fb-cell">
                                       <div className="px-fb-avatar">
@@ -706,15 +646,7 @@ export default function PartnerExclusiveDashboard() {
                                     </div>
                                   </td>
                                   <td className="px-fb-stars">
-                                    {(() => {
-                                      const r = Math.min(5, Math.max(1, fb.rating || (fb.action === "helpful" ? 5 : fb.action === "notRelevant" ? 1 : 4)));
-                                      return (
-                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                                          <span style={{ fontWeight: '700', color: '#f59e0b', fontSize: '13px' }}>{r.toFixed(1)}</span>
-                                          <span>{"★".repeat(r) + "☆".repeat(5 - r)}</span>
-                                        </span>
-                                      );
-                                    })()}
+                                    {"★".repeat(fb.rating || 3)}{"☆".repeat(5 - (fb.rating || 3))}
                                   </td>
                                   <td>
                                     <span className={`px-badge badge-${fb.action === "helpful" ? "paid" : fb.action === "notRelevant" ? "failed" : "pending"}`}>
@@ -748,23 +680,10 @@ export default function PartnerExclusiveDashboard() {
                                   <div className="px-fb-info">
                                     <span className="px-fb-email">{fb.studentName || fb.studentEmail}</span>
                                     <span className="px-fb-product">{fb.service}</span>
-                                    {fb.type === "marketplace" || fb.providerName ? (
-                                      <span style={{ fontSize: '10px', background: '#eef2ff', color: '#4f46e5', padding: '2px 6px', borderRadius: '4px', fontWeight: '600', display: 'inline-block', marginTop: '2px' }}>🛒 Marketplace</span>
-                                    ) : (
-                                      <span style={{ fontSize: '10px', background: '#f1f5f9', color: '#64748b', padding: '2px 6px', borderRadius: '4px', fontWeight: '600', display: 'inline-block', marginTop: '2px' }}>📌 Step View</span>
-                                    )}
                                   </div>
                                 </div>
-                                <div className="px-fb-rating" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                  {(() => {
-                                    const r = Math.min(5, Math.max(1, fb.rating || (fb.action === "helpful" ? 5 : fb.action === "notRelevant" ? 1 : 4)));
-                                    return (
-                                      <>
-                                        <span style={{ fontWeight: '700', color: '#f59e0b', fontSize: '13px' }}>{r.toFixed(1)}</span>
-                                        <span>{"★".repeat(r) + "☆".repeat(5 - r)}</span>
-                                      </>
-                                    );
-                                  })()}
+                                <div className="px-fb-rating">
+                                  {"★".repeat(fb.rating || 3)}{"☆".repeat(5 - (fb.rating || 3))}
                                 </div>
                               </div>
                               <p className="px-fb-body">{fb.comment}</p>

@@ -146,3 +146,18 @@ body.admin-popup-open .dashboard-sidebar {
 .dashboard-sidebar * {
   font-family: 'Poppins', sans-serif !important;
 }
+
+/* Super admin sidebar polish: keep the sidebar, hide the visible scrollbar */
+.sidebar-desktop.dashboard-sidebar,
+.sidebar-mobile-drawer,
+.sidebar-menu-scrollable,
+.dashboard-screens {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+}

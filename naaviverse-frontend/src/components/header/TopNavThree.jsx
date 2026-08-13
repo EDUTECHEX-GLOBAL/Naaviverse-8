@@ -1,7 +1,6 @@
 import React,{Fragment, useState} from 'react';
 import {Link} from 'react-router-dom';
 import SearchModal from '../../components/search-modal/SearchModal'
-// import MobileMenu from './MobileMenu';
 import Naavi from '../../assets/images/logo/logo_01.png';
 
 import ThemeMainMenu from './ThemeMainMenu';

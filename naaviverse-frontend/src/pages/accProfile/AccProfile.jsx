@@ -1142,148 +1142,220 @@ const AccProfile = () => {
 
                 /* ── APPROVED: show full profile ── */
               ) : isProfileData && accStatus === "approved" ? (
-                <div className="profile-modern-container" style={{ maxWidth: "100%", width: "100%", padding: "0 24px", boxSizing: "border-box", overflowY: "auto", flex: 1, minHeight: 0 }}>
+                <div className="profile-modern-container" style={{
+                  maxWidth: "100%", width: "100%", padding: "20px 28px",
+                  boxSizing: "border-box", overflowY: "auto", flex: 1, minHeight: 0,
+                  scrollbarWidth: "none", msOverflowStyle: "none",
+                }}>
 
-                  {/* Cover Banner */}
-                  <div style={{ position: "relative", marginBottom: "0" }}>
-                    <div style={{
-                      height: "160px",
-                      background: "linear-gradient(135deg, #43c97e 0%, #38b8a0 50%, #2dd4bf 100%)",
-                      borderRadius: "16px", width: "100%", position: "relative",
-                      display: "flex", alignItems: "flex-start", justifyContent: "flex-end",
-                      padding: "16px", boxSizing: "border-box",
-                    }}>
-                      <button
-                        onClick={() => { setEditMode("all"); setEditValue({}); }}
-                        style={{
-                          display: "flex", alignItems: "center", gap: "8px",
-                          padding: "9px 20px", background: "#ffffff",
-                          border: "none", borderRadius: "10px",
-                          color: "#1a1f36", fontWeight: "700", fontSize: "14px",
-                          cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                        }}
-                      >
-                        <EditIcon /> Edit Profile
-                      </button>
+                  {/* ── Page Header: Title + Pastel Edit Button ── */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                      {/* Avatar */}
+                      <div style={{
+                        width: "48px", height: "48px", borderRadius: "10px",
+                        background: "#fff", border: "1px solid #e2e8f0",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.05)", overflow: "hidden", flexShrink: 0,
+                      }}>
+                        <img
+                          src={profileData?.logo}
+                          alt={profileData?.businessName}
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                            e.target.parentNode.style.background = "linear-gradient(135deg, #3b82f6, #1d4ed8)";
+                            e.target.parentNode.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700">${(profileData?.businessName || "P").charAt(0).toUpperCase()}</div>`;
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <h1 style={{ fontSize: "18px", fontWeight: "700", color: "#0f172a", margin: 0 }}>
+                            {profileData?.businessName || "Your Profile"}
+                          </h1>
+                          <div style={{
+                            display: "inline-flex", alignItems: "center", gap: "3px",
+                            padding: "2px 7px", background: "#ecfdf5", borderRadius: "4px",
+                            fontSize: "11px", fontWeight: "600", color: "#059669",
+                          }}>
+                            <CheckIcon /><span>Verified</span>
+                          </div>
+                        </div>
+                        <p style={{ fontSize: "12px", color: "#64748b", margin: "2px 0 0 0", fontWeight: "400" }}>
+                          View and manage your business profile details
+                        </p>
+                      </div>
                     </div>
 
-                    {/* Avatar */}
-                    <div style={{
-                      position: "absolute", bottom: "-44px", left: "36px",
-                      width: "88px", height: "88px", borderRadius: "14px",
-                      border: "3px solid #fff", background: "#fff",
-                      boxShadow: "0 4px 16px rgba(0,0,0,0.12)", overflow: "hidden",
-                    }}>
-                      <img
-                        src={profileData?.logo}
-                        alt={profileData?.businessName}
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                          e.target.parentNode.style.background = "linear-gradient(135deg, #667eea, #764ba2)";
-                          e.target.parentNode.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;font-weight:700">${(profileData?.businessName || "P").charAt(0).toUpperCase()}</div>`;
-                        }}
-                      />
-
-                    </div>
+                    <button
+                      onClick={() => { setEditMode("all"); setEditValue({}); }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: "5px",
+                        padding: "6px 14px", background: "#e0f2fe",
+                        border: "1px solid #93c5fd", borderRadius: "6px",
+                        color: "#1d4ed8", fontWeight: "600", fontSize: "12px",
+                        cursor: "pointer", transition: "all 0.15s ease", flexShrink: 0,
+                      }}
+                      onMouseEnter={e => { e.target.style.background = "#bae6fd"; e.target.style.borderColor = "#60a5fa"; }}
+                      onMouseLeave={e => { e.target.style.background = "#e0f2fe"; e.target.style.borderColor = "#93c5fd"; }}
+                    >
+                      <EditIcon /> Edit Profile
+                    </button>
                   </div>
 
-                  {/* Name + badge row */}
+                  {/* ── Section 1: Business & Company Information ── */}
                   <div style={{
-                    paddingLeft: "140px", paddingRight: "24px",
-                    paddingTop: "10px", paddingBottom: "20px",
-                    display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap",
+                    background: "#ffffff", borderRadius: "10px",
+                    border: "1px solid #e2e8f0",
+                    marginBottom: "14px", overflow: "hidden",
                   }}>
-                    <h1 style={{ fontSize: "20px", fontWeight: "700", color: "#1a1f36", margin: 0 }}>
-                      {profileData?.businessName}
-                    </h1>
-                    <span style={{ fontSize: "13px", color: "#718096" }}>
-                      {profileData?.type || "Business"}
-                    </span>
                     <div style={{
-                      display: "inline-flex", alignItems: "center", gap: "5px",
-                      padding: "3px 10px", background: "#e6f7ee", borderRadius: "20px",
-                      fontSize: "12px", fontWeight: "600", color: "#2d6a4f",
+                      padding: "12px 18px",
+                      borderBottom: "1px solid #f1f5f9",
+                      background: "#fafafa",
+                      display: "flex", alignItems: "center", justifyContent: "space-between",
                     }}>
-                      <CheckIcon /><span>Verified Partner</span>
-                    </div>
-                  </div>
-
-                  {/* Profile details card */}
-                  <div style={{
-                    background: "#fff", borderRadius: "16px",
-                    border: "1px solid #eef0f3", boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
-                    margin: "0 0 24px 0", overflow: "hidden",
-                  }}>
-                    {/* Row 1 */}
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", borderBottom: "1px solid #f0f2f5" }}>
-                      {[
-                        { label: "Business Name", value: profileData?.businessName, field: "businessName" },
-                        { label: "Business Type", value: profileData?.type, field: "partnerType" },
-                        { label: "Website", value: profileData?.website, field: "website" },
-                        { label: "Email", value: userDetails?.email, field: null },
-                      ].map((item, i, arr) => (
-                        <div key={item.label} style={{ padding: "18px 20px", borderRight: i < arr.length - 1 ? "1px solid #f0f2f5" : "none" }}>
-                          <div style={{ fontSize: "11px", fontWeight: "600", color: "#9aa0ac", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>{item.label}</div>
-                          {editMode === "all" && item.field ? (
-                            <input defaultValue={item.value || ""} onChange={e => setEditValue(prev => ({ ...prev, [item.field]: e.target.value }))} style={{ fontSize: "14px", fontWeight: "500", color: "#1a1f36", border: "1px solid #43c97e", borderRadius: "6px", padding: "4px 8px", width: "100%", outline: "none" }} />
-                          ) : (
-                            <span style={{ fontSize: "14px", fontWeight: "500", color: "#1a1f36", wordBreak: "break-all" }}>{item.value || "—"}</span>
-                          )}
-                        </div>
-                      ))}
+                      <span style={{ fontSize: "13px", fontWeight: "600", color: "#1e293b" }}>Business & Company Information</span>
+                      <span style={{
+                        fontSize: "11px", fontWeight: "500", color: "#475569",
+                        background: "#f1f5f9", padding: "2px 8px", borderRadius: "4px",
+                      }}>{profileData?.type || "Business"}</span>
                     </div>
 
-                    {/* Row 2 */}
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", borderBottom: "1px solid #f0f2f5" }}>
-                      {[
-                        { label: "First Name", value: profileData?.firstName, field: "firstName" },
-                        { label: "Last Name", value: profileData?.lastName, field: "lastName" },
-                        { label: "Position", value: profileData?.yourPosition, field: "yourPosition" },
-                        { label: "Country", value: profileData?.country, field: "country" },
-                      ].map((item, i, arr) => (
-                        <div key={item.label} style={{ padding: "18px 20px", borderRight: i < arr.length - 1 ? "1px solid #f0f2f5" : "none" }}>
-                          <div style={{ fontSize: "11px", fontWeight: "600", color: "#9aa0ac", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>{item.label}</div>
-                          {editMode === "all" && item.field ? (
-                            <input defaultValue={item.value || ""} onChange={e => setEditValue(prev => ({ ...prev, [item.field]: e.target.value }))} style={{ fontSize: "14px", fontWeight: "500", color: "#1a1f36", border: "1px solid #43c97e", borderRadius: "6px", padding: "4px 8px", width: "100%", outline: "none" }} />
-                          ) : (
-                            <span style={{ fontSize: "14px", fontWeight: "500", color: "#1a1f36" }}>{item.value || "—"}</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                    <div style={{ padding: "16px 18px 6px" }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "14px" }}>
+                        {[
+                          { label: "Business Name", value: profileData?.businessName, field: "businessName" },
+                          { label: "Email Address", value: userDetails?.email, field: null },
+                        ].map((item) => (
+                          <div key={item.label}>
+                            <div style={{ fontSize: "11px", fontWeight: "500", color: "#64748b", marginBottom: "3px" }}>{item.label}</div>
+                            {editMode === "all" && item.field ? (
+                              <input defaultValue={item.value || ""} onChange={e => setEditValue(prev => ({ ...prev, [item.field]: e.target.value }))} style={{ fontSize: "13px", fontWeight: "500", color: "#0f172a", border: "none", borderBottom: "1px solid #cbd5e1", padding: "4px 0", width: "100%", outline: "none", background: "transparent" }} />
+                            ) : (
+                              <div style={{ fontSize: "13px", fontWeight: "500", color: "#0f172a", borderBottom: "1px solid #f1f5f9", paddingBottom: "4px", wordBreak: "break-all" }}>{item.value || "—"}</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
 
-                    {/* Row 3 — Description + Address */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-                      <div style={{ padding: "18px 20px", borderRight: "1px solid #f0f2f5" }}>
-                        <div style={{ fontSize: "11px", fontWeight: "600", color: "#9aa0ac", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>Description</div>
+                      <div style={{ marginBottom: "14px" }}>
+                        <div style={{ fontSize: "11px", fontWeight: "500", color: "#64748b", marginBottom: "3px" }}>Website</div>
+                        {editMode === "all" ? (
+                          <input defaultValue={profileData?.website || ""} onChange={e => setEditValue(prev => ({ ...prev, website: e.target.value }))} style={{ fontSize: "13px", fontWeight: "500", color: "#0f172a", border: "none", borderBottom: "1px solid #cbd5e1", padding: "4px 0", width: "100%", outline: "none", background: "transparent" }} />
+                        ) : (
+                          <div style={{ fontSize: "13px", fontWeight: "500", color: "#0f172a", borderBottom: "1px solid #f1f5f9", paddingBottom: "4px", wordBreak: "break-all" }}>{profileData?.website || "—"}</div>
+                        )}
+                      </div>
+
+                      <div style={{ marginBottom: "14px" }}>
+                        <div style={{ fontSize: "11px", fontWeight: "500", color: "#64748b", marginBottom: "3px" }}>Description</div>
                         {editMode === "all" ? (
                           <textarea
                             defaultValue={profileData?.description || ""}
                             onChange={e => setEditValue(prev => ({ ...prev, description: e.target.value }))}
-                            style={{ fontSize: "14px", color: "#1a1f36", lineHeight: "1.6", border: "1px solid #43c97e", borderRadius: "6px", padding: "4px 8px", width: "100%", outline: "none", resize: "vertical", minHeight: "60px" }}
+                            style={{ fontSize: "13px", color: "#0f172a", lineHeight: "1.5", border: "none", borderBottom: "1px solid #cbd5e1", padding: "4px 0", width: "100%", outline: "none", resize: "vertical", minHeight: "50px", background: "transparent" }}
                           />
                         ) : (
-                          <span style={{ fontSize: "14px", color: "#1a1f36", lineHeight: "1.6" }}>{profileData?.description || "—"}</span>
+                          <div style={{ fontSize: "13px", color: "#334155", lineHeight: "1.5", borderBottom: "1px solid #f1f5f9", paddingBottom: "4px" }}>{profileData?.description || "—"}</div>
                         )}
                       </div>
-                      <div style={{ padding: "18px 20px" }}>
-                        <div style={{ fontSize: "11px", fontWeight: "600", color: "#9aa0ac", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>Address</div>
-                        <div style={{ fontSize: "14px", color: "#1a1f36", lineHeight: "1.7" }}>
-                          <div>{profileData?.street || "—"}</div>
-                          <div>{[profileData?.city, profileData?.state].filter(Boolean).join(", ")}</div>
-                          <div>{[profileData?.country, profileData?.pincode].filter(Boolean).join(" ")}</div>
+                    </div>
+                  </div>
+
+                  {/* ── Section 2: Personal Information ── */}
+                  <div style={{
+                    background: "#ffffff", borderRadius: "10px",
+                    border: "1px solid #e2e8f0",
+                    marginBottom: "14px", overflow: "hidden",
+                  }}>
+                    <div style={{
+                      padding: "12px 18px",
+                      borderBottom: "1px solid #f1f5f9",
+                      background: "#fafafa",
+                    }}>
+                      <span style={{ fontSize: "13px", fontWeight: "600", color: "#1e293b" }}>Personal Information</span>
+                    </div>
+
+                    <div style={{ padding: "16px 18px 6px" }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "14px" }}>
+                        {[
+                          { label: "First Name", value: profileData?.firstName, field: "firstName" },
+                          { label: "Last Name", value: profileData?.lastName, field: "lastName" },
+                        ].map((item) => (
+                          <div key={item.label}>
+                            <div style={{ fontSize: "11px", fontWeight: "500", color: "#64748b", marginBottom: "3px" }}>{item.label}</div>
+                            {editMode === "all" && item.field ? (
+                              <input defaultValue={item.value || ""} onChange={e => setEditValue(prev => ({ ...prev, [item.field]: e.target.value }))} style={{ fontSize: "13px", fontWeight: "500", color: "#0f172a", border: "none", borderBottom: "1px solid #cbd5e1", padding: "4px 0", width: "100%", outline: "none", background: "transparent" }} />
+                            ) : (
+                              <div style={{ fontSize: "13px", fontWeight: "500", color: "#0f172a", borderBottom: "1px solid #f1f5f9", paddingBottom: "4px" }}>{item.value || "—"}</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "14px" }}>
+                        {[
+                          { label: "Position", value: profileData?.yourPosition, field: "yourPosition" },
+                          { label: "Country", value: profileData?.country, field: "country" },
+                        ].map((item) => (
+                          <div key={item.label}>
+                            <div style={{ fontSize: "11px", fontWeight: "500", color: "#64748b", marginBottom: "3px" }}>{item.label}</div>
+                            {editMode === "all" && item.field ? (
+                              <input defaultValue={item.value || ""} onChange={e => setEditValue(prev => ({ ...prev, [item.field]: e.target.value }))} style={{ fontSize: "13px", fontWeight: "500", color: "#0f172a", border: "none", borderBottom: "1px solid #cbd5e1", padding: "4px 0", width: "100%", outline: "none", background: "transparent" }} />
+                            ) : (
+                              <div style={{ fontSize: "13px", fontWeight: "500", color: "#0f172a", borderBottom: "1px solid #f1f5f9", paddingBottom: "4px" }}>{item.value || "—"}</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ── Section 3: Location & Address ── */}
+                  <div style={{
+                    background: "#ffffff", borderRadius: "10px",
+                    border: "1px solid #e2e8f0",
+                    marginBottom: "20px", overflow: "hidden",
+                  }}>
+                    <div style={{
+                      padding: "12px 18px",
+                      borderBottom: "1px solid #f1f5f9",
+                      background: "#fafafa",
+                    }}>
+                      <span style={{ fontSize: "13px", fontWeight: "600", color: "#1e293b" }}>Location & Address</span>
+                    </div>
+
+                    <div style={{ padding: "16px 18px 6px" }}>
+                      <div style={{ marginBottom: "14px" }}>
+                        <div style={{ fontSize: "11px", fontWeight: "500", color: "#64748b", marginBottom: "3px" }}>Street Address</div>
+                        <div style={{ fontSize: "13px", fontWeight: "500", color: "#0f172a", borderBottom: "1px solid #f1f5f9", paddingBottom: "4px" }}>{profileData?.street || "—"}</div>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "20px", marginBottom: "14px" }}>
+                        <div>
+                          <div style={{ fontSize: "11px", fontWeight: "500", color: "#64748b", marginBottom: "3px" }}>City</div>
+                          <div style={{ fontSize: "13px", fontWeight: "500", color: "#0f172a", borderBottom: "1px solid #f1f5f9", paddingBottom: "4px" }}>{profileData?.city || "—"}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: "11px", fontWeight: "500", color: "#64748b", marginBottom: "3px" }}>State</div>
+                          <div style={{ fontSize: "13px", fontWeight: "500", color: "#0f172a", borderBottom: "1px solid #f1f5f9", paddingBottom: "4px" }}>{profileData?.state || "—"}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: "11px", fontWeight: "500", color: "#64748b", marginBottom: "3px" }}>PIN Code</div>
+                          <div style={{ fontSize: "13px", fontWeight: "500", color: "#0f172a", borderBottom: "1px solid #f1f5f9", paddingBottom: "4px" }}>{profileData?.pincode || "—"}</div>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Save / Cancel */}
+                  {/* Save / Cancel Buttons */}
                   {editMode === "all" && (
-                    <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "24px", gap: "10px" }}>
+                    <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "20px", gap: "8px" }}>
                       <button
                         onClick={() => { setEditMode(null); setEditValue({}); }}
-                        style={{ padding: "10px 22px", background: "#f1f5f9", border: "none", borderRadius: "10px", color: "#475569", fontWeight: "700", fontSize: "14px", cursor: "pointer" }}
+                        style={{ padding: "7px 16px", background: "#fff", border: "1px solid #cbd5e1", borderRadius: "6px", color: "#475569", fontWeight: "600", fontSize: "12px", cursor: "pointer", transition: "all 0.15s ease" }}
+                        onMouseEnter={e => { e.target.style.background = "#f8fafc"; }}
+                        onMouseLeave={e => { e.target.style.background = "#fff"; }}
                       >
                         Cancel
                       </button>
@@ -1303,15 +1375,16 @@ const AccProfile = () => {
                             .catch(err => console.error("Update error:", err));
                         }}
                         style={{
-                          display: "flex", alignItems: "center", gap: "8px",
-                          padding: "10px 22px",
-                          background: "linear-gradient(135deg, #43c97e 0%, #2dd4bf 100%)",
-                          border: "none", borderRadius: "10px",
-                          color: "#fff", fontWeight: "700", fontSize: "14px",
-                          cursor: "pointer", boxShadow: "0 4px 14px rgba(67,201,126,0.35)",
+                          display: "flex", alignItems: "center", gap: "4px",
+                          padding: "7px 16px",
+                          background: "#e0f2fe", border: "1px solid #93c5fd",
+                          borderRadius: "6px", color: "#1d4ed8", fontWeight: "600", fontSize: "12px",
+                          cursor: "pointer", transition: "all 0.15s ease",
                         }}
+                        onMouseEnter={e => { e.target.style.background = "#bae6fd"; }}
+                        onMouseLeave={e => { e.target.style.background = "#e0f2fe"; }}
                       >
-                        <EditIcon /> Save Profile
+                        <EditIcon /> Save Changes
                       </button>
                     </div>
                   )}

@@ -1,93 +1,71 @@
 /* ============================================
-   PARTNER DASHBOARD SIDEBAR - COMPACT & CLEAN
+   PARTNER DASHBOARD SIDEBAR - NAAVI BLUE THEME
    ============================================ */
 
 .partner-dashboard-sidebar {
-  // Core dimensions
   height: 100vh;
-  width: 240px;
+  width: 230px;
   flex-shrink: 0;
-  
-  // Layout
   display: flex;
   flex-direction: column;
-  
-  // Colors - Light theme
   background: #ffffff;
-  
-  // Border
   border-right: 1px solid #eef2f6;
-  
-  // Positioning
   position: relative;
   z-index: 100;
-  
-  // NO overflow scroll on main container
   overflow: hidden;
-  
-  // Reset margins/paddings
   margin: 0;
   padding: 0;
 }
 
-/* Logo Section - Compact */
+/* Logo Section — Compact centered */
 .partner-dashboard-sidebar {
   .partner-dashboard-left {
     width: 100%;
-    padding: 0 16px;
-    height: 56px;
+    padding: 14px 16px 10px;
     display: flex;
     align-items: center;
+    justify-content: center;
     flex-shrink: 0;
-    border-bottom: 1px solid #eef2f6;
+    border-bottom: 1px solid #f1f5f9;
     box-sizing: border-box;
     cursor: pointer;
     background: #ffffff;
 
     .partner-dashboard-logo {
-      width: 50%;
-      height: auto;
+      height: 30px;
+      width: auto;
+      max-width: 140px;
       object-fit: contain;
     }
   }
 }
 
-/* Navigation Area - NO scrollbar unless needed, reduced padding */
+/* Navigation Area — Scrollable WITHOUT visible scrollbar, tight gap */
 .partner-sidebar-menu-scrollable {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
-  padding: 12px 12px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
+  padding: 10px 10px;
   margin: 0;
   background: #ffffff;
-  
-  // Only show scrollbar when needed and make it very thin
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
-  
-  &::-webkit-scrollbar {
-    width: 3px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 10px;
-  }
-  &::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
-/* Navigation Items - Reduced gap and padding */
+/* Navigation Items — Naavi Blue hover & active colors, compact padding */
 .partner-each-sidenav {
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
   padding: 8px 12px;
-  margin-bottom: 4px;
+  margin-bottom: 0;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
@@ -97,37 +75,37 @@
   outline: none;
   background: transparent;
   box-sizing: border-box;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 
   &:hover {
-    background: #f1f5f9;
-    color: #2273e6;
+    background: #eff6ff;
+    color: #2563eb;
 
     .partner-nav-icon {
-      stroke: #2273e6;
+      stroke: #2563eb;
     }
   }
 
   &.active {
-    background: rgba(34, 115, 230, 0.08);
-    color: #2273e6;
+    background: #e0f2fe;
+    color: #0284c7;
     font-weight: 600;
 
     .partner-nav-icon {
-      stroke: #2273e6;
+      stroke: #0284c7;
     }
   }
 
   &.locked {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
     
     &:hover {
       background: transparent;
-      color: #334155;
+      color: #94a3b8;
       
       .partner-nav-icon {
-        stroke: #6b7280;
+        stroke: #94a3b8;
       }
     }
   }
@@ -140,48 +118,53 @@
   }
 }
 
-/* Icons - Slightly smaller */
+/* Icons */
 .partner-nav-icon {
   width: 18px;
   height: 18px;
-  stroke: #6b7280;
+  stroke: #475569;
   stroke-width: 1.7;
   stroke-linecap: round;
   stroke-linejoin: round;
   fill: none;
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
-/* Add New Button - Compact */
+/* Add New Button — Pastel Blue Rectangle */
 .partner-add-new-btn {
-  background: #f8fafc;
+  background: #e0f2fe;
+  border: 1px solid #93c5fd;
+  color: #1d4ed8;
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 7px 12px;
   text-align: center;
-  margin-bottom: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #2273e6;
-  border: 1px solid #e2e8f0;
-  transition: all 0.2s ease;
+  margin-bottom: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: all 0.15s ease;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 
   &:hover:not(.locked) {
-    background: #eff6ff;
-    border-color: #bfdbfe;
+    background: #bae6fd;
+    border-color: #60a5fa;
+    color: #1e40af;
   }
 
   &.locked {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
   }
 }
 
-/* Profile Section - Compact */
+/* Profile Section */
 .partner-profile-section {
-  padding: 12px 16px;
-  border-top: 1px solid #eef2f6;
+  padding: 10px 10px;
+  border-top: 1px solid #f1f5f9;
   background: #ffffff;
   margin-top: auto;
 }
@@ -191,13 +174,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  border: 1px solid #eef2f6;
+  border: 1px solid transparent;
   transition: all 0.2s ease;
 
   &:hover {
     background-color: #f8fafc;
+    border-color: #e2e8f0;
   }
 }
 
@@ -206,20 +190,20 @@
   align-items: center;
   flex: 1;
   min-width: 0;
-  gap: 8px;
+  gap: 10px;
 }
 
 .partner-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #2273e6 0%, #1a5bc4 100%);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  font-weight: 600;
-  font-size: 12px;
+  font-weight: 700;
+  font-size: 13px;
   flex-shrink: 0;
 }
 
@@ -230,7 +214,7 @@
 
 .partner-profile-name {
   font-weight: 600;
-  font-size: 12px;
+  font-size: 13px;
   color: #1e293b;
   white-space: nowrap;
   overflow: hidden;
@@ -238,14 +222,14 @@
 }
 
 .partner-profile-status {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 500;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .partner-dots-btn {
-  padding: 4px 6px;
-  border-radius: 4px;
+  padding: 4px 5px;
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -262,34 +246,34 @@
   }
 }
 
-/* Dropdown Menu - Compact */
+/* Dropdown Menu */
 .partner-dropdown-menu {
   position: absolute;
   bottom: calc(100% + 6px);
   left: 0;
   right: 0;
   background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
   padding: 4px;
   z-index: 1000;
-  border: 1px solid #eef2f6;
+  border: 1px solid #e2e8f0;
 }
 
 .partner-dropdown-divider {
   height: 1px;
-  background: #eef2f6;
-  margin: 4px 0;
+  background: #f1f5f9;
+  margin: 3px 0;
 }
 
 .partner-logout-item {
   display: flex;
   align-items: center;
   padding: 8px 10px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   color: #ef4444;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   gap: 8px;
   transition: all 0.15s ease;
@@ -299,8 +283,8 @@
   }
 
   svg {
-    width: 14px;
-    height: 14px;
+    width: 15px;
+    height: 15px;
   }
 }
 
@@ -308,17 +292,17 @@
 @media (max-width: 768px) {
   .partner-dashboard-sidebar {
     position: fixed;
-    left: -260px;
+    left: -240px;
     top: 0;
-    width: 260px;
+    width: 240px;
     height: 100vh;
     z-index: 1001;
-    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: none;
 
     &.open {
       left: 0;
-      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
     }
   }
 }

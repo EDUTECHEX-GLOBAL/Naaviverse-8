@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ContactInfoWidget from "../../views/inner-pages/contact/ContactInfoWidget";
 import Newsletter from "../../components/footernew/Newsletter";
@@ -9,8 +9,19 @@ import "./toggler.scss"; // Add this import
 export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
   const [activeDropdown, setActiveDropdown] = useState(null);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setActiveDropdown(null);
+    }
+  }, [isOpen]);
+
   const toggleDropdown = (menu) => {
     setActiveDropdown(activeDropdown === menu ? null : menu);
+  };
+
+  const closePanel = () => {
+    setActiveDropdown(null);
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -18,11 +29,11 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
   return (
     <>
       <div className={`side-panel ${isOpen ? "active" : ""}`}>
-        <button className="side-panel-close" onClick={onClose} />
-        <div className="side-panel-overlay" onClick={onClose} />
+        <button className="side-panel-close" onClick={closePanel} />
+        <div className="side-panel-overlay" onClick={closePanel} />
         <div className="side-panel-content">
           <div className="side-panel-shape" />
-          <Link className="side-panel-logo" to="/" onClick={onClose}>
+          <Link className="side-panel-logo" to="/" onClick={closePanel}>
             <img src={logos} alt="Logo" />
           </Link>
 
@@ -31,7 +42,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
             <div className="mobile-nav">
               <ul className="mobile-nav-list">
                 <li className="mobile-nav-item">
-                  <Link to="/" onClick={onClose} className="mobile-nav-link">
+                  <Link to="/" onClick={closePanel} className="mobile-nav-link">
                     HOME
                   </Link>
                 </li>
@@ -57,7 +68,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/about/what-is-naavi"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         What is Naavi?
                       </Link>
@@ -66,7 +77,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/about/our-vision"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         Our Vision
                       </Link>
@@ -75,7 +86,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/about/why-naavi"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         Why Naavi
                       </Link>
@@ -84,7 +95,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/about/mission-philosophy"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         Mission & Philosophy
                       </Link>
@@ -93,7 +104,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/about/navigation-problem"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         The Navigation Problem
                       </Link>
@@ -102,7 +113,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/about/pathway-intelligence"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         Pathway Intelligence
                       </Link>
@@ -111,7 +122,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/about/naaviverse"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         Naaviverse
                       </Link>
@@ -140,7 +151,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/team/founders"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         Founders
                       </Link>
@@ -169,7 +180,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/impact/skill-gap-problem"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         Skill Gap Problem
                       </Link>
@@ -178,7 +189,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/impact/future-workforce"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         Future Workforce
                       </Link>
@@ -187,7 +198,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/impact/human-potential"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         Human Potential
                       </Link>
@@ -196,7 +207,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/impact/student-outcomes"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         Student Outcomes
                       </Link>
@@ -205,7 +216,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/impact/education-transformation"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         Education Transformation
                       </Link>
@@ -214,7 +225,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/impact/global-opportunity-access"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         Global Opportunity Access
                       </Link>
@@ -223,7 +234,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/impact/sdgs-social-impact"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         SDGs & Social Impact
                       </Link>
@@ -252,7 +263,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/technology/pathways-system"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         Pathways
                       </Link>
@@ -261,7 +272,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/technology/llms-knowledge-graphs"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         LLMs & Knowledge Graphs
                       </Link>
@@ -290,7 +301,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                       <Link
                         className="mobile-sub-link"
                         to="/contact"
-                        onClick={onClose}
+                        onClick={closePanel}
                       >
                         Contact Us
                       </Link>

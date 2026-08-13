@@ -51,6 +51,7 @@ export default function AdminFeedback() {
   const [filter, setFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all"); // all, AI, PARTNER
   const [searchTerm, setSearchTerm] = useState("");
+  const [openPaths, setOpenPaths] = useState({});
 
   useEffect(() => { fetchFeedbacks(); }, []);
 
@@ -98,11 +99,19 @@ export default function AdminFeedback() {
     const map = {};
     filtered.forEach(f => {
       const key = f.pathId || "unknown";
-      if (!map[key]) map[key] = { pathName: f.pathName || "Unknown Path", source: f.path_source, feedbacks: [] };
+      if (!map[key]) map[key] = { id: key, pathName: f.pathName || "Unknown Path", source: f.path_source, feedbacks: [] };
       map[key].feedbacks.push(f);
     });
-    return Object.values(map);
+    return Object.values(map).sort((a, b) => {
+      const latestA = Math.max(...a.feedbacks.map(f => new Date(f.createdAt || 0).getTime()));
+      const latestB = Math.max(...b.feedbacks.map(f => new Date(f.createdAt || 0).getTime()));
+      return latestB - latestA;
+    });
   }, [filtered]);
+
+  const togglePath = (pathId) => {
+    setOpenPaths(prev => ({ ...prev, [pathId]: !prev[pathId] }));
+  };
 
   return (
     <div className="af-root">
@@ -193,55 +202,75 @@ export default function AdminFeedback() {
             <p>No feedback matches your current filters.</p>
           </div>
         ) : (
-          pathGroups.map((group, gi) => (
-            <div key={gi} className="af-group">
-              <div className="af-group-bar">
-                <span className="af-group-name">{group.pathName}</span>
-                <SourceTag source={group.source} />
-                <span className="af-group-count">{group.feedbacks.length} feedback{group.feedbacks.length !== 1 ? "s" : ""}</span>
-              </div>
+          pathGroups.map((group) => {
+            const isOpen = !!openPaths[group.id];
+            const latestFeedback = group.feedbacks.reduce((latest, fb) => {
+              if (!latest) return fb;
+              return new Date(fb.createdAt || 0) > new Date(latest.createdAt || 0) ? fb : latest;
+            }, null);
 
-              <div className="af-table-responsive">
-                <div className="af-table">
-                  {group.feedbacks.map((fb, fi) => (
-                    <div key={fi} className="af-row">
-                      <div className="af-row-id">{(fb.studentEmail || "S").charAt(0).toUpperCase()}</div>
+            return (
+              <div key={group.id} className={`af-group ${isOpen ? "is-open" : ""}`}>
+                <button className="af-group-bar" type="button" onClick={() => togglePath(group.id)}>
+                  <span className="af-group-chevron" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </span>
+                  <span className="af-group-main">
+                    <span className="af-group-name">{group.pathName}</span>
+                    <span className="af-group-meta">
+                      Latest {timeAgo(latestFeedback?.createdAt)} {latestFeedback?.stepName ? `- ${latestFeedback.stepName}` : ""}
+                    </span>
+                  </span>
+                  <SourceTag source={group.source} />
+                  <span className="af-group-count">{group.feedbacks.length} feedback{group.feedbacks.length !== 1 ? "s" : ""}</span>
+                </button>
 
-                      <div className="af-row-main">
-                        <div className="af-row-line1">
-                          <span className="af-row-user">
-                            {fb.studentName ? `${fb.studentName} (${fb.studentEmail})` : fb.studentEmail}
-                          </span>
-                          <span className="af-row-step">{fb.stepName || "Step"}</span>
+                {isOpen && (
+                  <div className="af-table-responsive">
+                    <div className="af-table">
+                      {group.feedbacks.map((fb, fi) => (
+                        <div key={fi} className="af-row">
+                          <div className="af-row-id">{(fb.studentEmail || "S").charAt(0).toUpperCase()}</div>
+
+                          <div className="af-row-main">
+                            <div className="af-row-line1">
+                              <span className="af-row-user">
+                                {fb.studentName ? `${fb.studentName} (${fb.studentEmail})` : fb.studentEmail}
+                              </span>
+                              <span className="af-row-step">{fb.stepName || "Step"}</span>
+                            </div>
+
+                            <div className="af-row-line2">
+                              {fb.viewType && (
+                                <span className="af-meta-tag">{fb.viewType.charAt(0).toUpperCase() + fb.viewType.slice(1)} View</span>
+                              )}
+                              {fb.owner_id && fb.owner_id !== "path_engine_admin" && (
+                                <span className="af-meta-tag warn">Owner: {fb.owner_id}</span>
+                              )}
+                              {fb.studentPhone && (
+                                <span className="af-meta-tag">{fb.studentPhone}</span>
+                              )}
+                              {fb.studentCountry && (
+                                <span className="af-meta-tag">{fb.studentCountry}</span>
+                              )}
+                              {fb.comment && <span className="af-row-comment">"{fb.comment}"</span>}
+                            </div>
+                          </div>
+
+                          <div className="af-row-right">
+                            <span className="af-row-time">{timeAgo(fb.createdAt)}</span>
+                            <ActionTag action={fb.action} />
+                          </div>
                         </div>
-
-                        <div className="af-row-line2">
-                          {fb.viewType && (
-                            <span className="af-meta-tag">{fb.viewType.charAt(0).toUpperCase() + fb.viewType.slice(1)} View</span>
-                          )}
-                          {fb.owner_id && fb.owner_id !== "path_engine_admin" && (
-                            <span className="af-meta-tag warn">Owner: {fb.owner_id}</span>
-                          )}
-                          {fb.studentPhone && (
-                            <span className="af-meta-tag">{fb.studentPhone}</span>
-                          )}
-                          {fb.studentCountry && (
-                            <span className="af-meta-tag">{fb.studentCountry}</span>
-                          )}
-                          {fb.comment && <span className="af-row-comment">"{fb.comment}"</span>}
-                        </div>
-                      </div>
-
-                      <div className="af-row-right">
-                        <span className="af-row-time">{timeAgo(fb.createdAt)}</span>
-                        <ActionTag action={fb.action} />
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

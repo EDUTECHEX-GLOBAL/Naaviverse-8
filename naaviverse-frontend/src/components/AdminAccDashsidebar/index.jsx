@@ -238,6 +238,7 @@ const AdminAccDashsidebar = ({
 
       {/* ── Nav items ── */}
       <div
+        className="sidebar-menu-scrollable"
         style={{
           overflowY: "auto",
           flex: 1,

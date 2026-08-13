@@ -23,7 +23,7 @@ const NavIcon = ({ type, isActive }) => {
     height: "20",
     viewBox: "0 0 24 24",
     fill: "none",
-    stroke: isActive ? "#2273E6" : "#6B7280",
+    stroke: isActive ? "#2563eb" : "#475569",
     strokeWidth: "1.7",
     strokeLinecap: "round",
     strokeLinejoin: "round",
@@ -53,7 +53,7 @@ const NavIcon = ({ type, isActive }) => {
       alt="paths"
       width="20"
       height="20"
-      style={{ objectFit: "contain", opacity: isActive ? 1 : 0.55 }}
+      style={{ objectFit: "contain", opacity: 1 }}
     />
   );
    case "steps":
@@ -63,7 +63,7 @@ const NavIcon = ({ type, isActive }) => {
       alt="steps"
       width="20"
       height="20"
-      style={{ objectFit: "contain", opacity: isActive ? 1 : 0.55 }}
+      style={{ objectFit: "contain", opacity: 1 }}
     />
   );
     case "marketplace":
@@ -120,9 +120,8 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
   const userInitial = fullName.charAt(0).toUpperCase();
   const userEmail = userDetails?.email || "";
 
-  const isInternal = userDetails?.creationSource === "admin_created" || Boolean(userDetails?.createdBy && userDetails?.createdBy !== "Super Admin" && userDetails?.createdBy !== "self_registered") || userDetails?.status === true;
-  const partnerStatus = isInternal ? "approved" : (accStatus || userDetails?.approvalStatus);
-  const isLocked = !isInternal && partnerStatus !== "approved";
+  const partnerStatus = accStatus || userDetails?.approvalStatus;
+  const isLocked = partnerStatus !== "approved";
 
   const isActive = (path) => {
     return location.pathname === path;
@@ -254,9 +253,9 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
               }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="2" fill="#64748b" />
-                <circle cx="20" cy="12" r="2" fill="#64748b" />
-                <circle cx="4" cy="12" r="2" fill="#64748b" />
+                <circle cx="12" cy="12" r="2" fill="#000000" />
+                <circle cx="20" cy="12" r="2" fill="#000000" />
+                <circle cx="4" cy="12" r="2" fill="#000000" />
               </svg>
             </div>
           </div>

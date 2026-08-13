@@ -454,6 +454,40 @@ $border-light: rgba(0, 0, 0, 0.06);
 // ══════════════════════════════
 //  RESPONSIVE — multi-tier mobile layout
 // ══════════════════════════════
+// Mac desktop viewport normalization.
+// Targets common 16:10 macOS desktop viewports without changing the wider
+// Windows desktop baseline or any completed mobile breakpoints.
+@media (min-width: 1024px) and (max-width: 1680px) and (min-height: 850px) and (max-aspect-ratio: 17 / 10) {
+  .team-container {
+    max-width: 1280px;
+  }
+
+  .team-card-section {
+    padding-left: 42px;
+    padding-right: 42px;
+
+    &--leadership {
+      max-width: 100%;
+      padding-left: 34px;
+      padding-right: 34px;
+    }
+  }
+
+  .team-card-grid {
+    align-items: start;
+    gap: 48px;
+  }
+
+  .team-card-left,
+  .team-card-right {
+    align-self: start;
+  }
+
+  .team-card-right {
+    align-items: flex-start;
+  }
+}
+
 @media (max-width: 900px) {
   .team-container {
     padding: 0 20px;
@@ -519,6 +553,11 @@ $border-light: rgba(0, 0, 0, 0.06);
     padding: 0 18px;
   }
 
+  .team-hero {
+    margin-top: 0 !important;
+    padding-top: 18px !important;
+  }
+
   .team-hero-title,
   .team-card-title {
     font-size: 22px !important;
@@ -541,6 +580,11 @@ $border-light: rgba(0, 0, 0, 0.06);
 @media (min-width: 390px) and (max-width: 430px) {
   .team-container {
     padding: 0 18px;
+  }
+
+  .team-hero {
+    margin-top: 0 !important;
+    padding-top: 20px !important;
   }
 
   .team-hero-title,
@@ -572,6 +616,11 @@ $border-light: rgba(0, 0, 0, 0.06);
     padding: 0 14px;
   }
 
+  .team-hero {
+    margin-top: 0 !important;
+    padding-top: 16px !important;
+  }
+
   .team-hero-title,
   .team-card-title {
     font-size: 20px !important;
@@ -586,4 +635,45 @@ $border-light: rgba(0, 0, 0, 0.06);
   .team-card-section {
     padding: 16px 12px;
   }
-}
+}
+
+// Mobile typography polish only: justified text without stretched gaps or hyphens.
+@media (max-width: 576px) {
+  .team-page {
+    .team-hero-desc,
+    .team-card-outro,
+    .team-body-text,
+    .team-beyond-sub,
+    .team-beyond-body {
+      font-size: 13.25px !important;
+      line-height: 1.66 !important;
+      text-align: justify !important;
+      text-align-last: left;
+      text-justify: inter-word;
+      hyphens: none !important;
+      -webkit-hyphens: none !important;
+      -ms-hyphens: none !important;
+      word-break: normal !important;
+      overflow-wrap: normal !important;
+      white-space: normal;
+      word-spacing: -0.08em !important;
+      letter-spacing: -0.003em;
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+}
+
+@media (max-width: 380px) {
+  .team-page {
+    .team-hero-desc,
+    .team-card-outro,
+    .team-body-text,
+    .team-beyond-sub,
+    .team-beyond-body {
+      font-size: 12.9px !important;
+      line-height: 1.62 !important;
+      word-spacing: -0.09em !important;
+    }
+  }
+}

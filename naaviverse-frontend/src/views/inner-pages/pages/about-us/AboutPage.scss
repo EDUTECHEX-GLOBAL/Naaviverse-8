@@ -394,6 +394,29 @@ h2, .ab-heading {
 }
 
 // ═══════════════════════════════════════════════
+// Desktop viewport normalization for common macOS widths.
+// Keeps wider Windows desktop untouched while reducing side gutters and locking
+// the existing desktop rhythm on 1024px-1440px desktop browser views.
+@media (min-width: 1024px) and (max-width: 1440px) {
+  .ab-container {
+    max-width: 1200px;
+  }
+
+  .ab-grid {
+    align-items: center;
+    gap: 56px;
+  }
+
+  .ab-grid__text,
+  .ab-grid__visual {
+    align-self: center;
+  }
+
+  .ab-heading {
+    font-size: 36px;
+  }
+}
+
 //  RESPONSIVE FINE-TUNING FOR ALL MOBILE TIERS
 // ═══════════════════════════════════════════════
 
@@ -557,4 +580,63 @@ h2, .ab-heading {
     padding: 18px 14px;
   }
 }
-
+
+// Mobile typography polish only: justified text without hyphenation.
+@media (max-width: 576px) {
+  .ab-page {
+    .ab-body,
+    .ab-body--center {
+      font-size: 13.25px;
+      text-align: justify !important;
+      text-align-last: left;
+      text-justify: inter-word;
+      hyphens: none !important;
+      -webkit-hyphens: none !important;
+      -ms-hyphens: none !important;
+      word-break: normal;
+      overflow-wrap: normal;
+      white-space: normal;
+      word-spacing: -0.08em !important;
+      letter-spacing: -0.003em;
+      line-height: 1.66;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .ab-tech-card p {
+      font-size: 12.25px;
+      text-align: justify !important;
+      text-align-last: left;
+      text-justify: inter-word;
+      hyphens: none !important;
+      -webkit-hyphens: none !important;
+      -ms-hyphens: none !important;
+      word-break: normal;
+      overflow-wrap: normal;
+      white-space: normal;
+      word-spacing: -0.07em !important;
+      letter-spacing: -0.002em;
+      line-height: 1.62;
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+}
+
+@media (max-width: 380px) {
+  .ab-page {
+    .ab-body,
+    .ab-body--center {
+      font-size: 12.9px;
+      line-height: 1.62;
+      word-spacing: -0.09em !important;
+    }
+
+    .ab-tech-card p {
+      font-size: 12px;
+      line-height: 1.6;
+      word-spacing: -0.08em !important;
+    }
+  }
+}
+

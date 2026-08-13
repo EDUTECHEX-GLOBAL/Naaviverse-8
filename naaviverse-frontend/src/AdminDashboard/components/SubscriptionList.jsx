@@ -121,16 +121,15 @@ const SubscriptionList = () => {
       {/* Header */}
       <div className="subscription-list__header">
         <div>
-          <h1 className="subscription-list__title">Email Subscriptions</h1>
           <p className="subscription-list__subtitle">Manage and analyze subscriber data</p>
         </div>
         <div className="subscription-list__actions">
           {hasFilters && (
-            <Button onClick={clearFilters} icon={<FiFilter />} className="btn-outline">
+            <Button size="small" onClick={clearFilters} icon={<FiFilter size={12} />} className="btn-outline">
               Clear
             </Button>
           )}
-          <Button onClick={exportData} icon={<FiDownload />} type="primary" className="btn-primary">
+          <Button size="small" onClick={exportData} icon={<FiDownload size={12} />} type="primary" className="btn-primary">
             Export
           </Button>
         </div>
@@ -138,12 +137,12 @@ const SubscriptionList = () => {
 
       {/* Stat Pills */}
       <div className="subscription-list__stats">
-        <div className="stat-pill stat-pill--purple">
+        <div className="stat-pill stat-pill--blue">
           <FiUsers className="stat-pill__icon" />
           <span className="stat-pill__value">{stats.total}</span>
           <span className="stat-pill__label">Total</span>
         </div>
-        <div className="stat-pill stat-pill--blue">
+        <div className="stat-pill stat-pill--yellow">
           <FiCalendar className="stat-pill__icon" />
           <span className="stat-pill__value">{stats.recent}</span>
           <span className="stat-pill__label">Last 7 days</span>
@@ -160,6 +159,7 @@ const SubscriptionList = () => {
         <div className="filter-item">
           <div className="filter-label"><FiCalendar /> Start</div>
           <DatePicker
+            size="small"
             value={startDate}
             onChange={setStartDate}
             format="MMM DD, YYYY"
@@ -171,6 +171,7 @@ const SubscriptionList = () => {
         <div className="filter-item">
           <div className="filter-label"><FiCalendar /> End</div>
           <DatePicker
+            size="small"
             value={endDate}
             onChange={setEndDate}
             format="MMM DD, YYYY"
@@ -182,6 +183,7 @@ const SubscriptionList = () => {
         <div className="filter-item">
           <div className="filter-label"><FiSearch /> Email</div>
           <Input
+            size="small"
             value={searchEmail}
             onChange={(e) => setSearchEmail(e.target.value)}
             placeholder="Search email..."
@@ -209,7 +211,7 @@ const SubscriptionList = () => {
             <div className="empty-icon">📧</div>
             <p>No subscriptions found</p>
             {subscriptions.length > 0 && (
-              <Button onClick={clearFilters} type="link">Clear filters</Button>
+              <Button size="small" onClick={clearFilters} type="link">Clear filters</Button>
             )}
           </div>
         ) : (

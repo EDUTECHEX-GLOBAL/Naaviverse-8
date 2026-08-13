@@ -4,7 +4,14 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 const NAAVI_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
 
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px;
+  }
+
+  [id] {
+    scroll-margin-top: 80px;
+  }
 
   .naavi-navbar {
     display: flex;
@@ -123,15 +130,15 @@ const NAAVI_STYLES = `
     transform: translateY(0);
   }
 
-  .naavi-navbar .mega-menu.force-close {
+  /* Force immediate dismissal on item click until mouse leaves item */
+  .naavi-navbar .nav-item.closed-override .mega-menu {
     opacity: 0 !important;
     visibility: hidden !important;
     pointer-events: none !important;
-    transform: translateX(-50%) translateY(-2px) !important;
   }
 
-  .naavi-navbar .mega-menu.align-right.force-close {
-    transform: translateY(-8px) !important;
+  .naavi-navbar .nav-item.closed-override .chevron {
+    transform: none !important;
   }
 
   .naavi-navbar .mega-inner {
@@ -211,13 +218,17 @@ const NAAVI_STYLES = `
 function useInjectStyles(css) {
   useEffect(() => {
     const id = 'naavi-mega-nav-styles';
-    if (!document.getElementById(id)) {
+    const existingTag = document.getElementById(id);
+
+    if (existingTag) {
+      existingTag.textContent = css;
+    } else {
       const tag = document.createElement('style');
       tag.id = id;
       tag.textContent = css;
       document.head.appendChild(tag);
     }
-  }, []);
+  }, [css]);
 }
 
 const Chevron = () => <span className="chevron" aria-hidden="true" />;
@@ -230,156 +241,133 @@ const ThemeMainMenu = () => {
 
   const [closedMenu, setClosedMenu] = useState(null);
 
-  useEffect(() => {
-    setClosedMenu(null);
-  }, [location.pathname]);
-
-  const go = (path) => {
+  const goHome = (path) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     navigate(path);
   };
 
-  // Simple navigation with URLs - no hash needed!
-  const goToAboutSection = (sectionPath) => {
-    navigate(`/about/${sectionPath}`);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const goToTeamSection = (sectionPath) => {
-    navigate(`/team/${sectionPath}`);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const goToImpactSection = (sectionPath) => {
-    navigate(`/impact/${sectionPath}`);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const goToTechnologySection = (sectionPath) => {
-    navigate(`/technology/${sectionPath}`);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   const at = (prefix) => location.pathname.startsWith(prefix);
-  const fc = (menuName) => closedMenu === menuName ? 'force-close' : '';
-  const close = (menuName) => setClosedMenu(menuName);
-  const reset = () => setClosedMenu(null);
+
+  const handleLinkClick = (menuName) => {
+    setClosedMenu(menuName);
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  };
+
+  const handleMouseLeave = (menuName) => {
+    if (closedMenu === menuName) {
+      setClosedMenu(null);
+    }
+  };
 
   return (
     <Fragment>
       <div className="naavi-navbar">
         <ul className="navbar-nav desktop-menu-only">
 
-          {/* HOME - URL: http://localhost:3000/ */}
+          {/* HOME */}
           <li className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}>
-            <Link className="nav-link" to="/" onClick={() => go('/')}>HOME</Link>
+            <Link className="nav-link" to="/" onClick={() => goHome('/')}>HOME</Link>
           </li>
 
-          {/* ABOUT - Main dropdown with URL navigation */}
+          {/* ABOUT */}
           <li
-            className={`nav-item dropdown ${at('/about') ? 'active' : ''}`}
-            onMouseLeave={reset}
+            className={`nav-item dropdown ${at('/about') ? 'active' : ''} ${closedMenu === 'about' ? 'closed-override' : ''}`}
+            onMouseLeave={() => handleMouseLeave('about')}
           >
             <span className="nav-link">ABOUT <Chevron /></span>
-            <div className={`mega-menu w-2col ${fc('about')}`}>
+            <div className="mega-menu w-2col">
               <div className="mega-inner g2">
                 <div className="mega-col">
                   <p className="mega-heading">Who We Are</p>
-                  {/* URLs: http://localhost:3000/about/what-is-naavi */}
-                  <Link className="mega-item" to="/about/what-is-naavi" onClick={() => close('about')}>What is Naavi?</Link>
-                  <Link className="mega-item" to="/about/our-vision" onClick={() => close('about')}>Our Vision</Link>
-                  <Link className="mega-item" to="/about/why-naavi" onClick={() => close('about')}>Why Naavi</Link>
-                  <Link className="mega-item" to="/about/mission-philosophy" onClick={() => close('about')}>Mission & Philosophy</Link>
+                  <Link className="mega-item" to="/about/what-is-naavi" onClick={() => handleLinkClick('about')}>What is Naavi?</Link>
+                  <Link className="mega-item" to="/about/our-vision" onClick={() => handleLinkClick('about')}>Our Vision</Link>
+                  <Link className="mega-item" to="/about/why-naavi" onClick={() => handleLinkClick('about')}>Why Naavi</Link>
+                  <Link className="mega-item" to="/about/mission-philosophy" onClick={() => handleLinkClick('about')}>Mission & Philosophy</Link>
                 </div>
                 <div className="mega-col">
                   <p className="mega-heading">Platform</p>
-                  <Link className="mega-item" to="/about/navigation-problem" onClick={() => close('about')}>The Navigation Problem</Link>
-                  <Link className="mega-item" to="/about/pathway-intelligence" onClick={() => close('about')}>Pathway Intelligence</Link>
-                  <Link className="mega-item" to="/about/naaviverse" onClick={() => close('about')}>Naaviverse</Link>
+                  <Link className="mega-item" to="/about/navigation-problem" onClick={() => handleLinkClick('about')}>The Navigation Problem</Link>
+                  <Link className="mega-item" to="/about/pathway-intelligence" onClick={() => handleLinkClick('about')}>Pathway Intelligence</Link>
+                  <Link className="mega-item" to="/about/naaviverse" onClick={() => handleLinkClick('about')}>Naaviverse</Link>
                 </div>
               </div>
             </div>
           </li>
 
-          {/* TEAM - Main dropdown with URL navigation */}
+          {/* TEAM */}
           <li
-            className={`nav-item dropdown ${at('/team') ? 'active' : ''}`}
-            onMouseLeave={reset}
+            className={`nav-item dropdown ${at('/team') ? 'active' : ''} ${closedMenu === 'team' ? 'closed-override' : ''}`}
+            onMouseLeave={() => handleMouseLeave('team')}
           >
             <span className="nav-link">TEAM <Chevron /></span>
-            <div className={`mega-menu ${fc('team')}`}>
+            <div className="mega-menu">
               <div className="mega-inner g1">
                 <div className="mega-col">
                   <p className="mega-heading">Our People</p>
-                  {/* URL: http://localhost:3000/team/founders */}
-                  <Link className="mega-item" to="/team/founders" onClick={() => close('team')}>Founders</Link>
-                  {/* <Link className="mega-item" to="/team/leadership" onClick={() => close('team')}>Leadership</Link>
-                  <Link className="mega-item" to="/team/advisors" onClick={() => close('team')}>Advisors</Link>
-                  <Link className="mega-item" to="/team/careers" onClick={() => close('team')}>Careers</Link> */}
+                  <Link className="mega-item" to="/team/founders" onClick={() => handleLinkClick('team')}>Founders</Link>
                 </div>
               </div>
             </div>
           </li>
 
-          {/* IMPACT - Main dropdown with URL navigation */}
+          {/* IMPACT */}
           <li
-            className={`nav-item dropdown ${at('/impact') ? 'active' : ''}`}
-            onMouseLeave={reset}
+            className={`nav-item dropdown ${at('/impact') ? 'active' : ''} ${closedMenu === 'impact' ? 'closed-override' : ''}`}
+            onMouseLeave={() => handleMouseLeave('impact')}
           >
             <span className="nav-link">IMPACT <Chevron /></span>
-            <div className={`mega-menu w-3col ${fc('impact')}`}>
+            <div className="mega-menu w-3col">
               <div className="mega-inner g3">
                 <div className="mega-col">
                   <p className="mega-heading">The Problem</p>
-                  {/* URLs: http://localhost:3000/impact/skill-gap-problem */}
-                  <Link className="mega-item" to="/impact/skill-gap-problem" onClick={() => close('impact')}>Skill Gap Problem</Link>
-                  <Link className="mega-item" to="/impact/future-workforce" onClick={() => close('impact')}>Future Workforce</Link>
-                  <Link className="mega-item" to="/impact/human-potential" onClick={() => close('impact')}>Human Potential</Link>
+                  <Link className="mega-item" to="/impact/skill-gap-problem" onClick={() => handleLinkClick('impact')}>Skill Gap Problem</Link>
+                  <Link className="mega-item" to="/impact/future-workforce" onClick={() => handleLinkClick('impact')}>Future Workforce</Link>
+                  <Link className="mega-item" to="/impact/human-potential" onClick={() => handleLinkClick('impact')}>Human Potential</Link>
                 </div>
                 <div className="mega-col">
                   <p className="mega-heading">Outcomes</p>
-                  <Link className="mega-item" to="/impact/student-outcomes" onClick={() => close('impact')}>Student Outcomes</Link>
-                  <Link className="mega-item" to="/impact/education-transformation" onClick={() => close('impact')}>Education Transformation</Link>
-                 
+                  <Link className="mega-item" to="/impact/student-outcomes" onClick={() => handleLinkClick('impact')}>Student Outcomes</Link>
+                  <Link className="mega-item" to="/impact/education-transformation" onClick={() => handleLinkClick('impact')}>Education Transformation</Link>
                 </div>
                 <div className="mega-col">
                   <p className="mega-heading">Global Reach</p>
-                  <Link className="mega-item" to="/impact/global-opportunity-access" onClick={() => close('impact')}>Global Opportunity Access</Link>
-                  <Link className="mega-item" to="/impact/sdgs-social-impact" onClick={() => close('impact')}>SDGs & Social Impact</Link>
+                  <Link className="mega-item" to="/impact/global-opportunity-access" onClick={() => handleLinkClick('impact')}>Global Opportunity Access</Link>
+                  <Link className="mega-item" to="/impact/sdgs-social-impact" onClick={() => handleLinkClick('impact')}>SDGs & Social Impact</Link>
                 </div>
               </div>
             </div>
           </li>
 
-         {/* TECHNOLOGY */}
-<li
-  className={`nav-item dropdown ${at('/technology') ? 'active' : ''}`}
-  onMouseLeave={reset}
->
-  <span className="nav-link">TECHNOLOGY <Chevron /></span>
-  <div className={`mega-menu ${fc('technology')}`}>
-    <div className="mega-inner g1">
-      <div className="mega-col">
-        <p className="mega-heading">Core Technology</p>
-        <Link className="mega-item" to="/technology/pathways-system" onClick={() => close('technology')}>Pathways</Link>
-        <Link className="mega-item" to="/technology/llms-knowledge-graphs" onClick={() => close('technology')}>LLMs & Knowledge Graphs</Link>
-      </div>
-    </div>
-  </div>
-</li>
+          {/* TECHNOLOGY */}
+          <li
+            className={`nav-item dropdown ${at('/technology') ? 'active' : ''} ${closedMenu === 'technology' ? 'closed-override' : ''}`}
+            onMouseLeave={() => handleMouseLeave('technology')}
+          >
+            <span className="nav-link">TECHNOLOGY <Chevron /></span>
+            <div className="mega-menu">
+              <div className="mega-inner g1">
+                <div className="mega-col">
+                  <p className="mega-heading">Core Technology</p>
+                  <Link className="mega-item" to="/technology/pathways-system" onClick={() => handleLinkClick('technology')}>Pathways</Link>
+                  <Link className="mega-item" to="/technology/llms-knowledge-graphs" onClick={() => handleLinkClick('technology')}>LLMs & Knowledge Graphs</Link>
+                </div>
+              </div>
+            </div>
+          </li>
 
           {/* MORE */}
           <li
-            className={`nav-item dropdown ${at('/contact') ? 'active' : ''}`}
-            onMouseLeave={reset}
+            className={`nav-item dropdown ${at('/contact') ? 'active' : ''} ${closedMenu === 'more' ? 'closed-override' : ''}`}
+            onMouseLeave={() => handleMouseLeave('more')}
           >
             <span className="nav-link">MORE <Chevron /></span>
-            <div className={`mega-menu align-right ${fc('more')}`}>
+            <div className="mega-menu align-right">
               <div className="mega-inner g1">
                 <div className="mega-col">
                   <p className="mega-heading">Get in Touch</p>
-                  <Link className="mega-item" to="/contact" onClick={() => close('more')}>Contact Us</Link>
-                 
+                  <Link className="mega-item" to="/contact" onClick={() => handleLinkClick('more')}>Contact Us</Link>
                 </div>
               </div>
             </div>
@@ -399,3 +387,4 @@ const ThemeMainMenu = () => {
 };
 
 export default ThemeMainMenu;
+
