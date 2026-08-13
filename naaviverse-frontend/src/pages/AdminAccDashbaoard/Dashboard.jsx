@@ -273,8 +273,9 @@ export default function Dashboard() {
 
   // ── Approvals state ───────────────────────────────────────────────────────
   const [tab, setTab]           = useState("all");
-  const [selected, setSelected] = useState(null);
-  const [roleView, setRoleView] = useState("partner");
+  const 
+  [selected, setSelected] = useState(null);
+  const [roleView, setRoleView] = useState("external");
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [partnerData, setPartnerData] = useState([]);
   const [userData, setUserData]       = useState([]);
@@ -311,8 +312,25 @@ export default function Dashboard() {
       .finally(() => setLoadingUserDetail(false));
   }, [selected]);
 
-  const activeData    = roleView === "partner" ? partnerData : userData;
-  const filtered      = tab === "all" ? activeData : activeData.filter((a) => a.status === tab);
+  const isInternalItem = (item) => {
+    return (
+      item.creationSource === "admin_created" ||
+      item.businessName === "Naaviverse Internal" ||
+      (item.createdBy && item.createdBy !== "self_registered" && item.creationSource !== "self_registered")
+    );
+  };
+
+  const externalPartnerData = partnerData.filter((p) => !isInternalItem(p));
+  const internalPartnerData = partnerData.filter((p) => isInternalItem(p));
+
+  const activeData =
+    roleView === "external" || roleView === "partner"
+      ? externalPartnerData
+      : roleView === "internal"
+      ? internalPartnerData
+      : userData;
+
+  const filtered = tab === "all" ? activeData : activeData.filter((a) => a.status === tab);
 
   const approve = (id) => {
     axios.put(`${BASE_URL}/api/approvals/update/${id}`, { status: "approved" }).then((res) => {
@@ -1429,7 +1447,7 @@ export default function Dashboard() {
   // ══════════════════════════════════════════════════════════════════════════
   // APPROVALS — LIST VIEW (default fallback return)
   // ══════════════════════════════════════════════════════════════════════════
-  const isPartnerView = roleView === "partner";
+  const isPartnerView = roleView === "partner" || roleView === "external" || roleView === "internal";
 
   return (
     <div className="dashboard">
@@ -1444,39 +1462,56 @@ export default function Dashboard() {
         <div className="card-header">
           <div className="header-left">
             <div className={`header-icon ${isPartnerView ? "partner-icon" : "user-icon"}`}>
-  {isPartnerView ? (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-  ) : (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-  )}
-</div>
+              {isPartnerView ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              )}
+            </div>
             <div>
-              <h2>{isPartnerView ? "Partner Approvals" : "User Approvals"}</h2>
+              <h2>
+                {roleView === "internal"
+                  ? "Internal Partner Directory"
+                  : roleView === "user"
+                  ? "User Approvals"
+                  : "External Partner Approvals"}
+              </h2>
               <p className="header-subtitle">
-                {isPartnerView ? "Manage and review partner onboarding requests" : "Manage and review user registration requests"}
+                {roleView === "internal"
+                  ? "Manage and view admin-created internal partner accounts"
+                  : roleView === "user"
+                  ? "Manage and review user registration requests"
+                  : "Manage and review external partner onboarding requests"}
               </p>
             </div>
           </div>
 
           <div className="dropdown-container" ref={dropdownRef}>
-            <button type="button" className={`role-toggle-btn ${isPartnerView ? "partner-toggle" : "user-toggle"}`} onClick={() => setShowRoleDropdown((prev) => !prev)}>
-              {isPartnerView ? "Partners" : "Users"}
+            <button type="button" className={`role-toggle-btn ${roleView === "user" ? "user-toggle" : "partner-toggle"}`} onClick={() => setShowRoleDropdown((prev) => !prev)}>
+              {roleView === "internal" ? "Internal Partners" : roleView === "user" ? "Users" : "External Partners"}
               <svg className={`arrow ${showRoleDropdown ? "open" : ""}`} width="12" height="12" viewBox="0 0 12 12" fill="none">
                 <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
             <PortalDropdown anchorRef={dropdownRef} isOpen={showRoleDropdown} onClose={() => setShowRoleDropdown(false)}>
-              <button className={roleView === "partner" ? "partner-active" : ""} onClick={() => { setRoleView("partner"); setTab("all"); setShowRoleDropdown(false); }}>
+              <button className={roleView === "external" || roleView === "partner" ? "partner-active" : ""} onClick={() => { setRoleView("external"); setTab("all"); setShowRoleDropdown(false); }}>
                 <span className="menu-icon">
-                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-
-                  </span> Partners
-                <span className="menu-count partner-count">{partnerData.length}</span>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                </span> External Partners
+                <span className="menu-count partner-count">{externalPartnerData.length}</span>
               </button>
+
+              <button className={roleView === "internal" ? "partner-active" : ""} onClick={() => { setRoleView("internal"); setTab("all"); setShowRoleDropdown(false); }}>
+                <span className="menu-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </span> Internal Partners
+                <span className="menu-count partner-count" style={{ background: "#dbeafe", color: "#1e40af" }}>{internalPartnerData.length}</span>
+              </button>
+
               <button className={roleView === "user" ? "user-active" : ""} onClick={() => { setRoleView("user"); setTab("all"); setShowRoleDropdown(false); }}>
                 <span className="menu-icon">
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-</span> Users
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </span> Users
                 <span className="menu-count user-count">{userData.length}</span>
               </button>
             </PortalDropdown>

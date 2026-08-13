@@ -43,7 +43,10 @@ const signUp = async (req, res) => {
     const temporalPartner = new Partner({
       username, email, password, partnerType,
       OTP, isBlocked: false, OTPAttempts: 0,
-      OTPverified: false, OTPCreatedTime: currentTime, status: false,
+      OTPverified: false, OTPCreatedTime: currentTime,
+      status: false,
+      creationSource: "self_registered",
+      createdBy: "self_registered",
     });
 
     await temporalPartner.save();
@@ -116,9 +119,16 @@ const login = async (req, res) => {
       });
     }
 
-    const approval       = await Approval.findOne({ email: partner.email });
-    const profileCreated = !!approval;
-    const approvalStatus = (partner.creationSource === "admin_created" || partner.status) ? "approved" : (approval ? approval.status : "not_submitted");
+    const isInternal = partner.creationSource === "admin_created";
+    const approval       = await Approval.findOne({ email: partner.email.toLowerCase().trim() });
+    const profileCreated = Boolean(partner.businessName && partner.website);
+    
+    let approvalStatus = "not_submitted";
+    if (isInternal) {
+      approvalStatus = "approved";
+    } else if (approval) {
+      approvalStatus = approval.status || "pending";
+    }
 
     const token = jwt.sign({ id: partner._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
 
@@ -153,10 +163,11 @@ const login = async (req, res) => {
         businessName:       partner.businessName || partner.username,
         email:              partner.email,
         partnerType:        partner.partnerType,
-        creationSource:     partner.creationSource || "self_registered",
+        creationSource:     partner.creationSource || (isInternal ? "admin_created" : "self_registered"),
         mustChangePassword: partner.mustChangePassword === true || partner.mustChangePassword === "true",
         accountStatus:      partner.isBlocked ? "inactive" : (partner.accountStatus || "active"),
         profileCreated,
+        approvalStatus,
         status:             approvalStatus,
       },
     });
@@ -382,12 +393,15 @@ const updatePartnerProfile = async (req, res) => {
 
     await Partner.updateOne({ email }, { $set: updatedFields });
 
+    const isInternal = partner.creationSource === "admin_created";
+    const targetStatus = isInternal ? "approved" : "pending";
+
     const existingApproval = await Approval.findOne({ email });
     if (!existingApproval) {
       await Approval.create({
         role:         "Partner",
         businessName: updatedFields.businessName || partner.businessName,
-        type:         updatedFields.type         || partner.type,
+        type:         updatedFields.type         || partner.partnerType || partner.type,
         email:        partner.email,
         website:      updatedFields.website      || partner.website,
         firstName:    updatedFields.firstName    || partner.firstName,
@@ -395,7 +409,7 @@ const updatePartnerProfile = async (req, res) => {
         position:     updatedFields.yourPosition || partner.yourPosition,
         country:      updatedFields.country      || partner.country,
         date:         new Date().toDateString(),
-        status:       "pending",
+        status:       targetStatus,
       });
 
       // ✅ Log approval-submitted event
@@ -408,6 +422,11 @@ const updatePartnerProfile = async (req, res) => {
         title:       "Approval request submitted",
         desc:        `${updatedFields.businessName || partner.businessName} submitted profile for admin review`,
       });
+    } else if (!isInternal && existingApproval.status !== "approved") {
+      existingApproval.status = "pending";
+      existingApproval.businessName = updatedFields.businessName || partner.businessName;
+      existingApproval.website = updatedFields.website || partner.website;
+      await existingApproval.save();
     }
 
     res.status(200).json({ success: true, message: "Profile updated successfully!" });

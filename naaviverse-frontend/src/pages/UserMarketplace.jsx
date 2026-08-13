@@ -858,8 +858,8 @@ const UserMarketplace = ({ onStepChange }) => {
 
     try {
       const raw = localStorage.getItem("user");
-      const user = raw ? JSON.parse(raw) : null;
-      const email = user?.email || "guest@naaviverse.com";
+      const user = raw ? (() => { try { return JSON.parse(raw); } catch { return null; } })() : null;
+      const email = user?.email || user?.user?.email || "praneethsunkara143@gmail.com";
 
       const pathId = localStorage.getItem("selectedPathId") || "";
       const stepId = localStorage.getItem("selectedStepId") || "";
@@ -867,24 +867,26 @@ const UserMarketplace = ({ onStepChange }) => {
       const stepName = localStorage.getItem("selectedStepName") || "";
 
       // Find the specific marketplace item to get its name and category
-      const item = items.find(i => i._id === itemId);
-      if (!item) return;
+      const item = items.find(i => String(i._id) === String(itemId)) || {};
 
-      // Use API variable for the endpoint
-      await axios.post(`${API}/api/feedback`, {
+      const BACKEND_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:4545";
+      await axios.post(`${BACKEND_URL}/api/feedback`, {
         type: "marketplace",
         studentEmail: email,
         pathId,
         stepId,
         pathName,
         stepName,
-        providerName: item.name || "",
+        providerName: item.name || item.title || "Marketplace Resource",
         providerType: item.category || item.role || "vendor",
-        marketplaceItemId: item._id,
+        partner_email: item.partner_email || "praneethsunkara143@gmail.com",
+        providerEmail: item.partner_email || "praneethsunkara143@gmail.com",
+        marketplaceItemId: itemId,
+        service_id: itemId,
         action: nextValue.action || "",
         comment: nextValue.comment || "",
       });
-      console.log("Marketplace feedback submitted for item:", item.name);
+      console.log("Marketplace feedback submitted for item:", item.name || itemId);
     } catch (err) {
       console.error("Error submitting marketplace feedback:", err);
     }

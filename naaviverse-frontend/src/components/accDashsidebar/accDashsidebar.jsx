@@ -120,8 +120,9 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
   const userInitial = fullName.charAt(0).toUpperCase();
   const userEmail = userDetails?.email || "";
 
-  const partnerStatus = accStatus || userDetails?.approvalStatus;
-  const isLocked = partnerStatus !== "approved";
+  const isInternal = userDetails?.creationSource === "admin_created" || Boolean(userDetails?.createdBy && userDetails?.createdBy !== "Super Admin" && userDetails?.createdBy !== "self_registered") || userDetails?.status === true;
+  const partnerStatus = isInternal ? "approved" : (accStatus || userDetails?.approvalStatus);
+  const isLocked = !isInternal && partnerStatus !== "approved";
 
   const isActive = (path) => {
     return location.pathname === path;

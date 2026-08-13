@@ -49,13 +49,13 @@ const partnerSchema = new mongoose.Schema({
 
   createdBy: {
     type: String,
-    default: "Super Admin"
+    default: "self_registered"
   },
 
   accountStatus: {
     type: String,
-    enum: ["active", "inactive"],
-    default: "active"
+    enum: ["active", "inactive", "pending"],
+    default: "pending"
   },
 
   yourPosition: { type: String }

@@ -545,9 +545,10 @@ const getExclusiveDashboardStats = async (req, res) => {
     const Step = require("../models/StepsModel");
     const User = require("../models/UsersModel");
 
+    const emailRegex = new RegExp(`^${partnerEmail.trim()}$`, "i");
     const feedbacks = await Feedback.find({
       $or: [
-        { owner_id: partnerEmail.toLowerCase() },
+        { owner_id: emailRegex },
         { owner_id: String(partner._id) }
       ]
     }).sort({ createdAt: -1 }).lean();
@@ -557,19 +558,20 @@ const getExclusiveDashboardStats = async (req, res) => {
       const stepDoc = await Step.findById(fb.stepId).select("name step_order").lean();
       const userDoc = await User.findOne({ email: fb.studentEmail?.toLowerCase() }).select("name username").lean();
 
-      // Derive rating from action type
-      const actionRatingMap = { helpful: 5, comment: 4, skip: 3, notRelevant: 2 };
-      const rating = actionRatingMap[fb.action] || 3;
+      // Derive dynamic rating from action type (excluding skip from fake ratings)
+      const actionRatingMap = { helpful: 5, comment: 4, notRelevant: 1 };
+      const rating = fb.rating || actionRatingMap[fb.action] || 4;
 
       return {
         _id: fb._id,
         studentEmail: fb.studentEmail || "—",
         studentName: userDoc?.name || userDoc?.username || fb.studentEmail || "Student",
-        service: pathDoc?.nameOfPath || pathDoc?.name || stepDoc?.name || "Career Path Session",
+        service: fb.providerName || pathDoc?.nameOfPath || pathDoc?.name || stepDoc?.name || "Marketplace Resource",
         comment: fb.comment || (fb.action === "helpful" ? "Helpful session" : fb.action === "notRelevant" ? "Not relevant" : "Left evaluation"),
         action: fb.action || "helpful",
         rating,
-        type: fb.type || "marketplace",
+        type: fb.type || (fb.providerName ? "marketplace" : "step"),
+        providerName: fb.providerName || "",
         date: fb.createdAt || new Date()
       };
     }));
@@ -652,6 +654,14 @@ const getExclusiveDashboardStats = async (req, res) => {
       }
     });
 
+    // Calculate partner overall Bayesian rating & Marketplace Score
+    const { calculateBayesianAverage } = require("../services/MarketplaceRankingService");
+    const validRatings = populatedFeedbacks.filter(f => f.action !== "skip").map(f => f.rating);
+    const v = validRatings.length;
+    const R = v > 0 ? validRatings.reduce((sum, r) => sum + r, 0) / v : 4.0;
+    const bayesianRating = calculateBayesianAverage(v, R, 5, 4.0);
+    const marketplaceScore = Math.round(((bayesianRating / 5) * 100) * 100) / 100;
+
     return res.status(200).json({
       status: true,
       partner: {
@@ -663,6 +673,9 @@ const getExclusiveDashboardStats = async (req, res) => {
         totalEarnings,
         activeStudents: uniqueEmails.size,
         refundRate: 1.2, // standard representation rate
+        bayesianRating,
+        marketplaceScore,
+        totalFeedbackCount: v,
         recentTransactions: combined.slice(0, 10),
         allTransactions: combined,
         monthlyEarnings: last6Months,

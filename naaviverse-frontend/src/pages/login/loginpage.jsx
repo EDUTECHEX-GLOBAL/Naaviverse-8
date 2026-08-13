@@ -183,19 +183,28 @@ const Loginpage = ({ initialType }) => {
             } else {
                 const partnerData = result.partner || {};
 
-                let approvalStatus = partnerData.approvalStatus || "";
+                const isInternal = partnerData.creationSource === "admin_created";
 
-                try {
-                    const approvalRes = await axios.get(
-                        `${BASE_URL}/api/approvals/status?email=${emailToStore}`
-                    );
-                    const liveStatus = approvalRes.data?.data?.status;
-                    if (liveStatus) {
-                        approvalStatus = liveStatus;
-                        console.log("✅ Approval status fetched at login:", liveStatus);
+                let approvalStatus = partnerData.approvalStatus || (isInternal ? "approved" : "");
+
+                if (isInternal) {
+                    approvalStatus = "approved";
+                } else {
+                    try {
+                        const approvalRes = await axios.get(
+                            `${BASE_URL}/api/approvals/status?email=${emailToStore}`
+                        );
+                        const liveStatus = approvalRes.data?.data?.status;
+                        if (liveStatus) {
+                            approvalStatus = liveStatus;
+                            console.log("✅ Approval status fetched at login:", liveStatus);
+                        } else if (!approvalStatus) {
+                            approvalStatus = "not_submitted";
+                        }
+                    } catch (approvalErr) {
+                        console.warn("Could not fetch approval status at login:", approvalErr?.message);
+                        if (!approvalStatus) approvalStatus = "not_submitted";
                     }
-                } catch (approvalErr) {
-                    console.warn("Could not fetch approval status at login:", approvalErr?.message);
                 }
 
                 let profileData = {};
@@ -211,6 +220,7 @@ const Loginpage = ({ initialType }) => {
                             firstName: raw.firstName,
                             lastName: raw.lastName,
                             businessName: raw.businessName,
+                            website: raw.website,
                             mustChangePassword: rawMustChange,
                         };
                         console.log("✅ Partner profile fetched at login:", profileData.businessName);
@@ -230,13 +240,14 @@ const Loginpage = ({ initialType }) => {
 
                 const enrichedPartner = {
                     ...partnerData,
+                    creationSource: partnerData.creationSource || (isInternal ? "admin_created" : "self_registered"),
                     approvalStatus,
                     ...profileData,
                     mustChangePassword: mustChange,
                 };
                 localStorage.setItem("partner", JSON.stringify(enrichedPartner));
 
-                console.log("✅ Partner saved to localStorage. mustChangePassword:", mustChange);
+                console.log("✅ Partner saved to localStorage. mustChangePassword:", mustChange, "approvalStatus:", approvalStatus);
 
                 // Check if internal partner must update temporary password
                 if (mustChange) {
@@ -251,9 +262,16 @@ const Loginpage = ({ initialType }) => {
                     return;
                 }
 
-                if (profileData?.businessName) {
+                const isProfileComplete = Boolean(profileData?.businessName && profileData?.website);
+
+                if (isInternal) {
+                    // Internal partner created by Admin -> direct home access
+                    navigate("/dashboard/accountants/home");
+                } else if (approvalStatus === "approved" && isProfileComplete) {
+                    // Approved external partner with complete profile -> home access
                     navigate("/dashboard/accountants/home");
                 } else {
+                    // New external partner -> directly navigate to profile onboarding
                     navigate("/dashboard/accountants/profile");
                 }
             }

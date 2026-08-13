@@ -514,14 +514,13 @@ const AccProfile = () => {
     const mailId = userDetails?.email;
     if (!mailId) return;
 
-    const cachedStatus = userDetails?.approvalStatus;
+    const isInternal = userDetails?.creationSource === "admin_created" || Boolean(userDetails?.createdBy && userDetails?.createdBy !== "Super Admin" && userDetails?.createdBy !== "self_registered") || userDetails?.status === true;
 
-    if (cachedStatus === "approved") {
-      // Fast path only for approved — this status never reverts
+    if (isInternal || userDetails?.approvalStatus === "approved") {
+      // Internal or explicitly approved partner — fast path
       fetchAndShowProfile(mailId, "approved");
     } else {
-      // For pending, rejected, or no cached status — always check live
-      // so that admin approval/rejection is picked up immediately
+      // External partner — check approval pipeline
       loadApprovalThenProfile(mailId);
     }
   };

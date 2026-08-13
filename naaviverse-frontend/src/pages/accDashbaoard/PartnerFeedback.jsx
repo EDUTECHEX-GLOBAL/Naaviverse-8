@@ -33,16 +33,18 @@ const PinIcon = () => (
 
 // ── Time Ago Helper ─────────────────────────────────────────────────────────
 const timeAgo = (dateStr) => {
-  if (!dateStr) return "";
-  const diff = Date.now() - new Date(dateStr).getTime();
+  if (!dateStr) return "Just now";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "Just now";
+  const diff = Date.now() - d.getTime();
+  if (diff <= 60000) return "Just now"; // handles clock drift and brand new items
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "Just now";
   if (mins < 60) return `${mins}m ago`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
   const days = Math.floor(hrs / 24);
   if (days < 7) return `${days}d ago`;
-  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 };
 
 // ── Main Component ──────────────────────────────────────────────────────────
@@ -50,6 +52,7 @@ export default function PartnerFeedback() {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sectionFilter, setSectionFilter] = useState("all"); // all, step, marketplace
   const [filter, setFilter] = useState("all"); // all, helpful, notRelevant, comment
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -92,12 +95,19 @@ export default function PartnerFeedback() {
     const notRelevant = feedbacks.filter(f => f.action === "notRelevant").length;
     const comments = feedbacks.filter(f => f.action === "comment").length;
     const helpfulRate = total > 0 ? Math.round((helpful / total) * 100) : 0;
-    return { total, helpful, notRelevant, comments, helpfulRate };
+    const stepCount = feedbacks.filter(f => f.type === "step" || (!f.type && f.viewType)).length;
+    const marketplaceCount = feedbacks.filter(f => f.type === "marketplace" || f.providerName).length;
+    return { total, helpful, notRelevant, comments, helpfulRate, stepCount, marketplaceCount };
   }, [feedbacks]);
 
   // ── Filtered feedbacks ──────────────────────────────────────────────────
   const filtered = useMemo(() => {
     let list = feedbacks;
+    if (sectionFilter === "step") {
+      list = list.filter(f => f.type === "step" || (!f.type && f.viewType));
+    } else if (sectionFilter === "marketplace") {
+      list = list.filter(f => f.type === "marketplace" || f.providerName);
+    }
     if (filter !== "all") {
       list = list.filter(f => f.action === filter);
     }
@@ -106,20 +116,28 @@ export default function PartnerFeedback() {
       list = list.filter(f =>
         (f.pathName || "").toLowerCase().includes(q) ||
         (f.stepName || "").toLowerCase().includes(q) ||
+        (f.providerName || "").toLowerCase().includes(q) ||
         (f.comment || "").toLowerCase().includes(q) ||
         (f.studentEmail || "").toLowerCase().includes(q)
       );
     }
     return list;
-  }, [feedbacks, filter, searchTerm]);
+  }, [feedbacks, sectionFilter, filter, searchTerm]);
 
-  // ── Unique paths for grouping ───────────────────────────────────────────
+  // ── Unique paths / marketplace items for grouping ───────────────────────
   const pathGroups = useMemo(() => {
     const map = {};
     filtered.forEach(f => {
-      const key = f.pathId || "unknown";
-      if (!map[key]) map[key] = { pathName: f.pathName || "Unknown Path", feedbacks: [] };
-      map[key].feedbacks.push(f);
+      const isMarketplace = f.type === "marketplace" || Boolean(f.providerName);
+      const groupKey = isMarketplace ? `mkt_${f.providerName || "Marketplace"}` : (f.pathId || "step_path");
+      const groupTitle = isMarketplace
+        ? `🛒 Marketplace Service: ${f.providerName || f.stepName || "Marketplace Resource"}`
+        : (f.pathName || "Career Path Session");
+
+      if (!map[groupKey]) {
+        map[groupKey] = { isMarketplace, pathName: groupTitle, feedbacks: [] };
+      }
+      map[groupKey].feedbacks.push(f);
     });
     return Object.values(map);
   }, [filtered]);
@@ -138,7 +156,56 @@ export default function PartnerFeedback() {
             Refresh
           </button>
         </div>
-        <p className="pf-subtitle">See what students are saying about your paths</p>
+        <p className="pf-subtitle">See what students are saying about your Step Views &amp; Marketplace Services</p>
+
+        {/* ── Section Type Selector Tabs (Step Views vs Marketplace) ────── */}
+        <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
+          <button
+            style={{
+              padding: "8px 18px",
+              borderRadius: "20px",
+              border: "none",
+              fontSize: "13px",
+              fontWeight: "600",
+              cursor: "pointer",
+              background: sectionFilter === "all" ? "#4f6ef7" : "#f1f5f9",
+              color: sectionFilter === "all" ? "#ffffff" : "#64748b"
+            }}
+            onClick={() => setSectionFilter("all")}
+          >
+            All Feedback ({stats.total})
+          </button>
+          <button
+            style={{
+              padding: "8px 18px",
+              borderRadius: "20px",
+              border: "none",
+              fontSize: "13px",
+              fontWeight: "600",
+              cursor: "pointer",
+              background: sectionFilter === "step" ? "#4f6ef7" : "#f1f5f9",
+              color: sectionFilter === "step" ? "#ffffff" : "#64748b"
+            }}
+            onClick={() => setSectionFilter("step")}
+          >
+            📌 Step Views ({stats.stepCount})
+          </button>
+          <button
+            style={{
+              padding: "8px 18px",
+              borderRadius: "20px",
+              border: "none",
+              fontSize: "13px",
+              fontWeight: "600",
+              cursor: "pointer",
+              background: sectionFilter === "marketplace" ? "#4f6ef7" : "#f1f5f9",
+              color: sectionFilter === "marketplace" ? "#ffffff" : "#64748b"
+            }}
+            onClick={() => setSectionFilter("marketplace")}
+          >
+            🛒 Marketplace Services ({stats.marketplaceCount})
+          </button>
+        </div>
       </div>
 
       {/* ── Stats Row ────────────────────────────────────────────────────── */}
@@ -185,7 +252,7 @@ export default function PartnerFeedback() {
       <div className="pf-controls">
         <div className="pf-filter-pills">
           {[
-            { key: "all", label: "All" },
+            { key: "all", label: "All Actions" },
             { key: "helpful", label: "Helpful" },
             { key: "notRelevant", label: "Not Relevant" },
             { key: "comment", label: "Comments" },
@@ -204,7 +271,7 @@ export default function PartnerFeedback() {
           <input
             className="pf-search-input"
             type="text"
-            placeholder="Search by path, step, student..."
+            placeholder="Search by path, step, service, student..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
           />
@@ -228,7 +295,7 @@ export default function PartnerFeedback() {
           <div className="pf-empty">
             <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
             <h3>No feedbacks yet</h3>
-            <p>When students interact with your paths, their feedback will appear here.</p>
+            <p>When students interact with your paths or marketplace items, their feedback will appear here.</p>
           </div>
         ) : (
           pathGroups.map((group, gi) => (
@@ -255,12 +322,18 @@ export default function PartnerFeedback() {
                           <span className="pf-fb-email">
                             {fb.studentName ? `${fb.studentName} (${fb.studentEmail})` : fb.studentEmail}
                           </span>
-                          {fb.stepName && <span className="pf-fb-step-inline">{fb.stepName}</span>}
+                          {(fb.providerName || fb.stepName) && (
+                            <span className="pf-fb-step-inline">{fb.providerName || fb.stepName}</span>
+                          )}
                         </div>
 
                         <div className="pf-fb-line2">
-                          {fb.viewType && (
+                          {fb.type === "marketplace" || fb.providerName ? (
+                            <span className="pf-fb-chip" style={{ background: "#eef2ff", color: "#4f46e5", fontWeight: "600" }}>🛒 Marketplace Service</span>
+                          ) : fb.viewType ? (
                             <span className="pf-fb-chip">{fb.viewType.charAt(0).toUpperCase() + fb.viewType.slice(1)} View</span>
+                          ) : (
+                            <span className="pf-fb-chip">Step View</span>
                           )}
                           {fb.studentPhone && (
                             <span className="pf-fb-chip"><PhoneIcon /> {fb.studentPhone}</span>
@@ -275,7 +348,7 @@ export default function PartnerFeedback() {
                       </div>
 
                       <div className="pf-fb-right">
-                        <span className="pf-fb-time">{timeAgo(fb.createdAt)}</span>
+                        <span className="pf-fb-time">{timeAgo(fb.createdAt || fb.date || fb.updatedAt)}</span>
                         <ActionBadge action={fb.action} />
                       </div>
                     </div>
