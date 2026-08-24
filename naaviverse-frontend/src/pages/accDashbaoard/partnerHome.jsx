@@ -12,18 +12,7 @@ function getPartnerEmail() {
   } catch { return null; }
 }
 
-const LIVE_ACTIVITY = [
-  { id: "a1", name: "Anisha R.", initials: "A", color: "#0d9488", action: "Selected Yale Economics path", time: "2m ago", type: "path", typeBg: "rgba(13,148,136,.18)", typeColor: "#0d9488" },
-  { id: "a2", name: "Ravi K.", initials: "R", color: "#f4845f", action: "Purchased Expert 1:1 Session (₹4,999)", time: "8m ago", type: "purchase", typeBg: "rgba(244,132,95,.18)", typeColor: "#e55a2b" },
-  { id: "a4", name: "Dev P.", initials: "D", color: "#0d9488", action: "Selected MIT Computer Science path", time: "45m ago", type: "path", typeBg: "rgba(13,148,136,.18)", typeColor: "#0d9488" },
-  { id: "a5", name: "Priya T.", initials: "P", color: "#f4845f", action: "Purchased Full Path Bundle (₹9,999)", time: "1h ago", type: "purchase", typeBg: "rgba(244,132,95,.18)", typeColor: "#e55a2b" },
-  { id: "a7", name: "Kavya L.", initials: "K", color: "#0d9488", action: "Selected Pre-Med Johns Hopkins path", time: "3h ago", type: "path", typeBg: "rgba(13,148,136,.18)", typeColor: "#0d9488" },
-  { id: "a8", name: "Sneha M.", initials: "S", color: "#f59e0b", action: "Purchased Data Analytics Pack (₹2,499)", time: "4h ago", type: "purchase", typeBg: "rgba(245,158,11,.18)", typeColor: "#d97706" },
-  { id: "a9", name: "Rohit B.", initials: "R", color: "#0d9488", action: "Selected AI for Finance path", time: "5h ago", type: "path", typeBg: "rgba(13,148,136,.18)", typeColor: "#0d9488" },
-  { id: "a10", name: "Neha G.", initials: "N", color: "#f4845f", action: "Purchased Cloud Computing Bundle (₹5,499)", time: "6h ago", type: "purchase", typeBg: "rgba(244,132,95,.18)", typeColor: "#e55a2b" },
-  { id: "a11", name: "Arun S.", initials: "A", color: "#0d9488", action: "Selected Blockchain Fundamentals path", time: "7h ago", type: "path", typeBg: "rgba(13,148,136,.18)", typeColor: "#0d9488" },
-  { id: "a12", name: "Pooja M.", initials: "P", color: "#f59e0b", action: "Purchased Full Stack Bootcamp (₹3,999)", time: "8h ago", type: "purchase", typeBg: "rgba(245,158,11,.18)", typeColor: "#d97706" },
-];
+
 
 
 
@@ -132,7 +121,10 @@ export default function PartnerHome({ setispopular }) {
   const totalPurchases = dashStats?.totalMarketplacePurchases ?? 0;
   const totalMarketplaceRevenue = dashStats?.totalMarketplaceRevenue ?? 0;
   const totalBundles = MARKETPLACE_ITEMS.filter(m => m.type === "Bundle").reduce((s, m) => s + (m.purchases || 0), 0);
-  const actFiltered = activityTab === "All" ? LIVE_ACTIVITY : LIVE_ACTIVITY.filter(a => a.type === activityTab.toLowerCase());
+  const LIVE_ACTIVITY = dashStats?.liveActivity || [];
+  const actFiltered = activityTab === "All"
+    ? LIVE_ACTIVITY
+    : LIVE_ACTIVITY.filter(a => (a.type || "").toLowerCase() === activityTab.toLowerCase());
   const displayedActivity = showAllActivity ? actFiltered : actFiltered.slice(0, 4);
 
   // ── NOTIFICATIONS PAGE ──────────────────────────────────────────────────
@@ -680,29 +672,68 @@ export default function PartnerHome({ setispopular }) {
       <div className="ph-mid-row">
         <div className="ph-card ph-activity-card">
           <div className="ph-card-header">
-            <span className="ph-card-title">Live Activity</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="ph-card-title">Live Activity</span>
+              {LIVE_ACTIVITY.length > 0 && (
+                <span style={{ fontSize: 11, background: "rgba(13,148,136,0.12)", color: "#0d9488", padding: "2px 7px", borderRadius: 10, fontWeight: 700 }}>
+                  {LIVE_ACTIVITY.length}
+                </span>
+              )}
+            </div>
             <div className="ph-act-tabs">
               {["All", "Path", "Purchase"].map(t => (
                 <button key={t} className={`ph-act-tab ${activityTab === t ? "active" : ""}`} onClick={() => { setActivityTab(t); setShowAllActivity(false); }}>{t}</button>
               ))}
             </div>
           </div>
-          <div className="ph-activity-list">
-            {displayedActivity.map(a => (
-              <div key={a.id} className="ph-act-item">
-                <div className="ph-act-avatar" style={{ background: a.color }}>{a.initials}</div>
-                <div className="ph-act-info">
-                  <div className="ph-act-name">{a.name}</div>
-                  <div className="ph-act-action">{a.action}</div>
+
+          {statsLoading ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "12px 0" }}>
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 0" }}>
+                  <Skeleton width={36} height={36} radius={10} />
+                  <div style={{ flex: 1 }}>
+                    <Skeleton width="50%" height={13} style={{ marginBottom: 6 }} />
+                    <Skeleton width="75%" height={11} />
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                    <Skeleton width={40} height={10} />
+                    <Skeleton width={55} height={18} radius={10} />
+                  </div>
                 </div>
-                <div className="ph-act-right">
-                  <div className="ph-act-time">{a.time}</div>
-                  <span className="ph-act-chip" style={{ background: a.typeBg, color: a.typeColor }}>{a.type.charAt(0).toUpperCase() + a.type.slice(1)}</span>
-                </div>
+              ))}
+            </div>
+          ) : displayedActivity.length === 0 ? (
+            <div style={{ padding: "36px 16px", textAlign: "center", color: "#94a3b8", fontSize: 13 }}>
+              <div style={{ fontSize: 26, marginBottom: 8 }}>⚡</div>
+              <div style={{ fontWeight: 600, color: "#475569", marginBottom: 4 }}>No live activity yet</div>
+              <div style={{ fontSize: 12, color: "#94a3b8", maxWidth: 300, margin: "0 auto" }}>
+                {activityTab === "All"
+                  ? "When students enroll in your paths or purchase marketplace services, activities will stream here live."
+                  : `No ${activityTab.toLowerCase()} activities recorded yet.`}
               </div>
-            ))}
-          </div>
-          {actFiltered.length > 4 && (
+            </div>
+          ) : (
+            <div className="ph-activity-list">
+              {displayedActivity.map(a => (
+                <div key={a.id} className="ph-act-item">
+                  <div className="ph-act-avatar" style={{ background: a.color || "#0d9488" }}>{a.initials || "U"}</div>
+                  <div className="ph-act-info">
+                    <div className="ph-act-name">{a.name}</div>
+                    <div className="ph-act-action">{a.action}</div>
+                  </div>
+                  <div className="ph-act-right">
+                    <div className="ph-act-time">{a.time}</div>
+                    <span className="ph-act-chip" style={{ background: a.typeBg || "rgba(13,148,136,.18)", color: a.typeColor || "#0d9488" }}>
+                      {a.type ? a.type.charAt(0).toUpperCase() + a.type.slice(1) : "Activity"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!statsLoading && actFiltered.length > 4 && (
             <button className="ph-show-more-btn" onClick={() => setShowAllActivity(p => !p)}>
               {showAllActivity ? "Show less ↑" : `View all ${actFiltered.length} →`}
             </button>

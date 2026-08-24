@@ -13,10 +13,238 @@
 const mongoose  = require("mongoose");
 const pathModel = require("../models/PathModel");
 
-// ── Lazy-load to avoid circular deps ─────────────────────────────────────────
+// Lazy-load to avoid circular deps
 const getUserPathModel  = () => require("../models/UserPathsModel");
 const getPartnerModel   = () => require("../models/PartnerModel");
 const getUserModel      = () => require("../models/UsersModel");
+
+const AVATAR_COLORS = [
+  "#0d9488", "#f4845f", "#f59e0b", "#7c3aed", "#2563eb", "#db2777", "#059669", "#d97706"
+];
+
+function getAvatarColor(str = "") {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function makeInitials(name = "") {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "U";
+  if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
+  return (parts[0][0] + (parts[1]?.[0] || "")).toUpperCase();
+}
+
+function formatRelativeTime(date) {
+  if (!date) return "Recently";
+  const now = new Date();
+  const diffMs = now - new Date(date);
+  const diffSec = Math.max(0, Math.floor(diffMs / 1000));
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+
+  if (diffSec < 60) return "Just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffHour < 24) return `${diffHour}h ago`;
+  if (diffDay === 1) return "Yesterday";
+  if (diffDay < 7) return `${diffDay}d ago`;
+  if (diffDay < 30) return `${Math.floor(diffDay / 7)}w ago`;
+  return new Date(date).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+}
+
+function formatDisplayName(name, email) {
+  if (name && name.trim()) {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0];
+    return `${parts[0]} ${parts[parts.length - 1].charAt(0).toUpperCase()}.`;
+  }
+  if (email && email.includes("@")) {
+    const userPart = email.split("@")[0];
+    const clean = userPart.replace(/[._0-9]/g, " ").trim();
+    if (clean) {
+      const parts = clean.split(/\s+/).filter(Boolean);
+      if (parts.length > 0) {
+        return parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
+      }
+    }
+  }
+  return "Student";
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPER — fetchPartnerLiveActivity
+// ─────────────────────────────────────────────────────────────────────────────
+const fetchPartnerLiveActivity = async ({ email, partnerId }) => {
+  try {
+    const Partner = getPartnerModel();
+    const UserPath = getUserPathModel();
+    const User = getUserModel();
+    const MarketplaceItem = require("../models/MarketplaceModel");
+    const Payment = require("../models/PaymentModel");
+    const Purchase = require("../models/PurchaseModel");
+
+    let partnerDoc = null;
+    if (partnerId) {
+      partnerDoc = await Partner.findOne({ partnerId: partnerId.trim() }).lean();
+    }
+    if (!partnerDoc && email) {
+      partnerDoc = await Partner.findOne({
+        email: { $regex: new RegExp("^" + email.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i") }
+      }).lean();
+    }
+
+    const effectiveEmail = partnerDoc?.email || email;
+    const effectivePartnerId = partnerDoc?.partnerId || partnerId;
+
+    const paths = await pathModel.find({
+      $or: [
+        ...(effectiveEmail ? [{ email: { $regex: new RegExp("^" + effectiveEmail.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i") } }] : []),
+        ...(partnerDoc?._id ? [{ partner_id: partnerDoc._id }] : [])
+      ],
+      status: "active"
+    }).select("_id nameOfPath path_cat").lean();
+
+    const pathIds = paths.map(p => p._id);
+    const pathMap = Object.fromEntries(paths.map(p => [String(p._id), p.nameOfPath || "Learning Path"]));
+
+    const mktItems = await MarketplaceItem.find({
+      $or: [
+        ...(effectiveEmail ? [{ partner_email: { $regex: new RegExp("^" + effectiveEmail.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i") } }] : []),
+        ...(effectivePartnerId ? [{ partner_id: effectivePartnerId }] : [])
+      ]
+    }).lean();
+
+    const mktItemIds = mktItems.map(it => String(it._id));
+    const mktMap = Object.fromEntries(mktItems.map(it => [String(it._id), it.name || "Marketplace Item"]));
+
+    const enrollments = pathIds.length > 0
+      ? await UserPath.find({
+          pathId: { $in: pathIds },
+          status: "active"
+        })
+          .sort({ createdAt: -1 })
+          .limit(30)
+          .lean()
+      : [];
+
+    const payments = await Payment.find({
+      $or: [
+        ...(effectiveEmail ? [{ partnerEmail: effectiveEmail.toLowerCase() }] : []),
+        ...(effectivePartnerId ? [{ partnerId: effectivePartnerId }] : []),
+        ...(mktItemIds.length > 0 ? [{ productId: { $in: mktItemIds } }] : [])
+      ],
+      status: "paid"
+    })
+      .sort({ createdAt: -1 })
+      .limit(30)
+      .lean();
+
+    const purchases = await Purchase.find({
+      $or: [
+        ...(effectiveEmail ? [{ creatorEmail: effectiveEmail }] : []),
+        ...(effectivePartnerId ? [{ partnerId: effectivePartnerId }] : []),
+        ...(mktItemIds.length > 0 ? [{ productId: { $in: mktItemIds } }] : [])
+      ],
+      status: { $in: ["Paid", "paid"] }
+    })
+      .sort({ createdAt: -1, date: -1 })
+      .limit(30)
+      .lean();
+
+    const studentEmailSet = new Set();
+    enrollments.forEach(e => { if (e.email) studentEmailSet.add(e.email.toLowerCase().trim()); });
+    payments.forEach(p => { if (p.userEmail) studentEmailSet.add(p.userEmail.toLowerCase().trim()); });
+    purchases.forEach(p => { if (p.clientEmail) studentEmailSet.add(p.clientEmail.toLowerCase().trim()); });
+
+    const userDocs = studentEmailSet.size > 0
+      ? await User.find({ email: { $in: [...studentEmailSet] } }).select("name email username").lean()
+      : [];
+
+    const userMap = new Map();
+    userDocs.forEach(u => {
+      if (u.email) userMap.set(u.email.toLowerCase().trim(), u.name || u.username);
+    });
+
+    const rawEvents = [];
+
+    enrollments.forEach(enr => {
+      const rawEmail = (enr.email || "").toLowerCase().trim();
+      const resolvedName = userMap.get(rawEmail) || "";
+      const displayName = formatDisplayName(resolvedName, rawEmail);
+      const pathName = pathMap[String(enr.pathId)] || "Learning Path";
+      const ts = enr.createdAt || new Date();
+
+      rawEvents.push({
+        id: `path_${enr._id}`,
+        name: displayName,
+        email: rawEmail,
+        initials: makeInitials(displayName),
+        color: getAvatarColor(displayName || rawEmail),
+        action: `Selected ${pathName} path`,
+        time: formatRelativeTime(ts),
+        timestamp: new Date(ts).getTime(),
+        type: "path",
+        typeBg: "rgba(13,148,136,.18)",
+        typeColor: "#0d9488"
+      });
+    });
+
+    payments.forEach(pay => {
+      const rawEmail = (pay.userEmail || "").toLowerCase().trim();
+      const resolvedName = userMap.get(rawEmail) || "";
+      const displayName = formatDisplayName(resolvedName, rawEmail);
+      const prodName = pay.productName || mktMap[String(pay.productId)] || "Session";
+      const amtStr = pay.amount ? ` (₹${Number(pay.amount).toLocaleString("en-IN")})` : "";
+      const ts = pay.createdAt || new Date();
+
+      rawEvents.push({
+        id: `pay_${pay._id}`,
+        name: displayName,
+        email: rawEmail,
+        initials: makeInitials(displayName),
+        color: getAvatarColor(displayName || rawEmail),
+        action: `Purchased ${prodName}${amtStr}`,
+        time: formatRelativeTime(ts),
+        timestamp: new Date(ts).getTime(),
+        type: "purchase",
+        typeBg: "rgba(244,132,95,.18)",
+        typeColor: "#e55a2b"
+      });
+    });
+
+    purchases.forEach(pur => {
+      const rawEmail = (pur.clientEmail || "").toLowerCase().trim();
+      const resolvedName = pur.clientName || userMap.get(rawEmail) || "";
+      const displayName = formatDisplayName(resolvedName, rawEmail);
+      const prodName = pur.productName || mktMap[String(pur.productId)] || "Bundle";
+      const amtStr = pur.amount ? ` (₹${Number(pur.amount).toLocaleString("en-IN")})` : "";
+      const ts = pur.createdAt || pur.date || new Date();
+
+      rawEvents.push({
+        id: `pur_${pur._id}`,
+        name: displayName,
+        email: rawEmail,
+        initials: makeInitials(displayName),
+        color: getAvatarColor(displayName || rawEmail),
+        action: `Purchased ${prodName}${amtStr}`,
+        time: formatRelativeTime(ts),
+        timestamp: new Date(ts).getTime(),
+        type: "purchase",
+        typeBg: "rgba(245,158,11,.18)",
+        typeColor: "#d97706"
+      });
+    });
+
+    rawEvents.sort((a, b) => b.timestamp - a.timestamp);
+    return rawEvents.slice(0, 50);
+  } catch (err) {
+    console.error("fetchPartnerLiveActivity error:", err);
+    return [];
+  }
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPER — week boundary (last 7 days)
@@ -64,25 +292,13 @@ const getDashboardStats = async (req, res) => {
       .select("_id nameOfPath path_cat description total_steps the_ids")
       .lean();
 
-    if (!partnerPaths.length) {
-      return res.status(200).json({
-        status: true,
-        data: {
-          totalSelected:  0,
-          thisWeek:       0,
-          percentChange:  0,
-          paths:          [],
-        },
-      });
-    }
-
     const pathIds = partnerPaths.map(p => p._id);
 
     // ── 2. All-time enrollments per path from userPaths collection ────────
-    const allTimeAgg = await UserPath.aggregate([
+    const allTimeAgg = pathIds.length > 0 ? await UserPath.aggregate([
       { $match: { pathId: { $in: pathIds }, status: "active" } },
       { $group: { _id: "$pathId", count: { $sum: 1 } } },
-    ]);
+    ]) : [];
 
     // ── 2b. Legacy fallback: naavi_users.selectedPath ─────────────────────
     // Count users whose selectedPath is one of our paths but have NO userPaths doc
@@ -123,7 +339,7 @@ const getDashboardStats = async (req, res) => {
     }
 
     // ── 3. This-week enrollments per path ────────────────────────────────
-    const weekAgg = await UserPath.aggregate([
+    const weekAgg = pathIds.length > 0 ? await UserPath.aggregate([
       {
         $match: {
           pathId:    { $in: pathIds },
@@ -137,11 +353,11 @@ const getDashboardStats = async (req, res) => {
           count: { $sum: 1 },
         },
       },
-    ]);
+    ]) : [];
 
     // ── 4. Completed-steps count per path ────────────────────────────────
     //    completedSteps is an array on each userPath doc; we sum lengths
-    const stepsAgg = await UserPath.aggregate([
+    const stepsAgg = pathIds.length > 0 ? await UserPath.aggregate([
       {
         $match: {
           pathId: { $in: pathIds },
@@ -154,21 +370,21 @@ const getDashboardStats = async (req, res) => {
           totalCompleted: { $sum: { $size: { $ifNull: ["$completedSteps", []] } } },
         },
       },
-    ]);
+    ]) : [];
 
     // ── 5. Last-30-days total (for % change vs prev 30 days) ─────────────
-    const thisMonthTotal = await UserPath.countDocuments({
+    const thisMonthTotal = pathIds.length > 0 ? await UserPath.countDocuments({
       pathId:    { $in: pathIds },
       status:    "active",
       createdAt: { $gte: monthAgo() },
-    });
+    }) : 0;
 
     const { start: prevStart, end: prevEnd } = prevMonthRange();
-    const prevMonthTotal = await UserPath.countDocuments({
+    const prevMonthTotal = pathIds.length > 0 ? await UserPath.countDocuments({
       pathId:    { $in: pathIds },
       status:    "active",
       createdAt: { $gte: prevStart, $lt: prevEnd },
-    });
+    }) : 0;
 
     // ── 6. Grand totals ───────────────────────────────────────────────────
     const allTimeMap  = Object.fromEntries(allTimeAgg.map(x => [x._id.toString(), x.count]));
@@ -190,7 +406,7 @@ const getDashboardStats = async (req, res) => {
 
     // ── 7. Per-path completion rate ───────────────────────────────────────
     //    completion% = avg(completedSteps.length / total_steps * 100) across enrolled users
-    const completionRateAgg = await UserPath.aggregate([
+    const completionRateAgg = pathIds.length > 0 ? await UserPath.aggregate([
       {
         $match: {
           pathId: { $in: pathIds },
@@ -204,7 +420,7 @@ const getDashboardStats = async (req, res) => {
           enrolledCount:   { $sum: 1 },
         },
       },
-    ]);
+    ]) : [];
     const completionRateMap = Object.fromEntries(
       completionRateAgg.map(x => [x._id.toString(), { avgCompleted: x.avgCompleted, enrolled: x.enrolledCount }])
     );
@@ -320,6 +536,9 @@ const getDashboardStats = async (req, res) => {
       };
     });
 
+    // ── 11. Fetch live activity stream ──────────────────────────────────────
+    const liveActivity = await fetchPartnerLiveActivity({ email });
+
     return res.status(200).json({
       status: true,
       data: {
@@ -331,6 +550,7 @@ const getDashboardStats = async (req, res) => {
         marketplaceItems,
         totalMarketplacePurchases,
         totalMarketplaceRevenue,
+        liveActivity,
       },
     });
   } catch (err) {
@@ -689,8 +909,31 @@ const getExclusiveDashboardStats = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// GET PARTNER LIVE ACTIVITY
+// GET /api/partner-dashboard/live-activity?email=partner@x.com&partnerId=NVP-XXX
+// ─────────────────────────────────────────────────────────────────────────────
+const getPartnerLiveActivity = async (req, res) => {
+  try {
+    const { email, partnerId } = req.query;
+    if (!email && !partnerId) {
+      return res.status(400).json({ status: false, message: "email or partnerId is required" });
+    }
+
+    const activities = await fetchPartnerLiveActivity({ email, partnerId });
+    return res.status(200).json({
+      status: true,
+      data: activities,
+    });
+  } catch (err) {
+    console.error("getPartnerLiveActivity error:", err);
+    return res.status(500).json({ status: false, message: "Internal server error", error: err.message });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getPathEnrolledUsers,
   getExclusiveDashboardStats,
+  getPartnerLiveActivity,
 };
