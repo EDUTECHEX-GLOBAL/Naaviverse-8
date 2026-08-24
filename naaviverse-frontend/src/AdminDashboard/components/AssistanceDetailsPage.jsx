@@ -27,7 +27,7 @@ export default function AssistanceDetailsPage({
   const [showRecModal, setShowRecModal] = useState(false);
   const chatMessagesRef = useRef(null);
 
-  const loadMessages = async () => {
+  const loadMessages = React.useCallback(async () => {
     if (!request?.id) return;
     try {
       const data = await marketplaceReplacementService.getMessages(request.id);
@@ -35,7 +35,7 @@ export default function AssistanceDetailsPage({
     } catch (err) {
       console.error("Failed to load messages:", err);
     }
-  };
+  }, [request?.id]);
 
   useEffect(() => {
     if (request?.id) {
@@ -43,7 +43,7 @@ export default function AssistanceDetailsPage({
       const interval = setInterval(loadMessages, 3500);
       return () => clearInterval(interval);
     }
-  }, [request?.id]);
+  }, [request?.id, loadMessages]);
 
   // Scroll ONLY the internal chat container, never the window / full page
   useEffect(() => {

@@ -10,9 +10,7 @@ import FancyFeatureSeventeen from '../../components/feature/FancyFeatureSeventee
 import About from '../../components/about/About';
 import FancyFeatureNineteen from '../../components/feature/FancyFeatureNineteen';
 import CounterOne from '../../components/counter/CounterOne';
-import TestimonialFive from '../../components/testimonial/TestimonialFive';
 import Faq from '../../components/faq/Faq';
-import Blog from '../../components/blog/Blog';
 import Contact from '../../components/contact/Contact';
 import globe from '../../assets/images/assets/naavi-icon4.webp';
 import car from '../../assets/images/assets/naavi-icon2.webp';

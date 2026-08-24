@@ -30,7 +30,7 @@ export default function AssistanceRequestDetailsModal({
   const messagesEndRef = useRef(null);
   const chatMessagesRef = useRef(null);
 
-  const loadMessages = async () => {
+  const loadMessages = React.useCallback(async () => {
     if (!request?.id) return;
     try {
       const data = await marketplaceReplacementService.getMessages(request.id);
@@ -38,7 +38,7 @@ export default function AssistanceRequestDetailsModal({
     } catch (err) {
       console.error("Failed to load messages:", err);
     }
-  };
+  }, [request?.id]);
 
   useEffect(() => {
     if (isOpen && request?.id) {
@@ -46,7 +46,7 @@ export default function AssistanceRequestDetailsModal({
       const interval = setInterval(loadMessages, 3000);
       return () => clearInterval(interval);
     }
-  }, [isOpen, request?.id]);
+  }, [isOpen, request?.id, loadMessages]);
 
   useEffect(() => {
     if (chatMessagesRef.current) {

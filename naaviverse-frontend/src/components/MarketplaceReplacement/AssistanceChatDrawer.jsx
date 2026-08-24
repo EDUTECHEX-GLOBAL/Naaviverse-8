@@ -26,7 +26,7 @@ export default function AssistanceChatDrawer({
   const chatStreamRef = useRef(null);
 
   // Load all user assistance requests
-  const loadRequests = async () => {
+  const loadRequests = React.useCallback(async () => {
     setLoading(true);
     try {
       const data = await marketplaceReplacementService.getUserAssistanceRequests(userEmail);
@@ -44,10 +44,10 @@ export default function AssistanceChatDrawer({
     } finally {
       setLoading(false);
     }
-  };
+  }, [userEmail, activeRequestId, selectedRequest]);
 
   // Load messages for selected request
-  const loadMessages = async (reqId) => {
+  const loadMessages = React.useCallback(async (reqId) => {
     if (!reqId) return;
     try {
       const msgList = await marketplaceReplacementService.getMessages(reqId);
@@ -55,13 +55,13 @@ export default function AssistanceChatDrawer({
     } catch (err) {
       console.error("Failed to load messages:", err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
       loadRequests();
     }
-  }, [isOpen, userEmail, activeRequestId]);
+  }, [isOpen, loadRequests]);
 
   useEffect(() => {
     if (selectedRequest?.id) {
@@ -71,7 +71,7 @@ export default function AssistanceChatDrawer({
       }, 4000);
       return () => clearInterval(timer);
     }
-  }, [selectedRequest?.id]);
+  }, [selectedRequest?.id, loadMessages]);
 
   useEffect(() => {
     if (chatStreamRef.current) {
