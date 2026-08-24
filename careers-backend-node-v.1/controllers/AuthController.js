@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const UserPath = require("../models/UserPathsModel"); // 👈 ADD THIS
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const { generateOTP, sendOTP, sendNotificationMail } = require("../middlewares/verifySignUp");
+const { getOtpEmailContent } = require("../utils/otpEmailTemplate");
 
 // ── Activity logger (non-blocking — never breaks login if it fails) ───────────
 const { logActivityInternal } = require("./ActivityController");
@@ -33,7 +34,14 @@ const signUp = async (req, res) => {
 
     await user.save();
 
-    sendNotificationMail(email, "Naavi Signup OTP", `Your OTP is <b>${OTP}</b>`)
+    const { subject: otpSubject, html: otpHtml } = getOtpEmailContent({
+      type: "user_signup",
+      otpCode: OTP,
+      recipientName: username,
+      expiresIn: "10 minutes",
+    });
+
+    sendNotificationMail(email, otpSubject, otpHtml)
       .catch(err => console.error("Mail failed:", err));
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
@@ -69,11 +77,14 @@ const forgotPassword = async (req, res) => {
     userFound.OTPCreatedTime = new Date();
     await userFound.save();
 
-    await sendNotificationMail(
-      email,
-      "Naavi Password Reset OTP",
-      `Dear ${userFound.username},<br>Your OTP for password reset is: <b>${OTP}</b><br>This OTP expires in 10 minutes.`
-    );
+    const { subject: otpSubject, html: otpHtml } = getOtpEmailContent({
+      type: "user_forgot",
+      otpCode: OTP,
+      recipientName: userFound.username,
+      expiresIn: "10 minutes",
+    });
+
+    await sendNotificationMail(email, otpSubject, otpHtml);
 
     const token = jwt.sign({ id: userFound._id }, process.env.JWT_SECRET_KEY, { expiresIn: 86400 });
     return res.status(200).json({ success: true, token, message: "OTP sent successfully to your email address" });

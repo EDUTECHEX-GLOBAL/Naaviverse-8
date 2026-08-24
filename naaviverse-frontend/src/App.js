@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import axios from "axios";
 import ScrollToTop from "./components/ScrollToTop";
 import MyStepsAdmin from "./pages/AdminAccDashbaoard/MyStepsAdmin";
+
 /* ================= TEMPLATE ROUTER ================= */
 import AppRouter from "./router/AppRouter";
 
@@ -21,11 +22,12 @@ import UserProfile from "./pages/UserProfile";
 import Wallet from "./pages/Wallet";
 import StepPage from "./pages/CurrentStep/StepPage";
 import MallProduct from "./pages/dashboard/MallProduct/MallProduct";
+
 /* ================= ACCOUNTANT ================= */
 import AccDashboard from "./pages/accDashbaoard/accDashboard";
 import AccProfile from "./pages/accProfile/AccProfile";
 import MyPaths from "./pages/MyPaths";
-import NewStep1 from "./globalComponents/GlobalDrawer/NewStep1"
+import NewStep1 from "./globalComponents/GlobalDrawer/NewStep1";
 import CreateNewStep from "./pages/accDashbaoard/CreateNewStep";
 import MyStepsAcc from "./pages/accDashbaoard/MyStepsAcc";
 import PathPage from "./components/Pathview/PathPage";
@@ -45,6 +47,7 @@ import HomeDashboard from "./AdminDashboard/components/Home";
 import ContactList from "./AdminDashboard/components/ContactList";
 import SubscriptionList from "./AdminDashboard/components/SubscriptionList";
 import VisitorsList from "./AdminDashboard/components/VisitorsList";
+import MarketplaceAssistance from "./AdminDashboard/components/MarketplaceAssistance";
 
 /* ================= OTHER ================= */
 import PurchaseSuccess from "./pages/PurchaseSuccess";
@@ -143,7 +146,6 @@ function App() {
           <Route path="/dashboard/accountants/profile" element={<AccProfile />} />
 
           {/* ================= ADMIN ================= */}
-          {/* ================= ADMIN ================= */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard/profile" element={<AdminProfilePage />} />
 
@@ -156,6 +158,7 @@ function App() {
           <Route path="/admin/dashboard/subscriptions" element={<AdminAccDashbaoard />} />
           <Route path="/admin/dashboard/feedback" element={<AdminAccDashbaoard />} />
           <Route path="/admin/dashboard/internal-partners" element={<AdminAccDashbaoard />} />
+
           {/* ================= SUPER ADMIN ================= */}
           <Route path="/admin-login" element={<SuperAdminLogin />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />}>
@@ -163,6 +166,7 @@ function App() {
             <Route path="admin-contact" element={<ContactList />} />
             <Route path="admin-subscribe" element={<SubscriptionList />} />
             <Route path="admin-visitors" element={<VisitorsList />} />
+            <Route path="admin-marketplace-assistance" element={<MarketplaceAssistance />} />
           </Route>
 
           {/* ================= PURCHASE ================= */}
@@ -177,7 +181,6 @@ function App() {
           {/* ================= FALLBACK ================= */}
           <Route path="/*" element={<AppRouter />} />
           <Route path="*" element={<RoutePage />} />
-
 
         </Routes>
       </BrowserRouter>

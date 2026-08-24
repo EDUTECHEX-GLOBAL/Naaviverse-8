@@ -352,52 +352,96 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
   const [refinePrompt, setRefinePrompt] = useState("");
   const [refineResult, setRefineResult] = useState(null);
   const [savingPath, setSavingPath] = useState(false);
-  const [regeneratingIdx, setRegeneratingIdx] = useState(null);
+  const [regeneratingAltIdx, setRegeneratingAltIdx] = useState(null);
+  const [regeneratingStepId, setRegeneratingStepId] = useState(null);
   const [stepRegenError, setStepRegenError] = useState("");
 
   // Regenerate a single step's description + all views (macro/micro/nano)
-  // Sequential order: description → macro_view → micro_view → nano_view
   const handleRegenerateStep = async (e, step) => {
     e.stopPropagation();
-    if (regeneratingIdx !== null) return;
-    setRegeneratingIdx(step.id);
+    if (regeneratingStepId !== null) return;
+    setRegeneratingStepId(step.id);
     setStepRegenError("");
     try {
-      const fields = ["description", "macro_view", "micro_view", "nano_view"];
+      // 1) Patch main step description first
+      const descCtrl = new AbortController();
+      const descTimeout = setTimeout(() => descCtrl.abort(), 25000);
+
+      const res = await fetch(`${API}/api/path/patch-step`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: descCtrl.signal,
+        body: JSON.stringify({
+          step_id: step.id,
+          field: "description",
+          instruction: `Regenerate a fresh, detailed, accurate description for this step. Keep it relevant to the student's current position and target goal.`,
+          current_step: step,
+          current_position: userInput?.current || "",
+          target_goal: userInput?.goal || "",
+          profile: profile || {},
+        }),
+      });
+      clearTimeout(descTimeout);
+
+      if (!res.ok) throw new Error("Failed to regenerate step description");
+      const result = await res.json();
       let updatedStep = { ...step };
 
-      for (const field of fields) {
-        const instruction = field === "description"
-          ? `Regenerate a fresh, detailed, accurate description for this step. Keep it relevant to the student's current position and target goal.`
-          : `Regenerate a fresh, rich ${field.replace("_view", "")} view description for this step. Make it specific and actionable.`;
-
-        const res = await fetch(`${API}/api/path/patch-step`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            step_id: step.id,
-            field,
-            instruction,
-            current_step: updatedStep,
-            current_position: userInput?.current || "",
-            target_goal: userInput?.goal || "",
-            profile: profile || {},
-          }),
-        });
-
-        if (!res.ok) throw new Error(`Failed to regenerate ${field}`);
-        const result = await res.json();
-        // Merge each result as it arrives — description first, then views in order
-        if (result?.updated_step) {
-          updatedStep = { ...updatedStep, ...result.updated_step };
-          // Update UI incrementally so user sees progress in order
-          if (onStepPatched) onStepPatched(step.id, "__step__", { ...updatedStep });
-        }
+      if (result?.updated_step) {
+        updatedStep = { ...updatedStep, ...result.updated_step };
+        if (onStepPatched) onStepPatched(step.id, "__step__", { ...updatedStep });
       }
+
+      // Reset button spinner immediately so user sees instant completion
+      setRegeneratingStepId(null);
+
+      // 2) Patch views (macro_view, micro_view, nano_view) in background
+      const viewFields = ["macro_view", "micro_view", "nano_view"];
+      const viewPromises = viewFields.map(async (field) => {
+        try {
+          const viewCtrl = new AbortController();
+          const viewTimeout = setTimeout(() => viewCtrl.abort(), 18000);
+
+          const viewRes = await fetch(`${API}/api/path/patch-step`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            signal: viewCtrl.signal,
+            body: JSON.stringify({
+              step_id: step.id,
+              field,
+              instruction: `Regenerate a fresh, rich ${field.replace("_view", "")} view description for this step. Make it specific and actionable.`,
+              current_step: updatedStep,
+              current_position: userInput?.current || "",
+              target_goal: userInput?.goal || "",
+              profile: profile || {},
+            }),
+          });
+          clearTimeout(viewTimeout);
+
+          if (viewRes.ok) {
+            const viewResult = await viewRes.json();
+            return viewResult?.updated_step || null;
+          }
+        } catch (vErr) {
+          console.warn(`[Step Patch] ${field} view patch skipped or timed out:`, vErr.message);
+        }
+        return null;
+      });
+
+      const viewResults = await Promise.allSettled(viewPromises);
+      viewResults.forEach((r) => {
+        if (r.status === "fulfilled" && r.value) {
+          updatedStep = { ...updatedStep, ...r.value };
+        }
+      });
+
+      if (onStepPatched) onStepPatched(step.id, "__step__", { ...updatedStep });
+
     } catch (err) {
+      console.error("[Regenerate Step Error]:", err);
       setStepRegenError(`Step ${step.id}: ${err.message || "Regeneration failed"}`);
     } finally {
-      setRegeneratingIdx(null);
+      setRegeneratingStepId(null);
     }
   };
 
@@ -736,9 +780,9 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
     setError("");
 
     if (isRegen) {
-      setRegeneratingIdx(selectedAltIdx);
+      setRegeneratingAltIdx(selectedAltIdx);
     } else {
-      setRegeneratingIdx(null);
+      setRegeneratingAltIdx(null);
     }
 
     applyStatusEvent({
@@ -781,7 +825,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
       const finalData = await readPathStream(streamRes);
       console.log("[Naavi Dashboard] Successfully parsed final roadmap data from stream:", finalData);
       setLoading(false);
-      setRegeneratingIdx(null);
+      setRegeneratingAltIdx(null);
 
       let mergedData = finalData;
       if (finalData.alternatives && finalData.alternatives.length === 1) {
@@ -816,7 +860,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
     } catch (e) {
       console.error("[Naavi Dashboard] Generation Exception:", e);
       setLoading(false);
-      setRegeneratingIdx(null);
+      setRegeneratingAltIdx(null);
       setError(e.message.includes("fetch")
         ? "Cannot connect to backend. Run: uvicorn main:app --reload --port 8001"
         : e.message);
@@ -1102,7 +1146,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
             </div>
 
             {/* Content Space */}
-            {((loading && !pathData) || (loading && regeneratingIdx === selectedAltIdx)) ? (
+            {((loading && !pathData) || (loading && regeneratingAltIdx === selectedAltIdx)) ? (
               <div className="db-loading-state" style={{ padding: 0, background: 'transparent', boxShadow: 'none', minHeight: 'auto', height: 'auto' }}>
                 <div className="loader-container">
                   <div className="loader-header">
@@ -1266,11 +1310,11 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
                                   <button
                                     className="db-step-regen-btn"
                                     onClick={e => handleRegenerateStep(e, step)}
-                                    disabled={regeneratingIdx !== null}
+                                    disabled={regeneratingStepId !== null}
                                     title="Regenerate this step's content"
                                   >
                                     <RotateCwIcon size={13} />
-                                    {regeneratingIdx === step.id ? "Regenerating…" : "Regenerate"}
+                                    {String(regeneratingStepId) === String(step.id) ? "Regenerating…" : "Regenerate"}
                                   </button>
                                 </div>
                               </div>

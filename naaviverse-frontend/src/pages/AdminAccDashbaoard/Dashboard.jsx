@@ -3,6 +3,9 @@ import ReactDOM from "react-dom";
 import axios from "axios";
 import "./Dashboard.scss";
 import { useNavigate } from "react-router-dom";
+import marketplaceReplacementService from "../../services/marketplaceReplacementService";
+import AssistanceRequestDetailsModal from "../../AdminDashboard/components/AssistanceRequestDetailsModal";
+import AssistanceDetailsPage from "../../AdminDashboard/components/AssistanceDetailsPage";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -119,16 +122,26 @@ function NotifItem({ notif, onRead, onView, full = false }) {
 // Replace: emoji: "🔍" → use SVG in activity-tl-icon directly
 
 const TYPE_CONFIG = {
-  login:   { bg: "#f1f5f9", color: "#475569", chipClass: "activity-chip-login",
-    svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg> },
-  explore: { bg: "#fef3c7", color: "#b45309", chipClass: "activity-chip-explore",
-    svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> },
-  path:    { bg: "#ede9fe", color: "#7c3aed", chipClass: "activity-chip-path",
-    svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round"><path d="M4 17L8 7l4 6 4-4 4 8"/></svg> },
-  market:  { bg: "#cffafe", color: "#0e7490", chipClass: "activity-chip-market",
-    svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0e7490" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg> },
-  step:    { bg: "#dcfce7", color: "#15803d", chipClass: "activity-chip-path",
-    svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> },
+  login: {
+    bg: "#f1f5f9", color: "#475569", chipClass: "activity-chip-login",
+    svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" /></svg>
+  },
+  explore: {
+    bg: "#fef3c7", color: "#b45309", chipClass: "activity-chip-explore",
+    svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+  },
+  path: {
+    bg: "#ede9fe", color: "#7c3aed", chipClass: "activity-chip-path",
+    svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round"><path d="M4 17L8 7l4 6 4-4 4 8" /></svg>
+  },
+  market: {
+    bg: "#cffafe", color: "#0e7490", chipClass: "activity-chip-market",
+    svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0e7490" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0" /></svg>
+  },
+  step: {
+    bg: "#dcfce7", color: "#15803d", chipClass: "activity-chip-path",
+    svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+  },
 };
 
 const STATUS_COLORS = {
@@ -171,27 +184,27 @@ export default function Dashboard() {
   // ── Notification state ────────────────────────────────────────────────────
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [notifications, setNotifications] = useState([
-    { id: 1, type: "path",     title: "New path created",   desc: 'Admin created "AI Fundamentals" path',        time: "2 min ago",  unread: true  },
-    { id: 2, type: "purchase", title: "New purchase",       desc: 'Riya Sharma purchased "Data Science Pack"',   time: "18 min ago", unread: true  },
-    { id: 3, type: "approval", title: "Approval pending",   desc: "SkillBridge Institute awaiting review",       time: "1 hr ago",   unread: true  },
-    { id: 4, type: "path",     title: "Path published",     desc: '"Career Launchpad" is now live',              time: "3 hr ago",   unread: true  },
-    { id: 5, type: "purchase", title: "New purchase",       desc: 'Arjun Mehta purchased "Full Stack Bootcamp"', time: "5 hr ago",   unread: true  },
-    { id: 6, type: "path",     title: "Path updated",       desc: 'Admin updated steps in "Web Dev Basics"',     time: "Yesterday",  unread: false },
-    { id: 7, type: "approval", title: "Partner approved",   desc: "EduTech Solutions was successfully approved", time: "Yesterday",  unread: false },
-    { id: 8, type: "system",   title: "System maintenance", desc: "Scheduled downtime on Sunday 2–4 AM IST",     time: "2 days ago", unread: false },
+    { id: 1, type: "path", title: "New path created", desc: 'Admin created "AI Fundamentals" path', time: "2 min ago", unread: true },
+    { id: 2, type: "purchase", title: "New purchase", desc: 'Riya Sharma purchased "Data Science Pack"', time: "18 min ago", unread: true },
+    { id: 3, type: "approval", title: "Approval pending", desc: "SkillBridge Institute awaiting review", time: "1 hr ago", unread: true },
+    { id: 4, type: "path", title: "Path published", desc: '"Career Launchpad" is now live', time: "3 hr ago", unread: true },
+    { id: 5, type: "purchase", title: "New purchase", desc: 'Arjun Mehta purchased "Full Stack Bootcamp"', time: "5 hr ago", unread: true },
+    { id: 6, type: "path", title: "Path updated", desc: 'Admin updated steps in "Web Dev Basics"', time: "Yesterday", unread: false },
+    { id: 7, type: "approval", title: "Partner approved", desc: "EduTech Solutions was successfully approved", time: "Yesterday", unread: false },
+    { id: 8, type: "system", title: "System maintenance", desc: "Scheduled downtime on Sunday 2–4 AM IST", time: "2 days ago", unread: false },
   ]);
   const [notifFilter, setNotifFilter] = useState("all");
   const notifDropdownRef = useRef(null);
   const unreadCount = notifications.filter((n) => n.unread).length;
 
   const [selectedPartnerUser, setSelectedPartnerUser] = useState(null);
-  const [selectedPurchase, setSelectedPurchase]       = useState(null);
-  const [partnerActivityTab, setPartnerActivityTab]   = useState("all");
-  const [purchaseTab, setPurchaseTab]                 = useState("all");
+  const [selectedPurchase, setSelectedPurchase] = useState(null);
+  const [partnerActivityTab, setPartnerActivityTab] = useState("all");
+  const [purchaseTab, setPurchaseTab] = useState("all");
 
   const markAllRead = () => setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
   const markOneRead = (id) => setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, unread: false } : n)));
-  
+
   useEffect(() => {
     const handler = (e) => {
       if (notifDropdownRef.current && !notifDropdownRef.current.contains(e.target))
@@ -203,9 +216,9 @@ export default function Dashboard() {
 
   // ── Dashboard stats ───────────────────────────────────────────────────────
   const [dashStats, setDashStats] = useState({
-    paths:       { total: 0, active: 0, inactive: 0, pending: 0 },
+    paths: { total: 0, active: 0, inactive: 0, pending: 0 },
     marketplace: { total: 0, institution: 0, mentor: 0, distributor: 0, vendor: 0 },
-    approvals:   { total: 0, approved: 0, pending: 0, rejected: 0 },
+    approvals: { total: 0, approved: 0, pending: 0, rejected: 0 },
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -249,8 +262,8 @@ export default function Dashboard() {
   useEffect(() => { fetchPartnerActivity(); }, []);
 
   // ── Purchases (from API) ─────────────────────────────────────────────────
-  const [purchases, setPurchases]           = useState([]);
-  const [purchaseStats, setPurchaseStats]   = useState({
+  const [purchases, setPurchases] = useState([]);
+  const [purchaseStats, setPurchaseStats] = useState({
     total: 0, today: 0, pending: 0, completed: 0, revenue: "₹0", revenuePaise: 0,
   });
   const [purchasesLoading, setPurchasesLoading] = useState(false);
@@ -271,15 +284,40 @@ export default function Dashboard() {
 
   useEffect(() => { fetchPurchases(); }, []);
 
+  // ── Marketplace Assistance Requests state ──────────────────────────────────
+  const [assistanceRequests, setAssistanceRequests] = useState([]);
+  const [selectedAssistanceRequest, setSelectedAssistanceRequest] = useState(null);
+  const [isAssistanceModalOpen, setIsAssistanceModalOpen] = useState(false);
+  const [assistanceTab, setAssistanceTab] = useState("all");
+  const [assistanceLoading, setAssistanceLoading] = useState(false);
+
+  const fetchAssistanceRequests = async () => {
+    setAssistanceLoading(true);
+    try {
+      const data = await marketplaceReplacementService.getAllAssistanceRequests();
+      setAssistanceRequests(data || []);
+    } catch (err) {
+      console.error("Failed to fetch assistance requests:", err);
+    } finally {
+      setAssistanceLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAssistanceRequests();
+    const interval = setInterval(fetchAssistanceRequests, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   // ── Approvals state ───────────────────────────────────────────────────────
-  const [tab, setTab]           = useState("all");
+  const [tab, setTab] = useState("all");
   const [selected, setSelected] = useState(null);
   const [roleView, setRoleView] = useState("partner");
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [partnerData, setPartnerData] = useState([]);
-  const [userData, setUserData]       = useState([]);
+  const [userData, setUserData] = useState([]);
   const [loadingData, setLoadingData] = useState(false);
-  const [fullUserData, setFullUserData]           = useState(null);
+  const [fullUserData, setFullUserData] = useState(null);
   const [loadingUserDetail, setLoadingUserDetail] = useState(false);
   const [selectedActivityUser, setSelectedActivityUser] = useState(null);
 
@@ -311,8 +349,8 @@ export default function Dashboard() {
       .finally(() => setLoadingUserDetail(false));
   }, [selected]);
 
-  const activeData    = roleView === "partner" ? partnerData : userData;
-  const filtered      = tab === "all" ? activeData : activeData.filter((a) => a.status === tab);
+  const activeData = roleView === "partner" ? partnerData : userData;
+  const filtered = tab === "all" ? activeData : activeData.filter((a) => a.status === tab);
 
   const approve = (id) => {
     axios.put(`${BASE_URL}/api/approvals/update/${id}`, { status: "approved" }).then((res) => {
@@ -554,6 +592,124 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* ── Marketplace Assistance Requests Overview Panel ── */}
+          <div id="admin-mkt-assist-panel" className="admin-mkt-assist-section">
+            <div className="admin-mkt-assist-header">
+              <div className="amah-left">
+                <div className="amah-icon-wrap">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="amah-title-row">
+                    <h2 className="amah-title">Recent Assistance Requests & Activity Feed</h2>
+                    <span className="amah-live-badge">
+                      <span className="amah-pulse-dot" />
+                      {assistanceRequests.filter((r) => r.status === "pending").length} Pending Review
+                    </span>
+                  </div>
+                  <p className="amah-desc">
+                    Student requirements & escalations after recommendation replacements. Click any request to open complete details & live 2-way chat.
+                  </p>
+                </div>
+              </div>
+
+              {/* Filter Tabs */}
+              <div className="amah-filter-tabs">
+                {[
+                  { key: "all", label: "All", count: assistanceRequests.length },
+                  { key: "pending", label: "Pending", count: assistanceRequests.filter((r) => r.status === "pending").length },
+                  { key: "reviewing", label: "Reviewing", count: assistanceRequests.filter((r) => r.status === "reviewing").length },
+                  { key: "resolved", label: "Resolved", count: assistanceRequests.filter((r) => r.status === "resolved").length },
+                ].map((t) => (
+                  <button
+                    key={t.key}
+                    type="button"
+                    className={`amah-tab ${assistanceTab === t.key ? "active" : ""}`}
+                    onClick={() => setAssistanceTab(t.key)}
+                  >
+                    <span className="amah-tab-label">{t.label}</span>
+                    <span className="amah-tab-count">{t.count}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Assistance Requests List - Notification Box Style */}
+            <div className="admin-mkt-assist-notif-list">
+              {assistanceLoading ? (
+                <div className="amah-loading">Loading assistance requests...</div>
+              ) : (assistanceTab === "all" ? assistanceRequests : assistanceRequests.filter((r) => r.status === assistanceTab)).length === 0 ? (
+                <div className="amah-empty">
+                  <span style={{ display: "inline-block" }}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5">
+                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg>
+                  </span>
+                  <h4>No {assistanceTab !== "all" ? assistanceTab : ""} assistance requests</h4>
+                  <p>All student inquiries have been resolved.</p>
+                </div>
+              ) : (
+                (assistanceTab === "all" ? assistanceRequests : assistanceRequests.filter((r) => r.status === assistanceTab)).map((req) => (
+                  <div
+                    key={req.id}
+                    className={`admin-mkt-notif-item status-${req.status}`}
+                    onClick={() => {
+                      setSelectedAssistanceRequest(req);
+                      setView("assistanceDetails");
+                    }}
+                  >
+                    {/* Left Icon & Indicator */}
+                    <div className="amn-icon-wrap">
+                      <div className="amn-avatar">
+                        {(req.userName || req.userEmail || "U")[0].toUpperCase()}
+                      </div>
+                      {req.status === "pending" && <span className="amn-unread-dot" />}
+                    </div>
+
+                    {/* Notification Message Text */}
+                    <div className="amn-content">
+                      <div className="amn-title-line">
+                        <strong className="amn-user-name">{req.userName || "Student"}</strong>
+                        <span className="amn-action-text">
+                          submitted an assistance request for <strong>{req.stepName || req.pathName || "their career milestone"}</strong>
+                        </span>
+                      </div>
+                      <div className="amn-sub-line">
+                        <span>{req.userEmail}</span>
+                        <span className="amn-dot">•</span>
+                        <span className="amn-time">
+                          {new Date(req.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Status Pill & Click Action */}
+                    <div className="amn-right-actions">
+                      <span className={`amc-status-pill status-${req.status || "pending"}`}>
+                        <span className="asp-dot" />
+                        <span>
+                          {req.status === "reviewing"
+                            ? "Reviewing"
+                            : req.status === "pending"
+                            ? "Pending"
+                            : req.status === "resolved"
+                            ? "Resolved"
+                            : req.status === "closed"
+                            ? "Closed"
+                            : req.status?.toUpperCase() || "Pending"}
+                        </span>
+                      </span>
+                      <span className="amn-view-arrow">View Details →</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
           {/* ── KPI Section ── */}
           <div className="kpi-section">
             <div className="kpi-header">
@@ -699,15 +855,35 @@ export default function Dashboard() {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
+  // MARKETPLACE ASSISTANCE DETAILS — FULL PAGE VIEW
+  // ══════════════════════════════════════════════════════════════════════════
+  if (view === "assistanceDetails") {
+    return (
+      <div className="dashboard">
+        <AssistanceDetailsPage
+          request={selectedAssistanceRequest}
+          onBack={() => setView("home")}
+          onStatusChange={(updatedReq) => {
+            setAssistanceRequests((prev) =>
+              prev.map((r) => (r.id === updatedReq.id ? updatedReq : r))
+            );
+            setSelectedAssistanceRequest(updatedReq);
+          }}
+        />
+      </div>
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
   // NOTIFICATIONS — FULL PAGE
   // ══════════════════════════════════════════════════════════════════════════
   if (view === "notifications") {
     const FILTERS = [
-      { key: "all",      label: "All",       dot: "#7c3aed", countBg: "#ede9fe", countColor: "#7c3aed" },
-      { key: "path",     label: "Paths",     dot: "#8b5cf6", countBg: "#ede9fe", countColor: "#7c3aed" },
+      { key: "all", label: "All", dot: "#7c3aed", countBg: "#ede9fe", countColor: "#7c3aed" },
+      { key: "path", label: "Paths", dot: "#8b5cf6", countBg: "#ede9fe", countColor: "#7c3aed" },
       { key: "purchase", label: "Purchases", dot: "#22c55e", countBg: "#dcfce7", countColor: "#15803d" },
       { key: "approval", label: "Approvals", dot: "#f59e0b", countBg: "#fef3c7", countColor: "#b45309" },
-      { key: "system",   label: "System",    dot: "#94a3b8", countBg: "#f1f5f9", countColor: "#475569" },
+      { key: "system", label: "System", dot: "#94a3b8", countBg: "#f1f5f9", countColor: "#475569" },
     ];
     const filteredNotifs = notifFilter === "all"
       ? notifications
@@ -760,9 +936,9 @@ export default function Dashboard() {
             <div style={{ flex: 1, overflowY: "auto" }}>
               {filteredNotifs.length === 0 ? (
                 <div style={{ padding: "60px", textAlign: "center", color: "var(--slate-400)" }}>
-                  <div style={{ marginBottom: 8, opacity: 0.3, display:"flex", justifyContent:"center" }}>
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
-</div>
+                  <div style={{ marginBottom: 8, opacity: 0.3, display: "flex", justifyContent: "center" }}>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" /></svg>
+                  </div>
                   <p>No notifications here</p>
                 </div>
               ) : (
@@ -797,7 +973,7 @@ export default function Dashboard() {
           <div className="card-header">
             <div className="header-left">
               <div className="header-icon" style={{ background: "#fce7f3", border: "1px solid #fbcfe8", fontSize: 22 }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#be185d" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#be185d" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg></div>
               <div>
                 <h2>User Activity</h2>
                 <p className="header-subtitle">Live journey overview — login · paths · marketplace</p>
@@ -811,7 +987,7 @@ export default function Dashboard() {
           ) : activityUsers.length === 0 ? (
             <div style={{ padding: "48px", textAlign: "center" }}>
               <div style={{ fontSize: 36, opacity: 0.3 }}>
-<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
 
 
               </div>
@@ -828,8 +1004,8 @@ export default function Dashboard() {
                 <tbody>
                   {activityUsers.map((u, idx) => {
                     const palette = AVATAR_PALETTE[idx % AVATAR_PALETTE.length];
-                    const last    = u.lastEvent || u.events?.[u.events.length - 1];
-                    const cfg     = TYPE_CONFIG[last?.type] || TYPE_CONFIG.login;
+                    const last = u.lastEvent || u.events?.[u.events.length - 1];
+                    const cfg = TYPE_CONFIG[last?.type] || TYPE_CONFIG.login;
                     return (
                       <tr key={u.id} className="table-row">
                         <td>
@@ -889,7 +1065,7 @@ export default function Dashboard() {
   // ACTIVITY — DETAIL VIEW
   // ══════════════════════════════════════════════════════════════════════════
   if (view === "activity" && selectedActivityUser) {
-    const u       = selectedActivityUser;
+    const u = selectedActivityUser;
     const palette = u.palette || AVATAR_PALETTE[0];
     return (
       <div className="dashboard">
@@ -939,7 +1115,7 @@ export default function Dashboard() {
                       {ev.type === "step" && ev.pathName && (
                         <div style={{ display: "flex", flexDirection: "column", gap: 2, margin: "4px 0" }}>
                           <div style={{ fontSize: 12, color: "var(--violet-600)", fontWeight: 600 }}>📍 {ev.pathName}</div>
-                          {ev.stepName  && <div style={{ fontSize: 12, color: "var(--slate-500)" }}>Step: {ev.stepName}</div>}
+                          {ev.stepName && <div style={{ fontSize: 12, color: "var(--slate-500)" }}>Step: {ev.stepName}</div>}
                           {ev.microStep && <div style={{ fontSize: 12, color: "var(--slate-400)" }}>Micro: {ev.microStep}</div>}
                         </div>
                       )}
@@ -963,8 +1139,8 @@ export default function Dashboard() {
     const filteredPartners = partnerActivityLoading
       ? []
       : partnerActivityTab === "all"
-      ? partnerActivityUsers
-      : partnerActivityUsers.filter((u) => u.status === partnerActivityTab);
+        ? partnerActivityUsers
+        : partnerActivityUsers.filter((u) => u.status === partnerActivityTab);
 
     return (
       <div className="dashboard">
@@ -979,7 +1155,7 @@ export default function Dashboard() {
           <div className="card-header">
             <div className="header-left">
               <div className="header-icon" style={{ background: "#d1fae5", border: "1px solid #a7f3d0", fontSize: 22 }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>
 
               </div>
               <div>
@@ -1005,7 +1181,7 @@ export default function Dashboard() {
           ) : filteredPartners.length === 0 ? (
             <div style={{ padding: "48px", textAlign: "center" }}>
               <div style={{ fontSize: 36, opacity: 0.3 }}>
-<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>
 
 
               </div>
@@ -1019,7 +1195,7 @@ export default function Dashboard() {
                 </thead>
                 <tbody>
                   {filteredPartners.map((u, idx) => {
-                    const pal  = PARTNER_AVATAR_PALETTE[idx % PARTNER_AVATAR_PALETTE.length];
+                    const pal = PARTNER_AVATAR_PALETTE[idx % PARTNER_AVATAR_PALETTE.length];
                     const last = u.events?.[u.events.length - 1];
                     return (
                       <tr key={u.id} className="table-row">
@@ -1074,16 +1250,16 @@ export default function Dashboard() {
   // PARTNER ACTIVITY — DETAIL VIEW
   // ══════════════════════════════════════════════════════════════════════════
   if (view === "partnerActivity" && selectedPartnerUser) {
-    const u   = selectedPartnerUser;
+    const u = selectedPartnerUser;
     const pal = u.palette || PARTNER_AVATAR_PALETTE[0];
     const PARTNER_TYPE_ICONS = {
-  login:    { bg: "#f1f5f9", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg> },
-  publish:  { bg: "#dcfce7", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg> },
-  listing:  { bg: "#d1fae5", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
-  approval: { bg: "#fef3c7", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> },
-  invite:   { bg: "#cffafe", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0e7490" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> },
-  message:  { bg: "#e0e7ff", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4338ca" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> },
-};
+      login: { bg: "#f1f5f9", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" /></svg> },
+      publish: { bg: "#dcfce7", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" /></svg> },
+      listing: { bg: "#d1fae5", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg> },
+      approval: { bg: "#fef3c7", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+      invite: { bg: "#cffafe", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0e7490" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg> },
+      message: { bg: "#e0e7ff", svg: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4338ca" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg> },
+    };
     return (
       <div className="dashboard">
         <div className="details-card" style={{ maxWidth: 760 }}>
@@ -1143,10 +1319,10 @@ export default function Dashboard() {
   if (view === "purchaseActivity" && !selectedPurchase) {
     const filteredPurchases = purchasesLoading
       ? []
-      : purchaseTab === "all"      ? purchases
-      : purchaseTab === "today"    ? purchases.filter((p) => p.date?.startsWith("Today"))
-      : purchaseTab === "pending"  ? purchases.filter((p) => p.status === "pending")
-      : purchases.filter((p) => p.status === "completed");
+      : purchaseTab === "all" ? purchases
+        : purchaseTab === "today" ? purchases.filter((p) => p.date?.startsWith("Today"))
+          : purchaseTab === "pending" ? purchases.filter((p) => p.status === "pending")
+            : purchases.filter((p) => p.status === "completed");
 
     return (
       <div className="dashboard">
@@ -1160,7 +1336,7 @@ export default function Dashboard() {
           <div className="card-header">
             <div className="header-left">
               <div className="header-icon" style={{ background: "#e0e7ff", border: "1px solid #c7d2fe", fontSize: 22 }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4338ca" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4338ca" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0" /></svg>
 
               </div>
               <div>
@@ -1174,10 +1350,10 @@ export default function Dashboard() {
           </div>
           <div className="tab-btn-group">
             {[
-              { key: "all",       label: `All (${purchases.length})` },
-              { key: "today",     label: "Today" },
+              { key: "all", label: `All (${purchases.length})` },
+              { key: "today", label: "Today" },
               { key: "completed", label: "Completed" },
-              { key: "pending",   label: "Pending" },
+              { key: "pending", label: "Pending" },
             ].map(({ key, label }) => (
               <button key={key} className={`tab-btn ${purchaseTab === key ? "active" : ""}`} onClick={() => setPurchaseTab(key)}>
                 {label}
@@ -1218,7 +1394,7 @@ export default function Dashboard() {
                         <td className="date-cell">{p.date}</td>
                         <td>
                           <span className={`status-pill ${p.status === "completed" ? "approved" : "pending"}`}>
-                           {p.status === "completed" ? "✓ Done" : "Pending"}
+                            {p.status === "completed" ? "✓ Done" : "Pending"}
 
                           </span>
                         </td>
@@ -1275,20 +1451,20 @@ export default function Dashboard() {
           </div>
           <div className="details-section-title">Item Details</div>
           <div className="details-grid">
-            <DetailItem label="Item Name"         value={p.item}    icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>} />
-            <DetailItem label="Item Type"         value={p.type} />
+            <DetailItem label="Item Name" value={p.item} icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" /></svg>} />
+            <DetailItem label="Item Type" value={p.type} />
             <DetailItem label="Subscription Plan" value={p.plan} />
-            <DetailItem label="Marketplace"       value={p.marketplace} icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>} />
-            <DetailItem label="Duration"          value={p.duration} />
-            <DetailItem label="Total Steps"       value={`${p.steps} steps`} />
-            <DetailItem label="Micro Lessons"     value={`${p.microLessons} lessons`} />
-            <DetailItem label="Purchase Date"     value={p.date} />
-            <DetailItem label="Status"            value={p.status === "completed" ? "✓ Completed" : "⏳ Pending"} />
+            <DetailItem label="Marketplace" value={p.marketplace} icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>} />
+            <DetailItem label="Duration" value={p.duration} />
+            <DetailItem label="Total Steps" value={`${p.steps} steps`} />
+            <DetailItem label="Micro Lessons" value={`${p.microLessons} lessons`} />
+            <DetailItem label="Purchase Date" value={p.date} />
+            <DetailItem label="Status" value={p.status === "completed" ? "✓ Completed" : "⏳ Pending"} />
           </div>
           <div className="details-section-title">Buyer Details</div>
           <div className="details-grid">
-            <DetailItem label="Full Name" value={p.user}  icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} />
-            <DetailItem label="Email"     value={p.email} />
+            <DetailItem label="Full Name" value={p.user} icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
+            <DetailItem label="Email" value={p.email} />
           </div>
         </div>
       </div>
@@ -1300,7 +1476,7 @@ export default function Dashboard() {
   // ══════════════════════════════════════════════════════════════════════════
   if (view === "approvals" && selected) {
     const isPartner = selected.role?.toLowerCase() === "partner";
-    const isPending  = selected.status === "pending";
+    const isPending = selected.status === "pending";
     return (
       <div className="dashboard">
         <div className="details-card">
@@ -1322,11 +1498,11 @@ export default function Dashboard() {
                 </span>
               </div>
               <span className={`role-chip ${isPartner ? "partner" : "user"}`}>
-               {isPartner ? (
-  <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg> Partner</>
-) : (
-  <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> User</>
-)}
+                {isPartner ? (
+                  <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg> Partner</>
+                ) : (
+                  <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg> User</>
+                )}
               </span>
             </div>
           </div>
@@ -1335,14 +1511,14 @@ export default function Dashboard() {
             <>
               <div className="details-section-title">Profile Details</div>
               <div className="details-grid">
-                <DetailItem label="Business Name" value={selected.businessName} icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>} />
+                <DetailItem label="Business Name" value={selected.businessName} icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" /></svg>} />
                 <DetailItem label="Business Type" value={selected.type} />
-                <DetailItem label="Email"         value={selected.email} />
-                <DetailItem label="Website"       value={selected.website} isLink />
-                <DetailItem label="First Name"    value={selected.firstName} />
-                <DetailItem label="Last Name"     value={selected.lastName} />
-                <DetailItem label="Position"      value={selected.position} />
-                <DetailItem label="Country"       value={selected.country} />
+                <DetailItem label="Email" value={selected.email} />
+                <DetailItem label="Website" value={selected.website} isLink />
+                <DetailItem label="First Name" value={selected.firstName} />
+                <DetailItem label="Last Name" value={selected.lastName} />
+                <DetailItem label="Position" value={selected.position} />
+                <DetailItem label="Country" value={selected.country} />
               </div>
             </>
           ) : loadingUserDetail ? (
@@ -1351,29 +1527,29 @@ export default function Dashboard() {
             <>
               <SectionTitle>Level 1 — Basic Info</SectionTitle>
               <div className="details-grid">
-                <DetailItem label="Full Name"    value={fullUserData?.name || selected.businessName}  icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} />
-                <DetailItem label="Email"        value={fullUserData?.email || selected.email} />
-                <DetailItem label="Username"     value={fullUserData?.username} />
-                <DetailItem label="Phone"        value={fullUserData?.phoneNumber} />
+                <DetailItem label="Full Name" value={fullUserData?.name || selected.businessName} icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
+                <DetailItem label="Email" value={fullUserData?.email || selected.email} />
+                <DetailItem label="Username" value={fullUserData?.username} />
+                <DetailItem label="Phone" value={fullUserData?.phoneNumber} />
                 <DetailItem label="Account Type" value={fullUserData?.userType || selected.type} />
-                <DetailItem label="Country"      value={fullUserData?.country || selected.country} />
-                <DetailItem label="State"        value={fullUserData?.state} />
-                <DetailItem label="City"         value={fullUserData?.city} />
-                <DetailItem label="Postal Code"  value={fullUserData?.postalCode} />
+                <DetailItem label="Country" value={fullUserData?.country || selected.country} />
+                <DetailItem label="State" value={fullUserData?.state} />
+                <DetailItem label="City" value={fullUserData?.city} />
+                <DetailItem label="Postal Code" value={fullUserData?.postalCode} />
               </div>
               <SectionTitle>Level 2 — Academic Info</SectionTitle>
               <div className="details-grid">
-                <DetailItem label="School"              value={fullUserData?.school} />
-                <DetailItem label="Grade"               value={fullUserData?.grade} />
-                <DetailItem label="Curriculum"          value={fullUserData?.curriculum} />
-                <DetailItem label="Stream"              value={fullUserData?.stream} />
-                <DetailItem label="Performance"         value={fullUserData?.performance} />
+                <DetailItem label="School" value={fullUserData?.school} />
+                <DetailItem label="Grade" value={fullUserData?.grade} />
+                <DetailItem label="Curriculum" value={fullUserData?.curriculum} />
+                <DetailItem label="Stream" value={fullUserData?.stream} />
+                <DetailItem label="Performance" value={fullUserData?.performance} />
                 <DetailItem label="Financial Situation" value={fullUserData?.financialSituation} />
-                <DetailItem label="LinkedIn"            value={fullUserData?.linkedin} isLink />
+                <DetailItem label="LinkedIn" value={fullUserData?.linkedin} isLink />
               </div>
               <SectionTitle>Level 3 — Personality</SectionTitle>
               <div className="details-grid">
-                <DetailItem label="Personality Type" icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a4 4 0 014 4 4 4 0 01-1.2 2.8A4 4 0 0116 12a4 4 0 01-4 4 4 4 0 01-4-4 4 4 0 011.2-3.2A4 4 0 018 6a4 4 0 014-4z"/></svg>}
+                <DetailItem label="Personality Type" icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a4 4 0 014 4 4 4 0 01-1.2 2.8A4 4 0 0116 12a4 4 0 01-4 4 4 4 0 01-4-4 4 4 0 011.2-3.2A4 4 0 018 6a4 4 0 014-4z" /></svg>}
                   value={fullUserData?.personality ? fullUserData.personality.charAt(0).toUpperCase() + fullUserData.personality.slice(1) : undefined}
                 />
               </div>
@@ -1383,10 +1559,10 @@ export default function Dashboard() {
           {isPending && (
             <>
               <div className={`approval-note ${isPartner ? "partner-note" : "user-note"}`}>
-                <span style={{display:"flex",alignItems:"center",gap:8}}>
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-  Approval confirmation will be emailed to the {isPartner ? "partner" : "user"}
-</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
+                  Approval confirmation will be emailed to the {isPartner ? "partner" : "user"}
+                </span>
               </div>
               <div className="action-buttons">
                 <button className="btn btn-reject" onClick={() => reject(selected._id)}>
@@ -1444,12 +1620,12 @@ export default function Dashboard() {
         <div className="card-header">
           <div className="header-left">
             <div className={`header-icon ${isPartnerView ? "partner-icon" : "user-icon"}`}>
-  {isPartnerView ? (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-  ) : (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-  )}
-</div>
+              {isPartnerView ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+              )}
+            </div>
             <div>
               <h2>{isPartnerView ? "Partner Approvals" : "User Approvals"}</h2>
               <p className="header-subtitle">
@@ -1468,15 +1644,15 @@ export default function Dashboard() {
             <PortalDropdown anchorRef={dropdownRef} isOpen={showRoleDropdown} onClose={() => setShowRoleDropdown(false)}>
               <button className={roleView === "partner" ? "partner-active" : ""} onClick={() => { setRoleView("partner"); setTab("all"); setShowRoleDropdown(false); }}>
                 <span className="menu-icon">
-                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>
 
-                  </span> Partners
+                </span> Partners
                 <span className="menu-count partner-count">{partnerData.length}</span>
               </button>
               <button className={roleView === "user" ? "user-active" : ""} onClick={() => { setRoleView("user"); setTab("all"); setShowRoleDropdown(false); }}>
                 <span className="menu-icon">
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-</span> Users
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                </span> Users
                 <span className="menu-count user-count">{userData.length}</span>
               </button>
             </PortalDropdown>
@@ -1484,10 +1660,10 @@ export default function Dashboard() {
         </div>
 
         <div className="tab-btn-group">
-          <button className={`tab-btn ${tab === "all"         ? "active" : ""}`} onClick={() => setTab("all")}>All</button>
-          <button className={`tab-btn ${tab === "pending"     ? "active" : ""}`} onClick={() => setTab("pending")}>Pending</button>
-          <button className={`tab-btn ${tab === "approved"    ? "active" : ""}`} onClick={() => setTab("approved")}>Approved</button>
-          <button className={`tab-btn ${tab === "rejected"    ? "active" : ""}`} onClick={() => setTab("rejected")}>Rejected</button>
+          <button className={`tab-btn ${tab === "all" ? "active" : ""}`} onClick={() => setTab("all")}>All</button>
+          <button className={`tab-btn ${tab === "pending" ? "active" : ""}`} onClick={() => setTab("pending")}>Pending</button>
+          <button className={`tab-btn ${tab === "approved" ? "active" : ""}`} onClick={() => setTab("approved")}>Approved</button>
+          <button className={`tab-btn ${tab === "rejected" ? "active" : ""}`} onClick={() => setTab("rejected")}>Rejected</button>
           <button className={`tab-btn ${tab === "deactivated" ? "active" : ""}`} onClick={() => setTab("deactivated")}>Deactivated</button>
         </div>
 
@@ -1568,13 +1744,13 @@ export default function Dashboard() {
                   <tr>
                     <td colSpan="5" className="no-results">
                       <div className="empty-state">
-<div className="empty-icon">
-  {isPartnerView ? (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-  ) : (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-  )}
-</div>                        <p>No {tab === "all" ? "" : tab} {isPartnerView ? "partner" : "user"} records found</p>
+                        <div className="empty-icon">
+                          {isPartnerView ? (
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>
+                          ) : (
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                          )}
+                        </div>                        <p>No {tab === "all" ? "" : tab} {isPartnerView ? "partner" : "user"} records found</p>
                       </div>
                     </td>
                   </tr>
@@ -1584,6 +1760,22 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* ── Super Admin Assistance Details Modal & Chat ── */}
+      <AssistanceRequestDetailsModal
+        isOpen={isAssistanceModalOpen}
+        onClose={() => {
+          setIsAssistanceModalOpen(false);
+          setSelectedAssistanceRequest(null);
+        }}
+        request={selectedAssistanceRequest}
+        onStatusChange={(updated) => {
+          setAssistanceRequests((prev) =>
+            prev.map((r) => (r.id === updated.id ? updated : r))
+          );
+          setSelectedAssistanceRequest(updated);
+        }}
+      />
     </div>
   );
 }

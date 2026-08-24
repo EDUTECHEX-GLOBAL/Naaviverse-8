@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { Country, State, City } from "country-state-city";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -21,7 +22,7 @@ const LevelOneModal = ({
     name:           existingData?.name           || "",
     username:       existingData?.username       || "",
     phoneNumber:    existingData?.phoneNumber    || "",
-    country:        existingData?.country        || "",
+    country:        existingData?.country        || "India",
     state:          existingData?.state          || "",
     city:           existingData?.city           || "",
     postalCode:     existingData?.postalCode     || "",
@@ -30,8 +31,79 @@ const LevelOneModal = ({
     userType:       existingData?.userType       || "student",
   });
 
-  const [countries,         setCountries]         = useState([]);
-  const [states,            setStates]            = useState([]);
+  // ── Country code + phone number split ─────────────────────────────────────
+  const [countryCode, setCountryCode] = useState("+91");
+  const [phoneDigits, setPhoneDigits] = useState("");
+
+  // All countries from library
+  const allCountries = useMemo(() => {
+    return Country.getAllCountries().sort((a, b) => a.name.localeCompare(b.name));
+  }, []);
+
+  // Dial code options
+  const dialCodeOptions = useMemo(() => {
+    const seen = new Set();
+    const list = [];
+    allCountries.forEach((c) => {
+      if (c.phonecode) {
+        const formattedCode = c.phonecode.startsWith("+") ? c.phonecode : `+${c.phonecode}`;
+        const key = `${c.isoCode}-${formattedCode}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          list.push({
+            code: formattedCode,
+            isoCode: c.isoCode,
+            name: c.name,
+            label: `${formattedCode} (${c.isoCode} - ${c.name})`,
+          });
+        }
+      }
+    });
+    return list.sort((a, b) => a.name.localeCompare(b.name));
+  }, [allCountries]);
+
+  // Find selected country object
+  const selectedCountryObj = useMemo(() => {
+    if (!formData.country) return null;
+    return allCountries.find(
+      (c) => c.name.toLowerCase() === formData.country.toLowerCase() || c.isoCode.toLowerCase() === formData.country.toLowerCase()
+    );
+  }, [allCountries, formData.country]);
+
+  // States for selected country
+  const availableStates = useMemo(() => {
+    if (!selectedCountryObj) return [];
+    return State.getStatesOfCountry(selectedCountryObj.isoCode).sort((a, b) => a.name.localeCompare(b.name));
+  }, [selectedCountryObj]);
+
+  // Find selected state object
+  const selectedStateObj = useMemo(() => {
+    if (!formData.state || !availableStates.length) return null;
+    return availableStates.find(
+      (s) => s.name.toLowerCase() === formData.state.toLowerCase() || s.isoCode.toLowerCase() === formData.state.toLowerCase()
+    );
+  }, [availableStates, formData.state]);
+
+  // Cities for selected state
+  const availableCities = useMemo(() => {
+    if (!selectedCountryObj || !selectedStateObj) return [];
+    return City.getCitiesOfState(selectedCountryObj.isoCode, selectedStateObj.isoCode).sort((a, b) => a.name.localeCompare(b.name));
+  }, [selectedCountryObj, selectedStateObj]);
+
+  // Parse existing phoneNumber into code + digits on mount or when existingData arrives
+  useEffect(() => {
+    const ph = existingData?.phoneNumber || "";
+    if (ph) {
+      const match = ph.match(/^(\+\d{1,4})\s*(.*)$/);
+      if (match) {
+        setCountryCode(match[1]);
+        setPhoneDigits(match[2].replace(/[^\d]/g, ""));
+      } else {
+        setPhoneDigits(ph.replace(/[^\d]/g, ""));
+      }
+    }
+  }, [existingData?.phoneNumber]);
+
   const [userNameAvailable, setUserNameAvailable] = useState(null);
   const [checkingUsername,  setCheckingUsername]  = useState(false);
 
@@ -46,7 +118,7 @@ const LevelOneModal = ({
       name:           existingData.name           || "",
       username:       existingData.username       || "",
       phoneNumber:    existingData.phoneNumber    || "",
-      country:        existingData.country        || "",
+      country:        existingData.country        || "India",
       state:          existingData.state          || "",
       city:           existingData.city           || "",
       postalCode:     existingData.postalCode     || "",
@@ -58,25 +130,33 @@ const LevelOneModal = ({
     setUserNameAvailable(null);
   }, [existingData]);
 
-  useEffect(() => {
-    axios.get(`${BASE_URL}/api/countries`)
-      .then((res) => {
-        const list = Array.isArray(res.data) ? res.data : [];
-        setCountries(list.sort((a, b) => a.name.common.localeCompare(b.name.common)));
-      })
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    axios.get(`${BASE_URL}/api/states`)
-      .then((res) => setStates(Array.isArray(res.data) ? res.data : []))
-      .catch(() => {});
-  }, []);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((p) => ({ ...p, [name]: value }));
     if (name === "username") setUserNameAvailable(null);
+  };
+
+  // ── Country selection handler ─────────────────────────────────────────────
+  const handleCountryChange = (e) => {
+    const countryName = e.target.value;
+    setFormData((p) => ({ ...p, country: countryName, state: "", city: "" }));
+
+    const match = allCountries.find((c) => c.name.toLowerCase() === countryName.toLowerCase());
+    if (match && match.phonecode) {
+      const code = match.phonecode.startsWith("+") ? match.phonecode : `+${match.phonecode}`;
+      setCountryCode(code);
+    }
+  };
+
+  // ── State selection handler ───────────────────────────────────────────────
+  const handleStateChange = (e) => {
+    const stateName = e.target.value;
+    setFormData((p) => ({ ...p, state: stateName, city: "" }));
+  };
+
+  // ── City selection handler ────────────────────────────────────────────────
+  const handleCityChange = (e) => {
+    setFormData((p) => ({ ...p, city: e.target.value }));
   };
 
   // ── Username check — skip API call if username hasn't changed ─────────────
@@ -105,7 +185,7 @@ const LevelOneModal = ({
   const isFormValid = () =>
     formData.name &&
     formData.username &&
-    formData.phoneNumber &&
+    phoneDigits &&
     formData.country &&
     formData.state &&
     formData.city &&
@@ -163,12 +243,16 @@ const LevelOneModal = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const required = ["name", "username", "phoneNumber", "country", "state", "city", "postalCode"];
+    const required = ["name", "username", "country", "state", "city", "postalCode"];
     for (const f of required) {
       if (!formData[f]) {
         toast.error(`Please fill in ${f.replace(/([A-Z])/g, " $1").toLowerCase()}`);
         return;
       }
+    }
+    if (!phoneDigits) {
+      toast.error("Please fill in phone number");
+      return;
     }
 
     if (userNameAvailable === false) {
@@ -185,12 +269,11 @@ const LevelOneModal = ({
     setLoading(true);
     try {
       const email = userDetails?.email || formData.email;
+      const fullPhone = `${countryCode}${phoneDigits}`;
       const body  = {
         ...formData,
         email,
-        phoneNumber: formData.phoneNumber.startsWith("+")
-          ? formData.phoneNumber
-          : `+${formData.phoneNumber}`,
+        phoneNumber: fullPhone,
       };
 
       let response;
@@ -349,18 +432,33 @@ const LevelOneModal = ({
           </div>
         </div>
 
-        {/* ── Phone ───────────────────────────────────────────────────────── */}
+        {/* ── Phone Number with Country Code ──────────────────────────────── */}
         <div className="up-form-group">
           <label className="up-form-label">Phone Number *</label>
-          <input
-            className="up-input"
-            type="tel"
-            name="phoneNumber"
-            value={formData.phoneNumber}
-            onChange={handleChange}
-            placeholder="+91 9876543210"
-            required
-          />
+          <div className="up-phone-row">
+            <select
+              className="up-select up-phone-code"
+              value={countryCode}
+              onChange={(e) => setCountryCode(e.target.value)}
+            >
+              {dialCodeOptions.map((opt) => (
+                <option key={`${opt.isoCode}-${opt.code}`} value={opt.code}>
+                  {opt.code} ({opt.isoCode})
+                </option>
+              ))}
+            </select>
+            <input
+              className="up-input up-phone-input"
+              type="tel"
+              value={phoneDigits}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^\d]/g, "");
+                setPhoneDigits(val);
+              }}
+              placeholder="9876543210"
+              required
+            />
+          </div>
         </div>
 
         {/* ── Country + State ─────────────────────────────────────────────── */}
@@ -371,16 +469,13 @@ const LevelOneModal = ({
               className="up-select"
               name="country"
               value={formData.country}
-              onChange={handleChange}
+              onChange={handleCountryChange}
               required
             >
               <option value="">Select Country</option>
-              {formData.country && !countries.some((c) => c.name?.common === formData.country) && (
-                <option value={formData.country}>{formData.country}</option>
-              )}
-              {countries.map((c) => (
-                <option key={c.cca2 || c.name?.common} value={c.name?.common}>
-                  {c.name?.common}
+              {allCountries.map((c) => (
+                <option key={c.isoCode} value={c.name}>
+                  {c.name}
                 </option>
               ))}
             </select>
@@ -392,15 +487,19 @@ const LevelOneModal = ({
               className="up-select"
               name="state"
               value={formData.state}
-              onChange={handleChange}
+              onChange={handleStateChange}
               required
+              disabled={!availableStates.length}
             >
-              <option value="">Select State</option>
-              {formData.state && !states.some((s) => s.name === formData.state) && (
-                <option value={formData.state}>{formData.state}</option>
-              )}
-              {states.map((s) => (
-                <option key={s._id || s.name} value={s.name}>
+              <option value="">
+                {!formData.country
+                  ? "Select country first"
+                  : availableStates.length
+                  ? "Select State"
+                  : "No states found"}
+              </option>
+              {availableStates.map((s) => (
+                <option key={`${s.countryCode}-${s.isoCode}`} value={s.name}>
                   {s.name}
                 </option>
               ))}
@@ -412,15 +511,32 @@ const LevelOneModal = ({
         <div className="up-form-row">
           <div className="up-form-group">
             <label className="up-form-label">City *</label>
-            <input
-              className="up-input"
-              type="text"
-              name="city"
-              value={formData.city}
-              onChange={handleChange}
-              placeholder="Enter your city"
-              required
-            />
+            {availableCities.length > 0 ? (
+              <select
+                className="up-select"
+                name="city"
+                value={formData.city}
+                onChange={handleCityChange}
+                required
+              >
+                <option value="">Select City</option>
+                {availableCities.map((c, idx) => (
+                  <option key={`${c.countryCode}-${c.stateCode}-${c.name}-${idx}`} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                className="up-input"
+                type="text"
+                name="city"
+                value={formData.city}
+                onChange={handleCityChange}
+                placeholder={formData.state ? "Type your city" : "Select state first"}
+                required
+              />
+            )}
           </div>
 
           <div className="up-form-group">

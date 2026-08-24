@@ -3,11 +3,14 @@
 // =========================================
 
 require("dotenv").config();
+const fs = require("fs");
+const path = require("path");
 const User = require("../models/UsersModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const axios = require("axios");
 const nodemailer = require("nodemailer");
+const { getOtpEmailContent } = require("../utils/otpEmailTemplate");
 
 
 // =========================================
@@ -45,30 +48,29 @@ const generateOTP = () => {
 // SEND MAIL (MULTIPLE SERVICE SUPPORT)
 // =========================================
 
-// Build list of available transporters in priority order
 const getTransporters = () => {
   const transporters = [];
 
-  // 1. Brevo (highest priority if key exists)
+  // Option 1: Brevo (Sendinblue) API Key via SMTP
   if (process.env.BREVO_API_KEY) {
     transporters.push({
-      name: "Brevo",
+      name: "Brevo SMTP",
       transporter: nodemailer.createTransport({
         host: "smtp-relay.brevo.com",
         port: 587,
         secure: false,
         auth: {
-          user: process.env.BREVO_USER || "b31b04001@smtp-brevo.com",
+          user: BREVO_USER,
           pass: process.env.BREVO_API_KEY,
         },
       }),
     });
   }
 
-  // 2. SendGrid
+  // Option 2: SendGrid API Key via SMTP
   if (process.env.SENDGRID_API_KEY) {
     transporters.push({
-      name: "SendGrid",
+      name: "SendGrid SMTP",
       transporter: nodemailer.createTransport({
         host: "smtp.sendgrid.net",
         port: 587,
@@ -81,15 +83,15 @@ const getTransporters = () => {
     });
   }
 
-  // 3. Gmail (fallback)
+  // Option 3: Standard SMTP / Gmail (fallback)
   if (process.env.EMAIL_SERVICE_USER && process.env.EMAIL_SERVICE_PASS) {
     transporters.push({
-      name: "Gmail",
+      name: "Gmail / Custom SMTP",
       transporter: nodemailer.createTransport({
         service: "gmail",
         auth: {
-          user: process.env.EMAIL_SERVICE_USER.trim(),
-          pass: process.env.EMAIL_SERVICE_PASS.trim(),
+          user: process.env.EMAIL_SERVICE_USER,
+          pass: process.env.EMAIL_SERVICE_PASS,
         },
       }),
     });
@@ -98,12 +100,24 @@ const getTransporters = () => {
   return transporters;
 };
 
-const sendNotificationMail = async (email, subject, message) => {
+const sendNotificationMail = async (email, subject, message, attachments = []) => {
   const transporters = getTransporters();
 
   if (transporters.length === 0) {
     console.error("❌ No email service configuration found in .env (need BREVO_API_KEY, SENDGRID_API_KEY, or EMAIL_SERVICE_USER/PASS)");
     return false;
+  }
+
+  const defaultAttachments = attachments ? [...attachments] : [];
+  if (message && message.includes("cid:naavi_logo") && !defaultAttachments.some(a => a.cid === "naavi_logo")) {
+    const logoPath = path.join(__dirname, "../utils/naavi_final_logo2.png");
+    if (fs.existsSync(logoPath)) {
+      defaultAttachments.push({
+        filename: "naavi_logo.png",
+        path: logoPath,
+        cid: "naavi_logo",
+      });
+    }
   }
 
   const fromUser = process.env.EMAIL_SERVICE_USER || "naaviplatform@gmail.com";
@@ -112,6 +126,7 @@ const sendNotificationMail = async (email, subject, message) => {
     to: email,
     subject: subject || "Notification",
     html: message.startsWith("<") ? message : `<p>${message}</p>`,
+    attachments: defaultAttachments,
   };
 
   // Try each transporter in order until one succeeds
@@ -164,8 +179,8 @@ const signUp = async (req, res) => {
     // =========================
     // Create user
     // =========================
-    const OTP = generateOTP();
     const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const OTP = generateOTP();
 
     const temporalUser = new User({
       username,
@@ -182,64 +197,14 @@ const signUp = async (req, res) => {
     // =========================
     // Send OTP Email
     // =========================
-const mailSent = await sendNotificationMail(
-  email,
-  "Verify your account 🔐",
-  `
-  <div style="
-    background:#f3f7fb;
-    padding:40px 10px;
-    font-family:Arial, sans-serif;
-    text-align:center;
-  ">
+    const { subject: otpSubject, html: otpHtml } = getOtpEmailContent({
+      type: "user_signup",
+      otpCode: OTP,
+      recipientName: username,
+      expiresIn: "5 minutes",
+    });
 
-    <div style="
-      max-width:450px;
-      margin:auto;
-      background:#ffffff;
-      padding:35px;
-      border-radius:12px;
-      box-shadow:0 10px 25px rgba(0,0,0,0.08);
-    ">
-
-      <!-- Logo (only image, no domain text) -->
-      <img 
-        src="/favicon3.png"
-        width="90"
-        style="margin-bottom:18px;"
-        alt="Logo"
-      />
-
-      <h2 style="margin:0;color:#222;">
-        Welcome 👋
-      </h2>
-
-      <p style="color:#555;font-size:14px;line-height:1.6;margin-top:12px;">
-        Thanks for registering.<br/>
-        Please verify your email using the OTP below.
-      </p>
-
-      <div style="
-        margin:25px 0;
-        font-size:34px;
-        font-weight:bold;
-        letter-spacing:7px;
-        background:#00B5F9;
-        color:#ffffff;
-        padding:14px 0;
-        border-radius:8px;
-      ">
-        ${OTP}
-      </div>
-
-      <p style="font-size:12px;color:#888;">
-        This code expires in 5 minutes.
-      </p>
-
-    </div>
-  </div>
-  `
-);
+    const mailSent = await sendNotificationMail(email, otpSubject, otpHtml);
 
     if (!mailSent) {
       return res.status(500).json({
