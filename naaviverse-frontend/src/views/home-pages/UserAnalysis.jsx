@@ -10,15 +10,13 @@ import FancyFeatureSeventeen from '../../components/feature/FancyFeatureSeventee
 import About from '../../components/about/About';
 import FancyFeatureNineteen from '../../components/feature/FancyFeatureNineteen';
 import CounterOne from '../../components/counter/CounterOne';
-import TestimonialFive from '../../components/testimonial/TestimonialFive';
 import Faq from '../../components/faq/Faq';
-import Blog from '../../components/blog/Blog';
 import Contact from '../../components/contact/Contact';
 import globe from '../../assets/images/assets/naavi-icon4.webp';
 import car from '../../assets/images/assets/naavi-icon2.webp';
 import route from '../../assets/images/assets/naavi-icon3.webp';
 import './useranalysis.scss';
-import useranalysis from '../../assets/images/assets/useranalysis3.webp';
+import useranalysis from '../../assets/images/assets/useranalysis3.png';
 
 import BrandTwo from '../../components/brand/BrandTwo';
 import Footer from '../../components/footernew/index';
@@ -132,12 +130,17 @@ const UserAnalysis = () => {
                 </div>
 
 
+                {/* Visual Path Map Section */}
                 <div className="map-visual-wrapper text-center">
-                    <img
-                        src={useranalysis}
-                        alt="User Path Maps"
-                        className="map-visual-img"
-                    />
+                    <div className="container-fluid map-visual-container">
+                        <div className="map-visual-inner" data-aos="fade-up">
+                            <img
+                                src={useranalysis}
+                                alt="User Path Maps"
+                                className="map-visual-img"
+                            />
+                        </div>
+                    </div>
                 </div>
 
 

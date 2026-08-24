@@ -13,6 +13,7 @@ const jwt    = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 const { generateOTP, sendNotificationMail } = require("../middlewares/verifySignUp");
+const { getOtpEmailContent } = require("../utils/otpEmailTemplate");
 
 // ✅ Unified activity — replaces the old partneractivity.controller import
 const { logEvent } = require("./ActivityController");
@@ -64,11 +65,14 @@ const signUp = async (req, res) => {
     await temporalPartner.save();
     console.log("✅ Partner unique partnerId generated:", partnerId);
 
-    sendNotificationMail(
-      email,
-      "Naavi Registration Confirmation OTP",
-      `Dear Partner,<br>Your OTP: ${OTP}<br>`
-    );
+    const { subject: otpSubject, html: otpHtml } = getOtpEmailContent({
+      type: "partner_signup",
+      otpCode: OTP,
+      recipientName: username,
+      expiresIn: "10 minutes",
+    });
+
+    sendNotificationMail(email, otpSubject, otpHtml);
 
     const token = jwt.sign({ id: temporalPartner._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
 
@@ -194,7 +198,14 @@ const forgotPassword = async (req, res) => {
   partnerFound.OTPCreatedTime = currentTime;
   await partnerFound.save();
 
-  sendNotificationMail(req.body.email, "Naavi forgot password OTP", `Dear Partner,<br>Your OTP: ${OTP}<br>`);
+  const { subject: otpSubject, html: otpHtml } = getOtpEmailContent({
+    type: "partner_forgot",
+    otpCode: OTP,
+    recipientName: partnerFound.username || partnerFound.businessName,
+    expiresIn: "10 minutes",
+  });
+
+  sendNotificationMail(req.body.email, otpSubject, otpHtml);
 
   const token = jwt.sign({ id: partnerFound._id }, process.env.JWT_SECRET_KEY, { expiresIn: 86400 });
   return res.status(200).json({ success: true, token, message: "OTP sent to your emailId" });

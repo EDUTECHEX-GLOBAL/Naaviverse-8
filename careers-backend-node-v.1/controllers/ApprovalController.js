@@ -1,5 +1,8 @@
 const Approval = require("../models/ApprovalModel");
 const { sendNotificationMail } = require("../middlewares/verifySignUp");
+const { getApprovalEmailContent } = require("../utils/otpEmailTemplate");
+const User = require("../models/UsersModel");
+const Partner = require("../models/PartnerModel");
 
 exports.createApproval = async (req, res) => {
   try {
@@ -75,9 +78,6 @@ exports.getApprovalByEmail = async (req, res) => {
   }
 };
 
-const User = require("../models/UsersModel");
-const Partner = require("../models/PartnerModel");
-
 // ✅ UPDATE approval status — role-aware email notification & DB status sync
 exports.updateApproval = async (req, res) => {
   try {
@@ -98,11 +98,14 @@ exports.updateApproval = async (req, res) => {
     const greeting  = isUser ? "Dear User" : "Dear Partner";
 
     if (status === "approved") {
-      sendNotificationMail(
-        approval.email,
-        `Naaviverse ${roleLabel} Approval`,
-        `${greeting},<br>Your account has been approved by the admin.<br>You can now login to the platform.`
-      );
+      const { subject: appSubject, html: appHtml } = getApprovalEmailContent({
+        role: approval.role,
+        email: approval.email,
+        recipientName: approval.firstName || approval.businessName || approval.email,
+      });
+
+      sendNotificationMail(approval.email, appSubject, appHtml);
+
       if (isUser) {
         await User.findOneAndUpdate({ email: approval.email }, { status: "active", isBlocked: false });
       } else {

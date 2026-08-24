@@ -10,11 +10,11 @@
 }
 
 .dashboard-screens {
-  /* Desktop: takes remaining space beside the 260px sidebar */
-  width: calc(100vw - 260px);
+  /* Desktop: takes remaining space beside the sidebar */
+  flex: 1;
+  width: auto !important;
   height: 100vh;
   overflow-y: auto;
-  flex: 1;
   min-width: 0; /* prevents flex blowout */
   position: relative;
 

@@ -404,6 +404,17 @@
 
 .up-input::placeholder { color: var(--gray-400); }
 
+.up-phone-row { display: flex; gap: 10px; align-items: center; }
+.up-phone-code {
+  width: 130px;
+  flex-shrink: 0;
+  cursor: pointer;
+  padding: 11px 10px;
+}
+.up-phone-input {
+  flex: 1;
+}
+
 .up-username-row { display: flex; gap: 8px; align-items: flex-start; }
 .up-username-row .up-input { flex: 1; }
 

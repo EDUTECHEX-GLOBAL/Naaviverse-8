@@ -1,0 +1,352 @@
+/* ── Naavi Find Better Match Modal (Strict Isolation) ── */
+.nbm-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(15, 23, 42, 0.7) !important;
+  backdrop-filter: blur(5px) !important;
+  -webkit-backdrop-filter: blur(5px) !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
+  animation: nbmFadeIn 0.18s ease-out;
+
+  * {
+    box-sizing: border-box !important;
+  }
+}
+
+.nbm-modal {
+  background: #ffffff !important;
+  border-radius: 18px !important;
+  max-width: 580px !important;
+  width: 100% !important;
+  max-height: 90vh !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.28) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  animation: nbmScaleUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid #e2e8f0 !important;
+
+  /* Hide scrollbar but keep scrollable */
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE/Edge */
+  &::-webkit-scrollbar {
+    display: none !important; /* Chrome/Safari */
+  }
+}
+
+.nbm-header {
+  padding: 16px 20px 12px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  background: #ffffff !important;
+}
+
+.nbm-header-left {
+  flex: 1 !important;
+}
+
+.nbm-badge {
+  display: inline-block !important;
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  font-size: 10.5px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  margin-bottom: 6px !important;
+  border: 1px solid #bfdbfe !important;
+  line-height: 1 !important;
+}
+
+.nbm-title {
+  margin: 0 0 4px 0 !important;
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  line-height: 1.25 !important;
+}
+
+.nbm-subtitle {
+  margin: 0 !important;
+  font-size: 12px !important;
+  color: #64748b !important;
+  line-height: 1.4 !important;
+
+  .nbm-service-highlight {
+    font-weight: 700 !important;
+    color: #1e293b !important;
+  }
+}
+
+.nbm-close-btn {
+  background: transparent !important;
+  border: none !important;
+  font-size: 16px !important;
+  color: #94a3b8 !important;
+  cursor: pointer !important;
+  padding: 4px 6px !important;
+  border-radius: 6px !important;
+  line-height: 1 !important;
+  transition: all 0.15s ease !important;
+
+  &:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+  }
+}
+
+.nbm-form {
+  padding: 16px 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  background: #ffffff !important;
+}
+
+.nbm-error-alert {
+  background: #fef2f2 !important;
+  border: 1px solid #fee2e2 !important;
+  color: #dc2626 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+}
+
+.nbm-field-group {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.nbm-label {
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+
+  .nbm-optional {
+    font-size: 11px !important;
+    font-weight: 400 !important;
+    color: #94a3b8 !important;
+  }
+}
+
+/* ── Clean 2-column or wrapping Chip Grid ── */
+.nbm-chips-container {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 9px !important;
+
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.nbm-chip {
+  all: unset !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 9px 12px !important;
+  background: #f8fafc !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  transition: all 0.15s ease !important;
+  user-select: none !important;
+
+  .nbm-chip-indicator {
+    width: 18px !important;
+    height: 18px !important;
+    border-radius: 5px !important;
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: transparent !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    transition: all 0.15s ease !important;
+  }
+
+  .nbm-chip-icon {
+    font-size: 14px !important;
+    flex-shrink: 0 !important;
+    line-height: 1 !important;
+  }
+
+  .nbm-chip-text {
+    flex: 1 !important;
+    line-height: 1.3 !important;
+    word-break: break-word !important;
+  }
+
+  &:hover {
+    background: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+    color: #0f172a !important;
+
+    .nbm-chip-indicator {
+      border-color: #94a3b8 !important;
+      color: #64748b !important;
+    }
+  }
+
+  &.is-selected {
+    background: #f0fdf4 !important;
+    border-color: #16a34a !important;
+    color: #14532d !important;
+    box-shadow: 0 2px 6px rgba(22, 163, 74, 0.1) !important;
+
+    .nbm-chip-indicator {
+      background: #16a34a !important;
+      border-color: #16a34a !important;
+      color: #ffffff !important;
+    }
+  }
+}
+
+.nbm-textarea {
+  width: 100% !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 9px !important;
+  padding: 8px 12px !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+  color: #1e293b !important;
+  background: #ffffff !important;
+  resize: vertical !important;
+  min-height: 68px !important;
+  outline: none !important;
+  transition: all 0.15s ease !important;
+  box-sizing: border-box !important;
+
+  &:focus {
+    border-color: #0f766e !important;
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12) !important;
+  }
+
+  &::placeholder {
+    color: #94a3b8 !important;
+  }
+}
+
+.nbm-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  padding-top: 10px !important;
+  border-top: 1px solid #f1f5f9 !important;
+  flex-wrap: wrap !important;
+}
+
+.nbm-btn-secondary {
+  padding: 8px 14px !important;
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+
+  &:hover {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+  }
+}
+
+.nbm-btn-primary {
+  padding: 8px 18px !important;
+  background: #0f766e !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s ease !important;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.25) !important;
+
+  &:hover:not(:disabled) {
+    background: #0d5f58 !important;
+    transform: translateY(-1px) !important;
+  }
+
+  &:disabled {
+    opacity: 0.65 !important;
+    cursor: not-allowed !important;
+  }
+}
+
+.nbm-spinner-wrap {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.nbm-spinner {
+  width: 14px !important;
+  height: 14px !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  border-top-color: #ffffff !important;
+  border-radius: 50% !important;
+  animation: nbmSpin 0.6s linear infinite !important;
+}
+
+@keyframes nbmSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes nbmFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes nbmScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+

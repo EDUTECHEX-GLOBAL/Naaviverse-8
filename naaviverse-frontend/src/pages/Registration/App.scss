@@ -204,11 +204,11 @@ $shadow-card: 0 20px 50px -20px rgba(26, 31, 61, 0.18);
   height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   background: $bg-card;
   overflow-y: auto;
-  padding: 28px 40px;
+  padding: 20px 40px;
 
   /* Sleek custom scrollbar */
   &::-webkit-scrollbar {
@@ -225,8 +225,7 @@ $shadow-card: 0 20px 50px -20px rgba(26, 31, 61, 0.18);
     background: #94a3b8;
   }
 
-  // soft ambient glow, single signature touch — keeps the panel from
-  // feeling like a bare form while staying quiet
+  // soft ambient glow
   &::before {
     content: '';
     position: absolute;
@@ -252,14 +251,14 @@ $shadow-card: 0 20px 50px -20px rgba(26, 31, 61, 0.18);
   }
 }
 
+.reginside,
 .regFormCard {
   position: relative;
   z-index: 1;
   width: 100%;
   max-width: 400px;
   margin: auto 0;
-  padding-top: 20px;
-  padding-bottom: 20px;
+  padding: 16px 0 24px 0;
   animation: fadeInUp 0.5s ease-out;
 }
 
@@ -267,21 +266,21 @@ $shadow-card: 0 20px 50px -20px rgba(26, 31, 61, 0.18);
 .brandRow {
   display: flex;
   align-items: center;
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 
 .logoimg {
-  height: 34px;
+  height: 32px;
   width: auto;
   object-fit: contain;
 }
 
 /* ===== TITLES ===== */
 .reg-welcome-title {
-  font-size: 22px;
+  font-size: 21px;
   font-weight: 700;
   color: $text-primary;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   letter-spacing: -0.3px;
 }
 
@@ -289,8 +288,53 @@ $shadow-card: 0 20px 50px -20px rgba(26, 31, 61, 0.18);
   font-size: 13px;
   color: $text-secondary;
   font-weight: 400;
-  line-height: 1.5;
-  margin-bottom: 18px;
+  line-height: 1.4;
+  margin-bottom: 14px;
+}
+
+/* ===== TOGGLE TABS ===== */
+.toggle-box {
+  margin: 0 0 13px 0;
+  background: $bg-page;
+  border: 1px solid $border !important;
+  border-radius: 12px;
+  display: flex;
+  padding: 4px;
+  gap: 4px;
+  width: 100%;
+}
+
+.toggle-each {
+  font-weight: 500;
+  font-size: 13.5px;
+  color: $text-secondary;
+  padding: 8px 0;
+  width: 50%;
+  border-radius: 9px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+
+  .toggleIcon {
+    width: 15px;
+    height: 15px;
+  }
+
+  &:hover {
+    color: $text-primary;
+    background: rgba(44, 124, 178, 0.05);
+  }
+}
+
+.toggle-each-active {
+  background: #ffffff !important;
+  color: $primary !important;
+  font-weight: 600 !important;
+  box-shadow: $shadow-sm;
 }
 
 h2 {
@@ -301,12 +345,12 @@ h2 {
 .input1,
 .input2 {
   width: 100%;
-  height: 46px;
+  height: 44px;
   border: 1.5px solid $border;
   border-radius: 10px;
   padding: 0 14px;
-  margin-bottom: 11px;
-  font-size: 14px;
+  margin-bottom: 9px;
+  font-size: 13.5px;
   background: $bg-card;
   transition: all 0.2s ease;
   display: flex;
@@ -490,6 +534,58 @@ h2 {
   &.disabled {
     opacity: 0.5;
     pointer-events: none;
+  }
+}
+
+/* ===== DIVIDER ===== */
+.login-divider {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+  width: 100%;
+
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: $border;
+  }
+
+  .divider-text {
+    font-size: 11px;
+    color: $text-muted;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0 10px;
+  }
+}
+
+/* ===== GOOGLE BUTTON ===== */
+.google-btn {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  height: 46px;
+  border-radius: 10px;
+  border: 1.5px solid $border !important;
+  background: $bg-card;
+  color: $text-primary;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  gap: 10px;
+
+  &:hover {
+    background: $bg-page;
+    border-color: #cbd5e1 !important;
+    box-shadow: $shadow-sm;
+  }
+
+  svg {
+    flex-shrink: 0;
   }
 }
 

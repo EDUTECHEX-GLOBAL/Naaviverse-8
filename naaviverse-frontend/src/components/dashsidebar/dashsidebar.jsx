@@ -107,7 +107,16 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
   const [showLogoutMenu, setShowLogoutMenu] = useState(false);
   const [imgError,       setImgError]       = useState(false);
   const [mobileOpen,     setMobileOpen]     = useState(false);
+  const [collapsed,      setCollapsed]      = useState(() => localStorage.getItem('userSidebarCollapsed') === 'true');
   const logoutMenuRef = useRef(null);
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('userSidebarCollapsed', String(next));
+      return next;
+    });
+  };
 
   const isApprovalLocked = approvalStatus === "pending" || approvalStatus === "rejected";
   const isLocked         = isApprovalLocked || !!isProfileIncomplete;
@@ -232,24 +241,35 @@ const handleLogout = (e) => {
 
       {/* Sidebar */}
       <div
-        className={`user-dashboard-sidebar ${mobileOpen ? "mobile-open" : ""}`}
+        className={`user-dashboard-sidebar ${mobileOpen ? "mobile-open" : ""} ${collapsed ? "collapsed" : ""}`}
         onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Logo */}
+        {/* Logo + Toggle */}
         <div
           className="user-dashboard-left"
           style={{ cursor: isLocked ? "default" : "pointer" }}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (!isLocked) {
-              setsideNav("Home");
-              navigate("/dashboard/users/home");
-              setMobileOpen(false);
-            }
-          }}
         >
-          <img className="user-dashboard-logo" src={logo} alt="Naavi" />
+          <div
+            className="sidebar-logo-click"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!isLocked) {
+                setsideNav("Home");
+                navigate("/dashboard/users/home");
+                setMobileOpen(false);
+              }
+            }}
+          >
+            <img className="user-dashboard-logo" src={logo} alt="Naavi" />
+          </div>
+          <button className="sidebar-toggle-btn" onClick={(e) => { e.stopPropagation(); toggleCollapsed(); }} aria-label="Toggle sidebar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
         </div>
 
         {/* Nav items */}
@@ -261,9 +281,10 @@ const handleLogout = (e) => {
                 key={each.id}
                 className={`user-each-sidenav ${active ? "active" : ""} ${isLocked ? "locked" : ""}`}
                 onClick={(e) => handleNavigation(e, each.title, each.path)}
+                title={collapsed ? each.display : ""}
               >
                 <NavIcon type={each.icon} isActive={active} />
-                <span>{each.display}</span>
+                <span className="sidebar-label">{each.display}</span>
               </div>
             );
           })}
@@ -315,7 +336,7 @@ const handleLogout = (e) => {
                 ) : (
                   <div className="user-sidebar-avatar-initials">{userInitial}</div>
                 )}
-                <div className="user-sidebar-profile-name-wrap">
+                <div className="user-sidebar-profile-name-wrap sidebar-label">
                   <div className="user-sidebar-profile-name">{firstName}</div>
                   {isLocked && (
                     <div
@@ -333,7 +354,7 @@ const handleLogout = (e) => {
               </div>
 
               <div
-                className="user-sidebar-dots-btn"
+                className="user-sidebar-dots-btn sidebar-label"
                 onClick={(e) => { e.stopPropagation(); setShowLogoutMenu(v => !v); }}
               >
                 •••

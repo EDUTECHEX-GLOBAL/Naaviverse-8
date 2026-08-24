@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const marketplaceModel = require("../models/MarketplaceModel");
 const stepModel = require("../models/StepsModel");
 const {
@@ -81,11 +82,18 @@ const addMarketplaceItem = async (req, res) => {
 const getMarketplaceItemsByStep = async (req, res) => {
   try {
     const { step_id } = req.params;
-    const { layer, category } = req.query;
+    const { layer, category, searchQ, intent, path_id } = req.query;
     const filter = { step_id, status: "active" };
     if (layer) filter.layer = layer;
     if (category) filter.category = category;
-    const items = await getRankedMarketplaceItems(filter);
+    
+    const userContext = {
+      searchQuery: searchQ || intent || "",
+      pathId: path_id || "",
+      stepId: step_id || "",
+    };
+
+    const items = await getRankedMarketplaceItems(filter, userContext);
     res.json({ status: true, data: items });
   } catch (err) {
     console.error("getMarketplaceItemsByStep error:", err);
@@ -217,10 +225,56 @@ const getMarketplaceRankings = async (req, res) => {
     if (req.query.layer) filter.layer = req.query.layer;
     if (req.query.category) filter.category = req.query.category;
 
-    const items = await getRankedMarketplaceItems(filter);
+    const userContext = {
+      searchQuery: req.query.searchQ || req.query.intent || "",
+      pathId: req.query.path_id || "",
+      stepId: req.query.step_id || "",
+    };
+
+    const items = await getRankedMarketplaceItems(filter, userContext);
     return res.json({ status: true, data: items });
   } catch (err) {
     console.error("getMarketplaceRankings error:", err);
+    return res.status(500).json({ status: false, message: err.message });
+  }
+};
+
+// GET /api/marketplace/admin/score-breakdown/:id
+const getMarketplaceItemScoreBreakdown = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const item = await marketplaceModel.findById(id).lean();
+    if (!item) {
+      return res.status(404).json({ status: false, message: "Marketplace item not found" });
+    }
+    const MarketplaceAnalytics = require("../models/MarketplaceAnalyticsModel");
+    const { calculateMarketplaceScore } = require("../services/MarketplaceRankingService");
+    const analytics = await MarketplaceAnalytics.findOne({ service_id: id }).lean();
+    
+    const userContext = {
+      searchQuery: req.query.searchQ || "",
+      pathId: req.query.path_id || item.path_id || "",
+      stepId: req.query.step_id || item.step_id || "",
+    };
+
+    const scoreObj = calculateMarketplaceScore(item, analytics, userContext);
+    return res.json({
+      status: true,
+      data: {
+        item: {
+          _id: item._id,
+          name: item.name,
+          role: item.role,
+          category: item.category,
+          partner_email: item.partner_email,
+        },
+        naavi_score: scoreObj.naavi_score,
+        score_breakdown: scoreObj.score_breakdown,
+        analytics,
+      },
+    });
+  } catch (err) {
+    console.error("getMarketplaceItemScoreBreakdown error:", err);
     return res.status(500).json({ status: false, message: err.message });
   }
 };
@@ -468,6 +522,7 @@ module.exports = {
   getMarketplaceItemsByStep,
   getAllMarketplaceItems,
   getMarketplaceRankings,
+  getMarketplaceItemScoreBreakdown,
   updateMarketplaceAnalytics,
   recalculateMarketplaceRankings,
   linkMarketplaceToStep,

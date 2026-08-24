@@ -138,6 +138,7 @@ app.use("/admin/services", adminServicesRouter);
 
 app.use("/api/steps", stepsRouter);
 app.use("/api/marketplace", marketplaceRouter);
+app.use("/api/admin/marketplace", marketplaceRouter);
 app.get("/api/purchases", require("./controllers/MarketPlaceController").getAllPurchases);
 
 app.use("/api/universities", universitiesRouter);

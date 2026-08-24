@@ -229,13 +229,28 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
   height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   background: $bg-card;
-  overflow: hidden; // no scroll — content is sized to always fit
-  padding: 28px 40px;
+  overflow-y: auto;
+  padding: 20px 40px;
 
-  // same restrained signature glow as the signup panel
+  /* Sleek custom scrollbar */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  // soft ambient glow
   &::before {
     content: '';
     position: absolute;
@@ -261,41 +276,43 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
   }
 }
 
-.login-box {
+.login-box,
+.login-form-card {
   position: relative;
   z-index: 1;
   width: 100%;
   max-width: 400px;
+  margin: auto 0;
+  padding: 16px 0 24px 0;
   animation: fadeInUp 0.5s ease-out;
   background: transparent;
   border: none;
   box-shadow: none;
   border-radius: 0;
-  padding: 0;
 }
 
 /* ===== LOGO ===== */
 .full-logo-box {
   display: flex;
   justify-content: flex-start;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .full-logo {
-  height: 34px;
+  height: 32px;
   width: auto;
   object-fit: contain;
 }
 
 /* ===== WELCOME TEXT ===== */
 .login-welcome {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 
   .welcome-title {
-    font-size: 22px;
+    font-size: 21px;
     font-weight: 700;
     color: $text-primary;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     letter-spacing: -0.3px;
   }
 
@@ -303,7 +320,7 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
     font-size: 13px;
     color: $text-secondary;
     font-weight: 400;
-    line-height: 1.5;
+    line-height: 1.4;
   }
 }
 
@@ -594,7 +611,7 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
   justify-content: center;
   align-items: center;
   padding: 0;
-  height: 46px;
+  height: 44px;
   border-radius: 10px;
   border: 1.5px solid $border !important;
   background: $bg-card;
@@ -609,6 +626,31 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
     background: $bg-page;
     border-color: #cbd5e1 !important;
     box-shadow: $shadow-sm;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+/* ===== FOOTER LINK ===== */
+.login-footer-link {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 13.5px;
+  color: $text-secondary;
+
+  .link-highlight {
+    color: $primary;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 4px;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $primary-dark;
+      text-decoration: underline;
+    }
   }
 }
 

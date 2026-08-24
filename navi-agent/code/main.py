@@ -1456,6 +1456,7 @@ def get_mock_marketplace(focus: Optional[str] = None, step_title: str = "", step
             "mentors": [
                 {"name": "Class 10 Board Exam Top-Scorer Circle", "type": "Mentor", "why": "Free study tips and time management advice from past 98%+ board exam scorers.", "next_step": "Attend weekly board revision session.", "tags": ["Class 10", "Board Prep"], "section": "macro_free"},
                 {"name": "NCERT Board Subject Specialist", "type": "Mentor", "why": "Free AMA sessions on answer presentation and step-marking strategy for board exams.", "next_step": "Register for monthly board exam webinar.", "tags": ["NCERT", "Subject Specialist"], "section": "macro_free"},
+                {"name": "Academic Excellence Peer Advisory Group", "type": "Mentor", "why": "Free weekly study buddy check-ins and subject accountability circles.", "next_step": "Join peer study room.", "tags": ["Peer Study", "Accountability"], "section": "macro_free"},
                 {"name": "Board Exam Revision & Time Management Coach", "type": "Coaching", "cost": "$89", "duration": "3 weeks", "value": "Personalized chapterwise revision schedule and exam timing strategy.", "next_step": "Set up board study timetable.", "tags": ["Revision", "Timing"], "section": "micro_structured"},
                 {"name": "Core Subject Concept Tutor (Math/Science)", "type": "Tutor", "cost": "$70", "duration": "1 session", "value": "Clear specific chapter difficulties and formula applications.", "next_step": "Schedule 1-on-1 concept clarification call.", "tags": ["Math", "Science"], "section": "micro_structured"},
                 {"name": "Naaviverse Class 10 Board Result Audit", "type": "Mentor", "price": "$125", "session_details": "1-on-1 Strategy Call (45 mins)", "expected_outcomes": "Detailed mock board test evaluation and weak chapter isolation report.", "tags": ["Board Audit", "Mock Analysis"], "section": "nano_expert"},
@@ -1464,6 +1465,9 @@ def get_mock_marketplace(focus: Optional[str] = None, step_title: str = "", step
             "vendors": [
                 {"name": "Khan Academy Class 10 Foundation Modules", "type": "Course", "why": "Free video lectures and practice exercises for Class 10 Science & Math.", "next_step": "Complete chapter mastery exercises.", "tags": ["Khan Academy", "Class 10"], "section": "macro_free"},
                 {"name": "NCERT Exemplar Digital Diagnostic Portal", "type": "Platform", "why": "Free diagnostic problem sets matching high-order board questions.", "next_step": "Solve NCERT Exemplar diagnostics.", "tags": ["NCERT", "Exemplar"], "section": "macro_free"},
+                {"name": "Coursera STEM Foundations for High Schoolers", "type": "Course", "why": "Free access to introductory physics, chemistry, and calculus concepts.", "next_step": "Enroll in free audit track.", "tags": ["Coursera", "STEM"], "section": "macro_free"},
+                {"name": "edX Interactive Science Lab Simulations", "type": "Platform", "why": "Free virtual physics and chemistry lab simulations.", "next_step": "Try interactive lab module.", "tags": ["edX", "Virtual Lab"], "section": "macro_free"},
+                {"name": "MIT OpenCourseWare Secondary Math Prep", "type": "Course", "why": "Free self-paced problem sets for high school algebra and geometry.", "next_step": "Solve Problem Set 1.", "tags": ["MIT", "Math"], "section": "macro_free"},
                 {"name": "BYJU'S / Vedantu Class 10 Board Test Series", "type": "Course", "cost": "$99", "duration": "2 months", "value": "10 full-length mock board exams with step-by-step solutions and rankings.", "next_step": "Attempt mock board test 1.", "tags": ["Mock Board", "Test Series"], "section": "micro_structured"},
                 {"name": "Princeton Review Secondary School Science Track", "type": "Course", "cost": "$249", "duration": "6 weeks", "value": "Targeted instruction to master core science & mathematical problem solving.", "next_step": "Enroll in weekend live instruction cohort.", "tags": ["Science", "Math"], "section": "micro_structured"},
                 {"name": "Naaviverse Class 10 Board Exam Playbook", "type": "Provider", "price": "$130", "session_details": "Full Board Diagnostic Audit", "expected_outcomes": "Custom revision playbook with chapterwise summary notes.", "tags": ["Revision Playbook"], "section": "nano_expert"},
@@ -1472,6 +1476,7 @@ def get_mock_marketplace(focus: Optional[str] = None, step_title: str = "", step
             "institutions": [
                 {"name": "Central Board of Secondary Education (CBSE) Portal", "type": "Institute", "why": "Official source for class 10 sample papers, marking schemes, and circulars.", "next_step": "Download official sample question paper.", "tags": ["CBSE", "Marking Scheme"], "section": "macro_free"},
                 {"name": "National Council of Educational Research & Training (NCERT)", "type": "Institute", "why": "Official textbooks and learning resources for secondary education.", "next_step": "Access free NCERT digital e-books.", "tags": ["NCERT", "Textbooks"], "section": "macro_free"},
+                {"name": "State Education Board Resource Centre", "type": "Institute", "why": "Free state syllabus model papers and blue prints.", "next_step": "Download model question paper.", "tags": ["State Board", "Syllabus"], "section": "macro_free"},
                 {"name": "IIT Hyderabad Class 10 Foundation Academy", "type": "University", "cost": "$150", "duration": "8 weeks", "value": "Foundational STEM lectures mapping high school & competitive concepts.", "next_step": "Register for weekend online lectures.", "tags": ["IIT", "STEM Foundation"], "section": "micro_structured"},
                 {"name": "BITS Pilani Secondary School Honors Certificate", "type": "University", "cost": "$200", "duration": "10 weeks", "value": "Advanced topic certification to validate high school academic rigor.", "next_step": "Submit online enrollment form.", "tags": ["BITS", "Academic Rigor"], "section": "micro_structured"},
                 {"name": "Columbia High School Summer Program", "type": "University", "price": "$3,500", "session_details": "Summer School (2 weeks)", "expected_outcomes": "Advanced high school coursework validation and university exposure.", "tags": ["Columbia", "Summer School"], "section": "nano_expert"},
@@ -1480,6 +1485,7 @@ def get_mock_marketplace(focus: Optional[str] = None, step_title: str = "", step
             "distributors": [
                 {"name": "CBSE Class 10 Past 10 Years Solved Papers", "type": "Book", "why": "Compilation of past board examination papers with official solution keys.", "next_step": "Solve past board paper 1.", "tags": ["Solved Papers", "CBSE"], "section": "macro_free"},
                 {"name": "Class 10 Topper Answer Sheet & Formula Booklet", "type": "Guide", "why": "Analysis of actual topper answer sheets and essential formula summaries.", "next_step": "Download formula sheet template.", "tags": ["Topper Answers", "Formulas"], "section": "macro_free"},
+                {"name": "YouTube Academic Revision Channels Digest", "type": "YouTube", "why": "Curated playlist of top-rated free high school subject lectures.", "next_step": "Subscribe to revision playlist.", "tags": ["YouTube", "Lectures"], "section": "macro_free"},
                 {"name": "Class 10 Chapterwise Quick-Revision Booklets", "type": "Workbook", "cost": "$30", "duration": "Self-paced", "value": "Concise summary notes, mind maps, and key definitions.", "next_step": "Review mind maps before mock exam.", "tags": ["Mind Maps", "Summary Notes"], "section": "micro_structured"},
                 {"name": "O'Reilly Secondary School Science & Math Library", "type": "Subscription", "cost": "$45/year", "duration": "Annual", "value": "Access to technical reference books and problem-solving guides.", "next_step": "Access digital science library.", "tags": ["Library", "Science"], "section": "micro_structured"},
                 {"name": "Class 10 Board Excellence Weekly Newsletter", "type": "Newsletter", "price": "Free", "session_details": "Weekly Email", "expected_outcomes": "Weekly study schedules, exam stress management tips, and revision quizzes.", "tags": ["Newsletter", "Board Tips"], "section": "nano_expert"},
@@ -4763,6 +4769,7 @@ Rules:
 - {generation_rule}
 - Treat the current items as rejected for this replacement request. Do not reuse the same provider names unless there is no credible alternative; return next-best replacements.
 - Do not return or discuss any other Marketplace category or section.
+- Always generate a rich set of 5 to 8 distinct recommendations. Never return a small set of 1, 2, or 3 items.
 - Keep every item relevant to the step title, student context, and target goal.
 - Do not include the student's name, email, or personal identifiers.
 - Output valid JSON only using this exact structure:
@@ -4911,8 +4918,10 @@ async def patch_step(req: StepPatchRequest):
         else:
             prompt_current_items = current_category_items
             generation_rule = (
-                f'Return a dynamic, data-dependent list of fresh, relevant, real-world items for ONLY the '
-                f'"{category}" category. Do not use a fixed minimum, fixed maximum, or default count.'
+                f'Return a rich, comprehensive list of 5 to 8 fresh, relevant, high-quality real-world recommendations '
+                f'for ONLY the "{category}" category, dynamically tailored to the student\'s path goals ({req.target_goal}) '
+                f'and step requirements ({req.current_step.get("title", "")}). '
+                f'Never return a tiny set of 1, 2, or 3 items. Provide a strong, diverse set of choices.'
             )
 
         prompt = MARKETPLACE_CATEGORY_PATCH_PROMPT.format(

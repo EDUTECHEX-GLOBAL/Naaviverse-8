@@ -113,7 +113,16 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
   const navigate = useNavigate();
   const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('partnerSidebarCollapsed') === 'true');
   const dropdownRef = useRef(null);
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('partnerSidebarCollapsed', String(next));
+      return next;
+    });
+  };
 
   const userDetails = JSON.parse(localStorage.getItem("partner") || "{}");
   const fullName = userDetails?.businessName || userDetails?.fullName || "Partner";
@@ -156,22 +165,31 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
   }, []);
 
   return (
-    <div className={`partner-dashboard-sidebar ${isOpen ? "open" : ""}`}>
+    <div className={`partner-dashboard-sidebar ${isOpen ? "open" : ""} ${collapsed ? "collapsed" : ""}`}>
       {/* Logo Section */}
-      <div
-        className="partner-dashboard-left"
-        onClick={() => {
-          if (!isLocked) {
-            setaccsideNav("Home");
-            navigate("/dashboard/accountants/home");
-          }
-        }}
-      >
-        <img
-          className="partner-dashboard-logo"
-          src={logo}
-          alt="Naavi"
-        />
+      <div className="partner-dashboard-left">
+        <div
+          className="sidebar-logo-click"
+          onClick={() => {
+            if (!isLocked) {
+              setaccsideNav("Home");
+              navigate("/dashboard/accountants/home");
+            }
+          }}
+        >
+          <img
+            className="partner-dashboard-logo"
+            src={logo}
+            alt="Naavi"
+          />
+        </div>
+        <button className="sidebar-toggle-btn" onClick={(e) => { e.stopPropagation(); toggleCollapsed(); }} aria-label="Toggle sidebar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
       </div>
 
       {/* Navigation Items */}
@@ -184,11 +202,11 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
             <div
               key={i}
               className={`partner-each-sidenav ${active ? "active" : ""} ${!itemClickable ? "locked" : ""}`}
-              title={isLocked ? "Your account is pending admin approval" : ""}
+              title={collapsed ? each.display : (isLocked ? "Your account is pending admin approval" : "")}
               onClick={() => handleNavClick(each)}
             >
               <NavIcon type={each.icon} isActive={active} />
-              <span>{each.display}</span>
+              <span className="sidebar-label">{each.display}</span>
             </div>
           );
         })}
@@ -199,14 +217,15 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
         {/* Add New Button */}
         <div
           className={`partner-add-new-btn ${isLocked ? "locked" : ""}`}
-          title={isLocked ? "Your account is pending admin approval" : ""}
+          title={isLocked ? "Your account is pending admin approval" : (collapsed ? "Add New" : "")}
           onClick={() => {
             if (isLocked) return;
             if (onClose) onClose();
             setTimeout(() => setispopular(true), 300);
           }}
         >
-          + Add New
+          <span className="sidebar-label">+ Add New</span>
+          {collapsed && <span className="collapsed-plus">+</span>}
         </div>
 
         {/* Profile Section with Dropdown */}
@@ -225,7 +244,7 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
                 {userInitial}
               </div>
 
-              <div className="partner-profile-details">
+              <div className="partner-profile-details sidebar-label">
                 <div className="partner-profile-name">
                   {fullName}
                 </div>

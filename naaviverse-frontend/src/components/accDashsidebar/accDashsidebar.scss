@@ -15,21 +15,171 @@
   overflow: hidden;
   margin: 0;
   padding: 0;
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // ── Collapsed state ──
+  &.collapsed {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+
+    .partner-dashboard-left {
+      padding: 0 !important;
+      justify-content: center !important;
+    }
+
+    .partner-dashboard-logo,
+    .sidebar-logo-click {
+      display: none !important;
+    }
+
+    .sidebar-label {
+      display: none !important;
+      opacity: 0 !important;
+      width: 0 !important;
+      overflow: hidden !important;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .partner-each-sidenav {
+      justify-content: center !important;
+      padding: 10px 0 !important;
+
+      &[title]:hover::after {
+        content: attr(title);
+        position: absolute;
+        left: calc(100% + 8px);
+        top: 50%;
+        transform: translateY(-50%);
+        background: #16192B;
+        color: #ffffff;
+        font-size: 11.5px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 6px;
+        white-space: nowrap;
+        z-index: 9999;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        pointer-events: none;
+      }
+    }
+
+    .partner-profile-section {
+      padding: 8px 0 12px 0 !important;
+    }
+
+    .partner-add-new-btn {
+      width: 32px !important;
+      height: 32px !important;
+      padding: 0 !important;
+      margin: 0 auto 6px auto !important;
+      border-radius: 8px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    .collapsed-plus {
+      font-size: 18px !important;
+      font-weight: 700 !important;
+      color: #1d4ed8 !important;
+      line-height: 1 !important;
+    }
+
+    .partner-profile-row {
+      justify-content: center !important;
+      padding: 2px 0 !important;
+      border: none !important;
+    }
+
+    .partner-profile-info {
+      justify-content: center !important;
+      gap: 0 !important;
+      flex: none !important;
+    }
+
+    .partner-avatar {
+      width: 32px !important;
+      height: 32px !important;
+      margin: 0 auto !important;
+    }
+
+    .partner-dots-btn {
+      display: none !important;
+    }
+
+    .sidebar-toggle-btn {
+      margin: 0 auto !important;
+    }
+  }
+}
+
+/* Collapsed plus icon — hidden when expanded */
+.collapsed-plus {
+  display: none;
+
+  .partner-dashboard-sidebar.collapsed & {
+    display: inline;
+  }
+}
+
+/* Toggle button (hamburger) */
+.sidebar-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+  margin-left: auto;
+
+  &:hover {
+    background: #f1f5f9;
+
+    svg {
+      stroke: #2563eb;
+    }
+  }
+}
+
+/* Sidebar label transition */
+.sidebar-label {
+  opacity: 1;
+  width: auto;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity 0.18s ease, width 0.18s ease;
+}
+
+/* Logo click area */
+.sidebar-logo-click {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  cursor: pointer;
 }
 
 /* Logo Section — Compact centered */
 .partner-dashboard-sidebar {
   .partner-dashboard-left {
     width: 100%;
-    padding: 14px 16px 10px;
+    padding: 10px 10px 10px 16px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     flex-shrink: 0;
     border-bottom: 1px solid #f1f5f9;
     box-sizing: border-box;
-    cursor: pointer;
     background: #ffffff;
+    gap: 4px;
 
     .partner-dashboard-logo {
       height: 30px;
@@ -60,6 +210,7 @@
 
 /* Navigation Items — Naavi Blue hover & active colors, compact padding */
 .partner-each-sidenav {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;

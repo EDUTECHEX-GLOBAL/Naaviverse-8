@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../../assets/images/logo/naavi_final_logo2.png";
 import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
 import stepIcon from '../../assets/images/assets/naavi-icon1.webp';
+
 // ✅ URL map for each section
 const ROUTE_MAP = {
   Overview:          "/admin/dashboard/accountants",
@@ -41,24 +42,24 @@ const Icons = {
       <line x1="1" y1="10" x2="23" y2="10" />
     </svg>
   ),
- Paths: ({ color }) => (
-  <img
-    src={pathIcon}
-    alt="paths"
-    width="17"
-    height="17"
-    style={{ objectFit: "contain", opacity: color === "#2273E6" ? 1 : 0.55 }}
-  />
-),
+  Paths: ({ color }) => (
+    <img
+      src={pathIcon}
+      alt="paths"
+      width="17"
+      height="17"
+      style={{ objectFit: "contain", opacity: color === "#2273E6" ? 1 : 0.55 }}
+    />
+  ),
   Steps: ({ color }) => (
-  <img
-    src={stepIcon}
-    alt="steps"
-    width="17"
-    height="17"
-    style={{ objectFit: "contain", opacity: color === "#2273E6" ? 1 : 0.55 }}
-  />
-),
+    <img
+      src={stepIcon}
+      alt="steps"
+      width="17"
+      height="17"
+      style={{ objectFit: "contain", opacity: color === "#2273E6" ? 1 : 0.55 }}
+    />
+  ),
   Marketplace: ({ color }) => (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
@@ -126,9 +127,18 @@ const AdminAccDashsidebar = ({
 }) => {
   const [selectedMenu, setSelectedMenu] = useState([]);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('adminSidebarCollapsed') === 'true');
   const { accsideNav, setaccsideNav } = useStore();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('adminSidebarCollapsed', String(next));
+      return next;
+    });
+  };
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -194,34 +204,63 @@ const AdminAccDashsidebar = ({
       <div
         className="dashboard-left"
         style={{
-          padding: "0 20px",
+          padding: collapsed ? "0" : "0 10px 0 16px",
           height: "70px",
           borderBottom: "0.5px solid #e5e5e5",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent: collapsed ? "center" : "space-between",
           cursor: "pointer",
           flexShrink: 0,
+          gap: "4px",
         }}
       >
-        <img
-          className="dashboard-logo"
-          src={logo}
-          alt="Naavi"
-          style={{ width: "60%" }}
-          onClick={() => {
-            const defaultTitle = admin ? "Overview" : "CRM";
-            setaccsideNav(defaultTitle);
-            navigate(ROUTE_MAP[defaultTitle]);
-            setMobileOpen(false);
+        {!collapsed && (
+          <div className="sidebar-logo-click" style={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0, overflow: "hidden" }}>
+            <img
+              className="dashboard-logo"
+              src={logo}
+              alt="Naavi"
+              style={{ width: "60%" }}
+              onClick={() => {
+                const defaultTitle = admin ? "Overview" : "CRM";
+                setaccsideNav(defaultTitle);
+                navigate(ROUTE_MAP[defaultTitle]);
+                setMobileOpen(false);
+              }}
+            />
+          </div>
+        )}
+        <button
+          className="sidebar-toggle-btn"
+          onClick={(e) => { e.stopPropagation(); toggleCollapsed(); }}
+          aria-label="Toggle sidebar"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 34,
+            height: 34,
+            background: "transparent",
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer",
+            flexShrink: 0,
+            margin: collapsed ? "0 auto" : "0",
           }}
-        />
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
         {/* Close button — mobile only */}
         <button
           className="sidebar-mobile-close"
           onClick={() => setMobileOpen(false)}
           style={{
-            display: "none", // shown via CSS on mobile
+            display: "none",
             background: "none",
             border: "none",
             cursor: "pointer",
@@ -254,6 +293,7 @@ const AdminAccDashsidebar = ({
               <div
                 key={i}
                 className="each-sidenav"
+                title={collapsed ? each.display : ""}
                 style={{
                   background:   active ? "rgba(34, 115, 230, 0.1)" : "transparent",
                   color,
@@ -262,17 +302,19 @@ const AdminAccDashsidebar = ({
                   opacity:      each.click ? "1" : "0.25",
                   cursor:       each.click ? "pointer" : "not-allowed",
                   transition:   "all 0.2s ease",
-                  padding:      "12px 16px",
+                  padding:      collapsed ? "12px 0" : "12px 16px",
                   marginBottom: "4px",
                   fontSize:     "0.95rem",
                   display:      "flex",
                   alignItems:   "center",
+                  justifyContent: collapsed ? "center" : "flex-start",
                   gap:          "10px",
+                  position:     "relative",
                 }}
                 onClick={() => handleNavClick(each)}
               >
                 {getIcon(each.title, color)}
-                {each.display}
+                <span className="sidebar-label" style={{ opacity: collapsed ? 0 : 1, width: collapsed ? 0 : "auto", overflow: "hidden", whiteSpace: "nowrap", transition: "opacity 0.18s ease, width 0.18s ease" }}>{each.display}</span>
               </div>
             );
           })}
@@ -319,7 +361,7 @@ const AdminAccDashsidebar = ({
           onClick={handleLogout}
           style={{
             width:          "100%",
-            padding:        "8px 12px",
+            padding:        collapsed ? "8px 0" : "8px 12px",
             background:     "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
             color:          "#dc2626",
             border:         "1px solid #fecaca",
@@ -330,8 +372,8 @@ const AdminAccDashsidebar = ({
             transition:     "all 0.2s ease",
             display:        "flex",
             alignItems:     "center",
-            justifyContent: "center",
-            gap:            "8px",
+            justifyContent: collapsed ? "center" : "center",
+            gap:            collapsed ? "0" : "8px",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background  = "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)";
@@ -351,7 +393,7 @@ const AdminAccDashsidebar = ({
             <polyline points="16 17 21 12 16 7" />
             <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
-          Logout
+          {!collapsed && "Logout"}
         </button>
       </div>
     </>
@@ -379,11 +421,11 @@ const AdminAccDashsidebar = ({
           DESKTOP SIDEBAR — hidden on mobile
       ═══════════════════════════════════════════════ */}
       <div
-        className="dashboard-sidebar sidebar-desktop"
+        className={`dashboard-sidebar sidebar-desktop ${collapsed ? "collapsed" : ""}`}
         style={{
           overflow:   "hidden",
           padding:    "0",
-          width:      "210px",
+          width:      collapsed ? "60px" : "210px",
           flexShrink: 0,
           position:   "relative",
           zIndex:     100,
@@ -392,6 +434,7 @@ const AdminAccDashsidebar = ({
           display:    "flex",
           flexDirection: "column",
           height:     "100vh",
+          transition: "width 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >
         <SidebarContent />
