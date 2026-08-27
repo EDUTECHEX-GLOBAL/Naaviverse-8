@@ -1,0 +1,716 @@
+// AdminFeedback.scss — same structure as before (KPI ledger strip, tab
+// filters, grouped row list) with two fixes: (1) full Poppins, no
+// monospace anywhere, and (2) a proper color system — the brand blue used
+// across the rest of the app for the "source" filter group, a distinct
+// teal for the "action" filter group so the two rows of tabs no longer
+// look identical, and warmer/more legible accent colors throughout.
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+$ink: #1a2340;
+$slate-700: #454f6b;
+$slate-500: #6b7390;
+$slate-300: #a4abc4;
+$line: #e4e7f0;
+$line-strong: #cdd2e3;
+$bg: #f6f7fb;
+$card: #ffffff;
+
+$blue: #4f6ef7;
+$blue-soft: #eef1ff;
+$teal: #0f9488;
+$teal-soft: #e6f6f4;
+$amber: #d97706;
+$amber-soft: #fef3e2;
+$green: #12b76a;
+$green-soft: #e7f9f1;
+$red: #e5484d;
+$red-soft: #fdecec;
+
+$font: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+.af-root {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    font-family: $font;
+    color: $ink;
+    background: $bg;
+
+    * {
+        box-sizing: border-box;
+        font-family: $font;
+    }
+}
+
+// ── Header ──────────────────────────────────────────────────────────────────
+.af-header {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 24px 28px 0;
+    flex-shrink: 0;
+}
+
+.af-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.af-title {
+    font-size: 1.26rem;
+    font-weight: 700;
+    color: $ink;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.af-subtitle {
+    font-size: 0.82rem;
+    color: $slate-500;
+    margin: 0;
+    font-weight: 400;
+}
+
+.af-refresh-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: 1px solid $line-strong;
+    border-radius: 8px;
+    background: $card;
+    color: $slate-700;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+
+    &:hover {
+        border-color: $blue;
+        color: $blue;
+        background: $blue-soft;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+// ── KPI ledger — bordered strip, each cell tinted + accented ────────────────
+.af-ledger {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin: 18px 28px 0;
+    border: 1px solid $line;
+    border-radius: 10px;
+    background: $card;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.af-ledger-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 15px 18px;
+    border-right: 1px solid $line;
+    position: relative;
+    background: $card;
+
+    &:last-child {
+        border-right: none;
+    }
+
+    &::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: $slate-300;
+    }
+
+    &.accent-ai {
+        background: linear-gradient(180deg, $blue-soft 0%, $card 70%);
+
+        &::before {
+            background: $blue;
+        }
+
+        .af-ledger-value {
+            color: $blue;
+        }
+    }
+
+    &.accent-partner {
+        background: linear-gradient(180deg, $amber-soft 0%, $card 70%);
+
+        &::before {
+            background: $amber;
+        }
+
+        .af-ledger-value {
+            color: $amber;
+        }
+    }
+
+    &.accent-good {
+        background: linear-gradient(180deg, $green-soft 0%, $card 70%);
+
+        &::before {
+            background: $green;
+        }
+
+        .af-ledger-value {
+            color: $green;
+        }
+    }
+}
+
+.af-ledger-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: $slate-500;
+    padding-left: 8px;
+}
+
+.af-ledger-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: $ink;
+    padding-left: 8px;
+}
+
+// ── Filters — two distinct tab groups ────────────────────────────────────────
+.af-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    padding-bottom: 12px;
+    flex-shrink: 0;
+    gap: 14px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid $line;
+    margin: 0 28px;
+    width: calc(100% - 56px);
+}
+
+.af-filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.af-pill-divider {
+    width: 1px;
+    height: 18px;
+    background: $line-strong;
+    margin: 0 8px;
+}
+
+.af-pill {
+    padding: 6px 12px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    background: transparent;
+    color: $slate-500;
+    font-size: 0.76rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+        color: $ink;
+        background: $line;
+    }
+
+    // source-filter pills (before the divider) — brand blue
+    &.active {
+        background: $blue-soft;
+        color: $blue;
+        font-weight: 600;
+        border-color: rgba(79, 110, 247, 0.22);
+    }
+}
+
+// action-filter pills (after the divider) — teal, so the two rows read
+// as clearly separate controls instead of one indistinguishable group
+.af-pill-divider~.af-pill.active {
+    background: $teal-soft;
+    color: $teal;
+    border-color: rgba(15, 148, 136, 0.22);
+}
+
+.af-search-wrap {
+    position: relative;
+    min-width: 240px;
+}
+
+.af-search-icon {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: $slate-300;
+}
+
+.af-search-input {
+    width: 100%;
+    padding: 7px 12px 7px 32px;
+    border: 1px solid $line-strong;
+    border-radius: 8px;
+    background: $card;
+    font-size: 0.78rem;
+    color: $ink;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &::placeholder {
+        color: $slate-300;
+    }
+
+    &:focus {
+        border-color: $blue;
+        box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.1);
+    }
+}
+
+// ── Content ─────────────────────────────────────────────────────────────────
+.af-content {
+    padding: 18px 28px 32px;
+    flex: 1;
+    min-height: 0;
+}
+
+// ── Loading / Error / Empty ──────────────────────────────────────────────────
+.af-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 64px 0;
+    color: $slate-500;
+    font-size: 0.82rem;
+}
+
+.af-spinner {
+    width: 26px;
+    height: 26px;
+    border: 3px solid $blue-soft;
+    border-top-color: $blue;
+    border-radius: 50%;
+    animation: afSpin 0.7s linear infinite;
+}
+
+@keyframes afSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.af-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 50px 0;
+    text-align: center;
+    border: 1px solid $red-soft;
+    background: $red-soft;
+    border-radius: 10px;
+
+    p {
+        color: $slate-700;
+        font-size: 0.82rem;
+        margin: 0;
+    }
+
+    button {
+        padding: 7px 18px;
+        border-radius: 8px;
+        border: 1px solid $red;
+        background: $red;
+        color: #fff;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+}
+
+.af-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 64px 0;
+    text-align: center;
+    color: $slate-300;
+    border: 1px dashed $line-strong;
+    border-radius: 10px;
+    background: $card;
+
+    h3 {
+        font-size: 0.96rem;
+        font-weight: 600;
+        color: $slate-700;
+        margin: 0;
+    }
+
+    p {
+        font-size: 0.8rem;
+        color: $slate-500;
+        margin: 0;
+        max-width: 300px;
+        line-height: 1.5;
+    }
+}
+
+// ── Path group ──────────────────────────────────────────────────────────────
+.af-group {
+    margin-bottom: 10px;
+}
+
+.af-group-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 13px 16px;
+    margin-bottom: 0;
+    background: $card;
+    border: 1px solid $line;
+    border-radius: 10px;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
+
+    &:hover {
+        border-color: $line-strong;
+        background: #fbfcff;
+        box-shadow: 0 8px 18px rgba(26, 35, 64, 0.04);
+    }
+}
+
+.af-group.is-open .af-group-bar {
+    border-radius: 10px 10px 0 0;
+    border-color: $line-strong;
+    background: #fbfcff;
+}
+
+.af-group-chevron {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: $blue-soft;
+    color: $blue;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.16s ease;
+
+    svg {
+        width: 15px;
+        height: 15px;
+    }
+}
+
+.af-group.is-open .af-group-chevron {
+    transform: rotate(90deg);
+}
+
+.af-group-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.af-group-name {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: $ink;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.af-group-meta {
+    font-size: 0.7rem;
+    color: $slate-300;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.af-group-count {
+    font-size: 0.72rem;
+    color: $slate-500;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.af-source-tag {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 5px;
+
+    &.ai {
+        color: $blue;
+        background: $blue-soft;
+    }
+
+    &.partner {
+        color: $amber;
+        background: $amber-soft;
+    }
+}
+
+// ── Table / rows ──────────────────────────────────────────────────────────
+.af-table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 0 0 10px 10px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+        display: none;
+    }
+}
+
+.af-table {
+    display: flex;
+    flex-direction: column;
+    background: $card;
+    border: 1px solid $line;
+    border-top: 0;
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+    min-width: 620px;
+}
+
+.af-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 15px;
+    border-bottom: 1px solid $line;
+    border-left: 3px solid transparent;
+    transition: background 0.12s ease, border-color 0.12s ease;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:nth-child(even) {
+        background: #fbfbfe;
+    }
+
+    &:hover {
+        background: $blue-soft;
+        border-left-color: $blue;
+    }
+}
+
+.af-row-id {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $blue, #8b9bfb);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.af-row-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.af-row-line1 {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.af-row-user {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: $ink;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.af-row-step {
+    font-size: 0.72rem;
+    color: $slate-300;
+    font-weight: 400;
+
+    &::before {
+        content: "·";
+        margin-right: 8px;
+        color: $line-strong;
+    }
+}
+
+.af-row-line2 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.af-meta-tag {
+    font-size: 0.7rem;
+    color: $slate-500;
+    background: $bg;
+    border: 1px solid $line;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 500;
+    white-space: nowrap;
+
+    &.warn {
+        color: $amber;
+        background: $amber-soft;
+        border-color: rgba(217, 119, 6, 0.2);
+    }
+}
+
+.af-row-comment {
+    font-size: 0.78rem;
+    color: $slate-500;
+    font-style: italic;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.af-row-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.af-row-time {
+    font-size: 0.7rem;
+    color: $slate-300;
+    white-space: nowrap;
+    font-weight: 400;
+}
+
+.af-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: $slate-700;
+    white-space: nowrap;
+}
+
+.af-tag-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+// ── Responsive ──────────────────────────────────────────────────────────────
+@media (max-width: 900px) {
+    .af-ledger {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .af-header,
+    .af-content {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .af-ledger,
+    .af-controls {
+        margin-left: 16px;
+        margin-right: 16px;
+        width: calc(100% - 32px);
+    }
+}
+
+@media (max-width: 600px) {
+    .af-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .af-filter-pills {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 4px;
+        max-width: 100%;
+        -webkit-overflow-scrolling: touch;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    .af-search-wrap {
+        min-width: unset;
+        width: 100%;
+    }
+
+    .af-header {
+        padding: 16px 16px 0;
+    }
+
+    .af-title {
+        font-size: 1.12rem;
+    }
+
+    .af-subtitle {
+        font-size: 0.74rem;
+    }
+
+    .af-refresh-btn {
+        padding: 6px 10px;
+        font-size: 0.72rem;
+    }
+}

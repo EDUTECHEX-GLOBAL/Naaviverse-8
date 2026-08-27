@@ -1,0 +1,80 @@
+import React, { Fragment } from 'react';
+import ModalVideos from '../ModalVideo/ModalVideos';
+import bannerimage from '../../assets/images/assets/naavi_banner6.webp';
+import './homebanner.scss';
+
+const HeroBannerFive = () => {
+    const handleGenerateClick = (e) => {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent("openSidebar", { detail: { scrollToSubscribe: true } }));
+        const toggleBtn = document.querySelector(".menu-icon-btn");
+        if (toggleBtn) {
+            toggleBtn.click();
+        }
+
+        // Scroll inside the sidebar drawer to the Subscribe / Contact Us section
+        const scrollDrawer = () => {
+            const subBox = document.getElementById("mobile-subscribe-section") ||
+                           document.querySelector(".side-panel .newsletter") ||
+                           document.querySelector(".side-panel-box:nth-child(3)");
+            if (subBox) {
+                subBox.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        };
+
+        setTimeout(scrollDrawer, 100);
+        setTimeout(scrollDrawer, 350);
+    };
+
+    return (
+        <Fragment>
+            <ModalVideos isOpen={false} onClick={() => {}} />
+            <div className="hero-banner-five">
+                <div className="container">
+                    <div className="row">
+                        <div className="col-xxl-6 col-md-7">
+
+                            {/* Badges Section */}
+                            <div className="hero-badge-container">
+        <span className="hero-badge routes">PATHS</span>
+        <span className="hero-badge essentials">ESSENTIALS</span>
+        <span className="hero-badge pro">PRO</span>
+        <span className="hero-badge enterprise">ENTERPRISE</span>
+    </div>
+
+                            <div className="home">
+  Explore customized efficient <span className="green-text">Pathways</span> and <span className="amber-text">Steps</span> for You
+</div>
+
+                            <div className="home-text">
+                                Navigate towards your dream educational, skill and career destinations globally
+                            </div>
+                            <ul className="style-none button-group d-flex align-items-center">
+                                <li className="me-4">
+                                    <button
+                                        type="button"
+                                        onClick={handleGenerateClick}
+                                        className="ripple-btn btn-one"
+                                        style={{ border: 'none', cursor: 'pointer' }}
+                                    >
+                                        Generate
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="illustration-holder">
+                    <div className="illustration-holder">
+  <img src={bannerimage} alt="banner" className="responsive-banner" />
+</div>
+
+                </div>
+                <div className="shapes oval-one" />
+            </div>
+        </Fragment>
+    );
+};
+
+export default HeroBannerFive;

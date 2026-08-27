@@ -1,0 +1,128 @@
+// Small tablets and large smartphones (landscape view)
+$screen-sm-min: 576px;
+
+// Small tablets (portrait view)
+$screen-md-min: 768px;
+
+// Tablets and small desktops
+$screen-lg-min: 992px;
+
+// Large tablets and desktops
+$screen-xl-min: 1200px;
+
+// Custom Res
+$screen-xxl-min: 1400px;
+
+// Custom Res
+$screen-xxxl-min: 1600px;
+
+// Small devices
+@mixin sm {
+  @media (max-width: #{$screen-sm-min}) {
+    @content;
+  }
+}
+
+// Small devices
+@mixin smlscape {
+  @media (max-width: #{$screen-sm-min}) and (orientation:landscape) {
+    @content;
+  }
+}
+
+// Small devices
+@mixin smportrait {
+  @media (max-width: #{$screen-sm-min}) and (orientation:portrait) {
+    @content;
+  }
+}
+
+// Medium devices
+@mixin md {
+  @media (max-width: #{$screen-md-min}) {
+    @content;
+  }
+}
+
+// Medium devices
+@mixin mdportrait {
+  @media (max-width: #{$screen-md-min}) and (orientation:portrait) {
+    @content;
+  }
+}
+
+// Medium devices
+@mixin mdlscape {
+  @media (max-width: #{$screen-md-min}) and (orientation:landscape) {
+    @content;
+  }
+}
+
+// Large devices
+@mixin lg {
+  @media (max-width: #{$screen-lg-min}) {
+    @content;
+  }
+}
+
+// Extra large devices
+@mixin xl {
+  @media (max-width: #{$screen-xl-min}) {
+    @content;
+  }
+}
+
+// Extra large devices
+@mixin xxl {
+  @media (max-width: #{$screen-xxl-min}) {
+    @content;
+  }
+}
+
+// Extra large devices
+@mixin xxxl {
+  @media (max-width: #{$screen-xxxl-min}) {
+    @content;
+  }
+}
+
+// Custom
+@mixin btn-animate(
+  $color: $primary-color,
+  $height: 200%,
+  $width: 200%,
+  $left-move: 220%,
+  $left-move-ret: -220%
+) {
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 400ms ease;
+  * {
+    transform-origin: center center;
+    transition: all 400ms ease;
+  }
+  &::before {
+    content: "";
+    background: $color;
+    width: $width;
+    height: $height;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    position: absolute;
+    left: $left-move-ret;
+    transform-origin: center center;
+    transform: rotateZ(45deg);
+  }
+  &:hover {
+    * {
+      transform: scale(1.05);
+      transform-origin: 0;
+    }
+    &::before {
+      transition: all 0.6s ease;
+      left: $left-move;
+    }
+  }
+}

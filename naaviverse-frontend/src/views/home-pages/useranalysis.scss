@@ -1,0 +1,201 @@
+.featureSection {
+  padding: 60px 0;
+  background-color: white;
+
+  .row {
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .col-md-4 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  @media (max-width: 539px) {
+    padding: 10px 0;
+  }
+
+  @media (min-width: 540px) and (max-width: 768px) {
+    padding: 40px 0;
+  }
+}
+
+.featureIcon {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  margin: 0 auto 16px auto;
+  display: block;
+}
+
+.featureTitle {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  margin-top: 8px;
+  color: #222;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    font-size: 18px;
+  }
+}
+
+.featureText {
+  font-size: 15px;
+  color: #6B7A8D;
+  line-height: 1.6;
+  max-width: 240px;
+  margin: 0 auto;
+  margin-top: 4px !important;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
+}
+
+.map-visual-wrapper {
+  background-color: transparent;
+  padding: 15px 0 35px 0;
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .map-visual-container {
+    width: 100%;
+    max-width: 1340px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 20px;
+    padding-right: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+  }
+
+  .map-visual-inner {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    max-width: 1220px;
+    width: 100%;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .map-visual-img {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    display: block;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    object-fit: contain;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    // Optically balance the 70px asymmetric canvas margin:
+    transform: translateX(14px);
+  }
+
+  @media (min-width: 1400px) {
+    .map-visual-container {
+      max-width: 1420px;
+    }
+    .map-visual-inner {
+      max-width: 1260px;
+    }
+    .map-visual-img {
+      transform: translateX(16px);
+    }
+  }
+
+  @media (min-width: 992px) and (max-width: 1399px) {
+    .map-visual-container {
+      max-width: 100%;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+    .map-visual-inner {
+      max-width: 1140px;
+    }
+    .map-visual-img {
+      transform: translateX(12px);
+    }
+  }
+
+  @media (max-width: 991px) {
+    padding: 5px 0 20px 0;
+
+    .map-visual-container {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    .map-visual-inner {
+      max-width: 100%;
+    }
+
+    .map-visual-img {
+      transform: translateX(6px);
+    }
+  }
+
+  @media (max-width: 576px) {
+    padding: 0 0 15px 0;
+
+    .map-visual-container {
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
+    .map-visual-inner {
+      max-width: 100%;
+    }
+
+    .map-visual-img {
+      transform: translateX(0);
+    }
+  }
+}
+
+
+.fancy-feature-twenty {
+  margin-top: 40px !important;
+}
+
+// Override the framework lg-mt-100 class
+.lg-mt-100 {
+  margin-top: 40px !important;
+}
+
+// ── Fix space above FAQ section ──
+.counter-section-one,
+.counter-section,
+[class*="counter-section"] {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.fancy-feature-twenty {
+  margin-top: 0 !important;
+  padding-top: 60px !important;
+}
+
+// ── Fix the p tag margin inside FAQ left column ──
+.fancy-feature-twenty .block-style-five p {
+  margin-top: 0 !important;
+}

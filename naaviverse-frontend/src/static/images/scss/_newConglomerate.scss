@@ -1,0 +1,484 @@
+@import "./colors";
+@import "./mixin";
+
+.newConglomerate {
+  flex: 1;
+  padding: 0px 35px;
+  padding-top: 30px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  .title {
+    font-size: 20px;
+    font-weight: 500;
+  }
+  .searchBox {
+    margin-top: 30px;
+    height: 60px;
+    border: 1px solid $border-color;
+    padding: 0 20px;
+  }
+  .scrollForm {
+    flex: 1;
+    > div {
+      display: flex;
+      flex-direction: column;
+      .name {
+        font-size: 15px;
+        font-weight: 500;
+      }
+      .inputWrap {
+        display: flex;
+        height: 68px;
+        flex: 0 0 68px;
+        border: 1px solid $border-color;
+        margin: 20px 0 40px 0;
+        position: relative;
+        .text {
+          width: 0;
+          flex: 1;
+          border: none;
+          padding: 0 30px;
+          font-size: 13px;
+          &.stdCode {
+            flex: 0 0 90px;
+            border-right: 1px solid $border-color;
+            text-align: center;
+          }
+        }
+        .label {
+          cursor: pointer;
+          margin: auto;
+          width: 100%;
+          padding: 0 30px;
+          font-size: 16px;
+        }
+        .btnCheck {
+          width: fit-content;
+          padding: 0 20px;
+          border-left: 1px solid $border-color;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+          cursor: pointer;
+          &.left {
+            border: none;
+            border-right: 1px solid $border-color;
+          }
+        }
+        .statusBar {
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 20px;
+          &.true {
+            background: #ff5752;
+          }
+          &.false {
+            background: #4fc16e;
+          }
+        }
+        .status {
+          position: absolute;
+          left: -1px;
+          right: -1px;
+          top: 100%;
+          height: 30px;
+          border: 1px solid $border-color;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 10px;
+          font-weight: 500;
+          &.true {
+            background: rgba(231, 54, 37, 0.15);
+          }
+          &.false {
+            background: rgba(61, 182, 154, 0.15);
+          }
+        }
+        &.options {
+          border: none;
+          justify-content: space-between;
+          padding: 3px 0;
+          .option {
+            cursor: pointer;
+            flex: 0 0 49%;
+            border: 1px solid $border-color;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            &.true {
+              border-color: black;
+            }
+          }
+        }
+      }
+      .btnsWrap {
+        display: flex;
+        height: 70px;
+        flex: 0 0 70px;
+        margin: 20px 0 40px 0;
+        position: relative;
+        .btnRed,
+        .btnGreen {
+          background: #ec1d27;
+          flex: 0 0 36%;
+          margin-right: 3%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 22px;
+          font-weight: 600;
+          color: white;
+          opacity: 0.4;
+          cursor: pointer;
+          transition: all 400ms ease;
+          &:hover {
+            opacity: 0.7;
+            filter: contrast(1.5);
+          }
+          &.true {
+            opacity: 1;
+          }
+        }
+        .btnGreen {
+          background: #4fc16e;
+        }
+      }
+      .tokenAppList {
+        height: 110px !important;
+        flex: 0 0 110px;
+        margin: 20px 0 40px 0;
+        position: relative;
+        > div {
+          display: flex;
+          .cardBtn {
+            flex: 0 0 100px;
+            margin-right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            .cardIn {
+              border: 1px solid $border-color;
+              height: 70px;
+              width: 70px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              margin-bottom: 5px;
+              svg {
+                height: 35px;
+                width: 35px;
+                cursor: pointer;
+                transition: all 400ms ease;
+                &:hover {
+                  transform: scale(1.1);
+                }
+              }
+              img {
+                height: 100%;
+                width: 100%;
+                object-fit: contain;
+              }
+            }
+            span {
+              font-size: 15px;
+              text-align: center;
+            }
+          }
+          .cardBtnRow {
+            height: 70px;
+            flex: 0 0 90px;
+            margin: 0 0;
+            margin-right: 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            padding: 10px;
+            .cardIn {
+              border: 1px solid $border-color;
+              height: 70px;
+              min-width: 70px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              padding: 0 20px;
+              img {
+                height: 35px;
+                width: 35px;
+              }
+              .name {
+              }
+            }
+            .btnClose {
+              position: absolute;
+              right: 0px;
+              top: 0px;
+              width: 22px;
+              height: 22px;
+              border-radius: 11px;
+              background: white;
+              border: 1px solid $border-color;
+              z-index: 1;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              color: #e73625;
+              font-size: 13px;
+            }
+          }
+        }
+      }
+      .user {
+        flex: 0 0 110px;
+        max-height: 110px;
+        border: 1px solid $border-color;
+        margin: 20px 0 40px 0;
+        display: flex;
+        align-items: center;
+        padding: 0 30px;
+        img {
+          height: 56px;
+          width: 56px;
+          border-radius: 28px;
+        }
+        .userDetail {
+          flex: 1;
+          margin-left: 15px;
+          .name {
+            font-size: 20px;
+            font-weight: 600;
+          }
+          .email {
+            font-size: 17px;
+          }
+        }
+        .btnYesNo {
+          flex: 0 0 80px;
+          height: 100%;
+          border-left: 1px solid $border-color;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          img {
+            height: 40%;
+            width: auto;
+          }
+        }
+      }
+      .filesUpload {
+        padding-top: 20px;
+        display: flex;
+        height: 170px;
+        flex: 0 0 170px;
+        justify-content: space-between;
+        padding-bottom: 30px;
+        margin-bottom: 25px;
+        &.last {
+          margin-bottom: 30px;
+        }
+        .fileInp {
+          border: 1px solid $border-color;
+          position: relative;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          img {
+            height: 55%;
+            width: auto;
+            cursor: pointer;
+
+            &:hover {
+              transform: scale(1.03);
+            }
+            &.true {
+              transform: scale(1);
+              height: 100%;
+              width: 100%;
+              object-fit: contain;
+              &.white {
+                background: $primary-color;
+              }
+            }
+          }
+          input {
+            display: none;
+          }
+          .text {
+            display: flex;
+            align-items: flex-start;
+            font-weight: 500;
+            position: absolute;
+            bottom: -30px;
+            font-size: 12px;
+            text-align: center;
+            
+          }
+          .hovTxt {
+            display: none;
+          }
+          &:hover {
+            .hovTxt {
+              display: flex;
+              position: absolute;
+              top: 0;
+              bottom: 0;
+              left: 0;
+              right: 0;
+              justify-content: center;
+              align-items: center;
+              background: #fffa;
+              font-weight: bold;
+              text-align: center;
+            }
+          }
+          &.icon {
+            flex: 0 0 26%;
+            max-width: 26%;
+          }
+          &.cover {
+            flex: 0 0 42%;
+            max-width: 42%;
+          }
+          &.fullLogo {
+            flex: 0 0 48%;
+            max-width: 48%;
+          }
+        }
+      }
+    }
+  }
+  .titleOp {
+    margin-top: 30px;
+    font-weight: 600;
+    font-size: 21px;
+    margin-bottom: 30px;
+  }
+  .searchWrap {
+    height: 75px;
+    border: 1px solid $border-color;
+    display: flex;
+    input {
+      flex: 1;
+      border: none;
+      background: none;
+      padding: 0 30px;
+    }
+  }
+  .headTabs {
+    height: 65px;
+    border: 1px solid $border-color;
+    border-top: none;
+    display: flex;
+    .tab {
+      display: flex;
+      flex: 0 0 50%;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      &.true,
+      &:hover {
+        font-weight: 600;
+        background: #ededed;
+      }
+    }
+  }
+  .searchList {
+    height: 0 !important;
+    flex: 1;
+    border: 1px solid $border-color;
+    border-style: none solid;
+    > div {
+      display: flex;
+      flex-direction: column;
+      .user {
+        flex: 0 0 110px;
+        max-height: 110px;
+        border-bottom: 1px solid $border-color;
+        display: flex;
+        align-items: center;
+        padding: 0 30px;
+        cursor: pointer;
+        * {
+          transition: all 400ms ease;
+        }
+        img {
+          height: 44px;
+          width: 44px;
+          border-radius: 22px;
+        }
+        .userDetail {
+          margin-left: 15px;
+          .name {
+            font-size: 20px;
+            font-weight: 600;
+          }
+          .email {
+            font-size: 17px;
+          }
+        }
+        &:hover {
+          * {
+            transform: scale(1.03);
+          }
+        }
+        &.true {
+          background: whitesmoke;
+        }
+      }
+    }
+  }
+  .succesView {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 35px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    .labelItm {
+      font-weight: 500;
+      color: $primary-color;
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+  }
+}
+.landingLottie {
+  background: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.ftBtns {
+  height: 70px;
+  border-top: 1px solid $border-color;
+  display: flex;
+  .newField,
+  .btnSubmit {
+    flex: 0 0 50%;
+    background: white;
+    color: $primary-color;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+  }
+  .newField {
+  }
+  .btnSubmit {
+    border-left: 1px solid $border-color;
+    @include btn-animate;
+  }
+}

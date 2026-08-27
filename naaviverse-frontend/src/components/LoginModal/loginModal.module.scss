@@ -1,0 +1,208 @@
+@import "../../static/scss/colors";
+@import "../../static/scss/mixin";
+
+.loginModal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  .overlayClose {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+  }
+  .loginCard {
+    z-index: 1;
+    background-color: white;
+    height: 60%;
+    width: 90%;
+    max-width: 500px;
+    margin: auto;
+    border-radius: 30px;
+    border: 1px solid $border-color;
+    display: flex;
+    flex-direction: column;
+    color: $primary-color;
+    overflow: hidden;
+    position: relative;
+    .loadingAnim {
+      position: absolute;
+      background: #ffffffe0;
+      display: flex;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      left: 0;
+    }
+    .inCard {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0;
+      .logo {
+        width: 100%;
+        margin-bottom: 3%;
+        border-bottom: 1px solid $border-color;
+        padding: 25px 20%;
+      }
+      .form {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-evenly;
+        width: 100%;
+        h5 {
+          color: $primary-color;
+          font-size: 24px;
+          text-align: center;
+          margin-bottom: 3rem;
+        }
+        .twoFaLabel {
+          width: 60%;
+          margin: 30px 0;
+          text-align: center;
+          font-size: 22px;
+        }
+        .otpInputWrapper {
+          width: 80%;
+          justify-content: space-between;
+          > div {
+            flex: 0 0 15%;
+            height: 70px;
+            .otpInput {
+              width: 100% !important;
+              height: 100%;
+              border: 2px solid $border-color;
+              border-radius: 8px;
+              font-size: 28px;
+            }
+          }
+        }
+        .group {
+          position: relative;
+          margin: 0;
+          display: flex;
+          width: 70%;
+          input {
+            width: 100%;
+          }
+          input[type="password"],
+          input[type="text"] {
+            background: none;
+            color: $text-color;
+            font-size: 18px;
+            padding: 10px 10px 10px 0;
+            display: block;
+            border: none;
+            border-radius: 0;
+            border-bottom: 1px solid $border-color;
+            &:focus {
+              outline: none;
+            }
+            &:focus ~ label,
+            &:valid ~ label {
+              top: -14px;
+              font-size: 12px;
+              color: #00000070;
+              font-weight: 700;
+            }
+          }
+          input[type="password"] {
+            letter-spacing: 0.3em;
+          }
+          label {
+            color: $text-color;
+            font-size: 16px;
+            font-weight: normal;
+            position: absolute;
+            pointer-events: none;
+            left: 0;
+            top: 10px;
+            transition: 300ms ease all;
+          }
+          .eye {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 15px;
+            margin: auto;
+            height: 20px;
+            width: 20px;
+          }
+          .btnMain {
+            margin: 0 auto;
+            width: 80%;
+            height: 60px;
+            color: #fff;
+            background: $primary-color;
+            font-size: 1.3rem;
+            border-radius: 8px;
+            @include btn-animate(white);
+            &:disabled {
+              opacity: 0.7;
+            }
+          }
+        }
+        .forgot {
+          margin-top: 20px;
+          color: $primary-color;
+          cursor: pointer;
+          font-weight: 400;
+          &:hover {
+            font-weight: 600;
+          }
+        }
+        .success {
+          flex: 1;
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-direction: column;
+          .succesTitle {
+            width: 90%;
+            font-size: 30px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 40px;
+          }
+          .succesBottom {
+            position: absolute;
+            bottom: 50px;
+          }
+        }
+      }
+    }
+    .footerBtns {
+      border-top: 1px solid $border-color;
+      width: 100%;
+      height: 80px;
+      display: flex;
+      color: $text-color;
+      .btnReg,
+      .btnLogin {
+        flex: 0 0 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: 600;
+        font-size: 20px;
+        @include btn-animate($primary-color);
+        color: $primary-color;
+      }
+      .btnLogin {
+        background: $app-color;
+        color: white;
+        @include btn-animate(white);
+      }
+    }
+  }
+}

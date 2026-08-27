@@ -1,0 +1,108 @@
+import React, { Fragment, useEffect } from 'react';
+import {Helmet} from 'react-helmet';
+
+import TopNavFour from '../../../../components/header/TopNavFour';
+import InnerBanner from '../../../../components/page-title/InnerBanner';
+import TeamDetailsOne from '../../../../components/team/TeamDetailsOne'
+import BannerFive from '../../../../components/short-banner/BannerFive';
+import Footer from '../../../../components/footernew/index';
+
+
+const TeamDetails = () => {
+
+    useEffect(() => {
+
+        if (window.location.hash) {
+
+            const element = document.querySelector(window.location.hash);
+
+            if (element) {
+
+                setTimeout(() => {
+                    element.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+                }, 300);
+
+            }
+
+        }
+
+    }, []);
+    return (
+        <Fragment>
+            <div className="main-page-wrapper">
+                <Helmet>
+                    <title>Team Details V1 || Sinco - Data Science & Analytics React Template</title>
+                </Helmet>
+                {/* helmet end */}
+
+                <TopNavFour/> {/* theme-menu-four */}
+
+                <div className="theme-inner-banner">
+                    <InnerBanner intro="Team Details" currpage="Team"/>
+                    <img src="images/shape/shape_38.svg" alt="" className="shapes shape-one"/>
+                    <img src="images/shape/shape_39.svg" alt="" className="shapes shape-two"/>
+                </div>
+                {/* /.theme-inner-banner */}
+
+                <div className="team-details mt-110 mb-160 lg-mt-60 lg-mb-100">
+                    <div className="container">
+                        <div className="row">
+                            <div className="col-xxl-10 col-lg-12 col-md-10 m-auto">
+                                <TeamDetailsOne />
+                                {/* /.main-bg */}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {/* /.team-details */}
+
+                <div className="fancy-short-banner-five" style={{ marginTop: "-180px", marginBottom: "40px" }}>
+    <div className="container">
+        <div className="bg-wrapper">
+            <BannerFive/>
+        </div>
+    </div>
+</div>
+
+
+                <div className="footer-style-four space-fix-one theme-basic-footer">
+                    <div className="container">
+                        <div className="inner-wrapper">
+                            <div className="subscribe-area">
+                                <div className="row align-items-center">
+                                    <div className="col-md-6">
+                                        <div className="title-style-four sm-pb-20">
+                                            <h4 className="main-title">Join Our <span>Newsletter</span> &amp; Get updated.</h4>
+                                        </div>
+                                        {/* /.title-style-four */}
+                                    </div>
+                                    <div className="col-md-6">
+                                        <div className="subscribe-form">
+                                            <form action="#">
+                                                <input type="email" placeholder="Enter your email"/>
+                                                <button className="ripple-btn tran3s">Subscribe</button>
+                                            </form>
+                                            <p>We only send interesting and relevant emails.</p>
+                                        </div>
+                                        {/* /.subscribe-form */}
+                                    </div>
+                                </div>
+                            </div>
+                            {/* /.subscribe-area */}
+                            <Footer/>
+                            
+                        </div>
+                        {/* /.inner-wrapper */}
+                    </div>
+                </div>
+                {/* /.footer-style-four */}
+
+            </div>
+        </Fragment>
+    )
+}
+
+export default TeamDetails

@@ -1,0 +1,28 @@
+#bitbucket-pipelines.yml
+image: node:16.14.2
+
+pipelines:
+  branches:
+    master:
+      - step:
+          size: 2x
+          name: Build React Project
+          caches:
+            - node
+          script:
+            - yarn
+            - CI=false yarn run build
+            - mkdir packaged
+            - tar -czvf packaged/package-${BITBUCKET_BUILD_NUMBER}.tar.gz -C build .
+          artifacts:
+            - packaged/**
+      - step:
+          name: Deploy to Web
+          image: alpine
+          deployment: production
+          script:
+            - mkdir upload
+            - tar -xf packaged/package-${BITBUCKET_BUILD_NUMBER}.tar.gz -C upload
+            - apk update && apk add openssh rsync
+            - rsync -zrSlh --stats upload/ $USERNAME@$SERVER:naaviverse.com
+            - ssh  $USERNAME@$SERVER "./naaviverse.com.sh"

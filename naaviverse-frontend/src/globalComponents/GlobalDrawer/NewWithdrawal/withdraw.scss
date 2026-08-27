@@ -1,0 +1,111 @@
+.searchStyle{
+    border: 0.5px solid #e7e7e7;
+    border-radius: 10px;
+    height: 66px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.appDataCards{
+    height: 86px;
+    background: #FFFFFF;
+    border: 0.5px solid #E7E7E7;
+    border-radius: 10px;
+    margin: 20px 0px;
+
+    display: flex;
+    align-items: center;
+    padding-left: 25px;
+    font-weight: 700;
+    font-size: 20px;
+    &:hover{
+        background-color: whitesmoke;
+        transition: all 200ms ease-in-out;
+        cursor: pointer;
+    }
+}
+
+.withdrawButton{
+    width: 154px;
+    height: 60px;
+    border: 0.5px solid #E7E7E7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 20px;
+    cursor: pointer;
+    &:hover{
+        background: #2E2D2D;
+        color: white;
+    }
+}
+.selectedButton{
+    width: 154px;
+    height: 60px;
+    background: #2E2D2D;
+    border: 0.5px solid #E7E7E7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 20px;
+    color: white;
+    cursor: pointer;
+}
+
+.successHeader{
+    padding-top: 45px;
+    font-size: 35px;
+    font-weight: 800;
+}
+.successMessage{
+    padding: 40px 0px;
+    font-weight: 300;
+    font-size: 11.5px;
+    line-height: 30px;
+    // text-align: justify;
+    // word-break: break-all;
+}
+
+.vaultCard{
+    height: 79px;
+    background: #FFFFFF;
+    border: 0.5px solid #E7E7E7;
+    border-radius: 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    margin-bottom: 15px;
+    &>div{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: 600;
+    }
+    & > div:nth-child(3){
+        font-weight: 600;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        .vaultButton{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 85px;
+            height: 34px;
+            background: #FFFFFF;
+            border: 0.5px solid #E7E7E7;
+            border-radius: 5px;
+            cursor: pointer;
+            &:hover{
+                background-color: #182542;
+                color: white;
+            }
+        }
+    }
+    
+}

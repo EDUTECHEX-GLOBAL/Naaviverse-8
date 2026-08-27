@@ -1,0 +1,1232 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+$font-display : 'Poppins', sans-serif;
+$font-body    : 'Poppins', sans-serif;
+
+$bg     : #F4F6FB;
+$card   : #FFFFFF;
+$text   : #0D1117;
+$muted  : #6B7280;
+$border : #E5E7EB;
+
+$radius    : 14px;
+$radius-lg : 18px;
+
+// ── Single accent color (used everywhere instead of per-category hues) ──
+$primary       : #4F46E5;
+$primary-light : #EEF2FF;
+$primary-mid   : #C7D2FE;
+$primary-dark  : #3730A3;
+
+// ── Semantic status colors (meaning-based, not decorative) ──
+$free       : #059669;
+$free-light : #D1FAE5;
+$paid       : #DC2626;
+$paid-light : #FEE2E2;
+
+// ── Root ──────────────────────────────────────────────────
+.adm-root {
+  font-family: $font-body;
+  min-height: calc(100vh - 70px);
+  height: 100%;
+  overflow-y: auto;
+  color: $text;
+  padding: 18px 22px 34px;
+  background: linear-gradient(180deg, #f8fbff 0%, #f3f6fb 48%, #f7f8fb 100%);
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #D1D5DB;
+    border-radius: 10px;
+  }
+}
+
+// ── Stat Cards ─────────────────────────────────────────────
+.adm-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.adm-stat {
+  border-radius: 13px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: $card;
+  border: 1px solid $border;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+
+  &__icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: $primary-light;
+    color: $primary;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  &__label {
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    line-height: 1;
+    color: $muted;
+  }
+
+  &__val {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.1;
+    font-family: $font-display;
+    color: $text;
+  }
+}
+
+// ── Table Panel ────────────────────────────────────────────
+.adm-panel {
+  background: $card;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.055);
+
+  &__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid $border;
+    background: #FAFBFC;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    &-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    &-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  &__title {
+    font-family: $font-display;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: $text;
+    letter-spacing: -0.02em;
+  }
+}
+
+// ── Category dropdown (replaces the old static category cards) ──
+.adm-cat-dropdown {
+  position: relative;
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: $card;
+    border: 1.5px solid $border;
+    border-radius: 30px;
+    padding: 6px 12px 6px 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+
+    &:hover {
+      border-color: $primary-mid;
+      background: $primary-light;
+    }
+
+    &--open {
+      border-color: $primary;
+      background: $primary-light;
+    }
+  }
+
+  &__icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: $primary-light;
+    color: $primary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
+  }
+
+  &__count {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 8px;
+    border-radius: 20px;
+    background: $primary-light;
+    color: $primary;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  &__chevron {
+    display: flex;
+    align-items: center;
+    color: $muted;
+    transition: transform 0.18s;
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
+  }
+
+  &__btn--open &__chevron,
+  &__btn--open .adm-cat-dropdown__chevron {
+    transform: rotate(180deg);
+    color: $primary;
+  }
+
+  &__menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 220px;
+    background: $card;
+    border: 1px solid $border;
+    border-radius: 14px;
+    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+    padding: 6px;
+    z-index: 20;
+    animation: catMenuIn 0.15s ease forwards;
+  }
+
+  @keyframes catMenuIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 9px;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background 0.12s;
+
+    &:hover {
+      background: $primary-light;
+    }
+
+    &--active {
+      background: $primary-light;
+
+      .adm-cat-dropdown__item-label {
+        color: $primary-dark;
+        font-weight: 600;
+      }
+    }
+  }
+
+  &__item-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: $primary-light;
+    color: $primary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  &__item-label {
+    flex: 1;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: $text;
+  }
+
+  &__item-count {
+    font-size: 11px;
+    font-weight: 600;
+    color: $muted;
+  }
+}
+
+// ── Search ─────────────────────────────────────────────────
+.adm-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: $card;
+  border: 1px solid $border;
+  border-radius: 30px;
+  padding: 0 12px;
+  height: 30px;
+  min-width: 160px;
+  color: $muted;
+
+  &:focus-within {
+    border-color: $primary-mid;
+  }
+
+  &__input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 12px;
+    font-family: $font-body;
+    color: $text;
+    width: 100%;
+
+    &::placeholder {
+      color: #9CA3AF;
+    }
+  }
+}
+
+// ── Table ──────────────────────────────────────────────────
+.adm-table-wrap {
+  animation: tblIn 0.22s ease forwards;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  @keyframes tblIn {
+    from {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+.adm-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  table-layout: fixed; // locks each column to its own width on desktop — cell content can never bleed into the next column
+
+  thead tr {
+    background: #F6F8FC;
+  }
+
+  th {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: $muted;
+    text-align: left;
+    padding: 9px 14px;
+    border-bottom: 1px solid $border;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #F3F4F6;
+    vertical-align: middle;
+    font-size: 13px;
+    background: transparent;
+    overflow: hidden;
+  }
+
+  // Name / Partner Email get most of the space — Rating, Access, and the
+  // View button only ever hold short badges, so they stay minimal and fixed.
+  th:nth-child(1), td:nth-child(1) { width: 38%; }
+  th:nth-child(2), td:nth-child(2) { width: 34%; }
+  th:nth-child(3), td:nth-child(3) { width: 11%; }
+  th:nth-child(4), td:nth-child(4) { width: 9%; }
+  th:nth-child(5), td:nth-child(5) { width: 8%; }
+}
+
+.adm-row {
+  cursor: pointer;
+  transition: background-color 0.12s;
+
+  &:hover {
+    background-color: $primary-light;
+  }
+
+  &:hover td {
+    background: transparent;
+  }
+
+  &:last-child td {
+    border-bottom: none;
+  }
+
+  // Stays a normal table-cell (do NOT set display:flex here — that knocks
+  // the <td> out of table layout, so table-layout:fixed stops honoring its
+  // column width, the cell collapses to fit-content, and a dead gap opens
+  // up before the next column). The flex layout lives on the inner wrapper.
+  &__name-td {
+    overflow: hidden;
+  }
+
+  &__name-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  &__icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: $primary-light;
+    color: $primary;
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
+  }
+
+  &__name {
+    font-weight: 500;
+    color: $text;
+    font-size: 13px;
+    line-height: 1.4;
+    min-width: 0; // lets the flex item actually shrink/wrap instead of forcing overflow
+    flex: 1;
+    white-space: normal;
+    word-break: break-word;
+    // No line-clamp: the full title always shows, wrapping onto as many
+    // lines as it needs within the column's own width.
+  }
+
+  &__email {
+    font-size: 12px;
+    color: $muted;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.adm-nil {
+  color: #D1D5DB;
+}
+
+// ── Badges ─────────────────────────────────────────────────
+.adm-access {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+
+  &--free {
+    background: $free-light;
+    color: $free;
+  }
+
+  &--paid {
+    background: $paid-light;
+    color: $paid;
+  }
+}
+
+.adm-layer-pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: $primary-light;
+  color: $primary-dark;
+  white-space: nowrap;
+}
+
+.adm-rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: $primary-light;
+  border: 1px solid $primary-mid;
+  color: $primary-dark;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+
+  &--modal {
+    padding: 2px 0;
+    border: none;
+    background: transparent;
+  }
+}
+
+.adm-rating-stars {
+  color: #F59E0B;
+  font-size: 10px;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.adm-view-btn {
+  padding: 5px 13px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+  font-family: $font-body;
+  border: 1.5px solid $primary-light;
+  background: $primary-light;
+  color: $primary;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+
+  &:hover {
+    background: $primary-mid;
+    border-color: $primary;
+    transform: scale(1.04);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+// ── Empty & Skeleton ──────────────────────────────────────
+.adm-empty {
+  text-align: center;
+  padding: 40px 24px;
+
+  &__icon {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto 10px;
+    color: $primary;
+
+    svg {
+      width: 36px;
+      height: 36px;
+    }
+  }
+
+  &__text {
+    font-size: 13px;
+    font-weight: 500;
+    color: $muted;
+  }
+}
+
+.adm-skeletons {
+  padding: 4px 0;
+}
+
+.adm-skel-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 14px;
+  border-bottom: 1px solid #F3F4F6;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+// ── Modal ──────────────────────────────────────────────────
+.adm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 17, 23, 0.48);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: ovIn 0.2s ease forwards;
+
+  @keyframes ovIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+}
+
+.adm-modal {
+  background: $card;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: mdIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  position: relative;
+  max-height: 88vh;
+  margin: 0 auto;
+
+  @keyframes mdIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  &__x {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(4px);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    transition: background 0.15s, transform 0.2s;
+
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    &:hover {
+      background: $paid-light;
+      transform: rotate(90deg);
+    }
+  }
+
+  &__head {
+    padding: 18px 20px 14px;
+    background: linear-gradient(140deg, #FAFBFC 30%, $primary-light 120%);
+    border-bottom: 1px solid $border;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  &__avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: $primary-light;
+    color: $primary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg {
+      width: 19px;
+      height: 19px;
+    }
+  }
+
+  &__head-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__name {
+    font-family: $font-display;
+    font-size: 15px;
+    font-weight: 700;
+    color: $text;
+    letter-spacing: -0.03em;
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: $muted;
+    flex-wrap: wrap;
+  }
+
+  &__meta-dot {
+    color: #D1D5DB;
+  }
+
+  &__head-right {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+    padding-right: 30px;
+  }
+
+  &__role-tag {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 2px 9px;
+    border-radius: 20px;
+    background: $primary-light;
+    color: $primary-dark;
+  }
+
+  &__edit-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid $border;
+    background: $card;
+    cursor: pointer;
+    color: $muted;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    &:hover {
+      background: $primary-light;
+      border-color: $primary-mid;
+      color: $primary;
+    }
+  }
+
+  &__edit-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  &__save-btn {
+    padding: 5px 14px;
+    border-radius: 20px;
+    background: $primary;
+    color: #fff;
+    border: none;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: $font-body;
+    transition: background 0.15s;
+
+    &:hover {
+      background: $primary-dark;
+    }
+  }
+
+  &__cancel-btn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: transparent;
+    color: $muted;
+    border: 1px solid $border;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: $font-body;
+    transition: background 0.15s;
+
+    &:hover {
+      background: #F3F4F6;
+    }
+  }
+
+  &__body {
+    padding: 16px 18px 18px;
+    overflow-y: auto;
+    flex: 1;
+
+    &::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #E5E7EB;
+      border-radius: 10px;
+    }
+  }
+}
+
+// ── Edit title input ──────────────────────────────────────
+.adm-edit-title {
+  font-family: $font-display;
+  font-size: 15px;
+  font-weight: 700;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+  padding: 4px 9px;
+  outline: none;
+  width: 100%;
+  color: $text;
+
+  &:focus {
+    border-color: $primary-mid;
+  }
+}
+
+// ── Chips ─────────────────────────────────────────────────
+.adm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.adm-chip {
+  background: #F9FAFB;
+  border: 1px solid #F1F5F9;
+  border-radius: 10px;
+  padding: 7px 11px;
+  min-width: 72px;
+
+  &__label {
+    display: block;
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #9CA3AF;
+    margin-bottom: 3px;
+  }
+
+  &__val {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: $text;
+
+    &--free {
+      color: $free;
+    }
+
+    &--paid {
+      color: $paid;
+    }
+  }
+
+  &__input {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: $font-body;
+    color: $text;
+    border: 1px solid $border;
+    border-radius: 6px;
+    padding: 3px 7px;
+    outline: none;
+    width: 100%;
+    background: $card;
+
+    &:focus {
+      border-color: $primary-mid;
+    }
+  }
+}
+
+// ── Modal text fields ─────────────────────────────────────
+.adm-mfield {
+  background: #F9FAFB;
+  border: 1px solid #F1F5F9;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &__label {
+    display: block;
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #9CA3AF;
+    margin-bottom: 5px;
+  }
+
+  &__text {
+    font-size: 12.5px;
+    color: #374151;
+    line-height: 1.6;
+    word-break: break-word;
+    margin: 0;
+  }
+
+  &__textarea {
+    width: 100%;
+    font-size: 12.5px;
+    font-family: $font-body;
+    color: $text;
+    border: 1.5px solid $border;
+    border-radius: 7px;
+    padding: 7px 9px;
+    outline: none;
+    resize: vertical;
+    line-height: 1.6;
+    background: $card;
+    box-sizing: border-box;
+
+    &:focus {
+      border-color: $primary-mid;
+    }
+  }
+}
+
+// ── Feature chips ─────────────────────────────────────────
+.adm-feature-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.adm-feature-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: $primary-light;
+  color: $primary-dark;
+}
+
+// ── Score Inspector (10-Factor Naavi Score Breakdown) ───────
+.adm-score-inspector {
+  margin-top: 14px;
+  background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+  border-radius: 14px;
+  padding: 16px;
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.15);
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 12px;
+  }
+
+  &__tag {
+    display: block;
+    font-size: 8.5px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: #818cf8;
+    text-transform: uppercase;
+  }
+
+  &__title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 2px 0 0;
+  }
+
+  &__badge {
+    background: rgba(99, 102, 241, 0.2);
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    border-radius: 10px;
+    padding: 4px 10px;
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+  }
+
+  &__score-num {
+    font-size: 16px;
+    font-weight: 800;
+    color: #818cf8;
+  }
+
+  &__score-max {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+.adm-score-factors {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.adm-factor-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  &__info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+  }
+
+  &__name {
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+  }
+
+  &__weight {
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  &__val {
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  &__bar-track {
+    width: 100%;
+    height: 5px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+  }
+
+  &__bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+
+    &.high {
+      background: linear-gradient(90deg, #10b981, #34d399);
+    }
+    &.mid {
+      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    }
+    &.low {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+  }
+}
+
+// ── Responsive ─────────────────────────────────────────────
+@media (max-width: 960px) {
+  .adm-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .adm-root {
+    padding: 14px 14px 32px;
+  }
+
+  .adm-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .adm-panel__bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .adm-panel__bar-right {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .adm-search {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .adm-cat-dropdown__menu {
+    left: 0;
+    right: auto;
+    min-width: 200px;
+  }
+
+  // ── Stacked-card table ────────────────────────────────────
+  // Below 640px the table stops behaving like a table (which was forcing
+  // a 560px min-width and a horizontal scroll that hid the Name column)
+  // and becomes a list of self-contained cards instead. Nothing is ever
+  // clipped or scrolled off-screen.
+  .adm-table-wrap {
+    overflow-x: visible;
+  }
+
+  .adm-table {
+    min-width: 0;
+    width: 100%;
+    table-layout: auto;
+
+    thead {
+      display: none;
+    }
+
+    tbody,
+    tr,
+    td {
+      display: block;
+      width: 100%;
+    }
+
+    tr.adm-row {
+      border: 1px solid $border;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      padding: 10px 12px 8px;
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.04);
+
+      &:hover {
+        background: $primary-light;
+      }
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    td {
+      border-bottom: none !important;
+      padding: 5px 0;
+    }
+
+    .adm-row__name-td {
+      padding: 0 0 8px !important;
+      margin-bottom: 4px;
+      border-bottom: 1px solid #F3F4F6 !important;
+    }
+
+    .adm-row__name {
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    // Labeled rows: "Email  you@x.com", "Rating  ★ 4.5", "Access  Free"
+    td[data-label] {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+
+      &::before {
+        content: attr(data-label);
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: $muted;
+        flex-shrink: 0;
+      }
+    }
+
+    .adm-row__email {
+      white-space: normal;
+      word-break: break-all;
+      text-align: right;
+    }
+
+    // Action cell (View button) — right aligned, own row
+    td:last-child {
+      display: flex;
+      justify-content: flex-end;
+      padding-top: 8px;
+    }
+  }
+
+  // ── Modal centering fix ──────────────────────────────────
+  .adm-overlay {
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .adm-modal {
+    max-width: 94%;
+    max-height: 85vh;
+    margin: 0 auto;
+  }
+
+  .adm-modal__head {
+    padding: 16px 16px 12px;
+    flex-wrap: wrap;
+  }
+
+  .adm-modal__head-right {
+    padding-right: 26px;
+  }
+
+  .adm-modal__body {
+    padding: 14px 14px 16px;
+  }
+
+  .adm-chips {
+    gap: 6px;
+  }
+
+  .adm-chip {
+    min-width: 64px;
+    flex: 1 1 30%;
+  }
+}
+
+@media (max-width: 400px) {
+  .adm-modal__name {
+    font-size: 14px;
+  }
+
+  .adm-modal__avatar {
+    width: 36px;
+    height: 36px;
+  }
+}
