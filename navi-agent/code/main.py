@@ -439,127 +439,6 @@ JSON format must strictly follow:
         "<distinct learning objective 2>",
         "<distinct learning objective 3>"
       ],
-      "macro_view": "<4-5 sentence strategic paragraph explaining the BIG PICTURE PURPOSE of this milestone within the {cat} roadmap>",
-      "micro_view": "<4-5 sentence strategic paragraph describing the PRECISE EXECUTION OUTPUT — tasks, tools, deliverables, time commitment, and verification checkpoints>",
-      "nano_view": "<4-5 sentence strategic paragraph outlining the MENTOR/EXPERT GUIDANCE FOCUS — review sessions, validation criteria, accountability, and feedback loops>",
-      "marketplace": {{
-        "mentors": [
-          {{
-            "name": "<category-specific mentor or advisor>",
-            "type": "Mentor",
-            "why": "<why this fits macro free view>",
-            "next_step": "<specific action to connect>",
-            "tags": ["<tag1>", "<tag2>"],
-            "section": "macro_free",
-            "price": "Free"
-          }},
-          {{
-            "name": "<structured 1-on-1 coaching or tutor>",
-            "type": "Mentor",
-            "why": "<why this fits micro view>",
-            "next_step": "<how to book>",
-            "tags": ["<tag>"],
-            "section": "micro_structured",
-            "price": "<price, e.g. $89 or Rs 1,500>"
-          }},
-          {{
-            "name": "<premium strategic advisor or expert>",
-            "type": "Mentor",
-            "why": "<why this fits nano view>",
-            "next_step": "<how to apply>",
-            "tags": ["<tag>"],
-            "section": "nano_expert",
-            "price": "<price, e.g. $150 or Rs 5,000>"
-          }}
-        ],
-        "vendors": [
-          {{
-            "name": "<free course, open docs, or platform>",
-            "type": "Course",
-            "why": "<why>",
-            "next_step": "<action>",
-            "tags": ["<tag>"],
-            "section": "macro_free",
-            "cost": "Free"
-          }},
-          {{
-            "name": "<paid course or structured workshop>",
-            "type": "Course",
-            "why": "<why>",
-            "next_step": "<action>",
-            "tags": ["<tag>"],
-            "section": "micro_structured",
-            "cost": "<cost>"
-          }},
-          {{
-            "name": "<premium intensive bootcamp or specialized program>",
-            "type": "Bootcamp",
-            "why": "<why>",
-            "next_step": "<action>",
-            "tags": ["<tag>"],
-            "section": "nano_expert",
-            "cost": "<cost>"
-          }}
-        ],
-        "institutions": [
-          {{
-            "name": "<open institutional resource, foundation, or clinic/center>",
-            "type": "Institute",
-            "why": "<why>",
-            "next_step": "<action>",
-            "tags": ["<tag>"],
-            "section": "macro_free",
-            "cost": "Free"
-          }},
-          {{
-            "name": "<structured certificate program or organization>",
-            "type": "Institute",
-            "why": "<why>",
-            "next_step": "<action>",
-            "tags": ["<tag>"],
-            "section": "micro_structured",
-            "cost": "<cost>"
-          }},
-          {{
-            "name": "<premium executive or clinical / university program>",
-            "type": "Institute",
-            "why": "<why>",
-            "next_step": "<action>",
-            "tags": ["<tag>"],
-            "section": "nano_expert",
-            "cost": "<cost>"
-          }}
-        ],
-        "distributors": [
-          {{
-            "name": "<free guide, docs, podcast, youtube channel, or app>",
-            "type": "Resource",
-            "why": "<why>",
-            "next_step": "<action>",
-            "tags": ["<tag>"],
-            "section": "macro_free",
-            "cost": "Free"
-          }},
-          {{
-            "name": "<handbook, paid book, toolkit, or journal>",
-            "type": "Book",
-            "why": "<why>",
-            "next_step": "<action>",
-            "tags": ["<tag>"],
-            "section": "micro_structured",
-            "cost": "<cost>"
-          }},
-          {{
-            "name": "<professional subscription or advanced resource library>",
-            "type": "Subscription",
-            "why": "<why>",
-            "next_step": "<action>",
-            "tags": ["<tag>"],
-            "section": "nano_expert",
-            "cost": "<cost>"
-          }}
-        ]
-      }},
       "micro_steps": [
         {{"task": "<specific actionable task>", "resource": "<real specific resource>"}},
         {{"task": "<specific actionable task>", "resource": "<real specific resource>"}}
@@ -569,9 +448,13 @@ JSON format must strictly follow:
 }}
 
 CRITICAL RULES:
-1. STRICT CATEGORY ADHERENCE: Generate milestones and resources strictly appropriate for {cat.upper()}.
-2. NO GENERIC BOILERPLATE: Every single step must have unique, rich descriptions, distinct learning objectives, and custom Macro/Micro/Nano text.
-3. DYNAMIC STEP COUNT: Create genuinely necessary stages based on the goal's real requirements. Do not artificially pad or truncate steps.
+1. STRICT CATEGORY ADHERENCE: Generate milestones strictly appropriate for {cat.upper()}.
+2. DYNAMIC STEP COUNT RULE:
+   - For multi-year or comprehensive educational journeys (e.g. 24-36 months): Generate between 6 and 9 genuinely distinct milestones spanning the timeline.
+   - For skill acquisition or career transition journeys (e.g. 6-18 months): Generate between 5 and 7 genuinely distinct milestones.
+   - For short-term counseling or immediate support plans (e.g. 1-6 months): Generate between 3 and 5 genuinely distinct milestones.
+   - Every single milestone must have a distinct purpose and title.
+3. NO GENERIC BOILERPLATE: Every single step must have unique, rich descriptions, distinct learning objectives, and custom actionable checklist items.
 4. NAME BAN: NEVER include personal names, personal emails, or personal pronouns in any text fields. Keep all content objective and professional.
 """
     return prompt
@@ -977,16 +860,17 @@ async def log_generation_event(
 # Helper to query Groq and extract clean JSON with model fallbacks
 async def query_groq_json(
     prompt: str,
-    preferred_model: str = "llama-3.1-8b-instant",
+    preferred_model: str = "openai/gpt-oss-120b",
     fallback_models: Optional[List[str]] = None,
 ) -> dict:
     models = [preferred_model] + (
         fallback_models
         if fallback_models is not None
         else [
-            "llama-3.1-8b-instant",
-            "llama-3.3-70b-versatile",
-            "qwen/qwen3-32b",
+            "openai/gpt-oss-120b",
+            "qwen/qwen3.8-27b",
+            "groq/compound",
+            "groq/compound-mini",
             "openai/gpt-oss-20b",
         ]
     )
@@ -2634,8 +2518,8 @@ async def run_agent_1_blueprint(
 
         res = await query_groq_json(
             current_prompt,
-            preferred_model="llama-3.3-70b-versatile",
-            fallback_models=["llama-3.1-8b-instant"],
+            preferred_model="openai/gpt-oss-120b",
+            fallback_models=["qwen/qwen3.8-27b", "groq/compound", "groq/compound-mini"],
         )
 
         # Check semantic validity
@@ -2680,8 +2564,8 @@ async def run_agent_2_path_auditor(
     print(f"[Agent 2] Auditing path details (cat: {cat}) using fast model...")
     res = await query_groq_json(
         prompt,
-        preferred_model="llama-3.1-8b-instant",
-        fallback_models=["llama-3.3-70b-versatile"]
+        preferred_model="groq/compound-mini",
+        fallback_models=["qwen/qwen3.8-27b", "openai/gpt-oss-120b"]
     )
     return res
 
@@ -2708,8 +2592,8 @@ async def run_agent_3_steps_auditor(
     print(f"[Agent 3] Auditing steps & views (cat: {cat}) using fast model...")
     res = await query_groq_json(
         prompt,
-        preferred_model="llama-3.1-8b-instant",
-        fallback_models=["llama-3.3-70b-versatile"]
+        preferred_model="groq/compound-mini",
+        fallback_models=["qwen/qwen3.8-27b", "openai/gpt-oss-120b"]
     )
     if isinstance(res, list):
         return res
@@ -2740,8 +2624,8 @@ async def run_agent_4_marketplace_auditor(
     print(f"[Agent 4] Auditing marketplace recommendations (cat: {cat}) using fast model...")
     res = await query_groq_json(
         prompt,
-        preferred_model="llama-3.1-8b-instant",
-        fallback_models=["llama-3.3-70b-versatile"]
+        preferred_model="groq/compound-mini",
+        fallback_models=["qwen/qwen3.8-27b", "openai/gpt-oss-120b"]
     )
     if isinstance(res, list):
         return res
