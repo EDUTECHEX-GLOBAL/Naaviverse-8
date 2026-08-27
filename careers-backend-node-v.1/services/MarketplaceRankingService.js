@@ -25,6 +25,21 @@ const toPlainAnalytics = (analytics) => {
   return analytics;
 };
 
+/**
+ * Calculate Bayesian Average Rating
+ * Formula: (v * R + m * C) / (v + m)
+ * @param {number} v - Number of votes/ratings
+ * @param {number} R - Average rating (mean)
+ * @param {number} m - Prior vote weight threshold (default 5)
+ * @param {number} C - Prior mean rating (default 4.0)
+ * @returns {number} Bayesian average rating
+ */
+function calculateBayesianAverage(v = 0, R = 4.0, m = 5, C = 4.0) {
+  if (!v || v <= 0) return C;
+  const score = (v * R + m * C) / (v + m);
+  return Math.round(score * 100) / 100;
+}
+
 // ── 10 Individual Factor Scoring Functions ──────────────────────────────────
 
 function computeIntentScore(item, query = "") {
@@ -356,6 +371,7 @@ async function recalculateAllMarketplaceScores() {
 
 module.exports = {
   SCORE_WEIGHTS,
+  calculateBayesianAverage,
   calculateMarketplaceScore,
   trackMarketplaceEvent,
   attachAnalyticsToItems,

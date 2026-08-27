@@ -327,258 +327,169 @@ async def enrich_path_profile(doc):
     return doc
 
 
-# ─── AGENT 1: BLUEPRINT GENERATOR PROMPT ──────────────────────────────────
-AGENT_1_PROMPT = """You are the Naaviverse pathway blueprint generator (Agent 1).
-Your task is to draft the initial raw pathway based on the selected content segment:
+# ─── AGENT PROMPT BUILDERS (CATEGORY ISOLATION ENGINE) ──────────────────────
+
+def build_agent_1_prompt(
+    category: str,
+    sub_segment: Optional[str],
+    current_position: str,
+    target_goal: str,
+    profile: dict,
+    degree_type: Optional[str] = None,
+    focus_title_prefix: str = "Academic & Research",
+    focus_area: str = "",
+    focus: Optional[str] = None,
+    refine_prompt: Optional[str] = None,
+    requested_steps: Optional[int] = None,
+    existing_roadmap: Optional[dict] = None
+) -> str:
+    cat = resolve_focus_category(category or focus)
+    sub_seg = (sub_segment or "").strip()
+    profile_json = json.dumps(profile or {})
+    degree_val = degree_type or "Not required"
+
+    if cat == "academic":
+        category_rules = f"""=== PRIMARY CATEGORY CONSTRAINTS: ACADEMIC & RESEARCH ===
+Definition: Formal education, academic progression, university admissions, curriculum mastery, or academic research development.
+- Educational context: Grade/level ({current_position}), curriculum (CBSE, IB, Cambridge, etc.), subjects, prerequisites, target degree, target university, country, test prep (SAT/ACT/IELTS/GRE where relevant), academic projects, research.
+- Progression: Academic foundation & subject selection -> prerequisite preparation -> academic performance improvement -> research development -> test preparation -> profile development -> university research & application dossiers.
+- Dynamic timeline: Calculate timeline based on educational progression from current stage to target admission.
+- Dynamic readiness score: Score (0-100) based on GPA/academic performance relative to target institution selectivity.
+- Dynamic step count: Determine genuinely required stages (e.g. 5 to 10 milestones).
+"""
+    elif cat == "practical":
+        category_rules = f"""=== PRIMARY CATEGORY CONSTRAINTS: PRACTICAL & SKILLS ===
+Definition: Learning, developing, applying, and demonstrating a practical skill. Skill acquisition and proof of ability (e.g., Python proficiency, Web Dev, Data Analysis, CAD, UI/UX).
+- Progression: Core concept foundation -> guided practice & problem solving -> hands-on project building -> advanced application -> portfolio curation (GitHub / live demos) -> skill validation & code review.
+- Focus: Hands-on deliverables, repositories, project architecture, and proof of work.
+- Dynamic timeline: Typically 3 to 12 months based on beginner vs advanced skill gap.
+- Dynamic readiness score: Score (0-100) based on current familiarity vs target skill mastery.
+- Dynamic step count: Determine genuinely necessary skill progression stages (typically 4 to 6 milestones).
+
+🚨 STRICT NEGATIVE CONSTRAINTS (FORBIDDEN IN THIS CATEGORY):
+- DO NOT generate school selection, GPA targets, Grade 10/11/12 board exams, CBSE/IB curricula, SAT/ACT test prep, university applications, or college admissions dossiers unless the user's specific target goal explicitly demands a degree.
+- The focus is on SKILL acquisition and PROOF OF WORK, not formal academic admissions.
+"""
+    elif cat == "jobs":
+        category_rules = f"""=== PRIMARY CATEGORY CONSTRAINTS: JOBS & CAREERS ===
+Definition: Entering, changing, progressing, or advancing in a profession or job role (e.g., Junior to Senior Engineer, Career Switcher to Cloud Engineer, Student to Product Manager).
+- Progression: Role gap analysis & competency assessment -> skill gap development -> experience building & proof of work -> ATS-optimized resume & professional branding (LinkedIn/GitHub) -> networking & mock interviews -> job search & placement strategy.
+- Focus: Workplace competencies, technical & behavioral interviews, system design/case studies, and employer evidence.
+- Dynamic timeline: Typically 6 to 18 months based on current role vs target role gap.
+- Dynamic readiness score: Score (0-100) based on current experience/competencies vs target role expectations.
+- Dynamic step count: Determine genuinely required career progression stages (typically 4 to 7 milestones).
+
+🚨 STRICT NEGATIVE CONSTRAINTS (FORBIDDEN IN THIS CATEGORY):
+- DO NOT generate Grade 10/11/12 board exam preparation, school curriculum selection, SAT/ACT prep, or high school targets unless the user's goal explicitly requires an academic degree transition.
+- A career progression request from a developer or graduate MUST NOT become a high school / student admissions roadmap.
+"""
+    else:  # non_academic
+        category_rules = f"""=== PRIMARY CATEGORY CONSTRAINTS: NON-ACADEMIC COUNSELLING ===
+Definition: Support, guidance, wellbeing, decision-making, life skills, or short-term personal guidance.
+Sub-segment Focus: {sub_seg or 'Mental Health & Wellness / Life Skills'}
+
+Guidance by Focus:
+1. Mental Health & Wellness: Focus on stress management, trigger identification, daily mindfulness routines, sleep hygiene, healthy coping strategies, trusted support networks, and qualified professional counseling resources.
+2. Life Skills & Decision Support: Focus on time management, decision frameworks, prioritization, routine building, habit trackers, and personal accountability.
+3. Immediate Guidance & Support: Focus on immediate triage, practical time-boxed next actions, trusted helpline/resource navigation, and safe escalation options.
+
+- Dynamic timeline: Typically 1 to 6 months (time-boxed to immediate needs and sustainable habit formation).
+- Dynamic readiness score: Score (0-100) reflecting support readiness, self-awareness, and routine consistency.
+- Dynamic step count: Typically 3 to 5 meaningful, empathetic support milestones.
+
+🚨 STRICT NEGATIVE CONSTRAINTS (FORBIDDEN IN THIS CATEGORY):
+- DO NOT generate curriculum selection, school selection, GPA targets, SAT/ACT prep, university applications, board exams, internships, or job placement.
+- Do NOT promise diagnosis or medical treatment; recommend qualified professional support, safe practices, and trusted resources.
+"""
+
+    prompt = f"""You are the Naaviverse Pathway Blueprint Generator (Agent 1).
+Your task is to generate a fully custom, category-specific pathway blueprint.
+
+INPUT CONTEXT:
+- Category: {cat.upper()} ({focus_title_prefix})
+- Sub-Segment / Focus Area: {focus_area or sub_seg or 'Default'}
 - Current Position: {current_position}
-- Target Goal / Support Need: {target_goal}
-- Student Profile Details: {profile}
-- Degree Type: {degree_type}
-- Selected Segment Focus: {focus_area}
+- Target Goal / Need: {target_goal}
+- Degree Type: {degree_val}
+- User Profile: {profile_json}
 
-Respond ONLY with valid JSON. No markdown, no backticks, no explanation.
+{category_rules}
 
+SCHEMA REQUIREMENTS:
+Respond ONLY with valid JSON. No markdown backticks, no text explanation outside JSON.
+JSON format must strictly follow:
 {{
-  "path_title": "{focus_title_prefix} Pathway from {current_position} to {target_goal}",
-  "path_description": "A comprehensive pathway designed to take a learner from {current_position} to the target destination or support need of {target_goal} focusing on {focus_area}.",
-  "readiness_score": 15,
-  "readiness_label": "High School Starter",
-  "total_duration": "<calculated admission timeline, e.g. '<months> months'>",
+  "path_title": "<Unique, descriptive path title matching category and goal>",
+  "path_description": "<Rich 3-4 sentence strategic overview explaining how this specific pathway guides the user from {current_position} to {target_goal} in the {cat} category>",
+  "readiness_score": 25,
+  "readiness_label": "Early Starter",
+  "total_duration": "<calculated duration string, e.g. '6 months', '12 months', '36 months'>",
   "blind_spots": [
-    "<warning or critical gap 1 based on profile constraints>",
-    "<warning or critical gap 2 based on profile constraints>"
+    "<critical gap, constraint, or warning 1 based on profile & goal>",
+    "<critical gap, constraint, or warning 2 based on profile & goal>"
   ],
   "steps": [
     {{
       "id": 1,
-      "title": "<step/milestone title>",
-      "duration": "<calculated step duration range, e.g. 'Months 1-4'>",
-      "description": "<detailed step description (at least 3 to 4 comprehensive sentences) outlining exactly what academics, study plans, or profile goals to focus on during this step, why this is critical, and how it strategically prepares the student for {target_goal}>",
+      "title": "<step/milestone title specific to {cat}>",
+      "duration": "<calculated step range, e.g. 'Months 1-3' or 'Weeks 1-4'>",
+      "description": "<detailed step description (3-4 comprehensive sentences) outlining exact tasks, focus areas, and why this milestone matters for {target_goal}>",
       "learning_objectives": [
-        "<learning objective 1>",
-        "<learning objective 2>",
-        "<learning objective 3>"
+        "<distinct learning objective 1>",
+        "<distinct learning objective 2>",
+        "<distinct learning objective 3>"
       ],
-     "macro_view": "<4-5 sentence strategic paragraph explaining the BIG PICTURE PURPOSE of this milestone — what overarching academic goal it advances, why it is a critical non-negotiable foundation within the entire roadmap architecture, how mastering it unlocks the next stage of academic and career progression, what long-term college readiness competency it builds, and how it connects to the student's overall target destination at {target_goal}>",
-"micro_view": "<4-5 sentence strategic paragraph describing the PRECISE EXECUTION OUTPUT — what specific academic tasks, coursework, study schedules, and concrete deliverables the student must complete within this phase, how many hours per week to dedicate, what tools and platforms to use for tracking progress, what measurable checkpoints confirm task completion, and what the final tangible output of this phase looks like before moving forward>",
-"nano_view": "<4-5 sentence strategic paragraph outlining the MENTOR GUIDANCE FOCUS — what specific diagnostic assessments and expert review sessions should happen in this phase, how a mentor validates the student's readiness to advance, what peer cohort accountability checkpoints are recommended, what common failure patterns a mentor should watch for in this phase, and how targeted expert feedback is incorporated to refine the student's execution plan before the next milestone begins>",
-      "marketplace": {{
-        "mentors": [
-          {{
-            "name": "<free mentor/counseling option, e.g. Free counselor AMA session>",
-            "type": "Mentor",
-            "why": "<why this fits the macro free view>",
-            "next_step": "<specific action to register/join>",
-            "tags": ["<tag>", "<tag>"],
-            "section": "macro_free",
-            "price": "Free"
-          }},
-          {{
-            "name": "<paid mentor/coaching option, e.g. private SAT math tutor>",
-            "type": "Mentor",
-            "why": "<why this fits the micro view>",
-            "next_step": "<specific registration link/action>",
-            "tags": ["<tag>"],
-            "section": "micro_structured",
-            "price": "<realistic price, e.g. ₹1,500/session>"
-          }},
-          {{
-            "name": "<premium strategic mentor / admissions advisor>",
-            "type": "Mentor",
-            "why": "<why this fits the nano view>",
-            "next_step": "<specific next action>",
-            "tags": ["<tag>"],
-            "section": "nano_expert",
-            "price": "<realistic price, e.g. ₹5,000/month>"
-          }}
-        ],
-        "vendors": [
-          {{
-            "name": "<free course or online platform prep>",
-            "type": "Course",
-            "why": "<why this fits>",
-            "next_step": "<specific action>",
-            "tags": ["<tag>"],
-            "section": "macro_free",
-            "cost": "Free"
-          }},
-          {{
-            "name": "<paid course or certification exam package>",
-            "type": "Course",
-            "why": "<why this fits>",
-            "next_step": "<specific action>",
-            "tags": ["<tag>"],
-            "section": "micro_structured",
-            "cost": "<realistic cost, e.g. ₹3,500>"
-          }},
-          {{
-            "name": "<premium coding bootcamp or target prep program>",
-            "type": "Bootcamp",
-            "why": "<why this fits>",
-            "next_step": "<specific action>",
-            "tags": ["<tag>"],
-            "section": "nano_expert",
-            "cost": "<realistic cost, e.g. ₹95,000>"
-          }}
-        ],
-        "institutions": [
-          {{
-            "name": "<free open lectures or articles from a university>",
-            "type": "University",
-            "why": "<why this fits>",
-            "next_step": "<specific action>",
-            "tags": ["<tag>"],
-            "section": "macro_free",
-            "cost": "Free"
-          }},
-          {{
-            "name": "<university certificate course/program>",
-            "type": "University",
-            "why": "<why this fits>",
-            "next_step": "<specific action>",
-            "tags": ["<tag>"],
-            "section": "micro_structured",
-            "cost": "<realistic cost, e.g. ₹20,000>"
-          }},
-          {{
-            "name": "<premium university counselor or admissions seminar program>",
-            "type": "University",
-            "why": "<why this fits>",
-            "next_step": "<specific action>",
-            "tags": ["<tag>"],
-            "section": "nano_expert",
-            "cost": "<realistic cost, e.g. ₹2,50,000>"
-          }}
-        ],
-        "distributors": [
-          {{
-            "name": "<free youtube channel, docs or community forum>",
-            "type": "YouTube",
-            "why": "<why this fits>",
-            "next_step": "<specific action>",
-            "tags": ["<tag>"],
-            "section": "macro_free",
-            "cost": "Free"
-          }},
-          {{
-            "name": "<paid book, guide or technical publication>",
-            "type": "Book",
-            "why": "<why this fits>",
-            "next_step": "<specific action>",
-            "tags": ["<tag>"],
-            "section": "micro_structured",
-            "cost": "<realistic cost, e.g. ₹1,200>"
-          }},
-          {{
-            "name": "<premium tech libraries subscription>",
-            "type": "Subscription",
-            "why": "<why this fits>",
-            "next_step": "<specific action>",
-            "tags": ["<tag>"],
-            "section": "nano_expert",
-            "cost": "<realistic cost, e.g. ₹24,000/year>"
-          }}
-        ]
-      }},
       "micro_steps": [
-        {{"task": "<specific task action>", "resource": "<real resource>"}},
-        {{"task": "<specific task action>", "resource": "<real resource>"}},
-        {{"task": "<specific task action>", "resource": "<real resource>"}}
+        {{"task": "<specific actionable task>", "resource": "<real specific resource>"}},
+        {{"task": "<specific actionable task>", "resource": "<real specific resource>"}}
       ]
     }}
   ]
 }}
 
-Rules:
-- CONTENT TAXONOMY RULE: Start from the selected segment only. Do not blend all categories together unless the user explicitly asks to compare alternatives.
-- ACADEMIC & RESEARCH covers School K-12, Pre-University Grade 11-12, and University bachelor's/master's/PhD/transfer pathways. Use formal education, curriculum, admissions, tests, research, and academic milestones.
-- PRACTICAL & SKILLS covers learning a specific skill and applying skills in internships or real environments. Skills are not professions: "learn Python" is a skill path, while "become a Data Scientist" is a Jobs & Careers path.
-- JOBS & CAREERS covers profession/role outcomes. Distinguish technical roles such as engineering, data, and design from non-technical roles such as management, marketing, and operations.
-- NON-ACADEMIC COUNSELLING covers mental health and wellness, generic life counselling, and short-term immediate guidance. These are resource/support paths, not career roadmaps. Do not promise diagnosis or treatment; recommend qualified professional support, trusted resources, routine-building, safe escalation, and time-boxed next steps where relevant.
-- Calculate a realistic "readiness_score" (0-100) and "readiness_label" (e.g. Early Starter, Advanced, Intermediate) based dynamically on the student's profile signals (academic performance, stream, and curriculum) relative to the competitiveness of the Target Career Goal:
-  - For highly competitive targets (e.g., Harvard, Yale, Stanford, MIT, Oxford, IIT, BITS, Imperial College):
-    - If performance is "90% and above", score should be around 30-40 (Early/Intermediate Starter).
-    - If performance is "75%–89%", score should be around 20-30.
-    - If performance is below 75%, score should be around 10-20.
-  - For moderately competitive targets (e.g., Local Universities, State Colleges):
-    - If performance is "90% and above", score should be around 75-85 (Advanced Starter).
-    - If performance is "75%–89%", score should be around 50-60.
-    - If performance is below 75%, score should be around 30-40.
-  - Adjust the score dynamically based on these parameters. Do NOT hardcode it.
-- Highlight at least 2 critical "blind_spots" (gaps, potential constraints, or warnings based on their profile, e.g. "Lacks research projects", "Needs IELTS prep") as a list of strings.
-- CRITICAL TIMELINE PROGRESSION CONSTRAINT: You MUST calculate the total duration and steps dynamically to cover the educational progression from the student's current position/grade to ADMISSION into the final target goal, not completion of the target degree itself.
-  - Cumulative Calculation Formula: total duration = remaining current-stage months + each prerequisite degree stage before the target degree + an admissions-cycle minimum when the student is already eligible.
-  - School Formula: remaining school months = (final school grade - current grade + 1) * months per academic year.
-  - Degree Formula: add the configured duration for each prerequisite degree level before the target degree; do NOT add the target degree's own study duration.
-  - If the student is in school and target is Master's admission, include remaining school + Bachelor's prerequisite only, then finish with Master's application/admission readiness.
-  - If the student is in school and target is Bachelor's admission, include remaining school only, then finish with Bachelor's application/admission readiness.
-  - If the student is in university and target is Master's admission, include remaining Bachelor's time only, then finish with Master's application/admission readiness.
-  - If they are already eligible for the target degree admission, use a realistic admissions-cycle minimum.
-  - Do NOT ignore intermediate degrees. A student cannot jump from 10th Grade directly to Master's admission without first finishing high school and completing a Bachelor's.
-  - Set the `total_duration` field to this calculated admission timeline in the format: `"<calculated months> months"`.
-  - Distribute the generated milestones/steps in `steps` chronologically across this entire timeline (e.g., starting with school prep, transitioning to Bachelor's projects/internships, and finishing with target-degree application submission/admission readiness).
-- Determine the number of milestones/steps in `steps` dynamically based on the complexity of the target destination and calculated timeline.
-  - CRITICAL STEP COUNT RULE: You MUST generate a detailed, comprehensive roadmap with as many milestones as the student's data, grade, timeline, and target complexity require. Do NOT use a fixed step count or upper cap. Long multi-year timelines must include enough distinct milestones to cover school preparation, prerequisite degree readiness where relevant, standardized tests, profile building, applications, and admission readiness without compressing unrelated work into broad generic steps.
-  - DO NOT restrict or default the pathway to exactly 4 steps. A 4-step path is insufficient to cover a student's career transition and is strictly forbidden.
-- Ensure that the progression of milestones represents the pedagogical stages inspired by "Aryan's Pathway 2023":
-  - Early milestones must cover: choosing the right curriculum/subjects/streams based on passion/aptitude, researching schools, setting GPA targets (e.g., accomplishing 90%+ in board/school exams).
-  - Middle milestones must cover: internship selection & planning to acquire relevant skills, identifying and starting test prep modules (e.g., SAT, ACT, English proficiency like IELTS/TOEFL), identifying right mentors.
-  - Transition milestones must cover: planning transitions between academic grades, analyzing risks and gaps.
-  - Final milestones must cover: profile building, mock score iteration, university placement program registration, and completing college application dossiers.
-- For each milestone step, construct:
-  - `macro_view`: A 4-5 sentence strategic paragraph explaining the BIG PICTURE PURPOSE — what overarching academic goal the milestone advances, why it is a critical non-negotiable foundation in the roadmap, how mastering it unlocks the next academic stage, what long-term college readiness competency it builds, and how it ties directly to the target destination.
-  - `micro_view`: A 4-5 sentence strategic paragraph describing the PRECISE EXECUTION OUTPUT — what specific tasks, coursework, and deliverables the student must complete, how many hours per week to allocate, what tools and platforms to use, what measurable checkpoints confirm completion, and what the tangible output looks like before advancing.
-  - `nano_view`: A 4-5 sentence strategic paragraph outlining the MENTOR GUIDANCE FOCUS — what diagnostic assessments and expert sessions happen, how the mentor validates readiness to advance, what peer cohort checkpoints are recommended, what failure patterns to watch for, and how expert feedback is incorporated before the next milestone begins.
-- Distribute the calculated total duration logically across the steps. For example, distribute month ranges like "Months 1-3", "Months 4-6", etc., so they span the entire calculated duration of the pathway.
-- CRITICAL CONSISTENCY RULE: Every single milestone in `steps` must have equally rich `description`, `macro_view`, `micro_view`, and `nano_view` text. Do not make only Step 1 or Step 2 detailed. If the pathway has 5, 9, 10, 12, or any other number of steps, every step must receive a detailed multi-sentence explanation with no one-line view fields.
-- Generate a dynamic, appropriate number of micro_steps tasks per step based on the milestone requirements (do not hardcode to exactly 3).
-- Generate a dynamic, appropriate number of learning_objectives per step based on the milestone requirements (do not hardcode to exactly 3).
-- Generate a dynamic, data-dependent number of marketplace recommendations for each of the three sections ("macro_free", "micro_structured", "nano_expert") within all 4 category lists (mentors, vendors, institutions, distributors). Do NOT use a fixed minimum, fixed maximum, or default count. The number of recommendations must be based on the milestone's real needs, the student's grade and constraints, target competitiveness, budget signals, and the availability of relevant resources.
-- Ensure the 'type' field of each generated item matches the category (e.g. 'Mentor' or 'Coaching' for mentors, 'Course' or 'Bootcamp' for vendors, 'University' or 'School' for institutions, 'YouTube' or 'Book' or 'Community' for distributors).
-- Avoid repeated resource names. Suggest highly specific resources like freeCodeCamp, Coursera, MIT OCW, Khan Academy, specific textbooks.
-- Deeply differentiate based on profile grade, curriculum (CBSE vs. IB vs. University), financial budget, stream, personality type, and location.
-- Each step description MUST be a rich, detailed, multi-sentence paragraph (3-4 sentences). Do NOT provide short, generic, or single-sentence descriptions. Make them highly academic, pedagogical, and context-specific.
-- CRITICAL NAME BAN: NEVER mention the student's personal name (e.g. Sunkara, Chaitanya, Praneeth) or email or personal pronouns in any text fields (titles, descriptions, views, checklist tasks, or objectives). Focus purely on objective, academic instructions.
-- REFINEMENT, KEYWORD UNDERSTANDING & VALIDATION RULES:
-  - If a Refinement / Adjustment Request is provided:
-    - You MUST understand the keywords and intent behind it:
-      - E.g., if it says "change step X description", you MUST locate the step with id X and rewrite its "description" text exactly as requested (or make it more detailed/aligned with their feedback).
-      - E.g., if it says "add more steps" or "add X steps", you MUST increase the number of milestones in the "steps" and insert relevant steps with correct IDs.
-      - E.g., if it says "add correct marketplace" or "change marketplace", you MUST adjust the "marketplace" objects inside the relevant steps.
-      - E.g., if it says "give more accurate" or "add SAT prep", you MUST modify descriptions, objectives, and checklists to include those academic resources.
-    - If the request is completely unrelated to the career pathway, contains nonsense, or asks to perform out-of-scope tasks (e.g., "tell me a joke", "tell me a story", "what is the weather"), you MUST return a JSON object containing ONLY the key "error" with a polite description explaining why the request is invalid and how the user can ask correctly. Example: {{"error": "This request is irrelevant to career pathway refinement. Please provide specific instructions to adjust this pathway, such as 'change step 1 description' or 'add more milestones'."}}
-    - If the request is valid, perform the refinement. If an Existing Roadmap is provided as context, you MUST preserve all steps that the user did not ask to change. Modify or replace only the specific steps/details requested by the user, while keeping other milestones/steps identical to the existing roadmap.
+CRITICAL RULES:
+1. STRICT CATEGORY ADHERENCE: Generate milestones strictly appropriate for {cat.upper()}.
+2. DYNAMIC STEP COUNT RULE:
+   - For multi-year or comprehensive educational journeys (e.g. 24-36 months): Generate between 6 and 9 genuinely distinct milestones spanning the timeline.
+   - For skill acquisition or career transition journeys (e.g. 6-18 months): Generate between 5 and 7 genuinely distinct milestones.
+   - For short-term counseling or immediate support plans (e.g. 1-6 months): Generate between 3 and 5 genuinely distinct milestones.
+   - Every single milestone must have a distinct purpose and title.
+3. NO GENERIC BOILERPLATE: Every single step must have unique, rich descriptions, distinct learning objectives, and custom actionable checklist items.
+4. NAME BAN: NEVER include personal names, personal emails, or personal pronouns in any text fields. Keep all content objective and professional.
 """
+    return prompt
 
-# ─── AGENT 2: PATH AUDIT AGENT PROMPT ────────────────────────────────────────
-AGENT_2_PROMPT = """You are the Naaviverse Path Audit Agent (Agent 2).
-Your purpose is to validate and improve the overall roadmap's path-level information.
-Audited Goals:
-- Target Career Goal: {target_goal}
-- Student Current Position & Profile: {current_position} | {profile}
 
-Given this raw blueprint JSON, review and audit:
-1. The overall "path_title" (Is it clear, accurate, and aligned with target goal?)
-2. The overall "path_description" (Is it a professional, highly relevant, multi-sentence strategic summary?)
-3. Estimate a realistic "readiness_score" (0-100) and "readiness_label" (e.g. Early Starter, Advanced, Intermediate) based dynamically on the student's profile signals (academic performance, stream, and curriculum) relative to the competitiveness of the Target Career Goal:
-   - For highly competitive targets (e.g., Harvard, Yale, Stanford, MIT, Oxford, IIT, BITS):
-     - If performance is "90% and above", score should be around 30-40 (Early/Intermediate Starter).
-     - If performance is "75%–89%", score should be around 20-30.
-     - If performance is below 75%, score should be around 10-20.
-   - For moderately competitive targets (e.g., Local Universities, State Colleges):
-     - If performance is "90% and above", score should be around 75-85 (Advanced Starter).
-     - If performance is "75%–89%", score should be around 50-60.
-     - If performance is below 75%, score should be around 30-40.
-   - Adjust the score dynamically based on these parameters. Do NOT hardcode it.
-4. Highlight critical "blind_spots" (gaps, potential constraints, or warnings based on their profile).
-5. CRITICAL NAME BAN: Verify that the overall path title and description NEVER mention the student's personal name, email, or personal pronouns. If any names are present, rewrite the text to be completely objective, focusing purely on explaining the main strategic direction of this pathway.
+def build_agent_2_prompt(
+    category: str,
+    sub_segment: Optional[str],
+    current_position: str,
+    target_goal: str,
+    profile: dict,
+    blueprint_json: str
+) -> str:
+    cat = resolve_focus_category(category)
+    return f"""You are the Naaviverse Path Audit Agent (Agent 2).
+Your purpose is to validate and refine the overall pathway title, description, readiness score, and blind spots.
 
-Output ONLY a valid JSON object of this structure:
+CATEGORY CONTEXT: {cat.upper()} ({sub_segment or 'Standard'})
+Target Goal / Need: {target_goal}
+Current Position: {current_position}
+Student Profile: {json.dumps(profile or {{}})}
+
+AUDIT TASKS:
+1. Verify "path_title" is clear, accurate, and reflects {cat.upper()} pathway semantics.
+2. Verify "path_description" is professional, informative, multi-sentence, and specific to {target_goal}.
+3. Validate "readiness_score" (5-95) and "readiness_label" according to {cat.upper()} evaluation criteria.
+4. Validate "blind_spots" to highlight 2+ real, actionable constraints.
+5. NAME BAN: Ensure NO personal names, emails, or personal pronouns exist in any text.
+
+Output ONLY valid JSON matching:
 {{
   "path_title": "<audited and refined Path Title>",
   "path_description": "<audited and refined detailed multi-sentence Path Description>",
-  "readiness_score": <updated integer 0-100 based on profile readiness>,
-  "readiness_label": "<updated readiness description>",
+  "readiness_score": 25,
+  "readiness_label": "Early Starter",
   "blind_spots": [
     "<warning or critical gap 1 based on profile constraints>",
     "<warning or critical gap 2 based on profile constraints>"
@@ -586,198 +497,101 @@ Output ONLY a valid JSON object of this structure:
 }}
 
 Blueprint JSON to Audit:
-{blueprint}
+{blueprint_json}
 """
 
-# ─── AGENT 3: STEPS AND VIEWS AUDIT AGENT PROMPT ─────────────────────────────
-AGENT_3_PROMPT = """You are the Naaviverse Steps and Views Audit Agent (Agent 3).
-Your purpose is to validate the roadmap's execution structure, milestones, learning views, and micro checklists.
-Audited Goals:
-- Target Career Goal: {target_goal}
-- Student Current Position & Profile: {current_position} | {profile}
 
-Given this blueprint JSON containing steps and views, review and audit:
-1. Each step's "title" and "duration" (Ensure logical progression, and MUST preserve the step's exact calculated month duration range from the blueprint JSON, e.g. "Months 1-9" or "Months 1-6" or "Months 1-3" exactly. Do NOT change these ranges to default values).
-2. Each step's "description" (Must be a rich, detailed, multi-sentence paragraph of 3-4 sentences detailing the main academic utility).
-3. The step's "learning_objectives" (Verify they align with target learning outcomes).
-4. The step's "macro_view" (Must be a rich 4-5 sentence paragraph clearly explaining the BIG PICTURE PURPOSE — the overarching academic goal this milestone advances and why it is a critical foundation in the roadmap).
-5. The step's "micro_view" (Must be a rich 4-5 sentence paragraph describing the PRECISE EXECUTION OUTPUT — the exact academic tasks, deliverables, and coursework the student must complete to finish this phase).
-6. The step's "nano_view" (Must be a rich 4-5 sentence paragraph explaining the MENTOR GUIDANCE FOCUS — the diagnostic checks, expert review sessions, and accountability checkpoints that validate readiness to advance).
-7. The step's "micro_steps" checklist tasks (Make sure they are hyper-specific, actionable, and tailored to the student's curriculum/grade).
-8. CRITICAL NAME BAN: Strictly verify that NONE of the step titles, durations, descriptions, learning objectives, views (macro, micro, nano), or micro_steps tasks contain the student's personal name, email, or direct pronouns. Rewrite all fields to be completely objective, professional, and academic, focusing entirely on what the step achieves, how to execute it, and how to complete the step successfully.
-9. CRITICAL STEP PRESERVATION RULE: You MUST audit and return every single milestone/step provided in the blueprint JSON. If the blueprint JSON contains 8 steps, you must output exactly 8 audited steps in your JSON array. If it contains 10 steps, you must output exactly 10 audited steps. Do NOT skip, delete, combine, or truncate the steps under any circumstances.
+def build_agent_3_prompt(
+    category: str,
+    sub_segment: Optional[str],
+    current_position: str,
+    target_goal: str,
+    profile: dict,
+    blueprint_json: str
+) -> str:
+    cat = resolve_focus_category(category)
+    return f"""You are the Naaviverse Steps and Views Audit Agent (Agent 3).
+Your purpose is to validate and polish all steps, learning objectives, and Macro/Micro/Nano views.
 
-Output ONLY a valid JSON array of this structure:
-[
-  {{
-    "id": 1,
-    "title": "<audited step title>",
-    "duration": "<preserve duration range from blueprint exactly, e.g., 'Months 1-9'>",
-    "description": "<audited rich detailed multi-sentence description (3-4 sentences)>",
-    "learning_objectives": [
-      "<audited learning objective 1>",
-      "... for all learning objectives in this step ..."
-    ],
-    "macro_view": "<audited/refined macro view text>",
-    "micro_view": "<audited/refined micro view text>",
-    "nano_view": "<audited/refined nano view text>",
-    "micro_steps": [
-      {{"task": "<actionable task>", "resource": "<real specific resource>"}},
-      "... for all micro steps in this step ..."
-    ]
-  }},
-  ... for all steps in the blueprint ...
-]
+CATEGORY CONTEXT: {cat.upper()} ({sub_segment or 'Standard'})
+Target Goal / Need: {target_goal}
+Current Position: {current_position}
+
+AUDIT TASKS:
+1. Ensure every step's title, duration, and description strictly belong to {cat.upper()} semantics.
+2. PRESERVE DURATION: Keep the exact duration range from blueprint (e.g. 'Months 1-3', 'Weeks 1-4').
+3. Verify rich multi-sentence text in 'macro_view' (big picture), 'micro_view' (execution deliverables), and 'nano_view' (expert/mentor validation).
+4. Verify 'learning_objectives' and 'micro_steps' are hyper-specific and actionable for {target_goal}.
+5. CRITICAL STEP PRESERVATION: Audit and return EVERY step in the blueprint without skipping, combining, or dropping steps.
+6. NAME BAN: Ensure NO personal names or emails appear in any field.
+
+Output ONLY a valid JSON array of audited step objects.
 
 Blueprint JSON to Audit:
-{blueprint}
+{blueprint_json}
 """
 
-# ─── AGENT 4: MARKETPLACE AUDIT AGENT PROMPT ──────────────────────────────────
-AGENT_4_PROMPT = """You are the Naaviverse Marketplace Audit Agent (Agent 4).
-Your purpose is to validate all learning resource marketplace recommendations generated across each milestone's Macro, Micro, and Nano views.
-Audited Goals:
-- Target Career Goal: {target_goal}
-- Student Current Position & Profile: {current_position} | {profile}
 
-Given this blueprint JSON, review the "marketplace" block for each step.
-Ensure resources:
-1. Match the budget limits (Lower percentages like 0-25% or 25-50% => free/low cost resources, higher percentages => high quality bootcamps/paid courses/premium mentoring).
-2. Match personality traits (RIASEC codes: Realistic => practical/hands-on tasks, Investigative => research/data/logic, Artistic => design/creative writing, Social => teaching/helping/cooperative, Enterprising => startup/business/leadership, Conventional => structured/admin/analytical tracking).
-3. Are highly reputable, real-world educational resources (e.g. Khan Academy, Coursera, MIT OCW, specific standard prep books).
-4. Pricing and next steps are realistic, detailed, and actionable.
-5. CRITICAL NAME BAN: Ensure that no marketplace recommendations, why details, next steps, or outcomes contain the student's personal name, email, or pronouns. Keep all text objective and general.
-6. CRITICAL STEP PRESERVATION RULE: You MUST audit and return the marketplace blocks for every single milestone/step provided in the blueprint JSON. If the blueprint JSON has 8 steps, you must output exactly 8 audited steps in your JSON array. If it has 10 steps, you must output exactly 10 audited steps. Do NOT skip, delete, combine, or truncate steps under any circumstances.
+def build_agent_4_prompt(
+    category: str,
+    sub_segment: Optional[str],
+    current_position: str,
+    target_goal: str,
+    profile: dict,
+    blueprint_json: str
+) -> str:
+    cat = resolve_focus_category(category)
+    return f"""You are the Naaviverse Marketplace Audit Agent (Agent 4).
+Your purpose is to validate that all learning resource recommendations match {cat.upper()} needs.
 
-Output ONLY a valid JSON array of this structure:
+CATEGORY CONTEXT: {cat.upper()} ({sub_segment or 'Standard'})
+Target Goal / Need: {target_goal}
+Current Position: {current_position}
+
+AUDIT TASKS:
+1. Verify mentors, vendors, institutions, and distributors are genuinely relevant to {cat.upper()} and the specific step.
+   - Academic: Tutors, admissions advisors, test prep, universities, academic books.
+   - Practical: Developer mentors, coding sandboxes, project courses (Coursera/freeCodeCamp/Udemy), GitHub, docs.
+   - Jobs: Career coaches, mock interviewers, ATS resume reviews, LinkedIn, LeetCode, job boards.
+   - Non-Academic: Certified counselors, therapists, mindfulness apps, routine trackers, support groups.
+2. Validate realistic costs, action-oriented next steps, and proper section classification (macro_free, micro_structured, nano_expert).
+3. CRITICAL STEP PRESERVATION: Return audited marketplace objects for EVERY step in the blueprint.
+4. NAME BAN: Ensure NO personal names or emails appear.
+
+Output ONLY a valid JSON array of step marketplace objects:
 [
   {{
     "id": 1,
     "marketplace": {{
-      "mentors": [
-        {{
-          "name": "<audited mentor name>",
-          "type": "Mentor",
-          "why": "<why this fits the macro free view>",
-          "next_step": "<how to connect>",
-          "tags": ["<tag>"],
-          "section": "macro_free",
-          "price": "Free"
-        }},
-        {{
-          "name": "<audited paid mentor>",
-          "type": "Mentor",
-          "why": "<why this fits the micro view>",
-          "next_step": "<how to connect>",
-          "tags": ["<tag>"],
-          "section": "micro_structured",
-          "price": "<price>"
-        }},
-        {{
-          "name": "<audited premium mentor>",
-          "type": "Mentor",
-          "why": "<why this fits the nano view>",
-          "next_step": "<how to connect>",
-          "tags": ["<tag>"],
-          "section": "nano_expert",
-          "price": "<price>"
-        }}
-      ],
-      "vendors": [
-        {{
-          "name": "<audited free vendor resource>",
-          "type": "Course",
-          "why": "<why>",
-          "next_step": "<next step>",
-          "tags": ["<tag>"],
-          "section": "macro_free",
-          "cost": "Free"
-        }},
-        {{
-          "name": "<audited structured vendor course>",
-          "type": "Course",
-          "why": "<why>",
-          "next_step": "<next step>",
-          "tags": ["<tag>"],
-          "section": "micro_structured",
-          "cost": "<cost>"
-        }},
-        {{
-          "name": "<audited premium vendor bootcamp>",
-          "type": "Bootcamp",
-          "why": "<why>",
-          "next_step": "<next step>",
-          "tags": ["<tag>"],
-          "section": "nano_expert",
-          "cost": "<cost>"
-        }}
-      ],
-      "institutions": [
-        {{
-          "name": "<audited free open university resource>",
-          "type": "University",
-          "why": "<why>",
-          "next_step": "<next step>",
-          "tags": ["<tag>"],
-          "section": "macro_free",
-          "cost": "Free"
-        }},
-        {{
-          "name": "<audited university certificate program>",
-          "type": "University",
-          "why": "<why>",
-          "next_step": "<next step>",
-          "tags": ["<tag>"],
-          "section": "micro_structured",
-          "cost": "<cost>"
-        }},
-        {{
-          "name": "<audited premium executive university program>",
-          "type": "University",
-          "why": "<why>",
-          "next_step": "<next step>",
-          "tags": ["<tag>"],
-          "section": "nano_expert",
-          "cost": "<cost>"
-        }}
-      ],
-      "distributors": [
-        {{
-          "name": "<audited free youtube or docs>",
-          "type": "YouTube",
-          "why": "<why>",
-          "next_step": "<next step>",
-          "tags": ["<tag>"],
-          "section": "macro_free",
-          "cost": "Free"
-        }},
-        {{
-          "name": "<audited book or paid guide>",
-          "type": "Book",
-          "why": "<why>",
-          "next_step": "<next step>",
-          "tags": ["<tag>"],
-          "section": "micro_structured",
-          "cost": "<cost>"
-        }},
-        {{
-          "name": "<audited premium tech library subscription>",
-          "type": "Subscription",
-          "why": "<why>",
-          "next_step": "<next step>",
-          "tags": ["<tag>"],
-          "section": "nano_expert",
-          "cost": "<cost>"
-        }}
-      ]
+      "mentors": [],
+      "vendors": [],
+      "institutions": [],
+      "distributors": []
     }}
-  }},
-  ... for all steps in the blueprint ...
+  }}
 ]
 
 Blueprint JSON to Audit:
-{blueprint}
+{blueprint_json}
 """
+
+AGENT_1_PROMPT = """You are the Naaviverse pathway blueprint generator (Agent 1).
+Current Position: {current_position}
+Target Goal: {target_goal}
+Profile: {profile}
+Degree Type: {degree_type}
+Focus: {focus_area}
+"""
+AGENT_2_PROMPT = """You are the Naaviverse Path Audit Agent (Agent 2).
+Blueprint: {blueprint}
+"""
+AGENT_3_PROMPT = """You are the Naaviverse Steps and Views Audit Agent (Agent 3).
+Blueprint: {blueprint}
+"""
+AGENT_4_PROMPT = """You are the Naaviverse Marketplace Audit Agent (Agent 4).
+Blueprint: {blueprint}
+"""
+
 
 # ─── POST-PROCESSING: PERSONAL NAME SANITIZER ─────────────────────────────────
 def build_name_patterns(profile: dict, current_position: str = "") -> list:
@@ -861,61 +675,147 @@ def set_view_description(step: dict, view_key: str, description: str):
         step[view_key] = description
 
 
-def enrich_step_narrative(step: dict, current: str, goal: str) -> dict:
+def enrich_step_narrative(step: dict, current: str, goal: str, category: str = "academic") -> dict:
     """Guarantee every roadmap step has detailed view text, even when a model returns one-liners."""
     if not isinstance(step, dict):
         return step
 
+    cat = resolve_focus_category(category)
     title = str(step.get("title") or f"Step {step.get('id', '')}").strip()
     duration = str(step.get("duration") or "this phase").strip()
     existing_description = str(step.get("description") or "").strip()
-    source_description = existing_description or f"Complete the planned academic work for {title}."
+    source_description = existing_description or f"Complete the planned work for {title}."
 
-    if not is_rich_paragraph(existing_description, min_chars=220, min_sentences=3):
-        step["description"] = (
-            f"{source_description} This {duration} milestone should define the exact academic target, the evidence that proves progress, "
-            f"and the standards required to move forward in the pathway. The work should connect daily study routines, profile-building activity, "
-            f"and measurable readiness indicators so the student is not simply completing tasks but building a stronger admissions narrative. "
-            f"By the end of the phase, the student should have clear outputs, reviewed gaps, and a documented next-step plan for the following milestone."
-        )
+    if not is_rich_paragraph(existing_description, min_chars=200, min_sentences=2):
+        if cat == "practical":
+            step["description"] = (
+                f"{source_description} This {duration} milestone focuses on hands-on practical skill acquisition, "
+                f"code/design implementation, and creating demonstrable proof of work for {goal}. "
+                f"The learner should build functional exercises, review best practices, and document key learnings. "
+                f"By the end of this phase, concrete deliverables will validate readiness for more advanced project milestones."
+            )
+        elif cat == "jobs":
+            step["description"] = (
+                f"{source_description} This {duration} milestone targets core workplace competencies, role gap closures, "
+                f"and professional portfolio building required for {goal}. "
+                f"The candidate should practice technical/behavioral requirements, optimize evidence of capability, and engage with industry standards. "
+                f"Completion of this phase confirms readiness for hiring and placement opportunities."
+            )
+        elif cat == "non_academic":
+            step["description"] = (
+                f"{source_description} This {duration} milestone is designed for personal wellbeing, habit formation, "
+                f"and actionable support strategies to address {goal}. "
+                f"The individual will establish healthy daily routines, apply coping mechanisms, and connect with trusted support resources. "
+                f"By the end of this period, clear progress indicators and sustainable habits will provide steady guidance."
+            )
+        else:
+            step["description"] = (
+                f"{source_description} This {duration} milestone defines the exact academic target, evidence of progress, "
+                f"and standards required to move forward in the pathway for {goal}. "
+                f"The work connects daily study routines, academic preparation, and measurable readiness indicators. "
+                f"By the end of the phase, the student will have clear outputs and a documented progression plan."
+            )
 
     if not is_rich_paragraph(step.get("macro_view")):
-        set_view_description(step, "macro_view", (
-            f"{title} is a strategic milestone because it turns the broad ambition of reaching {goal} into a concrete stage of academic readiness. "
-            f"During {duration}, this phase should strengthen the student's transcript, subject confidence, and long-term preparation habits while keeping the final destination visible. "
-            f"It is important because weak execution here creates gaps that later appear in test scores, applications, interviews, or portfolio evidence. "
-            f"Completing this step well unlocks the next stage of the pathway by proving that the student can meet a defined standard, reflect on gaps, and convert guidance into steady progress. "
-            f"The big-picture outcome is a stronger, more coherent profile that connects the current position of {current} with the expectations of {goal}."
-        ))
+        if cat == "practical":
+            set_view_description(step, "macro_view", (
+                f"{title} is a vital milestone because it converts foundational knowledge into tangible technical ability for {goal}. "
+                f"During {duration}, this phase develops problem-solving speed, code cleanliness, and system understanding. "
+                f"Mastering these skills builds practical confidence and unlocks the next level of project architecture. "
+                f"The big-picture outcome is an authentic proof of work demonstrating real-world competency."
+            ))
+        elif cat == "jobs":
+            set_view_description(step, "macro_view", (
+                f"{title} represents a key career progression phase aligning existing experience from {current} toward {goal}. "
+                f"During {duration}, this milestone closes role capability gaps and refines professional standing. "
+                f"Strong execution here creates the credibility required for interviews, evaluations, and role transitions. "
+                f"The strategic result is a differentiated candidate profile meeting industry expectations."
+            ))
+        elif cat == "non_academic":
+            set_view_description(step, "macro_view", (
+                f"{title} establishes essential emotional and routine foundations to support personal progress toward {goal}. "
+                f"During {duration}, this phase reduces overwhelm, clarifies boundaries, and introduces positive coping mechanisms. "
+                f"Building these life practices ensures long-term mental resilience and sustainable personal balance. "
+                f"The overarching outcome is greater clarity, calmness, and personal empowerment."
+            ))
+        else:
+            set_view_description(step, "macro_view", (
+                f"{title} is a strategic milestone turning the ambition of reaching {goal} into concrete academic readiness. "
+                f"During {duration}, this phase strengthens subject confidence, transcripts, and long-term preparation habits. "
+                f"Completing this step proves the student can meet competitive standards and advance through prerequisites. "
+                f"The big-picture outcome is a coherent academic profile matching the expectations of {goal}."
+            ))
 
     if not is_rich_paragraph(step.get("micro_view")):
-        set_view_description(step, "micro_view", (
-            f"The execution focus for {title} should be converted into weekly deliverables, tracked study blocks, and visible proof of completion. "
-            f"The student should maintain a simple planner in Notion, Google Sheets, or a notebook with subject targets, practice-test scores, resource links, and pending mentor feedback. "
-            f"At least two to three focused work sessions per week should be reserved for this milestone, with extra time added before exams, submissions, or application deadlines. "
-            f"Completion should be measured through tangible outputs such as revised notes, mock-test analysis, shortlist documents, project logs, essay drafts, or reviewed checklists, depending on the step. "
-            f"Before moving forward, the student should be able to show what was completed, what improved, what still needs support, and how the next milestone will use this output."
-        ))
+        if cat == "practical":
+            set_view_description(step, "micro_view", (
+                f"The execution focus for {title} involves hands-on coding, building modules, and completing sandbox exercises. "
+                f"The learner should maintain a repository, track commits, test edge cases, and document technical notes. "
+                f"Dedicate 4 to 8 focused hours per week to code implementation and debugging practice. "
+                f"Completion is verified when functional code runs cleanly and is pushed with clear documentation."
+            ))
+        elif cat == "jobs":
+            set_view_description(step, "micro_view", (
+                f"Execution for {title} converts role requirements into concrete deliverables, resume updates, and interview prep. "
+                f"The candidate should complete case studies, system design problems, or portfolio documentation weekly. "
+                f"Reserve dedicated time for mock question drills, ATS keyword optimization, and professional outreach. "
+                f"Completion is measured by tangible artifacts: verified code repos, polished work samples, or recorded mock sessions."
+            ))
+        elif cat == "non_academic":
+            set_view_description(step, "micro_view", (
+                f"Daily execution for {title} centers on habit tracking, structured journaling, and routine adherence. "
+                f"Reserve 15 to 30 minutes daily for mindfulness, sleep scheduling, or task prioritization exercises. "
+                f"Maintain a simple tracker in a journal or app to record stress triggers, moods, and routine completions. "
+                f"Completion is validated when daily wellness routines are maintained consistently throughout the phase."
+            ))
+        else:
+            set_view_description(step, "micro_view", (
+                f"The execution focus for {title} is converted into weekly study blocks, chapter mastery, and mock tests. "
+                f"The student should maintain a structured planner with revision targets, formula sheets, and practice scores. "
+                f"At least two to three focused study sessions per week should be dedicated to core curriculum chapters. "
+                f"Completion is measured through reviewed mock exams, syllabus coverage checks, and diagnostic logs."
+            ))
 
     if not is_rich_paragraph(step.get("nano_view")):
-        set_view_description(step, "nano_view", (
-            f"The mentor focus for {title} should be diagnostic, evidence-based, and tied to readiness for the next milestone. "
-            f"A counselor, subject expert, or admissions mentor should review the student's current output, compare it with the milestone expectations, and identify the highest-risk gaps. "
-            f"The review should include specific feedback on academic quality, consistency, time management, and whether the evidence produced during {duration} is strong enough to support the overall pathway. "
-            f"Peer or cohort accountability can be used to compare progress, surface blind spots, and keep execution from becoming isolated or vague. "
-            f"The phase should close with a revised action list that records mentor feedback, fixes weak assumptions, and confirms whether the student is ready to advance."
-        ))
+        if cat == "practical":
+            set_view_description(step, "nano_view", (
+                f"The mentor focus for {title} centers on code review, architecture feedback, and technical diagnostic checks. "
+                f"A senior developer or mentor should review project structure, identify antipatterns, and suggest optimizations. "
+                f"Engage with developer communities to compare solutions, receive peer critiques, and fix code smells. "
+                f"The phase concludes with a code review sign-off validating that project standards have been achieved."
+            ))
+        elif cat == "jobs":
+            set_view_description(step, "nano_view", (
+                f"The mentor focus for {title} is strategic career advisory, mock interview evaluations, and portfolio critiques. "
+                f"An industry specialist or hiring manager should review competency evidence and pressure-test interview responses. "
+                f"Seek constructive feedback on communication clarity, technical depth, and executive presence. "
+                f"The phase wraps up with an expert assessment confirming role readiness for the next milestone."
+            ))
+        elif cat == "non_academic":
+            set_view_description(step, "nano_view", (
+                f"The guidance focus for {title} involves supportive check-ins, routine accountability, and qualified advisor feedback. "
+                f"A life coach, counselor, or trusted peer should review progress logs, discuss obstacles, and calibrate coping strategies. "
+                f"Utilize safe feedback loops to celebrate consistency, adjust routines, and identify when additional care is beneficial. "
+                f"The phase closes with a supportive reflection session affirming personal growth and readiness to continue."
+            ))
+        else:
+            set_view_description(step, "nano_view", (
+                f"The mentor focus for {title} is diagnostic, evidence-based, and tied to prerequisite milestone readiness. "
+                f"An academic counselor or subject tutor should review test performance, analyze weak topics, and address curriculum risks. "
+                f"Peer cohort study sessions are encouraged to compare problem-solving approaches and maintain motivation. "
+                f"The phase closes with mentor feedback confirming the student is prepared for subsequent academic stages."
+            ))
 
     return step
 
 
-def enrich_roadmap_narratives(roadmap: dict, current: str, goal: str) -> dict:
+def enrich_roadmap_narratives(roadmap: dict, current: str, goal: str, category: str = "academic") -> dict:
     if not isinstance(roadmap, dict):
         return roadmap
     milestones = roadmap.get("steps")
     if isinstance(milestones, list):
         roadmap["steps"] = [
-            enrich_step_narrative(milestone, current, goal)
+            enrich_step_narrative(milestone, current, goal, category)
             for milestone in milestones
         ]
     return roadmap
@@ -960,16 +860,17 @@ async def log_generation_event(
 # Helper to query Groq and extract clean JSON with model fallbacks
 async def query_groq_json(
     prompt: str,
-    preferred_model: str = "llama-3.1-8b-instant",
+    preferred_model: str = "openai/gpt-oss-120b",
     fallback_models: Optional[List[str]] = None,
 ) -> dict:
     models = [preferred_model] + (
         fallback_models
         if fallback_models is not None
         else [
-            "llama-3.1-8b-instant",
-            "llama-3.3-70b-versatile",
-            "qwen/qwen3-32b",
+            "openai/gpt-oss-120b",
+            "qwen/qwen3.8-27b",
+            "groq/compound",
+            "groq/compound-mini",
             "openai/gpt-oss-20b",
         ]
     )
@@ -1151,16 +1052,14 @@ def get_request_degree_type(goal: str, profile: dict, explicit_degree_type: Opti
     )
 
 
-def ensure_degree_type_for_generation(goal: str, profile: dict, explicit_degree_type: Optional[str] = None) -> dict:
-    degree_type = get_request_degree_type(goal, profile, explicit_degree_type)
-    if not degree_type:
-        raise HTTPException(
-            status_code=400,
-            detail="Degree type is required. Please include Bachelor's, Master's, PhD, Transfer, Associate, Diploma, or Certificate before generating a path.",
-        )
-
+def ensure_degree_type_for_generation(goal: str, profile: dict, explicit_degree_type: Optional[str] = None, category: str = "academic") -> dict:
+    cat = resolve_focus_category(category)
     enriched_profile = dict(profile or {})
-    enriched_profile["degreeType"] = degree_type
+    degree_type = get_request_degree_type(goal, profile, explicit_degree_type)
+    if degree_type:
+        enriched_profile["degreeType"] = degree_type
+    elif cat == "academic":
+        enriched_profile["degreeType"] = "Bachelor's"
     return enriched_profile
 
 
@@ -1184,7 +1083,48 @@ def duration_months_for_level(level: int) -> int:
     return duration_months_for_degree(degree_type) or MIN_ADMISSION_CYCLE_MONTHS
 
 
-def calculate_total_duration_months(current: str, goal: str, profile: dict, explicit_degree_type: Optional[str] = None) -> int:
+def calculate_total_duration_months(
+    current: str,
+    goal: str,
+    profile: dict,
+    explicit_degree_type: Optional[str] = None,
+    category: str = "academic",
+    sub_segment: Optional[str] = None
+) -> int:
+    cat = resolve_focus_category(category)
+    curr_lower = (current or "").lower()
+    goal_lower = (goal or "").lower()
+
+    # 1. Practical & Skills Duration (3 to 12 months)
+    if cat == "practical":
+        if any(k in curr_lower for k in ["beginner", "zero", "starter", "novice", "no experience"]):
+            return 8
+        elif any(k in curr_lower for k in ["intermediate", "basic", "learner"]):
+            return 6
+        elif any(k in curr_lower for k in ["advanced", "experienced"]):
+            return 4
+        return 6
+
+    # 2. Jobs & Careers Duration (6 to 18 months)
+    elif cat == "jobs":
+        if "senior" in goal_lower and any(k in curr_lower for k in ["junior", "entry", "student", "intern"]):
+            return 12
+        elif any(k in curr_lower for k in ["career switch", "transition", "non-tech"]):
+            return 12
+        elif any(k in goal_lower for k in ["lead", "manager", "director"]):
+            return 12
+        return 6
+
+    # 3. Non-Academic Counselling Duration (1 to 6 months)
+    elif cat == "non_academic":
+        sub_lower = (sub_segment or "").lower()
+        if "immediate" in sub_lower or "immediate" in goal_lower:
+            return 2
+        elif "life" in sub_lower or "habit" in goal_lower or "decision" in goal_lower:
+            return 3
+        return 3
+
+    # 4. Academic & Research Duration (Cumulative Academic Progression)
     target_degree = get_request_degree_type(goal, profile, explicit_degree_type)
 
     target_level = 0
@@ -1230,10 +1170,7 @@ def calculate_total_duration_months(current: str, goal: str, profile: dict, expl
     
     if is_masters:
         current_level = 2
-        if "1st year" in current_str or "first year" in current_str:
-            remaining_current_months = duration_months_for_level(current_level) // 2
-        else:
-            remaining_current_months = 0
+        remaining_current_months = duration_months_for_level(current_level) // 2
     elif is_bachelors:
         current_level = 1
         current_degree_months = duration_months_for_level(current_level)
@@ -1245,8 +1182,6 @@ def calculate_total_duration_months(current: str, goal: str, profile: dict, expl
             remaining_current_months = current_degree_months // 2
         elif "3rd year" in current_str or "third year" in current_str:
             remaining_current_months = current_degree_months // 4
-        elif "4th year" in current_str or "fourth year" in current_str or "final year" in current_str:
-            remaining_current_months = 0
         else:
             remaining_current_months = current_degree_months // 2
     elif is_school or grade_num is not None:
@@ -1317,7 +1252,7 @@ CONTENT_SEGMENTS = [
 
 def resolve_focus_category(focus: Optional[str]) -> str:
     text = str(focus or "").lower()
-    if any(k in text for k in ["non-academic", "non academic", "mental", "wellness", "life counselling", "life counseling", "immediate guidance"]):
+    if any(k in text for k in ["non_academic", "non-academic", "non academic", "mental", "wellness", "life counselling", "life counseling", "immediate guidance"]):
         return "non_academic"
     if any(k in text for k in ["jobs", "careers", "career-prep", "career prep", "technical roles", "non-technical", "profession", "placement"]):
         return "jobs"
@@ -1446,595 +1381,227 @@ def requires_degree_for_focus(focus: Optional[str]) -> bool:
     return resolve_focus_category(focus) == "academic"
 
 
-def get_mock_marketplace(focus: Optional[str] = None, step_title: str = "", step_id: int = 1, goal: str = "") -> dict:
+def get_mock_marketplace(
+    focus: Optional[str] = None,
+    step_title: str = "",
+    step_id: int = 1,
+    goal: str = "",
+    category: Optional[str] = None,
+    sub_segment: Optional[str] = None
+) -> dict:
+    cat = resolve_focus_category(category or focus)
     title_lower = (step_title or "").lower().strip()
-    goal_str = goal or "Target Goal"
+    goal_str = goal or "Target Destination"
 
-    # 1. Board Exams & Core Academics (Class 10 / Board Achievement)
-    if any(k in title_lower for k in ["board", "10th", "tenth", "class 10", "class x", "achievement"]):
+    # Category 4: Non-Academic Counselling
+    if cat == "non_academic":
+        sub_lower = (sub_segment or "").lower()
+        if "life" in sub_lower or "decision" in title_lower or "time" in title_lower or "habit" in title_lower:
+            return {
+                "mentors": [
+                    {"name": "Life Skills & Organization Coach", "type": "Mentor", "why": "Free advice on designing weekly schedules and decision checklists.", "next_step": "Join weekly life skills AMA.", "tags": ["Life Skills", "Habits"], "section": "macro_free", "price": "Free"},
+                    {"name": "Certified Personal Productivity Coach", "type": "Coaching", "cost": "$75", "duration": "2 weeks", "value": "1-on-1 habit tracking and time block optimization.", "next_step": "Book time audit session.", "tags": ["Time Management"], "section": "micro_structured"},
+                    {"name": "Executive Life Strategy Advisor", "type": "Mentor", "price": "$130", "session_details": "1-on-1 Goal & Strategy Session", "expected_outcomes": "Custom 90-day personal autonomy and decision framework.", "tags": ["Life Strategy"], "section": "nano_expert"}
+                ],
+                "vendors": [
+                    {"name": "Notion Life Planning Templates & Workflows", "type": "Platform", "why": "Free digital dashboards for habit tracking and daily prioritization.", "next_step": "Duplicate planner template.", "tags": ["Notion", "Productivity"], "section": "macro_free", "cost": "Free"},
+                    {"name": "Coursera Problem Solving & Decision Making", "type": "Course", "cost": "$49", "duration": "3 weeks", "value": "Structured frameworks to navigate complex choices.", "next_step": "Enroll in decision module.", "tags": ["Decision Making"], "section": "micro_structured"},
+                    {"name": "Mindvalley Habit Mastery Quest", "type": "Platform", "price": "$299", "session_details": "Structured Habit Program", "expected_outcomes": "Validated routines for focus and self-discipline.", "tags": ["Habit Mastery"], "section": "nano_expert"}
+                ],
+                "institutions": [
+                    {"name": "Open Life Skills Foundation", "type": "Institute", "why": "Free educational modules on financial literacy, time management, and communication.", "next_step": "Access free guides.", "tags": ["Life Skills", "Open Foundation"], "section": "macro_free", "cost": "Free"},
+                    {"name": "Center for Decision Sciences & Leadership", "type": "Institute", "cost": "$120", "duration": "4 weeks", "value": "Workshops on cognitive bias and prioritization.", "next_step": "Register for workshop series.", "tags": ["Decision Sciences"], "section": "micro_structured"},
+                    {"name": "International Life Coaching Academy", "type": "Institute", "price": "$450", "session_details": "Personal Mentorship Track", "expected_outcomes": "Certified personal development coaching.", "tags": ["Life Coaching"], "section": "nano_expert"}
+                ],
+                "distributors": [
+                    {"name": "Atomic Habits Implementation Guide", "type": "Guide", "why": "Summary framework for micro-habits and environment design.", "next_step": "Read habit loop breakdown.", "tags": ["Habits", "Guide"], "section": "macro_free", "cost": "Free"},
+                    {"name": "Getting Things Done (GTD) Workbook", "type": "Workbook", "cost": "$25", "duration": "Self-paced", "value": "Actionable task capture and daily processing system.", "next_step": "Set up project inbox.", "tags": ["GTD", "Workbook"], "section": "micro_structured"},
+                    {"name": "Personal Growth & Productivity Quarterly", "type": "Publication", "price": "$40/year", "session_details": "Quarterly Journal", "expected_outcomes": "Case studies and strategies for personal effectiveness.", "tags": ["Journal"], "section": "nano_expert"}
+                ]
+            }
+        else:  # Mental Health & Wellness / Immediate Support
+            return {
+                "mentors": [
+                    {"name": "Peer Wellness & Student Support Circle", "type": "Mentor", "why": "Free, confidential peer check-ins and shared coping strategies.", "next_step": "Join weekly wellness circle.", "tags": ["Peer Support", "Wellness"], "section": "macro_free", "price": "Free"},
+                    {"name": "Certified Stress & Mindfulness Coach", "type": "Coaching", "cost": "$65", "duration": "1 session", "value": "1-on-1 stress trigger mapping and breathwork routines.", "next_step": "Schedule wellness consult.", "tags": ["Mindfulness", "Stress"], "section": "micro_structured"},
+                    {"name": "Licensed Clinical Counselor / Therapist", "type": "Mentor", "price": "$120", "session_details": "1-on-1 Confidential Strategy Call", "expected_outcomes": "Professional emotional regulation and personalized coping plan.", "tags": ["Therapy", "Counseling"], "section": "nano_expert"}
+                ],
+                "vendors": [
+                    {"name": "Mindful Breath & Stress Reduction Guide", "type": "Resource", "why": "Free guided audio exercises for exam anxiety and decompression.", "next_step": "Listen to 10-minute mindfulness session.", "tags": ["Mindfulness", "Audio"], "section": "macro_free", "cost": "Free"},
+                    {"name": "Headspace / Calm Stress Management Program", "type": "Subscription", "cost": "$12/mo", "duration": "Monthly", "value": "Curated programs for sleep hygiene and anxiety reduction.", "next_step": "Start 14-day stress relief course.", "tags": ["Meditation", "Apps"], "section": "micro_structured"},
+                    {"name": "BetterHelp / Talkspace Dedicated Counseling", "type": "Platform", "price": "$260/mo", "session_details": "Weekly Virtual Sessions", "expected_outcomes": "Ongoing qualified therapist support and messaging.", "tags": ["Mental Health", "Counseling"], "section": "nano_expert"}
+                ],
+                "institutions": [
+                    {"name": "National Mental Health & Wellness Helpline", "type": "Institute", "why": "Free 24/7 confidential counseling and crisis support navigation.", "next_step": "Save 24/7 helpline contact.", "tags": ["Helpline", "24/7 Support"], "section": "macro_free", "cost": "Free"},
+                    {"name": "Center for Emotional Wellness & Mindfulness", "type": "Institute", "cost": "$90", "duration": "3 weeks", "value": "Structured resilience workshops and emotional literacy modules.", "next_step": "Register for weekend workshop.", "tags": ["Resilience", "Wellness"], "section": "micro_structured"},
+                    {"name": "Global Wellness & Psychological Care Institute", "type": "Institute", "price": "$350", "session_details": "Comprehensive Assessment", "expected_outcomes": "Detailed wellbeing evaluation and therapist referral.", "tags": ["Clinical Care"], "section": "nano_expert"}
+                ],
+                "distributors": [
+                    {"name": "Daily Emotional Check-in & Mood Journal", "type": "Guide", "why": "Free printable journal to track triggers and emotional patterns.", "next_step": "Download mood tracker PDF.", "tags": ["Mood Tracker", "Journal"], "section": "macro_free", "cost": "Free"},
+                    {"name": "The Anxiety and Phobia Workbook", "type": "Book", "cost": "$22", "duration": "Self-paced", "value": "Practical cognitive and relaxation techniques.", "next_step": "Complete Chapter 2 exercises.", "tags": ["Anxiety", "Workbook"], "section": "micro_structured"},
+                    {"name": "Mindfulness & Health Research Quarterly", "type": "Publication", "price": "$35/year", "session_details": "Quarterly Journal", "expected_outcomes": "Evidence-based wellness research and mindfulness insights.", "tags": ["Mindfulness", "Journal"], "section": "nano_expert"}
+                ]
+            }
+
+    # Category 2: Practical & Skills
+    elif cat == "practical":
         return {
             "mentors": [
-                {"name": "Class 10 Board Exam Top-Scorer Circle", "type": "Mentor", "why": "Free study tips and time management advice from past 98%+ board exam scorers.", "next_step": "Attend weekly board revision session.", "tags": ["Class 10", "Board Prep"], "section": "macro_free"},
-                {"name": "NCERT Board Subject Specialist", "type": "Mentor", "why": "Free AMA sessions on answer presentation and step-marking strategy for board exams.", "next_step": "Register for monthly board exam webinar.", "tags": ["NCERT", "Subject Specialist"], "section": "macro_free"},
-                {"name": "Academic Excellence Peer Advisory Group", "type": "Mentor", "why": "Free weekly study buddy check-ins and subject accountability circles.", "next_step": "Join peer study room.", "tags": ["Peer Study", "Accountability"], "section": "macro_free"},
-                {"name": "Board Exam Revision & Time Management Coach", "type": "Coaching", "cost": "$89", "duration": "3 weeks", "value": "Personalized chapterwise revision schedule and exam timing strategy.", "next_step": "Set up board study timetable.", "tags": ["Revision", "Timing"], "section": "micro_structured"},
-                {"name": "Core Subject Concept Tutor (Math/Science)", "type": "Tutor", "cost": "$70", "duration": "1 session", "value": "Clear specific chapter difficulties and formula applications.", "next_step": "Schedule 1-on-1 concept clarification call.", "tags": ["Math", "Science"], "section": "micro_structured"},
-                {"name": "Naaviverse Class 10 Board Result Audit", "type": "Mentor", "price": "$125", "session_details": "1-on-1 Strategy Call (45 mins)", "expected_outcomes": "Detailed mock board test evaluation and weak chapter isolation report.", "tags": ["Board Audit", "Mock Analysis"], "section": "nano_expert"},
-                {"name": "Elite 95%+ Board Exam Masterclass", "type": "Coaching", "price": "$160/hr", "session_details": "Private Board Strategy Session", "expected_outcomes": "Customized exam strategy targeting 95%+ aggregate board score.", "tags": ["95%+ Strategy", "Board Masterclass"], "section": "nano_expert"}
+                {"name": "Open Source & Developer Community Mentor", "type": "Mentor", "why": "Free guidance on git workflows, issue tracking, and contributing code.", "next_step": "Join community Discord.", "tags": ["Open Source", "Code"], "section": "macro_free", "price": "Free"},
+                {"name": "Senior Code Review & Project Coach", "type": "Coaching", "cost": "$70", "duration": "1 session", "value": "1-on-1 code audit and architecture feedback.", "next_step": "Submit project repo for review.", "tags": ["Code Review"], "section": "micro_structured"},
+                {"name": "Principal Engineer Project Advisory", "type": "Mentor", "price": "$150", "session_details": "Async Code Review & 45-min Zoom", "expected_outcomes": "Comprehensive architecture feedback and GitHub portfolio optimization.", "tags": ["Architecture", "Portfolio"], "section": "nano_expert"}
             ],
             "vendors": [
-                {"name": "Khan Academy Class 10 Foundation Modules", "type": "Course", "why": "Free video lectures and practice exercises for Class 10 Science & Math.", "next_step": "Complete chapter mastery exercises.", "tags": ["Khan Academy", "Class 10"], "section": "macro_free"},
-                {"name": "NCERT Exemplar Digital Diagnostic Portal", "type": "Platform", "why": "Free diagnostic problem sets matching high-order board questions.", "next_step": "Solve NCERT Exemplar diagnostics.", "tags": ["NCERT", "Exemplar"], "section": "macro_free"},
-                {"name": "Coursera STEM Foundations for High Schoolers", "type": "Course", "why": "Free access to introductory physics, chemistry, and calculus concepts.", "next_step": "Enroll in free audit track.", "tags": ["Coursera", "STEM"], "section": "macro_free"},
-                {"name": "edX Interactive Science Lab Simulations", "type": "Platform", "why": "Free virtual physics and chemistry lab simulations.", "next_step": "Try interactive lab module.", "tags": ["edX", "Virtual Lab"], "section": "macro_free"},
-                {"name": "MIT OpenCourseWare Secondary Math Prep", "type": "Course", "why": "Free self-paced problem sets for high school algebra and geometry.", "next_step": "Solve Problem Set 1.", "tags": ["MIT", "Math"], "section": "macro_free"},
-                {"name": "BYJU'S / Vedantu Class 10 Board Test Series", "type": "Course", "cost": "$99", "duration": "2 months", "value": "10 full-length mock board exams with step-by-step solutions and rankings.", "next_step": "Attempt mock board test 1.", "tags": ["Mock Board", "Test Series"], "section": "micro_structured"},
-                {"name": "Princeton Review Secondary School Science Track", "type": "Course", "cost": "$249", "duration": "6 weeks", "value": "Targeted instruction to master core science & mathematical problem solving.", "next_step": "Enroll in weekend live instruction cohort.", "tags": ["Science", "Math"], "section": "micro_structured"},
-                {"name": "Naaviverse Class 10 Board Exam Playbook", "type": "Provider", "price": "$130", "session_details": "Full Board Diagnostic Audit", "expected_outcomes": "Custom revision playbook with chapterwise summary notes.", "tags": ["Revision Playbook"], "section": "nano_expert"},
-                {"name": "PrepScholar Board Score 95%+ Guarantee", "type": "Platform", "price": "$349", "session_details": "AI Board Practice Engine", "expected_outcomes": "Adaptive question bank targeting top-percentile board marks.", "tags": ["PrepScholar", "Target 95%"], "section": "nano_expert"}
+                {"name": "freeCodeCamp Hands-on Curriculum", "type": "Course", "why": "100% free interactive lessons and portfolio project challenges.", "next_step": "Start module 1.", "tags": ["freeCodeCamp", "Projects"], "section": "macro_free", "cost": "Free"},
+                {"name": "Udemy / Coursera Project Bootcamp Track", "type": "Course", "cost": "$35", "duration": "4 weeks", "value": "Step-by-step project building and deployment tutorials.", "next_step": "Build and deploy project 1.", "tags": ["Course", "Projects"], "section": "micro_structured"},
+                {"name": "Udacity / Springboard Intensive Project Track", "type": "Bootcamp", "price": "$399/mo", "session_details": "Mentor-led Bootcamp", "expected_outcomes": "Production-grade portfolio projects graded by industry engineers.", "tags": ["Bootcamp", "Capstone"], "section": "nano_expert"}
             ],
             "institutions": [
-                {"name": "Central Board of Secondary Education (CBSE) Portal", "type": "Institute", "why": "Official source for class 10 sample papers, marking schemes, and circulars.", "next_step": "Download official sample question paper.", "tags": ["CBSE", "Marking Scheme"], "section": "macro_free"},
-                {"name": "National Council of Educational Research & Training (NCERT)", "type": "Institute", "why": "Official textbooks and learning resources for secondary education.", "next_step": "Access free NCERT digital e-books.", "tags": ["NCERT", "Textbooks"], "section": "macro_free"},
-                {"name": "State Education Board Resource Centre", "type": "Institute", "why": "Free state syllabus model papers and blue prints.", "next_step": "Download model question paper.", "tags": ["State Board", "Syllabus"], "section": "macro_free"},
-                {"name": "IIT Hyderabad Class 10 Foundation Academy", "type": "University", "cost": "$150", "duration": "8 weeks", "value": "Foundational STEM lectures mapping high school & competitive concepts.", "next_step": "Register for weekend online lectures.", "tags": ["IIT", "STEM Foundation"], "section": "micro_structured"},
-                {"name": "BITS Pilani Secondary School Honors Certificate", "type": "University", "cost": "$200", "duration": "10 weeks", "value": "Advanced topic certification to validate high school academic rigor.", "next_step": "Submit online enrollment form.", "tags": ["BITS", "Academic Rigor"], "section": "micro_structured"},
-                {"name": "Columbia High School Summer Program", "type": "University", "price": "$3,500", "session_details": "Summer School (2 weeks)", "expected_outcomes": "Advanced high school coursework validation and university exposure.", "tags": ["Columbia", "Summer School"], "section": "nano_expert"},
-                {"name": "Harvard Secondary School Summer Session", "type": "University", "price": "$4,200", "session_details": "College Credit Program", "expected_outcomes": "Earn official Harvard transcript credits.", "tags": ["Harvard", "Summer Credit"], "section": "nano_expert"}
+                {"name": "MIT OpenCourseWare Software & Algorithms", "type": "University", "why": "Free university lectures and problem sets covering core computing paradigms.", "next_step": "Watch introductory lecture.", "tags": ["MIT", "OpenCourseWare"], "section": "macro_free", "cost": "Free"},
+                {"name": "Developer Skills Academy Certificate", "type": "Institute", "cost": "$150", "duration": "6 weeks", "value": "Structured problem sets and verified skills certificate.", "next_step": "Submit enrollment form.", "tags": ["Certificate", "Skills"], "section": "micro_structured"},
+                {"name": "Advanced Engineering & Cloud Institute", "type": "Institute", "price": "$850", "session_details": "Online Capstone Track", "expected_outcomes": "Certified industry-ready proof of work credential.", "tags": ["Advanced Engineering"], "section": "nano_expert"}
             ],
             "distributors": [
-                {"name": "CBSE Class 10 Past 10 Years Solved Papers", "type": "Book", "why": "Compilation of past board examination papers with official solution keys.", "next_step": "Solve past board paper 1.", "tags": ["Solved Papers", "CBSE"], "section": "macro_free"},
-                {"name": "Class 10 Topper Answer Sheet & Formula Booklet", "type": "Guide", "why": "Analysis of actual topper answer sheets and essential formula summaries.", "next_step": "Download formula sheet template.", "tags": ["Topper Answers", "Formulas"], "section": "macro_free"},
-                {"name": "YouTube Academic Revision Channels Digest", "type": "YouTube", "why": "Curated playlist of top-rated free high school subject lectures.", "next_step": "Subscribe to revision playlist.", "tags": ["YouTube", "Lectures"], "section": "macro_free"},
-                {"name": "Class 10 Chapterwise Quick-Revision Booklets", "type": "Workbook", "cost": "$30", "duration": "Self-paced", "value": "Concise summary notes, mind maps, and key definitions.", "next_step": "Review mind maps before mock exam.", "tags": ["Mind Maps", "Summary Notes"], "section": "micro_structured"},
-                {"name": "O'Reilly Secondary School Science & Math Library", "type": "Subscription", "cost": "$45/year", "duration": "Annual", "value": "Access to technical reference books and problem-solving guides.", "next_step": "Access digital science library.", "tags": ["Library", "Science"], "section": "micro_structured"},
-                {"name": "Class 10 Board Excellence Weekly Newsletter", "type": "Newsletter", "price": "Free", "session_details": "Weekly Email", "expected_outcomes": "Weekly study schedules, exam stress management tips, and revision quizzes.", "tags": ["Newsletter", "Board Tips"], "section": "nano_expert"},
-                {"name": "National Secondary Education Board Journal", "type": "Publication", "price": "$60/year", "session_details": "Quarterly Journal", "expected_outcomes": "Statistical analysis of board exam scoring patterns and toppers' habits.", "tags": ["Journal", "Scoring Patterns"], "section": "nano_expert"}
+                {"name": "Official Framework Documentation & Sandboxes", "type": "Docs", "why": "Authoritative reference manuals and starter templates.", "next_step": "Explore official tutorials.", "tags": ["Docs", "Sandbox"], "section": "macro_free", "cost": "Free"},
+                {"name": "Clean Code & Pragmatic Programmer Guide Set", "type": "Book", "cost": "$35", "duration": "Self-paced", "value": "Essential software design principles and refactoring practices.", "next_step": "Read Chapter 1.", "tags": ["Clean Code", "Design Patterns"], "section": "micro_structured"},
+                {"name": "O'Reilly Media Learning Platform", "type": "Subscription", "cost": "$49/mo", "duration": "Monthly", "value": "Unlimited access to technical libraries, sandboxes, and books.", "next_step": "Access digital library.", "tags": ["O'Reilly", "Technical Library"], "section": "nano_expert"}
             ]
         }
 
-    # 2. Curriculum, Stream Assessment & Orientation
-    elif any(k in title_lower for k in ["assessment", "curriculum", "stream", "orientation", "diagnostic", "choice"]):
+    # Category 3: Jobs & Careers
+    elif cat == "jobs":
         return {
             "mentors": [
-                {"name": "Senior Peer Stream Advisor", "type": "Mentor", "why": "Free advice from senior students who navigated stream & subject selection.", "next_step": "Join weekly stream consultation call.", "tags": ["Stream Choice", "Peer Advisory"], "section": "macro_free"},
-                {"name": "Curriculum & Career Fit Circle", "type": "Mentor", "why": "Free AMA session with high school counselors on IB vs CBSE vs Cambridge.", "next_step": "Register for monthly stream guidance webinar.", "tags": ["Curriculum", "AMA"], "section": "macro_free"},
-                {"name": "Psychometric Stream Diagnostic Coaching", "type": "Mentor", "cost": "$79", "duration": "2 weeks", "value": "Guided analysis of student RIASEC aptitude profile for stream fit.", "next_step": "Book diagnostic review session.", "tags": ["Aptitude", "Coaching"], "section": "micro_structured"},
-                {"name": "Subject Stream Strategy Tutor", "type": "Tutor", "cost": "$65", "duration": "1 session", "value": "Evaluate subject combination prerequisites for target degrees.", "next_step": "Schedule 1-on-1 subject mapping.", "tags": ["Subjects", "Tutor"], "section": "micro_structured"},
-                {"name": "Naaviverse Academic Stream Intake Review", "type": "Mentor", "price": "$120", "session_details": "1-on-1 Strategy Call (45 mins)", "expected_outcomes": "Audit of subject choices, GPA safety nets, and curriculum alignment report.", "tags": ["Counseling", "Stream Audit"], "section": "nano_expert"},
-                {"name": "Elite Curriculum & College Pathway Counsel", "type": "Coaching", "price": "$150/hr", "session_details": "Private Stream & AP/IB Strategy Session", "expected_outcomes": "Custom subject mapping to maximize college credit transfer.", "tags": ["AP/IB", "Strategy"], "section": "nano_expert"}
+                {"name": "Tech / Industry Professional Networking Circle", "type": "Mentor", "why": "Free informational interviews and advice on workplace expectations.", "next_step": "Schedule 20-minute chat.", "tags": ["Networking", "Career"], "section": "macro_free", "price": "Free"},
+                {"name": "ATS Resume & LinkedIn Branding Specialist", "type": "Coaching", "cost": "$85", "duration": "2 weeks", "value": "Tailored resume rewrite and LinkedIn profile optimization.", "next_step": "Submit resume draft for review.", "tags": ["Resume", "LinkedIn"], "section": "micro_structured"},
+                {"name": "Senior Hiring Manager Mock Interviewer", "type": "Coaching", "price": "$175/hr", "session_details": "1-on-1 Technical / Behavioral Simulation", "expected_outcomes": "Realistic interview simulation, scoring rubric, and actionable critiques.", "tags": ["Mock Interview", "Placement"], "section": "nano_expert"}
             ],
             "vendors": [
-                {"name": "Holland RIASEC Psychometric Assessment Portal", "type": "Platform", "why": "Validated interest & personality diagnostic for stream selection.", "next_step": "Take the 20-minute online test.", "tags": ["RIASEC", "Diagnostics"], "section": "macro_free"},
-                {"name": "Khan Academy High School Orientation Modules", "type": "Course", "why": "Free foundational diagnostic tests across Math & Science.", "next_step": "Complete baseline diagnostic quiz.", "tags": ["Math", "Science"], "section": "macro_free"},
-                {"name": "Coursera Academic Orientation & Stream Prep", "type": "Course", "cost": "$49", "duration": "3 weeks", "value": "Structured introduction to high school academic rigor.", "next_step": "Complete foundation modules.", "tags": ["Orientation", "Academic Rigor"], "section": "micro_structured"},
-                {"name": "Mindler Stream Selection Assessment Track", "type": "Platform", "cost": "$149", "duration": "Self-paced", "value": "Comprehensive 5-dimensional career assessment for stream choice.", "next_step": "Review detailed stream compatibility report.", "tags": ["Career Fit", "Stream Assessment"], "section": "micro_structured"},
-                {"name": "Naaviverse Stream Diagnostic Masterclass", "type": "Provider", "price": "$120", "session_details": "Comprehensive Assessment", "expected_outcomes": "Detailed 15-page diagnostic report on student stream compatibility.", "tags": ["Diagnostic Report"], "section": "nano_expert"},
-                {"name": "PrepScholar Academic Stream & Target Strategy", "type": "Platform", "price": "$299", "session_details": "AI-Driven Career Mapping", "expected_outcomes": "Customized 4-year subject & GPA roadmap.", "tags": ["Roadmap", "Strategy"], "section": "nano_expert"}
+                {"name": "LeetCode / HackerRank Free Practice Arena", "type": "Platform", "why": "Free problem sets for coding challenges and algorithmic drills.", "next_step": "Solve 3 easy problems.", "tags": ["LeetCode", "Coding Drills"], "section": "macro_free", "cost": "Free"},
+                {"name": "InterviewCake / Educative System Design Course", "type": "Course", "cost": "$79", "duration": "Self-paced", "value": "Structured patterns for system design and interview problem solving.", "next_step": "Complete system design module 1.", "tags": ["System Design", "Interviews"], "section": "micro_structured"},
+                {"name": "Exponent / Pathrise Career Placement Track", "type": "Bootcamp", "price": "$450", "session_details": "Full Interview Prep & Job Search", "expected_outcomes": "Dedicated career mentorship, salary negotiation, and interview coaching.", "tags": ["Job Search", "Placement"], "section": "nano_expert"}
             ],
             "institutions": [
-                {"name": "IB Diploma & Cambridge International Information Bureau", "type": "Institute", "why": "Official portal explaining international curriculum requirements.", "next_step": "Download subject choice guides.", "tags": ["IB", "Cambridge"], "section": "macro_free"},
-                {"name": "State Board & CBSE Academic Advisory Portal", "type": "Institute", "why": "Free guides on national curriculum subject options.", "next_step": "Read stream eligibility norms.", "tags": ["CBSE", "State Board"], "section": "macro_free"},
-                {"name": "IIT Hyderabad Academic Foundation Seminar", "type": "University", "cost": "$120", "duration": "4 weeks", "value": "Foundation lectures mapping STEM subject prerequisites.", "next_step": "Register for weekend orientation.", "tags": ["STEM", "Foundation"], "section": "micro_structured"},
-                {"name": "BITS Pilani High School Orientation Certificate", "type": "University", "cost": "$180", "duration": "6 weeks", "value": "Certificates validating foundational problem-solving readiness.", "next_step": "Enroll in online track.", "tags": ["Bits", "Problem Solving"], "section": "micro_structured"},
-                {"name": "Ivy League High School Curriculum Summit", "type": "University", "price": "$250", "session_details": "Online Global Summit", "expected_outcomes": "Direct insights from admissions directors on secondary school curriculum weighting.", "tags": ["Ivy League", "Admissions"], "section": "nano_expert"},
-                {"name": "Stanford Online Youth Academic Symposium", "type": "University", "price": "$1,200", "session_details": "2-week Online Intensive", "expected_outcomes": "University-level coursework validation certificate.", "tags": ["Stanford", "Symposium"], "section": "nano_expert"}
+                {"name": "National Association of Colleges and Employers (NACE)", "type": "Institute", "why": "Free salary benchmarks and hiring trend reports.", "next_step": "Download salary guide.", "tags": ["NACE", "Salary Trends"], "section": "macro_free", "cost": "Free"},
+                {"name": "Professional Management & Career Institute", "type": "Institute", "cost": "$180", "duration": "4 weeks", "value": "Workplace leadership and business communication credentials.", "next_step": "Register for online seminar.", "tags": ["Leadership", "Workplace"], "section": "micro_structured"},
+                {"name": "Executive Career Transition Program", "type": "Institute", "price": "$1,200", "session_details": "Executive Placement Track", "expected_outcomes": "Verified career credentials and executive search network access.", "tags": ["Executive Search"], "section": "nano_expert"}
             ],
             "distributors": [
-                {"name": "Official High School Curriculum & Stream Selection Guide", "type": "Guide", "why": "Handbook outlining subject options and college entry requirements.", "next_step": "Download and read Chapter 1.", "tags": ["Guidebook", "Stream Selection"], "section": "macro_free"},
-                {"name": "Academic Streams & Career Pathways Directory", "type": "Library", "why": "Free digital repository of stream combination case studies.", "next_step": "Search archives for target degree prerequisites.", "tags": ["Library", "Pathways"], "section": "macro_free"},
-                {"name": "High School Stream Choice & Aptitude Worksheets", "type": "Workbook", "cost": "$25", "duration": "Self-paced", "value": "Structured exercises to evaluate personal strengths against subject demands.", "next_step": "Complete self-assessment exercises.", "tags": ["Worksheets", "Aptitude"], "section": "micro_structured"},
-                {"name": "O'Reilly High School Academic Foundation Book Set", "type": "Book", "cost": "$45", "duration": "Annual", "value": "Comprehensive books covering foundational logic and study techniques.", "next_step": "Order physical textbooks.", "tags": ["Foundation", "Books"], "section": "micro_structured"},
-                {"name": "Academic Streams Quarterly Digest", "type": "Newsletter", "price": "Free", "session_details": "Weekly Email", "expected_outcomes": "Regular updates on changing curriculum standards and university admission rules.", "tags": ["Newsletter", "Updates"], "section": "nano_expert"},
-                {"name": "International Baccalaureate Research Journal", "type": "Publication", "price": "$75/year", "session_details": "Digital Magazine", "expected_outcomes": "Case studies of top IB/CBSE scorers and subject strategy breakdowns.", "tags": ["IB", "Research"], "section": "nano_expert"}
+                {"name": "Tech Interview Handbook & Cheat Sheets", "type": "Guide", "why": "Curated guide on behavioral questions, resumes, and coding patterns.", "next_step": "Review behavioral question sheet.", "tags": ["Handbook", "Interviews"], "section": "macro_free", "cost": "Free"},
+                {"name": "Cracking the Coding Interview by Gayle McDowell", "type": "Book", "cost": "$35", "duration": "Self-paced", "value": "189 programming questions and solutions for tech job interviews.", "next_step": "Read Chapter 3.", "tags": ["CTCI", "Algorithms"], "section": "micro_structured"},
+                {"name": "Harvard Business Review Career & Leadership Package", "type": "Subscription", "cost": "$15/mo", "duration": "Monthly", "value": "Insights on negotiation, executive presence, and organizational management.", "next_step": "Read career management series.", "tags": ["HBR", "Leadership"], "section": "nano_expert"}
             ]
         }
 
-    # 2. School Selection, Academic Targets, GPA & Study Habits
-    elif any(k in title_lower for k in ["school", "target", "habit", "gpa", "board achievement", "10th", "tenth"]):
-        return {
-            "mentors": [
-                {"name": "Target School Selection & Ranking Advisor", "type": "Mentor", "why": "Free guidance on selecting top high schools and target GPA benchmarks.", "next_step": "Join school selection consultation call.", "tags": ["School Selection", "Target GPA"], "section": "macro_free"},
-                {"name": "High School Top-Scorer Study Circle", "type": "Mentor", "why": "Free study tips and time management advice from past 95%+ scorers.", "next_step": "Attend weekly study circle.", "tags": ["Study Habits", "Top Scorers"], "section": "macro_free"},
-                {"name": "Academic Target & GPA Optimization Coach", "type": "Coaching", "cost": "$89", "duration": "3 weeks", "value": "Personalized study scheduling and exam technique coaching.", "next_step": "Set up weekly study schedule.", "tags": ["GPA", "Study Schedule"], "section": "micro_structured"},
-                {"name": "Subject Foundation Tutor", "type": "Tutor", "cost": "$70", "duration": "1 session", "value": "Identify and fix core concept gaps in Math and Science.", "next_step": "Schedule gap assessment call.", "tags": ["Tutoring", "Concepts"], "section": "micro_structured"},
-                {"name": "Naaviverse Academic Safety Net Audit", "type": "Mentor", "price": "$125", "session_details": "1-on-1 Review Call", "expected_outcomes": "Detailed risk assessment of school grading standards and academic backup plan.", "tags": ["Safety Net", "GPA Audit"], "section": "nano_expert"},
-                {"name": "Elite High School Placement Counselor", "type": "Coaching", "price": "$160/hr", "session_details": "Private Consultation", "expected_outcomes": "Strategy to rank in top 5% of class cohort.", "tags": ["Class Rank", "Counseling"], "section": "nano_expert"}
-            ],
-            "vendors": [
-                {"name": "Khan Academy High School Subject Prep", "type": "Course", "why": "Free mastery exercises for Class 9/10/11 core subjects.", "next_step": "Complete subject mastery quizzes.", "tags": ["Khan Academy", "Subject Prep"], "section": "macro_free"},
-                {"name": "Albert.io Diagnostic & Practice Modules", "type": "Platform", "why": "Free subject diagnostic exams matching school board standards.", "next_step": "Solve diagnostic problem sets.", "tags": ["Diagnostics", "Practice"], "section": "macro_free"},
-                {"name": "BYJU'S / Vedantu Target Board Test Series", "type": "Course", "cost": "$99", "duration": "2 months", "value": "Full-length mock board tests with detailed step-by-step analytics.", "next_step": "Attempt mock test 1.", "tags": ["Mock Tests", "Board Exam"], "section": "micro_structured"},
-                {"name": "Princeton Review High School Mastery Track", "type": "Course", "cost": "$249", "duration": "6 weeks", "value": "Targeted instruction to boost GPA and test scores.", "next_step": "Enroll in live instruction cohort.", "tags": ["GPA Boost", "Test Prep"], "section": "micro_structured"},
-                {"name": "Naaviverse Top-Scorer Exam Prep Plan", "type": "Provider", "price": "$130", "session_details": "Full Diagnostic Audit", "expected_outcomes": "Custom exam prep playbook with revision notes.", "tags": ["Exam Playbook"], "section": "nano_expert"},
-                {"name": "PrepScholar Board & High School Prep", "type": "Platform", "price": "$349", "session_details": "AI Study Planner", "expected_outcomes": "Adaptive practice platform targeting 95%+ score.", "tags": ["PrepScholar", "Board Score"], "section": "nano_expert"}
-            ],
-            "institutions": [
-                {"name": "State & National School Boards Association", "type": "Institute", "why": "Official updates on board syllabus and grading benchmarks.", "next_step": "Download official syllabus blueprint.", "tags": ["Syllabus", "Board"], "section": "macro_free"},
-                {"name": "National Open Learning Directory", "type": "Institute", "why": "Free open-learning materials for high school subjects.", "next_step": "Access free subject lecture notes.", "tags": ["Open Learning", "Notes"], "section": "macro_free"},
-                {"name": "IIT Hyderabad Foundation Program", "type": "University", "cost": "$150", "duration": "8 weeks", "value": "Foundational syllabus mapping top engineering standards.", "next_step": "Register for online weekend lectures.", "tags": ["IIT", "Foundation"], "section": "micro_structured"},
-                {"name": "BITS Pilani High School Honors Certificate", "type": "University", "cost": "$200", "duration": "10 weeks", "value": "Advanced topic certification to showcase high school academic rigor.", "next_step": "Submit application form.", "tags": ["BITS", "Honors"], "section": "micro_structured"},
-                {"name": "Columbia High School Summer Program", "type": "University", "price": "$3,500", "session_details": "Summer School (2 weeks)", "expected_outcomes": "Advanced credit and university-level coursework validation.", "tags": ["Columbia", "Summer School"], "section": "nano_expert"},
-                {"name": "Harvard Secondary School Summer Session", "type": "University", "price": "$4,200", "session_details": "College Credit Program", "expected_outcomes": "Earn official Harvard transcript credits.", "tags": ["Harvard", "College Credit"], "section": "nano_expert"}
-            ],
-            "distributors": [
-                {"name": "NCERT & State Board Solved Question Papers", "type": "Book", "why": "Official compilation of past 10 years solved board exam papers.", "next_step": "Solve past paper 1.", "tags": ["Solved Papers", "NCERT"], "section": "macro_free"},
-                {"name": "Top Student Study Planner & Note-taking Guide", "type": "Guide", "why": "Proven techniques for effective revision and notes summary.", "next_step": "Download planner template.", "tags": ["Planner", "Notes"], "section": "macro_free"},
-                {"name": "High School Exam Summary Booklets", "type": "Workbook", "cost": "$30", "duration": "Self-paced", "value": "Chapterwise quick-revision notes and key formula sheets.", "next_step": "Review formula summary sheets.", "tags": ["Formula Sheet", "Revision"], "section": "micro_structured"},
-                {"name": "O'Reilly High School STEM Library", "type": "Subscription", "cost": "$45/year", "duration": "Annual", "value": "Access to technical reference books and problem-solving guides.", "next_step": "Access digital library.", "tags": ["Library", "STEM"], "section": "micro_structured"},
-                {"name": "Academic Target & GPA Excellence Newsletter", "type": "Newsletter", "price": "Free", "session_details": "Weekly Email", "expected_outcomes": "Weekly study tips, exam strategies, and motivation techniques.", "tags": ["Newsletter", "Study Tips"], "section": "nano_expert"},
-                {"name": "National Secondary Education Review Publication", "type": "Publication", "price": "$60/year", "session_details": "Quarterly Journal", "expected_outcomes": "Analysis of top board scorers and high school academic trends.", "tags": ["Journal", "Education"], "section": "nano_expert"}
-            ]
-        }
-
-    # 3. Internship, Skills & Practical Project Curation
-    elif any(k in title_lower for k in ["internship", "skill", "project", "practical", "coding", "hands-on", "portfolio", "development"]):
-        return {
-            "mentors": [
-                {"name": "Open Source Community Mentor", "type": "Mentor", "why": "Free guidance on joining open-source projects and writing production code.", "next_step": "Join community Discord.", "tags": ["Open Source", "Code"], "section": "macro_free"},
-                {"name": "GitHub Student Community Lead", "type": "Mentor", "why": "Free advice on structuring your developer portfolio and repositories.", "next_step": "Attend open office hours.", "tags": ["GitHub", "Portfolio"], "section": "macro_free"},
-                {"name": "Practical Career & Project Coach", "type": "Coaching", "cost": "$120", "duration": "4 weeks", "value": "Help select and scope a high-impact personal project.", "next_step": "Book project scoping call.", "tags": ["Project Coach", "Portfolio"], "section": "micro_structured"},
-                {"name": "Developer Code Review Specialist", "type": "Tutor", "cost": "$65", "duration": "1 session", "value": "1-on-1 code audit and architecture feedback.", "next_step": "Submit project repo for review.", "tags": ["Code Review", "Audit"], "section": "micro_structured"},
-                {"name": "Naavi Tech Portfolio Review & Mentorship", "type": "Mentor", "price": "$150", "session_details": "Async Code Review & 45-min Zoom Call", "expected_outcomes": "Comprehensive project feedback report and GitHub optimization tips.", "tags": ["Portfolio Audit", "GitHub"], "section": "nano_expert"},
-                {"name": "Industry Software Engineer Mock Interview Coach", "type": "Coaching", "price": "$175/hr", "session_details": "1-on-1 Technical Simulation", "expected_outcomes": "Realistic coding interview simulation and system design critiques.", "tags": ["Mock Interview", "Coding"], "section": "nano_expert"}
-            ],
-            "vendors": [
-                {"name": "freeCodeCamp Web Development & Coding Certification", "type": "Course", "why": "100% free hands-on coding curriculum with portfolio projects.", "next_step": "Start HTML/CSS/JavaScript modules.", "tags": ["freeCodeCamp", "Web Dev"], "section": "macro_free"},
-                {"name": "Forage Virtual Internship Experience", "type": "Platform", "why": "Free self-paced virtual work experience programs from top global firms.", "next_step": "Complete a 5-hour virtual internship module.", "tags": ["Virtual Internship", "Forage"], "section": "macro_free"},
-                {"name": "Codecademy Pro / Udemy Project Track", "type": "Course", "cost": "$39/mo", "duration": "Self-paced", "value": "Interactive coding environment with real-world project assignments.", "next_step": "Build and deploy portfolio project 1.", "tags": ["Codecademy", "Projects"], "section": "micro_structured"},
-                {"name": "Udemy AWS / Cloud Practitioner Certification Prep", "type": "Course", "cost": "$25", "duration": "3 weeks", "value": "Learn cloud infrastructure and obtain an industry credential.", "next_step": "Sit for practice exams.", "tags": ["AWS", "Cloud"], "section": "micro_structured"},
-                {"name": "Udacity Nanodegree Program", "type": "Bootcamp", "price": "$399/mo", "session_details": "Structured Online Bootcamp", "expected_outcomes": "Industry-certified portfolio projects graded by senior engineers.", "tags": ["Nanodegree", "Industry Project"], "section": "nano_expert"},
-                {"name": "Springboard Tech Career Track", "type": "Bootcamp", "price": "$1,200", "session_details": "Project-based Track", "expected_outcomes": "1-on-1 mentor support and capstone project placement.", "tags": ["Springboard", "Capstone"], "section": "nano_expert"}
-            ],
-            "institutions": [
-                {"name": "Harvard CS50 Introduction to Computer Science", "type": "University", "why": "World-famous free computer science and problem-solving foundation.", "next_step": "Watch Lecture 1 and solve problem set 1.", "tags": ["CS50", "Harvard"], "section": "macro_free"},
-                {"name": "MIT OpenCourseWare Python & Algorithms", "type": "University", "why": "Free university curriculum detailing software engineering fundamentals.", "next_step": "Download problem set files.", "tags": ["MIT", "Python"], "section": "macro_free"},
-                {"name": "Scaler Academy Foundational Software Track", "type": "Academy", "cost": "$600", "duration": "4 months", "value": "Structured software engineering program with industry mentors.", "next_step": "Pass eligibility test.", "tags": ["Scaler", "Software Track"], "section": "micro_structured"},
-                {"name": "Coding Ninjas Full Stack Web Dev Program", "type": "Academy", "cost": "$150", "duration": "3 months", "value": "Live webinars, doubt support, and web application deployment.", "next_step": "Submit enrollment application.", "tags": ["Coding Ninjas", "Full Stack"], "section": "micro_structured"},
-                {"name": "Stanford CPD Software Foundations Certificate", "type": "University", "price": "$850", "session_details": "Self-paced Online Certificate", "expected_outcomes": "Official Stanford credential in Advanced Software Engineering.", "tags": ["Stanford", "Certificate"], "section": "nano_expert"},
-                {"name": "IIIT Bangalore Software PG Diploma", "type": "Institute", "price": "$2,500", "session_details": "1-Year Online Program", "expected_outcomes": "Earn academic credits and corporate placement opportunities.", "tags": ["IIITB", "PG Diploma"], "section": "nano_expert"}
-            ],
-            "distributors": [
-                {"name": "GitHub Developer Docs & Git Workflow Guide", "type": "Guide", "why": "Official documentation for version control and repository management.", "next_step": "Create GitHub account and push first repo.", "tags": ["Git", "GitHub"], "section": "macro_free"},
-                {"name": "MDN Web Docs Developer Library", "type": "Docs", "why": "Comprehensive reference manual for HTML, CSS, and JS APIs.", "next_step": "Bookmark MDN reference guides.", "tags": ["MDN", "Docs"], "section": "macro_free"},
-                {"name": "O'Reilly Media Technical Learning Subscription", "type": "Subscription", "cost": "$49/mo", "duration": "Monthly", "value": "Unlimited access to thousands of programming books and live sandboxes.", "next_step": "Read 'Clean Code' digital book.", "tags": ["O'Reilly", "Clean Code"], "section": "micro_structured"},
-                {"name": "System Design Handbook by Alex Xu", "type": "Book", "cost": "$35", "duration": "Self-paced", "value": "Visual explanations of high-scale backend design paradigms.", "next_step": "Read Chapter 1.", "tags": ["System Design", "Alex Xu"], "section": "micro_structured"},
-                {"name": "Dev.to Tech Community Digest", "type": "Community", "price": "Free", "session_details": "Weekly Email", "expected_outcomes": "Stay updated with open-source trends, frameworks, and developer projects.", "tags": ["Dev.to", "Community"], "section": "nano_expert"},
-                {"name": "IEEE Software & Computing Magazine", "type": "Publication", "price": "$90/year", "session_details": "Monthly Magazine", "expected_outcomes": "Deep-dives into software architecture and industrial case studies.", "tags": ["IEEE", "Software"], "section": "nano_expert"}
-            ]
-        }
-
-    # 4. Standardized Test Prep (SAT / ACT / IELTS / TOEFL / GRE / GATE)
-    elif any(k in title_lower for k in ["test", "sat", "act", "ielts", "toefl", "gre", "gate", "exam", "score", "standardized"]):
-        return {
-            "mentors": [
-                {"name": "SAT / IELTS Peer Study Group", "type": "Mentor", "why": "Free peer review circles to practice speaking, reading, and problem solving.", "next_step": "Join weekly study session.", "tags": ["SAT", "IELTS"], "section": "macro_free"},
-                {"name": "Test Prep Strategy Advisor", "type": "Mentor", "why": "Free consultations to build an optimal test timeline and target score.", "next_step": "Register for diagnostic webinar.", "tags": ["Test Strategy", "Timeline"], "section": "macro_free"},
-                {"name": "SAT / ACT Intensive Coaching Cohort", "type": "Coaching", "cost": "$99", "duration": "4 weeks", "value": "Small group strategy review covering high-frequency test questions.", "next_step": "Join upcoming cohort.", "tags": ["SAT", "ACT"], "section": "micro_structured"},
-                {"name": "English Proficiency (IELTS/TOEFL) Tutor", "type": "Tutor", "cost": "$75", "duration": "2 sessions", "value": "1-on-1 speaking & writing mock evaluations.", "next_step": "Schedule speaking diagnostic.", "tags": ["IELTS", "TOEFL"], "section": "micro_structured"},
-                {"name": "Naavi Standardized Test Audit & Mock Review", "type": "Mentor", "price": "$140", "session_details": "1-on-1 Zoom Session (45 mins)", "expected_outcomes": "Detailed score breakdown, weak area isolation, and test-day pacing strategy.", "tags": ["Test Audit", "Score Strategy"], "section": "nano_expert"},
-                {"name": "Elite Test Prep Private Coach", "type": "Coaching", "price": "$150/hr", "session_details": "Private 1-on-1 Tutoring", "expected_outcomes": "Targeted instruction for 1500+ SAT / 8.0+ IELTS score.", "tags": ["Private Tutor", "1500+ SAT"], "section": "nano_expert"}
-            ],
-            "vendors": [
-                {"name": "College Board Official SAT Practice Portal", "type": "Platform", "why": "Free official SAT diagnostic tests and practice question bank.", "next_step": "Take full-length Practice Test 1.", "tags": ["College Board", "SAT"], "section": "macro_free"},
-                {"name": "Khan Academy Official SAT Prep Engine", "type": "Course", "why": "100% free personalized SAT math and reading practice.", "next_step": "Link College Board account to Khan Academy.", "tags": ["Khan Academy", "SAT"], "section": "macro_free"},
-                {"name": "Princeton Review SAT / ACT Course", "type": "Course", "cost": "$299", "duration": "6 weeks", "value": "Guided live instruction and score guarantee for high-stakes tests.", "next_step": "Enroll in live instruction cohort.", "tags": ["Princeton Review", "Live Prep"], "section": "micro_structured"},
-                {"name": "Magoosh IELTS / TOEFL Prep Track", "type": "Course", "cost": "$79", "duration": "3 months", "value": "Self-paced video lessons and 1000+ practice questions.", "next_step": "Complete video lessons on writing tasks.", "tags": ["Magoosh", "IELTS"], "section": "micro_structured"},
-                {"name": "Naaviverse Exam Masterclass & Diagnostic", "type": "Provider", "price": "$120", "session_details": "Full Mock Test Audit", "expected_outcomes": "Detailed analysis of timing bottlenecks and section scores.", "tags": ["Mock Audit"], "section": "nano_expert"},
-                {"name": "PrepScholar SAT 1500+ Guarantee Program", "type": "Platform", "price": "$397", "session_details": "AI-Customized Prep Platform", "expected_outcomes": "Customized prep algorithm targeting top 1% score.", "tags": ["PrepScholar", "1500+ SAT"], "section": "nano_expert"}
-            ],
-            "institutions": [
-                {"name": "ETS TOEFL & GRE Official Information Center", "type": "Institute", "why": "Official guidelines and free sample tests for English and grad exams.", "next_step": "Download official test bulletin.", "tags": ["ETS", "TOEFL"], "section": "macro_free"},
-                {"name": "British Council IELTS Advisory Center", "type": "Institute", "why": "Official IELTS preparation tips and computer-delivered test guides.", "next_step": "Access free road to IELTS module.", "tags": ["British Council", "IELTS"], "section": "macro_free"},
-                {"name": "Kaplan Test Prep Academic Institute", "type": "Institute", "cost": "$350", "duration": "8 weeks", "value": "Comprehensive test prep curriculum with mock test proctoring.", "next_step": "Register for proctored mock exam.", "tags": ["Kaplan", "Test Prep"], "section": "micro_structured"},
-                {"name": "Manhattan Prep Test Strategy Center", "type": "Institute", "cost": "$250", "duration": "4 weeks", "value": "Advanced topic strategy workshops targeting top-percentile scores.", "next_step": "Enroll in strategy workshop.", "tags": ["Manhattan Prep", "Strategy"], "section": "micro_structured"},
-                {"name": "Ivy League Standardized Testing Seminar", "type": "University", "price": "$200", "session_details": "Online Conference", "expected_outcomes": "Direct guidance from admissions officers on test-optional vs test-submitted policies.", "tags": ["Ivy League", "Test Policy"], "section": "nano_expert"},
-                {"name": "Cambridge Assessment English Certification", "type": "University", "price": "$400", "session_details": "Certified Exam Program", "expected_outcomes": "Earn official C1/C2 Cambridge English Certificate.", "tags": ["Cambridge", "English Cert"], "section": "nano_expert"}
-            ],
-            "distributors": [
-                {"name": "Official Digital SAT Study Guide", "type": "Book", "why": "Official College Board test book with 8 full-length practice tests.", "next_step": "Purchase or borrow book and solve Test 1.", "tags": ["SAT Book", "College Board"], "section": "macro_free"},
-                {"name": "IELTS Academic Official Practice Book", "type": "Book", "why": "Official past exam papers with audio files for listening practice.", "next_step": "Solve listening practice test 1.", "tags": ["IELTS Book", "Past Papers"], "section": "macro_free"},
-                {"name": "Barron's SAT / ACT 1500+ Vocabulary & Math Set", "type": "Workbook", "cost": "$30", "duration": "Self-paced", "value": "High-frequency word lists and advanced math problem drills.", "next_step": "Memorize high-frequency vocabulary list 1.", "tags": ["Barron's", "Vocabulary"], "section": "micro_structured"},
-                {"name": "Target Test Prep Digital Question Bank", "type": "Subscription", "cost": "$49/mo", "duration": "Monthly", "value": "2500+ categorized test questions with video solutions.", "next_step": "Practice 50 medium-difficulty questions.", "tags": ["Question Bank", "Solutions"], "section": "micro_structured"},
-                {"name": "Test Prep Strategy Digest", "type": "Newsletter", "price": "Free", "session_details": "Weekly Email", "expected_outcomes": "Weekly test tips, pacing formulas, and formula flashcards.", "tags": ["Newsletter", "Test Tips"], "section": "nano_expert"},
-                {"name": "International Testing Insights Quarterly", "type": "Publication", "price": "$50/year", "session_details": "Digital Magazine", "expected_outcomes": "Statistical analysis of test scoring trends and university averages.", "tags": ["Journal", "Scoring Trends"], "section": "nano_expert"}
-            ]
-        }
-
-    # 5. Profile Rigor, Research Project, Leadership & Applications
-    elif any(k in title_lower for k in ["profile", "research", "extracurricular", "leadership", "community", "essay", "shortlist", "university", "application", "placement"]):
-        return {
-            "mentors": [
-                {"name": "University Alumni Mentorship Circle", "type": "Mentor", "why": f"Free consultations with alumni to understand {goal_str} applications & campus culture.", "next_step": "Book 20-min intro chat.", "tags": ["Alumni", "Mentorship"], "section": "macro_free"},
-                {"name": "Community Impact & NGO Project Advisor", "type": "Mentor", "why": "Free advice on scoping a meaningful local community service initiative.", "next_step": "Schedule project consultation.", "tags": ["Community", "NGO"], "section": "macro_free"},
-                {"name": "Admissions Essay & Personal Statement Coach", "type": "Coaching", "cost": "$120", "duration": "4 weeks", "value": "Guided brainstorming and structure outline for college application essays.", "next_step": "Submit essay outline.", "tags": ["Essay Coach", "Admissions"], "section": "micro_structured"},
-                {"name": "Academic Research Paper Advisor", "type": "Tutor", "cost": "$95", "duration": "2 sessions", "value": "Help select a research topic, review literature, and structure paper draft.", "next_step": "Schedule topic approval call.", "tags": ["Research", "Advisor"], "section": "micro_structured"},
-                {"name": "Naavi Counselor Profile & Essay Review", "type": "Mentor", "price": "$150", "session_details": "1-on-1 Zoom Call & Essay Audit", "expected_outcomes": "Line-by-line critique of Common App essay and activity list optimization.", "tags": ["Common App", "Essay Audit"], "section": "nano_expert"},
-                {"name": "Former Ivy League Admissions Officer Strategy Session", "type": "Coaching", "price": "$250/hr", "session_details": "Private Application Audit", "expected_outcomes": "Holistic review of profile narrative and recommendation letter strategy.", "tags": ["Admissions Officer", "Ivy Strategy"], "section": "nano_expert"}
-            ],
-            "vendors": [
-                {"name": "Coursera Introduction to Academic Research & Writing", "type": "Course", "why": "Free course detailing research methodologies and citation formats.", "next_step": "Complete module on literature review.", "tags": ["Research", "Writing"], "section": "macro_free"},
-                {"name": "College Essay Guy Application Masterclass", "type": "Course", "why": "Free guides and workshops on drafting personal statements and supplements.", "next_step": "Complete the values exercise.", "tags": ["College Essay Guy", "Masterclass"], "section": "macro_free"},
-                {"name": "Lumiere Education Research Program", "type": "Bootcamp", "cost": "$850", "duration": "8 weeks", "value": "1-on-1 research mentorship with PhD researchers to write a paper.", "next_step": "Submit research proposal.", "tags": ["Lumiere", "Research Paper"], "section": "micro_structured"},
-                {"name": "Polygence Independent Project Track", "type": "Bootcamp", "cost": "$750", "duration": "10 weeks", "value": "Guided independent project creation with expert academic mentors.", "next_step": "Apply to project cohort.", "tags": ["Polygence", "Project Track"], "section": "micro_structured"},
-                {"name": "Mindvalley Quest For Leadership & Impact", "type": "Platform", "price": "$299", "session_details": "Curriculum", "expected_outcomes": "Validated certificate in community leadership and empathy.", "tags": ["Leadership", "EQ"], "section": "nano_expert"},
-                {"name": "Harvard Business School Online Leadership Principles", "type": "Course", "price": "$1,600", "session_details": "HBS Online Credential", "expected_outcomes": "Official Harvard Business School credential in leadership.", "tags": ["HBS Online", "Harvard"], "section": "nano_expert"}
-            ],
-            "institutions": [
-                {"name": "Toastmasters International Youth Leadership Club", "type": "Institute", "why": "Free local club meetings to build public speaking & leadership confidence.", "next_step": "Attend open club meeting as guest.", "tags": ["Toastmasters", "Leadership"], "section": "macro_free"},
-                {"name": "Local YMCA & Community Outreach Bureau", "type": "Institute", "why": "Free volunteering opportunities for student impact projects.", "next_step": "Register for weekend volunteering.", "tags": ["Volunteering", "YMCA"], "section": "macro_free"},
-                {"name": "Wharton Global Youth Leadership Program", "type": "University", "cost": "$450", "duration": "3 weeks", "value": "Introduction to business leadership, teamwork, and social entrepreneurship.", "next_step": "Apply to Wharton online workshop.", "tags": ["Wharton", "Business"], "section": "micro_structured"},
-                {"name": "NIFT Design & Innovation Seminar", "type": "Institute", "cost": "$150", "duration": "4 weeks", "value": "Learn human-centric design thinking and project execution.", "next_step": "Submit registration form.", "tags": ["Design Thinking", "NIFT"], "section": "micro_structured"},
-                {"name": "Admissions Leadership Seminar (Ivy League Focus)", "type": "University", "price": "$300", "session_details": "4-Week Webinar Series", "expected_outcomes": "Certified training on student impact and societal leadership.", "tags": ["Ivy League", "Leadership"], "section": "nano_expert"},
-                {"name": "Columbia Summer School & Academic Program", "type": "University", "price": "$3,500", "session_details": "2-Week Summer Intensive", "expected_outcomes": "Earn university credit and official recommendation letter.", "tags": ["Columbia", "Summer Credit"], "section": "nano_expert"}
-            ],
-            "distributors": [
-                {"name": "Fiske Guide to Colleges & Universities", "type": "Book", "why": "Comprehensive directory of 300+ university profiles, majors, and culture.", "next_step": "Read profiles of target universities.", "tags": ["Fiske Guide", "Colleges"], "section": "macro_free"},
-                {"name": "High School Research Publication Handbook", "type": "Guide", "why": "Guide outlining how to format, cite, and submit research to student journals.", "next_step": "Download paper template.", "tags": ["Research Guide", "Citations"], "section": "macro_free"},
-                {"name": "Harvard Business Review Student Package", "type": "Subscription", "cost": "$15/mo", "duration": "Monthly", "value": "Access to business strategy, personal growth, and leadership articles.", "next_step": "Read guide on peer leadership.", "tags": ["HBR", "Strategy"], "section": "micro_structured"},
-                {"name": "Dale Carnegie Youth Leadership Book Set", "type": "Book", "cost": "$25", "duration": "Self-paced", "value": "Books covering confidence building, public speaking, and teamwork.", "next_step": "Order book set online.", "tags": ["Dale Carnegie", "Leadership"], "section": "micro_structured"},
-                {"name": "Admissions & Research Weekly Digest", "type": "Newsletter", "price": "Free", "session_details": "Weekly Email", "expected_outcomes": "Curated list of international essay competitions and summer programs.", "tags": ["Newsletter", "Competitions"], "section": "nano_expert"},
-                {"name": "IEEE Spectrum & Rotarian Youth Publication", "type": "Publication", "price": "$40/year", "session_details": "Annual Subscription", "expected_outcomes": "Interviews with young leaders globally and notices of project funding.", "tags": ["Magazine", "Funding"], "section": "nano_expert"}
-            ]
-        }
-
-    # 6. Fallback (Modulo based on step_id so every step gets a distinct, non-repetitive marketplace dictionary!)
+    # Category 1: Academic & Research (Default)
     else:
-        modulo = (step_id % 5) + 1
-        if modulo == 1:
-            return get_mock_marketplace(focus, "assessment", step_id, goal)
-        elif modulo == 2:
-            return get_mock_marketplace(focus, "school target", step_id, goal)
-        elif modulo == 3:
-            return get_mock_marketplace(focus, "skill project", step_id, goal)
-        elif modulo == 4:
-            return get_mock_marketplace(focus, "test sat", step_id, goal)
+        if any(k in title_lower for k in ["test", "sat", "act", "ielts", "toefl", "gre", "gate"]):
+            return {
+                "mentors": [
+                    {"name": "SAT / IELTS Peer Study Group", "type": "Mentor", "why": "Free peer review circles to practice speaking and problem solving.", "next_step": "Join weekly study session.", "tags": ["SAT", "IELTS"], "section": "macro_free", "price": "Free"},
+                    {"name": "Test Prep Strategy Coach", "type": "Coaching", "cost": "$89", "duration": "3 weeks", "value": "Small group strategy review covering high-frequency test questions.", "next_step": "Join test cohort.", "tags": ["Test Prep"], "section": "micro_structured"},
+                    {"name": "Elite Standardized Test Private Coach", "type": "Coaching", "price": "$150/hr", "session_details": "Private 1-on-1 Tutoring", "expected_outcomes": "Targeted instruction for 1500+ SAT / 8.0+ IELTS score.", "tags": ["1500+ SAT"], "section": "nano_expert"}
+                ],
+                "vendors": [
+                    {"name": "Khan Academy Official SAT Prep Engine", "type": "Course", "why": "100% free personalized SAT math and reading practice.", "next_step": "Link College Board account.", "tags": ["Khan Academy", "SAT"], "section": "macro_free", "cost": "Free"},
+                    {"name": "Princeton Review / Magoosh Test Course", "type": "Course", "cost": "$149", "duration": "6 weeks", "value": "Guided live instruction and score guarantee for high-stakes tests.", "next_step": "Enroll in live instruction cohort.", "tags": ["Test Prep"], "section": "micro_structured"},
+                    {"name": "PrepScholar 99th-Percentile Program", "type": "Platform", "price": "$397", "session_details": "AI-Customized Prep Platform", "expected_outcomes": "Customized prep algorithm targeting top 1% score.", "tags": ["PrepScholar"], "section": "nano_expert"}
+                ],
+                "institutions": [
+                    {"name": "Official Testing Agency Bulletin (CollegeBoard/ETS/IELTS)", "type": "Institute", "why": "Official guidelines and sample tests for international exams.", "next_step": "Download test bulletin.", "tags": ["Official Board"], "section": "macro_free", "cost": "Free"},
+                    {"name": "Kaplan Academic Test Prep Institute", "type": "Institute", "cost": "$250", "duration": "4 weeks", "value": "Comprehensive test prep curriculum with mock test proctoring.", "next_step": "Register for proctored mock exam.", "tags": ["Kaplan"], "section": "micro_structured"},
+                    {"name": "Cambridge Assessment English Certification", "type": "University", "price": "$400", "session_details": "Certified Exam Program", "expected_outcomes": "Official C1/C2 Cambridge English Certificate.", "tags": ["Cambridge"], "section": "nano_expert"}
+                ],
+                "distributors": [
+                    {"name": "Official Test Study Guide & Practice Tests", "type": "Book", "why": "Official past test papers with complete explanations.", "next_step": "Solve Practice Test 1.", "tags": ["Official Guide"], "section": "macro_free", "cost": "Free"},
+                    {"name": "Barron's / Princeton Review Prep Book Set", "type": "Workbook", "cost": "$30", "duration": "Self-paced", "value": "Comprehensive review chapters and practice drills.", "next_step": "Solve diagnostic drills.", "tags": ["Review Book"], "section": "micro_structured"},
+                    {"name": "Test Prep Strategy Digest", "type": "Newsletter", "price": "Free", "session_details": "Weekly Email", "expected_outcomes": "Weekly test tips, pacing formulas, and formula flashcards.", "tags": ["Newsletter"], "section": "nano_expert"}
+                ]
+            }
         else:
-            return get_mock_marketplace(focus, "research profile", step_id, goal)
+            return {
+                "mentors": [
+                    {"name": "University Alumni Mentorship Circle", "type": "Mentor", "why": f"Free consultations with alumni to understand {goal_str} applications & curriculum.", "next_step": "Book 20-min intro chat.", "tags": ["Alumni", "Mentorship"], "section": "macro_free", "price": "Free"},
+                    {"name": "Academic Advisor & Curriculum Coach", "type": "Coaching", "cost": "$95", "duration": "3 weeks", "value": "Subject combination planning, GPA targets, and prerequisite mapping.", "next_step": "Schedule curriculum review.", "tags": ["Curriculum", "GPA"], "section": "micro_structured"},
+                    {"name": "Naaviverse Senior Admissions Strategist", "type": "Mentor", "price": "$150", "session_details": "1-on-1 Zoom Call & Dossier Audit", "expected_outcomes": "Comprehensive audit of academic profile and application positioning.", "tags": ["Admissions Audit"], "section": "nano_expert"}
+                ],
+                "vendors": [
+                    {"name": "Coursera Academic Research & Writing", "type": "Course", "why": "Free course detailing research methodologies and citation formats.", "next_step": "Complete literature review module.", "tags": ["Research", "Writing"], "section": "macro_free", "cost": "Free"},
+                    {"name": "Mindler / Crimson University Prep Track", "type": "Course", "cost": "$199", "duration": "6 weeks", "value": "Guided roadmap building for target university applications.", "next_step": "Complete profile review.", "tags": ["University Prep"], "section": "micro_structured"},
+                    {"name": "Lumiere / Polygence Academic Research Mentorship", "type": "Bootcamp", "cost": "$850", "duration": "8 weeks", "value": "1-on-1 research mentorship with PhD researchers to write a paper.", "next_step": "Submit research proposal.", "tags": ["Research Paper"], "section": "nano_expert"}
+                ],
+                "institutions": [
+                    {"name": "Target University Open Courses & Admissions Bureau", "type": "University", "why": "Official requirements, department open days, and major information.", "next_step": "Check prerequisites page.", "tags": ["University", "Requirements"], "section": "macro_free", "cost": "Free"},
+                    {"name": "University Summer High School / Transfer Academy", "type": "University", "cost": "$350", "duration": "4 weeks", "value": "Introductory college-level coursework and transcript credit.", "next_step": "Submit summer application.", "tags": ["Summer School"], "section": "micro_structured"},
+                    {"name": "Columbia / Harvard Secondary School Session", "type": "University", "price": "$3,500", "session_details": "College Credit Program", "expected_outcomes": "Official university transcript credits and recommendation.", "tags": ["Ivy League"], "section": "nano_expert"}
+                ],
+                "distributors": [
+                    {"name": "Fiske Guide to Colleges & Universities", "type": "Book", "why": "Comprehensive directory of 300+ university profiles, majors, and culture.", "next_step": "Read target profiles.", "tags": ["Fiske Guide"], "section": "macro_free", "cost": "Free"},
+                    {"name": "High School / College Research Handbook", "type": "Guide", "why": "Guide on formatting, citations, and student publications.", "next_step": "Download paper template.", "tags": ["Research Guide"], "section": "micro_structured"},
+                    {"name": "Admissions & Research Weekly Digest", "type": "Newsletter", "price": "Free", "session_details": "Weekly Email", "expected_outcomes": "Curated list of international essay competitions and summer programs.", "tags": ["Newsletter"], "section": "nano_expert"}
+                ]
+            }
+
 
 def customize_steps_for_focus(steps_configs: list, focus: Optional[str], goal: str) -> list:
     if not focus:
         return steps_configs
-    
-    category = resolve_focus_category(focus)
-    is_academic = category == "academic"
-    is_practical = category == "practical"
-    is_jobs = category == "jobs"
-    is_non_academic = category == "non_academic"
+    return steps_configs
 
-    custom_configs = []
-    for step in steps_configs:
-        step_copy = step.copy()
-        title = step_copy["title"]
-        desc = step_copy["description"]
-        macro = step_copy.get("macro_view", "")
-        micro = step_copy.get("micro_view", "")
-        nano = step_copy.get("nano_view", "")
 
-        focus_lower = focus.lower()
-        if is_academic:
-            if "research & honors" in focus_lower:
-                title = title.replace("Academic Target & Profile Review", "Research Question & Literature Review") \
-                             .replace("Academic Curation & GPA Target", "Research Scoping & Honor Roll Planning") \
-                             .replace("Board Achievement", "Honors Thesis & Academic Publication Mastery") \
-                             .replace("Skill Curation & Internship Selection", "Research Paper Drafting & Seminar Presentation") \
-                             .replace("Academics & Profile Rigor", "Academic Publication & Independent Study Rigor") \
-                             .replace("Test Score Curation", "Research Poster Curation & Review") \
-                             .replace("Standardized Test Prep Modules", "Academic Research Methodology Modules") \
-                             .replace("Standardized Test Prep", "Research Methodologies") \
-                             .replace("Standardized Test Score Curation", "Academic Manuscript Review") \
-                             .replace("Standardized Test", "Research Defense") \
-                             .replace("Admissions Finalization & Visas", "Academic Symposium Placement & Fellowships")
-                desc = desc.replace("internships", "independent research").replace("practical skills", "academic methodologies").replace("board exams", "research reviews").replace("study schedules", "literature review plans")
-                desc += " Prioritize original research papers, academic honors, independent studies, and publication cycles."
-                macro = f"Focusing on high-prestige academic research and honors designations: {macro}"
-                micro = f"Execute research projects, literature reviews, and manuscript writing: {micro}"
-                nano = f"Research mentor audit of methodologies and bibliography sources: {nano}"
-            elif "test prep" in focus_lower:
-                title = title.replace("Academic Target & Profile Review", "Admissions Standardized Test Diagnostic") \
-                             .replace("Academic Curation & GPA Target", "SAT/ACT Prep & admissions Milestones") \
-                             .replace("Board Achievement", "Standardized Test Score Optimization") \
-                             .replace("Skill Curation & Internship Selection", "Admissions Essays & AP Course Selection") \
-                             .replace("Academics & Profile Rigor", "Standardized Testing & AP/IB Exam Rigor") \
-                             .replace("Test Score Curation", "Admissions Portfolio & Test Submissions") \
-                             .replace("Standardized Test Prep Modules", "Intense SAT/ACT/IELTS Test Prep Modules") \
-                             .replace("Standardized Test Prep", "Standardized Test Prep Modules") \
-                             .replace("Standardized Test Score Curation", "Mock Test Scoring & Errors Analysis") \
-                             .replace("Standardized Test", "Official SAT/ACT Sitting") \
-                             .replace("Admissions Finalization & Visas", "University Admissions Portals & Visas Submission")
-                desc = desc.replace("internships", "mock sittings").replace("practical skills", "exam test-taking strategies").replace("board exams", "standardized exams").replace("study schedules", "test-prep modules")
-                desc += " Focus intensely on standardized test preparation (SAT, ACT, AP, IELTS) and college admissions portals."
-                macro = f"Focusing on competitive standardized testing and strategic college admissions: {macro}"
-                micro = f"Complete rigorous mock tests, review diagnostic reports, and finalize application essay drafts: {micro}"
-                nano = f"Test-prep mentor audit of scoring errors and essay critiques: {nano}"
-            else:  # Curriculum & GPA Focus
-                title = title.replace("Academic Target & Profile Review", "GPA Benchmark & Course Selection") \
-                             .replace("Academic Curation & GPA Target", "GPA Curation & Class Standing Plan") \
-                             .replace("Board Achievement", "School Curriculum Term Exams Mastery") \
-                             .replace("Skill Curation & Internship Selection", "Course Syllabus Selection & GPA Maximization") \
-                             .replace("Academics & Profile Rigor", "Curriculum Tracking & Class Rank Rigor") \
-                             .replace("Test Score Curation", "GPA Checklist & Transcripts Review") \
-                             .replace("Standardized Test Prep Modules", "School Subject Syllabus Chapters Modules") \
-                             .replace("Standardized Test Prep", "School Subject Prep Modules") \
-                             .replace("Standardized Test Score Curation", "Subject Exam Grade Diagnostics") \
-                             .replace("Standardized Test", "Term/Board Subject Exam") \
-                             .replace("Admissions Finalization & Visas", "Transcripts Evaluation & GPA Verification")
-                desc = desc.replace("internships", "course modules").replace("practical skills", "coursework understanding").replace("board exams", "class term tests").replace("study schedules", "subject revision cards")
-                desc += " Emphasize school/college course requirements, maximizing term GPAs, and class rank optimization."
-                macro = f"Focusing on core curriculum excellence and GPA maximization: {macro}"
-                micro = f"Complete weekly coursework reviews, submit class assignments, and track term exam grades: {micro}"
-                nano = f"Subject tutor audit of grade reports and course content mastery: {nano}"
-
-        elif is_practical:
-            if "project portfolio" in focus_lower:
-                title = title.replace("Academic Target & Profile Review", "Project Idea & Tech Stack Review") \
-                             .replace("Academic Curation & GPA Target", "Open Source & Git Repository Launch") \
-                             .replace("Board Achievement", "Full-Stack Project Launch Milestone") \
-                             .replace("Academics & Profile Rigor", "GitHub Portfolio & Project Readme Rigor") \
-                             .replace("Test Score Curation", "Project Showcase & Live Demo Audits") \
-                             .replace("Standardized Test Prep Modules", "Coding Projects Architecture Modules") \
-                             .replace("Standardized Test Prep", "Coding Projects Building") \
-                             .replace("Standardized Test Score Curation", "Code Review & Refactoring Diagnostics") \
-                             .replace("Standardized Test", "Project Demo Presentation") \
-                             .replace("Admissions Finalization & Visas", "Project Portfolio Showcase & Coding Interviews")
-                desc = desc.replace("board exams", "coding projects").replace("academic preparation", "technical building").replace("standardized test", "project deployment").replace("GPA", "github contributions")
-                desc += " Emphasize building side-projects, launching open-source packages, and optimizing GitHub repositories."
-                macro = f"Focusing on hands-on project building and open-source contributions: {macro}"
-                micro = f"Write clean modular code, write comprehensive documentation, and deploy live demos to cloud host: {micro}"
-                nano = f"Senior developer audit of code quality and repository READMEs: {nano}"
-            elif "certification & bootcamp" in focus_lower:
-                title = title.replace("Academic Target & Profile Review", "Professional Certification Track Selection") \
-                             .replace("Academic Curation & GPA Target", "Bootcamp Prep & Lab Sandbox Setup") \
-                             .replace("Board Achievement", "Professional Certification Exam Completion") \
-                             .replace("Academics & Profile Rigor", "Bootcamp Assignments & Lab Projects Rigor") \
-                             .replace("Test Score Curation", "Certification Credentials Registry Review") \
-                             .replace("Standardized Test Prep Modules", "Certification Syllabus Training Modules") \
-                             .replace("Standardized Test Prep", "Bootcamp Sandbox Training") \
-                             .replace("Standardized Test Score Curation", "Practice Exam Scoring Diagnostics") \
-                             .replace("Standardized Test", "Official Certification Exam Sitting") \
-                             .replace("Admissions Finalization & Visas", "Credentials Validation & Technical Audits")
-                desc = desc.replace("board exams", "certification exams").replace("academic preparation", "structured bootcamp labs").replace("standardized test", "credential exam").replace("GPA", "lab completion rate")
-                desc += " Emphasize professional certifications (AWS, Google Cloud, Scrum Master, Cisco) and coding bootcamps."
-                macro = f"Focusing on professional cloud/tech certifications and structured bootcamps: {macro}"
-                micro = f"Complete sandboxed lab tutorials, complete bootcamp assignments, and take certification practice tests: {micro}"
-                nano = f"Bootcamp instructor audit of sandbox labs and exam readiness reports: {nano}"
-            else:  # Internship & Applied Focus
-                title = title.replace("Academic Target & Profile Review", "Applied Skill Mapping & Internship Scoping") \
-                             .replace("Academic Curation & GPA Target", "Cold Outreach & Apprenticeship Pipeline") \
-                             .replace("Board Achievement", "Corporate Internship Offer Validation") \
-                             .replace("Academics & Profile Rigor", "Corporate Project Delivery & Applied Rigor") \
-                             .replace("Test Score Curation", "Internship Review & Professional Referral Plan") \
-                             .replace("Standardized Test Prep Modules", "Applied Work Experience Prep Modules") \
-                             .replace("Standardized Test Prep", "Corporate Project Scoping") \
-                             .replace("Standardized Test Score Curation", "Applied Performance Review Diagnostics") \
-                             .replace("Standardized Test", "Applied Project Presentation") \
-                             .replace("Admissions Finalization & Visas", "Internship Continuity & Professional Referrals")
-                desc = desc.replace("board exams", "corporate deliverables").replace("academic preparation", "applied workplace skill acquisition").replace("standardized test", "internship reviews").replace("GPA", "manager feedback score")
-                desc += " Emphasize corporate internships, job shadowing, applied workplace skills, and securing professional referrals."
-                macro = f"Focusing on applied corporate internship experiences and workspace readiness: {macro}"
-                micro = f"Apply to short internships, shadows industry professionals, and complete workspace project tasks: {micro}"
-                nano = f"Corporate mentor audit of workplace project deliverables and professional communication: {nano}"
-
-        elif is_jobs:
-            if "technical role" in focus_lower:
-                title = title.replace("Academic Target & Profile Review", "Technical Role Fit & LeetCode Plan") \
-                             .replace("Academic Curation & GPA Target", "System Design & Algorithms Map") \
-                             .replace("Board Achievement", "Technical Assessment Mastery") \
-                             .replace("Academics & Profile Rigor", "LeetCode Solutions & Tech Specs Rigor") \
-                             .replace("Test Score Curation", "Technical Portfolio & Github Reviews") \
-                             .replace("Standardized Test Prep Modules", "LeetCode Hackerrank Solving Modules") \
-                             .replace("Standardized Test Prep", "Coding Assessment Prep") \
-                             .replace("Standardized Test Score Curation", "Mock Technical Scoring Diagnostics") \
-                             .replace("Standardized Test", "Official Technical Interview Sitting") \
-                             .replace("Admissions Finalization & Visas", "Technical Placement & Team Onboarding")
-                desc = desc.replace("study schedules", "coding sessions").replace("GPA", "algorithmic skill").replace("test sittings", "coding assessments").replace("board exams", "technical test milestones")
-                desc += " Focus on technical role metrics: algorithm challenges, system design patterns, and coding interviews."
-                macro = f"Focusing on competitive technical role assessments and system design: {macro}"
-                micro = f"Solve 10+ LeetCode problems weekly, practice system design architectures, and complete mock technical tests: {micro}"
-                nano = f"Technical lead mentor review of algorithm efficiency and system patterns: {nano}"
-            elif "interview & networking" in focus_lower:
-                title = title.replace("Academic Target & Profile Review", "LinkedIn Curation & Networking Pipeline") \
-                             .replace("Academic Curation & GPA Target", "Informational Interviews & Cold Outreach") \
-                             .replace("Board Achievement", "Networking Referral Pipeline Mastery") \
-                             .replace("Academics & Profile Rigor", "Mock Behavioral Interviews & Speech Rigor") \
-                             .replace("Test Score Curation", "Job Referrals & Interview Schedules") \
-                             .replace("Standardized Test Prep Modules", "Behavioral Interview Prep Modules") \
-                             .replace("Standardized Test Prep", "Elevator Pitch Practice") \
-                             .replace("Standardized Test Score Curation", "Informational Interview Diagnostics") \
-                             .replace("Standardized Test", "Informational Outreach Session") \
-                             .replace("Admissions Finalization & Visas", "Job Offer Negotiation & Referral Closure")
-                desc = desc.replace("study schedules", "outreach tracking").replace("GPA", "professional networking").replace("test sittings", "referral queries").replace("board exams", "mock behavioral interviews")
-                desc += " Focus on networking: LinkedIn profile optimization, informational interviews, cold outreach, and mock behavioral interviews."
-                macro = f"Focusing on industry networking and behavioral interview preparation: {macro}"
-                micro = f"Reach out to 5 industry professionals weekly, schedule informational interviews, and practice elevator pitches: {micro}"
-                nano = f"Career coach audit of professional communication style and outreach follow-ups: {nano}"
-            else:  # Resume & Career Evidence Focus
-                title = title.replace("Academic Target & Profile Review", "Resume Audit & Gap Assessment") \
-                             .replace("Academic Curation & GPA Target", "Cover Letter Drafts & Resume Customization") \
-                             .replace("Board Achievement", "Resume Portfolio Submissions Milestone") \
-                             .replace("Academics & Profile Rigor", "Workplace Evidence & Portfolio Proofs") \
-                             .replace("Test Score Curation", "Application Tracker & Follow-up Plans") \
-                             .replace("Standardized Test Prep Modules", "ATS Formatting Resume Modules") \
-                             .replace("Standardized Test Prep", "Resume Building Modules") \
-                             .replace("Standardized Test Score Curation", "Resume ATS Screening Diagnostics") \
-                             .replace("Standardized Test", "Resume Submission Review") \
-                             .replace("Admissions Finalization & Visas", "Background Check & Employment Contracts")
-                desc = desc.replace("study schedules", "resume tracking").replace("GPA", "resume competitiveness").replace("test sittings", "resume reviews").replace("board exams", "resume draft milestones")
-                desc += " Focus on resume quality: tailoring descriptions, optimizing for ATS, building career folders, and job application tracking."
-                macro = f"Focusing on ATS-optimized resume building and professional evidence portfolios: {macro}"
-                micro = f"Draft 3 custom resumes, optimize summaries for target roles, and populate application tracker sheets: {micro}"
-                nano = f"HR consultant review of resume formats and ATS compatibility benchmarks: {nano}"
-
-        elif is_non_academic:
-            if "mental health" in focus_lower:
-                title = title.replace("Academic Target & Profile Review", "Mental Health Audit & Support Mapping") \
-                             .replace("Academic Curation & GPA Target", "Stress Management & Daily Routines") \
-                             .replace("Board Achievement", "Mindfulness & Sleep Hygiene Milestone") \
-                             .replace("Internship Planning & Skill Curation", "Coping Mechanisms & Safe Boundaries") \
-                             .replace("Academics & Profile Rigor", "Emotional Resilience & Weekly Journaling") \
-                             .replace("Test Score Curation", "Mental Health Diagnostics & Checkpoints") \
-                             .replace("University Placements Submission", "Mental Wellness Plan Review") \
-                             .replace("Admissions Finalization & Visas", "Ongoing Counselling & Care Continuity")
-                desc = desc.replace("academic preparation", "wellness planning").replace("study schedules", "wellness routines").replace("GPA", "wellbeing indicators").replace("test sittings", "mood checks").replace("board exams", "mental stressors")
-                desc += " This is a health support path; include wellness routines, coping tools, journaling, and professional support references."
-                macro = f"Focusing on mental wellness routines and emotional resilience: {macro}"
-                micro = f"Complete daily 10-minute mindfulness sessions, maintain sleep diaries, and complete weekly journaling: {micro}"
-                nano = f"Licensed counsellor review of wellbeing charts and routine continuity: {nano}"
-            elif "life skills" in focus_lower:
-                title = title.replace("Academic Target & Profile Review", "Time Management & Routine Mapping") \
-                             .replace("Academic Curation & GPA Target", "Decision Frameworks & Goal Planning") \
-                             .replace("Board Achievement", "Daily Organization & Habit Mastery") \
-                             .replace("Internship Planning & Skill Curation", "Task Prioritization & Focus Boundaries") \
-                             .replace("Academics & Profile Rigor", "Personal Finance & Budgeting Routines") \
-                             .replace("Test Score Curation", "Goal Progress & Habit Tracker Checkpoints") \
-                             .replace("University Placements Submission", "Life Goals Blueprint Review") \
-                             .replace("Admissions Finalization & Visas", "Autonomy Development & Life Coaching Continuity")
-                desc = desc.replace("academic preparation", "routine design").replace("study schedules", "habit trackers").replace("GPA", "organization levels").replace("test sittings", "habit audits").replace("board exams", "daily routines")
-                desc += " Focus on core life skills: time management, task prioritization, decision-making logs, and habit routines."
-                macro = f"Focusing on structured life skills coaching and time management: {macro}"
-                micro = f"Log daily tasks, compile decision logs, establish weekly calendars, and review budget sheets: {micro}"
-                nano = f"Life coach audit of time allocation charts and habit compliance scores: {nano}"
-            else:  # Immediate Action & Support Focus
-                title = title.replace("Academic Target & Profile Review", "Urgent Support Scoping & Triage") \
-                             .replace("Academic Curation & GPA Target", "Immediate Helpline & Resource Mapping") \
-                             .replace("Board Achievement", "Immediate Support Group Engagement") \
-                             .replace("Internship Planning & Skill Curation", "Escalation Routes & Safe Space Setup") \
-                             .replace("Academics & Profile Rigor", "Safety Plans & Crisis Response Setup") \
-                             .replace("Test Score Curation", "Immediate Safety Checkpoints") \
-                             .replace("University Placements Submission", "Crisis Care Plan Review") \
-                             .replace("Admissions Finalization & Visas", "Qualified Peer & Clinical Referrals Continuity")
-                desc = desc.replace("academic preparation", "safety checks").replace("study schedules", "safety boundaries").replace("GPA", "crisis indicators").replace("test sittings", "check-ins").replace("board exams", "stress events")
-                desc += " Focus on short-term navigation: hotline contacts, safe support networks, and qualified medical/peer escalation paths."
-                macro = f"Focusing on immediate crisis care navigation and safety-aware triage: {macro}"
-                micro = f"Identify 3 immediate hotlines, map emergency contacts, and document a short-term crisis safety plan: {micro}"
-                nano = f"Support representative review of safety plan details and escalation guidelines: {nano}"
-
-        step_copy["title"] = title
-        step_copy["description"] = desc
-        step_copy["macro_view"] = macro
-        step_copy["micro_view"] = micro
-        step_copy["nano_view"] = nano
-        custom_configs.append(step_copy)
-
-    return custom_configs
-
-def calculate_path_metrics(current: str, goal: str, profile: dict, path_type: str = "Academic & Research") -> dict:
-    # 1. total_duration based on target degree type first, then grade fallback.
-    total_months = calculate_total_duration_months(current, goal, profile)
+def calculate_path_metrics(
+    current: str,
+    goal: str,
+    profile: dict,
+    path_type: str = "Academic & Research",
+    sub_segment: Optional[str] = None
+) -> dict:
+    path_category = resolve_focus_category(path_type)
+    total_months = calculate_total_duration_months(current, goal, profile, category=path_category, sub_segment=sub_segment)
     total_duration = format_total_duration(total_months)
 
-    # 2. Competitiveness of target goal
-    goal_lower = goal.lower()
-    competitive_keywords = [
-        "harvard", "yale", "stanford", "mit", "oxford", "cambridge", "iit", "bits",
-        "imperial college", "caltech", "berkeley", "princeton", "columbia", "cornell"
-    ]
-    is_highly_competitive = any(kw in goal_lower for kw in competitive_keywords)
-
-    # 3. Performance
-    perf_str = str(profile.get("performance") or "").lower()
-    if "90" in perf_str or "above 90" in perf_str or "excellent" in perf_str or "gpa 4" in perf_str or "a+" in perf_str:
+    goal_lower = (goal or "").lower()
+    perf_str = str((profile or {}).get("performance") or "").lower()
+    if any(k in perf_str for k in ["90", "above 90", "excellent", "gpa 4", "a+", "top"]):
         perf_cat = "high"
-    elif "75" in perf_str or "80" in perf_str or "85" in perf_str or "good" in perf_str or "average" in perf_str:
+    elif any(k in perf_str for k in ["75", "80", "85", "good", "average"]):
         perf_cat = "medium"
     else:
         perf_cat = "low"
 
-    # 4. Profile signals
-    stream_str = str(profile.get("stream") or "").lower()
-    curriculum_str = str(profile.get("curriculum") or "").lower()
-    personality_str = str(profile.get("personality") or "").lower()
-    financial_str = str(profile.get("financialSituation") or "").lower()
-
-    # ──────────────────────────────────────────────────────────────────────────
-    # READINESS MODEL: Like ETA logic — the score indicates HOW READY the
-    # student's current profile is to achieve the goal via THIS specific path.
-    # Each path type evaluates different signals to compute a unique score.
-    # ──────────────────────────────────────────────────────────────────────────
-
-    base_score = 0
-
-    path_category = resolve_focus_category(path_type)
+    stream_str = str((profile or {}).get("stream") or "").lower()
+    curriculum_str = str((profile or {}).get("curriculum") or "").lower()
+    personality_str = str((profile or {}).get("personality") or "").lower()
+    financial_str = str((profile or {}).get("financialSituation") or "").lower()
 
     if path_category == "academic":
-        # ACADEMIC PATH: Readiness = alignment of academic profile to formal education route
-        # Base from performance
         base_score = {"high": 55, "medium": 35, "low": 20}.get(perf_cat, 20)
-        # Boost for academic curriculum match (CBSE/IB/IGCSE students are already in academic track)
         if any(k in curriculum_str for k in ["cbse", "ib", "igcse", "cambridge", "icse"]):
             base_score += 10
-        # Boost for science/commerce stream (university pathway relevant)
         if any(k in stream_str for k in ["science", "maths", "math", "commerce"]):
             base_score += 8
-        # Penalize if highly competitive goal and performance is low
-        if is_highly_competitive and perf_cat == "low":
-            base_score -= 15
-        # Boost if target is a university/degree in goal
-        if any(k in goal_lower for k in ["bachelor", "master", "university", "college", "degree", "phd", "bsc", "btech", "mbbs"]):
-            base_score += 7
-
+        if any(kw in goal_lower for kw in ["harvard", "yale", "stanford", "mit", "oxford", "cambridge", "iit", "bits"]):
+            base_score = int(base_score * 0.75)
     elif path_category == "practical":
-        # PRACTICAL PATH: Readiness = how well profile fits skills/project-based learning
         base_score = {"high": 50, "medium": 40, "low": 30}.get(perf_cat, 30)
-        # Skills-based goals are practical by nature — boost it
-        if any(k in goal_lower for k in ["engineer", "developer", "software", "data", "ai", "machine learning", "design", "architecture"]):
+        if any(k in personality_str for k in ["practical", "hands-on", "builder", "maker", "curious"]):
             base_score += 12
-        # Personality signals for hands-on learners
-        if any(k in personality_str for k in ["practical", "hands-on", "builder", "maker", "curious", "creative"]):
+        if any(k in goal_lower for k in ["developer", "software", "python", "web", "data", "ai", "cloud"]):
             base_score += 8
-        # Financial support matters for certifications/bootcamps
-        if any(k in financial_str for k in ["scholarship", "support", "funded", "family support"]):
-            base_score += 5
-        # All streams are eligible for skills path — no penalty
-        # But science stream has a slight edge
-        if "science" in stream_str:
-            base_score += 5
-
     elif path_category == "jobs":
-        # JOBS PATH: Readiness = alignment to job/career preparedness
         base_score = {"high": 45, "medium": 35, "low": 25}.get(perf_cat, 25)
-        # Career-focused goals naturally align
-        if any(k in goal_lower for k in ["career", "job", "placement", "intern", "manager", "analyst", "consultant", "hr", "finance"]):
-            base_score += 12
-        # Soft-skill personality signals
-        if any(k in personality_str for k in ["leader", "communication", "team", "social", "networking", "public speaking"]):
+        if any(k in personality_str for k in ["leader", "communication", "team", "social", "enterprising"]):
             base_score += 10
-        # Commerce/management stream aligns strongly
-        if any(k in stream_str for k in ["commerce", "business", "management", "arts", "humanities"]):
-            base_score += 8
-        # Financial stability helps career networking activities
-        if any(k in financial_str for k in ["self-funded", "employed", "working"]):
-            base_score += 5
-
-    elif path_category == "non_academic":
-        # NON-ACADEMIC SUPPORT PATH: score reflects support-plan readiness, not career readiness.
-        base_score = {"high": 45, "medium": 38, "low": 30}.get(perf_cat, 35)
-        if any(k in personality_str for k in ["anxious", "stress", "overwhelmed", "confused", "decision"]):
-            base_score += 8
-        if any(k in financial_str for k in ["support", "family", "funded", "stable"]):
-            base_score += 6
-        if any(k in goal_lower for k in ["mental", "stress", "wellness", "counselling", "counseling", "decision", "life", "guidance"]):
+        if any(k in current.lower() for k in ["developer", "engineer", "analyst", "intern", "associate"]):
+            base_score += 10
+    else:  # non_academic
+        base_score = 40
+        if any(k in personality_str for k in ["open", "reflective", "self-aware", "determined"]):
             base_score += 12
+        if any(k in financial_str for k in ["stable", "supported", "family"]):
+            base_score += 8
 
-    # 5. Apply competitive penalty uniformly
-    if is_highly_competitive:
-        base_score = int(base_score * 0.70)  # 30% harder to be "ready" for top-tier goals
-
-    # Apply variant-specific offset to ensure distinct readiness scores between alternatives
-    path_type_lower = str(path_type or "").lower()
-    variant_offset = 0
-    if "research" in path_type_lower or "portfolio" in path_type_lower or "technical role" in path_type_lower or "mental health" in path_type_lower:
-        variant_offset = +3
-    elif "test prep" in path_type_lower or "certification" in path_type_lower or "interview" in path_type_lower or "life skills" in path_type_lower:
-        variant_offset = -4
-    elif "curriculum" in path_type_lower or "applied" in path_type_lower or "resume" in path_type_lower or "immediate action" in path_type_lower:
-        variant_offset = +1
-    base_score += variant_offset
-
-    # 6. Clamp score between 5 and 95
     readiness_score = max(5, min(95, base_score))
-
-    # 7. Compute readiness label from final score
     if readiness_score >= 70:
         readiness_label = "Advanced Starter"
     elif readiness_score >= 50:
@@ -2051,7 +1618,6 @@ def calculate_path_metrics(current: str, goal: str, profile: dict, path_type: st
     }
 
 
-# ─── PATH ACCURACY SCORING MODEL ─────────────────
 def calculate_path_accuracy_score(roadmap: dict, profile: dict, current: str = "") -> dict:
     import math
     if not roadmap:
@@ -2395,365 +1961,311 @@ def calculate_path_accuracy_score(roadmap: dict, profile: dict, current: str = "
 
 
 # Pedagogical High-Fidelity Fallback Roadmap in case of a complete API lockout
-def get_fallback_mock_roadmap(current: str, goal: str, profile: dict, refine_prompt: Optional[str] = None, focus: Optional[str] = None) -> dict:
-    grade_str = str(profile.get("grade") or "").lower() or current.lower()
-    total_months = calculate_total_duration_months(current, goal, profile)
-    
-    # Aryan's Pathway structural mapping
-    if "10" in grade_str or "tenth" in grade_str:
-        steps_configs = [
+def get_academic_fallback(current: str, goal: str, profile: dict, focus: Optional[str] = None) -> dict:
+    total_months = calculate_total_duration_months(current, goal, profile, category="academic")
+    return {
+        "path_title": f"Academic & Research Pathway to {goal}",
+        "path_description": f"A structured academic pathway navigating formal education requirements, curriculum excellence, and admissions milestones toward {goal}.",
+        "readiness_score": 35,
+        "readiness_label": "Early Starter",
+        "total_duration": format_total_duration(total_months),
+        "blind_spots": ["Requires strong GPA consistency across all terms", "Must schedule standardized tests well in advance of application deadlines"],
+        "steps": [
             {
                 "id": 1,
-                "title": "Curriculum & Stream Assessment",
-                "duration": "Months 1-4",
-                "description": f"Choose the right academic curriculum and stream (CBSE, IB, Cambridge) based on passion, personality assessment, and aptitude for {goal}.",
-                "macro_view": "Selecting the right academic curriculum and subject stream is the single most impactful decision a student makes at the beginning of their educational journey, as it determines which doors open and which permanently close in the path toward a competitive university placement. This milestone establishes the foundational academic identity of the student — whether they pursue a science-heavy CBSE pathway, a globally recognized IB Diploma, or a rigorous Cambridge A-Level track — each of which signals a different level of academic ambition to admissions committees. Getting this choice correct means aligning the student's natural aptitude scores, RIASEC personality profile, and long-term career aspirations with the academic demands of the chosen stream, avoiding costly mid-stream transfers later. By the end of this milestone, the student will have a clear academic roadmap template tied directly to the demands of their target destination: {goal}.",
-
-"micro_view": "The student must complete a structured three-step execution process during this phase: first, take a validated psychometric assessment (e.g. Holland RIASEC Code Test or the 16Personalities aptitude tool) to identify core academic strengths and interests that should drive stream selection. Second, research and visit at least 3 potential schools offering the identified curriculum (CBSE/IB/Cambridge), evaluating each against criteria such as faculty quality, extracurricular options, lab infrastructure, and placement track record. Third, compile a written Academic Goal Statement of 500 words documenting the chosen stream, the rationale for the choice, the target GPA for Grade 10 board exams, and the extracurricular activities planned for profile enrichment over the next 12 months. All three deliverables must be reviewed and signed off before moving to the next milestone.",
-
-"nano_view": "A mentor or academic counselor should conduct an initial 45-minute intake diagnostic session reviewing the student's psychometric results, past academic performance records, and stated career interests to validate that the stream selection aligns with realistic university placement benchmarks for {goal}. The mentor should run a gap analysis comparing the student's current aptitude scores against the entry requirements of top universities in the target category, flagging any immediate curriculum risks or subject gaps that need to be addressed in Grade 10. A peer cohort review session should also be conducted where the student presents their Academic Goal Statement to a group of 3-4 senior students who have already navigated the same pathway, receiving structured feedback on blind spots and subject combination pitfalls. Expert feedback from this session must be incorporated into a revised Academic Goal Statement before the student formally commits to a school and stream.",
-            },
-            {
-                "id": 2,
-                "title": "School Selection & Academic Targets",
-                "duration": "Months 5-8",
-                "description": "Establish target schools and set clear academic targets. Focus on setting study habits and foundation metrics.",
-                "macro_view": "Establish high-caliber academic environments and target standards required for global universities.",
-                "micro_view": "Select schools based on location, budget, and mentor support, and finalize a weekly study timeline.",
-                "nano_view": "Obtain mentor diagnostic feedback on academic preparation and school resources mapping."
-            },
-            {
-                "id": 3,
-                "title": "Grade 10 Board Achievement",
-                "duration": "Months 9-12",
-                "description": "Achieve 90%+ in 10th-grade board exams. Master core academic concepts and prepare comprehensive exam notes.",
-                "macro_view": "Build a stellar academic foundation that serves as the official transcript entry point.",
-                "micro_view": "Complete diagnostic mock board tests, analyze weak chapters, and compile summary revision booklets.",
-                "nano_view": "Conduct progress check-ins with top-scoring student cohorts and board subject specialists."
-            },
-            {
-                "id": 4,
-                "title": "Internship Planning & Skill Curation",
-                "duration": "Months 13-16",
-                "description": "Focus on selecting and executing introductory internships to acquire practical skills and discover interests.",
-                "macro_view": "Supplement theoretical classroom learning with real-world project work and corporate exposure.",
-                "micro_view": "Apply for short internships, shadow industry specialists, and compile project reports.",
-                "nano_view": "Work with internship coordinators to align tasks with career interests and get reviews on deliverables."
-            },
-            {
-                "id": 5,
-                "title": "Grade 11 Transition & Diagnostic Test Prep",
-                "duration": "Months 17-20",
-                "description": "Transition to 11th grade successfully. Initiate standardized test prep diagnostics (SAT/ACT/IELTS/TOEFL) and map timelines.",
-                "macro_view": "Ensure a smooth academic step-up while setting the baseline for international standardized tests.",
-                "micro_view": "Purchase target test prep guides, take diagnostic test sittings, and plan a test calendar.",
-                "nano_view": "Conduct a transition risk analysis with senior academic advisors and test prep mentors."
-            },
-            {
-                "id": 6,
-                "title": "Grade 11 Academics & Profile Rigor",
-                "duration": "Months 21-24",
-                "description": "Maintain a 90%+ GPA in 11th-grade coursework and begin constructing an extracurricular profile / personal project.",
-                "macro_view": "Establish continuous academic growth and distinctiveness through specialized personal projects.",
-                "micro_view": "Start a research paper draft or launch a community service initiative, keeping complete logs.",
-                "nano_view": "Engage a subject-matter expert to scope your personal project and pressure-test the outline."
-            },
-            {
-                "id": 7,
-                "title": "Standardized Test Score Curation",
-                "duration": "Months 25-28",
-                "description": "Prepare intensively for the SAT/ACT and English proficiency tests. Take official exams and aim for top-tier scores.",
-                "macro_view": "Differentiate your application with highly competitive standardized exam scores.",
-                "micro_view": "Complete 10 full-length practice tests, review mistakes, and sit for the official examinations.",
-                "nano_view": "Conduct mock score iterations and review test-taking strategies with specialized coaches."
-            },
-            {
-                "id": 8,
-                "title": "Grade 12 Placement & Counselor Mapping",
-                "duration": "Months 29-32",
-                "description": f"Identify mentors and target university lists. Map recommendation letters and begin drafting essays for {goal}.",
-                "macro_view": "Convert academic and profile success into a curated admissions package targeting top-tier destinations.",
-                "micro_view": "Select 8-10 target universities, coordinate with recommendation letter writers, and draft common app essays.",
-                "nano_view": "Align with admissions counselors on portal shortlists and receive developmental feedback on essay drafts."
-            },
-            {
-                "id": 9,
-                "title": "Application Submission & Placement Curation",
-                "duration": "Months 33-36",
-                "description": f"Submit premium application dossiers to {goal} and prepare for interviews, visas, and matriculation.",
-                "macro_view": "Complete the college pathway, validate placement, and finalize legal entry permits.",
-                "micro_view": "Submit all application portals, participate in mock interview prep, and compile visa paperwork.",
-                "nano_view": "Conduct final panel mock interviews and visa checklist reviews with international coordinators."
-            }
-        ]
-    elif "11" in grade_str or "eleventh" in grade_str:
-        steps_configs = [
-            {
-                "id": 1,
-                "title": "Grade 11 Academic Curation & GPA Target",
-                "duration": "Months 1-4",
-                "description": "Establish stellar study schedules and targets. Focus on scoring 90%+ in school exams and mapping coursework.",
-                "macro_view": "Lay the baseline transcripts required for university admissions.",
-                "micro_view": "Attend extra academic support classes, compile weekly summaries, and track mock test scores.",
-                "nano_view": "Schedule advisor check-ins to review mid-term performance and flag curriculum risks."
-            },
-            {
-                "id": 2,
-                "title": "Skill Curation & Internship Selection",
-                "duration": "Months 5-8",
-                "description": "Select practical internships or projects to acquire industry skills and strengthen your profile.",
-                "macro_view": "Demonstrate real-world application of skills and initiative.",
-                "micro_view": "Draft a professional CV, apply to 3 target internships, and complete a showcase project.",
-                "nano_view": "Work with a career coach to select projects that align with your major interest."
-            },
-            {
-                "id": 3,
-                "title": "Standardized Test Prep Modules",
-                "duration": "Months 9-12",
-                "description": "Identify and focus on standardized test prep modules (SAT/ACT/IELTS). Map schedules and diagnostic metrics.",
-                "macro_view": "Prove academic readiness and language proficiency for international admissions.",
-                "micro_view": "Register on test portals, solve prep questions, and take diagnostic mock sittings.",
-                "nano_view": "Conduct test-taking technique diagnostics and identify sub-topic weaknesses with prep mentors."
-            },
-            {
-                "id": 4,
-                "title": "Mentor Mapping & Profile Rigor",
-                "duration": "Months 13-16",
-                "description": "Partner with a dedicated mentor to scope out personal projects, research papers, or community campaigns.",
-                "macro_view": "Highlight unique interests and intellectual depth beyond standard grades.",
-                "micro_view": "Develop a project repository, draft abstract outlines, and meet weekly project milestones.",
-                "nano_view": "Review drafts and source codes with expert mentors for validation and refinement."
-            },
-            {
-                "id": 5,
-                "title": "Grade 12 Transition & Shortlisting",
-                "duration": "Months 17-20",
-                "description": "Transition smoothly into Grade 12. Finalize university shortlists and begin college application essays.",
-                "macro_view": "Strategically select target institutions and draft compelling personal statements.",
-                "micro_view": "Finalize 8 target colleges, research specific essay prompts, and write initial drafts.",
-                "nano_view": "Receive feedback on essay story arcs and align shortlists with admissions counselors."
-            },
-            {
-                "id": 6,
-                "title": "Application Dossier & Placements",
-                "duration": "Months 21-24",
-                "description": f"Submit completed application dossiers to target destination: {goal}. Secure recommendations and handle visas.",
-                "macro_view": "Execute the final step of the pathway by submitting curated portfolios and finalizing placement.",
-                "micro_view": "Pay application fees, submit portals (Common App etc.), and compile visa documents.",
-                "nano_view": "Practice mock admissions interviews and undergo checklist verification with placements advisors."
-            }
-        ]
-    else:
-        steps_configs = [
-            {
-                "id": 1,
-                "title": "Grade 12 Academic Target & Profile Review",
+                "title": "Curriculum Alignment & Academic Target Setup",
                 "duration": "Months 1-3",
-                "description": "Establish term-exam targets and conduct a thorough profile review to identify extracurricular gaps.",
-                "macro_view": "Ensure final high school transcripts meet competitive standards while identifying portfolio issues.",
-                "micro_view": "Write down grade objectives, list active projects, and note recommendations needed.",
-                "nano_view": "Conduct a portfolio analysis session with advisors to map outstanding targets."
+                "description": f"Establish core academic targets, choose key subject combinations, and map prerequisite coursework for {goal}.",
+                "learning_objectives": ["Map prerequisite subjects", "Set minimum 90%+ academic GPA targets", "Identify core academic advisors"],
+                "macro_view": "This foundational milestone establishes academic rigor and transcript strength necessary for competitive admissions.",
+                "micro_view": "Review term syllabus, set weekly study blocks in Notion, and take initial diagnostic subject assessments.",
+                "nano_view": "Conduct diagnostic review with an academic counselor to flag curriculum gaps.",
+                "marketplace": get_mock_marketplace(focus, "Curriculum Alignment", 1, goal, category="academic"),
+                "micro_steps": [{"task": "Review prerequisite subject criteria", "resource": "Official Curriculum Guide"}]
             },
             {
                 "id": 2,
-                "title": "Test Score Curation & Finalization",
+                "title": "Academic Rigor & Diagnostic Standardized Prep",
                 "duration": "Months 4-6",
-                "description": "Complete final official standardized test sittings. Focus on test prep iteration and maximizing scores.",
-                "macro_view": "Finalize competitive metrics for college portals.",
-                "micro_view": "Practice weak areas, sit for official SAT/ACT/IELTS/TOEFL exams, and request score reports.",
-                "nano_view": "Coordinate score reviews and submission strategy check-ins with test mentors."
+                "description": "Maintain high term GPA performance and initiate diagnostic prep for standardized admissions exams where applicable.",
+                "learning_objectives": ["Complete baseline test diagnostics", "Target weak concept areas", "Maintain top 10% class standing"],
+                "macro_view": "Strengthen academic indicators that serve as prerequisites for international or national admissions.",
+                "micro_view": "Take 2 full-length diagnostic exams, analyze error logs, and dedicate 6 hours weekly to test problem solving.",
+                "nano_view": "Review diagnostic score reports with a test prep specialist to build a tailored study schedule.",
+                "marketplace": get_mock_marketplace(focus, "Diagnostic Prep", 2, goal, category="academic"),
+                "micro_steps": [{"task": "Complete diagnostic test sitting", "resource": "Official Practice Portal"}]
             },
             {
                 "id": 3,
-                "title": "Profile Curation & Mentor Counsel",
+                "title": "Academic Projects & Profile Differentiation",
                 "duration": "Months 7-9",
-                "description": "Connect with college mentors, draft letters of recommendation profiles, and write personal statements.",
-                "macro_view": "Draft highly persuasive stories that demonstrate your readiness for collegiate study.",
-                "micro_view": "Draft the main application essay, create resumes, and requests recommendation inputs.",
-                "nano_view": "Obtain structural and narrative feedback on essays from writing advisors."
+                "description": "Engage in specialized academic research projects, honors papers, or extracurricular competitions relevant to target field.",
+                "learning_objectives": ["Author a research paper or project draft", "Participate in academic seminars", "Secure faculty advisor support"],
+                "macro_view": "Differentiate the student profile through genuine academic curiosity and demonstrable scholarly work.",
+                "micro_view": "Draft a 10-page research paper outline, conduct literature reviews, and submit to student symposiums.",
+                "nano_view": "Subject mentor reviews methodology and citations before final paper submission.",
+                "marketplace": get_mock_marketplace(focus, "Academic Projects", 3, goal, category="academic"),
+                "micro_steps": [{"task": "Draft research paper outline", "resource": "Academic Research Guide"}]
             },
             {
                 "id": 4,
-                "title": "University Placements Submission",
-                "duration": "Months 10-11",
-                "description": f"Assemble and submit official application dossiers to {goal}. Double-check all transcript records.",
-                "macro_view": "Submit all credentials to target admissions committees without errors.",
-                "micro_view": "Complete university portal profiles, review transcripts, and submit portfolios.",
-                "nano_view": "Review application completeness checklist with counselor prior to final submission."
-            },
-            {
-                "id": 5,
-                "title": "Admissions Finalization & Visas",
-                "duration": "Month 12",
-                "description": "Review placement decisions, prepare for interviews, and complete visa and study permit documentation.",
-                "macro_view": "Transition smoothly from high school applicant to university-matriculated student.",
-                "micro_view": "Attend mock interviews, review visa documents, and pay enrollment deposits.",
-                "nano_view": "Participate in pre-departure briefings and mock visa interview check-ins."
+                "title": "Target Institution Selection & Admissions Dossier",
+                "duration": "Months 10-12",
+                "description": f"Finalize target university list, draft personal statements, secure letters of recommendation, and submit dossiers for {goal}.",
+                "learning_objectives": ["Finalize 8-10 balanced institution choices", "Complete personal statement drafts", "Submit complete application dossiers"],
+                "macro_view": "Convert academic preparation and profile rigor into successful admissions outcomes.",
+                "micro_view": "Submit all application portals, draft supplementary essays, and compile financial/visa documentation.",
+                "nano_view": "Admissions counselor line-by-line review of essays and application materials.",
+                "marketplace": get_mock_marketplace(focus, "Admissions Dossier", 4, goal, category="academic"),
+                "micro_steps": [{"task": "Submit application dossiers", "resource": "Admissions Portals"}]
             }
         ]
-
-    # Parse requested steps from refine_prompt if available
-    requested_steps = None
-    if refine_prompt:
-        match_steps = re.search(r'(\d+)\s*(?:step|milestone)', refine_prompt.lower())
-        if match_steps:
-            try:
-                requested_steps = int(match_steps.group(1))
-                if requested_steps < 1:
-                    requested_steps = 1
-            except Exception:
-                pass
-
-    baseline_steps = minimum_blueprint_steps(current, goal, profile)
-
-    if not requested_steps and focus:
-        focus_lower = focus.lower()
-        if "research & honors" in focus_lower:
-            requested_steps = len(steps_configs) + 2
-        elif "test prep" in focus_lower:
-            requested_steps = len(steps_configs) - 2
-        elif "curriculum & gpa" in focus_lower:
-            requested_steps = len(steps_configs)
-        elif "project portfolio" in focus_lower:
-            requested_steps = len(steps_configs) + 1
-        elif "certification & bootcamp" in focus_lower:
-            requested_steps = len(steps_configs) - 1
-        elif "internship & applied" in focus_lower:
-            requested_steps = len(steps_configs)
-        elif "technical role prep" in focus_lower:
-            requested_steps = len(steps_configs) + 1
-        elif "interview & networking" in focus_lower:
-            requested_steps = len(steps_configs) - 1
-        elif "resume & career evidence" in focus_lower:
-            requested_steps = len(steps_configs)
-        elif "mental health" in focus_lower:
-            requested_steps = len(steps_configs) + 1
-        elif "life skills" in focus_lower:
-            requested_steps = len(steps_configs) - 1
-        elif "immediate action" in focus_lower:
-            requested_steps = len(steps_configs)
-        else:
-            focus_category = resolve_focus_category(focus)
-            if focus_category == "academic":
-                requested_steps = len(steps_configs)
-            elif focus_category == "practical":
-                requested_steps = len(steps_configs) + 1
-            elif focus_category == "jobs":
-                requested_steps = max(4, len(steps_configs) - 1)
-            elif focus_category == "non_academic":
-                requested_steps = max(5, min(len(steps_configs), 7))
-
-    if not requested_steps and len(steps_configs) < baseline_steps:
-        requested_steps = baseline_steps
-    elif requested_steps and requested_steps < baseline_steps and not refine_prompt:
-        requested_steps = baseline_steps
-
-    steps_configs = customize_steps_for_focus(steps_configs, focus, goal)
-    total_duration = format_total_duration(total_months)
-
-    if requested_steps and requested_steps != len(steps_configs):
-        N = len(steps_configs)
-        M = requested_steps
-        
-        dup_counts = [0] * N
-        for j in range(M):
-            orig_idx = int(j * N / M)
-            dup_counts[orig_idx] += 1
-            
-        scaled_configs = []
-        new_id = 1
-        for orig_idx, count in enumerate(dup_counts):
-            if count == 0:
-                continue
-            orig_step = steps_configs[orig_idx]
-            for d in range(count):
-                new_step = orig_step.copy()
-                new_step["id"] = new_id
-                
-                # If there are duplicates, append Phase tag to title
-                if count > 1:
-                    new_step["title"] = f"{orig_step['title']} - Phase {d + 1}"
-                    new_step["duration"] = split_duration(orig_step["duration"], count, d)
-                
-                scaled_configs.append(new_step)
-                new_id += 1
-                
-        steps_configs = scaled_configs
-
-    for cfg, duration in zip(steps_configs, distribute_month_ranges(len(steps_configs), total_months)):
-        cfg["duration"] = duration
-
-    # Map the configurations to high-fidelity milestone structures
-    steps = []
-    for cfg in steps_configs:
-        step_title = cfg["title"]
-        step_desc = cfg["description"]
-        macro_view = cfg["macro_view"]
-        micro_view = cfg["micro_view"]
-        nano_view = cfg["nano_view"]
-
-        steps.append({
-            "id": cfg["id"],
-            "title": step_title,
-            "duration": cfg["duration"],
-            "description": step_desc,
-            "learning_objectives": [
-                f"Understand the requirements and targets of the {step_title} phase.",
-                f"Execute the micro execution steps and checklist tasks for this milestone.",
-                f"Engage in mentor reviews and peer feedback to confirm phase readiness."
-            ],
-            "macro_view": macro_view,
-            "micro_view": micro_view,
-            "nano_view": nano_view,
-            "marketplace": get_mock_marketplace(focus, step_title=step_title, step_id=cfg["id"], goal=goal),
-            "micro_steps": [
-                {"task": f"Define and document goals for the {step_title} phase", "resource": "Google Docs / Notion"},
-                {"task": f"Complete diagnostic sittings or task execution for {step_title}", "resource": "Practice Portals"},
-                {"task": f"Review execution output with mentor or advisor", "resource": "Naavi Platform"}
-            ]
-        })
-
-    path_title = f"Academic Pathway to {goal}"
-    path_description = f"A comprehensive pedagogical blueprint designed to take a student from {current} to the target academic goal: {goal}."
-    readiness_score = 30
-    readiness_label = "Early Starter"
-
-    if focus:
-        focus_category = resolve_focus_category(focus)
-        if focus_category == "academic":
-            path_title = f"Academic & Research Pathway to {goal}"
-            path_description = f"A highly rigorous academic and research-oriented roadmap designed to maximize GPA, master standardized test prep (SAT/ACT/IELTS/TOEFL), secure academic honors, publish research, and build a competitive profile for top-tier university placement in {goal}."
-            readiness_score = 40
-            readiness_label = "Intermediate Starter"
-        elif focus_category == "practical":
-            path_title = f"Practical & Skills Pathway to {goal}"
-            path_description = f"A hands-on roadmap focused on learning the selected skill, building proof-of-work projects, earning practical credentials where useful, and applying the skill in internship or real-environment contexts for {goal}. This track treats skills separately from professions."
-            readiness_score = 35
-            readiness_label = "Early Builder"
-        elif focus_category == "jobs":
-            path_title = f"Jobs & Careers Pathway to {goal}"
-            path_description = f"A role-readiness roadmap focused on technical or non-technical profession clarity, resume evidence, interview preparation, networking, and job-search execution for {goal}."
-            readiness_score = 45
-            readiness_label = "Career Starter"
-        elif focus_category == "non_academic":
-            path_title = f"Non-Academic Support Path for {goal}"
-            path_description = f"A support and resource-navigation path for {goal}. This is not a career roadmap; it focuses on wellbeing routines, life decision support, trusted resources, counsellor review, short-term check-ins, and escalation to qualified help when appropriate."
-            readiness_score = 40
-            readiness_label = "Support Plan Starter"
-
-    roadmap = {
-        "path_title": path_title,
-        "path_description": path_description,
-        "readiness_score": readiness_score,
-        "readiness_label": readiness_label,
-        "total_duration": total_duration,
-        "blind_spots": [
-            "Lacks formal international exposure - needs IELTS/SAT preparation.",
-            "Needs structured extracurricular profile development for university entrance."
-        ],
-        "steps": steps
     }
-    return enrich_roadmap_narratives(roadmap, current, goal)
+
+
+def get_practical_fallback(current: str, goal: str, profile: dict, focus: Optional[str] = None) -> dict:
+    total_months = calculate_total_duration_months(current, goal, profile, category="practical")
+    return {
+        "path_title": f"Practical & Skills Pathway: {goal}",
+        "path_description": f"A project-driven, practical skill-building pathway to master core technologies, build real-world software/tools, and showcase an exceptional portfolio for {goal}.",
+        "readiness_score": 40,
+        "readiness_label": "Early Starter",
+        "total_duration": format_total_duration(total_months),
+        "blind_spots": ["Need to maintain consistent daily coding habits", "Ensure portfolio projects have live deployed demos and clean documentation"],
+        "steps": [
+            {
+                "id": 1,
+                "title": "Core Foundations & Sandbox Environment Setup",
+                "duration": "Months 1-2",
+                "description": f"Master fundamental syntax, algorithms, and core architecture principles required for {goal}.",
+                "learning_objectives": ["Master core language syntax and tools", "Set up professional Git/GitHub workflow", "Complete 20+ algorithmic exercises"],
+                "macro_view": "Building an unshakable technical foundation ensures rapid progress when tackling complex projects.",
+                "micro_view": "Complete freeCodeCamp/Coursera modules, solve 5 coding exercises weekly, and push clean code to GitHub.",
+                "nano_view": "Senior developer reviews initial repository setup and code style compliance.",
+                "marketplace": get_mock_marketplace(focus, "Core Foundations", 1, goal, category="practical"),
+                "micro_steps": [{"task": "Set up GitHub repository and dev environment", "resource": "Official Documentation"}]
+            },
+            {
+                "id": 2,
+                "title": "Hands-on Project Development & Module Building",
+                "duration": "Months 3-4",
+                "description": "Design and build 2 end-to-end practical projects implementing industry-standard design patterns and clean architecture.",
+                "learning_objectives": ["Build functional full-stack/standalone application", "Implement robust error handling and tests", "Deploy project to cloud hosting"],
+                "macro_view": "Applied project building transforms theoretical understanding into demonstrable proof of capability.",
+                "micro_view": "Build a modular application with API endpoints, automated unit tests, and live cloud deployment on Vercel/AWS.",
+                "nano_view": "Conduct an architectural code review with an experienced engineer to eliminate antipatterns.",
+                "marketplace": get_mock_marketplace(focus, "Project Development", 2, goal, category="practical"),
+                "micro_steps": [{"task": "Build and deploy capstone project 1", "resource": "GitHub & Cloud Sandbox"}]
+            },
+            {
+                "id": 3,
+                "title": "Advanced Applications & Open Source Contributions",
+                "duration": "Months 5-6",
+                "description": "Tackle advanced optimizations, contribute to existing open-source codebases, and write technical documentation.",
+                "learning_objectives": ["Submit 2+ open source pull requests", "Optimize application performance and latency", "Write technical architecture breakdown"],
+                "macro_view": "Collaborating on complex codebases validates professional engineering standards and teamwork ability.",
+                "micro_view": "Profile memory and performance bottlenecks, refactor complex modules, and write a comprehensive project README.",
+                "nano_view": "Open source maintainer or senior peer review of submitted pull requests.",
+                "marketplace": get_mock_marketplace(focus, "Advanced Applications", 3, goal, category="practical"),
+                "micro_steps": [{"task": "Submit pull request to open-source repository", "resource": "GitHub Community"}]
+            },
+            {
+                "id": 4,
+                "title": "Portfolio Showcase & Proof-of-Work Validation",
+                "duration": "Months 7-8",
+                "description": f"Curate a professional developer portfolio website showcasing live demos, code repositories, and technical writing for {goal}.",
+                "learning_objectives": ["Deploy high-impact developer portfolio", "Create video walkthroughs of key projects", "Pass peer technical code review"],
+                "macro_view": "A verified portfolio serves as undeniable evidence of practical competence.",
+                "micro_view": "Launch portfolio site, record 3-minute video walkthroughs, and publish technical case studies.",
+                "nano_view": "Principal engineer audit of complete portfolio and GitHub presence.",
+                "marketplace": get_mock_marketplace(focus, "Portfolio Showcase", 4, goal, category="practical"),
+                "micro_steps": [{"task": "Launch portfolio website with live demos", "resource": "Developer Portfolio"}]
+            }
+        ]
+    }
+
+
+def get_jobs_fallback(current: str, goal: str, profile: dict, focus: Optional[str] = None) -> dict:
+    total_months = calculate_total_duration_months(current, goal, profile, category="jobs")
+    return {
+        "path_title": f"Jobs & Careers Pathway: {goal}",
+        "path_description": f"A targeted career transition and job readiness pathway focusing on role competency, ATS resume evidence, networking, and interview mastery for {goal}.",
+        "readiness_score": 45,
+        "readiness_label": "Intermediate Starter",
+        "total_duration": format_total_duration(total_months),
+        "blind_spots": ["Need to tailor resume achievements with quantifiable metrics (STAR format)", "Schedule weekly mock interviews to build communication confidence"],
+        "steps": [
+            {
+                "id": 1,
+                "title": "Role Competency & Skill-Gap Analysis",
+                "duration": "Months 1-2",
+                "description": f"Analyze current qualifications against hiring benchmarks for {goal} to identify key technical and soft-skill gaps.",
+                "learning_objectives": ["Benchmark 15+ job descriptions for target role", "Identify top 3 competency gaps", "Build structured 6-month closing plan"],
+                "macro_view": "Targeted gap analysis prevents wasted effort by focusing purely on employer-demanded skills.",
+                "micro_view": "Compile a matrix of required competencies, complete technical self-assessments, and draft development goals.",
+                "nano_view": "Career coach review of competency matrix to align targets with realistic market demand.",
+                "marketplace": get_mock_marketplace(focus, "Competency Analysis", 1, goal, category="jobs"),
+                "micro_steps": [{"task": "Compile target role competency matrix", "resource": "Job Market Data"}]
+            },
+            {
+                "id": 2,
+                "title": "Workplace Proof of Work & Technical Evidence",
+                "duration": "Months 3-4",
+                "description": "Construct high-impact work samples, case studies, and technical artifacts proving readiness for target responsibilities.",
+                "learning_objectives": ["Complete 2 enterprise-grade case studies", "Document measurable business/technical outcomes", "Publish case studies publicly"],
+                "macro_view": "Demonstrable workplace outputs make candidates stand out immediately to recruiters.",
+                "micro_view": "Develop end-to-end case studies detailing problem statement, architectural choices, and quantifiable impact.",
+                "nano_view": "Industry hiring manager review of case study relevance and technical depth.",
+                "marketplace": get_mock_marketplace(focus, "Proof of Work", 2, goal, category="jobs"),
+                "micro_steps": [{"task": "Complete enterprise case study", "resource": "Case Study Framework"}]
+            },
+            {
+                "id": 3,
+                "title": "ATS Resume, LinkedIn & Professional Branding",
+                "duration": "Months 5-6",
+                "description": "Optimize resume with quantifiable impact metrics, align LinkedIn headline and experience, and build professional presence.",
+                "learning_objectives": ["Achieve 85%+ score on ATS resume scanners", "Optimize LinkedIn for recruiter search keywords", "Create targeted outreach list"],
+                "macro_view": "Optimized branding ensures inbound recruiter visibility and high application-to-interview conversion rates.",
+                "micro_view": "Rewrite resume bullet points using XYZ format ('Accomplished [X] as measured by [Y], by doing [Z]'), update LinkedIn profile, and connect with 20 industry peers.",
+                "nano_view": "HR recruiter line-by-line review of resume ATS compliance and executive presence.",
+                "marketplace": get_mock_marketplace(focus, "ATS Resume", 3, goal, category="jobs"),
+                "micro_steps": [{"task": "Optimize resume and run ATS diagnostic", "resource": "ATS Resume Builder"}]
+            },
+            {
+                "id": 4,
+                "title": "Mock Interviews, Networking & Job Placement",
+                "duration": "Months 7-8",
+                "description": f"Conduct intensive technical and behavioral mock interview simulations, leverage networking referrals, and secure offer for {goal}.",
+                "learning_objectives": ["Complete 5+ realistic mock interviews", "Execute warm referral outreach campaign", "Master offer negotiation strategies"],
+                "macro_view": "Mastering the interview loop and salary negotiation unlocks optimal career placement.",
+                "micro_view": "Complete 3 technical mock loops, practice behavioral STAR responses, and apply to 10 target companies weekly via referrals.",
+                "nano_view": "Senior interviewer mock simulation with detailed scoring rubric and negotiation coaching.",
+                "marketplace": get_mock_marketplace(focus, "Mock Interviews", 4, goal, category="jobs"),
+                "micro_steps": [{"task": "Complete full mock interview simulation", "resource": "Mock Interview Platform"}]
+            }
+        ]
+    }
+
+
+def get_non_academic_fallback(current: str, goal: str, profile: dict, focus: Optional[str] = None, sub_segment: Optional[str] = None) -> dict:
+    total_months = calculate_total_duration_months(current, goal, profile, category="non_academic", sub_segment=sub_segment)
+    sub_lower = (sub_segment or "").lower()
+
+    if "life" in sub_lower or "decision" in goal.lower():
+        return {
+            "path_title": f"Life Skills & Decision Support: {goal}",
+            "path_description": f"A practical, structured personal development plan to build daily routines, master time management, and establish clear decision-making frameworks for {goal}.",
+            "readiness_score": 45,
+            "readiness_label": "Intermediate Starter",
+            "total_duration": format_total_duration(total_months),
+            "blind_spots": ["Avoid over-committing to too many changes at once; focus on 1-2 habit anchors", "Schedule regular weekly reflection check-ins to maintain consistency"],
+            "steps": [
+                {
+                    "id": 1,
+                    "title": "Current Routine & Time-Audit Assessment",
+                    "duration": "Weeks 1-3",
+                    "description": "Log daily activities, identify energy drains and time leaks, and establish clear priorities for personal balance.",
+                    "learning_objectives": ["Track 7-day time allocation", "Identify top 3 productivity bottlenecks", "Define personal non-negotiables"],
+                    "macro_view": "Understanding current baseline habits is the prerequisite for sustainable lifestyle adjustments.",
+                    "micro_view": "Log hourly activities in a journal or app, categorize high vs low value time, and set up a weekly planner.",
+                    "nano_view": "Productivity advisor reviews time logs to help establish realistic habit anchors.",
+                    "marketplace": get_mock_marketplace(focus, "Routine Assessment", 1, goal, category="non_academic", sub_segment=sub_segment),
+                    "micro_steps": [{"task": "Complete 7-day time audit log", "resource": "Notion Time Tracker"}]
+                },
+                {
+                    "id": 2,
+                    "title": "Structured Daily Habits & Decision Frameworks",
+                    "duration": "Weeks 4-7",
+                    "description": "Implement morning/evening routines, prioritize tasks using the Eisenhower Matrix, and apply decision-making checklists.",
+                    "learning_objectives": ["Establish consistent morning/evening routine", "Apply task prioritization matrix daily", "Build weekly review habit"],
+                    "macro_view": "Consistent daily frameworks eliminate decision fatigue and build reliable self-discipline.",
+                    "micro_view": "Follow fixed morning routine for 21 consecutive days, plan daily top 3 priorities, and conduct Sunday reviews.",
+                    "nano_view": "Life coach check-in to calibrate habit friction and troubleshoot routine disruptions.",
+                    "marketplace": get_mock_marketplace(focus, "Decision Frameworks", 2, goal, category="non_academic", sub_segment=sub_segment),
+                    "micro_steps": [{"task": "Set up daily top-3 task prioritization system", "resource": "Habit Tracker"}]
+                },
+                {
+                    "id": 3,
+                    "title": "Long-term Autonomy & Sustainable Habit Review",
+                    "duration": "Weeks 8-12",
+                    "description": "Review progress metrics, celebrate habit consistency, and establish an autonomous ongoing growth rhythm.",
+                    "learning_objectives": ["Review 90-day habit adherence score", "Automate weekly life planning reviews", "Establish ongoing accountability system"],
+                    "macro_view": "Transitioning from guided coaching to self-sustaining personal autonomy ensures lifelong balance.",
+                    "micro_view": "Review habit completion logs, refine quarterly goals, and maintain monthly peer check-ins.",
+                    "nano_view": "Final reflective session with coach to celebrate wins and set long-term autonomy targets.",
+                    "marketplace": get_mock_marketplace(focus, "Habit Review", 3, goal, category="non_academic", sub_segment=sub_segment),
+                    "micro_steps": [{"task": "Complete 90-day progress and habit evaluation", "resource": "Personal Growth Review"}]
+                }
+            ]
+        }
+    else:  # Mental Health & Wellness / Immediate Guidance
+        return {
+            "path_title": f"Mental Health & Wellness Plan: {goal}",
+            "path_description": f"A compassionate, evidence-based wellness roadmap designed to identify stress triggers, introduce restorative daily routines, and establish trusted support networks for {goal}.",
+            "readiness_score": 40,
+            "readiness_label": "Early Starter",
+            "total_duration": format_total_duration(total_months),
+            "blind_spots": ["Do not attempt to fix everything overnight; focus on gentle, steady daily practices", "Reach out to qualified professionals whenever stress feels overwhelming"],
+            "steps": [
+                {
+                    "id": 1,
+                    "title": "Stress Triggers & Current Wellbeing Assessment",
+                    "duration": "Weeks 1-3",
+                    "description": "Identify root stressors, emotional triggers, and physical tension patterns to build personal self-awareness.",
+                    "learning_objectives": ["Map primary stress triggers and patterns", "Establish a safe personal decompression space", "Identify trusted support contacts"],
+                    "macro_view": "Recognizing personal triggers without judgment is the first empowering step toward emotional balance.",
+                    "micro_view": "Complete a 5-minute daily mood log, note situations that elevate anxiety, and list 3 grounding activities.",
+                    "nano_view": "Supportive intake conversation with a counselor or mentor to review wellbeing indicators.",
+                    "marketplace": get_mock_marketplace(focus, "Wellbeing Assessment", 1, goal, category="non_academic", sub_segment=sub_segment),
+                    "micro_steps": [{"task": "Complete daily mood and trigger reflection", "resource": "Mood Journal"}]
+                },
+                {
+                    "id": 2,
+                    "title": "Daily Mindfulness Routines & Sleep Hygiene",
+                    "duration": "Weeks 4-7",
+                    "description": "Introduce restorative 10-minute daily mindfulness exercises, sleep consistency routines, and digital detox boundaries.",
+                    "learning_objectives": ["Practice daily 10-minute breathwork/mindfulness", "Establish 8-hour sleep hygiene schedule", "Set healthy screen time boundaries"],
+                    "macro_view": "Physical nervous system regulation and restful sleep create the foundation for mental resilience.",
+                    "micro_view": "Listen to guided audio meditations before bed, stop screens 45 minutes before sleep, and practice 4-7-8 breathing.",
+                    "nano_view": "Check in with a wellness coach or peer circle to share progress and receive encouragement.",
+                    "marketplace": get_mock_marketplace(focus, "Mindfulness Routines", 2, goal, category="non_academic", sub_segment=sub_segment),
+                    "micro_steps": [{"task": "Complete 10-minute mindfulness practice daily", "resource": "Headspace / Calm"}]
+                },
+                {
+                    "id": 3,
+                    "title": "Healthy Coping Strategies & Sustainable Balance",
+                    "duration": "Weeks 8-12",
+                    "description": f"Solidify actionable coping strategies for exam/work pressure, build regular exercise habits, and sustain emotional wellness for {goal}.",
+                    "learning_objectives": ["Apply coping strategies during high-stress moments", "Maintain supportive peer connections", "Establish ongoing wellness check-ins"],
+                    "macro_view": "Embedding positive coping mechanisms transforms temporary relief into permanent personal strength.",
+                    "micro_view": "Maintain weekly reflection sessions, engage in restorative hobbies, and keep support contacts accessible.",
+                    "nano_view": "Licensed counselor or therapist review of coping toolbox and long-term care continuity.",
+                    "marketplace": get_mock_marketplace(focus, "Sustainable Balance", 3, goal, category="non_academic", sub_segment=sub_segment),
+                    "micro_steps": [{"task": "Finalize personal stress-response action plan", "resource": "Wellness Plan"}]
+                }
+            ]
+        }
+
+
+def get_fallback_mock_roadmap(
+    current: str,
+    goal: str,
+    profile: dict,
+    refine_prompt: Optional[str] = None,
+    focus: Optional[str] = None,
+    category: Optional[str] = None,
+    sub_segment: Optional[str] = None
+) -> dict:
+    cat = resolve_focus_category(category or focus)
+    if cat == "practical":
+        return get_practical_fallback(current, goal, profile, focus)
+    elif cat == "jobs":
+        return get_jobs_fallback(current, goal, profile, focus)
+    elif cat == "non_academic":
+        return get_non_academic_fallback(current, goal, profile, focus, sub_segment)
+    else:
+        return get_academic_fallback(current, goal, profile, focus)
+
 
 def scale_blueprint_steps(blueprint: dict, requested_steps: int) -> dict:
     steps = blueprint.get("steps", [])
@@ -2909,8 +2421,16 @@ async def get_relevant_admin_feedback(target_goal: str, profile: dict) -> List[d
 
 
 # Specialized Audit Tasks
-async def run_agent_1_blueprint(current: str, goal: str, profile: dict, refine_prompt: Optional[str] = None, existing_roadmap: Optional[dict] = None, focus: Optional[str] = None) -> dict:
-    # Parse requested steps from refine_prompt if available
+async def run_agent_1_blueprint(
+    current: str,
+    goal: str,
+    profile: dict,
+    refine_prompt: Optional[str] = None,
+    existing_roadmap: Optional[dict] = None,
+    focus: Optional[str] = None,
+    content_category: Optional[str] = None,
+    sub_segment: Optional[str] = None
+) -> dict:
     requested_steps = None
     if refine_prompt:
         match_steps = re.search(r'(\d+)\s*(?:step|milestone)', refine_prompt.lower())
@@ -2922,41 +2442,43 @@ async def run_agent_1_blueprint(current: str, goal: str, profile: dict, refine_p
             except Exception:
                 pass
 
+    cat = resolve_focus_category(content_category or focus)
     focus_title_prefix = "Academic & Research"
-    focus_area = "SCHOOL (LKG-K12), COLLEGE (11-12), UNIVERSITY (BACHELORS, ANY DEGREE)"
-    if focus:
-        focus_category = resolve_focus_category(focus)
-        if focus_category == "academic":
-            focus_title_prefix = "Academic & Research"
-            focus_area = "SCHOOL (LKG-K12), COLLEGE (11-12), UNIVERSITY (BACHELORS, ANY DEGREE). Focus strictly on formal education milestones, school curricula, college admissions, test prep, degrees, and academic research."
-        elif focus_category == "practical":
-            focus_title_prefix = "Practical & Skills"
-            focus_area = "SKILLS TRACK and INTERNSHIP TRACK. Focus strictly on practical skill acquisition, proof-of-work projects, applied practice, internships, and real-environment execution. Do not treat a skill as a profession."
-        elif focus_category == "jobs":
-            focus_title_prefix = "Jobs & Careers"
-            focus_area = "JOBS & CAREERS. Focus strictly on profession/role readiness, technical or non-technical role preparation, job placements, networking, resume evidence, interviews, and workplace readiness."
-        elif focus_category == "non_academic":
-            focus_title_prefix = "Non-Academic Counselling"
-            focus_area = "NON-ACADEMIC COUNSELLING. Focus strictly on mental health and wellness support, generic life counselling, short-term immediate guidance, resource navigation, routines, and qualified referral options. This is not a career roadmap."
+    focus_area = focus or "Standard Academic Pathway"
+    if cat == "practical":
+        focus_title_prefix = "Practical & Skills"
+        focus_area = focus or "Hands-on Practical Skills and Project Development"
+    elif cat == "jobs":
+        focus_title_prefix = "Jobs & Careers"
+        focus_area = focus or "Profession Readiness and Career Progression"
+    elif cat == "non_academic":
+        focus_title_prefix = "Non-Academic Counselling"
+        focus_area = focus or (sub_segment or "Mental Health & Wellness / Life Skills Support")
 
-    prompt = AGENT_1_PROMPT.format(
+    prompt = build_agent_1_prompt(
+        category=cat,
+        sub_segment=sub_segment,
         current_position=current,
         target_goal=goal,
-        profile=json.dumps(profile),
-        degree_type=get_request_degree_type(goal, profile) or "Not provided",
+        profile=profile,
+        degree_type=get_request_degree_type(goal, profile) if cat == "academic" else None,
         focus_title_prefix=focus_title_prefix,
-        focus_area=focus_area
+        focus_area=focus_area,
+        focus=focus,
+        refine_prompt=refine_prompt,
+        requested_steps=requested_steps,
+        existing_roadmap=existing_roadmap
     )
+
     if focus:
-        prompt += f"\n\n🚨 STRATEGIC FOCUS DIRECTION: You MUST structure and customize this pathway according to this specific strategic focus direction:\n👉 \"{focus}\"\nEnsure all milestone titles, descriptions, objectives, learning views, checklists, and resources strongly reflect this focus so that it stands out distinctly from other alternative options."
+        prompt += f"\n\n🚨 STRATEGIC FOCUS DIRECTION: Structure this pathway according to: \"{focus}\".\nEnsure all milestone titles, descriptions, and learning views reflect this focus."
 
     if refine_prompt:
-        prompt += f"\n\n==================================================\nCRITICAL USER REQUEST FOR REFINE / ADJUSTMENT:\nThe user has requested the following specific instruction to refine/adjust this pathway. You MUST strictly adhere to and execute this instruction in your output:\n👉 \"{refine_prompt}\"\n==================================================\n"
+        prompt += f"\n\n==================================================\nCRITICAL USER REQUEST FOR REFINE / ADJUSTMENT:\n👉 \"{refine_prompt}\"\n==================================================\n"
         if requested_steps:
-            prompt += f"\n\n🚨 CRITICAL ENFORCEMENT: The user has explicitly requested EXACTLY {requested_steps} steps/milestones. You MUST ignore any conflicting default step count rules and generate EXACTLY {requested_steps} distinct step objects inside the 'steps' JSON array. Do not output more or fewer than {requested_steps} steps. Ensure they have IDs 1 to {requested_steps}."
+            prompt += f"\n🚨 CRITICAL ENFORCEMENT: Output EXACTLY {requested_steps} distinct step objects inside 'steps'."
         if existing_roadmap:
             raw_roadmap = existing_roadmap.get("roadmap_data") or existing_roadmap
-            # Context compression: Only send metadata to save thousands of tokens and avoid TPM limit
             compressed_roadmap = {
                 "path_title": raw_roadmap.get("path_title", ""),
                 "path_description": raw_roadmap.get("path_description", ""),
@@ -2971,136 +2493,143 @@ async def run_agent_1_blueprint(current: str, goal: str, profile: dict, refine_p
                     for m in raw_roadmap.get("steps", [])
                 ]
             }
-            prompt += f"\nEXISTING ROADMAP (use this as the base reference to modify only what the user requested, leaving other steps unchanged):\n{json.dumps(compressed_roadmap, indent=2)}\n"
-            
+            prompt += f"\nEXISTING ROADMAP (preserve unedited steps):\n{json.dumps(compressed_roadmap, indent=2)}\n"
+
     feedback_items = []
-    # Retrieve and append feedback matching target_goal or profile
     try:
         feedback_items = await get_relevant_admin_feedback(goal, profile)
         if feedback_items:
-            feedback_str = "\n\n==================================================\n🚨 LEARN FROM PAST EXPERT ADMIN FEEDBACK / INSTRUCTIONS:\nAdmins have previously edited pathways for similar target goals or student profiles and left the following guidelines. You MUST strictly incorporate these learnings when structuring this new pathway:\n"
+            feedback_str = "\n\n==================================================\n🚨 PAST EXPERT ADMIN GUIDANCE:\n"
             for item in feedback_items:
-                feedback_str += f"- [{item['category'].upper()}] (For Target: '{item['target_goal']}', Grade: {item['profile_grade'] or 'N/A'}, Curriculum: {item['profile_curriculum'] or 'N/A'}, Stream: {item['profile_stream'] or 'N/A'}):\n  \"{item['feedback_text']}\"\n"
+                feedback_str += f"- [{item['category'].upper()}]: \"{item['feedback_text']}\"\n"
             feedback_str += "==================================================\n"
             prompt += feedback_str
-            print(f"[Feedback Learning] Injected {len(feedback_items)} relevant admin feedbacks into generation prompt.")
     except Exception as e:
-        print(f"[Feedback Learning Warning] Could not inject admin feedback: {e}")
+        print(f"[Feedback Learning Warning] {e}")
 
-    print(f"[Agent 1] Generating initial roadmap blueprint (focus: {focus or 'default'}) using 70B...")
-    # Keep Agent 1 retries bounded. The generic helper previously cycled through
-    # five models and this function then started a second full retry cycle.
-    res = await query_groq_json(
-        prompt,
-        preferred_model="llama-3.3-70b-versatile",
-        fallback_models=["llama-3.1-8b-instant"],
-    )
+    print(f"[Agent 1] Generating roadmap blueprint (cat: {cat}, focus: {focus or 'default'}) using 70B...")
 
-    if requested_steps and is_complete_blueprint(res, current, goal, profile):
+    # Generation loop with semantic validation & auto-regeneration
+    res = None
+    for attempt in range(2):
+        current_prompt = prompt
+        if attempt > 0:
+            current_prompt += f"\n\n🚨 PREVIOUS GENERATION CORRECTION: The previous response contained cross-category artifacts. You MUST output a pure {cat.upper()} roadmap focusing strictly on {focus_area}. STRICTLY OBEY NEGATIVE CONSTRAINTS."
+
+        res = await query_groq_json(
+            current_prompt,
+            preferred_model="openai/gpt-oss-120b",
+            fallback_models=["qwen/qwen3.8-27b", "groq/compound", "groq/compound-mini"],
+        )
+
+        # Check semantic validity
+        is_valid, reason = validate_category_semantics(res, cat, sub_segment)
+        if is_valid:
+            break
+        print(f"[Agent 1 Semantic Validation Warning] Attempt {attempt + 1} rejected: {reason}. Retrying...")
+
+    if requested_steps and is_complete_blueprint(res, current, goal, profile, requested_steps, category=cat):
         res = scale_blueprint_steps(res, requested_steps)
 
-    # Reject truncated/repaired responses that contain only the first milestone.
-    # A complete fallback is safer than displaying a one-step 36-month pathway.
-    if not is_complete_blueprint(res, current, goal, profile, requested_steps):
+    if not is_complete_blueprint(res, current, goal, profile, requested_steps, category=cat):
         received_steps = len(res.get("steps", [])) if isinstance(res, dict) else 0
-        print(
-            f"[Blueprint Validation] Incomplete model roadmap ({received_steps} steps). "
-            "Serving board-calibrated fallback roadmap."
-        )
-        fallback = get_fallback_mock_roadmap(current, goal, profile, refine_prompt, focus)
-        fallback["admin_feedback_memory"] = build_admin_feedback_memory(
-            feedback_items,
-            applied_to_prompt=bool(feedback_items),
-            fallback_used=True,
-        )
+        print(f"[Blueprint Validation] Incomplete blueprint ({received_steps} steps). Using category-native fallback for {cat}.")
+        fallback = get_fallback_mock_roadmap(current, goal, profile, refine_prompt, focus, category=cat, sub_segment=sub_segment)
+        fallback["admin_feedback_memory"] = build_admin_feedback_memory(feedback_items, applied_to_prompt=bool(feedback_items), fallback_used=True)
         return fallback
 
-    res["admin_feedback_memory"] = build_admin_feedback_memory(
-        feedback_items,
-        applied_to_prompt=bool(feedback_items),
-        fallback_used=False,
+    res["admin_feedback_memory"] = build_admin_feedback_memory(feedback_items, applied_to_prompt=bool(feedback_items), fallback_used=False)
+    return res
+
+
+async def run_agent_2_path_auditor(
+    blueprint: dict,
+    current: str,
+    goal: str,
+    profile: dict,
+    refine_prompt: Optional[str] = None,
+    existing_roadmap: Optional[dict] = None,
+    category: str = "academic",
+    sub_segment: Optional[str] = None
+) -> dict:
+    cat = resolve_focus_category(category)
+    prompt = build_agent_2_prompt(
+        category=cat,
+        sub_segment=sub_segment,
+        current_position=current,
+        target_goal=goal,
+        profile=profile,
+        blueprint_json=json.dumps(blueprint, indent=2)
+    )
+    print(f"[Agent 2] Auditing path details (cat: {cat}) using fast model...")
+    res = await query_groq_json(
+        prompt,
+        preferred_model="groq/compound-mini",
+        fallback_models=["qwen/qwen3.8-27b", "openai/gpt-oss-120b"]
     )
     return res
 
-async def run_agent_2_path_auditor(blueprint: dict, current: str, goal: str, profile: dict, refine_prompt: Optional[str] = None, existing_roadmap: Optional[dict] = None) -> dict:
-    # CONTEXT COMPRESSION: Send only path-level attributes. Save thousands of tokens!
-    compressed_blueprint = {
-        "path_title": blueprint.get("path_title", ""),
-        "path_description": blueprint.get("path_description", ""),
-        "readiness_score": blueprint.get("readiness_score", 15),
-        "readiness_label": blueprint.get("readiness_label", ""),
-        "blind_spots": blueprint.get("blind_spots", [])
-    }
-    prompt = AGENT_2_PROMPT.format(
+
+async def run_agent_3_steps_auditor(
+    blueprint: dict,
+    current: str,
+    goal: str,
+    profile: dict,
+    refine_prompt: Optional[str] = None,
+    existing_roadmap: Optional[dict] = None,
+    category: str = "academic",
+    sub_segment: Optional[str] = None
+) -> list:
+    cat = resolve_focus_category(category)
+    prompt = build_agent_3_prompt(
+        category=cat,
+        sub_segment=sub_segment,
         current_position=current,
         target_goal=goal,
-        profile=json.dumps(profile),
-        blueprint=json.dumps(compressed_blueprint)
+        profile=profile,
+        blueprint_json=json.dumps(blueprint, indent=2)
     )
-    if refine_prompt:
-        prompt += f"\n\n==================================================\nCRITICAL USER REQUEST FOR REFINE / ADJUSTMENT:\nThe user has requested the following specific instruction to refine/adjust this pathway. You MUST strictly adhere to and execute this instruction in your output:\n👉 \"{refine_prompt}\"\n==================================================\n"
-        if existing_roadmap:
-            roadmap_to_send = existing_roadmap.get("roadmap_data") or existing_roadmap
-            prompt += f"\nEXISTING ROADMAP:\n{json.dumps(roadmap_to_send, indent=2)}\n"
-    print("[Agent 2] Auditing overall path title, description, and readiness using 8B...")
-    return await query_groq_json(prompt, preferred_model="llama-3.1-8b-instant")
+    print(f"[Agent 3] Auditing steps & views (cat: {cat}) using fast model...")
+    res = await query_groq_json(
+        prompt,
+        preferred_model="groq/compound-mini",
+        fallback_models=["qwen/qwen3.8-27b", "openai/gpt-oss-120b"]
+    )
+    if isinstance(res, list):
+        return res
+    if isinstance(res, dict) and "steps" in res and isinstance(res["steps"], list):
+        return res["steps"]
+    return blueprint.get("steps", [])
 
-async def run_agent_3_steps_auditor(blueprint: dict, current: str, goal: str, profile: dict, refine_prompt: Optional[str] = None, existing_roadmap: Optional[dict] = None) -> list:
-    # CONTEXT COMPRESSION: Send step metadata, views, and checklists. Skip marketplace to save tokens!
-    compressed_blueprint = [
-        {
-            "id": m["id"],
-            "title": m["title"],
-            "duration": m["duration"],
-            "description": m["description"],
-            "learning_objectives": m.get("learning_objectives", []),
-            "macro_view": get_view_description(m, "macro_view"),
-            "micro_view": get_view_description(m, "micro_view"),
-            "nano_view": get_view_description(m, "nano_view"),
-            "micro_steps": m.get("micro_steps", [])
-        }
-        for m in blueprint.get("steps", [])
-    ]
-    prompt = AGENT_3_PROMPT.format(
+
+async def run_agent_4_marketplace_auditor(
+    blueprint: dict,
+    current: str,
+    goal: str,
+    profile: dict,
+    refine_prompt: Optional[str] = None,
+    existing_roadmap: Optional[dict] = None,
+    category: str = "academic",
+    sub_segment: Optional[str] = None
+) -> list:
+    cat = resolve_focus_category(category)
+    prompt = build_agent_4_prompt(
+        category=cat,
+        sub_segment=sub_segment,
         current_position=current,
         target_goal=goal,
-        profile=json.dumps(profile),
-        blueprint=json.dumps(compressed_blueprint)
+        profile=profile,
+        blueprint_json=json.dumps(blueprint, indent=2)
     )
-    if refine_prompt:
-        prompt += f"\n\n==================================================\nCRITICAL USER REQUEST FOR REFINE / ADJUSTMENT:\nThe user has requested the following specific instruction to refine/adjust this pathway. You MUST strictly adhere to and execute this instruction in your output:\n👉 \"{refine_prompt}\"\n==================================================\n"
-        if existing_roadmap:
-            roadmap_to_send = existing_roadmap.get("roadmap_data") or existing_roadmap
-            prompt += f"\nEXISTING ROADMAP:\n{json.dumps(roadmap_to_send, indent=2)}\n"
-    print("[Agent 3] Auditing steps, learning views, and checklists using 8B...")
-    res = await query_groq_json(prompt, preferred_model="llama-3.1-8b-instant")
-    return res if isinstance(res, list) else []
-
-async def run_agent_4_marketplace_auditor(blueprint: dict, current: str, goal: str, profile: dict, refine_prompt: Optional[str] = None, existing_roadmap: Optional[dict] = None) -> list:
-    # CONTEXT COMPRESSION: Send only milestone ids and resource structures. Save ~5000 tokens!
-    compressed_blueprint = [
-        {
-            "id": m["id"],
-            "title": m["title"],
-            "marketplace": m.get("marketplace", {})
-        }
-        for m in blueprint.get("steps", [])
-    ]
-    prompt = AGENT_4_PROMPT.format(
-        current_position=current,
-        target_goal=goal,
-        profile=json.dumps(profile),
-        blueprint=json.dumps(compressed_blueprint)
+    print(f"[Agent 4] Auditing marketplace recommendations (cat: {cat}) using fast model...")
+    res = await query_groq_json(
+        prompt,
+        preferred_model="groq/compound-mini",
+        fallback_models=["qwen/qwen3.8-27b", "openai/gpt-oss-120b"]
     )
-    if refine_prompt:
-        prompt += f"\n\n==================================================\nCRITICAL USER REQUEST FOR REFINE / ADJUSTMENT:\nThe user has requested the following specific instruction to refine/adjust this pathway. You MUST strictly adhere to and execute this instruction in your output:\n👉 \"{refine_prompt}\"\n==================================================\n"
-        if existing_roadmap:
-            roadmap_to_send = existing_roadmap.get("roadmap_data") or existing_roadmap
-            prompt += f"\nEXISTING ROADMAP:\n{json.dumps(roadmap_to_send, indent=2)}\n"
-    print("[Agent 4] Auditing resource marketplace selections using 8B...")
-    res = await query_groq_json(prompt, preferred_model="llama-3.1-8b-instant")
-    return res if isinstance(res, list) else []
-
+    if isinstance(res, list):
+        return res
+    return blueprint.get("steps", [])
 
 
 def build_agent_statuses(active_agent: str = None, completed_agents: list = None) -> dict:
@@ -3119,27 +2648,67 @@ def build_agent_statuses(active_agent: str = None, completed_agents: list = None
     return statuses
 
 
-def minimum_blueprint_steps(current: str, goal: str, profile: dict) -> int:
-    total_months = calculate_total_duration_months(current, goal, profile)
-    if total_months >= duration_months_for_level(1):
-        return 10
-    if total_months >= MONTHS_PER_ACADEMIC_YEAR * 2:
-        return 8
-    grade_text = f"{profile.get('grade') or ''} {current}".lower()
+# ─── CATEGORY SEMANTIC VALIDATION ──────────────────────────────────────────
+def validate_category_semantics(blueprint: Any, category: str, sub_segment: Optional[str] = None) -> tuple[bool, str]:
+    """Validates structural and semantic validity according to agent_flow.md rules."""
+    if not isinstance(blueprint, dict) or blueprint.get("error"):
+        return False, "Blueprint is empty or returned an error."
 
-    if total_months >= MONTHS_PER_ACADEMIC_YEAR * 5:
-        return 16
-    if total_months >= duration_months_for_level(1):
-        return 14
-    if total_months >= MONTHS_PER_ACADEMIC_YEAR * 3:
-        return 12
-    if total_months >= MONTHS_PER_ACADEMIC_YEAR * 2:
-        return 10
-    if "10" in grade_text or "11" in grade_text or "tenth" in grade_text or "eleventh" in grade_text:
-        return 12
-    if "12" in grade_text or "twelfth" in grade_text:
-        return 8
-    return 8
+    steps = blueprint.get("steps")
+    if not isinstance(steps, list) or len(steps) < 2:
+        return False, f"Blueprint must contain at least 2 structured steps (received {len(steps) if isinstance(steps, list) else 0})."
+
+    cat = resolve_focus_category(category)
+    content_text = (
+        str(blueprint.get("path_title", "")) + " " +
+        str(blueprint.get("path_description", "")) + " " +
+        " ".join([
+            str(s.get("title", "")) + " " +
+            str(s.get("description", "")) + " " +
+            str(s.get("macro_view", "")) + " " +
+            str(s.get("micro_view", "")) + " " +
+            str(s.get("nano_view", ""))
+            for s in steps if isinstance(s, dict)
+        ])
+    ).lower()
+
+    # Category 4: Non-Academic Counselling
+    if cat == "non_academic":
+        forbidden = [
+            "sat prep", "act prep", "ielts prep", "gpa target", "grade 10 board", "grade 11 board", "grade 12 board",
+            "cbse curriculum", "ib diploma", "university admissions dossier", "common app", "college placement program"
+        ]
+        for term in forbidden:
+            if term in content_text:
+                return False, f"Category Leakage: Non-Academic Counselling pathway contains forbidden academic term '{term}'."
+
+    # Category 3: Jobs & Careers
+    elif cat == "jobs":
+        forbidden = [
+            "grade 10 board", "grade 11 board", "grade 12 board", "cbse curriculum", "icse stream", "high school school selection"
+        ]
+        for term in forbidden:
+            if term in content_text:
+                return False, f"Category Leakage: Jobs & Careers pathway contains forbidden school/board term '{term}'."
+
+    # Category 2: Practical & Skills
+    elif cat == "practical":
+        forbidden = [
+            "grade 10 board", "sat prep modules", "college admissions dossier", "university application submission"
+        ]
+        for term in forbidden:
+            if term in content_text:
+                return False, f"Category Leakage: Practical & Skills pathway contains forbidden academic admissions term '{term}'."
+
+    return True, "Valid"
+
+def minimum_blueprint_steps(current: str, goal: str, profile: dict, category: str = "academic") -> int:
+    cat = resolve_focus_category(category)
+    if cat == "non_academic":
+        return 3
+    elif cat in ["practical", "jobs"]:
+        return 4
+    return 4
 
 
 def is_complete_blueprint(
@@ -3148,14 +2717,19 @@ def is_complete_blueprint(
     goal: str,
     profile: dict,
     requested_steps: Optional[int] = None,
+    category: str = "academic"
 ) -> bool:
     if not isinstance(blueprint, dict) or blueprint.get("error"):
         return False
     milestones = blueprint.get("steps")
-    if not isinstance(milestones, list):
+    if not isinstance(milestones, list) or len(milestones) == 0:
         return False
-    required_steps = requested_steps or minimum_blueprint_steps(current, goal, profile)
-    return len(milestones) >= required_steps
+    
+    if requested_steps:
+        return len(milestones) == requested_steps
+
+    required_min = minimum_blueprint_steps(current, goal, profile, category)
+    return len(milestones) >= required_min
 
 
 def sse_payload(event: str, data: dict) -> str:
@@ -3170,25 +2744,25 @@ async def build_and_store_final_path(
     current: str,
     goal: str,
     profile: dict,
-    path_type: str = "Academic & Research"
+    path_type: str = "Academic & Research",
+    sub_segment: Optional[str] = None
 ) -> dict:
-    # Calculate metrics — pass path_type so readiness score is unique per path
-    metrics = calculate_path_metrics(current, goal, profile, path_type)
+    cat = resolve_focus_category(path_type)
+    metrics = calculate_path_metrics(current, goal, profile, path_type, sub_segment=sub_segment)
     
     final_steps = []
     blueprint_milestones = blueprint.get("steps", [])
     num_steps = len(blueprint_milestones)
     
-    total_months = calculate_total_duration_months(current, goal, profile)
+    total_months = calculate_total_duration_months(current, goal, profile, category=cat, sub_segment=sub_segment)
     try:
         total_months = int(metrics["total_duration"].split()[0])
-    except:
+    except Exception:
         pass
 
     for i, orig_milestone in enumerate(blueprint_milestones):
         m_id = orig_milestone.get("id", i + 1)
         
-        # Enforce strict mathematical distribution of months over the generated steps
         if num_steps > 0:
             start_month = int((i / num_steps) * total_months) + 1
             end_month = int(((i + 1) / num_steps) * total_months)
@@ -3196,7 +2770,7 @@ async def build_and_store_final_path(
                 end_month = start_month
             enforced_duration = f"Month {start_month}" if start_month == end_month else f"Months {start_month}-{end_month}"
         else:
-            enforced_duration = orig_milestone.get("duration", format_total_duration(MONTHS_PER_ACADEMIC_YEAR // 4))
+            enforced_duration = orig_milestone.get("duration", "Months 1-3")
 
         merged_milestone = {
             "id": m_id,
@@ -3213,8 +2787,8 @@ async def build_and_store_final_path(
         final_steps.append(merged_milestone)
 
     final_json = {
-        "path_title": blueprint.get("path_title") or f"Academic Pathway to {goal}",
-        "path_description": blueprint.get("path_description") or f"Detailed strategy blueprint for achieving target goal: {goal}.",
+        "path_title": blueprint.get("path_title") or f"{path_type} Pathway to {goal}",
+        "path_description": blueprint.get("path_description") or f"Detailed strategic blueprint guiding from {current} to {goal}.",
         "readiness_score": metrics["readiness_score"],
         "readiness_label": metrics["readiness_label"],
         "total_duration": metrics["total_duration"],
@@ -3223,13 +2797,11 @@ async def build_and_store_final_path(
         "admin_feedback_memory": blueprint.get("admin_feedback_memory") or build_admin_feedback_memory([], False),
     }
 
-    final_json = enrich_roadmap_narratives(final_json, current, goal)
+    final_json = enrich_roadmap_narratives(final_json, current, goal, category=cat)
 
     name_tokens = build_name_patterns(profile, current)
     if name_tokens:
-        print(f"[Sanitizer] Scrubbing personal name tokens: {name_tokens}")
         final_json = recursive_sanitize(final_json, name_tokens)
-        print("[Sanitizer] Personal name sanitization complete.")
 
     final_json["db_id"] = None
     final_json["status"] = "draft"
@@ -3335,16 +2907,15 @@ async def generate_path_stream(req: PathGenerationRequest):
     refine_prompt = req.refine_prompt.strip() if req.refine_prompt else None
     existing_roadmap = req.existing_roadmap
     focus_req = req.focus.strip() if req.focus else None
+    content_cat = req.content_category.strip() if req.content_category else None
+    sub_seg = req.sub_segment.strip() if req.sub_segment else None
 
     if not current or not goal:
         raise HTTPException(status_code=400, detail="Current position and Target goal cannot be empty")
-    if requires_degree_for_focus(focus_req):
-        profile = ensure_degree_type_for_generation(goal, profile, req.degree_type)
-    else:
-        profile = dict(profile or {})
-        degree_type = get_request_degree_type(goal, profile, req.degree_type)
-        if degree_type:
-            profile["degreeType"] = degree_type
+    
+    # Decouple degree type: Only require/ensure for academic tracks
+    cat = resolve_focus_category(content_cat or focus_req)
+    profile = ensure_degree_type_for_generation(goal, profile, req.degree_type, category=cat)
 
     async def event_stream():
         completed = []
@@ -3364,34 +2935,32 @@ async def generate_path_stream(req: PathGenerationRequest):
                     "study", "prep", "sat", "ielts", "act", "toefl", "exam", "career", "university",
                     "college", "school", "curriculum", "grade", "subject", "class", "detail", "more",
                     "resource", "mentor", "timeline", "month", "year", "academics", "score", "placement",
-                    "portfolio", "admission", "ielts", "gpa", "internship", "project"
+                    "portfolio", "admission", "gpa", "internship", "project", "stress", "routine", "mindfulness", "skills"
                 ]
                 if any(n in val for n in noise) or len(val) < 4 or not any(kw in val for kw in valid_keywords):
-                    yield sse_payload("error", {"message": "This request is irrelevant to career pathway refinement. Please provide specific instructions to adjust this pathway, such as 'change step 1 description' or 'add more milestones'."})
+                    yield sse_payload("error", {"message": "This request is irrelevant to pathway refinement. Please provide specific instructions to adjust this pathway, such as 'change step 1 description' or 'add more milestones'."})
                     return
 
             yield sse_payload("status", {
                 "statuses": build_agent_statuses("agent1", completed),
                 "progress": 20,
-                "message": "Creating pathway for selected segment..."
+                "message": f"Creating {cat.replace('_', ' ').title()} pathway alternatives..."
             })
 
             foci, option_names = get_focus_choices(
                 focus_req=focus_req,
-                content_category=req.content_category,
-                sub_segment=req.sub_segment
+                content_category=content_cat,
+                sub_segment=sub_seg
             )
 
-            # Run Agent 1 alternatives in parallel, but keep yielding events while
-            # the model calls are in flight. A single gather() made the stream sit
-            # at 20% until every alternative had finished.
             blueprint_tasks = {
                 asyncio.create_task(
                     run_agent_1_blueprint(
-                        current, goal, profile, refine_prompt, existing_roadmap, focus=focus
+                        current, goal, profile, refine_prompt, existing_roadmap,
+                        focus=f_choice, content_category=content_cat, sub_segment=sub_seg
                     )
                 ): index
-                for index, focus in enumerate(foci)
+                for index, f_choice in enumerate(foci)
             }
             blueprints = [None] * len(foci)
             pending_tasks = set(blueprint_tasks)
@@ -3405,14 +2974,12 @@ async def generate_path_stream(req: PathGenerationRequest):
                     return_when=asyncio.FIRST_COMPLETED,
                 )
 
-                # A status heartbeat keeps the SSE response flowing through
-                # browsers and reverse proxies during long model calls.
                 if not done:
                     stage_progress = min(39, stage_progress + 1)
                     yield sse_payload("status", {
                         "statuses": build_agent_statuses("agent1", completed),
                         "progress": stage_progress,
-                        "message": f"Creating pathway alternatives... ({finished_count} of {len(foci)} ready)"
+                        "message": f"Generating pathway alternatives... ({finished_count} of {len(foci)} ready)"
                     })
                     continue
 
@@ -3424,25 +2991,19 @@ async def generate_path_stream(req: PathGenerationRequest):
                         blueprints[index] = exc
                     finished_count += 1
 
-                stage_progress = max(
-                    stage_progress,
-                    20 + round(20 * finished_count / len(foci)),
-                )
+                stage_progress = max(stage_progress, 20 + round(20 * finished_count / len(foci)))
                 yield sse_payload("status", {
                     "statuses": build_agent_statuses("agent1", completed),
                     "progress": stage_progress,
-                    "message": f"Creating pathway alternatives... ({finished_count} of {len(foci)} ready)"
+                    "message": f"Generating pathway alternatives... ({finished_count} of {len(foci)} ready)"
                 })
 
             valid_blueprints = []
             for i, bp in enumerate(blueprints):
-                if isinstance(bp, Exception) or not is_complete_blueprint(bp, current, goal, profile):
+                if isinstance(bp, Exception) or not is_complete_blueprint(bp, current, goal, profile, category=cat):
                     received_steps = len(bp.get("steps", [])) if isinstance(bp, dict) else 0
-                    print(
-                        f"Blueprint {i} was incomplete ({received_steps} steps). "
-                        "Using the complete fallback roadmap."
-                    )
-                    valid_blueprints.append(get_fallback_mock_roadmap(current, goal, profile, refine_prompt, focus=foci[i]))
+                    print(f"Blueprint {i} was incomplete ({received_steps} steps). Using category-native fallback.")
+                    valid_blueprints.append(get_fallback_mock_roadmap(current, goal, profile, refine_prompt, focus=foci[i], category=cat, sub_segment=sub_seg))
                 else:
                     valid_blueprints.append(bp)
 
@@ -3454,7 +3015,6 @@ async def generate_path_stream(req: PathGenerationRequest):
             })
             await asyncio.sleep(0.15)
 
-            # Agent 2: normalize path-level fields for every alternative.
             for i, bp in enumerate(valid_blueprints):
                 bp["path_title"] = bp.get("path_title") or f"{option_names[i]} Pathway to {goal}"
                 bp["path_description"] = bp.get("path_description") or f"A structured pathway from {current} to {goal}."
@@ -3467,10 +3027,9 @@ async def generate_path_stream(req: PathGenerationRequest):
             })
             await asyncio.sleep(0.15)
 
-            # Agent 3: enforce complete, sequential milestone collections.
             for i, bp in enumerate(valid_blueprints):
-                if not is_complete_blueprint(bp, current, goal, profile):
-                    bp = get_fallback_mock_roadmap(current, goal, profile, refine_prompt, focus=foci[i])
+                if not is_complete_blueprint(bp, current, goal, profile, category=cat):
+                    bp = get_fallback_mock_roadmap(current, goal, profile, refine_prompt, focus=foci[i], category=cat, sub_segment=sub_seg)
                     valid_blueprints[i] = bp
                 for step_number, milestone in enumerate(bp["steps"], start=1):
                     milestone["id"] = step_number
@@ -3486,7 +3045,14 @@ async def generate_path_stream(req: PathGenerationRequest):
             for i, bp in enumerate(valid_blueprints):
                 for milestone in bp["steps"]:
                     if not milestone.get("marketplace"):
-                        milestone["marketplace"] = get_mock_marketplace(foci[i], step_title=milestone.get("title", ""), step_id=milestone.get("id", 1), goal=goal)
+                        milestone["marketplace"] = get_mock_marketplace(
+                            foci[i],
+                            step_title=milestone.get("title", ""),
+                            step_id=milestone.get("id", 1),
+                            goal=goal,
+                            category=cat,
+                            sub_segment=sub_seg
+                        )
                     if not milestone.get("micro_steps"):
                         milestone["micro_steps"] = [
                             {
@@ -3506,7 +3072,8 @@ async def generate_path_stream(req: PathGenerationRequest):
             for i, bp in enumerate(valid_blueprints):
                 final_json = await build_and_store_final_path(
                     bp, {}, [], [], current, goal, profile,
-                    path_type=option_names[i]
+                    path_type=option_names[i],
+                    sub_segment=sub_seg
                 )
                 final_json["option_name"] = option_names[i]
                 accuracy = calculate_path_accuracy_score(final_json, profile, current)
@@ -3515,17 +3082,15 @@ async def generate_path_stream(req: PathGenerationRequest):
                 final_json["accuracy_color"] = accuracy["accuracy_color"]
                 final_json["accuracy_breakdown"] = accuracy["breakdown"]
                 final_json["accuracy_details"] = accuracy["details"]
-                print(f"[Accuracy Model] Stream Option '{option_names[i]}': score={accuracy['accuracy_score']} ({accuracy['accuracy_label']}) | structural={accuracy['breakdown']['structural']} content={accuracy['breakdown']['content']} market={accuracy['breakdown']['market']}")
                 final_alternatives.append(final_json)
-
 
             completed.append("ready")
             elapsed = time.perf_counter() - started_at
-            print(f"[Audit API] Alternate paths generation completed in {elapsed:.2f} seconds (Consolidated Agent 1 Pipeline).")
+            print(f"[Path Generation] Completed in {elapsed:.2f} seconds.")
             yield sse_payload("status", {
                 "statuses": build_agent_statuses(None, completed),
                 "progress": 100,
-                "message": "Your alternate career paths are ready!"
+                "message": "Your pathways are ready!"
             })
             yield sse_payload("result", {
                 "alternatives": final_alternatives
@@ -3554,171 +3119,110 @@ async def generate_path(req: PathGenerationRequest):
     refine_prompt = req.refine_prompt.strip() if req.refine_prompt else None
     existing_roadmap = req.existing_roadmap
     focus_req = req.focus.strip() if req.focus else None
-    
+    content_cat = req.content_category.strip() if req.content_category else None
+    sub_seg = req.sub_segment.strip() if req.sub_segment else None
+
     if not current or not goal:
         raise HTTPException(status_code=400, detail="Current position and Target goal cannot be empty")
-    if requires_degree_for_focus(focus_req):
-        profile = ensure_degree_type_for_generation(goal, profile, req.degree_type)
-    else:
-        profile = dict(profile or {})
-        degree_type = get_request_degree_type(goal, profile, req.degree_type)
-        if degree_type:
-            profile["degreeType"] = degree_type
     
-    if refine_prompt:
-        val = refine_prompt.lower().strip()
-        noise = [
-            "tell me a story", "tell a story", "write a story", "write a poem", "write a song",
-            "tell me a joke", "tell a joke", "joke", "weather", "capital of", "who is",
-            "what is the meaning of life", "hi", "hello", "hey", "how are you", "what's up",
-            "sing a song", "write code", "help me chat", "how are you doing"
-        ]
-        valid_keywords = [
-            "step", "milestone", "path", "road", "course", "market", "description", "objective",
-            "duration", "add", "change", "remove", "delete", "update", "make", "give", "focus",
-            "study", "prep", "sat", "ielts", "act", "toefl", "exam", "career", "university",
-            "college", "school", "curriculum", "grade", "subject", "class", "detail", "more",
-            "resource", "mentor", "timeline", "month", "year", "academics", "score", "placement",
-            "portfolio", "admission", "ielts", "gpa", "internship", "project"
-        ]
-        if any(n in val for n in noise) or len(val) < 4 or not any(kw in val for kw in valid_keywords):
-            raise HTTPException(status_code=400, detail="This request is irrelevant to career pathway refinement. Please provide specific instructions to adjust this pathway, such as 'change step 1 description' or 'add more milestones'.")
+    cat = resolve_focus_category(content_cat or focus_req)
+    profile = ensure_degree_type_for_generation(goal, profile, req.degree_type, category=cat)
 
     try:
         foci, option_names = get_focus_choices(
             focus_req=focus_req,
-            content_category=req.content_category,
-            sub_segment=req.sub_segment
+            content_category=content_cat,
+            sub_segment=sub_seg
         )
 
-        # 1. Run Agent 1 in parallel
         blueprint_tasks = [
-            run_agent_1_blueprint(current, goal, profile, refine_prompt, existing_roadmap, focus=focus)
-            for focus in foci
+            run_agent_1_blueprint(
+                current, goal, profile, refine_prompt, existing_roadmap,
+                focus=f_choice, content_category=content_cat, sub_segment=sub_seg
+            )
+            for f_choice in foci
         ]
         blueprints = await asyncio.gather(*blueprint_tasks, return_exceptions=True)
-        
+
         valid_blueprints = []
         for i, bp in enumerate(blueprints):
-            if isinstance(bp, Exception) or not bp or "steps" not in bp:
-                valid_blueprints.append(get_fallback_mock_roadmap(current, goal, profile, refine_prompt, focus=foci[i]))
+            if isinstance(bp, Exception) or not is_complete_blueprint(bp, current, goal, profile, category=cat):
+                valid_blueprints.append(get_fallback_mock_roadmap(current, goal, profile, refine_prompt, focus=foci[i], category=cat, sub_segment=sub_seg))
             else:
                 valid_blueprints.append(bp)
-                
-        # 3. Merge and score
+
         final_alternatives = []
         for i, bp in enumerate(valid_blueprints):
             final_json = await build_and_store_final_path(
                 bp, {}, [], [], current, goal, profile,
-                path_type=option_names[i]
+                path_type=option_names[i],
+                sub_segment=sub_seg
             )
             final_json["option_name"] = option_names[i]
-            # ── ACCURACY MODEL: attach score to every generated path ──
             accuracy = calculate_path_accuracy_score(final_json, profile, current)
             final_json["accuracy_score"] = accuracy["accuracy_score"]
             final_json["accuracy_label"] = accuracy["accuracy_label"]
             final_json["accuracy_color"] = accuracy["accuracy_color"]
             final_json["accuracy_breakdown"] = accuracy["breakdown"]
             final_json["accuracy_details"] = accuracy["details"]
-            print(f"[Accuracy Model] Option '{option_names[i]}': score={accuracy['accuracy_score']} ({accuracy['accuracy_label']}) | structural={accuracy['breakdown']['structural']} content={accuracy['breakdown']['content']} market={accuracy['breakdown']['market']}")
             final_alternatives.append(final_json)
-            
-        final_alternatives = await log_generation_event(
-            current, goal, profile, refine_prompt, focus_req, existing_roadmap, final_alternatives
-        )
-        return {"alternatives": final_alternatives}
-        
-    except Exception as e:
-        print(f"[AI Pipeline Warning] Exception occurred during generation: {e}. Recovering with fallbacks.")
-        final_alternatives = []
-        foci, option_names = get_focus_choices(
-            focus_req=focus_req,
-            content_category=req.content_category,
-            sub_segment=req.sub_segment
-        )
 
-        for i in range(len(foci)):
-            final_json = get_fallback_mock_roadmap(current, goal, profile, refine_prompt, focus=foci[i])
-            name_tokens = build_name_patterns(profile, current)
-            if name_tokens:
-                final_json = recursive_sanitize(final_json, name_tokens)
-            final_json["db_id"] = None
-            final_json["status"] = "draft"
-            final_json["option_name"] = option_names[i]
-            final_alternatives.append(final_json)
-            
-        final_alternatives = await log_generation_event(
-            current, goal, profile, refine_prompt, focus_req, existing_roadmap, final_alternatives
-        )
         return {"alternatives": final_alternatives}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/api/path/blueprint")
 async def generate_path_blueprint(req: PathGenerationRequest):
-    import time
-    start_time = time.time()
     current = req.current_position.strip()
     goal = req.target_goal.strip()
     profile = req.profile or {}
-    
+    refine_prompt = req.refine_prompt.strip() if req.refine_prompt else None
+    existing_roadmap = req.existing_roadmap
+    focus_req = req.focus.strip() if req.focus else None
+    content_cat = req.content_category.strip() if req.content_category else None
+    sub_seg = req.sub_segment.strip() if req.sub_segment else None
+
     if not current or not goal:
         raise HTTPException(status_code=400, detail="Current position and Target goal cannot be empty")
-    profile = ensure_degree_type_for_generation(goal, profile, req.degree_type)
-    
+
+    cat = resolve_focus_category(content_cat or focus_req)
+    profile = ensure_degree_type_for_generation(goal, profile, req.degree_type, category=cat)
+
     try:
-        blueprint = await run_agent_1_blueprint(current, goal, profile)
-        elapsed = time.time() - start_time
-        print(f"[Blueprint API] Generated initial blueprint in {elapsed:.2f} seconds.")
+        blueprint = await run_agent_1_blueprint(
+            current, goal, profile, refine_prompt, existing_roadmap,
+            focus=focus_req, content_category=content_cat, sub_segment=sub_seg
+        )
         return blueprint
     except Exception as e:
-        print(f"[Blueprint API Error] {e}")
-        return get_fallback_mock_roadmap(current, goal, profile)
+        return get_fallback_mock_roadmap(current, goal, profile, refine_prompt, focus=focus_req, category=cat, sub_segment=sub_seg)
 
 
 @app.post("/api/path/audit")
 async def generate_path_audit(req: PathAuditRequest):
-    import time
-    start_time = time.time()
     blueprint = req.blueprint
-    current = req.current_position.strip()
-    goal = req.target_goal.strip()
+    current = req.current_position
+    goal = req.target_goal
     profile = req.profile or {}
-    
+
     try:
-        final_json = await build_and_store_final_path(
-            blueprint, {}, [], [], current, goal, profile
+        path_audit_task = run_agent_2_path_auditor(blueprint, current, goal, profile)
+        steps_audit_task = run_agent_3_steps_auditor(blueprint, current, goal, profile)
+        market_audit_task = run_agent_4_marketplace_auditor(blueprint, current, goal, profile)
+
+        path_audit, steps_audit, market_audit = await asyncio.gather(
+            path_audit_task, steps_audit_task, market_audit_task
         )
-        elapsed = time.time() - start_time
-        print(f"[Audit API] Consolidated audit completed in {elapsed:.2f} seconds.")
+
+        final_json = await build_and_store_final_path(
+            blueprint, path_audit, steps_audit, market_audit, current, goal, profile
+        )
         return final_json
-        
     except Exception as e:
-        print(f"[AI Pipeline Warning] Exception occurred during audit: {e}. Recovering with fallback.")
-        final_json = get_fallback_mock_roadmap(current, goal, profile)
-        name_tokens = build_name_patterns(profile, current)
-        if name_tokens:
-            final_json = recursive_sanitize(final_json, name_tokens)
-        
-        final_json["db_id"] = None
-        final_json["status"] = "draft"
-        return final_json
+        return get_fallback_mock_roadmap(current, goal, profile)
 
 
-# Backward-compatible simple path endpoint
-@app.post("/api/path_legacy")
-async def generate_path_legacy(req: GoalRequest):
-    # Parse out current & goal if possible, otherwise use fallback defaults
-    raw_goal = req.goal
-    current = "High School"
-    goal = raw_goal
-    if "Current:" in raw_goal and "Goal:" in raw_goal:
-        match = re.search(r"Current:\s*(.*?)\s*\.\s*Goal:\s*(.*?)\s*\.", raw_goal)
-        if match:
-            current = match.group(1)
-            goal = match.group(2)
-    return await generate_path(PathGenerationRequest(current_position=current, target_goal=goal))
-
-# Admin Endpoint: Get pathway statistics and analytics charts
 @app.get("/api/admin/analytics")
 async def get_admin_analytics():
     # 1. Counts

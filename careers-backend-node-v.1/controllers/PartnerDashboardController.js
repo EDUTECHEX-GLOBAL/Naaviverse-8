@@ -13,238 +13,10 @@
 const mongoose  = require("mongoose");
 const pathModel = require("../models/PathModel");
 
-// Lazy-load to avoid circular deps
+// ── Lazy-load to avoid circular deps ─────────────────────────────────────────
 const getUserPathModel  = () => require("../models/UserPathsModel");
 const getPartnerModel   = () => require("../models/PartnerModel");
 const getUserModel      = () => require("../models/UsersModel");
-
-const AVATAR_COLORS = [
-  "#0d9488", "#f4845f", "#f59e0b", "#7c3aed", "#2563eb", "#db2777", "#059669", "#d97706"
-];
-
-function getAvatarColor(str = "") {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-}
-
-function makeInitials(name = "") {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "U";
-  if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
-  return (parts[0][0] + (parts[1]?.[0] || "")).toUpperCase();
-}
-
-function formatRelativeTime(date) {
-  if (!date) return "Recently";
-  const now = new Date();
-  const diffMs = now - new Date(date);
-  const diffSec = Math.max(0, Math.floor(diffMs / 1000));
-  const diffMin = Math.floor(diffSec / 60);
-  const diffHour = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHour / 24);
-
-  if (diffSec < 60) return "Just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
-  if (diffHour < 24) return `${diffHour}h ago`;
-  if (diffDay === 1) return "Yesterday";
-  if (diffDay < 7) return `${diffDay}d ago`;
-  if (diffDay < 30) return `${Math.floor(diffDay / 7)}w ago`;
-  return new Date(date).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
-}
-
-function formatDisplayName(name, email) {
-  if (name && name.trim()) {
-    const parts = name.trim().split(/\s+/);
-    if (parts.length === 1) return parts[0];
-    return `${parts[0]} ${parts[parts.length - 1].charAt(0).toUpperCase()}.`;
-  }
-  if (email && email.includes("@")) {
-    const userPart = email.split("@")[0];
-    const clean = userPart.replace(/[._0-9]/g, " ").trim();
-    if (clean) {
-      const parts = clean.split(/\s+/).filter(Boolean);
-      if (parts.length > 0) {
-        return parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
-      }
-    }
-  }
-  return "Student";
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// HELPER — fetchPartnerLiveActivity
-// ─────────────────────────────────────────────────────────────────────────────
-const fetchPartnerLiveActivity = async ({ email, partnerId }) => {
-  try {
-    const Partner = getPartnerModel();
-    const UserPath = getUserPathModel();
-    const User = getUserModel();
-    const MarketplaceItem = require("../models/MarketplaceModel");
-    const Payment = require("../models/PaymentModel");
-    const Purchase = require("../models/PurchaseModel");
-
-    let partnerDoc = null;
-    if (partnerId) {
-      partnerDoc = await Partner.findOne({ partnerId: partnerId.trim() }).lean();
-    }
-    if (!partnerDoc && email) {
-      partnerDoc = await Partner.findOne({
-        email: { $regex: new RegExp("^" + email.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i") }
-      }).lean();
-    }
-
-    const effectiveEmail = partnerDoc?.email || email;
-    const effectivePartnerId = partnerDoc?.partnerId || partnerId;
-
-    const paths = await pathModel.find({
-      $or: [
-        ...(effectiveEmail ? [{ email: { $regex: new RegExp("^" + effectiveEmail.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i") } }] : []),
-        ...(partnerDoc?._id ? [{ partner_id: partnerDoc._id }] : [])
-      ],
-      status: "active"
-    }).select("_id nameOfPath path_cat").lean();
-
-    const pathIds = paths.map(p => p._id);
-    const pathMap = Object.fromEntries(paths.map(p => [String(p._id), p.nameOfPath || "Learning Path"]));
-
-    const mktItems = await MarketplaceItem.find({
-      $or: [
-        ...(effectiveEmail ? [{ partner_email: { $regex: new RegExp("^" + effectiveEmail.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i") } }] : []),
-        ...(effectivePartnerId ? [{ partner_id: effectivePartnerId }] : [])
-      ]
-    }).lean();
-
-    const mktItemIds = mktItems.map(it => String(it._id));
-    const mktMap = Object.fromEntries(mktItems.map(it => [String(it._id), it.name || "Marketplace Item"]));
-
-    const enrollments = pathIds.length > 0
-      ? await UserPath.find({
-          pathId: { $in: pathIds },
-          status: "active"
-        })
-          .sort({ createdAt: -1 })
-          .limit(30)
-          .lean()
-      : [];
-
-    const payments = await Payment.find({
-      $or: [
-        ...(effectiveEmail ? [{ partnerEmail: effectiveEmail.toLowerCase() }] : []),
-        ...(effectivePartnerId ? [{ partnerId: effectivePartnerId }] : []),
-        ...(mktItemIds.length > 0 ? [{ productId: { $in: mktItemIds } }] : [])
-      ],
-      status: "paid"
-    })
-      .sort({ createdAt: -1 })
-      .limit(30)
-      .lean();
-
-    const purchases = await Purchase.find({
-      $or: [
-        ...(effectiveEmail ? [{ creatorEmail: effectiveEmail }] : []),
-        ...(effectivePartnerId ? [{ partnerId: effectivePartnerId }] : []),
-        ...(mktItemIds.length > 0 ? [{ productId: { $in: mktItemIds } }] : [])
-      ],
-      status: { $in: ["Paid", "paid"] }
-    })
-      .sort({ createdAt: -1, date: -1 })
-      .limit(30)
-      .lean();
-
-    const studentEmailSet = new Set();
-    enrollments.forEach(e => { if (e.email) studentEmailSet.add(e.email.toLowerCase().trim()); });
-    payments.forEach(p => { if (p.userEmail) studentEmailSet.add(p.userEmail.toLowerCase().trim()); });
-    purchases.forEach(p => { if (p.clientEmail) studentEmailSet.add(p.clientEmail.toLowerCase().trim()); });
-
-    const userDocs = studentEmailSet.size > 0
-      ? await User.find({ email: { $in: [...studentEmailSet] } }).select("name email username").lean()
-      : [];
-
-    const userMap = new Map();
-    userDocs.forEach(u => {
-      if (u.email) userMap.set(u.email.toLowerCase().trim(), u.name || u.username);
-    });
-
-    const rawEvents = [];
-
-    enrollments.forEach(enr => {
-      const rawEmail = (enr.email || "").toLowerCase().trim();
-      const resolvedName = userMap.get(rawEmail) || "";
-      const displayName = formatDisplayName(resolvedName, rawEmail);
-      const pathName = pathMap[String(enr.pathId)] || "Learning Path";
-      const ts = enr.createdAt || new Date();
-
-      rawEvents.push({
-        id: `path_${enr._id}`,
-        name: displayName,
-        email: rawEmail,
-        initials: makeInitials(displayName),
-        color: getAvatarColor(displayName || rawEmail),
-        action: `Selected ${pathName} path`,
-        time: formatRelativeTime(ts),
-        timestamp: new Date(ts).getTime(),
-        type: "path",
-        typeBg: "rgba(13,148,136,.18)",
-        typeColor: "#0d9488"
-      });
-    });
-
-    payments.forEach(pay => {
-      const rawEmail = (pay.userEmail || "").toLowerCase().trim();
-      const resolvedName = userMap.get(rawEmail) || "";
-      const displayName = formatDisplayName(resolvedName, rawEmail);
-      const prodName = pay.productName || mktMap[String(pay.productId)] || "Session";
-      const amtStr = pay.amount ? ` (₹${Number(pay.amount).toLocaleString("en-IN")})` : "";
-      const ts = pay.createdAt || new Date();
-
-      rawEvents.push({
-        id: `pay_${pay._id}`,
-        name: displayName,
-        email: rawEmail,
-        initials: makeInitials(displayName),
-        color: getAvatarColor(displayName || rawEmail),
-        action: `Purchased ${prodName}${amtStr}`,
-        time: formatRelativeTime(ts),
-        timestamp: new Date(ts).getTime(),
-        type: "purchase",
-        typeBg: "rgba(244,132,95,.18)",
-        typeColor: "#e55a2b"
-      });
-    });
-
-    purchases.forEach(pur => {
-      const rawEmail = (pur.clientEmail || "").toLowerCase().trim();
-      const resolvedName = pur.clientName || userMap.get(rawEmail) || "";
-      const displayName = formatDisplayName(resolvedName, rawEmail);
-      const prodName = pur.productName || mktMap[String(pur.productId)] || "Bundle";
-      const amtStr = pur.amount ? ` (₹${Number(pur.amount).toLocaleString("en-IN")})` : "";
-      const ts = pur.createdAt || pur.date || new Date();
-
-      rawEvents.push({
-        id: `pur_${pur._id}`,
-        name: displayName,
-        email: rawEmail,
-        initials: makeInitials(displayName),
-        color: getAvatarColor(displayName || rawEmail),
-        action: `Purchased ${prodName}${amtStr}`,
-        time: formatRelativeTime(ts),
-        timestamp: new Date(ts).getTime(),
-        type: "purchase",
-        typeBg: "rgba(245,158,11,.18)",
-        typeColor: "#d97706"
-      });
-    });
-
-    rawEvents.sort((a, b) => b.timestamp - a.timestamp);
-    return rawEvents.slice(0, 50);
-  } catch (err) {
-    console.error("fetchPartnerLiveActivity error:", err);
-    return [];
-  }
-};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPER — week boundary (last 7 days)
@@ -906,6 +678,138 @@ const getExclusiveDashboardStats = async (req, res) => {
   } catch (err) {
     console.error("getExclusiveDashboardStats error:", err);
     return res.status(500).json({ status: false, message: "Internal server error", error: err.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPER — FETCH PARTNER LIVE ACTIVITY
+// ─────────────────────────────────────────────────────────────────────────────
+const fetchPartnerLiveActivity = async ({ email, partnerId }) => {
+  try {
+    const UserPath = getUserPathModel();
+    const User = getUserModel();
+    const Partner = getPartnerModel();
+    const Payment = require("../models/PaymentModel");
+    const Purchase = require("../models/PurchaseModel");
+    const MarketplaceItem = require("../models/MarketplaceModel");
+
+    let queryEmail = email ? email.trim() : null;
+    let partnerDoc = null;
+    if (partnerId) {
+      partnerDoc = await Partner.findOne({ partnerId: partnerId.trim() }).lean();
+      if (partnerDoc && !queryEmail) queryEmail = partnerDoc.email;
+    } else if (queryEmail) {
+      partnerDoc = await Partner.findOne({ email: queryEmail }).lean();
+    }
+
+    if (!queryEmail && !partnerDoc) return [];
+
+    const partnerEmailClean = queryEmail ? queryEmail.toLowerCase() : "";
+    const pId = partnerDoc?.partnerId || null;
+
+    // 1. Fetch recent Path enrollments
+    const partnerPaths = await pathModel.find({ email: queryEmail }).select("_id nameOfPath").lean();
+    const pathIds = partnerPaths.map(p => p._id);
+    const pathMap = Object.fromEntries(partnerPaths.map(p => [p._id.toString(), p.nameOfPath]));
+
+    let pathActivities = [];
+    if (pathIds.length > 0) {
+      const recentEnrollments = await UserPath.find({ pathId: { $in: pathIds } })
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .lean();
+
+      pathActivities = recentEnrollments.map(item => ({
+        id: `act_path_${item._id}`,
+        userEmail: (item.email || item.userEmail || "").toLowerCase(),
+        actionText: `Selected ${pathMap[item.pathId?.toString()] || "Pathway"} path`,
+        date: item.createdAt || new Date(),
+        type: "path",
+        typeBg: "rgba(13,148,136,.18)",
+        typeColor: "#0d9488"
+      }));
+    }
+
+    // 2. Fetch recent Marketplace Purchases (Payments & Purchases)
+    const items = await MarketplaceItem.find({ partner_email: queryEmail }).select("_id").lean();
+    const itemIds = items.map(it => String(it._id));
+
+    const paymentQuery = [];
+    if (pId) paymentQuery.push({ partnerId: pId });
+    if (partnerEmailClean) paymentQuery.push({ partnerEmail: partnerEmailClean });
+    if (itemIds.length > 0) paymentQuery.push({ productId: { $in: itemIds } });
+
+    let payments = [];
+    if (paymentQuery.length > 0) {
+      payments = await Payment.find({ $or: paymentQuery, status: "paid" })
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .lean();
+    }
+
+    const purchaseQuery = [];
+    if (pId) purchaseQuery.push({ partnerId: pId });
+    if (queryEmail) purchaseQuery.push({ creatorEmail: queryEmail });
+
+    let purchases = [];
+    if (purchaseQuery.length > 0) {
+      purchases = await Purchase.find({ $or: purchaseQuery, status: { $in: ["Paid", "paid"] } })
+        .sort({ date: -1, createdAt: -1 })
+        .limit(10)
+        .lean();
+    }
+
+    const purchaseActivities = [
+      ...payments.map(pay => ({
+        id: `act_pay_${pay._id}`,
+        userEmail: (pay.userEmail || "").toLowerCase(),
+        actionText: `Purchased ${pay.productName || "Marketplace Item"} (₹${(pay.amount || 0).toLocaleString()})`,
+        date: pay.createdAt || new Date(),
+        type: "purchase",
+        typeBg: "rgba(244,132,95,.18)",
+        typeColor: "#e55a2b"
+      })),
+      ...purchases.map(pur => ({
+        id: `act_pur_${pur._id}`,
+        userEmail: (pur.clientEmail || "").toLowerCase(),
+        actionText: `Purchased ${pur.productName || "Marketplace Item"} (₹${(pur.amount || 0).toLocaleString()})`,
+        date: pur.date || pur.createdAt || new Date(),
+        type: "purchase",
+        typeBg: "rgba(244,132,95,.18)",
+        typeColor: "#e55a2b"
+      }))
+    ];
+
+    // 3. Combine, hydrate user names, and sort chronologically descending
+    const combined = [...pathActivities, ...purchaseActivities];
+    combined.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    const slice = combined.slice(0, 15);
+    const userEmails = [...new Set(slice.map(a => a.userEmail))].filter(Boolean);
+    const users = await User.find({ email: { $in: userEmails } }).select("email name username").lean();
+    const userMap = Object.fromEntries(users.map(u => [u.email.toLowerCase(), u.name || u.username || u.email]));
+
+    const avatarColors = ["#0d9488", "#f4845f", "#f59e0b", "#8b5cf6", "#3b82f6"];
+
+    return slice.map((item, idx) => {
+      const uName = userMap[item.userEmail] || item.userEmail.split("@")[0] || "User";
+      const initial = uName.charAt(0).toUpperCase();
+      const color = avatarColors[idx % avatarColors.length];
+      return {
+        id: item.id,
+        name: uName,
+        initials: initial,
+        color,
+        action: item.actionText,
+        time: item.date ? new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Recently",
+        type: item.type,
+        typeBg: item.typeBg,
+        typeColor: item.typeColor,
+      };
+    });
+  } catch (err) {
+    console.error("fetchPartnerLiveActivity error:", err);
+    return [];
   }
 };
 

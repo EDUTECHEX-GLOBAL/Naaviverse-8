@@ -514,13 +514,12 @@ const AccProfile = () => {
     const mailId = userDetails?.email;
     if (!mailId) return;
 
-    const isInternal = userDetails?.creationSource === "admin_created" || Boolean(userDetails?.createdBy && userDetails?.createdBy !== "Super Admin" && userDetails?.createdBy !== "self_registered") || userDetails?.status === true;
+    const isInternal = userDetails?.creationSource === "admin_created";
 
-    if (isInternal || userDetails?.approvalStatus === "approved") {
-      // Internal or explicitly approved partner — fast path
+    if (isInternal) {
       fetchAndShowProfile(mailId, "approved");
     } else {
-      // External partner — check approval pipeline
+      // External self-registered partner — check live approval pipeline
       loadApprovalThenProfile(mailId);
     }
   };

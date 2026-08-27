@@ -12,7 +12,18 @@ function getPartnerEmail() {
   } catch { return null; }
 }
 
-
+const LIVE_ACTIVITY = [
+  { id: "a1", name: "Anisha R.", initials: "A", color: "#0d9488", action: "Selected Yale Economics path", time: "2m ago", type: "path", typeBg: "rgba(13,148,136,.18)", typeColor: "#0d9488" },
+  { id: "a2", name: "Ravi K.", initials: "R", color: "#f4845f", action: "Purchased Expert 1:1 Session (₹4,999)", time: "8m ago", type: "purchase", typeBg: "rgba(244,132,95,.18)", typeColor: "#e55a2b" },
+  { id: "a4", name: "Dev P.", initials: "D", color: "#0d9488", action: "Selected MIT Computer Science path", time: "45m ago", type: "path", typeBg: "rgba(13,148,136,.18)", typeColor: "#0d9488" },
+  { id: "a5", name: "Priya T.", initials: "P", color: "#f4845f", action: "Purchased Full Path Bundle (₹9,999)", time: "1h ago", type: "purchase", typeBg: "rgba(244,132,95,.18)", typeColor: "#e55a2b" },
+  { id: "a7", name: "Kavya L.", initials: "K", color: "#0d9488", action: "Selected Pre-Med Johns Hopkins path", time: "3h ago", type: "path", typeBg: "rgba(13,148,136,.18)", typeColor: "#0d9488" },
+  { id: "a8", name: "Sneha M.", initials: "S", color: "#f59e0b", action: "Purchased Data Analytics Pack (₹2,499)", time: "4h ago", type: "purchase", typeBg: "rgba(245,158,11,.18)", typeColor: "#d97706" },
+  { id: "a9", name: "Rohit B.", initials: "R", color: "#0d9488", action: "Selected AI for Finance path", time: "5h ago", type: "path", typeBg: "rgba(13,148,136,.18)", typeColor: "#0d9488" },
+  { id: "a10", name: "Neha G.", initials: "N", color: "#f4845f", action: "Purchased Cloud Computing Bundle (₹5,499)", time: "6h ago", type: "purchase", typeBg: "rgba(244,132,95,.18)", typeColor: "#e55a2b" },
+  { id: "a11", name: "Arun S.", initials: "A", color: "#0d9488", action: "Selected Blockchain Fundamentals path", time: "7h ago", type: "path", typeBg: "rgba(13,148,136,.18)", typeColor: "#0d9488" },
+  { id: "a12", name: "Pooja M.", initials: "P", color: "#f59e0b", action: "Purchased Full Stack Bootcamp (₹3,999)", time: "8h ago", type: "purchase", typeBg: "rgba(245,158,11,.18)", typeColor: "#d97706" },
+];
 
 
 

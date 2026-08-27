@@ -5,10 +5,8 @@ import {
   FaUsers,
   FaSignOutAlt,
   FaBars,
-  FaBell,
   FaHome,
   FaTimes,
-  FaHeadset,
 } from 'react-icons/fa';
 
 import assessalogo from "../../assets/images/logo/naavi_final_logo2.webp";
@@ -70,7 +68,6 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
 
         <div className="admin-sidebar">
           <NavItem icon={FaHome} label="Home" path="/admin-dashboard/admin-home" setSidebarOpen={setSidebarOpen} />
-          <NavItem icon={FaHeadset} label="Assistance Requests" path="/admin-dashboard/admin-marketplace-assistance" setSidebarOpen={setSidebarOpen} />
           <NavItem icon={FaEnvelope} label="Contact Us" path="/admin-dashboard/admin-contact" setSidebarOpen={setSidebarOpen} />
           <NavItem icon={FaUserPlus} label="Subscribe" path="/admin-dashboard/admin-subscribe" setSidebarOpen={setSidebarOpen} />
           <NavItem icon={FaUsers} label="Visitors" path="/admin-dashboard/admin-visitors" setSidebarOpen={setSidebarOpen} />

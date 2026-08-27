@@ -16,16 +16,17 @@ const FeedbackSchema = new mongoose.Schema(
     pathId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "paths",
-      default: null,
+      required: true,
     },
     stepId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "career_steps",
-      default: null,
+      required: true,
     },
     // viewType applies only when type === 'step' (macro, micro, nano)
     viewType: {
       type: String,
+      enum: ["macro", "micro", "nano"],
       default: null,
     },
     // providerName & providerType apply only when type === 'marketplace'
