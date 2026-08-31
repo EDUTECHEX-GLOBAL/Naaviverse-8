@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import Dashsidebar from "../../components/dashsidebar/dashsidebar";
+import UserTopHeader from "../../components/UserTopHeader/UserTopHeader";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
 import "./wallet.css";
@@ -195,7 +196,8 @@ const Wallet = () => {
           </div>
 
           <div className="dashboard-screens" onClick={() => setShowDrop(false)}>
-            <div className="services-main" onClick={() => setShowDrop(false)}>
+            <UserTopHeader />
+            <div className="services-main" style={{ height: "calc(100% - 64px)", overflowY: "auto" }} onClick={() => setShowDrop(false)}>
 
               {/* Page heading */}
               <div className="wallet-page-header">
