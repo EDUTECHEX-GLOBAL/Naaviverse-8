@@ -5,6 +5,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useStore } from "../../components/store/store.ts";
 import Dashsidebar from "../../components/dashsidebar/dashsidebar";
+import UserTopHeader from "../../components/UserTopHeader/UserTopHeader";
 import { LoadingAnimation1 } from "../../components/LoadingAnimation1";
 import LevelOneModal from "./LevelOneModal";
 import LevelTwoModal from "./LevelTwoModal";
@@ -321,7 +322,8 @@ const UserProfile = () => {
           isProfileIncomplete={false}
         />
         <div className="dashboard-screens">
-          <div className="up-profile-container">
+          <UserTopHeader />
+          <div className="up-profile-container" style={{ height: "calc(100% - 64px)", overflowY: "auto" }}>
 
             {/* ✅ NEW: Review banner at top when pending/rejected — no more fullscreen overlay */}
             {isReadOnly && <ReviewBanner />}

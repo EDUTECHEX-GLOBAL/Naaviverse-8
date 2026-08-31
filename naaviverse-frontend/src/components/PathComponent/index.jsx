@@ -195,10 +195,15 @@ const PathComponent = () => {
 
     try {
       setConfirmLoading(true);
-    localStorage.setItem("selectedPathId", pathId);
-localStorage.setItem("selectedPathOwner", email); // 👈 store owner
-localStorage.removeItem("selectedStepId");
-localStorage.removeItem("selectedStepNumber");
+      localStorage.setItem("selectedPathId", pathId);
+      localStorage.setItem("selectedPathOwner", email); // 👈 store owner
+      localStorage.setItem("selectedPathName", modalPath?.nameOfPath || modalPath?.name || "");
+      if (pathSteps?.length) {
+        localStorage.setItem("selectedPathSteps", `${pathSteps.length} steps`);
+      }
+      window.dispatchEvent(new Event("naavi:path-selected"));
+      localStorage.removeItem("selectedStepId");
+      localStorage.removeItem("selectedStepNumber");
       await axios.post(`${BASE_URL}/api/userpaths/selectpath`, { email, pathId });
     } catch (err) {
       console.error("Select path error:", err.response?.data || err.message);

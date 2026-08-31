@@ -36,6 +36,7 @@ import UserHome from "./userHome.jsx";
 import UserMarketplace from "../UserMarketplace.jsx";
 import UserPurchasesPage from "./UserPurchasesPage.jsx";
 import UserMentorsPage from "./UserMentorsPage.jsx";
+import UserTopHeader from "../../components/UserTopHeader/UserTopHeader";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -303,7 +304,8 @@ const Dashboard = () => {
           </div>
 
           <div className="dashboard-screens">
-            <div style={{ height: "100%" }}>
+            <UserTopHeader />
+            <div style={{ height: "calc(100% - 64px)", overflowY: "auto" }}>
 
 {activePage === "Home" ? (
   <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>

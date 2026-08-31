@@ -413,28 +413,28 @@ export default function App() {
             <div className="route-search-point"><IconPin size={14} /></div>
             <div className="route-search-copy route-from">
               <span>From</span>
-              <strong>{userInput?.current || buildPositionLabel(profile)}</strong>
+              <strong>{userInput?.current || buildPositionLabel(profile) || "Please select"}</strong>
             </div>
             <div className="route-search-divider" />
             <div className="route-search-point goal"><IconTarget size={14} /></div>
             <div className="route-search-copy route-to">
               <span>To</span>
-              <strong>{userInput?.goal || "Set your future goal"}</strong>
+              <strong style={{ color: !userInput?.goal ? "#94a3b8" : "inherit" }}>
+                {userInput?.goal || "Please select"}
+              </strong>
             </div>
-            {pathData && (
-              <>
-                <div className="route-search-divider" />
-                <div className="route-search-copy route-steps">
-                  <span>Steps</span>
-                  <strong>
-                    {(pathData?.alternatives
+            <div className="route-search-divider" />
+            <div className="route-search-copy route-steps">
+              <span>Steps</span>
+              <strong style={{ color: !pathData ? "#94a3b8" : "inherit" }}>
+                {pathData
+                  ? `${(pathData?.alternatives
                       ? pathData.alternatives[selectedAltIdx] || pathData.alternatives[0]
                       : pathData
-                    )?.steps?.length || 0} steps
-                  </strong>
-                </div>
-              </>
-            )}
+                    )?.steps?.length || 0} steps`
+                  : "Please select"}
+              </strong>
+            </div>
           </div>
 
           <div className="topbar-profile">
