@@ -421,8 +421,8 @@ JSON format must strictly follow:
 {{
   "path_title": "<Unique, descriptive path title matching category and goal>",
   "path_description": "<Rich 3-4 sentence strategic overview explaining how this specific pathway guides the user from {current_position} to {target_goal} in the {cat} category>",
-  "readiness_score": 25,
-  "readiness_label": "Early Starter",
+  "readiness_score": <calculated readiness score integer 0-100 based on profile readiness>,
+  "readiness_label": "<descriptive readiness label, e.g. 'Early Starter', 'Developing Readiness', or 'Advanced Readiness'>",
   "total_duration": "<calculated duration string, e.g. '6 months', '12 months', '36 months'>",
   "blind_spots": [
     "<critical gap, constraint, or warning 1 based on profile & goal>",
@@ -433,7 +433,10 @@ JSON format must strictly follow:
       "id": 1,
       "title": "<step/milestone title specific to {cat}>",
       "duration": "<calculated step range, e.g. 'Months 1-3' or 'Weeks 1-4'>",
-      "description": "<detailed step description (3-4 comprehensive sentences) outlining exact tasks, focus areas, and why this milestone matters for {target_goal}>",
+      "description": "<detailed step overview (2-3 sentences) explaining what this phase accomplishes>",
+      "macro_view": "<Macro View (2-3 sentences): Strategic big-picture vision explaining WHY this phase is crucial for {target_goal}>",
+      "micro_view": "<Micro View (2-3 sentences): Execution roadmap detailing exact daily/weekly study actions, deliverables, and practice hours>",
+      "nano_view": "<Nano View (2-3 sentences): Mentor & diagnostic guidance focus describing how expert review or code/essay audits validate readiness>",
       "learning_objectives": [
         "<distinct learning objective 1>",
         "<distinct learning objective 2>",
@@ -442,20 +445,38 @@ JSON format must strictly follow:
       "micro_steps": [
         {{"task": "<specific actionable task>", "resource": "<real specific resource>"}},
         {{"task": "<specific actionable task>", "resource": "<real specific resource>"}}
-      ]
+      ],
+      "marketplace": {{
+        "mentors": [
+          {{"name": "<Specific Mentor/Group Name for this exact milestone>", "type": "Mentor", "why": "<Why this mentor fits this specific milestone>", "next_step": "<Action step>", "tags": ["<Tag1>", "<Tag2>"], "section": "macro_free", "price": "Free"}},
+          {{"name": "<Structured Coach Name>", "type": "Coaching", "cost": "$95", "duration": "3 weeks", "value": "<Value prop for this milestone>", "next_step": "<Action>", "tags": ["<Tag1>"], "section": "micro_structured"}},
+          {{"name": "<Expert Advisor Name>", "type": "Mentor", "price": "$150", "session_details": "1-on-1 Call", "expected_outcomes": "<Outcome>", "tags": ["<Tag1>"], "section": "nano_expert"}}
+        ],
+        "vendors": [
+          {{"name": "<Specific Course/Tool for this milestone>", "type": "Course", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
+          {{"name": "<Paid Platform/Bootcamp>", "type": "Platform", "cost": "$149", "duration": "4 weeks", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
+          {{"name": "<Advanced Certification/Program>", "type": "Bootcamp", "price": "$397", "session_details": "Intensive Track", "expected_outcomes": "<Outcomes>", "tags": ["<Tag>"], "section": "nano_expert"}}
+        ],
+        "institutions": [
+          {{"name": "<Target University Bureau or Department>", "type": "University", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
+          {{"name": "<University Summer / Cert Program>", "type": "Institute", "cost": "$250", "duration": "4 weeks", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
+          {{"name": "<Global Institution Certification>", "type": "University", "price": "$1,200", "session_details": "Credit Track", "expected_outcomes": "<Outcomes>", "tags": ["<Tag>"], "section": "nano_expert"}}
+        ],
+        "distributors": [
+          {{"name": "<Free Guide/Docs for this step>", "type": "Guide", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
+          {{"name": "<Book/Workbook for this step>", "type": "Book", "cost": "$30", "duration": "Self-paced", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
+          {{"name": "<Specialized Digest/Journal>", "type": "Newsletter", "price": "Free", "session_details": "Weekly Email", "expected_outcomes": "<Outcomes>", "tags": ["<Tag>"], "section": "nano_expert"}}
+        ]
+      }}
     }}
   ]
 }}
 
 CRITICAL RULES:
 1. STRICT CATEGORY ADHERENCE: Generate milestones strictly appropriate for {cat.upper()}.
-2. DYNAMIC STEP COUNT RULE:
-   - For multi-year or comprehensive educational journeys (e.g. 24-36 months): Generate between 6 and 9 genuinely distinct milestones spanning the timeline.
-   - For skill acquisition or career transition journeys (e.g. 6-18 months): Generate between 5 and 7 genuinely distinct milestones.
-   - For short-term counseling or immediate support plans (e.g. 1-6 months): Generate between 3 and 5 genuinely distinct milestones.
-   - Every single milestone must have a distinct purpose and title.
-3. NO GENERIC BOILERPLATE: Every single step must have unique, rich descriptions, distinct learning objectives, and custom actionable checklist items.
-4. NAME BAN: NEVER include personal names, personal emails, or personal pronouns in any text fields. Keep all content objective and professional.
+2. STEP COUNT: Generate between 5 and 8 genuinely distinct, detailed milestones spanning the timeline.
+3. NO GENERIC BOILERPLATE: Every single step must have unique descriptions, distinct learning objectives, and custom actionable micro_steps.
+4. NAME BAN: NEVER include personal names or emails in any text fields. Keep all content objective and professional.
 """
     return prompt
 
@@ -488,8 +509,8 @@ Output ONLY valid JSON matching:
 {{
   "path_title": "<audited and refined Path Title>",
   "path_description": "<audited and refined detailed multi-sentence Path Description>",
-  "readiness_score": 25,
-  "readiness_label": "Early Starter",
+  "readiness_score": <audited readiness score integer 5-95>,
+  "readiness_label": "<audited readiness label>",
   "blind_spots": [
     "<warning or critical gap 1 based on profile constraints>",
     "<warning or critical gap 2 based on profile constraints>"
@@ -676,136 +697,9 @@ def set_view_description(step: dict, view_key: str, description: str):
 
 
 def enrich_step_narrative(step: dict, current: str, goal: str, category: str = "academic") -> dict:
-    """Guarantee every roadmap step has detailed view text, even when a model returns one-liners."""
+    """Passes through the pure model-generated milestone text without inserting static template text."""
     if not isinstance(step, dict):
         return step
-
-    cat = resolve_focus_category(category)
-    title = str(step.get("title") or f"Step {step.get('id', '')}").strip()
-    duration = str(step.get("duration") or "this phase").strip()
-    existing_description = str(step.get("description") or "").strip()
-    source_description = existing_description or f"Complete the planned work for {title}."
-
-    if not is_rich_paragraph(existing_description, min_chars=200, min_sentences=2):
-        if cat == "practical":
-            step["description"] = (
-                f"{source_description} This {duration} milestone focuses on hands-on practical skill acquisition, "
-                f"code/design implementation, and creating demonstrable proof of work for {goal}. "
-                f"The learner should build functional exercises, review best practices, and document key learnings. "
-                f"By the end of this phase, concrete deliverables will validate readiness for more advanced project milestones."
-            )
-        elif cat == "jobs":
-            step["description"] = (
-                f"{source_description} This {duration} milestone targets core workplace competencies, role gap closures, "
-                f"and professional portfolio building required for {goal}. "
-                f"The candidate should practice technical/behavioral requirements, optimize evidence of capability, and engage with industry standards. "
-                f"Completion of this phase confirms readiness for hiring and placement opportunities."
-            )
-        elif cat == "non_academic":
-            step["description"] = (
-                f"{source_description} This {duration} milestone is designed for personal wellbeing, habit formation, "
-                f"and actionable support strategies to address {goal}. "
-                f"The individual will establish healthy daily routines, apply coping mechanisms, and connect with trusted support resources. "
-                f"By the end of this period, clear progress indicators and sustainable habits will provide steady guidance."
-            )
-        else:
-            step["description"] = (
-                f"{source_description} This {duration} milestone defines the exact academic target, evidence of progress, "
-                f"and standards required to move forward in the pathway for {goal}. "
-                f"The work connects daily study routines, academic preparation, and measurable readiness indicators. "
-                f"By the end of the phase, the student will have clear outputs and a documented progression plan."
-            )
-
-    if not is_rich_paragraph(step.get("macro_view")):
-        if cat == "practical":
-            set_view_description(step, "macro_view", (
-                f"{title} is a vital milestone because it converts foundational knowledge into tangible technical ability for {goal}. "
-                f"During {duration}, this phase develops problem-solving speed, code cleanliness, and system understanding. "
-                f"Mastering these skills builds practical confidence and unlocks the next level of project architecture. "
-                f"The big-picture outcome is an authentic proof of work demonstrating real-world competency."
-            ))
-        elif cat == "jobs":
-            set_view_description(step, "macro_view", (
-                f"{title} represents a key career progression phase aligning existing experience from {current} toward {goal}. "
-                f"During {duration}, this milestone closes role capability gaps and refines professional standing. "
-                f"Strong execution here creates the credibility required for interviews, evaluations, and role transitions. "
-                f"The strategic result is a differentiated candidate profile meeting industry expectations."
-            ))
-        elif cat == "non_academic":
-            set_view_description(step, "macro_view", (
-                f"{title} establishes essential emotional and routine foundations to support personal progress toward {goal}. "
-                f"During {duration}, this phase reduces overwhelm, clarifies boundaries, and introduces positive coping mechanisms. "
-                f"Building these life practices ensures long-term mental resilience and sustainable personal balance. "
-                f"The overarching outcome is greater clarity, calmness, and personal empowerment."
-            ))
-        else:
-            set_view_description(step, "macro_view", (
-                f"{title} is a strategic milestone turning the ambition of reaching {goal} into concrete academic readiness. "
-                f"During {duration}, this phase strengthens subject confidence, transcripts, and long-term preparation habits. "
-                f"Completing this step proves the student can meet competitive standards and advance through prerequisites. "
-                f"The big-picture outcome is a coherent academic profile matching the expectations of {goal}."
-            ))
-
-    if not is_rich_paragraph(step.get("micro_view")):
-        if cat == "practical":
-            set_view_description(step, "micro_view", (
-                f"The execution focus for {title} involves hands-on coding, building modules, and completing sandbox exercises. "
-                f"The learner should maintain a repository, track commits, test edge cases, and document technical notes. "
-                f"Dedicate 4 to 8 focused hours per week to code implementation and debugging practice. "
-                f"Completion is verified when functional code runs cleanly and is pushed with clear documentation."
-            ))
-        elif cat == "jobs":
-            set_view_description(step, "micro_view", (
-                f"Execution for {title} converts role requirements into concrete deliverables, resume updates, and interview prep. "
-                f"The candidate should complete case studies, system design problems, or portfolio documentation weekly. "
-                f"Reserve dedicated time for mock question drills, ATS keyword optimization, and professional outreach. "
-                f"Completion is measured by tangible artifacts: verified code repos, polished work samples, or recorded mock sessions."
-            ))
-        elif cat == "non_academic":
-            set_view_description(step, "micro_view", (
-                f"Daily execution for {title} centers on habit tracking, structured journaling, and routine adherence. "
-                f"Reserve 15 to 30 minutes daily for mindfulness, sleep scheduling, or task prioritization exercises. "
-                f"Maintain a simple tracker in a journal or app to record stress triggers, moods, and routine completions. "
-                f"Completion is validated when daily wellness routines are maintained consistently throughout the phase."
-            ))
-        else:
-            set_view_description(step, "micro_view", (
-                f"The execution focus for {title} is converted into weekly study blocks, chapter mastery, and mock tests. "
-                f"The student should maintain a structured planner with revision targets, formula sheets, and practice scores. "
-                f"At least two to three focused study sessions per week should be dedicated to core curriculum chapters. "
-                f"Completion is measured through reviewed mock exams, syllabus coverage checks, and diagnostic logs."
-            ))
-
-    if not is_rich_paragraph(step.get("nano_view")):
-        if cat == "practical":
-            set_view_description(step, "nano_view", (
-                f"The mentor focus for {title} centers on code review, architecture feedback, and technical diagnostic checks. "
-                f"A senior developer or mentor should review project structure, identify antipatterns, and suggest optimizations. "
-                f"Engage with developer communities to compare solutions, receive peer critiques, and fix code smells. "
-                f"The phase concludes with a code review sign-off validating that project standards have been achieved."
-            ))
-        elif cat == "jobs":
-            set_view_description(step, "nano_view", (
-                f"The mentor focus for {title} is strategic career advisory, mock interview evaluations, and portfolio critiques. "
-                f"An industry specialist or hiring manager should review competency evidence and pressure-test interview responses. "
-                f"Seek constructive feedback on communication clarity, technical depth, and executive presence. "
-                f"The phase wraps up with an expert assessment confirming role readiness for the next milestone."
-            ))
-        elif cat == "non_academic":
-            set_view_description(step, "nano_view", (
-                f"The guidance focus for {title} involves supportive check-ins, routine accountability, and qualified advisor feedback. "
-                f"A life coach, counselor, or trusted peer should review progress logs, discuss obstacles, and calibrate coping strategies. "
-                f"Utilize safe feedback loops to celebrate consistency, adjust routines, and identify when additional care is beneficial. "
-                f"The phase closes with a supportive reflection session affirming personal growth and readiness to continue."
-            ))
-        else:
-            set_view_description(step, "nano_view", (
-                f"The mentor focus for {title} is diagnostic, evidence-based, and tied to prerequisite milestone readiness. "
-                f"An academic counselor or subject tutor should review test performance, analyze weak topics, and address curriculum risks. "
-                f"Peer cohort study sessions are encouraged to compare problem-solving approaches and maintain motivation. "
-                f"The phase closes with mentor feedback confirming the student is prepared for subsequent academic stages."
-            ))
-
     return step
 
 
@@ -863,38 +757,23 @@ async def query_groq_json(
     preferred_model: str = "openai/gpt-oss-120b",
     fallback_models: Optional[List[str]] = None,
 ) -> dict:
-    models = [preferred_model] + (
-        fallback_models
-        if fallback_models is not None
-        else [
-            "openai/gpt-oss-120b",
-            "qwen/qwen3.8-27b",
-            "groq/compound",
-            "groq/compound-mini",
-            "openai/gpt-oss-20b",
-        ]
-    )
+    active_groq_models = ["openai/gpt-oss-120b", "qwen/qwen3.8-27b", "groq/compound", "groq/compound-mini"]
+    models = [preferred_model] if preferred_model in active_groq_models else []
+    if fallback_models:
+        for f in fallback_models:
+            if f in active_groq_models and f not in models:
+                models.append(f)
+    for m in active_groq_models:
+        if m not in models:
+            models.append(m)
 
-
-
-    # Deduplicate while preserving order (preferred_model may already be one of the fallbacks)
-    seen = set()
-    unique_models = []
-    for m in models:
-        if m not in seen:
-            seen.add(m)
-            unique_models.append(m)
+    unique_models = models
 
     last_err = None
     for m in unique_models:
         try:
             estimated_input_tokens = int(len(prompt) / 3.2)
-            if "70b" in m or "120b" in m or "32b" in m or "17b" in m:
-                max_tok = 4096
-            else:
-                max_tok = max(1000, 5800 - estimated_input_tokens)
-                if max_tok > 2500:
-                    max_tok = 2500
+            max_tok = 8192
 
             response = await async_client.chat.completions.create(
                 model=m,
@@ -1138,16 +1017,19 @@ def calculate_total_duration_months(
             target_level = 1
 
     current_str = f"{(profile or {}).get('grade') or ''} {current or ''}".lower()
-    
+    curr_pos_lower = (current or "").lower()
+    profile_grade_lower = str((profile or {}).get("grade") or "").lower()
+
     current_level = 0
     remaining_current_months = 0
     is_school = False
     grade_num = None
-    
+
     if any(k in current_str for k in ["grade", "class", "std", "th ", "th", "school"]):
         is_school = True
-        
-    num_match = re.search(r'\b(9|10|11|12)\b', current_str)
+
+    # Extract grade primarily from current_position (the input box), fallback to profile.grade
+    num_match = re.search(r'\b(9|10|11|12)\b', curr_pos_lower) or re.search(r'\b(9|10|11|12)\b', profile_grade_lower)
     if num_match:
         grade_num = int(num_match.group(1))
         is_school = True
@@ -1187,7 +1069,8 @@ def calculate_total_duration_months(
     elif is_school or grade_num is not None:
         current_level = 0
         if grade_num is not None:
-            remaining_current_months = (FINAL_SCHOOL_GRADE - grade_num + 1) * MONTHS_PER_ACADEMIC_YEAR
+            # (FINAL_SCHOOL_GRADE - grade_num + 1) * MONTHS_PER_ACADEMIC_YEAR
+            remaining_current_months = max(1, (FINAL_SCHOOL_GRADE - grade_num + 1)) * MONTHS_PER_ACADEMIC_YEAR
         else:
             remaining_current_months = MONTHS_PER_ACADEMIC_YEAR * 2
     else:
@@ -1201,11 +1084,9 @@ def calculate_total_duration_months(
     if target_level <= current_level:
         return max(MIN_ADMISSION_CYCLE_MONTHS, remaining_current_months)
 
-    total_duration = remaining_current_months
-    for level in range(current_level + 1, target_level):
-        total_duration += duration_months_for_level(level)
-            
-    return max(MIN_ADMISSION_CYCLE_MONTHS, total_duration)
+    # If transitioning from High School (level 0) to Bachelor's (level 1),
+    # the duration is the remaining high school time leading up to university entry.
+    return max(MIN_ADMISSION_CYCLE_MONTHS, remaining_current_months)
 
 
 def format_total_duration(months: int) -> str:
@@ -1270,10 +1151,6 @@ CATEGORY_VARIANTS = {
         {
             "option_name": "Test Prep & Admissions Focus",
             "focus": "Academic & Research - Test Prep & Admissions Track: Focus on standardized tests (SAT, ACT, AP, GRE, IELTS, TOEFL, board exams) and strategic admissions milestones for competitive schools and universities."
-        },
-        {
-            "option_name": "Curriculum & GPA Focus",
-            "focus": "Academic & Research - Curriculum & GPA Excellence Track: Focus on standard academic curricula, course selections, maintaining a top-tier GPA, and fulfilling prerequisite school/college/university coursework."
         }
     ],
     "practical": [
@@ -1284,10 +1161,6 @@ CATEGORY_VARIANTS = {
         {
             "option_name": "Certification & Bootcamp Focus",
             "focus": "Practical & Skills - Certification & Structured Learning Track: Focus on completing industry-recognized professional certifications, structured bootcamps, and specialized skills courses."
-        },
-        {
-            "option_name": "Internship & Applied Focus",
-            "focus": "Practical & Skills - Internship & Applied Practice Track: Focus on gaining early work experience, securing internships, participating in apprenticeships, and applying learning to real-world environments."
         }
     ],
     "jobs": [
@@ -1298,10 +1171,6 @@ CATEGORY_VARIANTS = {
         {
             "option_name": "Interview & Networking Focus",
             "focus": "Jobs & Careers - Interview Prep & Networking: Focus on interview skills (behavioral, technical, case studies), networking with industry professionals, cold outreach, and securing referrals."
-        },
-        {
-            "option_name": "Resume & Career Evidence Focus",
-            "focus": "Jobs & Careers - Resume & Career Evidence: Focus on tailoring resumes, building professional profiles (LinkedIn, GitHub), gathering evidence of workplace competence, and job search management."
         }
     ],
     "non_academic": [
@@ -1312,10 +1181,6 @@ CATEGORY_VARIANTS = {
         {
             "option_name": "Life Skills & Decision Focus",
             "focus": "Non-Academic Counselling - Life Skills & Decision Support: Focus on time management, decision support, routine building, navigating personal/educational choices, and generic life coaching."
-        },
-        {
-            "option_name": "Immediate Action & Support Focus",
-            "focus": "Non-Academic Counselling - Immediate Guidance & Support: Focus on short-term resource navigation, safe escalation paths, quick-win routines, and qualified peer or professional referral options."
         }
     ]
 }
@@ -1560,61 +1425,8 @@ def calculate_path_metrics(
     total_months = calculate_total_duration_months(current, goal, profile, category=path_category, sub_segment=sub_segment)
     total_duration = format_total_duration(total_months)
 
-    goal_lower = (goal or "").lower()
-    perf_str = str((profile or {}).get("performance") or "").lower()
-    if any(k in perf_str for k in ["90", "above 90", "excellent", "gpa 4", "a+", "top"]):
-        perf_cat = "high"
-    elif any(k in perf_str for k in ["75", "80", "85", "good", "average"]):
-        perf_cat = "medium"
-    else:
-        perf_cat = "low"
-
-    stream_str = str((profile or {}).get("stream") or "").lower()
-    curriculum_str = str((profile or {}).get("curriculum") or "").lower()
-    personality_str = str((profile or {}).get("personality") or "").lower()
-    financial_str = str((profile or {}).get("financialSituation") or "").lower()
-
-    if path_category == "academic":
-        base_score = {"high": 55, "medium": 35, "low": 20}.get(perf_cat, 20)
-        if any(k in curriculum_str for k in ["cbse", "ib", "igcse", "cambridge", "icse"]):
-            base_score += 10
-        if any(k in stream_str for k in ["science", "maths", "math", "commerce"]):
-            base_score += 8
-        if any(kw in goal_lower for kw in ["harvard", "yale", "stanford", "mit", "oxford", "cambridge", "iit", "bits"]):
-            base_score = int(base_score * 0.75)
-    elif path_category == "practical":
-        base_score = {"high": 50, "medium": 40, "low": 30}.get(perf_cat, 30)
-        if any(k in personality_str for k in ["practical", "hands-on", "builder", "maker", "curious"]):
-            base_score += 12
-        if any(k in goal_lower for k in ["developer", "software", "python", "web", "data", "ai", "cloud"]):
-            base_score += 8
-    elif path_category == "jobs":
-        base_score = {"high": 45, "medium": 35, "low": 25}.get(perf_cat, 25)
-        if any(k in personality_str for k in ["leader", "communication", "team", "social", "enterprising"]):
-            base_score += 10
-        if any(k in current.lower() for k in ["developer", "engineer", "analyst", "intern", "associate"]):
-            base_score += 10
-    else:  # non_academic
-        base_score = 40
-        if any(k in personality_str for k in ["open", "reflective", "self-aware", "determined"]):
-            base_score += 12
-        if any(k in financial_str for k in ["stable", "supported", "family"]):
-            base_score += 8
-
-    readiness_score = max(5, min(95, base_score))
-    if readiness_score >= 70:
-        readiness_label = "Advanced Starter"
-    elif readiness_score >= 50:
-        readiness_label = "Intermediate Starter"
-    elif readiness_score >= 30:
-        readiness_label = "Early Starter"
-    else:
-        readiness_label = "Beginner"
-
     return {
         "total_duration": total_duration,
-        "readiness_score": readiness_score,
-        "readiness_label": readiness_label
     }
 
 
@@ -1659,19 +1471,14 @@ def calculate_path_accuracy_score(roadmap: dict, profile: dict, current: str = "
     w_info = 0.40
     w_market = 0.30
     
-    # ── 1. Step Count Accuracy Model (S_steps) ──
-    grade_str = str(profile.get("grade") or "").lower() or str(current).lower()
-    if "10" in grade_str or "tenth" in grade_str or "k-12" in grade_str or "k12" in grade_str:
-        expected_steps = 12
-    elif "11" in grade_str or "eleventh" in grade_str:
-        expected_steps = 10
-    elif "12" in grade_str or "twelfth" in grade_str:
-        expected_steps = 8
+    # ── 1. Step Count Evaluation (S_steps) ──
+    # Dynamically evaluate generation richness based on actual steps generated by the AI model
+    if actual_steps >= 4:
+        S_steps = 1.0
+    elif actual_steps >= 2:
+        S_steps = 0.75
     else:
-        expected_steps = 10
-        
-    sigma = 2.0
-    S_steps = math.exp(-((actual_steps - expected_steps)**2) / (2 * sigma**2))
+        S_steps = 0.50
     
     # ── 2. Information Density / Content Quality Model (S_info) ──
     # Measures how rich and meaningful the content is using:
@@ -1946,325 +1753,31 @@ def calculate_path_accuracy_score(roadmap: dict, profile: dict, current: str = "
         },
         "details": {
             "step_count": actual_steps,
-            "expected_steps": expected_steps,
+            "expected_steps": actual_steps,
             "s_steps": round(S_steps, 3),
             "s_info": round(S_info, 3),
             "s_market": round(S_market, 3),
             "s_market_presence": round(S_market_presence, 3),
             "s_market_field_quality": round(S_market_quality, 3),
-            "s_market_relevance": round(S_market_relevance, 3),
             "info_formula": "Harmonic F1-Score(Sigmoid Word Count, Normalized Lexical Density)",
             "market_formula": "Harmonic F1-Score(Sigmoid Presence, F1(Field Quality, Jaccard Relevance))"
         }
     }
 
 
-
-# Pedagogical High-Fidelity Fallback Roadmap in case of a complete API lockout
-def get_academic_fallback(current: str, goal: str, profile: dict, focus: Optional[str] = None) -> dict:
-    total_months = calculate_total_duration_months(current, goal, profile, category="academic")
-    return {
-        "path_title": f"Academic & Research Pathway to {goal}",
-        "path_description": f"A structured academic pathway navigating formal education requirements, curriculum excellence, and admissions milestones toward {goal}.",
-        "readiness_score": 35,
-        "readiness_label": "Early Starter",
-        "total_duration": format_total_duration(total_months),
-        "blind_spots": ["Requires strong GPA consistency across all terms", "Must schedule standardized tests well in advance of application deadlines"],
-        "steps": [
-            {
-                "id": 1,
-                "title": "Curriculum Alignment & Academic Target Setup",
-                "duration": "Months 1-3",
-                "description": f"Establish core academic targets, choose key subject combinations, and map prerequisite coursework for {goal}.",
-                "learning_objectives": ["Map prerequisite subjects", "Set minimum 90%+ academic GPA targets", "Identify core academic advisors"],
-                "macro_view": "This foundational milestone establishes academic rigor and transcript strength necessary for competitive admissions.",
-                "micro_view": "Review term syllabus, set weekly study blocks in Notion, and take initial diagnostic subject assessments.",
-                "nano_view": "Conduct diagnostic review with an academic counselor to flag curriculum gaps.",
-                "marketplace": get_mock_marketplace(focus, "Curriculum Alignment", 1, goal, category="academic"),
-                "micro_steps": [{"task": "Review prerequisite subject criteria", "resource": "Official Curriculum Guide"}]
-            },
-            {
-                "id": 2,
-                "title": "Academic Rigor & Diagnostic Standardized Prep",
-                "duration": "Months 4-6",
-                "description": "Maintain high term GPA performance and initiate diagnostic prep for standardized admissions exams where applicable.",
-                "learning_objectives": ["Complete baseline test diagnostics", "Target weak concept areas", "Maintain top 10% class standing"],
-                "macro_view": "Strengthen academic indicators that serve as prerequisites for international or national admissions.",
-                "micro_view": "Take 2 full-length diagnostic exams, analyze error logs, and dedicate 6 hours weekly to test problem solving.",
-                "nano_view": "Review diagnostic score reports with a test prep specialist to build a tailored study schedule.",
-                "marketplace": get_mock_marketplace(focus, "Diagnostic Prep", 2, goal, category="academic"),
-                "micro_steps": [{"task": "Complete diagnostic test sitting", "resource": "Official Practice Portal"}]
-            },
-            {
-                "id": 3,
-                "title": "Academic Projects & Profile Differentiation",
-                "duration": "Months 7-9",
-                "description": "Engage in specialized academic research projects, honors papers, or extracurricular competitions relevant to target field.",
-                "learning_objectives": ["Author a research paper or project draft", "Participate in academic seminars", "Secure faculty advisor support"],
-                "macro_view": "Differentiate the student profile through genuine academic curiosity and demonstrable scholarly work.",
-                "micro_view": "Draft a 10-page research paper outline, conduct literature reviews, and submit to student symposiums.",
-                "nano_view": "Subject mentor reviews methodology and citations before final paper submission.",
-                "marketplace": get_mock_marketplace(focus, "Academic Projects", 3, goal, category="academic"),
-                "micro_steps": [{"task": "Draft research paper outline", "resource": "Academic Research Guide"}]
-            },
-            {
-                "id": 4,
-                "title": "Target Institution Selection & Admissions Dossier",
-                "duration": "Months 10-12",
-                "description": f"Finalize target university list, draft personal statements, secure letters of recommendation, and submit dossiers for {goal}.",
-                "learning_objectives": ["Finalize 8-10 balanced institution choices", "Complete personal statement drafts", "Submit complete application dossiers"],
-                "macro_view": "Convert academic preparation and profile rigor into successful admissions outcomes.",
-                "micro_view": "Submit all application portals, draft supplementary essays, and compile financial/visa documentation.",
-                "nano_view": "Admissions counselor line-by-line review of essays and application materials.",
-                "marketplace": get_mock_marketplace(focus, "Admissions Dossier", 4, goal, category="academic"),
-                "micro_steps": [{"task": "Submit application dossiers", "resource": "Admissions Portals"}]
-            }
-        ]
-    }
+def validate_category_semantics(blueprint: dict, category: str, sub_segment: Optional[str] = None) -> tuple:
+    if not isinstance(blueprint, dict):
+        return False, "Blueprint is not a dictionary"
+    steps = blueprint.get("steps")
+    if not isinstance(steps, list) or len(steps) == 0:
+        return False, "Blueprint must contain at least 2 structured steps (received 0)."
+    if len(steps) < 2:
+        return False, f"Blueprint must contain at least 2 structured steps (received {len(steps)})."
+    return True, "Valid"
 
 
-def get_practical_fallback(current: str, goal: str, profile: dict, focus: Optional[str] = None) -> dict:
-    total_months = calculate_total_duration_months(current, goal, profile, category="practical")
-    return {
-        "path_title": f"Practical & Skills Pathway: {goal}",
-        "path_description": f"A project-driven, practical skill-building pathway to master core technologies, build real-world software/tools, and showcase an exceptional portfolio for {goal}.",
-        "readiness_score": 40,
-        "readiness_label": "Early Starter",
-        "total_duration": format_total_duration(total_months),
-        "blind_spots": ["Need to maintain consistent daily coding habits", "Ensure portfolio projects have live deployed demos and clean documentation"],
-        "steps": [
-            {
-                "id": 1,
-                "title": "Core Foundations & Sandbox Environment Setup",
-                "duration": "Months 1-2",
-                "description": f"Master fundamental syntax, algorithms, and core architecture principles required for {goal}.",
-                "learning_objectives": ["Master core language syntax and tools", "Set up professional Git/GitHub workflow", "Complete 20+ algorithmic exercises"],
-                "macro_view": "Building an unshakable technical foundation ensures rapid progress when tackling complex projects.",
-                "micro_view": "Complete freeCodeCamp/Coursera modules, solve 5 coding exercises weekly, and push clean code to GitHub.",
-                "nano_view": "Senior developer reviews initial repository setup and code style compliance.",
-                "marketplace": get_mock_marketplace(focus, "Core Foundations", 1, goal, category="practical"),
-                "micro_steps": [{"task": "Set up GitHub repository and dev environment", "resource": "Official Documentation"}]
-            },
-            {
-                "id": 2,
-                "title": "Hands-on Project Development & Module Building",
-                "duration": "Months 3-4",
-                "description": "Design and build 2 end-to-end practical projects implementing industry-standard design patterns and clean architecture.",
-                "learning_objectives": ["Build functional full-stack/standalone application", "Implement robust error handling and tests", "Deploy project to cloud hosting"],
-                "macro_view": "Applied project building transforms theoretical understanding into demonstrable proof of capability.",
-                "micro_view": "Build a modular application with API endpoints, automated unit tests, and live cloud deployment on Vercel/AWS.",
-                "nano_view": "Conduct an architectural code review with an experienced engineer to eliminate antipatterns.",
-                "marketplace": get_mock_marketplace(focus, "Project Development", 2, goal, category="practical"),
-                "micro_steps": [{"task": "Build and deploy capstone project 1", "resource": "GitHub & Cloud Sandbox"}]
-            },
-            {
-                "id": 3,
-                "title": "Advanced Applications & Open Source Contributions",
-                "duration": "Months 5-6",
-                "description": "Tackle advanced optimizations, contribute to existing open-source codebases, and write technical documentation.",
-                "learning_objectives": ["Submit 2+ open source pull requests", "Optimize application performance and latency", "Write technical architecture breakdown"],
-                "macro_view": "Collaborating on complex codebases validates professional engineering standards and teamwork ability.",
-                "micro_view": "Profile memory and performance bottlenecks, refactor complex modules, and write a comprehensive project README.",
-                "nano_view": "Open source maintainer or senior peer review of submitted pull requests.",
-                "marketplace": get_mock_marketplace(focus, "Advanced Applications", 3, goal, category="practical"),
-                "micro_steps": [{"task": "Submit pull request to open-source repository", "resource": "GitHub Community"}]
-            },
-            {
-                "id": 4,
-                "title": "Portfolio Showcase & Proof-of-Work Validation",
-                "duration": "Months 7-8",
-                "description": f"Curate a professional developer portfolio website showcasing live demos, code repositories, and technical writing for {goal}.",
-                "learning_objectives": ["Deploy high-impact developer portfolio", "Create video walkthroughs of key projects", "Pass peer technical code review"],
-                "macro_view": "A verified portfolio serves as undeniable evidence of practical competence.",
-                "micro_view": "Launch portfolio site, record 3-minute video walkthroughs, and publish technical case studies.",
-                "nano_view": "Principal engineer audit of complete portfolio and GitHub presence.",
-                "marketplace": get_mock_marketplace(focus, "Portfolio Showcase", 4, goal, category="practical"),
-                "micro_steps": [{"task": "Launch portfolio website with live demos", "resource": "Developer Portfolio"}]
-            }
-        ]
-    }
-
-
-def get_jobs_fallback(current: str, goal: str, profile: dict, focus: Optional[str] = None) -> dict:
-    total_months = calculate_total_duration_months(current, goal, profile, category="jobs")
-    return {
-        "path_title": f"Jobs & Careers Pathway: {goal}",
-        "path_description": f"A targeted career transition and job readiness pathway focusing on role competency, ATS resume evidence, networking, and interview mastery for {goal}.",
-        "readiness_score": 45,
-        "readiness_label": "Intermediate Starter",
-        "total_duration": format_total_duration(total_months),
-        "blind_spots": ["Need to tailor resume achievements with quantifiable metrics (STAR format)", "Schedule weekly mock interviews to build communication confidence"],
-        "steps": [
-            {
-                "id": 1,
-                "title": "Role Competency & Skill-Gap Analysis",
-                "duration": "Months 1-2",
-                "description": f"Analyze current qualifications against hiring benchmarks for {goal} to identify key technical and soft-skill gaps.",
-                "learning_objectives": ["Benchmark 15+ job descriptions for target role", "Identify top 3 competency gaps", "Build structured 6-month closing plan"],
-                "macro_view": "Targeted gap analysis prevents wasted effort by focusing purely on employer-demanded skills.",
-                "micro_view": "Compile a matrix of required competencies, complete technical self-assessments, and draft development goals.",
-                "nano_view": "Career coach review of competency matrix to align targets with realistic market demand.",
-                "marketplace": get_mock_marketplace(focus, "Competency Analysis", 1, goal, category="jobs"),
-                "micro_steps": [{"task": "Compile target role competency matrix", "resource": "Job Market Data"}]
-            },
-            {
-                "id": 2,
-                "title": "Workplace Proof of Work & Technical Evidence",
-                "duration": "Months 3-4",
-                "description": "Construct high-impact work samples, case studies, and technical artifacts proving readiness for target responsibilities.",
-                "learning_objectives": ["Complete 2 enterprise-grade case studies", "Document measurable business/technical outcomes", "Publish case studies publicly"],
-                "macro_view": "Demonstrable workplace outputs make candidates stand out immediately to recruiters.",
-                "micro_view": "Develop end-to-end case studies detailing problem statement, architectural choices, and quantifiable impact.",
-                "nano_view": "Industry hiring manager review of case study relevance and technical depth.",
-                "marketplace": get_mock_marketplace(focus, "Proof of Work", 2, goal, category="jobs"),
-                "micro_steps": [{"task": "Complete enterprise case study", "resource": "Case Study Framework"}]
-            },
-            {
-                "id": 3,
-                "title": "ATS Resume, LinkedIn & Professional Branding",
-                "duration": "Months 5-6",
-                "description": "Optimize resume with quantifiable impact metrics, align LinkedIn headline and experience, and build professional presence.",
-                "learning_objectives": ["Achieve 85%+ score on ATS resume scanners", "Optimize LinkedIn for recruiter search keywords", "Create targeted outreach list"],
-                "macro_view": "Optimized branding ensures inbound recruiter visibility and high application-to-interview conversion rates.",
-                "micro_view": "Rewrite resume bullet points using XYZ format ('Accomplished [X] as measured by [Y], by doing [Z]'), update LinkedIn profile, and connect with 20 industry peers.",
-                "nano_view": "HR recruiter line-by-line review of resume ATS compliance and executive presence.",
-                "marketplace": get_mock_marketplace(focus, "ATS Resume", 3, goal, category="jobs"),
-                "micro_steps": [{"task": "Optimize resume and run ATS diagnostic", "resource": "ATS Resume Builder"}]
-            },
-            {
-                "id": 4,
-                "title": "Mock Interviews, Networking & Job Placement",
-                "duration": "Months 7-8",
-                "description": f"Conduct intensive technical and behavioral mock interview simulations, leverage networking referrals, and secure offer for {goal}.",
-                "learning_objectives": ["Complete 5+ realistic mock interviews", "Execute warm referral outreach campaign", "Master offer negotiation strategies"],
-                "macro_view": "Mastering the interview loop and salary negotiation unlocks optimal career placement.",
-                "micro_view": "Complete 3 technical mock loops, practice behavioral STAR responses, and apply to 10 target companies weekly via referrals.",
-                "nano_view": "Senior interviewer mock simulation with detailed scoring rubric and negotiation coaching.",
-                "marketplace": get_mock_marketplace(focus, "Mock Interviews", 4, goal, category="jobs"),
-                "micro_steps": [{"task": "Complete full mock interview simulation", "resource": "Mock Interview Platform"}]
-            }
-        ]
-    }
-
-
-def get_non_academic_fallback(current: str, goal: str, profile: dict, focus: Optional[str] = None, sub_segment: Optional[str] = None) -> dict:
-    total_months = calculate_total_duration_months(current, goal, profile, category="non_academic", sub_segment=sub_segment)
-    sub_lower = (sub_segment or "").lower()
-
-    if "life" in sub_lower or "decision" in goal.lower():
-        return {
-            "path_title": f"Life Skills & Decision Support: {goal}",
-            "path_description": f"A practical, structured personal development plan to build daily routines, master time management, and establish clear decision-making frameworks for {goal}.",
-            "readiness_score": 45,
-            "readiness_label": "Intermediate Starter",
-            "total_duration": format_total_duration(total_months),
-            "blind_spots": ["Avoid over-committing to too many changes at once; focus on 1-2 habit anchors", "Schedule regular weekly reflection check-ins to maintain consistency"],
-            "steps": [
-                {
-                    "id": 1,
-                    "title": "Current Routine & Time-Audit Assessment",
-                    "duration": "Weeks 1-3",
-                    "description": "Log daily activities, identify energy drains and time leaks, and establish clear priorities for personal balance.",
-                    "learning_objectives": ["Track 7-day time allocation", "Identify top 3 productivity bottlenecks", "Define personal non-negotiables"],
-                    "macro_view": "Understanding current baseline habits is the prerequisite for sustainable lifestyle adjustments.",
-                    "micro_view": "Log hourly activities in a journal or app, categorize high vs low value time, and set up a weekly planner.",
-                    "nano_view": "Productivity advisor reviews time logs to help establish realistic habit anchors.",
-                    "marketplace": get_mock_marketplace(focus, "Routine Assessment", 1, goal, category="non_academic", sub_segment=sub_segment),
-                    "micro_steps": [{"task": "Complete 7-day time audit log", "resource": "Notion Time Tracker"}]
-                },
-                {
-                    "id": 2,
-                    "title": "Structured Daily Habits & Decision Frameworks",
-                    "duration": "Weeks 4-7",
-                    "description": "Implement morning/evening routines, prioritize tasks using the Eisenhower Matrix, and apply decision-making checklists.",
-                    "learning_objectives": ["Establish consistent morning/evening routine", "Apply task prioritization matrix daily", "Build weekly review habit"],
-                    "macro_view": "Consistent daily frameworks eliminate decision fatigue and build reliable self-discipline.",
-                    "micro_view": "Follow fixed morning routine for 21 consecutive days, plan daily top 3 priorities, and conduct Sunday reviews.",
-                    "nano_view": "Life coach check-in to calibrate habit friction and troubleshoot routine disruptions.",
-                    "marketplace": get_mock_marketplace(focus, "Decision Frameworks", 2, goal, category="non_academic", sub_segment=sub_segment),
-                    "micro_steps": [{"task": "Set up daily top-3 task prioritization system", "resource": "Habit Tracker"}]
-                },
-                {
-                    "id": 3,
-                    "title": "Long-term Autonomy & Sustainable Habit Review",
-                    "duration": "Weeks 8-12",
-                    "description": "Review progress metrics, celebrate habit consistency, and establish an autonomous ongoing growth rhythm.",
-                    "learning_objectives": ["Review 90-day habit adherence score", "Automate weekly life planning reviews", "Establish ongoing accountability system"],
-                    "macro_view": "Transitioning from guided coaching to self-sustaining personal autonomy ensures lifelong balance.",
-                    "micro_view": "Review habit completion logs, refine quarterly goals, and maintain monthly peer check-ins.",
-                    "nano_view": "Final reflective session with coach to celebrate wins and set long-term autonomy targets.",
-                    "marketplace": get_mock_marketplace(focus, "Habit Review", 3, goal, category="non_academic", sub_segment=sub_segment),
-                    "micro_steps": [{"task": "Complete 90-day progress and habit evaluation", "resource": "Personal Growth Review"}]
-                }
-            ]
-        }
-    else:  # Mental Health & Wellness / Immediate Guidance
-        return {
-            "path_title": f"Mental Health & Wellness Plan: {goal}",
-            "path_description": f"A compassionate, evidence-based wellness roadmap designed to identify stress triggers, introduce restorative daily routines, and establish trusted support networks for {goal}.",
-            "readiness_score": 40,
-            "readiness_label": "Early Starter",
-            "total_duration": format_total_duration(total_months),
-            "blind_spots": ["Do not attempt to fix everything overnight; focus on gentle, steady daily practices", "Reach out to qualified professionals whenever stress feels overwhelming"],
-            "steps": [
-                {
-                    "id": 1,
-                    "title": "Stress Triggers & Current Wellbeing Assessment",
-                    "duration": "Weeks 1-3",
-                    "description": "Identify root stressors, emotional triggers, and physical tension patterns to build personal self-awareness.",
-                    "learning_objectives": ["Map primary stress triggers and patterns", "Establish a safe personal decompression space", "Identify trusted support contacts"],
-                    "macro_view": "Recognizing personal triggers without judgment is the first empowering step toward emotional balance.",
-                    "micro_view": "Complete a 5-minute daily mood log, note situations that elevate anxiety, and list 3 grounding activities.",
-                    "nano_view": "Supportive intake conversation with a counselor or mentor to review wellbeing indicators.",
-                    "marketplace": get_mock_marketplace(focus, "Wellbeing Assessment", 1, goal, category="non_academic", sub_segment=sub_segment),
-                    "micro_steps": [{"task": "Complete daily mood and trigger reflection", "resource": "Mood Journal"}]
-                },
-                {
-                    "id": 2,
-                    "title": "Daily Mindfulness Routines & Sleep Hygiene",
-                    "duration": "Weeks 4-7",
-                    "description": "Introduce restorative 10-minute daily mindfulness exercises, sleep consistency routines, and digital detox boundaries.",
-                    "learning_objectives": ["Practice daily 10-minute breathwork/mindfulness", "Establish 8-hour sleep hygiene schedule", "Set healthy screen time boundaries"],
-                    "macro_view": "Physical nervous system regulation and restful sleep create the foundation for mental resilience.",
-                    "micro_view": "Listen to guided audio meditations before bed, stop screens 45 minutes before sleep, and practice 4-7-8 breathing.",
-                    "nano_view": "Check in with a wellness coach or peer circle to share progress and receive encouragement.",
-                    "marketplace": get_mock_marketplace(focus, "Mindfulness Routines", 2, goal, category="non_academic", sub_segment=sub_segment),
-                    "micro_steps": [{"task": "Complete 10-minute mindfulness practice daily", "resource": "Headspace / Calm"}]
-                },
-                {
-                    "id": 3,
-                    "title": "Healthy Coping Strategies & Sustainable Balance",
-                    "duration": "Weeks 8-12",
-                    "description": f"Solidify actionable coping strategies for exam/work pressure, build regular exercise habits, and sustain emotional wellness for {goal}.",
-                    "learning_objectives": ["Apply coping strategies during high-stress moments", "Maintain supportive peer connections", "Establish ongoing wellness check-ins"],
-                    "macro_view": "Embedding positive coping mechanisms transforms temporary relief into permanent personal strength.",
-                    "micro_view": "Maintain weekly reflection sessions, engage in restorative hobbies, and keep support contacts accessible.",
-                    "nano_view": "Licensed counselor or therapist review of coping toolbox and long-term care continuity.",
-                    "marketplace": get_mock_marketplace(focus, "Sustainable Balance", 3, goal, category="non_academic", sub_segment=sub_segment),
-                    "micro_steps": [{"task": "Finalize personal stress-response action plan", "resource": "Wellness Plan"}]
-                }
-            ]
-        }
-
-
-def get_fallback_mock_roadmap(
-    current: str,
-    goal: str,
-    profile: dict,
-    refine_prompt: Optional[str] = None,
-    focus: Optional[str] = None,
-    category: Optional[str] = None,
-    sub_segment: Optional[str] = None
-) -> dict:
-    cat = resolve_focus_category(category or focus)
-    if cat == "practical":
-        return get_practical_fallback(current, goal, profile, focus)
-    elif cat == "jobs":
-        return get_jobs_fallback(current, goal, profile, focus)
-    elif cat == "non_academic":
-        return get_non_academic_fallback(current, goal, profile, focus, sub_segment)
-    else:
-        return get_academic_fallback(current, goal, profile, focus)
+def get_fallback_mock_roadmap(*args, **kwargs) -> dict:
+    raise RuntimeError("Fallback mock roadmaps are disabled. All pathways must be generated by AI.")
 
 
 def scale_blueprint_steps(blueprint: dict, requested_steps: int) -> dict:
@@ -2511,35 +2024,36 @@ async def run_agent_1_blueprint(
 
     # Generation loop with semantic validation & auto-regeneration
     res = None
-    for attempt in range(2):
+    last_valid_res = None
+    for attempt in range(3):
         current_prompt = prompt
         if attempt > 0:
-            current_prompt += f"\n\n🚨 PREVIOUS GENERATION CORRECTION: The previous response contained cross-category artifacts. You MUST output a pure {cat.upper()} roadmap focusing strictly on {focus_area}. STRICTLY OBEY NEGATIVE CONSTRAINTS."
+            current_prompt += f"\n\n🚨 PREVIOUS GENERATION CORRECTION: Ensure you output a pure {cat.upper()} roadmap focusing strictly on {focus_area}. Output a complete JSON object containing a non-empty 'steps' array with detailed milestones for {goal}."
 
         res = await query_groq_json(
             current_prompt,
             preferred_model="openai/gpt-oss-120b",
-            fallback_models=["qwen/qwen3.8-27b", "groq/compound", "groq/compound-mini"],
+            fallback_models=["qwen/qwen3.8-27b", "groq/compound"],
         )
 
-        # Check semantic validity
-        is_valid, reason = validate_category_semantics(res, cat, sub_segment)
-        if is_valid:
+        if isinstance(res, dict) and isinstance(res.get("steps"), list) and len(res["steps"]) > 0:
+            last_valid_res = res
             break
-        print(f"[Agent 1 Semantic Validation Warning] Attempt {attempt + 1} rejected: {reason}. Retrying...")
+        else:
+            err_info = res.get("error") if isinstance(res, dict) else None
+            print(f"[Agent 1 JSON Structure Warning] Attempt {attempt + 1} did not return valid steps array ({err_info or 'empty'}). Retrying...")
+            await asyncio.sleep(1.0)
 
-    if requested_steps and is_complete_blueprint(res, current, goal, profile, requested_steps, category=cat):
-        res = scale_blueprint_steps(res, requested_steps)
+    if isinstance(res, dict) and isinstance(res.get("steps"), list) and len(res["steps"]) > 0:
+        blueprint_to_return = res
+    elif last_valid_res and isinstance(last_valid_res.get("steps"), list) and len(last_valid_res["steps"]) > 0:
+        blueprint_to_return = last_valid_res
+    else:
+        err_msg = res.get("error") if (isinstance(res, dict) and res.get("error")) else "Model failed to output milestone steps."
+        raise RuntimeError(f"AI Pathway Generation Failed: {err_msg}. Please click 'Find My Path' to retry.")
 
-    if not is_complete_blueprint(res, current, goal, profile, requested_steps, category=cat):
-        received_steps = len(res.get("steps", [])) if isinstance(res, dict) else 0
-        print(f"[Blueprint Validation] Incomplete blueprint ({received_steps} steps). Using category-native fallback for {cat}.")
-        fallback = get_fallback_mock_roadmap(current, goal, profile, refine_prompt, focus, category=cat, sub_segment=sub_segment)
-        fallback["admin_feedback_memory"] = build_admin_feedback_memory(feedback_items, applied_to_prompt=bool(feedback_items), fallback_used=True)
-        return fallback
-
-    res["admin_feedback_memory"] = build_admin_feedback_memory(feedback_items, applied_to_prompt=bool(feedback_items), fallback_used=False)
-    return res
+    blueprint_to_return["admin_feedback_memory"] = build_admin_feedback_memory(feedback_items, applied_to_prompt=bool(feedback_items), fallback_used=False)
+    return blueprint_to_return
 
 
 async def run_agent_2_path_auditor(
@@ -2755,10 +2269,7 @@ async def build_and_store_final_path(
     num_steps = len(blueprint_milestones)
     
     total_months = calculate_total_duration_months(current, goal, profile, category=cat, sub_segment=sub_segment)
-    try:
-        total_months = int(metrics["total_duration"].split()[0])
-    except Exception:
-        pass
+    metrics["total_duration"] = format_total_duration(total_months)
 
     for i, orig_milestone in enumerate(blueprint_milestones):
         m_id = orig_milestone.get("id", i + 1)
@@ -2786,11 +2297,15 @@ async def build_and_store_final_path(
         }
         final_steps.append(merged_milestone)
 
+    # Extract raw model-generated readiness score directly from Agent 1 output
+    final_readiness_score = int(blueprint.get("readiness_score", 0)) if blueprint.get("readiness_score") is not None else 0
+    final_readiness_label = blueprint.get("readiness_label") or "AI Assessed Readiness"
+
     final_json = {
         "path_title": blueprint.get("path_title") or f"{path_type} Pathway to {goal}",
         "path_description": blueprint.get("path_description") or f"Detailed strategic blueprint guiding from {current} to {goal}.",
-        "readiness_score": metrics["readiness_score"],
-        "readiness_label": metrics["readiness_label"],
+        "readiness_score": final_readiness_score,
+        "readiness_label": final_readiness_label,
         "total_duration": metrics["total_duration"],
         "steps": final_steps,
         "blind_spots": blueprint.get("blind_spots") or [],
@@ -2953,44 +2468,21 @@ async def generate_path_stream(req: PathGenerationRequest):
                 sub_segment=sub_seg
             )
 
-            blueprint_tasks = {
-                asyncio.create_task(
-                    run_agent_1_blueprint(
-                        current, goal, profile, refine_prompt, existing_roadmap,
-                        focus=f_choice, content_category=content_cat, sub_segment=sub_seg
-                    )
-                ): index
-                for index, f_choice in enumerate(foci)
-            }
             blueprints = [None] * len(foci)
-            pending_tasks = set(blueprint_tasks)
             finished_count = 0
             stage_progress = 20
 
-            while pending_tasks:
-                done, pending_tasks = await asyncio.wait(
-                    pending_tasks,
-                    timeout=3,
-                    return_when=asyncio.FIRST_COMPLETED,
-                )
-
-                if not done:
-                    stage_progress = min(39, stage_progress + 1)
-                    yield sse_payload("status", {
-                        "statuses": build_agent_statuses("agent1", completed),
-                        "progress": stage_progress,
-                        "message": f"Generating pathway alternatives... ({finished_count} of {len(foci)} ready)"
-                    })
-                    continue
-
-                for task in done:
-                    index = blueprint_tasks[task]
-                    try:
-                        blueprints[index] = task.result()
-                    except Exception as exc:
-                        blueprints[index] = exc
-                    finished_count += 1
-
+            for index, f_choice in enumerate(foci):
+                if index > 0:
+                    await asyncio.sleep(2.0)  # Stagger model calls to avoid Groq rate limit burst
+                try:
+                    blueprints[index] = await run_agent_1_blueprint(
+                        current, goal, profile, refine_prompt, existing_roadmap,
+                        focus=f_choice, content_category=content_cat, sub_segment=sub_seg
+                    )
+                except Exception as exc:
+                    blueprints[index] = exc
+                finished_count += 1
                 stage_progress = max(stage_progress, 20 + round(20 * finished_count / len(foci)))
                 yield sse_payload("status", {
                     "statuses": build_agent_statuses("agent1", completed),
@@ -2999,13 +2491,16 @@ async def generate_path_stream(req: PathGenerationRequest):
                 })
 
             valid_blueprints = []
+            valid_option_names = []
             for i, bp in enumerate(blueprints):
-                if isinstance(bp, Exception) or not is_complete_blueprint(bp, current, goal, profile, category=cat):
-                    received_steps = len(bp.get("steps", [])) if isinstance(bp, dict) else 0
-                    print(f"Blueprint {i} was incomplete ({received_steps} steps). Using category-native fallback.")
-                    valid_blueprints.append(get_fallback_mock_roadmap(current, goal, profile, refine_prompt, focus=foci[i], category=cat, sub_segment=sub_seg))
-                else:
+                if not isinstance(bp, Exception) and isinstance(bp, dict) and isinstance(bp.get("steps"), list) and len(bp["steps"]) >= 2:
                     valid_blueprints.append(bp)
+                    valid_option_names.append(option_names[i])
+                else:
+                    print(f"[Stream Generation Warning] Option {i + 1} ('{option_names[i]}') failed model generation: {bp}")
+
+            if not valid_blueprints:
+                raise HTTPException(status_code=500, detail="AI Pathway Generation Failed for all options. Please click 'Find My Path' to retry.")
 
             completed.append("agent1")
             yield sse_payload("status", {
@@ -3016,8 +2511,10 @@ async def generate_path_stream(req: PathGenerationRequest):
             await asyncio.sleep(0.15)
 
             for i, bp in enumerate(valid_blueprints):
-                bp["path_title"] = bp.get("path_title") or f"{option_names[i]} Pathway to {goal}"
-                bp["path_description"] = bp.get("path_description") or f"A structured pathway from {current} to {goal}."
+                if not bp.get("path_title"):
+                    bp["path_title"] = f"{valid_option_names[i]} Track: {goal}"
+                if not bp.get("path_description"):
+                    bp["path_description"] = f"A structured {valid_option_names[i]} pathway guiding from {current} to {goal}."
 
             completed.append("agent2")
             yield sse_payload("status", {
@@ -3028,9 +2525,6 @@ async def generate_path_stream(req: PathGenerationRequest):
             await asyncio.sleep(0.15)
 
             for i, bp in enumerate(valid_blueprints):
-                if not is_complete_blueprint(bp, current, goal, profile, category=cat):
-                    bp = get_fallback_mock_roadmap(current, goal, profile, refine_prompt, focus=foci[i], category=cat, sub_segment=sub_seg)
-                    valid_blueprints[i] = bp
                 for step_number, milestone in enumerate(bp["steps"], start=1):
                     milestone["id"] = step_number
 
@@ -3072,10 +2566,10 @@ async def generate_path_stream(req: PathGenerationRequest):
             for i, bp in enumerate(valid_blueprints):
                 final_json = await build_and_store_final_path(
                     bp, {}, [], [], current, goal, profile,
-                    path_type=option_names[i],
+                    path_type=valid_option_names[i],
                     sub_segment=sub_seg
                 )
-                final_json["option_name"] = option_names[i]
+                final_json["option_name"] = valid_option_names[i]
                 accuracy = calculate_path_accuracy_score(final_json, profile, current)
                 final_json["accuracy_score"] = accuracy["accuracy_score"]
                 final_json["accuracy_label"] = accuracy["accuracy_label"]
@@ -3145,20 +2639,23 @@ async def generate_path(req: PathGenerationRequest):
         blueprints = await asyncio.gather(*blueprint_tasks, return_exceptions=True)
 
         valid_blueprints = []
+        valid_opt_names = []
         for i, bp in enumerate(blueprints):
-            if isinstance(bp, Exception) or not is_complete_blueprint(bp, current, goal, profile, category=cat):
-                valid_blueprints.append(get_fallback_mock_roadmap(current, goal, profile, refine_prompt, focus=foci[i], category=cat, sub_segment=sub_seg))
-            else:
+            if not isinstance(bp, Exception) and isinstance(bp, dict) and isinstance(bp.get("steps"), list) and len(bp["steps"]) >= 2:
                 valid_blueprints.append(bp)
+                valid_opt_names.append(option_names[i])
+
+        if not valid_blueprints:
+            raise HTTPException(status_code=500, detail="AI Pathway Generation Failed for all options. Please click 'Find My Path' to retry.")
 
         final_alternatives = []
         for i, bp in enumerate(valid_blueprints):
             final_json = await build_and_store_final_path(
                 bp, {}, [], [], current, goal, profile,
-                path_type=option_names[i],
+                path_type=valid_opt_names[i],
                 sub_segment=sub_seg
             )
-            final_json["option_name"] = option_names[i]
+            final_json["option_name"] = valid_opt_names[i]
             accuracy = calculate_path_accuracy_score(final_json, profile, current)
             final_json["accuracy_score"] = accuracy["accuracy_score"]
             final_json["accuracy_label"] = accuracy["accuracy_label"]

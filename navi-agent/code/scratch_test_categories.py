@@ -99,20 +99,12 @@ assert not is_valid, "Failed to catch category leakage!"
 print(f"[OK] Correctly caught category leakage: '{violation}'")
 
 print("\n" + "=" * 60)
-print("TEST 5: Category-Aware Step Narrative Enrichment")
+print("TEST 5: Pure Model Pass-Through Narrative Check")
 print("=" * 60)
-raw_step = {"id": 1, "title": "Foundation", "duration": "Month 1"}
-enriched_mh = enrich_step_narrative(dict(raw_step), "Exam stress", "Manage stress", "non_academic")
-assert "wellness" in enriched_mh["description"].lower() or "support" in enriched_mh["description"].lower()
-assert "transcript" not in enriched_mh["macro_view"].lower()
-
-enriched_prac = enrich_step_narrative(dict(raw_step), "Beginner Python", "Python Portfolio", "practical")
-assert "code" in enriched_prac["description"].lower() or "skill" in enriched_prac["description"].lower()
-
-enriched_job = enrich_step_narrative(dict(raw_step), "Junior Dev", "Senior Dev", "jobs")
-assert "workplace" in enriched_job["description"].lower() or "role" in enriched_job["description"].lower()
-
-print("[OK] Narrative enrichment is strictly category-isolated!")
+raw_step = {"id": 1, "title": "Foundation", "duration": "Month 1", "description": "Custom LLM text"}
+enriched = enrich_step_narrative(dict(raw_step), "Exam stress", "Manage stress", "non_academic")
+assert enriched["description"] == "Custom LLM text"
+print("[OK] Pure model pass-through verified!")
 
 print("\n" + "=" * 60)
 print("TEST 6: Category-Specific Prompt Builders")

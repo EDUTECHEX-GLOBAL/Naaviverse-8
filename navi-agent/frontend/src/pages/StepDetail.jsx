@@ -17,7 +17,16 @@ const VIEWS = [
 ];
 
 function richText(value, fallback) {
-  return value || fallback || "This step needs focused execution. Clarify the expected outcome, identify the skills required, and complete a small proof of work before moving forward. Use feedback from peers, mentors, or real users to check whether the work is strong enough for the next stage.";
+  let target = value || fallback;
+  if (target && typeof target === "object") {
+    if (typeof target.description === "string") target = target.description;
+    else if (typeof target.text === "string") target = target.text;
+    else if (typeof target.content === "string") target = target.content;
+    else target = JSON.stringify(target);
+  }
+  return typeof target === "string" && target.trim()
+    ? target
+    : "This step needs focused execution. Clarify the expected outcome, identify the skills required, and complete a small proof of work before moving forward. Use feedback from peers, mentors, or real users to check whether the work is strong enough for the next stage.";
 }
 
 export default function StepDetail({ step, initialView = "macro", onViewClick }) {
@@ -64,8 +73,13 @@ export default function StepDetail({ step, initialView = "macro", onViewClick })
               <p className="sd-view-desc">{view.desc}</p>
             </div>
             <div className="step-reading-card card">
-              <div className="macro-ov-title">What this phase means</div>
-              <p className="macro-ov-body">{richText(step.macro_view?.description || step.macro_view, step.description)}</p>
+              <div className="macro-ov-title">What this phase means (Macro Vision)</div>
+              <p className="macro-ov-body">
+                {richText(
+                  step.macro_view?.description || step.macro_view,
+                  `${step.title} is a vital milestone. During ${step.duration}, this phase establishes foundational subject mastery and strategic alignment necessary for reaching ${step.description || 'your target goal'}.`
+                )}
+              </p>
             </div>
           </div>
         )}
@@ -77,9 +91,12 @@ export default function StepDetail({ step, initialView = "macro", onViewClick })
               <p className="sd-view-desc">{view.desc}</p>
             </div>
             <div className="step-reading-card card step-reading-card--micro">
-              <div className="macro-ov-title">How to execute this step</div>
+              <div className="macro-ov-title">How to execute this step (Micro Roadmap)</div>
               <p className="macro-ov-body">
-                {richText(step.micro_view?.description || step.micro_view || step.detailed_description || step.details || step.content, step.description)}
+                {richText(
+                  step.micro_view?.description || step.micro_view || step.detailed_description || step.details || step.content,
+                  `Detailed weekly execution for ${step.title}: Allocate 5-8 hours weekly to practice problem sets, review core syllabus topics, complete diagnostic exercises, and maintain a structured progress log.`
+                )}
               </p>
             </div>
           </div>
@@ -92,9 +109,12 @@ export default function StepDetail({ step, initialView = "macro", onViewClick })
               <p className="sd-view-desc">{view.desc}</p>
             </div>
             <div className="step-reading-card card step-reading-card--nano">
-              <div className="macro-ov-title">Personalized guidance focus</div>
+              <div className="macro-ov-title">Personalized guidance focus (Nano Audit)</div>
               <p className="macro-ov-body">
-                {richText(step.nano_view?.description || step.nano_view, `Use expert support to review your work for ${step.title}. A mentor should help you identify weak assumptions, convert the step into a concrete deliverable, and decide what evidence proves readiness. Bring your current work, questions, and target outcome so the session produces specific next actions.`)}
+                {richText(
+                  step.nano_view?.description || step.nano_view,
+                  `1-on-1 Mentor Focus for ${step.title}: Schedule diagnostic review sessions with subject advisors or counselors to audit weak topics, verify concept mastery, and receive personalized feedback.`
+                )}
               </p>
             </div>
             <div className="nano-options">

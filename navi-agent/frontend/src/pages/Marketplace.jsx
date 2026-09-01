@@ -11,10 +11,10 @@ import {
 const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:8001" : "");
 
 const CATEGORIES = [
-  { key: "mentors",      label: "Mentors",      Icon: IconUser,     tag: "pill-coral" },
-  { key: "vendors",      label: "Vendors",      Icon: IconPackage,  tag: "pill-teal" },
+  { key: "mentors", label: "Mentors", Icon: IconUser, tag: "pill-coral" },
+  { key: "vendors", label: "Vendors", Icon: IconPackage, tag: "pill-teal" },
   { key: "institutions", label: "Institutions", Icon: IconBuilding, tag: "pill-blue" },
-  { key: "distributors", label: "Distributors", Icon: IconUsers,    tag: "pill-lavender" },
+  { key: "distributors", label: "Distributors", Icon: IconUsers, tag: "pill-lavender" },
 ];
 
 // view: "macro" = free only, "micro"/"nano" = paid options shown
@@ -150,9 +150,9 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
 
   const items = useMemo(() => {
     const matchedDynamic = [];
-    
+
     const rawItems = getViewMarketplaceItems(step, activeView, currentCategory);
-    
+
     rawItems.forEach((item, sourceIndex) => {
       const price = item.discount || item.cost || item.price || (activeView === "macro" ? "Free" : "Varies");
       matchedDynamic.push({
@@ -169,9 +169,9 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
         isRecommended: true,
       });
     });
-    
+
     const combined = matchedDynamic;
-    
+
     // Apply search filter
     return combined.filter(item => {
       if (!search.trim()) return true;
@@ -230,7 +230,7 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
   const { recommendedItems, standardItems } = useMemo(() => {
     const recommended = [];
     const standard = [];
-    
+
     items.forEach(item => {
       if (item.isRecommended) {
         recommended.push(item);
@@ -238,7 +238,7 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
         standard.push(item);
       }
     });
-    
+
     return { recommendedItems: recommended, standardItems: standard };
   }, [items]);
 
@@ -259,20 +259,20 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
       <div className="mp-view-tabs">
         {[
           { key: "macro", label: "Free resources", desc: "No cost options" },
-          { key: "micro", label: "Structured",     desc: "Paid courses & tools" },
-          { key: "nano",  label: "Expert 1:1",     desc: "Mentors & coaching" },
+          { key: "micro", label: "Structured", desc: "Paid courses & tools" },
+          { key: "nano", label: "Expert 1:1", desc: "Mentors & coaching" },
         ]
-        .filter(v => !view || v.key === view)
-        .map(v => (
-          <button
-            key={v.key}
-            className={`mp-view-btn ${activeView === v.key ? "mp-view-btn--active" : ""}`}
-            onClick={() => handleViewChange(v.key)}
-          >
-            <span className="mp-view-label">{v.label}</span>
-            <span className="mp-view-desc">{v.desc}</span>
-          </button>
-        ))}
+          .filter(v => !view || v.key === view)
+          .map(v => (
+            <button
+              key={v.key}
+              className={`mp-view-btn ${activeView === v.key ? "mp-view-btn--active" : ""}`}
+              onClick={() => handleViewChange(v.key)}
+            >
+              <span className="mp-view-label">{v.label}</span>
+              <span className="mp-view-desc">{v.desc}</span>
+            </button>
+          ))}
       </div>
 
       {/* Category tabs */}
@@ -324,7 +324,7 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
               return (
                 <div key={i} className="mp-card card card-clickable mp-card--recommended">
                   <div className="mp-recommended-badge">✨ AI Recommended</div>
-                  
+
                   <div className="mp-card-top">
                     <div className="mp-avatar">{item.avatar}</div>
                     <div className="mp-card-info">
@@ -335,7 +335,7 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
 
                   <div className="mp-card-tags">
                     {item.tags.map((t, j) => (
-                      <span key={j} className={`pill ${["pill-teal","pill-blue","pill-lavender"][j % 3]}`}>{t}</span>
+                      <span key={j} className={`pill ${["pill-teal", "pill-blue", "pill-lavender"][j % 3]}`}>{t}</span>
                     ))}
                   </div>
 
@@ -353,7 +353,7 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
                       </div>
                     )}
                   </div>
-     
+
                   <div className="mp-card-bottom">
                     <div className="mp-card-rating">
                       <IconStar size={13} fill="var(--amber)" color="var(--amber)" />
@@ -365,7 +365,7 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
                       <span className={`mp-card-price ${isFree ? "mp-price-free" : ""}`}>{price}</span>
                     </div>
                   </div>
-     
+
                   <button className="btn-primary mp-connect-btn">
                     {getCtaLabel(currentCategory, activeView)}
                   </button>
@@ -407,10 +407,10 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
 
                   <div className="mp-card-tags">
                     {item.tags.map((t, j) => (
-                      <span key={j} className={`pill ${["pill-teal","pill-blue","pill-lavender"][j % 3]}`}>{t}</span>
+                      <span key={j} className={`pill ${["pill-teal", "pill-blue", "pill-lavender"][j % 3]}`}>{t}</span>
                     ))}
                   </div>
-     
+
                   <div className="mp-card-bottom">
                     <div className="mp-card-rating">
                       <IconStar size={13} fill="var(--amber)" color="var(--amber)" />
@@ -422,7 +422,7 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
                       <span className={`mp-card-price ${isFree ? "mp-price-free" : ""}`}>{price}</span>
                     </div>
                   </div>
-     
+
                   <button className="btn-primary mp-connect-btn">
                     {getCtaLabel(currentCategory, activeView)}
                   </button>

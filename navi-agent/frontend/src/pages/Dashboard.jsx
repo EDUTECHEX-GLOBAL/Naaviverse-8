@@ -74,10 +74,10 @@ const CONTENT_SEGMENTS = [
 ];
 
 const CATEGORY_TABS = {
-  academic: ["Research & Honors Focus", "Test Prep & Admissions Focus", "Curriculum & GPA Focus"],
-  practical: ["Project Portfolio Focus", "Certification & Bootcamp Focus", "Internship & Applied Focus"],
-  jobs: ["Technical Role Prep Focus", "Interview & Networking Focus", "Resume & Career Evidence Focus"],
-  non_academic: ["Mental Health & Wellness Focus", "Life Skills & Decision Focus", "Immediate Action & Support Focus"]
+  academic: ["Research & Honors Focus", "Test Prep & Admissions Focus"],
+  practical: ["Project Portfolio Focus", "Certification & Bootcamp Focus"],
+  jobs: ["Technical Role Prep Focus", "Interview & Networking Focus"],
+  non_academic: ["Mental Health & Wellness Focus", "Life Skills & Decision Focus"]
 };
 
 function getProfileValue(profile, key) {
@@ -116,7 +116,8 @@ function analyzeGoalParts(goalText) {
   const universityKeywords = [
     "university", "college", "uni", "institute", "school", "tech", "iit",
     "mit", "yale", "stanford", "harvard", "oxford", "cambridge", "princeton",
-    "columbia", "cornell", "caltech", "berkeley", "ucla", "nyu", "hec", "bits"
+    "columbia", "cornell", "caltech", "berkeley", "ucla", "nyu", "hec", "bits",
+    "academy", "defence", "defense", "military", "naval", "navy", "army", "nda", "ima", "usna", "usma"
   ];
 
   const isCountry = (str) => {
@@ -157,9 +158,14 @@ function analyzeGoalParts(goalText) {
     unassigned.splice(degreeIdx, 1);
   }
 
-  // 4. Remaining goes to program
+  // 4. Remaining goes to program or institution
   if (unassigned.length > 0) {
-    program = unassigned.join(" ");
+    if (!university && unassigned.length > 1) {
+      program = unassigned[0];
+      university = unassigned.slice(1).join(" ");
+    } else {
+      program = unassigned.join(" ");
+    }
   }
 
   const missing = [];
