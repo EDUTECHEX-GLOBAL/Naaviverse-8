@@ -6,7 +6,7 @@ import datetime
 import time
 import certifi
 from typing import Optional, List, Dict, Any
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -27,8 +27,48 @@ app.add_middleware(
     allow_headers=["*"],
 )
  
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-async_client = AsyncGroq(api_key=os.environ.get("GROQ_API_KEY"))
+# ─── MULTI-KEY GROQ POOL (LOAD BALANCING & HIGH ACCURACY FAILOVER) ──────────
+def load_groq_api_keys() -> List[str]:
+    keys = []
+    # 1. Numbered without underscore: GROQ_API_KEY1, GROQ_API_KEY2, ...
+    for i in range(1, 10):
+        k = os.environ.get(f"GROQ_API_KEY{i}", "").strip()
+        if k and k not in keys:
+            keys.append(k)
+    # 2. Numbered with underscore: GROQ_API_KEY_1, GROQ_API_KEY_2, ...
+    for i in range(1, 10):
+        k = os.environ.get(f"GROQ_API_KEY_{i}", "").strip()
+        if k and k not in keys:
+            keys.append(k)
+    # 3. Comma-separated: GROQ_API_KEYS
+    raw_list = os.environ.get("GROQ_API_KEYS", "")
+    if raw_list:
+        for k in raw_list.split(","):
+            k = k.strip()
+            if k and k not in keys:
+                keys.append(k)
+    # 4. Standard single key: GROQ_API_KEY
+    default_k = os.environ.get("GROQ_API_KEY", "").strip()
+    if default_k and default_k not in keys:
+        keys.append(default_k)
+    return keys
+
+GROQ_KEYS = load_groq_api_keys()
+if not GROQ_KEYS:
+    raise ValueError("No Groq API keys found in environment. Please set GROQ_API_KEY1 / GROQ_API_KEY2.")
+
+print(f"[Groq Key Pool] Initialized {len(GROQ_KEYS)} API key(s) for parallel load balancing and auto-failover.")
+
+# Map keys to AsyncGroq and Groq clients
+GROQ_ASYNC_CLIENTS = [AsyncGroq(api_key=k) for k in GROQ_KEYS]
+GROQ_SYNC_CLIENTS = [Groq(api_key=k) for k in GROQ_KEYS]
+
+# Expose primary clients for backwards compatibility
+client = GROQ_SYNC_CLIENTS[0]
+async_client = GROQ_ASYNC_CLIENTS[0]
+
+# Global round-robin cursor for distributing requests across keys
+_groq_key_cursor = 0
 
 # MongoDB Setup
 MONGODB_URI = os.environ.get("MONGODB_URI")
@@ -329,6 +369,80 @@ async def enrich_path_profile(doc):
 
 # ─── AGENT PROMPT BUILDERS (CATEGORY ISOLATION ENGINE) ──────────────────────
 
+def format_student_signals_context(profile: dict) -> str:
+    """Extracts and formats student signals including Financial Status, Location, Personality, and Domain Context."""
+    if not isinstance(profile, dict) or not profile:
+        return "STUDENT SIGNALS: No specific profile signals provided. Use balanced default pricing and pacing."
+
+    personality_geo = profile.get("personalityGeography") or {}
+    academics = profile.get("academics") or {}
+    skills = profile.get("practicalSkills") or {}
+    jobs = profile.get("jobsCareers") or {}
+    counselling = profile.get("nonAcademicCounselling") or {}
+
+    # 1. Financial Status
+    fin_status = (
+        personality_geo.get("financialSituation") or 
+        profile.get("financialSituation") or 
+        profile.get("financial_situation") or 
+        "Moderate"
+    ).strip()
+
+    fin_lower = fin_status.lower()
+    if any(term in fin_lower for term in ["high", "affluent", "premium", "wealthy", "upper"]):
+        market_guidance = (
+            "FINANCIAL CAPACITY: HIGH / AFFLUENT. The student has the capacity to invest in high-end, premium marketplace resources. "
+            "Prioritize top-tier 1-on-1 private mentors, executive coaches, paid university certifications, elite bootcamps, and premium expert sessions ($150 - $1,500+) "
+            "across micro and nano tiers, while maintaining high-quality macro resources."
+        )
+    elif any(term in fin_lower for term in ["low", "need", "budget", "constrained", "struggling", "minimal"]):
+        market_guidance = (
+            "FINANCIAL CAPACITY: BUDGET-CONSCIOUS / NEED-BASED. The student has financial constraints. "
+            "Prioritize high-value free resources, community mentorship, scholarship pathways, open-source cohorts, "
+            "and low-cost tools ($0 - $49) across all marketplace recommendations."
+        )
+    else:
+        market_guidance = (
+            f"FINANCIAL CAPACITY: {fin_status.upper()}. Provide a balanced blend of free foundations (macro_free), "
+            f"moderate accessible courses/books ($30-$150 in micro_structured), and selective 1-on-1 expert advisory."
+        )
+
+    # 2. Location
+    country = (personality_geo.get("country") or profile.get("country") or "").strip()
+    state = (personality_geo.get("state") or profile.get("state") or "").strip()
+    city = (personality_geo.get("city") or profile.get("city") or "").strip()
+    loc_parts = [p for p in [city, state, country] if p]
+    location_str = ", ".join(loc_parts) if loc_parts else "Not Specified"
+
+    # 3. Personality & Learning Style
+    personality_signal = (
+        personality_geo.get("personalitySignal") or 
+        profile.get("personality") or 
+        profile.get("personality_signal") or 
+        "Self-directed Learner"
+    ).strip()
+
+    signals_lines = [
+        "=== STUDENT SIGNALS & PERSONALIZATION ENGINE ===",
+        f"- Location / Region: {location_str} (Consider regional institutions, timezone convenience, and local job/academic markets)",
+        f"- Financial Status: {fin_status}",
+        f"  👉 MARKETPLACE PRICING DIRECTIVE: {market_guidance}",
+        f"- Personality & Study Habit: {personality_signal} (Adapt milestone pacing, study rhythm, and micro-step checklists to this personality style)"
+    ]
+
+    # 4. Domain Context
+    if academics.get("gradeLevel") or academics.get("curriculum"):
+        signals_lines.append(f"- Academic Baseline: Grade {academics.get('gradeLevel', 'N/A')}, Curriculum: {academics.get('curriculum', 'N/A')}, Stream: {academics.get('academicStream', 'N/A')}, Performance: {academics.get('currentPerformance', 'N/A')}")
+    if skills.get("skillLevel") or skills.get("learningMode"):
+        signals_lines.append(f"- Practical Skill Baseline: Level: {skills.get('skillLevel', 'Developing')}, Mode: {skills.get('learningMode', 'Hands-on')}, Target Skill: {skills.get('targetSkill', 'Technical')}")
+    if jobs.get("currentRole") or jobs.get("yearsOfExperience"):
+        signals_lines.append(f"- Career Baseline: Role: {jobs.get('currentRole', 'N/A')}, Experience: {jobs.get('yearsOfExperience', '0')} yrs, Industry: {jobs.get('industry', 'N/A')}")
+    if counselling.get("concernArea") or counselling.get("currentChallenge"):
+        signals_lines.append(f"- Wellbeing Baseline: Focus: {counselling.get('concernArea', 'Personal Development')}, Challenge: {counselling.get('currentChallenge', 'Balance & clarity')}, Support: {counselling.get('supportTypeNeeded', 'Guidance')}")
+
+    return "\n".join(signals_lines)
+
+
 def build_agent_1_prompt(
     category: str,
     sub_segment: Optional[str],
@@ -346,6 +460,7 @@ def build_agent_1_prompt(
     cat = resolve_focus_category(category or focus)
     sub_seg = (sub_segment or "").strip()
     profile_json = json.dumps(profile or {})
+    signals_context = format_student_signals_context(profile)
     degree_val = degree_type or "Not required"
 
     if cat == "academic":
@@ -353,18 +468,18 @@ def build_agent_1_prompt(
 Definition: Formal education, academic progression, university admissions, curriculum mastery, or academic research development.
 - Educational context: Grade/level ({current_position}), curriculum (CBSE, IB, Cambridge, etc.), subjects, prerequisites, target degree, target university, country, test prep (SAT/ACT/IELTS/GRE where relevant), academic projects, research.
 - Progression: Academic foundation & subject selection -> prerequisite preparation -> academic performance improvement -> research development -> test preparation -> profile development -> university research & application dossiers.
-- Dynamic timeline: Calculate timeline based on educational progression from current stage to target admission.
-- Dynamic readiness score: Score (0-100) based on GPA/academic performance relative to target institution selectivity.
-- Dynamic step count: Determine genuinely required stages (e.g. 5 to 10 milestones).
+- Dynamic timeline: Calculate timeline autonomously based entirely on the specific distance between current position and target destination. No fixed or preset timeline.
+- Dynamic readiness score: Score (0-100) based on academic performance relative to target institution selectivity.
+- Dynamic step count: Autonomously determine the exact number of milestones needed to reach the goal. NO pre-planned, fixed, or bracketed step count.
 """
     elif cat == "practical":
         category_rules = f"""=== PRIMARY CATEGORY CONSTRAINTS: PRACTICAL & SKILLS ===
 Definition: Learning, developing, applying, and demonstrating a practical skill. Skill acquisition and proof of ability (e.g., Python proficiency, Web Dev, Data Analysis, CAD, UI/UX).
 - Progression: Core concept foundation -> guided practice & problem solving -> hands-on project building -> advanced application -> portfolio curation (GitHub / live demos) -> skill validation & code review.
 - Focus: Hands-on deliverables, repositories, project architecture, and proof of work.
-- Dynamic timeline: Typically 3 to 12 months based on beginner vs advanced skill gap.
+- Dynamic timeline: Calculate timeline autonomously based entirely on the skill gap between current position and target mastery. No fixed or preset timeline.
 - Dynamic readiness score: Score (0-100) based on current familiarity vs target skill mastery.
-- Dynamic step count: Determine genuinely necessary skill progression stages (typically 4 to 6 milestones).
+- Dynamic step count: Autonomously determine the exact number of milestones needed to bridge the skill gap. NO pre-planned, fixed, or bracketed step count.
 
 🚨 STRICT NEGATIVE CONSTRAINTS (FORBIDDEN IN THIS CATEGORY):
 - DO NOT generate school selection, GPA targets, Grade 10/11/12 board exams, CBSE/IB curricula, SAT/ACT test prep, university applications, or college admissions dossiers unless the user's specific target goal explicitly demands a degree.
@@ -375,9 +490,9 @@ Definition: Learning, developing, applying, and demonstrating a practical skill.
 Definition: Entering, changing, progressing, or advancing in a profession or job role (e.g., Junior to Senior Engineer, Career Switcher to Cloud Engineer, Student to Product Manager).
 - Progression: Role gap analysis & competency assessment -> skill gap development -> experience building & proof of work -> ATS-optimized resume & professional branding (LinkedIn/GitHub) -> networking & mock interviews -> job search & placement strategy.
 - Focus: Workplace competencies, technical & behavioral interviews, system design/case studies, and employer evidence.
-- Dynamic timeline: Typically 6 to 18 months based on current role vs target role gap.
+- Dynamic timeline: Calculate timeline autonomously based entirely on the career gap between current position and target role. No fixed or preset timeline.
 - Dynamic readiness score: Score (0-100) based on current experience/competencies vs target role expectations.
-- Dynamic step count: Determine genuinely required career progression stages (typically 4 to 7 milestones).
+- Dynamic step count: Autonomously determine the exact number of milestones needed to achieve the target role. NO pre-planned, fixed, or bracketed step count.
 
 🚨 STRICT NEGATIVE CONSTRAINTS (FORBIDDEN IN THIS CATEGORY):
 - DO NOT generate Grade 10/11/12 board exam preparation, school curriculum selection, SAT/ACT prep, or high school targets unless the user's goal explicitly requires an academic degree transition.
@@ -393,9 +508,9 @@ Guidance by Focus:
 2. Life Skills & Decision Support: Focus on time management, decision frameworks, prioritization, routine building, habit trackers, and personal accountability.
 3. Immediate Guidance & Support: Focus on immediate triage, practical time-boxed next actions, trusted helpline/resource navigation, and safe escalation options.
 
-- Dynamic timeline: Typically 1 to 6 months (time-boxed to immediate needs and sustainable habit formation).
+- Dynamic timeline: Calculate timeline autonomously based entirely on the user's personal need and sustainable habit formation. No fixed or preset timeline.
 - Dynamic readiness score: Score (0-100) reflecting support readiness, self-awareness, and routine consistency.
-- Dynamic step count: Typically 3 to 5 meaningful, empathetic support milestones.
+- Dynamic step count: Autonomously determine the exact number of milestones needed to achieve wellbeing and clarity. NO pre-planned, fixed, or bracketed step count.
 
 🚨 STRICT NEGATIVE CONSTRAINTS (FORBIDDEN IN THIS CATEGORY):
 - DO NOT generate curriculum selection, school selection, GPA targets, SAT/ACT prep, university applications, board exams, internships, or job placement.
@@ -411,7 +526,8 @@ INPUT CONTEXT:
 - Current Position: {current_position}
 - Target Goal / Need: {target_goal}
 - Degree Type: {degree_val}
-- User Profile: {profile_json}
+
+{signals_context}
 
 {category_rules}
 
@@ -434,9 +550,9 @@ JSON format must strictly follow:
       "title": "<step/milestone title specific to {cat}>",
       "duration": "<calculated step range, e.g. 'Months 1-3' or 'Weeks 1-4'>",
       "description": "<detailed step overview (2-3 sentences) explaining what this phase accomplishes>",
-      "macro_view": "<Macro View (2-3 sentences): Strategic big-picture vision explaining WHY this phase is crucial for {target_goal}>",
-      "micro_view": "<Micro View (2-3 sentences): Execution roadmap detailing exact daily/weekly study actions, deliverables, and practice hours>",
-      "nano_view": "<Nano View (2-3 sentences): Mentor & diagnostic guidance focus describing how expert review or code/essay audits validate readiness>",
+      "macro_view": "<Macro View (Deep, comprehensive strategic narrative of 4-6 sentences / 100-150 words): Thoroughly explain WHY this milestone is non-negotiable for achieving {target_goal}, the fundamental capability or mindset transformation that occurs during this phase, and the tangible criteria/evidence proving the student is ready to transition to the next phase. DO NOT output a short 1-sentence summary.>",
+      "micro_view": "<Micro View (Deep, granular operational plan of 4-6 sentences / 100-150 words): Detail the concrete weekly execution cadence, specific daily/weekly study and practice hours, tangible deliverables or project artifacts the student must produce, and exact self-assessment benchmarks to verify mastery. DO NOT output a short 1-sentence summary.>",
+      "nano_view": "<Nano View (Deep, specialized 1-on-1 audit & diagnostic focus of 4-6 sentences / 100-150 words): Specify exactly what an expert mentor, tutor, or counselor will evaluate during a 1-on-1 audit, the common blind spots or subtle failure modes to check for at this stage, and the precise diagnostic questions used to verify authentic readiness. DO NOT output a short 1-sentence summary.>",
       "learning_objectives": [
         "<distinct learning objective 1>",
         "<distinct learning objective 2>",
@@ -474,9 +590,11 @@ JSON format must strictly follow:
 
 CRITICAL RULES:
 1. STRICT CATEGORY ADHERENCE: Generate milestones strictly appropriate for {cat.upper()}.
-2. STEP COUNT: Generate between 5 and 8 genuinely distinct, detailed milestones spanning the timeline.
-3. NO GENERIC BOILERPLATE: Every single step must have unique descriptions, distinct learning objectives, and custom actionable micro_steps.
-4. NAME BAN: NEVER include personal names or emails in any text fields. Keep all content objective and professional.
+2. AUTONOMOUS & DYNAMIC STEP COUNT (ZERO PRE-PLANNED NUMBERS): Do NOT use any predetermined, fixed, or bracketed step count. Determine the exact number of milestones dynamically and autonomously based solely on the student's current position and target destination. The agent must create as many or as few steps as genuinely required to bridge the gap from start to destination.
+3. IN-DEPTH MACRO, MICRO & NANO VIEWS (MANDATORY): Never output short, generic 1-2 sentence summaries for macro_view, micro_view, or nano_view. Each view must be a rich, comprehensive, and highly detailed analysis (at least 100 words each) packed with specific methodologies, concrete deliverables, and domain-relevant terminology directly tied to {target_goal} and {current_position}.
+4. NO GENERIC BOILERPLATE: Every single step must have unique descriptions, distinct learning objectives, and custom actionable micro_steps.
+5. NAME BAN: NEVER include personal names or emails in any text fields. Keep all content objective and professional.
+6. MANDATORY STUDENT SIGNALS & FINANCIAL ALIGNMENT: Adapt all marketplace recommendations, mentor rates, and resource tiers directly to the student's Financial Status. If Financial Status is High/Affluent, prioritize prestigious private mentors ($150-$500/call), executive coaches, elite university credit tracks, and premium certifications ($300-$1500+). If Financial Status is Low/Budget-Conscious, prioritize high-value free resources, scholarship programs, open-source cohorts, and affordable tools ($0-$49). Adjust roadmap study cadence and deliverables according to Location and Personality style.
 """
     return prompt
 
@@ -490,19 +608,21 @@ def build_agent_2_prompt(
     blueprint_json: str
 ) -> str:
     cat = resolve_focus_category(category)
+    signals_context = format_student_signals_context(profile)
     return f"""You are the Naaviverse Path Audit Agent (Agent 2).
 Your purpose is to validate and refine the overall pathway title, description, readiness score, and blind spots.
 
 CATEGORY CONTEXT: {cat.upper()} ({sub_segment or 'Standard'})
 Target Goal / Need: {target_goal}
 Current Position: {current_position}
-Student Profile: {json.dumps(profile or {{}})}
+
+{signals_context}
 
 AUDIT TASKS:
 1. Verify "path_title" is clear, accurate, and reflects {cat.upper()} pathway semantics.
 2. Verify "path_description" is professional, informative, multi-sentence, and specific to {target_goal}.
-3. Validate "readiness_score" (5-95) and "readiness_label" according to {cat.upper()} evaluation criteria.
-4. Validate "blind_spots" to highlight 2+ real, actionable constraints.
+3. Validate "readiness_score" (5-95) and "readiness_label" according to {cat.upper()} evaluation criteria and student signals.
+4. Validate "blind_spots" to highlight 2+ real, actionable constraints based on student signals (financial, geographic, academic background).
 5. NAME BAN: Ensure NO personal names, emails, or personal pronouns exist in any text.
 
 Output ONLY valid JSON matching:
@@ -531,6 +651,7 @@ def build_agent_3_prompt(
     blueprint_json: str
 ) -> str:
     cat = resolve_focus_category(category)
+    signals_context = format_student_signals_context(profile)
     return f"""You are the Naaviverse Steps and Views Audit Agent (Agent 3).
 Your purpose is to validate and polish all steps, learning objectives, and Macro/Micro/Nano views.
 
@@ -538,11 +659,13 @@ CATEGORY CONTEXT: {cat.upper()} ({sub_segment or 'Standard'})
 Target Goal / Need: {target_goal}
 Current Position: {current_position}
 
+{signals_context}
+
 AUDIT TASKS:
 1. Ensure every step's title, duration, and description strictly belong to {cat.upper()} semantics.
 2. PRESERVE DURATION: Keep the exact duration range from blueprint (e.g. 'Months 1-3', 'Weeks 1-4').
-3. Verify rich multi-sentence text in 'macro_view' (big picture), 'micro_view' (execution deliverables), and 'nano_view' (expert/mentor validation).
-4. Verify 'learning_objectives' and 'micro_steps' are hyper-specific and actionable for {target_goal}.
+3. ENFORCE DEEP MACRO, MICRO & NANO VIEWS: Ensure 'macro_view' (strategic vision & phase meaning), 'micro_view' (granular execution, weekly cadence, and deliverables), and 'nano_view' (1-on-1 mentor diagnostic criteria & blind spot detection) contain deep, rich, comprehensive multi-sentence text (at least 100-150 words each). If any view is brief or generic (1-2 sentences), expand it thoroughly with substantive, highly relevant guidance specific to {target_goal} and {current_position}. NEVER ALLOW SHORT OR SUPERFICIAL PLACEHOLDERS.
+4. Verify 'learning_objectives' and 'micro_steps' are hyper-specific and actionable for {target_goal} while respecting student personality and location.
 5. CRITICAL STEP PRESERVATION: Audit and return EVERY step in the blueprint without skipping, combining, or dropping steps.
 6. NAME BAN: Ensure NO personal names or emails appear in any field.
 
@@ -562,12 +685,15 @@ def build_agent_4_prompt(
     blueprint_json: str
 ) -> str:
     cat = resolve_focus_category(category)
+    signals_context = format_student_signals_context(profile)
     return f"""You are the Naaviverse Marketplace Audit Agent (Agent 4).
-Your purpose is to validate that all learning resource recommendations match {cat.upper()} needs.
+Your purpose is to validate that all learning resource recommendations match {cat.upper()} needs and the student's specific signals.
 
 CATEGORY CONTEXT: {cat.upper()} ({sub_segment or 'Standard'})
 Target Goal / Need: {target_goal}
 Current Position: {current_position}
+
+{signals_context}
 
 AUDIT TASKS:
 1. Verify mentors, vendors, institutions, and distributors are genuinely relevant to {cat.upper()} and the specific step.
@@ -575,9 +701,14 @@ AUDIT TASKS:
    - Practical: Developer mentors, coding sandboxes, project courses (Coursera/freeCodeCamp/Udemy), GitHub, docs.
    - Jobs: Career coaches, mock interviewers, ATS resume reviews, LinkedIn, LeetCode, job boards.
    - Non-Academic: Certified counselors, therapists, mindfulness apps, routine trackers, support groups.
-2. Validate realistic costs, action-oriented next steps, and proper section classification (macro_free, micro_structured, nano_expert).
-3. CRITICAL STEP PRESERVATION: Return audited marketplace objects for EVERY step in the blueprint.
-4. NAME BAN: Ensure NO personal names or emails appear.
+2. STRICT FINANCIAL STATUS PRICING ALIGNMENT:
+   - Match marketplace resource pricing to the student's Financial Capacity.
+   - If High / Affluent: Include premium 1-on-1 mentors, top bootcamps, and certified programs with premium price tiers ($150-$1,500+).
+   - If Budget / Low: Emphasize free tiers, financial aid, scholarships, and low-cost alternatives ($0-$49).
+3. GEOGRAPHIC & LOCATION RELEVANCE: Ensure regional institutions, timezone compatibility, and local market suitability reflect the student's location.
+4. Validate realistic costs, action-oriented next steps, and proper section classification (macro_free, micro_structured, nano_expert).
+5. CRITICAL STEP PRESERVATION: Return audited marketplace objects for EVERY step in the blueprint.
+6. NAME BAN: Ensure NO personal names or emails appear.
 
 Output ONLY a valid JSON array of step marketplace objects:
 [
@@ -751,7 +882,7 @@ async def log_generation_event(
     return final_alternatives
 
 
-# Helper to query Groq and extract clean JSON with model fallbacks
+# Helper to query Groq with Multi-Key Parallel Rotation and Auto-Failover
 async def query_groq_json(
     prompt: str,
     preferred_model: str = "openai/gpt-oss-120b",
@@ -769,65 +900,80 @@ async def query_groq_json(
 
     unique_models = models
 
+    # Determine starting key index via global round-robin cursor
+    global _groq_key_cursor
+    start_key_idx = _groq_key_cursor % len(GROQ_ASYNC_CLIENTS)
+    _groq_key_cursor += 1
+
     last_err = None
     for m in unique_models:
-        try:
-            estimated_input_tokens = int(len(prompt) / 3.2)
-            max_tok = 8192
+        # Try each available API key for the current model before falling back to lower-tier models
+        for key_offset in range(len(GROQ_ASYNC_CLIENTS)):
+            key_idx = (start_key_idx + key_offset) % len(GROQ_ASYNC_CLIENTS)
+            active_async_client = GROQ_ASYNC_CLIENTS[key_idx]
 
-            response = await async_client.chat.completions.create(
-                model=m,
-                max_tokens=max_tok,
-                temperature=0.3,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are a career path database sub-agent. "
-                            "Always respond with valid, complete JSON only. "
-                            "No markdown, no backticks, no explanations. "
-                            "Start immediately with { or [ and end with } or ]. "
-                            "NEVER truncate your response. Complete the full JSON structure."
-                        ),
-                    },
-                    {"role": "user", "content": prompt},
-                ],
-            )
-            raw = response.choices[0].message.content.strip()
-            # Strip markdown fences if present
-            raw = re.sub(r"```(?:json)?", "", raw).strip().strip("`").strip()
-
-            # Extract the outermost JSON object or array
-            match = re.search(r'(\{.*\}|\[.*\])', raw, re.DOTALL)
-            if match:
-                raw = match.group(0)
-
-            # Attempt direct parse
             try:
-                return json.loads(raw)
-            except json.JSONDecodeError as json_err:
-                # Attempt partial JSON recovery: try to close unclosed brackets
-                print(f"[JSON Recovery] Attempting to repair truncated JSON from model {m}. Error at char {json_err.pos}.")
-                # Truncate to last valid position and try to close structures
-                truncated = raw[:json_err.pos].rstrip().rstrip(",").rstrip()
-                # Count unclosed braces/brackets
-                opens = truncated.count("{") - truncated.count("}")
-                open_arrays = truncated.count("[") - truncated.count("]")
-                closing = "]" * open_arrays + "}" * opens
-                repaired = truncated + closing
+                max_tok = 8192
+                response = await active_async_client.chat.completions.create(
+                    model=m,
+                    max_tokens=max_tok,
+                    temperature=0.3,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are a career path database sub-agent. "
+                                "Always respond with valid, complete JSON only. "
+                                "No markdown, no backticks, no explanations. "
+                                "Start immediately with { or [ and end with } or ]. "
+                                "NEVER truncate your response. Complete the full JSON structure."
+                            ),
+                        },
+                        {"role": "user", "content": prompt},
+                    ],
+                )
+                raw = response.choices[0].message.content.strip()
+                # Strip markdown fences if present
+                raw = re.sub(r"```(?:json)?", "", raw).strip().strip("`").strip()
+
+                # Extract the outermost JSON object or array
+                match = re.search(r'(\{.*\}|\[.*\])', raw, re.DOTALL)
+                if match:
+                    raw = match.group(0)
+
+                # Attempt direct parse
                 try:
-                    result = json.loads(repaired)
-                    print(f"[JSON Recovery] Successfully repaired truncated JSON from model {m}.")
-                    return result
-                except Exception:
-                    raise json_err  # Let the outer except catch it and try next model
+                    return json.loads(raw)
+                except json.JSONDecodeError as json_err:
+                    # Attempt partial JSON recovery: try to close unclosed brackets
+                    print(f"[JSON Recovery] Attempting to repair truncated JSON from model {m} (Key {key_idx + 1}). Error at char {json_err.pos}.")
+                    truncated = raw[:json_err.pos].rstrip().rstrip(",").rstrip()
+                    opens = truncated.count("{") - truncated.count("}")
+                    open_arrays = truncated.count("[") - truncated.count("]")
+                    closing = "]" * open_arrays + "}" * opens
+                    repaired = truncated + closing
+                    try:
+                        result = json.loads(repaired)
+                        print(f"[JSON Recovery] Successfully repaired truncated JSON from model {m} (Key {key_idx + 1}).")
+                        return result
+                    except Exception:
+                        raise json_err  # Let outer except catch it and try next key/model
 
-        except Exception as e:
-            print(f"[Groq Call Failed for model {m}] trying next fallback. Error: {e}")
-            last_err = e
-            continue
+            except Exception as e:
+                err_str = str(e).lower()
+                is_rate_limit = "429" in err_str or "rate limit" in err_str or "tokens per minute" in err_str or "tpm" in err_str or "quota" in err_str
+                last_err = e
 
-    print(f"[Groq Critical Failure] All models exhausted. Final error: {last_err}")
+                if is_rate_limit and len(GROQ_ASYNC_CLIENTS) > 1:
+                    next_key_idx = ((key_idx + 1) % len(GROQ_ASYNC_CLIENTS)) + 1
+                    print(f"[Groq Key Failover] Key {key_idx + 1} rate-limited on model {m}. Instant auto-failover to Key {next_key_idx}...")
+                    continue  # Try next key on this SAME high-tier model!
+                else:
+                    print(f"[Groq Call Failed for model {m} (Key {key_idx + 1})] Error: {e}")
+                    # If error is not a rate limit, break out of key loop to attempt next fallback model
+                    break
+
+    print(f"[Groq Critical Failure] All models and keys exhausted. Final error: {last_err}")
     return {}
 
 
@@ -1539,8 +1685,8 @@ def calculate_path_accuracy_score(roadmap: dict, profile: dict, current: str = "
             return 0.0
         return 2.0 * (word_count_score * density_score) / (word_count_score + density_score)
 
-    # Word Count Targets (e.g. 15 words for description, 30 words for views)
-    T_desc, T_macro, T_micro, T_nano = 15, 30, 30, 30
+    # Word Count Targets (e.g. 25 words for description, 80 words for deep views)
+    T_desc, T_macro, T_micro, T_nano = 25, 80, 80, 80
     total_I = 0.0
 
     for step in steps:
@@ -1992,21 +2138,39 @@ async def run_agent_1_blueprint(
             prompt += f"\n🚨 CRITICAL ENFORCEMENT: Output EXACTLY {requested_steps} distinct step objects inside 'steps'."
         if existing_roadmap:
             raw_roadmap = existing_roadmap.get("roadmap_data") or existing_roadmap
-            compressed_roadmap = {
-                "path_title": raw_roadmap.get("path_title", ""),
-                "path_description": raw_roadmap.get("path_description", ""),
-                "total_duration": raw_roadmap.get("total_duration", ""),
-                "steps": [
-                    {
-                        "id": m.get("id"),
-                        "title": m.get("title", ""),
-                        "duration": m.get("duration", ""),
-                        "description": m.get("description", "")
-                    }
-                    for m in raw_roadmap.get("steps", [])
-                ]
-            }
-            prompt += f"\nEXISTING ROADMAP (preserve unedited steps):\n{json.dumps(compressed_roadmap, indent=2)}\n"
+            existing_steps = raw_roadmap.get("steps", [])
+            clean_existing_steps = []
+            for m in existing_steps:
+                clean_step = {
+                    "id": m.get("id"),
+                    "title": m.get("title", ""),
+                    "duration": m.get("duration", ""),
+                    "description": m.get("description", ""),
+                    "macro_view": m.get("macro_view", ""),
+                    "micro_view": m.get("micro_view", ""),
+                    "nano_view": m.get("nano_view", ""),
+                    "learning_objectives": m.get("learning_objectives", []),
+                    "micro_steps": m.get("micro_steps", [])
+                }
+                clean_existing_steps.append(clean_step)
+
+            refine_instruction = f"""
+==================================================
+🤖 ADVANCED REFINE AGENT INSTRUCTIONS:
+User Modification Request: "{refine_prompt}"
+Active Category: {cat.upper()}
+Active Sub-Category: {sub_segment or 'Standard'}
+
+Refinement Execution Rules:
+1. STRICT CATEGORY & DROPDOWN COMPLIANCE: Execute the user's refinement strictly within the {cat.upper()} domain ({sub_segment or 'Standard'}). Never cross over into forbidden categories (e.g. no high school board exams for software careers or mental health counselling).
+2. UNDERSTAND INTENT & PRESERVE UNTOUCHED STEPS: Understand whether the user wants to add new milestones, modify existing milestones, update duration/timeline, or adjust specific topics. Keep all unedited milestones intact with their exact sequence.
+3. IN-DEPTH VIEWS FOR ALL STEPS: Any new or modified step MUST have deep, rich, comprehensive 'macro_view', 'micro_view', and 'nano_view' (at least 100-150 words each). Do NOT output empty or 1-sentence summaries.
+4. ZERO MOCK / NO FALLBACK DATA: Generate 100% genuine, relevant, highly specific milestones and guidance tailored to {goal} and {current}.
+==================================================
+EXISTING ROADMAP BLUEPRINT TO MODIFY:
+{json.dumps({"path_title": raw_roadmap.get("path_title"), "total_duration": raw_roadmap.get("total_duration"), "steps": clean_existing_steps}, indent=2)}
+"""
+            prompt += refine_instruction
 
     feedback_items = []
     try:
@@ -2363,31 +2527,122 @@ async def get_path_score(req: PathScoreRequest):
     current = req.current_position or ""
     return calculate_path_accuracy_score(req.roadmap_data, profile, current)
 
+def normalize_student_profile_doc(doc: dict) -> dict:
+    if not doc:
+        return doc
+
+    # Ensure personalityGeography
+    pg = doc.get("personalityGeography") or {}
+    doc["personalityGeography"] = {
+        "name": pg.get("name", doc.get("name", "")),
+        "age": pg.get("age", ""),
+        "country": pg.get("country", doc.get("country", "")),
+        "state": pg.get("state", doc.get("state", "")),
+        "city": pg.get("city", doc.get("city", "")),
+        "financialSituation": pg.get("financialSituation", doc.get("financialSituation", "")),
+        "scholarshipRequirement": pg.get("scholarshipRequirement", ""),
+        "personalitySignal": pg.get("personalitySignal", doc.get("personality", "")),
+        "interests": pg.get("interests", ""),
+        "skills": pg.get("skills", ""),
+        "preferences": pg.get("preferences", ""),
+    }
+
+    # Ensure academics — pure student signals only, NO currentPosition/futureGoal
+    ac = doc.get("academics") or {}
+    doc["academics"] = {
+        "educationStage": ac.get("educationStage", "undergraduate"),
+        "degreeType": ac.get("degreeType", doc.get("degreeType", "")),
+        "gradeLevel": ac.get("gradeLevel", doc.get("grade", "")),
+        "curriculum": ac.get("curriculum", doc.get("curriculum", "")),
+        "academicStream": ac.get("academicStream", doc.get("stream", "")),
+        "schoolOrCollege": ac.get("schoolOrCollege", doc.get("school", "")),
+        "currentPerformance": ac.get("currentPerformance", doc.get("performance", "")),
+    }
+
+    # Ensure practicalSkills — student context only
+    ps = doc.get("practicalSkills") or {}
+    doc["practicalSkills"] = {
+        "targetSkill": ps.get("targetSkill", ""),
+        "skillCategory": ps.get("skillCategory", ""),
+        "skillLevel": ps.get("skillLevel", ""),
+        "learningMode": ps.get("learningMode", ""),
+        "projectType": ps.get("projectType", ""),
+    }
+
+    # Ensure jobsCareers — student context only
+    jc = doc.get("jobsCareers") or {}
+    doc["jobsCareers"] = {
+        "currentRole": jc.get("currentRole", ""),
+        "yearsOfExperience": jc.get("yearsOfExperience", ""),
+        "industry": jc.get("industry", ""),
+        "employmentType": jc.get("employmentType", ""),
+    }
+
+    # Ensure nonAcademicCounselling — student context only
+    nac = doc.get("nonAcademicCounselling") or {}
+    doc["nonAcademicCounselling"] = {
+        "concernArea": nac.get("concernArea", ""),
+        "currentChallenge": nac.get("currentChallenge", ""),
+        "supportTypeNeeded": nac.get("supportTypeNeeded", ""),
+    }
+
+    # Sync flat fields for backward compatibility
+    doc["name"] = doc["personalityGeography"]["name"] or doc.get("name", "")
+    doc["grade"] = doc["academics"]["gradeLevel"] or doc.get("grade", "")
+    doc["degreeType"] = doc["academics"]["degreeType"] or doc.get("degreeType", "")
+    doc["curriculum"] = doc["academics"]["curriculum"] or doc.get("curriculum", "")
+    doc["stream"] = doc["academics"]["academicStream"] or doc.get("stream", "")
+    doc["school"] = doc["academics"]["schoolOrCollege"] or doc.get("school", "")
+    doc["performance"] = doc["academics"]["currentPerformance"] or doc.get("performance", "")
+    doc["financialSituation"] = doc["personalityGeography"]["financialSituation"] or doc.get("financialSituation", "")
+    doc["personality"] = doc["personalityGeography"]["personalitySignal"] or doc.get("personality", "")
+    doc["country"] = doc["personalityGeography"]["country"] or doc.get("country", "")
+    doc["state"] = doc["personalityGeography"]["state"] or doc.get("state", "")
+    doc["city"] = doc["personalityGeography"]["city"] or doc.get("city", "")
+
+    return doc
+
+def deep_merge_profile(existing_doc: dict, new_data: dict) -> dict:
+    merged = {**existing_doc}
+    for k, v in new_data.items():
+        if k in ["personalityGeography", "academics", "jobsCareers", "nonAcademicCounselling", "schoolK12"] and isinstance(v, dict):
+            merged[k] = {**(merged.get(k) or {}), **v}
+        else:
+            merged[k] = v
+    return normalize_student_profile_doc(merged)
+
 @app.post("/api/profile")
-async def save_profile(profile: StudentProfileModel):
-    existing = await profiles_collection.find_one({"email": profile.email.lower()})
-    profile_dict = profile.dict(by_alias=True, exclude_none=True)
-    profile_dict["email"] = profile_dict["email"].lower()
-    
-    if "_id" in profile_dict:
-        del profile_dict["_id"]
-    if "id" in profile_dict:
-        del profile_dict["id"]
+async def save_profile(profile_data: dict = Body(...)):
+    email = profile_data.get("email", "").lower().strip()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
         
-    profile_dict["updated_at"] = datetime.datetime.now(datetime.timezone.utc)
+    existing = await profiles_collection.find_one({"email": email})
+    
+    if "_id" in profile_data:
+        del profile_data["_id"]
+    if "id" in profile_data:
+        del profile_data["id"]
+        
+    profile_data["email"] = email
+    profile_data["updated_at"] = datetime.datetime.now(datetime.timezone.utc)
     
     if existing:
+        merged = deep_merge_profile(existing, profile_data)
+        if "_id" in merged:
+            del merged["_id"]
         await profiles_collection.update_one(
-            {"email": profile.email.lower()},
-            {"$set": profile_dict}
+            {"email": email},
+            {"$set": merged}
         )
-        updated_doc = await profiles_collection.find_one({"email": profile.email.lower()})
-        return serialize_mongo_doc(updated_doc)
+        updated_doc = await profiles_collection.find_one({"email": email})
+        return serialize_mongo_doc(normalize_student_profile_doc(updated_doc))
     else:
-        profile_dict["created_at"] = datetime.datetime.now(datetime.timezone.utc)
-        result = await profiles_collection.insert_one(profile_dict)
-        profile_dict["id"] = str(result.inserted_id)
-        return serialize_mongo_doc(profile_dict)
+        normalized = normalize_student_profile_doc(profile_data)
+        normalized["created_at"] = datetime.datetime.now(datetime.timezone.utc)
+        result = await profiles_collection.insert_one(normalized)
+        normalized["id"] = str(result.inserted_id)
+        return serialize_mongo_doc(normalized)
 
 @app.get("/api/profile/{email}")
 async def get_profile(email: str):
@@ -2397,7 +2652,49 @@ async def get_profile(email: str):
     doc = await profiles_collection.find_one({"email": email.lower()})
     if not doc:
         raise HTTPException(status_code=404, detail="Profile not found")
-    return serialize_mongo_doc(doc)
+    return serialize_mongo_doc(normalize_student_profile_doc(doc))
+
+@app.get("/api/students/{student_id}/profile")
+async def get_student_profile(student_id: str):
+    # Support lookup by email or mongo _id
+    query = {"email": student_id.lower()}
+    if ObjectId.is_valid(student_id):
+        query = {"$or": [{"email": student_id.lower()}, {"_id": ObjectId(student_id)}]}
+    doc = await profiles_collection.find_one(query)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+    return serialize_mongo_doc(normalize_student_profile_doc(doc))
+
+@app.put("/api/students/{student_id}/profile")
+@app.patch("/api/students/{student_id}/profile")
+async def update_student_profile(student_id: str, profile_data: dict = Body(...)):
+    query = {"email": student_id.lower()}
+    if ObjectId.is_valid(student_id):
+        query = {"$or": [{"email": student_id.lower()}, {"_id": ObjectId(student_id)}]}
+    existing = await profiles_collection.find_one(query)
+    
+    if "_id" in profile_data:
+        del profile_data["_id"]
+    if "id" in profile_data:
+        del profile_data["id"]
+        
+    profile_data["updated_at"] = datetime.datetime.now(datetime.timezone.utc)
+    if "email" not in profile_data:
+        profile_data["email"] = student_id.lower()
+        
+    if existing:
+        merged = deep_merge_profile(existing, profile_data)
+        if "_id" in merged:
+            del merged["_id"]
+        await profiles_collection.update_one(query, {"$set": merged})
+        updated_doc = await profiles_collection.find_one(query)
+        return serialize_mongo_doc(normalize_student_profile_doc(updated_doc))
+    else:
+        normalized = normalize_student_profile_doc(profile_data)
+        normalized["created_at"] = datetime.datetime.now(datetime.timezone.utc)
+        result = await profiles_collection.insert_one(normalized)
+        normalized["id"] = str(result.inserted_id)
+        return serialize_mongo_doc(normalized)
 
 
 async def run_option_audits(blueprint: dict, current: str, goal: str, profile: dict, refine_prompt: Optional[str] = None, existing_roadmap: Optional[dict] = None):
@@ -2419,6 +2716,16 @@ async def generate_path_stream(req: PathGenerationRequest):
     current = req.current_position.strip()
     goal = req.target_goal.strip()
     profile = req.profile or {}
+    email = (profile.get("email") or "").strip().lower()
+    if email:
+        try:
+            db_profile = await profiles_collection.find_one({"email": email})
+            if db_profile:
+                db_profile = serialize_mongo_doc(db_profile)
+                profile = deep_merge_profile(db_profile, profile)
+        except Exception as e:
+            print(f"[Profile Hydration Warning] {e}")
+
     refine_prompt = req.refine_prompt.strip() if req.refine_prompt else None
     existing_roadmap = req.existing_roadmap
     focus_req = req.focus.strip() if req.focus else None
@@ -2693,7 +3000,7 @@ async def generate_path_blueprint(req: PathGenerationRequest):
         )
         return blueprint
     except Exception as e:
-        return get_fallback_mock_roadmap(current, goal, profile, refine_prompt, focus=focus_req, category=cat, sub_segment=sub_seg)
+        raise HTTPException(status_code=500, detail=f"AI Blueprint Generation Failed: {str(e)}. Please retry.")
 
 
 @app.post("/api/path/audit")
@@ -2717,7 +3024,7 @@ async def generate_path_audit(req: PathAuditRequest):
         )
         return final_json
     except Exception as e:
-        return get_fallback_mock_roadmap(current, goal, profile)
+        raise HTTPException(status_code=500, detail=f"AI Path Audit Generation Failed: {str(e)}. Please retry.")
 
 
 @app.get("/api/admin/analytics")
@@ -3399,6 +3706,8 @@ class StepPatchRequest(BaseModel):
     marketplace_section: Optional[str] = None
     marketplace_category: Optional[str] = None
     marketplace_item_index: Optional[int] = None
+    content_category: Optional[str] = None
+    sub_segment: Optional[str] = None
 
 
 MARKETPLACE_SECTIONS = {"macro_free", "micro_structured", "nano_expert"}
@@ -3759,15 +4068,16 @@ Marketplace category: {marketplace_category}
 Current items in this exact category:
 {current_items}
 
-Student context:
+Student Context & Signals:
 - Current position: {current_position}
 - Target goal: {target_goal}
-- Profile: {profile}
+{signals_context}
 
 User instruction: {instruction}
 
 Rules:
 - {generation_rule}
+- MANDATORY FINANCIAL ALIGNMENT: Strictly align pricing and tiers with the student's Financial Capacity (high-tier premium resources if financial situation is High/Affluent; free/budget options if Low/Need-based).
 - Treat the current items as rejected for this replacement request. Do not reuse the same provider names unless there is no credible alternative; return next-best replacements.
 - Do not return or discuss any other Marketplace category or section.
 - Always generate a rich set of 5 to 8 distinct recommendations. Never return a small set of 1, 2, or 3 items.
@@ -3801,7 +4111,12 @@ Type requirements:
 """
 
 STEP_PATCH_PROMPT = """You are the Naaviverse Step Patch Agent.
-Your ONLY job is to rewrite ONE specific field inside ONE step of a career roadmap.
+Your ONLY job is to rewrite ONE specific field inside ONE step of a pathway.
+
+CATEGORY CONTEXT:
+- Focus Category: {category}
+- Sub-Category / Track: {sub_segment}
+- Domain Constraints: {category_rules}
 
 Step being updated:
 - Step ID: {step_id}
@@ -3812,24 +4127,25 @@ Field to update: "{field}"
 Current value of that field:
 {current_value}
 
-Student Context:
+Student Context & Signals:
 - Current Position: {current_position}
 - Target Goal: {target_goal}
-- Profile: {profile}
+{signals_context}
 
 User Instruction: {instruction}
 
 Rules:
-- Rewrite ONLY the "{field}" field according to the user's instruction.
-- Keep the content relevant to the step's title and duration.
-- Keep the tone academic, strategic, and professional.
+- Rewrite ONLY the "{field}" field strictly according to the user's instruction and within {category} ({sub_segment}) semantics.
+- STRICT CATEGORY ADHERENCE: Content must strictly align with {category} ({sub_segment}). Never generate school board exams, GPA targets, or college admissions for Practical Skills, Jobs/Careers, or Non-Academic Counselling pathways unless requested by an academic transition.
+- ZERO MOCK / NO FALLBACK DATA: Provide genuine, real-world, actionable, and accurate content.
+- Keep the tone strategic, professional, and practical.
 - Do NOT mention the student's personal name or email.
 - Output ONLY a valid JSON object with a single key "{field}" containing the rewritten value.
 - No markdown, no backticks, no explanation. Just the JSON.
 
 Expected output formats based on the target field:
 - If the field is "macro_view", "micro_view", "nano_view", or "description", the output format must be:
-  {{"{field}": "<your rewritten detailed text paragraph>"}}
+  {{"{field}": "<your rewritten detailed text paragraph — must be comprehensive, deep, and substantive (4-6 detailed sentences / 100-150 words), thoroughly addressing the user instruction with domain-specific methodologies, never a short 1-line blurb>"}}
 
 - If the field is "marketplace", the output format must be a valid JSON object:
   {{
@@ -3892,6 +4208,31 @@ async def patch_step(req: StepPatchRequest):
 
     current_val = req.current_step.get(req.field, "")
 
+    cat = resolve_focus_category(req.content_category or (req.profile or {}).get("activeSegment"))
+    sub_seg = req.sub_segment or (req.profile or {}).get("subSegment") or "Standard"
+
+    if cat == "practical":
+        category_rules = "Focus on hands-on practical coding, developer portfolio, github projects, software frameworks. STRICTLY FORBIDDEN: School board exams, GPA, SAT/ACT, college applications."
+    elif cat == "jobs":
+        category_rules = "Focus on career progression, ATS resumes, job interviews, professional networking, industry role readiness. STRICTLY FORBIDDEN: High school school selection or board exams."
+    elif cat == "non_academic":
+        category_rules = "Focus on mental health, personal routines, stress reduction, life skills, wellbeing habits, professional counselling. STRICTLY FORBIDDEN: College admissions, SAT/ACT, academic tests, GPA."
+    else:
+        category_rules = "Focus on academic progression, curriculum mastery, admissions, transcripts, scholarly preparation."
+
+    profile = req.profile or {}
+    email = (profile.get("email") or "").strip().lower()
+    if email:
+        try:
+            db_profile = await profiles_collection.find_one({"email": email})
+            if db_profile:
+                db_profile = serialize_mongo_doc(db_profile)
+                profile = deep_merge_profile(db_profile, profile)
+        except Exception as e:
+            print(f"[Profile Hydration Warning] {e}")
+
+    signals_context = format_student_signals_context(profile)
+
     if req.field == "marketplace":
         section = req.marketplace_section or "macro_free"
         category = req.marketplace_category or "vendors"
@@ -3934,16 +4275,16 @@ async def patch_step(req: StepPatchRequest):
             current_items=json.dumps(prompt_current_items, indent=2),
             current_position=req.current_position,
             target_goal=req.target_goal,
-            profile=json.dumps(req.profile or {}),
+            signals_context=signals_context,
             instruction=req.instruction,
             generation_rule=generation_rule,
         )
 
         print(
             f"[Patch Agent] Patching step {req.step_id} marketplace "
-            f"section '{section}', category '{category}'."
+            f"section '{section}', category '{category}' using 120B..."
         )
-        result = await query_groq_json(prompt, preferred_model="llama-3.1-8b-instant")
+        result = await query_groq_json(prompt, preferred_model="openai/gpt-oss-120b", fallback_models=["qwen/qwen3.8-27b", "groq/compound"])
         generated_items = result.get("marketplace_items") if isinstance(result, dict) else None
         if not isinstance(generated_items, list) or not generated_items:
             raise HTTPException(status_code=500, detail="Marketplace patch failed to return category items. Please try again.")
@@ -3984,6 +4325,9 @@ async def patch_step(req: StepPatchRequest):
         current_value_str = str(current_val)
 
     prompt = STEP_PATCH_PROMPT.format(
+        category=cat.upper(),
+        sub_segment=sub_seg,
+        category_rules=category_rules,
         step_id=req.step_id,
         step_title=req.current_step.get("title", f"Step {req.step_id}"),
         step_duration=req.current_step.get("duration", ""),
@@ -3991,18 +4335,17 @@ async def patch_step(req: StepPatchRequest):
         current_value=current_value_str,
         current_position=req.current_position,
         target_goal=req.target_goal,
-        profile=json.dumps(req.profile or {}),
+        signals_context=signals_context,
         instruction=req.instruction
     )
 
-    print(f"[Patch Agent] Patching step {req.step_id} field '{req.field}' with instruction: {req.instruction}")
-    result = await query_groq_json(prompt, preferred_model="llama-3.1-8b-instant")
+    print(f"[Patch Agent] Patching step {req.step_id} field '{req.field}' (cat: {cat.upper()}) using 120B...")
+    result = await query_groq_json(prompt, preferred_model="openai/gpt-oss-120b", fallback_models=["qwen/qwen3.8-27b", "groq/compound"])
 
     if not result or req.field not in result:
         raise HTTPException(status_code=500, detail="Patch agent failed to return updated content. Please try again.")
 
     # Sanitize any personal names
-    profile = req.profile or {}
     name_tokens = build_name_patterns(profile, req.current_position)
     new_value = result[req.field]
     if name_tokens:

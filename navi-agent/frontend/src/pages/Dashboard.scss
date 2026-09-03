@@ -712,6 +712,98 @@
   font-weight: 600;
 }
 
+/* ── Active Category & Focus Strip ───────────────────────── */
+.db-selected-category-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.db-track-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 20px;
+  font-size: 12px;
+  color: #166534;
+
+  .db-track-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #16a34a;
+  }
+
+  .db-track-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #15803d;
+  }
+
+  .db-track-name {
+    font-weight: 700;
+  }
+}
+
+.db-subtrack-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 20px;
+  font-size: 12px;
+  color: #1e40af;
+
+  .db-subtrack-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #3b82f6;
+  }
+
+  .db-subtrack-name {
+    font-weight: 600;
+  }
+}
+
+.db-empty-selection-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.db-empty-chip {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+
+  &.category {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+  }
+
+  &.subcategory {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+  }
+}
+
 /* ── Alternatives Selector Tabs ───────────────────────────── */
 .db-alt-tabs {
   display: flex;
@@ -828,7 +920,16 @@
 
   svg {
     transition: transform 0.3s ease;
+
+    &.spinning {
+      animation: dbSpin 0.9s linear infinite;
+    }
   }
+}
+
+@keyframes dbSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .db-save-path-btn {

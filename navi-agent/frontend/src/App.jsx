@@ -32,7 +32,8 @@ const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0
 
 function buildPositionLabel(profile) {
   if (!profile) return "Profile unavailable";
-  return [profile.grade, profile.stream, profile.country].filter(Boolean).join(" • ") || "Current position";
+  // PART 4: No default data in current position — show only user-provided values
+  return profile.name || "Student";
 }
 
 async function pathRecordExists(dbId) {
@@ -240,15 +241,10 @@ export default function App() {
   }, [activeEmail, pathData]);
 
   const handleProfileUpdated = (newProfile) => {
-    console.log("[Naavi App] Student Signals profile updated. Resetting path cache. New profile:", newProfile);
+    console.log("[Naavi App] Student Signals profile updated. New profile:", newProfile);
     setProfile(newProfile);
-    setPathData(null);
-    setUserInput({ current: "", goal: "" });
-    setSelectedAltIdx(0);
-    if (activeEmail) {
-      localStorage.removeItem(`nv_path_data_${activeEmail.toLowerCase()}`);
-      localStorage.removeItem(`nv_user_input_${activeEmail.toLowerCase()}`);
-      localStorage.removeItem(`nv_active_nav_${activeEmail.toLowerCase()}`);
+    if (activeEmail && newProfile) {
+      localStorage.setItem(`nv_profile_${activeEmail.toLowerCase()}`, JSON.stringify(newProfile));
     }
   };
 

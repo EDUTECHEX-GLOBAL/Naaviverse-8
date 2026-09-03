@@ -1,31 +1,25 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "./ProfileDetails.scss";
-import { IconUser, IconCheck, IconArrowLeft } from "./Icons";
+import { IconCheck, IconArrowLeft } from "./Icons";
+import PersonalityGeography from "../components/segmentFields/PersonalityGeography";
+import AcademicFields from "../components/segmentFields/AcademicFields";
+import JobsCareersFields from "../components/segmentFields/JobsCareersFields";
+import NonAcademicCounsellingFields from "../components/segmentFields/NonAcademicCounsellingFields";
+import PracticalSkillsFields from "../components/segmentFields/PracticalSkillsFields";
 
 const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:8001" : "");
 
-const DEGREE_TYPE_OPTIONS = [
-  "K-12",
-  "Grade 11-12",
-  "Bachelor's",
-  "Master's",
-  "PhD",
-  "Transfer/Lateral",
-  "B.Tech/B.E.",
-  "B.Sc",
-  "BBA",
-  "MBBS",
-  "MBA",
-  "M.Tech",
-  "Diploma",
-  "Certificate",
-];
-
 export default function ProfileDetails({ profile, onProfileUpdated, onBack }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({});
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
+
+  // Pure student signals state — NO destination / future goal / path fields
+  const [personalityGeography, setPersonalityGeography] = useState({});
+  const [academics, setAcademics] = useState({});
+  const [practicalSkills, setPracticalSkills] = useState({});
+  const [jobsCareers, setJobsCareers] = useState({});
+  const [nonAcademicCounselling, setNonAcademicCounselling] = useState({});
 
   // Location API states
   const [countriesList, setCountriesList] = useState([]);
@@ -35,9 +29,63 @@ export default function ProfileDetails({ profile, onProfileUpdated, onBack }) {
   const [loadingStates, setLoadingStates] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
 
+  // Initialize and synchronize state when profile prop changes
   useEffect(() => {
     if (profile) {
-      setFormData(profile);
+      setPersonalityGeography(
+        profile.personalityGeography || {
+          name: profile.name || "",
+          age: "",
+          country: profile.country || "",
+          state: profile.state || "",
+          city: profile.city || "",
+          financialSituation: profile.financialSituation || "",
+          scholarshipRequirement: "",
+          personalitySignal: profile.personality || "",
+          interests: "",
+          skills: "",
+          preferences: "",
+        }
+      );
+
+      setAcademics(
+        profile.academics || {
+          educationStage: "undergraduate",
+          degreeType: profile.degreeType || profile.degree_type || "",
+          gradeLevel: profile.grade || "",
+          curriculum: profile.curriculum || "",
+          academicStream: profile.stream || "",
+          schoolOrCollege: profile.school || "",
+          currentPerformance: profile.performance || "",
+        }
+      );
+
+      setPracticalSkills(
+        profile.practicalSkills || {
+          targetSkill: "",
+          skillCategory: "",
+          skillLevel: "",
+          learningMode: "",
+          projectType: "",
+        }
+      );
+
+      setJobsCareers(
+        profile.jobsCareers || {
+          currentRole: "",
+          yearsOfExperience: "",
+          industry: "",
+          employmentType: "",
+        }
+      );
+
+      setNonAcademicCounselling(
+        profile.nonAcademicCounselling || {
+          concernArea: "",
+          currentChallenge: "",
+          supportTypeNeeded: "",
+        }
+      );
     }
   }, [profile]);
 
@@ -63,7 +111,7 @@ export default function ProfileDetails({ profile, onProfileUpdated, onBack }) {
       const res = await fetch("https://countriesnow.space/api/v0.1/countries/states", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ country: countryName })
+        body: JSON.stringify({ country: countryName }),
       });
       const json = await res.json();
       if (!json.error) {
@@ -86,7 +134,7 @@ export default function ProfileDetails({ profile, onProfileUpdated, onBack }) {
       const res = await fetch("https://countriesnow.space/api/v0.1/countries/state/cities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ country: countryName, state: stateName })
+        body: JSON.stringify({ country: countryName, state: stateName }),
       });
       const json = await res.json();
       if (!json.error) {
@@ -109,61 +157,75 @@ export default function ProfileDetails({ profile, onProfileUpdated, onBack }) {
     }
   }, [isEditing]);
 
+  const currentCountry = personalityGeography.country;
+  const currentState = personalityGeography.state;
+
   useEffect(() => {
-    if (isEditing && formData.country) {
-      fetchStates(formData.country);
+    if (isEditing && currentCountry) {
+      fetchStates(currentCountry);
     } else {
       setStatesList([]);
       setCitiesList([]);
     }
-  }, [formData.country, isEditing]);
+  }, [currentCountry, isEditing]);
 
   useEffect(() => {
-    if (isEditing && formData.country && formData.state) {
-      fetchCities(formData.country, formData.state);
+    if (isEditing && currentCountry && currentState) {
+      fetchCities(currentCountry, currentState);
     } else {
       setCitiesList([]);
     }
-  }, [formData.state, formData.country, isEditing]);
+  }, [currentState, currentCountry, isEditing]);
 
   const handleCountryChange = (e) => {
     const val = e.target.value;
-    setFormData(prev => ({
+    setPersonalityGeography((prev) => ({
       ...prev,
       country: val,
       state: "",
-      city: ""
+      city: "",
     }));
   };
 
   const handleStateChange = (e) => {
     const val = e.target.value;
-    setFormData(prev => ({
+    setPersonalityGeography((prev) => ({
       ...prev,
       state: val,
-      city: ""
+      city: "",
     }));
   };
 
   const handleCityChange = (e) => {
     const val = e.target.value;
-    setFormData(prev => ({
+    setPersonalityGeography((prev) => ({
       ...prev,
-      city: val
+      city: val,
     }));
   };
 
   const handleSave = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     setSaving(true);
     setMessage({ text: "", type: "" });
 
     try {
+      const email = profile?.email || "";
+      if (!email) throw new Error("User email is missing");
+
       const payload = {
         ...profile,
-        ...formData,
+        email,
+        // Pure student signals only — no destination / path fields
+        personalityGeography,
+        academics,
+        practicalSkills,
+        jobsCareers,
+        nonAcademicCounselling,
+        // Sync name from personalityGeography
+        name: personalityGeography.name || profile?.name || "",
       };
-      
+
       const res = await fetch(`${API}/api/profile`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -172,45 +234,29 @@ export default function ProfileDetails({ profile, onProfileUpdated, onBack }) {
 
       if (!res.ok) throw new Error("Failed to update profile signals");
       const saved = await res.json();
-      
+
       if (onProfileUpdated) {
         onProfileUpdated(saved);
       }
       if (saved && saved.email) {
         localStorage.setItem(`nv_profile_${saved.email.toLowerCase()}`, JSON.stringify(saved));
       }
-      
-      setMessage({ text: "Profile details updated successfully!", type: "success" });
+
+      setMessage({ text: "Student signals updated successfully!", type: "success" });
       setIsEditing(false);
     } catch (err) {
+      console.error("Save error:", err);
       setMessage({ text: err.message, type: "error" });
     } finally {
       setSaving(false);
     }
   };
+
   const getInitials = () => {
-    return "SS";
-  };
-
-  // Helper to get formatted labels
-  const getDisplayValue = (val) => {
-    return val?.trim() || val || "Not provided";
-  };
-
-  const handleReset = () => {
-    setFormData({
-      grade: "",
-      degreeType: "",
-      curriculum: "",
-      stream: "",
-      school: "",
-      performance: "",
-      financialSituation: "",
-      personality: "",
-      country: "",
-      state: "",
-      city: ""
-    });
+    const name = personalityGeography?.name || profile?.name || "Student";
+    const parts = name.split(" ").filter(Boolean);
+    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    return name.slice(0, 2).toUpperCase() || "SS";
   };
 
   return (
@@ -223,19 +269,16 @@ export default function ProfileDetails({ profile, onProfileUpdated, onBack }) {
       </div>
 
       <div className="profile-card-wrapper">
-        {/* Banner with Profile Avatar */}
+        {/* Hero Banner */}
         <div className="profile-hero-banner">
           <div className="profile-avatar-circle">
             <span className="profile-avatar-initials">{getInitials()}</span>
           </div>
           <div className="profile-hero-info">
-            <h2>Student Profile Signals</h2>
-            <p className="profile-hero-email">Configure and curate the student academic profile parameters below.</p>
-            <div className="profile-badge-row">
-              <span className="profile-badge badge-secondary">
-                {profile?.grade || "Grade Pending"} • {profile?.curriculum || "Curriculum Pending"}
-              </span>
-            </div>
+            <h2>Student Signals</h2>
+            <p className="profile-hero-email">
+              Who is this student? Personal, academic, financial, and characteristic information.
+            </p>
           </div>
         </div>
 
@@ -249,297 +292,53 @@ export default function ProfileDetails({ profile, onProfileUpdated, onBack }) {
 
         <form onSubmit={handleSave} className="profile-info-form">
           <div className="profile-form-grid">
-            
-            {/* Academic Section */}
-            <div className="profile-section-card">
-              <h3 className="profile-section-title">Academic Background</h3>
-              
-              <div className="profile-fields-list">
-                <div className="profile-field-group profile-field-group--highlight">
-                  <label>Degree Type</label>
-                  {isEditing ? (
-                    <select
-                      className="profile-select"
-                      value={formData.degreeType || ""}
-                      onChange={e => setFormData({ ...formData, degreeType: e.target.value })}
-                      required
-                    >
-                      <option value="">Select Degree Type</option>
-                      {DEGREE_TYPE_OPTIONS.map(opt => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <div className="profile-value-display">{getDisplayValue(profile?.degreeType || profile?.degree_type)}</div>
-                  )}
-                </div>
+            {/* Personal Info + Location + Financial + Characteristics */}
+            <PersonalityGeography
+              data={personalityGeography}
+              onChange={(field, val) =>
+                setPersonalityGeography((prev) => ({ ...prev, [field]: val }))
+              }
+              isEditing={isEditing}
+              countriesList={countriesList}
+              statesList={statesList}
+              citiesList={citiesList}
+              loadingCountries={loadingCountries}
+              loadingStates={loadingStates}
+              loadingCities={loadingCities}
+              onCountryChange={handleCountryChange}
+              onStateChange={handleStateChange}
+              onCityChange={handleCityChange}
+            />
 
-                <div className="profile-field-group">
-                  <label>Grade Level</label>
-                  {isEditing ? (
-                    <>
-                      <select
-                        className="profile-select"
-                        value={formData.grade && !["Grade 9", "Grade 10", "Grade 11", "Grade 12", "Bachelor's", "Master's"].includes(formData.grade) ? "Other" : (formData.grade || "")}
-                        onChange={e => {
-                          const val = e.target.value;
-                          if (val === "Other") {
-                            setFormData({ ...formData, grade: " " });
-                          } else {
-                            setFormData({ ...formData, grade: val });
-                          }
-                        }}
-                        required
-                      >
-                        <option value="">Select Grade</option>
-                        {["Grade 9", "Grade 10", "Grade 11", "Grade 12", "Bachelor's", "Master's"].map(opt => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                        <option value="Other">Other</option>
-                      </select>
-                      {formData.grade && !["Grade 9", "Grade 10", "Grade 11", "Grade 12", "Bachelor's", "Master's"].includes(formData.grade) && (
-                        <input
-                          type="text"
-                          className="profile-input"
-                          style={{ marginTop: "8px" }}
-                          value={formData.grade === " " ? "" : formData.grade}
-                          onChange={e => setFormData({ ...formData, grade: e.target.value })}
-                          placeholder="Specify custom grade level"
-                          required
-                        />
-                      )}
-                    </>
-                  ) : (
-                    <div className="profile-value-display">{getDisplayValue(profile?.grade)}</div>
-                  )}
-                </div>
+            {/* Academic Information — Stage-Adaptive */}
+            <AcademicFields
+              data={academics}
+              onChange={(field, val) => setAcademics((prev) => ({ ...prev, [field]: val }))}
+              isEditing={isEditing}
+            />
 
-                <div className="profile-field-group">
-                  <label>Curriculum</label>
-                  {isEditing ? (
-                    <>
-                      <select
-                        className="profile-select"
-                        value={formData.curriculum && !["CBSE", "ICSE", "State Board", "IB", "IGCSE", "University"].includes(formData.curriculum) ? "Other" : (formData.curriculum || "")}
-                        onChange={e => {
-                          const val = e.target.value;
-                          if (val === "Other") {
-                            setFormData({ ...formData, curriculum: " " });
-                          } else {
-                            setFormData({ ...formData, curriculum: val });
-                          }
-                        }}
-                      >
-                        <option value="">Select Curriculum</option>
-                        {["CBSE", "ICSE", "State Board", "IB", "IGCSE", "University"].map(opt => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                        <option value="Other">Other</option>
-                      </select>
-                      {formData.curriculum && !["CBSE", "ICSE", "State Board", "IB", "IGCSE", "University"].includes(formData.curriculum) && (
-                        <input
-                          type="text"
-                          className="profile-input"
-                          style={{ marginTop: "8px" }}
-                          value={formData.curriculum === " " ? "" : formData.curriculum}
-                          onChange={e => setFormData({ ...formData, curriculum: e.target.value })}
-                          placeholder="Specify custom curriculum"
-                          required
-                        />
-                      )}
-                    </>
-                  ) : (
-                    <div className="profile-value-display">{getDisplayValue(profile?.curriculum)}</div>
-                  )}
-                </div>
+            {/* Practical Skills — optional student context */}
+            <PracticalSkillsFields
+              data={practicalSkills}
+              onChange={(field, val) => setPracticalSkills((prev) => ({ ...prev, [field]: val }))}
+              isEditing={isEditing}
+            />
 
-                <div className="profile-field-group">
-                  <label>Academic Stream</label>
-                  {isEditing ? (
-                    <>
-                      <select
-                        className="profile-select"
-                        value={formData.stream && !["Science", "Commerce", "Arts", "Engineering"].includes(formData.stream) ? "Other" : (formData.stream || "")}
-                        onChange={e => {
-                          const val = e.target.value;
-                          if (val === "Other") {
-                            setFormData({ ...formData, stream: " " });
-                          } else {
-                            setFormData({ ...formData, stream: val });
-                          }
-                        }}
-                      >
-                        <option value="">Select Stream</option>
-                        {["Science", "Commerce", "Arts", "Engineering"].map(opt => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                        <option value="Other">Other</option>
-                      </select>
-                      {formData.stream && !["Science", "Commerce", "Arts", "Engineering"].includes(formData.stream) && (
-                        <input
-                          type="text"
-                          className="profile-input"
-                          style={{ marginTop: "8px" }}
-                          value={formData.stream === " " ? "" : formData.stream}
-                          onChange={e => setFormData({ ...formData, stream: e.target.value })}
-                          placeholder="Specify custom academic stream"
-                          required
-                        />
-                      )}
-                    </>
-                  ) : (
-                    <div className="profile-value-display">{getDisplayValue(profile?.stream)}</div>
-                  )}
-                </div>
+            {/* Jobs & Careers — optional student context */}
+            <JobsCareersFields
+              data={jobsCareers}
+              onChange={(field, val) => setJobsCareers((prev) => ({ ...prev, [field]: val }))}
+              isEditing={isEditing}
+            />
 
-                <div className="profile-field-group">
-                  <label>School / College</label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      className="profile-input"
-                      value={formData.school || ""}
-                      onChange={e => setFormData({ ...formData, school: e.target.value })}
-                      placeholder="e.g. Delhi Public School"
-                    />
-                  ) : (
-                    <div className="profile-value-display">{getDisplayValue(profile?.school)}</div>
-                  )}
-                </div>
-
-                <div className="profile-field-group">
-                  <label>Current Performance</label>
-                  {isEditing ? (
-                    <select
-                      className="profile-select"
-                      value={formData.performance || ""}
-                      onChange={e => setFormData({ ...formData, performance: e.target.value })}
-                    >
-                      <option value="">Select Performance</option>
-                      {["Below 60%", "60%–74%", "75%–89%", "90% and above"].map(opt => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <div className="profile-value-display">{getDisplayValue(profile?.performance)}</div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Persona & Location Section */}
-            <div className="profile-section-card">
-              <h3 className="profile-section-title">Personality & Geography</h3>
-
-              <div className="profile-fields-list">
-                <div className="profile-field-group">
-                  <label>Student Personality Signal</label>
-                  {isEditing ? (
-                    <select
-                      className="profile-select"
-                      value={formData.personality || ""}
-                      onChange={e => setFormData({ ...formData, personality: e.target.value })}
-                    >
-                      <option value="">Select Personality</option>
-                      {[
-                        "Realistic: Engineer, Electrician, Mechanic",
-                        "Investigative: Scientist, Data Analyst, AI Researcher",
-                        "Artistic: Designer, Writer, Animator",
-                        "Social: Teacher, Counselor, Nurse",
-                        "Enterprising: Entrepreneur, Manager, Marketing Executive",
-                        "Conventional: Accountant, Banker, Administrator"
-                      ].map(opt => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <div className="profile-value-display-wide">{getDisplayValue(profile?.personality)}</div>
-                  )}
-                </div>
-
-                <div className="profile-field-group">
-                  <label>Financial Situation</label>
-                  {isEditing ? (
-                    <select
-                      className="profile-select"
-                      value={formData.financialSituation || ""}
-                      onChange={e => setFormData({ ...formData, financialSituation: e.target.value })}
-                    >
-                      <option value="">Select Budget Tier</option>
-                      {["0-25%", "25-50%", "50-75%", "75-100%"].map(opt => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <div className="profile-value-display-wide">{getDisplayValue(profile?.financialSituation)}</div>
-                  )}
-                </div>
-
-                <div className="profile-field-row-3col">
-                  <div className="profile-field-group">
-                    <label>Country</label>
-                    {isEditing ? (
-                      <select
-                        className="profile-select"
-                        value={formData.country || ""}
-                        onChange={handleCountryChange}
-                        disabled={loadingCountries}
-                      >
-                        <option value="">{loadingCountries ? "Loading countries..." : "Select Country"}</option>
-                        {countriesList.map(c => (
-                          <option key={c.name} value={c.name}>{c.name}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <div className="profile-value-display">{getDisplayValue(profile?.country)}</div>
-                    )}
-                  </div>
-
-                  <div className="profile-field-group">
-                    <label>State</label>
-                    {isEditing ? (
-                      <select
-                        className="profile-select"
-                        value={formData.state || ""}
-                        onChange={handleStateChange}
-                        disabled={loadingStates || !formData.country}
-                      >
-                        <option value="">
-                          {!formData.country ? "Select country first" : loadingStates ? "Loading states..." : "Select State"}
-                        </option>
-                        {statesList.map(s => (
-                          <option key={s.name} value={s.name}>{s.name}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <div className="profile-value-display">{getDisplayValue(profile?.state)}</div>
-                    )}
-                  </div>
-
-                  <div className="profile-field-group">
-                    <label>City</label>
-                    {isEditing ? (
-                      <select
-                        className="profile-select"
-                        value={formData.city || ""}
-                        onChange={handleCityChange}
-                        disabled={loadingCities || !formData.state}
-                      >
-                        <option value="">
-                          {!formData.state ? "Select state first" : loadingCities ? "Loading cities..." : "Select City"}
-                        </option>
-                        {citiesList.map(c => (
-                          <option key={c} value={c}>{c}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <div className="profile-value-display">{getDisplayValue(profile?.city)}</div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
+            {/* Non-Academic Counselling — optional student context */}
+            <NonAcademicCounsellingFields
+              data={nonAcademicCounselling}
+              onChange={(field, val) =>
+                setNonAcademicCounselling((prev) => ({ ...prev, [field]: val }))
+              }
+              isEditing={isEditing}
+            />
           </div>
 
           {/* Actions Bar */}
@@ -549,16 +348,14 @@ export default function ProfileDetails({ profile, onProfileUpdated, onBack }) {
                 <button
                   type="button"
                   className="profile-btn btn-cancel"
-                  style={{ marginRight: "auto", borderColor: "#EB4335", color: "#EB4335" }}
-                  onClick={handleReset}
-                >
-                  Reset Details
-                </button>
-                <button
-                  type="button"
-                  className="profile-btn btn-cancel"
                   onClick={() => {
-                    setFormData(profile);
+                    if (profile) {
+                      setPersonalityGeography(profile.personalityGeography || {});
+                      setAcademics(profile.academics || {});
+                      setPracticalSkills(profile.practicalSkills || {});
+                      setJobsCareers(profile.jobsCareers || {});
+                      setNonAcademicCounselling(profile.nonAcademicCounselling || {});
+                    }
                     setIsEditing(false);
                     setMessage({ text: "", type: "" });
                   }}
@@ -566,12 +363,8 @@ export default function ProfileDetails({ profile, onProfileUpdated, onBack }) {
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="profile-btn btn-save"
-                  disabled={saving}
-                >
-                  {saving ? "Saving Changes..." : "Save Changes"}
+                <button type="submit" className="profile-btn btn-save" disabled={saving}>
+                  {saving ? "Saving Changes..." : "Save Student Signals"}
                 </button>
               </>
             ) : (

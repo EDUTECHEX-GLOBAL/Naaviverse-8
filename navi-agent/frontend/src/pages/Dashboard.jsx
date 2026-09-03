@@ -32,53 +32,24 @@ const STEP_COLORS = [
   { border: "#F9B000", bg: "#FEF7E0", text: "#8A6000", pill: "pill-amber" },
 ];
 
-const CONTENT_SEGMENTS = [
-  {
-    key: "academic",
-    label: "Academic & Research",
-    prompt: "Academic & Research",
-    subSegments: [
-      { key: "school", label: "School: K-12" },
-      { key: "pre_university", label: "Pre-University: Grade 11-12" },
-      { key: "university", label: "University: Bachelor's / Master's / PhD / Transfer" },
-    ],
-  },
-  {
-    key: "practical",
-    label: "Practical & Skills",
-    prompt: "Practical & Skills",
-    subSegments: [
-      { key: "skills", label: "Skills Track" },
-      { key: "internship", label: "Internship Track" },
-    ],
-  },
-  {
-    key: "jobs",
-    label: "Jobs & Careers",
-    prompt: "Jobs & Careers",
-    subSegments: [
-      { key: "technical", label: "Technical Roles" },
-      { key: "non_technical", label: "Non-Technical Roles" },
-    ],
-  },
-  {
-    key: "non_academic",
-    label: "Non-Academic Counselling",
-    prompt: "Non-Academic Counselling",
-    subSegments: [
-      { key: "mental_health", label: "Mental Health & Wellness" },
-      { key: "life", label: "Generic Life Counselling" },
-      { key: "immediate", label: "Short-term / Immediate Guidance" },
-    ],
-  },
-];
+import SegmentSelector from "../components/SegmentSelector";
+import {
+  SEGMENTS,
+  SEGMENT_CONFIGS,
+  getSegmentConfig,
+  getDefaultSubSegment,
+  getProfileKeyForSegment,
+} from "../constants/segments";
 
-const CATEGORY_TABS = {
-  academic: ["Research & Honors Focus", "Test Prep & Admissions Focus"],
-  practical: ["Project Portfolio Focus", "Certification & Bootcamp Focus"],
-  jobs: ["Technical Role Prep Focus", "Interview & Networking Focus"],
-  non_academic: ["Mental Health & Wellness Focus", "Life Skills & Decision Focus"]
-};
+function getSegmentKeyInProfile(segmentKey) {
+  return getProfileKeyForSegment(segmentKey);
+}
+
+function getSegmentPositionAndGoal(profile, segmentKey) {
+  // PART 4 & 5: No default data. Current position and destination start empty.
+  // Student Signals do NOT define current position or destination.
+  return { current: "", goal: "" };
+}
 
 function getProfileValue(profile, key) {
   return profile?.[key]?.trim?.() || profile?.[key] || "Not provided";
@@ -347,10 +318,14 @@ function RotateCwIcon({ size = 14 }) {
 }
 
 export default function Dashboard({ profile, pathData, userInput, initialCurrent = "", onPathGenerated, onStepClick, onGenerationStart, onProfileUpdated, selectedAltIdx, setSelectedAltIdx, onStepPatched }) {
-  const [current, setCurrent] = useState(userInput?.current || initialCurrent);
-  const [goal, setGoal] = useState(userInput?.goal || "");
-  const [selectedSegmentKey, setSelectedSegmentKey] = useState("academic");
-  const [selectedSubSegmentKey, setSelectedSubSegmentKey] = useState("school");
+  // PART 2: Category must be explicitly selected — no hardcoded default
+  const [activeSegment, setActiveSegmentLocal] = useState(profile?.activeSegment || "");
+  const [activeSubSegment, setActiveSubSegmentLocal] = useState(profile?.subSegment || "");
+
+  // PART 4 & 5: Start empty, or populate from userInput if an existing roadmap is already active
+  const [current, setCurrent] = useState(() => (pathData && userInput?.current ? userInput.current : ""));
+  const [goal, setGoal] = useState(() => (pathData && userInput?.goal ? userInput.goal : ""));
+
   const [loading, setLoading] = useState(false);
   const [loadMsg, setLoadMsg] = useState("");
   const [error, setError] = useState("");
@@ -361,6 +336,73 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
   const [regeneratingAltIdx, setRegeneratingAltIdx] = useState(null);
   const [regeneratingStepId, setRegeneratingStepId] = useState(null);
   const [stepRegenError, setStepRegenError] = useState("");
+
+  // Sync segment from profile on mount, and restore active inputs if roadmap is loaded
+  useEffect(() => {
+    if (profile?.activeSegment && !activeSegment) {
+      setActiveSegmentLocal(profile.activeSegment);
+    }
+    if (profile?.subSegment && !activeSubSegment) {
+      setActiveSubSegmentLocal(profile.subSegment);
+    }
+    if (pathData && userInput) {
+      if (userInput.current && !current) setCurrent(userInput.current);
+      if (userInput.goal && !goal) setGoal(userInput.goal);
+    }
+  }, [profile, pathData, userInput]);
+
+  const handleSegmentChange = async (newSegment, defaultSub) => {
+    // PART 2 & 4: Switch category — current/goal stay as-is (user controls them)
+    setActiveSegmentLocal(newSegment);
+    setActiveSubSegmentLocal(defaultSub || getDefaultSubSegment(newSegment));
+
+    // Clear existing path when category changes
+    if (onPathGenerated) {
+      onPathGenerated(null, { current, goal });
+    }
+
+    if (profile && onProfileUpdated) {
+      const updatedProfile = {
+        ...profile,
+        activeSegment: newSegment,
+        subSegment: defaultSub || getDefaultSubSegment(newSegment),
+      };
+      onProfileUpdated(updatedProfile);
+      if (profile.email) {
+        try {
+          await fetch(`${API}/api/profile`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedProfile),
+          });
+        } catch (err) {
+          console.warn("Failed to persist segment change to backend:", err);
+        }
+      }
+    }
+  };
+
+  const handleSubSegmentChange = async (newSub) => {
+    setActiveSubSegmentLocal(newSub);
+    if (profile && onProfileUpdated) {
+      const updatedProfile = {
+        ...profile,
+        subSegment: newSub,
+      };
+      onProfileUpdated(updatedProfile);
+      if (profile.email) {
+        try {
+          await fetch(`${API}/api/profile`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedProfile),
+          });
+        } catch (err) {
+          console.warn("Failed to persist subsegment to backend:", err);
+        }
+      }
+    }
+  };
 
   // Regenerate a single step's description + all views (macro/micro/nano)
   const handleRegenerateStep = async (e, step) => {
@@ -385,6 +427,8 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
           current_position: userInput?.current || "",
           target_goal: userInput?.goal || "",
           profile: profile || {},
+          content_category: activeSegment,
+          sub_segment: activeSubSegment,
         }),
       });
       clearTimeout(descTimeout);
@@ -420,6 +464,8 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
               current_position: userInput?.current || "",
               target_goal: userInput?.goal || "",
               profile: profile || {},
+              content_category: activeSegment,
+              sub_segment: activeSubSegment,
             }),
           });
           clearTimeout(viewTimeout);
@@ -453,10 +499,9 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
 
 
   const activePath = pathData?.alternatives ? pathData.alternatives[selectedAltIdx] : pathData;
- const steps = activePath?.steps || [];
-  const selectedSegment = CONTENT_SEGMENTS.find(segment => segment.key === selectedSegmentKey) || CONTENT_SEGMENTS[0];
-  const selectedSubSegment = selectedSegment.subSegments.find(sub => sub.key === selectedSubSegmentKey) || selectedSegment.subSegments[0];
-  const selectedFocus = `${selectedSegment.prompt} - ${selectedSubSegment.label}`;
+  const steps = activePath?.steps || [];
+  const segmentConfig = getSegmentConfig(activeSegment);
+  const selectedFocus = segmentConfig ? `${segmentConfig.label} - ${activeSubSegment || getDefaultSubSegment(activeSegment)}` : "";
 
   const handleSavePath = async () => {
     if (!activePath) {
@@ -544,45 +589,54 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
     }
   };
 
-  useEffect(() => {
-    if (userInput?.current) {
-      setCurrent(userInput.current);
-    } else {
-      setCurrent(initialCurrent);
-    }
-  }, [userInput?.current, initialCurrent]);
-
-  useEffect(() => {
-    if (userInput?.goal) {
-      setGoal(userInput.goal);
-    } else {
-      setGoal("");
-    }
-  }, [userInput?.goal]);
-
   const goalAnalysis = analyzeGoalParts(goal);
   const profileDegreeType = profile?.degreeType || profile?.degree_type || "";
   const selectedDegreeType = goalAnalysis.degreeType || profileDegreeType;
   const effectiveMissing = goalAnalysis.missing.filter(m => !(m === "degreeType" && selectedDegreeType));
+  
+  const currentSegKey = getSegmentKeyInProfile(activeSegment);
   const generationProfile = {
     ...(profile || {}),
+    activeSegment,
+    subSegment: activeSubSegment,
     degreeType: selectedDegreeType,
     targetProgram: goalAnalysis.program || "",
     targetUniversity: goalAnalysis.university || "",
     targetCountry: goalAnalysis.country || profile?.country || "",
+    [currentSegKey]: {
+      ...(profile?.[currentSegKey] || {}),
+      currentPosition: current,
+      futureGoal: goal,
+    },
   };
   const refineAnalysis = analyzeRefinement(refinePrompt);
-  const isAcademicSegment = selectedSegmentKey === "academic";
+  const isAcademicSegment = activeSegment === SEGMENTS.ACADEMICS;
+  // PART 2: Category must be explicitly selected
+  const isCategorySelected = !!activeSegment;
+  const isSubCategorySelected = !!activeSubSegment;
   const isGoalValid = goal.trim() !== "" && (!isAcademicSegment || effectiveMissing.length === 0);
   const formattedMissing = effectiveMissing.map(m => m === "degreeType" ? "degree type" : m);
   const missingFieldsText = formattedMissing.join(", ").replace(/, ([^,]*)$/, ' and $1');
+
   const goalPlaceholder = isAcademicSegment
     ? "Degree Type • Program • University • Country"
-    : selectedSegmentKey === "practical"
-      ? "e.g. Learn Python for data analysis, or complete a UX internship"
-      : selectedSegmentKey === "jobs"
-        ? "e.g. Become a Data Scientist, Product Manager, or Marketing Analyst"
-        : "e.g. Manage exam stress, decide next steps, or get immediate guidance";
+    : activeSegment === SEGMENTS.JOBS_CAREERS
+      ? "e.g. Senior Machine Learning Engineer • Google • USA"
+      : activeSegment === SEGMENTS.NON_ACADEMIC_COUNSELLING
+        ? "e.g. Build stress resilience, improve focus and study-life balance"
+        : activeSegment === SEGMENTS.PRACTICAL
+          ? "e.g. Build a full-stack portfolio with 5 deployed projects"
+          : "e.g. 95% in Grade 10 CBSE Board Exams • Science Stream";
+
+  const currentPlaceholder = isAcademicSegment
+    ? "e.g. Grade 12, IGCSE Science, Hyderabad"
+    : activeSegment === SEGMENTS.JOBS_CAREERS
+      ? "e.g. Junior Software Developer, 2 yrs experience, Tech"
+      : activeSegment === SEGMENTS.NON_ACADEMIC_COUNSELLING
+        ? "e.g. Facing high exam anxiety and lack of career clarity"
+        : activeSegment === SEGMENTS.PRACTICAL
+          ? "e.g. Beginner Python learner, 2 months self-study"
+          : "e.g. Grade 10 CBSE Student, Delhi Public School";
 
   // Progress follows backend stages plus bounded heartbeats during long model calls.
   const [loaderProgress, setLoaderProgress] = useState(0);
@@ -669,15 +723,21 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
 
   async function generate(customPrompt = "", isTabRegen = false) {
     const promptText = typeof customPrompt === "string" ? customPrompt : "";
-    if (!current.trim() || !isGoalValid) {
-      console.warn("[Naavi Dashboard] Cannot generate pathway. Inputs invalid or empty:", { current, goal, isGoalValid });
+    const activeCurrent = current.trim() || (pathData && userInput?.current ? userInput.current.trim() : "") || "";
+    const activeGoal = goal.trim() || (pathData && userInput?.goal ? userInput.goal.trim() : "") || "";
+
+    if (!current.trim() && activeCurrent) setCurrent(activeCurrent);
+    if (!goal.trim() && activeGoal) setGoal(activeGoal);
+
+    if (!activeCurrent || !activeGoal) {
+      console.warn("[Naavi Dashboard] Cannot generate pathway. Inputs invalid or empty:", { current: activeCurrent, goal: activeGoal, isGoalValid });
       return;
     }
 
     const isRegen = isTabRegen && pathData !== null && pathData !== undefined;
     console.log("[Naavi Dashboard] generate() invoked:", {
-      current,
-      goal,
+      current: activeCurrent,
+      goal: activeGoal,
       isRegen,
       isTabRegen,
       refinePrompt: promptText || "(none)"
@@ -698,9 +758,11 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
           field: surgicalInfo.field,
           instruction: surgicalInfo.instruction,
           current_step: surgicalInfo.targetStep,
-          current_position: current,
-          target_goal: goal,
-          profile: generationProfile
+          current_position: activeCurrent,
+          target_goal: activeGoal,
+          profile: generationProfile,
+          content_category: activeSegment,
+          sub_segment: activeSubSegment
         };
         if (surgicalInfo.field === "marketplace") {
           payload.marketplace_section = surgicalInfo.marketplaceSection;
@@ -780,7 +842,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
     }
 
     if (onGenerationStart) {
-      onGenerationStart({ current, goal }, isRegen);
+      onGenerationStart({ current: activeCurrent, goal: activeGoal }, isRegen);
     }
     setLoading(true);
     setError("");
@@ -805,15 +867,15 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
 
     try {
       const payload = {
-        current_position: current,
-        target_goal: goal,
+        current_position: activeCurrent,
+        target_goal: activeGoal,
         profile: generationProfile,
         degree_type: selectedDegreeType,
         refine_prompt: promptText || null,
         existing_roadmap: isRegen && promptText ? activePath : null,
         focus: isRegen && activePath ? activePath.option_name : selectedFocus,
-        content_category: selectedSegmentKey,
-        sub_segment: selectedSubSegmentKey
+        content_category: activeSegment,
+        sub_segment: activeSubSegment
       };
       console.log("[Naavi Dashboard] Calling Stream API endpoint:", `${API}/api/path/stream`, "Payload:", payload);
 
@@ -858,7 +920,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
         setSelectedAltIdx(0);
       }
 
-      onPathGenerated(mergedData, { current, goal });
+      onPathGenerated(mergedData, { current: activeCurrent, goal: activeGoal });
       if (promptText) {
         setRefinePrompt("");
       }
@@ -882,37 +944,16 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
 
           {/* Route input card */}
           <div className="db-input-card">
-            <div className="db-input-label-row">
-              <div className="db-input-label-icon blue-dot" />
-              <span className="db-input-kicker">Content segment</span>
-            </div>
-            <div className="db-segment-grid" role="tablist" aria-label="Content segment">
-              {CONTENT_SEGMENTS.map(segment => (
-                <button
-                  key={segment.key}
-                  type="button"
-                  className={`db-segment-btn ${selectedSegmentKey === segment.key ? "active" : ""}`}
-                  onClick={() => {
-                    setSelectedSegmentKey(segment.key);
-                    setSelectedSubSegmentKey(segment.subSegments[0].key);
-                  }}
-                  disabled={loading}
-                >
-                  {segment.label}
-                </button>
-              ))}
-            </div>
-            <select
-              className="db-segment-select"
-              value={selectedSubSegmentKey}
-              onChange={event => setSelectedSubSegmentKey(event.target.value)}
+            {/* PART 2 & 3: Dynamic Category + Sub-Category Dropdowns */}
+            <SegmentSelector
+              activeSegment={activeSegment}
+              activeSubSegment={activeSubSegment}
+              onSelectSegment={handleSegmentChange}
+              onSelectSubSegment={handleSubSegmentChange}
+              showSubSegments={true}
+              useDropdown={true}
               disabled={loading}
-              aria-label="Content sub-segment"
-            >
-              {selectedSegment.subSegments.map(sub => (
-                <option key={sub.key} value={sub.key}>{sub.label}</option>
-              ))}
-            </select>
+            />
 
             <div className="db-input-label-row">
               <div className="db-input-label-icon green-dot" />
@@ -921,7 +962,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
             <textarea
               className="db-textarea"
               rows={3}
-              placeholder="e.g. Grade 12, IGCSE Science, Hyderabad"
+              placeholder={currentPlaceholder}
               value={current}
               onChange={e => setCurrent(e.target.value)}
               disabled={loading}
@@ -968,10 +1009,16 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
               <div className="db-agent-body">
                 <span className="db-agent-title">Naavi Agent</span>
                 <p className="db-agent-text">
-                  {goal.trim() === "" ? (
+                  {!isCategorySelected ? (
+                    <>Please select a <strong>Content Category</strong> and <strong>Sub-Category</strong> to begin.</>
+                  ) : !isSubCategorySelected ? (
+                    <>Please select a <strong>Sub-Category</strong> for {segmentConfig?.label || "your category"}.</>
+                  ) : !current.trim() ? (
+                    <>Please enter your <strong>Current position</strong> &amp; <strong>Future goal</strong> to generate your AI pathway.</>
+                  ) : goal.trim() === "" ? (
                     isAcademicSegment
                       ? <>Please enter your goal using the format: <strong>Degree Type • Program • University • Country</strong></>
-                      : <>Please enter the specific outcome you want for <strong>{selectedSubSegment.label}</strong>.</>
+                      : <>Please enter the target outcome you want for <strong>{activeSubSegment || getDefaultSubSegment(activeSegment)}</strong>.</>
                   ) : isAcademicSegment && effectiveMissing.length > 0 ? (
                     <>You missed the <strong>{missingFieldsText}</strong>. Please include {effectiveMissing.length === 1 ? 'it' : 'them'} (e.g. {
                       effectiveMissing.includes("degreeType") ? "Bachelor's" : ""
@@ -989,7 +1036,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
                         effectiveMissing.includes("country") ? "USA" : ""
                       }).</>
                   ) : (
-                    <>Segment is set to <strong>{selectedSegment.label}</strong>. Click <strong>Find My Path</strong> to continue.</>
+                    <>Ready for <strong>{segmentConfig.label}</strong> ({activeSubSegment || getDefaultSubSegment(activeSegment)})! Click <strong>Find My Path</strong> to generate.</>
                   )}
                 </p>
               </div>
@@ -1000,7 +1047,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
             <button
               className="db-generate-btn"
               onClick={() => generate("", false)}
-              disabled={loading || !current.trim() || !isGoalValid}
+              disabled={loading || !isCategorySelected || !isSubCategorySelected || !current.trim() || !isGoalValid}
             >
               {loading ? (
                 <span className="db-loading-inner">
@@ -1078,8 +1125,6 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
             </div>
           )}
 
-
-
         </div>
       </div>
 
@@ -1092,14 +1137,37 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
               alt="Career Route Navigation Map"
               className="db-empty-illustration"
             />
-            <h3 className="db-empty-title">Your path will appear here</h3>
-            <p className="db-empty-sub">Enter your current situation and future goal on the left, then click Find My Path</p>
+            <h3 className="db-empty-title">Ready to Generate Your Personalized Pathway</h3>
+            <p className="db-empty-sub">
+              Select your category and sub-category on the left, enter your current situation and target goal, then click <strong>Find My Path</strong>.
+            </p>
+            <div className="db-empty-selection-strip">
+              <span className="db-empty-chip category">
+                Track: <strong>{segmentConfig.label}</strong>
+              </span>
+              <span className="db-empty-chip subcategory">
+                Focus: <strong>{activeSubSegment || getDefaultSubSegment(activeSegment)}</strong>
+              </span>
+            </div>
           </div>
         ) : (
           <div className="db-path-view">
+            {/* Selected category strip */}
+            <div className="db-selected-category-strip">
+              <div className="db-track-badge">
+                <span className="db-track-dot" />
+                <span className="db-track-label">Track:</span>
+                <span className="db-track-name">{segmentConfig.label}</span>
+              </div>
+              <div className="db-subtrack-badge">
+                <span className="db-subtrack-label">Focus:</span>
+                <span className="db-subtrack-name">{activeSubSegment || getDefaultSubSegment(activeSegment)}</span>
+              </div>
+            </div>
+
             {/* Alternatives selector tabs */}
             <div className="db-alt-tabs">
-              {(pathData?.alternatives || CATEGORY_TABS[selectedSegmentKey] || CONTENT_SEGMENTS.map(segment => segment.label)).map((alt, idx) => {
+              {(pathData?.alternatives || []).map((alt, idx) => {
                 const name = typeof alt === "string" ? alt : (alt.option_name || `Option ${idx + 1}`);
                 return (
                   <button
@@ -1339,7 +1407,8 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
                         onClick={() => generate("", true)}
                         disabled={loading}
                       >
-                        <RotateCwIcon size={14} /> Regenerate
+                        <RotateCwIcon size={14} className={loading && regeneratingAltIdx === selectedAltIdx ? "spinning" : ""} />
+                        {loading && regeneratingAltIdx === selectedAltIdx ? "Regenerating..." : "Regenerate"}
                       </button>
                     )}
 

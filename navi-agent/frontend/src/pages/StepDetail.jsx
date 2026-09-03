@@ -29,6 +29,24 @@ function richText(value, fallback) {
     : "This step needs focused execution. Clarify the expected outcome, identify the skills required, and complete a small proof of work before moving forward. Use feedback from peers, mentors, or real users to check whether the work is strong enough for the next stage.";
 }
 
+function renderDetailedContent(value, fallback) {
+  const raw = richText(value, fallback);
+  if (!raw) return null;
+  const paragraphs = raw.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+  if (paragraphs.length <= 1) {
+    return <p className="macro-ov-body">{raw}</p>;
+  }
+  return (
+    <div className="macro-ov-content">
+      {paragraphs.map((para, idx) => (
+        <p key={idx} className="macro-ov-body">
+          {para}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 export default function StepDetail({ step, initialView = "macro", onViewClick }) {
   const [active, setActive] = useState(initialView);
   if (!step) return null;
@@ -74,12 +92,10 @@ export default function StepDetail({ step, initialView = "macro", onViewClick })
             </div>
             <div className="step-reading-card card">
               <div className="macro-ov-title">What this phase means (Macro Vision)</div>
-              <p className="macro-ov-body">
-                {richText(
-                  step.macro_view?.description || step.macro_view,
-                  `${step.title} is a vital milestone. During ${step.duration}, this phase establishes foundational subject mastery and strategic alignment necessary for reaching ${step.description || 'your target goal'}.`
-                )}
-              </p>
+              {renderDetailedContent(
+                step.macro_view?.description || step.macro_view,
+                `${step.title} is a vital milestone. During ${step.duration}, this phase establishes foundational subject mastery and strategic alignment necessary for reaching ${step.description || 'your target goal'}.`
+              )}
             </div>
           </div>
         )}
@@ -92,12 +108,10 @@ export default function StepDetail({ step, initialView = "macro", onViewClick })
             </div>
             <div className="step-reading-card card step-reading-card--micro">
               <div className="macro-ov-title">How to execute this step (Micro Roadmap)</div>
-              <p className="macro-ov-body">
-                {richText(
-                  step.micro_view?.description || step.micro_view || step.detailed_description || step.details || step.content,
-                  `Detailed weekly execution for ${step.title}: Allocate 5-8 hours weekly to practice problem sets, review core syllabus topics, complete diagnostic exercises, and maintain a structured progress log.`
-                )}
-              </p>
+              {renderDetailedContent(
+                step.micro_view?.description || step.micro_view || step.detailed_description || step.details || step.content,
+                `Detailed weekly execution for ${step.title}: Allocate 5-8 hours weekly to practice problem sets, review core syllabus topics, complete diagnostic exercises, and maintain a structured progress log.`
+              )}
             </div>
           </div>
         )}
@@ -110,12 +124,10 @@ export default function StepDetail({ step, initialView = "macro", onViewClick })
             </div>
             <div className="step-reading-card card step-reading-card--nano">
               <div className="macro-ov-title">Personalized guidance focus (Nano Audit)</div>
-              <p className="macro-ov-body">
-                {richText(
-                  step.nano_view?.description || step.nano_view,
-                  `1-on-1 Mentor Focus for ${step.title}: Schedule diagnostic review sessions with subject advisors or counselors to audit weak topics, verify concept mastery, and receive personalized feedback.`
-                )}
-              </p>
+              {renderDetailedContent(
+                step.nano_view?.description || step.nano_view,
+                `1-on-1 Mentor Focus for ${step.title}: Schedule diagnostic review sessions with subject advisors or counselors to audit weak topics, verify concept mastery, and receive personalized feedback.`
+              )}
             </div>
             <div className="nano-options">
               {nanoOptions.map((opt, i) => (
@@ -171,8 +183,9 @@ export default function StepDetail({ step, initialView = "macro", onViewClick })
         .step-reading-card { padding: 24px; margin-bottom: 24px; }
         .step-reading-card--micro { border-left: 4px solid var(--blue);  }
         .step-reading-card--nano  { border-left: 4px solid var(--red);   }
-        .macro-ov-title { font-weight: 600; font-size: 14px; margin-bottom: 8px; color: var(--text); }
-        .macro-ov-body { font-size: 13px; color: var(--text2); line-height: 1.7; white-space: pre-line; }
+        .macro-ov-title { font-weight: 700; font-size: 15px; margin-bottom: 12px; color: var(--text); letter-spacing: -0.01em; }
+        .macro-ov-content { display: flex; flex-direction: column; gap: 12px; }
+        .macro-ov-body { font-size: 14px; color: #334155; line-height: 1.75; white-space: pre-line; }
         .nano-options { display: flex; flex-direction: column; gap: 14px; }
         .nano-opt { display: flex; align-items: center; gap: 16px; padding: 18px 20px; }
         .nano-opt-icon { display: flex; color: var(--accent); flex-shrink: 0; }

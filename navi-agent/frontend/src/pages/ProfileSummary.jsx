@@ -24,8 +24,9 @@ function value(profile, key) {
   return profile?.[key]?.trim?.() || profile?.[key] || "Not available";
 }
 
-function degreeTypeValue(profile) {
-  return profile?.degreeType?.trim?.() || profile?.degree_type?.trim?.() || profile?.degreeType || profile?.degree_type || "Not available";
+function nestedValue(profile, section, key) {
+  const sectionData = profile?.[section] || {};
+  return sectionData?.[key]?.trim?.() || sectionData?.[key] || "Not available";
 }
 
 function ProfileField({ Icon, label, value }) {
@@ -43,35 +44,54 @@ function ProfileField({ Icon, label, value }) {
 export default function ProfileSummary({ profile }) {
   const data = profile || readProfile();
 
+  // Pull from structured student signals, falling back to legacy flat fields
+  const pg = data?.personalityGeography || {};
+  const ac = data?.academics || {};
+
+  const studentName = pg.name || data?.name || "Not available";
+  const country = pg.country || data?.country || "Not available";
+  const state = pg.state || data?.state || "Not available";
+  const city = pg.city || data?.city || "Not available";
+  const financialSituation = pg.financialSituation || data?.financialSituation || "Not available";
+  const personalitySignal = pg.personalitySignal || data?.personality || "Not available";
+
+  const educationStage = ac.educationStage || "undergraduate";
+  const gradeLevel = ac.gradeLevel || data?.grade || "Not available";
+  const curriculum = ac.curriculum || data?.curriculum || "Not available";
+  const degreeType = ac.degreeType || data?.degreeType || data?.degree_type || "Not available";
+  const academicStream = ac.academicStream || data?.stream || "Not available";
+  const schoolOrCollege = ac.schoolOrCollege || ac.schoolName || data?.school || "Not available";
+  const performance = ac.currentPerformance || data?.performance || "Not available";
+
   const fields = [
-    { Icon: IconUser, label: "Name", value: value(data, "name") },
-    { Icon: IconBook, label: "Degree Type", value: degreeTypeValue(data) },
-    { Icon: IconBook, label: "Grade", value: value(data, "grade") },
-    { Icon: IconBook, label: "Curriculum", value: value(data, "curriculum") },
-    { Icon: IconBuilding, label: "School", value: value(data, "school") },
-    { Icon: IconRoute, label: "Stream", value: value(data, "stream") },
-    { Icon: IconTarget, label: "Performance", value: value(data, "performance") },
-    { Icon: IconBrain, label: "Personality", value: value(data, "personality") },
-    { Icon: IconPackage, label: "Financial Situation", value: value(data, "financialSituation") },
-    { Icon: IconGlobe, label: "Country", value: value(data, "country") },
-    { Icon: IconMap, label: "State", value: value(data, "state") },
-    { Icon: IconPin, label: "City", value: value(data, "city") },
+    { Icon: IconUser, label: "Name", value: studentName },
+    { Icon: IconGlobe, label: "Country", value: country },
+    { Icon: IconMap, label: "State", value: state },
+    { Icon: IconPin, label: "City", value: city },
+    { Icon: IconBook, label: "Education Stage", value: educationStage === "school" ? "School Student" : educationStage === "postgraduate" ? "Postgraduate Student" : "Undergraduate Student" },
+    { Icon: IconBook, label: educationStage === "school" ? "Grade" : "Degree Type", value: educationStage === "school" ? gradeLevel : degreeType },
+    { Icon: IconBook, label: "Curriculum", value: curriculum },
+    { Icon: IconRoute, label: "Stream / Major", value: academicStream },
+    { Icon: IconBuilding, label: educationStage === "school" ? "School" : "College / University", value: schoolOrCollege },
+    { Icon: IconTarget, label: "Performance", value: performance },
+    { Icon: IconPackage, label: "Financial Situation", value: financialSituation },
+    { Icon: IconBrain, label: "Personality Signal", value: personalitySignal },
   ];
 
   return (
     <div className="page profile-view-page">
       <div className="profile-view-header">
         <div>
-          <div className="pill pill-teal">Profile Summary</div>
+          <div className="pill pill-teal">Student Signals Summary</div>
           <h1 className="display-title" style={{ marginTop: 14, fontSize: "28px", fontWeight: "500" }}>
-            Your saved profile
+            Student Profile
           </h1>
           <p className="profile-view-sub">
-            These details were collected during onboarding and are used to personalize your journey.
+            These student signals describe who the student is — personal, academic, financial, and characteristic information.
           </p>
         </div>
         <div className="profile-view-avatar">
-          {(value(data, "name") || "N").slice(0, 1).toUpperCase()}
+          {(studentName || "N").slice(0, 1).toUpperCase()}
         </div>
       </div>
 
@@ -87,14 +107,14 @@ export default function ProfileSummary({ profile }) {
         <>
           <div className="card profile-overview-card">
             <div>
-              <div className="section-label">Current Position</div>
+              <div className="section-label">Student Location</div>
               <h2 style={{ fontSize: "20px", fontWeight: "500", margin: "8px 0 0 0" }}>
-                {[data.grade, data.stream, data.country].filter(Boolean).join(" • ") || "Academic details unavailable"}
+                {[city, state, country].filter(v => v && v !== "Not available").join(", ") || "Location unavailable"}
               </h2>
             </div>
             <div className="profile-location-pill">
               <IconPin size={16} />
-              {[data.city, data.state, data.country].filter(Boolean).join(", ") || "Location unavailable"}
+              {[city, state, country].filter(v => v && v !== "Not available").join(", ") || "Location unavailable"}
             </div>
           </div>
 
