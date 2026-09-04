@@ -1017,36 +1017,36 @@ def split_duration(duration_str: str, num_parts: int, index: int) -> str:
 
 
 DEGREE_TYPE_OPTIONS = {
-    "bachelor": ("Bachelor's", 48),
-    "bachelors": ("Bachelor's", 48),
-    "bachelor's": ("Bachelor's", 48),
-    "undergraduate": ("Bachelor's", 48),
-    "ug": ("Bachelor's", 48),
-    "btech": ("Bachelor's", 48),
-    "b.tech": ("Bachelor's", 48),
-    "bsc": ("Bachelor's", 48),
-    "b.sc": ("Bachelor's", 48),
-    "master": ("Master's", 24),
-    "masters": ("Master's", 24),
-    "master's": ("Master's", 24),
-    "graduate": ("Master's", 24),
-    "postgraduate": ("Master's", 24),
-    "pg": ("Master's", 24),
-    "mtech": ("Master's", 24),
-    "m.tech": ("Master's", 24),
-    "msc": ("Master's", 24),
-    "m.sc": ("Master's", 24),
-    "mba": ("Master's", 24),
-    "phd": ("PhD", 60),
-    "ph.d": ("PhD", 60),
-    "doctorate": ("PhD", 60),
-    "doctoral": ("PhD", 60),
-    "transfer": ("Transfer", 24),
-    "associate": ("Associate", 24),
-    "associates": ("Associate", 24),
-    "diploma": ("Diploma", 12),
-    "certificate": ("Certificate", 6),
-    "certification": ("Certificate", 6),
+    "bachelor": "Bachelor's",
+    "bachelors": "Bachelor's",
+    "bachelor's": "Bachelor's",
+    "undergraduate": "Bachelor's",
+    "ug": "Bachelor's",
+    "btech": "Bachelor's",
+    "b.tech": "Bachelor's",
+    "bsc": "Bachelor's",
+    "b.sc": "Bachelor's",
+    "master": "Master's",
+    "masters": "Master's",
+    "master's": "Master's",
+    "graduate": "Master's",
+    "postgraduate": "Master's",
+    "pg": "Master's",
+    "mtech": "Master's",
+    "m.tech": "Master's",
+    "msc": "Master's",
+    "m.sc": "Master's",
+    "mba": "Master's",
+    "phd": "PhD",
+    "ph.d": "PhD",
+    "doctorate": "PhD",
+    "doctoral": "PhD",
+    "transfer": "Transfer",
+    "associate": "Associate",
+    "associates": "Associate",
+    "diploma": "Diploma",
+    "certificate": "Certificate",
+    "certification": "Certificate",
 }
 
 MONTHS_PER_ACADEMIC_YEAR = 12
@@ -1058,7 +1058,7 @@ def normalize_degree_type(value: Optional[str]) -> Optional[str]:
     if not value:
         return None
     text = str(value).strip().lower()
-    for key, (label, _) in DEGREE_TYPE_OPTIONS.items():
+    for key, label in DEGREE_TYPE_OPTIONS.items():
         if re.search(rf"(^|[\s\-.]){re.escape(key)}($|[\s\-.])", text):
             return label
     return None
@@ -1094,23 +1094,11 @@ def ensure_degree_type_for_generation(goal: str, profile: dict, explicit_degree_
 
 
 def duration_months_for_degree(degree_type: Optional[str]) -> Optional[int]:
-    normalized = normalize_degree_type(degree_type)
-    if not normalized:
-        return None
-    for label, months in DEGREE_TYPE_OPTIONS.values():
-        if label == normalized:
-            return months
     return None
 
 
 def duration_months_for_level(level: int) -> int:
-    level_to_degree = {
-        1: "bachelor",
-        2: "master",
-        3: "phd",
-    }
-    degree_type = level_to_degree.get(level)
-    return duration_months_for_degree(degree_type) or MIN_ADMISSION_CYCLE_MONTHS
+    return 12
 
 
 def calculate_total_duration_months(
@@ -1124,135 +1112,78 @@ def calculate_total_duration_months(
     cat = resolve_focus_category(category)
     curr_lower = (current or "").lower().strip()
     goal_lower = (goal or "").lower().strip()
+    prof = profile or {}
 
-    # 1. Academic Degree Progression (Preserve formal degree program durations)
-    if cat == "academic" or explicit_degree_type:
-        target_degree = get_request_degree_type(goal, profile, explicit_degree_type)
-        if target_degree:
-            d_dur = duration_months_for_degree(target_degree)
-            if d_dur:
-                return d_dur
+    # 1. Determine Level of Current Position
+    def get_level(text: str) -> int:
+        t = text.lower()
+        if any(k in t for k in ["phd", "ph.d", "doctorate", "doctoral"]):
+            return 5
+        elif any(k in t for k in ["master", "mtech", "msc", "mba", "postgrad", "pg", "senior", "lead", "architect", "principal"]):
+            return 4
+        elif any(k in t for k in ["bachelor", "btech", "bsc", "undergrad", "ug", "associate", "experienced", "engineer", "professional"]):
+            return 3
+        elif any(k in t for k in ["diploma", "certificate", "intermediate", "junior", "12th", "11th"]):
+            return 2
+        elif any(k in t for k in ["school", "10th", "9th", "8th", "7th", "6th", "5th", "beginner", "novice", "starter", "zero"]):
+            return 1
+        return 2
 
-    # 2. Dynamic Gap Evaluation Engine (Small, Moderate, Large Gap)
-    curr_is_senior = any(k in curr_lower for k in ["experienced", "senior", "lead", "engineer", "expert", "professional", "advanced"])
-    curr_is_beginner = any(k in curr_lower for k in ["beginner", "novice", "zero", "starter", "no experience", "basic", "learner", "fresher"])
-    
-    goal_is_basic = any(k in goal_lower for k in ["basic", "foundation", "intro", "beginner", "fundamental"])
-    goal_is_senior = any(k in goal_lower for k in ["senior", "lead", "architect", "principal", "manager", "director", "head"])
+    curr_level = get_level(curr_lower)
+    prof_acad = prof.get("academics") or {}
+    if isinstance(prof_acad, dict) and prof_acad.get("highestQualification"):
+        curr_level = max(curr_level, get_level(str(prof_acad.get("highestQualification"))))
+
+    # 2. Determine Level of Target Goal
+    goal_level = get_level(goal_lower)
+    target_degree = get_request_degree_type(goal, profile, explicit_degree_type)
+    if target_degree:
+        deg_map = {"Certificate": 1, "Diploma": 2, "Associate": 2, "Bachelor's": 3, "Master's": 4, "PhD": 5}
+        goal_level = max(goal_level, deg_map.get(target_degree, 3))
+
+    # 3. Calculate Distance / Level Gap
+    level_gap = goal_level - curr_level
     is_career_switch = any(k in curr_lower for k in ["career switch", "transition", "non-tech", "changing field"])
+    
+    curr_words = set(w for w in curr_lower.split() if len(w) > 3)
+    goal_words = set(w for w in goal_lower.split() if len(w) > 3)
+    common_words = curr_words.intersection(goal_words)
 
-    # Classify user-to-goal distance gap
-    if (curr_is_senior and goal_is_basic) or (curr_lower == goal_lower and len(curr_lower) > 0):
-        gap = "small"
-    elif (curr_is_beginner and goal_is_senior) or is_career_switch:
-        gap = "large"
-    elif curr_is_beginner:
-        gap = "large" if goal_is_senior else "moderate"
-    elif curr_is_senior:
-        gap = "small" if not goal_is_senior else "moderate"
-    else:
-        # Check domain keyword match between current and goal
-        curr_words = set(w for w in curr_lower.split() if len(w) > 3)
-        goal_words = set(w for w in goal_lower.split() if len(w) > 3)
-        common = curr_words.intersection(goal_words)
-        gap = "small" if common else "moderate"
+    # 4. Dynamic Gap Duration Calculation (No hardcoded month tables)
+    if cat == "academic":
+        if level_gap <= 0:
+            months = 6 if common_words else 12
+        elif level_gap == 1:
+            months = 18 if common_words else 24
+        elif level_gap == 2:
+            months = 30 if common_words else 36
+        else:
+            months = 48
+        if is_career_switch:
+            months += 6
+        return max(6, min(60, months))
 
-    # Category duration derived from evaluated gap
-    if cat == "practical":
-        return 2 if gap == "small" else (6 if gap == "moderate" else 12)
+    elif cat == "practical":
+        if level_gap <= 0:
+            return 2 if common_words else 4
+        elif level_gap == 1:
+            return 4 if common_words else 6
+        else:
+            return 8 if common_words else 12
+
     elif cat == "jobs":
-        return 3 if gap == "small" else (6 if gap == "moderate" else 18)
-    elif cat == "non_academic":
+        if level_gap <= 0:
+            return 3 if common_words else 6
+        elif level_gap == 1:
+            return 6 if common_words else 12
+        else:
+            return 12 if common_words else 18
+
+    else: # non_academic
         sub_lower = (sub_segment or "").lower()
         if "immediate" in sub_lower or "immediate" in goal_lower:
             return 1
-        return 1 if gap == "small" else (3 if gap == "moderate" else 6)
-    else:
-        # Academic non-degree preparation gap
-        return 3 if gap == "small" else (6 if gap == "moderate" else 12)
-    target_degree = get_request_degree_type(goal, profile, explicit_degree_type)
-
-    target_level = 0
-    if target_degree:
-        td_lower = target_degree.lower()
-        if any(k in td_lower for k in ["phd", "ph.d", "doctorate", "doctoral"]):
-            target_level = 3
-        elif any(k in td_lower for k in ["master", "postgraduate", "pg", "mtech", "msc", "mba"]):
-            target_level = 2
-        elif any(k in td_lower for k in ["bachelor", "undergraduate", "ug", "btech", "bsc", "associate", "diploma", "transfer"]):
-            target_level = 1
-
-    current_str = f"{(profile or {}).get('grade') or ''} {current or ''}".lower()
-    curr_pos_lower = (current or "").lower()
-    profile_grade_lower = str((profile or {}).get("grade") or "").lower()
-
-    current_level = 0
-    remaining_current_months = 0
-    is_school = False
-    grade_num = None
-
-    if any(k in current_str for k in ["grade", "class", "std", "th ", "th", "school"]):
-        is_school = True
-
-    # Extract grade primarily from current_position (the input box), fallback to profile.grade
-    num_match = re.search(r'\b(9|10|11|12)\b', curr_pos_lower) or re.search(r'\b(9|10|11|12)\b', profile_grade_lower)
-    if num_match:
-        grade_num = int(num_match.group(1))
-        is_school = True
-    elif "tenth" in current_str or "10th" in current_str:
-        grade_num = 10
-        is_school = True
-    elif "eleventh" in current_str or "11th" in current_str:
-        grade_num = 11
-        is_school = True
-    elif "twelfth" in current_str or "12th" in current_str:
-        grade_num = 12
-        is_school = True
-    elif "ninth" in current_str or "9th" in current_str:
-        grade_num = 9
-        is_school = True
-
-    is_bachelors = any(k in current_str for k in ["bachelor", "btech", "b.tech", "bsc", "b.sc", "undergrad", "ug", "college", "university"])
-    is_masters = any(k in current_str for k in ["master", "mtech", "m.tech", "msc", "m.sc", "mba", "postgrad", "pg"])
-    is_graduate = any(k in current_str for k in ["grad", "completed", "finished", "degree holder", "alumni"])
-    
-    if is_masters:
-        current_level = 2
-        remaining_current_months = duration_months_for_level(current_level) // 2
-    elif is_bachelors:
-        current_level = 1
-        current_degree_months = duration_months_for_level(current_level)
-        if is_graduate:
-            remaining_current_months = 0
-        elif "1st year" in current_str or "first year" in current_str:
-            remaining_current_months = current_degree_months - (current_degree_months // 4)
-        elif "2nd year" in current_str or "second year" in current_str:
-            remaining_current_months = current_degree_months // 2
-        elif "3rd year" in current_str or "third year" in current_str:
-            remaining_current_months = current_degree_months // 4
-        else:
-            remaining_current_months = current_degree_months // 2
-    elif is_school or grade_num is not None:
-        current_level = 0
-        if grade_num is not None:
-            # (FINAL_SCHOOL_GRADE - grade_num + 1) * MONTHS_PER_ACADEMIC_YEAR
-            remaining_current_months = max(1, (FINAL_SCHOOL_GRADE - grade_num + 1)) * MONTHS_PER_ACADEMIC_YEAR
-        else:
-            remaining_current_months = MONTHS_PER_ACADEMIC_YEAR * 2
-    else:
-        if target_level >= 2:
-            current_level = 1
-            remaining_current_months = 0
-        else:
-            current_level = 0
-            remaining_current_months = MONTHS_PER_ACADEMIC_YEAR * 2
-
-    if target_level <= current_level:
-        return max(MIN_ADMISSION_CYCLE_MONTHS, remaining_current_months)
-
-    # If transitioning from High School (level 0) to Bachelor's (level 1),
-    # the duration is the remaining high school time leading up to university entry.
-    return max(MIN_ADMISSION_CYCLE_MONTHS, remaining_current_months)
+        return 1 if level_gap <= 0 else (3 if level_gap == 1 else 6)
 
 
 def format_total_duration(months: int) -> str:

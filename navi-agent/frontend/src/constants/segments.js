@@ -17,8 +17,7 @@ export const SEGMENT_CONFIGS = [
       { key: "research_phd", label: "Research & PhD" },
       { key: "transfer_lateral", label: "Transfer / Lateral Entry" },
       { key: "k12_primary_middle", label: "School: Grades 1–8" },
-      { key: "k12_high_school", label: "School: Grades 9–10" },
-      { key: "k12_senior", label: "Pre-University: Grades 11–12" },
+      { key: "k12_senior", label: "Pre-University: Grades 9–12" },
     ],
   },
   {
