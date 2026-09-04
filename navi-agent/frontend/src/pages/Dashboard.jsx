@@ -500,8 +500,8 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
 
   const activePath = pathData?.alternatives ? pathData.alternatives[selectedAltIdx] : pathData;
   const steps = activePath?.steps || [];
-  const segmentConfig = getSegmentConfig(activeSegment);
-  const selectedFocus = segmentConfig ? `${segmentConfig.label} - ${activeSubSegment || getDefaultSubSegment(activeSegment)}` : "";
+  const segmentConfig = getSegmentConfig(activeSegment) || { label: activeSegment || "Selected Category", shortLabel: activeSegment || "Category" };
+  const selectedFocus = `${segmentConfig.label} - ${activeSubSegment || getDefaultSubSegment(activeSegment)}`;
 
   const handleSavePath = async () => {
     if (!activePath) {
@@ -1036,7 +1036,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
                         effectiveMissing.includes("country") ? "USA" : ""
                       }).</>
                   ) : (
-                    <>Ready for <strong>{segmentConfig.label}</strong> ({activeSubSegment || getDefaultSubSegment(activeSegment)})! Click <strong>Find My Path</strong> to generate.</>
+                    <>Ready for <strong>{segmentConfig?.label || "Category"}</strong> ({activeSubSegment || getDefaultSubSegment(activeSegment)})! Click <strong>Find My Path</strong> to generate.</>
                   )}
                 </p>
               </div>
@@ -1143,7 +1143,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
             </p>
             <div className="db-empty-selection-strip">
               <span className="db-empty-chip category">
-                Track: <strong>{segmentConfig.label}</strong>
+                Track: <strong>{segmentConfig?.label || "Category"}</strong>
               </span>
               <span className="db-empty-chip subcategory">
                 Focus: <strong>{activeSubSegment || getDefaultSubSegment(activeSegment)}</strong>
@@ -1157,7 +1157,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
               <div className="db-track-badge">
                 <span className="db-track-dot" />
                 <span className="db-track-label">Track:</span>
-                <span className="db-track-name">{segmentConfig.label}</span>
+                <span className="db-track-name">{segmentConfig?.label || "Category"}</span>
               </div>
               <div className="db-subtrack-badge">
                 <span className="db-subtrack-label">Focus:</span>
@@ -1310,15 +1310,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
 
                         <div className="db-accuracy-breakdown">
                           <div className="db-breakdown-item">
-                            <span className="db-breakdown-name">No. of Steps (30%)</span>
-                            <div className="db-breakdown-bar-bg">
-                              <div className="db-breakdown-bar-fill structural" style={{ width: `${breakdown.structural_score}%` }} />
-                            </div>
-                            <span className="db-breakdown-val">{breakdown.structural_score}/100</span>
-                          </div>
-
-                          <div className="db-breakdown-item">
-                            <span className="db-breakdown-name">Info Inside Steps (40%)</span>
+                            <span className="db-breakdown-name">Semantic Vector Cosine (45%)</span>
                             <div className="db-breakdown-bar-bg">
                               <div className="db-breakdown-bar-fill content" style={{ width: `${breakdown.content_score}%` }} />
                             </div>
@@ -1326,11 +1318,19 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
                           </div>
 
                           <div className="db-breakdown-item">
-                            <span className="db-breakdown-name">Marketplace Inside Steps (30%)</span>
+                            <span className="db-breakdown-name">Profile & Market Alignment (30%)</span>
                             <div className="db-breakdown-bar-bg">
                               <div className="db-breakdown-bar-fill profile" style={{ width: `${breakdown.market_score}%` }} />
                             </div>
                             <span className="db-breakdown-val">{breakdown.market_score}/100</span>
+                          </div>
+
+                          <div className="db-breakdown-item">
+                            <span className="db-breakdown-name">Schema Completeness (25%)</span>
+                            <div className="db-breakdown-bar-bg">
+                              <div className="db-breakdown-bar-fill structural" style={{ width: `${breakdown.structural_score}%` }} />
+                            </div>
+                            <span className="db-breakdown-val">{breakdown.structural_score}/100</span>
                           </div>
                         </div>
                       </div>

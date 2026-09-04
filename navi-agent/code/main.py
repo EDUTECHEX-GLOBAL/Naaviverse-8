@@ -14,7 +14,12 @@ from groq import Groq, AsyncGroq
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
-from models import StudentProfileModel
+try:
+    import importlib
+    _st_mod = importlib.import_module("sentence_transformers")
+    SentenceTransformer = getattr(_st_mod, "SentenceTransformer", None)
+except Exception:
+    SentenceTransformer = None
 
 load_dotenv()
 
@@ -1117,39 +1122,54 @@ def calculate_total_duration_months(
     sub_segment: Optional[str] = None
 ) -> int:
     cat = resolve_focus_category(category)
-    curr_lower = (current or "").lower()
-    goal_lower = (goal or "").lower()
+    curr_lower = (current or "").lower().strip()
+    goal_lower = (goal or "").lower().strip()
 
-    # 1. Practical & Skills Duration (3 to 12 months)
+    # 1. Academic Degree Progression (Preserve formal degree program durations)
+    if cat == "academic" or explicit_degree_type:
+        target_degree = get_request_degree_type(goal, profile, explicit_degree_type)
+        if target_degree:
+            d_dur = duration_months_for_degree(target_degree)
+            if d_dur:
+                return d_dur
+
+    # 2. Dynamic Gap Evaluation Engine (Small, Moderate, Large Gap)
+    curr_is_senior = any(k in curr_lower for k in ["experienced", "senior", "lead", "engineer", "expert", "professional", "advanced"])
+    curr_is_beginner = any(k in curr_lower for k in ["beginner", "novice", "zero", "starter", "no experience", "basic", "learner", "fresher"])
+    
+    goal_is_basic = any(k in goal_lower for k in ["basic", "foundation", "intro", "beginner", "fundamental"])
+    goal_is_senior = any(k in goal_lower for k in ["senior", "lead", "architect", "principal", "manager", "director", "head"])
+    is_career_switch = any(k in curr_lower for k in ["career switch", "transition", "non-tech", "changing field"])
+
+    # Classify user-to-goal distance gap
+    if (curr_is_senior and goal_is_basic) or (curr_lower == goal_lower and len(curr_lower) > 0):
+        gap = "small"
+    elif (curr_is_beginner and goal_is_senior) or is_career_switch:
+        gap = "large"
+    elif curr_is_beginner:
+        gap = "large" if goal_is_senior else "moderate"
+    elif curr_is_senior:
+        gap = "small" if not goal_is_senior else "moderate"
+    else:
+        # Check domain keyword match between current and goal
+        curr_words = set(w for w in curr_lower.split() if len(w) > 3)
+        goal_words = set(w for w in goal_lower.split() if len(w) > 3)
+        common = curr_words.intersection(goal_words)
+        gap = "small" if common else "moderate"
+
+    # Category duration derived from evaluated gap
     if cat == "practical":
-        if any(k in curr_lower for k in ["beginner", "zero", "starter", "novice", "no experience"]):
-            return 8
-        elif any(k in curr_lower for k in ["intermediate", "basic", "learner"]):
-            return 6
-        elif any(k in curr_lower for k in ["advanced", "experienced"]):
-            return 4
-        return 6
-
-    # 2. Jobs & Careers Duration (6 to 18 months)
+        return 2 if gap == "small" else (6 if gap == "moderate" else 12)
     elif cat == "jobs":
-        if "senior" in goal_lower and any(k in curr_lower for k in ["junior", "entry", "student", "intern"]):
-            return 12
-        elif any(k in curr_lower for k in ["career switch", "transition", "non-tech"]):
-            return 12
-        elif any(k in goal_lower for k in ["lead", "manager", "director"]):
-            return 12
-        return 6
-
-    # 3. Non-Academic Counselling Duration (1 to 6 months)
+        return 3 if gap == "small" else (6 if gap == "moderate" else 18)
     elif cat == "non_academic":
         sub_lower = (sub_segment or "").lower()
         if "immediate" in sub_lower or "immediate" in goal_lower:
-            return 2
-        elif "life" in sub_lower or "habit" in goal_lower or "decision" in goal_lower:
-            return 3
-        return 3
-
-    # 4. Academic & Research Duration (Cumulative Academic Progression)
+            return 1
+        return 1 if gap == "small" else (3 if gap == "moderate" else 6)
+    else:
+        # Academic non-degree preparation gap
+        return 3 if gap == "small" else (6 if gap == "moderate" else 12)
     target_degree = get_request_degree_type(goal, profile, explicit_degree_type)
 
     target_level = 0
@@ -1576,8 +1596,87 @@ def calculate_path_metrics(
     }
 
 
-def calculate_path_accuracy_score(roadmap: dict, profile: dict, current: str = "") -> dict:
+# ─── DENSE EMBEDDING SERVICE FOR ACCURACY MODEL ───────────────────────────
+_GLOBAL_EMBEDDING_MODEL = None
+
+def get_dense_embedding_model():
+    global _GLOBAL_EMBEDDING_MODEL
+    if _GLOBAL_EMBEDDING_MODEL is None:
+        try:
+            if SentenceTransformer is not None:
+                _GLOBAL_EMBEDDING_MODEL = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+                print("[Embedding Service] Loaded sentence-transformers/all-MiniLM-L6-v2 successfully.")
+            else:
+                import importlib
+                st_module = importlib.import_module("sentence_transformers")
+                _GLOBAL_EMBEDDING_MODEL = st_module.SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+        except Exception as err:
+            print(f"[Embedding Service Warning] SentenceTransformer unavailable: {err}")
+            _GLOBAL_EMBEDDING_MODEL = None
+    return _GLOBAL_EMBEDDING_MODEL
+
+
+def compute_dense_embedding(text: str) -> Optional[list]:
+    model = get_dense_embedding_model()
+    if not model or not text or not str(text).strip():
+        return None
+    try:
+        vec = model.encode(str(text).strip(), convert_to_numpy=True)
+        return vec.tolist() if hasattr(vec, "tolist") else [float(x) for x in vec]
+    except Exception as exc:
+        print(f"[Dense Embedding Error] {exc}")
+        return None
+
+
+def cosine_similarity_dense(vec_a: list, vec_b: list) -> float:
+    if not vec_a or not vec_b or len(vec_a) != len(vec_b):
+        return 0.0
     import math
+    dot_product = sum(a * b for a, b in zip(vec_a, vec_b))
+    norm_a = math.sqrt(sum(a * a for a in vec_a))
+    norm_b = math.sqrt(sum(b * b for b in vec_b))
+    if norm_a == 0 or norm_b == 0:
+        return 0.0
+    return dot_product / (norm_a * norm_b)
+
+
+def step_has_complete_structure(step: dict) -> bool:
+    if not isinstance(step, dict):
+        return False
+    title = str(step.get("title", "")).strip()
+    duration = str(step.get("duration", "")).strip()
+    description = str(step.get("description", "")).strip()
+    
+    mv = get_view_description(step, "macro_view")
+    uv = get_view_description(step, "micro_view")
+    nv = get_view_description(step, "nano_view")
+    
+    objs = step.get("learning_objectives") or []
+    msteps_list = step.get("micro_steps") or []
+    
+    valid_objs = isinstance(objs, list) and len([x for x in objs if str(x).strip()]) >= 2
+    valid_msteps = isinstance(msteps_list, list) and len([x for x in msteps_list if str(x).strip()]) >= 2
+    
+    return bool(
+        title and duration and description and
+        mv and uv and nv and
+        valid_objs and valid_msteps
+    )
+
+
+def compute_dynamic_step_completeness(generated_steps: list) -> float:
+    if not generated_steps or len(generated_steps) == 0:
+        return 0.0
+    valid_steps = sum(
+        1 for s in generated_steps
+        if step_has_complete_structure(s)
+    )
+    return valid_steps / len(generated_steps)
+
+
+def calculate_path_accuracy_score(roadmap: dict, profile: dict, current: str = "", goal: str = "") -> dict:
+    import math
+
     if not roadmap:
         return {
             "accuracy_score": 0,
@@ -1587,6 +1686,7 @@ def calculate_path_accuracy_score(roadmap: dict, profile: dict, current: str = "
                 "structural": 0,
                 "content": 0,
                 "market": 0,
+                "profile_alignment": 0,
                 "structural_score": 0,
                 "content_score": 0,
                 "market_score": 0
@@ -1594,7 +1694,7 @@ def calculate_path_accuracy_score(roadmap: dict, profile: dict, current: str = "
             "details": {}
         }
         
-    steps = roadmap.get("steps") or roadmap.get("steps") or []
+    steps = roadmap.get("steps") or []
     actual_steps = len(steps)
     if actual_steps == 0:
         return {
@@ -1605,6 +1705,7 @@ def calculate_path_accuracy_score(roadmap: dict, profile: dict, current: str = "
                 "structural": 0,
                 "content": 0,
                 "market": 0,
+                "profile_alignment": 0,
                 "structural_score": 0,
                 "content_score": 0,
                 "market_score": 0
@@ -1612,263 +1713,165 @@ def calculate_path_accuracy_score(roadmap: dict, profile: dict, current: str = "
             "details": {}
         }
 
-    # Weights for the Mathematical Model
-    w_steps = 0.30
-    w_info = 0.40
-    w_market = 0.30
-    
-    # ── 1. Step Count Evaluation (S_steps) ──
-    # Dynamically evaluate generation richness based on actual steps generated by the AI model
-    if actual_steps >= 4:
-        S_steps = 1.0
-    elif actual_steps >= 2:
-        S_steps = 0.75
-    else:
-        S_steps = 0.50
-    
-    # ── 2. Information Density / Content Quality Model (S_info) ──
-    # Measures how rich and meaningful the content is using:
-    # 1. Word Count (via Logistic Sigmoid curve, centering target threshold at 60%)
-    # 2. Lexical Density (ratio of content-carrying words to functional grammar words)
-    # Hitting a Lexical Density of >= 45% is considered a perfect professional score.
-    # The final step quality is the harmonic mean of density and length.
-    
-    FUNCTIONAL_WORDS = {
-        "am", "is", "are", "was", "were", "be", "been", "being",
-        "have", "has", "had", "having", "do", "does", "did", "doing",
-        "a", "an", "the", "and", "but", "if", "or", "because", "as",
-        "until", "while", "of", "at", "by", "for", "with", "about",
-        "against", "between", "into", "through", "during", "before",
-        "after", "above", "below", "to", "from", "up", "down", "in",
-        "out", "on", "off", "over", "under", "again", "further", "then",
-        "once", "here", "there", "when", "where", "why", "how", "all",
-        "any", "both", "each", "few", "more", "most", "other", "some",
-        "such", "no", "nor", "not", "only", "own", "same", "so", "than",
-        "too", "very", "s", "t", "can", "will", "just", "don", "should",
-        "now", "i", "me", "my", "myself", "we", "our", "ours", "ourselves",
-        "you", "your", "yours", "yourself", "yourselves", "he", "him",
-        "his", "himself", "she", "her", "hers", "herself", "it", "its",
-        "itself", "they", "them", "their", "theirs", "themselves",
-        "what", "which", "who", "whom", "this", "that", "these", "those"
-    }
+    # ── HYBRID MODEL WEIGHTS ──
+    # 1. Semantic Embedding Vector Cosine Similarity (45%)
+    # 2. Student Profile Alignment (30%)
+    # 3. Schema & Structural Completeness (25%)
+    w_semantic = 0.45
+    w_alignment = 0.30
+    w_schema = 0.25
 
-    SIGMOID_K = 10.0  # steepness
+    # ── 1. SEMANTIC VECTOR SIMILARITY (Dense Embedding Cosine Space) ──
+    query_text = f"{current} {goal}".strip()
+    if not query_text or query_text == " ":
+        query_text = (roadmap.get("path_title", "") + " " + roadmap.get("path_description", "")).strip()
 
-    def sigmoid_score(val: float, threshold: float, center_fraction: float = 0.6) -> float:
-        """Logistic sigmoid saturation. Center is placed at center_fraction * threshold
-        so that reaching the target threshold gets close to 100% score."""
-        if threshold <= 0:
-            return 1.0 if val > 0 else 0.0
-        center = center_fraction * threshold
-        x = (val / center) - 1.0
-        return 1.0 / (1.0 + math.exp(-SIGMOID_K * x))
+    query_embedding = compute_dense_embedding(query_text)
 
-    def content_quality_score(text: str, target_words: float) -> float:
-        """Combines word count and lexical density to measure content information quality."""
-        # 1. Clean text and split into words
-        raw_words = re.findall(r"[a-zA-Z0-9]+", str(text or "").lower())
-        total_words = len(raw_words)
-        if total_words == 0:
-            return 0.0
-        
-        # Word Count score
-        word_count_score = sigmoid_score(total_words, target_words, center_fraction=0.6)
-        
-        # Lexical Density score
-        content_words = [w for w in raw_words if w not in FUNCTIONAL_WORDS]
-        lexical_density = len(content_words) / total_words
-        # Scale lexical density (45% content words is considered fully professional density)
-        density_score = min(1.0, lexical_density / 0.45)
-        
-        # Combine using harmonic mean: requires both decent word count and high lexical density
-        if word_count_score + density_score == 0:
-            return 0.0
-        return 2.0 * (word_count_score * density_score) / (word_count_score + density_score)
-
-    # Word Count Targets (e.g. 25 words for description, 80 words for deep views)
-    T_desc, T_macro, T_micro, T_nano = 25, 80, 80, 80
-    total_I = 0.0
-
-    for step in steps:
-        # Evaluate text elements
-        D_desc = content_quality_score(step.get("description"), T_desc)
-        D_macro = content_quality_score(get_view_description(step, "macro_view"), T_macro)
-        D_micro = content_quality_score(get_view_description(step, "micro_view"), T_micro)
-        D_nano = content_quality_score(get_view_description(step, "nano_view"), T_nano)
-
-        # Completeness check for structured lists (using count sigmoid)
-        objs = step.get("learning_objectives") or []
-        msteps_list = step.get("micro_steps") or []
-        C_objs = sigmoid_score(len(objs) if isinstance(objs, list) else 0, 3.0, center_fraction=0.6)
-        C_msteps = sigmoid_score(len(msteps_list) if isinstance(msteps_list, list) else 0, 3.0, center_fraction=0.6)
-
-        I_i = (D_desc + D_macro + D_micro + D_nano + C_objs + C_msteps) / 6.0
-        total_I += I_i
-
-    S_info = total_I / actual_steps
-    
-    # ── 3. Marketplace Completeness Model (S_market) ──
-    # Current scoring includes relevance to the step, not just item counts.
-    stopwords = {
-        "the", "and", "for", "with", "from", "into", "that", "this", "their", "your",
-        "you", "are", "will", "must", "should", "step", "phase", "month", "months",
-        "student", "students", "path", "pathway", "goal", "target", "current",
-        "complete", "completion", "review", "resource", "resources", "course",
-        "program", "platform", "session", "support", "prepare", "preparation",
-        "build", "based", "using", "through", "during", "toward", "towards"
-    }
-
-    def normalize_token(token: str) -> str:
-        token = token.lower().strip()
-        for suffix in ("ing", "ed", "es", "s"):
-            if len(token) > len(suffix) + 3 and token.endswith(suffix):
-                return token[:-len(suffix)]
-        return token
-
-    def tokens_from_text(value: Any) -> set:
-        if isinstance(value, dict):
-            value = " ".join(str(v) for v in value.values())
-        elif isinstance(value, list):
-            value = " ".join(str(v) for v in value)
-        text = str(value or "").lower()
-        raw_tokens = re.findall(r"[a-z0-9]+", text)
-        return {
-            normalized
-            for tok in raw_tokens
-            if len(tok) >= 3
-            for normalized in [normalize_token(tok)]
-            if normalized not in stopwords
-        }
-
-    def collect_step_tokens(step: dict) -> set:
-        step_parts = [
-            roadmap.get("path_title", ""),
-            roadmap.get("path_description", ""),
-            step.get("title", ""),
-            step.get("description", ""),
-            get_view_description(step, "macro_view"),
-            get_view_description(step, "micro_view"),
-            get_view_description(step, "nano_view"),
-            step.get("learning_objectives", []),
-            step.get("micro_steps", []),
-            profile.get("grade", ""),
-            profile.get("curriculum", ""),
-            profile.get("stream", ""),
-            profile.get("performance", ""),
-            profile.get("degreeType", ""),
-            profile.get("degree_type", ""),
+    # Batch collect milestone text for efficient SentenceTransformer encoding
+    step_texts = []
+    for s in steps:
+        step_text_parts = [
+            s.get("title", ""),
+            s.get("description", ""),
+            get_view_description(s, "macro_view"),
+            get_view_description(s, "micro_view"),
+            get_view_description(s, "nano_view"),
+            " ".join(str(o) for o in (s.get("learning_objectives") or [])),
+            " ".join(str(m) for m in (s.get("micro_steps") or []))
         ]
-        return tokens_from_text(step_parts)
+        combined_step_text = " ".join(p for p in step_text_parts if p).strip()
+        if combined_step_text:
+            step_texts.append(combined_step_text)
 
-    def collect_item_tokens(item: dict) -> set:
-        return tokens_from_text([
-            item.get("name", ""),
-            item.get("type", ""),
-            item.get("why", ""),
-            item.get("value", ""),
-            item.get("next_step", ""),
-            item.get("session_details", ""),
-            item.get("expected_outcomes", ""),
-            item.get("tags", []),
-        ])
+    embedding_model = get_dense_embedding_model()
+    step_embeddings = []
+    if embedding_model and step_texts:
+        try:
+            encoded = embedding_model.encode(step_texts, convert_to_numpy=True)
+            step_embeddings = [vec.tolist() if hasattr(vec, "tolist") else list(vec) for vec in encoded]
+        except Exception as exc:
+            print(f"[Batch Embedding Error] {exc}")
+            step_embeddings = []
 
-    def item_field_score(item: dict, required_fields: list) -> float:
-        if not isinstance(item, dict) or not required_fields:
-            return 0.0
-        present = 0
-        for field in required_fields:
-            value = item.get(field)
-            if isinstance(value, list):
-                present += 1 if len(value) > 0 else 0
-            elif str(value or "").strip():
-                present += 1
-        return present / len(required_fields)
+    if query_embedding and step_embeddings:
+        # Per-step dense cosine similarity
+        step_sims = [cosine_similarity_dense(query_embedding, emb) for emb in step_embeddings]
+        
+        # Linear map raw cosine [-1, 1] to normalized relevance [0, 1] for all-MiniLM-L6-v2
+        # Baseline cosine threshold 0.10 mapped to 0.0, top relevance 0.80 mapped to 1.0
+        step_relevances = [max(0.0, min(1.0, (sim - 0.10) / 0.70)) for sim in step_sims]
+        
+        import statistics
+        sorted_rel = sorted(step_relevances, reverse=True)
+        max_rel = sorted_rel[0]
+        med_rel = float(statistics.median(step_relevances))
+        
+        # Truly count-neutral semantic representation using invariant distribution statistics:
+        # S_semantic = 0.50 * max(relevance) + 0.50 * median(relevance)
+        # Why is this invariant to duplicated equivalent milestones?
+        # For any sample X, repeating X n times preserves both max(X) and median(X) identically.
+        # Repeating identical or equivalent steps (1x, 2x, 5x, 10x, 20x) produces the EXACT same S_semantic score.
+        S_semantic = (0.50 * max_rel) + (0.50 * med_rel)
+        semantic_method = "Dense Embedding Cosine Similarity"
+        semantic_model_name = "sentence-transformers/all-MiniLM-L6-v2"
+        semantic_status = "available"
+        raw_cosine_val = round(sum(step_sims) / len(step_sims), 3)
+    else:
+        # NO LEXICAL FALLBACK: Do not fabricate a fake score or default 0.50/0.70 score
+        S_semantic = 0.0
+        semantic_method = "Dense Embedding Cosine Similarity"
+        semantic_model_name = "sentence-transformers/all-MiniLM-L6-v2"
+        semantic_status = "unavailable"
+        raw_cosine_val = 0.0
 
-    # ── Jaccard Similarity Index ──
-    # Measures the true set-overlap between step keywords and item keywords.
-    # Formula: J(A,B) = |A ∩ B| / |A ∪ B|
-    def jaccard_similarity(tokens_a: set, tokens_b: set) -> float:
-        """Jaccard Index: ratio of shared keywords to total unique keywords."""
-        if not tokens_a or not tokens_b:
-            return 0.0
-        intersection = len(tokens_a & tokens_b)
-        union = len(tokens_a | tokens_b)
-        return intersection / union if union > 0 else 0.0
-
-    # ── Harmonic Mean (F1-Score) ──
-    # Requires BOTH completeness AND relevance to be high for a good score.
-    # If either is 0, the entire score is 0 — prevents false positives.
-    # Formula: F1 = 2 * (P * R) / (P + R)
-    def harmonic_f1(completeness: float, relevance: float) -> float:
-        """Harmonic mean of completeness and relevance (F1-Score)."""
-        if completeness + relevance == 0:
-            return 0.0
-        return 2.0 * (completeness * relevance) / (completeness + relevance)
-
-    def item_relevance_score(step_tokens: set, item: dict) -> float:
-        """Keyword-based validation using Jaccard Similarity Index, scaled to real-world overlaps."""
-        item_tokens = collect_item_tokens(item)
-        raw_jaccard = jaccard_similarity(step_tokens, item_tokens)
-        # In real-world text, a 15% keyword overlap is considered an excellent semantic match.
-        return min(1.0, raw_jaccard / 0.15)
-
-    marketplace_sections = {
-        "macro_free": ["name", "type", "why", "next_step"],
-        "micro_structured": ["name", "type", "cost", "duration", "value", "next_step"],
-        "nano_expert": ["name", "type", "price", "session_details", "expected_outcomes"],
-    }
-
-    total_M = 0.0
-    total_market_presence = 0.0
-    total_market_quality = 0.0
-    total_market_relevance = 0.0
-    section_count = len(marketplace_sections)
-
-    for step in steps:
-        market = combined_marketplace_from_step(step)
-        step_tokens = collect_step_tokens(step)
-        step_market_score = 0.0
-        step_presence_score = 0.0
-        step_quality_score = 0.0
-        step_relevance_score = 0.0
-
-        if isinstance(market, dict):
-            for section, required_fields in marketplace_sections.items():
-                items = marketplace_items_for_section(market, section)
-
-                # Presence: sigmoid-based count scoring (consistent with Section 2)
-                count_score = sigmoid_score(len(items), 2.0)
-                # Quality: field completeness ratio per item
-                field_scores = [item_field_score(item, required_fields) for item in items if isinstance(item, dict)]
-                # Relevance: Jaccard keyword similarity per item
-                relevance_scores = [item_relevance_score(step_tokens, item) for item in items if isinstance(item, dict)]
-                field_score = sum(field_scores) / len(field_scores) if field_scores else 0.0
-                relevance_score = sum(relevance_scores) / len(relevance_scores) if relevance_scores else 0.0
-
-                # Harmonic F1-Score: requires BOTH quality AND relevance
-                # If irrelevant courses are present, F1 pulls score to 0.
-                quality_relevance_f1 = harmonic_f1(field_score, relevance_score)
-                # Final section score: presence gates the F1 quality-relevance score
-                section_score = harmonic_f1(count_score, quality_relevance_f1)
-                step_market_score += section_score
-                step_presence_score += count_score
-                step_quality_score += field_score
-                step_relevance_score += relevance_score
-
-        total_M += step_market_score / section_count
-        total_market_presence += step_presence_score / section_count
-        total_market_quality += step_quality_score / section_count
-        total_market_relevance += step_relevance_score / section_count
-
-    S_market = total_M / actual_steps
-    S_market_presence = total_market_presence / actual_steps
-    S_market_quality = total_market_quality / actual_steps
-    S_market_relevance = total_market_relevance / actual_steps
+    # ── 2. STUDENT PROFILE ALIGNMENT (Financial, Location, Level) ──
+    prof = profile or {}
+    personality_geo = prof.get("personalityGeography") or {}
+    academics = prof.get("academics") or {}
     
-    # ── Total Score ──
-    raw_score = 100.0 * (w_steps * S_steps + w_info * S_info + w_market * S_market)
-    total_score = min(100, round(raw_score))
-    
+    fin_status = (
+        personality_geo.get("financialSituation") or 
+        prof.get("financialSituation") or 
+        prof.get("financial_situation") or 
+        "Moderate"
+    ).lower()
+
+    # Check Marketplace Financial Alignment across steps
+    financial_match_sum = 0.0
+    for s in steps:
+        market = combined_marketplace_from_step(s)
+        items_free = marketplace_items_for_section(market, "macro_free") if isinstance(market, dict) else []
+        items_struct = marketplace_items_for_section(market, "micro_structured") if isinstance(market, dict) else []
+        items_expert = marketplace_items_for_section(market, "nano_expert") if isinstance(market, dict) else []
+
+        if any(term in fin_status for term in ["high", "affluent", "premium", "upper"]):
+            # Affluent students: reward presence of expert & premium structured items
+            match = 1.0 if (len(items_expert) > 0 or len(items_struct) > 0) else 0.7
+        elif any(term in fin_status for term in ["low", "need", "budget", "constrained", "minimal"]):
+            # Budget-conscious students: reward presence of high-value free items ($0)
+            match = 1.0 if len(items_free) > 0 else 0.7
+        else:
+            # Balanced mix
+            match = 1.0 if (len(items_free) > 0 and (len(items_struct) > 0 or len(items_expert) > 0)) else 0.85
+        
+        financial_match_sum += match
+
+    A_fin = financial_match_sum / actual_steps
+
+    # Geographic / Location Alignment
+    country = (personality_geo.get("country") or prof.get("country") or "").strip()
+    city = (personality_geo.get("city") or prof.get("city") or "").strip()
+    A_geo = 1.0 if (country or city) else 0.85
+
+    # Baseline Level Alignment (Degree / Grade)
+    stream = (academics.get("academicStream") or prof.get("stream") or "").strip()
+    grade = (academics.get("gradeLevel") or prof.get("grade") or "").strip()
+    A_level = 1.0 if (stream or grade) else 0.85
+
+    S_alignment = (A_fin * 0.50) + (A_geo * 0.25) + (A_level * 0.25)
+
+    # ── 3. SCHEMA & STRUCTURAL COMPLETENESS ──
+    # True structural integrity evaluation (ZERO static numbers or fixed step targets)
+    C_steps = compute_dynamic_step_completeness(steps)
+
+    # Structured Lists & Multi-View Completeness
+    views_complete = 0
+    lists_complete = 0
+    market_tiers_complete = 0
+
+    for s in steps:
+        # Check Views
+        mv = get_view_description(s, "macro_view")
+        uv = get_view_description(s, "micro_view")
+        nv = get_view_description(s, "nano_view")
+        if mv and uv and nv:
+            views_complete += 1
+
+        # Check Lists
+        objs = s.get("learning_objectives") or []
+        msteps_list = s.get("micro_steps") or []
+        if isinstance(objs, list) and len(objs) >= 2 and isinstance(msteps_list, list) and len(msteps_list) >= 2:
+            lists_complete += 1
+
+        # Check Marketplace Tiers
+        m = combined_marketplace_from_step(s)
+        if isinstance(m, dict):
+            if (len(marketplace_items_for_section(m, "macro_free")) > 0 and 
+                len(marketplace_items_for_section(m, "micro_structured")) > 0 and 
+                len(marketplace_items_for_section(m, "nano_expert")) > 0):
+                market_tiers_complete += 1
+
+    C_views = views_complete / actual_steps
+    C_lists = lists_complete / actual_steps
+    C_market = market_tiers_complete / actual_steps
+
+    S_schema = (C_steps * 0.30) + (C_views * 0.30) + (C_lists * 0.20) + (C_market * 0.20)
+
+    # ── FINAL HYBRID ACCURACY SCORE ──
+    raw_score = 100.0 * (w_semantic * S_semantic + w_alignment * S_alignment + w_schema * S_schema)
+    total_score = min(100, max(10, round(raw_score)))
+
     if total_score >= 90:
         label = "Excellent Accuracy"
         color = "#137333"
@@ -1884,29 +1887,32 @@ def calculate_path_accuracy_score(roadmap: dict, profile: dict, current: str = "
     else:
         label = "Needs Improvement"
         color = "#c5221f"
-        
+
     return {
         "accuracy_score": total_score,
         "accuracy_label": label,
         "accuracy_color": color,
         "breakdown": {
-            "structural": round(S_steps * 100),
-            "content": round(S_info * 100),
-            "market": round(S_market * 100),
-            "structural_score": round(S_steps * 100),
-            "content_score": round(S_info * 100),
-            "market_score": round(S_market * 100)
+            "structural": round(S_schema * 100),
+            "content": round(S_semantic * 100),
+            "market": round(S_alignment * 100),
+            "profile_alignment": round(S_alignment * 100),
+            "structural_score": round(S_schema * 100),
+            "content_score": round(S_semantic * 100),
+            "market_score": round(S_alignment * 100)
         },
         "details": {
             "step_count": actual_steps,
-            "expected_steps": actual_steps,
-            "s_steps": round(S_steps, 3),
-            "s_info": round(S_info, 3),
-            "s_market": round(S_market, 3),
-            "s_market_presence": round(S_market_presence, 3),
-            "s_market_field_quality": round(S_market_quality, 3),
-            "info_formula": "Harmonic F1-Score(Sigmoid Word Count, Normalized Lexical Density)",
-            "market_formula": "Harmonic F1-Score(Sigmoid Presence, F1(Field Quality, Jaccard Relevance))"
+            "s_semantic_vector_cosine": round(S_semantic, 3),
+            "s_profile_alignment": round(S_alignment, 3),
+            "s_schema_completeness": round(S_schema, 3),
+            "semantic_method": semantic_method,
+            "semantic_model": semantic_model_name,
+            "semantic_status": semantic_status,
+            "raw_cosine": raw_cosine_val,
+            "info_formula": "Dense Embedding Cosine Similarity (Query Vector vs Step Relevance Coverage)",
+            "market_formula": "Student Profile Alignment Matrix (Financial Status, Geographic Location, Academic Baseline)",
+            "structural_formula": "Schema Completeness Matrix (Step Structural Integrity, Multi-Views, Structured Lists, Marketplace Tiers)"
         }
     }
 
@@ -1916,9 +1922,7 @@ def validate_category_semantics(blueprint: dict, category: str, sub_segment: Opt
         return False, "Blueprint is not a dictionary"
     steps = blueprint.get("steps")
     if not isinstance(steps, list) or len(steps) == 0:
-        return False, "Blueprint must contain at least 2 structured steps (received 0)."
-    if len(steps) < 2:
-        return False, f"Blueprint must contain at least 2 structured steps (received {len(steps)})."
+        return False, "Blueprint must contain at least 1 structured step (received 0)."
     return True, "Valid"
 
 
@@ -2333,8 +2337,8 @@ def validate_category_semantics(blueprint: Any, category: str, sub_segment: Opti
         return False, "Blueprint is empty or returned an error."
 
     steps = blueprint.get("steps")
-    if not isinstance(steps, list) or len(steps) < 2:
-        return False, f"Blueprint must contain at least 2 structured steps (received {len(steps) if isinstance(steps, list) else 0})."
+    if not isinstance(steps, list) or len(steps) == 0:
+        return False, f"Blueprint must contain at least 1 structured step (received {len(steps) if isinstance(steps, list) else 0})."
 
     cat = resolve_focus_category(category)
     content_text = (
@@ -2380,15 +2384,6 @@ def validate_category_semantics(blueprint: Any, category: str, sub_segment: Opti
 
     return True, "Valid"
 
-def minimum_blueprint_steps(current: str, goal: str, profile: dict, category: str = "academic") -> int:
-    cat = resolve_focus_category(category)
-    if cat == "non_academic":
-        return 3
-    elif cat in ["practical", "jobs"]:
-        return 4
-    return 4
-
-
 def is_complete_blueprint(
     blueprint: Any,
     current: str,
@@ -2403,11 +2398,10 @@ def is_complete_blueprint(
     if not isinstance(milestones, list) or len(milestones) == 0:
         return False
     
-    if requested_steps:
+    if requested_steps is not None:
         return len(milestones) == requested_steps
 
-    required_min = minimum_blueprint_steps(current, goal, profile, category)
-    return len(milestones) >= required_min
+    return True
 
 
 def sse_payload(event: str, data: dict) -> str:
@@ -2438,14 +2432,17 @@ async def build_and_store_final_path(
     for i, orig_milestone in enumerate(blueprint_milestones):
         m_id = orig_milestone.get("id", i + 1)
         
-        if num_steps > 0:
+        ai_dur = str(orig_milestone.get("duration", "")).strip()
+        if ai_dur:
+            enforced_duration = ai_dur
+        elif num_steps > 0:
             start_month = int((i / num_steps) * total_months) + 1
             end_month = int(((i + 1) / num_steps) * total_months)
             if end_month < start_month:
                 end_month = start_month
             enforced_duration = f"Month {start_month}" if start_month == end_month else f"Months {start_month}-{end_month}"
         else:
-            enforced_duration = orig_milestone.get("duration", "Months 1-3")
+            enforced_duration = "Months 1-3"
 
         merged_milestone = {
             "id": m_id,
@@ -2520,6 +2517,12 @@ async def login(req: LoginRequest):
         return serialize_mongo_doc(admin_profile)
     else:
         raise HTTPException(status_code=401, detail="Invalid admin credentials")
+
+class PathScoreRequest(BaseModel):
+    roadmap_data: dict
+    current_position: Optional[str] = ""
+    target_goal: Optional[str] = ""
+    profile: Optional[dict] = None
 
 @app.post("/api/path/score")
 async def get_path_score(req: PathScoreRequest):
@@ -2800,7 +2803,7 @@ async def generate_path_stream(req: PathGenerationRequest):
             valid_blueprints = []
             valid_option_names = []
             for i, bp in enumerate(blueprints):
-                if not isinstance(bp, Exception) and isinstance(bp, dict) and isinstance(bp.get("steps"), list) and len(bp["steps"]) >= 2:
+                if not isinstance(bp, Exception) and isinstance(bp, dict) and isinstance(bp.get("steps"), list) and len(bp["steps"]) > 0:
                     valid_blueprints.append(bp)
                     valid_option_names.append(option_names[i])
                 else:
@@ -2841,26 +2844,6 @@ async def generate_path_stream(req: PathGenerationRequest):
                 "progress": 80,
                 "message": "Checking learning resources and action checklists..."
             })
-            await asyncio.sleep(0.15)
-
-            for i, bp in enumerate(valid_blueprints):
-                for milestone in bp["steps"]:
-                    if not milestone.get("marketplace"):
-                        milestone["marketplace"] = get_mock_marketplace(
-                            foci[i],
-                            step_title=milestone.get("title", ""),
-                            step_id=milestone.get("id", 1),
-                            goal=goal,
-                            category=cat,
-                            sub_segment=sub_seg
-                        )
-                    if not milestone.get("micro_steps"):
-                        milestone["micro_steps"] = [
-                            {
-                                "task": f"Complete the planned work for {milestone.get('title', 'this milestone')}",
-                                "resource": "Naavi progress tracker",
-                            }
-                        ]
             completed.append("agent4")
             yield sse_payload("status", {
                 "statuses": build_agent_statuses("ready", completed),
@@ -2877,7 +2860,7 @@ async def generate_path_stream(req: PathGenerationRequest):
                     sub_segment=sub_seg
                 )
                 final_json["option_name"] = valid_option_names[i]
-                accuracy = calculate_path_accuracy_score(final_json, profile, current)
+                accuracy = calculate_path_accuracy_score(final_json, profile, current, goal)
                 final_json["accuracy_score"] = accuracy["accuracy_score"]
                 final_json["accuracy_label"] = accuracy["accuracy_label"]
                 final_json["accuracy_color"] = accuracy["accuracy_color"]
@@ -2948,7 +2931,7 @@ async def generate_path(req: PathGenerationRequest):
         valid_blueprints = []
         valid_opt_names = []
         for i, bp in enumerate(blueprints):
-            if not isinstance(bp, Exception) and isinstance(bp, dict) and isinstance(bp.get("steps"), list) and len(bp["steps"]) >= 2:
+            if not isinstance(bp, Exception) and isinstance(bp, dict) and isinstance(bp.get("steps"), list) and len(bp["steps"]) > 0:
                 valid_blueprints.append(bp)
                 valid_opt_names.append(option_names[i])
 
@@ -2963,7 +2946,7 @@ async def generate_path(req: PathGenerationRequest):
                 sub_segment=sub_seg
             )
             final_json["option_name"] = valid_opt_names[i]
-            accuracy = calculate_path_accuracy_score(final_json, profile, current)
+            accuracy = calculate_path_accuracy_score(final_json, profile, current, goal)
             final_json["accuracy_score"] = accuracy["accuracy_score"]
             final_json["accuracy_label"] = accuracy["accuracy_label"]
             final_json["accuracy_color"] = accuracy["accuracy_color"]

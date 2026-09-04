@@ -3,4 +3,6 @@ uvicorn
 groq
 python-dotenv
 motor
-dnspython    
+dnspython
+sentence-transformers
+numpy
