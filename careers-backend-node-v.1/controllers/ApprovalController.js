@@ -38,6 +38,7 @@ exports.createApproval = async (req, res) => {
 };
 
 // ✅ GET approvals — filtered by role if provided
+// Enriches Partner approvals with partnerScope: "internal" | "external"
 exports.getApprovals = async (req, res) => {
   try {
     const { role } = req.query;
@@ -47,8 +48,44 @@ exports.getApprovals = async (req, res) => {
       : {};
 
     const approvals = await Approval.find(query).sort({ createdAt: -1 });
+
+    // Enrich Partner approvals with partnerScope
+    const normRole = role ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase() : null;
+    if (normRole === "Partner" || !role) {
+      const partnerEmails = approvals
+        .filter((a) => a.role === "Partner" && a.email)
+        .map((a) => a.email.toLowerCase().trim());
+
+      const partners = partnerEmails.length
+        ? await Partner.find({ email: { $in: partnerEmails } })
+            .select("email creationSource partnerType")
+            .lean()
+        : [];
+
+      const pMap = new Map();
+      partners.forEach((p) => {
+        if (p.email) pMap.set(p.email.toLowerCase().trim(), p);
+      });
+
+      const enriched = approvals.map((a) => {
+        const obj = a.toObject();
+        if (obj.role === "Partner") {
+          const p = obj.email ? pMap.get(obj.email.toLowerCase().trim()) : null;
+          const isInternal = Boolean(
+            (p && (p.creationSource === "admin_created" || (p.partnerType && String(p.partnerType).toLowerCase() === "internal"))) ||
+            (obj.businessName && /naaviverse\s+internal/i.test(obj.businessName))
+          );
+          obj.partnerScope = isInternal ? "internal" : "external";
+        }
+        return obj;
+      });
+
+      return res.json({ status: true, data: enriched });
+    }
+
     res.json({ status: true, data: approvals });
   } catch (err) {
+    console.error("getApprovals error:", err);
     res.status(500).json({ status: false, message: "Error fetching approvals" });
   }
 };

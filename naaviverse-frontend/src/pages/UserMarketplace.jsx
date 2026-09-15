@@ -424,7 +424,11 @@ function diversify(list) {
 // Category pastel tag styling map
 const CATEGORY_TAG_STYLES = {
   university: { label: "University", color: "#3E7BFA", bg: "#EAF1FF" },
+  universities: { label: "University", color: "#3E7BFA", bg: "#EAF1FF" },
   institute: { label: "Institute", color: "#D97706", bg: "#FFF6E4" },
+  institutes: { label: "Institute", color: "#D97706", bg: "#FFF6E4" },
+  institution: { label: "Institution", color: "#3E7BFA", bg: "#EAF1FF" },
+  institutions: { label: "Institution", color: "#3E7BFA", bg: "#EAF1FF" },
   mentor: { label: "Mentor", color: "#059669", bg: "#ECFDF5" },
   mentors: { label: "Mentor", color: "#059669", bg: "#ECFDF5" },
   bootcamp: { label: "Bootcamp", color: "#E5473C", bg: "#FDEBEA" },
@@ -436,7 +440,10 @@ const CATEGORY_TAG_STYLES = {
   distributors: { label: "Distributor", color: "#8B5CF6", bg: "#F1EEFB" },
 };
 
-const getCategoryMeta = (item) => {
+const getCategoryMeta = (item = {}) => {
+  if (!item) {
+    return { label: "DISTRIBUTOR", color: "#8B5CF6", bg: "#F1EEFB" };
+  }
   const candidateKeys = [
     item.role,
     item.category,
@@ -456,7 +463,8 @@ const getCategoryMeta = (item) => {
   if (allText.includes("distribut")) return CATEGORY_TAG_STYLES.distributor;
   if (allText.includes("vendor")) return CATEGORY_TAG_STYLES.vendor;
   if (allText.includes("mentor")) return CATEGORY_TAG_STYLES.mentor;
-  if (allText.includes("institut") || allText.includes("universit")) return CATEGORY_TAG_STYLES.institution;
+  if (allText.includes("universit")) return CATEGORY_TAG_STYLES.university;
+  if (allText.includes("institut")) return CATEGORY_TAG_STYLES.institute || CATEGORY_TAG_STYLES.institution;
 
   const fallbackLabel = candidateKeys[0] || "Distributor";
   return { label: String(fallbackLabel).toUpperCase(), color: "#8B5CF6", bg: "#F1EEFB" };
@@ -476,19 +484,19 @@ const MarketplaceCard = ({
   onRequestAssistance,
 }) => {
   const free = isFreeItem(service);
-  const isExternal = service.checkoutType === "external";
-  const catMeta = getCategoryMeta(service);
+  const isExternal = service?.checkoutType === "external";
+  const catMeta = getCategoryMeta(service) || { label: "Distributor", color: "#8B5CF6", bg: "#F1EEFB" };
   const ratingVal = getMarketplaceStarRating(service);
-  const scorePct = service.naaviScore || computeNaaviScore(service);
+  const scorePct = service?.naaviScore || computeNaaviScore(service);
 
   // Breakdown metrics for hover tooltip
-  const intentPct = Math.round((service.intent ?? (service.score_breakdown?.intentMatch ? service.score_breakdown.intentMatch / 100 : 0.85)) * 100);
-  const pathPct = Math.round((service.path ?? (service.score_breakdown?.pathStepMatch ? service.score_breakdown.pathStepMatch / 100 : 0.80)) * 100);
-  const personalizationPct = Math.round((service.personalization ?? 0.75) * 100);
-  const qualityPct = Math.round((service.quality ?? (service.score_breakdown?.partnerQuality ? service.score_breakdown.partnerQuality / 100 : 0.80)) * 100);
-  const popularityPct = Math.round((service.popularity ?? (service.score_breakdown?.popularity ? service.score_breakdown.popularity / 100 : 0.70)) * 100);
+  const intentPct = Math.round((service?.intent ?? (service?.score_breakdown?.intentMatch ? service.score_breakdown.intentMatch / 100 : 0.85)) * 100);
+  const pathPct = Math.round((service?.path ?? (service?.score_breakdown?.pathStepMatch ? service.score_breakdown.pathStepMatch / 100 : 0.80)) * 100);
+  const personalizationPct = Math.round((service?.personalization ?? 0.75) * 100);
+  const qualityPct = Math.round((service?.quality ?? (service?.score_breakdown?.partnerQuality ? service.score_breakdown.partnerQuality / 100 : 0.80)) * 100);
+  const popularityPct = Math.round((service?.popularity ?? (service?.score_breakdown?.popularity ? service.score_breakdown.popularity / 100 : 0.70)) * 100);
 
-  const reviewCount = service.reviews || service.rating_count || (120 + ((service.name?.length || 0) * 17) % 850);
+  const reviewCount = service?.reviews || service?.rating_count || (120 + ((service?.name?.length || 0) * 17) % 850);
 
   return (
     <div
@@ -502,9 +510,9 @@ const MarketplaceCard = ({
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
             <span
               className="mkt-card__cat-pill"
-              style={{ color: catMeta.color, backgroundColor: catMeta.bg }}
+              style={{ color: catMeta?.color || "#8B5CF6", backgroundColor: catMeta?.bg || "#F1EEFB" }}
             >
-              {catMeta.label}
+              {catMeta?.label || "Distributor"}
             </span>
 
             {replacementCount > 0 && (
@@ -1131,6 +1139,53 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
       return;
     }
 
+    // FREE SERVICE ENROLLMENT (no payment required)
+    if (total <= 0) {
+      setSubmitting(true);
+      axios
+        .post(`${process.env.REACT_APP_API_BASE_URL || ""}/api/payment/marketplace-order`, {
+          userEmail: email,
+          items: cart.map((item) => ({
+            _id: item._id,
+            name: item.name,
+            layer: item.layer,
+            cost: item.cost,
+            partnerId: item.partnerId || null,
+            partner_email: item.partner_email || null,
+          })),
+          total: 0,
+          currency: "INR",
+        })
+        .then((orderRes) => {
+          setSubmitting(false);
+          if (orderRes.data?.success) {
+            onConfirm({
+              orderId: orderRes.data.orderId || orderRes.data.order?.id || `FREE_${Date.now()}`,
+              total: 0,
+              itemCount: cart.length,
+              date: new Date(),
+              studentEmail: email,
+              item: cart[0],
+            });
+          } else {
+            setPayError(orderRes.data?.error || "Failed to complete enrollment.");
+          }
+        })
+        .catch((err) => {
+          console.warn("Free enrollment fallback:", err?.message);
+          setSubmitting(false);
+          onConfirm({
+            orderId: `FREE_${Date.now()}`,
+            total: 0,
+            itemCount: cart.length,
+            date: new Date(),
+            studentEmail: email,
+            item: cart[0],
+          });
+        });
+      return;
+    }
+
     // INTERNAL PARTNER — REAL RAZORPAY PAYMENT
     setSubmitting(true);
 
@@ -1311,7 +1366,9 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
-              100% Secure Checkout via Razorpay. Choose Pay Button Below To Proceed.
+              {total <= 0
+                ? "Free Item — No payment required. Click below to confirm enrollment."
+                : "100% Secure Checkout via Razorpay. Choose Pay Button Below To Proceed."}
             </div>
             {payError && <div className="rzp-pay-error">{payError}</div>}
           </div>
@@ -1340,13 +1397,15 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
             <button className="os-pay-btn rzp-pay-btn" onClick={handlePayClick} disabled={submitting}>
               {submitting ? (
                 <span className="rzp-btn-inner">
-                  <span className="rzp-mini-spinner" /> Processing Payment…
+                  <span className="rzp-mini-spinner" /> {total <= 0 ? "Enrolling…" : "Processing Payment…"}
                 </span>
               ) : (
-                <span className="rzp-btn-inner">Pay ₹{total === 0 ? "0" : total.toLocaleString("en-IN")}</span>
+                <span className="rzp-btn-inner">{total <= 0 ? "Enroll for Free" : `Pay ₹${total.toLocaleString("en-IN")}`}</span>
               )}
             </button>
-            <p className="rzp-secure-text">100% Secure Encrypted Razorpay Checkout.</p>
+            <p className="rzp-secure-text">
+              {total <= 0 ? "Instant confirmation & course access." : "100% Secure Encrypted Razorpay Checkout."}
+            </p>
           </div>
         </div>
       </div>

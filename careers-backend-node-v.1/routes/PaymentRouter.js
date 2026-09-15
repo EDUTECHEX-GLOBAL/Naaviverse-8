@@ -317,19 +317,51 @@ router.get("/invoice/:paymentId", async (req, res) => {
 
 // ═════════════════════════════════════════
 //   MARKETPLACE — CREATE RAZORPAY ORDER
+// ═════════════════════════════════════════
+//   MARKETPLACE — CREATE RAZORPAY ORDER
 //   POST /api/payment/marketplace-order
 // ═════════════════════════════════════════
 router.post("/marketplace-order", async (req, res) => {
   try {
     const { userEmail, items = [], total, currency = "INR" } = req.body;
 
-    if (!userEmail || !total || total <= 0) {
-      return res.status(400).json({ success: false, error: "userEmail and total are required" });
+    if (!userEmail) {
+      return res.status(400).json({ success: false, error: "userEmail is required" });
     }
+
+    if (total === undefined || total === null || isNaN(Number(total))) {
+      return res.status(400).json({ success: false, error: "Valid total is required" });
+    }
+
+    const numTotal = Number(total);
 
     // Determine tier (nano > micro > macro)
     const layers = items.map(i => (i.layer || "macro").toLowerCase());
     const tier = layers.includes("nano") ? "nano" : layers.includes("micro") ? "micro" : "macro";
+
+    // If total is 0 (Free service), skip Razorpay gateway
+    if (numTotal <= 0) {
+      const payment = await Payment.create({
+        userEmail,
+        productId:     "naavi-marketplace",
+        productName:   `Marketplace (Free) — ${items.map(i => i.name).join(", ")}`,
+        billingMethod: "lifetime",
+        amount:        0,
+        currency,
+        tier,
+        planTier:      "standard",
+        status:        "paid",
+      });
+
+      console.log(`✅ Marketplace Free order created: ${payment._id} | ${userEmail} | ${tier}`);
+      return res.json({
+        success: true,
+        free: true,
+        order: { id: "free_" + payment._id },
+        orderId: "free_" + payment._id,
+        paymentId: payment._id,
+      });
+    }
 
     // Create a combined payment record
     const payment = await Payment.create({
@@ -337,15 +369,15 @@ router.post("/marketplace-order", async (req, res) => {
       productId:     "naavi-marketplace",
       productName:   `Marketplace — ${items.map(i => i.name).join(", ")}`,
       billingMethod: "monthly",
-      amount:        total,
+      amount:        numTotal,
       currency,
-      tier:          tier === "macro" ? "micro" : tier,
+      tier,
       planTier:      "standard",
       status:        "pending",
     });
 
     const order = await razorpay.orders.create({
-      amount:   total * 100,
+      amount:   Math.round(numTotal * 100),
       currency,
       receipt:  "mkt_" + payment._id,
       notes:    { userEmail, tier, productId: "naavi-marketplace" },
@@ -354,7 +386,7 @@ router.post("/marketplace-order", async (req, res) => {
     payment.razorpayOrderId = order.id;
     await payment.save();
 
-    console.log(`✅ Marketplace order created: ${order.id} | ₹${total} | ${tier}`);
+    console.log(`✅ Marketplace order created: ${order.id} | ₹${numTotal} | ${tier}`);
     return res.json({ success: true, order, paymentId: payment._id });
 
   } catch (err) {

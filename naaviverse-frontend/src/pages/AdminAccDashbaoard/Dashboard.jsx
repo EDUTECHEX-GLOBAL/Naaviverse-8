@@ -314,6 +314,8 @@ export default function Dashboard() {
   const [selected, setSelected] = useState(null);
   const [roleView, setRoleView] = useState("partner");
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+  const [partnerScope, setPartnerScope] = useState("all"); // "all" | "internal" | "external"
+  const [showScopeDropdown, setShowScopeDropdown] = useState(false);
   const [partnerData, setPartnerData] = useState([]);
   const [userData, setUserData] = useState([]);
   const [loadingData, setLoadingData] = useState(false);
@@ -322,6 +324,7 @@ export default function Dashboard() {
   const [selectedActivityUser, setSelectedActivityUser] = useState(null);
 
   const dropdownRef = useRef(null);
+  const scopeDropdownRef = useRef(null);
 
   const fetchApprovals = (role, setter) => {
     setLoadingData(true);
@@ -350,7 +353,14 @@ export default function Dashboard() {
   }, [selected]);
 
   const activeData = roleView === "partner" ? partnerData : userData;
-  const filtered = tab === "all" ? activeData : activeData.filter((a) => a.status === tab);
+  const scopedData = (roleView === "partner" && partnerScope !== "all")
+    ? activeData.filter((a) => a.partnerScope === partnerScope)
+    : activeData;
+  const filtered = tab === "all" ? scopedData : scopedData.filter((a) => a.status === tab);
+
+  // Counts for scope sub-dropdown
+  const internalCount = partnerData.filter((a) => a.partnerScope === "internal").length;
+  const externalCount = partnerData.filter((a) => a.partnerScope === "external").length;
 
   const approve = (id) => {
     axios.put(`${BASE_URL}/api/approvals/update/${id}`, { status: "approved" }).then((res) => {
@@ -1634,28 +1644,60 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="dropdown-container" ref={dropdownRef}>
-            <button type="button" className={`role-toggle-btn ${isPartnerView ? "partner-toggle" : "user-toggle"}`} onClick={() => setShowRoleDropdown((prev) => !prev)}>
-              {isPartnerView ? "Partners" : "Users"}
-              <svg className={`arrow ${showRoleDropdown ? "open" : ""}`} width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            <PortalDropdown anchorRef={dropdownRef} isOpen={showRoleDropdown} onClose={() => setShowRoleDropdown(false)}>
-              <button className={roleView === "partner" ? "partner-active" : ""} onClick={() => { setRoleView("partner"); setTab("all"); setShowRoleDropdown(false); }}>
-                <span className="menu-icon">
-                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div className="dropdown-container" ref={dropdownRef}>
+              <button type="button" className={`role-toggle-btn ${isPartnerView ? "partner-toggle" : "user-toggle"}`} onClick={() => setShowRoleDropdown((prev) => !prev)}>
+                {isPartnerView ? "Partners" : "Users"}
+                <svg className={`arrow ${showRoleDropdown ? "open" : ""}`} width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              <PortalDropdown anchorRef={dropdownRef} isOpen={showRoleDropdown} onClose={() => setShowRoleDropdown(false)}>
+                <button className={roleView === "partner" ? "partner-active" : ""} onClick={() => { setRoleView("partner"); setTab("all"); setPartnerScope("all"); setShowRoleDropdown(false); }}>
+                  <span className="menu-icon">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>
+                  </span> Partners
+                  <span className="menu-count partner-count">{partnerData.length}</span>
+                </button>
+                <button className={roleView === "user" ? "user-active" : ""} onClick={() => { setRoleView("user"); setTab("all"); setPartnerScope("all"); setShowRoleDropdown(false); }}>
+                  <span className="menu-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                  </span> Users
+                  <span className="menu-count user-count">{userData.length}</span>
+                </button>
+              </PortalDropdown>
+            </div>
 
-                </span> Partners
-                <span className="menu-count partner-count">{partnerData.length}</span>
-              </button>
-              <button className={roleView === "user" ? "user-active" : ""} onClick={() => { setRoleView("user"); setTab("all"); setShowRoleDropdown(false); }}>
-                <span className="menu-icon">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-                </span> Users
-                <span className="menu-count user-count">{userData.length}</span>
-              </button>
-            </PortalDropdown>
+            {/* ── Internal / External sub-dropdown (only visible for Partners) ── */}
+            {isPartnerView && (
+              <div className="dropdown-container" ref={scopeDropdownRef}>
+                <button
+                  type="button"
+                  className="role-toggle-btn scope-toggle"
+                  onClick={() => setShowScopeDropdown((prev) => !prev)}
+                >
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: partnerScope === "internal" ? "#2563eb" : partnerScope === "external" ? "#f59e0b" : "#94a3b8", flexShrink: 0 }} />
+                  {partnerScope === "all" ? "All Partners" : partnerScope === "internal" ? "Internal" : "External"}
+                  <svg className={`arrow ${showScopeDropdown ? "open" : ""}`} width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                <PortalDropdown anchorRef={scopeDropdownRef} isOpen={showScopeDropdown} onClose={() => setShowScopeDropdown(false)}>
+                  <button className={partnerScope === "all" ? "partner-active" : ""} onClick={() => { setPartnerScope("all"); setTab("all"); setShowScopeDropdown(false); }}>
+                    <span className="menu-icon">📋</span> All Partners
+                    <span className="menu-count partner-count">{partnerData.length}</span>
+                  </button>
+                  <button className={partnerScope === "internal" ? "scope-internal-active" : ""} onClick={() => { setPartnerScope("internal"); setTab("all"); setShowScopeDropdown(false); }}>
+                    <span className="menu-icon">🏢</span> Internal
+                    <span className="menu-count scope-internal-count">{internalCount}</span>
+                  </button>
+                  <button className={partnerScope === "external" ? "scope-external-active" : ""} onClick={() => { setPartnerScope("external"); setTab("all"); setShowScopeDropdown(false); }}>
+                    <span className="menu-icon">🌐</span> External
+                    <span className="menu-count scope-external-count">{externalCount}</span>
+                  </button>
+                </PortalDropdown>
+              </div>
+            )}
           </div>
         </div>
 
@@ -1675,7 +1717,7 @@ export default function Dashboard() {
               <thead>
                 <tr>
                   <th>{isPartnerView ? "Business" : "Name"}</th>
-                  <th>Type</th><th>Email</th><th>Date</th><th>Actions</th>
+                  <th>Type</th>{isPartnerView && <th>Source</th>}<th>Email</th><th>Date</th><th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -1691,6 +1733,13 @@ export default function Dashboard() {
                         </div>
                       </td>
                       <td><span className="type-badge">{item.type || "—"}</span></td>
+                      {isPartnerView && (
+                        <td>
+                          <span className={`scope-badge ${item.partnerScope === "internal" ? "scope-internal" : "scope-external"}`}>
+                            {item.partnerScope === "internal" ? "🏢 Internal" : "🌐 External"}
+                          </span>
+                        </td>
+                      )}
                       <td className="email-cell">{item.email}</td>
                       <td className="date-cell">{item.date}</td>
                       <td style={{ whiteSpace: "nowrap" }}>
@@ -1742,7 +1791,7 @@ export default function Dashboard() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="5" className="no-results">
+                    <td colSpan={isPartnerView ? "6" : "5"} className="no-results">
                       <div className="empty-state">
                         <div className="empty-icon">
                           {isPartnerView ? (

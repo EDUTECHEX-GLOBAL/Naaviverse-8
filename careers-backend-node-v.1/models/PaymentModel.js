@@ -13,11 +13,10 @@ const PaymentSchema = new mongoose.Schema(
       required: true,
     },
 
-    // tier: always "micro" for subscriptions
-    // nano is a per-step credit unlock, not a subscription tier
+    // tier: macro (free pathway/services), micro (subscriptions/guided), nano (per-step unlock)
     tier: {
       type: String,
-      enum: ["micro", "nano"],
+      enum: ["macro", "micro", "nano"],
       default: "micro",
     },
 

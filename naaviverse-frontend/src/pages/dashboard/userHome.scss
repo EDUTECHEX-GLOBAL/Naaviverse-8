@@ -1040,6 +1040,17 @@
     color: var(--uh-blue-dark);
   }
 
+  &.p-macro,
+  &.p-macro-view {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  &.p-marketplace {
+    background: #f1f5f9;
+    color: #475569;
+  }
+
   &.p-bundle {
     background: var(--uh-green-light);
     color: #166534;
@@ -1056,6 +1067,12 @@
   &.s-active {
     background: var(--uh-green-light);
     color: #166534;
+  }
+
+  &.s-free {
+    background: #eef2ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
   }
 
   &.s-completed {

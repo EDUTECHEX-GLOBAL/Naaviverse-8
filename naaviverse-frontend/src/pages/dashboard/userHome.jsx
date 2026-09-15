@@ -221,11 +221,20 @@ export default function UserHome() {
       try {
         setPurchasesLoading(true);
         setSubsLoading(true);
-        const { data } = await axios.get(`${BASE_URL}/api/payment/transactions`, {
-          params: { email: user.email }
-        });
-        if (data?.success) {
-          const paidTxns = data.data.filter(t => t.status?.toLowerCase() === "paid");
+        const [txRes, userPathsRes] = await Promise.allSettled([
+          axios.get(`${BASE_URL}/api/payment/transactions`, {
+            params: { email: user.email },
+          }),
+          axios.get(`${BASE_URL}/api/userpaths`, {
+            params: { email: user.email, status: "active" },
+          }),
+        ]);
+
+        const txData = txRes.status === "fulfilled" ? txRes.value.data : null;
+        const userPathsData = userPathsRes.status === "fulfilled" ? userPathsRes.value.data?.data || [] : [];
+
+        if (txData?.success) {
+          const paidTxns = txData.data.filter((t) => t.status?.toLowerCase() === "paid");
 
           const isPlatformSubscription = (t) => {
             if (t.partnerId || t.partnerEmail) return false;
@@ -250,8 +259,9 @@ export default function UserHome() {
           };
 
           // 1. Subscriptions: Only true platform plan subscriptions (Nano, Micro, Pro, Plus, Naavi Platform)
-          const subTxns = paidTxns.filter(isPlatformSubscription).map(t => {
+          const subTxns = paidTxns.filter(isPlatformSubscription).map((t) => {
             const cleanName = (t.productName || "Naavi Plan Subscription")
+              .replace(/^Marketplace \(Free\) —\s*/i, "")
               .replace(/^Marketplace —\s*/i, "")
               .replace(/^Subscription —\s*/i, "");
             return {
@@ -264,38 +274,92 @@ export default function UserHome() {
               date: new Date(t.createdAt || Date.now()).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
-                year: "numeric"
+                year: "numeric",
               }),
               status: "Paid",
-              partner: "Naavi"
+              partner: "Naavi",
             };
           });
 
-          // 2. Marketplace Purchases: All marketplace items, courses, mentoring, tools & partner services
-          const marketTxns = paidTxns.filter(t => !isPlatformSubscription(t)).map(t => {
-            const cleanName = (t.productName || "Marketplace Item")
-              .replace(/^Marketplace —\s*/i, "")
-              .replace(/^Subscription —\s*/i, "");
+          // 2. Marketplace Purchases & Free Enrollments
+          const marketTxns = paidTxns
+            .filter((t) => !isPlatformSubscription(t))
+            .map((t) => {
+              const rawName = t.productName || "Marketplace Item";
+              const cleanName = rawName
+                .replace(/^Marketplace \(Free\) —\s*/i, "")
+                .replace(/^Marketplace —\s*/i, "")
+                .replace(/^Subscription —\s*/i, "");
+
+              const isFree =
+                Number(t.amount || 0) === 0 ||
+                t.tier === "macro" ||
+                rawName.toLowerCase().includes("(free)");
+
+              const typeLabel = t.tier
+                ? t.tier.charAt(0).toUpperCase() + t.tier.slice(1)
+                : isFree
+                ? "Macro"
+                : "Marketplace";
+
+              return {
+                id: t._id,
+                name: cleanName,
+                type: typeLabel,
+                plan: isFree
+                  ? "Macro View"
+                  : t.tier === "subscription"
+                  ? "Subscription"
+                  : "Marketplace",
+                cost: isFree ? "Free" : `₹${(t.amount || 0).toLocaleString("en-IN")}`,
+                amount: t.amount || 0,
+                isFree,
+                date: new Date(t.createdAt || Date.now()).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                }),
+                rawDate: new Date(t.createdAt || Date.now()).getTime(),
+                status: isFree ? "Free" : "Paid",
+                icon: isFree ? "🧭" : "🛍️",
+              };
+            });
+
+          // 3. Macro Pathway Enrollments (Enrolled Paths)
+          const macroPathEnrollments = (userPathsData || []).map((up) => {
+            const pathName =
+              up.PathDetails?.[0]?.nameOfPath ||
+              up.PathDetails?.[0]?.name ||
+              up.pathDetails?.nameOfPath ||
+              up.pathName ||
+              "Pathway";
 
             return {
-              id: t._id,
-              name: cleanName,
-              type: t.tier ? (t.tier.charAt(0).toUpperCase() + t.tier.slice(1)) : "Marketplace",
-              plan: t.tier === "subscription" ? "Subscription" : "Marketplace",
-              cost: `₹${(t.amount || 0).toLocaleString("en-IN")}`,
-              amount: t.amount || 0,
-              date: new Date(t.createdAt || Date.now()).toLocaleDateString("en-US", {
+              id: `macro-path-${up._id || up.pathId}`,
+              name: `${pathName} (Macro View)`,
+              type: "Macro",
+              plan: "Macro View",
+              cost: "Free",
+              amount: 0,
+              isFree: true,
+              date: new Date(up.createdAt || Date.now()).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
-                year: "numeric"
+                year: "numeric",
               }),
-              status: "active",
-              icon: "🛍️"
+              rawDate: new Date(up.createdAt || Date.now()).getTime(),
+              status: "Free",
+              icon: "🧭",
             };
           });
 
+          // Combine both marketplace items and macro pathway enrollments, sorted by newest first
+          const allPurchases = [...marketTxns, ...macroPathEnrollments].sort(
+            (a, b) => b.rawDate - a.rawDate
+          );
+
           setSubscriptions(subTxns);
-          setPurchases(marketTxns);
+          setPurchases(allPurchases);
         }
       } catch (err) {
         console.error("❌ Transactions fetch error:", err);
@@ -633,13 +697,15 @@ export default function UserHome() {
                   <div className="uh-purchase-emoji">{m.icon}</div>
                   <div className="uh-purchase-info">
                     <span className="uh-purchase-name">{m.name}</span>
-                    <span className="uh-purchase-meta">{m.type} · Purchased {m.date}</span>
+                    <span className="uh-purchase-meta">{m.type} · {m.isFree ? "Enrolled" : "Purchased"} {m.date}</span>
                   </div>
                   <div className="uh-purchase-right">
-                    <span className={`uh-plan-tag p-${m.plan.toLowerCase()}`}>{m.plan}</span>
-                    <span className="uh-purchase-cr" style={{ color: "#0d9488", fontWeight: "bold" }}>{m.cost}</span>
+                    <span className={`uh-plan-tag p-${(m.plan || "").toLowerCase().replace(/\s+/g, "-")}`}>{m.plan}</span>
+                    <span className="uh-purchase-cr" style={{ color: m.isFree ? "#4f46e5" : "#0d9488", fontWeight: "bold" }}>{m.cost}</span>
                   </div>
-                  <span className={`uh-status-dot s-active`}>Paid</span>
+                  <span className={`uh-status-dot ${m.isFree ? "s-free" : "s-active"}`}>
+                    {m.isFree ? "Free" : "Paid"}
+                  </span>
                 </div>
               ))}
             </div>

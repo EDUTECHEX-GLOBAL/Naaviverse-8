@@ -34,35 +34,94 @@ export default function UserPurchasesPage() {
     const fetchPurchases = async () => {
       try {
         setPurchasesLoading(true);
-        const { data } = await axios.get(`${BASE_URL}/api/payment/transactions`, {
-          params: { email: user.email }
-        });
-        if (data?.success) {
-          const filtered = data.data.filter(t => 
-            t.status?.toLowerCase() === "paid" && 
-            t.productId !== "naavi-platform"
-          ).map(t => {
-            const cleanName = t.productName.startsWith("Marketplace — ")
-              ? t.productName.replace("Marketplace — ", "")
-              : t.productName;
+        const [txRes, userPathsRes] = await Promise.allSettled([
+          axios.get(`${BASE_URL}/api/payment/transactions`, {
+            params: { email: user.email },
+          }),
+          axios.get(`${BASE_URL}/api/userpaths`, {
+            params: { email: user.email, status: "active" },
+          }),
+        ]);
+
+        const txData = txRes.status === "fulfilled" ? txRes.value.data : null;
+        const userPathsData = userPathsRes.status === "fulfilled" ? userPathsRes.value.data?.data || [] : [];
+
+        if (txData?.success) {
+          const filtered = txData.data
+            .filter((t) => t.status?.toLowerCase() === "paid" && t.productId !== "naavi-platform")
+            .map((t) => {
+              const rawName = t.productName || "Marketplace Item";
+              const cleanName = rawName
+                .replace(/^Marketplace \(Free\) —\s*/i, "")
+                .replace(/^Marketplace —\s*/i, "")
+                .replace(/^Subscription —\s*/i, "");
+
+              const isFree =
+                Number(t.amount || 0) === 0 ||
+                t.tier === "macro" ||
+                rawName.toLowerCase().includes("(free)");
+
+              const typeLabel = t.tier
+                ? t.tier.charAt(0).toUpperCase() + t.tier.slice(1)
+                : isFree
+                ? "Macro"
+                : "Marketplace";
+
+              return {
+                id: t._id,
+                name: cleanName,
+                type: typeLabel,
+                plan: isFree
+                  ? "Macro View"
+                  : t.planTier && t.productId === "naavi-platform"
+                  ? t.planTier.charAt(0).toUpperCase() + t.planTier.slice(1)
+                  : "Marketplace",
+                cost: isFree ? "Free" : `₹${(t.amount || 0).toLocaleString("en-IN")}`,
+                amount: t.amount || 0,
+                isFree,
+                date: new Date(t.createdAt || Date.now()).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                }),
+                rawDate: new Date(t.createdAt || Date.now()).getTime(),
+                status: isFree ? "Free" : "Paid",
+                icon: isFree ? "🧭" : "🛍️",
+              };
+            });
+
+          const macroPathEnrollments = (userPathsData || []).map((up) => {
+            const pathName =
+              up.PathDetails?.[0]?.nameOfPath ||
+              up.PathDetails?.[0]?.name ||
+              up.pathDetails?.nameOfPath ||
+              up.pathName ||
+              "Pathway";
 
             return {
-              id: t._id,
-              name: cleanName,
-              type: t.tier ? (t.tier.charAt(0).toUpperCase() + t.tier.slice(1)) : "Marketplace",
-              plan: (t.planTier && t.productId === "naavi-platform") ? (t.planTier.charAt(0).toUpperCase() + t.planTier.slice(1)) : "Marketplace",
-              cost: `₹${t.amount.toLocaleString("en-IN")}`,
-              amount: t.amount,
-              date: new Date(t.createdAt).toLocaleDateString("en-US", {
+              id: `macro-path-${up._id || up.pathId}`,
+              name: `${pathName} (Macro View)`,
+              type: "Macro",
+              plan: "Macro View",
+              cost: "Free",
+              amount: 0,
+              isFree: true,
+              date: new Date(up.createdAt || Date.now()).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
-                year: "numeric"
+                year: "numeric",
               }),
-              status: "active",
-              icon: "🛍️"
+              rawDate: new Date(up.createdAt || Date.now()).getTime(),
+              status: "Free",
+              icon: "🧭",
             };
           });
-          setPurchases(filtered);
+
+          const allPurchases = [...filtered, ...macroPathEnrollments].sort(
+            (a, b) => b.rawDate - a.rawDate
+          );
+
+          setPurchases(allPurchases);
         }
       } catch (err) {
         console.error("❌ Purchases fetch error:", err);
@@ -102,13 +161,15 @@ export default function UserPurchasesPage() {
                   <div className="uh-purchase-emoji">{m.icon}</div>
                   <div className="uh-purchase-info">
                     <span className="uh-purchase-name">{m.name}</span>
-                    <span className="uh-purchase-meta">{m.type} · Purchased {m.date}</span>
+                    <span className="uh-purchase-meta">{m.type} · {m.isFree ? "Enrolled" : "Purchased"} {m.date}</span>
                   </div>
                   <div className="uh-purchase-right">
-                    <span className={`uh-plan-tag p-${m.plan.toLowerCase()}`}>{m.plan}</span>
-                    <span className="uh-purchase-cr" style={{ color: "#0d9488", fontWeight: "bold" }}>{m.cost}</span>
+                    <span className={`uh-plan-tag p-${(m.plan || "").toLowerCase().replace(/\s+/g, "-")}`}>{m.plan}</span>
+                    <span className="uh-purchase-cr" style={{ color: m.isFree ? "#4f46e5" : "#0d9488", fontWeight: "bold" }}>{m.cost}</span>
                   </div>
-                  <span className={`uh-status-dot s-active`}>Paid</span>
+                  <span className={`uh-status-dot ${m.isFree ? "s-free" : "s-active"}`}>
+                    {m.isFree ? "Free" : "Paid"}
+                  </span>
                 </div>
               ))}
             </div>
