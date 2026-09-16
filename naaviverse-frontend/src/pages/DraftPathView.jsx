@@ -296,6 +296,7 @@ const DraftPathView = () => {
   const [totalSteps, setTotalSteps] = useState(5);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [view, setView] = useState("draft");
   const [viewAllOpen, setViewAllOpen] = useState(false);
@@ -560,13 +561,17 @@ const DraftPathView = () => {
 
   const handleSubmitForApproval = async () => {
     try {
-      await axios.put(`${BASE_URL}/api/paths/submit`, { pathId: id });
-      alert("Path submitted for approval successfully!");
+      setSubmitting(true);
+      setError(null);
+      const res = await axios.put(`${BASE_URL}/api/paths/submit`, { pathId: id });
+      alert(res.data?.message || "Path submitted for approval successfully!");
       const updated = await axios.get(`${BASE_URL}/api/paths/viewpath/${id}`);
       setPathData(updated.data.data);
     } catch (err) {
       console.error("Error submitting path:", err);
-      setError("Failed to submit for approval.");
+      setError(err?.response?.data?.message || "Failed to submit for approval.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -642,7 +647,17 @@ const DraftPathView = () => {
 
             <div className="path-title-section">
               <h1 className="path-title">{pathData.nameOfPath || "Untitled Path"}</h1>
-              <span className="draft-badge">DRAFT</span>
+              {pathData?.status === "waitingforapproval" ? (
+                <span className="draft-badge" style={{ background: "#0284c7" }}>PENDING APPROVAL</span>
+              ) : pathData?.status === "changesrequested" ? (
+                <span className="draft-badge" style={{ background: "#e11d48" }}>CHANGES REQUESTED</span>
+              ) : pathData?.status === "rejected" ? (
+                <span className="draft-badge" style={{ background: "#dc2626" }}>REJECTED</span>
+              ) : pathData?.status === "active" ? (
+                <span className="draft-badge" style={{ background: "#059669" }}>ACTIVE</span>
+              ) : (
+                <span className="draft-badge">DRAFT</span>
+              )}
             </div>
 
             <div className="path-stats">
@@ -701,18 +716,24 @@ const DraftPathView = () => {
               <button
                 className="btn-primary"
                 onClick={handleSubmitForApproval}
-                disabled={steps.length < totalSteps}
+                disabled={submitting || steps.length < totalSteps}
                 title={
                   steps.length < totalSteps
                     ? `Complete all ${totalSteps} steps first (${steps.length}/${totalSteps} done)`
+                    : pathData?.status === "waitingforapproval"
+                    ? "Re-submit updated path for approval"
                     : "Submit for approval"
                 }
                 style={{
-                  opacity: steps.length < totalSteps ? 0.5 : 1,
-                  cursor: steps.length < totalSteps ? "not-allowed" : "pointer",
+                  opacity: (submitting || steps.length < totalSteps) ? 0.5 : 1,
+                  cursor: (submitting || steps.length < totalSteps) ? "not-allowed" : "pointer",
                 }}
               >
-                Submit for Approval
+                {submitting
+                  ? "Submitting..."
+                  : pathData?.status === "waitingforapproval"
+                  ? "Re-submit for Approval"
+                  : "Submit for Approval"}
               </button>
             </div>
           </div>

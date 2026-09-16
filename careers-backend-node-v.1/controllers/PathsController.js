@@ -171,8 +171,8 @@ const submitForApproval = async (req, res) => {
       return res.status(400).json({ status: false, message: "Cannot submit empty path. Add at least one step." });
     }
 
-    if (!["draft", "rejected", "changesrequested"].includes(path.status)) {
-      return res.status(400).json({ status: false, message: "Only draft or rejected paths can be submitted" });
+    if (!["draft", "rejected", "changesrequested", "waitingforapproval"].includes(path.status)) {
+      return res.status(400).json({ status: false, message: "Only draft, rejected, or paths under review can be submitted" });
     }
 
     // Count steps saved in the steps collection by path_id
@@ -193,10 +193,10 @@ const submitForApproval = async (req, res) => {
 
     // Mark all pending change requests as addressed on resubmit
     if (path.changeRequests && path.changeRequests.length > 0) {
-      path.changeRequests = path.changeRequests.map(cr => ({
-        ...cr.toObject(),
-        status: "addressed"
-      }));
+      path.changeRequests.forEach(cr => {
+        cr.status = "addressed";
+      });
+      path.markModified("changeRequests");
     }
 
     path.review_notes = '';
