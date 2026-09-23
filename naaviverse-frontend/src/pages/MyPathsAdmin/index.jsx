@@ -15,7 +15,7 @@ const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { sideNav, setsideNav } = useStore();
+  const { sideNav, setsideNav, accsideNav, setaccsideNav } = useStore();
   let userDetails = JSON.parse(localStorage.getItem("adminuser"));
   const { setCurrentStepData, setCurrentStepDataLength, mypathsMenu, setMypathsMenu } = useCoinContextData();
   const [pathChangeRequests, setPathChangeRequests] = useState({}); // { [pathId]: [...changeRequests] }
@@ -132,6 +132,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
       : `${BASE_URL}/api/paths/get?email=${email}`;
     axios.get(endpoint).then(({ data }) => {
       setPartnerPathData(data?.data);
+      if (data?.status && data?.data) setBackupPathData(data.data);
       setLoading(false);
     }).catch(() => setLoading(false));
   };
@@ -264,15 +265,15 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     }).catch(() => setActionLoading(false));
   };
 
-  // ── One-time setup: backup paths, steps, services ──
+  // ── One-time setup: auxiliary steps, services (deferred for fast initial page load) ──
   useEffect(() => {
-    axios.get(`${BASE_URL}/api/paths/get?status=active`).then(({ data }) => {
-      if (data.status) setBackupPathData(data?.data);
-    });
-    getAllSteps();
-    axios.get(`${BASE_URL}/api/services/getservices?status=active`).then(({ data }) => {
-      if (data.status) setAllServicesToAdd(data.data);
-    });
+    const timer = setTimeout(() => {
+      getAllSteps();
+      axios.get(`${BASE_URL}/api/services/getservices?status=active`).then(({ data }) => {
+        if (data.status) setAllServicesToAdd(data.data);
+      }).catch(() => {});
+    }, 300);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -986,15 +987,16 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                       >
                         {getCreatorLabel(path)}
                       </span>
-                    </div>                <div className="paths-col-desc" onClick={ev => ev.stopPropagation()}>
-                      <span className="path-desc-text">
+                    </div>
+                    <div className="paths-col-desc" onClick={ev => ev.stopPropagation()}>
+                      <p className="path-desc-text">
                         {expandedRows[path?._id] ? path?.description : (path?.description?.length > 120 ? path?.description?.substring(0, 120) + "..." : path?.description)}
-                      </span>
-                      {path?.description?.length > 120 && (
-                        <span className="path-desc-toggle" onClick={ev => { ev.stopPropagation(); setExpandedRows(prev => ({ ...prev, [path._id]: !prev[path._id] })); }}>
-                          {expandedRows[path?._id] ? " Read Less" : " Read More"}
-                        </span>
-                      )}
+                        {path?.description?.length > 120 && (
+                          <span className="path-desc-toggle" onClick={ev => { ev.stopPropagation(); setExpandedRows(prev => ({ ...prev, [path._id]: !prev[path._id] })); }}>
+                            {expandedRows[path?._id] ? " Read Less" : " Read More"}
+                          </span>
+                        )}
+                      </p>
                     </div>
                     <div className="paths-col-steps">
                       <div className="path-meta-info">
@@ -1005,7 +1007,19 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                           })()}
                         </span>
                       </div>
-                      <span className="actions-pill">Actions</span>
+                      <div className="path-actions-group">
+                        <button
+                          className="admin-view-steps-btn"
+                          onClick={(ev) => {
+                            ev.stopPropagation();
+                            if (setaccsideNav) setaccsideNav("Steps");
+                            navigate(`/admin/dashboard/steps?tab=active&pathId=${path?._id}&pathName=${encodeURIComponent(path?.nameOfPath || "")}`);
+                          }}
+                        >
+                          View Steps
+                        </button>
+                        <span className="actions-pill">Actions</span>
+                      </div>
                     </div>
                   </div>
                 )

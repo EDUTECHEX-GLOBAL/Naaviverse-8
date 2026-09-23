@@ -454,6 +454,194 @@ def format_student_signals_context(profile: dict) -> str:
     return "\n".join(signals_lines)
 
 
+def resolve_focus_category(focus: Optional[str]) -> str:
+    text = str(focus or "").lower()
+    if any(k in text for k in ["non_academic", "non-academic", "non academic", "mental", "wellness", "life counselling", "life counseling", "immediate guidance"]):
+        return "non_academic"
+    if any(k in text for k in ["jobs", "careers", "career-prep", "career prep", "technical roles", "non-technical", "profession", "placement"]):
+        return "jobs"
+    if any(k in text for k in ["practical", "skills", "skill", "internship"]):
+        return "practical"
+    return "academic"
+
+
+def get_subsegment_rules(cat: str, sub_segment: Optional[str] = None) -> str:
+    sub = str(sub_segment or "").strip().lower()
+    cat = resolve_focus_category(cat)
+
+    if cat == "academic":
+        if any(k in sub for k in ["undergraduate", "bachelor", "university_ug", "ug"]):
+            return (
+                "Sub-Segment: Undergraduate (Bachelor's) Admissions & Prep.\n"
+                "- Context: High school to university transition, high school GPA/transcripts, AP/IB/prerequisite courses, standardized tests (SAT/ACT/IELTS/TOEFL), extracurricular profile, essay writing, university shortlisting, application dossiers.\n"
+                "- Progression: Academic baseline & subject selection -> prerequisite preparation -> standardized test readiness -> extracurricular & profile elevation -> target university research & application dossiers.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: Forbidden to include Middle school curricula, PhD dissertation, or MBA job history."
+            )
+        elif any(k in sub for k in ["postgraduate", "master", "mba", "university_pg", "pg"]):
+            return (
+                "Sub-Segment: Postgraduate (Master's / MBA) Admissions & Prep.\n"
+                "- Context: Undergraduate degree completion, GPA elevation, GRE/GMAT/IELTS, statement of purpose (SOP), letters of recommendation (LOR), work experience, targeted graduate programs.\n"
+                "- Progression: Undergraduate transcript audit -> standardized testing (GRE/GMAT) -> research / work experience evidence -> SOP & recommendation letters -> target university submissions.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: Forbidden to include High school board exams, Grade 10-12 curricula, or SAT/ACT."
+            )
+        elif any(k in sub for k in ["phd", "research", "research_phd", "doctorate"]):
+            return (
+                "Sub-Segment: Research & PhD Academia.\n"
+                "- Context: Literature reviews, research proposal formulation, publication in peer-reviewed journals, identifying faculty advisors/PIs, methodologies, conference papers, dissertation prep.\n"
+                "- Progression: Literature mapping & gap analysis -> research question & methodology design -> faculty advisor outreach & fellowship applications -> draft proposal & publication pipeline.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: Forbidden to include High school curriculum, SAT/ACT, or undergraduate coursework."
+            )
+        elif any(k in sub for k in ["transfer", "lateral", "transfer_lateral"]):
+            return (
+                "Sub-Segment: Transfer / Lateral Entry.\n"
+                "- Context: Transferable credits, GPA elevation, articulation agreements, university transfer requirements, credit evaluation, transfer essays.\n"
+                "- Progression: Credit audit -> GPA optimization -> target institution articulation requirements -> transfer essay crafting -> credit transfer finalization.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: Forbidden to include Grade 10-12 school exams."
+            )
+        elif any(k in sub for k in ["grade 1", "grade 2", "grade 3", "grade 4", "grade 5", "grade 6", "grade 7", "grade 8", "primary", "middle", "k12_primary"]):
+            return (
+                "Sub-Segment: School Grades 1–8.\n"
+                "- Context: Foundational numeracy, literacy, cognitive development, STEM fundamentals, study routines, formative school assessments.\n"
+                "- Progression: Foundational skill diagnostic -> reading & quantitative habit building -> exploratory science & creative projects -> academic confidence & scholastic mastery.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: Forbidden to include College applications, GRE/GMAT, internships, or career placement."
+            )
+        elif any(k in sub for k in ["grade 9", "grade 10", "grade 11", "grade 12", "senior", "pre-university", "k12_senior", "high school"]):
+            return (
+                "Sub-Segment: Pre-University (Grades 9–12).\n"
+                "- Context: Secondary & higher secondary curricula (CBSE, ICSE, IB, Cambridge A-Levels, State Boards), board examinations, stream selection (Science/Commerce/Humanities), competitive college entrance foundation.\n"
+                "- Progression: Stream selection & subject mastery -> board exam syllabus completion -> revision cycles & past papers -> competitive exam foundation.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: Forbidden to include Graduate school tests (GRE/GMAT) or PhD proposals."
+            )
+        return (
+            "Sub-Segment: Academic & Higher Education.\n"
+            "- Context: Formal education, academic progression, university admissions, curriculum mastery, or academic research development.\n"
+            "- Progression: Academic foundation -> prerequisite preparation -> research/performance development -> profile development -> target university dossiers."
+        )
+
+    elif cat == "practical":
+        if any(k in sub for k in ["creative", "creative_skills", "design", "ui/ux", "multimedia", "graphic", "3d"]):
+            return (
+                "Sub-Segment: Creative Skills (Design, UI/UX, Multimedia, Visual Arts).\n"
+                "- Context: Visual hierarchy, typography, color theory, wireframing, interactive prototyping, tools (Figma, Adobe Creative Suite, Blender), user testing, portfolio curation on Behance/Dribbble.\n"
+                "- Progression: Design fundamentals & tool mastery -> guided design exercises -> real-world client/spec project execution -> interactive prototype testing -> polished design portfolio showcase.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include coding challenges, LeetCode, backend database queries, school board exams, or college admissions."
+            )
+        elif any(k in sub for k in ["business", "business_skills", "finance", "marketing", "management", "sales"]):
+            return (
+                "Sub-Segment: Business & Management Skills.\n"
+                "- Context: Financial modeling, Excel mastery, business analytics, KPI dashboards, product strategy, market research, sales negotiation, project management (Agile/Scrum).\n"
+                "- Progression: Business concept foundations -> data analysis & spreadsheet modeling -> strategic framework applications -> real-world case analysis & presentation -> business deliverable portfolio.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include coding frameworks, compiler design, school board exams, or college admissions."
+            )
+        elif any(k in sub for k in ["digital", "digital_skills", "seo", "social media", "growth", "no-code"]):
+            return (
+                "Sub-Segment: Digital Skills (Growth, SEO, No-Code, Content Creation).\n"
+                "- Context: Search engine optimization, social media marketing, content creation, analytics tools (Google Analytics, SEMrush), no-code automation (Zapier, Airtable, Webflow).\n"
+                "- Progression: Digital channel basics -> campaign setup & SEO auditing -> automation & no-code workflow creation -> performance analytics & optimization -> live digital campaign proof-of-work.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include school board exams, college applications, or low-level systems programming."
+            )
+        elif any(k in sub for k in ["vocational", "vocational_skills", "trades", "craft", "audio", "culinary", "technician"]):
+            return (
+                "Sub-Segment: Vocational & Applied Skills.\n"
+                "- Context: Hands-on vocational trade, studio craft, culinary techniques, physical prototyping, equipment operation, safety protocols, practical skill certification.\n"
+                "- Progression: Workshop safety & tool fundamentals -> guided hands-on techniques -> supervised practical builds -> quality validation -> trade certification & practical proof-of-work.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include academic theory tests, SAT/ACT, or college admissions."
+            )
+        else:  # tech_skills or generic practical
+            return (
+                "Sub-Segment: Technical & Software Skills.\n"
+                "- Context: Core programming concepts, algorithmic thinking, hands-on project building, modern libraries/frameworks, GitHub repository curation, code reviews, live deployment.\n"
+                "- Progression: Core concept foundation -> guided problem solving -> hands-on project building -> advanced application & architecture -> portfolio curation on GitHub.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include school board exams, GPA targets, SAT/ACT, or college admissions."
+            )
+
+    elif cat == "jobs":
+        if any(k in sub for k in ["healthcare", "healthcare_roles", "medical", "clinical", "health", "nursing", "hospital"]):
+            return (
+                "Sub-Segment: Healthcare & Clinical Roles.\n"
+                "- Context: Clinical competencies, patient care standards, healthcare regulations (HIPAA), clinical documentation, certifications (BLS, ACLS, CNA, RN, CMA), hospital/clinic shadowing, medical interviews.\n"
+                "- Progression: Healthcare competency assessment -> clinical certification preparation -> clinical experience / patient care shadowing -> healthcare resume & compliance verification -> clinical interview preparation.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include LeetCode, software engineering algorithms, GitHub repositories, or school board exams."
+            )
+        elif any(k in sub for k in ["creative", "creative_roles", "art director", "copywriting"]):
+            return (
+                "Sub-Segment: Creative Roles (Designers, Writers, Creative Directors).\n"
+                "- Context: Creative portfolio presentation, design challenge decks, client case studies, industry reel, creative agency networking, behavioral and portfolio interviews.\n"
+                "- Progression: Portfolio gap audit -> case study narrative development -> deck & reel presentation polish -> agency networking & outreach -> creative interview & design challenge loops.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include technical coding tests, LeetCode, school board exams, or college admissions."
+            )
+        elif any(k in sub for k in ["business", "business_roles", "product manager", "consulting", "analyst"]):
+            return (
+                "Sub-Segment: Business & Corporate Roles (Product, Consulting, Finance, Operations).\n"
+                "- Context: Case interview frameworks, market sizing, financial modeling, product sense, stakeholder alignment, executive resume crafting, LinkedIn executive branding.\n"
+                "- Progression: Role gap assessment -> case interview & business challenge practice -> executive resume & LinkedIn branding -> networking & recruiter outreach -> multi-round behavioral and case interviews.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include LeetCode coding challenges, school board exams, or college applications."
+            )
+        elif any(k in sub for k in ["gov", "public", "gov_public_roles", "civil service", "policy"]):
+            return (
+                "Sub-Segment: Government & Public Sector Roles.\n"
+                "- Context: Public service examinations, civil services prep, government recruitment regulations, policy analysis, administrative law, public sector interview protocols.\n"
+                "- Progression: Exam syllabus mapping -> administrative & policy study cycles -> mock examinations & timed tests -> public sector interview & document verification prep.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include startup pitch decks, LeetCode, or corporate tech bootcamps."
+            )
+        elif any(k in sub for k in ["entrepreneur", "entrepreneurship", "startup", "founder"]):
+            return (
+                "Sub-Segment: Entrepreneurship & Venture Building.\n"
+                "- Context: Problem validation, customer discovery interviews, lean MVP creation, business model canvas, unit economics, go-to-market execution, pitch deck and angel/VC outreach.\n"
+                "- Progression: Customer problem discovery -> MVP prototyping & user feedback -> unit economics & business model validation -> go-to-market launch -> pitch deck & fundraising.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include traditional corporate employee hierarchy or school board exams."
+            )
+        else:  # tech_roles or generic jobs
+            return (
+                "Sub-Segment: Technical Roles (Engineering, Data Science, DevOps, Cloud).\n"
+                "- Context: Role competency assessment, technical interview prep (DSA/System Design), ATS-optimized engineering resume, GitHub proof of work, technical screening loops.\n"
+                "- Progression: Role competency gap analysis -> system design & coding interview mastery -> ATS resume & GitHub proof-of-work -> recruiter outreach & technical screening -> onsite loop preparation.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include school board exams, Grade 10-12 exams, or college admissions."
+            )
+
+    else:  # non_academic
+        if any(k in sub for k in ["stress", "stress_management", "burnout", "anxiety", "pressure"]):
+            return (
+                "Sub-Segment: Stress Management & Burnout Prevention.\n"
+                "- Context: Somatic stress reduction, nervous system regulation, breathing exercises (4-7-8, box breathing), cognitive reframing of stressors, boundary setting, sleep architecture, stress logs, certified stress/wellness coaches.\n"
+                "- Progression: Stress trigger identification & acute relief -> daily grounding routine & sleep reset -> cognitive boundary setting & workload management -> long-term stress resilience habits.\n"
+                "- Milestone Marketplace Progression: Milestone 1 = free stress logs & breathing apps (Smiling Mind, Breathwrk); Milestone 2 = evidence-based MBSR courses & stress workbooks; Milestone 3 = certified stress management coaches & somatic practitioners; Milestone 4+ = retreat workshops & preventive lifestyle communities.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include academic curricula, exams, job placement, or coding tests."
+            )
+        elif any(k in sub for k in ["personal_dev", "personal development", "habit", "productivity", "discipline"]):
+            return (
+                "Sub-Segment: Personal Development & Self-Discipline.\n"
+                "- Context: Daily routine design, habit loop formation (cue, routine, reward), time blocking, accountability systems, goal breakdown, journal prompts, self-reflection practices.\n"
+                "- Progression: Routine audit & energy mapping -> core habit loop installation -> focus systems & digital distraction management -> self-accountability & periodic review cadence.\n"
+                "- Milestone Marketplace Progression: Milestone 1 = free habit trackers & Notion templates; Milestone 2 = structured productivity courses & habit coaching; Milestone 3 = executive life coaches & personalized development audits; Milestone 4+ = mastermind groups & annual review retreats.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include school exams, college admissions, or LeetCode."
+            )
+        elif any(k in sub for k in ["relationship", "relationship_guidance", "interpersonal", "communication"]):
+            return (
+                "Sub-Segment: Relationship Guidance & Interpersonal Communication.\n"
+                "- Context: Active listening frameworks, Nonviolent Communication (NVC), boundary setting, conflict de-escalation, emotional empathy, interpersonal relationship dynamics.\n"
+                "- Progression: Communication style assessment -> active listening & emotion regulation -> constructive boundary setting -> mutual problem-solving dialogues -> relational harmony maintenance.\n"
+                "- Milestone Marketplace Progression: Milestone 1 = relationship communication guides & self-assessments; Milestone 2 = structured interpersonal workshops & books; Milestone 3 = licensed relationship counselors & certified coaches; Milestone 4+ = communication practice groups & support circles.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include academic tutoring, college admissions, or coding tests."
+            )
+        elif any(k in sub for k in ["family", "family_guidance", "parent", "generational"]):
+            return (
+                "Sub-Segment: Family Guidance & Generational Dynamics.\n"
+                "- Context: Family communication patterns, handling generational expectations, constructive conversations, emotional boundaries, resolving family conflict respectfully.\n"
+                "- Progression: Family dynamics mapping -> emotional boundary identification -> structured family dialogue techniques -> mutual expectation alignment -> sustained collaborative harmony.\n"
+                "- Milestone Marketplace Progression: Milestone 1 = family dynamics workbooks & communication prompts; Milestone 2 = family mediation workshops & parenting/family books; Milestone 3 = licensed family counselors & mediation advisors; Milestone 4+ = family support networks.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include academic tutoring, college admissions, or coding tests."
+            )
+        else:  # mental_wellbeing or general mental
+            return (
+                "Sub-Segment: Mental Wellbeing & Emotional Resilience.\n"
+                "- Context: Emotional awareness, cognitive reframing (CBT principles), daily mindfulness routines, identifying anxiety triggers, peer support circles, qualified professional counseling resources.\n"
+                "- Progression: Emotional baseline assessment -> daily mindfulness & grounding routine -> cognitive reframing of negative patterns -> support network integration -> sustainable emotional resilience.\n"
+                "- Milestone Marketplace Progression: Milestone 1 = free mindfulness apps & mood journals (Smiling Mind, Daylio, Mindful.org); Milestone 2 = evidence-based cognitive wellbeing courses (MBSR, Yale Science of Wellbeing); Milestone 3 = certified therapists, counseling platforms (licensed practitioners, Psychology Today directory); Milestone 4+ = resilience circles & ongoing wellness communities.\n"
+                "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include college applications, GPA targets, academic board exams, or job placement."
+            )
+
+
 def build_agent_1_prompt(
     category: str,
     sub_segment: Optional[str],
@@ -474,58 +662,12 @@ def build_agent_1_prompt(
     signals_context = format_student_signals_context(profile)
     degree_val = degree_type or "Not required"
 
-    if cat == "academic":
-        category_rules = f"""=== PRIMARY CATEGORY CONSTRAINTS: ACADEMIC & RESEARCH ===
-Definition: Formal education, academic progression, university admissions, curriculum mastery, or academic research development.
-- Educational context: Grade/level ({current_position}), curriculum (CBSE, IB, Cambridge, etc.), subjects, prerequisites, target degree, target university, country, test prep (SAT/ACT/IELTS/GRE where relevant), academic projects, research.
-- Progression: Academic foundation & subject selection -> prerequisite preparation -> academic performance improvement -> research development -> test preparation -> profile development -> university research & application dossiers.
+    subsegment_detail = get_subsegment_rules(cat, sub_seg)
+    category_rules = f"""=== PRIMARY CATEGORY CONSTRAINTS: {cat.upper()} ===
+{subsegment_detail}
 - Dynamic timeline: Calculate timeline autonomously based entirely on the specific distance between current position and target destination. No fixed or preset timeline.
-- Dynamic readiness score: Score (0-100) based on academic performance relative to target institution selectivity.
+- Dynamic readiness score: Score (0-100) based on current position relative to target goal.
 - Dynamic step count: Autonomously determine the exact number of milestones needed to reach the goal. NO pre-planned, fixed, or bracketed step count.
-"""
-    elif cat == "practical":
-        category_rules = f"""=== PRIMARY CATEGORY CONSTRAINTS: PRACTICAL & SKILLS ===
-Definition: Learning, developing, applying, and demonstrating a practical skill. Skill acquisition and proof of ability (e.g., Python proficiency, Web Dev, Data Analysis, CAD, UI/UX).
-- Progression: Core concept foundation -> guided practice & problem solving -> hands-on project building -> advanced application -> portfolio curation (GitHub / live demos) -> skill validation & code review.
-- Focus: Hands-on deliverables, repositories, project architecture, and proof of work.
-- Dynamic timeline: Calculate timeline autonomously based entirely on the skill gap between current position and target mastery. No fixed or preset timeline.
-- Dynamic readiness score: Score (0-100) based on current familiarity vs target skill mastery.
-- Dynamic step count: Autonomously determine the exact number of milestones needed to bridge the skill gap. NO pre-planned, fixed, or bracketed step count.
-
-🚨 STRICT NEGATIVE CONSTRAINTS (FORBIDDEN IN THIS CATEGORY):
-- DO NOT generate school selection, GPA targets, Grade 10/11/12 board exams, CBSE/IB curricula, SAT/ACT test prep, university applications, or college admissions dossiers unless the user's specific target goal explicitly demands a degree.
-- The focus is on SKILL acquisition and PROOF OF WORK, not formal academic admissions.
-"""
-    elif cat == "jobs":
-        category_rules = f"""=== PRIMARY CATEGORY CONSTRAINTS: JOBS & CAREERS ===
-Definition: Entering, changing, progressing, or advancing in a profession or job role (e.g., Junior to Senior Engineer, Career Switcher to Cloud Engineer, Student to Product Manager).
-- Progression: Role gap analysis & competency assessment -> skill gap development -> experience building & proof of work -> ATS-optimized resume & professional branding (LinkedIn/GitHub) -> networking & mock interviews -> job search & placement strategy.
-- Focus: Workplace competencies, technical & behavioral interviews, system design/case studies, and employer evidence.
-- Dynamic timeline: Calculate timeline autonomously based entirely on the career gap between current position and target role. No fixed or preset timeline.
-- Dynamic readiness score: Score (0-100) based on current experience/competencies vs target role expectations.
-- Dynamic step count: Autonomously determine the exact number of milestones needed to achieve the target role. NO pre-planned, fixed, or bracketed step count.
-
-🚨 STRICT NEGATIVE CONSTRAINTS (FORBIDDEN IN THIS CATEGORY):
-- DO NOT generate Grade 10/11/12 board exam preparation, school curriculum selection, SAT/ACT prep, or high school targets unless the user's goal explicitly requires an academic degree transition.
-- A career progression request from a developer or graduate MUST NOT become a high school / student admissions roadmap.
-"""
-    else:  # non_academic
-        category_rules = f"""=== PRIMARY CATEGORY CONSTRAINTS: NON-ACADEMIC COUNSELLING ===
-Definition: Support, guidance, wellbeing, decision-making, life skills, or short-term personal guidance.
-Sub-segment Focus: {sub_seg or 'Mental Health & Wellness / Life Skills'}
-
-Guidance by Focus:
-1. Mental Health & Wellness: Focus on stress management, trigger identification, daily mindfulness routines, sleep hygiene, healthy coping strategies, trusted support networks, and qualified professional counseling resources.
-2. Life Skills & Decision Support: Focus on time management, decision frameworks, prioritization, routine building, habit trackers, and personal accountability.
-3. Immediate Guidance & Support: Focus on immediate triage, practical time-boxed next actions, trusted helpline/resource navigation, and safe escalation options.
-
-- Dynamic timeline: Calculate timeline autonomously based entirely on the user's personal need and sustainable habit formation. No fixed or preset timeline.
-- Dynamic readiness score: Score (0-100) reflecting support readiness, self-awareness, and routine consistency.
-- Dynamic step count: Autonomously determine the exact number of milestones needed to achieve wellbeing and clarity. NO pre-planned, fixed, or bracketed step count.
-
-🚨 STRICT NEGATIVE CONSTRAINTS (FORBIDDEN IN THIS CATEGORY):
-- DO NOT generate curriculum selection, school selection, GPA targets, SAT/ACT prep, university applications, board exams, internships, or job placement.
-- Do NOT promise diagnosis or medical treatment; recommend qualified professional support, safe practices, and trusted resources.
 """
 
     prompt = f"""You are the Naaviverse Pathway Blueprint Generator (Agent 1).
@@ -610,12 +752,23 @@ JSON format must strictly follow:
 
 CRITICAL RULES:
 1. STRICT CATEGORY ADHERENCE: Generate milestones strictly appropriate for {cat.upper()}.
-2. AUTONOMOUS & DYNAMIC STEP COUNT (ZERO PRE-PLANNED NUMBERS): Do NOT use any predetermined, fixed, or bracketed step count. Determine the exact number of milestones dynamically and autonomously based solely on the student's current position and target destination. The agent must create as many or as few steps as genuinely required to bridge the gap from start to destination.
+2. AUTONOMOUS & DYNAMIC STEP COUNT (NO FIXED 4-STEP DEFAULT - GENERATE WISELY BASED ON SCOPE):
+Do NOT default to exactly 4 milestones! Autonomously determine the exact number of milestones based on the genuine scope, complexity, and timeline of the pathway from {current_position} to {target_goal}:
+- Targeted / Short-term / Immediate goals (e.g. 1-3 months, single exam, acute stress management, quick tool/skill acquisition, immediate portfolio polish): Generate 3 to 4 focused milestones.
+- Standard / Intermediate transitions (e.g. 4-8 months, career switcher, full-stack mastery, structured wellbeing habit transformation): Generate 4 to 5 milestones.
+- Comprehensive / Long-term journeys (e.g. 9-18 months, undergraduate/postgraduate degree prep, transitioning from junior to senior/lead, multi-phase public sector exam prep, startup launch from 0 to 1): Generate 5 to 7 milestones.
+- Deep Academic / Multi-year journeys (e.g. PhD research, multi-year university degrees): Generate 6 to 8 milestones.
+Evaluate the genuine distance between {current_position} and {target_goal} and output the appropriate number of milestones. NEVER output exactly 4 steps unless the timeline and scope genuinely call for 4.
 3. IN-DEPTH MACRO, MICRO & NANO VIEWS (MANDATORY): Never output short, generic 1-2 sentence summaries for macro_view, micro_view, or nano_view. Each view must be a rich, comprehensive, and highly detailed analysis (at least 100 words each) packed with specific methodologies, concrete deliverables, and domain-relevant terminology directly tied to {target_goal} and {current_position}.
 4. NO GENERIC BOILERPLATE: Every single step must have unique descriptions, distinct learning objectives, and custom actionable micro_steps.
 5. NAME BAN: NEVER include personal names or emails in any text fields. Keep all content objective and professional.
 6. MANDATORY STUDENT SIGNALS & FINANCIAL ALIGNMENT: Adapt all marketplace recommendations, mentor rates, and resource tiers directly to the student's Financial Status. If Financial Status is High/Affluent, prioritize prestigious private mentors ($150-$500/call), executive coaches, elite university credit tracks, and premium certifications ($300-$1500+). If Financial Status is Low/Budget-Conscious, prioritize high-value free resources, scholarship programs, open-source cohorts, and affordable tools ($0-$49). Adjust roadmap study cadence and deliverables according to Location and Personality style.
 7. MULTI-ITEM DIVERSE MARKETPLACE PER VIEW (MANDATORY): For EVERY milestone, you MUST generate MULTIPLE diverse, authentic recommendations for each section: at least 2 distinct items for 'macro_free', at least 1-2 for 'micro_structured', and at least 1-2 for 'nano_expert' under mentors, vendors, institutions, and distributors. NEVER return only 1 item per section. Provide multiple authentic, realistic choices tailored to each milestone.
+8. ZERO MARKETPLACE DUPLICATION ACROSS MILESTONES (STRICT MANDATE): Every single milestone must feature completely distinct, non-repeating marketplace items and provider names. NEVER repeat the same mentor, coach, course, app, platform, book, or institution in multiple milestones. Progressively advance the resources across milestones:
+- Milestone 1: foundational learning, self-assessment, open-source/free introductory tools/guides, community peer advisors.
+- Milestone 2: structured practice platforms, guided modules, applied skill coaches, domain toolkits.
+- Milestone 3: intensive project/case review, specialized certifications, 1-on-1 expert mentors or counselors.
+- Milestone 4+: capstone execution, accredited credentialing bodies, senior industry specialists, long-term maintenance networks.
 """
     return prompt
 
@@ -717,19 +870,18 @@ Current Position: {current_position}
 {signals_context}
 
 AUDIT TASKS:
-1. Verify mentors, vendors, institutions, and distributors are genuinely relevant to {cat.upper()} and the specific step.
-   - Academic: Tutors, admissions advisors, test prep, universities, academic books.
-   - Practical: Developer mentors, coding sandboxes, project courses (Coursera/freeCodeCamp/Udemy), GitHub, docs.
-   - Jobs: Career coaches, mock interviewers, ATS resume reviews, LinkedIn, LeetCode, job boards.
-   - Non-Academic: Certified counselors, therapists, mindfulness apps, routine trackers, support groups.
-2. STRICT FINANCIAL STATUS PRICING ALIGNMENT:
+1. Verify mentors, vendors, institutions, and distributors are genuinely relevant to {cat.upper()} ({sub_segment or 'Standard'}) and the specific step.
+2. STRICT DOMAIN CONSTRAINTS:
+{get_subsegment_rules(cat, sub_segment)}
+3. STRICT FINANCIAL STATUS PRICING ALIGNMENT:
    - Match marketplace resource pricing to the student's Financial Capacity.
    - If High / Affluent: Include premium 1-on-1 mentors, top bootcamps, and certified programs with premium price tiers ($150-$1,500+).
    - If Budget / Low: Emphasize free tiers, financial aid, scholarships, and low-cost alternatives ($0-$49).
-3. GEOGRAPHIC & LOCATION RELEVANCE: Ensure regional institutions, timezone compatibility, and local market suitability reflect the student's location.
-4. Validate realistic costs, action-oriented next steps, and proper section classification (macro_free, micro_structured, nano_expert).
-5. CRITICAL STEP PRESERVATION: Return audited marketplace objects for EVERY step in the blueprint.
-6. NAME BAN: Ensure NO personal names or emails appear.
+4. GEOGRAPHIC & LOCATION RELEVANCE: Ensure regional institutions, timezone compatibility, and local market suitability reflect the student's location.
+5. Validate realistic costs, action-oriented next steps, and proper section classification (macro_free, micro_structured, nano_expert).
+6. CRITICAL STEP PRESERVATION: Return audited marketplace objects for EVERY step in the blueprint.
+7. ZERO MARKETPLACE DUPLICATION ACROSS STEPS (MANDATORY): Ensure that no marketplace item or provider name repeats across different steps. Every step must feature distinct, step-progressive resources.
+8. NAME BAN: Ensure NO personal names or emails appear.
 
 Output ONLY a valid JSON array of step marketplace objects:
 [
@@ -2425,6 +2577,49 @@ def sse_payload(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data)}\n\n"
 
 
+def deduplicate_roadmap_marketplaces(steps: list) -> list:
+    """Ensure no marketplace item or provider name is duplicated across multiple milestones."""
+    if not isinstance(steps, list):
+        return steps
+    seen_names = set()
+    for step in steps:
+        if not isinstance(step, dict):
+            continue
+        step_id = step.get("id", "")
+        m = step.get("marketplace")
+        if not isinstance(m, dict):
+            continue
+
+        for cat_key in ["mentors", "vendors", "institutions", "distributors"]:
+            items = m.get(cat_key)
+            if not isinstance(items, list):
+                continue
+            deduped_items = []
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                name = str(item.get("name") or "").strip()
+                if not name:
+                    continue
+                name_key = name.lower()
+                if name_key in seen_names:
+                    # Item is a duplicate from an earlier milestone
+                    if len(items) <= 2:
+                        distinct_name = f"{name} (Phase {step_id})"
+                        item["name"] = distinct_name
+                        seen_names.add(distinct_name.lower())
+                        deduped_items.append(item)
+                    else:
+                        # Drop duplicate to keep recommendations fresh and unique
+                        continue
+                else:
+                    seen_names.add(name_key)
+                    deduped_items.append(item)
+            m[cat_key] = deduped_items
+
+    return steps
+
+
 async def build_and_store_final_path(
     blueprint: dict,
     path_audit: dict,
@@ -2474,6 +2669,8 @@ async def build_and_store_final_path(
             "micro_steps": orig_milestone.get("micro_steps") or []
         }
         final_steps.append(merged_milestone)
+
+    final_steps = deduplicate_roadmap_marketplaces(final_steps)
 
     # Extract raw model-generated readiness score directly from Agent 1 output
     final_readiness_score = int(blueprint.get("readiness_score", 0)) if blueprint.get("readiness_score") is not None else 0
@@ -4225,6 +4422,11 @@ def merge_marketplace_item(
 MARKETPLACE_CATEGORY_PATCH_PROMPT = """You are the Naaviverse Marketplace Patch Agent.
 Generate ONLY replacement items for one Marketplace category inside one step.
 
+CATEGORY CONTEXT:
+- Focus Category: {category}
+- Sub-Category / Track: {sub_segment}
+- Domain Constraints: {category_rules}
+
 Step ID: {step_id}
 Step title: {step_title}
 Step duration: {step_duration}
@@ -4242,10 +4444,10 @@ User instruction: {instruction}
 
 Rules:
 - {generation_rule}
+- MANDATORY DOMAIN ADHERENCE: Strictly match recommendations to {category} ({sub_segment}). Never generate coding or software developer tools for Healthcare, Creative, Business, or Non-Academic pathways unless the target goal explicitly specifies it.
 - MANDATORY FINANCIAL ALIGNMENT: Strictly align pricing and tiers with the student's Financial Capacity (high-tier premium resources if financial situation is High/Affluent; free/budget options if Low/Need-based).
 - Treat the current items as rejected for this replacement request. Do not reuse the same provider names unless there is no credible alternative; return next-best replacements.
 - Do not return or discuss any other Marketplace category or section.
-- Always generate a rich set of 5 to 8 distinct recommendations. Never return a small set of 1, 2, or 3 items.
 - Keep every item relevant to the step title, student context, and target goal.
 - Do not include the student's name, email, or personal identifiers.
 - Output valid JSON only using this exact structure:
@@ -4376,14 +4578,7 @@ async def patch_step(req: StepPatchRequest):
     cat = resolve_focus_category(req.content_category or (req.profile or {}).get("activeSegment"))
     sub_seg = req.sub_segment or (req.profile or {}).get("subSegment") or "Standard"
 
-    if cat == "practical":
-        category_rules = "Focus on hands-on practical coding, developer portfolio, github projects, software frameworks. STRICTLY FORBIDDEN: School board exams, GPA, SAT/ACT, college applications."
-    elif cat == "jobs":
-        category_rules = "Focus on career progression, ATS resumes, job interviews, professional networking, industry role readiness. STRICTLY FORBIDDEN: High school school selection or board exams."
-    elif cat == "non_academic":
-        category_rules = "Focus on mental health, personal routines, stress reduction, life skills, wellbeing habits, professional counselling. STRICTLY FORBIDDEN: College admissions, SAT/ACT, academic tests, GPA."
-    else:
-        category_rules = "Focus on academic progression, curriculum mastery, admissions, transcripts, scholarly preparation."
+    category_rules = get_subsegment_rules(cat, sub_seg)
 
     profile = req.profile or {}
     email = (profile.get("email") or "").strip().lower()
@@ -4432,6 +4627,9 @@ async def patch_step(req: StepPatchRequest):
             )
 
         prompt = MARKETPLACE_CATEGORY_PATCH_PROMPT.format(
+            category=cat,
+            sub_segment=sub_seg,
+            category_rules=category_rules,
             step_id=req.step_id,
             step_title=req.current_step.get("title", f"Step {req.step_id}"),
             step_duration=req.current_step.get("duration", ""),

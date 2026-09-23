@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./AdminStyles.scss";
 import logo from "../../assets/images/logo/naavi_final_logo2.webp";
+import faviconLogo from "../../assets/images/logo/naavi_favicon.png";
 import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -55,7 +56,7 @@ const AdminLogin = () => {
           <img src={logo} alt="Logo" className="logo-image" />
         </div>
 
-        <h2 className="admin-login-title">Super Admin Login</h2>
+        <h2 className="admin-login-title">Website Admin Login</h2>
 
         <form className="admin-login-form" onSubmit={handleSubmit}>
 
@@ -106,6 +107,12 @@ const AdminLogin = () => {
           </button>
 
         </form>
+
+        {loading && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(250, 248, 243, 0.92)", backdropFilter: "blur(8px)" }}>
+            <img src={faviconLogo} alt="Loading" style={{ width: "90px", height: "90px", objectFit: "contain", animation: "heartbeat 1.3s infinite" }} />
+          </div>
+        )}
       </div>
     </div>
   );
