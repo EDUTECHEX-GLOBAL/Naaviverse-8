@@ -1011,6 +1011,8 @@ export default function AdminReview() {
           profile: selectedPath.profile || {},
           marketplace_section: col.marketKey,
           marketplace_category: category,
+          content_category: selectedPath.content_category || selectedPath.category || selectedPath.focus_requested || "",
+          sub_segment: selectedPath.sub_segment || "",
         }),
       });
 

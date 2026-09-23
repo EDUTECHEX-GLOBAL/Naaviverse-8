@@ -405,7 +405,7 @@ $font-mono: "Space Mono", monospace;
 .otclogo {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -413,8 +413,9 @@ $font-mono: "Space Mono", monospace;
   backdrop-filter: blur(8px);
 
   .otclogoimg {
-    width: 120px;
-    height: auto;
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
     animation: heartbeat 1.3s infinite;
   }
 }

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import logo from "../../assets/images/logo/naavi_final_logo2.png";
-import loadinglogo from "./loadinglogo.svg"; // Update with your loading logo path
+import loadinglogo from "./naavi_favicon.png";
 import info from "./info.svg";
 import "./loginpage.scss";
 

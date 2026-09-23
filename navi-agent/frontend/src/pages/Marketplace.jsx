@@ -228,6 +228,8 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
           marketplace_section: getSectionForView(activeView),
           marketplace_category: currentCategory,
           marketplace_item_index: item.sourceIndex,
+          content_category: userInput?.content_category || profile?.activeSegment || "",
+          sub_segment: userInput?.sub_segment || profile?.subSegment || "",
         }),
       });
 

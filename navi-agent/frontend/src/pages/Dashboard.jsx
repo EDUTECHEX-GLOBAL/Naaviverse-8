@@ -427,7 +427,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
 
     // Clear existing path when category changes
     if (onPathGenerated) {
-      onPathGenerated(null, { current: autofill.current || current, goal: autofill.goal || goal });
+      onPathGenerated(null, { current: autofill.current || current, goal: autofill.goal || goal, content_category: newSegment, sub_segment: sub });
     }
 
     if (profile && onProfileUpdated) {
@@ -453,6 +453,9 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
 
   const handleSubSegmentChange = async (newSub) => {
     setActiveSubSegmentLocal(newSub);
+    if (onPathGenerated && userInput) {
+      onPathGenerated(pathData, { ...userInput, sub_segment: newSub });
+    }
     if (profile && onProfileUpdated) {
       const updatedProfile = {
         ...profile,
@@ -939,7 +942,12 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
     }
 
     if (onGenerationStart) {
-      onGenerationStart({ current: activeCurrent, goal: activeGoal }, isRegen);
+      onGenerationStart({
+        current: activeCurrent,
+        goal: activeGoal,
+        content_category: activeSegment,
+        sub_segment: activeSubSegment,
+      }, isRegen);
     }
     setLoading(true);
     setError("");
@@ -1017,7 +1025,12 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
         setSelectedAltIdx(0);
       }
 
-      onPathGenerated(mergedData, { current: activeCurrent, goal: activeGoal });
+      onPathGenerated(mergedData, {
+        current: activeCurrent,
+        goal: activeGoal,
+        content_category: activeSegment,
+        sub_segment: activeSubSegment,
+      });
       if (promptText) {
         setRefinePrompt("");
       }

@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useCoinContextData } from "../../../context/CoinContext.js";
+import React, { useState, useEffect } from "react";
 import Skeleton from "react-loading-skeleton";
 import "./mypaths.scss";
 import axios from "axios";
@@ -63,9 +62,14 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const pathId = queryParams.get("pathId");
-  const stepsFromPath = location.state?.steps || null;
+  const pathName = queryParams.get("pathName");
+  const tabParam = queryParams.get("tab");
+  const { setaccsideNav } = useStore();
   let userDetails = JSON.parse(localStorage.getItem("adminuser"));
-  const { mypathsMenu, setMypathsMenu } = useCoinContextData();
+
+  const [stepsMenu, setStepsMenu] = useState(
+    tabParam === "inactive" ? "Inactive Steps" : "Active Steps"
+  );
 
   const [partnerStepsData, setPartnerStepsData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -107,15 +111,20 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
 
   // ─── Data fetchers ────────────────────────────────────────────────────────
 
-  const getAllSteps = () => {
+  const getAllSteps = (statusOverride, pathIdOverride) => {
     setLoading(true);
-    const status = mypathsMenu === "Active Steps" ? "active" : "inactive";
-    axios.get(`${BASE_URL}/api/steps/get?status=${status}`)
+    const targetStatus = statusOverride || (stepsMenu === "Inactive Steps" ? "inactive" : "active");
+    const targetPathId = pathIdOverride !== undefined ? pathIdOverride : new URLSearchParams(location.search).get("pathId");
+
+    let url = `${BASE_URL}/api/steps/get?status=${targetStatus}`;
+    if (targetPathId) {
+      url += `&path_id=${targetPathId}`;
+    }
+
+    axios.get(url)
       .then(({ data }) => {
         const result = data?.data || [];
         setPartnerStepsData(result);
-        if (result.length > 0) fetchMarketplaceCounts(result);
-        else setServiceCountMap({});
         setLoading(false);
       })
       .catch(() => { setPartnerStepsData([]); setLoading(false); });
@@ -159,34 +168,16 @@ const MyStepsAdmin = ({ search, admin, fetchAllServicesAgain }) => {
       });
   };
 
-  // ✅ REPLACE WITH:
-  const isMounted = useRef(false); // ✅ add this ref
-
   useEffect(() => {
-    const tab = new URLSearchParams(location.search).get("tab");
-    const correctMenu = tab === "inactive" ? "Inactive Steps" : "Active Steps";
-    setMypathsMenu(correctMenu);
-    setLoading(true);
-    const status = correctMenu === "Active Steps" ? "active" : "inactive";
-    axios.get(`${BASE_URL}/api/steps/get?status=${status}`)
-      .then(({ data }) => {
-        const result = data?.data || [];
-        setPartnerStepsData(result);
-        if (result.length > 0) fetchMarketplaceCounts(result);
-        else setServiceCountMap({});
-        setLoading(false);
-      })
-      .catch(() => { setPartnerStepsData([]); setLoading(false); });
+    const params = new URLSearchParams(location.search);
+    const tab = params.get("tab");
+    const pId = params.get("pathId");
+    const activeMenu = tab === "inactive" ? "Inactive Steps" : "Active Steps";
+    const status = tab === "inactive" ? "inactive" : "active";
 
-    // Mark mount as done AFTER initial fetch
-    isMounted.current = true;
-  }, []);
-
-  // ✅ Skip the very first run — only fires when user manually clicks a tab
-  useEffect(() => {
-    if (!isMounted.current) return;
-    getAllSteps();
-  }, [mypathsMenu]);
+    setStepsMenu(activeMenu);
+    getAllSteps(status, pId);
+  }, [location.search]);
 
   useEffect(() => {
     if (modalOpen) document.body.classList.add("admin-popup-open");
@@ -371,7 +362,7 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
 
 
 
-  const filtered = (stepsFromPath || partnerStepsData)?.filter(e =>
+  const filtered = partnerStepsData?.filter(e =>
     e?.name?.toLowerCase()?.includes(search?.toLowerCase() || "")
   );
   const currentLayerCfg = selectedStep ? getLayerConfig(selectedStep)[marketLayer] : null;
@@ -394,11 +385,16 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
         <div className="admin-steps-menu">
           {["Active Steps", "Inactive Steps"].map(tab => (
             <div key={tab}
-              className={`admin-steps-menu-item ${mypathsMenu === tab ? "active-tab" : ""}`}
+              className={`admin-steps-menu-item ${stepsMenu === tab ? "active-tab" : ""}`}
               onClick={() => {
-                setMypathsMenu(tab);
+                setStepsMenu(tab);
                 const tabValue = tab === "Inactive Steps" ? "inactive" : "active";
-                navigate(`/admin/dashboard/steps?tab=${tabValue}`); // ✅ updates URL
+                let url = `/admin/dashboard/steps?tab=${tabValue}`;
+                if (pathId) {
+                  url += `&pathId=${pathId}`;
+                  if (pathName) url += `&pathName=${encodeURIComponent(pathName)}`;
+                }
+                navigate(url);
               }}>
               {tab}
             </div>
@@ -423,24 +419,50 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
       <div className="admin-steps-content">
 
         {pathId && (
-          <button
-            className="show-all-btn"
-            onClick={() => navigate("/steps")}
-            style={{ marginBottom: "10px" }}
-          >
-            Show All Steps
-          </button>
+          <div className="steps-back-banner">
+            <span
+              className="back-link"
+              onClick={() => {
+                if (setaccsideNav) setaccsideNav("Paths");
+                navigate("/admin/dashboard/paths?tab=active");
+              }}
+            >
+              ← Back to Paths
+            </span>
+            <span className="back-separator">•</span>
+            <span
+              className="back-link clear-filter-link"
+              onClick={() => {
+                const tabValue = stepsMenu === "Inactive Steps" ? "inactive" : "active";
+                navigate(`/admin/dashboard/steps?tab=${tabValue}`);
+              }}
+            >
+              Show All Steps
+            </span>
+            <span className="back-label">
+              Showing steps for: <strong>{decodeURIComponent(pathName || "")}</strong>
+            </span>
+          </div>
         )}
         <div className="admin-steps-list">
-          {loading
-            ? Array(6).fill("").map((_, i) => (
+          {loading ? (
+            Array(6).fill("").map((_, i) => (
               <div className="admin-step-card" key={i}>
                 <div className="admin-step-name"><Skeleton width={120} height={20} /></div>
                 <div className="admin-step-desc"><Skeleton width="90%" height={20} /></div>
                 <div className="admin-step-right"><Skeleton width={80} height={32} borderRadius={50} /></div>
               </div>
             ))
-            : filtered?.map(e => {
+          ) : filtered?.length === 0 ? (
+            <div className="admin-steps-empty">
+              <div className="admin-steps-empty-icon">📌</div>
+              <div className="admin-steps-empty-title">No Steps Found</div>
+              <div className="admin-steps-empty-sub">
+                {pathId ? "No steps found for this path." : "Try adjusting your search or switch tabs."}
+              </div>
+            </div>
+          ) : (
+            filtered?.map(e => {
               const isFree = !e?.cost || e?.cost?.toLowerCase() === "free";
               const rawDesc = e?.macro_description || e?.micro_description || e?.nano_description || "";
               const isExpanded = expandedSteps[e._id];
@@ -501,7 +523,8 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
                   </div>
                 </div>
               );
-            })}
+            })
+          )}
         </div>
       </div>
 
@@ -545,7 +568,7 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
   <div className="sm-option-list">
 
     {/* Edit Step — only for Active */}
-    {mypathsMenu === "Active Steps" && (
+    {stepsMenu === "Active Steps" && (
       <div className="sm-option" onClick={() => goTo("editStep")}>
         <div className="sm-option-icon" style={{ background: "#eff6ff" }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2">
@@ -577,7 +600,7 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
     </div>
 
     {/* Marketplace — only for Active */}
-    {mypathsMenu === "Active Steps" && (
+    {stepsMenu === "Active Steps" && (
       <div className="sm-option" onClick={() => goTo("marketplace_layer")}>
         <div className="sm-option-icon" style={{ background: "#f0fdfa" }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#14b8a6" strokeWidth="2">

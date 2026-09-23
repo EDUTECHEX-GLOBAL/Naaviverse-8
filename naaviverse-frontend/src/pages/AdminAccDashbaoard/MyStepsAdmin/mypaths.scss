@@ -154,6 +154,84 @@ $pink-soft: rgba(99, 102, 241, 0.05);
   // No overflow:hidden — let it scroll naturally
 }
 
+// ─── Back-to-paths Banner ───────────────────────────────────────
+.steps-back-banner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: #e6f3f4;
+  border: 1px solid rgba(13, 107, 110, 0.2);
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin: 10px 12px 0;
+  font-size: 0.85rem;
+  box-sizing: border-box;
+
+  .back-link {
+    cursor: pointer;
+    color: #0d6b6e;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: opacity 0.15s ease;
+
+    &:hover {
+      text-decoration: underline;
+      opacity: 0.85;
+    }
+  }
+
+  .back-separator {
+    color: #94a3b8;
+    font-size: 0.8rem;
+  }
+
+  .clear-filter-link {
+    color: #6366f1;
+    font-weight: 600;
+  }
+
+  .back-label {
+    color: #334155;
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+
+    strong {
+      color: #0f172a;
+      font-weight: 700;
+    }
+  }
+}
+
+// ─── Empty state ────────────────────────────────────────────────
+.admin-steps-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: #94a3b8;
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px dashed #cbd5e1;
+
+  .admin-steps-empty-icon {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+  }
+
+  .admin-steps-empty-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .admin-steps-empty-sub {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin-top: 4px;
+  }
+}
+
 // ─── Steps list ─────────────────────────────────────────────────
 .admin-steps-list {
   flex: 1;
@@ -161,7 +239,6 @@ $pink-soft: rgba(99, 102, 241, 0.05);
   display: flex;
   flex-direction: column;
   gap: 10px;
-
 }
 
 // ─── Step Card — mobile-first stacked ───────────────────────────
