@@ -592,7 +592,7 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
         }
         .mp-recommended-badge {
           position: absolute;
-          top: 12px;
+          top: 6px;
           right: 12px;
           font-size: 9px;
           font-weight: 700;
@@ -602,6 +602,7 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
           border-radius: 20px;
           text-transform: uppercase;
           letter-spacing: 0.05em;
+          z-index: 2;
         }
         .mp-card-details {
           font-size: 12px;

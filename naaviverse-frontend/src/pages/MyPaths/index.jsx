@@ -20,7 +20,25 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { sideNav, setsideNav } = useStore();
-  let userDetails = JSON.parse(localStorage.getItem("partner"));
+  // ✅ FIX: Safe parsing with fallback
+  let userDetails = null;
+  try {
+    const raw = localStorage.getItem("partner");
+    userDetails = raw ? JSON.parse(raw) : null;
+  } catch (e) { userDetails = null; }
+  const getPartnerEmail = () => {
+    try {
+      const partnerRaw = localStorage.getItem("partner");
+      const p = partnerRaw ? JSON.parse(partnerRaw) : null;
+      const email = p?.email || p?.user?.email || localStorage.getItem("loginEmail") || null;
+      console.log("🔍 getPartnerEmail:", email, "from partner:", !!p, "loginEmail:", localStorage.getItem("loginEmail"));
+      return email;
+    } catch (e) {
+      const fallback = localStorage.getItem("loginEmail") || null;
+      console.log("🔍 getPartnerEmail fallback:", fallback);
+      return fallback;
+    }
+  };
   const {
     setCurrentStepData,
     setCurrentStepDataLength,
@@ -116,8 +134,14 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
     setPartnerPathData([]);
     setLoading(true);
 
-    const email = userDetails?.email;
+    const email = getPartnerEmail();
     let endpoint = "";
+
+    if (!email) {
+      console.warn("❌ MyPaths getAllPaths: No partner email found, skipping fetch");
+      setLoading(false);
+      return;
+    }
 
     if (admin && (mypathsMenu === "Pending Approval" || mypathsMenu === "Pending Paths")) {
       endpoint = `/api/paths/get?status=waitingforapproval`;
@@ -132,7 +156,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
         ].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
         setPartnerPathData(combined);
         fetchStepCounts(combined);
-      }).catch(() => { }).finally(() => setLoading(false));
+      }).catch((err) => { console.error("❌ Error fetching draft paths (getAllPaths):", err); }).finally(() => setLoading(false));
       return;
     } else if (!admin && mypathsMenu === "Pending Approval") {
       endpoint = `/api/paths/get?email=${email}&status=waitingforapproval`;
@@ -184,6 +208,12 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
     getAllServices();
   }, [selectedStepId]);
 
+  // ✅ FIX: Force re-fetch on every mount (handles returning from DraftPathView)
+  const [mountKey, setMountKey] = useState(0);
+  useEffect(() => {
+    setMountKey((k) => k + 1);
+  }, []);
+
   // ✅ FIX 2: URL-based fetch also calls fetchStepCounts after loading
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -197,9 +227,16 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
     };
 
     const status = tabToStatus[tab] || "active";
-    const email = userDetails?.email;
+    // ✅ FIX: Read partner email fresh from localStorage (not stale closure)
+    const email = getPartnerEmail();
 
-    if (!email) return;
+    console.log("📋 MyPaths useEffect triggered. tab:", tab, "status:", status, "email:", email, "mountKey:", mountKey);
+
+    if (!email) {
+      console.warn("❌ MyPaths useEffect: No partner email found, skipping fetch. tab=", tab);
+      setLoading(false);
+      return;
+    }
 
     setPartnerPathData([]);
     setLoading(true);
@@ -207,24 +244,28 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
     let endpoint = "";
 
     if (status === "draft") {
+      const url1 = `${BASE_URL}/api/paths/get?email=${encodeURIComponent(email)}&status=draft`;
+      const url2 = `${BASE_URL}/api/paths/get?email=${encodeURIComponent(email)}&status=changesrequested`;
+      console.log("📋 Fetching draft paths:", url1, url2);
       Promise.all([
-        axios.get(`${BASE_URL}/api/paths/get?email=${email}&status=draft`),
-        axios.get(`${BASE_URL}/api/paths/get?email=${email}&status=changesrequested`),
+        axios.get(url1),
+        axios.get(url2),
       ]).then(([res1, res2]) => {
+        console.log("✅ Draft paths response:", res1.data?.total, "draft,", res2.data?.total, "changesrequested");
         const combined = [
           ...(res1.data?.data || []),
           ...(res2.data?.data || []),
         ].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
         setPartnerPathData(combined);
         fetchStepCounts(combined);
-      }).catch(() => { }).finally(() => setLoading(false));
+      }).catch((err) => { console.error("❌ Error fetching draft paths:", err); }).finally(() => setLoading(false));
       return;
     } else if (status === "waitingforapproval") {
-      endpoint = `/api/paths/get?email=${email}&status=waitingforapproval`;
+      endpoint = `/api/paths/get?email=${encodeURIComponent(email)}&status=waitingforapproval`;
     } else if (status === "inactive") {
-      endpoint = `/api/paths/get?email=${email}&status=inactive`;
+      endpoint = `/api/paths/get?email=${encodeURIComponent(email)}&status=inactive`;
     } else {
-      endpoint = `/api/paths/get?email=${email}&status=active`;
+      endpoint = `/api/paths/get?email=${encodeURIComponent(email)}&status=active`;
     }
 
     axios
@@ -240,7 +281,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
       })
       .finally(() => setLoading(false));
 
-  }, [location.search]);
+  }, [location.search, mountKey]);
 
   // Load services for add/remove
   useEffect(() => {
