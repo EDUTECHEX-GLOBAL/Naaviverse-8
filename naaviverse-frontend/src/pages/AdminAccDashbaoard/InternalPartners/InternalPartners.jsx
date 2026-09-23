@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import axios from "axios";
 import "./InternalPartners.scss";
 import { toast } from "react-toastify";
@@ -150,6 +150,88 @@ const InternalPartners = () => {
       accountStatus: partner.accountStatus,
     });
     setIsFormModalOpen(true);
+  };
+
+  const internalPostalTimerRef = useRef(null);
+
+  const cleanInternalPostalPlace = (raw) => {
+    if (!raw) return "";
+    return raw
+      .replace(/\s+[HSB]\s*\.?O\.?$/i, "")
+      .replace(/\s*\([^)]*\)/g, "")
+      .replace(/\s*(City|GPO|North|South|East|West|Central)$/gi, "")
+      .trim();
+  };
+
+  const lookupInternalPartnerPostal = async (code, countryName) => {
+    const trimmed = (code || "").trim();
+    if (!trimmed || trimmed.length < 3) return;
+
+    try {
+      const activeCountry = countryName || formData.country || "India";
+      const isIndia = activeCountry.toLowerCase() === "india" || /^\d{6}$/.test(trimmed);
+      const iso = isIndia ? "in" : "us";
+
+      const tasks = [
+        fetch(`https://api.zippopotam.us/${iso}/${encodeURIComponent(trimmed)}`, { signal: AbortSignal.timeout(8000) })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (d && d.places && d.places.length > 0) {
+              const p = d.places[0];
+              const c = cleanInternalPostalPlace(p["place name"]);
+              if (c) return { city: c, state: p["state"] || "", country: d.country || activeCountry };
+            }
+            throw new Error("No place");
+          }),
+      ];
+
+      if (isIndia && /^\d{6}$/.test(trimmed)) {
+        tasks.push(
+          fetch(`https://api.postalpincode.in/pincode/${trimmed}`, { signal: AbortSignal.timeout(8000) })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => {
+              const res = d && d[0];
+              if (res && res.Status === "Success" && res.PostOffice?.length > 0) {
+                const po = res.PostOffice[0];
+                const cleanBlock = (po.Block || "").replace(/\s*\(Urban\)/i, "").replace(/\s*\(Rural\)/i, "").trim();
+                const cleanDiv = (po.Division || "").replace(/\s*(City|GPO|North|South|East|West|Central)/gi, "").trim();
+                let extractedCity = "";
+                if (cleanDiv && cleanDiv !== po.District && !po.District.toLowerCase().includes(cleanDiv.toLowerCase())) {
+                  extractedCity = cleanDiv;
+                } else if (cleanBlock && cleanBlock !== po.District && cleanBlock !== "Shaikpet" && !po.District.toLowerCase().includes(cleanBlock.toLowerCase())) {
+                  extractedCity = cleanBlock;
+                } else {
+                  extractedCity = po.District || po.Division || po.Name || "";
+                }
+                const c = cleanInternalPostalPlace(extractedCity);
+                if (c) return { city: c, state: po.State || "", country: po.Country || "India" };
+              }
+              throw new Error("No PO");
+            })
+        );
+      }
+
+      const res = await Promise.any(tasks);
+      if (res) {
+        setFormData((prev) => ({
+          ...prev,
+          city: res.city || prev.city,
+          state: res.state || prev.state,
+          country: prev.country || res.country,
+        }));
+      }
+    } catch (e) {}
+  };
+
+  const handlePincodeChange = (val) => {
+    setFormData((prev) => ({ ...prev, pincode: val }));
+    clearTimeout(internalPostalTimerRef.current);
+    const trimmed = (val || "").trim();
+    if (trimmed.length >= 3) {
+      internalPostalTimerRef.current = setTimeout(() => {
+        lookupInternalPartnerPostal(trimmed, formData.country);
+      }, 250);
+    }
   };
 
   const handleFormSubmit = async (e) => {
@@ -665,7 +747,8 @@ const InternalPartners = () => {
                         type="text"
                         placeholder="Pincode"
                         value={formData.pincode}
-                        onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                        onChange={(e) => handlePincodeChange(e.target.value)}
+                        onBlur={() => lookupInternalPartnerPostal(formData.pincode, formData.country)}
                       />
                     </div>
                   </div>

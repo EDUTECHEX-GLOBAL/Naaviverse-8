@@ -107,6 +107,7 @@ export const InputDivsCreatePartner = ({
   setFunc,
   funcValue,
   addCurrency,
+  onBlur,
 }) => {
   return (
     <div className={classNames.inputDivs} style={{marginTop:'0px', marginBottom:"0px", gap:'0px'}}>
@@ -118,6 +119,7 @@ export const InputDivsCreatePartner = ({
           onChange={(event) => {
             setFunc(event.target.value);
           }}
+          onBlur={onBlur}
           value={funcValue ? funcValue : ""}
           style={{ borderRadius: "10px" }}
         />

@@ -305,6 +305,142 @@ const AccProfile = () => {
   const [lastName, setLastName] = useState('');
   const [position, setPosition] = useState('');
 
+  // ── Automatic City & State lookup from Postal Code for Partner Profile ───
+  const partnerPostalTimerRef = useRef(null);
+
+  const cleanPostalPlaceName = (raw) => {
+    if (!raw) return "";
+    return raw
+      .replace(/\s+[HSB]\s*\.?O\.?$/i, "")
+      .replace(/\s*\([^)]*\)/g, "")
+      .replace(/\s*(City|GPO|North|South|East|West|Central)$/gi, "")
+      .trim();
+  };
+
+  const lookupPartnerPostalCode = async (postalCodeVal, currentCountry) => {
+    const trimmed = (postalCodeVal || "").trim();
+    if (!trimmed || trimmed.length < 3) return;
+
+    try {
+      const activeCountry = currentCountry || businessCountry || "India";
+      const isIndia = activeCountry.toLowerCase() === "india" || /^\d{6}$/.test(trimmed);
+
+      // Determine ISO for Zippopotam
+      let countryIso = isIndia ? "in" : "us";
+      if (activeCountry && countryApiValue?.length) {
+        const found = countryApiValue.find(
+          (c) => c?.name?.common?.toLowerCase() === activeCountry.toLowerCase()
+        );
+        if (found?.cca2) countryIso = found.cca2.toLowerCase();
+      }
+
+      const tasks = [];
+
+      // Task 1: Zippopotam (sub-second fast response)
+      tasks.push(
+        fetch(`https://api.zippopotam.us/${countryIso}/${encodeURIComponent(trimmed)}`, { signal: AbortSignal.timeout(8000) })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (d && d.places && d.places.length > 0) {
+              const place = d.places[0];
+              const cName = cleanPostalPlaceName(place["place name"]);
+              if (cName) {
+                return {
+                  city: cName,
+                  state: place["state"] || "",
+                  country: d.country || activeCountry || "India",
+                };
+              }
+            }
+            throw new Error("No place");
+          })
+      );
+
+      // Task 2: India Post API (if 6-digit PIN code)
+      if (isIndia && /^\d{6}$/.test(trimmed)) {
+        tasks.push(
+          fetch(`https://api.postalpincode.in/pincode/${trimmed}`, { signal: AbortSignal.timeout(8000) })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => {
+              const res = d && d[0];
+              if (res && res.Status === "Success" && res.PostOffice && res.PostOffice.length > 0) {
+                const po = res.PostOffice[0];
+                const cleanBlock = (po.Block || "").replace(/\s*\(Urban\)/i, "").replace(/\s*\(Rural\)/i, "").trim();
+                const cleanDiv = (po.Division || "").replace(/\s*(City|GPO|North|South|East|West|Central)/gi, "").trim();
+                let extractedCity = "";
+                if (cleanDiv && cleanDiv !== po.District && !po.District.toLowerCase().includes(cleanDiv.toLowerCase())) {
+                  extractedCity = cleanDiv;
+                } else if (cleanBlock && cleanBlock !== po.District && cleanBlock !== "Shaikpet" && !po.District.toLowerCase().includes(cleanBlock.toLowerCase())) {
+                  extractedCity = cleanBlock;
+                } else {
+                  extractedCity = po.District || po.Division || po.Name || "";
+                }
+                const cName = cleanPostalPlaceName(extractedCity);
+                if (cName) {
+                  return {
+                    city: cName,
+                    state: po.State || "",
+                    country: po.Country || "India",
+                  };
+                }
+              }
+              throw new Error("No PO");
+            })
+        );
+      }
+
+      // Race to get the fastest valid result
+      let result = null;
+      try {
+        result = await Promise.any(tasks);
+      } catch (raceErr) {
+        // Fallback: OpenStreetMap Nominatim if both failed
+        try {
+          const nomRes = await fetch(
+            `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(trimmed)}&country=${encodeURIComponent(activeCountry)}&format=json&addressdetails=1`,
+            { signal: AbortSignal.timeout(6000) }
+          );
+          if (nomRes.ok) {
+            const nomData = await nomRes.json();
+            if (nomData && nomData.length > 0) {
+              const addr = nomData[0].address;
+              const nCity = addr.city || addr.town || addr.village || addr.county || addr.state_district || "";
+              result = {
+                city: cleanPostalPlaceName(nCity),
+                state: addr.state || "",
+                country: addr.country || activeCountry,
+              };
+            }
+          }
+        } catch (e) {}
+      }
+
+      if (result) {
+        if (result.city) setCity(result.city);
+        if (result.state) setBusinessState(result.state);
+        if (result.country && !businessCountry) {
+          const matchedCountry = countryApiValue?.find(
+            (c) => c?.name?.common?.toLowerCase() === result.country.toLowerCase()
+          );
+          setBusinessCountry(matchedCountry ? matchedCountry.name.common : result.country);
+        }
+      }
+    } catch (err) {
+      console.warn("Partner postal code auto-fill error:", err.message);
+    }
+  };
+
+  const handlePartnerPinCodeChange = (val) => {
+    setPinCode(val);
+    clearTimeout(partnerPostalTimerRef.current);
+    const trimmed = (val || "").trim();
+    if (trimmed.length >= 3) {
+      partnerPostalTimerRef.current = setTimeout(() => {
+        lookupPartnerPostalCode(trimmed, businessCountry);
+      }, 250);
+    }
+  };
+
   const handleDownload = (type) => {
     let filePath;
     if (type === "Path") filePath = "/PathTemplate.xlsx";
@@ -1892,13 +2028,13 @@ const AccProfile = () => {
 
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "10px" }}>
                       <InputDivsCreatePartner placeholderText="City..." setFunc={setCity} funcValue={city} />
-                      <InputDivsCreatePartner placeholderText="Pincode / Postal Code..." setFunc={setPinCode} funcValue={pinCode} />
+                      <InputDivsCreatePartner placeholderText="Pincode / Postal Code..." setFunc={handlePartnerPinCodeChange} onBlur={() => lookupPartnerPostalCode(pinCode, businessCountry)} funcValue={pinCode} />
                     </div>
 
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "10px" }}>
                       <InputDivsCreatePartner placeholderText="State / Province..." setFunc={setBusinessState} funcValue={businessState} />
                       <div className={styles.inputDivs} style={{ border: '1.5px solid #e2e8f0', borderRadius: '10px', fontSize: "14px", fontWeight: "500", paddingLeft: '0px', marginTop: '0px', background: '#fff' }}>
-                        <select name="country" id="country" style={{ border: "none", padding: '0.75rem 1rem', width: '100%', fontSize: "14px", outline: "none", background: "transparent", color: businessCountry ? "#1e293b" : "#94a3b8" }} onChange={(e) => setBusinessCountry(e.target.value)}>
+                        <select name="country" id="country" value={businessCountry} style={{ border: "none", padding: '0.75rem 1rem', width: '100%', fontSize: "14px", outline: "none", background: "transparent", color: businessCountry ? "#1e293b" : "#94a3b8" }} onChange={(e) => setBusinessCountry(e.target.value)}>
                           <option value="">Select Country *</option>
                           {countryApiValue?.map((item) => (
                             <option key={item.cca2} value={item?.name?.common}>{item?.name?.common}</option>
