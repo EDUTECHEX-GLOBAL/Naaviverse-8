@@ -575,24 +575,33 @@ JSON format must strictly follow:
       ],
       "marketplace": {{
         "mentors": [
-          {{"name": "<Specific Mentor/Group Name for this exact milestone>", "type": "Mentor", "why": "<Why this mentor fits this specific milestone>", "next_step": "<Action step>", "tags": ["<Tag1>", "<Tag2>"], "section": "macro_free", "price": "Free"}},
-          {{"name": "<Structured Coach Name>", "type": "Coaching", "cost": "$95", "duration": "3 weeks", "value": "<Value prop for this milestone>", "next_step": "<Action>", "tags": ["<Tag1>"], "section": "micro_structured"}},
-          {{"name": "<Expert Advisor Name>", "type": "Mentor", "price": "$150", "session_details": "1-on-1 Call", "expected_outcomes": "<Outcome>", "tags": ["<Tag1>"], "section": "nano_expert"}}
+          {{"name": "<Free Community / Peer Mentor 1>", "type": "Mentor", "why": "<Why this mentor fits this specific milestone>", "next_step": "<Action step>", "tags": ["<Tag1>", "<Tag2>"], "section": "macro_free", "price": "Free"}},
+          {{"name": "<Free Alumni / Senior Advisor 2>", "type": "Mentor", "why": "<Why this mentor fits>", "next_step": "<Action step>", "tags": ["<Tag1>"], "section": "macro_free", "price": "Free"}},
+          {{"name": "<Structured Coach 1>", "type": "Coaching", "cost": "$95", "duration": "3 weeks", "value": "<Value prop for this milestone>", "next_step": "<Action>", "tags": ["<Tag1>"], "section": "micro_structured"}},
+          {{"name": "<Skill / Project Coach 2>", "type": "Coaching", "cost": "$120", "duration": "4 weeks", "value": "<Value prop>", "next_step": "<Action>", "tags": ["<Tag1>"], "section": "micro_structured"}},
+          {{"name": "<Expert Advisor 1>", "type": "Mentor", "price": "$150", "session_details": "1-on-1 Call", "expected_outcomes": "<Outcome>", "tags": ["<Tag1>"], "section": "nano_expert"}},
+          {{"name": "<Senior Domain Specialist 2>", "type": "Mentor", "price": "$250", "session_details": "1-on-1 Strategy Session", "expected_outcomes": "<Outcome>", "tags": ["<Tag1>"], "section": "nano_expert"}}
         ],
         "vendors": [
-          {{"name": "<Specific Course/Tool for this milestone>", "type": "Course", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
-          {{"name": "<Paid Platform/Bootcamp>", "type": "Platform", "cost": "$149", "duration": "4 weeks", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
-          {{"name": "<Advanced Certification/Program>", "type": "Bootcamp", "price": "$397", "session_details": "Intensive Track", "expected_outcomes": "<Outcomes>", "tags": ["<Tag>"], "section": "nano_expert"}}
+          {{"name": "<Free Course / Learning Tool 1>", "type": "Course", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
+          {{"name": "<Free Interactive Sandbox / Platform 2>", "type": "Platform", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
+          {{"name": "<Paid Guided Course / Platform 1>", "type": "Platform", "cost": "$149", "duration": "4 weeks", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
+          {{"name": "<Applied Hands-on Track 2>", "type": "Course", "cost": "$199", "duration": "6 weeks", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
+          {{"name": "<Advanced Bootcamp / Specialization 1>", "type": "Bootcamp", "price": "$397", "session_details": "Intensive Track", "expected_outcomes": "<Outcomes>", "tags": ["<Tag>"], "section": "nano_expert"}}
         ],
         "institutions": [
-          {{"name": "<Target University Bureau or Department>", "type": "University", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
-          {{"name": "<University Summer / Cert Program>", "type": "Institute", "cost": "$250", "duration": "4 weeks", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
-          {{"name": "<Global Institution Certification>", "type": "University", "price": "$1,200", "session_details": "Credit Track", "expected_outcomes": "<Outcomes>", "tags": ["<Tag>"], "section": "nano_expert"}}
+          {{"name": "<Target University / Board Bureau 1>", "type": "University", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
+          {{"name": "<Public Examination / Research Center 2>", "type": "Institute", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
+          {{"name": "<University Summer / Cert Program 1>", "type": "Institute", "cost": "$250", "duration": "4 weeks", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
+          {{"name": "<Accredited Professional Body 2>", "type": "Institute", "cost": "$180", "duration": "Exam / Module", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
+          {{"name": "<Global Institution Certification 1>", "type": "University", "price": "$1,200", "session_details": "Credit Track", "expected_outcomes": "<Outcomes>", "tags": ["<Tag>"], "section": "nano_expert"}}
         ],
         "distributors": [
-          {{"name": "<Free Guide/Docs for this step>", "type": "Guide", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
-          {{"name": "<Book/Workbook for this step>", "type": "Book", "cost": "$30", "duration": "Self-paced", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
-          {{"name": "<Specialized Digest/Journal>", "type": "Newsletter", "price": "Free", "session_details": "Weekly Email", "expected_outcomes": "<Outcomes>", "tags": ["<Tag>"], "section": "nano_expert"}}
+          {{"name": "<Free Guide / Official Docs 1>", "type": "Guide", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
+          {{"name": "<Curated Open Practice Papers 2>", "type": "Guide", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
+          {{"name": "<Standard Prep Book / Workbook 1>", "type": "Book", "cost": "$30", "duration": "Self-paced", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
+          {{"name": "<Advanced Study Toolkit 2>", "type": "Workbook", "cost": "$45", "duration": "Self-paced", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
+          {{"name": "<Specialized Digest / Research Journal 1>", "type": "Newsletter", "price": "Free", "session_details": "Weekly Digest", "expected_outcomes": "<Outcomes>", "tags": ["<Tag>"], "section": "nano_expert"}}
         ]
       }}
     }}
@@ -606,6 +615,7 @@ CRITICAL RULES:
 4. NO GENERIC BOILERPLATE: Every single step must have unique descriptions, distinct learning objectives, and custom actionable micro_steps.
 5. NAME BAN: NEVER include personal names or emails in any text fields. Keep all content objective and professional.
 6. MANDATORY STUDENT SIGNALS & FINANCIAL ALIGNMENT: Adapt all marketplace recommendations, mentor rates, and resource tiers directly to the student's Financial Status. If Financial Status is High/Affluent, prioritize prestigious private mentors ($150-$500/call), executive coaches, elite university credit tracks, and premium certifications ($300-$1500+). If Financial Status is Low/Budget-Conscious, prioritize high-value free resources, scholarship programs, open-source cohorts, and affordable tools ($0-$49). Adjust roadmap study cadence and deliverables according to Location and Personality style.
+7. MULTI-ITEM DIVERSE MARKETPLACE PER VIEW (MANDATORY): For EVERY milestone, you MUST generate MULTIPLE diverse, authentic recommendations for each section: at least 2 distinct items for 'macro_free', at least 1-2 for 'micro_structured', and at least 1-2 for 'nano_expert' under mentors, vendors, institutions, and distributors. NEVER return only 1 item per section. Provide multiple authentic, realistic choices tailored to each milestone.
 """
     return prompt
 
@@ -899,7 +909,7 @@ async def query_groq_json(
     preferred_model: str = "openai/gpt-oss-120b",
     fallback_models: Optional[List[str]] = None,
 ) -> dict:
-    active_groq_models = ["openai/gpt-oss-120b", "qwen/qwen3.8-27b", "groq/compound", "groq/compound-mini"]
+    active_groq_models = ["openai/gpt-oss-120b", "qwen/qwen3.8-27b", "openai/gpt-oss-20b"]
     models = [preferred_model] if preferred_model in active_groq_models else []
     if fallback_models:
         for f in fallback_models:
@@ -956,13 +966,56 @@ async def query_groq_json(
                 try:
                     return json.loads(raw)
                 except json.JSONDecodeError as json_err:
-                    # Attempt partial JSON recovery: try to close unclosed brackets
+                    # Attempt partial JSON recovery for truncated output
                     print(f"[JSON Recovery] Attempting to repair truncated JSON from model {m} (Key {key_idx + 1}). Error at char {json_err.pos}.")
-                    truncated = raw[:json_err.pos].rstrip().rstrip(",").rstrip()
-                    opens = truncated.count("{") - truncated.count("}")
-                    open_arrays = truncated.count("[") - truncated.count("]")
-                    closing = "]" * open_arrays + "}" * opens
-                    repaired = truncated + closing
+                    truncated = raw[:json_err.pos]
+
+                    # Step 1: Detect and close any unclosed string literal
+                    in_str = False
+                    escape_next = False
+                    for ch in truncated:
+                        if escape_next:
+                            escape_next = False
+                            continue
+                        if ch == '\\':
+                            escape_next = True
+                            continue
+                        if ch == '"':
+                            in_str = not in_str
+                    if in_str:
+                        truncated += '"'
+
+                    # Step 2: Strip trailing dangling keys, colons, commas
+                    for _ in range(5):
+                        truncated = truncated.rstrip()
+                        truncated = re.sub(r',\s*$', '', truncated)
+                        truncated = re.sub(r':\s*$', '', truncated)
+                        truncated = re.sub(r',\s*"[^"]*"\s*:\s*$', '', truncated)
+                        truncated = re.sub(r'{\s*"[^"]*"\s*:\s*$', '{', truncated)
+                        truncated = re.sub(r',\s*"[^"]*"\s*$', '', truncated)
+
+                    # Step 3: Compute unclosed brackets (string-aware)
+                    stack = []
+                    in_s = False
+                    esc = False
+                    for ch in truncated:
+                        if esc:
+                            esc = False
+                            continue
+                        if ch == '\\':
+                            esc = True
+                            continue
+                        if ch == '"':
+                            in_s = not in_s
+                            continue
+                        if not in_s:
+                            if ch in '{[':
+                                stack.append('}' if ch == '{' else ']')
+                            elif ch in '}]':
+                                if stack and stack[-1] == ch:
+                                    stack.pop()
+
+                    repaired = truncated + ''.join(reversed(stack))
                     try:
                         result = json.loads(repaired)
                         print(f"[JSON Recovery] Successfully repaired truncated JSON from model {m} (Key {key_idx + 1}).")
@@ -972,16 +1025,36 @@ async def query_groq_json(
 
             except Exception as e:
                 err_str = str(e).lower()
-                is_rate_limit = "429" in err_str or "rate limit" in err_str or "tokens per minute" in err_str or "tpm" in err_str or "quota" in err_str
+                status_code = getattr(e, "status_code", None)
+                is_payload_too_large = (
+                    status_code == 413
+                    or "413" in err_str
+                    or "request too large" in err_str
+                    or "context_length_exceeded" in err_str
+                    or "reduce your message size" in err_str
+                    or "reduce the length of the messages" in err_str
+                )
+                is_rate_limit = not is_payload_too_large and (
+                    status_code == 429
+                    or "429" in err_str
+                    or "rate limit" in err_str
+                    or "tokens per minute" in err_str
+                    or "tpm" in err_str
+                    or "quota" in err_str
+                )
                 last_err = e
 
-                if is_rate_limit and len(GROQ_ASYNC_CLIENTS) > 1:
+                if is_payload_too_large:
+                    print(f"[Groq Model Limit] Prompt too large for model {m} ({e}). Skipping to next fallback model...")
+                    break  # Never retry keys for 413, break to next model immediately
+
+                if is_rate_limit and len(GROQ_ASYNC_CLIENTS) > 1 and key_offset < len(GROQ_ASYNC_CLIENTS) - 1:
                     next_key_idx = ((key_idx + 1) % len(GROQ_ASYNC_CLIENTS)) + 1
                     print(f"[Groq Key Failover] Key {key_idx + 1} rate-limited on model {m}. Instant auto-failover to Key {next_key_idx}...")
                     continue  # Try next key on this SAME high-tier model!
                 else:
                     print(f"[Groq Call Failed for model {m} (Key {key_idx + 1})] Error: {e}")
-                    # If error is not a rate limit, break out of key loop to attempt next fallback model
+                    # If error is not a rate limit or all keys exhausted, break out of key loop to attempt next fallback model
                     break
 
     print(f"[Groq Critical Failure] All models and keys exhausted. Final error: {last_err}")
@@ -2086,10 +2159,10 @@ async def run_agent_1_blueprint(
                     "id": m.get("id"),
                     "title": m.get("title", ""),
                     "duration": m.get("duration", ""),
-                    "description": m.get("description", ""),
-                    "macro_view": m.get("macro_view", ""),
-                    "micro_view": m.get("micro_view", ""),
-                    "nano_view": m.get("nano_view", ""),
+                    "description": str(m.get("description", "")).strip(),
+                    "macro_view": get_view_description(m, "macro_view"),
+                    "micro_view": get_view_description(m, "micro_view"),
+                    "nano_view": get_view_description(m, "nano_view"),
                     "learning_objectives": m.get("learning_objectives", []),
                     "micro_steps": m.get("micro_steps", [])
                 }
@@ -2104,9 +2177,16 @@ Active Sub-Category: {sub_segment or 'Standard'}
 
 Refinement Execution Rules:
 1. STRICT CATEGORY & DROPDOWN COMPLIANCE: Execute the user's refinement strictly within the {cat.upper()} domain ({sub_segment or 'Standard'}). Never cross over into forbidden categories (e.g. no high school board exams for software careers or mental health counselling).
-2. UNDERSTAND INTENT & PRESERVE UNTOUCHED STEPS: Understand whether the user wants to add new milestones, modify existing milestones, update duration/timeline, or adjust specific topics. Keep all unedited milestones intact with their exact sequence.
+2. INTENT KEYWORD TARGETING (GO DIRECTLY TO THE REQUESTED SECTION):
+   - MARKETPLACE & RESOURCE REQUESTS (e.g. 'marketplace', 'more recommendations', 'mentors', 'vendors', 'courses', 'resources', 'why only 1', 'for every view'):
+     You MUST generate a rich, comprehensive, multi-item marketplace for EVERY milestone. Generate at least 2 distinct items for 'macro_free', at least 1-2 for 'micro_structured', and at least 1-2 for 'nano_expert' across mentors, vendors, institutions, and distributors. Never output only 1 item per view/category.
+   - STEP COUNT & TIMELINE REQUESTS (e.g. 'add steps', 'more milestones', 'increase steps', 'change duration', 'months'):
+     Directly update the number of milestones, sequence, or duration as requested, recalculating timeline while preserving untouched content.
+   - VIEWS & CONTENT REQUESTS (e.g. 'macro view', 'micro view', 'nano view', 'check step description', 'learning objectives', 'micro steps'):
+     Directly rewrite, expand, or adjust the specific view or step text targeted by the user.
 3. IN-DEPTH VIEWS FOR ALL STEPS: Any new or modified step MUST have deep, rich, comprehensive 'macro_view', 'micro_view', and 'nano_view' (at least 100-150 words each). Do NOT output empty or 1-sentence summaries.
 4. ZERO MOCK / NO FALLBACK DATA: Generate 100% genuine, relevant, highly specific milestones and guidance tailored to {goal} and {current}.
+5. COMPLETE OUTPUT: Every step in 'steps' must output the complete structure including 'id', 'title', 'duration', 'description', 'macro_view', 'micro_view', 'nano_view', 'learning_objectives', 'micro_steps', and a fully populated 'marketplace'.
 ==================================================
 EXISTING ROADMAP BLUEPRINT TO MODIFY:
 {json.dumps({"path_title": raw_roadmap.get("path_title"), "total_duration": raw_roadmap.get("total_duration"), "steps": clean_existing_steps}, indent=2)}
@@ -2138,7 +2218,7 @@ EXISTING ROADMAP BLUEPRINT TO MODIFY:
         res = await query_groq_json(
             current_prompt,
             preferred_model="openai/gpt-oss-120b",
-            fallback_models=["qwen/qwen3.8-27b", "groq/compound"],
+            fallback_models=["qwen/qwen3.8-27b", "openai/gpt-oss-20b"],
         )
 
         if isinstance(res, dict) and isinstance(res.get("steps"), list) and len(res["steps"]) > 0:
@@ -2147,7 +2227,7 @@ EXISTING ROADMAP BLUEPRINT TO MODIFY:
         else:
             err_info = res.get("error") if isinstance(res, dict) else None
             print(f"[Agent 1 JSON Structure Warning] Attempt {attempt + 1} did not return valid steps array ({err_info or 'empty'}). Retrying...")
-            await asyncio.sleep(1.0)
+            await asyncio.sleep(3.0)
 
     if isinstance(res, dict) and isinstance(res.get("steps"), list) and len(res["steps"]) > 0:
         blueprint_to_return = res
@@ -2183,7 +2263,7 @@ async def run_agent_2_path_auditor(
     print(f"[Agent 2] Auditing path details (cat: {cat}) using fast model...")
     res = await query_groq_json(
         prompt,
-        preferred_model="groq/compound-mini",
+        preferred_model="openai/gpt-oss-20b",
         fallback_models=["qwen/qwen3.8-27b", "openai/gpt-oss-120b"]
     )
     return res
@@ -2211,7 +2291,7 @@ async def run_agent_3_steps_auditor(
     print(f"[Agent 3] Auditing steps & views (cat: {cat}) using fast model...")
     res = await query_groq_json(
         prompt,
-        preferred_model="groq/compound-mini",
+        preferred_model="openai/gpt-oss-20b",
         fallback_models=["qwen/qwen3.8-27b", "openai/gpt-oss-120b"]
     )
     if isinstance(res, list):
@@ -2243,7 +2323,7 @@ async def run_agent_4_marketplace_auditor(
     print(f"[Agent 4] Auditing marketplace recommendations (cat: {cat}) using fast model...")
     res = await query_groq_json(
         prompt,
-        preferred_model="groq/compound-mini",
+        preferred_model="openai/gpt-oss-20b",
         fallback_models=["qwen/qwen3.8-27b", "openai/gpt-oss-120b"]
     )
     if isinstance(res, list):
@@ -2721,7 +2801,7 @@ async def generate_path_stream(req: PathGenerationRequest):
 
             for index, f_choice in enumerate(foci):
                 if index > 0:
-                    await asyncio.sleep(2.0)  # Stagger model calls to avoid Groq rate limit burst
+                    await asyncio.sleep(3.5)  # Stagger model calls to avoid Groq rate limit burst
                 try:
                     blueprints[index] = await run_agent_1_blueprint(
                         current, goal, profile, refine_prompt, existing_roadmap,
@@ -4369,7 +4449,7 @@ async def patch_step(req: StepPatchRequest):
             f"[Patch Agent] Patching step {req.step_id} marketplace "
             f"section '{section}', category '{category}' using 120B..."
         )
-        result = await query_groq_json(prompt, preferred_model="openai/gpt-oss-120b", fallback_models=["qwen/qwen3.8-27b", "groq/compound"])
+        result = await query_groq_json(prompt, preferred_model="openai/gpt-oss-120b", fallback_models=["qwen/qwen3.8-27b", "openai/gpt-oss-20b"])
         generated_items = result.get("marketplace_items") if isinstance(result, dict) else None
         if not isinstance(generated_items, list) or not generated_items:
             raise HTTPException(status_code=500, detail="Marketplace patch failed to return category items. Please try again.")
@@ -4425,7 +4505,7 @@ async def patch_step(req: StepPatchRequest):
     )
 
     print(f"[Patch Agent] Patching step {req.step_id} field '{req.field}' (cat: {cat.upper()}) using 120B...")
-    result = await query_groq_json(prompt, preferred_model="openai/gpt-oss-120b", fallback_models=["qwen/qwen3.8-27b", "groq/compound"])
+    result = await query_groq_json(prompt, preferred_model="openai/gpt-oss-120b", fallback_models=["qwen/qwen3.8-27b", "openai/gpt-oss-20b"])
 
     if not result or req.field not in result:
         raise HTTPException(status_code=500, detail="Patch agent failed to return updated content. Please try again.")
