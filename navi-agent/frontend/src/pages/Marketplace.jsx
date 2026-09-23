@@ -123,6 +123,37 @@ function getViewMarketplaceItems(step, view, category) {
 }
 
 
+function formatCardItem(item, sourceIndex, view, category) {
+  if (!item) return null;
+  const name = item.name || "Resource";
+  const price = item.discount || item.cost || item.price || (view === "macro" ? "Free" : "Varies");
+  return {
+    sourceIndex,
+    name: name,
+    role: item.structure || item.type || (category === "mentors" ? "Expert Guide" : "Learning Resource"),
+    why: item.why || item.value || item.expected_outcomes || "",
+    next_step: item.next_step || item.session_details || "",
+    tags: Array.isArray(item.tags) ? item.tags : [],
+    price: price,
+    rating: item.rating || "4.8",
+    sessions: item.sessions || (category === "mentors" ? 42 : null),
+    avatar: name.split(" ").filter(Boolean).map(w => w[0]).join("").substring(0, 2).toUpperCase() || "NV",
+    isRecommended: true,
+    _raw: item,
+  };
+}
+
+function getHistoryPillLabel(hi, total) {
+  if (total <= 1) return "Current";
+  if (total === 2) {
+    return hi === 0 ? "Previous Best" : "Current Best ✨";
+  }
+  if (hi === total - 1) return "Current Best ✨";
+  if (hi === total - 2) return "Previous Best";
+  if (hi === 0) return "Original";
+  return `Option ${hi + 1}`;
+}
+
 export default function Marketplace({ step, view, userInput, profile, onStepPatched }) {
   const [activeCategory, setActiveCategory] = useState("mentors");
   const [activeView, setActiveView] = useState(view || "macro");
@@ -130,6 +161,10 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
   const [regeneratingItemKey, setRegeneratingItemKey] = useState("");
   const [regenError, setRegenError] = useState("");
   const [regenSuccess, setRegenSuccess] = useState("");
+  // History: { [itemKey]: [ item0, item1, ... ] } — stores all versions (original + alts)
+  const [generationHistory, setGenerationHistory] = useState({});
+  // Which version pill is active per card: { [itemKey]: index }
+  const [activeHistoryVersion, setActiveHistoryVersion] = useState({});
 
   const availableCats = CATEGORIES;
 
@@ -149,37 +184,19 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
   };
 
   const items = useMemo(() => {
-    const matchedDynamic = [];
-
     const rawItems = getViewMarketplaceItems(step, activeView, currentCategory);
-
-    rawItems.forEach((item, sourceIndex) => {
-      const price = item.discount || item.cost || item.price || (activeView === "macro" ? "Free" : "Varies");
-      matchedDynamic.push({
-        sourceIndex,
-        name: item.name,
-        role: item.structure || item.type || (currentCategory === "mentors" ? "Expert Guide" : "Learning Resource"),
-        why: item.why || item.value || item.expected_outcomes || "",
-        next_step: item.next_step || item.session_details || "",
-        tags: item.tags || [],
-        price: price,
-        rating: item.rating || "4.8",
-        sessions: item.sessions || (currentCategory === "mentors" ? 42 : null),
-        avatar: item.name.split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase(),
-        isRecommended: true,
-      });
-    });
-
-    const combined = matchedDynamic;
+    const matchedDynamic = rawItems.map((item, sourceIndex) =>
+      formatCardItem(item, sourceIndex, activeView, currentCategory)
+    );
 
     // Apply search filter
-    return combined.filter(item => {
+    return matchedDynamic.filter(item => {
+      if (!item) return false;
       if (!search.trim()) return true;
       const hay = `${item.name} ${item.role} ${item.tags.join(" ")} ${item.why} ${item.next_step}`.toLowerCase();
       return hay.includes(search.toLowerCase());
     });
   }, [step, currentCategory, activeView, search]);
-
 
   const activeCat = CATEGORIES.find(c => c.key === currentCategory);
 
@@ -189,6 +206,11 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
     setRegeneratingItemKey(itemKey);
     setRegenError("");
     setRegenSuccess("");
+
+    // Baseline: ensure the current card is recorded before generating next best
+    const existingHistory = generationHistory[itemKey] && generationHistory[itemKey].length > 0
+      ? generationHistory[itemKey]
+      : [item];
 
     try {
       const categoryLabel = activeCat?.label || currentCategory;
@@ -218,8 +240,32 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
       if (patchResult.updated_step && onStepPatched) {
         onStepPatched(step.id, "__step__", patchResult.updated_step);
       }
+
+      // Extract newly generated item from the patched step
+      let formattedNew = null;
+      if (patchResult.updated_step) {
+        const freshRawItems = getViewMarketplaceItems(patchResult.updated_step, activeView, currentCategory);
+        const freshRaw = freshRawItems[item.sourceIndex];
+        if (freshRaw) {
+          formattedNew = formatCardItem(freshRaw, item.sourceIndex, activeView, currentCategory);
+        }
+      }
+
+      const nextHistory = formattedNew ? [...existingHistory, formattedNew] : existingHistory;
+
+      setGenerationHistory(prev => ({
+        ...prev,
+        [itemKey]: nextHistory,
+      }));
+
+      // Focus on the newly generated best option
+      setActiveHistoryVersion(prev => ({
+        ...prev,
+        [itemKey]: nextHistory.length - 1,
+      }));
+
       setSearch("");
-      setRegenSuccess(`${item.name} was replaced with a next-best ${categoryLabel} option.`);
+      setRegenSuccess(`New next-best ${categoryLabel} option generated! You can compare all versions using the pills.`);
     } catch (err) {
       setRegenError(err.message || "Marketplace regeneration failed. Please try again.");
     } finally {
@@ -319,37 +365,67 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
           <div className="mp-section-title">✨ Recommended for this Step</div>
           <div className="mp-recommended-grid">
             {recommendedItems.map((item, i) => {
-              const price = item.price;
+              const itemKey = `${activeView}_${currentCategory}_${item.sourceIndex}`;
+              const history = generationHistory[itemKey] || [];
+              const hasHistory = history.length > 1;
+              const activeVersion = activeHistoryVersion[itemKey];
+              // Determine which item to display: if a previous version is selected, show it; otherwise show current
+              const isViewingPrevious = hasHistory && typeof activeVersion === "number" && activeVersion < history.length - 1;
+              const displayItem = isViewingPrevious ? history[activeVersion] : item;
+              const price = displayItem.price;
               const isFree = price?.toLowerCase().includes("free") || price?.toLowerCase().includes("free");
               return (
                 <div key={i} className="mp-card card card-clickable mp-card--recommended">
                   <div className="mp-recommended-badge">✨ AI Recommended</div>
 
+                  {/* ── History comparison pills ── */}
+                  {hasHistory && (
+                    <div className="mp-history-bar">
+                      <div className="mp-history-label">🔄 {history.length} Options Generated</div>
+                      <div className="mp-history-pills">
+                        {history.map((h, hi) => {
+                          const isSelected = (typeof activeVersion === "number" ? activeVersion : history.length - 1) === hi;
+                          const isLatest = hi === history.length - 1;
+                          return (
+                            <button
+                              key={hi}
+                              className={`mp-history-pill ${isSelected ? "mp-history-pill--active" : ""} ${isLatest ? "mp-history-pill--latest" : ""}`}
+                              onClick={() => setActiveHistoryVersion(prev => ({ ...prev, [itemKey]: hi }))}
+                              type="button"
+                            >
+                              {getHistoryPillLabel(hi, history.length)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="mp-card-top">
-                    <div className="mp-avatar">{item.avatar}</div>
+                    <div className="mp-avatar">{displayItem.avatar}</div>
                     <div className="mp-card-info">
-                      <div className="mp-card-name">{item.name}</div>
-                      <div className="mp-card-role">{item.role}</div>
+                      <div className="mp-card-name">{displayItem.name}</div>
+                      <div className="mp-card-role">{displayItem.role}</div>
                     </div>
                   </div>
 
                   <div className="mp-card-tags">
-                    {item.tags.map((t, j) => (
+                    {(displayItem.tags || []).map((t, j) => (
                       <span key={j} className={`pill ${["pill-teal", "pill-blue", "pill-lavender"][j % 3]}`}>{t}</span>
                     ))}
                   </div>
 
                   <div className="mp-card-details">
-                    {item.why && (
+                    {displayItem.why && (
                       <div className="mp-detail-row">
                         <span className="mp-detail-lbl">Why it fits</span>
-                        <span className="mp-detail-val">{item.why}</span>
+                        <span className="mp-detail-val">{displayItem.why}</span>
                       </div>
                     )}
-                    {item.next_step && (
+                    {displayItem.next_step && (
                       <div className="mp-detail-row">
                         <span className="mp-detail-lbl">Next Action</span>
-                        <span className="mp-detail-val">{item.next_step}</span>
+                        <span className="mp-detail-val">{displayItem.next_step}</span>
                       </div>
                     )}
                   </div>
@@ -357,14 +433,20 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
                   <div className="mp-card-bottom">
                     <div className="mp-card-rating">
                       <IconStar size={13} fill="var(--amber)" color="var(--amber)" />
-                      <span>{item.rating}</span>
-                      {item.sessions && <span className="mp-sessions">· {item.sessions} sessions</span>}
+                      <span>{displayItem.rating}</span>
+                      {displayItem.sessions && <span className="mp-sessions">· {displayItem.sessions} sessions</span>}
                     </div>
                     <div className="mp-card-price-line">
                       <span className="mp-price-lbl">Investment</span>
                       <span className={`mp-card-price ${isFree ? "mp-price-free" : ""}`}>{price}</span>
                     </div>
                   </div>
+
+                  {isViewingPrevious && (
+                    <div className="mp-viewing-previous-badge">
+                      👁 Comparing with: <strong>{getHistoryPillLabel(activeVersion, history.length)}</strong>
+                    </div>
+                  )}
 
                   <button className="btn-primary mp-connect-btn">
                     {getCtaLabel(currentCategory, activeView)}
@@ -393,20 +475,50 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
           )}
           <div className="mp-grid">
             {standardItems.map((item, i) => {
-              const price = item.price;
+              const itemKey = `${activeView}_${currentCategory}_${item.sourceIndex}`;
+              const history = generationHistory[itemKey] || [];
+              const hasHistory = history.length > 1;
+              const activeVersion = activeHistoryVersion[itemKey];
+              const isViewingPrevious = hasHistory && typeof activeVersion === "number" && activeVersion < history.length - 1;
+              const displayItem = isViewingPrevious ? history[activeVersion] : item;
+              const price = displayItem.price;
               const isFree = price?.toLowerCase().includes("free") || price?.toLowerCase().includes("free");
               return (
                 <div key={i} className="mp-card card card-clickable">
+
+                  {/* ── History comparison pills ── */}
+                  {hasHistory && (
+                    <div className="mp-history-bar">
+                      <div className="mp-history-label">🔄 {history.length} Options Generated</div>
+                      <div className="mp-history-pills">
+                        {history.map((h, hi) => {
+                          const isSelected = (typeof activeVersion === "number" ? activeVersion : history.length - 1) === hi;
+                          const isLatest = hi === history.length - 1;
+                          return (
+                            <button
+                              key={hi}
+                              className={`mp-history-pill ${isSelected ? "mp-history-pill--active" : ""} ${isLatest ? "mp-history-pill--latest" : ""}`}
+                              onClick={() => setActiveHistoryVersion(prev => ({ ...prev, [itemKey]: hi }))}
+                              type="button"
+                            >
+                              {getHistoryPillLabel(hi, history.length)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="mp-card-top">
-                    <div className="mp-avatar">{item.avatar}</div>
+                    <div className="mp-avatar">{displayItem.avatar}</div>
                     <div className="mp-card-info">
-                      <div className="mp-card-name">{item.name}</div>
-                      <div className="mp-card-role">{item.role}</div>
+                      <div className="mp-card-name">{displayItem.name}</div>
+                      <div className="mp-card-role">{displayItem.role}</div>
                     </div>
                   </div>
 
                   <div className="mp-card-tags">
-                    {item.tags.map((t, j) => (
+                    {(displayItem.tags || []).map((t, j) => (
                       <span key={j} className={`pill ${["pill-teal", "pill-blue", "pill-lavender"][j % 3]}`}>{t}</span>
                     ))}
                   </div>
@@ -414,14 +526,20 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
                   <div className="mp-card-bottom">
                     <div className="mp-card-rating">
                       <IconStar size={13} fill="var(--amber)" color="var(--amber)" />
-                      <span>{item.rating}</span>
-                      {item.sessions && <span className="mp-sessions">· {item.sessions} sessions</span>}
+                      <span>{displayItem.rating}</span>
+                      {displayItem.sessions && <span className="mp-sessions">· {displayItem.sessions} sessions</span>}
                     </div>
                     <div className="mp-card-price-line">
                       <span className="mp-price-lbl">Investment</span>
                       <span className={`mp-card-price ${isFree ? "mp-price-free" : ""}`}>{price}</span>
                     </div>
                   </div>
+
+                  {isViewingPrevious && (
+                    <div className="mp-viewing-previous-badge">
+                      👁 Comparing with: <strong>{getHistoryPillLabel(activeVersion, history.length)}</strong>
+                    </div>
+                  )}
 
                   <button className="btn-primary mp-connect-btn">
                     {getCtaLabel(currentCategory, activeView)}
@@ -452,6 +570,74 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
 
       <style>{`
         .mp-header { margin-bottom: 24px; }
+
+        /* ── History comparison bar ── */
+        .mp-history-bar {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          padding: 10px 12px;
+          background: linear-gradient(135deg, #f0f4ff, #f5f0ff);
+          border: 1px solid rgba(99, 102, 241, 0.15);
+          border-radius: 10px;
+          margin-bottom: 4px;
+        }
+        .mp-history-label {
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: #6366f1;
+        }
+        .mp-history-pills {
+          display: flex;
+          gap: 6px;
+          flex-wrap: wrap;
+        }
+        .mp-history-pill {
+          padding: 5px 12px;
+          border-radius: 20px;
+          border: 1.5px solid var(--border);
+          background: var(--bg2);
+          font-size: 11px;
+          font-weight: 600;
+          font-family: var(--font-body);
+          color: var(--text2);
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .mp-history-pill:hover {
+          border-color: #6366f1;
+          color: #6366f1;
+          background: #eef2ff;
+        }
+        .mp-history-pill--active {
+          border-color: #6366f1;
+          background: #6366f1;
+          color: #fff;
+        }
+        .mp-history-pill--active:hover {
+          background: #4f46e5;
+          color: #fff;
+        }
+        .mp-history-pill--latest {
+          border-color: var(--accent);
+        }
+        .mp-history-pill--latest.mp-history-pill--active {
+          background: var(--accent);
+          border-color: var(--accent);
+          color: #fff;
+        }
+        .mp-viewing-previous-badge {
+          font-size: 11px;
+          font-weight: 600;
+          color: #6366f1;
+          background: #eef2ff;
+          border: 1px solid rgba(99, 102, 241, 0.2);
+          padding: 5px 10px;
+          border-radius: 8px;
+          text-align: center;
+        }
 
         .mp-view-tabs {
           display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px;
