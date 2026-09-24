@@ -52,6 +52,13 @@ export default function PartnerHome({ setispopular }) {
   const [statsError, setStatsError] = useState(null);
   const [pathUsers, setPathUsers] = useState([]);
   const [pathUsersLoading, setPathUsersLoading] = useState(false);
+  const [showPathHint, setShowPathHint] = useState(() => {
+    try {
+      return localStorage.getItem("dismissed_partner_path_hint") !== "true";
+    } catch {
+      return true;
+    }
+  });
 
   const notifRef = useRef(null);
   const unread = notifications.filter(n => n.unread).length;
@@ -617,12 +624,40 @@ export default function PartnerHome({ setispopular }) {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" /><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2" /></svg>
             {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
           </div>
-          <button className="ph-add-btn" onClick={() => setispopular && setispopular(true)}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-            </svg>
-            Add New
-          </button>
+          <div className="ph-add-btn-wrap">
+            {showPathHint && (
+              <div
+                className="ph-floating-path-hint"
+                onClick={() => setispopular && setispopular(true)}
+                title="Click here to create a path"
+              >
+                <span className="ph-hint-sparkle">✨</span>
+                <span className="ph-hint-text">Click here to create a path</span>
+                <span className="ph-hint-arrow-down">↓</span>
+                <button
+                  type="button"
+                  className="ph-hint-close-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowPathHint(false);
+                    try {
+                      localStorage.setItem("dismissed_partner_path_hint", "true");
+                    } catch {}
+                  }}
+                  title="Dismiss message"
+                >
+                  ×
+                </button>
+                <div className="ph-hint-tail" />
+              </div>
+            )}
+            <button className="ph-add-btn" onClick={() => setispopular && setispopular(true)}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+              </svg>
+              Add New
+            </button>
+          </div>
         </div>
       </div>
 
