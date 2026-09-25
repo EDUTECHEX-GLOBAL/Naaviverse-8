@@ -605,7 +605,7 @@ def get_subsegment_rules(cat: str, sub_segment: Optional[str] = None) -> str:
                 "Sub-Segment: Stress Management & Burnout Prevention.\n"
                 "- Context: Somatic stress reduction, nervous system regulation, breathing exercises (4-7-8, box breathing), cognitive reframing of stressors, boundary setting, sleep architecture, stress logs, certified stress/wellness coaches.\n"
                 "- Progression: Stress trigger identification & acute relief -> daily grounding routine & sleep reset -> cognitive boundary setting & workload management -> long-term stress resilience habits.\n"
-                "- Milestone Marketplace Progression: Milestone 1 = free stress logs & breathing apps (Smiling Mind, Breathwrk); Milestone 2 = evidence-based MBSR courses & stress workbooks; Milestone 3 = certified stress management coaches & somatic practitioners; Milestone 4+ = retreat workshops & preventive lifestyle communities.\n"
+                "- Milestone Marketplace Progression: Early milestones = free stress logs & breathing apps (Smiling Mind, Breathwrk); Intermediate milestones = evidence-based MBSR courses & stress workbooks; Advanced & Capstone milestones = certified stress management coaches, somatic practitioners & preventive lifestyle communities.\n"
                 "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include academic curricula, exams, job placement, or coding tests."
             )
         elif any(k in sub for k in ["personal_dev", "personal development", "habit", "productivity", "discipline"]):
@@ -613,7 +613,7 @@ def get_subsegment_rules(cat: str, sub_segment: Optional[str] = None) -> str:
                 "Sub-Segment: Personal Development & Self-Discipline.\n"
                 "- Context: Daily routine design, habit loop formation (cue, routine, reward), time blocking, accountability systems, goal breakdown, journal prompts, self-reflection practices.\n"
                 "- Progression: Routine audit & energy mapping -> core habit loop installation -> focus systems & digital distraction management -> self-accountability & periodic review cadence.\n"
-                "- Milestone Marketplace Progression: Milestone 1 = free habit trackers & Notion templates; Milestone 2 = structured productivity courses & habit coaching; Milestone 3 = executive life coaches & personalized development audits; Milestone 4+ = mastermind groups & annual review retreats.\n"
+                "- Milestone Marketplace Progression: Early milestones = free habit trackers & Notion templates; Intermediate milestones = structured productivity courses & habit coaching; Advanced & Capstone milestones = executive life coaches, personalized audits & mastermind groups.\n"
                 "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include school exams, college admissions, or LeetCode."
             )
         elif any(k in sub for k in ["relationship", "relationship_guidance", "interpersonal", "communication"]):
@@ -621,7 +621,7 @@ def get_subsegment_rules(cat: str, sub_segment: Optional[str] = None) -> str:
                 "Sub-Segment: Relationship Guidance & Interpersonal Communication.\n"
                 "- Context: Active listening frameworks, Nonviolent Communication (NVC), boundary setting, conflict de-escalation, emotional empathy, interpersonal relationship dynamics.\n"
                 "- Progression: Communication style assessment -> active listening & emotion regulation -> constructive boundary setting -> mutual problem-solving dialogues -> relational harmony maintenance.\n"
-                "- Milestone Marketplace Progression: Milestone 1 = relationship communication guides & self-assessments; Milestone 2 = structured interpersonal workshops & books; Milestone 3 = licensed relationship counselors & certified coaches; Milestone 4+ = communication practice groups & support circles.\n"
+                "- Milestone Marketplace Progression: Early milestones = relationship communication guides & self-assessments; Intermediate milestones = structured interpersonal workshops & books; Advanced & Capstone milestones = licensed relationship counselors & certified coaches.\n"
                 "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include academic tutoring, college admissions, or coding tests."
             )
         elif any(k in sub for k in ["family", "family_guidance", "parent", "generational"]):
@@ -629,7 +629,7 @@ def get_subsegment_rules(cat: str, sub_segment: Optional[str] = None) -> str:
                 "Sub-Segment: Family Guidance & Generational Dynamics.\n"
                 "- Context: Family communication patterns, handling generational expectations, constructive conversations, emotional boundaries, resolving family conflict respectfully.\n"
                 "- Progression: Family dynamics mapping -> emotional boundary identification -> structured family dialogue techniques -> mutual expectation alignment -> sustained collaborative harmony.\n"
-                "- Milestone Marketplace Progression: Milestone 1 = family dynamics workbooks & communication prompts; Milestone 2 = family mediation workshops & parenting/family books; Milestone 3 = licensed family counselors & mediation advisors; Milestone 4+ = family support networks.\n"
+                "- Milestone Marketplace Progression: Early milestones = family dynamics workbooks & communication prompts; Intermediate milestones = family mediation workshops & parenting/family books; Advanced & Capstone milestones = licensed family counselors & mediation advisors.\n"
                 "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include academic tutoring, college admissions, or coding tests."
             )
         else:  # mental_wellbeing or general mental
@@ -637,7 +637,7 @@ def get_subsegment_rules(cat: str, sub_segment: Optional[str] = None) -> str:
                 "Sub-Segment: Mental Wellbeing & Emotional Resilience.\n"
                 "- Context: Emotional awareness, cognitive reframing (CBT principles), daily mindfulness routines, identifying anxiety triggers, peer support circles, qualified professional counseling resources.\n"
                 "- Progression: Emotional baseline assessment -> daily mindfulness & grounding routine -> cognitive reframing of negative patterns -> support network integration -> sustainable emotional resilience.\n"
-                "- Milestone Marketplace Progression: Milestone 1 = free mindfulness apps & mood journals (Smiling Mind, Daylio, Mindful.org); Milestone 2 = evidence-based cognitive wellbeing courses (MBSR, Yale Science of Wellbeing); Milestone 3 = certified therapists, counseling platforms (licensed practitioners, Psychology Today directory); Milestone 4+ = resilience circles & ongoing wellness communities.\n"
+                "- Milestone Marketplace Progression: Early milestones = free mindfulness apps & mood journals (Smiling Mind, Daylio, Mindful.org); Intermediate milestones = evidence-based cognitive wellbeing courses (MBSR, Yale Science of Wellbeing); Advanced & Capstone milestones = certified therapists, counseling platforms (licensed practitioners, Psychology Today directory) & resilience communities.\n"
                 "- STRICT NEGATIVE CONSTRAINTS: STRICTLY FORBIDDEN to include college applications, GPA targets, academic board exams, or job placement."
             )
 
@@ -670,6 +670,40 @@ def build_agent_1_prompt(
 - Dynamic step count: Autonomously determine the exact number of milestones needed to reach the goal. NO pre-planned, fixed, or bracketed step count.
 """
 
+    curr_low = (current_position or "").lower()
+    goal_low = (target_goal or "").lower()
+    is_school = any(k in curr_low for k in ["grade 10", "grade 9", "grade 8", "grade 7", "grade 6", "10th", "9th", "8th", "7th", "6th", "k-10", "k-12", "school", "secondary"])
+    is_master = any(k in goal_low for k in ["master", "master's", "mtech", "m.tech", "msc", "m.sc", "mba", "postgrad", "pg"])
+    is_phd = any(k in goal_low for k in ["phd", "ph.d", "doctorate", "doctoral", "postdoc"])
+    is_bachelor = any(k in goal_low for k in ["bachelor", "bachelor's", "btech", "b.tech", "bsc", "b.sc", "undergrad"])
+
+    if requested_steps:
+        step_scope_directive = f"""CRITICAL STEP COUNT MANDATE:
+Output EXACTLY {requested_steps} distinct step objects inside 'steps'. Every step must be unique, progressive, and fully detailed."""
+    elif is_school and (is_master or is_phd):
+        target_deg_label = "PhD" if is_phd else "Master's"
+        step_scope_directive = f"""CRITICAL JOURNEY SCOPE & STEP COUNT MANDATE (MANDATORY 6 TO 8 MILESTONES):
+The student is currently in school ({current_position}) and targeting a graduate {target_deg_label} degree ({target_goal}).
+This journey spans high school graduation, undergraduate studies, advanced research, and graduate admissions.
+UNDER NO CIRCUMSTANCES should this journey be compressed into 3 or 4 milestones!
+You MUST generate 6 to 8 distinct, comprehensive milestones covering:
+- Milestone 1: High School STEM & Core Subject Mastery (Grades 10-11)
+- Milestone 2: Standardized Testing, Profile Building & Pre-College Competitions (Grade 12)
+- Milestone 3: Undergraduate College Admissions & Foundation Year
+- Milestone 4: Core Undergraduate Academic & Technical Specialization
+- Milestone 5: Applied Proof-of-Work Projects & Technical Internships
+- Milestone 6: Advanced Research, Publications & Faculty Mentorship
+- Milestone 7: Graduate School Standardized Testing (GRE/TOEFL) & Portfolio Audit
+- Milestone 8: Target Graduate Application, SOP, Faculty Outreach & Admissions Capstone"""
+    elif is_phd or (is_school and is_bachelor):
+        step_scope_directive = f"""CRITICAL JOURNEY SCOPE & STEP COUNT MANDATE:
+This is an extensive multi-phase progression from {current_position} to {target_goal}.
+You MUST generate 5 to 7 distinct progressive milestones covering foundational preparation, core execution, advanced specialization, and capstone achievement. Do NOT generate fewer than 5 milestones."""
+    else:
+        step_scope_directive = f"""AUTONOMOUS & DYNAMIC STEP COUNT:
+Analyze the full distance from {current_position} to {target_goal}.
+Generate 5 to 7 comprehensive milestones. Never artificially restrict or default to 3 or 4 milestones."""
+
     prompt = f"""You are the Naaviverse Pathway Blueprint Generator (Agent 1).
 Your task is to generate a fully custom, category-specific pathway blueprint.
 
@@ -684,6 +718,8 @@ INPUT CONTEXT:
 
 {category_rules}
 
+{step_scope_directive}
+
 SCHEMA REQUIREMENTS:
 Respond ONLY with valid JSON. No markdown backticks, no text explanation outside JSON.
 JSON format must strictly follow:
@@ -692,7 +728,7 @@ JSON format must strictly follow:
   "path_description": "<Rich 3-4 sentence strategic overview explaining how this specific pathway guides the user from {current_position} to {target_goal} in the {cat} category>",
   "readiness_score": <calculated readiness score integer 0-100 based on profile readiness>,
   "readiness_label": "<descriptive readiness label, e.g. 'Early Starter', 'Developing Readiness', or 'Advanced Readiness'>",
-  "total_duration": "<calculated duration string, e.g. '6 months', '12 months', '36 months'>",
+  "total_duration": "<calculated duration string, e.g. '72 months', '84 months'>",
   "blind_spots": [
     "<critical gap, constraint, or warning 1 based on profile & goal>",
     "<critical gap, constraint, or warning 2 based on profile & goal>"
@@ -701,11 +737,11 @@ JSON format must strictly follow:
     {{
       "id": 1,
       "title": "<step/milestone title specific to {cat}>",
-      "duration": "<calculated step range, e.g. 'Months 1-3' or 'Weeks 1-4'>",
+      "duration": "<calculated step range, e.g. 'Months 1-6' or 'Months 7-18'>",
       "description": "<detailed step overview (2-3 sentences) explaining what this phase accomplishes>",
-      "macro_view": "<Macro View (Deep, comprehensive strategic narrative of 4-6 sentences / 100-150 words): Thoroughly explain WHY this milestone is non-negotiable for achieving {target_goal}, the fundamental capability or mindset transformation that occurs during this phase, and the tangible criteria/evidence proving the student is ready to transition to the next phase. DO NOT output a short 1-sentence summary.>",
-      "micro_view": "<Micro View (Deep, granular operational plan of 4-6 sentences / 100-150 words): Detail the concrete weekly execution cadence, specific daily/weekly study and practice hours, tangible deliverables or project artifacts the student must produce, and exact self-assessment benchmarks to verify mastery. DO NOT output a short 1-sentence summary.>",
-      "nano_view": "<Nano View (Deep, specialized 1-on-1 audit & diagnostic focus of 4-6 sentences / 100-150 words): Specify exactly what an expert mentor, tutor, or counselor will evaluate during a 1-on-1 audit, the common blind spots or subtle failure modes to check for at this stage, and the precise diagnostic questions used to verify authentic readiness. DO NOT output a short 1-sentence summary.>",
+      "macro_view": "<Macro View (2-3 focused strategic sentences / 40-60 words): Thoroughly explain WHY this milestone is critical for achieving {target_goal} and the capability transformation achieved.>",
+      "micro_view": "<Micro View (2-3 operational sentences / 40-60 words): Detail weekly study hours, tangible deliverables/projects to build, and concrete self-assessment mastery criteria.>",
+      "nano_view": "<Nano View (2-3 diagnostic audit sentences / 40-60 words): Specify what an expert mentor will evaluate during a 1-on-1 audit, common blind spots, and readiness verification.>",
       "learning_objectives": [
         "<distinct learning objective 1>",
         "<distinct learning objective 2>",
@@ -717,33 +753,24 @@ JSON format must strictly follow:
       ],
       "marketplace": {{
         "mentors": [
-          {{"name": "<Free Community / Peer Mentor 1>", "type": "Mentor", "why": "<Why this mentor fits this specific milestone>", "next_step": "<Action step>", "tags": ["<Tag1>", "<Tag2>"], "section": "macro_free", "price": "Free"}},
-          {{"name": "<Free Alumni / Senior Advisor 2>", "type": "Mentor", "why": "<Why this mentor fits>", "next_step": "<Action step>", "tags": ["<Tag1>"], "section": "macro_free", "price": "Free"}},
-          {{"name": "<Structured Coach 1>", "type": "Coaching", "cost": "$95", "duration": "3 weeks", "value": "<Value prop for this milestone>", "next_step": "<Action>", "tags": ["<Tag1>"], "section": "micro_structured"}},
-          {{"name": "<Skill / Project Coach 2>", "type": "Coaching", "cost": "$120", "duration": "4 weeks", "value": "<Value prop>", "next_step": "<Action>", "tags": ["<Tag1>"], "section": "micro_structured"}},
-          {{"name": "<Expert Advisor 1>", "type": "Mentor", "price": "$150", "session_details": "1-on-1 Call", "expected_outcomes": "<Outcome>", "tags": ["<Tag1>"], "section": "nano_expert"}},
-          {{"name": "<Senior Domain Specialist 2>", "type": "Mentor", "price": "$250", "session_details": "1-on-1 Strategy Session", "expected_outcomes": "<Outcome>", "tags": ["<Tag1>"], "section": "nano_expert"}}
+          {{"name": "<Free Community Mentor>", "type": "Mentor", "section": "macro_free", "price": "Free", "why": "<Why this mentor fits this milestone>", "next_step": "<Action step>"}},
+          {{"name": "<Structured Coach>", "type": "Coaching", "section": "micro_structured", "cost": "$95", "why": "<Value prop for this milestone>", "next_step": "<Action step>"}},
+          {{"name": "<Expert 1-on-1 Specialist>", "type": "Mentor", "section": "nano_expert", "price": "$150", "why": "<Specialist outcome>", "next_step": "<Action step>"}}
         ],
         "vendors": [
-          {{"name": "<Free Course / Learning Tool 1>", "type": "Course", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
-          {{"name": "<Free Interactive Sandbox / Platform 2>", "type": "Platform", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
-          {{"name": "<Paid Guided Course / Platform 1>", "type": "Platform", "cost": "$149", "duration": "4 weeks", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
-          {{"name": "<Applied Hands-on Track 2>", "type": "Course", "cost": "$199", "duration": "6 weeks", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
-          {{"name": "<Advanced Bootcamp / Specialization 1>", "type": "Bootcamp", "price": "$397", "session_details": "Intensive Track", "expected_outcomes": "<Outcomes>", "tags": ["<Tag>"], "section": "nano_expert"}}
+          {{"name": "<Free Learning Tool / Course>", "type": "Course", "section": "macro_free", "cost": "Free", "why": "<Why it fits>", "next_step": "<Action step>"}},
+          {{"name": "<Paid Guided Course / Platform>", "type": "Platform", "section": "micro_structured", "cost": "$49", "why": "<Course value>", "next_step": "<Action step>"}},
+          {{"name": "<Advanced Bootcamp / Certification>", "type": "Bootcamp", "section": "nano_expert", "price": "$299", "why": "<Specialized rigor>", "next_step": "<Action step>"}}
         ],
         "institutions": [
-          {{"name": "<Target University / Board Bureau 1>", "type": "University", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
-          {{"name": "<Public Examination / Research Center 2>", "type": "Institute", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
-          {{"name": "<University Summer / Cert Program 1>", "type": "Institute", "cost": "$250", "duration": "4 weeks", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
-          {{"name": "<Accredited Professional Body 2>", "type": "Institute", "cost": "$180", "duration": "Exam / Module", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
-          {{"name": "<Global Institution Certification 1>", "type": "University", "price": "$1,200", "session_details": "Credit Track", "expected_outcomes": "<Outcomes>", "tags": ["<Tag>"], "section": "nano_expert"}}
+          {{"name": "<Target University / Bureau>", "type": "University", "section": "macro_free", "cost": "Free", "why": "<Academic fit>", "next_step": "<Action step>"}},
+          {{"name": "<Accredited Institute / Program>", "type": "Institute", "section": "micro_structured", "cost": "$120", "why": "<Structured credential>", "next_step": "<Action step>"}},
+          {{"name": "<Global Credentialing Body>", "type": "University", "section": "nano_expert", "price": "$500", "why": "<Accredited track>", "next_step": "<Action step>"}}
         ],
         "distributors": [
-          {{"name": "<Free Guide / Official Docs 1>", "type": "Guide", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
-          {{"name": "<Curated Open Practice Papers 2>", "type": "Guide", "why": "<Why it fits>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "macro_free", "cost": "Free"}},
-          {{"name": "<Standard Prep Book / Workbook 1>", "type": "Book", "cost": "$30", "duration": "Self-paced", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
-          {{"name": "<Advanced Study Toolkit 2>", "type": "Workbook", "cost": "$45", "duration": "Self-paced", "value": "<Value>", "next_step": "<Action>", "tags": ["<Tag>"], "section": "micro_structured"}},
-          {{"name": "<Specialized Digest / Research Journal 1>", "type": "Newsletter", "price": "Free", "session_details": "Weekly Digest", "expected_outcomes": "<Outcomes>", "tags": ["<Tag>"], "section": "nano_expert"}}
+          {{"name": "<Free Practice Material / Guide>", "type": "Guide", "section": "macro_free", "cost": "Free", "why": "<Open resource>", "next_step": "<Action step>"}},
+          {{"name": "<Standard Prep Book / Workbook>", "type": "Book", "section": "micro_structured", "cost": "$25", "why": "<Standard reference>", "next_step": "<Action step>"}},
+          {{"name": "<Specialized Research Publication>", "type": "Publication", "section": "nano_expert", "price": "Free", "why": "<Advanced research>", "next_step": "<Action step>"}}
         ]
       }}
     }}
@@ -752,23 +779,13 @@ JSON format must strictly follow:
 
 CRITICAL RULES:
 1. STRICT CATEGORY ADHERENCE: Generate milestones strictly appropriate for {cat.upper()}.
-2. AUTONOMOUS & DYNAMIC STEP COUNT (NO FIXED 4-STEP DEFAULT - GENERATE WISELY BASED ON SCOPE):
-Do NOT default to exactly 4 milestones! Autonomously determine the exact number of milestones based on the genuine scope, complexity, and timeline of the pathway from {current_position} to {target_goal}:
-- Targeted / Short-term / Immediate goals (e.g. 1-3 months, single exam, acute stress management, quick tool/skill acquisition, immediate portfolio polish): Generate 3 to 4 focused milestones.
-- Standard / Intermediate transitions (e.g. 4-8 months, career switcher, full-stack mastery, structured wellbeing habit transformation): Generate 4 to 5 milestones.
-- Comprehensive / Long-term journeys (e.g. 9-18 months, undergraduate/postgraduate degree prep, transitioning from junior to senior/lead, multi-phase public sector exam prep, startup launch from 0 to 1): Generate 5 to 7 milestones.
-- Deep Academic / Multi-year journeys (e.g. PhD research, multi-year university degrees): Generate 6 to 8 milestones.
-Evaluate the genuine distance between {current_position} and {target_goal} and output the appropriate number of milestones. NEVER output exactly 4 steps unless the timeline and scope genuinely call for 4.
-3. IN-DEPTH MACRO, MICRO & NANO VIEWS (MANDATORY): Never output short, generic 1-2 sentence summaries for macro_view, micro_view, or nano_view. Each view must be a rich, comprehensive, and highly detailed analysis (at least 100 words each) packed with specific methodologies, concrete deliverables, and domain-relevant terminology directly tied to {target_goal} and {current_position}.
+2. PROGRESSIVE MILESTONES: Every single milestone must have its own unique title, timeline, in-depth Macro/Micro/Nano views, learning objectives, micro-steps, and progressive marketplace.
+3. CONCISE DEPTH (NO BLOAT, COMPLETE OUTPUT): Keep macro_view, micro_view, and nano_view rich and substantive (2-3 sentences each). Do NOT output empty or generic placeholders.
 4. NO GENERIC BOILERPLATE: Every single step must have unique descriptions, distinct learning objectives, and custom actionable micro_steps.
 5. NAME BAN: NEVER include personal names or emails in any text fields. Keep all content objective and professional.
-6. MANDATORY STUDENT SIGNALS & FINANCIAL ALIGNMENT: Adapt all marketplace recommendations, mentor rates, and resource tiers directly to the student's Financial Status. If Financial Status is High/Affluent, prioritize prestigious private mentors ($150-$500/call), executive coaches, elite university credit tracks, and premium certifications ($300-$1500+). If Financial Status is Low/Budget-Conscious, prioritize high-value free resources, scholarship programs, open-source cohorts, and affordable tools ($0-$49). Adjust roadmap study cadence and deliverables according to Location and Personality style.
-7. MULTI-ITEM DIVERSE MARKETPLACE PER VIEW (MANDATORY): For EVERY milestone, you MUST generate MULTIPLE diverse, authentic recommendations for each section: at least 2 distinct items for 'macro_free', at least 1-2 for 'micro_structured', and at least 1-2 for 'nano_expert' under mentors, vendors, institutions, and distributors. NEVER return only 1 item per section. Provide multiple authentic, realistic choices tailored to each milestone.
-8. ZERO MARKETPLACE DUPLICATION ACROSS MILESTONES (STRICT MANDATE): Every single milestone must feature completely distinct, non-repeating marketplace items and provider names. NEVER repeat the same mentor, coach, course, app, platform, book, or institution in multiple milestones. Progressively advance the resources across milestones:
-- Milestone 1: foundational learning, self-assessment, open-source/free introductory tools/guides, community peer advisors.
-- Milestone 2: structured practice platforms, guided modules, applied skill coaches, domain toolkits.
-- Milestone 3: intensive project/case review, specialized certifications, 1-on-1 expert mentors or counselors.
-- Milestone 4+: capstone execution, accredited credentialing bodies, senior industry specialists, long-term maintenance networks.
+6. MANDATORY STUDENT SIGNALS & FINANCIAL ALIGNMENT: Adapt all marketplace recommendations, mentor rates, and resource tiers directly to the student's Financial Status.
+7. MULTI-TIER AUTHENTIC MARKETPLACE PER MILESTONE (MANDATORY): For EVERY milestone, generate authentic, non-duplicative recommendations across macro_free, micro_structured, and nano_expert under mentors, vendors, institutions, and distributors (1 distinct authentic recommendation per tier).
+8. ZERO MARKETPLACE DUPLICATION ACROSS MILESTONES (STRICT MANDATE): Every milestone must feature completely distinct, non-repeating provider and resource names. Progressively advance resources across milestones.
 """
     return prompt
 
@@ -1060,6 +1077,7 @@ async def query_groq_json(
     prompt: str,
     preferred_model: str = "openai/gpt-oss-120b",
     fallback_models: Optional[List[str]] = None,
+    max_tokens: int = 6144,
 ) -> dict:
     active_groq_models = ["openai/gpt-oss-120b", "qwen/qwen3.8-27b", "openai/gpt-oss-20b"]
     models = [preferred_model] if preferred_model in active_groq_models else []
@@ -1078,6 +1096,9 @@ async def query_groq_json(
     start_key_idx = _groq_key_cursor % len(GROQ_ASYNC_CLIENTS)
     _groq_key_cursor += 1
 
+    # Estimate prompt tokens (rough: 1 token ≈ 4 chars)
+    prompt_tokens_est = len(prompt) // 4
+
     last_err = None
     for m in unique_models:
         # Try each available API key for the current model before falling back to lower-tier models
@@ -1086,7 +1107,12 @@ async def query_groq_json(
             active_async_client = GROQ_ASYNC_CLIENTS[key_idx]
 
             try:
-                max_tok = 8192
+                # Model-aware token safety: openai/gpt-oss-20b has tighter TPM limits
+                if m == "openai/gpt-oss-20b":
+                    safe_max_tok = min(max_tokens, max(1024, 7600 - prompt_tokens_est))
+                else:
+                    safe_max_tok = min(max_tokens, 8192)
+                max_tok = safe_max_tok
                 response = await active_async_client.chat.completions.create(
                     model=m,
                     max_tokens=max_tok,
@@ -1296,7 +1322,8 @@ def normalize_degree_type(value: Optional[str]) -> Optional[str]:
 
 
 def extract_degree_type_from_goal(goal: str) -> Optional[str]:
-    parts = [p.strip() for p in re.split(r"[\u2022.]+", goal or "") if p.strip()]
+    # Split on bullets, pipes, or commas, preserving periods in abbreviations like Ph.D.
+    parts = [p.strip() for p in re.split(r"[\u2022|,\n]+", goal or "") if p.strip()]
     for part in parts:
         normalized = normalize_degree_type(part)
         if normalized:
@@ -1348,15 +1375,15 @@ def calculate_total_duration_months(
     # 1. Determine Level of Current Position
     def get_level(text: str) -> int:
         t = text.lower()
-        if any(k in t for k in ["phd", "ph.d", "doctorate", "doctoral"]):
+        if any(k in t for k in ["phd", "ph.d", "doctorate", "doctoral", "postdoc"]):
             return 5
-        elif any(k in t for k in ["master", "mtech", "msc", "mba", "postgrad", "pg", "senior", "lead", "architect", "principal"]):
+        elif any(k in t for k in ["master", "master's", "mtech", "m.tech", "msc", "m.sc", "mba", "postgrad", "pg", "senior", "lead", "architect", "principal"]):
             return 4
-        elif any(k in t for k in ["bachelor", "btech", "bsc", "undergrad", "ug", "associate", "experienced", "engineer", "professional"]):
+        elif any(k in t for k in ["bachelor", "bachelor's", "btech", "b.tech", "bsc", "b.sc", "bba", "undergrad", "ug", "associate", "experienced", "engineer", "professional"]):
             return 3
-        elif any(k in t for k in ["diploma", "certificate", "intermediate", "junior", "12th", "11th"]):
+        elif any(k in t for k in ["grade 11", "grade 12", "intermediate", "junior", "12th", "11th", "diploma", "certificate"]):
             return 2
-        elif any(k in t for k in ["school", "10th", "9th", "8th", "7th", "6th", "5th", "beginner", "novice", "starter", "zero"]):
+        elif any(k in t for k in ["grade 10", "grade 9", "grade 8", "grade 7", "grade 6", "10th", "9th", "8th", "7th", "6th", "5th", "k-10", "k-12", "school", "secondary", "beginner", "novice", "starter", "zero"]):
             return 1
         return 2
 
@@ -1380,19 +1407,23 @@ def calculate_total_duration_months(
     goal_words = set(w for w in goal_lower.split() if len(w) > 3)
     common_words = curr_words.intersection(goal_words)
 
-    # 4. Dynamic Gap Duration Calculation (No hardcoded month tables)
+    # 4. Dynamic Gap Duration Calculation
     if cat == "academic":
         if level_gap <= 0:
             months = 6 if common_words else 12
         elif level_gap == 1:
             months = 18 if common_words else 24
         elif level_gap == 2:
-            months = 30 if common_words else 36
+            months = 36 if common_words else 48
+        elif level_gap == 3:
+            # e.g., Grade 10 to Master's: 2 yrs High School + 4 yrs Undergrad = 60-72 months
+            months = 60 if common_words else 72
         else:
-            months = 48
+            # level_gap >= 4: e.g. Grade 10 to PhD: 2 yrs High School + 4 yrs Undergrad + PhD transition = 72-96 months
+            months = 72 if common_words else 84
         if is_career_switch:
-            months += 6
-        return max(6, min(60, months))
+            months += 12
+        return max(6, min(96, months))
 
     elif cat == "practical":
         if level_gap <= 0:
@@ -2257,15 +2288,62 @@ async def run_agent_1_blueprint(
     sub_segment: Optional[str] = None
 ) -> dict:
     requested_steps = None
+    is_step_increase_intent = False
     if refine_prompt:
-        match_steps = re.search(r'(\d+)\s*(?:step|milestone)', refine_prompt.lower())
+        rp_lower = refine_prompt.lower()
+        # Pattern 1: "6 steps", "8 milestones" — explicit number before keyword
+        match_steps = re.search(r'(\d+)\s*(?:step|milestone|phase)', rp_lower)
         if match_steps:
             try:
                 requested_steps = int(match_steps.group(1))
                 if requested_steps < 1:
                     requested_steps = 1
+                is_step_increase_intent = True
             except Exception:
                 pass
+        # Pattern 2: "steps to 7", "milestones to 6" — keyword then "to N"
+        if not requested_steps:
+            match_to = re.search(r'(?:step|milestone|phase)s?\s+(?:to|=)\s*(\d+)', rp_lower)
+            if match_to:
+                try:
+                    requested_steps = int(match_to.group(1))
+                    is_step_increase_intent = True
+                except Exception:
+                    pass
+        # Pattern 3: "add 2 more steps/milestones" — relative increase
+        if not requested_steps:
+            match_add = re.search(r'add\s+(\d+)\s+(?:more\s+)?(?:step|milestone|phase)', rp_lower)
+            if match_add and existing_roadmap:
+                try:
+                    add_count = int(match_add.group(1))
+                    raw_rm = existing_roadmap.get("roadmap_data") or existing_roadmap
+                    current_count = len(raw_rm.get("steps", []))
+                    requested_steps = current_count + add_count
+                    is_step_increase_intent = True
+                except Exception:
+                    pass
+        # Pattern 4: "increase steps", "more milestones", "expand steps" — general increase without specific number
+        if not requested_steps and not is_step_increase_intent:
+            if re.search(r'(?:increase|more|expand|extend|add|extra|additional|deeper|longer)\s*(?:step|milestone|phase)', rp_lower):
+                is_step_increase_intent = True
+                if existing_roadmap:
+                    raw_rm = existing_roadmap.get("roadmap_data") or existing_roadmap
+                    current_count = len(raw_rm.get("steps", []))
+                    requested_steps = current_count + 3  # Add 3 more by default
+            elif re.search(r'(?:step|milestone|phase)s?\s*(?:increase|more|expand|add)', rp_lower):
+                is_step_increase_intent = True
+                if existing_roadmap:
+                    raw_rm = existing_roadmap.get("roadmap_data") or existing_roadmap
+                    current_count = len(raw_rm.get("steps", []))
+                    requested_steps = current_count + 3
+        # Pattern 5: "reduce steps", "fewer milestones" — decrease
+        if not requested_steps and not is_step_increase_intent:
+            match_reduce = re.search(r'(?:reduce|fewer|less|decrease|shorten)\s*(?:step|milestone|phase)', rp_lower)
+            if match_reduce and existing_roadmap:
+                is_step_increase_intent = True  # Still a step-count intent
+                raw_rm = existing_roadmap.get("roadmap_data") or existing_roadmap
+                current_count = len(raw_rm.get("steps", []))
+                requested_steps = max(2, current_count - 2)
 
     cat = resolve_focus_category(content_category or focus)
     focus_title_prefix = "Academic & Research"
@@ -2301,26 +2379,70 @@ async def run_agent_1_blueprint(
     if refine_prompt:
         prompt += f"\n\n==================================================\nCRITICAL USER REQUEST FOR REFINE / ADJUSTMENT:\n👉 \"{refine_prompt}\"\n==================================================\n"
         if requested_steps:
-            prompt += f"\n🚨 CRITICAL ENFORCEMENT: Output EXACTLY {requested_steps} distinct step objects inside 'steps'."
+            prompt += f"\n🚨 CRITICAL ENFORCEMENT: Output EXACTLY {requested_steps} distinct step objects inside 'steps'. Each step must be unique, progressive, and fully detailed."
         if existing_roadmap:
             raw_roadmap = existing_roadmap.get("roadmap_data") or existing_roadmap
             existing_steps = raw_roadmap.get("steps", [])
-            clean_existing_steps = []
-            for m in existing_steps:
-                clean_step = {
-                    "id": m.get("id"),
-                    "title": m.get("title", ""),
-                    "duration": m.get("duration", ""),
-                    "description": str(m.get("description", "")).strip(),
-                    "macro_view": get_view_description(m, "macro_view"),
-                    "micro_view": get_view_description(m, "micro_view"),
-                    "nano_view": get_view_description(m, "nano_view"),
-                    "learning_objectives": m.get("learning_objectives", []),
-                    "micro_steps": m.get("micro_steps", [])
-                }
-                clean_existing_steps.append(clean_step)
 
-            refine_instruction = f"""
+            if is_step_increase_intent:
+                # COMPACT OUTLINE: Send only IDs, titles, durations (~300 tokens) to avoid TPM limits
+                compact_outline = []
+                for m in existing_steps:
+                    compact_outline.append({
+                        "id": m.get("id"),
+                        "title": m.get("title", ""),
+                        "duration": m.get("duration", ""),
+                        "description": str(m.get("description", "")).strip()[:120]
+                    })
+                compact_dump = json.dumps({
+                    "path_title": raw_roadmap.get("path_title"),
+                    "total_duration": raw_roadmap.get("total_duration"),
+                    "steps": compact_outline
+                }, indent=1)
+                refine_instruction = f"""
+==================================================
+🤖 STEP EXPANSION / MODIFICATION AGENT INSTRUCTIONS:
+User Request: "{refine_prompt}"
+Active Category: {cat.upper()}
+Active Sub-Category: {sub_segment or 'Standard'}
+Current Step Count: {len(existing_steps)}
+Target Step Count: {requested_steps or 'More than current (autonomously determine)'}
+
+EXPANSION RULES:
+1. Keep ALL existing milestone themes/topics as a foundation.
+2. Expand the sequence by adding new intermediate, advanced, or capstone milestones.
+3. Re-sequence IDs (1, 2, 3, ...) and redistribute durations across the full timeline.
+4. Every step (existing + new) MUST have complete: id, title, duration, description, macro_view (100+ words), micro_view (100+ words), nano_view (100+ words), learning_objectives (3+), micro_steps (2+), and a fully populated marketplace.
+5. ZERO MOCK DATA: All content must be authentically generated for {goal} from {current}.
+6. ZERO DUPLICATION: No marketplace item name may repeat across milestones.
+==================================================
+EXISTING ROADMAP OUTLINE TO EXPAND:
+{compact_dump}
+"""
+                prompt += refine_instruction
+            else:
+                # NON-STEP-COUNT REFINE: Send condensed existing steps
+                clean_existing_steps = []
+                for m in existing_steps:
+                    clean_step = {
+                        "id": m.get("id"),
+                        "title": m.get("title", ""),
+                        "duration": m.get("duration", ""),
+                        "description": str(m.get("description", "")).strip(),
+                        "macro_view": get_view_description(m, "macro_view")[:200],
+                        "micro_view": get_view_description(m, "micro_view")[:200],
+                        "nano_view": get_view_description(m, "nano_view")[:200],
+                        "learning_objectives": m.get("learning_objectives", []),
+                        "micro_steps": m.get("micro_steps", [])
+                    }
+                    clean_existing_steps.append(clean_step)
+
+                clean_dump = json.dumps({
+                    "path_title": raw_roadmap.get("path_title"),
+                    "total_duration": raw_roadmap.get("total_duration"),
+                    "steps": clean_existing_steps
+                }, indent=2)
+                refine_instruction = f"""
 ==================================================
 🤖 ADVANCED REFINE AGENT INSTRUCTIONS:
 User Modification Request: "{refine_prompt}"
@@ -2341,9 +2463,9 @@ Refinement Execution Rules:
 5. COMPLETE OUTPUT: Every step in 'steps' must output the complete structure including 'id', 'title', 'duration', 'description', 'macro_view', 'micro_view', 'nano_view', 'learning_objectives', 'micro_steps', and a fully populated 'marketplace'.
 ==================================================
 EXISTING ROADMAP BLUEPRINT TO MODIFY:
-{json.dumps({"path_title": raw_roadmap.get("path_title"), "total_duration": raw_roadmap.get("total_duration"), "steps": clean_existing_steps}, indent=2)}
+{clean_dump}
 """
-            prompt += refine_instruction
+                prompt += refine_instruction
 
     feedback_items = []
     try:
@@ -2357,7 +2479,7 @@ EXISTING ROADMAP BLUEPRINT TO MODIFY:
     except Exception as e:
         print(f"[Feedback Learning Warning] {e}")
 
-    print(f"[Agent 1] Generating roadmap blueprint (cat: {cat}, focus: {focus or 'default'}) using 70B...")
+    print(f"[Agent 1] Generating roadmap blueprint (cat: {cat}, focus: {focus or 'default'}, requested_steps: {requested_steps or 'auto'}, step_intent: {is_step_increase_intent}) using 120B...")
 
     # Generation loop with semantic validation & auto-regeneration
     res = None
@@ -2371,6 +2493,7 @@ EXISTING ROADMAP BLUEPRINT TO MODIFY:
             current_prompt,
             preferred_model="openai/gpt-oss-120b",
             fallback_models=["qwen/qwen3.8-27b", "openai/gpt-oss-20b"],
+            max_tokens=8192,
         )
 
         if isinstance(res, dict) and isinstance(res.get("steps"), list) and len(res["steps"]) > 0:
@@ -2578,44 +2701,53 @@ def sse_payload(event: str, data: dict) -> str:
 
 
 def deduplicate_roadmap_marketplaces(steps: list) -> list:
-    """Ensure no marketplace item or provider name is duplicated across multiple milestones."""
+    """Ensure no marketplace item or provider name is duplicated across multiple milestones.
+    Deduplicates across step.marketplace AND any view-embedded marketplace items."""
     if not isinstance(steps, list):
         return steps
     seen_names = set()
+
+    def _dedup_items(items_list: list) -> list:
+        """Filter a list of marketplace item dicts, dropping duplicates by name."""
+        if not isinstance(items_list, list):
+            return items_list
+        deduped = []
+        for item in items_list:
+            if not isinstance(item, dict):
+                continue
+            name = str(item.get("name") or "").strip()
+            if not name:
+                continue
+            name_key = name.lower()
+            if name_key in seen_names:
+                # Drop duplicate — keep recommendations fresh and unique
+                continue
+            seen_names.add(name_key)
+            deduped.append(item)
+        return deduped
+
     for step in steps:
         if not isinstance(step, dict):
             continue
-        step_id = step.get("id", "")
-        m = step.get("marketplace")
-        if not isinstance(m, dict):
-            continue
 
-        for cat_key in ["mentors", "vendors", "institutions", "distributors"]:
-            items = m.get(cat_key)
-            if not isinstance(items, list):
-                continue
-            deduped_items = []
-            for item in items:
-                if not isinstance(item, dict):
-                    continue
-                name = str(item.get("name") or "").strip()
-                if not name:
-                    continue
-                name_key = name.lower()
-                if name_key in seen_names:
-                    # Item is a duplicate from an earlier milestone
-                    if len(items) <= 2:
-                        distinct_name = f"{name} (Phase {step_id})"
-                        item["name"] = distinct_name
-                        seen_names.add(distinct_name.lower())
-                        deduped_items.append(item)
-                    else:
-                        # Drop duplicate to keep recommendations fresh and unique
-                        continue
-                else:
-                    seen_names.add(name_key)
-                    deduped_items.append(item)
-            m[cat_key] = deduped_items
+        # 1. Deduplicate main step marketplace
+        m = step.get("marketplace")
+        if isinstance(m, dict):
+            for cat_key in ["mentors", "vendors", "institutions", "distributors"]:
+                items = m.get(cat_key)
+                if isinstance(items, list):
+                    m[cat_key] = _dedup_items(items)
+
+        # 2. Deduplicate view-level embedded marketplaces (if views contain marketplace dicts)
+        for view_key in ["macro_view", "micro_view", "nano_view"]:
+            view_val = step.get(view_key)
+            if isinstance(view_val, dict) and "marketplace" in view_val:
+                vm = view_val["marketplace"]
+                if isinstance(vm, dict):
+                    for cat_key in ["mentors", "vendors", "institutions", "distributors"]:
+                        vitems = vm.get(cat_key)
+                        if isinstance(vitems, list):
+                            vm[cat_key] = _dedup_items(vitems)
 
     return steps
 
@@ -2676,12 +2808,16 @@ async def build_and_store_final_path(
     final_readiness_score = int(blueprint.get("readiness_score", 0)) if blueprint.get("readiness_score") is not None else 0
     final_readiness_label = blueprint.get("readiness_label") or "AI Assessed Readiness"
 
+    # Extract raw model-generated total duration directly from Agent 1 output if present
+    ai_total_dur = str(blueprint.get("total_duration") or "").strip()
+    final_total_duration = ai_total_dur if (ai_total_dur and any(ch.isdigit() for ch in ai_total_dur)) else metrics["total_duration"]
+
     final_json = {
         "path_title": blueprint.get("path_title") or f"{path_type} Pathway to {goal}",
         "path_description": blueprint.get("path_description") or f"Detailed strategic blueprint guiding from {current} to {goal}.",
         "readiness_score": final_readiness_score,
         "readiness_label": final_readiness_label,
-        "total_duration": metrics["total_duration"],
+        "total_duration": final_total_duration,
         "steps": final_steps,
         "blind_spots": blueprint.get("blind_spots") or [],
         "admin_feedback_memory": blueprint.get("admin_feedback_memory") or build_admin_feedback_memory([], False),
@@ -2992,6 +3128,17 @@ async def generate_path_stream(req: PathGenerationRequest):
                 sub_segment=sub_seg
             )
 
+            # When refining an existing roadmap, only refine the single active pathway
+            if refine_prompt and len(foci) > 1:
+                target_name = (focus_req or (existing_roadmap.get("option_name") if isinstance(existing_roadmap, dict) else "") or "").lower()
+                matched_idx = 0
+                for idx, opt in enumerate(option_names):
+                    if opt.lower() in target_name or target_name in opt.lower():
+                        matched_idx = idx
+                        break
+                foci = [foci[matched_idx]]
+                option_names = [option_names[matched_idx]]
+
             blueprints = [None] * len(foci)
             finished_count = 0
             stage_progress = 20
@@ -3141,6 +3288,17 @@ async def generate_path(req: PathGenerationRequest):
             content_category=content_cat,
             sub_segment=sub_seg
         )
+
+        # When refining an existing roadmap, only refine the single active pathway
+        if refine_prompt and len(foci) > 1:
+            target_name = (focus_req or (existing_roadmap.get("option_name") if isinstance(existing_roadmap, dict) else "") or "").lower()
+            matched_idx = 0
+            for idx, opt in enumerate(option_names):
+                if opt.lower() in target_name or target_name in opt.lower():
+                    matched_idx = idx
+                    break
+            foci = [foci[matched_idx]]
+            option_names = [option_names[matched_idx]]
 
         blueprint_tasks = [
             run_agent_1_blueprint(

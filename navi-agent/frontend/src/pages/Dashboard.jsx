@@ -125,8 +125,21 @@ function analyzeGoalParts(goalText) {
     };
   }
 
-  // Split by dot or middle dot
-  const rawParts = goalText.split(/[•.]+/).map(p => p.trim()).filter(Boolean);
+  // Split by bullet, pipe, comma, or newline — DO NOT split by standalone period to preserve Ph.D. or U.S.A.
+  let rawParts = [];
+  if (goalText.includes("•")) {
+    rawParts = goalText.split(/\s*•\s*/).map(p => p.trim()).filter(Boolean);
+  } else if (goalText.includes("|")) {
+    rawParts = goalText.split(/\s*\|\s*/).map(p => p.trim()).filter(Boolean);
+  } else if (goalText.includes(",")) {
+    rawParts = goalText.split(/\s*,\s*/).map(p => p.trim()).filter(Boolean);
+  } else {
+    rawParts = goalText.split(/\s*[\n\r]+\s*/).map(p => p.trim()).filter(Boolean);
+    if (rawParts.length <= 1) {
+      // Fallback: split on multiple spaces or dash
+      rawParts = goalText.split(/\s+-\s+|\s{2,}/).map(p => p.trim()).filter(Boolean);
+    }
+  }
 
   let degreeType = "";
   let program = "";
@@ -134,13 +147,19 @@ function analyzeGoalParts(goalText) {
   let country = "";
 
   const degreeKeywords = [
-    "bachelor's", "bachelors", "bachelor", "master's", "masters", "master", "phd", "ph.d", "transfer", "associate", "associates", "diploma", "doctorate", "ug", "pg", "undergraduate", "graduate", "postgraduate", "b.s", "b.a", "m.s", "m.a", "btech", "mtech", "b.tech", "m.tech", "mba", "bsc", "msc", "b.sc", "m.sc"
+    "phd", "ph.d", "ph.d.", "doctorate", "doctoral", "doctor",
+    "master's", "masters", "master", "m.s", "ms", "m.tech", "mtech", "mba", "m.sc", "msc",
+    "bachelor's", "bachelors", "bachelor", "b.s", "bs", "b.tech", "btech", "b.sc", "bsc", "bba",
+    "undergraduate", "graduate", "postgraduate", "associate", "associates", "diploma", "certificate", "transfer",
+    "k-12", "grade 11-12", "ug", "pg"
   ];
 
   const countryKeywords = [
     "usa", "us", "uk", "united states", "united kingdom", "india", "canada",
     "germany", "australia", "singapore", "france", "japan", "switzerland",
-    "netherlands", "sweden", "italy", "spain", "china", "hong kong", "ireland", "new zealand"
+    "netherlands", "sweden", "italy", "spain", "china", "hong kong", "ireland", "new zealand",
+    "uae", "dubai", "finland", "norway", "denmark", "south korea", "korea",
+    "ind", "can", "aus", "deu", "sgp", "fra", "jpn", "nld", "che", "swe", "esp", "ita", "chn", "hkg", "irl", "nzl"
   ];
 
   const universityKeywords = [
@@ -150,42 +169,46 @@ function analyzeGoalParts(goalText) {
     "academy", "defence", "defense", "military", "naval", "navy", "army", "nda", "ima", "usna", "usma"
   ];
 
+  const isDegreeType = (str) => {
+    const raw = str.toLowerCase().trim();
+    const clean = raw.replace(/[.\s']/g, "");
+    return degreeKeywords.some(keyword => {
+      const cleanKw = keyword.replace(/[.\s']/g, "");
+      return clean === cleanKw || raw === keyword || raw.startsWith(keyword + " ") || raw.endsWith(" " + keyword);
+    });
+  };
+
   const isCountry = (str) => {
-    const s = str.toLowerCase();
-    return countryKeywords.includes(s) || s.length === 2 || s.length === 3;
+    const s = str.toLowerCase().trim();
+    return countryKeywords.includes(s);
   };
 
   const isUniversity = (str) => {
-    const s = str.toLowerCase();
+    const s = str.toLowerCase().trim();
     return universityKeywords.some(keyword => s.includes(keyword));
-  };
-
-  const isDegreeType = (str) => {
-    const s = str.toLowerCase();
-    return degreeKeywords.some(keyword => s.includes(keyword));
   };
 
   const unassigned = [...rawParts];
 
-  // 1. Identify Country
+  // 1. Identify Degree Type FIRST (so PhD, MBA, etc. are never swallowed by country or program)
+  const degreeIdx = unassigned.findIndex(p => isDegreeType(p));
+  if (degreeIdx !== -1) {
+    degreeType = unassigned[degreeIdx];
+    unassigned.splice(degreeIdx, 1);
+  }
+
+  // 2. Identify Country SECOND
   const countryIdx = unassigned.findIndex(p => isCountry(p));
   if (countryIdx !== -1) {
     country = unassigned[countryIdx];
     unassigned.splice(countryIdx, 1);
   }
 
-  // 2. Identify University
+  // 3. Identify University THIRD
   const uniIdx = unassigned.findIndex(p => isUniversity(p));
   if (uniIdx !== -1) {
     university = unassigned[uniIdx];
     unassigned.splice(uniIdx, 1);
-  }
-
-  // 3. Identify Degree Type
-  const degreeIdx = unassigned.findIndex(p => isDegreeType(p));
-  if (degreeIdx !== -1) {
-    degreeType = unassigned[degreeIdx];
-    unassigned.splice(degreeIdx, 1);
   }
 
   // 4. Remaining goes to program or institution
@@ -239,7 +262,10 @@ function analyzeRefinement(text) {
     "study", "prep", "sat", "ielts", "act", "toefl", "exam", "career", "university",
     "college", "school", "curriculum", "grade", "subject", "class", "detail", "more",
     "resource", "mentor", "timeline", "month", "year", "academics", "score", "placement",
-    "portfolio", "admission", "ielts", "gpa", "internship", "project"
+    "portfolio", "admission", "ielts", "gpa", "internship", "project",
+    "increase", "expand", "extend", "reduce", "fewer", "nano", "micro", "macro",
+    "vendor", "vendors", "institution", "distributor", "coach", "bootcamp",
+    "certification", "platform", "milestone", "phase", "deeper", "longer", "shorter"
   ];
 
   const hasValidKeyword = validKeywords.some(kw => val.includes(kw));
@@ -261,6 +287,16 @@ function parseSurgicalRefinement(prompt, steps) {
   if (!prompt || !steps || steps.length === 0) return null;
 
   const text = prompt.toLowerCase();
+
+  // GUARD: Step-count change intents should NOT be handled surgically — they need full Agent 1 regeneration
+  const isStepCountIntent = (
+    /(?:increase|more|expand|extend|add|extra|additional|deeper|longer|reduce|fewer|less|decrease|shorten)\s*(?:step|milestone|phase)/i.test(text) ||
+    /(?:step|milestone|phase)s?\s*(?:increase|more|expand|add|reduce|decrease)/i.test(text) ||
+    /\d+\s*(?:step|milestone|phase)/i.test(text) && /(?:make|change|set|want|need|give)/i.test(text) ||
+    /add\s+\d+\s+(?:more\s+)?(?:step|milestone|phase)/i.test(text) ||
+    /(?:step|milestone|phase)s?\s+(?:to|=)\s*\d+/i.test(text)
+  );
+  if (isStepCountIntent) return null; // Let full refine agent handle this
 
   // Look for step/milestone/phase and number
   const stepMatch = text.match(/(?:step|milestone|phase)\s*(\d+)/i);
