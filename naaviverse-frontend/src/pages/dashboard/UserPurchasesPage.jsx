@@ -27,6 +27,7 @@ export default function UserPurchasesPage() {
   const user = getUserFromStorage();
   const [purchases, setPurchases] = useState([]);
   const [purchasesLoading, setPurchasesLoading] = useState(true);
+  const [filterType, setFilterType] = useState("paid");
 
   useEffect(() => {
     if (!user?.email) return;
@@ -47,8 +48,41 @@ export default function UserPurchasesPage() {
         const userPathsData = userPathsRes.status === "fulfilled" ? userPathsRes.value.data?.data || [] : [];
 
         if (txData?.success) {
-          const filtered = txData.data
-            .filter((t) => t.status?.toLowerCase() === "paid" && t.productId !== "naavi-platform")
+          const isSubscriptionPlan = (t) => {
+            if (!t) return false;
+            const prodId = (t.productId || "").toLowerCase();
+            const prodName = (t.productName || "").trim();
+            const nameLower = prodName.toLowerCase();
+
+            if (
+              prodId === "naavi-marketplace" ||
+              prodId.startsWith("macro-") ||
+              prodId.startsWith("micro-") ||
+              prodId.startsWith("nano-") ||
+              nameLower.startsWith("marketplace") ||
+              t.partnerId ||
+              t.partnerEmail
+            ) {
+              return false;
+            }
+
+            if (prodId === "naavi-platform" || t.planTier) {
+              return true;
+            }
+
+            return (
+              nameLower.includes("nano plan") ||
+              nameLower.includes("micro plan") ||
+              nameLower.includes("plus plan") ||
+              nameLower.includes("pro plan") ||
+              nameLower.includes("naavi pro") ||
+              nameLower.includes("standard plan") ||
+              nameLower.includes("platform subscription")
+            );
+          };
+
+          const filtered = (txData.data || [])
+            .filter((t) => t.status?.toLowerCase() !== "pending" && !isSubscriptionPlan(t))
             .map((t) => {
               const rawName = t.productName || "Marketplace Item";
               const cleanName = rawName
@@ -56,10 +90,10 @@ export default function UserPurchasesPage() {
                 .replace(/^Marketplace —\s*/i, "")
                 .replace(/^Subscription —\s*/i, "");
 
+              const isFailed = t.status?.toLowerCase() === "failed";
               const isFree =
-                Number(t.amount || 0) === 0 ||
-                t.tier === "macro" ||
-                rawName.toLowerCase().includes("(free)");
+                !isFailed &&
+                (Number(t.amount || 0) === 0 || rawName.toLowerCase().includes("(free)"));
 
               const typeLabel = t.tier
                 ? t.tier.charAt(0).toUpperCase() + t.tier.slice(1)
@@ -73,19 +107,18 @@ export default function UserPurchasesPage() {
                 type: typeLabel,
                 plan: isFree
                   ? "Macro View"
-                  : t.planTier && t.productId === "naavi-platform"
-                  ? t.planTier.charAt(0).toUpperCase() + t.planTier.slice(1)
                   : "Marketplace",
-                cost: isFree ? "Free" : `₹${(t.amount || 0).toLocaleString("en-IN")}`,
+                cost: isFree ? "₹0" : `₹${(t.amount || 0).toLocaleString("en-IN")}`,
                 amount: t.amount || 0,
                 isFree,
+                isFailed,
                 date: new Date(t.createdAt || Date.now()).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
                   year: "numeric",
                 }),
                 rawDate: new Date(t.createdAt || Date.now()).getTime(),
-                status: isFree ? "Free" : "Paid",
+                status: isFailed ? "Failed" : isFree ? "Free" : "Paid",
                 icon: isFree ? "🧭" : "🛍️",
               };
             });
@@ -103,9 +136,10 @@ export default function UserPurchasesPage() {
               name: `${pathName} (Macro View)`,
               type: "Macro",
               plan: "Macro View",
-              cost: "Free",
+              cost: "₹0",
               amount: 0,
               isFree: true,
+              isFailed: false,
               date: new Date(up.createdAt || Date.now()).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
@@ -133,49 +167,78 @@ export default function UserPurchasesPage() {
     fetchPurchases();
   }, [user?.email]);
 
+  const displayedPurchases = purchases.filter((p) =>
+    filterType === "free" ? p.isFree : !p.isFree
+  );
+
   return (
-    <div className="uh-root" style={{ padding: "24px" }}>
-      <div className="uh-card" style={{ padding: "24px", maxWidth: "800px", margin: "0 auto" }}>
-        <div className="uh-view-all-header" style={{ marginBottom: "20px" }}>
-          <button className="uh-view-all-back-btn" onClick={() => navigate("/dashboard/users/home")}>
-            <Icon type="arrow-l" size={12} color="var(--uh-blue-mid)" /> Back to Dashboard
-          </button>
-          <h3 className="uh-view-all-title" style={{ fontSize: "18px" }}>Marketplace Purchases</h3>
+    <div className="uh-root uh-purchases-page-root">
+      <div className="uh-card uh-purchases-page-card">
+        <div className="uh-view-all-header">
+          <div className="uh-view-all-back-wrap">
+            <button
+              className="uh-view-all-back-btn"
+              onClick={() => navigate("/dashboard/users/home")}
+            >
+              <Icon type="arrow-l" size={10} color="var(--uh-blue-mid)" /> Back to Dashboard
+            </button>
+          </div>
+
+          <h3 className="uh-view-all-title">
+            Marketplace Purchases
+          </h3>
+
+          <div className="uh-view-all-filter-wrap">
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="uh-filter-select"
+            >
+              <option value="free">Free</option>
+              <option value="paid">Paid</option>
+            </select>
+          </div>
         </div>
 
-        <div className="uh-section-title" style={{ fontSize: "11px", marginBottom: "14px" }}>All Purchases</div>
+        <div className="uh-section-title" style={{ fontSize: "11px", marginBottom: "14px" }}>
+          {filterType === "free" ? "Free Purchases" : "Paid Purchases"}
+        </div>
 
         {purchasesLoading ? (
           <div className="uh-loading">Loading purchases…</div>
-        ) : purchases.length === 0 ? (
+        ) : displayedPurchases.length === 0 ? (
           <div className="uh-no-purchases" style={{ padding: "60px 20px", textAlign: "center", color: "#64748b" }}>
             <div style={{ fontSize: "2.5rem", marginBottom: "12px" }}>🛍️</div>
-            <strong>No purchases found</strong>
-            <p style={{ margin: "6px 0 0", fontSize: "0.85rem" }}>Paid marketplace items will show up here once purchased.</p>
+            <strong>No {filterType} purchases found</strong>
+            <p style={{ margin: "6px 0 0", fontSize: "0.85rem" }}>
+              {filterType === "paid"
+                ? "Paid marketplace items will show up here once purchased."
+                : "Free enrolled pathways and items will show up here."}
+            </p>
           </div>
         ) : (
           <>
             <div className="uh-purchases-list" style={{ gap: "10px", marginBottom: "20px" }}>
-              {purchases.map(m => (
+              {displayedPurchases.map(m => (
                 <div key={m.id} className="uh-purchase-row">
                   <div className="uh-purchase-emoji">{m.icon}</div>
                   <div className="uh-purchase-info">
                     <span className="uh-purchase-name">{m.name}</span>
-                    <span className="uh-purchase-meta">{m.type} · {m.isFree ? "Enrolled" : "Purchased"} {m.date}</span>
+                    <span className="uh-purchase-meta">{m.type} · {m.isFailed ? "Failed on " : m.isFree ? "Enrolled " : "Purchased "} {m.date}</span>
                   </div>
                   <div className="uh-purchase-right">
                     <span className={`uh-plan-tag p-${(m.plan || "").toLowerCase().replace(/\s+/g, "-")}`}>{m.plan}</span>
-                    <span className="uh-purchase-cr" style={{ color: m.isFree ? "#4f46e5" : "#0d9488", fontWeight: "bold" }}>{m.cost}</span>
+                    <span className="uh-purchase-cr" style={{ color: m.isFailed ? "#dc2626" : m.isFree ? "#4f46e5" : "#0d9488", fontWeight: "bold" }}>{m.cost}</span>
                   </div>
-                  <span className={`uh-status-dot ${m.isFree ? "s-free" : "s-active"}`}>
-                    {m.isFree ? "Free" : "Paid"}
+                  <span className={`uh-status-dot ${m.isFailed ? "s-failed" : m.isFree ? "s-free" : "s-active"}`}>
+                    {m.status}
                   </span>
                 </div>
               ))}
             </div>
             <div className="uh-purchases-total" style={{ padding: "14px" }}>
               <span style={{ fontSize: "13px" }}>Total spent</span>
-              <strong style={{ fontSize: "16px" }}>₹{purchases.reduce((s, p) => s + (p.amount || 0), 0).toLocaleString("en-IN")}</strong>
+              <strong style={{ fontSize: "16px" }}>₹{displayedPurchases.filter(p => p.status === "Paid").reduce((s, p) => s + (p.amount || 0), 0).toLocaleString("en-IN")}</strong>
             </div>
           </>
         )}

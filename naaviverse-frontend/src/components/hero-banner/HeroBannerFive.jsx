@@ -47,7 +47,7 @@ const HeroBannerFive = () => {
 </div>
 
                             <div className="home-text">
-                                Navigate towards your dream educational, skill and career destinations globally
+                                Navigate towards your dream educational, skill, and career destinations globally.
                             </div>
                             <ul className="style-none button-group d-flex align-items-center">
                                 <li className="me-4">
@@ -56,6 +56,7 @@ const HeroBannerFive = () => {
                                         onClick={handleGenerateClick}
                                         className="ripple-btn btn-one"
                                         style={{ border: 'none', cursor: 'pointer' }}
+                                        aria-label="Generate your personalized pathway"
                                     >
                                         Generate
                                     </button>

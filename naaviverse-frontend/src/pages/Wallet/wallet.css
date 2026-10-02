@@ -21,6 +21,15 @@
   padding: 20px 28px 24px;
   max-width: 680px;
 }
+@media (max-width: 768px) {
+  .wallet-container {
+    padding: 14px 14px 24px;
+    max-width: 100%;
+  }
+  .wallet-page-header {
+    padding: 14px 16px 10px;
+  }
+}
 .wallet-info-note {
   margin-bottom: 0 !important;
 }

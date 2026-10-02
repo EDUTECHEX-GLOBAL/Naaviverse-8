@@ -223,7 +223,7 @@ const StepPage = ({ productDataArray, selectedPathId, showSelectedPath, selected
     <>
       <div className="dashboard-main">
         <div className="dashboard-body">
-          <div>
+          <div style={{ display: "flex", height: "100%", flexShrink: 0 }}>
             {userType === "partner" ? (
               <AccDashsidebar />
             ) : userType === "user" ? (
@@ -510,6 +510,29 @@ const Carousel1 = ({
   useEffect(() => {
     if (razorpayOptions) {
       const razorpay = new window.Razorpay(razorpayOptions);
+      razorpay.on("payment.failed", async function (failureResponse) {
+        try {
+          const err = failureResponse?.error || {};
+          const apiBase = BASE_URL || "http://localhost:4545";
+          await axios.post(`${apiBase}/api/payment/failure`, {
+            razorpay_order_id: err.metadata?.order_id || razorpayOptions.order_id,
+            razorpay_payment_id: err.metadata?.payment_id || failureResponse?.razorpay_payment_id,
+            userEmail: userDetails?.user?.email,
+            amount: parseFloat(razorpayOptions.amount || 0) / 100,
+            productId: item?._id || "step-service",
+            productName: item?.name || "Step Service",
+            billingMethod: "one-time",
+            failureReason: err.description || err.reason || "Payment Failed",
+            errorCode: err.code || "PAYMENT_FAILED",
+            errorDescription: err.description || "",
+            errorSource: err.source || "razorpay_checkout",
+            errorStep: err.step || "payment_authentication"
+          });
+          window.dispatchEvent(new CustomEvent("naavi:payment-updated"));
+        } catch (e) {
+          console.error("Failed to report payment failure", e);
+        }
+      });
       razorpay.open();
     }
   }, [razorpayOptions]);

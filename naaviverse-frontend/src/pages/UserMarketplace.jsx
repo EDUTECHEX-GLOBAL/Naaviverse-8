@@ -8,6 +8,7 @@ import marketplaceReplacementService from "../services/marketplaceReplacementSer
 import FindBetterMatchModal from "../components/MarketplaceReplacement/FindBetterMatchModal";
 import AssistanceRequestModal from "../components/MarketplaceReplacement/AssistanceRequestModal";
 import AssistanceChatDrawer from "../components/MarketplaceReplacement/AssistanceChatDrawer";
+import { validatePersonName } from "../utils/emailValidator";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || "http://localhost:4545";
 const API = BASE_URL;
@@ -319,6 +320,12 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
             placeholder="Type your feedback..."
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmitComment();
+              }
+            }}
           />
           <button
             type="button"
@@ -632,7 +639,6 @@ const MarketplaceCard = ({
           <span className="mkt-card__price">
             {free ? "Free" : `₹${itemPrice(service).toLocaleString("en-IN")}`}
           </span>
-          {!free && <span className="mkt-card__price-sub">onwards</span>}
         </div>
 
         {isPurchased ? (
@@ -942,7 +948,12 @@ const CartDrawer = ({ cart, onRemove, onClose, onCheckout }) => {
             </svg>
             Your Cart
           </h2>
-          <button className="cd-close" onClick={onClose}>✕</button>
+          <button className="cd-close" onClick={onClose} aria-label="Close cart" title="Close cart">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
         </div>
         {cart.length === 0 ? (
           <div className="cd-empty">
@@ -1066,7 +1077,13 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
   const [timeSlot, setTimeSlot] = useState("10:00 AM");
   const [submitting, setSubmitting] = useState(false);
   const [payError, setPayError] = useState("");
-  const [fieldErrors, setFieldErrors] = useState({});
+  const [fieldErrors, setFieldErrors] = useState(() => {
+    if (initialName) {
+      const res = validatePersonName(initialName, "Full name");
+      if (!res.isValid) return { fullName: res.message };
+    }
+    return {};
+  });
 
   useEffect(() => {
     const targetEmail = email || initialEmail;
@@ -1079,6 +1096,8 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
             const fetchedName = uData.name || uData.fullName || uData.username;
             if (fetchedName) {
               setFullName(fetchedName);
+              const nameCheck = validatePersonName(fetchedName, "Full name");
+              setFieldErrors((p) => ({ ...p, fullName: nameCheck.isValid ? "" : nameCheck.message }));
             }
             if (uData.email) {
               setEmail(uData.email);
@@ -1100,14 +1119,15 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
 
   const handlePayClick = () => {
     const errors = {};
-    if (!fullName.trim()) errors.fullName = "Full name is required";
+    const nameVal = validatePersonName(fullName, "Full name");
+    if (!nameVal.isValid) errors.fullName = nameVal.message;
     if (!email.trim()) errors.email = "Email address is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Enter a valid email address";
     if (!phone.trim()) errors.phone = "Phone number is required";
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      setPayError("Please fill in all required fields before proceeding.");
+      setPayError(errors.fullName || "Please fill in all required fields correctly before proceeding.");
       return;
     }
 
@@ -1278,6 +1298,35 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
         };
 
         const rzp = new window.Razorpay(options);
+        rzp.on("payment.failed", async (response) => {
+          console.warn("⚠️ Marketplace payment failed:", response?.error);
+          const err = response?.error || {};
+          const failureReason = err.description || err.reason || "Marketplace payment was declined or failed";
+          try {
+            await axios.post(`${process.env.REACT_APP_API_BASE_URL || ""}/api/payment/failure`, {
+              razorpay_order_id:   order.id,
+              razorpay_payment_id: err.metadata?.payment_id || null,
+              error_code:          err.code || null,
+              error_description:   err.description || null,
+              error_reason:        err.reason || null,
+              error_source:        err.source || null,
+              error_step:          err.step || null,
+              failureReason,
+              userEmail:           email,
+              amount:              total,
+              productId:           "naavi-marketplace",
+              productName:         `Marketplace — ${cart.map((i) => i.name).join(", ")}`,
+              billingMethod:       "monthly",
+              tier:                cart.some((i) => (i.layer || "").toLowerCase() === "nano") ? "nano" : "micro",
+              planTier:            "standard",
+            });
+            window.dispatchEvent(new CustomEvent("naavi:payment-updated", { detail: { status: "failed" } }));
+          } catch (postErr) {
+            console.error("❌ Failed to report marketplace payment failure:", postErr);
+          }
+          setSubmitting(false);
+          setPayError(`Payment failed: ${failureReason}. Please try again.`);
+        });
         rzp.open();
       } catch (err) {
         console.error("Marketplace Razorpay Order error:", err);
@@ -1289,7 +1338,12 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
 
   return (
     <div className="checkout-page">
-      <div className="chk-layout">
+      <form
+        className="chk-layout"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!submitting) handlePayClick();
+        }}>
         <div className="chk-left">
           <h1 className="chk-title">Checkout</h1>
           <div className="chk-section">
@@ -1303,8 +1357,20 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
               <input
                 value={fullName}
                 onChange={(e) => {
-                  setFullName(e.target.value);
-                  setFieldErrors((p) => ({ ...p, fullName: "" }));
+                  const val = e.target.value;
+                  setFullName(val);
+                  const res = validatePersonName(val, "Full name");
+                  setFieldErrors((p) => ({ ...p, fullName: res.isValid ? "" : res.message }));
+                }}
+                onBlur={() => {
+                  const res = validatePersonName(fullName, "Full name");
+                  setFieldErrors((p) => ({ ...p, fullName: res.isValid ? "" : res.message }));
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (!submitting) handlePayClick();
+                  }
                 }}
                 placeholder="Your full name"
                 className={fieldErrors.fullName ? "input-err" : ""}
@@ -1321,6 +1387,12 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
                   setEmail(e.target.value);
                   setFieldErrors((p) => ({ ...p, email: "" }));
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (!submitting) handlePayClick();
+                  }
+                }}
                 placeholder="your@email.com"
                 className={fieldErrors.email ? "input-err" : ""}
               />
@@ -1336,6 +1408,12 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
                   setPhone(e.target.value);
                   setFieldErrors((p) => ({ ...p, phone: "" }));
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (!submitting) handlePayClick();
+                  }
+                }}
                 placeholder="+91 98765 43210"
                 className={fieldErrors.phone ? "input-err" : ""}
               />
@@ -1346,7 +1424,17 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
             <div className="chk-section-lbl">Schedule Session</div>
             <div className="chk-field">
               <label>Preferred Date</label>
-              <input type="date" value={prefDate} onChange={(e) => setPrefDate(e.target.value)} />
+              <input
+                type="date"
+                value={prefDate}
+                onChange={(e) => setPrefDate(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (!submitting) handlePayClick();
+                  }
+                }}
+              />
             </div>
             <div className="chk-field">
               <label>Select Time Slot</label>
@@ -1394,7 +1482,7 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
               <span>Total</span>
               <span>₹{total === 0 ? "0" : total.toLocaleString("en-IN")}</span>
             </div>
-            <button className="os-pay-btn rzp-pay-btn" onClick={handlePayClick} disabled={submitting}>
+            <button type="submit" className="os-pay-btn rzp-pay-btn" disabled={submitting}>
               {submitting ? (
                 <span className="rzp-btn-inner">
                   <span className="rzp-mini-spinner" /> {total <= 0 ? "Enrolling…" : "Processing Payment…"}
@@ -1408,7 +1496,7 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
             </p>
           </div>
         </div>
-      </div>
+      </form>
     </div>
   );
 };
@@ -1459,6 +1547,7 @@ const UserMarketplace = ({ onStepChange }) => {
       return null;
     }
   })();
+<<<<<<< HEAD
   const userEmail =
     userRaw?.user?.email ||
     userRaw?.email ||
@@ -1474,15 +1563,57 @@ const UserMarketplace = ({ onStepChange }) => {
     localStorage.getItem("userName") ||
     "Student";
   const stepId = localStorage.getItem("selectedStepId") || "default_step";
+=======
+  const userEmail = userRaw?.user?.email || userRaw?.email || "guest@naaviverse.com";
+  const userName = userRaw?.user?.displayName || userRaw?.displayName || "Student";
+  const stepId = location.state?.stepId || localStorage.getItem("selectedStepId") || "default_step";
+>>>>>>> origin/feature/login
   const pathId = localStorage.getItem("selectedPathId") || "default_path";
   const pathName = localStorage.getItem("selectedPathName") || "Career Path";
   const stepName = localStorage.getItem("selectedStepName") || "Learning Step";
 
   // ── Component state ────────────────────────────────────────────────────────
   const [page, setPage] = useState("marketplace");
+  const searchParams = new URLSearchParams(location.search);
+  const urlLayer = searchParams.get("view") || searchParams.get("layer");
+
+  const [unlockedLayers, setUnlockedLayers] = useState({
+    macro: true,
+    micro: location.state?.creditUnlocked?.micro || false,
+    nano: location.state?.creditUnlocked?.nano || false,
+  });
+
+  const initialRequestedLayer = (
+    urlLayer ||
+    location.state?.defaultTab ||
+    location.state?.view ||
+    "macro"
+  ).toLowerCase();
+
   const [activeLayer, setActiveLayer] = useState(
-    location.state?.defaultTab?.toLowerCase() || location.state?.view?.toLowerCase() || "macro"
+    initialRequestedLayer === "macro" ||
+    (initialRequestedLayer === "micro" && location.state?.creditUnlocked?.micro) ||
+    (initialRequestedLayer === "nano" && location.state?.creditUnlocked?.nano)
+      ? initialRequestedLayer
+      : "macro"
   );
+
+  const visibleLayerPills = useMemo(() => {
+    return LAYER_PILLS.filter(({ key }) => {
+      if (key === "macro") return true;
+      if (key === "micro") return !!unlockedLayers.micro;
+      if (key === "nano") return !!unlockedLayers.nano;
+      return false;
+    });
+  }, [unlockedLayers]);
+
+  // Ensure activeLayer is always one of the unlocked/visible views; fallback to "macro"
+  useEffect(() => {
+    if (activeLayer !== "macro" && !unlockedLayers[activeLayer]) {
+      setActiveLayer("macro");
+    }
+  }, [activeLayer, unlockedLayers]);
+
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQ, setSearchQ] = useState("");
 
@@ -1522,6 +1653,19 @@ const UserMarketplace = ({ onStepChange }) => {
     });
   }, [stepId, userEmail]);
 
+  // Hide mobile hamburger/menu button when Cart or Assistance is open
+  useEffect(() => {
+    const isCartOrAssistanceOpen = Boolean(showCart || chatDrawerOpen || page === "checkout");
+    if (isCartOrAssistanceOpen) {
+      document.body.classList.add("mkt-drawer-open");
+    } else {
+      document.body.classList.remove("mkt-drawer-open");
+    }
+    return () => {
+      document.body.classList.remove("mkt-drawer-open");
+    };
+  }, [showCart, chatDrawerOpen, page]);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -1546,8 +1690,49 @@ const UserMarketplace = ({ onStepChange }) => {
   };
 
   useEffect(() => {
-    if (location.state?.view) setActiveLayer(location.state.view.toLowerCase());
-  }, [location.state?.view]);
+    const sp = new URLSearchParams(location.search);
+    const ul = sp.get("view") || sp.get("layer");
+    const requested = (ul || location.state?.view || location.state?.defaultTab || "").toLowerCase();
+    if (requested) {
+      if (requested === "macro" || unlockedLayers[requested]) {
+        setActiveLayer(requested);
+      } else {
+        setActiveLayer("macro");
+      }
+    }
+  }, [location.search, location.state?.view, location.state?.defaultTab, unlockedLayers]);
+
+  // Check unlock status for step layers (credits or active subscription)
+  useEffect(() => {
+    if (!userEmail || userEmail === "guest@naaviverse.com" || !stepId) return;
+
+    Promise.all([
+      axios.get(`${API}/api/subscriptions/step-unlock/check`, {
+        params: { email: userEmail, step_id: stepId },
+      }),
+      axios.get(`${API}/api/subscriptions/status`, {
+        params: { email: userEmail },
+      }),
+    ])
+      .then(([unlockRes, subRes]) => {
+        const creditUnlocked = unlockRes.data?.unlocked || { micro: false, nano: false };
+        const subData = subRes.data?.data;
+        const isSubscribed = subData?.status === "active";
+        const tier = subData?.tier;
+
+        const hasMicro = (isSubscribed && (tier === "micro" || tier === "nano")) || !!creditUnlocked.micro;
+        const hasNano = (isSubscribed && tier === "nano") || !!creditUnlocked.nano;
+
+        setUnlockedLayers({
+          macro: true,
+          micro: hasMicro,
+          nano: hasNano,
+        });
+      })
+      .catch((err) => {
+        console.warn("Could not check unlock status in marketplace:", err);
+      });
+  }, [userEmail, stepId]);
 
   useEffect(() => {
     if (location.state?.exclusiveSuccess) {
@@ -1613,7 +1798,9 @@ const UserMarketplace = ({ onStepChange }) => {
     }
     setLoading(true);
     axios
-      .get(`${process.env.REACT_APP_API_BASE_URL || "http://localhost:4545"}/api/marketplace/step/${stepId}`)
+      .get(`${process.env.REACT_APP_API_BASE_URL || "http://localhost:4545"}/api/marketplace/step/${stepId}`, {
+        params: { email: userEmail },
+      })
       .then((res) => {
         const fetched = res.data?.data || [];
         setItems(fetched.length > 0 ? fetched : DEMO_FALLBACK_ITEMS);
@@ -1631,8 +1818,16 @@ const UserMarketplace = ({ onStepChange }) => {
     pathStrong: false,
   });
 
+  const isCurrentViewUnlocked = useMemo(() => {
+    if (activeLayer === "macro") return true;
+    return !!unlockedLayers[activeLayer];
+  }, [activeLayer, unlockedLayers]);
+
   // Filter & Sort Pipeline (Excluding rejected items)
   const categoryBaseItems = useMemo(() => {
+    // If current view is not unlocked, show completely empty content (no preview/placeholder)
+    if (!isCurrentViewUnlocked) return [];
+
     const q = searchQ.toLowerCase().trim();
     const rejectedSet = new Set((replacementState.rejectedItemIds || []).map((id) => String(id)));
     return items.filter((s) => {
@@ -1647,7 +1842,7 @@ const UserMarketplace = ({ onStepChange }) => {
         s.role?.toLowerCase().includes(q);
       return isLayerMatched && isSearchMatched;
     });
-  }, [items, activeLayer, searchQ, replacementState.rejectedItemIds]);
+  }, [items, activeLayer, searchQ, replacementState.rejectedItemIds, isCurrentViewUnlocked]);
 
   // Apply Hard Filters → Score → Diversify → Sort order
   const filtered = useMemo(() => {
@@ -1929,7 +2124,9 @@ const UserMarketplace = ({ onStepChange }) => {
       cart.forEach((c) => next.add(String(c._id || c.id)));
       return next;
     });
+    const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
     navigate("/purchase/success", {
+      replace: isMobile,
       state: {
         orderId: info.orderId,
         purchasedItem: info.item || null,
@@ -1997,9 +2194,9 @@ const UserMarketplace = ({ onStepChange }) => {
                   )}
                 </div>
 
-                {/* Layer pills: Macro, Micro, Nano */}
+                {/* Layer pills: Macro, Micro, Nano based on unlocked status */}
                 <div className="vpills">
-                  {LAYER_PILLS.map(({ key, label }) => (
+                  {visibleLayerPills.map(({ key, label }) => (
                     <button
                       key={key}
                       className={`vpill ${activeLayer === key ? "active" : ""}`}
@@ -2013,38 +2210,40 @@ const UserMarketplace = ({ onStepChange }) => {
                   ))}
                 </div>
 
-                {/* Super Admin Assistance Trigger Button */}
-                <button
-                  type="button"
-                  className="mkt-assist-btn"
-                  onClick={() => setChatDrawerOpen(true)}
-                  title="Super Admin Assistance & Live Chat"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                  </svg>
-                  <span>Assistance</span>
-                  {assistanceTickets.length > 0 && (
-                    <span className="assist-btn-badge">{assistanceTickets.length}</span>
-                  )}
-                </button>
+                <div className="mkt-topbar-actions">
+                  {/* Super Admin Assistance Trigger Button */}
+                  <button
+                    type="button"
+                    className="mkt-assist-btn"
+                    onClick={() => setChatDrawerOpen(true)}
+                    title="Super Admin Assistance & Live Chat"
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                    <span>Assistance</span>
+                    {assistanceTickets.length > 0 && (
+                      <span className="assist-btn-badge">{assistanceTickets.length}</span>
+                    )}
+                  </button>
 
-                {/* Cart Button */}
-                <button className="cart-top-btn" onClick={() => setShowCart(true)}>
-                  <svg className="cart-icon" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"
-                      stroke="currentColor"
-                      strokeWidth="1.9"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-                    <path d="M16 10a4 4 0 01-8 0" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <span>Cart</span>
-                  {cart.length > 0 && <span className="cart-top-badge">{cart.length}</span>}
-                </button>
+                  {/* Cart Button */}
+                  <button className="cart-top-btn" onClick={() => setShowCart(true)}>
+                    <svg className="cart-icon" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"
+                        stroke="currentColor"
+                        strokeWidth="1.9"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+                      <path d="M16 10a4 4 0 01-8 0" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span>Cart</span>
+                    {cart.length > 0 && <span className="cart-top-badge">{cart.length}</span>}
+                  </button>
+                </div>
               </div>
 
               {/* ── Max Replacements Reached Banner ── */}
@@ -2078,8 +2277,8 @@ const UserMarketplace = ({ onStepChange }) => {
                 onFilterChange={setFilterState}
                 activeLayer={activeLayer}
                 onLayerChange={setActiveLayer}
-                categoryCounts={categoryCounts}
-                totalResults={filtered.length}
+                categoryCounts={isCurrentViewUnlocked ? categoryCounts : { all: 0 }}
+                totalResults={isCurrentViewUnlocked ? filtered.length : 0}
                 onClearFilters={clearAllFilters}
                 hasActiveFilters={hasActiveFilters}
               />
@@ -2091,6 +2290,10 @@ const UserMarketplace = ({ onStepChange }) => {
                     <div className="mkt-spinner" />
                     <p>Loading services…</p>
                   </div>
+                ) : !isCurrentViewUnlocked ? (
+                  /* Completely empty content when view is not unlocked:
+                     Do not show any locked content, preview, placeholder, or unlock screen. */
+                  null
                 ) : (
                   <MarketplaceGrid
                     services={filtered}

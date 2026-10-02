@@ -112,18 +112,18 @@ const UserAnalysis = () => {
                         <div className="row text-center">
                             <div className="col-md-4 mb-40" data-aos="fade-up">
                                 <img src={car} alt="Car Icon" className="featureIcon" />
-                                <div className="featureTitle">Real-time Paths</div>
-                                <p className="featureText">Improve pathways forecast with up-to-date global data</p>
+                                <div className="featureTitle">Real-Time Paths</div>
+                                <p className="featureText">Improve pathways forecast with up-to-date global data.</p>
                             </div>
                             <div className="col-md-4 mb-40" data-aos="fade-up" data-aos-delay="100">
                                 <img src={globe} alt="Globe Icon" className="featureIcon" />
                                 <div className="featureTitle">Global Routing</div>
-                                <p className="featureText">Provide pathways with steps to over 20 countries</p>
+                                <p className="featureText">Provide pathways with steps to over 20 countries.</p>
                             </div>
                             <div className="col-md-4 mb-40" data-aos="fade-up" data-aos-delay="200">
                                 <img src={route} alt="Routing Icon" className="featureIcon" />
-                                <div className="featureTitle">Precise Nano steps</div>
-                                <p className="featureText">Steps with mentors optimized for success</p>
+                                <div className="featureTitle">Precise Nano Steps</div>
+                                <p className="featureText">Steps with mentors optimized for success.</p>
                             </div>
                         </div>
                     </div>
@@ -157,9 +157,9 @@ const UserAnalysis = () => {
                                 {/* /.title-style-three */}
                             </div>
                             <div className="col-xl-6 col-lg-7">
-                                <p className="m0 text-center text-lg-start md-pt-30">
-                                    At Naaviverse, we build AI-powered ecosystems that transform potential into opportunity
-                                </p>
+                                 <p className="m0 text-center text-lg-start md-pt-30">
+                                     At Naaviverse, we build AI-powered ecosystems that transform potential into opportunity.
+                                 </p>
                             </div>
                         </div>
                         <FancyFeatureSeventeen />
@@ -192,11 +192,11 @@ const UserAnalysis = () => {
                                     <div className="title-style-three">
                                         <div className="sc-title">QUESTIONS &amp; ANSWERS</div>
                                         <h2 className="main-title" style={{ color: '#010d4c', opacity: 1, display: 'block', visibility: 'visible' }}>
-                                            <span style={{ color: '#000' }}>FAQ's</span>
+                                            <span style={{ color: '#000' }}>FAQs</span>
                                         </h2>
                                     </div>
                                     {/* /.title-style-three */}
-                                    <p className="pt-20 pb-15">Don’t find your answer here? just send us a message for any query.
+                                    <p className="pt-20 pb-15">Don’t find your answer here? Just send us a message for any query.
                                     </p>
                                     <Link to="/contact" className="btn-eight ripple-btn">Contact us</Link>
                                 </div>
@@ -230,7 +230,7 @@ const UserAnalysis = () => {
 
                 <Contact /> {/* /.Fancy Feature 21 end */}
 
-                <div id="partners-section" className="partner-section-two mt-30 mb-60 lg-mb-40">
+                <div className="partner-section-two mt-30 mb-60 lg-mb-40">
 
 
 

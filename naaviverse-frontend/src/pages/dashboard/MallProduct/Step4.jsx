@@ -17,17 +17,17 @@ const Step4 = ({ setAcceptOffer }) => {
   // 1️⃣ GET PROFILE ID FROM YOUR BACKEND
   // -------------------------------------------------
   useEffect(() => {
-    const email = userDetails?.user?.email;
+    const email = userDetails?.user?.email || userDetails?.email;
 
     if (!email) return;
 
     axios
-      .get(`${BASE_URL}/api/users/get?email=${email}`)
+      .get(`${BASE_URL}/api/users/get/${email}`)
       .then((res) => {
         console.log("PROFILE RESPONSE (LOCAL API):", res.data);
 
         if (res.data?.status && res.data?.data) {
-          setProfileId(res.data.data.profileDataId);
+          setProfileId(res.data.data.profileDataId || res.data.data._id);
         } else {
           setErrorMsg("Unable to fetch user profile");
         }
@@ -46,7 +46,7 @@ const Step4 = ({ setAcceptOffer }) => {
       setLoading(true);
 
       const body = {
-        userEmail: userDetails?.user?.email,
+        userEmail: userDetails?.user?.email || userDetails?.email,
         productId: index?.product_id || index?._id || "",
         productName: index?.product_name || index?.name || "",
         billingMethod:
@@ -108,6 +108,30 @@ const Step4 = ({ setAcceptOffer }) => {
       };
 
       const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", async function (failureResponse) {
+        try {
+          const err = failureResponse?.error || {};
+          await axios.post(`${BASE_URL}/api/payment/failure`, {
+            razorpay_order_id: err.metadata?.order_id || order.id,
+            razorpay_payment_id: err.metadata?.payment_id || failureResponse?.razorpay_payment_id,
+            userEmail: userDetails?.user?.email,
+            amount: (order.amount || 0) / 100,
+            productId: index?._id || "mall-product",
+            productName: index?.product_name || "Mall Product",
+            billingMethod: "one-time",
+            failureReason: err.description || err.reason || "Payment Failed",
+            errorCode: err.code || "PAYMENT_FAILED",
+            errorDescription: err.description || "",
+            errorSource: err.source || "razorpay_checkout",
+            errorStep: err.step || "payment_authentication"
+          });
+          window.dispatchEvent(new CustomEvent("naavi:payment-updated"));
+        } catch (e) {
+          console.error("Failed to report payment failure", e);
+        }
+        setLoading(false);
+        setErrorMsg(failureResponse?.error?.description || "Payment failed. Please try again.");
+      });
       rzp.open();
 
     } catch (error) {

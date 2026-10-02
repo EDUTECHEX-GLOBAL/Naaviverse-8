@@ -1428,45 +1428,22 @@ const AccDashboard = () => {
   const pathSubmission = (totalStepsOverride) => {
     console.log("🚀 ---- PATH SUBMISSION TRIGGERED ----");
 
-    // 1️⃣ Log Redux user object
-    console.log("🔥 Redux USER VALUE:", user);
-
-    // 2️⃣ Log localStorage user raw string
-    const rawLocal = localStorage.getItem("user");
-    console.log("🔥 LocalStorage USER VALUE RAW:", rawLocal);
-
-    // 3️⃣ Parse localStorage safely
-    let storedUser = {};
-    try {
-      storedUser = rawLocal ? JSON.parse(rawLocal) : {};
-    } catch (e) {
-      storedUser = {};
-    }
-
-    // 4️⃣ Log parsed localStorage value
-    console.log("🔥 Parsed LocalStorage User:", storedUser);
-
-    // 5️⃣ Find final email from all possible sources
+    // ✅ FIX: Use partner email from localStorage (same source as MyPaths, Marketplace, MyStepsAcc)
+    const currentPartner = getPartner();
     const finalEmail =
-      user?.email ||
-      user?.user?.email ||
-      user?.currentUser?.email ||
-      storedUser?.email ||
-      storedUser?.user?.email ||
-      storedUser?.currentUser?.email ||
-      localStorage.getItem("loginEmail");   // ⭐ REQUIRED LAST CHECK
+      currentPartner?.email ||
+      currentPartner?.user?.email ||
+      localStorage.getItem("loginEmail");
 
-    // 6️⃣ Log final email decision
     console.log("🔥 FINAL EMAIL USED:", finalEmail);
 
-    // 7️⃣ If missing, stop execution
     if (!finalEmail) {
-      console.log("❌ User email missing. Cannot create path.");
-      alert("User email missing. Please login again.");
+      console.log("❌ Partner email missing. Cannot create path.");
+      alert("Partner email missing. Please login again.");
       return;
     }
 
-    // 8️⃣ Build the payload
+    // Build the payload
     const payload = {
       email: finalEmail,
       nameOfPath: pathSteps.nameOfPath,
@@ -1515,7 +1492,6 @@ const AccDashboard = () => {
       stream: stream,
       grade_avg: gradeAvg,
       performance: gradeAvg[0],
-      status: "waitingforapproval",
     };
 
     // 9️⃣ Log the payload before sending

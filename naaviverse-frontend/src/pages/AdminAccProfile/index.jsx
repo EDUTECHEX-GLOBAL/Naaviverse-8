@@ -24,6 +24,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import AccDashsidebar from "../../components/accDashsidebar/accDashsidebar.jsx";
+import { validatePersonName } from "../../utils/emailValidator";
 import {
   GetFollowersPerAccount,
   GetCategoriesAcc,
@@ -2789,16 +2790,16 @@ const AdminAccProfile = () => {
                         maxHeight: "4rem",
                         opacity:
                           profilePicture &&
-                          firstName &&
-                          lastName &&
+                          validatePersonName(firstName, "First name").isValid &&
+                          validatePersonName(lastName, "Last name").isValid &&
                           userName.length > 0 &&
                           userNameAvailable
                             ? "1"
                             : "0.25",
                         cursor:
                           profilePicture &&
-                          firstName &&
-                          lastName &&
+                          validatePersonName(firstName, "First name").isValid &&
+                          validatePersonName(lastName, "Last name").isValid &&
                           userName.length > 0 &&
                           userNameAvailable
                             ? "pointer"
@@ -2807,10 +2808,20 @@ const AdminAccProfile = () => {
                         width: "48%",
                       }}
                       onClick={() => {
+                        const fnRes = validatePersonName(firstName, "First name");
+                        if (!fnRes.isValid) {
+                          toast.error(fnRes.message);
+                          return;
+                        }
+                        const lnRes = validatePersonName(lastName, "Last name");
+                        if (!lnRes.isValid) {
+                          toast.error(lnRes.message);
+                          return;
+                        }
                         if (
                           profilePicture &&
-                          firstName &&
-                          lastName &&
+                          fnRes.isValid &&
+                          lnRes.isValid &&
                           userName.length > 0 &&
                           userNameAvailable
                         ) {

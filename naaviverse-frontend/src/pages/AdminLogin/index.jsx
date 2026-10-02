@@ -148,27 +148,36 @@ const AdminLogin = () => {
                                 </div>
                             </div>
 
-                            <div className="input-box">
-                                <EmailIcon />
-                                <input
-                                    className="input-inp"
-                                    type="text"
-                                    placeholder="Admin email"
-                                    required
-                                    id="email"
-                                    name="email"
-                                    autoComplete="email"
-                                    value={email}
-                                    onInput={(e) => { setIsError(false); setEmail(e.target.value); }}
-                                />
-                            </div>
-
-                            <div
-                                className={`login-btn ${email?.length > 0 ? "" : "disabled"}`}
-                                onClick={() => { if (email?.length > 0) { initiateForgotPassword(); } }}
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    if (email?.length > 0 && !isLoading) initiateForgotPassword();
+                                }}
+                                style={{ width: "100%" }}
                             >
-                                Send Reset Code
-                            </div>
+                                <div className="input-box">
+                                    <EmailIcon />
+                                    <input
+                                        className="input-inp"
+                                        type="text"
+                                        placeholder="Admin email"
+                                        required
+                                        id="email"
+                                        name="email"
+                                        autoComplete="email"
+                                        value={email}
+                                        onInput={(e) => { setIsError(false); setEmail(e.target.value); }}
+                                    />
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className={`login-btn ${email?.length > 0 ? "" : "disabled"}`}
+                                    disabled={!email || email.length === 0 || isLoading}
+                                >
+                                    Send Reset Code
+                                </button>
+                            </form>
                             <div className="ghost-btn" onClick={() => { setForgotPassword(false); setEmail(""); }}>
                                 Never Mind
                             </div>
@@ -182,32 +191,41 @@ const AdminLogin = () => {
                                 </div>
                             </div>
 
-                            <div className="input-box otp-box">
-                                <OtpIcon />
-                                <input
-                                    className="input-inp"
-                                    type="text"
-                                    placeholder="Enter code"
-                                    value={code}
-                                    onInput={e => setCode(e.target.value)}
-                                />
-                            </div>
-                            <div className="input-box">
-                                <LockIcon />
-                                <input
-                                    className="input-inp"
-                                    type="password"
-                                    placeholder="New password"
-                                    value={newPassword2}
-                                    onInput={e => setNewPassword2(e.target.value)}
-                                />
-                            </div>
-                            <div
-                                className={`login-btn ${(code && newPassword2) ? "" : "disabled"}`}
-                                onClick={() => { if (code && newPassword2) submitForgotPassword(); }}
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    if (code && newPassword2 && !isLoading) submitForgotPassword();
+                                }}
+                                style={{ width: "100%" }}
                             >
-                                Submit
-                            </div>
+                                <div className="input-box otp-box">
+                                    <OtpIcon />
+                                    <input
+                                        className="input-inp"
+                                        type="text"
+                                        placeholder="Enter code"
+                                        value={code}
+                                        onInput={e => setCode(e.target.value)}
+                                    />
+                                </div>
+                                <div className="input-box">
+                                    <LockIcon />
+                                    <input
+                                        className="input-inp"
+                                        type="password"
+                                        placeholder="New password"
+                                        value={newPassword2}
+                                        onInput={e => setNewPassword2(e.target.value)}
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    className={`login-btn ${(code && newPassword2) ? "" : "disabled"}`}
+                                    disabled={!code || !newPassword2 || isLoading}
+                                >
+                                    Submit
+                                </button>
+                            </form>
                             <div
                                 className="ghost-btn"
                                 onClick={() => { setForgotPassword(false); setForgotPasswordStep(1); setCode(""); setNewPassword2(""); }}
@@ -236,47 +254,58 @@ const AdminLogin = () => {
                             </div>
                         )}
 
-                        <div className="input-box">
-                            <EmailIcon />
-                            <input
-                                className="input-inp"
-                                type="text"
-                                placeholder="Admin email"
-                                required
-                                id="email"
-                                name="email"
-                                autoComplete="email"
-                                value={email}
-                                onInput={(e) => { setIsError(false); setEmail(e.target.value); }}
-                            />
-                        </div>
-
-                        <div className="input-box">
-                            <LockIcon />
-                            <input
-                                className="input-inp"
-                                type={showPassword ? "text" : "password"}
-                                placeholder="Password"
-                                id="password"
-                                autoComplete="new-password"
-                                name="password"
-                                required
-                                value={password}
-                                onInput={(e) => { setIsError(false); setPassword(e.target.value); }}
-                                onKeyDown={(e) => { if (e.key === "Enter" && email && password) handleLogin(); }}
-                            />
-                            <div className="eye-icon" onClick={() => setShowPassword(!showPassword)}>
-                                <EyeIcon open={showPassword} />
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                if (email && password && !isLoading) handleLogin();
+                            }}
+                            style={{ width: "100%" }}
+                        >
+                            <div className="input-box">
+                                <EmailIcon />
+                                <input
+                                    className="input-inp"
+                                    type="text"
+                                    placeholder="Admin email"
+                                    required
+                                    id="email"
+                                    name="email"
+                                    autoComplete="email"
+                                    value={email}
+                                    onInput={(e) => { setIsError(false); setEmail(e.target.value); }}
+                                />
                             </div>
-                        </div>
 
-                        <div className="forgot" onClick={() => { setForgotPassword(true); setIsError(false); }}>
-                            Forgot Password?
-                        </div>
+                            <div className="input-box">
+                                <LockIcon />
+                                <input
+                                    className="input-inp"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="Password"
+                                    id="password"
+                                    autoComplete="new-password"
+                                    name="password"
+                                    required
+                                    value={password}
+                                    onInput={(e) => { setIsError(false); setPassword(e.target.value); }}
+                                />
+                                <div className="eye-icon" onClick={() => setShowPassword(!showPassword)}>
+                                    <EyeIcon open={showPassword} />
+                                </div>
+                            </div>
 
-                        <div className="login-btn" onClick={handleLogin}>
-                            Sign In
-                        </div>
+                            <div className="forgot" onClick={() => { setForgotPassword(true); setIsError(false); }}>
+                                Forgot Password?
+                            </div>
+
+                            <button
+                                type="submit"
+                                className={`login-btn ${(!email || !password || isLoading) ? "disabled" : ""}`}
+                                disabled={!email || !password || isLoading}
+                            >
+                                Sign In
+                            </button>
+                        </form>
                     </>
                 )}
 

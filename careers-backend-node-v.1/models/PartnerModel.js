@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 
 const partnerSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
-  partnerId: { type: String, unique: true },
+  partnerId: { type: String, unique: true, sparse: true },
   username: { type: String },
   password: { type: String, required: true },
   userType: { type: String },
@@ -25,6 +25,8 @@ const partnerSchema = new mongoose.Schema({
   country: { type: String },
   description: { type: String },
   website: { type: String },
+  phone: { type: String },
+  phoneNumber: { type: String },
 
   // ❌ OLD generic field: type
   // type: { type: String },
@@ -63,19 +65,14 @@ const partnerSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Hash password before save
+// Normalize email and hash password before save
 partnerSchema.pre("save", async function (next) {
+  if (this.email) {
+    this.email = this.email.trim().toLowerCase();
+  }
   if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
-
-// Normalize email
-partnerSchema.pre("save", function (next) {
-  if (this.email) {
-    this.email = this.email.toLowerCase();
-  }
   next();
 });
 

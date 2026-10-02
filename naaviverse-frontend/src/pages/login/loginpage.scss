@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
 
 /* ===== DESIGN TOKENS ===== */
 $primary: #2c7cb2;
@@ -108,11 +108,11 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Poppins', sans-serif;
   background: $bg-page;
 }
 
-/* ===== LEFT HERO PANEL (unchanged) ===== */
+/* ===== LEFT HERO PANEL ===== */
 .login-hero-panel {
   position: relative;
   width: 52%;
@@ -120,102 +120,118 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: center;
 
-  .hero-bg {
+  .auth-hero-header {
+    display: none;
+  }
+
+  .hero-visual-area {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    z-index: 0;
-  }
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 
-  .hero-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(180deg, rgba(26, 31, 61, 0.4) 0%, rgba(26, 31, 61, 0.6) 50%, rgba(26, 31, 61, 0.85) 100%);
-    z-index: 1;
-  }
-
-  .hero-content {
-    position: relative;
-    z-index: 2;
-    padding: 0 48px 56px;
-    animation: slideInLeft 0.8s ease-out;
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255, 255, 255, 0.12);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 100px;
-      padding: 8px 18px;
-      margin-bottom: 24px;
-      color: rgba(255, 255, 255, 0.95);
-      font-size: 13px;
-      font-weight: 500;
-      letter-spacing: 0.3px;
-
-      .badge-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: $success;
-        animation: pulse-glow 2s infinite;
-      }
+    .hero-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
     }
 
-    .hero-title {
-      font-size: 42px;
-      font-weight: 800;
-      color: #ffffff;
-      line-height: 1.15;
-      margin-bottom: 16px;
-      letter-spacing: -0.5px;
-
-      .hero-highlight {
-        background: linear-gradient(135deg, #60a5fa, #a78bfa);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
+    .hero-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, rgba(26, 31, 61, 0.45) 0%, rgba(26, 31, 61, 0.65) 50%, rgba(26, 31, 61, 0.88) 100%);
+      z-index: 1;
     }
 
-    .hero-subtitle {
-      font-size: 16px;
-      color: rgba(255, 255, 255, 0.75);
-      line-height: 1.7;
-      max-width: 480px;
-      font-weight: 400;
-    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: clamp(24px, 4vh, 48px) 48px;
+      animation: slideInLeft 0.8s ease-out;
 
-    .hero-stats {
-      display: flex;
-      gap: 36px;
-      margin-top: 36px;
-      padding-top: 28px;
-      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 100px;
+        padding: 6px 16px;
+        margin-bottom: clamp(12px, 2vh, 20px);
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.3px;
 
-      .stat-item {
-        .stat-value {
-          font-size: 28px;
-          font-weight: 800;
-          color: #ffffff;
-          letter-spacing: -0.5px;
+        .badge-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: $success;
+          animation: pulse-glow 2s infinite;
         }
+      }
 
-        .stat-label {
-          font-size: 13px;
-          color: rgba(255, 255, 255, 0.6);
-          margin-top: 4px;
-          font-weight: 400;
+      .hero-title {
+        font-size: clamp(28px, 2.8vw, 42px);
+        font-weight: 800;
+        color: #ffffff;
+        line-height: 1.18;
+        margin-bottom: clamp(10px, 1.8vh, 16px);
+        letter-spacing: -0.5px;
+
+        .hero-highlight {
+          background: linear-gradient(135deg, #60a5fa, #a78bfa);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+      }
+
+      .hero-subtitle {
+        font-size: clamp(13.5px, 1.05vw, 16px);
+        color: rgba(255, 255, 255, 0.82);
+        line-height: 1.65;
+        max-width: 480px;
+        font-weight: 400;
+      }
+
+      .hero-stats {
+        display: flex;
+        gap: clamp(20px, 2.5vw, 36px);
+        margin-top: clamp(18px, 2.8vh, 32px);
+        padding-top: clamp(14px, 2.2vh, 24px);
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+
+        .stat-item {
+          .stat-value {
+            font-size: clamp(22px, 2vw, 28px);
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+          }
+
+          .stat-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.65);
+            margin-top: 4px;
+            font-weight: 400;
+          }
         }
       }
     }
@@ -590,7 +606,7 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
   border-radius: 10px;
   outline: none;
   border: none;
-  font-family: "Inter", sans-serif;
+  font-family: 'Poppins', sans-serif;
   font-weight: 450;
   font-size: 14px;
   height: 100%;
@@ -605,9 +621,17 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
 }
 
 .otp-box .input-inp {
-  letter-spacing: 6px;
+  letter-spacing: 8px;
   text-align: center;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 17px;
+  padding-right: 28px;
+
+  &::placeholder {
+    letter-spacing: normal;
+    font-size: 13.5px;
+    font-weight: 400;
+  }
 }
 
 .password-box {
@@ -619,20 +643,22 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  width: 19px;
-  height: 19px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   flex-shrink: 0;
   color: $text-muted;
   opacity: 0.8;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
 
   svg {
-    width: 100%;
-    height: 100%;
+    width: 19px;
+    height: 19px;
   }
 
   &:hover {
     color: $primary;
+    background: rgba(0, 0, 0, 0.04);
   }
 }
 
@@ -680,6 +706,9 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
   background: $gradient-button !important;
   padding: 0;
   border-radius: 10px;
+  border: none;
+  outline: none;
+  font-family: inherit;
   color: #ffffff;
   font-weight: 600;
   font-size: 14.5px;
@@ -817,7 +846,22 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
   }
 }
 
-/* ===== FORGOT PASSWORD - STEP TITLE ===== */
+/* ===== FORGOT PASSWORD - STEP PILL ===== */
+.auth-step-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: $primary;
+  background: $primary-light;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(44, 124, 178, 0.18);
+}
+
 .step-info-text {
   font-size: 13px;
   color: $text-secondary;
@@ -826,18 +870,25 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
 }
 
 .back-link {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  font-size: 12.5px;
-  color: $text-secondary;
-  font-weight: 500;
+  font-size: 13.5px;
+  color: $primary;
+  font-weight: 600;
   cursor: pointer;
-  margin-top: 14px;
-  transition: color 0.2s ease;
+  margin-top: 18px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  text-align: center;
+  width: 100%;
 
   &:hover {
-    color: $primary;
+    color: $primary-dark;
+    background: rgba(44, 124, 178, 0.06);
+    text-decoration: underline;
   }
 }
 
@@ -858,7 +909,7 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
   .login-hero-panel {
     width: 45%;
 
-    .hero-content {
+    .hero-visual-area .hero-content {
       padding: 0 32px 40px;
 
       .hero-title {
@@ -887,36 +938,57 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
     flex-direction: column;
     height: auto;
     min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
-  .login-hero-panel {
-    display: none;
+  .login-hero-panel,
+  .login-main .login-hero-panel {
+    display: none !important;
   }
 
   .login-form-panel {
     width: 100%;
-    height: auto;
+    flex: 1;
     min-height: 100vh;
-    overflow: visible;
-    padding: 24px 20px;
+    overflow-y: auto;
+    padding: 32px 20px 40px;
+    display: flex;
+    flex-direction: column;
     justify-content: flex-start;
-    padding-top: 48px;
+    align-items: center;
   }
 
   .login-box {
-    max-width: 100%;
+    width: 100%;
+    max-width: 420px;
     padding: 0;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
   }
 
-  .full-logo {
-    height: 30px;
+  .full-logo-box {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 22px;
+    width: 100%;
+
+    .full-logo {
+      height: 32px;
+      width: auto;
+      max-width: 160px;
+      object-fit: contain;
+    }
   }
 
   .login-welcome {
     margin-bottom: 20px;
+    text-align: center;
 
     .welcome-title {
-      font-size: 21px;
+      font-size: 22px;
     }
   }
 
@@ -938,6 +1010,12 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
     font-size: 14px;
   }
 
+  .otp-box .input-inp {
+    letter-spacing: 6px;
+    font-size: 16px;
+    padding-right: 20px;
+  }
+
   .login-btn {
     height: 46px;
     font-size: 14px;
@@ -953,15 +1031,41 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
     margin-bottom: 16px;
   }
 
+  .back-link {
+    font-size: 13.5px;
+    margin-top: 16px;
+    padding: 10px;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+  }
+
   .otclogo .otclogoimg {
     width: 150px;
   }
 }
 
 @media (max-width: 400px) {
+  .full-logo-box {
+    margin-bottom: 18px;
+
+    .full-logo {
+      height: 28px;
+    }
+  }
+
   .login-form-panel {
-    padding: 20px 16px;
-    padding-top: 36px;
+    padding: 20px 16px 30px;
+  }
+
+  .login-box {
+    max-width: 100%;
+  }
+
+  .auth-step-pill {
+    font-size: 10px;
+    padding: 3px 9px;
+    margin-bottom: 8px;
   }
 
   .toggle-each {

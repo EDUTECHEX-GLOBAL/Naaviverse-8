@@ -62,35 +62,51 @@ const DashboardLoginPage = () => {
       <div className="loginPage-wrapper">
         <div className="loginPage-leftSide">
           <img src={appFullLogo} alt="" className="login-logo" />
-          <input
-            type="text"
-            className="login-input1"
-            placeholder="Email"
-            onChange={(e) => {
-              setEmail(e.target.value);
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!logginin && email && password) attemptLogin();
             }}
-          />
-          <div className="login-input2">
+            style={{ width: "100%" }}
+          >
             <input
-              type="password"
-              placeholder="Password"
+              type="text"
+              className="login-input1"
+              placeholder="Email"
+              value={email}
               onChange={(e) => {
-                setPassword(e.target.value);
+                setEmail(e.target.value);
               }}
             />
-          </div>
-          <div className="forgot-password-div">
-            <div>Forgot Password</div>
-          </div>
-          <div
-            className="login-Btn"
-            onClick={() => {
-              attemptLogin();
-            }}
-            style={{ opacity: logginin ? "0.25" : "1" }}
-          >
-            {logginin ? "Loading..." : "Login"}
-          </div>
+            <div className="login-input2">
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                }}
+              />
+            </div>
+            <div className="forgot-password-div">
+              <div>Forgot Password</div>
+            </div>
+            <button
+              type="submit"
+              className="login-Btn"
+              disabled={logginin || !email || !password}
+              style={{
+                opacity: logginin ? "0.25" : "1",
+                border: "none",
+                outline: "none",
+                font: "inherit",
+                cursor: (logginin || !email || !password) ? "not-allowed" : "pointer",
+                width: "100%"
+              }}
+            >
+              {logginin ? "Loading..." : "Login"}
+            </button>
+          </form>
           <div className="google-Btn">
             <img src={googlelogo} alt="" />
             <div>Continue With Google</div>

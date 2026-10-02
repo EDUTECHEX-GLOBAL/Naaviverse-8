@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import axios from "axios";
 import "./InternalPartners.scss";
 import { toast } from "react-toastify";
+import { Country } from "country-state-city";
+import { getCountryPhoneRules } from "../../UserProfile/LevelOneModal";
+import { validatePersonName } from "../../../utils/emailValidator";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
 
@@ -53,6 +56,134 @@ const InternalPartners = () => {
   const [newTempPassword, setNewTempPassword] = useState("");
   const [showPasswordText, setShowPasswordText] = useState(false);
 
+  // ── Existing country data and calling code options ────────────────────────
+  const allCountries = useMemo(() => {
+    return Country.getAllCountries().sort((a, b) => a.name.localeCompare(b.name));
+  }, []);
+
+  const dialCodeOptions = useMemo(() => {
+    const seen = new Set();
+    const list = [];
+    allCountries.forEach((c) => {
+      if (c.phonecode) {
+        const formattedCode = c.phonecode.startsWith("+") ? c.phonecode : `+${c.phonecode}`;
+        const key = `${c.isoCode}-${formattedCode}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          const rules = getCountryPhoneRules(c.isoCode);
+          list.push({
+            code: formattedCode,
+            isoCode: c.isoCode,
+            name: c.name,
+            flag: c.flag || "",
+            lengths: rules.lengths,
+            minLength: rules.minLength,
+            maxLength: rules.maxLength,
+            formatDescription: rules.formatDescription,
+            placeholder: rules.placeholder,
+          });
+        }
+      }
+    });
+    return list.sort((a, b) => a.name.localeCompare(b.name));
+  }, [allCountries]);
+
+  const [selectedPhoneIso, setSelectedPhoneIso] = useState("IN");
+
+  const currentPhoneCountry = useMemo(() => {
+    return (
+      dialCodeOptions.find((c) => c.isoCode === selectedPhoneIso) ||
+      dialCodeOptions.find((c) => c.isoCode === "IN") ||
+      dialCodeOptions[0] ||
+      {
+        lengths: [10],
+        minLength: 10,
+        maxLength: 10,
+        formatDescription: "exactly 10 digits",
+        placeholder: "9876543210",
+        name: "India",
+        code: "+91",
+        isoCode: "IN",
+        flag: "🇮🇳",
+      }
+    );
+  }, [dialCodeOptions, selectedPhoneIso]);
+
+  // Synchronize calling code when Country input changes
+  useEffect(() => {
+    if (formData.country) {
+      const clean = formData.country.trim().toLowerCase();
+      const match = dialCodeOptions.find(
+        (c) => c.name.toLowerCase() === clean || c.isoCode.toLowerCase() === clean
+      );
+      if (match && match.isoCode !== selectedPhoneIso) {
+        setSelectedPhoneIso(match.isoCode);
+        setFormData((prev) => ({
+          ...prev,
+          phone: (prev.phone || "").slice(0, match.maxLength),
+        }));
+      }
+    }
+  }, [formData.country, dialCodeOptions, selectedPhoneIso]);
+
+  const handlePhoneCountryChange = (isoCode) => {
+    setSelectedPhoneIso(isoCode);
+    const countryObj = dialCodeOptions.find((c) => c.isoCode === isoCode);
+    if (countryObj) {
+      setFormData((prev) => ({
+        ...prev,
+        phone: (prev.phone || "").slice(0, countryObj.maxLength),
+      }));
+    }
+  };
+
+  const handlePartnerPhoneChange = (val) => {
+    const max = currentPhoneCountry.maxLength;
+    const cleanDigits = (val || "").replace(/\D/g, "").slice(0, max);
+    setFormData((prev) => ({ ...prev, phone: cleanDigits }));
+  };
+
+  const handlePhoneKeyDown = (e) => {
+    if (
+      e.key === "Backspace" ||
+      e.key === "Delete" ||
+      e.key === "Tab" ||
+      e.key === "ArrowLeft" ||
+      e.key === "ArrowRight" ||
+      e.key === "ArrowUp" ||
+      e.key === "ArrowDown" ||
+      e.key === "Enter" ||
+      e.ctrlKey ||
+      e.metaKey
+    ) {
+      return;
+    }
+    // Block non-digits
+    if (!/^\d$/.test(e.key)) {
+      e.preventDefault();
+      return;
+    }
+    // Block if current digit length has reached the country's max limit
+    const max = currentPhoneCountry.maxLength;
+    const hasSelection = e.target.selectionStart !== e.target.selectionEnd;
+    if ((formData.phone || "").length >= max && !hasSelection) {
+      e.preventDefault();
+    }
+  };
+
+  const handlePhonePaste = (e) => {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData("text") || "";
+    const cleanPasted = pasted.replace(/\D/g, "");
+    const max = currentPhoneCountry.maxLength;
+    const target = e.target;
+    const start = target.selectionStart || 0;
+    const end = target.selectionEnd || 0;
+    const current = formData.phone || "";
+    const merged = current.slice(0, start) + cleanPasted + current.slice(end);
+    setFormData((prev) => ({ ...prev, phone: merged.slice(0, max) }));
+  };
+
   // Fetch partners from real backend
   const fetchPartners = async () => {
     try {
@@ -74,6 +205,15 @@ const InternalPartners = () => {
   useEffect(() => {
     fetchPartners();
   }, []);
+
+  useEffect(() => {
+    if (selectedPartner) {
+      const updated = partners.find((p) => p.id === selectedPartner.id);
+      if (updated) {
+        setSelectedPartner(updated);
+      }
+    }
+  }, [partners]);
 
   /* ---------------- HELPERS ---------------- */
   const generateStrongPassword = () => {
@@ -101,6 +241,7 @@ const InternalPartners = () => {
 
   const handleOpenCreateModal = () => {
     setIsEditing(false);
+    setSelectedPhoneIso("IN");
     setFormData({
       id: "",
       partnerName: "",
@@ -128,6 +269,26 @@ const InternalPartners = () => {
   const handleOpenEditModal = (partner, e) => {
     e?.stopPropagation();
     setIsEditing(true);
+
+    let rawPhone = getPhoneValue(partner) === "—" ? "" : getPhoneValue(partner);
+    let matchedIso = "IN";
+    if (partner.country) {
+      const cleanC = partner.country.trim().toLowerCase();
+      const match = dialCodeOptions.find(
+        (c) => c.name.toLowerCase() === cleanC || c.isoCode.toLowerCase() === cleanC
+      );
+      if (match) matchedIso = match.isoCode;
+    }
+    if (rawPhone.startsWith("+")) {
+      const matchDial = dialCodeOptions.find((d) => rawPhone.startsWith(d.code));
+      if (matchDial) {
+        matchedIso = matchDial.isoCode;
+        rawPhone = rawPhone.slice(matchDial.code.length).trim();
+      }
+    }
+    setSelectedPhoneIso(matchedIso);
+    const cleanDigits = rawPhone.replace(/\D/g, "");
+
     setFormData({
       id: partner.id,
       partnerName: partner.partnerName,
@@ -135,7 +296,7 @@ const InternalPartners = () => {
       contactPerson: partner.contactPerson || partner.firstName || "",
       lastName: partner.lastName || "",
       email: partner.email,
-      phone: getPhoneValue(partner) === "—" ? "" : getPhoneValue(partner),
+      phone: cleanDigits,
       category: partner.category,
       website: partner.website || "",
       yourPosition: partner.yourPosition || "",
@@ -152,6 +313,92 @@ const InternalPartners = () => {
     setIsFormModalOpen(true);
   };
 
+  const internalPostalTimerRef = useRef(null);
+
+  const cleanInternalPostalPlace = (raw) => {
+    if (!raw) return "";
+    return raw
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/ā/g, "a")
+      .replace(/Ā/g, "A")
+      .replace(/\s+[HSB]\s*\.?O\.?$/i, "")
+      .replace(/\s*\([^)]*\)/g, "")
+      .replace(/\s*(City|GPO|North|South|East|West|Central)$/gi, "")
+      .trim();
+  };
+
+  const lookupInternalPartnerPostal = async (code, countryName) => {
+    const trimmed = (code || "").trim();
+    if (!trimmed || trimmed.length < 3) return;
+
+    try {
+      const activeCountry = countryName || formData.country || "India";
+      const isIndia = activeCountry.toLowerCase() === "india" || /^\d{6}$/.test(trimmed);
+      const iso = isIndia ? "in" : "us";
+
+      const tasks = [
+        fetch(`https://api.zippopotam.us/${iso}/${encodeURIComponent(trimmed)}`, { signal: AbortSignal.timeout(8000) })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (d && d.places && d.places.length > 0) {
+              const p = d.places[0];
+              const c = cleanInternalPostalPlace(p["place name"]);
+              if (c) return { city: c, state: p["state"] || "", country: d.country || activeCountry };
+            }
+            throw new Error("No place");
+          }),
+      ];
+
+      if (isIndia && /^\d{6}$/.test(trimmed)) {
+        tasks.push(
+          fetch(`https://api.postalpincode.in/pincode/${trimmed}`, { signal: AbortSignal.timeout(8000) })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => {
+              const res = d && d[0];
+              if (res && res.Status === "Success" && res.PostOffice?.length > 0) {
+                const po = res.PostOffice[0];
+                const cleanBlock = (po.Block || "").replace(/\s*\(Urban\)/i, "").replace(/\s*\(Rural\)/i, "").trim();
+                const cleanDiv = (po.Division || "").replace(/\s*(City|GPO|North|South|East|West|Central)/gi, "").trim();
+                let extractedCity = "";
+                if (cleanDiv && cleanDiv !== po.District && !po.District.toLowerCase().includes(cleanDiv.toLowerCase())) {
+                  extractedCity = cleanDiv;
+                } else if (cleanBlock && cleanBlock !== po.District && cleanBlock !== "Shaikpet" && !po.District.toLowerCase().includes(cleanBlock.toLowerCase())) {
+                  extractedCity = cleanBlock;
+                } else {
+                  extractedCity = po.District || po.Division || po.Name || "";
+                }
+                const c = cleanInternalPostalPlace(extractedCity);
+                if (c) return { city: c, state: po.State || "", country: po.Country || "India" };
+              }
+              throw new Error("No PO");
+            })
+        );
+      }
+
+      const res = await Promise.any(tasks);
+      if (res) {
+        setFormData((prev) => ({
+          ...prev,
+          city: res.city || prev.city,
+          state: res.state || prev.state,
+          country: prev.country || res.country,
+        }));
+      }
+    } catch (e) {}
+  };
+
+  const handlePincodeChange = (val) => {
+    setFormData((prev) => ({ ...prev, pincode: val }));
+    clearTimeout(internalPostalTimerRef.current);
+    const trimmed = (val || "").trim();
+    if (trimmed.length >= 3) {
+      internalPostalTimerRef.current = setTimeout(() => {
+        lookupInternalPartnerPostal(trimmed, formData.country);
+      }, 250);
+    }
+  };
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (!formData.partnerName || !formData.email || !formData.contactPerson) {
@@ -159,17 +406,63 @@ const InternalPartners = () => {
       return;
     }
 
+    const contactVal = validatePersonName(formData.contactPerson, "First name");
+    if (!contactVal.isValid) {
+      toast.error(contactVal.message);
+      return;
+    }
+
+    if (formData.lastName && formData.lastName.trim()) {
+      const lastVal = validatePersonName(formData.lastName, "Last name");
+      if (!lastVal.isValid) {
+        toast.error(lastVal.message);
+        return;
+      }
+    }
+
+    if (formData.phone) {
+      const phoneDigits = (formData.phone || "").replace(/\D/g, "");
+      const isPhoneValid = currentPhoneCountry.lengths
+        ? currentPhoneCountry.lengths.includes(phoneDigits.length)
+        : phoneDigits.length === currentPhoneCountry.maxLength;
+
+      if (!isPhoneValid) {
+        toast.error(
+          `Phone number for ${currentPhoneCountry.name} must be ${currentPhoneCountry.formatDescription || `${currentPhoneCountry.maxLength} digits`}`
+        );
+        return;
+      }
+    }
+
+    const formattedPhone = formData.phone
+      ? (formData.phone.startsWith("+") ? formData.phone : `${currentPhoneCountry.code} ${formData.phone}`)
+      : "";
+
+    const payload = {
+      ...formData,
+      phone: formattedPhone,
+      phoneNumber: formattedPhone,
+    };
+
     try {
       if (isEditing) {
-        const res = await axios.put(`${BASE_URL}/api/partner/internal/update/${formData.id}`, formData);
+        const res = await axios.put(`${BASE_URL}/api/partner/internal/update/${formData.id}`, payload);
         if (res.data && res.data.success) {
           toast.success(`Partner "${formData.partnerName}" updated!`);
+          if (selectedPartner && selectedPartner.id === formData.id) {
+            setSelectedPartner((prev) => ({
+              ...prev,
+              ...(res.data.data || {}),
+              phone: formattedPhone || res.data.data?.phone || prev.phone,
+              phoneNumber: formattedPhone || res.data.data?.phoneNumber || prev.phoneNumber,
+            }));
+          }
           fetchPartners();
         } else {
           toast.error(res.data?.message || "Failed to update partner");
         }
       } else {
-        const res = await axios.post(`${BASE_URL}/api/partner/internal/create`, formData);
+        const res = await axios.post(`${BASE_URL}/api/partner/internal/create`, payload);
         if (res.data && res.data.success) {
           toast.success(`Internal Partner "${formData.partnerName}" created successfully!`);
           fetchPartners();
@@ -191,6 +484,9 @@ const InternalPartners = () => {
       const res = await axios.patch(`${BASE_URL}/api/partner/internal/status/${partner.id}`);
       if (res.data && res.data.success) {
         toast.info(`Partner "${partner.partnerName}" is now ${res.data.accountStatus}`);
+        if (selectedPartner && selectedPartner.id === partner.id) {
+          setSelectedPartner((prev) => ({ ...prev, accountStatus: res.data.accountStatus }));
+        }
         fetchPartners();
       }
     } catch (err) {
@@ -363,37 +659,37 @@ const InternalPartners = () => {
           <table className="ip-slim-table">
             <thead>
               <tr>
-                <th>Partner Account</th>
-                <th>Category</th>
-                <th>Contact</th>
-                <th>Status</th>
+                <th className="th-partner">Partner Account</th>
+                <th className="th-category">Category</th>
+                <th className="th-contact">Contact</th>
+                <th className="th-status">Status</th>
                 {/* <th>Security</th> */}
-                <th>Offerings</th>
+                <th className="th-offerings">Offerings</th>
                 <th className="th-actions">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredPartners.map((p) => (
                 <tr key={p.id} className={getFamilyClass(p.id)} onClick={() => handleViewDetails(p)}>
-                  <td>
+                  <td className="td-partner">
                     <div className="partner-compact-cell">
                       <div className="avatar-sm">{getInitials(p.partnerName)}</div>
                       <span className="p-title">{p.partnerName}</span>
                     </div>
                   </td>
 
-                  <td>
+                  <td className="td-category">
                     <span className="chip-cat">{p.category}</span>
                   </td>
 
-                  <td>
+                  <td className="td-contact">
                     <div className="contact-compact">
                       <span className="c-person">{p.contactPerson}</span>
                       <span className="c-email">{p.email}</span>
                     </div>
                   </td>
 
-                  <td>
+                  <td className="td-status">
                     <span className={`badge-status ${p.accountStatus}`}>
                       <span className="dot"></span>
                       {p.accountStatus === "active" ? "Active" : "Inactive"}
@@ -408,7 +704,7 @@ const InternalPartners = () => {
                     )}
                   </td> */}
 
-                  <td>
+                  <td className="td-offerings">
                     <div className="offering-compact">
                       <span className="o-num">{p.totalOfferings} items</span>
                       <span className="o-rev">{p.totalRevenue}</span>
@@ -550,10 +846,15 @@ const InternalPartners = () => {
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Dr. Aris"
+                      placeholder="e.g. Aris"
                       value={formData.contactPerson}
                       onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
                     />
+                    {formData.contactPerson && !validatePersonName(formData.contactPerson, "First name").isValid && (
+                      <span style={{ fontSize: "11px", color: "#dc2626", marginTop: "3px" }}>
+                        {validatePersonName(formData.contactPerson, "First name").message}
+                      </span>
+                    )}
                   </div>
                   <div className="m-field">
                     <label>Last Name</label>
@@ -563,6 +864,11 @@ const InternalPartners = () => {
                       value={formData.lastName}
                       onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                     />
+                    {formData.lastName && !validatePersonName(formData.lastName, "Last name").isValid && (
+                      <span style={{ fontSize: "11px", color: "#dc2626", marginTop: "3px" }}>
+                        {validatePersonName(formData.lastName, "Last name").message}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -602,16 +908,102 @@ const InternalPartners = () => {
                   </div>
                   <div className="m-field">
                     <label>Phone Number</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 9876543210"
-                      maxLength={10}
-                      value={formData.phone}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, "").slice(0, 10);
-                        setFormData({ ...formData, phone: val });
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        border: "1px solid var(--border)",
+                        background: "#fafbfe",
+                        borderRadius: "var(--radius-sm)",
+                        height: "38px",
+                        padding: "0 10px",
+                        boxSizing: "border-box",
+                        transition: "all 0.15s ease",
+                        position: "relative",
                       }}
-                    />
+                      className="ip-phone-input-group"
+                    >
+                      {/* Country Calling Code & Flag selector */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          position: "relative",
+                          paddingRight: "8px",
+                          borderRight: "1px solid #d8dae6",
+                          cursor: "pointer",
+                          flexShrink: 0,
+                          height: "100%",
+                        }}
+                      >
+                        <img
+                          src={`https://flagcdn.com/w40/${currentPhoneCountry.isoCode.toLowerCase()}.png`}
+                          alt={currentPhoneCountry.name}
+                          style={{
+                            width: "18px",
+                            height: "12px",
+                            objectFit: "cover",
+                            borderRadius: "2px",
+                            boxShadow: "0 0 1px rgba(0,0,0,0.3)",
+                          }}
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                          }}
+                        />
+                        <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--ink)" }}>
+                          {currentPhoneCountry.code}
+                        </span>
+                        <span style={{ fontSize: "8px", color: "var(--ink-faint)" }}>▼</span>
+                        <select
+                          value={selectedPhoneIso}
+                          onChange={(e) => handlePhoneCountryChange(e.target.value)}
+                          title="Select Country Calling Code"
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            opacity: 0,
+                            cursor: "pointer",
+                          }}
+                        >
+                          {dialCodeOptions.map((opt) => (
+                            <option key={`${opt.isoCode}-${opt.code}`} value={opt.isoCode}>
+                              {opt.name} ({opt.code})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Phone Number Input */}
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        placeholder="Phone Number"
+                        value={formData.phone}
+                        maxLength={currentPhoneCountry.maxLength}
+                        onChange={(e) => handlePartnerPhoneChange(e.target.value)}
+                        onKeyDown={handlePhoneKeyDown}
+                        onPaste={handlePhonePaste}
+                        className="ip-phone-input"
+                        style={{
+                          border: "none",
+                          outline: "none",
+                          background: "transparent",
+                          fontSize: "0.85rem",
+                          fontWeight: "500",
+                          color: "var(--ink)",
+                          flex: 1,
+                          width: "100%",
+                          height: "100%",
+                          padding: "0 0 0 10px",
+                          boxSizing: "border-box",
+                          boxShadow: "none",
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -665,7 +1057,8 @@ const InternalPartners = () => {
                         type="text"
                         placeholder="Pincode"
                         value={formData.pincode}
-                        onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                        onChange={(e) => handlePincodeChange(e.target.value)}
+                        onBlur={() => lookupInternalPartnerPostal(formData.pincode, formData.country)}
                       />
                     </div>
                   </div>
@@ -742,38 +1135,40 @@ const InternalPartners = () => {
               <button className="m-close" onClick={() => setIsResetModalOpen(false)}>✕</button>
             </div>
 
-            <div className="m-body">
-              <p className="reset-desc">
-                Target account: <strong>{resetTargetPartner.email}</strong>
-              </p>
+            <form onSubmit={(e) => { e.preventDefault(); handleConfirmPasswordReset(); }}>
+              <div className="m-body">
+                <p className="reset-desc">
+                  Target account: <strong>{resetTargetPartner.email}</strong>
+                </p>
 
-              <div className="m-field">
-                <label>New Temporary Password</label>
-                <div className="pass-inline-group">
-                  <input
-                    type={showPasswordText ? "text" : "password"}
-                    value={newTempPassword}
-                    onChange={(e) => setNewTempPassword(e.target.value)}
-                  />
-                  <button type="button" className="btn-opt highlight" onClick={() => setNewTempPassword(generateStrongPassword())}>
-                    Generate
-                  </button>
+                <div className="m-field">
+                  <label>New Temporary Password</label>
+                  <div className="pass-inline-group">
+                    <input
+                      type={showPasswordText ? "text" : "password"}
+                      value={newTempPassword}
+                      onChange={(e) => setNewTempPassword(e.target.value)}
+                    />
+                    <button type="button" className="btn-opt highlight" onClick={() => setNewTempPassword(generateStrongPassword())}>
+                      Generate
+                    </button>
+                  </div>
+                </div>
+
+                <div className="copy-snippet-box">
+                  <div className="snippet-top">
+                    <span>Credentials Snippet</span>
+                    <button type="button" className="btn-copy" onClick={handleCopyCredentials}>Copy</button>
+                  </div>
+                  <code>{`Email: ${resetTargetPartner.email}\nPass: ${newTempPassword}`}</code>
                 </div>
               </div>
 
-              <div className="copy-snippet-box">
-                <div className="snippet-top">
-                  <span>Credentials Snippet</span>
-                  <button className="btn-copy" onClick={handleCopyCredentials}>Copy</button>
-                </div>
-                <code>{`Email: ${resetTargetPartner.email}\nPass: ${newTempPassword}`}</code>
+              <div className="m-actions">
+                <button type="button" className="ip-btn-secondary" onClick={() => setIsResetModalOpen(false)}>Cancel</button>
+                <button type="submit" className="ip-btn-primary">Confirm Reset</button>
               </div>
-            </div>
-
-            <div className="m-actions">
-              <button className="ip-btn-secondary" onClick={() => setIsResetModalOpen(false)}>Cancel</button>
-              <button className="ip-btn-primary" onClick={handleConfirmPasswordReset}>Confirm Reset</button>
-            </div>
+            </form>
           </div>
         </div>
       )}

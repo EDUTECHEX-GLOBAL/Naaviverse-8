@@ -147,7 +147,7 @@ const EditServiceForm = ({ service, onSave, onCancel }) => {
 
   return (
     <div className="drawer-content">
-      <div className="edit-form-container">
+      <form onSubmit={(e) => { e.preventDefault(); if (!loading) handleSave(); }} className="edit-form-container">
         <h3>
           {/* <span className="edit-icon">✏️</span> */}
           Edit Service
@@ -409,7 +409,7 @@ const EditServiceForm = ({ service, onSave, onCancel }) => {
             onClick={handleSave} 
             disabled={loading}
             className="save-btn"
-            type="button"
+            type="submit"
           >
             {loading ? (
               <>
@@ -421,7 +421,7 @@ const EditServiceForm = ({ service, onSave, onCancel }) => {
             )}
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };

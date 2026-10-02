@@ -71,6 +71,12 @@ const PreStepTwo = () => {
               onChange={(e) => {
                 setNewPassword(e.target.value);
               }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && validPassword && !loading) {
+                  e.preventDefault();
+                  setStep("step3");
+                }
+              }}
             />
             {newPassword ? (
               <div>
@@ -144,6 +150,12 @@ const PreStepTwo = () => {
               value={newPassword}
               onChange={(e) => {
                 setNewPassword(e.target.value);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && validPassword && !loading) {
+                  e.preventDefault();
+                  setStep("step3");
+                }
               }}
             />
             {newPassword ? (

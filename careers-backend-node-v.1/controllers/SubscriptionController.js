@@ -354,20 +354,43 @@ const checkStepUnlock = async (req, res) => {
       return res.status(400).json({ status: false, message: "email and step_id are required" });
     }
 
-    const sub = await Subscription.findOne({ userEmail: email, productId: PRODUCT_ID });
+    const cleanEmail = String(email).trim().toLowerCase();
+    const subs = await Subscription.find({
+      userEmail: { $regex: new RegExp(`^${cleanEmail}$`, "i") },
+    });
 
-    if (!sub || !Array.isArray(sub.unlockedSteps)) {
+    if (!subs || subs.length === 0) {
       return res.json({ status: true, unlocked: { micro: false, nano: false } });
     }
 
-    const stepUnlocks = sub.unlockedSteps.filter((u) => u.step_id === step_id);
-    const layers = stepUnlocks.map((u) => u.layer);
+    let microUnlocked = false;
+    let nanoUnlocked = false;
+
+    for (const sub of subs) {
+      // Check active subscription coverage
+      if (sub.status === "active") {
+        if (sub.tier === "nano") {
+          microUnlocked = true;
+          nanoUnlocked = true;
+        } else if (sub.tier === "micro") {
+          microUnlocked = true;
+        }
+      }
+
+      // Check step-specific credit unlocks
+      if (Array.isArray(sub.unlockedSteps)) {
+        const stepUnlocks = sub.unlockedSteps.filter((u) => String(u.step_id) === String(step_id));
+        const layers = stepUnlocks.map((u) => u.layer);
+        if (layers.includes("micro")) microUnlocked = true;
+        if (layers.includes("nano")) nanoUnlocked = true;
+      }
+    }
 
     return res.json({
       status: true,
       unlocked: {
-        micro: layers.includes("micro"),
-        nano: layers.includes("nano"),
+        micro: microUnlocked,
+        nano: nanoUnlocked,
       },
     });
   } catch (err) {

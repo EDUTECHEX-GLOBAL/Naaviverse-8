@@ -1,11 +1,28 @@
 const express = require('express');
 const router = express.Router();
 const Contact = require('../models/ContactModel');
+const { validateEmail, validatePersonName } = require('../../utils/emailValidator');
 
 // POST — save message
 router.post('/', async (req, res) => {
   try {
-    await Contact.create(req.body);
+    const { email, fullName, mobile, message } = req.body;
+
+    const validation = validateEmail(email);
+    if (!validation.isValid) {
+      return res.status(400).json({ message: validation.message });
+    }
+
+    const nameValidation = validatePersonName(fullName, "Full name");
+    if (!nameValidation.isValid) {
+      return res.status(400).json({ message: nameValidation.message });
+    }
+
+    await Contact.create({
+      ...req.body,
+      email: validation.cleanEmail,
+      fullName: nameValidation.cleanName,
+    });
     res.status(201).json({ message: "Message saved successfully" });
   } catch (err) {
     res.status(500).json({ message: "Error saving message" });

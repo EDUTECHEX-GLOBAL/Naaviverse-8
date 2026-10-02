@@ -124,6 +124,12 @@ const PreStepOne = () => {
               onChange={(e) => {
                 setTempEmail(e.target.value);
               }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && tempEmail && tempPass && !loading) {
+                  e.preventDefault();
+                  varifyTempDetails();
+                }
+              }}
             />
             {/* {tempEmail ? (
               <div>
@@ -145,6 +151,12 @@ const PreStepOne = () => {
               value={tempPass}
               onChange={(e) => {
                 setTempPass(e.target.value);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && tempEmail && tempPass && !loading) {
+                  e.preventDefault();
+                  varifyTempDetails();
+                }
               }}
             />
             {/* {tempPass ? (
@@ -221,6 +233,12 @@ const PreStepOne = () => {
                 onChange={(e) => {
                   setTempEmail(e.target.value);
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && tempEmail && tempPass && !loading) {
+                    e.preventDefault();
+                    varifyTempDetails();
+                  }
+                }}
               />
               {tempEmail ? (
                 <div>
@@ -242,6 +260,12 @@ const PreStepOne = () => {
                 value={tempPass}
                 onChange={(e) => {
                   setTempPass(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && tempEmail && tempPass && !loading) {
+                    e.preventDefault();
+                    varifyTempDetails();
+                  }
                 }}
               />
               {/* {tempPass ? (

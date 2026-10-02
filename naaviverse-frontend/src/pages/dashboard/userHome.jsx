@@ -250,8 +250,15 @@ export default function UserHome({ initialView = "home" }) {
 
   // ✅ Correct placement - This useEffect scrolls when activeTab changes
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     if (detailCardRef.current) {
-      detailCardRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      const scrollParent = detailCardRef.current.closest('.uh-root') || detailCardRef.current.parentElement;
+      if (scrollParent && typeof scrollParent.scrollTo === 'function') {
+        scrollParent.scrollTo({ top: detailCardRef.current.offsetTop - 20, behavior: "smooth" });
+      }
     }
   }, [activeTab]);
 
@@ -356,55 +363,70 @@ export default function UserHome({ initialView = "home" }) {
         const userPathsData = userPathsRes.status === "fulfilled" ? userPathsRes.value.data?.data || [] : [];
 
         if (txData?.success) {
-          const paidTxns = txData.data.filter((t) => t.status?.toLowerCase() === "paid");
+          const allTxns = (txData.data || []).filter(
+            (t) => t.status?.toLowerCase() !== "pending"
+          );
 
           const isPlatformSubscription = (t) => {
-            if (t.partnerId || t.partnerEmail) return false;
-            const rawName = (t.productName || "").trim();
-            const nameLower = rawName.toLowerCase();
-            if (rawName.startsWith("Marketplace —")) return false;
-            if (t.productId === "naavi-platform") return true;
+            if (!t) return false;
+            const prodId = (t.productId || "").toLowerCase();
+            const prodName = (t.productName || "").trim();
+            const nameLower = prodName.toLowerCase();
 
-            const isExplicitPlan =
+            if (
+              prodId === "naavi-marketplace" ||
+              prodId.startsWith("macro-") ||
+              prodId.startsWith("micro-") ||
+              prodId.startsWith("nano-") ||
+              nameLower.startsWith("marketplace") ||
+              t.partnerId ||
+              t.partnerEmail
+            ) {
+              return false;
+            }
+
+            if (prodId === "naavi-platform" || t.planTier) {
+              return true;
+            }
+
+            return (
               nameLower.includes("nano plan") ||
               nameLower.includes("micro plan") ||
               nameLower.includes("plus plan") ||
               nameLower.includes("pro plan") ||
-              nameLower.includes("proplus plan") ||
-              nameLower.includes("pro plus plan") ||
               nameLower.includes("naavi pro") ||
-              nameLower.includes("platform subscription") ||
-              nameLower.startsWith("plan subscription") ||
-              nameLower.endsWith("plan subscription");
-
-            return isExplicitPlan;
+              nameLower.includes("standard plan") ||
+              nameLower.includes("platform subscription")
+            );
           };
 
           // 1. Subscriptions: Only true platform plan subscriptions (Nano, Micro, Pro, Plus, Naavi Platform)
-          const subTxns = paidTxns.filter(isPlatformSubscription).map((t) => {
-            const cleanName = (t.productName || "Naavi Plan Subscription")
-              .replace(/^Marketplace \(Free\) —\s*/i, "")
-              .replace(/^Marketplace —\s*/i, "")
-              .replace(/^Subscription —\s*/i, "");
-            return {
-              id: t._id,
-              name: cleanName,
-              service: "Plan Subscription",
-              billing: "Monthly",
-              amount: `₹${(t.amount || 0).toLocaleString("en-IN")}`,
-              rawAmount: t.amount || 0,
-              date: new Date(t.createdAt || Date.now()).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              }),
-              status: "Paid",
-              partner: "Naavi",
-            };
-          });
+          const subTxns = allTxns
+            .filter((t) => t.status?.toLowerCase() === "paid" && isPlatformSubscription(t))
+            .map((t) => {
+              const cleanName = (t.productName || "Naavi Plan Subscription")
+                .replace(/^Marketplace \(Free\) —\s*/i, "")
+                .replace(/^Marketplace —\s*/i, "")
+                .replace(/^Subscription —\s*/i, "");
+              return {
+                id: t._id,
+                name: cleanName,
+                service: "Plan Subscription",
+                billing: "Monthly",
+                amount: `₹${(t.amount || 0).toLocaleString("en-IN")}`,
+                rawAmount: t.amount || 0,
+                date: new Date(t.createdAt || Date.now()).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                }),
+                status: "Paid",
+                partner: "Naavi",
+              };
+            });
 
-          // 2. Marketplace Purchases & Free Enrollments
-          const marketTxns = paidTxns
+          // 2. Marketplace Purchases & Items
+          const marketTxns = allTxns
             .filter((t) => !isPlatformSubscription(t))
             .map((t) => {
               const rawName = t.productName || "Marketplace Item";
@@ -413,10 +435,10 @@ export default function UserHome({ initialView = "home" }) {
                 .replace(/^Marketplace —\s*/i, "")
                 .replace(/^Subscription —\s*/i, "");
 
+              const isFailed = t.status?.toLowerCase() === "failed";
               const isFree =
-                Number(t.amount || 0) === 0 ||
-                t.tier === "macro" ||
-                rawName.toLowerCase().includes("(free)");
+                !isFailed &&
+                (Number(t.amount || 0) === 0 || rawName.toLowerCase().includes("(free)"));
 
               const typeLabel = t.tier
                 ? t.tier.charAt(0).toUpperCase() + t.tier.slice(1)
@@ -430,19 +452,18 @@ export default function UserHome({ initialView = "home" }) {
                 type: typeLabel,
                 plan: isFree
                   ? "Macro View"
-                  : t.tier === "subscription"
-                  ? "Subscription"
                   : "Marketplace",
-                cost: isFree ? "Free" : `₹${(t.amount || 0).toLocaleString("en-IN")}`,
+                cost: isFree ? "₹0" : `₹${(t.amount || 0).toLocaleString("en-IN")}`,
                 amount: t.amount || 0,
                 isFree,
+                isFailed,
                 date: new Date(t.createdAt || Date.now()).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
                   year: "numeric",
                 }),
                 rawDate: new Date(t.createdAt || Date.now()).getTime(),
-                status: isFree ? "Free" : "Paid",
+                status: isFailed ? "Failed" : isFree ? "Free" : "Paid",
                 icon: isFree ? "🧭" : "🛍️",
               };
             });
@@ -461,9 +482,10 @@ export default function UserHome({ initialView = "home" }) {
               name: `${pathName} (Macro View)`,
               type: "Macro",
               plan: "Macro View",
-              cost: "Free",
+              cost: "₹0",
               amount: 0,
               isFree: true,
+              isFailed: false,
               date: new Date(up.createdAt || Date.now()).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
@@ -599,6 +621,7 @@ export default function UserHome({ initialView = "home" }) {
 
         const pName = pathData?.name || pathData?.nameOfPath || "";
         localStorage.setItem("selectedPathName", pName);
+        window.dispatchEvent(new Event("naavi:path-selected"));
 
         setMyPath({
           name: pName || "—",
@@ -874,21 +897,21 @@ export default function UserHome({ initialView = "home" }) {
                   <div className="uh-purchase-emoji">{m.icon}</div>
                   <div className="uh-purchase-info">
                     <span className="uh-purchase-name">{m.name}</span>
-                    <span className="uh-purchase-meta">{m.type} · {m.isFree ? "Enrolled" : "Purchased"} {m.date}</span>
+                    <span className="uh-purchase-meta">{m.type} · {m.isFailed ? "Failed on " : m.isFree ? "Enrolled " : "Purchased "} {m.date}</span>
                   </div>
                   <div className="uh-purchase-right">
                     <span className={`uh-plan-tag p-${(m.plan || "").toLowerCase().replace(/\s+/g, "-")}`}>{m.plan}</span>
-                    <span className="uh-purchase-cr" style={{ color: m.isFree ? "#4f46e5" : "#0d9488", fontWeight: "bold" }}>{m.cost}</span>
+                    <span className="uh-purchase-cr" style={{ color: m.isFailed ? "#dc2626" : m.isFree ? "#4f46e5" : "#0d9488", fontWeight: "bold" }}>{m.cost}</span>
                   </div>
-                  <span className={`uh-status-dot ${m.isFree ? "s-free" : "s-active"}`}>
-                    {m.isFree ? "Free" : "Paid"}
+                  <span className={`uh-status-dot ${m.isFailed ? "s-failed" : m.isFree ? "s-free" : "s-active"}`}>
+                    {m.status}
                   </span>
                 </div>
               ))}
             </div>
             <div className="uh-purchases-total">
               <span>Total spent</span>
-              <strong>₹{purchases.reduce((s, p) => s + (p.amount || 0), 0).toLocaleString("en-IN")}</strong>
+              <strong>₹{purchases.filter(p => p.status === "Paid").reduce((s, p) => s + (p.amount || 0), 0).toLocaleString("en-IN")}</strong>
             </div>
           </>
         )}
@@ -1056,57 +1079,31 @@ export default function UserHome({ initialView = "home" }) {
           </div>
         ) : (
           <>
-            <div className="uh-purchases-list" style={{ gap: "8px" }}>
+            <div className="uh-purchases-list uh-subs-list">
               {displaySubs.map(sub => (
-                <div
-                  key={sub.id}
-                  style={{
-                    padding: "11px 15px",
-                    background: "#ffffff",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "10px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: "12px",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.03)"
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        alignSelf: "center",
-                        padding: "3px 9px",
-                        background: "#f0fdf4",
-                        border: "1px solid #bbf7d0",
-                        borderRadius: "16px",
-                        fontSize: "11px",
-                        fontWeight: "500",
-                        color: "#16a34a",
-                        whiteSpace: "nowrap",
-                        flexShrink: 0
-                      }}
-                    >
+                <div key={sub.id} className="uh-sub-row">
+                  <div className="uh-sub-top">
+                    <span className="uh-sub-partner-badge">
                       • {sub.partner || "Naavi"}
                     </span>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: "13px", fontWeight: "600", color: "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <div className="uh-sub-info">
+                      <div className="uh-sub-name">
                         {sub.name}
                       </div>
-                      <div style={{ fontSize: "11px", color: "#64748b", marginTop: "1px" }}>
+                      <div className="uh-sub-meta">
                         {sub.service || "Plan"} · {sub.date}
                       </div>
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
-                    <span style={{ fontSize: "13px", fontWeight: "600", color: "#0f172a" }}>{sub.amount}</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", alignSelf: "center", padding: "3px 9px", background: "#fef3c7", border: "1px solid #fde68a", color: "#d97706", borderRadius: "16px", fontSize: "11px", fontWeight: "500" }}>
-                      {sub.billing || "Monthly"}
-                    </span>
-                    <span style={{ display: "inline-flex", alignItems: "center", alignSelf: "center", padding: "3px 9px", background: "#dcfce7", border: "1px solid #bbf7d0", color: "#15803d", borderRadius: "16px", fontSize: "11px", fontWeight: "500" }}>
+                  <div className="uh-sub-bottom">
+                    <div className="uh-sub-bottom-left">
+                      <span className="uh-sub-amount">{sub.amount}</span>
+                      <span className="uh-sub-billing-badge">
+                        {sub.billing || "Monthly"}
+                      </span>
+                    </div>
+                    <span className="uh-sub-status-badge">
                       • {sub.status || "Paid"}
                     </span>
                   </div>
@@ -1427,7 +1424,7 @@ export default function UserHome({ initialView = "home" }) {
 
       {/* ── BOTTOM STRIP ────────────────────────────────────────────────────── */}
       <div className="uh-bottom-strip">
-        <div className="uh-bs-item" onClick={() => navigate("/dashboard/users/MyPath")}>
+        <div className="uh-bs-item" onClick={() => navigate("/dashboard/users/my-journey")}>
           <span className="uh-bs-num">{myPath ? `${myPath.doneCount}/${myPath.totalSteps}` : "—"}</span>
           <span className="uh-bs-label">Steps done</span>
           <Icon type="arrow-r" size={11} color="#3b82f6" />

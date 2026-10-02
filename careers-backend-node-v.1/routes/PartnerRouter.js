@@ -35,6 +35,7 @@ router.get("/logout",               logout);
 
 // ── OTP & Verification ────────────────────────────────────────────────────
 router.post("/verifyotp",           verifyOtp);
+router.post("/verifyOTP",           verifyOtp);
 router.post("/forgotPassword",      forgotPassword);
 router.post("/updatepassword",      updatePassword);
 router.post("/resetPassword/:token", resetPassword);

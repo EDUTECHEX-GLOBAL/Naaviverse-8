@@ -27,6 +27,14 @@ body {
   font-family: 'Poppins', sans-serif !important;
 }
 
+/* Protect icon fonts from font-family override */
+.bi, [class^="bi-"], [class*=" bi-"] {
+  font-family: bootstrap-icons !important;
+}
+.fa, .fas, .far, .fab, [class^="fa-"], [class*=" fa-"] {
+  font-family: "Font Awesome 5 Free", "FontAwesome" !important;
+}
+
 /* 🔥 IMAGE + ICON + CONTENT FIX (VERY IMPORTANT) */
 img,
 svg {

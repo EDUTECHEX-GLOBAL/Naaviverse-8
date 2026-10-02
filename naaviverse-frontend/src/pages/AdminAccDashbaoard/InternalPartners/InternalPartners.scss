@@ -34,7 +34,7 @@
   --shadow-card: 0 1px 2px rgba(18, 22, 43, 0.04), 0 10px 24px rgba(18, 22, 43, 0.05);
   --shadow-pop: 0 20px 48px rgba(18, 22, 43, 0.16);
 
-  padding: 22px 26px 40px;
+  padding: 16px 20px 28px;
   background: var(--canvas);
   min-height: 100vh;
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -61,9 +61,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
-  margin-bottom: 18px;
-  padding: 0 2px 16px;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding: 0 2px 10px;
   border-bottom: 1px solid var(--border-soft);
 }
 
@@ -75,7 +75,7 @@
 
     h2 {
       font-family: "Poppins", sans-serif;
-      font-size: 1.4rem;
+      font-size: 1.35rem;
       font-weight: 700;
       color: var(--ink);
       margin: 0;
@@ -84,25 +84,25 @@
   }
 
   .sub-title {
-    font-size: 0.83rem;
+    font-size: 0.8rem;
     color: var(--ink-soft);
-    margin: 3px 0 0;
+    margin: 2px 0 0;
   }
 }
 
 .ip-btn-primary {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   background: var(--accent);
   color: #ffffff;
   border: none;
-  padding: 2px 6px;
+  padding: 6px 13px;
   border-radius: var(--radius-sm);
-  font-size: 0.83rem;
+  font-size: 0.81rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 8px 18px var(--accent-ring);
+  box-shadow: 0 6px 14px var(--accent-ring);
   transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   white-space: nowrap;
 
@@ -202,21 +202,21 @@
 .ip-compact-toolbar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 11px;
   flex-wrap: wrap;
 }
 
 .ip-search-inline {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   background: var(--surface);
   border: 1px solid var(--border);
-  padding: 0 12px;
+  padding: 0 10px;
   border-radius: var(--radius-sm);
-  width: 320px;
-  height: 38px;
+  width: 290px;
+  height: 34px;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
   &:focus-within {
@@ -228,7 +228,7 @@
     border: none;
     outline: none;
     width: 100%;
-    font-size: 0.83rem;
+    font-size: 0.81rem;
     color: var(--ink);
     background: transparent;
 
@@ -239,7 +239,7 @@
     background: none;
     border: none;
     color: var(--ink-faint);
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     cursor: pointer;
     &:hover { color: var(--ink); }
   }
@@ -248,16 +248,16 @@
 .ip-segment-pills {
   display: flex;
   background: #eef0f7;
-  padding: 3px;
+  padding: 2px;
   border-radius: var(--radius-sm);
   gap: 2px;
 
   .seg-btn {
     background: none;
     border: none;
-    padding: 7px 13px;
-    border-radius: 8px;
-    font-size: 0.79rem;
+    padding: 5px 11px;
+    border-radius: 7px;
+    font-size: 0.76rem;
     font-weight: 600;
     color: var(--ink-soft);
     cursor: pointer;
@@ -276,28 +276,28 @@
 .ip-select-compact {
   background: var(--surface);
   border: 1px solid var(--border);
-  padding: 0 12px;
+  padding: 0 10px;
   border-radius: var(--radius-sm);
-  font-size: 0.79rem;
+  font-size: 0.76rem;
   font-weight: 600;
   color: #3f3f46;
   outline: none;
-  height: 38px;
+  height: 34px;
   cursor: pointer;
 }
 
 .ip-view-switch {
   display: flex;
   background: #eef0f7;
-  padding: 3px;
+  padding: 2px;
   border-radius: var(--radius-sm);
   margin-left: auto;
 
   .v-btn {
     background: none;
     border: none;
-    padding: 6px 9px;
-    border-radius: 8px;
+    padding: 4px 7px;
+    border-radius: 7px;
     color: var(--ink-soft);
     cursor: pointer;
     display: flex;
@@ -318,45 +318,56 @@
 .ip-table-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   overflow-x: auto;
   box-shadow: var(--shadow-card);
 }
 
 .ip-slim-table {
   width: 100%;
-  min-width: 850px;
+  min-width: 780px;
   border-collapse: collapse;
   text-align: left;
+  table-layout: fixed;
 
   th {
     background: #fafbfe;
     color: var(--ink-soft);
-    font-size: 0.7rem;
+    font-size: 0.69rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 12px 14px;
+    letter-spacing: 0.04em;
+    padding: 9px 12px;
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
 
+    &.th-partner { width: 28%; }
+    &.th-category { width: 17%; }
+    &.th-contact { width: 24%; }
+    &.th-status { width: 11%; }
+    &.th-offerings { width: 9%; }
     &.th-actions {
-      min-width: 170px;
-      width: 170px;
+      width: 11%;
+      min-width: 125px;
       text-align: right;
     }
   }
 
   td {
-    padding: 12px 14px;
+    padding: 8px 12px;
     border-bottom: 1px solid var(--border-soft);
-    font-size: 0.82rem;
+    font-size: 0.81rem;
     vertical-align: middle;
     white-space: nowrap;
 
+    &.td-partner { width: 28%; }
+    &.td-category { width: 17%; }
+    &.td-contact { width: 24%; }
+    &.td-status { width: 11%; }
+    &.td-offerings { width: 9%; }
     &.td-actions {
-      min-width: 170px;
-      width: 170px;
+      width: 11%;
+      min-width: 125px;
       text-align: right;
     }
 
@@ -375,14 +386,15 @@
 .partner-compact-cell {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 9px;
+  min-width: 0;
 
   .avatar-sm {
-    width: 34px;
-    height: 34px;
-    border-radius: 11px;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
     color: #ffffff;
-    font-size: 0.76rem;
+    font-size: 0.72rem;
     font-weight: 700;
     display: flex;
     align-items: center;
@@ -394,42 +406,59 @@
   .p-title {
     font-weight: 600;
     color: var(--ink);
-    font-size: 0.85rem;
+    font-size: 0.83rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
 .chip-cat {
   background: #f1f2f8;
   color: #4b4f63;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 999px;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .contact-compact {
   display: flex;
   flex-direction: column;
   gap: 1px;
+  line-height: 1.25;
+  min-width: 0;
 
   .c-person {
     font-weight: 600;
     color: #27272a;
+    font-size: 0.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .c-email {
-    font-size: 0.72rem;
+    font-size: 0.71rem;
     color: var(--ink-soft);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
 .badge-status {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
+  gap: 4px;
+  padding: 3px 8px;
   border-radius: 999px;
-  font-size: 0.72rem;
+  font-size: 0.69rem;
   font-weight: 600;
 
   .dot {
@@ -453,9 +482,9 @@
 
 .chip-sec {
   display: inline-block;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  padding: 4px 9px;
+  padding: 3px 8px;
   border-radius: 999px;
 
   &.temp {
@@ -473,15 +502,16 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
+  line-height: 1.25;
 
   .o-num {
     font-weight: 600;
     color: #27272a;
-    font-size: 0.78rem;
+    font-size: 0.76rem;
   }
 
   .o-rev {
-    font-size: 0.72rem;
+    font-size: 0.71rem;
     color: var(--accent-strong);
     font-weight: 600;
   }
@@ -491,14 +521,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 4px;
 
   .act-btn {
     background: #f8f8fc;
     border: 1px solid var(--border);
-    border-radius: 9px;
-    width: 30px;
-    height: 30px;
+    border-radius: 7px;
+    width: 27px;
+    height: 27px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -506,7 +536,11 @@
     cursor: pointer;
     transition: all 0.15s ease;
 
-    svg { display: block; }
+    svg {
+      width: 13px;
+      height: 13px;
+      display: block;
+    }
 
     &:hover { transform: translateY(-1px); }
 
@@ -823,6 +857,36 @@
     }
 
     textarea { resize: vertical; }
+
+    .ip-phone-input-group {
+      &:focus-within {
+        border-color: #c7bffb !important;
+        background: #ffffff !important;
+        box-shadow: 0 0 0 3px var(--accent-ring) !important;
+      }
+
+      input.ip-phone-input {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 0 0 10px !important;
+        border-radius: 0 !important;
+        height: 100% !important;
+
+        &:focus {
+          border: none !important;
+          background: transparent !important;
+          box-shadow: none !important;
+        }
+      }
+
+      select {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+    }
   }
 
   .pass-inline-group {

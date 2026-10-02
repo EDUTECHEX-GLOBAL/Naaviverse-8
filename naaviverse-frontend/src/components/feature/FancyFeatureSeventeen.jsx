@@ -7,7 +7,7 @@ const ServiceContent = [
   {
     icon: icon32,
     title: "Smart Path Guidance",
-    desc: "Get personalized recommendations based on your interests, strengths, and goals",
+    desc: "Get personalized recommendations based on your interests, strengths, and goals.",
     color: "#E1F0FA",  // Soft blue
     gradient: "linear-gradient(135deg, rgba(225, 240, 250, 0.75) 0%, rgba(200, 225, 245, 0.65) 100%)",
     borderColor: "rgba(120, 170, 210, 0.25)"
@@ -15,7 +15,7 @@ const ServiceContent = [
   {
     icon: icon31,
     title: "Structured Learning Roadmaps",
-    desc: "Follow step-by-step plans that guide you to target at every stage of your journey.",
+    desc: "Follow step-by-step plans that guide you to your target at every stage of your journey.",
     color: "#E0F0E8",  // Soft green-blue
     gradient: "linear-gradient(135deg, rgba(224, 240, 232, 0.75) 0%, rgba(190, 225, 210, 0.65) 100%)",
     borderColor: "rgba(100, 170, 150, 0.25)"
@@ -23,7 +23,7 @@ const ServiceContent = [
   {
     icon: icon33,
     title: "Insights & Expert Support",
-    desc: "Access smart insights, curated resources, and one-to-one guidance to make confident decisions",
+    desc: "Access smart insights, curated resources, and one-to-one guidance to make confident decisions.",
     color: "#FFF2D9",  // Soft yellow
     gradient: "linear-gradient(135deg, rgba(255, 242, 217, 0.75) 0%, rgba(250, 230, 190, 0.65) 100%)",
     borderColor: "rgba(220, 180, 120, 0.25)"
@@ -91,7 +91,11 @@ const FancyFeatureSeventeen = () => {
 
                   <p className="card-description">{val.desc}</p>
 
-                  <button className="action-button">
+                  <button
+                    type="button"
+                    className="action-button"
+                    aria-label={`Explore ${val.title}`}
+                  >
                     Explore Feature
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                       <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

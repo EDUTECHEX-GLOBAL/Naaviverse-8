@@ -26,6 +26,7 @@ import {
   IconMessageSquare,
   IconBookmark,
 } from "./pages/Icons";
+import { cleanLocationText } from "./utils/textUtils";
 import "./App.css";
 
 const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:8001" : "");
@@ -33,7 +34,7 @@ const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0
 function buildPositionLabel(profile) {
   if (!profile) return "Profile unavailable";
   // PART 4: No default data in current position — show only user-provided values
-  return profile.name || "Student";
+  return cleanLocationText(profile.name) || "Student";
 }
 
 async function pathRecordExists(dbId) {
@@ -88,7 +89,7 @@ export default function App() {
 
   const [pathData, setPathData] = useState(() => {
     const email = (() => {
-      try { return JSON.parse(localStorage.getItem("nv_session") || "null"); }
+      try { return JSON.parse(sessionStorage.getItem("nv_session") || "null"); }
       catch { return null; }
     })();
     if (!email) return null;
@@ -102,7 +103,7 @@ export default function App() {
   const [selectedAltIdx, setSelectedAltIdx] = useState(0);
   const [userInput, setUserInput] = useState(() => {
     const email = (() => {
-      try { return JSON.parse(localStorage.getItem("nv_session") || "null"); }
+      try { return JSON.parse(sessionStorage.getItem("nv_session") || "null"); }
       catch { return null; }
     })();
     if (!email) return { current: "", goal: "" };
@@ -162,6 +163,7 @@ export default function App() {
     return (
       <Routes>
         <Route path="/login" element={<AuthFlow onAuthenticated={handleAuthenticated} />} />
+        <Route path="/" element={<AuthFlow onAuthenticated={handleAuthenticated} />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
@@ -395,7 +397,7 @@ export default function App() {
 
         {/* Topbar */}
         <header className={`maps-topbar ${!isDashboard ? "has-back" : ""}`}>
-          <button className="hamburger-btn" onClick={() => setSidebarOpen(o => !o)} aria-label="Open navigation menu">
+          <button className="hamburger-btn" onClick={() => setSidebarOpen(o => !o)} aria-label="Toggle navigation menu" title="Toggle navigation menu">
             <IconMenu size={20} />
           </button>
 
@@ -409,14 +411,14 @@ export default function App() {
             <div className="route-search-point"><IconPin size={14} /></div>
             <div className="route-search-copy route-from">
               <span>From</span>
-              <strong>{userInput?.current || buildPositionLabel(profile) || "Please select"}</strong>
+              <strong>{cleanLocationText(userInput?.current) || cleanLocationText(buildPositionLabel(profile)) || "Please select"}</strong>
             </div>
             <div className="route-search-divider" />
             <div className="route-search-point goal"><IconTarget size={14} /></div>
             <div className="route-search-copy route-to">
               <span>To</span>
               <strong style={{ color: !userInput?.goal ? "#94a3b8" : "inherit" }}>
-                {userInput?.goal || "Please select"}
+                {cleanLocationText(userInput?.goal) || "Please select"}
               </strong>
             </div>
             <div className="route-search-divider" />
@@ -433,16 +435,16 @@ export default function App() {
             </div>
           </div>
 
-          <div className="topbar-profile">
-            <IconBuilding size={15} />
-            <span>{profile?.city || activeEmail}</span>
+          <div className="topbar-profile" title={cleanLocationText(profile?.city) || activeEmail}>
+            <IconPin size={15} />
+            <span>{cleanLocationText(profile?.city) || activeEmail}</span>
           </div>
         </header>
 
         {/* Main content */}
         <main className="app-main">
           <Routes>
-            <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/login" element={<AuthFlow onAuthenticated={handleAuthenticated} />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={
               <Dashboard

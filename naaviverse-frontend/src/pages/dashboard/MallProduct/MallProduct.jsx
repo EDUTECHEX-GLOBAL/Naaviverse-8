@@ -46,7 +46,7 @@ const MallProduct = () => {
   return (
     <div className="dashboard-main">
       <div className="dashboard-body">
-        <div onClick={() => setShowDrop(false)}>
+        <div onClick={() => setShowDrop(false)} style={{ display: "flex", height: "100%", flexShrink: 0 }}>
           <Dashsidebar isNotOnMainPage={true} />
         </div>
         <div className="dashboard-screens" style={{ height: "100%" }}>

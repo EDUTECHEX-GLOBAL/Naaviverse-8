@@ -166,8 +166,14 @@ router.post("/verify", async (req, res) => {
 
     if (expectedSignature !== razorpay_signature) {
       await Payment.findOneAndUpdate(
-        { razorpayOrderId: razorpay_order_id },
-        { status: "failed" }
+        { razorpayOrderId: razorpay_order_id, status: { $ne: "paid" } },
+        { 
+          status: "failed",
+          razorpayPaymentId: razorpay_payment_id,
+          failureReason: "Payment signature verification failed",
+          errorCode: "INVALID_SIGNATURE",
+          errorDescription: "Signature returned by Razorpay did not match",
+        }
       );
       return res.status(400).json({ success: false, message: "Invalid signature" });
     }
@@ -268,16 +274,238 @@ router.post("/verify", async (req, res) => {
 });
 
 // ═════════════════════════════════════════
+//   RECORD PAYMENT FAILURE
+//   POST /api/payment/failure (and /record-failure)
+// ═════════════════════════════════════════
+const handlePaymentFailure = async (req, res) => {
+  try {
+    const {
+      razorpay_order_id,
+      order_id,
+      orderId,
+      razorpay_payment_id,
+      payment_id,
+      paymentId,
+      error_code,
+      errorCode,
+      error_description,
+      errorDescription,
+      error_reason,
+      errorReason,
+      error_source,
+      errorSource,
+      error_step,
+      errorStep,
+      failureReason,
+      userEmail,
+      email,
+      amount,
+      productId,
+      productName,
+      billingMethod,
+      tier,
+      planTier,
+      currency,
+    } = req.body;
+
+    const targetOrderId = razorpay_order_id || order_id || orderId || null;
+    const targetPaymentId = razorpay_payment_id || payment_id || paymentId || null;
+    const targetEmail = (userEmail || email || "").toLowerCase().trim();
+    const finalReason = error_description || errorDescription || error_reason || errorReason || failureReason || "Payment was declined or failed";
+    const finalCode = error_code || errorCode || null;
+    const finalDesc = error_description || errorDescription || null;
+    const finalSource = error_source || errorSource || null;
+    const finalStep = error_step || errorStep || null;
+
+    let payment = null;
+
+    // 1. Try to find existing record by order ID or payment ID
+    if (targetOrderId) {
+      payment = await Payment.findOne({ razorpayOrderId: targetOrderId });
+    }
+    if (!payment && targetPaymentId) {
+      payment = await Payment.findOne({ razorpayPaymentId: targetPaymentId });
+    }
+
+    // 2. Prevent overwriting a successful payment (Requirement 8)
+    if (payment && payment.status === "paid") {
+      console.log(`ℹ️ Payment ${payment._id} is already marked as paid. Ignoring failure report.`);
+      return res.json({
+        success: true,
+        message: "Payment is already marked as paid",
+        payment,
+      });
+    }
+
+    // 3. Update existing record if found (Requirement 7 - prevents duplicate records)
+    if (payment) {
+      payment.status = "failed";
+      if (targetPaymentId && !payment.razorpayPaymentId) {
+        payment.razorpayPaymentId = targetPaymentId;
+      }
+      payment.failureReason = finalReason;
+      payment.errorCode = finalCode;
+      payment.errorDescription = finalDesc;
+      payment.errorSource = finalSource;
+      payment.errorStep = finalStep;
+      if (amount && (!payment.amount || payment.amount === 0)) {
+        payment.amount = Number(amount);
+      }
+      await payment.save();
+      console.log(`⚠️ Payment record ${payment._id} updated to failed: ${finalReason}`);
+      return res.json({
+        success: true,
+        message: "Payment status updated to failed",
+        payment,
+      });
+    }
+
+    // 4. If no existing payment record found, create a new one (Requirement 2 & 4)
+    if (targetEmail) {
+      const newPayment = await Payment.create({
+        userEmail: targetEmail,
+        productId: productId || "naavi-platform",
+        productName: productName || "Naavi Platform Subscription",
+        billingMethod: ["monthly", "annual", "lifetime"].includes(billingMethod) ? billingMethod : "monthly",
+        amount: Number(amount) || 0,
+        currency: currency || "INR",
+        tier: ["macro", "micro", "nano"].includes(tier) ? tier : "micro",
+        planTier: ["standard", "pro", "proplus"].includes(planTier) ? planTier : "standard",
+        status: "failed",
+        razorpayOrderId: targetOrderId,
+        razorpayPaymentId: targetPaymentId || `FAILED_${Date.now()}`,
+        failureReason: finalReason,
+        errorCode: finalCode,
+        errorDescription: finalDesc,
+        errorSource: finalSource,
+        errorStep: finalStep,
+      });
+      console.log(`⚠️ New failed payment record created: ${newPayment._id} for ${targetEmail}`);
+      return res.json({
+        success: true,
+        message: "Failed payment recorded",
+        payment: newPayment,
+      });
+    }
+
+    return res.status(400).json({
+      success: false,
+      error: "Missing required order ID or user email to record payment failure",
+    });
+
+  } catch (err) {
+    console.error("❌ Record failure error:", err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+router.post("/failure", handlePaymentFailure);
+router.post("/record-failure", handlePaymentFailure);
+
+// ═════════════════════════════════════════
+//   RAZORPAY WEBHOOK HANDLER
+//   POST /api/payment/webhook
+// ═════════════════════════════════════════
+router.post("/webhook", async (req, res) => {
+  try {
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    if (webhookSecret) {
+      const signature = req.headers["x-razorpay-signature"];
+      const expectedSignature = crypto
+        .createHmac("sha256", webhookSecret)
+        .update(JSON.stringify(req.body))
+        .digest("hex");
+
+      if (expectedSignature !== signature) {
+        console.warn("⚠️ Invalid Razorpay webhook signature");
+        return res.status(400).json({ success: false, message: "Invalid webhook signature" });
+      }
+    }
+
+    const event = req.body?.event;
+    console.log(`🔔 Razorpay Webhook Event: ${event}`);
+
+    if (event === "payment.failed") {
+      const paymentEntity = req.body?.payload?.payment?.entity;
+      if (paymentEntity) {
+        const orderId = paymentEntity.order_id;
+        const paymentId = paymentEntity.id;
+        const email = paymentEntity.email;
+        const amount = paymentEntity.amount ? paymentEntity.amount / 100 : 0;
+        const failureReason = paymentEntity.error_description || paymentEntity.error_reason || "Payment failed via webhook";
+        const errorCode = paymentEntity.error_code;
+        const errorDesc = paymentEntity.error_description;
+        const errorSource = paymentEntity.error_source;
+        const errorStep = paymentEntity.error_step;
+
+        let payment = null;
+        if (orderId) {
+          payment = await Payment.findOne({ razorpayOrderId: orderId });
+        }
+        if (!payment && paymentId) {
+          payment = await Payment.findOne({ razorpayPaymentId: paymentId });
+        }
+
+        // Do not overwrite if already paid
+        if (payment && payment.status === "paid") {
+          return res.json({ status: "ok", message: "Already paid" });
+        }
+
+        if (payment) {
+          payment.status = "failed";
+          payment.razorpayPaymentId = paymentId || payment.razorpayPaymentId;
+          payment.failureReason = failureReason;
+          payment.errorCode = errorCode || payment.errorCode;
+          payment.errorDescription = errorDesc || payment.errorDescription;
+          payment.errorSource = errorSource || payment.errorSource;
+          payment.errorStep = errorStep || payment.errorStep;
+          await payment.save();
+          console.log(`⚠️ Webhook updated payment ${payment._id} to failed`);
+        } else if (email) {
+          await Payment.create({
+            userEmail: String(email).toLowerCase().trim(),
+            productId: paymentEntity.notes?.productId || "naavi-platform",
+            productName: paymentEntity.notes?.productName || "Naavi Subscription",
+            billingMethod: paymentEntity.notes?.billingMethod || "monthly",
+            amount,
+            currency: paymentEntity.currency || "INR",
+            tier: paymentEntity.notes?.tier || "micro",
+            planTier: paymentEntity.notes?.planTier || "standard",
+            status: "failed",
+            razorpayOrderId: orderId,
+            razorpayPaymentId: paymentId,
+            failureReason,
+            errorCode,
+            errorDescription: errorDesc,
+            errorSource,
+            errorStep,
+          });
+          console.log(`⚠️ Webhook created new failed payment record for ${email}`);
+        }
+      }
+    }
+
+    return res.json({ status: "ok" });
+  } catch (err) {
+    console.error("❌ Webhook error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ═════════════════════════════════════════
 //   GET TRANSACTIONS
 // ═════════════════════════════════════════
 router.get("/transactions", async (req, res) => {
   try {
     const { email } = req.query;
-    const payments = await Payment.find({ userEmail: email }).sort({ createdAt: -1 });
+    const query = email
+      ? { userEmail: { $regex: new RegExp(`^${String(email).trim()}$`, "i") } }
+      : {};
+    const payments = await Payment.find(query).sort({ createdAt: -1 });
     return res.json({ success: true, data: payments });
   } catch (err) {
     console.error("❌ Fetch transactions error:", err);
-    res.status(500).json({ success: false });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -418,8 +646,14 @@ router.post("/marketplace-verify", async (req, res) => {
 
     if (expectedSig !== razorpay_signature) {
       await Payment.findOneAndUpdate(
-        { razorpayOrderId: razorpay_order_id },
-        { status: "failed" }
+        { razorpayOrderId: razorpay_order_id, status: { $ne: "paid" } },
+        { 
+          status: "failed",
+          razorpayPaymentId: razorpay_payment_id,
+          failureReason: "Marketplace payment signature verification failed",
+          errorCode: "INVALID_SIGNATURE",
+          errorDescription: "Signature returned by Razorpay did not match",
+        }
       );
       return res.status(400).json({ success: false, message: "Invalid payment signature" });
     }

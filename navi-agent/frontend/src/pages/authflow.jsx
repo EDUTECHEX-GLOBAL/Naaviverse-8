@@ -1,25 +1,36 @@
 import { useState } from "react";
+import { sanitizeProfileLocations } from "../utils/textUtils";
 
 // ── localStorage helpers ──────────────────────────────────
 const SESSION_KEY = "nv_session";
 const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:8001" : "");
 
 function getLocalProfile(email) {
-  try { return JSON.parse(localStorage.getItem(`nv_profile_${email}`) || "null"); }
+  try {
+    const prof = JSON.parse(localStorage.getItem(`nv_profile_${email}`) || "null");
+    return sanitizeProfileLocations(prof);
+  }
   catch { return null; }
 }
 function saveLocalProfile(email, profile) {
-  localStorage.setItem(`nv_profile_${email}`, JSON.stringify(profile));
+  const sanitized = sanitizeProfileLocations(profile);
+  localStorage.setItem(`nv_profile_${email}`, JSON.stringify(sanitized));
 }
 function getSession() {
-  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); }
+  try {
+    if (localStorage.getItem(SESSION_KEY)) {
+      localStorage.removeItem(SESSION_KEY);
+    }
+  } catch {}
+  try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || "null"); }
   catch { return null; }
 }
 function saveSession(email) {
-  localStorage.setItem(SESSION_KEY, JSON.stringify(email));
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(email));
 }
 function clearSession() {
-  localStorage.removeItem(SESSION_KEY);
+  try { sessionStorage.removeItem(SESSION_KEY); } catch {}
+  try { localStorage.removeItem(SESSION_KEY); } catch {}
 }
 
 // ── Field configs ─────────────────────────────────────────
@@ -108,9 +119,17 @@ export default function AuthFlow({ onAuthenticated }) {
           </span> */}
         </div>
 
-        <div className="auth-card">
+        <form
+          className="auth-card"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (email.trim() && password.trim()) {
+              handleLogin();
+            }
+          }}
+        >
           <div className="auth-card-head">
-            <h2 className="auth-title">Path Engine Admin Login</h2>
+            <h2 className="auth-title">Naavi Agent Login</h2>
             {/* <p className="auth-sub">
               Log in with your administrator credentials to curate career pathways and manage student signals.
             </p> */}
@@ -124,7 +143,6 @@ export default function AuthFlow({ onAuthenticated }) {
               placeholder="pathengine.admin@gmail.com"
               value={email}
               onChange={e => { setEmail(e.target.value); setEmailError(""); }}
-              onKeyDown={e => e.key === "Enter" && handleLogin()}
               autoFocus
             />
            
@@ -139,7 +157,6 @@ export default function AuthFlow({ onAuthenticated }) {
                 placeholder="••••••••"
                 value={password}
                 onChange={e => { setPassword(e.target.value); setEmailError(""); }}
-                onKeyDown={e => e.key === "Enter" && handleLogin()}
               />
               <button
                 type="button"
@@ -153,13 +170,13 @@ export default function AuthFlow({ onAuthenticated }) {
           </div>
 
           <button
+            type="submit"
             className="auth-btn-primary"
-            onClick={handleLogin}
             disabled={!email.trim() || !password.trim()}
           >
             Log In →
           </button>
-        </div>
+        </form>
       </div>
 
       <div className="auth-visual">

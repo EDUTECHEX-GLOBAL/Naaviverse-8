@@ -145,7 +145,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 8px 16px;
   background: #e6f3f4;
   border-radius: 12px;
   padding: 10px 16px;
@@ -164,9 +164,27 @@
 
   .back-label {
     color: #4b5e6b;
-    flex: 1;
+    flex: 1 1 260px;
     min-width: 0;
-    word-break: break-word;
+    word-break: normal;
+    overflow-wrap: break-word;
+    line-height: 1.45;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 12px 14px;
+
+    .back-label {
+      width: 100%;
+      flex: none;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      padding-top: 6px;
+      border-top: 1px solid rgba(13, 107, 110, 0.14);
+    }
   }
 }
 

@@ -7,11 +7,11 @@ const FaqContent = [
         desc: `Educational pathways are structured routes that guide students through various learning experiences, helping them achieve specific academic or career goals. `,
         expand: 'a'
     }, {
-        title: 'How should we interact or provide information?',
+        title: 'How should we interact or provide information?',
         desc: `We should interact by delivering clear, concise, and relevant information that aligns with the needs and interests of the audience. Engaging communication fosters understanding and encourages meaningful dialogue.`,
         expand: 'b'
     }, {
-        title: 'How does the personalisation works?',
+        title: 'How does personalization work?',
         desc: `Personalization works by analyzing individual preferences, behaviors, and data to tailor content or experiences to each user. It ensures relevance by adapting to unique needs, creating a more engaging and customized interaction.`,
         expand: 'c'
     },

@@ -107,6 +107,8 @@ const Loginpage = ({ initialType }) => {
     const [code, setCode] = useState("");
     const [newPassword1, setNewPassword1] = useState("");
     const [newPassword2, setNewPassword2] = useState("");
+    const [forgotEye1, setForgotEye1] = useState(false);
+    const [forgotEye2, setForgotEye2] = useState(false);
     const [passwordResetMsg, setPasswordResetMsg] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -186,6 +188,12 @@ const Loginpage = ({ initialType }) => {
             setLoginType("Accountants");
         } else if (role === "Users" || role === "user" || type === "user") {
             setLoginType("Users");
+        }
+
+        const testForgotStep = urlParams.get("testForgotStep");
+        if (testForgotStep) {
+            setForgotPassword(true);
+            setForgotPasswordStep(parseInt(testForgotStep, 10));
         }
     }, [initialType, setLoginType]);
 
@@ -815,9 +823,33 @@ const Loginpage = ({ initialType }) => {
                 { value: "4.9★", label: "Partner Rating" },
             ],
         },
+        ForgotPasswordUsers: {
+            badge: "Account Security & Recovery",
+            title: "Reset Your",
+            highlight: "Password",
+            subtitle: "Follow the simple verification steps to securely reset your credentials and access your dashboard.",
+            stats: [
+                { value: "100%", label: "Secure Recovery" },
+                { value: "256-bit", label: "Encryption" },
+                { value: "Instant", label: "Verification" },
+            ],
+        },
+        ForgotPasswordPartners: {
+            badge: "Partner Account Security",
+            title: "Recover Partner",
+            highlight: "Account",
+            subtitle: "Reset your partner password securely to regain access to your client management dashboard.",
+            stats: [
+                { value: "100%", label: "Secure Recovery" },
+                { value: "256-bit", label: "Encryption" },
+                { value: "Instant", label: "Verification" },
+            ],
+        },
     };
 
-    const hero = heroContent[loginType] || heroContent.Users;
+    const hero = forgotPassword
+        ? (loginType === "Accountants" ? heroContent.ForgotPasswordPartners : heroContent.ForgotPasswordUsers)
+        : (heroContent[loginType] || heroContent.Users);
 
     // ── RENDER: FORGOT PASSWORD FLOWS ──
     const renderForgotPassword = () => {
@@ -828,38 +860,54 @@ const Loginpage = ({ initialType }) => {
                         <img className="full-logo" src={logo} alt="Naaviverse" />
                     </div>
                     <div className="login-welcome">
+                        <div className="auth-step-pill">Step 1 of 4</div>
                         <div className="welcome-title">Reset Password</div>
                         <div className="welcome-subtitle">Enter your email address and we'll send you a verification code.</div>
                     </div>
-                    <div className="input-box">
-                        <EmailIcon />
-                        <input
-                            className="input-inp"
-                            type="text"
-                            placeholder="Email address"
-                            required
-                            value={email}
-                            onInput={(e) => {
-                                setiserror(false);
-                                setemail(e.target.value);
-                            }}
-                        />
-                    </div>
-                    <div
-                        className={`login-btn ${loading || !email ? "disabled" : ""}`}
-                        onClick={initiateForgotPassword}
-                    >
-                        {loading ? "Sending..." : "Send Verification Code"}
-                    </div>
-                    <div
-                        className="back-link"
-                        onClick={() => {
-                            setForgotPassword(false);
-                            setemail("");
-                            setLoading(false);
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            if (!loading && email) initiateForgotPassword();
                         }}
+                        style={{ width: "100%" }}
                     >
-                        ← Back to Login
+                        <div className="input-box">
+                            <EmailIcon />
+                            <input
+                                className="input-inp"
+                                type="email"
+                                placeholder="Email address"
+                                required
+                                value={email}
+                                autoCapitalize="none"
+                                autoComplete="email"
+                                onInput={(e) => {
+                                    setiserror(false);
+                                    setemail(e.target.value);
+                                }}
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className={`login-btn ${loading || !email ? "disabled" : ""}`}
+                            disabled={loading || !email}
+                        >
+                            {loading ? "Sending..." : "Send Verification Code"}
+                        </button>
+                    </form>
+                    <div className="login-footer-link" style={{ marginTop: "20px" }}>
+                        Remember your password?{" "}
+                        <span
+                            className="link-highlight"
+                            onClick={() => {
+                                setForgotPassword(false);
+                                setForgotPasswordStep(1);
+                                setemail("");
+                                setLoading(false);
+                            }}
+                        >
+                            Sign In
+                        </span>
                     </div>
                 </div>
             );
@@ -872,136 +920,207 @@ const Loginpage = ({ initialType }) => {
                         <img className="full-logo" src={logo} alt="Naaviverse" />
                     </div>
                     <div className="login-welcome">
+                        <div className="auth-step-pill">Step 2 of 4</div>
                         <div className="welcome-title">Verify Code</div>
-                        <div className="welcome-subtitle">We've sent a verification code to your email. Please enter it below.</div>
+                        <div className="welcome-subtitle">We've sent a 6-digit verification code to your email. Please enter it below.</div>
                     </div>
-                    <div className="input-box otp-box">
-                        <OtpIcon />
-                        <input
-                            className="input-inp"
-                            type="text"
-                            placeholder="Enter 6-digit code"
-                            value={code}
-                            onInput={(e) => setCode(e.target.value)}
-                            maxLength={6}
-                        />
-                    </div>
-                    <div
-                        className={`login-btn ${code?.length === 6 ? "" : "disabled"}`}
-                        onClick={() => code?.length === 6 && setForgotPasswordStep(3)}
-                    >
-                        Verify Code
-                    </div>
-                    <div
-                        className="back-link"
-                        onClick={() => {
-                            setForgotPasswordStep(1);
-                            setCode("");
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            if (code?.length === 6) setForgotPasswordStep(3);
                         }}
+                        style={{ width: "100%" }}
                     >
-                        ← Go Back
+                        <div className="input-box otp-box">
+                            <OtpIcon />
+                            <input
+                                className="input-inp"
+                                type="text"
+                                placeholder="Enter 6-digit code"
+                                value={code}
+                                onInput={(e) => setCode(e.target.value.replace(/[^0-9]/g, ""))}
+                                maxLength={6}
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                autoComplete="one-time-code"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className={`login-btn ${code?.length === 6 ? "" : "disabled"}`}
+                            disabled={code?.length !== 6}
+                        >
+                            Verify Code
+                        </button>
+                    </form>
+                    <div className="login-footer-link" style={{ marginTop: "20px" }}>
+                        <span
+                            className="link-highlight"
+                            onClick={() => {
+                                setForgotPasswordStep(1);
+                                setCode("");
+                            }}
+                        >
+                            ← Back to Email
+                        </span>
                     </div>
                 </div>
             );
         }
 
         if (forgotPasswordStep === 3) {
+            const isMinLength = (newPassword1 || "").length >= 6;
+
             return (
                 <div className="login-box">
                     <div className="full-logo-box">
                         <img className="full-logo" src={logo} alt="Naaviverse" />
                     </div>
                     <div className="login-welcome">
+                        <div className="auth-step-pill">Step 3 of 4</div>
                         <div className="welcome-title">New Password</div>
-                        <div className="welcome-subtitle">Create a strong password for your account.</div>
+                        <div className="welcome-subtitle">Create a strong password for your account (at least 6 characters).</div>
                     </div>
-                    <div className="input-box password-box">
-                        <LockIcon />
-                        <input
-                            className="input-inp"
-                            type="password"
-                            placeholder="New password"
-                            value={newPassword1}
-                            onInput={(e) => setNewPassword1(e.target.value)}
-                        />
-                        <div className="password-check">
-                            <div
-                                style={{
-                                    background:
-                                        newPassword1?.length >= 6
-                                            ? "linear-gradient(90deg, #47B4D5 0.02%, #29449D 119.26%)"
-                                            : "#FE2C55",
-                                }}
-                            ></div>
-                        </div>
-                    </div>
-                    <div
-                        className={`login-btn ${newPassword1?.length >= 6 ? "" : "disabled"}`}
-                        onClick={() => newPassword1?.length >= 6 && setForgotPasswordStep(4)}
-                    >
-                        Continue
-                    </div>
-                    <div
-                        className="back-link"
-                        onClick={() => {
-                            setForgotPasswordStep(2);
-                            setNewPassword1("");
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            if (isMinLength) setForgotPasswordStep(4);
                         }}
+                        style={{ width: "100%" }}
                     >
-                        ← Go Back
+                        <div className="input-box password-box">
+                            <LockIcon />
+                            <input
+                                className="input-inp"
+                                type={forgotEye1 ? "text" : "password"}
+                                placeholder="New password"
+                                value={newPassword1}
+                                onInput={(e) => setNewPassword1(e.target.value)}
+                            />
+                            <div className="eye-icon" onClick={() => setForgotEye1(!forgotEye1)}>
+                                <EyeIcon open={forgotEye1} />
+                            </div>
+                        </div>
+
+                        {newPassword1?.length > 0 && (
+                            <div style={{
+                                fontSize: "0.8rem",
+                                fontWeight: "500",
+                                marginTop: "-4px",
+                                marginBottom: "14px",
+                                paddingLeft: "4px",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                color: isMinLength ? "#16a34a" : "#dc2626"
+                            }}>
+                                {isMinLength ? (
+                                    <><span>✓</span> Password meets minimum length (6+ characters)</>
+                                ) : (
+                                    <><span>✕</span> Password must be at least 6 characters</>
+                                )}
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            className={`login-btn ${isMinLength ? "" : "disabled"}`}
+                            disabled={!isMinLength}
+                        >
+                            Continue
+                        </button>
+                    </form>
+                    <div className="login-footer-link" style={{ marginTop: "20px" }}>
+                        <span
+                            className="link-highlight"
+                            onClick={() => {
+                                setForgotPasswordStep(2);
+                                setNewPassword1("");
+                            }}
+                        >
+                            ← Back to Code Verification
+                        </span>
                     </div>
                 </div>
             );
         }
 
         if (forgotPasswordStep === 4) {
+            const isMinLength = (newPassword2 || "").length >= 6;
+            const isMatching = newPassword2 === newPassword1 && newPassword2.length > 0;
+            const isValid = isMinLength && isMatching;
+
             return (
                 <div className="login-box">
                     <div className="full-logo-box">
                         <img className="full-logo" src={logo} alt="Naaviverse" />
                     </div>
                     <div className="login-welcome">
+                        <div className="auth-step-pill">Step 4 of 4</div>
                         <div className="welcome-title">Confirm Password</div>
                         <div className="welcome-subtitle">Re-enter your new password to confirm.</div>
                     </div>
-                    <div className="input-box password-box">
-                        <LockIcon />
-                        <input
-                            className="input-inp"
-                            type="password"
-                            placeholder="Confirm password"
-                            value={newPassword2}
-                            onInput={(e) => setNewPassword2(e.target.value)}
-                        />
-                        <div className="password-check">
-                            <div
-                                style={{
-                                    background:
-                                        newPassword2?.length >= 6 && newPassword2 === newPassword1
-                                            ? "linear-gradient(90deg, #47B4D5 0.02%, #29449D 119.26%)"
-                                            : "#FE2C55",
-                                }}
-                            ></div>
-                        </div>
-                    </div>
-                    <div
-                        className={`login-btn ${newPassword2?.length >= 6 && newPassword2 === newPassword1 ? "" : "disabled"}`}
-                        onClick={() =>
-                            newPassword2?.length >= 6 &&
-                            newPassword2 === newPassword1 &&
-                            submitForgotPassword()
-                        }
-                    >
-                        Reset Password
-                    </div>
-                    <div
-                        className="back-link"
-                        onClick={() => {
-                            setForgotPasswordStep(3);
-                            setNewPassword2("");
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            if (isValid && !loading) {
+                                submitForgotPassword();
+                            }
                         }}
+                        style={{ width: "100%" }}
                     >
-                        ← Go Back
+                        <div className="input-box password-box">
+                            <LockIcon />
+                            <input
+                                className="input-inp"
+                                type={forgotEye2 ? "text" : "password"}
+                                placeholder="Confirm password"
+                                value={newPassword2}
+                                onInput={(e) => setNewPassword2(e.target.value)}
+                            />
+                            <div className="eye-icon" onClick={() => setForgotEye2(!forgotEye2)}>
+                                <EyeIcon open={forgotEye2} />
+                            </div>
+                        </div>
+
+                        {newPassword2?.length > 0 && (
+                            <div style={{
+                                fontSize: "0.8rem",
+                                fontWeight: "500",
+                                marginTop: "-4px",
+                                marginBottom: "14px",
+                                paddingLeft: "4px",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                color: isMatching ? "#16a34a" : "#dc2626"
+                            }}>
+                                {isMatching ? (
+                                    <><span>✓</span> Passwords match</>
+                                ) : (
+                                    <><span>✕</span> Passwords do not match</>
+                                )}
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            className={`login-btn ${isValid && !loading ? "" : "disabled"}`}
+                            disabled={!isValid || loading}
+                        >
+                            {loading ? "Resetting Password..." : "Reset Password"}
+                        </button>
+                    </form>
+                    <div className="login-footer-link" style={{ marginTop: "20px" }}>
+                        <span
+                            className="link-highlight"
+                            onClick={() => {
+                                setForgotPasswordStep(3);
+                                setNewPassword2("");
+                            }}
+                        >
+                            ← Back to New Password
+                        </span>
                     </div>
                 </div>
             );
@@ -1037,79 +1156,84 @@ const Loginpage = ({ initialType }) => {
                     </div>
                 )}
 
-                <div className="input-box password-box">
-                    <LockIcon />
-                    <input
-                        className="input-inp"
-                        type={forceEye1 ? "text" : "password"}
-                        placeholder="New Password (min. 6 characters)"
-                        value={forceNewPassword}
-                        onChange={(e) => {
-                            setForcePasswordError("");
-                            setForceNewPassword(e.target.value);
-                        }}
-                    />
-                    <div className="eye-icon" onClick={() => setForceEye1(!forceEye1)}>
-                        <EyeIcon open={forceEye1} />
-                    </div>
-                </div>
-                {forceNewPassword.length > 0 && forceNewPassword.length < 6 && (
-                    <div style={{ fontSize: "0.78rem", color: "#dc2626", marginTop: "4px", paddingLeft: "4px" }}>
-                        Password must be at least 6 characters
-                    </div>
-                )}
-
-                <div className="input-box password-box" style={{ marginTop: "12px" }}>
-                    <LockIcon />
-                    <input
-                        className="input-inp"
-                        type={forceEye2 ? "text" : "password"}
-                        placeholder="Confirm New Password"
-                        value={forceConfirmPassword}
-                        onChange={(e) => {
-                            setForcePasswordError("");
-                            setForceConfirmPassword(e.target.value);
-                        }}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter" && isPasswordValid) handleForcePasswordUpdate(e);
-                        }}
-                    />
-                    <div className="eye-icon" onClick={() => setForceEye2(!forceEye2)}>
-                        <EyeIcon open={forceEye2} />
-                    </div>
-                </div>
-
-                {forceConfirmPassword.length > 0 && (
-                    <div style={{
-                        fontSize: "0.8rem",
-                        fontWeight: "500",
-                        marginTop: "6px",
-                        paddingLeft: "4px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        color: isMatching && isMinLength ? "#16a34a" : "#dc2626"
-                    }}>
-                        {isMatching && isMinLength ? (
-                            <><span>✓</span> Passwords match</>
-                        ) : !isMinLength ? (
-                            <><span>✕</span> Password must be at least 6 characters</>
-                        ) : (
-                            <><span>✕</span> Passwords do not match</>
-                        )}
-                    </div>
-                )}
-
-                <div
-                    className={`login-btn ${forcePasswordLoading || !isPasswordValid ? "disabled" : ""}`}
-                    style={{ marginTop: "20px" }}
-                    onClick={(e) => {
-                        if (!isPasswordValid || forcePasswordLoading) return;
-                        handleForcePasswordUpdate(e);
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        if (isPasswordValid && !forcePasswordLoading) {
+                            handleForcePasswordUpdate(e);
+                        }
                     }}
+                    style={{ width: "100%" }}
                 >
-                    {forcePasswordLoading ? "Updating Password..." : "Set Password & Continue"}
-                </div>
+                    <div className="input-box password-box">
+                        <LockIcon />
+                        <input
+                            className="input-inp"
+                            type={forceEye1 ? "text" : "password"}
+                            placeholder="New Password (min. 6 characters)"
+                            value={forceNewPassword}
+                            onChange={(e) => {
+                                setForcePasswordError("");
+                                setForceNewPassword(e.target.value);
+                            }}
+                        />
+                        <div className="eye-icon" onClick={() => setForceEye1(!forceEye1)}>
+                            <EyeIcon open={forceEye1} />
+                        </div>
+                    </div>
+                    {forceNewPassword.length > 0 && forceNewPassword.length < 6 && (
+                        <div style={{ fontSize: "0.78rem", color: "#dc2626", marginTop: "4px", paddingLeft: "4px" }}>
+                            Password must be at least 6 characters
+                        </div>
+                    )}
+
+                    <div className="input-box password-box" style={{ marginTop: "12px" }}>
+                        <LockIcon />
+                        <input
+                            className="input-inp"
+                            type={forceEye2 ? "text" : "password"}
+                            placeholder="Confirm New Password"
+                            value={forceConfirmPassword}
+                            onChange={(e) => {
+                                setForcePasswordError("");
+                                setForceConfirmPassword(e.target.value);
+                            }}
+                        />
+                        <div className="eye-icon" onClick={() => setForceEye2(!forceEye2)}>
+                            <EyeIcon open={forceEye2} />
+                        </div>
+                    </div>
+
+                    {forceConfirmPassword.length > 0 && (
+                        <div style={{
+                            fontSize: "0.8rem",
+                            fontWeight: "500",
+                            marginTop: "6px",
+                            paddingLeft: "4px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            color: isMatching && isMinLength ? "#16a34a" : "#dc2626"
+                        }}>
+                            {isMatching && isMinLength ? (
+                                <><span>✓</span> Passwords match</>
+                            ) : !isMinLength ? (
+                                <><span>✕</span> Password must be at least 6 characters</>
+                            ) : (
+                                <><span>✕</span> Passwords do not match</>
+                            )}
+                        </div>
+                    )}
+
+                    <button
+                        type="submit"
+                        className={`login-btn ${forcePasswordLoading || !isPasswordValid ? "disabled" : ""}`}
+                        style={{ marginTop: "20px" }}
+                        disabled={!isPasswordValid || forcePasswordLoading}
+                    >
+                        {forcePasswordLoading ? "Updating Password..." : "Set Password & Continue"}
+                    </button>
+                </form>
             </div>
         );
     };
@@ -1211,70 +1335,61 @@ const Loginpage = ({ initialType }) => {
                 </div>
             )}
 
-            {!loginError && iserror && (
-                <div className="prompt-div">
-                    <div>
-                        <img src={info} alt="" />
-                    </div>
-                    <div>
-                        The credentials you entered are incorrect. Please try again or
-                        reset your password.
-                    </div>
-                </div>
-            )}
-
-            <div className="input-box">
-                <EmailIcon />
-                <input
-                    className="input-inp"
-                    type="text"
-                    placeholder="Email address"
-                    value={email}
-                    onInput={(e) => {
-                        setLoginError(null);
-                        setiserror(false);
-                        setemail(e.target.value);
-                    }}
-                    onBlur={handleEmailBlur}
-                />
-            </div>
-
-            <div className="input-box password-box">
-                <LockIcon />
-                <input
-                    className="input-inp"
-                    type={eye ? "text" : "password"}
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => {
-                        if (loginError?.type === "invalid_password" || loginError?.type === "error") {
+                       <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    if (email && password && !isLoading) handleLogin();
+                }}
+                style={{ width: "100%" }}
+            >
+                <div className="input-box">
+                    <EmailIcon />
+                    <input
+                        className="input-inp"
+                        type="text"
+                        placeholder="Email address"
+                        value={email}
+                        onInput={(e) => {
                             setLoginError(null);
-                        }
-                        setiserror(false);
-                        setpassword(e.target.value);
-                    }}
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter" && email && password) {
-                            handleLogin();
-                        }
-                    }}
-                />
-                <div className="eye-icon" onClick={() => seteye(!eye)}>
-                    {eye ? (
-                        <svg viewBox="0 0 24 24" fill="none"><path d="M3 3l18 18M10.6 10.6a2.5 2.5 0 0 0 3.5 3.5M6.6 6.7C4.5 8.1 3 10 2.5 12c1.3 4.2 5.3 7 9.5 7 1.6 0 3.1-.4 4.4-1.1M9.9 4.2A10.6 10.6 0 0 1 12 4c4.2 0 8.2 2.8 9.5 7-.4 1.3-1 2.5-1.9 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                    ) : (
-                        <svg viewBox="0 0 24 24" fill="none"><path d="M2.5 12C3.8 7.8 7.8 5 12 5s8.2 2.8 9.5 7c-1.3 4.2-5.3 7-9.5 7s-8.2-2.8-9.5-7Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.6" /></svg>
-                    )}
+                            setiserror(false);
+                            setemail(e.target.value);
+                        }}
+                        onBlur={handleEmailBlur}
+                    />
                 </div>
-            </div>
 
-            <div className="forgot" onClick={() => setForgotPassword(true)}>
-                Forgot Password?
-            </div>
+                <div className="input-box password-box">
+                    <LockIcon />
+                    <input
+                        className="input-inp"
+                        type={eye ? "text" : "password"}
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => {
+                            if (loginError?.type === "invalid_password" || loginError?.type === "error") {
+                                setLoginError(null);
+                            }
+                            setiserror(false);
+                            setpassword(e.target.value);
+                        }}
+                    />
+                    <div className="eye-icon" onClick={() => seteye(!eye)}>
+                        <EyeIcon open={eye} />
+                    </div>
+                </div>
 
-            <div className="login-btn" onClick={handleLogin}>
-                Sign In
-            </div>
+                <div className="forgot" onClick={() => setForgotPassword(true)}>
+                    Forgot Password?
+                </div>
+
+                <button
+                    type="submit"
+                    className={`login-btn ${(!email || !password || isLoading) ? "disabled" : ""}`}
+                    disabled={!email || !password || isLoading}
+                >
+                    {isLoading ? "Signing in..." : "Sign In"}
+                </button>
+            </form>
 
             <div className="login-divider">
                 <div className="divider-line"></div>
@@ -1334,27 +1449,32 @@ const Loginpage = ({ initialType }) => {
 
     return (
         <div className="login-main">
-            {/* ── LEFT HERO PANEL ── */}
+            {/* ── LEFT HERO PANEL (Logo above image in both desktop and mobile) ── */}
             <div className="login-hero-panel">
-                <img src={loginHero} alt="Platform visual" className="hero-bg" />
-                <div className="hero-overlay"></div>
-                <div className="hero-content">
-                    <div className="hero-badge">
-                        <span className="badge-dot"></span>
-                        {hero.badge}
-                    </div>
-                    <h1 className="hero-title">
-                        {hero.title}{" "}
-                        <span className="hero-highlight">{hero.highlight}</span>
-                    </h1>
-                    <p className="hero-subtitle">{hero.subtitle}</p>
-                    <div className="hero-stats">
-                        {hero.stats.map((stat, i) => (
-                            <div className="stat-item" key={i}>
-                                <div className="stat-value">{stat.value}</div>
-                                <div className="stat-label">{stat.label}</div>
-                            </div>
-                        ))}
+                <div className="auth-hero-header">
+                    <img src={logo} alt="SkillNaav" className="auth-hero-logo" onClick={() => navigate("/")} />
+                </div>
+                <div className="hero-visual-area">
+                    <img src={loginHero} alt="Platform visual" className="hero-bg" />
+                    <div className="hero-overlay"></div>
+                    <div className="hero-content">
+                        <div className="hero-badge">
+                            <span className="badge-dot"></span>
+                            {hero.badge}
+                        </div>
+                        <h1 className="hero-title">
+                            {hero.title}{" "}
+                            <span className="hero-highlight">{hero.highlight}</span>
+                        </h1>
+                        <p className="hero-subtitle">{hero.subtitle}</p>
+                        <div className="hero-stats">
+                            {hero.stats.map((stat, i) => (
+                                <div className="stat-item" key={i}>
+                                    <div className="stat-value">{stat.value}</div>
+                                    <div className="stat-label">{stat.label}</div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

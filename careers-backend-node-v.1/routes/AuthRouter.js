@@ -23,6 +23,7 @@ router.post("/login", login);
 router.post("/google-login", googleLogin);
 router.get("/logout", logout);
 router.post("/verifyOTP", verifyOTP);
+router.post("/verifyotp", verifyOTP);
 router.post("/forgotPassword", forgotPassword);
 router.post("/updatepassword", updatePassword);
 router.post("/changePassword", updatePassword);

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, { useState, useRef, useEffect, useContext, useMemo } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../accDashbaoard/accDashboard.scss";
@@ -25,6 +25,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import AccDashsidebar from "../../components/accDashsidebar/accDashsidebar";
+import { validatePersonName } from "../../utils/emailValidator";
 import {
   GetFollowersPerAccount,
   GetCategoriesAcc,
@@ -60,8 +61,9 @@ import {
 import { uploadImageFunc } from "../../utils/imageUpload";
 import classNames from "../../components/createAccountant/components.module.scss";
 import trash from "../accDashbaoard/trash.svg";
-import { State } from "country-state-city";
+import { Country, State } from "country-state-city";
 import MenuNav from "../../components/MenuNav/index.jsx";
+import { getCountryPhoneRules } from "../UserProfile/LevelOneModal";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -321,6 +323,147 @@ const AccProfile = () => {
     return '';
   });
   const [position, setPosition] = useState('');
+  const [phone, setPhone] = useState('');
+
+  // ── Automatic City & State lookup from Postal Code for Partner Profile ───
+  const partnerPostalTimerRef = useRef(null);
+
+  const cleanPostalPlaceName = (raw) => {
+    if (!raw) return "";
+    return raw
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/ā/g, "a")
+      .replace(/Ā/g, "A")
+      .replace(/\s+[HSB]\s*\.?O\.?$/i, "")
+      .replace(/\s*\([^)]*\)/g, "")
+      .replace(/\s*(City|GPO|North|South|East|West|Central)$/gi, "")
+      .trim();
+  };
+
+  const lookupPartnerPostalCode = async (postalCodeVal, currentCountry) => {
+    const trimmed = (postalCodeVal || "").trim();
+    if (!trimmed || trimmed.length < 3) return;
+
+    try {
+      const activeCountry = currentCountry || businessCountry || "India";
+      const isIndia = activeCountry.toLowerCase() === "india" || /^\d{6}$/.test(trimmed);
+
+      // Determine ISO for Zippopotam
+      let countryIso = isIndia ? "in" : "us";
+      if (activeCountry && countryApiValue?.length) {
+        const found = countryApiValue.find(
+          (c) => c?.name?.common?.toLowerCase() === activeCountry.toLowerCase()
+        );
+        if (found?.cca2) countryIso = found.cca2.toLowerCase();
+      }
+
+      const tasks = [];
+
+      // Task 1: Zippopotam (sub-second fast response)
+      tasks.push(
+        fetch(`https://api.zippopotam.us/${countryIso}/${encodeURIComponent(trimmed)}`, { signal: AbortSignal.timeout(8000) })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (d && d.places && d.places.length > 0) {
+              const place = d.places[0];
+              const cName = cleanPostalPlaceName(place["place name"]);
+              if (cName) {
+                return {
+                  city: cName,
+                  state: place["state"] || "",
+                  country: d.country || activeCountry || "India",
+                };
+              }
+            }
+            throw new Error("No place");
+          })
+      );
+
+      // Task 2: India Post API (if 6-digit PIN code)
+      if (isIndia && /^\d{6}$/.test(trimmed)) {
+        tasks.push(
+          fetch(`https://api.postalpincode.in/pincode/${trimmed}`, { signal: AbortSignal.timeout(8000) })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => {
+              const res = d && d[0];
+              if (res && res.Status === "Success" && res.PostOffice && res.PostOffice.length > 0) {
+                const po = res.PostOffice[0];
+                const cleanBlock = (po.Block || "").replace(/\s*\(Urban\)/i, "").replace(/\s*\(Rural\)/i, "").trim();
+                const cleanDiv = (po.Division || "").replace(/\s*(City|GPO|North|South|East|West|Central)/gi, "").trim();
+                let extractedCity = "";
+                if (cleanDiv && cleanDiv !== po.District && !po.District.toLowerCase().includes(cleanDiv.toLowerCase())) {
+                  extractedCity = cleanDiv;
+                } else if (cleanBlock && cleanBlock !== po.District && cleanBlock !== "Shaikpet" && !po.District.toLowerCase().includes(cleanBlock.toLowerCase())) {
+                  extractedCity = cleanBlock;
+                } else {
+                  extractedCity = po.District || po.Division || po.Name || "";
+                }
+                const cName = cleanPostalPlaceName(extractedCity);
+                if (cName) {
+                  return {
+                    city: cName,
+                    state: po.State || "",
+                    country: po.Country || "India",
+                  };
+                }
+              }
+              throw new Error("No PO");
+            })
+        );
+      }
+
+      // Race to get the fastest valid result
+      let result = null;
+      try {
+        result = await Promise.any(tasks);
+      } catch (raceErr) {
+        // Fallback: OpenStreetMap Nominatim if both failed
+        try {
+          const nomRes = await fetch(
+            `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(trimmed)}&country=${encodeURIComponent(activeCountry)}&format=json&addressdetails=1`,
+            { signal: AbortSignal.timeout(6000) }
+          );
+          if (nomRes.ok) {
+            const nomData = await nomRes.json();
+            if (nomData && nomData.length > 0) {
+              const addr = nomData[0].address;
+              const nCity = addr.city || addr.town || addr.village || addr.county || addr.state_district || "";
+              result = {
+                city: cleanPostalPlaceName(nCity),
+                state: addr.state || "",
+                country: addr.country || activeCountry,
+              };
+            }
+          }
+        } catch (e) {}
+      }
+
+      if (result) {
+        if (result.city) setCity(result.city);
+        if (result.state) setBusinessState(result.state);
+        if (result.country && !businessCountry) {
+          const matchedCountry = countryApiValue?.find(
+            (c) => c?.name?.common?.toLowerCase() === result.country.toLowerCase()
+          );
+          setBusinessCountry(matchedCountry ? matchedCountry.name.common : result.country);
+        }
+      }
+    } catch (err) {
+      console.warn("Partner postal code auto-fill error:", err.message);
+    }
+  };
+
+  const handlePartnerPinCodeChange = (val) => {
+    setPinCode(val);
+    clearTimeout(partnerPostalTimerRef.current);
+    const trimmed = (val || "").trim();
+    if (trimmed.length >= 3) {
+      partnerPostalTimerRef.current = setTimeout(() => {
+        lookupPartnerPostalCode(trimmed, businessCountry);
+      }, 250);
+    }
+  };
 
   const handleDownload = (type) => {
     let filePath;
@@ -337,9 +480,142 @@ const AccProfile = () => {
 
     setTimeout(() => resetpop(), 300);
   };
+  // ── Existing country data and calling code options ────────────────────────
+  const allCountries = useMemo(() => {
+    return Country.getAllCountries().sort((a, b) => a.name.localeCompare(b.name));
+  }, []);
+
+  const dialCodeOptions = useMemo(() => {
+    const seen = new Set();
+    const list = [];
+    allCountries.forEach((c) => {
+      if (c.phonecode) {
+        const formattedCode = c.phonecode.startsWith("+") ? c.phonecode : `+${c.phonecode}`;
+        const key = `${c.isoCode}-${formattedCode}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          const rules = getCountryPhoneRules(c.isoCode);
+          list.push({
+            code: formattedCode,
+            isoCode: c.isoCode,
+            name: c.name,
+            flag: c.flag || "",
+            lengths: rules.lengths,
+            minLength: rules.minLength,
+            maxLength: rules.maxLength,
+            formatDescription: rules.formatDescription,
+            placeholder: rules.placeholder,
+          });
+        }
+      }
+    });
+    return list.sort((a, b) => a.name.localeCompare(b.name));
+  }, [allCountries]);
+
+  const [selectedPhoneIso, setSelectedPhoneIso] = useState("IN");
+
+  const currentPhoneCountry = useMemo(() => {
+    return (
+      dialCodeOptions.find((c) => c.isoCode === selectedPhoneIso) ||
+      dialCodeOptions.find((c) => c.isoCode === "IN") ||
+      dialCodeOptions[0] ||
+      {
+        lengths: [10],
+        minLength: 10,
+        maxLength: 10,
+        formatDescription: "exactly 10 digits",
+        placeholder: "9876543210",
+        name: "India",
+        code: "+91",
+        isoCode: "IN",
+        flag: "🇮🇳",
+      }
+    );
+  }, [dialCodeOptions, selectedPhoneIso]);
+
+  // Synchronize calling code when Section 2 country changes
+  useEffect(() => {
+    if (businessCountry) {
+      const clean = businessCountry.trim().toLowerCase();
+      const match = dialCodeOptions.find(
+        (c) => c.name.toLowerCase() === clean || c.isoCode.toLowerCase() === clean
+      );
+      if (match && match.isoCode !== selectedPhoneIso) {
+        setSelectedPhoneIso(match.isoCode);
+        setPhone((prev) => prev.slice(0, match.maxLength));
+      }
+    }
+  }, [businessCountry, dialCodeOptions]);
+
+  const handlePhoneCountryChange = (isoCode) => {
+    setSelectedPhoneIso(isoCode);
+    const countryObj = dialCodeOptions.find((c) => c.isoCode === isoCode);
+    if (countryObj) {
+      setPhone((prev) => prev.slice(0, countryObj.maxLength));
+    }
+  };
+
+  const handlePartnerPhoneChange = (val) => {
+    const max = currentPhoneCountry.maxLength;
+    const cleanDigits = (val || "").replace(/\D/g, "").slice(0, max);
+    setPhone(cleanDigits);
+  };
+
+  const handlePhoneKeyDown = (e) => {
+    if (
+      e.key === "Backspace" ||
+      e.key === "Delete" ||
+      e.key === "Tab" ||
+      e.key === "ArrowLeft" ||
+      e.key === "ArrowRight" ||
+      e.key === "ArrowUp" ||
+      e.key === "ArrowDown" ||
+      e.key === "Enter" ||
+      e.ctrlKey ||
+      e.metaKey
+    ) {
+      return;
+    }
+    // Block non-digits
+    if (!/^\d$/.test(e.key)) {
+      e.preventDefault();
+      return;
+    }
+    // Block if current digit length has reached the country's max limit
+    const max = currentPhoneCountry.maxLength;
+    const hasSelection = e.target.selectionStart !== e.target.selectionEnd;
+    if (phone.length >= max && !hasSelection) {
+      e.preventDefault();
+    }
+  };
+
+  const handlePhonePaste = (e) => {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData("text") || "";
+    const cleanPasted = pasted.replace(/\D/g, "");
+    const max = currentPhoneCountry.maxLength;
+    const target = e.target;
+    const start = target.selectionStart || 0;
+    const end = target.selectionEnd || 0;
+    const current = phone || "";
+    const merged = current.slice(0, start) + cleanPasted + current.slice(end);
+    setPhone(merged.slice(0, max));
+  };
+
+  const isPhoneValid = Boolean(
+    phone &&
+    (currentPhoneCountry.lengths
+      ? currentPhoneCountry.lengths.includes(phone.length)
+      : phone.length === currentPhoneCountry.maxLength)
+  );
+
+  const isFirstNameValid = validatePersonName(firstName, "First Name").isValid;
+  const isLastNameValid = validatePersonName(lastName, "Last Name").isValid;
+
   const allSelected = businessName && businessDesc && website &&
     businessType && businessLogo && street && city && pinCode &&
-    businessState && businessCountry && firstName && lastName && position;
+    businessState && businessCountry && isFirstNameValid && isLastNameValid && position &&
+    isPhoneValid;
 
   // ─── Approval Flow Helpers ──────────────────────────────────────────────────
 
@@ -995,8 +1271,24 @@ const AccProfile = () => {
     let email = userDetails?.email || localStorage.getItem("loginEmail");
     if (!email) return;
 
+    const firstVal = validatePersonName(firstName, "First Name");
+    if (!firstVal.isValid) {
+      toast.error(firstVal.message);
+      return;
+    }
+    const lastVal = validatePersonName(lastName, "Last Name");
+    if (!lastVal.isValid) {
+      toast.error(lastVal.message);
+      return;
+    }
+
+    const fullPhoneNumber = phone ? `${currentPhoneCountry.code} ${phone}` : "";
+
     axios.put(`${BASE_URL}/api/partner/add`, {
       email, firstName, lastName, businessName,
+      phone, phoneNumber: fullPhoneNumber || phone,
+      countryCode: currentPhoneCountry.code,
+      phoneCountryIso: selectedPhoneIso,
       logo: businessLogo, street, city,
       state: businessState, pincode: pinCode,
       country: businessCountry, description: businessDesc,
@@ -1011,6 +1303,9 @@ const AccProfile = () => {
             firstName,
             lastName,
             businessName,
+            phone,
+            phoneNumber: fullPhoneNumber || phone,
+            countryCode: currentPhoneCountry.code,
             logo: businessLogo,
             street,
             city,
@@ -1343,15 +1638,34 @@ const AccProfile = () => {
                         ))}
                       </div>
 
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "14px" }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "20px", marginBottom: "14px" }}>
                         {[
                           { label: "Position", value: profileData?.yourPosition, field: "yourPosition" },
+                          { label: "Phone Number", value: profileData?.phone || profileData?.phoneNumber, field: "phone" },
                           { label: "Country", value: profileData?.country, field: "country" },
                         ].map((item) => (
                           <div key={item.label}>
                             <div style={{ fontSize: "11px", fontWeight: "500", color: "#64748b", marginBottom: "3px" }}>{item.label}</div>
                             {editMode === "all" && item.field ? (
-                              <input defaultValue={item.value || ""} onChange={e => setEditValue(prev => ({ ...prev, [item.field]: e.target.value }))} style={{ fontSize: "13px", fontWeight: "500", color: "#0f172a", border: "none", borderBottom: "1px solid #cbd5e1", padding: "4px 0", width: "100%", outline: "none", background: "transparent" }} />
+                              <input
+                                defaultValue={item.value || ""}
+                                type={item.field === "phone" ? "tel" : "text"}
+                                inputMode={item.field === "phone" ? "numeric" : undefined}
+                                maxLength={item.field === "phone" ? 10 : undefined}
+                                onChange={e => {
+                                  let val = e.target.value;
+                                  if (item.field === "phone") {
+                                    val = val.replace(/\D/g, "").slice(0, 10);
+                                    e.target.value = val;
+                                  }
+                                  setEditValue(prev => ({
+                                    ...prev,
+                                    [item.field]: val,
+                                    ...(item.field === "phone" ? { phoneNumber: val } : {})
+                                  }));
+                                }}
+                                style={{ fontSize: "13px", fontWeight: "500", color: "#0f172a", border: "none", borderBottom: "1px solid #cbd5e1", padding: "4px 0", width: "100%", outline: "none", background: "transparent" }}
+                              />
                             ) : (
                               <div style={{ fontSize: "13px", fontWeight: "500", color: "#0f172a", borderBottom: "1px solid #f1f5f9", paddingBottom: "4px" }}>{item.value || "—"}</div>
                             )}
@@ -1412,6 +1726,20 @@ const AccProfile = () => {
                         onClick={() => {
                           const email = userDetails?.email;
                           const updates = editValue || {};
+                          if (updates.firstName !== undefined) {
+                            const fnRes = validatePersonName(updates.firstName, "First name");
+                            if (!fnRes.isValid) {
+                              toast.error(fnRes.message);
+                              return;
+                            }
+                          }
+                          if (updates.lastName !== undefined) {
+                            const lnRes = validatePersonName(updates.lastName, "Last name");
+                            if (!lnRes.isValid) {
+                              toast.error(lnRes.message);
+                              return;
+                            }
+                          }
                           axios.put(`${BASE_URL}/api/partner/add`, { email, ...updates })
                             .then(({ data }) => {
                               if (data.success) {
@@ -1530,11 +1858,12 @@ const AccProfile = () => {
                         </div>
                       ))}
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", borderBottom: "1px solid #f0f2f5" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", borderBottom: "1px solid #f0f2f5" }}>
                       {[
                         { label: "First Name", value: profileData?.firstName },
                         { label: "Last Name", value: profileData?.lastName },
                         { label: "Position", value: profileData?.yourPosition },
+                        { label: "Phone Number", value: profileData?.phone || profileData?.phoneNumber },
                         { label: "Country", value: profileData?.country },
                       ].map((item, i, arr) => (
                         <div key={item.label} style={{ padding: "18px 20px", borderRight: i < arr.length - 1 ? "1px solid #f0f2f5" : "none" }}>
@@ -1907,7 +2236,32 @@ const AccProfile = () => {
                   </div>
                 </div>
 
-                <div className="overall-div" style={{ padding: "10px 4px 10px 0" }}>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!allSelected) {
+                      const fnRes = validatePersonName(firstName, "First name");
+                      const lnRes = validatePersonName(lastName, "Last name");
+                      if (!fnRes.isValid) {
+                        toast.error(fnRes.message);
+                      } else if (!lnRes.isValid) {
+                        toast.error(lnRes.message);
+                      } else if (!phone) {
+                        toast.error("Please enter your mobile number");
+                      } else if (!isPhoneValid) {
+                        toast.error(
+                          `Mobile number for ${currentPhoneCountry.name} must be ${currentPhoneCountry.formatDescription || `${currentPhoneCountry.maxLength} digits`}`
+                        );
+                      } else {
+                        toast.error("Please fill in all required fields (*)");
+                      }
+                      return;
+                    }
+                    createPartnerProfile();
+                  }}
+                  className="overall-div"
+                  style={{ padding: "10px 4px 10px 0" }}
+                >
                   
                   {/* Section 1: Business Details */}
                   <div style={{ marginBottom: "22px" }}>
@@ -1942,15 +2296,18 @@ const AccProfile = () => {
 
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "10px" }}>
                       <InputDivsCreatePartner placeholderText="City..." setFunc={setCity} funcValue={city} />
-                      <InputDivsCreatePartner placeholderText="Pincode / Postal Code..." setFunc={setPinCode} funcValue={pinCode} />
+                      <InputDivsCreatePartner placeholderText="Pincode / Postal Code..." setFunc={handlePartnerPinCodeChange} onBlur={() => lookupPartnerPostalCode(pinCode, businessCountry)} funcValue={pinCode} />
                     </div>
 
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "10px" }}>
                       <InputDivsCreatePartner placeholderText="State / Province..." setFunc={setBusinessState} funcValue={businessState} />
                       <div className={styles.inputDivs} style={{ border: '1.5px solid #e2e8f0', borderRadius: '10px', fontSize: "14px", fontWeight: "500", paddingLeft: '0px', marginTop: '0px', background: '#fff' }}>
-                        <select name="country" id="country" style={{ border: "none", padding: '0.75rem 1rem', width: '100%', fontSize: "14px", outline: "none", background: "transparent", color: businessCountry ? "#1e293b" : "#94a3b8" }} onChange={(e) => setBusinessCountry(e.target.value)}>
+                        <select name="country" id="country" value={businessCountry} style={{ border: "none", padding: '0.75rem 1rem', width: '100%', fontSize: "14px", outline: "none", background: "transparent", color: businessCountry ? "#1e293b" : "#94a3b8" }} onChange={(e) => setBusinessCountry(e.target.value)}>
                           <option value="">Select Country *</option>
-                          {countryApiValue?.map((item) => (
+                          {(countryApiValue?.length
+                            ? countryApiValue
+                            : Country.getAllCountries().map(c => ({ cca2: c.isoCode, name: { common: c.name } }))
+                          )?.map((item) => (
                             <option key={item.cca2} value={item?.name?.common}>{item?.name?.common}</option>
                           ))}
                         </select>
@@ -1968,14 +2325,112 @@ const AccProfile = () => {
                       <InputDivsCreatePartner placeholderText="First Name..." setFunc={setFirstName} funcValue={firstName} />
                       <InputDivsCreatePartner placeholderText="Last Name..." setFunc={setLastName} funcValue={lastName} />
                     </div>
-                    <div style={{ marginTop: "10px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "10px" }}>
                       <InputDivsCreatePartner placeholderText="Your Designation / Position (e.g. Director, Partner)" setFunc={setPosition} funcValue={position} />
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          border: "1px solid #2c7cb2",
+                          borderRadius: "10px",
+                          height: "54px",
+                          background: "#ffffff",
+                          padding: "0 12px",
+                          boxSizing: "border-box",
+                          marginBottom: "10px",
+                          width: "100%",
+                          position: "relative",
+                        }}
+                      >
+                        {/* Country Calling Code & Flag selector */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            position: "relative",
+                            paddingRight: "8px",
+                            borderRight: "1px solid #e2e8f0",
+                            cursor: "pointer",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <img
+                            src={`https://flagcdn.com/w40/${currentPhoneCountry.isoCode.toLowerCase()}.png`}
+                            alt={currentPhoneCountry.name}
+                            style={{
+                              width: "18px",
+                              height: "12px",
+                              objectFit: "cover",
+                              borderRadius: "2px",
+                              boxShadow: "0 0 1px rgba(0,0,0,0.3)",
+                            }}
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                            }}
+                          />
+                          <span style={{ fontSize: "13px", fontWeight: "600", color: "#1e293b" }}>
+                            {currentPhoneCountry.code}
+                          </span>
+                          <span style={{ fontSize: "8px", color: "#64748b" }}>▼</span>
+                          <select
+                            value={selectedPhoneIso}
+                            onChange={(e) => handlePhoneCountryChange(e.target.value)}
+                            title="Select Country Calling Code"
+                            style={{
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              width: "100%",
+                              height: "100%",
+                              opacity: 0,
+                              cursor: "pointer",
+                            }}
+                          >
+                            {dialCodeOptions.map((opt) => (
+                              <option key={`${opt.isoCode}-${opt.code}`} value={opt.isoCode}>
+                                {opt.name} ({opt.code})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Local Mobile Number Input */}
+                        <input
+                          type="tel"
+                          inputMode="numeric"
+                          placeholder="Phone Number"
+                          value={phone}
+                          maxLength={currentPhoneCountry.maxLength}
+                          onChange={(e) => handlePartnerPhoneChange(e.target.value)}
+                          onKeyDown={handlePhoneKeyDown}
+                          onPaste={handlePhonePaste}
+                          style={{
+                            border: "none",
+                            outline: "none",
+                            background: "transparent",
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            color: "#0f172a",
+                            flex: 1,
+                            width: "100%",
+                            height: "100%",
+                            padding: "0 0 0 10px",
+                            boxSizing: "border-box",
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
 
                   {/* Submit Button */}
-                  <div
+                  <button
+                    type="submit"
                     style={{
+                      width: "100%",
+                      border: "none",
+                      outline: "none",
+                      fontFamily: "inherit",
                       background: allSelected ? "linear-gradient(135deg, #2c7cb2 0%, #1a5a8a 100%)" : "#cbd5e1",
                       color: "#ffffff",
                       borderRadius: "12px",
@@ -1986,13 +2441,13 @@ const AccProfile = () => {
                       cursor: allSelected ? "pointer" : "not-allowed",
                       transition: "all 0.2s ease",
                       boxShadow: allSelected ? "0 4px 14px rgba(44, 124, 178, 0.35)" : "none",
-                      marginTop: "10px"
+                      marginTop: "10px",
+                      display: "block"
                     }}
-                    onClick={() => allSelected && createPartnerProfile()}
                   >
                     Become a Partner →
-                  </div>
-                </div>
+                  </button>
+                </form>
               </>
             )}
 
@@ -2072,7 +2527,7 @@ const AccProfile = () => {
           <div className="overall-div" style={{ height: "calc(100% - 10.5rem)" }}>
             <div className="each-action1"><div>{profileData?.address}</div></div>
             <div className="line-container"><div className="linee"></div><div className="new-txt">New</div><div className="linee"></div></div>
-            <div className="each-action1"><input type="text" placeholder="New Address.." onChange={(e) => setNewAddress(e.target.value)} /></div>
+            <div className="each-action1"><input type="text" placeholder="New Address.." value={newAddress} onChange={(e) => setNewAddress(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && newAddress) editData("address", newAddress); }} /></div>
           </div>
           <div className="stepBtns" style={{ height: "4.5rem" }}><div style={{ opacity: newAddress ? "1" : "0.25", cursor: newAddress ? "pointer" : "not-allowed", background: "#59A2DD" }} onClick={() => { if (newAddress) editData("address", newAddress); }}>Submit Edit</div></div>
           {loading && <div className="loading-component" style={{ top: "0", right: "0", width: "100%", height: "calc(100% - 70px)", position: "absolute", display: "flex" }}><LoadingAnimation1 icon={lg1} width={200} /></div>}
@@ -2085,7 +2540,7 @@ const AccProfile = () => {
           <div className="overall-div" style={{ height: "calc(100% - 10.5rem)" }}>
             <div className="each-action1"><div>{profileData?.displayName}</div></div>
             <div className="line-container"><div className="linee"></div><div className="new-txt">New</div><div className="linee"></div></div>
-            <div className="each-action1"><input type="text" placeholder="New Display Name.." onChange={(e) => setNewDisplayName(e.target.value)} /></div>
+            <div className="each-action1"><input type="text" placeholder="New Display Name.." value={newDisplayName} onChange={(e) => setNewDisplayName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && newDisplayName) editData("displayName", newDisplayName); }} /></div>
           </div>
           <div className="stepBtns" style={{ height: "4.5rem" }}><div style={{ opacity: newDisplayName ? "1" : "0.25", cursor: newDisplayName ? "pointer" : "not-allowed", background: "#59A2DD" }} onClick={() => { if (newDisplayName) editData("displayName", newDisplayName); }}>Submit Edit</div></div>
           {loading && <div className="loading-component" style={{ top: "0", right: "0", width: "100%", height: "calc(100% - 70px)", position: "absolute", display: "flex" }}><LoadingAnimation1 icon={lg1} width={200} /></div>}
@@ -2098,7 +2553,7 @@ const AccProfile = () => {
           <div className="overall-div" style={{ height: "calc(100% - 10.5rem)" }}>
             <div className="each-action1"><div>{profileData?.phone}</div></div>
             <div className="line-container"><div className="linee"></div><div className="new-txt">New</div><div className="linee"></div></div>
-            <div className="each-action1"><input type="number" placeholder="New Phone Number.." onChange={(e) => setNewPhoneNo(e.target.value)} /></div>
+            <div className="each-action1"><input type="number" placeholder="New Phone Number.." value={newPhoneNo} onChange={(e) => setNewPhoneNo(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && newPhoneNo) editData("phone", newPhoneNo); }} /></div>
           </div>
           <div className="stepBtns" style={{ height: "4.5rem" }}><div style={{ opacity: newPhoneNo ? "1" : "0.25", cursor: newPhoneNo ? "pointer" : "not-allowed", background: "#59A2DD" }} onClick={() => { if (newPhoneNo) editData("phone", newPhoneNo); }}>Submit Edit</div></div>
           {loading && <div className="loading-component" style={{ top: "0", right: "0", width: "100%", height: "calc(100% - 70px)", position: "absolute", display: "flex" }}><LoadingAnimation1 icon={lg1} width={200} /></div>}
@@ -2111,7 +2566,7 @@ const AccProfile = () => {
           <div className="overall-div" style={{ height: "calc(100% - 10.5rem)" }}>
             <div className="each-action1"><div>{profileData?.description}</div></div>
             <div className="line-container"><div className="linee"></div><div className="new-txt">New</div><div className="linee"></div></div>
-            <div className="each-action1"><input type="text" placeholder="New Description.." onChange={(e) => setNewDescription(e.target.value)} /></div>
+            <div className="each-action1"><input type="text" placeholder="New Description.." value={newDescription} onChange={(e) => setNewDescription(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && newDescription) editData("description", newDescription); }} /></div>
           </div>
           <div className="stepBtns" style={{ height: "4.5rem" }}><div style={{ opacity: newDescription ? "1" : "0.25", cursor: newDescription ? "pointer" : "not-allowed", background: "#59A2DD" }} onClick={() => { if (newDescription) editData("description", newDescription); }}>Submit Edit</div></div>
           {loading && <div className="loading-component" style={{ top: "0", right: "0", width: "100%", height: "calc(100% - 70px)", position: "absolute", display: "flex" }}><LoadingAnimation1 icon={lg1} width={200} /></div>}
@@ -2124,7 +2579,7 @@ const AccProfile = () => {
           <div className="overall-div" style={{ height: "calc(100% - 10.5rem)" }}>
             <div className="each-action1" style={{ position: "relative" }}><div>{profileData?.colorCode}</div><div className="bgColorDiv" style={{ background: `#${profileData?.colorCode}` }}></div></div>
             <div className="line-container"><div className="linee"></div><div className="new-txt">New</div><div className="linee"></div></div>
-            <div className="each-action1" style={{ position: "relative" }}><input type="text" placeholder="New Colour Code.." onChange={(e) => setNewColorCode(e.target.value)} /><div className="bgColorDiv" style={{ background: newColorCode ? `#${newColorCode}` : "transparent" }}></div></div>
+            <div className="each-action1" style={{ position: "relative" }}><input type="text" placeholder="New Colour Code.." value={newColorCode} onChange={(e) => setNewColorCode(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && newColorCode) editData("colorCode", newColorCode); }} /><div className="bgColorDiv" style={{ background: newColorCode ? `#${newColorCode}` : "transparent" }}></div></div>
           </div>
           <div className="stepBtns" style={{ height: "4.5rem" }}><div style={{ opacity: newColorCode ? "1" : "0.25", cursor: newColorCode ? "pointer" : "not-allowed", background: "#59A2DD" }} onClick={() => { if (newColorCode) editData("colorCode", newColorCode); }}>Submit Edit</div></div>
           {loading && <div className="loading-component" style={{ top: "0", right: "0", width: "100%", height: "calc(100% - 70px)", position: "absolute", display: "flex" }}><LoadingAnimation1 icon={lg1} width={200} /></div>}

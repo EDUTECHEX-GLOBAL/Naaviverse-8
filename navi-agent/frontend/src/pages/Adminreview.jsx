@@ -8,6 +8,7 @@ import {
   IconCheck, IconAlert, IconArrowLeft, IconUser,
   IconSearch, IconNavigation, IconBrain, IconBulb
 } from "./Icons";
+import { cleanLocationText } from "../utils/textUtils";
 import { MOCK_DATA, getPriceForView } from "./Marketplace";
 
 const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:8001" : "");
@@ -1401,9 +1402,9 @@ export default function AdminReview() {
                       </button>
                     </div>
                     <div className="ar-q-route">
-                      <div className="ar-q-point"><span className="q-dot green" /><span>{path.current_position}</span></div>
+                      <div className="ar-q-point"><span className="q-dot green" /><span>{cleanLocationText(path.current_position)}</span></div>
                       <div className="ar-q-spine" />
-                      <div className="ar-q-point"><span className="q-dot red" /><strong>{path.target_goal}</strong></div>
+                      <div className="ar-q-point"><span className="q-dot red" /><strong>{cleanLocationText(path.target_goal)}</strong></div>
                     </div>
                     <div className="ar-q-meta">
                       <div className="meta-item"><span>Grade</span><span>{path.profile?.grade || "N/A"}</span></div>

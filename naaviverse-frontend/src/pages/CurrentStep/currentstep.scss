@@ -886,7 +886,7 @@ $proplus-btn-hover:   #fad6b0;
 }
 
 .sub-gate__title {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Poppins', sans-serif;
   font-size: 28px;
   font-weight: 600;
   color: $navy;
@@ -1409,8 +1409,10 @@ $proplus-btn-hover:   #fad6b0;
     box-shadow: $shadow-lg;
 
     .modal-step-logo, img {
-      max-height: 45px;
-      max-width: 160px;
+      height: 44px;
+      max-height: 44px;
+      width: auto;
+      max-width: 175px;
       object-fit: contain;
     }
 

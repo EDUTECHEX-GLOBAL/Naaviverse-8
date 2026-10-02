@@ -41,6 +41,13 @@ const PaymentSchema = new mongoose.Schema(
     razorpaySignature: { type: String },
     partnerId: { type: String, default: null },
     partnerEmail: { type: String, default: null },
+
+    // Failure tracking details
+    failureReason: { type: String, default: null },
+    errorCode: { type: String, default: null },
+    errorDescription: { type: String, default: null },
+    errorSource: { type: String, default: null },
+    errorStep: { type: String, default: null },
   },
   { timestamps: true }
 );

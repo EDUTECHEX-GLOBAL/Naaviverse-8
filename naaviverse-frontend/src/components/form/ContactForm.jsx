@@ -1,4 +1,5 @@
 import React, { Fragment, useState } from 'react';
+import { validatePersonName } from '../../utils/emailValidator';
 
 const ContactForm = () => {
     // New API endpoint URL for NoCodeAPI Google Sheets integration
@@ -6,14 +7,25 @@ const ContactForm = () => {
 
     // State to manage success or error message
     const [statusMessage, setStatusMessage] = useState('');
+    const [nameVal, setNameVal] = useState('');
+    const [nameError, setNameError] = useState('');
 
     // Handle form submission
     const handleSubmit = (e) => {
         e.preventDefault();
 
+        const rawName = e.target.elements.name.value;
+        const validation = validatePersonName(rawName, "Name");
+        if (!validation.isValid) {
+            setNameError(validation.message);
+            setStatusMessage(validation.message);
+            return;
+        }
+        setNameError('');
+
         // Retrieve form data
         const formData = [
-            [e.target.elements.name.value.trim(), e.target.elements.email.value.trim(), e.target.elements.message.value.trim()]
+            [validation.cleanName, e.target.elements.email.value.trim(), e.target.elements.message.value.trim()]
         ];
 
         // Headers setup for the request
@@ -39,6 +51,8 @@ const ContactForm = () => {
             .then(result => {
                 console.log('Success:', result); // Log the result from the fetch
                 setStatusMessage('Form submitted successfully!'); // Set success message
+                setNameVal('');
+                setNameError('');
                 e.target.reset(); // Reset the form after submission
             })
             .catch(error => {
@@ -58,10 +72,27 @@ const ContactForm = () => {
                             <input
                                 type="text"
                                 name="name"
+                                value={nameVal}
+                                onChange={(e) => {
+                                    setNameVal(e.target.value);
+                                    if (nameError) {
+                                        const res = validatePersonName(e.target.value, "Name");
+                                        setNameError(res.isValid ? '' : res.message);
+                                    }
+                                }}
+                                onBlur={() => {
+                                    const res = validatePersonName(nameVal, "Name");
+                                    setNameError(res.isValid ? '' : res.message);
+                                }}
                                 placeholder="Your Name"
-                                className="form-control"
+                                className={`form-control ${nameError ? 'is-invalid' : ''}`}
                                 required
                             />
+                            {nameError && (
+                                <div className="text-danger mt-1" style={{ fontSize: '13px' }}>
+                                    {nameError}
+                                </div>
+                            )}
                         </div>
                     </div>
 

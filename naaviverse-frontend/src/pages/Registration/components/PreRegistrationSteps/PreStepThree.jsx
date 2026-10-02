@@ -76,6 +76,12 @@ const PreStepThree = () => {
                 onChange={(e) => {
                   setVerifyPassword(e.target.value);
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newPassword === verifyPassword && !loading) {
+                    e.preventDefault();
+                    updateUserPassword();
+                  }
+                }}
               />
               {newPassword ? (
                 <div>
@@ -188,6 +194,12 @@ const PreStepThree = () => {
                 value={verifyPassword}
                 onChange={(e) => {
                   setVerifyPassword(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newPassword === verifyPassword && !loading) {
+                    e.preventDefault();
+                    updateUserPassword();
+                  }
                 }}
               />
               {newPassword ? (

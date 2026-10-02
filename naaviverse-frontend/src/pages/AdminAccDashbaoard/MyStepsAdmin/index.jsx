@@ -420,25 +420,26 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
 
         {pathId && (
           <div className="steps-back-banner">
-            <span
-              className="back-link"
-              onClick={() => {
-                if (setaccsideNav) setaccsideNav("Paths");
-                navigate("/admin/dashboard/paths?tab=active");
-              }}
-            >
-              ← Back to Paths
-            </span>
-            <span className="back-separator">•</span>
-            <span
-              className="back-link clear-filter-link"
-              onClick={() => {
-                const tabValue = stepsMenu === "Inactive Steps" ? "inactive" : "active";
-                navigate(`/admin/dashboard/steps?tab=${tabValue}`);
-              }}
-            >
-              Show All Steps
-            </span>
+            <div className="steps-banner-actions">
+              <span
+                className="back-link"
+                onClick={() => {
+                  if (setaccsideNav) setaccsideNav("Paths");
+                  navigate("/admin/dashboard/paths?tab=active");
+                }}
+              >
+                ← Back to Paths
+              </span>
+              <span
+                className="back-link clear-filter-link"
+                onClick={() => {
+                  const tabValue = stepsMenu === "Inactive Steps" ? "inactive" : "active";
+                  navigate(`/admin/dashboard/steps?tab=${tabValue}`);
+                }}
+              >
+                Show All Steps
+              </span>
+            </div>
             <span className="back-label">
               Showing steps for: <strong>{decodeURIComponent(pathName || "")}</strong>
             </span>
@@ -640,7 +641,7 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
 
               {/* EDIT STEP */}
               {modalScreen === "editStep" && (
-                <div className="sm-form">
+                <form onSubmit={(e) => { e.preventDefault(); if (!actionLoading) handleSaveStep(); }} className="sm-form">
                   <div className="sm-form-group">
                     <label className="sm-label">Name</label>
                     <input className="sm-input" type="text" value={editName} onChange={e => setEditName(e.target.value)} placeholder="Step name" />
@@ -659,10 +660,10 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
                       <input className="sm-input" type="text" value={editCost} onChange={e => setEditCost(e.target.value)} placeholder="Free or amount" />
                     </div>
                   </div>
-                  <button className="sm-btn-primary" onClick={handleSaveStep} disabled={actionLoading}>
+                  <button type="submit" className="sm-btn-primary" disabled={actionLoading}>
                     {actionLoading ? "Saving..." : "Save Changes"}
                   </button>
-                </div>
+                </form>
               )}
 
               {/* VIEW STEP - Keep same structure */}
@@ -881,7 +882,53 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
                     </div>
                   )}
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (actionLoading) return;
+                      if (!mpRole || !mpName) { toast.error("Role and Name are required"); return; }
+                      setActionLoading(true);
+
+                      axios
+                        .post(`${BASE_URL}/api/marketplace/add`, {
+                          name: mpName,
+                          role: mpRole,
+                          layer: marketLayer,
+                          step_id: selectedStep._id,
+                          path_id: null,
+                          partner_email: userDetails?.email || "",
+                          access: mpAccess,
+                          cost: mpCost,
+                          goal: mpGoal,
+                          outcomes: mpOutcomes,
+                          duration: mpDuration,
+                          features: mpFeatures,
+                          discount: mpDiscount,
+                        })
+                        .then(({ data }) => {
+                          if (data?.status && data?.data) {
+                            const newItem = data.data;
+                            setAttachedServices(prev => [...prev, newItem]);
+                            setMarketplaceItems(prev => [...prev, newItem]);
+                            const fieldKey = `${marketLayer}_marketplace`;
+                            setSelectedStep(prev => ({
+                              ...prev,
+                              [fieldKey]: [...(prev?.[fieldKey] || []), newItem._id],
+                            }));
+                            setMpRole(""); setMpName(""); setMpAccess("Free"); setMpCost("");
+                            setMpGoal(""); setMpOutcomes(""); setMpDuration("");
+                            setMpFeatures(""); setMpDiscount("");
+                            fetchMarketplaceCounts(partnerStepsData);
+                            goBack();
+                          }
+                          setActionLoading(false);
+                        })
+                        .catch(() => {
+                          toast.error("Failed to add marketplace item");
+                          setActionLoading(false);
+                        });
+                    }}
+                    style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                       <label className="admin-pp-section-label" style={{ marginBottom: 0 }}>Role *</label>
                       <select
@@ -904,7 +951,7 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
                       />
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    <div className="sm-form-row">
                       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                         <label className="admin-pp-section-label" style={{ marginBottom: 0 }}>Access</label>
                         <select
@@ -948,7 +995,7 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
                       />
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    <div className="sm-form-row">
                       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                         <label className="admin-pp-section-label" style={{ marginBottom: 0 }}>Outcomes</label>
                         <input
@@ -966,55 +1013,13 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
                     </div>
 
                     <button
+                      type="submit"
                       className="admin-pp-btn admin-pp-btn--blue"
                       style={{ marginTop: 4, borderRadius: 50 }}
-                      disabled={actionLoading}
-                      onClick={() => {
-                        if (!mpRole || !mpName) { toast.error("Role and Name are required"); return; }
-                        setActionLoading(true);
-
-                        axios
-                          .post(`${BASE_URL}/api/marketplace/add`, {
-                            name: mpName,
-                            role: mpRole,
-                            layer: marketLayer,
-                            step_id: selectedStep._id,
-                            path_id: null,
-                            partner_email: userDetails?.email || "",
-                            access: mpAccess,
-                            cost: mpCost,
-                            goal: mpGoal,
-                            outcomes: mpOutcomes,
-                            duration: mpDuration,
-                            features: mpFeatures,
-                            discount: mpDiscount,
-                          })
-                          .then(({ data }) => {
-                            if (data?.status && data?.data) {
-                              const newItem = data.data;
-                              setAttachedServices(prev => [...prev, newItem]);
-                              setMarketplaceItems(prev => [...prev, newItem]);
-                              const fieldKey = `${marketLayer}_marketplace`;
-                              setSelectedStep(prev => ({
-                                ...prev,
-                                [fieldKey]: [...(prev?.[fieldKey] || []), newItem._id],
-                              }));
-                              setMpRole(""); setMpName(""); setMpAccess("Free"); setMpCost("");
-                              setMpGoal(""); setMpOutcomes(""); setMpDuration("");
-                              setMpFeatures(""); setMpDiscount("");
-                              fetchMarketplaceCounts(partnerStepsData);
-                              goBack();
-                            }
-                            setActionLoading(false);
-                          })
-                          .catch(() => {
-                            toast.error("Failed to add marketplace item");
-                            setActionLoading(false);
-                          });
-                      }}>
+                      disabled={actionLoading}>
                       {actionLoading ? "Adding..." : "Add to Marketplace"}
                     </button>
-                  </div>
+                  </form>
                 </div>
               )}
 

@@ -1,14 +1,20 @@
 const mongoose = require("mongoose");
 const User = require("../models/UsersModel");
 const Partner = require("../models/PartnerModel");
-const Approval = require("../models/ApprovalModel");
 require("dotenv").config({ path: ".env" });
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const UserPath = require("../models/UserPathsModel"); // 👈 ADD THIS
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
-const { generateOTP, sendOTP, sendNotificationMail } = require("../middlewares/verifySignUp");
+const {
+  generateOTP,
+  sendOTP,
+  sendNotificationMail,
+  setPendingRegistration,
+  getPendingRegistration,
+  deletePendingRegistration,
+} = require("../middlewares/verifySignUp");
 const { getOtpEmailContent } = require("../utils/otpEmailTemplate");
 
 // ── Activity logger (non-blocking — never breaks login if it fails) ───────────
@@ -22,10 +28,10 @@ const signUp = async (req, res) => {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
-    const cleanEmail = email.toLowerCase().trim();
-    const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+    const cleanEmail = email.trim().toLowerCase();
 
-    const existingUser = await User.findOne({ email: emailRegex });
+    // Check if verified user exists
+    const existingUser = await User.findOne({ email: cleanEmail, OTPverified: true });
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -45,15 +51,19 @@ const signUp = async (req, res) => {
       });
     }
 
+    // Clean up any old unverified user record with this email in MongoDB if one existed from before
+    await User.deleteMany({ email: cleanEmail, OTPverified: { $ne: true } });
+
     const OTP = generateOTP();
 
-    const user = new User({
-      username, email: cleanEmail, password,
-      OTP, OTPCreatedTime: new Date(),
-      OTPverified: false, status: "inactive",
+    // Store in-memory pending registration ONLY — DO NOT persist to MongoDB until OTP is verified!
+    setPendingRegistration(cleanEmail, {
+      username: username.trim(),
+      email: cleanEmail,
+      password,
+      role: "user",
+      otp: OTP,
     });
-
-    await user.save();
 
     const { subject: otpSubject, html: otpHtml } = getOtpEmailContent({
       type: "user_signup",
@@ -63,14 +73,17 @@ const signUp = async (req, res) => {
     });
 
     sendNotificationMail(cleanEmail, otpSubject, otpHtml)
-      .catch(err => console.error("Mail failed:", err));
+      .catch((err) => console.error("Mail failed:", err));
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
-
-    return res.status(200).json({ success: true, otpSent: true, token });
+    return res.status(200).json({
+      success: true,
+      otpSent: true,
+      message: "OTP sent successfully",
+      otp: OTP,
+    });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ success: false });
+    console.error("SignUp error:", err);
+    return res.status(500).json({ success: false, message: "Signup failed" });
   }
 };
 
@@ -214,10 +227,8 @@ const login = async (req, res) => {
       return res.status(400).json({ success: false, message: "Both email and password are required" });
     }
 
-    const cleanEmail = email.toLowerCase().trim();
-    const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
-
-    const user = await User.findOne({ email: emailRegex });
+    const cleanEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: cleanEmail });
 
     if (!user) {
       // Check if this email is registered as a Partner
@@ -257,7 +268,7 @@ const login = async (req, res) => {
 // ── Auto-restore selectedPath if missing ──────────────────────────
 if (!user.selectedPath) {
   const latestUserPath = await UserPath.findOne(
-    { email, status: "active" },
+    { email: cleanEmail, status: "active" },
     { pathId: 1 },
     { sort: { createdAt: -1 } }
   ).lean();
@@ -350,25 +361,84 @@ const verifyOTP = async (req, res) => {
     const { email, otp } = req.body;
     if (!email || !otp) return res.status(400).json({ success: false, message: "Email and OTP are required" });
 
-    const userFound = await User.findOne({ email });
-    if (!userFound) return res.status(404).json({ message: "User not found" });
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanOtp = otp.toString().trim();
 
-    if (new Date() - userFound.OTPCreatedTime > 10 * 60 * 1000) {
+    // 1. Check pending registration (new user registration flow)
+    const pending = getPendingRegistration(cleanEmail);
+    if (pending) {
+      if (pending.otp.toString().trim() !== cleanOtp) {
+        pending.attempts = (pending.attempts || 0) + 1;
+        if (pending.attempts >= 5) {
+          deletePendingRegistration(cleanEmail);
+        }
+        return res.status(400).json({ success: false, message: "Invalid OTP. Please try again." });
+      }
+
+      // Valid OTP! Create permanent user in MongoDB now
+      const passwordToUse = pending.password || req.body.password;
+      const usernameToUse = pending.username || req.body.username || cleanEmail.split("@")[0];
+
+      // Remove any leftover unverified records
+      await User.deleteMany({ email: cleanEmail, OTPverified: { $ne: true } });
+
+      const newUser = new User({
+        username: usernameToUse,
+        email: cleanEmail,
+        password: passwordToUse,
+        OTPverified: true,
+        status: "active",
+      });
+
+      await newUser.save();
+      deletePendingRegistration(cleanEmail);
+
+      const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
+
+      return res.status(200).json({
+        success: true,
+        message: "OTP Verified successfully",
+        token,
+        user: {
+          id: newUser._id,
+          username: newUser.username,
+          email: newUser.email,
+        },
+      });
+    }
+
+    // 2. Existing user check (for password reset / confirmation / legacy flow)
+    const userFound = await User.findOne({ email: cleanEmail });
+    if (!userFound) return res.status(404).json({ success: false, message: "No pending registration found or user not found" });
+
+    if (userFound.OTPCreatedTime && new Date() - userFound.OTPCreatedTime > 10 * 60 * 1000) {
       return res.status(400).json({ success: false, message: "OTP expired." });
     }
 
-    if (otp !== userFound.OTP) {
+    if (!userFound.OTP || cleanOtp !== userFound.OTP.toString().trim()) {
       return res.status(400).json({ success: false, message: "OTP doesn't match" });
     }
 
     userFound.OTPverified = true;
+    userFound.status = "active";
     userFound.OTP = null;
     userFound.OTPCreatedTime = null;
     await userFound.save();
 
-    return res.status(200).json({ success: true, message: "OTP Verified successfully" });
+    const token = jwt.sign({ id: userFound._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP Verified successfully",
+      token,
+      user: {
+        id: userFound._id,
+        username: userFound.username,
+        email: userFound.email,
+      },
+    });
   } catch (err) {
-    console.log(err);
+    console.error("verifyOTP error:", err);
     return res.status(500).json({ success: false, message: "Something went wrong during OTP verification" });
   }
 };

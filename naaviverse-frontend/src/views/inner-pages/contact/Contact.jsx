@@ -1,4 +1,3 @@
-// Contact.jsx
 import React, { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
@@ -6,6 +5,7 @@ import { Icon } from "@iconify/react";
 import { Helmet } from "react-helmet-async";
 import "./contact.scss";
 import Footer from '../../../components/footernew/index';
+import { validateEmail, validatePersonName } from "../../../utils/emailValidator";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -33,7 +33,53 @@ export default function Contact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const contactData = { fullName, email, product, mobile, message };
+    const nameVal = validatePersonName(fullName, "Full Name");
+    if (!nameVal.isValid) {
+      setStatus(nameVal.message);
+      setStatusType("error");
+      setToastVisible(true);
+      setTimeout(() => {
+        setToastVisible(false);
+        setTimeout(() => {
+          setStatus("");
+          setStatusType("");
+        }, 400);
+      }, 5000);
+      return;
+    }
+
+    const validation = validateEmail(email);
+    if (!validation.isValid) {
+      setStatus(validation.message);
+      setStatusType("error");
+      setToastVisible(true);
+      setTimeout(() => {
+        setToastVisible(false);
+        setTimeout(() => {
+          setStatus("");
+          setStatusType("");
+        }, 400);
+      }, 5000);
+      return;
+    }
+    const cleanEmail = validation.cleanEmail;
+
+    const trimmedMobile = mobile.trim();
+    if (!trimmedMobile || !/^\d{10}$/.test(trimmedMobile)) {
+      setStatus("Please enter a valid 10-digit mobile number.");
+      setStatusType("error");
+      setToastVisible(true);
+      setTimeout(() => {
+        setToastVisible(false);
+        setTimeout(() => {
+          setStatus("");
+          setStatusType("");
+        }, 400);
+      }, 5000);
+      return;
+    }
+
+    const contactData = { fullName: fullName.trim(), email: cleanEmail, product, mobile: trimmedMobile, message: message.trim() };
 
     try {
       await axios.post(`${BASE_URL}/api/admin-contact`, contactData);
@@ -45,7 +91,8 @@ export default function Contact() {
       setMobile("");
       setMessage("");
     } catch (error) {
-      setStatus("Error sending message. Please try again.");
+      const errorMsg = error.response?.data?.message || "Error sending message. Please try again.";
+      setStatus(errorMsg);
       setStatusType("error");
     }
 
@@ -159,7 +206,7 @@ export default function Contact() {
 
             {/* Right Side - Form Card */}
             <div className="contact-form-card">
-              <form onSubmit={handleSubmit} className="contact-form">
+              <form onSubmit={handleSubmit} className="contact-form" noValidate>
                 <div className="contact-form-row">
                   <div className="contact-form-group">
                     <label>Full Name *</label>
@@ -179,6 +226,8 @@ export default function Contact() {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       placeholder="hello@naavi.ai"
+                      pattern="[a-zA-Z0-9._%+-]+@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}"
+                      title="Please enter a valid email address (e.g. name@gmail.com, .in, .net, .org, .edu)"
                     />
                   </div>
                 </div>

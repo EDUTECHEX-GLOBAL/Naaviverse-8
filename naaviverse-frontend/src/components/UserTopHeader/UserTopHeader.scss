@@ -6,9 +6,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  min-height: 64px;
-  padding: 10px 24px;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  height: 76px;
+  min-height: 76px;
+  padding: 0 24px;
   background: rgba(255, 255, 255, 0.98);
   border-bottom: 1px solid #eef2f6;
   backdrop-filter: blur(14px);
@@ -20,7 +23,7 @@
 .uth-left-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
@@ -39,12 +42,13 @@
   gap: 6px;
   transition: all 0.2s ease;
   font-family: inherit;
+  flex-shrink: 0;
 
   &:hover {
-    border-color: #22c55e;
-    color: #16a34a;
-    background: #f0fdf4;
-    box-shadow: 0 2px 6px rgba(34, 197, 94, 0.12);
+    border-color: #cbd5e1;
+    color: #1e293b;
+    background: #f8fafc;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   }
 
   svg {
@@ -56,16 +60,22 @@
 .uth-route-searchbar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  align-self: center;
+  margin-top: auto;
+  margin-bottom: auto;
+  height: 44px;
+  gap: 10px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 28px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  padding: 6px 18px;
-  flex: 1;
-  max-width: 860px;
+  padding: 0 16px;
+  flex: 1 1 auto;
+  max-width: 720px;
   min-width: 0;
+  overflow: hidden;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
@@ -101,19 +111,20 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
-  flex: 1;
+  flex: 1 1 0;
+  overflow: hidden;
 
   &.uth-from-copy {
-    flex: 1.1;
+    flex: 1.1 1 0;
   }
 
   &.uth-to-copy {
-    flex: 1.4;
+    flex: 1.3 1 0;
   }
 
   &.uth-steps-copy {
-    flex: 0.6;
-    max-width: 110px;
+    flex: 0.6 0 auto;
+    max-width: 105px;
   }
 
   .uth-label {
@@ -123,9 +134,16 @@
     letter-spacing: 0.08em;
     font-weight: 700;
     line-height: 1.1;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .uth-value {
+    display: block;
+    width: 100%;
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -139,22 +157,31 @@
       font-weight: 500;
       font-style: italic;
     }
+
+    &.uth-mobile-val {
+      display: none !important;
+    }
   }
 }
 
 .uth-divider {
   width: 1px;
-  height: 26px;
+  height: 24px;
   background: #e2e8f0;
   flex-shrink: 0;
 }
 
 /* ── Location Pill ── */
 .uth-location-pill {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  align-self: center !important;
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+  height: 38px;
+  max-height: 38px;
+  gap: 7px;
+  padding: 0 16px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 20px;
@@ -163,11 +190,20 @@
   color: #334155;
   white-space: nowrap;
   flex-shrink: 0;
+  max-width: 170px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   transition: all 0.2s ease;
+  box-sizing: border-box;
 
   svg {
-    color: #64748b;
+    color: #0284c7;
+    flex-shrink: 0;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &:hover {
@@ -176,16 +212,64 @@
   }
 }
 
+.uth-route-segment {
+  display: contents;
+}
+
+.uth-mobile-icon {
+  display: none;
+}
+
+.uth-desktop-icon {
+  display: block;
+}
+
 /* ── Responsive adjustments ── */
-@media (max-width: 900px) {
+@media (max-width: 1200px) {
   .user-top-header {
-    padding: 8px 14px;
+    height: 70px;
+    min-height: 70px;
+    padding: 0 16px;
+    gap: 10px;
+  }
+
+  .uth-route-searchbar {
+    max-width: 580px;
+    height: 42px;
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .uth-location-pill {
+    height: 36px;
+    max-height: 36px;
+    padding: 0 12px;
+    font-size: 12.5px;
+    max-width: 140px;
+  }
+}
+
+@media (max-width: 950px) {
+  .user-top-header {
+    height: 64px;
+    min-height: 64px;
+    padding: 0 12px;
     gap: 8px;
   }
 
   .uth-route-searchbar {
-    padding: 6px 12px;
-    gap: 8px;
+    max-width: 460px;
+    height: 38px;
+    padding: 0 10px;
+    gap: 6px;
+  }
+
+  .uth-search-copy.uth-steps-copy {
+    display: none;
+  }
+
+  .uth-divider:last-of-type {
+    display: none;
   }
 
   .uth-search-copy .uth-value {
@@ -193,17 +277,347 @@
   }
 
   .uth-location-pill {
-    padding: 6px 10px;
+    height: 34px;
+    max-height: 34px;
+    padding: 0 10px;
     font-size: 12px;
+    max-width: 120px;
   }
 }
 
-@media (max-width: 650px) {
-  .uth-steps-copy {
-    display: none;
+/* Mobile: Matching Second Reference Image Exactly
+   Row 1: Hamburger at top-left, Rajahmundry (+ three-dots) at top-right
+   Row 2: Green FROM bar (left) and Red TO bar (right) directly below header
+   Row 3: Back button directly underneath FROM bar on the left side */
+@media (max-width: 768px) {
+  .user-top-header {
+    height: auto !important;
+    min-height: auto !important;
+    padding: 14px 14px 12px 14px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    box-sizing: border-box !important;
+    position: sticky !important;
+    top: 0 !important;
+    flex-shrink: 0 !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(14px) !important;
+    z-index: 80 !important;
+    border-bottom: 1px solid #eef2f6 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
   }
 
-  .uth-divider:last-of-type {
-    display: none;
+  /* Row 1: Rajahmundry location pill positioned at the top-right corner,
+     straight across from the top-left hamburger menu icon (.user-mobile-menu-btn). */
+  .uth-location-pill {
+    position: absolute !important;
+    top: 14px !important;
+    right: 14px !important;
+    margin: 0 !important;
+    height: 34px !important;
+    max-height: 34px !important;
+    padding: 0 14px !important;
+    background: #f0f9ff !important;
+    border: 1px solid #bae6fd !important;
+    border-radius: 20px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #1e293b !important;
+    max-width: 180px !important;
+    gap: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+    flex-shrink: 0 !important;
+    z-index: 2 !important;
+
+    .uth-desktop-icon {
+      display: none !important;
+    }
+
+    .uth-mobile-icon {
+      display: block !important;
+      width: 14px !important;
+      height: 14px !important;
+      color: #0284c7 !important;
+      fill: #0284c7 !important;
+      flex-shrink: 0 !important;
+    }
+
+    span {
+      display: inline-block !important;
+      max-width: 140px !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+    }
+
+    &:hover {
+      border-color: #7dd3fc !important;
+      background: #e0f2fe !important;
+    }
+  }
+
+  /* Row 2: Green FROM bar (left) and Red TO bar (right) side-by-side directly below Row 1 */
+  .uth-route-searchbar {
+    order: 2 !important;
+    width: 100% !important;
+    flex: 0 0 auto !important;
+    margin: 44px 0 0 0 !important;
+    display: flex !important;
+    align-items: stretch !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    height: auto !important;
+    max-width: none !important;
+    gap: 10px !important;
+    overflow: visible !important;
+
+    &:hover {
+      box-shadow: none !important;
+      border-color: transparent !important;
+    }
+  }
+
+  .uth-route-segment {
+    display: flex !important;
+    align-items: center !important;
+    gap: 9px !important;
+    border-radius: 14px !important;
+    padding: 6px 12px 6px 8px !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+    box-sizing: border-box !important;
+    transition: all 0.2s ease !important;
+
+    &.uth-from-segment {
+      background: #f0fdf4 !important;
+      border: 1px solid #bbf7d0 !important;
+
+      .uth-search-point {
+        background: #16a34a !important;
+      }
+
+      .uth-search-copy .uth-label {
+        color: #16a34a !important;
+      }
+
+      &:hover {
+        border-color: #86efac !important;
+      }
+    }
+
+    &.uth-to-segment {
+      background: #fef2f2 !important;
+      border: 1px solid #fecaca !important;
+
+      .uth-search-point {
+        background: #ef4444 !important;
+      }
+
+      .uth-search-copy .uth-label {
+        color: #ef4444 !important;
+      }
+
+      &:hover {
+        border-color: #fca5a5 !important;
+      }
+    }
+
+    .uth-search-point {
+      width: 34px !important;
+      height: 34px !important;
+      min-width: 34px !important;
+      border-radius: 50% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      flex-shrink: 0 !important;
+      color: #ffffff !important;
+
+      .uth-desktop-icon {
+        display: none !important;
+      }
+
+      .uth-mobile-icon {
+        display: block !important;
+        width: 16px !important;
+        height: 16px !important;
+        fill: #ffffff !important;
+      }
+    }
+
+    .uth-search-copy {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      min-width: 0 !important;
+      flex: 1 1 0 !important;
+      overflow: hidden !important;
+
+      .uth-label {
+        font-size: 10.5px !important;
+        font-weight: 700 !important;
+        line-height: 1.1 !important;
+        margin-bottom: 2px !important;
+        letter-spacing: 0.05em !important;
+        text-transform: uppercase !important;
+        display: block !important;
+      }
+
+      .uth-value {
+        font-size: 13.5px !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        line-height: 1.25 !important;
+        max-width: 100% !important;
+        display: block !important;
+
+        &.uth-desktop-val {
+          display: none !important;
+        }
+
+        &.uth-mobile-val {
+          display: block !important;
+        }
+      }
+    }
+  }
+
+  .uth-divider {
+    display: none !important;
+  }
+
+  .uth-search-copy.uth-steps-copy {
+    display: none !important;
+  }
+
+  /* Row 3: Back button directly underneath FROM bar on the left side */
+  .uth-left-actions {
+    order: 3 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    height: auto !important;
+    flex-shrink: 0 !important;
+
+    &:empty {
+      display: none !important;
+    }
+  }
+
+  .uth-back-btn {
+    height: 36px !important;
+    padding: 0 14px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    border-radius: 10px !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #1e293b !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+
+    svg {
+      width: 14px !important;
+      height: 14px !important;
+      stroke: #1e293b !important;
+      stroke-width: 2.4 !important;
+    }
+
+    span {
+      display: inline-block !important;
+      color: #1e293b !important;
+      font-weight: 600 !important;
+    }
+
+    &:hover {
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+      background: #f8fafc !important;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .user-top-header {
+    padding: 12px 12px 10px 12px !important;
+    gap: 10px !important;
+  }
+
+  .uth-location-pill {
+    position: absolute !important;
+    top: 12px !important;
+    right: 12px !important;
+    margin: 0 !important;
+    height: 32px !important;
+    max-height: 32px !important;
+    padding: 0 12px !important;
+    font-size: 12px !important;
+    max-width: 150px !important;
+
+    span {
+      max-width: 110px !important;
+    }
+  }
+
+  .uth-route-searchbar {
+    margin: 40px 0 0 0 !important;
+    gap: 8px !important;
+  }
+
+  .uth-route-segment {
+    gap: 8px !important;
+    padding: 5px 10px 5px 7px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    border-radius: 12px !important;
+
+    .uth-search-point {
+      width: 32px !important;
+      height: 32px !important;
+      min-width: 32px !important;
+
+      .uth-mobile-icon {
+        width: 15px !important;
+        height: 15px !important;
+      }
+    }
+
+    .uth-search-copy {
+      .uth-label {
+        font-size: 9.5px !important;
+      }
+      .uth-value {
+        font-size: 12.5px !important;
+      }
+    }
+  }
+
+  .uth-left-actions {
+    height: auto !important;
+  }
+
+  .uth-back-btn {
+    height: 34px !important;
+    padding: 0 12px !important;
+    font-size: 12.5px !important;
   }
 }

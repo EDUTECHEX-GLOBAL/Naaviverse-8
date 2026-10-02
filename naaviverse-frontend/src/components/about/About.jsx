@@ -58,8 +58,8 @@ const About = () => {
                 lineHeight: '1.7',
                 color: '#6B7A8D',
               }}>
-                AI technology is perfect for best business solutions &amp; we
-                offer help to achieve your goals.
+                AI technology is ideal for optimal pathways, and we
+                provide guidance to help achieve your goals.
               </p>
               <ul className="style-none list-item color-rev">
                 <li>Personalized Pathway Insights</li>

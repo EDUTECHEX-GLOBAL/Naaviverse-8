@@ -15,7 +15,12 @@ const PurchaseSuccess = () => {
             setCountdown(c => {
                 if (c <= 1) {
                     clearInterval(timer);
-                    navigate('/dashboard/users/Marketplace');
+                    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+                    if (isMobile) {
+                        navigate('/dashboard/users/Marketplace', { replace: true, state: { fromPurchaseSuccess: true } });
+                    } else {
+                        navigate('/dashboard/users/Marketplace');
+                    }
                     return 0;
                 }
                 return c - 1;
@@ -23,6 +28,15 @@ const PurchaseSuccess = () => {
         }, 1000);
         return () => clearInterval(timer);
     }, [navigate]);
+
+    const handleGoToMarketplace = () => {
+        const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+        if (isMobile) {
+            navigate('/dashboard/users/Marketplace', { replace: true, state: { fromPurchaseSuccess: true } });
+        } else {
+            navigate('/dashboard/users/Marketplace');
+        }
+    };
 
     return (
         <div style={{
@@ -78,7 +92,7 @@ const PurchaseSuccess = () => {
                 </p>
 
                 <button
-                    onClick={() => navigate('/dashboard/users/Marketplace')}
+                    onClick={handleGoToMarketplace}
                     style={{
                         background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
                         border: 'none', borderRadius: 10, color: '#fff',

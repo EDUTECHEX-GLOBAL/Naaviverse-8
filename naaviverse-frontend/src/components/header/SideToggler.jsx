@@ -29,7 +29,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
   return (
     <>
       <div className={`side-panel ${isOpen ? "active" : ""}`}>
-        <button className="side-panel-close" onClick={closePanel} />
+        <button className="side-panel-close" onClick={closePanel} aria-label="Close navigation panel" title="Close" />
         <div className="side-panel-overlay" onClick={closePanel} />
         <div className="side-panel-content">
           <div className="side-panel-shape" />
@@ -333,7 +333,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                 <div className="side-panel-box">
                   <Newsletter
                     title="Subscribe"
-                    subtitle="Subscribe to the list to get pilot access to the platform and updates"
+                    subtitle="Subscribe to the list to get pilot access to the platform and updates."
                     placeholder="example@gmail.com"
                   />
                 </div>
@@ -348,7 +348,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
             <>
               <div className="side-panel-box">
                 <h2 className="side-panel-heading">
-                  Do you have a project in your <br /> mind? Keep connect us.
+                  Do you have a project in mind? <br /> Connect with us.
                 </h2>
               </div>
 
@@ -359,7 +359,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
               <div className="side-panel-box">
                 <Newsletter
                   title="Subscribe"
-                  subtitle="Subscribe to the list to get pilot access to the platform and updates"
+                  subtitle="Subscribe to the list to get pilot access to the platform and updates."
                   placeholder="example@gmail.com"
                 />
               </div>

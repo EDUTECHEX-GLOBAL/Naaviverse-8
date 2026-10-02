@@ -11,7 +11,23 @@ const Pathview = memo(({ paths, loading, onAdjustCoordinates, onViewPath }) => {
     setPathItemStep,
     setSelectedPathItem,
     searchTerm,
+    setSearchterm,
   } = useCoinContextData();
+
+  const [searchQuery, setSearchQuery] = useState(searchTerm || "");
+
+  useEffect(() => {
+    if (searchTerm !== undefined && searchTerm !== searchQuery) {
+      setSearchQuery(searchTerm);
+    }
+  }, [searchTerm]);
+
+  const handleSearchChange = (val) => {
+    setSearchQuery(val);
+    if (typeof setSearchterm === "function") {
+      setSearchterm(val);
+    }
+  };
 
   const formattedData = useMemo(() => {
     return (paths || []).map((p) => ({
@@ -25,14 +41,41 @@ const Pathview = memo(({ paths, loading, onAdjustCoordinates, onViewPath }) => {
   }, [paths]);
 
   const filteredData = useMemo(() => {
-    if (!searchTerm?.trim()) return formattedData;
-    const term = searchTerm.toLowerCase();
-    return formattedData.filter((item) =>
-      item.pathName.toLowerCase().includes(term) ||
-      item.program.toLowerCase().includes(term) ||
-      item.description.toLowerCase().includes(term)
-    );
-  }, [formattedData, searchTerm]);
+    const rawQuery = (searchQuery || "").trim().toLowerCase();
+    if (!rawQuery) return formattedData;
+
+    // Split query by whitespace to match all keywords/tokens
+    const tokens = rawQuery.split(/\s+/).filter(Boolean);
+
+    return formattedData.filter((item) => {
+      const p = item.raw || {};
+      const tagsStr = Array.isArray(p.tags) ? p.tags.join(" ") : (p.tags || "");
+      const skillsStr = Array.isArray(p.skills) ? p.skills.join(" ") : (p.skills || "");
+
+      const searchableText = [
+        item.pathName,
+        item.program,
+        item.description,
+        p.category,
+        p.universityName,
+        p.school,
+        p.institutionName,
+        p.degree,
+        p.discipline,
+        p.stream,
+        p.grade,
+        p.curriculum,
+        p.targetRole,
+        tagsStr,
+        skillsStr,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return tokens.every((token) => searchableText.includes(token));
+    });
+  }, [formattedData, searchQuery]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
@@ -41,7 +84,7 @@ const Pathview = memo(({ paths, loading, onAdjustCoordinates, onViewPath }) => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [pathsLength, searchTerm]);
+  }, [pathsLength, searchQuery]);
 
   const paginatedData = filteredData.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -94,20 +137,57 @@ const Pathview = memo(({ paths, loading, onAdjustCoordinates, onViewPath }) => {
             </span>
           )}
         </div>
-        <button
-          className="pathview-topbar__coords-btn"
-          onClick={onAdjustCoordinates}
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="4" y1="6" x2="20" y2="6" />
-            <line x1="4" y1="12" x2="20" y2="12" />
-            <line x1="4" y1="18" x2="20" y2="18" />
-            <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none" />
-            <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none" />
-            <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none" />
-          </svg>
-          Adjust Coordinates
-        </button>
+
+        <div className="pathview-topbar__right">
+          <div className="pathview-search-box">
+            <svg
+              className="pathview-search-icon"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              className="pathview-search-input"
+              placeholder="Search path"
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                className="pathview-search-clear"
+                onClick={() => handleSearchChange("")}
+                title="Clear search"
+                type="button"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          <button
+            className="pathview-topbar__coords-btn"
+            onClick={onAdjustCoordinates}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="4" y1="6" x2="20" y2="6" />
+              <line x1="4" y1="12" x2="20" y2="12" />
+              <line x1="4" y1="18" x2="20" y2="18" />
+              <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none" />
+              <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none" />
+              <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none" />
+            </svg>
+            Adjust Coordinates
+          </button>
+        </div>
       </div>
 
       {/* CARDS GRID */}
