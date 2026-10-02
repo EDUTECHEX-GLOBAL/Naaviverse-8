@@ -92,6 +92,9 @@ class RoadmapData(BaseModel):
     readiness_score: int
     readiness_label: str
     total_duration: str
+    total_duration_months: Optional[int] = None
+    duration_status: Optional[str] = "calculated"
+    duration_calculation: Optional[List[Dict[str, Any]]] = None
     steps: List[Milestone] = Field(default_factory=list)
     blind_spots: List[str] = Field(default_factory=list)
 

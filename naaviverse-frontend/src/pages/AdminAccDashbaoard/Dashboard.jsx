@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import ReactDOM from "react-dom";
 import axios from "axios";
 import "./Dashboard.scss";
@@ -182,17 +182,10 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   // ── Notification state ────────────────────────────────────────────────────
+  const READ_NOTIFS_KEY = "admin_read_notif_ids";
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: "path", title: "New path created", desc: 'Admin created "AI Fundamentals" path', time: "2 min ago", unread: true },
-    { id: 2, type: "purchase", title: "New purchase", desc: 'Riya Sharma purchased "Data Science Pack"', time: "18 min ago", unread: true },
-    { id: 3, type: "approval", title: "Approval pending", desc: "SkillBridge Institute awaiting review", time: "1 hr ago", unread: true },
-    { id: 4, type: "path", title: "Path published", desc: '"Career Launchpad" is now live', time: "3 hr ago", unread: true },
-    { id: 5, type: "purchase", title: "New purchase", desc: 'Arjun Mehta purchased "Full Stack Bootcamp"', time: "5 hr ago", unread: true },
-    { id: 6, type: "path", title: "Path updated", desc: 'Admin updated steps in "Web Dev Basics"', time: "Yesterday", unread: false },
-    { id: 7, type: "approval", title: "Partner approved", desc: "EduTech Solutions was successfully approved", time: "Yesterday", unread: false },
-    { id: 8, type: "system", title: "System maintenance", desc: "Scheduled downtime on Sunday 2–4 AM IST", time: "2 days ago", unread: false },
-  ]);
+  const [notifications, setNotifications] = useState([]);
+  const [notifsLoading, setNotifsLoading] = useState(false);
   const [notifFilter, setNotifFilter] = useState("all");
   const notifDropdownRef = useRef(null);
   const unreadCount = notifications.filter((n) => n.unread).length;
@@ -202,8 +195,98 @@ export default function Dashboard() {
   const [partnerActivityTab, setPartnerActivityTab] = useState("all");
   const [purchaseTab, setPurchaseTab] = useState("all");
 
-  const markAllRead = () => setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
-  const markOneRead = (id) => setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, unread: false } : n)));
+  const fetchNotifications = useCallback(() => {
+    setNotifsLoading(true);
+    axios
+      .get(`${BASE_URL}/api/dashboard/notifications`)
+      .then(({ data }) => {
+        if (data?.status && Array.isArray(data.notifications)) {
+          let readIds = new Set();
+          try {
+            readIds = new Set(JSON.parse(localStorage.getItem(READ_NOTIFS_KEY) || "[]"));
+          } catch (e) {
+            readIds = new Set();
+          }
+
+          const formatted = data.notifications.map((n) => ({
+            ...n,
+            unread: !readIds.has(n.id),
+          }));
+          setNotifications(formatted);
+        }
+      })
+      .catch((err) => console.error("Admin notifications error:", err))
+      .finally(() => setNotifsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 20000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
+
+  const markAllRead = () => {
+    setNotifications((prev) => {
+      const allIds = prev.map((n) => n.id);
+      try {
+        const existing = new Set(JSON.parse(localStorage.getItem(READ_NOTIFS_KEY) || "[]"));
+        allIds.forEach((id) => existing.add(id));
+        localStorage.setItem(READ_NOTIFS_KEY, JSON.stringify([...existing]));
+      } catch (e) {
+        console.error("Failed to save read notifs:", e);
+      }
+      return prev.map((n) => ({ ...n, unread: false }));
+    });
+  };
+
+  const markOneRead = (id) => {
+    try {
+      const existing = new Set(JSON.parse(localStorage.getItem(READ_NOTIFS_KEY) || "[]"));
+      existing.add(id);
+      localStorage.setItem(READ_NOTIFS_KEY, JSON.stringify([...existing]));
+    } catch (e) {
+      console.error("Failed to save read notif:", e);
+    }
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, unread: false } : n))
+    );
+  };
+
+  const handleNotifView = (n) => {
+    markOneRead(n.id);
+    setShowNotifDropdown(false);
+
+    if (n.targetTab === "paths" || n.type === "path") {
+      navigate("/admin/dashboard/paths?tab=active");
+    } else if (n.targetTab === "crm") {
+      navigate("/admin/dashboard/crm");
+    } else if (n.targetTab === "approvals" || n.type === "approval") {
+      setView("approvals");
+      setSelected(null);
+      setTab("all");
+    } else if (n.targetTab === "marketplace") {
+      if (n.id && typeof n.id === "string" && n.id.startsWith("ast-")) {
+        const ticketId = n.targetId || n.id.replace("ast-", "");
+        const matched = assistanceRequests.find(
+          (r) => r.ticketId === ticketId || r.id === ticketId || r._id === ticketId
+        );
+        if (matched) {
+          setSelectedAssistanceRequest(matched);
+          setView("assistanceDetails");
+          return;
+        }
+      }
+      navigate("/admin/dashboard/marketplace?tab=assistance");
+    } else if (n.targetTab === "activity") {
+      setView("activity");
+      setSelectedActivityUser(null);
+    } else if (n.type === "purchase") {
+      setView("purchaseActivity");
+      setSelectedPurchase(null);
+    } else {
+      setView("home");
+    }
+  };
 
   useEffect(() => {
     const handler = (e) => {
@@ -556,13 +639,24 @@ export default function Dashboard() {
                       </div>
                     </div>
                     <div className="notif-dd-list">
-                      {notifications.slice(0, 4).map((n) => (
-                        <NotifItem
-                          key={n.id} notif={n}
-                          onRead={() => markOneRead(n.id)}
-                          onView={() => { markOneRead(n.id); setShowNotifDropdown(false); setView("notifications"); setNotifFilter(n.type); }}
-                        />
-                      ))}
+                      {notifsLoading && notifications.length === 0 ? (
+                        <div style={{ padding: "20px", textAlign: "center", fontSize: 13, color: "var(--slate-400)" }}>
+                          Loading notifications...
+                        </div>
+                      ) : notifications.length === 0 ? (
+                        <div style={{ padding: "20px", textAlign: "center", fontSize: 13, color: "var(--slate-400)" }}>
+                          No notifications
+                        </div>
+                      ) : (
+                        notifications.slice(0, 6).map((n) => (
+                          <NotifItem
+                            key={n.id}
+                            notif={n}
+                            onRead={() => markOneRead(n.id)}
+                            onView={() => handleNotifView(n)}
+                          />
+                        ))
+                      )}
                     </div>
                     <div className="notif-dd-footer">
                       <button className="notif-view-all-btn" onClick={() => { setShowNotifDropdown(false); setView("notifications"); setNotifFilter("all"); }}>
@@ -918,7 +1012,7 @@ export default function Dashboard() {
               <button style={{ fontSize: 12, fontWeight: 600, background: "var(--slate-100)", color: "var(--slate-600)", border: "none", padding: "6px 14px", borderRadius: "var(--radius-full)", cursor: "pointer", fontFamily: "var(--font)" }} onClick={markAllRead}>
                 Mark all read
               </button>
-              <button style={{ fontSize: 12, fontWeight: 600, background: "var(--rose-50)", color: "var(--rose-600)", border: "1px solid var(--rose-100)", padding: "6px 14px", borderRadius: "var(--radius-full)", cursor: "pointer", fontFamily: "var(--font)" }} onClick={() => setNotifications([])}>
+              <button style={{ fontSize: 12, fontWeight: 600, background: "var(--rose-50)", color: "var(--rose-600)", border: "1px solid var(--rose-100)", padding: "6px 14px", borderRadius: "var(--radius-full)", cursor: "pointer", fontFamily: "var(--font)" }} onClick={() => { markAllRead(); setNotifications([]); }}>
                 Clear all
               </button>
             </div>
@@ -955,7 +1049,7 @@ export default function Dashboard() {
                 filteredNotifs.map((n) => (
                   <NotifItem key={n.id} notif={n} full
                     onRead={() => markOneRead(n.id)}
-                    onView={() => { markOneRead(n.id); if (n.type === "approval") { setView("approvals"); setSelected(null); setTab("all"); } else setView("home"); }}
+                    onView={() => handleNotifView(n)}
                   />
                 ))
               )}

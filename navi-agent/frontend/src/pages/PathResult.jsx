@@ -38,9 +38,9 @@ export default function PathResult({ pathData, userInput, onStepClick, onBack })
             <span className="score-num">{pathData.readiness_score}</span>
             <span className="score-label">Readiness</span>
           </div>
-          <div className="route-bar-duration">
+          <div className="route-bar-duration" title={Array.isArray(pathData?.duration_calculation) ? pathData.duration_calculation.map(s => `${s.stage}: ${s.months}m`).join(" + ") : undefined}>
             <span className="duration-val">{pathData.total_duration}</span>
-            <span className="duration-label">Est. duration</span>
+            <span className="duration-label">Verified Duration</span>
           </div>
         </div>
       </div>

@@ -11,11 +11,16 @@ const {
   getPathEnrolledUsers,
   getExclusiveDashboardStats,
   getPartnerLiveActivity,
+  getPartnerNotifications,
 } = require("../controllers/PartnerDashboardController");
 
 // GET /api/partner-dashboard/stats?email=partner@x.com
 // Returns: totalSelected, thisWeek, percentChange, paths[], liveActivity[]
 router.get("/stats", getDashboardStats);
+
+// GET /api/partner-dashboard/notifications?email=partner@x.com&partnerId=NVP-XXX
+// Returns: real-time aggregated notifications for partner
+router.get("/notifications", getPartnerNotifications);
 
 // GET /api/partner-dashboard/path-users?pathId=xxx&partnerEmail=partner@x.com
 // Returns: enrolled user list with completion% for a specific path

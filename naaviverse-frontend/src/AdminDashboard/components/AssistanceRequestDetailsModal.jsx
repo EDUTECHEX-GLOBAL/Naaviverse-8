@@ -27,8 +27,17 @@ export default function AssistanceRequestDetailsModal({
   const [inputMsg, setInputMsg] = useState("");
   const [sending, setSending] = useState(false);
   const [showRecModal, setShowRecModal] = useState(false);
+  const [copiedTicket, setCopiedTicket] = useState(false);
   const messagesEndRef = useRef(null);
   const chatMessagesRef = useRef(null);
+
+  const handleCopyTicket = (e) => {
+    e.stopPropagation();
+    if (!request?.id) return;
+    navigator.clipboard?.writeText(request.id);
+    setCopiedTicket(true);
+    setTimeout(() => setCopiedTicket(false), 2000);
+  };
 
   const loadMessages = React.useCallback(async () => {
     if (!request?.id) return;
@@ -109,7 +118,21 @@ export default function AssistanceRequestDetailsModal({
         <div className="aadd-header">
           <div>
             <div className="aadd-meta-top">
-              <span className="aadd-id">Ticket #{request.id}</span>
+              <span
+                className="aadd-id"
+                onClick={handleCopyTicket}
+                title="Click to copy Ticket ID"
+                style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
+              >
+                <span>Ticket #{request.id}</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+                {copiedTicket && (
+                  <span style={{ fontSize: "10.5px", color: "#16a34a", fontWeight: 700 }}>Copied!</span>
+                )}
+              </span>
               <span className={`aadd-status-badge status-${request.status}`}>
                 {request.status.toUpperCase()}
               </span>

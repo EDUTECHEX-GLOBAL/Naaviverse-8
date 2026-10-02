@@ -45,6 +45,11 @@ const MarketplaceAssistanceSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+
+    recommendedService: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
   },
   { timestamps: true }
 );

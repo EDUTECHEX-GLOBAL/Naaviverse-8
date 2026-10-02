@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../../assets/images/logo/naavi_final_logo2.png";
 import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
 import stepIcon from '../../assets/images/assets/naavi-icon1.webp';
+import marketplaceReplacementService from "../../services/marketplaceReplacementService";
 
 // ✅ URL map for each section
 const ROUTE_MAP = {
@@ -131,6 +132,17 @@ const AdminAccDashsidebar = ({
   const { accsideNav, setaccsideNav } = useStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const [pendingAssistanceCount, setPendingAssistanceCount] = useState(0);
+
+  useEffect(() => {
+    marketplaceReplacementService
+      .getAllAssistanceRequests()
+      .then((reqs) => {
+        const pending = (reqs || []).filter((r) => r.status === "pending" || r.status === "reviewing").length;
+        setPendingAssistanceCount(pending);
+      })
+      .catch(() => {});
+  }, [location.pathname]);
 
   const toggleCollapsed = () => {
     setCollapsed((prev) => {
@@ -171,7 +183,7 @@ const AdminAccDashsidebar = ({
         setaccsideNav(menu[0].title);
       }
     }
-  }, [admin, location.pathname]);
+  }, [admin, location.pathname, accsideNav, setaccsideNav]);
 
   const isActive = (title) => {
     const route = ROUTE_MAP[title];
@@ -315,6 +327,22 @@ const AdminAccDashsidebar = ({
               >
                 {getIcon(each.title, color)}
                 <span className="sidebar-label" style={{ opacity: collapsed ? 0 : 1, width: collapsed ? 0 : "auto", overflow: "hidden", whiteSpace: "nowrap", transition: "opacity 0.18s ease, width 0.18s ease" }}>{each.display}</span>
+                {each.title === "Marketplace" && pendingAssistanceCount > 0 && !collapsed && (
+                  <span
+                    style={{
+                      marginLeft: "auto",
+                      background: "#fef3c7",
+                      color: "#b45309",
+                      border: "1px solid #fde68a",
+                      borderRadius: "10px",
+                      padding: "1px 6px",
+                      fontSize: "11px",
+                      fontWeight: "700",
+                    }}
+                  >
+                    {pendingAssistanceCount}
+                  </span>
+                )}
               </div>
             );
           })}

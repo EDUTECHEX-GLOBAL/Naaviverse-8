@@ -273,6 +273,52 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   }
 }
 
+// Super Admin Assistance Trigger Button
+.mkt-assist-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1.5px solid #bfdbfe;
+  border-radius: $radius-sm;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.15);
+  }
+
+  .assist-btn-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #2563eb;
+    color: #ffffff;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 9px;
+    font-size: 9px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
+  }
+}
+
 // Cart button (Dark Green)
 .cart-top-btn {
   position: relative;

@@ -291,18 +291,35 @@ const AccProfile = () => {
     console.log("Partner data retrieved from localStorage:", userDetails);
   }, []);
 
-  const [businessName, setBusinessName] = useState('');
+  const [businessName, setBusinessName] = useState(() => {
+    const bn = userDetails?.businessName;
+    return (bn && bn !== userDetails?.username) ? bn : '';
+  });
   const [businessDesc, setBusinessDesc] = useState('');
   const [website, setWebsite] = useState('');
   const [businessType, setBusinessType] = useState('');
-  const [businessLogo, setBusinessLogo] = useState('');
+  const [businessLogo, setBusinessLogo] = useState(userDetails?.logo || userDetails?.picture || '');
   const [street, setStreet] = useState('');
   const [city, setCity] = useState('');
   const [pinCode, setPinCode] = useState('');
   const [businessState, setBusinessState] = useState('');
   const [businessCountry, setBusinessCountry] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [firstName, setFirstName] = useState(() => {
+    if (userDetails?.firstName) return userDetails.firstName;
+    if (userDetails?.name) {
+      const parts = userDetails.name.trim().split(/\s+/);
+      return parts[0] || '';
+    }
+    return '';
+  });
+  const [lastName, setLastName] = useState(() => {
+    if (userDetails?.lastName) return userDetails.lastName;
+    if (userDetails?.name) {
+      const parts = userDetails.name.trim().split(/\s+/);
+      return parts.slice(1).join(' ') || '';
+    }
+    return '';
+  });
   const [position, setPosition] = useState('');
 
   const handleDownload = (type) => {
@@ -327,6 +344,22 @@ const AccProfile = () => {
   // ─── Approval Flow Helpers ──────────────────────────────────────────────────
 
   /**
+   * Helper to verify if partner has actually submitted all essential onboarding details.
+   * Prevents accounts with dummy or partial data from getting stuck in pending review.
+   */
+  const checkIsProfileComplete = (raw, profileRes) => {
+    if (!raw) return false;
+    if (profileRes?.data?.profileIncomplete === true) return false;
+    return Boolean(
+      raw.businessName &&
+      raw.businessName.trim() !== "" &&
+      raw.website &&
+      raw.website.trim() !== "" &&
+      (raw.city || raw.street || raw.firstName)
+    );
+  };
+
+  /**
    * Writes the approval status into localStorage so we can skip the
    * approval API on the next page load if we already know the answer.
    */
@@ -346,11 +379,12 @@ const AccProfile = () => {
       .then((profileRes) => {
         const raw = profileRes.data?.data || {};
 
-        if (!raw || !raw.businessName) {
-          // API returned empty data - no profile exists yet
+        if (!checkIsProfileComplete(raw, profileRes)) {
+          // API returned empty or incomplete data - no complete profile exists yet
           setIsProfileData(false);
           setProfileData({});
           setCreateBrandProfile(true);
+          setAccStatus("");
           setIsLoadingProfile(false);
           return;
         }
@@ -380,7 +414,7 @@ const AccProfile = () => {
       })
       .catch((err) => {
         console.error("Error fetching profile:", err);
-        // Network error - do NOT open create form, show empty state
+        // Network error - show empty state
         setIsProfileData(false);
         setProfileData({});
         setAccStatus("");
@@ -412,21 +446,37 @@ const AccProfile = () => {
           // Still load the profile so the partner can see what they submitted
           fetchAndShowProfile(mailId, "rejected");
         } else if (liveStatus === "pending") {
-          updateLocalStorage("pending");
-          setCreateBrandProfile(false);
-          // Still load the profile so the partner can see what they submitted
-          fetchAndShowProfile(mailId, "pending");
-        } else {
-          // No approval record yet — but the partner might have just submitted
-          // their profile (API delay) or the approval doc wasn't created yet.
-          // Check whether a partner profile row actually exists before showing
-          // the create form — avoids the "create again" loop.
+          // Verify they actually submitted a complete profile before locking into pending view
           axios
             .get(`${BASE_URL}/api/partner/get?email=${mailId}`)
             .then((profileRes) => {
               const raw = profileRes.data?.data || {};
-              if (raw && raw.businessName) {
-                // Profile exists but no approval record yet — treat as pending
+              if (checkIsProfileComplete(raw, profileRes)) {
+                updateLocalStorage("pending");
+                setCreateBrandProfile(false);
+                fetchAndShowProfile(mailId, "pending");
+              } else {
+                // Profile incomplete -> open profile creation modal
+                setIsProfileData(false);
+                setProfileData({});
+                setAccStatus("");
+                setCreateBrandProfile(true);
+                setIsLoadingProfile(false);
+              }
+            })
+            .catch(() => {
+              updateLocalStorage("pending");
+              setCreateBrandProfile(false);
+              fetchAndShowProfile(mailId, "pending");
+            });
+        } else {
+          // No approval record yet — check whether partner has a completed profile
+          axios
+            .get(`${BASE_URL}/api/partner/get?email=${mailId}`)
+            .then((profileRes) => {
+              const raw = profileRes.data?.data || {};
+              if (checkIsProfileComplete(raw, profileRes)) {
+                // Profile exists and is complete, but no approval record yet — treat as pending
                 console.log("Profile found but no approval record -> pending");
                 const normalized = { ...raw, type: raw.type || raw.partnerType || raw.businessType || "" };
                 setIsProfileData(true);
@@ -445,7 +495,7 @@ const AccProfile = () => {
                   businessName: raw.businessName || existingLS.businessName,
                 }));
               } else {
-                // Genuinely no profile yet -> show create form
+                // Genuinely no profile yet or incomplete -> show create form
                 setIsProfileData(false);
                 setProfileData({});
                 setAccStatus("");
@@ -472,7 +522,7 @@ const AccProfile = () => {
           .get(`${BASE_URL}/api/partner/get?email=${mailId}`)
           .then((profileRes) => {
             const raw = profileRes.data?.data || {};
-            if (raw && raw.businessName) {
+            if (checkIsProfileComplete(raw, profileRes)) {
               const normalized = { ...raw, type: raw.type || raw.partnerType || raw.businessType || "" };
               setIsProfileData(true);
               setProfileData(normalized);
@@ -511,7 +561,7 @@ const AccProfile = () => {
    * actions (approve / reject) are reflected immediately on next page load.
    */
   const handleAccountantData = () => {
-    const mailId = userDetails?.email;
+    const mailId = userDetails?.email || localStorage.getItem("loginEmail");
     if (!mailId) return;
 
     const isInternal = userDetails?.creationSource === "admin_created";
@@ -942,7 +992,7 @@ const AccProfile = () => {
   }
 
   const createPartnerProfile = () => {
-    let email = userDetails?.email;
+    let email = userDetails?.email || localStorage.getItem("loginEmail");
     if (!email) return;
 
     axios.put(`${BASE_URL}/api/partner/add`, {

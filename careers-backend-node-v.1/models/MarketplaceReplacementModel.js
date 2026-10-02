@@ -4,9 +4,13 @@ const MarketplaceReplacementSchema = new mongoose.Schema(
   {
     userId: { type: String },
     userEmail: { type: String, required: true, index: true },
+    userName: { type: String, default: "Student" },
     pathId: { type: String },
+    pathName: { type: String, default: "" },
     stepId: { type: String, required: true, index: true },
+    stepName: { type: String, default: "" },
     originalMarketplaceItemId: { type: String, required: true },
+    originalItemName: { type: String, default: "" },
 
     replacementCount: {
       type: Number,
@@ -37,6 +41,8 @@ const MarketplaceReplacementSchema = new mongoose.Schema(
         "replacement_active",
         "max_replacements_reached",
         "admin_requested",
+        "pending",
+        "reviewing",
         "resolved",
         "closed",
       ],

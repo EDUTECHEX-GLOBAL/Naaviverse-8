@@ -9,7 +9,9 @@ import loginHero from "../../static/images/login/login_hero.png";
 import loadinglogo from "./favicon3.png";
 import axios from "axios";
 import info from "./info.svg";
-import { Loginservice } from "../../services/loginapis";
+import { Loginservice, GoogleLoginservice } from "../../services/loginapis";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -43,6 +45,20 @@ const PartnerToggleIcon = () => (
     <svg className="toggleIcon" viewBox="0 0 24 24" fill="none">
         <rect x="3.5" y="7.5" width="17" height="11" rx="2" stroke="currentColor" strokeWidth="1.6" />
         <path d="M8.5 7.5V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v1.5" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+);
+
+const WarningIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+        <line x1="12" y1="9" x2="12" y2="13" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+);
+
+const SwitchIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
     </svg>
 );
 
@@ -82,7 +98,10 @@ const Loginpage = ({ initialType }) => {
     const [password, setpassword] = useState("");
     const [eye, seteye] = useState(false);
     const [iserror, setiserror] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const [loginError, setLoginError] = useState(null);
+    const hasGoogleToken = typeof window !== "undefined" && window.location.hash.includes("access_token");
+    const [isGoogleProcessing, setIsGoogleProcessing] = useState(hasGoogleToken);
+    const [isLoading, setIsLoading] = useState(hasGoogleToken);
     const [forgotPassword, setForgotPassword] = useState(false);
     const [forgotPasswordStep, setForgotPasswordStep] = useState(1);
     const [code, setCode] = useState("");
@@ -101,6 +120,57 @@ const Loginpage = ({ initialType }) => {
     const [forceEye2, setForceEye2] = useState(false);
     const [partnerContext, setPartnerContext] = useState(null);
 
+    const handleSwitchRole = (targetRole) => {
+        setLoginType(targetRole);
+        setLoginError(null);
+        setiserror(false);
+        const label = targetRole === "Accountants" ? "Partner" : "User";
+        toast.info(`Switched to ${label} login. Please enter your password.`, {
+            position: "top-right",
+            autoClose: 3000,
+        });
+    };
+
+    const handleEmailBlur = async () => {
+        const cleanEmail = email.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(cleanEmail)) return;
+
+        try {
+            const res = await axios.post(`${BASE_URL}/api/auth/checkEmailDuplicate`, { email: cleanEmail });
+            const data = res.data;
+            if (data && data.exists) {
+                if (data.registeredRole === "Partner" && loginType === "Users") {
+                    setLoginError({
+                        type: "toggle_warning",
+                        targetRole: "Accountants",
+                        targetRoleLabel: "Partner",
+                        title: "Partner Account Detected",
+                        message: "This email is registered as a Partner account.",
+                        detail: "You are currently on User login. Click below to switch to Partner login.",
+                        actionText: "Switch to Partner Login",
+                        actionType: "switch_role",
+                    });
+                } else if (data.registeredRole === "User" && loginType === "Accountants") {
+                    setLoginError({
+                        type: "toggle_warning",
+                        targetRole: "Users",
+                        targetRoleLabel: "User",
+                        title: "User Account Detected",
+                        message: "This email is registered as a standard User account.",
+                        detail: "You are currently on Partner login. Click below to switch to User login.",
+                        actionText: "Switch to User Login",
+                        actionType: "switch_role",
+                    });
+                } else if (loginError?.type === "toggle_warning") {
+                    setLoginError(null);
+                }
+            }
+        } catch (e) {
+            // Ignore background check failure
+        }
+    };
+
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const role = urlParams.get("role");
@@ -118,6 +188,205 @@ const Loginpage = ({ initialType }) => {
             setLoginType("Users");
         }
     }, [initialType, setLoginType]);
+
+    // Handle Google OAuth Callback (extract token from URL hash)
+    useEffect(() => {
+        const hash = window.location.hash;
+        if (!hash || !hash.includes("access_token")) return;
+
+        const handleGoogleCallback = async () => {
+            setIsLoading(true);
+            try {
+                // Parse access_token from hash
+                const hashParams = new URLSearchParams(hash.substring(1));
+                const accessToken = hashParams.get("access_token");
+
+                // Clean hash from URL without reloading
+                window.history.replaceState(null, "", window.location.pathname + window.location.search);
+
+                if (!accessToken) {
+                    setIsLoading(false);
+                    return;
+                }
+
+                // Fetch Google profile
+                const googleRes = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                });
+
+                const googleUser = googleRes.data;
+                console.log("✅ Google user fetched:", googleUser?.email);
+
+                const storedRole = localStorage.getItem("googleAuthRole") || loginType || "Users";
+                const targetRole = (storedRole === "Accountants" || storedRole === "partner") ? "Accountants" : "Users";
+
+                // Authenticate with backend
+                const res = await GoogleLoginservice({
+                    email: googleUser.email,
+                    name: googleUser.name,
+                    picture: googleUser.picture,
+                    role: targetRole,
+                });
+
+                const result = res.data;
+                if (!result.success) {
+                    setLoginError({
+                        type: "error",
+                        title: "Login Failed",
+                        message: result.message || "Failed to log in with Google.",
+                    });
+                    setiserror(true);
+                    setIsLoading(false);
+                    return;
+                }
+
+                localStorage.setItem("authToken", result.token);
+                const isUserAuth = result.userType === "user" || targetRole === "Users";
+                localStorage.setItem("userType", isUserAuth ? "user" : "partner");
+
+                if (result.user) {
+                    const userObj = {
+                        ...result.user,
+                        user: result.user,
+                        email: result.user.email,
+                        username: result.user.username,
+                        name: result.user.name || result.user.username,
+                        _id: result.user.id || result.user._id,
+                        id: result.user.id || result.user._id,
+                    };
+                    localStorage.setItem("user", JSON.stringify(userObj));
+                    if (result.user.name) localStorage.setItem("userName", result.user.name);
+                    if (result.user.profilePicture) localStorage.setItem("userProfilePic", result.user.profilePicture);
+
+                    try {
+                        const profileRes = await axios.get(
+                            `${BASE_URL}/api/users/get/${result.user.email}`
+                        );
+                        const profileData = profileRes.data?.data;
+                        if (profileData?.name) {
+                            localStorage.setItem("userName", profileData.name);
+                            localStorage.setItem("user", JSON.stringify({
+                                ...userObj,
+                                name: profileData.name,
+                            }));
+                        }
+                        if (profileData?.profilePicture) {
+                            localStorage.setItem("userProfilePic", profileData.profilePicture);
+                        }
+                    } catch (e) {
+                        console.warn("Could not fetch profile at login:", e?.message);
+                    }
+                }
+
+                const emailToStore = result?.user?.email || result?.partner?.email || googleUser.email || "";
+                localStorage.setItem("loginEmail", emailToStore);
+
+                if (isUserAuth) {
+                    // Check user profile completion directly to route without flashing the dashboard
+                    let isComplete = false;
+                    try {
+                        const profileRes = await axios.get(
+                            `${BASE_URL}/api/users/get/${result.user.email}`
+                        );
+                        const profileData = profileRes.data?.data;
+                        if (profileData) {
+                            isComplete =
+                                profileData.isProfileCompleted === true ||
+                                Boolean(
+                                    profileData.name &&
+                                    profileData.username &&
+                                    profileData.phoneNumber &&
+                                    profileData.school &&
+                                    profileData.personality
+                                );
+                        }
+                    } catch (e) {
+                        console.warn("Could not check user profile completion:", e?.message);
+                    }
+
+                    if (!isComplete) {
+                        navigate("/dashboard/users/profile", { replace: true });
+                    } else {
+                        navigate("/dashboard/users/home", { replace: true });
+                    }
+                } else {
+                    const partnerData = result.partner || {};
+                    let isProfileComplete = false;
+                    try {
+                        const profileRes = await axios.get(
+                            `${BASE_URL}/api/partner/get?email=${emailToStore}`
+                        );
+                        const raw = profileRes.data?.data || {};
+                        const isIncomplete = profileRes.data?.profileIncomplete === true;
+                        isProfileComplete = !isIncomplete && Boolean(
+                            raw.businessName &&
+                            raw.website &&
+                            (raw.street || raw.city || raw.firstName)
+                        );
+                    } catch (profileErr) {
+                        console.warn("Could not fetch partner profile at login:", profileErr?.message);
+                    }
+
+                    const enrichedPartner = {
+                        ...partnerData,
+                        creationSource: partnerData.creationSource || "self_registered",
+                        approvalStatus: partnerData.approvalStatus || (isProfileComplete ? "pending" : "not_submitted"),
+                        mustChangePassword: false,
+                    };
+                    localStorage.setItem("partner", JSON.stringify(enrichedPartner));
+
+                    if (!isProfileComplete) {
+                        navigate("/dashboard/accountants/profile", { replace: true });
+                    } else {
+                        navigate("/dashboard/accountants/home", { replace: true });
+                    }
+                }
+            } catch (error) {
+                setIsGoogleProcessing(false);
+                setIsLoading(false);
+                console.error("Google Auth Callback Error:", error);
+                const errData = error.response?.data;
+                const code = errData?.code;
+                const msg = errData?.message;
+                const registeredRole = errData?.registeredRole;
+
+                if (code === "REGISTERED_AS_PARTNER" || registeredRole === "Partner") {
+                    setLoginError({
+                        type: "toggle_warning",
+                        targetRole: "Accountants",
+                        targetRoleLabel: "Partner",
+                        title: "Registered as Partner",
+                        message: "This email is registered as a Partner account.",
+                        detail: "You tried signing in as a User. Switch to Partner login to continue with this account.",
+                        actionText: "Switch to Partner Login",
+                        actionType: "switch_role",
+                    });
+                } else if (code === "REGISTERED_AS_USER" || registeredRole === "User") {
+                    setLoginError({
+                        type: "toggle_warning",
+                        targetRole: "Users",
+                        targetRoleLabel: "User",
+                        title: "Registered as User",
+                        message: "This email is registered as a User account.",
+                        detail: "You tried signing in as a Partner. Switch to User login to continue with this account.",
+                        actionText: "Switch to User Login",
+                        actionType: "switch_role",
+                    });
+                } else {
+                    setLoginError({
+                        type: "error",
+                        title: "Google Sign-In Failed",
+                        message: msg || "Failed to authenticate with Google. Please try again.",
+                    });
+                    setiserror(true);
+                }
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        handleGoogleCallback();
+    }, [navigate, loginType]);
 
     const getProfilePic = async (email, loginType) => {
         try {
@@ -146,6 +415,8 @@ const Loginpage = ({ initialType }) => {
 
     const handleLogin = async () => {
         setIsLoading(true);
+        setLoginError(null);
+        setiserror(false);
         const obj = { email, password };
 
         try {
@@ -156,6 +427,11 @@ const Loginpage = ({ initialType }) => {
 
             if (!result?.token) {
                 console.error("Login failed:", result?.message || "Unknown error");
+                setLoginError({
+                    type: "error",
+                    title: "Login Failed",
+                    message: result?.message || "Invalid credentials. Please try again.",
+                });
                 setiserror(true);
                 setIsLoading(false);
                 return;
@@ -307,9 +583,78 @@ const Loginpage = ({ initialType }) => {
 
             getProfilePic(emailToStore, loginType);
             setiserror(false);
+            setLoginError(null);
 
         } catch (error) {
             console.error("Error during login:", error.message || error);
+            const errData = error.response?.data;
+            const code = errData?.code;
+            const msg = errData?.message;
+            const registeredRole = errData?.registeredRole;
+
+            if (code === "REGISTERED_AS_PARTNER" || (loginType === "Users" && registeredRole === "Partner")) {
+                setLoginError({
+                    type: "toggle_warning",
+                    targetRole: "Accountants",
+                    targetRoleLabel: "Partner",
+                    title: "Registered as Partner",
+                    message: "This email is registered as a Partner account.",
+                    detail: "You are currently on the User login tab. Would you like to switch to Partner login?",
+                    actionText: "Switch to Partner Login",
+                    actionType: "switch_role",
+                });
+                toast.warning("This email is registered as a Partner account. Switch to Partner login to continue.", {
+                    position: "top-right",
+                    autoClose: 5000,
+                });
+            } else if (code === "REGISTERED_AS_USER" || (loginType === "Accountants" && registeredRole === "User")) {
+                setLoginError({
+                    type: "toggle_warning",
+                    targetRole: "Users",
+                    targetRoleLabel: "User",
+                    title: "Registered as User",
+                    message: "This email is registered as a User account.",
+                    detail: "You are currently on the Partner login tab. Would you like to switch to User login?",
+                    actionText: "Switch to User Login",
+                    actionType: "switch_role",
+                });
+                toast.warning("This email is registered as a User account. Switch to User login to continue.", {
+                    position: "top-right",
+                    autoClose: 5000,
+                });
+            } else if (code === "USER_NOT_FOUND" || code === "PARTNER_NOT_FOUND" || error.response?.status === 404) {
+                setLoginError({
+                    type: "not_found",
+                    title: "Account Not Found",
+                    message: loginType === "Users"
+                        ? "No User account exists with this email address."
+                        : "No Partner account exists with this email address.",
+                    detail: "Please check your email address or create a new account.",
+                    actionText: "Create New Account",
+                    actionType: "register",
+                });
+            } else if (code === "INVALID_PASSWORD") {
+                setLoginError({
+                    type: "invalid_password",
+                    title: "Incorrect Password",
+                    message: "The password you entered is incorrect.",
+                    detail: "Please check your password or reset it if forgotten.",
+                    actionText: "Forgot Password?",
+                    actionType: "forgot_password",
+                });
+            } else if (code === "OTP_NOT_VERIFIED") {
+                setLoginError({
+                    type: "error",
+                    title: "Email Verification Required",
+                    message: msg || "Please verify your email via OTP before logging in.",
+                });
+            } else {
+                setLoginError({
+                    type: "error",
+                    title: "Sign In Error",
+                    message: msg || "The credentials you entered are incorrect. Please try again or reset your password.",
+                });
+            }
             setiserror(true);
         } finally {
             setIsLoading(false);
@@ -790,13 +1135,21 @@ const Loginpage = ({ initialType }) => {
             <div className="toggle-box">
                 <div
                     className={`toggle-each ${loginType === "Users" ? "toggle-each-active" : ""}`}
-                    onClick={() => setLoginType("Users")}
+                    onClick={() => {
+                        setLoginType("Users");
+                        setLoginError(null);
+                        setiserror(false);
+                    }}
                 >
                     <UserToggleIcon /> User
                 </div>
                 <div
                     className={`toggle-each ${loginType === "Accountants" ? "toggle-each-active" : ""}`}
-                    onClick={() => setLoginType("Accountants")}
+                    onClick={() => {
+                        setLoginType("Accountants");
+                        setLoginError(null);
+                        setiserror(false);
+                    }}
                 >
                     <PartnerToggleIcon /> Partner
                 </div>
@@ -808,7 +1161,57 @@ const Loginpage = ({ initialType }) => {
                 </div>
             )}
 
-            {iserror && (
+            {loginError && loginError.type === "toggle_warning" && (
+                <div className="toggle-warning-box">
+                    <div className="warning-header">
+                        <WarningIcon />
+                        <span>{loginError.title || "Role Mismatch"}</span>
+                    </div>
+                    <div className="warning-message">
+                        <div>{loginError.message}</div>
+                        {loginError.detail && <div className="warning-detail">{loginError.detail}</div>}
+                    </div>
+                    <button
+                        type="button"
+                        className="warning-action-btn"
+                        onClick={() => handleSwitchRole(loginError.targetRole)}
+                    >
+                        <SwitchIcon />
+                        <span>{loginError.actionText || `Switch to ${loginError.targetRoleLabel}`}</span>
+                    </button>
+                </div>
+            )}
+
+            {loginError && loginError.type !== "toggle_warning" && (
+                <div className={`login-alert-box ${loginError.type}`}>
+                    <div className="alert-icon">
+                        <img src={info} alt="" />
+                    </div>
+                    <div className="alert-content">
+                        {loginError.title && <div className="alert-title">{loginError.title}</div>}
+                        <div className="alert-msg">{loginError.message}</div>
+                        {loginError.detail && <div className="alert-detail">{loginError.detail}</div>}
+                        {loginError.actionType === "register" && (
+                            <span
+                                className="alert-link"
+                                onClick={() => navigate(`/register?role=${loginType}`)}
+                            >
+                                {loginError.actionText} →
+                            </span>
+                        )}
+                        {loginError.actionType === "forgot_password" && (
+                            <span
+                                className="alert-link"
+                                onClick={() => setForgotPassword(true)}
+                            >
+                                {loginError.actionText} →
+                            </span>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {!loginError && iserror && (
                 <div className="prompt-div">
                     <div>
                         <img src={info} alt="" />
@@ -828,9 +1231,11 @@ const Loginpage = ({ initialType }) => {
                     placeholder="Email address"
                     value={email}
                     onInput={(e) => {
+                        setLoginError(null);
                         setiserror(false);
                         setemail(e.target.value);
                     }}
+                    onBlur={handleEmailBlur}
                 />
             </div>
 
@@ -842,6 +1247,9 @@ const Loginpage = ({ initialType }) => {
                     placeholder="Password"
                     value={password}
                     onChange={(e) => {
+                        if (loginError?.type === "invalid_password" || loginError?.type === "error") {
+                            setLoginError(null);
+                        }
                         setiserror(false);
                         setpassword(e.target.value);
                     }}
@@ -874,9 +1282,9 @@ const Loginpage = ({ initialType }) => {
                 <div className="divider-line"></div>
             </div>
 
-            <div className="google-btn" onClick={handleGoogleAuth}>
+            <div className="google-btn" onClick={isLoading ? undefined : handleGoogleAuth}>
                 <GoogleIcon />
-                <span>Continue with Google</span>
+                <span>{isLoading ? "Signing in..." : "Continue with Google"}</span>
             </div>
 
             <div className="login-footer-link">
@@ -893,6 +1301,36 @@ const Loginpage = ({ initialType }) => {
             </div>
         </div>
     );
+
+    if (isGoogleProcessing) {
+        return (
+            <div style={{
+                position: "fixed",
+                inset: 0,
+                background: "#f8fafc",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "16px",
+                zIndex: 99999
+            }}>
+                <img src={logo} alt="Naaviverse" style={{ width: "160px", objectFit: "contain" }} />
+                <div style={{
+                    width: "42px",
+                    height: "42px",
+                    border: "3px solid #cbd5e1",
+                    borderTopColor: "#2c7cb2",
+                    borderRadius: "50%",
+                    animation: "loginGoogleSpin 0.75s linear infinite"
+                }} />
+                <p style={{ color: "#475569", fontSize: "15px", fontWeight: "500", margin: 0 }}>
+                    Signing in with Google, please wait...
+                </p>
+                <style>{`@keyframes loginGoogleSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+            </div>
+        );
+    }
 
     return (
         <div className="login-main">
@@ -936,6 +1374,8 @@ const Loginpage = ({ initialType }) => {
                     <img className="otclogoimg" src={loadinglogo} alt="" />
                 </div>
             )}
+
+            <ToastContainer position="top-right" autoClose={4000} />
         </div>
     );
 };

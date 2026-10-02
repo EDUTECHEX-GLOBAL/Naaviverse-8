@@ -7,6 +7,7 @@
 
 const mongoose = require("mongoose");
 const Partner  = require("../models/PartnerModel");
+const User     = require("../models/UsersModel");
 const Approval = require("../models/ApprovalModel");
 require("dotenv").config({ path: ".env" });
 const jwt    = require("jsonwebtoken");
@@ -33,9 +34,27 @@ const signUp = async (req, res) => {
       });
     }
 
-    const existingPartner = await Partner.findOne({ email });
+    const cleanEmail = email.toLowerCase().trim();
+    const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+
+    const existingPartner = await Partner.findOne({ email: emailRegex });
     if (existingPartner) {
-      return res.status(400).json({ success: false, message: "User is already registered" });
+      return res.status(400).json({
+        success: false,
+        code: "ALREADY_REGISTERED",
+        registeredRole: "Partner",
+        message: "This email is already registered as a Partner account."
+      });
+    }
+
+    const existingUser = await User.findOne({ email: emailRegex });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        code: "REGISTERED_AS_USER",
+        registeredRole: "User",
+        message: "This email is already registered as a User account."
+      });
     }
 
     const OTP         = generateOTP();
@@ -106,14 +125,36 @@ const login = async (req, res) => {
       return res.status(400).json({ success: false, message: "Both email and password are required" });
     }
 
-    const partner = await Partner.findOne({ email });
+    const cleanEmail = email.toLowerCase().trim();
+    const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+
+    const partner = await Partner.findOne({ email: emailRegex });
     if (!partner) {
-      return res.status(401).json({ success: false, message: "Invalid credentials" });
+      // Check if this email is registered as a standard User
+      const user = await User.findOne({ email: emailRegex });
+      if (user) {
+        return res.status(400).json({
+          success: false,
+          code: "REGISTERED_AS_USER",
+          registeredRole: "User",
+          message: "This email is registered as a User account. Please switch to User login.",
+        });
+      }
+
+      return res.status(404).json({
+        success: false,
+        code: "PARTNER_NOT_FOUND",
+        message: "No partner account found with this email. Please check your email or register as a partner.",
+      });
     }
 
     const isMatch = await partner.matchPassword(password);
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: "Invalid password" });
+      return res.status(401).json({
+        success: false,
+        code: "INVALID_PASSWORD",
+        message: "The password you entered is incorrect. Please try again or reset your password.",
+      });
     }
 
     if (partner.isBlocked || partner.accountStatus === "inactive") {

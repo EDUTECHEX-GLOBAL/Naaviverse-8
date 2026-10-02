@@ -114,6 +114,7 @@ function App() {
           <Route path="/dashboard/users/purchases" element={<Dashboard />} />
           <Route path="/dashboard/users/mentors" element={<Dashboard />} />
           <Route path="/dashboard/users/wallet" element={<Wallet />} />
+          <Route path="/dashboard/users/notifications" element={<Dashboard />} />
           <Route path="/dashboard/users/home" element={<Dashboard />} />
 
           {/* ✅ MUST be before /:id wildcard so it doesn't get caught by MallProduct */}

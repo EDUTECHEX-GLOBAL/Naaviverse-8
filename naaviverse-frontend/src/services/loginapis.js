@@ -23,3 +23,22 @@ export const Loginservice = async (object, loginType) => {
     throw error;
   }
 };
+
+export const GoogleLoginservice = async ({ email, name, picture, role }) => {
+  try {
+    const endpoint = `${BASE_URL}/api/auth/google-login`;
+    console.log("🔥 Using Google login endpoint:", endpoint);
+
+    const response = await axios.post(
+      endpoint,
+      { email, name, picture, role },
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    return response;
+  } catch (error) {
+    console.error("Google Login API Error:", error.response?.data || error.message);
+    throw error;
+  }
+};
+

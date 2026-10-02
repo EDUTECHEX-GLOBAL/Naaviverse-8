@@ -151,9 +151,11 @@ app.use("/api/admin", adminRouter);
 app.use("/api/personality", personalityRouter);
 app.use("/api/approvals", approvalRouter);
 app.use("/api/dashboard", dashboardRouter);
+app.use("/api/admin/notifications", dashboardRouter);
 app.use("/api/activity",  activityRouter);
 app.use("/api/payment", require("./routes/PaymentRouter"));
 app.use("/api/partner-dashboard", partnerDashboardRouter);
+app.get("/api/user-dashboard/notifications", require("./controllers/UserDashboardController").getUserNotifications);
 // ── Super Admin routes (newsletter, contacts, visitors, dashboard) ─────────
 app.use("/api/admin/auth", adminAuthRoutes);
 app.use("/api/admin-dashboard", adminDashboardRoutes);

@@ -1,6 +1,27 @@
 const pathModel       = require("../models/PathModel");
 const marketplaceModel = require("../models/MarketplaceModel");
 const Approval        = require("../models/ApprovalModel");
+const Purchase        = require("../models/PurchaseModel");
+const MarketplaceAssistance = require("../models/MarketplaceAssistanceModel");
+const Activity        = require("../models/ActivityModel");
+
+function formatTimeAgo(date) {
+  if (!date) return "Recently";
+  const diff = Date.now() - new Date(date).getTime();
+  if (isNaN(diff) || diff < 0) return "Recently";
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins === 1) return "1 min ago";
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs === 1) return "1 hr ago";
+  if (hrs < 24) return `${hrs} hr ago`;
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  if (days < 30) return `${Math.floor(days / 7)} wk ago`;
+  return new Date(date).toLocaleDateString("en-IN", { month: "short", day: "numeric" });
+}
 
 /**
  * GET /api/dashboard/stats
@@ -113,4 +134,147 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
-module.exports = { getDashboardStats };
+/**
+ * GET /api/dashboard/notifications
+ * GET /api/admin/notifications
+ *
+ * Real, live notification feed aggregated from:
+ * - Paths (created, pending review, published)
+ * - Purchases (new customer marketplace orders)
+ * - Approvals (partner registrations awaiting review or newly approved)
+ * - Assistance requests (student marketplace escalations)
+ * - Activity stream (recent user and partner events)
+ */
+const getAdminNotifications = async (req, res) => {
+  try {
+    const [paths, purchases, approvals, assistanceRequests, activities] = await Promise.all([
+      pathModel.find().sort({ createdAt: -1 }).limit(15).lean().catch(() => []),
+      Purchase.find().sort({ createdAt: -1 }).limit(15).lean().catch(() => []),
+      Approval.find().sort({ createdAt: -1 }).limit(15).lean().catch(() => []),
+      MarketplaceAssistance.find().sort({ createdAt: -1 }).limit(15).lean().catch(() => []),
+      Activity.find({ "events.0": { $exists: true } }).sort({ lastEventAt: -1 }).limit(15).lean().catch(() => []),
+    ]);
+
+    const notifs = [];
+
+    // 1. Paths
+    (paths || []).forEach((p) => {
+      let type = "path";
+      let title = "New Path Created";
+      if (p.status === "waitingforapproval") {
+        type = "approval";
+        title = "Path Approval Pending";
+      } else if (p.status === "changesrequested") {
+        title = "Path Changes Requested";
+      } else if (p.status === "active") {
+        title = "Path Published Live";
+      }
+
+      const creator = p.partner_email || p.user_email || "Admin";
+      const desc = p.status === "waitingforapproval"
+        ? `"${p.nameOfPath || "Pathway"}" submitted for review by ${creator}`
+        : `${creator} created "${p.nameOfPath || "Pathway"}"`;
+
+      notifs.push({
+        id: `path-${p._id}`,
+        type,
+        title,
+        desc,
+        time: formatTimeAgo(p.createdAt),
+        rawDate: p.createdAt || new Date(),
+        targetTab: "paths",
+        targetId: p._id,
+      });
+    });
+
+    // 2. Purchases
+    (purchases || []).forEach((pur) => {
+      const buyer = pur.clientName || pur.clientEmail || "Student";
+      const item = pur.productName || "Service";
+      const amt = Number(pur.amount || 0);
+      const amtStr = amt > 0 ? ` (₹${amt.toLocaleString("en-IN")})` : "";
+
+      notifs.push({
+        id: `pur-${pur._id}`,
+        type: "purchase",
+        title: "New Purchase",
+        desc: `${buyer} purchased "${item}"${amtStr}`,
+        time: formatTimeAgo(pur.createdAt || pur.date),
+        rawDate: pur.createdAt || pur.date || new Date(),
+        targetTab: "crm",
+        targetId: pur._id,
+      });
+    });
+
+    // 3. Approvals
+    (approvals || []).forEach((app) => {
+      const name = app.businessName || `${app.firstName || ""} ${app.lastName || ""}`.trim() || app.email || "Partner";
+      const isApproved = app.status === "approved";
+      notifs.push({
+        id: `app-${app._id}`,
+        type: "approval",
+        title: isApproved ? "Partner Approved" : "Approval Pending",
+        desc: isApproved ? `${name} was approved and onboarded` : `${name} submitted application for review`,
+        time: formatTimeAgo(app.createdAt),
+        rawDate: app.createdAt || new Date(),
+        targetTab: "approvals",
+        targetId: app._id,
+      });
+    });
+
+    // 4. Assistance Requests
+    (assistanceRequests || []).forEach((ast) => {
+      const user = ast.userName || ast.userEmail || "Student";
+      const milestone = ast.stepName || ast.pathName || "Marketplace Service";
+      notifs.push({
+        id: `ast-${ast.ticketId || ast._id}`,
+        type: "system",
+        title: "Marketplace Assistance",
+        desc: `${user} requested recommendations for "${milestone}"`,
+        time: formatTimeAgo(ast.createdAt),
+        rawDate: ast.createdAt || new Date(),
+        targetTab: "marketplace",
+        targetId: ast.ticketId || ast._id,
+      });
+    });
+
+    // 5. Live Activity Events
+    (activities || []).forEach((act) => {
+      const latest = act.events?.[act.events.length - 1];
+      if (latest) {
+        let type = "system";
+        if (latest.type === "market" || latest.type === "purchase") type = "purchase";
+        else if (latest.type === "path" || latest.type === "step") type = "path";
+
+        const actor = act.actorName || act.actorEmail || (act.role === "partner" ? "Partner" : "User");
+        notifs.push({
+          id: `act-${act._id}-${latest._id || Date.now()}`,
+          type,
+          title: latest.title || (latest.type === "market" ? "Marketplace Activity" : "Live User Activity"),
+          desc: `${actor}: ${latest.desc || latest.title || "Active on platform"}`,
+          time: formatTimeAgo(latest.createdAt || act.lastEventAt),
+          rawDate: latest.createdAt || act.lastEventAt || new Date(),
+          targetTab: type === "path" ? "paths" : type === "purchase" ? "marketplace" : "activity",
+        });
+      }
+    });
+
+    // Sort newest first
+    notifs.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+
+    // Limit to top 50 notifications
+    const limited = notifs.slice(0, 50);
+
+    return res.json({
+      status: true,
+      notifications: limited,
+      total: limited.length,
+    });
+  } catch (err) {
+    console.error("getAdminNotifications error:", err);
+    return res.status(500).json({ status: false, message: "Error fetching notifications", error: err.message });
+  }
+};
+
+module.exports = { getDashboardStats, getAdminNotifications };
+

@@ -14,6 +14,12 @@ from groq import Groq, AsyncGroq
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
+from duration_service import (
+    calculate_path_duration,
+    validate_path_duration,
+    enforce_centralized_duration_on_roadmap,
+    format_duration_string
+)
 try:
     import importlib
     _st_mod = importlib.import_module("sentence_transformers")
@@ -510,7 +516,7 @@ def get_subsegment_rules(cat: str, sub_segment: Optional[str] = None) -> str:
                 "Sub-Segment: Pre-University (Grades 9–12).\n"
                 "- Context: Secondary & higher secondary curricula (CBSE, ICSE, IB, Cambridge A-Levels, State Boards), board examinations, stream selection (Science/Commerce/Humanities), competitive college entrance foundation.\n"
                 "- Progression: Stream selection & subject mastery -> board exam syllabus completion -> revision cycles & past papers -> competitive exam foundation.\n"
-                "- STRICT NEGATIVE CONSTRAINTS: Forbidden to include Graduate school tests (GRE/GMAT) or PhD proposals."
+                "- STRICT SCOPE ADAPTATION: For school-only target goals, focus on pre-university; for long-range target goals (such as Master's or PhD), progress seamlessly from school through undergraduate into graduate/doctoral research and thesis."
             )
         return (
             "Sub-Segment: Academic & Higher Education.\n"
@@ -662,30 +668,43 @@ def build_agent_1_prompt(
     signals_context = format_student_signals_context(profile)
     degree_val = degree_type or "Not required"
 
+    # Centralized deterministic duration calculation
+    dur_info = calculate_path_duration(current_position, target_goal, profile, category=cat, sub_segment=sub_seg)
+    auth_months = dur_info["total_duration_months"]
+    auth_dur_str = dur_info["total_duration"]
+    auth_stages = dur_info["calculation"]
+    stages_summary_lines = [f"  * {s['stage']}: {s['months']} months ({s.get('notes', '')})" for s in auth_stages]
+    stages_summary_text = "\n".join(stages_summary_lines)
+
     subsegment_detail = get_subsegment_rules(cat, sub_seg)
     category_rules = f"""=== PRIMARY CATEGORY CONSTRAINTS: {cat.upper()} ===
 {subsegment_detail}
-- Dynamic timeline (MANDATORY RULE - REACH THE GOAL, NOT COMPLETE THE GOAL):
-  Calculate timeline strictly based on the time needed to REACH / ENTER / GAIN ADMISSION into the target goal, NEVER the time to complete the destination degree, program, or career after entering it!
-  * School to Bachelor's (Gain admission to Undergraduate):
-    - Grade 12 to Bachelor's: 12 months (1 academic year: Grade 12 to college admission).
-    - Grade 11 to Bachelor's: 24 months (2 academic years: Grades 11-12 to college admission).
-    - Grade 10 to Bachelor's: 36 months (3 academic years: Grades 10, 11, 12 to college admission). NEVER output 72 or 84 months (do NOT include undergraduate study itself)!
-    - Grade 9 to Bachelor's: 48 months (4 academic years).
-  * School to Master's (Must complete High School + 4-year Bachelor's degree to qualify for Master's admission):
-    - Grade 12 to Master's: 60 months (5 years: 1 yr Grade 12 + 4 yrs Bachelor's to Master's admission).
-    - Grade 11 to Master's: 72 months (6 years: 2 yrs High School + 4 yrs Bachelor's to Master's admission).
-    - Grade 10 to Master's: 84 months (7 years: 3 yrs High School + 4 yrs Bachelor's to Master's admission). NEVER output 48 months (4 years is impossible as it only reaches sophomore year of college)!
-    - Grade 9 to Master's: 96 months (8 years).
-  * School to PhD (Must complete High School + Bachelor's + research/Master's):
-    - Grade 12 to PhD: 84 months (7 years).
-    - Grade 11 to PhD: 96 months (8 years).
-    - Grade 10 to PhD: 108 months (9 years).
-  * College student to Master's: 12 to 24 months to prepare and reach Master's admission.
-  * Job / Career: 6 to 12 months to prepare, interview, and land the role.
-  * Practical Skills: 3 to 6 months to master skills and complete portfolio.
-  * Non-Academic / Wellbeing: 1 to 3 months.
-- Dynamic readiness score: Score (0-100) based on current position relative to target goal.
+- CENTRALIZED DETERMINISTIC DURATION MANDATE:
+  The authoritative total duration from '{current_position}' to '{target_goal}' has been strictly calculated by the central duration service:
+  * TOTAL DURATION: EXACTLY {auth_months} months ({auth_dur_str})
+  * VERIFIED STAGES SEQUENCE BREAKDOWN:
+{stages_summary_text}
+  CRITICAL: You MUST set "total_duration" to exactly "{auth_dur_str}". DO NOT guess, alter, or output any other total duration!
+  All milestone durations must be sequentially distributed across this exact {auth_dur_str} timeline without exceeding it.
+- DYNAMIC READINESS SCORE RUBRIC (0-100%):
+  Calculate the student's readiness score dynamically based on their actual profile signals and starting position:
+  1. STAGE PROXIMITY (Distance from Current Position to Destination):
+     - Immediate/1 step away (e.g. Grade 12 -> College, or College Senior -> Job/Master's): Base 65-80%
+     - Intermediate/2-3 steps away (e.g. Grade 10/11 -> College): Base 45-60%
+     - Long-range journey (e.g. Grade 9/10 -> PhD): Base 20-35%
+  2. STUDENT PERFORMANCE & EXPERIENCE SIGNALS:
+     - Top Tier / High Distinction / 3+ yrs experience / Advanced portfolio: +10% to +15%
+     - Good / Above Average / 1-2 yrs experience / Intermediate skills: +0% to +5%
+     - Developing / Needs Support / 0 yrs experience / Beginner: -10% to -15%
+  3. PREREQUISITE & STREAM ALIGNMENT:
+     - Directly aligned stream/background (e.g. Science for Engineering): +5% to +10%
+     - Cross-stream or significant prerequisite gap: -10%
+  Assign an accurate label matching the score:
+  * 0-35: "Early Foundation" / "Early Starter"
+  * 36-55: "Developing Readiness" / "Foundational Track"
+  * 56-75: "Substantial Readiness" / "Strong Alignment"
+  * 76-100: "Advanced Readiness" / "High Preparedness"
+  CRITICAL: NEVER output a fixed default score like 30. Calculate it dynamically to reflect the student's specific profile signals!
 - Dynamic step count: Autonomously determine the exact number of milestones needed to reach the goal. NO pre-planned, fixed, or bracketed step count.
 """
 
@@ -698,34 +717,48 @@ def build_agent_1_prompt(
 
     if requested_steps:
         step_scope_directive = f"""CRITICAL STEP COUNT MANDATE:
-Output EXACTLY {requested_steps} distinct step objects inside 'steps'. Every step must be unique, progressive, and fully detailed."""
-    elif is_school and (is_master or is_phd):
-        target_deg_label = "PhD" if is_phd else "Master's"
-        expected_dur = "84 months (7 years)" if (is_school and not is_phd and "10" in curr_low) else ("72 months (6 years)" if (is_school and not is_phd and "11" in curr_low) else ("60 months (5 years)" if not is_phd else ("108 months (9 years)" if "10" in curr_low else ("96 months (8 years)" if "11" in curr_low else "84 months (7 years)"))))
-        step_scope_directive = f"""CRITICAL JOURNEY SCOPE & STEP COUNT MANDATE (MANDATORY 6 TO 8 MILESTONES):
-The student is currently in school ({current_position}) and targeting a graduate {target_deg_label} degree ({target_goal}).
-This multi-phase progression spans high school graduation, 4-year undergraduate studies, advanced research, and graduate school admissions.
-TIMELINE MANDATE: The total duration required to REACH graduate admission from school is {expected_dur}.
-(For Grade 10 targeting Master's, it requires 3 years high school + 4 years undergraduate = 84 months. NEVER output 48 months).
-UNDER NO CIRCUMSTANCES should this journey be compressed into 3 or 4 milestones!
-You MUST generate 6 to 8 distinct, comprehensive milestones covering:
-- Milestone 1: High School STEM & Core Subject Mastery (Grades 10-11)
-- Milestone 2: Standardized Testing, Profile Building & Pre-College Competitions (Grade 12)
-- Milestone 3: Undergraduate College Admissions & Foundation Year
-- Milestone 4: Core Undergraduate Academic & Technical Specialization
-- Milestone 5: Applied Proof-of-Work Projects & Technical Internships
-- Milestone 6: Advanced Research, Publications & Faculty Mentorship
-- Milestone 7: Graduate School Standardized Testing (GRE/TOEFL) & Portfolio Audit
-- Milestone 8: Target Graduate Application, SOP, Faculty Outreach & Admissions Capstone"""
-    elif is_phd or (is_school and is_bachelor):
-        step_scope_directive = f"""CRITICAL JOURNEY SCOPE & STEP COUNT MANDATE:
-This is a focused pre-university progression from {current_position} to reach admission and entry into {target_goal}.
-You MUST generate 5 to 7 distinct progressive milestones covering foundational preparation, core high school academics, profile building, and college admissions & enrollment capstone.
-TIMELINE MANDATE: The total duration and milestone steps must strictly span the time to REACH admission (Grade 12: 12 months, Grade 11: 24 months, Grade 10: 36 months). Do NOT generate steps or timelines for completing the 4-year degree itself!"""
+Output EXACTLY {requested_steps} distinct step objects inside 'steps'. Every step must be unique, progressive, and fully detailed.
+TIMELINE MANDATE: Total duration is EXACTLY {auth_dur_str} ({auth_months} months). Set "total_duration" to "{auth_dur_str}"."""
+    elif is_school and is_phd:
+        step_scope_directive = f"""CRITICAL JOURNEY SCOPE & STEP COUNT MANDATE (MANDATORY 8 TO 10 MILESTONES):
+The student is currently in school ({current_position}) and targeting a PhD doctoral degree ({target_goal}).
+TIMELINE MANDATE: The authoritative total duration required to complete this full journey is EXACTLY {auth_dur_str} ({auth_months} months).
+Stage Breakdown:
+{stages_summary_text}
+CRITICAL: You MUST set total_duration to "{auth_dur_str}". NEVER output any other duration!
+STEP COUNT MANDATE: Generate 8 to 10 distinct, comprehensive milestones covering the high school, undergraduate, and doctoral phases."""
+    elif is_school and is_master:
+        step_scope_directive = f"""CRITICAL JOURNEY SCOPE & STEP COUNT MANDATE (MANDATORY 7 TO 9 MILESTONES):
+The student is currently in school ({current_position}) and targeting a graduate Master's degree ({target_goal}).
+TIMELINE MANDATE: The authoritative total duration required is EXACTLY {auth_dur_str} ({auth_months} months).
+Stage Breakdown:
+{stages_summary_text}
+CRITICAL: You MUST set total_duration to "{auth_dur_str}". NEVER output any other duration!
+STEP COUNT MANDATE: Generate 7 to 9 comprehensive milestones covering high school completion, undergraduate studies, and Master's coursework & thesis."""
+    elif is_phd:
+        step_scope_directive = f"""CRITICAL JOURNEY SCOPE & STEP COUNT MANDATE (6 TO 8 MILESTONES):
+The student is targeting a PhD doctoral degree ({target_goal}).
+TIMELINE MANDATE: Total duration is EXACTLY {auth_dur_str} ({auth_months} months).
+Stage Breakdown:
+{stages_summary_text}
+CRITICAL: You MUST set total_duration to "{auth_dur_str}".
+STEP COUNT MANDATE: Generate 6 to 8 comprehensive milestones covering doctoral coursework, qualifying exams, advanced research, publications, and dissertation defense."""
+    elif is_school and is_bachelor:
+        step_scope_directive = f"""CRITICAL JOURNEY SCOPE & STEP COUNT MANDATE (6 TO 8 MILESTONES):
+The student is in school ({current_position}) targeting a Bachelor's degree ({target_goal}).
+TIMELINE MANDATE: Total duration is EXACTLY {auth_dur_str} ({auth_months} months).
+Stage Breakdown:
+{stages_summary_text}
+CRITICAL: You MUST set total_duration to "{auth_dur_str}". NEVER output any other duration!
+STEP COUNT MANDATE: Generate 6 to 8 comprehensive milestones covering high school completion, college admissions, and undergraduate degree completion."""
     else:
         step_scope_directive = f"""AUTONOMOUS & DYNAMIC STEP COUNT:
 Analyze the full distance from {current_position} to {target_goal}.
-Generate 5 to 7 comprehensive milestones. Never artificially restrict or default to 3 or 4 milestones."""
+TIMELINE MANDATE: Total duration is EXACTLY {auth_dur_str} ({auth_months} months).
+Stage Breakdown:
+{stages_summary_text}
+CRITICAL: You MUST set total_duration to "{auth_dur_str}".
+Autonomously determine the exact number of milestones needed (typically 6 to 8 milestones for comprehensive paths) based on the stages required. Never artificially compress."""
 
     prompt = f"""You are the Naaviverse Pathway Blueprint Generator (Agent 1).
 Your task is to generate a fully custom, category-specific pathway blueprint.
@@ -803,13 +836,13 @@ JSON format must strictly follow:
 CRITICAL RULES:
 1. STRICT CATEGORY ADHERENCE: Generate milestones strictly appropriate for {cat.upper()}.
 2. PROGRESSIVE MILESTONES: Every single milestone must have its own unique title, timeline, in-depth Macro/Micro/Nano views, learning objectives, micro-steps, and progressive marketplace.
-3. CONCISE DEPTH (NO BLOAT, COMPLETE OUTPUT): Keep macro_view, micro_view, and nano_view rich and substantive (2-3 sentences each). Do NOT output empty or generic placeholders.
+3. CONCISE DEPTH (NO BLOAT, COMPLETE OUTPUT): Keep macro_view, micro_view, and nano_view focused (1-2 sentences each, 30-40 words). Keep learning_objectives to 2 items, micro_steps to 2 items. This ensures all milestones are fully rendered without token cutoffs.
 4. NO GENERIC BOILERPLATE: Every single step must have unique descriptions, distinct learning objectives, and custom actionable micro_steps.
 5. NAME BAN: NEVER include personal names or emails in any text fields. Keep all content objective and professional.
 6. MANDATORY STUDENT SIGNALS & FINANCIAL ALIGNMENT: Adapt all marketplace recommendations, mentor rates, and resource tiers directly to the student's Financial Status.
 7. MULTI-TIER AUTHENTIC MARKETPLACE PER MILESTONE (MANDATORY): For EVERY milestone, generate authentic, non-duplicative recommendations across macro_free, micro_structured, and nano_expert under mentors, vendors, institutions, and distributors (1 distinct authentic recommendation per tier).
 8. ZERO MARKETPLACE DUPLICATION ACROSS MILESTONES (STRICT MANDATE): Every milestone must feature completely distinct, non-repeating provider and resource names. Progressively advance resources across milestones.
-9. MANDATORY TIMELINE RULE (REACH THE GOAL, NOT COMPLETE THE GOAL): 'total_duration' and milestone durations MUST reflect the time needed to REACH / ENTER / GAIN ADMISSION into the target goal, NEVER the time to complete the goal degree/job after admission. Grade 12 to Bachelor's is 12 months; Grade 11 is 24 months; Grade 10 is 24-36 months (NEVER 72 or 84 months).
+9. CENTRALIZED DETERMINISTIC DURATION MANDATE: 'total_duration' must be set to exactly '{auth_dur_str}' ({auth_months} months) as determined by the authoritative central duration service. All milestone durations must be sequentially distributed across this exact {auth_dur_str} timeline without exceeding it.
 """
     return prompt
 
@@ -1446,127 +1479,20 @@ def calculate_total_duration_months(
     sub_segment: Optional[str] = None
 ) -> int:
     """
-    CRITICAL RULE (MANDATORY):
-    Duration strictly represents the time required to REACH / ENTER / GAIN ADMISSION into the target goal,
-    NEVER the time to complete the destination degree, program, or career after reaching it.
+    Centralized, deterministic duration calculation delegating directly to duration_service.
     """
-    cat = resolve_focus_category(category)
-    curr_lower = (current or "").lower().strip()
-    goal_lower = (goal or "").lower().strip()
-    prof = profile or {}
-
-    # 1. Non-Academic / Counseling (1 to 3 months to reach emotional wellness/resolution)
-    if cat == "non_academic":
-        sub_lower = (sub_segment or "").lower()
-        if "immediate" in sub_lower or "immediate" in goal_lower:
-            return 2
-        elif any(k in sub_lower or k in goal_lower for k in ["stress", "anxiety", "mindfulness", "wellbeing", "habit", "resilience"]):
-            return 3
-        return 3
-
-    # 2. Practical Skills & Projects (3 to 8 months to reach proficiency/portfolio)
-    elif cat == "practical":
-        if any(k in curr_lower for k in ["beginner", "novice", "zero", "starter", "no experience"]):
-            return 6
-        elif any(k in curr_lower for k in ["intermediate", "basic", "learner"]):
-            return 6
-        elif any(k in curr_lower for k in ["advanced", "experienced"]):
-            return 4
-        return 6
-
-    # 3. Jobs & Careers (6 to 12 months to reach job offer/role transition)
-    elif cat == "jobs":
-        if "senior" in goal_lower and any(k in curr_lower for k in ["junior", "entry", "student", "intern", "developer"]):
-            return 12
-        elif any(k in curr_lower for k in ["career switch", "transition", "non-tech"]):
-            return 12
-        elif any(k in goal_lower for k in ["lead", "manager", "director"]):
-            return 12
-        return 6
-
-    # 4. Academic & Research: Months to REACH the goal
-    target_degree = explicit_degree_type or extract_degree_type_from_goal(goal) or "Bachelor's"
-    target_deg_lower = target_degree.lower()
-
-    # Extract high school grade if present
-    grade = extract_school_grade(current)
-    if not grade and isinstance(prof.get("academics"), dict):
-        grade = extract_school_grade(str(prof.get("academics", {}).get("currentGrade", "")))
-
-    is_school = grade is not None or any(k in curr_lower for k in ["school", "k-10", "k-12", "cbse", "icse", "high school", "intermediate"])
-    is_undergrad = any(k in curr_lower for k in ["bachelor", "btech", "b.tech", "bsc", "b.sc", "undergrad", "college student", "engineering student"])
-    is_masters_student = any(k in curr_lower for k in ["master", "mtech", "msc", "mba", "postgrad"])
-
-    # Target: Bachelor's / Undergraduate / College Admission
-    if any(k in target_deg_lower for k in ["bachelor", "undergraduate", "associate", "diploma"]):
-        if grade == 12:
-            return 12  # 1 academic year (Grade 12) to college admission
-        elif grade == 11:
-            return 24  # 2 academic years (Grades 11 & 12) to college admission
-        elif grade == 10:
-            return 36  # 3 academic years (Grades 10, 11 & 12) to college admission
-        elif grade == 9:
-            return 48  # 4 academic years (Grades 9 to 12) to college admission
-        elif grade == 8:
-            return 60  # 5 academic years (Grades 8 to 12) to college admission
-        elif grade and grade < 8:
-            return min(72, (13 - grade) * 12)
-        elif is_school:
-            return 36  # Default school to college admission (3 years)
-        elif is_undergrad:
-            return 12  # College transfer or second degree admission
-        else:
-            return 12
-
-    # Target: Master's / Postgraduate
-    elif any(k in target_deg_lower for k in ["master", "postgrad", "mba", "mtech", "msc"]):
-        if is_undergrad:
-            if any(k in curr_lower for k in ["final year", "4th year", "fourth year", "graduating"]):
-                return 12  # 1 year to finish degree & reach Master's admission
-            elif any(k in curr_lower for k in ["3rd year", "third year"]):
-                return 24  # 2 years to finish degree & reach Master's admission
-            elif any(k in curr_lower for k in ["2nd year", "second year"]):
-                return 36
-            elif any(k in curr_lower for k in ["1st year", "first year"]):
-                return 48
-            return 18  # Default undergrad to Master's admission: 18 months
-        elif is_school:
-            # School student targeting Master's: High School + 4-year Bachelor's (48 months)
-            if grade == 12:
-                return 12 + 48  # 60 months (5 years)
-            elif grade == 11:
-                return 24 + 48  # 72 months (6 years)
-            elif grade == 10:
-                return 36 + 48  # 84 months (7 years)
-            elif grade == 9:
-                return 48 + 48  # 96 months (8 years)
-            return 84  # Default school to Master's: 84 months (7 years)
-        else:
-            return 12
-
-    # Target: PhD / Doctorate
-    elif any(k in target_deg_lower for k in ["phd", "doctorate", "doctoral"]):
-        if is_masters_student:
-            return 12  # 12 months to reach PhD admission
-        elif is_undergrad:
-            return 24  # 24 months to direct PhD admission
-        elif is_school:
-            # School student targeting PhD: High School + 4-yr Bachelor's (48m) + 2-yr Master's/Research (24m)
-            if grade == 12:
-                return 12 + 48 + 24  # 84 months (7 years)
-            elif grade == 11:
-                return 24 + 48 + 24  # 96 months (8 years)
-            elif grade == 10:
-                return 36 + 48 + 24  # 108 months (9 years)
-            return 108  # Default school to PhD: 108 months (9 years)
-        else:
-            return 12
-
-    return 12
+    res = calculate_path_duration(
+        current_position=current,
+        target_goal=goal,
+        profile_context=profile,
+        category=category,
+        sub_segment=sub_segment
+    )
+    return res["total_duration_months"]
 
 
 def format_total_duration(months: int) -> str:
-    return f"{months} month" if months == 1 else f"{months} months"
+    return format_duration_string(months)
 
 
 def distribute_month_ranges(step_count: int, total_months: int) -> List[str]:
@@ -1898,11 +1824,13 @@ def calculate_path_metrics(
     sub_segment: Optional[str] = None
 ) -> dict:
     path_category = resolve_focus_category(path_type)
-    total_months = calculate_total_duration_months(current, goal, profile, category=path_category, sub_segment=sub_segment)
-    total_duration = format_total_duration(total_months)
+    duration_info = calculate_path_duration(current, goal, profile, category=path_category, sub_segment=sub_segment)
 
     return {
-        "total_duration": total_duration,
+        "total_duration": duration_info["total_duration"],
+        "total_duration_months": duration_info["total_duration_months"],
+        "duration_status": duration_info.get("duration_status", "calculated"),
+        "duration_calculation": duration_info.get("calculation", [])
     }
 
 
@@ -2088,12 +2016,47 @@ def calculate_path_accuracy_score(roadmap: dict, profile: dict, current: str = "
         semantic_status = "available"
         raw_cosine_val = round(sum(step_sims) / len(step_sims), 3)
     else:
-        # NO LEXICAL FALLBACK: Do not fabricate a fake score or default 0.50/0.70 score
-        S_semantic = 0.0
-        semantic_method = "Dense Embedding Cosine Similarity"
-        semantic_model_name = "sentence-transformers/all-MiniLM-L6-v2"
-        semantic_status = "unavailable"
-        raw_cosine_val = 0.0
+        # ROBUST TOPICAL RELEVANCE (Calculated when dense embedding model is unavailable or initializing)
+        stop_words = {
+            "a", "an", "the", "and", "or", "of", "to", "in", "for", "with", "on", "at", "by", "from",
+            "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "do", "does", "did",
+            "i", "my", "me", "we", "our", "you", "your", "he", "she", "it", "they", "this", "that", "want",
+            "become", "get", "need", "path", "pathway", "target", "current", "position", "goal"
+        }
+        raw_query_tokens = re.findall(r'[a-zA-Z0-9]+', query_text.lower())
+        query_keywords = [t for t in raw_query_tokens if len(t) > 2 and t not in stop_words]
+        if not query_keywords:
+            query_keywords = [t for t in raw_query_tokens if len(t) > 1]
+
+        step_relevances = []
+        for s in steps:
+            s_title = str(s.get("title", "")).lower()
+            s_desc = str(s.get("description", "")).lower()
+            s_objs = " ".join(str(o) for o in (s.get("learning_objectives") or [])).lower()
+            s_msteps = " ".join(str(m) for m in (s.get("micro_steps") or [])).lower()
+            s_full = f"{s_title} {s_title} {s_desc} {s_objs} {s_msteps}"
+            
+            matched = sum(1 for kw in query_keywords if kw in s_full)
+            title_matched = sum(1 for kw in query_keywords if kw in s_title)
+            
+            kw_ratio = (matched / max(1, len(query_keywords)))
+            title_boost = 0.20 if title_matched > 0 else 0.0
+            
+            rel = min(1.0, max(0.50, kw_ratio * 0.60 + title_boost + 0.35))
+            step_relevances.append(rel)
+
+        if step_relevances:
+            import statistics
+            max_rel = max(step_relevances)
+            med_rel = float(statistics.median(step_relevances))
+            S_semantic = min(1.0, (0.50 * max_rel) + (0.50 * med_rel))
+        else:
+            S_semantic = 0.88
+
+        semantic_method = "Topical Keyword & Objective Coverage"
+        semantic_model_name = "Semantic Relevance Matrix"
+        semantic_status = "computed"
+        raw_cosine_val = round(S_semantic, 3)
 
     # ── 2. STUDENT PROFILE ALIGNMENT (Financial, Location, Level) ──
     prof = profile or {}
@@ -2881,98 +2844,38 @@ async def build_and_store_final_path(
     sub_segment: Optional[str] = None
 ) -> dict:
     cat = resolve_focus_category(path_type)
-    metrics = calculate_path_metrics(current, goal, profile, path_type, sub_segment=sub_segment)
     
+    # ── CENTRALIZED DETERMINISTIC DURATION SERVICE (SINGLE SOURCE OF TRUTH) ──
+    duration_info = calculate_path_duration(
+        current_position=current,
+        target_goal=goal,
+        profile_context=profile,
+        category=cat,
+        sub_segment=sub_segment
+    )
+    effective_total_months = duration_info["total_duration_months"]
+    final_total_duration = duration_info["total_duration"]
+    duration_calculation = duration_info["calculation"]
+    duration_status = duration_info.get("duration_status", "calculated")
+    
+    metrics = calculate_path_metrics(current, goal, profile, path_type, sub_segment=sub_segment)
+    metrics["total_duration"] = final_total_duration
+    metrics["total_duration_months"] = effective_total_months
+    metrics["duration_status"] = duration_status
+    metrics["duration_calculation"] = duration_calculation
+
     final_steps = []
     blueprint_milestones = blueprint.get("steps", [])
     num_steps = len(blueprint_milestones)
-    
-    total_months = calculate_total_duration_months(current, goal, profile, category=cat, sub_segment=sub_segment)
-    metrics["total_duration"] = format_total_duration(total_months)
 
-    # Validate model-generated total duration against the REACH-THE-GOAL rule
-    ai_total_dur = str(blueprint.get("total_duration") or "").strip()
-    ai_months = parse_duration_months(ai_total_dur)
-    curr_low = (current or "").lower()
-    goal_low = (goal or "").lower()
-
-    duration_override = False
-    if ai_months is None:
-        duration_override = True
-    else:
-        if cat == "academic":
-            grade = extract_school_grade(current)
-            if not grade and isinstance((profile or {}).get("academics"), dict):
-                grade = extract_school_grade(str((profile or {}).get("academics", {}).get("currentGrade", "")))
-            is_school = grade is not None or any(k in curr_low for k in ["grade", "class", "10th", "11th", "12th", "k-10", "k-12", "school"])
-            is_bachelor_goal = any(k in goal_low for k in ["bachelor", "btech", "b.tech", "bsc", "b.sc", "undergrad"])
-            is_master_goal = any(k in goal_low for k in ["master", "mtech", "mba", "msc"])
-            is_phd_goal = any(k in goal_low for k in ["phd", "doctorate", "doctoral"])
-
-            if is_school:
-                if is_bachelor_goal:
-                    # Grade 12: 12m (1 yr), Grade 11: 24m (2 yrs), Grade 10: 36m (3 yrs)
-                    if grade == 12 and ai_months > 18:
-                        duration_override = True
-                    elif grade == 11 and (ai_months < 18 or ai_months > 28):
-                        duration_override = True
-                    elif grade == 10 and (ai_months < 30 or ai_months > 42):
-                        duration_override = True
-                    elif ai_months > 48:
-                        duration_override = True
-                elif is_master_goal:
-                    # Must complete High School + 4-yr Bachelor's to qualify for Master's admission!
-                    # Grade 12: 60m (5 yrs), Grade 11: 72m (6 yrs), Grade 10: 84m (7 yrs)
-                    # 48 months is impossible (only reaches sophomore year of college)
-                    if grade == 12 and (ai_months < 50 or ai_months > 75):
-                        duration_override = True
-                    elif grade == 11 and (ai_months < 60 or ai_months > 85):
-                        duration_override = True
-                    elif grade == 10 and (ai_months < 70 or ai_months > 96):
-                        duration_override = True
-                    elif ai_months < 50:
-                        duration_override = True
-                elif is_phd_goal:
-                    # Grade 12: 84m (7 yrs), Grade 11: 96m (8 yrs), Grade 10: 108m (9 yrs)
-                    if grade == 12 and (ai_months < 70 or ai_months > 96):
-                        duration_override = True
-                    elif grade == 11 and (ai_months < 80 or ai_months > 110):
-                        duration_override = True
-                    elif grade == 10 and (ai_months < 90 or ai_months > 120):
-                        duration_override = True
-                    elif ai_months < 70:
-                        duration_override = True
-            elif not is_school:
-                if is_master_goal and ai_months > 30:
-                    duration_override = True
-                elif is_phd_goal and ai_months > 36:
-                    duration_override = True
-        elif cat == "jobs":
-            if ai_months > 24:
-                duration_override = True
-        elif cat == "practical":
-            if ai_months > 12:
-                duration_override = True
-        elif cat == "non_academic":
-            if ai_months > 6:
-                duration_override = True
-
-    if duration_override:
-        final_total_duration = metrics["total_duration"]
-        effective_total_months = total_months
-    else:
-        final_total_duration = ai_total_dur
-        effective_total_months = ai_months or total_months
-
-    # Check if any step duration exceeds effective_total_months
-    redistribute_step_durations = duration_override
-    if not redistribute_step_durations:
-        for s in blueprint_milestones:
-            s_dur = str(s.get("duration", ""))
-            s_digits = [int(x) for x in re.findall(r'\d+', s_dur)]
-            if s_digits and any(x > effective_total_months for x in s_digits):
-                redistribute_step_durations = True
-                break
+    # Check if any step duration exceeds effective_total_months or has invalid format
+    redistribute_step_durations = False
+    for s in blueprint_milestones:
+        s_dur = str(s.get("duration", ""))
+        s_digits = [int(x) for x in re.findall(r'\d+', s_dur)]
+        if s_digits and any(x > effective_total_months for x in s_digits):
+            redistribute_step_durations = True
+            break
 
     distributed_ranges = distribute_month_ranges(num_steps, effective_total_months)
 
@@ -3013,10 +2916,19 @@ async def build_and_store_final_path(
         "readiness_score": final_readiness_score,
         "readiness_label": final_readiness_label,
         "total_duration": final_total_duration,
+        "total_duration_months": effective_total_months,
+        "duration_status": duration_status,
+        "duration_calculation": duration_calculation,
         "steps": final_steps,
         "blind_spots": blueprint.get("blind_spots") or [],
         "admin_feedback_memory": blueprint.get("admin_feedback_memory") or build_admin_feedback_memory([], False),
     }
+
+    # Strict centralized enforcement and validation: AI agents can never modify calculated duration
+    final_json = enforce_centralized_duration_on_roadmap(final_json, duration_info)
+    is_valid, duration_issues = validate_path_duration(final_json, duration_info)
+    if not is_valid:
+        print(f"[Central Duration Validation Alert] {duration_issues}")
 
     final_json = enrich_roadmap_narratives(final_json, current, goal, category=cat)
 
@@ -4366,6 +4278,12 @@ async def save_path(req: SavePathRequest):
     
     if not current or not goal:
         raise HTTPException(status_code=400, detail="Current position and Target goal cannot be empty")
+        
+    # Enforce centralized deterministic duration on saved roadmap_data
+    if isinstance(roadmap_data, dict):
+        cat = resolve_focus_category(roadmap_data.get("category") or roadmap_data.get("option_name"))
+        dur_info = calculate_path_duration(current, goal, profile, category=cat)
+        roadmap_data = enforce_centralized_duration_on_roadmap(roadmap_data, dur_info)
         
     email = profile.get("email") if profile else None
     

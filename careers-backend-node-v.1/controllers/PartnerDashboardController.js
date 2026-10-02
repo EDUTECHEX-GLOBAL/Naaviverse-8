@@ -45,6 +45,24 @@ function prevMonthRange() {
   return { start, end };
 }
 
+function formatTimeAgo(date) {
+  if (!date) return "Recently";
+  const diff = Date.now() - new Date(date).getTime();
+  if (isNaN(diff) || diff < 0) return "Recently";
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins === 1) return "1 min ago";
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs === 1) return "1 hr ago";
+  if (hrs < 24) return `${hrs} hr ago`;
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  if (days < 30) return `${Math.floor(days / 7)} wk ago`;
+  return new Date(date).toLocaleDateString("en-IN", { month: "short", day: "numeric" });
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // GET DASHBOARD STATS
 // GET /api/partner-dashboard/stats?email=partner@x.com
@@ -310,15 +328,7 @@ const getDashboardStats = async (req, res) => {
 
     // ── 11. Fetch live activity stream & generate real notifications ───────
     const liveActivity = await fetchPartnerLiveActivity({ email });
-
-    const notifications = liveActivity.map(act => ({
-      id: act.id,
-      type: act.type || "purchase",
-      title: act.type === "purchase" ? "New Marketplace Purchase" : act.type === "path" ? "Path Selection" : "Notification",
-      desc: `${act.name} ${act.action}`,
-      time: act.time || "Recently",
-      unread: true,
-    }));
+    const notifications = await fetchPartnerNotificationsList({ email });
 
     return res.status(200).json({
       status: true,
@@ -845,9 +855,303 @@ const getPartnerLiveActivity = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// FETCH PARTNER NOTIFICATIONS LIST (REAL DATA AGGREGATION)
+// ─────────────────────────────────────────────────────────────────────────────
+const fetchPartnerNotificationsList = async ({ email, partnerId }) => {
+  try {
+    const UserPath = getUserPathModel();
+    const User = getUserModel();
+    const Partner = getPartnerModel();
+    const Payment = require("../models/PaymentModel");
+    const Purchase = require("../models/PurchaseModel");
+    const MarketplaceItem = require("../models/MarketplaceModel");
+    const Approval = require("../models/ApprovalModel");
+    const MarketplaceAssistance = require("../models/MarketplaceAssistanceModel");
+    const Activity = require("../models/ActivityModel");
+
+    let queryEmail = email ? email.trim() : null;
+    let partnerDoc = null;
+    if (partnerId) {
+      partnerDoc = await Partner.findOne({ partnerId: partnerId.trim() }).lean();
+      if (partnerDoc && !queryEmail) queryEmail = partnerDoc.email;
+    } else if (queryEmail) {
+      partnerDoc = await Partner.findOne({
+        email: { $regex: new RegExp("^" + queryEmail.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i") }
+      }).lean();
+    }
+
+    const partnerEmailClean = queryEmail ? queryEmail.toLowerCase() : "";
+    const pId = partnerDoc?.partnerId || null;
+    const emailRegex = queryEmail ? new RegExp("^" + queryEmail.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i") : null;
+
+    const notifs = [];
+
+    // 1. Partner's Paths & Review Status
+    let partnerPaths = [];
+    if (emailRegex) {
+      partnerPaths = await pathModel.find({
+        $or: [
+          { email: emailRegex },
+          { partner_email: emailRegex },
+          { user_email: emailRegex }
+        ]
+      }).select("_id nameOfPath status createdAt updatedAt reviewFeedback").lean().catch(() => []);
+    }
+
+    const pathIds = partnerPaths.map(p => p._id);
+    const pathMap = Object.fromEntries(partnerPaths.map(p => [String(p._id), p.nameOfPath || "Pathway"]));
+
+    partnerPaths.forEach(p => {
+      let type = "path";
+      let title = "Path Published Live";
+      let desc = `"${p.nameOfPath || "Pathway"}" is published and live for students.`;
+      if (p.status === "waitingforapproval") {
+        type = "approval";
+        title = "Path Under Review";
+        desc = `"${p.nameOfPath || "Pathway"}" is currently undergoing review by Naavi admin.`;
+      } else if (p.status === "changesrequested") {
+        type = "approval";
+        title = "Path Changes Requested";
+        desc = `Admin requested adjustments for "${p.nameOfPath || "Pathway"}": ${p.reviewFeedback || "Please review steps."}`;
+      }
+
+      notifs.push({
+        id: `pstat-${p._id}-${p.status}`,
+        type,
+        title,
+        desc,
+        time: formatTimeAgo(p.updatedAt || p.createdAt),
+        rawDate: p.updatedAt || p.createdAt || new Date(),
+        targetTab: "Paths",
+        targetId: String(p._id),
+      });
+    });
+
+    // 2. Path Enrollments by students
+    if (pathIds.length > 0) {
+      const recentEnrollments = await UserPath.find({ pathId: { $in: pathIds } })
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .lean()
+        .catch(() => []);
+
+      const userEmails = [...new Set(recentEnrollments.map(e => e.email || e.userEmail).filter(Boolean))];
+      const users = await User.find({ email: { $in: userEmails } }).select("email name username").lean().catch(() => []);
+      const userMap = Object.fromEntries(users.map(u => [String(u.email).toLowerCase(), u.name || u.username || u.email]));
+
+      recentEnrollments.forEach(en => {
+        const uEmail = (en.email || en.userEmail || "").toLowerCase();
+        const studentName = userMap[uEmail] || (uEmail ? uEmail.split("@")[0] : "A student");
+        const pName = pathMap[String(en.pathId)] || "your learning path";
+        notifs.push({
+          id: `enroll-${en._id}`,
+          type: "path",
+          title: "New Path Enrollment",
+          desc: `${studentName} started learning "${pName}"`,
+          time: formatTimeAgo(en.createdAt),
+          rawDate: en.createdAt || new Date(),
+          targetTab: "Paths",
+          targetId: String(en.pathId),
+        });
+      });
+    }
+
+    // 3. Marketplace Purchases & Payments
+    let mktItems = [];
+    if (emailRegex) {
+      mktItems = await MarketplaceItem.find({ partner_email: emailRegex }).select("_id name").lean().catch(() => []);
+    }
+    const itemIds = mktItems.map(it => String(it._id));
+    const itemMap = Object.fromEntries(mktItems.map(it => [String(it._id), it.name]));
+
+    const payQuery = [];
+    if (pId) payQuery.push({ partnerId: pId });
+    if (partnerEmailClean) payQuery.push({ partnerEmail: partnerEmailClean });
+    if (itemIds.length > 0) payQuery.push({ productId: { $in: itemIds } });
+
+    let payments = [];
+    if (payQuery.length > 0) {
+      payments = await Payment.find({ $or: payQuery, status: "paid" })
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .lean()
+        .catch(() => []);
+    }
+
+    const purQuery = [];
+    if (pId) purQuery.push({ partnerId: pId });
+    if (queryEmail) purQuery.push({ creatorEmail: queryEmail });
+    if (itemIds.length > 0) purQuery.push({ productId: { $in: itemIds } });
+
+    let purchases = [];
+    if (purQuery.length > 0) {
+      purchases = await Purchase.find({ $or: purQuery, status: { $in: ["Paid", "paid"] } })
+        .sort({ date: -1, createdAt: -1 })
+        .limit(20)
+        .lean()
+        .catch(() => []);
+    }
+
+    payments.forEach(pay => {
+      const buyer = pay.userName || pay.userEmail || "Student";
+      const itemTitle = pay.productName || itemMap[String(pay.productId)] || "Marketplace Service";
+      const amt = Number(pay.amount || 0);
+      const amtStr = amt > 0 ? ` (₹${amt.toLocaleString("en-IN")})` : "";
+      notifs.push({
+        id: `pay-${pay._id}`,
+        type: "purchase",
+        title: "New Purchase",
+        desc: `${buyer} purchased "${itemTitle}"${amtStr}`,
+        time: formatTimeAgo(pay.createdAt),
+        rawDate: pay.createdAt || new Date(),
+        targetTab: "CRM",
+        targetId: String(pay._id),
+      });
+    });
+
+    purchases.forEach(pur => {
+      const buyer = pur.clientName || pur.clientEmail || "Student";
+      const itemTitle = pur.productName || itemMap[String(pur.productId)] || "Marketplace Service";
+      const amt = Number(pur.amount || 0);
+      const amtStr = amt > 0 ? ` (₹${amt.toLocaleString("en-IN")})` : "";
+      notifs.push({
+        id: `pur-${pur._id}`,
+        type: "purchase",
+        title: "New Purchase",
+        desc: `${buyer} purchased "${itemTitle}"${amtStr}`,
+        time: formatTimeAgo(pur.date || pur.createdAt),
+        rawDate: pur.date || pur.createdAt || new Date(),
+        targetTab: "CRM",
+        targetId: String(pur._id),
+      });
+    });
+
+    // 4. Partner Account Verification / Approval
+    if (emailRegex) {
+      const approvalDoc = await Approval.findOne({ email: emailRegex }).lean().catch(() => null);
+      if (approvalDoc) {
+        const isApproved = approvalDoc.status === "approved";
+        notifs.push({
+          id: `app-${approvalDoc._id}`,
+          type: "approval",
+          title: isApproved ? "Partner Account Approved" : "Application Under Review",
+          desc: isApproved
+            ? "Your organization is verified and active on Naavi."
+            : "Your partner profile is currently undergoing review by Naavi administrators.",
+          time: formatTimeAgo(approvalDoc.updatedAt || approvalDoc.createdAt),
+          rawDate: approvalDoc.updatedAt || approvalDoc.createdAt || new Date(),
+          targetTab: "Home",
+          targetId: String(approvalDoc._id),
+        });
+      }
+    }
+
+    // 5. Marketplace Assistance Requests for Partner
+    const astQuery = [];
+    if (partnerEmailClean) astQuery.push({ partnerEmail: partnerEmailClean });
+    if (pathIds.length > 0) astQuery.push({ pathId: { $in: pathIds } });
+
+    if (astQuery.length > 0) {
+      const assistanceRequests = await MarketplaceAssistance.find({ $or: astQuery })
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .lean()
+        .catch(() => []);
+
+      assistanceRequests.forEach(ast => {
+        const student = ast.userName || ast.userEmail || "A student";
+        const milestone = ast.stepName || ast.pathName || "Marketplace Service";
+        notifs.push({
+          id: `ast-${ast._id}`,
+          type: "system",
+          title: "Assistance Request",
+          desc: `${student} requested recommendation guidance on "${milestone}"`,
+          time: formatTimeAgo(ast.createdAt),
+          rawDate: ast.createdAt || new Date(),
+          targetTab: "Marketplace",
+          targetId: String(ast._id),
+        });
+      });
+    }
+
+    // 6. Live User Activity Events for Partner's Content
+    if (pathIds.length > 0) {
+      const strPathIds = pathIds.map(String);
+      const acts = await Activity.find({
+        $or: [
+          { "events.pathId": { $in: strPathIds } },
+          { "events.partnerEmail": partnerEmailClean }
+        ]
+      }).sort({ lastEventAt: -1 }).limit(10).lean().catch(() => []);
+
+      acts.forEach(act => {
+        const latest = act.events?.[act.events.length - 1];
+        if (latest) {
+          const actor = act.actorName || act.actorEmail || "A student";
+          notifs.push({
+            id: `act-${act._id}-${latest._id || Date.now()}`,
+            type: latest.type === "market" || latest.type === "purchase" ? "purchase" : "path",
+            title: latest.title || "Live Journey Activity",
+            desc: `${actor}: ${latest.desc || latest.title || "Interacted with your content"}`,
+            time: formatTimeAgo(latest.createdAt || act.lastEventAt),
+            rawDate: latest.createdAt || act.lastEventAt || new Date(),
+            targetTab: latest.type === "market" ? "Marketplace" : "Paths",
+            targetId: String(act._id),
+          });
+        }
+      });
+    }
+
+    // Sort newest first
+    notifs.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+
+    // Deduplicate by ID
+    const seen = new Set();
+    const unique = [];
+    for (const n of notifs) {
+      if (!seen.has(n.id)) {
+        seen.add(n.id);
+        unique.push(n);
+      }
+    }
+
+    return unique.slice(0, 50);
+  } catch (err) {
+    console.error("fetchPartnerNotificationsList error:", err);
+    return [];
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET PARTNER NOTIFICATIONS
+// GET /api/partner-dashboard/notifications?email=partner@x.com&partnerId=NVP-XXX
+// ─────────────────────────────────────────────────────────────────────────────
+const getPartnerNotifications = async (req, res) => {
+  try {
+    const email = req.query.email || req.body?.email;
+    const partnerId = req.query.partnerId || req.body?.partnerId;
+    if (!email && !partnerId) {
+      return res.status(400).json({ status: false, message: "Partner email or partnerId is required" });
+    }
+
+    const notifications = await fetchPartnerNotificationsList({ email, partnerId });
+    return res.status(200).json({
+      status: true,
+      notifications,
+      total: notifications.length,
+    });
+  } catch (err) {
+    console.error("getPartnerNotifications error:", err);
+    return res.status(500).json({ status: false, message: "Error fetching partner notifications", error: err.message });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getPathEnrolledUsers,
   getExclusiveDashboardStats,
   getPartnerLiveActivity,
+  getPartnerNotifications,
+  fetchPartnerNotificationsList,
 };

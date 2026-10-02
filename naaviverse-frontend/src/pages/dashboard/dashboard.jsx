@@ -49,6 +49,7 @@ const URL_TO_SIDENAV = {
   "/dashboard/users/purchases": "PurchasesPage",
   "/dashboard/users/mentors": "MentorsPage",
   "/dashboard/users/paths": "Paths",
+  "/dashboard/users/notifications": "Notifications",
   "/dashboard/users": "Home",
 };
 
@@ -310,6 +311,11 @@ const Dashboard = () => {
 {activePage === "Home" ? (
   <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
     <UserHome />
+  </div>
+
+) : activePage === "Notifications" ? (
+  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+    <UserHome initialView="notifications" />
   </div>
 
 ) : activePage === "Market Place" ? (

@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import "./AdminMarketplace.scss";
 import Skeleton from "react-loading-skeleton";
 import axios from "axios";
 import { toast } from "react-toastify";
+import MarketplaceAssistance from "../../AdminDashboard/components/MarketplaceAssistance";
+import marketplaceReplacementService from "../../services/marketplaceReplacementService";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -126,6 +129,26 @@ const AdminMarketplace = () => {
     name: "", access: "", cost: "", discount: "", layer: "",
     duration: "", goal: "", features: "", outcomes: "", iterations: "", partner_email: "",
   });
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlTab = searchParams.get("tab");
+  const [activeSection, setActiveSection] = useState(urlTab === "assistance" ? "assistance" : "catalog");
+  const [pendingAssistanceCount, setPendingAssistanceCount] = useState(0);
+
+  useEffect(() => {
+    if (urlTab === "assistance") {
+      setActiveSection("assistance");
+    } else if (urlTab === "catalog") {
+      setActiveSection("catalog");
+    }
+  }, [urlTab]);
+
+  useEffect(() => {
+    marketplaceReplacementService.getAllAssistanceRequests().then((reqs) => {
+      const pending = (reqs || []).filter((r) => r.status === "pending" || r.status === "reviewing").length;
+      setPendingAssistanceCount(pending);
+    }).catch(() => {});
+  }, [activeSection]);
 
   const dropdownRef = useRef(null);
 
@@ -258,8 +281,49 @@ const AdminMarketplace = () => {
   return (
     <div className="adm-root">
 
-      {/* Stat Cards */}
-      <div className="adm-stats">
+      {/* ── Section Header Navigation (Catalog vs Assistance Requests) ── */}
+      <div className="adm-header-nav">
+        <div className="adm-header-tabs">
+          <button
+            type="button"
+            className={`adm-header-tab ${activeSection === "catalog" ? "active" : ""}`}
+            onClick={() => {
+              setActiveSection("catalog");
+              setSearchParams({ tab: "catalog" });
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <path d="M16 10a4 4 0 01-8 0" />
+            </svg>
+            <span>Marketplace Catalog</span>
+          </button>
+
+          <button
+            type="button"
+            className={`adm-header-tab ${activeSection === "assistance" ? "active" : ""}`}
+            onClick={() => {
+              setActiveSection("assistance");
+              setSearchParams({ tab: "assistance" });
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            <span>Assistance Requests</span>
+          </button>
+        </div>
+      </div>
+
+      {activeSection === "assistance" ? (
+        <div className="adm-assistance-embedded">
+          <MarketplaceAssistance />
+        </div>
+      ) : (
+        <>
+          {/* Stat Cards */}
+          <div className="adm-stats">
         {[
           { label: "Total Listings", value: totalItems,     Icon: StatListings },
           { label: "Paid Items",     value: paidItems,      Icon: StatPaid     },
@@ -594,7 +658,7 @@ const AdminMarketplace = () => {
                       </div>
                       <div className="adm-score-inspector__badge">
                         <span className="adm-score-inspector__score-num">
-                          {scoreBreakdown?.naavi_score || selectedItem.naavi_score || selectedItem.marketplace_score || "75.0"}
+                          {loadingScore ? "..." : (scoreBreakdown?.naavi_score || selectedItem.naavi_score || selectedItem.marketplace_score || "75.0")}
                         </span>
                         <span className="adm-score-inspector__score-max">/100</span>
                       </div>
@@ -637,6 +701,8 @@ const AdminMarketplace = () => {
           </div>
         );
       })()}
+        </>
+      )}
     </div>
   );
 };

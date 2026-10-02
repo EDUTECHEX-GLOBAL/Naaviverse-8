@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 import "./partnerHome.scss";
+import { useStore } from "../../components/store/store.ts";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
 
 function getPartnerEmail() {
@@ -42,6 +43,8 @@ export default function PartnerHome({ setispopular }) {
   const [selectedPath, setSelectedPath] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [pathTab, setPathTab] = useState("all");
+  const { setaccsideNav } = useStore();
+
   const [activityTab, setActivityTab] = useState("All");
   const [showNotif, setShowNotif] = useState(false);
   const [notifFilter, setNotifFilter] = useState("all");
@@ -63,28 +66,76 @@ export default function PartnerHome({ setispopular }) {
   const notifRef = useRef(null);
   const unread = notifications.filter(n => n.unread).length;
 
+  const fetchNotifications = useCallback(async () => {
+    const email = getPartnerEmail();
+    if (!email) return;
+    try {
+      const res = await axios.get(`${BASE_URL}/api/partner-dashboard/notifications`, { params: { email } });
+      if (res.data?.status && Array.isArray(res.data.notifications)) {
+        let readIds = new Set();
+        try {
+          const raw = localStorage.getItem(`read_notifs_${email}`);
+          if (raw) readIds = new Set(JSON.parse(raw));
+        } catch {}
+
+        const formatted = res.data.notifications.map(n => ({
+          ...n,
+          unread: !readIds.has(n.id),
+        }));
+        setNotifications(formatted);
+      }
+    } catch (err) {
+      console.error("fetchNotifications error:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 20000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
+
   const markAllRead = () => {
     setNotifications(p => p.map(n => ({ ...n, unread: false })));
     try {
       const email = getPartnerEmail();
       if (email) {
         const allIds = notifications.map(n => n.id);
-        localStorage.setItem(`read_notifs_${email}`, JSON.stringify(allIds));
+        const existing = new Set(JSON.parse(localStorage.getItem(`read_notifs_${email}`) || "[]"));
+        allIds.forEach(id => existing.add(id));
+        localStorage.setItem(`read_notifs_${email}`, JSON.stringify([...existing]));
       }
     } catch {}
   };
 
-  const markRead = id => {
+  const markRead = (id) => {
     setNotifications(p => p.map(n => n.id === id ? { ...n, unread: false } : n));
     try {
       const email = getPartnerEmail();
       if (email) {
-        const raw = localStorage.getItem(`read_notifs_${email}`);
-        const readIds = new Set(raw ? JSON.parse(raw) : []);
-        readIds.add(id);
-        localStorage.setItem(`read_notifs_${email}`, JSON.stringify([...readIds]));
+        const existing = new Set(JSON.parse(localStorage.getItem(`read_notifs_${email}`) || "[]"));
+        existing.add(id);
+        localStorage.setItem(`read_notifs_${email}`, JSON.stringify([...existing]));
       }
     } catch {}
+  };
+
+  const handleNotifAction = (n) => {
+    markRead(n.id);
+    setShowNotif(false);
+
+    const tab = n.targetTab || (n.type === "path" ? "Paths" : n.type === "purchase" ? "CRM" : "Home");
+    if (tab === "Paths" && setaccsideNav) {
+      setaccsideNav("Paths");
+    } else if (tab === "CRM" && setaccsideNav) {
+      setaccsideNav("CRM");
+    } else if (tab === "Marketplace" && setaccsideNav) {
+      setaccsideNav("Marketplace");
+    } else if (tab === "Feedback" && setaccsideNav) {
+      setaccsideNav("Feedback");
+    } else {
+      setView("home");
+    }
   };
 
   useEffect(() => {
@@ -101,28 +152,19 @@ export default function PartnerHome({ setispopular }) {
       const res = await axios.get(`${BASE_URL}/api/partner-dashboard/stats`, { params: { email } });
       if (res.data?.status) {
         setDashStats(res.data.data);
-        const rawNotifs = res.data.data?.notifications || res.data.data?.liveActivity || [];
-        let readIds = new Set();
-        try {
-          const raw = localStorage.getItem(`read_notifs_${email}`);
-          if (raw) readIds = new Set(JSON.parse(raw));
-        } catch {}
+        if (Array.isArray(res.data.data?.notifications) && res.data.data.notifications.length > 0) {
+          let readIds = new Set();
+          try {
+            const raw = localStorage.getItem(`read_notifs_${email}`);
+            if (raw) readIds = new Set(JSON.parse(raw));
+          } catch {}
 
-        const formattedNotifs = rawNotifs.map(act => {
-          const isPurchase = act.type === "purchase";
-          const isPath = act.type === "path";
-          const title = act.title || (isPurchase ? "New Marketplace Purchase" : isPath ? "Path Selection" : "Notification");
-          const desc = act.desc || `${act.name ? act.name + " " : ""}${act.action || ""}`;
-          return {
-            id: act.id,
-            type: act.type || "purchase",
-            title,
-            desc,
-            time: act.time || "Recently",
+          const formattedNotifs = res.data.data.notifications.map(act => ({
+            ...act,
             unread: !readIds.has(act.id),
-          };
-        });
-        setNotifications(formattedNotifs);
+          }));
+          setNotifications(formattedNotifs);
+        }
       }
       else setStatsError(res.data?.message || "Failed to load stats");
     } catch { setStatsError("Could not load dashboard data."); }
@@ -167,6 +209,7 @@ export default function PartnerHome({ setispopular }) {
       { key: "purchase", label: "Purchases", dot: "#15803d" },
       { key: "path", label: "Paths", dot: "#0f766e" },
       { key: "approval", label: "Approvals", dot: "#b45309" },
+      { key: "system", label: "System", dot: "#64748b" },
     ];
     const filtered = notifFilter === "all" ? notifications : notifications.filter(n => n.type === notifFilter);
     return (
@@ -180,7 +223,7 @@ export default function PartnerHome({ setispopular }) {
             <div className="ph-notif-page-title">Notifications</div>
             <div style={{ display: "flex", gap: 8 }}>
               <button className="ph-mark-all-btn" onClick={markAllRead}>Mark all read</button>
-              <button className="ph-clear-btn" onClick={() => setNotifications([])}>Clear all</button>
+              <button className="ph-clear-btn" onClick={() => { markAllRead(); setNotifications([]); }}>Clear all</button>
             </div>
           </div>
           <div className="ph-notif-body">
@@ -201,7 +244,7 @@ export default function PartnerHome({ setispopular }) {
                 : filtered.map(n => {
                   const cfg = NOTIF_CFG[n.type] || NOTIF_CFG.system;
                   return (
-                    <div key={n.id} className={`ph-notif-full-item ${n.unread ? "unread" : ""}`} onClick={() => markRead(n.id)}>
+                    <div key={n.id} className={`ph-notif-full-item ${n.unread ? "unread" : ""}`} onClick={() => handleNotifAction(n)}>
                       <div className="ph-notif-full-icon" style={{ background: cfg.bg }}>{cfg.icon}</div>
                       <div className="ph-notif-full-body">
                         <div className="ph-notif-full-title">{n.title}</div>
@@ -211,7 +254,19 @@ export default function PartnerHome({ setispopular }) {
                           <span className="ph-notif-full-tag" style={{ background: cfg.bg, color: cfg.color }}>{cfg.label}</span>
                         </div>
                       </div>
-                      {n.unread && <div className="ph-unread-dot" />}
+                      <div className="ph-notif-full-right">
+                        {n.unread && <div className="ph-unread-dot" />}
+                        <button
+                          type="button"
+                          className="ph-full-view-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleNotifAction(n);
+                          }}
+                        >
+                          View →
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
@@ -594,17 +649,29 @@ export default function PartnerHome({ setispopular }) {
                         No new notifications
                       </div>
                     ) : (
-                      notifications.slice(0, 5).map(n => {
+                      notifications.slice(0, 6).map(n => {
                         const cfg = NOTIF_CFG[n.type] || NOTIF_CFG.system;
                         return (
-                          <div key={n.id} className={`ph-notif-dd-item ${n.unread ? "unread" : ""}`} onClick={(e) => { e.stopPropagation(); markRead(n.id); }}>
+                          <div key={n.id} className={`ph-notif-dd-item ${n.unread ? "unread" : ""}`} onClick={() => handleNotifAction(n)}>
                             <div className="ph-notif-dd-icon" style={{ background: cfg.bg }}>{cfg.icon}</div>
                             <div className="ph-notif-dd-body">
                               <div className="ph-notif-dd-item-title">{n.title}</div>
                               <div className="ph-notif-dd-item-desc">{n.desc}</div>
                               <div className="ph-notif-dd-item-time">{n.time}</div>
                             </div>
-                            {n.unread && <div className="ph-unread-dot" />}
+                            <div className="ph-notif-dd-right">
+                              {n.unread && <div className="ph-unread-dot" />}
+                              <button
+                                type="button"
+                                className="ph-notif-view-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleNotifAction(n);
+                                }}
+                              >
+                                View
+                              </button>
+                            </div>
                           </div>
                         );
                       })

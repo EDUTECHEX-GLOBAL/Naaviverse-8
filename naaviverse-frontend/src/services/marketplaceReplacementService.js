@@ -72,8 +72,11 @@ export const marketplaceReplacementService = {
 
   async submitReplacement({
     userEmail,
+    userName,
     stepId,
+    stepName,
     pathId,
+    pathName,
     rejectedItem,
     reasons,
     message,
@@ -97,9 +100,13 @@ export const marketplaceReplacementService = {
     try {
       const response = await axios.post(`${API}/api/marketplace/replacement`, {
         userEmail,
+        userName,
         stepId,
+        stepName,
         pathId,
+        pathName,
         rejectedItemId: rejectedId,
+        rejectedItemName: rejectedItem?.name,
         reasons,
         message,
         replacementCount: newCount,
@@ -276,7 +283,23 @@ export const marketplaceReplacementService = {
 
   async getUserAssistanceRequests(userEmail) {
     try {
-      const res = await axios.get(`${API}/api/marketplace/assistance/user?email=${userEmail}`);
+      let email = userEmail;
+      if (!email || email === "undefined" || email === "null") {
+        try {
+          const raw = localStorage.getItem("user");
+          const parsed = raw ? JSON.parse(raw) : null;
+          email =
+            parsed?.email ||
+            parsed?.user?.email ||
+            localStorage.getItem("loginEmail") ||
+            localStorage.getItem("userEmail") ||
+            "";
+        } catch (e) {
+          email = localStorage.getItem("loginEmail") || "";
+        }
+      }
+      if (!email) return [];
+      const res = await axios.get(`${API}/api/marketplace/assistance/user?email=${encodeURIComponent(email.trim())}`);
       if (res.data?.status && res.data?.requests) {
         return res.data.requests;
       }

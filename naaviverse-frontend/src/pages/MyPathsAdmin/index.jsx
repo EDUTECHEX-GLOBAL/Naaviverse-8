@@ -15,9 +15,9 @@ const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { sideNav, setsideNav, accsideNav, setaccsideNav } = useStore();
+  const { setaccsideNav } = useStore();
   let userDetails = JSON.parse(localStorage.getItem("adminuser"));
-  const { setCurrentStepData, setCurrentStepDataLength, mypathsMenu, setMypathsMenu } = useCoinContextData();
+  const { mypathsMenu, setMypathsMenu } = useCoinContextData();
   const [pathChangeRequests, setPathChangeRequests] = useState({}); // { [pathId]: [...changeRequests] }
   const [changeRequestsLoading, setChangeRequestsLoading] = useState({});
 
@@ -34,11 +34,9 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const [stepActionEnabled, setStepActionEnabled] = useState(false);
   const [stepActionStep, setStepActionStep] = useState(1);
   const [editPaths, setEditPaths] = useState("default");
-  const [metaDataStep, setMetaDataStep] = useState("default");
   const [selectedPath, setSelectedPath] = useState({});
-  const [newValue, setNewValue] = useState("");
   const [viewPathEnabled, setViewPathEnabled] = useState(false);
-  const [viewPathLoading, setViewPathLoading] = useState(false);
+  const [viewPathLoading] = useState(false);
   const [viewPathData, setViewPathData] = useState([]);
   const [showSelectedPath, setShowSelectedPath] = useState(null);
   const [backupPathData, setBackupPathData] = useState([]);
@@ -52,11 +50,12 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const [allServicesToAdd, setAllServicesToAdd] = useState([]);
   const [allServicesToRemove, setAllServicesToRemove] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
-  const [expandedHistoryId, setExpandedHistoryId] = useState(null);
   const [pendingPopup, setPendingPopup] = useState(null); // { type: 'approve'|'request'|'reject'|'compare', pathId, path }
   const [rejectChecklist, setRejectChecklist] = useState([]);
   const [rejectNote, setRejectNote] = useState("");
   const [rejectNoteError, setRejectNoteError] = useState(false);
+  const [sourceTypeFilter, setSourceTypeFilter] = useState("all"); // "all" | "manual" | "generated"
+  const [counts, setCounts] = useState({ all: 0, active: 0, pending: 0, inactive: 0 });
   // ── Marketplace states ────────────────────────────────────────
   const [marketLayer, setMarketLayer] = useState("");
   const [marketplaceItems, setMarketplaceItems] = useState([]);       // all items for this layer
@@ -76,8 +75,6 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const [mpFeatures, setMpFeatures] = useState("");
   const [mpDiscount, setMpDiscount] = useState("");
   const [otherIssue, setOtherIssue] = useState("");
-  const [vcrActiveTab, setVcrActiveTab] = useState("all");
-  const [vcrOpenThreads, setVcrOpenThreads] = useState({});
   const [vcrSelectedRequest, setVcrSelectedRequest] = useState(null);
   const [creatorModalPath, setCreatorModalPath] = useState(null);
 
@@ -124,6 +121,34 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   });
 
   // ─── Fetchers ────────────────────────────────────────────────
+  const fetchCounts = () => {
+    if (!admin) return;
+    axios.get(`${BASE_URL}/api/paths/get?status=all`).then(({ data }) => {
+      if (data?.status && Array.isArray(data?.data)) {
+        const all = data.data;
+        setCounts({
+          all: all.length,
+          active: all.filter(p => p.status === "active").length,
+          pending: all.filter(p => p.status === "waitingforapproval" || p.status === "changesrequested").length,
+          inactive: all.filter(p => p.status === "inactive").length,
+        });
+      }
+    }).catch(() => {});
+  };
+
+  const fetchAllStatusPaths = () => {
+    setLoading(true);
+    const endpoint = admin
+      ? `${BASE_URL}/api/paths/get?status=all`
+      : `${BASE_URL}/api/paths/get?email=${userDetails?.email}`;
+    axios.get(endpoint).then(({ data }) => {
+      setPartnerPathData(data?.data || []);
+      if (data?.status && data?.data) setBackupPathData(data.data);
+      setLoading(false);
+      fetchCounts();
+    }).catch(() => setLoading(false));
+  };
+
   const getAllPaths = () => {
     setLoading(true);
     const email = userDetails?.email;
@@ -134,6 +159,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
       setPartnerPathData(data?.data);
       if (data?.status && data?.data) setBackupPathData(data.data);
       setLoading(false);
+      fetchCounts();
     }).catch(() => setLoading(false));
   };
 
@@ -146,6 +172,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     axios.get(endpoint).then(({ data }) => {
       setPartnerPathData(data?.data);
       setLoading(false);
+      fetchCounts();
     }).catch(() => setLoading(false));
   };
 
@@ -162,7 +189,16 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
       ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setPartnerPathData(combined);
       setLoading(false);
+      fetchCounts();
     }).catch(() => setLoading(false));
+  };
+
+  const refreshCurrentTabPaths = () => {
+    fetchCounts();
+    if (mypathsMenu === "All Paths") fetchAllStatusPaths();
+    else if (mypathsMenu === "Pending Paths") getNewPath();
+    else if (mypathsMenu === "Inactive Paths") getInactivePath();
+    else getAllPaths();
   };
   const getAllSteps = () => {
     axios.get(`${BASE_URL}/api/steps/get?status=active`).then(({ data }) => {
@@ -279,8 +315,12 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
 
   // ── Read URL tab on mount → set menu + fetch correct data ──
   useEffect(() => {
+    fetchCounts();
     const tab = new URLSearchParams(location.search).get("tab");
-    if (tab === "inactive") {
+    if (tab === "all") {
+      setMypathsMenu("All Paths");
+      fetchAllStatusPaths();
+    } else if (tab === "inactive") {
       setMypathsMenu("Inactive Paths");
       getInactivePath();
     } else if (tab === "pending") {
@@ -324,12 +364,28 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
 
   // ─── Filter ──────────────────────────────────────────────────
   const filteredPartnerPathData = partnerPathData?.filter((entry) => {
-    const mn = entry?.nameOfPath?.toLowerCase()?.includes(searchName?.toLowerCase());
-    const me = entry?.email?.toLowerCase()?.includes(searchEmail?.toLowerCase());
-    if (!searchName && !searchEmail) return true;
-    if (searchName && !searchEmail) return mn;
-    if (!searchName && searchEmail) return me;
-    return mn && me;
+    const qName = searchName.trim().toLowerCase();
+    const qEmail = searchEmail.trim().toLowerCase();
+
+    const matchesName = qName
+      ? entry?.nameOfPath?.toLowerCase()?.includes(qName)
+      : true;
+
+    const creatorEmail = (entry?.email || "").toLowerCase();
+    const partnerName = (entry?.partnerDetails?.businessName || entry?.partnerDetails?.username || "").toLowerCase();
+    const matchesEmail = qEmail
+      ? (creatorEmail.includes(qEmail) || partnerName.includes(qEmail))
+      : true;
+
+    const isAi = isAgentGenerated(entry);
+    const matchesSource =
+      sourceTypeFilter === "all"
+        ? true
+        : sourceTypeFilter === "generated"
+        ? isAi
+        : !isAi;
+
+    return matchesName && matchesEmail && matchesSource;
   });
 
   // ─── Reset ───────────────────────────────────────────────────
@@ -338,9 +394,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     setPathActionStep(1);
     setSelectedPathId("");
     setEditPaths("default");
-    setMetaDataStep("default");
     setSelectedPath([]);
-    setNewValue("");
     setViewPathData([]);
     setMarketStepId("");
     setMarketStepData(null);
@@ -359,7 +413,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
       if (data?.status) {
         setActionLoading(false);
         setPathActionStep(3);
-        mypathsMenu === "Paths" ? getAllPaths() : getInactivePath();
+        refreshCurrentTabPaths();
       }
     }).catch(() => setActionLoading(false));
   };
@@ -367,14 +421,14 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
   const reactivatePath = () => {
     setActionLoading(true);
     axios.put(`${BASE_URL}/api/paths/reactivate/${selectedPathId}`).then(({ data }) => {
-      if (data?.status) { setActionLoading(false); setPathActionStep(3); getAllPaths(); }
+      if (data?.status) { setActionLoading(false); setPathActionStep(3); refreshCurrentTabPaths(); }
     }).catch(() => setActionLoading(false));
   };
 
   const handleApprovePath = () => {
     setActionLoading(true);
     axios.put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, { status: "active" }).then(({ data }) => {
-      if (data.status) { getAllPaths(); setPathActionEnabled(false); setActionLoading(false); setPathActionStep(1); }
+      if (data.status) { refreshCurrentTabPaths(); setPathActionEnabled(false); setActionLoading(false); setPathActionStep(1); }
     }).catch(() => setActionLoading(false));
   };
 
@@ -382,7 +436,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     setActionLoading(true);
     axios.put(`${BASE_URL}/api/paths/updatepath/${selectedPathId}`, { status: "draft" }).then(({ data }) => {
       if (data.status) {
-        mypathsMenu === "Pending Paths" ? getNewPath() : getAllPaths();
+        refreshCurrentTabPaths();
         setPathActionEnabled(false); setActionLoading(false); setPathActionStep(1);
       }
     });
@@ -459,46 +513,20 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
       status: "draft",
       review_notes: rejectNote.trim(),
     }).then(({ data }) => {
-      if (data.status) { getNewPath(); setActionLoading(false); closePendingPopup(); }
+      if (data.status) { refreshCurrentTabPaths(); setActionLoading(false); closePendingPopup(); }
     }).catch(() => setActionLoading(false));
   };
 
   const handleApproveConfirm = () => {
     setActionLoading(true);
     axios.put(`${BASE_URL}/api/paths/updatepath/${pendingPopup?.pathId}`, { status: "active" }).then(({ data }) => {
-      if (data.status) { getNewPath(); setActionLoading(false); closePendingPopup(); }
+      if (data.status) { refreshCurrentTabPaths(); setActionLoading(false); closePendingPopup(); }
     }).catch(() => setActionLoading(false));
   };
 
-  const STATIC_HISTORY = [
-    { type: "submitted", label: "Partner submitted path", sub: "8 Mar 2026, 9:00 AM" },
-    { type: "request", label: "Round 1 — Changes requested", sub: "Issues: Price too high, Steps incomplete · 9 Mar 2026" },
-    { type: "resubmit", label: "Round 2 — Partner resubmitted", sub: "10 Mar 2026, 10:49 AM · Under review" },
-  ];
 
-  // Static compare data
-  const STATIC_COMPARE = {
-    old: { price: "₹999", steps: "2 steps", description: "Short intro only, no details about curriculum.", duration: "Not specified" },
-    new: { price: "₹999", steps: "2 steps", description: "Full curriculum breakdown added with subject-wise goals for Grade 11 students.", duration: "6 months" },
-    checklist: [
-      { label: "Price needs to be reduced", fixed: false },
-      { label: "Steps are incomplete", fixed: false },
-      { label: "Path description too vague", fixed: true },
-      { label: "Duration unrealistic", fixed: true },
-    ]
-  };
 
-  const editMetaData = (field) => {
-    setActionLoading(true);
-    axios.patch(`${BASE_URL}/api/paths/edit`, { pathId: selectedPathId, [field]: newValue }).then(({ data }) => {
-      if (data?.status) { setMetaDataStep("success"); setActionLoading(false); setTimeout(reload1, 2000); }
-    }).catch(() => setActionLoading(false));
-  };
 
-  function reload1() {
-    getAllPaths(); setPathActionEnabled(false); setPathActionStep(1);
-    setSelectedPathId(""); setEditPaths("default"); setMetaDataStep("default"); setSelectedPath([]); setNewValue("");
-  }
 
   const handlePlace = (item, index) => {
     const arr = (item?.the_ids || []).map(({ step_id, backup_pathId }) => ({ step_id, backup_pathId }));
@@ -678,11 +706,6 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
       <path d="M20 6L9 17l-5-5" />
     </svg>
   );
-  const IconX = () => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  );
   const IconShop = () => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
@@ -726,58 +749,162 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
 
       {/* TOPBAR */}
       <div className="admin-paths-topbar">
+        {/* Status Tabs with real counts */}
         <div className="admin-paths-tabs">
+          {admin && (
+            <button
+              type="button"
+              className={`paths-tab ${mypathsMenu === "All Paths" ? "active" : ""}`}
+              onClick={() => {
+                setMypathsMenu("All Paths");
+                setViewPathEnabled(false);
+                setViewPathData([]);
+                fetchAllStatusPaths();
+                navigate("/admin/dashboard/paths?tab=all");
+              }}>
+              <span className="tab-dot dot-all"></span>
+              All Paths
+              {counts.all > 0 && <span className="tab-count">{counts.all}</span>}
+            </button>
+          )}
+
           <button
+            type="button"
             className={`paths-tab ${mypathsMenu === "Paths" ? "active" : ""}`}
             onClick={() => {
               setMypathsMenu("Paths");
               setViewPathEnabled(false);
               setViewPathData([]);
-              getAllPaths();                          // ← add this
+              getAllPaths();
               navigate("/admin/dashboard/paths?tab=active");
             }}>
+            <span className="tab-dot dot-active"></span>
             {admin ? "Active Paths" : "Paths"}
+            {counts.active > 0 && <span className="tab-count">{counts.active}</span>}
           </button>
+
           {admin && (
             <button
+              type="button"
               className={`paths-tab ${mypathsMenu === "Pending Paths" ? "active" : ""}`}
               onClick={() => {
                 setMypathsMenu("Pending Paths");
                 setViewPathEnabled(false);
                 setViewPathData([]);
-                getNewPath();                          // ← add this
+                getNewPath();
                 navigate("/admin/dashboard/paths?tab=pending");
               }}>
+              <span className="tab-dot dot-pending"></span>
               Pending Paths
+              {counts.pending > 0 && <span className="tab-count">{counts.pending}</span>}
             </button>
           )}
+
           {admin && (
             <button
+              type="button"
               className={`paths-tab ${mypathsMenu === "Inactive Paths" ? "active" : ""}`}
               onClick={() => {
                 setMypathsMenu("Inactive Paths");
                 setViewPathEnabled(false);
                 setViewPathData([]);
-                getInactivePath();                     // ← add this
+                getInactivePath();
                 navigate("/admin/dashboard/paths?tab=inactive");
               }}>
+              <span className="tab-dot dot-inactive"></span>
               Inactive Paths
+              {counts.inactive > 0 && <span className="tab-count">{counts.inactive}</span>}
             </button>
           )}
         </div>
-        <div className="admin-paths-search-row">
-          <div className="paths-search-input">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input type="text" placeholder="Search by path" value={searchName} onChange={e => setSearchName(e.target.value)} />
+
+        {/* Row 2: Type Filters & Search */}
+        <div className="admin-paths-controls">
+          {/* Creation Type Filter: All / Manual / AI Generated */}
+          <div className="paths-type-filter">
+            <span className="filter-label">Source:</span>
+            <div className="type-toggle-group">
+              <button
+                type="button"
+                className={`type-btn ${sourceTypeFilter === "all" ? "active" : ""}`}
+                onClick={() => setSourceTypeFilter("all")}
+              >
+                All
+              </button>
+              <button
+                type="button"
+                className={`type-btn ${sourceTypeFilter === "manual" ? "active" : ""}`}
+                onClick={() => setSourceTypeFilter("manual")}
+                title="Paths created manually by partners/admins"
+              >
+                <span className="type-dot manual-dot"></span> Manuals
+              </button>
+              <button
+                type="button"
+                className={`type-btn ${sourceTypeFilter === "generated" ? "active" : ""}`}
+                onClick={() => setSourceTypeFilter("generated")}
+                title="AI Agent Generated Paths"
+              >
+                <span className="type-dot ai-dot"></span> AI Generated
+              </button>
+            </div>
           </div>
-          <div className="paths-search-input">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-              <polyline points="22,6 12,13 2,6" />
-            </svg>
-            <input type="text" placeholder="Search by email" value={searchEmail} onChange={e => setSearchEmail(e.target.value)} />
+
+          {/* Search Inputs */}
+          <div className="admin-paths-search-row">
+            <div className="paths-search-input">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search by path name..."
+                value={searchName}
+                onChange={e => setSearchName(e.target.value)}
+              />
+              {searchName && (
+                <button type="button" className="search-clear-btn" onClick={() => setSearchName("")} title="Clear">
+                  ×
+                </button>
+              )}
+            </div>
+
+            <div className="paths-search-input">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search by creator / email..."
+                value={searchEmail}
+                onChange={e => setSearchEmail(e.target.value)}
+              />
+              {searchEmail && (
+                <button type="button" className="search-clear-btn" onClick={() => setSearchEmail("")} title="Clear">
+                  ×
+                </button>
+              )}
+            </div>
+
+            {(searchName || searchEmail || sourceTypeFilter !== "all") && (
+              <button
+                type="button"
+                className="paths-reset-filter-btn"
+                onClick={() => {
+                  setSearchName("");
+                  setSearchEmail("");
+                  setSourceTypeFilter("all");
+                }}
+                title="Reset all filters"
+              >
+                Reset Filters
+              </button>
+            )}
+
+            <div className="paths-count-badge">
+              <strong>{filteredPartnerPathData?.length || 0}</strong> {filteredPartnerPathData?.length === 1 ? "Path" : "Paths"}
+            </div>
           </div>
         </div>
       </div>
@@ -884,15 +1011,16 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
           </div>
         ) : (
           <div className="paths-table-body">
-            {loading
-              ? Array(8).fill("").map((_, i) => (
+            {loading ? (
+              Array(8).fill("").map((_, i) => (
                 <div className="paths-table-row" key={i}>
                   <div className="paths-col-name"><Skeleton width={120} height={20} /></div>
                   <div className="paths-col-desc"><Skeleton width="90%" height={20} /></div>
                   <div className="paths-col-steps"><Skeleton width={70} height={28} borderRadius={50} /></div>
                 </div>
               ))
-              : filteredPartnerPathData?.map((path, i) => (
+            ) : filteredPartnerPathData?.length > 0 ? (
+              filteredPartnerPathData.map((path, i) => (
                 mypathsMenu === "Pending Paths" ? (
                   <div className="pending-path-card" key={i}>
                     <div className="pending-card-top">
@@ -987,6 +1115,20 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                       >
                         {getCreatorLabel(path)}
                       </span>
+                      {(mypathsMenu === "All Paths" || path?.status !== "active") && (
+                        <span className={`path-status-pill status-${path?.status || "active"}`}>
+                          <span className="status-dot"></span>
+                          {path?.status === "waitingforapproval"
+                            ? "Pending"
+                            : path?.status === "changesrequested"
+                            ? "Changes Req."
+                            : path?.status === "inactive"
+                            ? "Inactive"
+                            : path?.status === "draft"
+                            ? "Draft"
+                            : "Active"}
+                        </span>
+                      )}
                     </div>
                     <div className="paths-col-desc" onClick={ev => ev.stopPropagation()}>
                       <p className="path-desc-text">
@@ -1023,7 +1165,31 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                     </div>
                   </div>
                 )
-              ))}
+              ))
+            ) : (
+              <div className="paths-empty-state">
+                <div className="empty-icon">🔍</div>
+                <h3>No paths found</h3>
+                <p>
+                  {searchName || searchEmail || sourceTypeFilter !== "all"
+                    ? "No pathways match your current filter criteria. Try adjusting or resetting filters."
+                    : `No ${mypathsMenu.toLowerCase()} available at the moment.`}
+                </p>
+                {(searchName || searchEmail || sourceTypeFilter !== "all") && (
+                  <button
+                    type="button"
+                    className="empty-reset-btn"
+                    onClick={() => {
+                      setSearchName("");
+                      setSearchEmail("");
+                      setSourceTypeFilter("all");
+                    }}
+                  >
+                    Clear Filters
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

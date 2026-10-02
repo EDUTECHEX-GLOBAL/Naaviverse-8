@@ -517,7 +517,7 @@ const MarketplaceCard = ({
 
             {replacementCount > 0 && (
               <span className="mkt-card__replacement-badge" title="Recommendation Replacement">
-                {/* Replacement {replacementCount} of 3 */}
+                Replacement {replacementCount} of 3
               </span>
             )}
           </div>
@@ -913,7 +913,7 @@ const MarketplaceGrid = ({
               onToggleCart={onToggleCart}
               onCardView={onCardView}
               isPurchased={isPurchased}
-              replacementCount={isFirstRelevance ? replacementCount : 0}
+              replacementCount={isFirstRelevance ? replacementCount : (replacementCount >= 3 ? 3 : 0)}
               whyRecommended={isFirstRelevance ? whyRecommended : []}
               onFindBetterMatch={onFindBetterMatch}
               onRequestAssistance={onRequestAssistance}
@@ -1092,7 +1092,7 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
           console.warn("Could not fetch profile details for checkout:", err?.message);
         });
     }
-  }, []);
+  }, [email, initialEmail]);
 
   const subtotal = cart.reduce((a, s) => a + itemPrice(s), 0);
   const tax = Math.round(subtotal * 0.18);
@@ -1459,8 +1459,20 @@ const UserMarketplace = ({ onStepChange }) => {
       return null;
     }
   })();
-  const userEmail = userRaw?.user?.email || userRaw?.email || "guest@naaviverse.com";
-  const userName = userRaw?.user?.displayName || userRaw?.displayName || "Student";
+  const userEmail =
+    userRaw?.user?.email ||
+    userRaw?.email ||
+    localStorage.getItem("loginEmail") ||
+    localStorage.getItem("userEmail") ||
+    "guest@naaviverse.com";
+  const userName =
+    userRaw?.user?.displayName ||
+    userRaw?.displayName ||
+    userRaw?.user?.name ||
+    userRaw?.name ||
+    userRaw?.fullName ||
+    localStorage.getItem("userName") ||
+    "Student";
   const stepId = localStorage.getItem("selectedStepId") || "default_step";
   const pathId = localStorage.getItem("selectedPathId") || "default_path";
   const pathName = localStorage.getItem("selectedPathName") || "Career Path";
@@ -1843,8 +1855,11 @@ const UserMarketplace = ({ onStepChange }) => {
     if (!selectedServiceForMatch) return;
     const res = await marketplaceReplacementService.submitReplacement({
       userEmail,
+      userName,
       stepId,
+      stepName,
       pathId,
+      pathName,
       rejectedItem: selectedServiceForMatch,
       reasons,
       message,
@@ -2155,6 +2170,10 @@ const UserMarketplace = ({ onStepChange }) => {
         onClose={() => setChatDrawerOpen(false)}
         userEmail={userEmail}
         userName={userName}
+        stepId={stepId}
+        stepName={stepName}
+        pathId={pathId}
+        pathName={pathName}
         onAddToCart={toggleCart}
         onOpenCart={() => {
           setChatDrawerOpen(false);

@@ -92,6 +92,7 @@ const NewHomePage = () => {
   const [signupRole, setSignupRole] = useState("");
   const [showPassReq, setShowPassReq] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [roleWarning, setRoleWarning] = useState(null);
 
   const [validations, setValidations] = useState({
     capitalLetter: false,
@@ -147,21 +148,48 @@ const NewHomePage = () => {
       userPassword === confirmPassword
     ) {
       setLoading(true);
+      setErrorMessage("");
+      setRoleWarning(null);
 
       axios.post(`${BASE_URL}/api/auth/checkEmailDuplicate`, {
         email: userEmail
       })
         .then(({ data }) => {
-          if (data.count === 1) {
+          if (data && (data.exists || data.count >= 1)) {
             setLoading(false);
-            setErrorMessage("This email is already registered.");
+            const registeredRole = data.registeredRole;
+            if (registeredRole === "Partner" && isUser) {
+              setRoleWarning({
+                role: "Partner",
+                title: "Registered as Partner",
+                message: "This email is already registered as a Partner account.",
+                targetRole: "Accountants",
+                action: "switch_role",
+              });
+            } else if (registeredRole === "User" && isPartner) {
+              setRoleWarning({
+                role: "User",
+                title: "Registered as User",
+                message: "This email is already registered as a standard User account.",
+                targetRole: "Users",
+                action: "switch_role",
+              });
+            } else {
+              setRoleWarning({
+                role: registeredRole || (isUser ? "User" : "Partner"),
+                title: "Email Already Registered",
+                message: `This email is already registered as a ${registeredRole || (isUser ? "User" : "Partner")} account.`,
+                action: "login",
+              });
+            }
           } else {
             registerUser();
           }
         })
-        .catch(() => {
+        .catch((err) => {
           setLoading(false);
-          setErrorMessage("Error checking email.");
+          const errData = err.response?.data;
+          setErrorMessage(errData?.message || "Error checking email.");
         });
     } else {
       alert("Ensure all password requirements are met.");
@@ -192,12 +220,41 @@ const NewHomePage = () => {
         if (data.success) {
           setShowOtp(true);
         } else {
-          alert("Signup failed.");
+          setErrorMessage(data?.message || "Signup failed.");
         }
       })
-      .catch(() => {
+      .catch((err) => {
         setLoading(false);
-        alert("Signup failed.");
+        const errData = err.response?.data;
+        if (errData?.registeredRole) {
+          const regRole = errData.registeredRole;
+          if (regRole === "Partner" && isUser) {
+            setRoleWarning({
+              role: "Partner",
+              title: "Registered as Partner",
+              message: "This email is already registered as a Partner account.",
+              targetRole: "Accountants",
+              action: "switch_role",
+            });
+          } else if (regRole === "User" && isPartner) {
+            setRoleWarning({
+              role: "User",
+              title: "Registered as User",
+              message: "This email is already registered as a User account.",
+              targetRole: "Users",
+              action: "switch_role",
+            });
+          } else {
+            setRoleWarning({
+              role: regRole,
+              title: "Email Already Registered",
+              message: `This email is already registered as a ${regRole} account.`,
+              action: "login",
+            });
+          }
+        } else {
+          setErrorMessage(errData?.message || "Signup failed. Please try again.");
+        }
       });
   };
 
@@ -276,7 +333,7 @@ const NewHomePage = () => {
     }
 
     const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-    const redirectUri = encodeURIComponent(`${window.location.origin}/register`);
+    const redirectUri = encodeURIComponent(`${window.location.origin}/login`);
 
     if (!clientId) {
       alert(
@@ -341,6 +398,7 @@ const NewHomePage = () => {
               onClick={() => {
                 setSignupRole("Users");
                 setErrorMessage("");
+                setRoleWarning(null);
               }}
             >
               <UserToggleIcon /> User Signup
@@ -350,11 +408,46 @@ const NewHomePage = () => {
               onClick={() => {
                 setSignupRole("Accountants");
                 setErrorMessage("");
+                setRoleWarning(null);
               }}
             >
               <PartnerToggleIcon /> Partner Signup
             </div>
           </div>
+
+          {roleWarning && (
+            <div className="signup-toggle-warning">
+              <div className="warning-head">
+                <span className="warning-badge">⚠️ Notice</span>
+                <strong>{roleWarning.title}</strong>
+              </div>
+              <p className="warning-desc">{roleWarning.message}</p>
+              <div className="warning-actions">
+                {roleWarning.targetRole && (
+                  <button
+                    type="button"
+                    className="warning-btn primary"
+                    onClick={() => {
+                      setSignupRole(roleWarning.targetRole);
+                      setRoleWarning(null);
+                      setErrorMessage("");
+                    }}
+                  >
+                    Switch to {roleWarning.targetRole === "Accountants" ? "Partner Signup" : "User Signup"}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="warning-btn secondary"
+                  onClick={() => {
+                    navigate(`/login?role=${roleWarning.targetRole || signupRole}`);
+                  }}
+                >
+                  Sign In Now →
+                </button>
+              </div>
+            </div>
+          )}
 
           {errorMessage && <div className="errorMsg">{errorMessage}</div>}
 
@@ -365,7 +458,11 @@ const NewHomePage = () => {
               placeholder='Email address'
               disabled={showOtp}
               value={userEmail}
-              onChange={e => setUserEmail(e.target.value)}
+              onChange={e => {
+                setRoleWarning(null);
+                setErrorMessage("");
+                setUserEmail(e.target.value);
+              }}
             />
           </div>
 

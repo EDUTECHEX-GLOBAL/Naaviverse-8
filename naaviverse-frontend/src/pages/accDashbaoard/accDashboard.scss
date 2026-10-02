@@ -2462,7 +2462,7 @@ body:has(.step-popup-overlay) {
     color: #4a5568;
     line-height: 1.6;
     display: flex;
-    align-items: start;
+    align-items: flex-start;
     justify-content: space-between;
   }
 }
@@ -2941,7 +2941,7 @@ body:has(.step-popup-overlay) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.2rem;
-  align-content: start;
+  align-content: flex-start;
 }
 
 .marketplace-card {

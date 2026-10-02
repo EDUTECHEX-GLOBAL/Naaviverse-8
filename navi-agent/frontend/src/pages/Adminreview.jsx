@@ -1540,7 +1540,12 @@ export default function AdminReview() {
                 <div className={`stat-read-item${isFieldEdited("total_duration", activeRoadmap.total_duration) ? " edited-field-highlight" : ""}`}>
                   <span>Total Duration {isFieldEdited("total_duration", activeRoadmap.total_duration) && <span className="badge-edited" style={{ display: "inline-flex", alignItems: "center" }}><EditIcon size={10} /></span>
                   }</span>
-                  <span>{activeRoadmap.total_duration}</span>
+                  <strong>{activeRoadmap.total_duration}</strong>
+                  {Array.isArray(activeRoadmap.duration_calculation) && activeRoadmap.duration_calculation.length > 0 && (
+                    <div style={{ fontSize: "11px", color: "var(--text-secondary, #6b7280)", marginTop: "4px", lineHeight: "1.4" }}>
+                      {activeRoadmap.duration_calculation.map(s => `${s.stage} (${s.months}m)`).join(" + ")}
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (

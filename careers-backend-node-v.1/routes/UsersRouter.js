@@ -5,6 +5,7 @@ const UsersController = require("../controllers/UserProfileController");
 const UserController = require("../controllers/UserController");
 const { getAllUsers, getUserProfilePic } = require("../controllers/AuthController");
 const { getUserActivity } = require("../controllers/UserActivityController"); // << ADD THIS
+const { getUserNotifications } = require("../controllers/UserDashboardController");
 
 // User profile CRUD
 router.post("/add", UsersController.addUserProfile);
@@ -18,6 +19,9 @@ router.get('/check-username', UserController.checkUsername);
 
 // CRM Activity
 router.get("/activity", getUserActivity); // << ADD THIS
+
+// User Live Notifications
+router.get("/notifications", getUserNotifications);
 
 // Utility routes
 router.get("/", getAllUsers);

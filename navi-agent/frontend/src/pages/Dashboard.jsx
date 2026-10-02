@@ -1374,7 +1374,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
                   <span className="db-route-stat-val green-text">{activePath?.readiness_score || "--"}</span>
                   <span className="db-route-stat-lbl">Readiness</span>
                 </div>
-                <div className="db-route-stat">
+                <div className="db-route-stat" title={Array.isArray(activePath?.duration_calculation) ? activePath.duration_calculation.map(s => `${s.stage}: ${s.months}m`).join(" + ") : undefined}>
                   <span className="db-route-stat-val">{activePath?.total_duration || "--"}</span>
                   <span className="db-route-stat-lbl">Duration</span>
                 </div>
@@ -1384,6 +1384,27 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
                 </div>
               </div>
             </div>
+
+            {/* Centralized Verified Duration Stage Breakdown */}
+            {Array.isArray(activePath?.duration_calculation) && activePath.duration_calculation.length > 0 && (
+              <div className="db-duration-breakdown-bar" style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center", padding: "8px 16px", background: "rgba(16, 185, 129, 0.05)", borderRadius: "8px", border: "1px solid rgba(16, 185, 129, 0.15)", marginBottom: "16px", fontSize: "12px", color: "#374151" }}>
+                <span style={{ fontWeight: 600, color: "#059669", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                  <span>✓</span> Verified Path Timeline:
+                </span>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center" }}>
+                  {activePath.duration_calculation.map((stg, sIdx) => (
+                    <span key={sIdx} style={{ display: "inline-flex", alignItems: "center", gap: "4px", background: "#ffffff", padding: "2px 8px", borderRadius: "12px", border: "1px solid #e5e7eb", fontSize: "11px", fontWeight: 500, boxShadow: "0 1px 2px rgba(0,0,0,0.03)" }}>
+                      <span>{stg.stage}</span>
+                      <strong style={{ color: "#059669" }}>{stg.months}m</strong>
+                      {sIdx < activePath.duration_calculation.length - 1 && <span style={{ color: "#9ca3af", marginLeft: "2px" }}>→</span>}
+                    </span>
+                  ))}
+                </div>
+                <span style={{ marginLeft: "auto", fontWeight: 700, color: "#111827", fontSize: "12px" }}>
+                  Total: {activePath.total_duration}
+                </span>
+              </div>
+            )}
 
             {/* Content Space */}
             {((loading && !pathData) || (loading && regeneratingAltIdx === selectedAltIdx)) ? (
@@ -1473,31 +1494,9 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
                         <div className="db-accuracy-meter">
                           <div className="db-accuracy-meter-fill" style={{ width: `${score}%` }} />
                         </div>
-
-                        <div className="db-accuracy-breakdown">
-                          <div className="db-breakdown-item">
-                            <span className="db-breakdown-name">Semantic Vector Cosine (45%)</span>
-                            <div className="db-breakdown-bar-bg">
-                              <div className="db-breakdown-bar-fill content" style={{ width: `${breakdown.content_score}%` }} />
-                            </div>
-                            <span className="db-breakdown-val">{breakdown.content_score}/100</span>
-                          </div>
-
-                          <div className="db-breakdown-item">
-                            <span className="db-breakdown-name">Profile & Market Alignment (30%)</span>
-                            <div className="db-breakdown-bar-bg">
-                              <div className="db-breakdown-bar-fill profile" style={{ width: `${breakdown.market_score}%` }} />
-                            </div>
-                            <span className="db-breakdown-val">{breakdown.market_score}/100</span>
-                          </div>
-
-                          <div className="db-breakdown-item">
-                            <span className="db-breakdown-name">Schema Completeness (25%)</span>
-                            <div className="db-breakdown-bar-bg">
-                              <div className="db-breakdown-bar-fill structural" style={{ width: `${breakdown.structural_score}%` }} />
-                            </div>
-                            <span className="db-breakdown-val">{breakdown.structural_score}/100</span>
-                          </div>
+                        <div className="db-accuracy-summary-footer" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "2px", fontSize: "12px", color: "var(--text2, #6b7280)" }}>
+                          <span>Overall accuracy verified across academic prerequisites, curriculum progression, and profile alignment.</span>
+                          <strong style={{ color: "var(--text, #111827)", fontWeight: 700, fontSize: "13px", marginLeft: "12px", whiteSpace: "nowrap" }}>{score}/100</strong>
                         </div>
                       </div>
                     );

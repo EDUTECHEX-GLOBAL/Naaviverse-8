@@ -1,8 +1,11 @@
 const mongoose = require("mongoose");
 const User = require("../models/UsersModel");
+const Partner = require("../models/PartnerModel");
+const Approval = require("../models/ApprovalModel");
 require("dotenv").config({ path: ".env" });
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const UserPath = require("../models/UserPathsModel"); // 👈 ADD THIS
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const { generateOTP, sendOTP, sendNotificationMail } = require("../middlewares/verifySignUp");
@@ -19,15 +22,33 @@ const signUp = async (req, res) => {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
-    const existingUser = await User.findOne({ email });
+    const cleanEmail = email.toLowerCase().trim();
+    const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+
+    const existingUser = await User.findOne({ email: emailRegex });
     if (existingUser) {
-      return res.status(400).json({ success: false, message: "User already exists" });
+      return res.status(400).json({
+        success: false,
+        code: "ALREADY_REGISTERED",
+        registeredRole: "User",
+        message: "This email is already registered as a User account."
+      });
+    }
+
+    const existingPartner = await Partner.findOne({ email: emailRegex });
+    if (existingPartner) {
+      return res.status(400).json({
+        success: false,
+        code: "REGISTERED_AS_PARTNER",
+        registeredRole: "Partner",
+        message: "This email is already registered as a Partner account."
+      });
     }
 
     const OTP = generateOTP();
 
     const user = new User({
-      username, email, password,
+      username, email: cleanEmail, password,
       OTP, OTPCreatedTime: new Date(),
       OTPverified: false, status: "inactive",
     });
@@ -41,7 +62,7 @@ const signUp = async (req, res) => {
       expiresIn: "10 minutes",
     });
 
-    sendNotificationMail(email, otpSubject, otpHtml)
+    sendNotificationMail(cleanEmail, otpSubject, otpHtml)
       .catch(err => console.error("Mail failed:", err));
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
@@ -55,12 +76,51 @@ const signUp = async (req, res) => {
 
 const checkEmailDuplicate = async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.body.email });
-    if (user) return res.status(400).json({ message: "The email already exists" });
-    return res.status(200).json({ message: "Email is available" });
+    const email = req.body?.email || req.query?.email;
+    if (!email) return res.status(400).json({ success: false, message: "Email is required" });
+
+    const cleanEmail = email.toLowerCase().trim();
+    const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+
+    const user = await User.findOne({ email: emailRegex });
+    const partner = await Partner.findOne({ email: emailRegex });
+
+    if (user && partner) {
+      return res.status(200).json({
+        exists: true,
+        count: 2,
+        registeredRole: "Both",
+        message: "This email is registered as both a User and a Partner account."
+      });
+    }
+
+    if (user) {
+      return res.status(200).json({
+        exists: true,
+        count: 1,
+        registeredRole: "User",
+        message: "This email is already registered as a User account."
+      });
+    }
+
+    if (partner) {
+      return res.status(200).json({
+        exists: true,
+        count: 1,
+        registeredRole: "Partner",
+        message: "This email is already registered as a Partner account."
+      });
+    }
+
+    return res.status(200).json({
+      exists: false,
+      count: 0,
+      registeredRole: null,
+      message: "Email is available"
+    });
   } catch (error) {
     console.error("Error checking email:", error);
-    res.status(500).json({ success: false, message: "Something went wrong, signup failed" });
+    res.status(500).json({ success: false, message: "Something went wrong, email check failed" });
   }
 };
 
@@ -154,19 +214,45 @@ const login = async (req, res) => {
       return res.status(400).json({ success: false, message: "Both email and password are required" });
     }
 
-    const user = await User.findOne({ email });
+    const cleanEmail = email.toLowerCase().trim();
+    const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+
+    const user = await User.findOne({ email: emailRegex });
 
     if (!user) {
-      return res.status(401).json({ success: false, message: "Invalid credentials" });
+      // Check if this email is registered as a Partner
+      const partner = await Partner.findOne({ email: emailRegex });
+      if (partner) {
+        return res.status(400).json({
+          success: false,
+          code: "REGISTERED_AS_PARTNER",
+          registeredRole: "Partner",
+          message: "This email is registered as a Partner account. Please switch to Partner login.",
+        });
+      }
+
+      return res.status(404).json({
+        success: false,
+        code: "USER_NOT_FOUND",
+        message: "No user account found with this email. Please check your email or create a new account.",
+      });
     }
 
     if (!user.OTPverified) {
-      return res.status(401).json({ success: false, message: "Please verify your email via OTP before logging in" });
+      return res.status(401).json({
+        success: false,
+        code: "OTP_NOT_VERIFIED",
+        message: "Please verify your email via OTP before logging in"
+      });
     }
-const isMatch = await user.matchPassword(password);
-if (!isMatch) {
-  return res.status(401).json({ success: false, message: "Invalid password" });
-}
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        code: "INVALID_PASSWORD",
+        message: "The password you entered is incorrect. Please try again or reset your password."
+      });
+    }
 
 // ── Auto-restore selectedPath if missing ──────────────────────────
 if (!user.selectedPath) {
@@ -353,6 +439,236 @@ const checkUsername = async (req, res) => {
   }
 };
 
+const googleLogin = async (req, res) => {
+  try {
+    const { email, name, picture, role } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required from Google account" });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+
+    const requestedRole = (role === "Accountants" || role === "partner") ? "partner" : "user";
+
+    // Check existing records
+    const existingUser = await User.findOne({ email: emailRegex });
+    const existingPartner = await Partner.findOne({ email: emailRegex });
+
+    // Handle cross-role warning if account already registered on the opposite role
+    let activeRole = requestedRole;
+    if (requestedRole === "user" && !existingUser && existingPartner) {
+      return res.status(400).json({
+        success: false,
+        code: "REGISTERED_AS_PARTNER",
+        registeredRole: "Partner",
+        message: "This email is registered as a Partner account. Please switch to Partner login."
+      });
+    }
+
+    if (requestedRole === "partner" && !existingPartner && existingUser) {
+      return res.status(400).json({
+        success: false,
+        code: "REGISTERED_AS_USER",
+        registeredRole: "User",
+        message: "This email is registered as a User account. Please switch to User login."
+      });
+    }
+
+    // Process as USER
+    if (activeRole === "user") {
+      let user = existingUser;
+
+      if (!user) {
+        const randomPassword = crypto.randomBytes(16).toString("hex");
+        const baseUsername = (name || cleanEmail.split("@")[0] || "user").replace(/[^a-zA-Z0-9_]/g, "");
+        const uniqueSuffix = Math.floor(1000 + Math.random() * 9000);
+        const username = `${baseUsername || "user"}_${uniqueSuffix}`;
+
+        user = new User({
+          email: cleanEmail,
+          name: name || baseUsername,
+          username,
+          usernameLower: username.toLowerCase(),
+          password: randomPassword,
+          profilePicture: picture || "",
+          userType: "user",
+          OTPverified: true,
+          status: "active",
+        });
+
+        await user.save();
+        console.log("✅ Created new Google User:", cleanEmail);
+      } else {
+        let changed = false;
+        if (!user.OTPverified) {
+          user.OTPverified = true;
+          changed = true;
+        }
+        if (!user.profilePicture && picture) {
+          user.profilePicture = picture;
+          changed = true;
+        }
+        if (!user.name && name) {
+          user.name = name;
+          changed = true;
+        }
+        if (changed) {
+          await user.save();
+        }
+      }
+
+      // Restore selectedPath if missing
+      if (!user.selectedPath) {
+        const latestUserPath = await UserPath.findOne(
+          { email: cleanEmail, status: "active" },
+          { pathId: 1 },
+          { sort: { createdAt: -1 } }
+        ).lean();
+
+        if (latestUserPath) {
+          user.selectedPath = latestUserPath.pathId;
+          await user.save();
+        }
+      }
+
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
+
+      logActivityInternal({
+        userId: user._id.toString(),
+        email: user.email,
+        type: "login",
+        title: "Logged in via Google",
+        desc: `Google Sign-in · ${user.city || "Unknown location"}`,
+      }).catch(() => {});
+
+      return res.status(200).json({
+        success: true,
+        message: "Google login successful",
+        token,
+        userType: "user",
+        user: {
+          id: user._id,
+          _id: user._id,
+          username: user.username,
+          name: user.name || user.username,
+          email: user.email,
+          profilePicture: user.profilePicture,
+        },
+      });
+    }
+
+    // Process as PARTNER
+    let partner = existingPartner;
+
+    if (!partner) {
+      const randomPassword = crypto.randomBytes(16).toString("hex");
+      const baseUsername = (name || cleanEmail.split("@")[0] || "partner").replace(/[^a-zA-Z0-9_]/g, "");
+      const nameParts = (name || "").trim().split(/\s+/);
+      const googleFirstName = nameParts[0] || "";
+      const googleLastName = nameParts.slice(1).join(" ") || "";
+
+      partner = new Partner({
+        email: cleanEmail,
+        username: baseUsername,
+        firstName: googleFirstName,
+        lastName: googleLastName,
+        businessName: "",
+        password: randomPassword,
+        logo: picture || "",
+        partnerType: "Distributor",
+        userType: "partner",
+        OTPverified: true,
+        status: true,
+        accountStatus: "pending",
+        creationSource: "self_registered",
+        createdBy: "self_registered",
+      });
+
+      await partner.save();
+
+      const prefix = "NVP";
+      const cleanUser = cleanEmail.replace(/[^a-zA-Z0-9]/g, "");
+      const code = cleanUser.slice(0, 3).toUpperCase();
+      const year = new Date().getFullYear();
+      const shortId = partner._id.toString().slice(-6).toUpperCase();
+      partner.partnerId = `${prefix}-${code}-${year}-${shortId}`;
+      await partner.save();
+
+      console.log("✅ Created new Google Partner:", cleanEmail);
+    } else {
+      let changed = false;
+      if (!partner.OTPverified) {
+        partner.OTPverified = true;
+        changed = true;
+      }
+      if (!partner.logo && picture) {
+        partner.logo = picture;
+        changed = true;
+      }
+      // If previous bug auto-filled businessName to username and profile is still incomplete, reset it
+      if (partner.businessName === partner.username && (!partner.website || !partner.city)) {
+        partner.businessName = "";
+        changed = true;
+      }
+      if (changed) {
+        await partner.save();
+      }
+    }
+
+    if (!partner.partnerId) {
+      const pType = (partner.partnerType || "GEN").slice(0, 4).toUpperCase();
+      const shortId = String(partner._id).slice(-4).toUpperCase();
+      partner.partnerId = `NVP-${pType}-${new Date().getFullYear()}-${shortId}`;
+      await partner.save();
+    }
+
+    const token = jwt.sign({ id: partner._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
+
+    const isInternal = partner.creationSource === "admin_created";
+    const approval = await Approval.findOne({ email: partner.email.toLowerCase().trim() });
+    const profileCreated = Boolean(partner.businessName && partner.website && (partner.street || partner.city || partner.firstName));
+
+    let approvalStatus = "not_submitted";
+    if (isInternal) {
+      approvalStatus = "approved";
+    } else if (approval) {
+      approvalStatus = approval.status || "pending";
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Google login successful",
+      token,
+      userType: "partner",
+      mustChangePassword: false,
+      partner: {
+        id: partner._id,
+        _id: partner._id,
+        partnerId: partner.partnerId,
+        username: partner.username,
+        businessName: partner.businessName || "",
+        firstName: partner.firstName || "",
+        lastName: partner.lastName || "",
+        logo: partner.logo || picture || "",
+        email: partner.email,
+        partnerType: partner.partnerType || "Distributor",
+        creationSource: partner.creationSource || "self_registered",
+        mustChangePassword: false,
+        accountStatus: partner.isBlocked ? "inactive" : (partner.accountStatus || "pending"),
+        profileCreated,
+        approvalStatus,
+        status: approvalStatus,
+      },
+    });
+
+  } catch (error) {
+    console.error("Google Login Error:", error);
+    return res.status(500).json({ success: false, message: "Google authentication failed" });
+  }
+};
+
 module.exports = {
   signUp, forgotPassword, login,
   checkEmailDuplicate, sendConfirmationEmail,
@@ -360,4 +676,5 @@ module.exports = {
   logout, verifyOTP, updatePassword,
   getAllUsers, getUserProfilePic,
   submitForgotPassword, checkUsername,
+  googleLogin,
 };

@@ -12,13 +12,15 @@ const {
   checkEmailDuplicate,
   getAllUsers,
   submitForgotPassword,
-  getUserProfilePic   // <-- Add this
+  getUserProfilePic,
+  googleLogin,
 } = require("../controllers/AuthController");
 
 
 // Auth routes
 router.post("/signup", signUp);
 router.post("/login", login);
+router.post("/google-login", googleLogin);
 router.get("/logout", logout);
 router.post("/verifyOTP", verifyOTP);
 router.post("/forgotPassword", forgotPassword);
