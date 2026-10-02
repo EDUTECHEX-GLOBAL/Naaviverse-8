@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import "./userHome.scss";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { GetWalletBalance, GetWalletTxns } from "../../views/inner-pages/pages/services/wallet";
 import pathIcon from "../../assets/images/assets/naavi-icon2.webp";
@@ -168,7 +168,6 @@ const NOTIF_CONFIG = {
 // ═══════════════════════════════════════════════════════════════════
 export default function UserHome({ initialView = "home" }) {
   const navigate = useNavigate();
-  const location = useLocation();
   const user = getUserFromStorage();
   const rawName = user?.name || user?.fullName || localStorage.getItem("userName") || "";
   const firstName = rawName.split(" ")[0] || (user?.email || "there").split("@")[0] || "Aparna";
@@ -202,6 +201,7 @@ export default function UserHome({ initialView = "home" }) {
 
   const notifRef = useRef(null);
   const detailCardRef = useRef(null);
+  const isInitialMount = useRef(true);
   const unread = notifications.filter(n => !n.read).length;
   const creditPct = credits
     ? Math.round((credits.available / (credits.total || 50)) * 100)
@@ -704,9 +704,6 @@ export default function UserHome({ initialView = "home" }) {
     });
   };
 
-  const markRead = markOneRead;
-  const markAll = markAllRead;
-
   const handleNotifView = (n) => {
     markOneRead(n.id);
     setShowNotif(false);
@@ -737,8 +734,6 @@ export default function UserHome({ initialView = "home" }) {
       setView("home");
     }
   };
-
-  const handleNotifClick = handleNotifView;
 
   // ── Panels (dashboard = preview only, View All always navigates out) ────────
   const WalletPanel = () => {

@@ -4,21 +4,14 @@ import scanfull from "../assets/images/icons/scanfull.svg";
 import scan from "../assets/images/icons/scan.svg";
 import add from "../assets/images/icons/add.svg";
 import deleteIcon from "../assets/images/icons/delete.svg";
-import rightIco from "../assets/images/icons/thick-right.svg"
-import { useNavigate } from "react-router-dom";
+import rightIco from "../assets/images/icons/thick-right.svg";
 import nextId from "react-id-generator";
 import AccountSelection from "./ScanWallet";
 
-
-
-
-
-
 const WalletScanOverview = () => {
-    const navigate = useNavigate();
     const [wallets, setWallets] = useState("");
 
-    const actions = [
+    const actions = useMemo(() => [
         {
             _id: nextId(),
             title: "Scan Existing Wallets",
@@ -40,56 +33,53 @@ const WalletScanOverview = () => {
             logo: deleteIcon,
             id: "delete",
         },
-    ];
+    ], []);
 
     const WalletPages = useMemo(() => {
         switch (wallets) {
             case "Scan Existing Wallets":
-                return <AccountSelection/>
+                return <AccountSelection/>;
             default:
                 return <div className="menu-page-main" style={{height: '100%'}}>
                     <div className="menu-container">
                         <div className="menu-container-content">
                             <header>
-                                <img src={scanfull} />
+                                <img src={scanfull} alt="Scan full" />
                             </header>
                             <section className="mcc-section">
                                 <ul>
                                     {actions.map((obj) => {
-                                        console.log(obj)
                                         return (
-                                            <li>
+                                            <li key={obj._id}>
                                                 <div
                                                     onClick={() => {
-                                                        obj.id == "scan"
+                                                        obj.id === "scan"
                                                             ? setWallets(obj.title)
                                                             : console.log();
                                                     }}
                                                     className="action-card-wrapper"
                                                 >
                                                     <div className="acw-left">
-                                                        <img src={obj.logo} />
+                                                        <img src={obj.logo} alt="" />
                                                         <div>
                                                             <h4>{obj.title}</h4>
                                                             <p>{obj.description}</p>
                                                         </div>
                                                     </div>
                                                     <button>
-                                                        <img src={rightIco} />
+                                                        <img src={rightIco} alt="" />
                                                     </button>
                                                 </div>
                                             </li>
-                                        )
+                                        );
                                     })}
                                 </ul>
                             </section>
                         </div>
                     </div>
-                </div>
+                </div>;
         }
-    }, [
-        wallets,
-    ])
+    }, [wallets, actions]);
 
 
     return (

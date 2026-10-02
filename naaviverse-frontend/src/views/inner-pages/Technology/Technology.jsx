@@ -11,8 +11,6 @@ import Footer from '../../../components/footernew/index';
 import PathEngineImg from './images/Path_Engine.webp';
 import SynergyImg from './images/Synergy_1.webp';
 
-const HEADER_OFFSET = 110;
-
 const pathwayBullets = [
   "user decisions",
   "performance",

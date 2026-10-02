@@ -29,7 +29,6 @@ const Images = {
   excel: require("./excel.svg").default,
   pdf: require("./pdf.svg").default,
   png: require("./png.svg").default,
-  mainLogo: require("./main-logo.svg").default,
   mainLogoFull: require("./main-logo-full.svg").default,
 
   taxchainicon: require("./taxchainicon.svg").default,

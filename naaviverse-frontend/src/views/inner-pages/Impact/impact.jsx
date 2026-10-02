@@ -11,8 +11,6 @@ import humanPotentialImg from './images/human_potential.webp';
 import globalOpportunityImg from './images/global_opportunity_access.webp';
 import sdgImpactImg from './images/SDG_Social_Impact.webp';
 
-const HEADER_OFFSET = 180;
-
 const stories = [
   {
     id: 'skill-gap-problem',

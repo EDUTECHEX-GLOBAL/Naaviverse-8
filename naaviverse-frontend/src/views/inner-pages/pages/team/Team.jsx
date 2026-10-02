@@ -8,8 +8,6 @@ import buildingBeyondImg from './images/Building.webp';
 import ndustryImg from './images/naavi_advisors.gif';
 import whatDrivesUsImg from './images/what drives us.webp';
 
-const HEADER_OFFSET = 100;
-
 const disciplines = [
   "Artificial Intelligence",
   "Deep Technology",

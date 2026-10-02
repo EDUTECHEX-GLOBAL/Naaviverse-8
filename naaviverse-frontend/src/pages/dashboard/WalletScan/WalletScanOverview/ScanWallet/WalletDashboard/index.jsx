@@ -50,8 +50,7 @@ const WalletDashboard = ({ userData, setUserData, setSelectionStep }) => {
     const [registeredApps, setRegisteredApps] = useState(null);
     const [userDetails, setUserDetails] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [appsData , setAppsData] = useState(null)
-    const [miniAppsData , setMiniAppsData] = useState(null)
+    const [appsData , setAppsData] = useState(null);
 
     const getRegisteredApps = async () => {
         let res = await getRegisteredApp();
@@ -79,6 +78,7 @@ const WalletDashboard = ({ userData, setUserData, setSelectionStep }) => {
     useEffect(() => {
         getRegisteredApps();
         setUpUserDetails();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handlePDFDownload = () => {
@@ -96,7 +96,7 @@ const WalletDashboard = ({ userData, setUserData, setSelectionStep }) => {
             localStorage.removeItem("miniTabSelected");
             localStorage.removeItem("tabApps");
             let tempSub = tabsConfig[0].subTabs;
-            tempSub.map((x) => {
+            tempSub.forEach((x) => {
                 localStorage.removeItem(x?.keyId);
             });
             refresh();
@@ -137,22 +137,19 @@ const WalletDashboard = ({ userData, setUserData, setSelectionStep }) => {
         if (selectedTab.subTabs.length === 1) {
             return;
         } else {
-            let indexTwo = 0;
-            let coin = "";
             let index = tabsConfig.findIndex((x) => {
                 return x.id === selectedTab.id;
             });
             let newTab = null;
             let subTabTemp = selectedTab.subTabs.filter((x, num) => {
                 if (x.id === obj.id && x.type === obj.type) {
-                    indexTwo = num;
                     newTab = selectedTab.subTabs[num - 1];
                 }
                 return x.id !== obj.id || x.type !== obj.type;
             });
             let keyIdTemp = selectedTab.keyId;
             let temporary = [];
-            Object.keys(keyIdTemp).map((x) => {
+            Object.keys(keyIdTemp).forEach((x) => {
                 if (obj.id === x) {
                     let arr = keyIdTemp[x];
                     if (arr.length === 1) {
@@ -248,8 +245,6 @@ const WalletDashboard = ({ userData, setUserData, setSelectionStep }) => {
                         app={true}
                     />
                 );
-
-                break;
             case "type":
                 return (
                     <AccountSelection
@@ -260,8 +255,6 @@ const WalletDashboard = ({ userData, setUserData, setSelectionStep }) => {
                         type="type"
                     />
                 );
-
-                break;
             case "split":
                 return (
                     <AccountSelection
@@ -347,6 +340,7 @@ const WalletDashboard = ({ userData, setUserData, setSelectionStep }) => {
             // history(`/apps/wallet-scan/select`);
             setUserData("")
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     React.useEffect(() => {
@@ -355,6 +349,7 @@ const WalletDashboard = ({ userData, setUserData, setSelectionStep }) => {
             return x.id === type && x.type === subType;
         });
         updateState("miniTabSelected", { ...tempObj });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [type]);
 
     return (
@@ -408,7 +403,7 @@ const WalletDashboard = ({ userData, setUserData, setSelectionStep }) => {
                                     alt="cancel"
                                 />
                                 <h4>
-                                    <img className="main-image" src={obj?.app?.app_icon} />{" "}
+                                    <img className="main-image" src={obj?.app?.app_icon} alt="" />{" "}
                                     {obj?.app?.app_name}
                                 </h4>
                             </div>
@@ -416,7 +411,7 @@ const WalletDashboard = ({ userData, setUserData, setSelectionStep }) => {
                     </div>
                 </div>
                 <div onClick={() => setAddType("app")} className="d-h-add">
-                    <img src={Images.plus} />
+                    <img src={Images.plus} alt="" />
                 </div>
             </div>
             <div className="dashboard-sub-header">
@@ -443,7 +438,7 @@ const WalletDashboard = ({ userData, setUserData, setSelectionStep }) => {
                                         src={Images.cancel}
                                         alt="cancel"
                                     />
-                                    <img className="main-image" src={obj.icon} />{" "}
+                                    <img className="main-image" src={obj.icon} alt="" />{" "}
                                     <h6>
                                         {obj.name} {"("}
                                         {obj.type}
@@ -457,7 +452,7 @@ const WalletDashboard = ({ userData, setUserData, setSelectionStep }) => {
                                                         : console.log();
                                                 }}
                                             >
-                                                <img src={obj.subType.coin.icon} />
+                                                <img src={obj.subType.coin.icon} alt="" />
                                                 {obj.subType.coin.name}
                                                 <img
                                                     onClick={(e) => {
@@ -476,7 +471,7 @@ const WalletDashboard = ({ userData, setUserData, setSelectionStep }) => {
                                                     setSplitNum(num);
                                                 }}
                                             >
-                                                <img src={Images.plus} />
+                                                <img src={Images.plus} alt="" />
                                             </button>
                                         )}
                                     </h6>
@@ -486,11 +481,11 @@ const WalletDashboard = ({ userData, setUserData, setSelectionStep }) => {
                 </div>
                 <div className="dashboard-sub-header-options">
                     <button>
-                        <img src={Images.settings} />
+                        <img src={Images.settings} alt="" />
                     </button>
                     <button onClick={() => setAddType("type")}>
                         {" "}
-                        <img src={Images.plus} />
+                        <img src={Images.plus} alt="" />
                     </button>
                 </div>
             </div>

@@ -154,65 +154,9 @@ const NewHomePage = () => {
       return;
     }
 
-<<<<<<< HEAD
-    if (
-      validations.capitalLetter &&
-      validations.specialCharacter &&
-      validations.tenCharacters &&
-      validations.oneNumber &&
-      userPassword === confirmPassword
-    ) {
-      setLoading(true);
-      setErrorMessage("");
-      setRoleWarning(null);
-
-      axios.post(`${BASE_URL}/api/auth/checkEmailDuplicate`, {
-        email: userEmail
-      })
-        .then(({ data }) => {
-          if (data && (data.exists || data.count >= 1)) {
-            setLoading(false);
-            const registeredRole = data.registeredRole;
-            if (registeredRole === "Partner" && isUser) {
-              setRoleWarning({
-                role: "Partner",
-                title: "Registered as Partner",
-                message: "This email is already registered as a Partner account.",
-                targetRole: "Accountants",
-                action: "switch_role",
-              });
-            } else if (registeredRole === "User" && isPartner) {
-              setRoleWarning({
-                role: "User",
-                title: "Registered as User",
-                message: "This email is already registered as a standard User account.",
-                targetRole: "Users",
-                action: "switch_role",
-              });
-            } else {
-              setRoleWarning({
-                role: registeredRole || (isUser ? "User" : "Partner"),
-                title: "Email Already Registered",
-                message: `This email is already registered as a ${registeredRole || (isUser ? "User" : "Partner")} account.`,
-                action: "login",
-              });
-            }
-          } else {
-            registerUser();
-          }
-        })
-        .catch((err) => {
-          setLoading(false);
-          const errData = err.response?.data;
-          setErrorMessage(errData?.message || "Error checking email.");
-        });
-    } else {
-      alert("Ensure all password requirements are met.");
-=======
     if (userPassword !== confirmPassword) {
       setErrorMessage("Passwords do not match.");
       return;
->>>>>>> origin/feature/login
     }
 
     if (
@@ -227,25 +171,53 @@ const NewHomePage = () => {
     }
 
     setLoading(true);
+    setErrorMessage("");
+    setRoleWarning(null);
     const cleanEmail = (userEmail || "").trim().toLowerCase();
+
     axios.post(`${BASE_URL}/api/auth/checkEmailDuplicate`, {
       email: cleanEmail
     })
       .then(({ data }) => {
-        if (data.count === 1 || data.exists) {
+        if (data && (data.exists || data.count >= 1)) {
           setLoading(false);
-          setErrorMessage("This email is already registered.");
+          const registeredRole = data.registeredRole;
+          if (registeredRole === "Partner" && isUser) {
+            setRoleWarning({
+              role: "Partner",
+              title: "Registered as Partner",
+              message: "This email is already registered as a Partner account.",
+              targetRole: "Accountants",
+              action: "switch_role",
+            });
+          } else if (registeredRole === "User" && isPartner) {
+            setRoleWarning({
+              role: "User",
+              title: "Registered as User",
+              message: "This email is already registered as a standard User account.",
+              targetRole: "Users",
+              action: "switch_role",
+            });
+          } else {
+            setRoleWarning({
+              role: registeredRole || (isUser ? "User" : "Partner"),
+              title: "Email Already Registered",
+              message: `This email is already registered as a ${registeredRole || (isUser ? "User" : "Partner")} account.`,
+              action: "login",
+            });
+          }
         } else {
           registerUser();
         }
       })
       .catch((err) => {
         setLoading(false);
-        const msg = err.response?.data?.message;
+        const errData = err.response?.data;
+        const msg = errData?.message;
         if (msg && msg.toLowerCase().includes("already exists")) {
           setErrorMessage("This email is already registered.");
         } else {
-          setErrorMessage("Error checking email.");
+          setErrorMessage(errData?.message || "Error checking email.");
         }
       });
   };
@@ -277,16 +249,11 @@ const NewHomePage = () => {
         if (data.success) {
           setShowOtp(true);
         } else {
-<<<<<<< HEAD
           setErrorMessage(data?.message || "Signup failed.");
-=======
-          alert(data.message || "Signup failed.");
->>>>>>> origin/feature/login
         }
       })
       .catch((err) => {
         setLoading(false);
-<<<<<<< HEAD
         const errData = err.response?.data;
         if (errData?.registeredRole) {
           const regRole = errData.registeredRole;
@@ -317,9 +284,6 @@ const NewHomePage = () => {
         } else {
           setErrorMessage(errData?.message || "Signup failed. Please try again.");
         }
-=======
-        alert(err.response?.data?.message || "Signup failed.");
->>>>>>> origin/feature/login
       });
   };
 
@@ -526,115 +490,6 @@ const NewHomePage = () => {
 
           {errorMessage && <div className="errorMsg">{errorMessage}</div>}
 
-<<<<<<< HEAD
-          <div className='input1'>
-            <EmailIcon />
-            <input
-              type="email"
-              placeholder='Email address'
-              disabled={showOtp}
-              value={userEmail}
-              onChange={e => {
-                setRoleWarning(null);
-                setErrorMessage("");
-                setUserEmail(e.target.value);
-              }}
-            />
-          </div>
-
-          <div className='input1'>
-            <UserIcon />
-            <input
-              type="text"
-              placeholder='Choose a username'
-              disabled={showOtp}
-              value={userName}
-              onChange={e => setUserName(e.target.value)}
-            />
-          </div>
-
-          {isPartner && (
-            <div className={`input1 selectWrap ${partnerType ? "hasValue" : ""}`}>
-              <BriefcaseIcon />
-              <select
-                disabled={showOtp}
-                value={partnerType}
-                onChange={(e) => setPartnerType(e.target.value)}
-              >
-                <option value="">Select Partner Type</option>
-                <option value="Distributor">Distributor</option>
-                <option value="Vendor">Vendor</option>
-                <option value="Mentor">Mentor</option>
-                <option value="Institution">Institution</option>
-              </select>
-            </div>
-          )}
-
-          <div className='passwordWrapper'>
-            <div className='input2'>
-              <LockIcon />
-              <input
-                type="password"
-                placeholder='Create password'
-                disabled={showOtp}
-                value={userPassword}
-                onChange={e => setUserPassword(e.target.value)}
-              />
-            </div>
-
-            <div className='input2'>
-              <LockIcon />
-              <input
-                type="password"
-                placeholder='Confirm password'
-                disabled={showOtp}
-                value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
-                style={{
-                  borderColor: confirmPassword && userPassword !== confirmPassword ? "#ef4444" : undefined,
-                }}
-              />
-            </div>
-          </div>
-
-          <div className='passreq' onClick={() => setShowPassReq(!showPassReq)}>
-            {showPassReq ? "Hide" : "View"} Password Requirements
-          </div>
-
-          {showPassReq && (
-            <div className='passreqCard'>
-              <div>{validations.capitalLetter ? <img src={tickMarkValid} alt="✓" /> : <img src={tickMark} alt="○" />} One Capital Letter</div>
-              <div>{validations.specialCharacter ? <img src={tickMarkValid} alt="✓" /> : <img src={tickMark} alt="○" />} One Special Character</div>
-              <div>{validations.tenCharacters ? <img src={tickMarkValid} alt="✓" /> : <img src={tickMark} alt="○" />} Ten Characters</div>
-              <div>{validations.oneNumber ? <img src={tickMarkValid} alt="✓" /> : <img src={tickMark} alt="○" />} One Number</div>
-            </div>
-          )}
-
-          {showOtp && (
-            <>
-              <div className="otpHelperText">
-                {wrongOtp
-                  ? <span className="otpError">Incorrect code. Please check and try again.</span>
-                  : "We've sent a verification code to your email. Please enter it below."
-                }
-              </div>
-              <div className='input2 otpInput'>
-                <OtpIcon />
-                <input
-                  type="text"
-                  placeholder='Enter 6-digit code'
-                  value={userOtp}
-                  onChange={e => setUserOtp(e.target.value)}
-                  maxLength={6}
-                />
-              </div>
-            </>
-          )}
-
-          <div
-            className={`nextStep ${isFormValid ? "" : "disabled"}`}
-            onClick={showOtp ? confirmEmail : handleCreateAccount}
-=======
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -646,7 +501,6 @@ const NewHomePage = () => {
               }
             }}
             style={{ width: "100%" }}
->>>>>>> origin/feature/login
           >
             <div className='input1'>
               <EmailIcon />
@@ -655,7 +509,11 @@ const NewHomePage = () => {
                 placeholder='Email address'
                 disabled={showOtp}
                 value={userEmail}
-                onChange={e => setUserEmail(e.target.value)}
+                onChange={e => {
+                  setRoleWarning(null);
+                  setErrorMessage("");
+                  setUserEmail(e.target.value);
+                }}
               />
             </div>
 

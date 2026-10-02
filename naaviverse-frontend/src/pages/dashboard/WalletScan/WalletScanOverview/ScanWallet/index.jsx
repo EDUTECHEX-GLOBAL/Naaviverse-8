@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useContext, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import AppAssets from "./AppAssets/AppAssets";
 import RegisteredApps from "./RegisteredApps/RegisteredApps";
 import TypeOfAsset from "./TypeOfAsset/TypeOfAsset";
@@ -7,10 +6,8 @@ import TypeOfStreams from "./TypeOfStreams/TypeOfStreams";
 import { Context } from "../../globalComponents/Context/Context";
 import "./scanwallet.scss";
 import CardSkeleton from "./CardSkeleton/CardSkeleton";
-import axios from "axios";
-import { authenticate } from "../../services/postAPIs";
 import { getRegisteredApp, getUserDetails } from "../../services/getAPIs";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import WalletDashboard from "./WalletDashboard";
 export default function AccountSelection({
     type,
@@ -20,7 +17,6 @@ export default function AccountSelection({
     splitNum,
     app,
 }) {
-    const navigate = useNavigate();
     const context = useContext(Context);
 
     const {
@@ -36,7 +32,7 @@ export default function AccountSelection({
     );
     const [registeredApps, setRegisteredApps] = useState(null);
     const [userDetails, setUserDetails] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [, setLoading] = useState(true);
     const [userData11, setUserData] = useState("");
     const [splitInfo, setSplitInfo] = React.useState({
         app: null,
@@ -48,7 +44,6 @@ export default function AccountSelection({
         stream: null,
         streamType: null,
     });
-    const [appsData, setAppsData] = useState([]);
 
     // const checkAuth = async () => {
     //     let res = await authenticate();
@@ -95,6 +90,7 @@ export default function AccountSelection({
     useEffect(() => {
         getRegisteredApps();
         setUpUserDetails();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userData11]);
 
     // console.log(registeredApps, "registeredApps")
@@ -111,6 +107,7 @@ export default function AccountSelection({
         } else {
             document.documentElement.setAttribute("data-theme", "light");
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 
@@ -337,6 +334,7 @@ export default function AccountSelection({
     React.useEffect(() => {
         if (app || type) return;
         handleTheme(true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const userWallet = useMemo(() => {
@@ -368,6 +366,7 @@ export default function AccountSelection({
                     <ToastContainer />
                 </div>
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userData11, selectionStep, registeredApps, userDetails, currentTheme, type, app, selectedTab])
 
     return (

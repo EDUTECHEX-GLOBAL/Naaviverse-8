@@ -1547,7 +1547,6 @@ const UserMarketplace = ({ onStepChange }) => {
       return null;
     }
   })();
-<<<<<<< HEAD
   const userEmail =
     userRaw?.user?.email ||
     userRaw?.email ||
@@ -1562,12 +1561,7 @@ const UserMarketplace = ({ onStepChange }) => {
     userRaw?.fullName ||
     localStorage.getItem("userName") ||
     "Student";
-  const stepId = localStorage.getItem("selectedStepId") || "default_step";
-=======
-  const userEmail = userRaw?.user?.email || userRaw?.email || "guest@naaviverse.com";
-  const userName = userRaw?.user?.displayName || userRaw?.displayName || "Student";
   const stepId = location.state?.stepId || localStorage.getItem("selectedStepId") || "default_step";
->>>>>>> origin/feature/login
   const pathId = localStorage.getItem("selectedPathId") || "default_path";
   const pathName = localStorage.getItem("selectedPathName") || "Career Path";
   const stepName = localStorage.getItem("selectedStepName") || "Learning Step";
