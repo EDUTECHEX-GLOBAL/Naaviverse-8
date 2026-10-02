@@ -77,12 +77,59 @@ const addMarketplaceItem = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// HELPER — check whether a user has unlocked a step layer (credit or subscription)
+// ─────────────────────────────────────────────────────────────────────────────
+async function isLayerUnlockedForUser(email, stepId, layer) {
+  if (!layer || layer === "macro") return true; // Macro view is free
+  if (!email || !stepId) return false;
+
+  try {
+    const SubscriptionModel = require("../models/SubscriptionModel");
+    const cleanEmail = String(email).trim().toLowerCase();
+    const subs = await SubscriptionModel.find({
+      userEmail: { $regex: new RegExp(`^${cleanEmail}$`, "i") },
+    });
+
+    if (!subs || subs.length === 0) return false;
+
+    for (const sub of subs) {
+      // Active subscription covering this tier
+      if (sub.status === "active") {
+        if (sub.tier === "nano") return true;
+        if (layer === "micro" && (sub.tier === "micro" || sub.tier === "nano")) return true;
+      }
+
+      // Step-specific credit unlock
+      if (Array.isArray(sub.unlockedSteps)) {
+        const isUnlocked = sub.unlockedSteps.some(
+          (u) => String(u.step_id) === String(stepId) && u.layer === layer
+        );
+        if (isUnlocked) return true;
+      }
+    }
+  } catch (err) {
+    console.error("Error checking layer unlock:", err);
+  }
+
+  return false;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // GET /api/marketplace/step/:step_id?layer=macro|micro|nano
 // ─────────────────────────────────────────────────────────────────────────────
 const getMarketplaceItemsByStep = async (req, res) => {
   try {
     const { step_id } = req.params;
-    const { layer, category, searchQ, intent, path_id } = req.query;
+    const { layer, category, searchQ, intent, path_id, email } = req.query;
+
+    // If a specific layer is requested that requires unlock, verify user permission
+    if (layer && layer !== "macro") {
+      const unlocked = await isLayerUnlockedForUser(email, step_id, layer);
+      if (!unlocked) {
+        return res.json({ status: true, data: [] });
+      }
+    }
+
     const filter = { step_id, status: "active" };
     if (layer) filter.layer = layer;
     if (category) filter.category = category;
@@ -93,7 +140,19 @@ const getMarketplaceItemsByStep = async (req, res) => {
       stepId: step_id || "",
     };
 
-    const items = await getRankedMarketplaceItems(filter, userContext);
+    let items = await getRankedMarketplaceItems(filter, userContext);
+
+    // If email is provided and no specific layer was filtered, exclude locked layers
+    if (email) {
+      const microUnlocked = await isLayerUnlockedForUser(email, step_id, "micro");
+      const nanoUnlocked = await isLayerUnlockedForUser(email, step_id, "nano");
+      items = items.filter((item) => {
+        if (item.layer === "micro") return microUnlocked;
+        if (item.layer === "nano") return nanoUnlocked;
+        return true;
+      });
+    }
+
     res.json({ status: true, data: items });
   } catch (err) {
     console.error("getMarketplaceItemsByStep error:", err);

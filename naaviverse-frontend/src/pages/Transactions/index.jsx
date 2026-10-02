@@ -648,6 +648,13 @@ const Transactions = () => {
                         placeholder="Service Name"
                         value={serviceNameInput}
                         onChange={(e) => setServiceNameInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleGetCurrencies();
+                            setpstep(5);
+                          }
+                        }}
                       />
                     </div>
                     <div className="acc-step-box">
@@ -657,6 +664,13 @@ const Transactions = () => {
                         placeholder="Service Code"
                         value={serviceCodeInput}
                         onChange={(e) => setServiceCodeInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleGetCurrencies();
+                            setpstep(5);
+                          }
+                        }}
                       />
                     </div>
                     <div className="acc-step-box">
@@ -666,6 +680,13 @@ const Transactions = () => {
                         placeholder="Product Label"
                         value={productLabel}
                         onChange={(e) => setProductLabel(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleGetCurrencies();
+                            setpstep(5);
+                          }
+                        }}
                       />
                     </div>
                     <div className="acc-step-box">
@@ -675,6 +696,13 @@ const Transactions = () => {
                         placeholder="Service Tagline"
                         value={serviceTagline}
                         onChange={(e) => setServiceTagline(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleGetCurrencies();
+                            setpstep(5);
+                          }
+                        }}
                       />
                     </div>
                     <div className="acc-step-box1">
@@ -775,6 +803,12 @@ const Transactions = () => {
                         value={firstMonthPrice}
                         onChange={(e) => setfirstMonthPrice(e.target.value)}
                         onWheel={(e) => e.target.blur()}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleFinalSubmit();
+                          }
+                        }}
                       />
                       <div className="acc-step-feildHead">
                         {selectedCurrency.coinSymbol}
@@ -793,6 +827,12 @@ const Transactions = () => {
                         value={monthlyPrice}
                         onChange={(e) => setmonthlyPrice(e.target.value)}
                         onWheel={(e) => e.target.blur()}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleFinalSubmit();
+                          }
+                        }}
                       />
                       <div className="acc-step-feildHead">
                         {selectedCurrency.coinSymbol}
@@ -811,6 +851,12 @@ const Transactions = () => {
                         value={gracePeriod}
                         onChange={(e) => setgracePeriod(e.target.value)}
                         onWheel={(e) => e.target.blur()}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleFinalSubmit();
+                          }
+                        }}
                       />
                       <div className="acc-step-feildHead">Days</div>
                     </div>
@@ -827,6 +873,12 @@ const Transactions = () => {
                         value={secondChargeAttempt}
                         onChange={(e) => setsecondChargeAttempt(e.target.value)}
                         onWheel={(e) => e.target.blur()}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleFinalSubmit();
+                          }
+                        }}
                       />
                       <div className="acc-step-feildHead">Days</div>
                     </div>
@@ -843,6 +895,12 @@ const Transactions = () => {
                         value={thirdChargeAttempt}
                         onChange={(e) => setthirdChargeAttempt(e.target.value)}
                         onWheel={(e) => e.target.blur()}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleFinalSubmit();
+                          }
+                        }}
                       />
                       <div className="acc-step-feildHead">Days</div>
                     </div>

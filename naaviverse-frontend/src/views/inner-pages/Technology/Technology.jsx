@@ -18,14 +18,14 @@ const pathwayBullets = [
   "performance",
   "behavioral patterns",
   "emerging opportunities",
-  "and future industry trends.",
+  "future industry trends.",
 ];
 
 const pathwayCore = [
   "personalized growth navigation,",
   "intelligent decision-making,",
   "adaptive career transitions,",
-  "and long-term human development.",
+  "long-term human development.",
 ];
 
 const llmCapabilities = [
@@ -33,7 +33,7 @@ const llmCapabilities = [
   "contextual understanding,",
   "pathway generation,",
   "predictive reasoning,",
-  "and adaptive recommendations.",
+  "adaptive recommendations.",
 ];
 
 const kgNodes = [
@@ -43,7 +43,7 @@ const kgNodes = [
   "industries",
   "mentors",
   "opportunities",
-  "and human pathways.",
+  "human pathways.",
 ];
 
 const Technology = () => {

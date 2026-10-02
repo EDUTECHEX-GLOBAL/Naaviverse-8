@@ -141,8 +141,35 @@ export const useRazorpayPayment = ({ userEmail, userDetails, onSuccess, onError 
     };
 
     const rzp = new window.Razorpay(options);
-    rzp.on("payment.failed", (response) => {
-      onError(`Payment failed: ${response.error?.description || "Unknown error"}. Please try again.`);
+    rzp.on("payment.failed", async (response) => {
+      console.warn("⚠️ Razorpay payment failed:", response?.error);
+      const err = response?.error || {};
+      const failureReason = err.description || err.reason || "Payment was declined or failed";
+
+      try {
+        await axios.post(`${BASE_URL}/api/payment/failure`, {
+          razorpay_order_id:   order.id,
+          razorpay_payment_id: err.metadata?.payment_id || null,
+          error_code:          err.code || null,
+          error_description:   err.description || null,
+          error_reason:        err.reason || null,
+          error_source:        err.source || null,
+          error_step:          err.step || null,
+          failureReason,
+          userEmail,
+          amount,
+          productId:           "naavi-platform",
+          productName:         `Naavi ${planLabel} Plan`,
+          billingMethod:       billing,
+          planTier:            basePlanTier,
+          tier:                actualTier,
+        });
+        window.dispatchEvent(new CustomEvent("naavi:payment-updated", { detail: { status: "failed" } }));
+      } catch (postErr) {
+        console.error("❌ Failed to report payment failure to backend:", postErr);
+      }
+
+      onError(`Payment failed: ${failureReason}. Please try again.`);
     });
     rzp.open();
 

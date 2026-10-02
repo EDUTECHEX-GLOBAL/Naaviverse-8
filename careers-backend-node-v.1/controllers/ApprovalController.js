@@ -3,6 +3,7 @@ const { sendNotificationMail } = require("../middlewares/verifySignUp");
 const { getApprovalEmailContent } = require("../utils/otpEmailTemplate");
 const User = require("../models/UsersModel");
 const Partner = require("../models/PartnerModel");
+const { validatePersonName } = require("../utils/emailValidator");
 
 exports.createApproval = async (req, res) => {
   try {
@@ -11,6 +12,20 @@ exports.createApproval = async (req, res) => {
 
     if (!email || !role) {
       return res.status(400).json({ status: false, message: "email and role are required" });
+    }
+
+    if (firstName) {
+      const fNameVal = validatePersonName(firstName, "First name");
+      if (!fNameVal.isValid) {
+        return res.status(400).json({ status: false, message: fNameVal.message });
+      }
+    }
+
+    if (lastName) {
+      const lNameVal = validatePersonName(lastName, "Last name");
+      if (!lNameVal.isValid) {
+        return res.status(400).json({ status: false, message: lNameVal.message });
+      }
     }
 
     const normalisedRole = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();

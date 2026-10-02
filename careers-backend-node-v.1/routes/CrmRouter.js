@@ -1,6 +1,7 @@
 const express = require("express");
 const Client = require("../models/ClientModel");
 const Purchase = require("../models/PurchaseModel");
+const { validatePersonName } = require("../utils/emailValidator");
 
 // ADD THESE 3 NEW LINES
 const Path     = require("../models/PathModel");
@@ -14,6 +15,13 @@ const router = express.Router();
 ---------------------------------------- */
 router.post("/clients/add", async (req, res) => {
   try {
+    if (req.body.name !== undefined) {
+      const nameVal = validatePersonName(req.body.name, "Client name");
+      if (!nameVal.isValid) {
+        return res.status(400).json({ status: false, message: nameVal.message });
+      }
+      req.body.name = nameVal.cleanName;
+    }
     const client = await Client.create(req.body);
 
     res.json({

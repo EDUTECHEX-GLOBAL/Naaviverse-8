@@ -122,11 +122,29 @@ router.get("/steps", async (req, res) => {
     const stepIds = path.the_ids.map(s => s.step_id);
     const steps   = await Step.find({ _id: { $in: stepIds } }).lean();
 
+    // Determine destination country & course from destination coordinates or path name
+    let destCountry = path.destination_country || path.feature_coordinates?.country || "";
+    let courseName = path.destination_degree || path.program || path.feature_coordinates?.destination_degree || path.feature_coordinates?.program || "";
+
+    const fullName = path.nameOfPath || path.name || "";
+    if (fullName.includes("•") || fullName.includes("·")) {
+      const parts = fullName.split(/[•·]/).map(p => p.trim()).filter(Boolean);
+      if (parts.length >= 2) {
+        if (!destCountry) destCountry = parts[parts.length - 1];
+        if (!courseName && parts.length >= 3) courseName = parts[1];
+      }
+    }
+
     return res.status(200).json({
       status: true,
       data: {
-        name:        path.nameOfPath,
-        description: path.description,
+        name:               path.nameOfPath || path.name,
+        nameOfPath:         path.nameOfPath || path.name,
+        description:        path.description,
+        country:            destCountry,
+        course:             courseName,
+        destination_degree: path.destination_degree || path.feature_coordinates?.destination_degree || "",
+        program:            path.program || path.feature_coordinates?.program || "",
         steps,
       },
     });

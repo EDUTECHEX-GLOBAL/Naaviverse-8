@@ -146,12 +146,17 @@ export default function AssistanceChatDrawer({
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
               </div>
-              <div>
+              <div className="adh-title-wrap">
                 <h3 className="adh-title">Super Admin Assistance</h3>
                 <p className="adh-sub">Direct support & curated marketplace recommendations</p>
               </div>
             </div>
-            <button className="adh-close-btn" onClick={onClose} type="button">✕</button>
+            <button className="adh-close-btn" onClick={onClose} type="button" aria-label="Close assistance" title="Close assistance">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
           </div>
 
           {/* Multi-request selector if user has more than 1 ticket */}

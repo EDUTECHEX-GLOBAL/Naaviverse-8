@@ -4,17 +4,18 @@ import { useStore } from "../store/store.ts";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCoinContextData } from "../../context/CoinContext";
 import logo from '../../assets/images/logo/naavi_final_logo2.png';
+import faviconLogo from '../../assets/images/logo/naavi_favicon.png';
 import history from "./history.svg";
 import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
 import stepIcon from '../../assets/images/assets/naavi-icon1.webp';
 const NavIcon = ({ type, isActive }) => {
   const iconProps = {
     className: "user-nav-icon",
-    width: "18",
-    height: "18",
+    width: "20",
+    height: "20",
     viewBox: "0 0 24 24",
     fill: "none",
-   stroke: isActive ? "#ffffff" : "#000000",
+    stroke: isActive ? "#0284c7" : "#475569",
     strokeWidth: "1.7",
     strokeLinecap: "round",
     strokeLinejoin: "round",
@@ -28,16 +29,16 @@ const NavIcon = ({ type, isActive }) => {
           <polyline points="9 22 9 12 15 12 15 22" />
         </svg>
       );
-   case "paths":
-  return (
-    <img
-      src={pathIcon}
-      alt="paths"
-      width="18"
-      height="18"
-      style={{ objectFit: "contain", opacity: isActive ? 1 : 0.55 }}
-    />
-  );
+    case "paths":
+      return (
+        <img
+          src={pathIcon}
+          alt="paths"
+          width="20"
+          height="20"
+          style={{ objectFit: "contain", opacity: 1 }}
+        />
+      );
     case "journey":
       return (
         <svg {...iconProps}>
@@ -45,16 +46,16 @@ const NavIcon = ({ type, isActive }) => {
           <circle cx="12" cy="9" r="2.5" />
         </svg>
       );
-   case "current-step":
-  return (
-    <img
-      src={stepIcon}
-      alt="current-step"
-      width="18"
-      height="18"
-      style={{ objectFit: "contain", opacity: isActive ? 1 : 0.55 }}
-    />
-  );
+    case "current-step":
+      return (
+        <img
+          src={stepIcon}
+          alt="current-step"
+          width="20"
+          height="20"
+          style={{ objectFit: "contain", opacity: 1 }}
+        />
+      );
     case "transactions":
       return (
         <svg {...iconProps}>
@@ -69,17 +70,10 @@ const NavIcon = ({ type, isActive }) => {
         <svg {...iconProps}>
           <rect x="2" y="5" width="20" height="14" rx="2" ry="2" />
           <line x1="2" y1="10" x2="22" y2="10" />
-          <circle cx="18" cy="15" r="1" fill={isActive ? "#ffffff" : "#888"} />
+          <circle cx="18" cy="15" r="1" fill={isActive ? "#0284c7" : "#888"} />
         </svg>
       );
 
-   
-  return (
-    <svg {...iconProps}>
-      <path d="M9 11l3 3L22 4" />  {/* checkmark */}
-      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-    </svg>
-  )  
     default:
       return <svg {...iconProps}><circle cx="12" cy="12" r="10" /></svg>;
   }
@@ -107,8 +101,13 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
   const [showLogoutMenu, setShowLogoutMenu] = useState(false);
   const [imgError,       setImgError]       = useState(false);
   const [mobileOpen,     setMobileOpen]     = useState(false);
-  const [collapsed,      setCollapsed]      = useState(() => localStorage.getItem('userSidebarCollapsed') === 'true');
+  const [collapsed,      setCollapsed]      = useState(false);
   const logoutMenuRef = useRef(null);
+
+  useEffect(() => {
+    // Clear any stale collapsed flag so side section and three dots are visible by default
+    localStorage.removeItem('userSidebarCollapsed');
+  }, []);
 
   const toggleCollapsed = () => {
     setCollapsed((prev) => {
@@ -245,7 +244,19 @@ const handleLogout = (e) => {
         onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Logo + Toggle */}
+        {/* Floating edge toggle button on sidebar border */}
+        <button
+          className="sidebar-edge-toggle-btn"
+          onClick={(e) => { e.stopPropagation(); toggleCollapsed(); }}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points={collapsed ? "9 18 15 12 9 6" : "15 18 9 12 15 6"} />
+          </svg>
+        </button>
+
+        {/* Logo Section */}
         <div
           className="user-dashboard-left"
           style={{ cursor: isLocked ? "default" : "pointer" }}
@@ -254,22 +265,24 @@ const handleLogout = (e) => {
             className="sidebar-logo-click"
             onClick={(e) => {
               e.stopPropagation();
+              if (collapsed) {
+                toggleCollapsed();
+                return;
+              }
               if (!isLocked) {
                 setsideNav("Home");
                 navigate("/dashboard/users/home");
                 setMobileOpen(false);
               }
             }}
+            title={collapsed ? "Expand sidebar" : "Naavi Home"}
           >
-            <img className="user-dashboard-logo" src={logo} alt="Naavi" />
+            <img
+              className={`user-dashboard-logo ${collapsed ? "collapsed-logo" : ""}`}
+              src={collapsed ? faviconLogo : logo}
+              alt="Naavi"
+            />
           </div>
-          <button className="sidebar-toggle-btn" onClick={(e) => { e.stopPropagation(); toggleCollapsed(); }} aria-label="Toggle sidebar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round">
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </button>
         </div>
 
         {/* Nav items */}
@@ -283,7 +296,9 @@ const handleLogout = (e) => {
                 onClick={(e) => handleNavigation(e, each.title, each.path)}
                 title={collapsed ? each.display : ""}
               >
-                <NavIcon type={each.icon} isActive={active} />
+                <span className="user-nav-icon-wrapper">
+                  <NavIcon type={each.icon} isActive={active} />
+                </span>
                 <span className="sidebar-label">{each.display}</span>
               </div>
             );
@@ -354,17 +369,28 @@ const handleLogout = (e) => {
               </div>
 
               <div
-                className="user-sidebar-dots-btn sidebar-label"
+                className="user-sidebar-dots-btn"
                 onClick={(e) => { e.stopPropagation(); setShowLogoutMenu(v => !v); }}
+                title="Account options"
               >
-                •••
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="2" fill="#000000" />
+                  <circle cx="20" cy="12" r="2" fill="#000000" />
+                  <circle cx="4" cy="12" r="2" fill="#000000" />
+                </svg>
               </div>
             </div>
 
             {showLogoutMenu && (
               <div className="user-sidebar-logout-menu">
-                <div className="user-sidebar-logout-item" onClick={(e) => handleLogout(e)}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                <div
+                  className="user-sidebar-logout-item"
+                  onClick={(e) => {
+                    setShowLogoutMenu(false);
+                    handleLogout(e);
+                  }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                     <polyline points="16 17 21 12 16 7" />
                     <line x1="21" y1="12" x2="9" y2="12" />

@@ -12,11 +12,18 @@ require("dotenv").config({ path: ".env" });
 const jwt    = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
-const { generateOTP, sendNotificationMail } = require("../middlewares/verifySignUp");
+const {
+  generateOTP,
+  sendNotificationMail,
+  setPendingRegistration,
+  getPendingRegistration,
+  deletePendingRegistration,
+} = require("../middlewares/verifySignUp");
 const { getOtpEmailContent } = require("../utils/otpEmailTemplate");
 
 // ✅ Unified activity — replaces the old partneractivity.controller import
 const { logEvent } = require("./ActivityController");
+const { validatePersonName } = require("../utils/emailValidator");
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -33,37 +40,28 @@ const signUp = async (req, res) => {
       });
     }
 
-    const existingPartner = await Partner.findOne({ email });
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Check if verified partner exists
+    const existingPartner = await Partner.findOne({ email: cleanEmail, OTPverified: true });
     if (existingPartner) {
       return res.status(400).json({ success: false, message: "User is already registered" });
     }
 
-    const OTP         = generateOTP();
-    const currentTime = new Date();
+    // Clean up any old unverified partner record with this email in MongoDB if one existed from before
+    await Partner.deleteMany({ email: cleanEmail, OTPverified: { $ne: true } });
 
-    const temporalPartner = new Partner({
-      username, email, password, partnerType,
-      OTP, isBlocked: false, OTPAttempts: 0,
-      OTPverified: false, OTPCreatedTime: currentTime,
-      status: false,
-      creationSource: "self_registered",
-      createdBy: "self_registered",
+    const OTP = generateOTP();
+
+    // Store in-memory pending registration ONLY — DO NOT persist to MongoDB until OTP is verified!
+    setPendingRegistration(cleanEmail, {
+      username: username.trim(),
+      email: cleanEmail,
+      password,
+      partnerType,
+      role: "partner",
+      otp: OTP,
     });
-
-    await temporalPartner.save();
-    console.log("✅ Partner saved. OTP:", OTP);
-
-    // Auto-generate unique partnerId
-    const prefix = "NVP";
-    const cleanUser = (username || email).replace(/[^a-zA-Z0-9]/g, "");
-    const code = cleanUser.slice(0, 3).toUpperCase();
-    const year = new Date().getFullYear();
-    const shortId = temporalPartner._id.toString().slice(-6).toUpperCase();
-    const partnerId = `${prefix}-${code}-${year}-${shortId}`;
-
-    temporalPartner.partnerId = partnerId;
-    await temporalPartner.save();
-    console.log("✅ Partner unique partnerId generated:", partnerId);
 
     const { subject: otpSubject, html: otpHtml } = getOtpEmailContent({
       type: "partner_signup",
@@ -72,21 +70,13 @@ const signUp = async (req, res) => {
       expiresIn: "10 minutes",
     });
 
-    sendNotificationMail(email, otpSubject, otpHtml);
+    sendNotificationMail(cleanEmail, otpSubject, otpHtml);
 
-    const token = jwt.sign({ id: temporalPartner._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
-
-    return res.status(201).json({
+    return res.status(200).json({
       success: true,
-      message: "Partner created successfully",
-      token,
-      partner: {
-        id:          temporalPartner._id,
-        partnerId:   temporalPartner.partnerId,
-        username:    temporalPartner.username,
-        email:       temporalPartner.email,
-        partnerType: temporalPartner.partnerType,
-      },
+      otpSent: true,
+      message: "OTP sent to your email",
+      otp: OTP,
     });
   } catch (error) {
     console.error("SignUp Error:", error);
@@ -106,9 +96,17 @@ const login = async (req, res) => {
       return res.status(400).json({ success: false, message: "Both email and password are required" });
     }
 
-    const partner = await Partner.findOne({ email });
+    const cleanEmail = email.trim().toLowerCase();
+    const partner = await Partner.findOne({ email: cleanEmail });
     if (!partner) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+
+    if (!partner.OTPverified) {
+      return res.status(401).json({
+        success: false,
+        message: "Please verify your email via OTP before logging in",
+      });
     }
 
     const isMatch = await partner.matchPassword(password);
@@ -124,7 +122,7 @@ const login = async (req, res) => {
     }
 
     const isInternal = partner.creationSource === "admin_created";
-    const approval       = await Approval.findOne({ email: partner.email.toLowerCase().trim() });
+    const approval       = await Approval.findOne({ email: cleanEmail });
     const profileCreated = Boolean(partner.businessName && partner.website);
     
     let approvalStatus = "not_submitted";
@@ -301,23 +299,108 @@ const resetPassword = async (req, res) => {
 const verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
-    const partner        = await Partner.findOne({ email });
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: "Email and OTP are required" });
+    }
 
-    if (!partner)
-      return res.status(400).json({ success: false, message: "Partner not found" });
-    if (partner.isOTPExpired())
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanOtp = otp.toString().trim();
+
+    // 1. Check pending registration first (registration flow)
+    const pending = getPendingRegistration(cleanEmail);
+    if (pending) {
+      if (pending.otp.toString().trim() !== cleanOtp) {
+        pending.attempts = (pending.attempts || 0) + 1;
+        if (pending.attempts >= 5) {
+          deletePendingRegistration(cleanEmail);
+        }
+        return res.status(400).json({ success: false, message: "Invalid OTP. Please try again." });
+      }
+
+      // Valid OTP! Create permanent partner in MongoDB now
+      const passwordToUse = pending.password || req.body.password;
+      const usernameToUse = pending.username || req.body.username || cleanEmail.split("@")[0];
+      const partnerTypeToUse = pending.partnerType || req.body.partnerType || "Distributor";
+
+      // Remove any leftover unverified records
+      await Partner.deleteMany({ email: cleanEmail, OTPverified: { $ne: true } });
+
+      const newPartner = new Partner({
+        username: usernameToUse,
+        email: cleanEmail,
+        password: passwordToUse,
+        partnerType: partnerTypeToUse,
+        OTPverified: true,
+        status: true,
+        accountStatus: "pending",
+        creationSource: "self_registered",
+        createdBy: "self_registered",
+      });
+
+      await newPartner.save();
+
+      // Auto-generate unique partnerId
+      const prefix = "NVP";
+      const cleanUser = (usernameToUse || cleanEmail).replace(/[^a-zA-Z0-9]/g, "");
+      const code = cleanUser.slice(0, 3).toUpperCase() || "GEN";
+      const year = new Date().getFullYear();
+      const shortId = newPartner._id.toString().slice(-6).toUpperCase();
+      const partnerId = `${prefix}-${code}-${year}-${shortId}`;
+
+      newPartner.partnerId = partnerId;
+      await newPartner.save();
+
+      deletePendingRegistration(cleanEmail);
+
+      const token = jwt.sign({ id: newPartner._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
+
+      return res.status(200).json({
+        success: true,
+        message: "OTP verified successfully",
+        token,
+        partner: {
+          id: newPartner._id,
+          partnerId: newPartner.partnerId,
+          username: newPartner.username,
+          email: newPartner.email,
+          partnerType: newPartner.partnerType,
+        },
+      });
+    }
+
+    // 2. Fallback: check existing partner in DB (e.g. forgot password or legacy)
+    const partner = await Partner.findOne({ email: cleanEmail });
+    if (!partner) {
+      return res.status(400).json({ success: false, message: "Partner not found or OTP expired" });
+    }
+
+    if (partner.isOTPExpired()) {
       return res.status(400).json({ success: false, message: "OTP expired. Please request a new one." });
-    if (
-      !partner.OTP ||
-      partner.OTP.toString().trim().toLowerCase() !== otp.toString().trim().toLowerCase()
-    ) return res.status(400).json({ success: false, message: "Invalid OTP. Please try again." });
+    }
 
-    partner.status      = true;
+    if (!partner.OTP || partner.OTP.toString().trim() !== cleanOtp) {
+      return res.status(400).json({ success: false, message: "Invalid OTP. Please try again." });
+    }
+
+    partner.status = true;
     partner.OTPverified = true;
-    partner.OTP         = null;
+    partner.OTP = null;
     await partner.save();
 
-    return res.status(200).json({ success: true, message: "OTP verified successfully" });
+    const token = jwt.sign({ id: partner._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP verified successfully",
+      token,
+      partner: {
+        id: partner._id,
+        partnerId: partner.partnerId,
+        username: partner.username,
+        email: partner.email,
+        partnerType: partner.partnerType,
+      },
+    });
   } catch (error) {
     console.error("Error verifying OTP:", error);
     return res.status(500).json({ success: false, message: "Server error during OTP verification" });
@@ -382,10 +465,33 @@ const updatePartnerProfile = async (req, res) => {
       logoData = partner.logo || "";
     }
 
+    let cleanPhone = req.body.phone !== undefined ? req.body.phone : req.body.phoneNumber;
+    if (typeof cleanPhone === "string") {
+      cleanPhone = cleanPhone.replace(/\D/g, "").slice(0, 10);
+    }
+
+    if (req.body.firstName !== undefined) {
+      const fNameVal = validatePersonName(req.body.firstName, "First name");
+      if (!fNameVal.isValid) {
+        return res.status(400).json({ success: false, message: fNameVal.message });
+      }
+      req.body.firstName = fNameVal.cleanName;
+    }
+
+    if (req.body.lastName !== undefined && req.body.lastName.trim() !== "") {
+      const lNameVal = validatePersonName(req.body.lastName, "Last name");
+      if (!lNameVal.isValid) {
+        return res.status(400).json({ success: false, message: lNameVal.message });
+      }
+      req.body.lastName = lNameVal.cleanName;
+    }
+
     const updatedFields = {
       firstName:    req.body.firstName,
       lastName:     req.body.lastName,
       businessName: req.body.businessName,
+      phone:        cleanPhone,
+      phoneNumber:  cleanPhone,
       logo:         logoData,
       street:       req.body.street,
       city:         req.body.city,
@@ -541,6 +647,18 @@ const createInternalPartner = async (req, res) => {
       });
     }
 
+    const contactVal = validatePersonName(contactPerson, "First name");
+    if (!contactVal.isValid) {
+      return res.status(400).json({ success: false, message: contactVal.message });
+    }
+
+    if (lastName && lastName.trim() !== "") {
+      const lastVal = validatePersonName(lastName, "Last name");
+      if (!lastVal.isValid) {
+        return res.status(400).json({ success: false, message: lastVal.message });
+      }
+    }
+
     const cleanEmail = email.toLowerCase().trim();
     const existingPartner = await Partner.findOne({ email: cleanEmail });
     if (existingPartner) {
@@ -566,6 +684,7 @@ const createInternalPartner = async (req, res) => {
       email: cleanEmail,
       password: tempPassword, // pre-save hook will hash password!
       phone: phone || "",
+      phoneNumber: phone || "",
       type: category || "Education & Learning",
       partnerType: category || "Education & Learning",
       website: website || "",
@@ -647,9 +766,18 @@ const createInternalPartner = async (req, res) => {
         partnerName: newPartner.username,
         organizationName: newPartner.businessName,
         contactPerson: newPartner.firstName,
+        firstName: newPartner.firstName,
+        lastName: newPartner.lastName,
         email: newPartner.email,
-        phone: newPartner.phone,
+        phone: newPartner.phone || newPartner.phoneNumber || "—",
         category: newPartner.partnerType,
+        website: newPartner.website,
+        yourPosition: newPartner.yourPosition,
+        street: newPartner.street,
+        city: newPartner.city,
+        state: newPartner.state,
+        pincode: newPartner.pincode,
+        country: newPartner.country,
         description: newPartner.description,
         partnerType: "internal",
         creationSource: newPartner.creationSource,
@@ -687,7 +815,7 @@ const getAllInternalPartners = async (req, res) => {
       firstName: p.firstName || "",
       lastName: p.lastName || "",
       email: p.email,
-      phone: p.phone || "—",
+      phone: p.phone || p.phoneNumber || p.contactNumber || p.mobile || "—",
       category: p.partnerType || "Education & Learning",
       website: p.website || "",
       yourPosition: p.yourPosition || "",
@@ -723,8 +851,16 @@ const updateInternalPartner = async (req, res) => {
       partnerName,
       organizationName,
       contactPerson,
+      lastName,
       phone,
       category,
+      website,
+      yourPosition,
+      street,
+      city,
+      state,
+      pincode,
+      country,
       description,
       accountStatus,
       mustChangePassword,
@@ -737,9 +873,32 @@ const updateInternalPartner = async (req, res) => {
 
     if (partnerName) partner.username = partnerName;
     if (organizationName) partner.businessName = organizationName;
-    if (contactPerson) partner.firstName = contactPerson;
-    if (phone !== undefined) partner.phone = phone;
+    if (contactPerson) {
+      const contactVal = validatePersonName(contactPerson, "First name");
+      if (!contactVal.isValid) {
+        return res.status(400).json({ success: false, message: contactVal.message });
+      }
+      partner.firstName = contactVal.cleanName;
+    }
+    if (lastName !== undefined && lastName.trim() !== "") {
+      const lastVal = validatePersonName(lastName, "Last name");
+      if (!lastVal.isValid) {
+        return res.status(400).json({ success: false, message: lastVal.message });
+      }
+      partner.lastName = lastVal.cleanName;
+    }
+    if (phone !== undefined) {
+      partner.phone = phone;
+      partner.phoneNumber = phone;
+    }
     if (category) partner.partnerType = category;
+    if (website !== undefined) partner.website = website;
+    if (yourPosition !== undefined) partner.yourPosition = yourPosition;
+    if (street !== undefined) partner.street = street;
+    if (city !== undefined) partner.city = city;
+    if (state !== undefined) partner.state = state;
+    if (pincode !== undefined) partner.pincode = pincode;
+    if (country !== undefined) partner.country = country;
     if (description !== undefined) partner.description = description;
     if (accountStatus) {
       partner.accountStatus = accountStatus;
@@ -758,9 +917,18 @@ const updateInternalPartner = async (req, res) => {
         partnerName: partner.username,
         organizationName: partner.businessName,
         contactPerson: partner.firstName,
+        firstName: partner.firstName,
+        lastName: partner.lastName,
         email: partner.email,
-        phone: partner.phone,
+        phone: partner.phone || partner.phoneNumber || "—",
         category: partner.partnerType,
+        website: partner.website,
+        yourPosition: partner.yourPosition,
+        street: partner.street,
+        city: partner.city,
+        state: partner.state,
+        pincode: partner.pincode,
+        country: partner.country,
         description: partner.description,
         partnerType: "internal",
         creationSource: partner.creationSource || "admin_created",

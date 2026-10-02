@@ -66,7 +66,7 @@ const VaultTransactions = () => {
     if (!email) return;
     setLoading(true);
     axios
-      .get(`${BASE_URL}/api/subscriptions/user-transactions`, {
+      .get(`${BASE_URL}/api/payment/transactions`, {
         params: { email },
       })
       .then((res) => {
@@ -136,7 +136,7 @@ const VaultTransactions = () => {
           </div>
           <div>
             <div className="s-label">Last Payment</div>
-            <div className="s-value" style={{ fontSize: "1rem", letterSpacing: "-0.01em" }}>
+            <div className="s-value">
               {loading ? <Skeleton width={90} height={22} /> : lastPayment}
             </div>
             <div className="s-sub">Most Recent</div>

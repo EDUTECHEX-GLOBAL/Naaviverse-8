@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Icon } from '@iconify/react';
 import './footer.scss';
 import Logo from "../../assets/images/logo/naavi_footer_logo.png";
+import { validateEmail } from "../../utils/emailValidator";
 
 const Footer = () => {
   const [email, setEmail] = useState("");
@@ -13,13 +14,15 @@ const Footer = () => {
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
-    if (!email) {
-      setMessage("Please enter a valid email.");
+    const validation = validateEmail(email);
+    if (!validation.isValid) {
+      setMessage(validation.message);
       setIsSuccess(false);
       return;
     }
+    const cleanEmail = validation.cleanEmail;
     try {
-      const res = await axios.post(`${cleanBaseUrl}/api/admin-subscribe`, { email });
+      const res = await axios.post(`${cleanBaseUrl}/api/admin-subscribe`, { email: cleanEmail });
       if (res.status === 201) {
         setMessage("Thanks for subscribing!");
         setIsSuccess(true);
@@ -27,14 +30,15 @@ const Footer = () => {
       }
     } catch (err) {
       const serverMsg = err.response?.data?.message;
-      if (
+      if (serverMsg) {
+        setMessage(serverMsg);
+      } else if (
         err.response?.status === 400 ||
-        err.response?.status === 409 ||
-        (serverMsg && (serverMsg.toLowerCase().includes("already") || serverMsg.toLowerCase().includes("exist")))
+        err.response?.status === 409
       ) {
         setMessage("You have already used this email, please use a different email.");
       } else {
-        setMessage(serverMsg || "You have already used this email, please use a different email.");
+        setMessage("Unable to subscribe. Please try again later.");
       }
       setIsSuccess(false);
       console.error(err);
@@ -48,7 +52,7 @@ const Footer = () => {
           <div className="footer-grid">
             <div className="footer-col footer-col-info">
               <div className="footer-logo">
-                <img src={Logo} alt="Logo" />
+                <img src={Logo} alt="Naavi Network" />
               </div>
               <div className="footer-address">
                 <p className='footer-head'><strong>NAAVI NETWORK</strong><br />
@@ -78,15 +82,20 @@ const Footer = () => {
 
             <div className="footer-col footer-col-subscribe">
               <h4 className="footer-heading">Subscribe</h4>
-              <form className="footer-subscribe" onSubmit={handleSubscribe}>
+              <form className="footer-subscribe" noValidate onSubmit={handleSubscribe}>
                 <input
                   type="email"
                   placeholder="example@gmail.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (message) setMessage("");
+                  }}
                   required
+                  pattern="[a-zA-Z0-9._%+-]+@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}"
+                  title="Please enter a valid email address (e.g. name@gmail.com, .in, .net, .org, .edu)"
                 />
-                <button type="submit">Send</button>
+                <button type="submit" aria-label="Subscribe to newsletter">Send</button>
               </form>
 
               {/* Toggle Success/Error Message in green directly below send box */}
@@ -104,7 +113,7 @@ const Footer = () => {
               )}
 
               <p className="footer-subtext">
-                Subscribe to the list to get pilot access to the platform and updates
+                Subscribe to the list to get pilot access to the platform and updates.
               </p>
             </div>
           </div>

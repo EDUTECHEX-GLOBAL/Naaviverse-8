@@ -9,24 +9,28 @@ const BrandLogo = [
         img: NvidiaLogo,
         dataDelay: '',
         className: '',
+        name: 'NVIDIA Inception Program',
         link: 'https://www.nvidia.com/en-in/startups/', // Nvidia link
     },
     {
         img: ThubLogo,
         dataDelay: '100',
         className: 'thub',
+        name: 'T-Hub',
         link: 'https://t-hub.co/', // Thub link
     },
     {
         img: DeptScienceLogo,
         dataDelay: '200',
         className: 'dst-logo',
+        name: 'Department of Science and Technology',
         link: 'https://dst.gov.in/', // DST link
     },
     {
         img: MathLogo,
         dataDelay: '300',
         className: '',
+        name: 'MATH AI Scale Up',
         link: 'https://www.mat-hub.ai/', // MATH AI Scale up link
     }
 ];
@@ -50,7 +54,7 @@ const BrandTwo = () => {
                                 className="d-flex align-items-center justify-content-center">
                                 <img
                                     src={item.img}
-                                    alt={`Logo ${i + 1}`}
+                                    alt={item.name}
                                     className={`brand-logo-img ${item.className}`}
                                 />
                             </a>

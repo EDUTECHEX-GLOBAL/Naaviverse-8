@@ -6,6 +6,7 @@ import * as XLSX from "xlsx";
 // Source: src/logos/naavi_final_logo2.png
 import naaviLogo from "../../logos/naavi_final_logo2.png";
 import "./PartnerExclusiveDashboard.scss";
+import { validatePersonName } from "../../utils/emailValidator";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
 
@@ -157,6 +158,7 @@ export default function PartnerExclusiveDashboard() {
     ifsc: partner?.ifsc || "",
     holderName: currentPartner?.businessName || currentPartner?.username || partner?.businessName || partner?.username || "",
   });
+  const [payoutError, setPayoutError] = useState("");
 
   useEffect(() => {
     if (currentPartner || partner) {
@@ -171,6 +173,12 @@ export default function PartnerExclusiveDashboard() {
   }, [currentPartner, partner]);
 
   const handleSavePayout = () => {
+    const valResult = validatePersonName(payoutForm.holderName, "Account holder name");
+    if (!valResult.isValid) {
+      setPayoutError(valResult.message);
+      return;
+    }
+    setPayoutError("");
     const updated = {
       ...currentPartner,
       ...payoutForm,
@@ -749,8 +757,19 @@ export default function PartnerExclusiveDashboard() {
                               type="text"
                               placeholder="Enter account holder name"
                               value={payoutForm.holderName}
-                              onChange={(e) => setPayoutForm({ ...payoutForm, holderName: e.target.value })}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setPayoutForm({ ...payoutForm, holderName: val });
+                                const res = validatePersonName(val, "Account holder name");
+                                setPayoutError(res.isValid ? "" : res.message);
+                              }}
+                              style={payoutError ? { borderColor: "#dc2626" } : {}}
                             />
+                            {payoutError && (
+                              <span style={{ color: "#dc2626", fontSize: "0.85rem", marginTop: "4px", display: "block" }}>
+                                {payoutError}
+                              </span>
+                            )}
                           </div>
                           <div className="px-form-group">
                             <label>Bank name</label>

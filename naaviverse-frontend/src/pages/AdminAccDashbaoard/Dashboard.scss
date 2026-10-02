@@ -87,6 +87,9 @@
 .dashboard {
   height: 100%;
   min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   background: #f0f4fb;
   padding: 0 24px;
   overflow-y: auto;
@@ -101,7 +104,12 @@
   &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb { background: var(--slate-300); border-radius: var(--radius-full); }
 
-  @media (max-width: 768px) { padding: 0 12px; }
+  @media (max-width: 768px) {
+    padding: 0 6px;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -852,16 +860,53 @@ table {
 }
 
 .notif-dropdown {
-  position: absolute; top: calc(100% + 10px); right: 0;
-  width: 350px; background: white; border-radius: var(--radius-xl);
-  border: 1px solid var(--slate-200); box-shadow: var(--shadow-lg); z-index: 99999; overflow: hidden;
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 350px;
+  background: white;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--slate-200);
+  box-shadow: var(--shadow-lg);
+  z-index: 999999;
+  overflow: hidden;
   animation: notifIn .16s ease;
 
-  @media (max-width: 400px) { width: calc(100vw - 24px); right: -12px; }
+  @media (max-width: 768px) {
+    position: fixed !important;
+    top: 68px !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    max-width: 400px !important;
+    margin: 0 auto !important;
+    border-radius: 16px !important;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.22) !important;
+    z-index: 999999 !important;
+  }
 
   @keyframes notifIn {
     from { opacity: 0; transform: translateY(-8px); }
     to   { opacity: 1; transform: translateY(0); }
+  }
+}
+
+.notif-mobile-backdrop {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.32);
+    backdrop-filter: blur(2px);
+    z-index: 999998;
+    animation: notifFadeIn 0.15s ease;
+
+    @keyframes notifFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
   }
 }
 
@@ -875,7 +920,14 @@ table {
   &:hover { background: var(--violet-100); }
 }
 
-.notif-dd-list { max-height: 300px; overflow-y: auto; }
+.notif-dd-list {
+  max-height: 300px;
+  overflow-y: auto;
+
+  @media (max-width: 768px) {
+    max-height: min(340px, calc(100vh - 200px));
+  }
+}
 
 .notif-dd-item {
   display: flex; align-items: flex-start; gap: 11px; padding: 11px 15px;
@@ -1218,13 +1270,20 @@ table {
       font-size: 11px;
       color: #94a3b8;
 
+      .amn-email {
+        word-break: break-all;
+      }
+
       .amn-dot {
         font-size: 8px;
+        flex-shrink: 0;
       }
 
       .amn-time {
         color: #64748b;
         font-weight: 500;
+        white-space: nowrap;
+        flex-shrink: 0;
       }
     }
   }
@@ -1291,6 +1350,167 @@ table {
       transition: all 0.15s ease;
       display: inline-flex;
       align-items: center;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+  }
+}
+
+/* ── Mobile Responsive for Marketplace Assistance Overview ── */
+@media (max-width: 768px) {
+  .admin-mkt-assist-section {
+    padding: 16px 12px;
+    border-radius: 14px;
+    margin-bottom: 16px;
+  }
+
+  .admin-mkt-assist-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+
+    .amah-left {
+      min-width: 0;
+      width: 100%;
+      gap: 10px;
+
+      .amah-icon-wrap {
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+      }
+
+      .amah-title-row {
+        gap: 6px;
+        flex-direction: column;
+        align-items: flex-start;
+
+        .amah-title {
+          font-size: 15px;
+          line-height: 1.3;
+        }
+
+        .amah-live-badge {
+          font-size: 10.5px;
+          padding: 2px 8px;
+        }
+      }
+
+      .amah-desc {
+        font-size: 11.5px;
+        line-height: 1.4;
+      }
+    }
+
+    .amah-filter-tabs {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      &::-webkit-scrollbar { display: none; }
+      padding: 3px;
+      gap: 4px;
+
+      .amah-tab {
+        flex: 1 1 auto;
+        justify-content: center;
+        min-width: max-content;
+        padding: 6px 10px;
+        font-size: 11.5px;
+        gap: 5px;
+
+        .amah-tab-count {
+          font-size: 9.5px;
+          padding: 1px 5px;
+        }
+      }
+    }
+  }
+
+  .admin-mkt-notif-item {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    grid-template-areas:
+      "icon content"
+      "actions actions";
+    gap: 8px 10px;
+    padding: 12px 10px;
+    align-items: start;
+
+    &:hover {
+      transform: none;
+    }
+
+    .amn-icon-wrap {
+      grid-area: icon;
+      align-self: start;
+      margin-top: 2px;
+    }
+
+    .amn-content {
+      grid-area: content;
+      min-width: 0;
+      width: 100%;
+
+      .amn-title-line {
+        white-space: normal;
+        word-break: break-word;
+        font-size: 12.5px;
+        line-height: 1.4;
+        display: block;
+
+        .amn-user-name {
+          font-size: 12.5px;
+        }
+      }
+
+      .amn-sub-line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 3px 6px;
+        font-size: 11px;
+        margin-top: 4px;
+
+        .amn-email {
+          word-break: break-all;
+        }
+
+        .amn-dot {
+          display: inline;
+        }
+
+        .amn-time {
+          white-space: nowrap;
+        }
+      }
+    }
+
+    .amn-right-actions {
+      grid-area: actions;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding-top: 8px;
+      margin-top: 4px;
+      border-top: 1px solid #f1f5f9;
+
+      .amc-status-pill {
+        flex-shrink: 0;
+      }
+
+      .amn-view-arrow {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: #2563eb;
+        white-space: nowrap;
+      }
     }
   }
 }

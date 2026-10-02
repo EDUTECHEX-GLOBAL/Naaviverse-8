@@ -31,6 +31,8 @@ export const InputDivs = ({
   setFunc,
   funcValue,
   addCurrency,
+  onKeyDown,
+  ...rest
 }) => {
   return (
     <div className={classNames.inputDivs}>
@@ -42,7 +44,9 @@ export const InputDivs = ({
           onChange={(event) => {
             setFunc(event.target.value);
           }}
+          onKeyDown={onKeyDown}
           value={funcValue ? funcValue : ""}
+          {...rest}
         />
       </div>
     </div>
@@ -55,6 +59,8 @@ export const InputDivsCheck = ({
   setFunc,
   funcValue,
   colorCode,
+  onKeyDown,
+  ...rest
 }) => {
   return (
     <div className={classNames.inputDivs} style={{ marginTop: "3rem" }}>
@@ -66,8 +72,10 @@ export const InputDivsCheck = ({
           onChange={(event) => {
             setFunc(event.target.value);
           }}
+          onKeyDown={onKeyDown}
           value={funcValue ? funcValue : ""}
           style={{ borderRadius: "35px" }}
+          {...rest}
         />
 
         <div className={classNames.currencyDiv2}>Check</div>
@@ -82,6 +90,8 @@ export const InputDivsWithMT = ({
   setFunc,
   funcValue,
   addCurrency,
+  onKeyDown,
+  ...rest
 }) => {
   return (
     <div className={classNames.inputDivs} style={{ marginTop: "3rem" }}>
@@ -93,8 +103,10 @@ export const InputDivsWithMT = ({
           onChange={(event) => {
             setFunc(event.target.value);
           }}
+          onKeyDown={onKeyDown}
           value={funcValue ? funcValue : ""}
           style={{ borderRadius: "35px" }}
+          {...rest}
         />
       </div>
     </div>
@@ -108,20 +120,33 @@ export const InputDivsCreatePartner = ({
   funcValue,
   addCurrency,
   onBlur,
+  maxLength,
+  type = "text",
+  inputMode,
+  onKeyDown,
+  onPaste,
+  style,
+  ...rest
 }) => {
   return (
     <div className={classNames.inputDivs} style={{marginTop:'0px', marginBottom:"0px", gap:'0px'}}>
       <div className={classNames.heading}>{heading}</div>
       <div className={classNames.inputHolder}>
         <input
+          type={type}
+          maxLength={maxLength}
+          inputMode={inputMode}
           className={classNames.inputClass}
           placeholder={placeholderText}
           onChange={(event) => {
-            setFunc(event.target.value);
+            if (setFunc) setFunc(event.target.value);
           }}
+          onKeyDown={onKeyDown}
+          onPaste={onPaste}
           onBlur={onBlur}
           value={funcValue ? funcValue : ""}
-          style={{ borderRadius: "10px" }}
+          style={{ borderRadius: "10px", ...style }}
+          {...rest}
         />
       </div>
     </div>
@@ -164,10 +189,9 @@ export const InputDivCounty = ({
   setFunc,
   funcValue,
   addCurrency,
+  onKeyDown,
+  ...rest
 }) => {
-
-  
-
   return (
     <div className={classNames.inputDivs} style={{ marginTop: "3rem" }}>
       <div className={classNames.heading}>{heading}</div>
@@ -178,8 +202,10 @@ export const InputDivCounty = ({
           onChange={(event) => {
             setFunc(event.target.value);
           }}
+          onKeyDown={onKeyDown}
           value={funcValue ? funcValue : ""}
           style={{ borderRadius: "35px" }}
+          {...rest}
         />
       </div>
     </div>
@@ -192,6 +218,8 @@ export const InputDivsWithColorCode = ({
   setFunc,
   funcValue,
   colorCode,
+  onKeyDown,
+  ...rest
 }) => {
   return (
     <div className={classNames.inputDivs}>
@@ -203,8 +231,10 @@ export const InputDivsWithColorCode = ({
           onChange={(event) => {
             setFunc(event.target.value);
           }}
+          onKeyDown={onKeyDown}
           value={funcValue ? funcValue : ""}
           style={{ borderRadius: "35px" }}
+          {...rest}
         />
         <div
           className={classNames.currencyDiv1}

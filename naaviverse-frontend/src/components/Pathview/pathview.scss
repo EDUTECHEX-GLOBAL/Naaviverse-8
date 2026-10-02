@@ -32,14 +32,15 @@ $transition:  all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   align-items: center;
   justify-content: space-between;
   padding: 0 0 14px 0;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 12px;
+  flex-wrap: nowrap;
 
   &__left {
     display: flex;
     align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 8px;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
   }
 
   &__title {
@@ -48,15 +49,99 @@ $transition:  all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     color: $text-dark;
     margin: 0;
     letter-spacing: -0.02em;
+    line-height: 1.2;
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    top: 4px;
   }
 
   &__count {
-    font-size: 0.74rem;
-    color: $text-light;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    color: $text-mid;
     font-weight: 500;
     background: $brand-soft;
-    padding: 2px 9px;
-    border-radius: $radius-tag;
+    border: 1px solid rgba(108, 92, 231, 0.16);
+    padding: 0 8px;
+    height: 22px;
+    border-radius: 11px;
+    line-height: 1;
+    white-space: nowrap;
+    box-sizing: border-box;
+  }
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+  }
+
+  .pathview-search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1.5px solid rgba(108, 92, 231, 0.22);
+    border-radius: 8px;
+    padding: 0 10px;
+    height: 31px;
+    width: 230px;
+    transition: $transition;
+    box-shadow: 0 1px 4px rgba(108, 92, 231, 0.05);
+
+    &:focus-within {
+      border-color: $brand;
+      box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.14);
+      width: 270px;
+    }
+
+    .pathview-search-icon {
+      color: $text-light;
+      flex-shrink: 0;
+      margin-right: 6px;
+    }
+
+    .pathview-search-input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.78rem;
+      color: $text-dark;
+      width: 100%;
+      font-family: inherit;
+
+      &::placeholder {
+        color: $text-light;
+      }
+    }
+
+    .pathview-search-clear {
+      border: none;
+      background: rgba(108, 92, 231, 0.1);
+      color: $text-mid;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+      margin-left: 4px;
+      flex-shrink: 0;
+
+      &:hover {
+        background: rgba(108, 92, 231, 0.22);
+        color: $text-dark;
+      }
+    }
   }
 
   /* Compact button — reduced height */
@@ -64,8 +149,9 @@ $transition:  all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    // Smaller padding = smaller height
-    padding: 5px 12px;
+    height: 31px;
+    padding: 0 12px;
+    box-sizing: border-box;
     background: $brand;
     color: #fff;
     border: none;
@@ -87,6 +173,69 @@ $transition:  all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     &:active { transform: translateY(0); }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 0 0 12px 0;
+
+    &__left {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+    }
+
+    &__title {
+      font-size: 1.12rem;
+      top: 0;
+      line-height: 1.2;
+    }
+
+    &__count {
+      font-size: 0.72rem;
+      height: 22px;
+      position: relative;
+      top: -2px;
+    }
+
+    &__right {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pathview-search-box {
+      flex: 1 1 0;
+      min-width: 0;
+      width: auto !important;
+      height: 36px;
+      box-sizing: border-box;
+
+      &:focus-within {
+        width: auto !important;
+      }
+
+      .pathview-search-input {
+        font-size: 0.82rem;
+      }
+    }
+
+    &__coords-btn {
+      height: 36px;
+      padding: 0 12px;
+      font-size: 0.76rem;
+      flex-shrink: 0;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-sizing: border-box;
+    }
   }
 }
 
@@ -232,31 +381,38 @@ $transition:  all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 18px 0 4px;
-  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px 0 4px;
 }
 
 .pag-pages {
   display: flex;
+  align-items: center;
   gap: 4px;
-  flex-wrap: wrap;
-  justify-content: center;
 }
 
 .pag-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   cursor: pointer;
   font-weight: 600;
   transition: $transition;
-  border-radius: 8px;
+  border-radius: 6px;
+  line-height: 1;
+  padding: 0;
+  box-sizing: border-box;
+  text-align: center;
 
   &--nav {
-    padding: 6px 14px;
+    height: 28px;
+    padding: 0 10px;
     background: $bg-card;
     color: $brand;
-    border: 1.5px solid rgba(108, 92, 231, 0.18);
-    font-size: 0.76rem;
+    border: 1px solid rgba(108, 92, 231, 0.2);
+    font-size: 0.72rem;
+    border-radius: 6px;
 
     &:hover:not(:disabled) {
       background: $brand;
@@ -269,16 +425,18 @@ $transition:  all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
       border-color: #e5e5ef;
       cursor: not-allowed;
       background: #f9f9fb;
+      opacity: 0.6;
     }
   }
 
   &--page {
-    width: 30px;
-    height: 30px;
-    font-size: 0.76rem;
+    width: 28px;
+    height: 28px;
+    font-size: 0.74rem;
     background: $bg-card;
     color: $text-mid;
-    border: 1.5px solid #e8e8f4;
+    border: 1px solid #e8e8f4;
+    border-radius: 6px;
 
     &:hover {
       background: $brand-soft;
@@ -290,7 +448,7 @@ $transition:  all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
       background: $brand;
       color: #fff;
       border-color: $brand;
-      box-shadow: 0 3px 10px rgba(108, 92, 231, 0.25);
+      box-shadow: 0 2px 8px rgba(108, 92, 231, 0.25);
     }
   }
 }

@@ -93,10 +93,8 @@ function App() {
       <BrowserRouter>
         <VisitorLogger />
         <ScrollToTop />
-
         <Routes>
-          {/* ================= SINCO TEMPLATE (LANDING + INNER PAGES) ================= */}
-          <Route path="/" element={<AppRouter />} />
+
 
           {/* ================= PUBLIC ================= */}
           <Route path="/login" element={<Loginpage />} />

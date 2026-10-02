@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import "./AdminMarketplace.scss";
 import Skeleton from "react-loading-skeleton";
 import axios from "axios";
@@ -411,7 +412,7 @@ const AdminMarketplace = () => {
         const layer  = selectedItem.layer?.toUpperCase();
         const featureList = parseFeatures(selectedItem.features);
 
-        return (
+        return createPortal(
           <div className="adm-overlay" onClick={handleCloseModal}>
             <div className="adm-modal" onClick={(e) => e.stopPropagation()}>
 
@@ -634,7 +635,8 @@ const AdminMarketplace = () => {
                 )}
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         );
       })()}
     </div>

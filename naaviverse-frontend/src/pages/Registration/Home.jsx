@@ -29,6 +29,18 @@ const LockIcon = () => (
     <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
   </svg>
 );
+const EyeIcon = () => (
+  <svg className="eyeToggleIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+const EyeOffIcon = () => (
+  <svg className="eyeToggleIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+    <line x1="1" y1="1" x2="23" y2="23" />
+  </svg>
+);
 const BriefcaseIcon = () => (
   <svg className="fieldIcon" viewBox="0 0 24 24" fill="none">
     <rect x="3.5" y="7.5" width="17" height="11" rx="2" stroke="currentColor" strokeWidth="1.6" />
@@ -84,6 +96,8 @@ const NewHomePage = () => {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [partnerType, setPartnerType] = useState("");
   const [showOtp, setShowOtp] = useState(false);
   const [userOtp, setUserOtp] = useState('');
@@ -139,33 +153,44 @@ const NewHomePage = () => {
       return;
     }
 
-    if (
-      validations.capitalLetter &&
-      validations.specialCharacter &&
-      validations.tenCharacters &&
-      validations.oneNumber &&
-      userPassword === confirmPassword
-    ) {
-      setLoading(true);
-
-      axios.post(`${BASE_URL}/api/auth/checkEmailDuplicate`, {
-        email: userEmail
-      })
-        .then(({ data }) => {
-          if (data.count === 1) {
-            setLoading(false);
-            setErrorMessage("This email is already registered.");
-          } else {
-            registerUser();
-          }
-        })
-        .catch(() => {
-          setLoading(false);
-          setErrorMessage("Error checking email.");
-        });
-    } else {
-      alert("Ensure all password requirements are met.");
+    if (userPassword !== confirmPassword) {
+      setErrorMessage("Passwords do not match.");
+      return;
     }
+
+    if (
+      !validations.capitalLetter ||
+      !validations.specialCharacter ||
+      !validations.tenCharacters ||
+      !validations.oneNumber
+    ) {
+      setErrorMessage("Please ensure all password requirements are met.");
+      setShowPassReq(true);
+      return;
+    }
+
+    setLoading(true);
+    const cleanEmail = (userEmail || "").trim().toLowerCase();
+    axios.post(`${BASE_URL}/api/auth/checkEmailDuplicate`, {
+      email: cleanEmail
+    })
+      .then(({ data }) => {
+        if (data.count === 1 || data.exists) {
+          setLoading(false);
+          setErrorMessage("This email is already registered.");
+        } else {
+          registerUser();
+        }
+      })
+      .catch((err) => {
+        setLoading(false);
+        const msg = err.response?.data?.message;
+        if (msg && msg.toLowerCase().includes("already exists")) {
+          setErrorMessage("This email is already registered.");
+        } else {
+          setErrorMessage("Error checking email.");
+        }
+      });
   };
 
   const registerUser = () => {
@@ -173,15 +198,18 @@ const NewHomePage = () => {
       ? `${BASE_URL}/api/auth/signup`
       : `${BASE_URL}/api/partner/signup`;
 
+    const cleanEmail = (userEmail || "").trim().toLowerCase();
+    const cleanUser = (userName || "").trim();
+
     const payload = isUser
       ? {
-        username: userName,
-        email: userEmail,
+        username: cleanUser,
+        email: cleanEmail,
         password: userPassword,
       }
       : {
-        username: userName,
-        email: userEmail,
+        username: cleanUser,
+        email: cleanEmail,
         password: userPassword,
         partnerType: partnerType,
       };
@@ -192,12 +220,12 @@ const NewHomePage = () => {
         if (data.success) {
           setShowOtp(true);
         } else {
-          alert("Signup failed.");
+          alert(data.message || "Signup failed.");
         }
       })
-      .catch(() => {
+      .catch((err) => {
         setLoading(false);
-        alert("Signup failed.");
+        alert(err.response?.data?.message || "Signup failed.");
       });
   };
 
@@ -206,15 +234,20 @@ const NewHomePage = () => {
       ? `${BASE_URL}/api/auth/verifyotp`
       : `${BASE_URL}/api/partner/verifyotp`;
 
+    const cleanEmail = (userEmail || "").trim().toLowerCase();
+    const cleanUser = (userName || "").trim();
+
     axios.post(verifyOtpUrl, {
-      email: userEmail.trim(),
-      username: userName.trim(),
-      otp: userOtp.trim(),
+      email: cleanEmail,
+      username: cleanUser,
+      password: userPassword,
+      partnerType: partnerType,
+      otp: (userOtp || "").trim(),
     })
       .then(({ data }) => {
         if (data.success) {
           if (isUser) {
-            ApplyWelcomeBonus(userEmail.trim().toLowerCase())
+            ApplyWelcomeBonus(cleanEmail)
               .then(() => console.log("Welcome bonus applied"))
               .catch((err) => console.error("Welcome bonus failed:", err.message));
           }
@@ -224,7 +257,7 @@ const NewHomePage = () => {
         }
       })
       .catch(() => {
-        alert("OTP verification failed.");
+        setWrongOtp(true);
       });
   };
 
@@ -292,27 +325,32 @@ const NewHomePage = () => {
 
   return (
     <div className='regContainer'>
-      {/* ── LEFT HERO PANEL ── */}
+      {/* ── LEFT HERO PANEL (Logo above image in both desktop and mobile) ── */}
       <div className='regleftside'>
-        <img src={signupHero} alt="Join Naaviverse" className="hero-bg" />
-        <div className="hero-overlay"></div>
-        <div className="hero-content">
-          <div className="hero-badge">
-            <span className="badge-dot"></span>
-            {hero.badge}
-          </div>
-          <h1 className="hero-title">
-            {hero.title}{" "}
-            <span className="hero-highlight">{hero.highlight}</span>
-          </h1>
-          <p className="hero-subtitle">{hero.subtitle}</p>
-          <div className="hero-features">
-            {hero.features.map((feat, i) => (
-              <div className="feature-item" key={i}>
-                <div className="feature-icon">{feat.icon}</div>
-                <span>{feat.text}</span>
-              </div>
-            ))}
+        <div className="auth-hero-header">
+          <img src={logo} alt="SkillNaav" className="auth-hero-logo" onClick={() => navigate("/")} />
+        </div>
+        <div className="hero-visual-area">
+          <img src={signupHero} alt="Join Naaviverse" className="hero-bg" />
+          <div className="hero-overlay"></div>
+          <div className="hero-content">
+            <div className="hero-badge">
+              <span className="badge-dot"></span>
+              {hero.badge}
+            </div>
+            <h1 className="hero-title">
+              {hero.title}{" "}
+              <span className="hero-highlight">{hero.highlight}</span>
+            </h1>
+            <p className="hero-subtitle">{hero.subtitle}</p>
+            <div className="hero-features">
+              {hero.features.map((feat, i) => (
+                <div className="feature-item" key={i}>
+                  <div className="feature-icon">{feat.icon}</div>
+                  <span>{feat.text}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -358,112 +396,144 @@ const NewHomePage = () => {
 
           {errorMessage && <div className="errorMsg">{errorMessage}</div>}
 
-          <div className='input1'>
-            <EmailIcon />
-            <input
-              type="email"
-              placeholder='Email address'
-              disabled={showOtp}
-              value={userEmail}
-              onChange={e => setUserEmail(e.target.value)}
-            />
-          </div>
-
-          <div className='input1'>
-            <UserIcon />
-            <input
-              type="text"
-              placeholder='Choose a username'
-              disabled={showOtp}
-              value={userName}
-              onChange={e => setUserName(e.target.value)}
-            />
-          </div>
-
-          {isPartner && (
-            <div className={`input1 selectWrap ${partnerType ? "hasValue" : ""}`}>
-              <BriefcaseIcon />
-              <select
-                disabled={showOtp}
-                value={partnerType}
-                onChange={(e) => setPartnerType(e.target.value)}
-              >
-                <option value="">Select Partner Type</option>
-                <option value="Distributor">Distributor</option>
-                <option value="Vendor">Vendor</option>
-                <option value="Mentor">Mentor</option>
-                <option value="Institution">Institution</option>
-              </select>
-            </div>
-          )}
-
-          <div className='passwordWrapper'>
-            <div className='input2'>
-              <LockIcon />
-              <input
-                type="password"
-                placeholder='Create password'
-                disabled={showOtp}
-                value={userPassword}
-                onChange={e => setUserPassword(e.target.value)}
-              />
-            </div>
-
-            <div className='input2'>
-              <LockIcon />
-              <input
-                type="password"
-                placeholder='Confirm password'
-                disabled={showOtp}
-                value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
-                style={{
-                  borderColor: confirmPassword && userPassword !== confirmPassword ? "#ef4444" : undefined,
-                }}
-              />
-            </div>
-          </div>
-
-          <div className='passreq' onClick={() => setShowPassReq(!showPassReq)}>
-            {showPassReq ? "Hide" : "View"} Password Requirements
-          </div>
-
-          {showPassReq && (
-            <div className='passreqCard'>
-              <div>{validations.capitalLetter ? <img src={tickMarkValid} alt="✓" /> : <img src={tickMark} alt="○" />} One Capital Letter</div>
-              <div>{validations.specialCharacter ? <img src={tickMarkValid} alt="✓" /> : <img src={tickMark} alt="○" />} One Special Character</div>
-              <div>{validations.tenCharacters ? <img src={tickMarkValid} alt="✓" /> : <img src={tickMark} alt="○" />} Ten Characters</div>
-              <div>{validations.oneNumber ? <img src={tickMarkValid} alt="✓" /> : <img src={tickMark} alt="○" />} One Number</div>
-            </div>
-          )}
-
-          {showOtp && (
-            <>
-              <div className="otpHelperText">
-                {wrongOtp
-                  ? <span className="otpError">Incorrect code. Please check and try again.</span>
-                  : "We've sent a verification code to your email. Please enter it below."
-                }
-              </div>
-              <div className='input2 otpInput'>
-                <OtpIcon />
-                <input
-                  type="text"
-                  placeholder='Enter 6-digit code'
-                  value={userOtp}
-                  onChange={e => setUserOtp(e.target.value)}
-                  maxLength={6}
-                />
-              </div>
-            </>
-          )}
-
-          <div
-            className={`nextStep ${isFormValid ? "" : "disabled"}`}
-            onClick={showOtp ? confirmEmail : handleCreateAccount}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (loading) return;
+              if (showOtp) {
+                if (userOtp && userOtp.trim().length > 0) confirmEmail();
+              } else if (isFormValid) {
+                handleCreateAccount();
+              }
+            }}
+            style={{ width: "100%" }}
           >
-            {loading ? "Creating Account..." : showOtp ? "Verify & Continue" : "Create Account"}
-          </div>
+            <div className='input1'>
+              <EmailIcon />
+              <input
+                type="email"
+                placeholder='Email address'
+                disabled={showOtp}
+                value={userEmail}
+                onChange={e => setUserEmail(e.target.value)}
+              />
+            </div>
+
+            <div className='input1'>
+              <UserIcon />
+              <input
+                type="text"
+                placeholder='Choose a username'
+                disabled={showOtp}
+                value={userName}
+                onChange={e => setUserName(e.target.value)}
+              />
+            </div>
+
+            {isPartner && (
+              <div className={`input1 selectWrap ${partnerType ? "hasValue" : ""}`}>
+                <BriefcaseIcon />
+                <select
+                  disabled={showOtp}
+                  value={partnerType}
+                  onChange={(e) => setPartnerType(e.target.value)}
+                >
+                  <option value="">Select Partner Type</option>
+                  <option value="Distributor">Distributor</option>
+                  <option value="Vendor">Vendor</option>
+                  <option value="Mentor">Mentor</option>
+                  <option value="Institution">Institution</option>
+                </select>
+              </div>
+            )}
+
+            <div className='passwordWrapper'>
+              <div className='input2'>
+                <LockIcon />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder='Create password'
+                  disabled={showOtp}
+                  value={userPassword}
+                  onChange={e => setUserPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  tabIndex={-1}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowPassword(prev => !prev)}
+                >
+                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              </div>
+
+              <div className='input2'>
+                <LockIcon />
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder='Confirm password'
+                  disabled={showOtp}
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  style={{
+                    borderColor: confirmPassword && userPassword !== confirmPassword ? "#ef4444" : undefined,
+                  }}
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  tabIndex={-1}
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowConfirmPassword(prev => !prev)}
+                >
+                  {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              </div>
+            </div>
+
+            <div className='passreq' onClick={() => setShowPassReq(!showPassReq)}>
+              {showPassReq ? "Hide" : "View"} Password Requirements
+            </div>
+
+            {showPassReq && (
+              <div className='passreqCard'>
+                <div>{validations.capitalLetter ? <img src={tickMarkValid} alt="✓" /> : <img src={tickMark} alt="○" />} One Capital Letter</div>
+                <div>{validations.specialCharacter ? <img src={tickMarkValid} alt="✓" /> : <img src={tickMark} alt="○" />} One Special Character</div>
+                <div>{validations.tenCharacters ? <img src={tickMarkValid} alt="✓" /> : <img src={tickMark} alt="○" />} Ten Characters</div>
+                <div>{validations.oneNumber ? <img src={tickMarkValid} alt="✓" /> : <img src={tickMark} alt="○" />} One Number</div>
+              </div>
+            )}
+
+            {showOtp && (
+              <>
+                <div className="otpHelperText">
+                  {wrongOtp
+                    ? <span className="otpError">Incorrect code. Please check and try again.</span>
+                    : "We've sent a verification code to your email. Please enter it below."
+                  }
+                </div>
+                <div className='input2 otpInput'>
+                  <OtpIcon />
+                  <input
+                    type="text"
+                    placeholder='Enter 6-digit code'
+                    value={userOtp}
+                    onChange={e => setUserOtp(e.target.value)}
+                    maxLength={6}
+                  />
+                </div>
+              </>
+            )}
+
+            <button
+              type="submit"
+              disabled={showOtp ? (!userOtp || userOtp.trim().length === 0 || loading) : (!isFormValid || loading)}
+              className={`nextStep ${(showOtp ? (userOtp && userOtp.trim().length > 0 && !loading) : (isFormValid && !loading)) ? "" : "disabled"}`}
+            >
+              {loading ? "Creating Account..." : showOtp ? "Verify & Continue" : "Create Account"}
+            </button>
+          </form>
 
           <div className="login-divider">
             <div className="divider-line"></div>

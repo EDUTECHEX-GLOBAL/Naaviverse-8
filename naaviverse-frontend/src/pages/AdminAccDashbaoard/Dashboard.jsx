@@ -211,7 +211,11 @@ export default function Dashboard() {
         setShowNotifDropdown(false);
     };
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("touchstart", handler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("touchstart", handler);
+    };
   }, []);
 
   // ── Dashboard stats ───────────────────────────────────────────────────────
@@ -547,29 +551,35 @@ export default function Dashboard() {
                 </button>
 
                 {showNotifDropdown && (
-                  <div className="notif-dropdown">
-                    <div className="notif-dd-header">
-                      <span className="notif-dd-title">Notifications</span>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        {unreadCount > 0 && <span className="notif-dd-count">{unreadCount} new</span>}
-                        <button className="notif-mark-all-btn" onClick={markAllRead}>Mark all read</button>
+                  <>
+                    <div
+                      className="notif-mobile-backdrop"
+                      onClick={() => setShowNotifDropdown(false)}
+                    />
+                    <div className="notif-dropdown">
+                      <div className="notif-dd-header">
+                        <span className="notif-dd-title">Notifications</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          {unreadCount > 0 && <span className="notif-dd-count">{unreadCount} new</span>}
+                          <button className="notif-mark-all-btn" onClick={markAllRead}>Mark all read</button>
+                        </div>
+                      </div>
+                      <div className="notif-dd-list">
+                        {notifications.slice(0, 4).map((n) => (
+                          <NotifItem
+                            key={n.id} notif={n}
+                            onRead={() => markOneRead(n.id)}
+                            onView={() => { markOneRead(n.id); setShowNotifDropdown(false); setView("notifications"); setNotifFilter(n.type); }}
+                          />
+                        ))}
+                      </div>
+                      <div className="notif-dd-footer">
+                        <button className="notif-view-all-btn" onClick={() => { setShowNotifDropdown(false); setView("notifications"); setNotifFilter("all"); }}>
+                          View all notifications →
+                        </button>
                       </div>
                     </div>
-                    <div className="notif-dd-list">
-                      {notifications.slice(0, 4).map((n) => (
-                        <NotifItem
-                          key={n.id} notif={n}
-                          onRead={() => markOneRead(n.id)}
-                          onView={() => { markOneRead(n.id); setShowNotifDropdown(false); setView("notifications"); setNotifFilter(n.type); }}
-                        />
-                      ))}
-                    </div>
-                    <div className="notif-dd-footer">
-                      <button className="notif-view-all-btn" onClick={() => { setShowNotifDropdown(false); setView("notifications"); setNotifFilter("all"); }}>
-                        View all notifications →
-                      </button>
-                    </div>
-                  </div>
+                  </>
                 )}
               </div>
 
@@ -688,7 +698,7 @@ export default function Dashboard() {
                         </span>
                       </div>
                       <div className="amn-sub-line">
-                        <span>{req.userEmail}</span>
+                        <span className="amn-email">{req.userEmail}</span>
                         <span className="amn-dot">•</span>
                         <span className="amn-time">
                           {new Date(req.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}

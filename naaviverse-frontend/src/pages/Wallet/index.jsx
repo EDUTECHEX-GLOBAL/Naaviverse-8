@@ -191,13 +191,13 @@ const Wallet = () => {
       <div className="dashboard-main">
         <div className="dashboard-body">
 
-          <div onClick={() => setShowDrop(false)}>
+          <div onClick={() => setShowDrop(false)} style={{ display: "flex", height: "100%", flexShrink: 0 }}>
             <Dashsidebar />
           </div>
 
           <div className="dashboard-screens" onClick={() => setShowDrop(false)}>
             <UserTopHeader />
-            <div className="services-main" style={{ height: "calc(100% - 64px)", overflowY: "auto" }} onClick={() => setShowDrop(false)}>
+            <div className="services-main" style={{ height: "calc(100% - 76px)", overflowY: "auto" }} onClick={() => setShowDrop(false)}>
 
               {/* Page heading */}
               <div className="wallet-page-header">

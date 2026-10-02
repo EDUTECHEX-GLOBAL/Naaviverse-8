@@ -25,6 +25,7 @@ export default function AssistanceDetailsPage({
   const [inputMsg, setInputMsg] = useState("");
   const [sending, setSending] = useState(false);
   const [showRecModal, setShowRecModal] = useState(false);
+  const [activeMobileTab, setActiveMobileTab] = useState("details");
   const chatMessagesRef = useRef(null);
 
   const loadMessages = React.useCallback(async () => {
@@ -159,10 +160,46 @@ export default function AssistanceDetailsPage({
         </div>
       </div>
 
+      {/* Mobile Tab Switcher */}
+      <div className="adp-mobile-tab-nav">
+        <button
+          type="button"
+          className={`adp-mobile-tab-btn ${activeMobileTab === "details" ? "active" : ""}`}
+          onClick={() => setActiveMobileTab("details")}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+          </svg>
+          <span>Ticket Details</span>
+        </button>
+        <button
+          type="button"
+          className={`adp-mobile-tab-btn ${activeMobileTab === "chat" ? "active" : ""}`}
+          onClick={() => setActiveMobileTab("chat")}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          <span>Live Chat {messages.length > 0 ? `(${messages.length})` : ""}</span>
+        </button>
+        <button
+          type="button"
+          className={`adp-mobile-tab-btn ${activeMobileTab === "all" ? "active" : ""}`}
+          onClick={() => setActiveMobileTab("all")}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+          </svg>
+          <span>All</span>
+        </button>
+      </div>
+
       {/* Main 2-Column Content Grid */}
       <div className="adp-content-grid">
         {/* Left Column: Comprehensive Context */}
-        <div className="adp-left-col">
+        <div className={`adp-left-col ${activeMobileTab === "chat" ? "mobile-hidden" : ""}`}>
           {/* Student Profile Card */}
           <div className="adp-card">
             <div className="adp-card-header">
@@ -184,7 +221,7 @@ export default function AssistanceDetailsPage({
               </div>
               <div className="adp-meta-cell">
                 <span className="lbl">Email</span>
-                <span className="val" title={request.userEmail}>{request.userEmail}</span>
+                <span className="val" style={{ wordBreak: "break-all", whiteSpace: "normal" }} title={request.userEmail}>{request.userEmail}</span>
               </div>
               <div className="adp-meta-cell">
                 <span className="lbl">Submitted</span>
@@ -302,7 +339,7 @@ export default function AssistanceDetailsPage({
         </div>
 
         {/* Right Column: Live Chat & Admin Support Messenger */}
-        <div className="adp-right-col">
+        <div className={`adp-right-col ${activeMobileTab === "details" ? "mobile-hidden" : ""}`}>
           <div className="adp-chat-card">
             <div className="adp-chat-header">
               <div className="chat-header-info">
@@ -311,7 +348,7 @@ export default function AssistanceDetailsPage({
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                   </svg>
                 </div>
-                <div>
+                <div className="chat-header-text">
                   <h3 className="chat-title">Live 2-Way Chat with {request.userName || "Student"}</h3>
                   <span className="chat-sub">Direct support thread & recommendation channel</span>
                 </div>
@@ -387,8 +424,13 @@ export default function AssistanceDetailsPage({
                 type="submit"
                 className="chat-send-btn"
                 disabled={sending || !inputMsg.trim()}
+                title="Send Message"
               >
-                {sending ? "Sending..." : "Send Message →"}
+                <span className="send-btn-label">{sending ? "Sending..." : "Send"}</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
               </button>
             </form>
           </div>

@@ -7,28 +7,28 @@ const ProcessContent = [
     num: 1,
     className: 'numb tran3s',
     heading: 'Create Naavi Profile',
-    desc: 'Customized details, skills, interests',
+    desc: 'Customized details, skills, and interests',
     dataDelay: ''
   },
   {
     num: 2,
     className: 'numb tran3s',
     heading: 'Enter the Coordinates',
-    desc: 'Current and Future Academic Destinations',
+    desc: 'Current and future academic destinations',
     dataDelay: '50'
   },
   {
     num: 3,
     className: 'numb tran3s',
     heading: 'Explore Paths and Steps',
-    desc: 'Curated pathway with precise navigation',
+    desc: 'Curated pathways with precise navigation',
     dataDelay: '100'
   },
   {
     num: 4,
     className: 'numb tran3s',
     heading: 'Marketplace of Mentors & Institutions',
-    desc: 'Will help you navigate the journey',
+    desc: 'Expert mentors and institutions to guide your journey',
     dataDelay: '150'
   }
 ];
@@ -45,7 +45,7 @@ const FancyFeatureNineteen = () => {
               <div className="title-style-three pb-15">
                 <div className="sc-title">PERSONALIZED PATHWAYS</div>
                 <h2 className="main-title" style={{ color: '#010d4c', opacity: 1, display: 'block', visibility: 'visible' }}>
-                  How Naavi <span style={{ color: '#198754' }}>process</span> works
+                  How the Naavi <span style={{ color: '#198754' }}>process</span> works
                 </h2>
               </div>
 

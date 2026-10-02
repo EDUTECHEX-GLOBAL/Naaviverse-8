@@ -5,6 +5,7 @@ import axios from "axios";
 // Source: src/logos/naavi_final_logo2.png
 import naaviLogo from "../../logos/naavi_final_logo2.png";
 import "./NaaviExclusivePage.scss";
+import { validatePersonName } from "../../utils/emailValidator";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -131,7 +132,8 @@ const DetailsStep = ({ form, onChange, onNext }) => {
 
   const validate = () => {
     const e = {};
-    if (!form.fullName.trim()) e.fullName = "Full name is required.";
+    const nameVal = validatePersonName(form.fullName, "Full name");
+    if (!nameVal.isValid) e.fullName = nameVal.message;
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       e.email = "Enter a valid email.";
     if (!form.phone.trim() || !/^\d{10}$/.test(form.phone.replace(/\s/g, "")))
@@ -164,7 +166,16 @@ const DetailsStep = ({ form, onChange, onNext }) => {
         <div className="ne-field">
           <label htmlFor="ne-fullname">Full name *</label>
           <input id="ne-fullname" name="fullName" placeholder="John Doe"
-            value={form.fullName} onChange={onChange}
+            value={form.fullName}
+            onChange={(e) => {
+              onChange(e);
+              const res = validatePersonName(e.target.value, "Full name");
+              setErrors((prev) => ({ ...prev, fullName: res.isValid ? "" : res.message }));
+            }}
+            onBlur={() => {
+              const res = validatePersonName(form.fullName, "Full name");
+              setErrors((prev) => ({ ...prev, fullName: res.isValid ? "" : res.message }));
+            }}
             className={errors.fullName ? "error" : ""} />
           {errors.fullName && <span className="ne-err">{errors.fullName}</span>}
         </div>
@@ -373,6 +384,30 @@ const PaymentStep = ({ item, studentForm, onBack, onSuccess }) => {
       };
 
       const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", async function (failureResponse) {
+        try {
+          const err = failureResponse?.error || {};
+          await axios.post(`${BASE_URL}/api/payment/failure`, {
+            razorpay_order_id: err.metadata?.order_id || order.id,
+            razorpay_payment_id: err.metadata?.payment_id || failureResponse?.razorpay_payment_id,
+            userEmail: studentForm.email,
+            amount: (order.amount || 0) / 100,
+            productId: item?._id || "naavi-exclusive",
+            productName: item?.name || "Naavi Exclusive Service",
+            billingMethod: "one-time",
+            failureReason: err.description || err.reason || "Payment Failed",
+            errorCode: err.code || "PAYMENT_FAILED",
+            errorDescription: err.description || "",
+            errorSource: err.source || "razorpay_checkout",
+            errorStep: err.step || "payment_authentication"
+          });
+          window.dispatchEvent(new CustomEvent("naavi:payment-updated"));
+        } catch (e) {
+          console.error("Failed to report payment failure", e);
+        }
+        setProcessing(false);
+        setErrorMsg(failureResponse?.error?.description || "Payment failed. Please try again.");
+      });
       rzp.open();
 
     } catch (err) {

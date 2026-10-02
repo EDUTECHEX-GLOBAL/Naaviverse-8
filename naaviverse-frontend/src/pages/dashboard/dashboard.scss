@@ -15,8 +15,10 @@
   width: auto !important;
   height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
   min-width: 0; /* prevents flex blowout */
   position: relative;
+  background: #f6f5ff;
 
   .row-1 {
     display: flex;
@@ -181,9 +183,12 @@
   width: 100%;
   height: auto;              /* ← KEY CHANGE: let content define height */
   min-height: 100%;          /* ← fills viewport when content is short */
-   background-color: transparent;
+  background-color: transparent;
   overflow-y: visible;       /* ← let dashboard-screens handle scroll */
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 
   .accsideNav-CREATE_PATH {
   .services-main {
@@ -598,7 +603,7 @@
     /* Full viewport width — sidebar is fixed overlay, not in flow */
     width: 100vw !important;
     height: 100vh;
-    padding-top: 64px; /* clear the hamburger button */
+    padding-top: 0 !important; /* UserTopHeader is the sticky top header */
     overflow-y: auto;
     position: relative;
     z-index: 1;
@@ -607,7 +612,8 @@
   .services-main {
     width: 100% !important;
     padding-top: 0;
-    height: calc(100vh - 64px);
+    height: auto !important;
+    min-height: calc(100% - 76px);
   }
 
   .service-main {

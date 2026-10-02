@@ -10,6 +10,7 @@ import {
   IconTarget,
   IconUser,
 } from "./Icons";
+import { cleanLocationText } from "../utils/textUtils";
 
 function readProfile() {
   try {
@@ -48,10 +49,10 @@ export default function ProfileSummary({ profile }) {
   const pg = data?.personalityGeography || {};
   const ac = data?.academics || {};
 
-  const studentName = pg.name || data?.name || "Not available";
-  const country = pg.country || data?.country || "Not available";
-  const state = pg.state || data?.state || "Not available";
-  const city = pg.city || data?.city || "Not available";
+  const studentName = cleanLocationText(pg.name || data?.name || "Not available");
+  const country = cleanLocationText(pg.country || data?.country || "Not available");
+  const state = cleanLocationText(pg.state || data?.state || "Not available");
+  const city = cleanLocationText(pg.city || data?.city || "Not available");
   const financialSituation = pg.financialSituation || data?.financialSituation || "Not available";
   const personalitySignal = pg.personalitySignal || data?.personality || "Not available";
 

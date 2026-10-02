@@ -1,10 +1,49 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import MenuNav from '../../../components/MenuNav';
 import '../../../pages/VaultTransactions/transactionpage.scss';
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
+const isSubscriptionPlan = (t) => {
+  if (!t) return false;
+  const prodId = (t.productId || "").toLowerCase();
+  const prodName = (t.productName || "").trim();
+  const nameLower = prodName.toLowerCase();
+
+  // If it explicitly belongs to marketplace, it is not a subscription plan
+  if (
+    prodId === "naavi-marketplace" ||
+    prodId.startsWith("macro-") ||
+    prodId.startsWith("micro-") ||
+    prodId.startsWith("nano-") ||
+    nameLower.startsWith("marketplace") ||
+    t.partnerId ||
+    t.partnerEmail
+  ) {
+    return false;
+  }
+
+  // If it's naavi-platform or has planTier, it's a subscription plan
+  if (prodId === "naavi-platform" || t.planTier) {
+    return true;
+  }
+
+  if (
+    nameLower.includes("nano plan") ||
+    nameLower.includes("micro plan") ||
+    nameLower.includes("plus plan") ||
+    nameLower.includes("pro plan") ||
+    nameLower.includes("naavi pro") ||
+    nameLower.includes("standard plan") ||
+    nameLower.includes("platform subscription")
+  ) {
+    return true;
+  }
+
+  return false;
+};
 
 const TransactionPage = ({
   showDrop,
@@ -29,25 +68,42 @@ const TransactionPage = ({
     return { datePart, timePart };
   };
 
-  useEffect(() => {
+  const fetchTransactions = useCallback(() => {
     setIsTxnLoading(true);
-    const userDetails = JSON.parse(localStorage.getItem("user"));
+    const userDetails = JSON.parse(localStorage.getItem("user") || "{}");
     const email = userDetails?.user?.email || userDetails?.email;
+
+    if (!email) {
+      setIsTxnLoading(false);
+      return;
+    }
 
     axios.get(`${BASE_URL}/api/payment/transactions`, { params: { email } })
       .then(({ data }) => {
-        if (data?.success) {
-          // Filter: only Naavi Platform Subscriptions (productId = "naavi-platform") and EXCLUDE pending payments
-          const subs = data.data.filter(t => 
-            t.productId === "naavi-platform" &&
-            t.status?.toLowerCase() !== "pending"
+        if (data?.success && Array.isArray(data.data)) {
+          // Exclude unfinalized pending records, include ONLY subscription plans
+          const subscriptionTxns = data.data.filter(t => 
+            t.status?.toLowerCase() !== "pending" && isSubscriptionPlan(t)
           );
-          setTxnData(subs);
+          setTxnData(subscriptionTxns);
         }
       })
       .catch(err => console.error("❌ Transaction fetch error:", err))
       .finally(() => setIsTxnLoading(false));
   }, []);
+
+  useEffect(() => {
+    fetchTransactions();
+
+    const handleUpdate = () => fetchTransactions();
+    window.addEventListener("naavi:payment-updated", handleUpdate);
+    window.addEventListener("focus", handleUpdate);
+
+    return () => {
+      window.removeEventListener("naavi:payment-updated", handleUpdate);
+      window.removeEventListener("focus", handleUpdate);
+    };
+  }, [fetchTransactions]);
 
   // ── Download invoice PDF ──────────────────────────────────────
   const handleDownloadInvoice = async (razorpayPaymentId) => {
@@ -84,8 +140,9 @@ const TransactionPage = ({
     .filter(t => t.status?.toLowerCase() === 'paid')
     .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
-  const activePlans  = txnData.filter(t => t.status?.toLowerCase() === 'paid').length;
-  const lastPayment  = txnData.length > 0 ? dateFormat(txnData[0].createdAt).datePart : '—';
+  const activePlans = txnData.filter(t => t.status?.toLowerCase() === 'paid').length;
+  const paidTxns    = txnData.filter(t => t.status?.toLowerCase() === 'paid');
+  const lastPayment = paidTxns.length > 0 ? dateFormat(paidTxns[0].createdAt).datePart : '—';
 
   const getStatusClass = (status) => {
     switch (status?.toLowerCase()) {
@@ -150,115 +207,126 @@ const TransactionPage = ({
 
         {/* ── TABLE ───────────────────────────────────────────── */}
         <div className="txn-table-wrap">
+          <div className="txn-scroll">
 
-          {/* Header — 7 columns now (added Invoice) */}
-          <div className="txn-header-row">
-            <span>Date</span>
-            <span>Partner</span>
-            <span>Service</span>
-            <span>Amount</span>
-            <span>Billing</span>
-            <span>Status</span>
-            <span>Invoice</span>
-          </div>
+            {/* Header — 7 columns */}
+            <div className="txn-header-row">
+              <span>Date</span>
+              <span>Partner</span>
+              <span>Service</span>
+              <span>Amount</span>
+              <span>Billing</span>
+              <span>Status</span>
+              <span>Invoice</span>
+            </div>
 
-          <div className="txn-body">
-            {isTxnLoading ? (
-              [1, 2, 3, 4, 5].map((_, i) => (
-                <div className="txn-skeleton-row" key={i}>
-                  {[...Array(7)].map((__, j) => (
-                    <Skeleton key={j} height={20} borderRadius={8} />
-                  ))}
-                </div>
-              ))
-            ) : filteredData.length > 0 ? (
-              filteredData.map((each, i) => {
-                const { datePart, timePart } = dateFormat(each.createdAt);
-                const isPaid       = each.status?.toLowerCase() === 'paid';
-                const isDownloading = downloadingId === each.razorpayPaymentId;
-
-                return (
-                  <div className="txn-row" key={i}>
-
-                    <div className="date-cell">
-                      <div className="date-main">{datePart}</div>
-                      <div className="date-time">{timePart}</div>
-                    </div>
-
-                    <div>
-                      <div className="partner-badge">
-                        <div className="partner-dot" />
-                        <span>Naavi</span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="service-name">{each.productName}</div>
-                      <div className="service-sub">Subscription</div>
-                    </div>
-
-                    <div className="amount-cell">
-                      ₹{Number(each.amount).toLocaleString('en-IN')}
-                    </div>
-
-                    <div>
-                      <span className={getBillingClass(each.billingMethod)}>
-                        {each.billingMethod}
-                      </span>
-                    </div>
-
-                    <div>
-                      <span className={getStatusClass(each.status)}>
-                        {each.status}
-                      </span>
-                    </div>
-
-                    {/* ── Download button ── */}
-                    <div>
-                      {isPaid ? (
-                        <button
-                          className={`invoice-btn ${isDownloading ? 'invoice-btn--loading' : ''}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDownloadInvoice(each.razorpayPaymentId);
-                          }}
-                          disabled={isDownloading}
-                          title="Download PDF invoice"
-                        >
-                          {isDownloading ? (
-                            <span className="invoice-btn__spinner" />
-                          ) : (
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                              stroke="currentColor" strokeWidth="2.2"
-                              strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                              <polyline points="7 10 12 15 17 10"/>
-                              <line x1="12" y1="15" x2="12" y2="3"/>
-                            </svg>
-                          )}
-                          <span>{isDownloading ? 'Preparing…' : 'PDF'}</span>
-                        </button>
-                      ) : (
-                        <span className="invoice-na">—</span>
-                      )}
-                    </div>
-
+            <div className="txn-body">
+              {isTxnLoading ? (
+                [1, 2, 3, 4, 5].map((_, i) => (
+                  <div className="txn-skeleton-row" key={i}>
+                    {[...Array(7)].map((__, j) => (
+                      <Skeleton key={j} height={20} borderRadius={8} />
+                    ))}
                   </div>
-                );
-              })
-            ) : (
-              <div className="txn-empty">
-               <div className="empty-icon">
-  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4 2v20l3-2 2 2 2-2 2 2 2-2 3 2V2l-3 2-2-2-2 2-2-2-2 2-3-2z"/>
-    <line x1="8" y1="10" x2="16" y2="10"/>
-    <line x1="8" y1="14" x2="14" y2="14"/>
-  </svg>
-</div>
-                <div className="empty-title">No transactions found</div>
-                <div className="empty-sub">Your payment history will appear here</div>
-              </div>
-            )}
+                ))
+              ) : filteredData.length > 0 ? (
+                filteredData.map((each, i) => {
+                  const { datePart, timePart } = dateFormat(each.createdAt);
+                  const isPaid       = each.status?.toLowerCase() === 'paid';
+                  const isDownloading = downloadingId === each.razorpayPaymentId;
+
+                  return (
+                    <div className="txn-row" key={i}>
+
+                      <div className="date-cell">
+                        <div className="date-main">{datePart}</div>
+                        <div className="date-time">{timePart}</div>
+                      </div>
+
+                      <div className="partner-cell">
+                        <div className="partner-badge">
+                          <div className="partner-dot" />
+                          <span>Naavi</span>
+                        </div>
+                      </div>
+
+                      <div className="service-cell">
+                        <div className="service-name" title={each.productName || "Naavi Platform"}>
+                          {each.productName || "Naavi Platform"}
+                        </div>
+                        <div
+                          className="service-sub"
+                          title={each.status?.toLowerCase() === "failed" ? (each.failureReason || "Payment Failed") : ""}
+                        >
+                          {each.status?.toLowerCase() === "failed"
+                            ? (each.failureReason || "Payment Failed")
+                            : (each.tier === "nano" ? "Nano View" : each.tier === "micro" ? "Micro View" : "Subscription")}
+                        </div>
+                      </div>
+
+                      <div className="amount-cell">
+                        ₹{Number(each.amount || 0).toLocaleString('en-IN')}
+                      </div>
+
+                      <div className="billing-cell">
+                        <span className={getBillingClass(each.billingMethod)}>
+                          {each.billingMethod || "Monthly"}
+                        </span>
+                      </div>
+
+                      <div className="status-cell">
+                        <span className={getStatusClass(each.status)}>
+                          {each.status?.toLowerCase() === "failed" ? "Failed" : each.status?.toLowerCase() === "paid" ? "Paid" : each.status}
+                        </span>
+                      </div>
+
+                      {/* ── Download button ── */}
+                      <div className="invoice-cell">
+                        {isPaid ? (
+                          <button
+                            className={`invoice-btn ${isDownloading ? 'invoice-btn--loading' : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownloadInvoice(each.razorpayPaymentId);
+                            }}
+                            disabled={isDownloading}
+                            title="Download PDF invoice"
+                          >
+                            {isDownloading ? (
+                              <span className="invoice-btn__spinner" />
+                            ) : (
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" strokeWidth="2.2"
+                                strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                              </svg>
+                            )}
+                            <span>{isDownloading ? 'Preparing…' : 'PDF'}</span>
+                          </button>
+                        ) : (
+                          <span className="invoice-na">—</span>
+                        )}
+                      </div>
+
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="txn-empty">
+                 <div className="empty-icon">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 2v20l3-2 2 2 2-2 2 2 2-2 3 2V2l-3 2-2-2-2 2-2-2-2 2-3-2z"/>
+      <line x1="8" y1="10" x2="16" y2="10"/>
+      <line x1="8" y1="14" x2="14" y2="14"/>
+    </svg>
+  </div>
+                  <div className="empty-title">No transactions found</div>
+                  <div className="empty-sub">Your payment history will appear here</div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

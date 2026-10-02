@@ -33,6 +33,7 @@ const STEP_COLORS = [
 import SegmentSelector from "../components/SegmentSelector";
 import CategoryMismatchWarning from "../components/CategoryMismatchWarning";
 import { analyzeCategoryConsistency } from "../utils/categoryConsistencyValidator";
+import { cleanLocationText } from "../utils/textUtils";
 import {
   SEGMENTS,
   SEGMENT_CONFIGS,
@@ -54,7 +55,8 @@ function getSegmentPositionAndGoal(profile, segmentKey) {
   const jc = profile.jobsCareers || {};
   const nac = profile.nonAcademicCounselling || {};
 
-  const locationStr = [geo.city, geo.state, geo.country].filter(Boolean).join(", ") || profile.city || profile.country || "";
+  const rawLocation = [geo.city, geo.state, geo.country].filter(Boolean).join(", ") || profile.city || profile.country || "";
+  const locationStr = cleanLocationText(rawLocation);
 
   if (segmentKey === SEGMENTS.ACADEMICS) {
     const parts = [];
@@ -71,7 +73,7 @@ function getSegmentPositionAndGoal(profile, segmentKey) {
     if (aca.schoolName || aca.schoolOrCollege || profile.school) parts.push(aca.schoolName || aca.schoolOrCollege || profile.school);
     if (locationStr) parts.push(locationStr);
 
-    const current = parts.filter(Boolean).join(" • ");
+    const current = cleanLocationText(parts.filter(Boolean).join(" • "));
     return { current, goal: "" };
   }
 
@@ -82,7 +84,7 @@ function getSegmentPositionAndGoal(profile, segmentKey) {
     if (ps.learningMode) parts.push(ps.learningMode);
     if (locationStr) parts.push(locationStr);
 
-    const current = parts.filter(Boolean).join(" • ");
+    const current = cleanLocationText(parts.filter(Boolean).join(" • "));
     return { current, goal: "" };
   }
 
@@ -93,7 +95,7 @@ function getSegmentPositionAndGoal(profile, segmentKey) {
     if (jc.industry) parts.push(jc.industry);
     if (locationStr) parts.push(locationStr);
 
-    const current = parts.filter(Boolean).join(" • ");
+    const current = cleanLocationText(parts.filter(Boolean).join(" • "));
     return { current, goal: "" };
   }
 
@@ -103,7 +105,7 @@ function getSegmentPositionAndGoal(profile, segmentKey) {
     if (nac.currentChallenge) parts.push(nac.currentChallenge);
     if (locationStr) parts.push(locationStr);
 
-    const current = parts.filter(Boolean).join(" • ");
+    const current = cleanLocationText(parts.filter(Boolean).join(" • "));
     return { current, goal: "" };
   }
 
@@ -382,8 +384,8 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
   const [activeSubSegment, setActiveSubSegmentLocal] = useState(profile?.subSegment || "");
 
   // PART 4 & 5: Start empty, or populate from userInput if an existing roadmap is already active
-  const [current, setCurrent] = useState(() => (pathData && userInput?.current ? userInput.current : ""));
-  const [goal, setGoal] = useState(() => (pathData && userInput?.goal ? userInput.goal : ""));
+  const [current, setCurrent] = useState(() => (pathData && userInput?.current ? cleanLocationText(userInput.current) : ""));
+  const [goal, setGoal] = useState(() => (pathData && userInput?.goal ? cleanLocationText(userInput.goal) : ""));
 
   const [loading, setLoading] = useState(false);
   const [loadMsg, setLoadMsg] = useState("");
@@ -405,13 +407,13 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
       setActiveSubSegmentLocal(profile.subSegment);
     }
     if (pathData && userInput) {
-      if (userInput.current && !current) setCurrent(userInput.current);
-      if (userInput.goal && !goal) setGoal(userInput.goal);
+      if (userInput.current && !current) setCurrent(cleanLocationText(userInput.current));
+      if (userInput.goal && !goal) setGoal(cleanLocationText(userInput.goal));
     } else if (profile && !current) {
       const targetSeg = activeSegment || profile.activeSegment || SEGMENTS.ACADEMICS;
       const autofill = getSegmentPositionAndGoal(profile, targetSeg);
-      if (autofill.current) setCurrent(autofill.current);
-      if (autofill.goal) setGoal(autofill.goal);
+      if (autofill.current) setCurrent(cleanLocationText(autofill.current));
+      if (autofill.goal) setGoal(cleanLocationText(autofill.goal));
     }
   }, [profile, pathData, userInput]);
 
@@ -422,12 +424,12 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
 
     // Autofill Current Position and Goal from Student Signals for this category
     const autofill = getSegmentPositionAndGoal(profile, newSegment);
-    if (autofill.current) setCurrent(autofill.current);
-    if (autofill.goal) setGoal(autofill.goal);
+    if (autofill.current) setCurrent(cleanLocationText(autofill.current));
+    if (autofill.goal) setGoal(cleanLocationText(autofill.goal));
 
     // Clear existing path when category changes
     if (onPathGenerated) {
-      onPathGenerated(null, { current: autofill.current || current, goal: autofill.goal || goal, content_category: newSegment, sub_segment: sub });
+      onPathGenerated(null, { current: cleanLocationText(autofill.current || current), goal: cleanLocationText(autofill.goal || goal), content_category: newSegment, sub_segment: sub });
     }
 
     if (profile && onProfileUpdated) {

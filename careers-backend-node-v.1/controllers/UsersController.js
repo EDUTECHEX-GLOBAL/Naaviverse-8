@@ -1,10 +1,19 @@
 const { findOneAndUpdate } = require('../models/PathModel');
 const userModel = require('../models/UsersModel');
 const axios = require('axios');
-const userPersonalityModel = require('../models/UserPersonalityAnsModel')
+const userPersonalityModel = require('../models/UserPersonalityAnsModel');
+const { validatePersonName } = require('../utils/emailValidator');
 
 const addUser = async (req, res) => {
     try {
+        if (req.body.name !== undefined) {
+            const nameVal = validatePersonName(req.body.name, "Name");
+            if (!nameVal.isValid) {
+                return res.status(400).json({ status: false, message: nameVal.message });
+            }
+            req.body.name = nameVal.cleanName;
+        }
+
         // Find the user by email
         let user = await userModel.findOne({ email: req.body.email });
 

@@ -272,7 +272,7 @@ function generateInvoicePDF(payment) {
     const btnX = M + (CW - btnW) / 2;
     doc.roundedRect(btnX, y, btnW, btnH, 8).fill(C.dark);
     doc.fillColor(C.white).font("Helvetica-Bold").fontSize(11)
-      .text("Start Learning  \u2192", btnX, y + 10, { width: btnW, align: "center" });
+      .text("Start Learning", btnX, y + 10, { width: btnW, align: "center" });
 
     // ════════════════════════════════════════════════════
     //  8. FOOTER

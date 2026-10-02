@@ -158,8 +158,8 @@ $pink-soft: rgba(99, 102, 241, 0.05);
 .steps-back-banner {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-wrap: nowrap;
+  gap: 16px;
   background: #e6f3f4;
   border: 1px solid rgba(13, 107, 110, 0.2);
   border-radius: 12px;
@@ -168,12 +168,28 @@ $pink-soft: rgba(99, 102, 241, 0.05);
   font-size: 0.85rem;
   box-sizing: border-box;
 
+  .steps-banner-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
+    line-height: 1.4;
+  }
+
   .back-link {
     cursor: pointer;
     color: #0d6b6e;
     font-weight: 600;
     white-space: nowrap;
     flex-shrink: 0;
+    margin: 0 !important;
+    padding: 0;
+    line-height: 1.4;
+    display: inline-flex;
+    align-items: center;
     transition: opacity 0.15s ease;
 
     &:hover {
@@ -183,24 +199,61 @@ $pink-soft: rgba(99, 102, 241, 0.05);
   }
 
   .back-separator {
-    color: #94a3b8;
-    font-size: 0.8rem;
+    display: none;
   }
 
   .clear-filter-link {
-    color: #6366f1;
+    color: #0d6b6e;
     font-weight: 600;
+    margin: 0 !important;
   }
 
   .back-label {
     color: #334155;
-    flex: 1;
+    flex: 1 1 auto;
     min-width: 0;
-    word-break: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    margin: 0;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
 
     strong {
       color: #0f172a;
       font-weight: 700;
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 14px;
+    margin: 8px 10px 0;
+
+    .steps-banner-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      white-space: nowrap;
+      margin: 0;
+    }
+
+    .back-link {
+      margin: 0 !important;
+    }
+
+    .back-label {
+      width: 100%;
+      font-size: 0.82rem;
+      white-space: normal;
+      word-break: break-word;
+      line-height: 1.4;
+      display: block;
     }
   }
 }

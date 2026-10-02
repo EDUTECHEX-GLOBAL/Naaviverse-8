@@ -287,6 +287,41 @@ const verifyOTP = async (req, res) => {
   }
 };
 
+// =========================================
+// PENDING REGISTRATIONS (IN-MEMORY STATE)
+// Never store unverified accounts in MongoDB!
+// =========================================
+const pendingRegistrations = new Map();
+
+const setPendingRegistration = (email, data) => {
+  if (!email) return;
+  const cleanEmail = email.trim().toLowerCase();
+  pendingRegistrations.set(cleanEmail, {
+    ...data,
+    email: cleanEmail,
+    createdAt: Date.now(),
+    attempts: 0,
+  });
+};
+
+const getPendingRegistration = (email) => {
+  if (!email) return null;
+  const cleanEmail = email.trim().toLowerCase();
+  const item = pendingRegistrations.get(cleanEmail);
+  if (!item) return null;
+
+  // 10-minute expiry
+  if (Date.now() - item.createdAt > 10 * 60 * 1000) {
+    pendingRegistrations.delete(cleanEmail);
+    return null;
+  }
+  return item;
+};
+
+const deletePendingRegistration = (email) => {
+  if (!email) return;
+  pendingRegistrations.delete(email.trim().toLowerCase());
+};
 
 // =========================================
 module.exports = {
@@ -294,4 +329,7 @@ module.exports = {
   verifyOTP,
   generateOTP,
   sendNotificationMail,
+  setPendingRegistration,
+  getPendingRegistration,
+  deletePendingRegistration,
 };

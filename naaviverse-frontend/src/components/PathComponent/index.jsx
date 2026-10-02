@@ -198,6 +198,11 @@ const PathComponent = () => {
       localStorage.setItem("selectedPathId", pathId);
       localStorage.setItem("selectedPathOwner", email); // 👈 store owner
       localStorage.setItem("selectedPathName", modalPath?.nameOfPath || modalPath?.name || "");
+      localStorage.removeItem("selectedPathCountry");
+      localStorage.removeItem("selectedPathUniversity");
+      localStorage.removeItem("selectedPathPathway");
+      localStorage.removeItem("selectedPathCourse");
+      localStorage.removeItem("selectedPathCountryForId");
       if (pathSteps?.length) {
         localStorage.setItem("selectedPathSteps", `${pathSteps.length} steps`);
       }
@@ -291,7 +296,7 @@ const PathComponent = () => {
           )}
 
           {modalPath.description && modalPath.description !== "-" && (
-            <p className="pfm-desc">{modalPath.description}</p>
+            <p className="pfm-desc" style={{ marginTop: 0 }}>{modalPath.description}</p>
           )}
 
           <div className="pfm-btns">

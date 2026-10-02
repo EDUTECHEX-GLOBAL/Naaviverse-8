@@ -2,12 +2,13 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Country, State, City } from "country-state-city";
+import { validatePersonName } from "../../utils/emailValidator";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 // ── Country-specific mobile phone number digit rules ──────────────────────────
 // Supports exact length (e.g. India: 10, Australia: 9) and variable lengths (e.g. Germany: 10-11, Brazil: 10-11, Indonesia: 9-12)
-const COUNTRY_MOBILE_RULES = {
+export const COUNTRY_MOBILE_RULES = {
   // North America & Caribbean (NANP + others)
   US: [10], CA: [10], MX: [10], AG: [10], AI: [10], AS: [10], BB: [10], BM: [10],
   BS: [10], DM: [10], DO: [10], GD: [10], GU: [10], JM: [10], KN: [10], KY: [10],
@@ -47,7 +48,7 @@ const COUNTRY_MOBILE_RULES = {
   SZ: [8], TG: [8]
 };
 
-const getCountryPhoneRules = (isoCode) => {
+export const getCountryPhoneRules = (isoCode) => {
   const custom = COUNTRY_MOBILE_RULES[isoCode];
   const lengths = custom || [7, 8, 9, 10, 11, 12, 13, 14, 15];
   const minLength = Math.min(...lengths);
@@ -297,10 +298,15 @@ const LevelOneModal = ({
     setUserNameAvailable(null);
   }, [existingData]);
 
+  const [nameTouched, setNameTouched] = useState(false);
+  const nameValidation = validatePersonName(formData.name, "Full Name");
+  const nameError = !nameValidation.isValid ? nameValidation.message : "";
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((p) => ({ ...p, [name]: value }));
     if (name === "username") setUserNameAvailable(null);
+    if (name === "name") setNameTouched(true);
   };
 
   // ── Country selection handler ─────────────────────────────────────────────
@@ -345,6 +351,10 @@ const LevelOneModal = ({
   const cleanPostalPlaceName = (raw) => {
     if (!raw) return "";
     return raw
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/ā/g, "a")
+      .replace(/Ā/g, "A")
       .replace(/\s+[HSB]\s*\.?O\.?$/i, "")
       .replace(/\s*\([^)]*\)/g, "")
       .replace(/\s*(City|GPO|North|South|East|West|Central)$/gi, "")
@@ -526,7 +536,7 @@ const LevelOneModal = ({
 
   // ── Form validation — unchanged username is implicitly valid ──────────────
   const isFormValid = () =>
-    formData.name &&
+    nameValidation.isValid &&
     formData.username &&
     phoneDigits &&
     (currentPhoneCountry.lengths ? currentPhoneCountry.lengths.includes(phoneDigits.length) : true) &&
@@ -586,6 +596,12 @@ const LevelOneModal = ({
   // ── Submit ─────────────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setNameTouched(true);
+    if (!nameValidation.isValid) {
+      toast.error(nameValidation.message);
+      return;
+    }
 
     const required = ["name", "username", "country", "state", "city", "postalCode"];
     for (const f of required) {
@@ -738,14 +754,19 @@ const LevelOneModal = ({
           <div className="up-form-group">
             <label className="up-form-label">Full Name *</label>
             <input
-              className="up-input"
+              className={`up-input ${nameError && (nameTouched || formData.name) ? "input-err" : ""}`}
+              style={nameError && (nameTouched || formData.name) ? { borderColor: "#ef4444" } : {}}
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
+              onBlur={() => setNameTouched(true)}
               placeholder="Enter full name"
               required
             />
+            {nameError && (nameTouched || formData.name) && (
+              <div className="up-username-err">{nameError}</div>
+            )}
           </div>
 
           <div className="up-form-group">
@@ -949,7 +970,7 @@ const LevelOneModal = ({
           <button
             type="submit"
             className="up-btn-primary"
-            disabled={loading || uploading}
+            disabled={loading || uploading || !isFormValid()}
           >
             {loading ? "Saving…" : creation ? "Continue →" : "Save Changes"}
           </button>

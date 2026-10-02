@@ -41,8 +41,13 @@ const userSchema = new mongoose.Schema({
 selectedPath: { type: mongoose.Schema.Types.ObjectId, ref: "paths", default: null },
 }, { timestamps: true });
 
-// Normalize username fields before save
+// Normalize email and username fields before save
 userSchema.pre("save", async function (next) {
+  // normalize email
+  if (this.email) {
+    this.email = this.email.trim().toLowerCase();
+  }
+
   // normalize username
   if (this.username) {
     this.username = this.username.trim();

@@ -1453,6 +1453,7 @@ body {
   /* Clamp to 4 lines — saves space, feels clean */
   display: -webkit-box;
   -webkit-line-clamp: 4;
+  line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1500,11 +1501,12 @@ body {
 .journey-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 0;
+  min-height: 100%;
+  height: auto;
+  flex: 1 0 auto;
   padding: 2.5rem 3rem;
   background: #f4f8fb;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .journey-header {
@@ -1614,6 +1616,7 @@ body {
   flex: 1;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

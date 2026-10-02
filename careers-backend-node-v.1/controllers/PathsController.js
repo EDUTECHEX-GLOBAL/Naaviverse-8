@@ -623,9 +623,15 @@ const getPath = async (req, res) => {
       {
         $lookup: {
           from: "naavi_partners",
-          localField: "email",
-          foreignField: "email",
+          let: { pathEmail: { $toLower: { $ifNull: ["$email", ""] } } },
           pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: [{ $toLower: { $ifNull: ["$email", ""] } }, "$$pathEmail"]
+                }
+              }
+            },
             {
               $project: {
                 password: 0,
@@ -639,8 +645,56 @@ const getPath = async (req, res) => {
         }
       },
       {
+        $lookup: {
+          from: "users",
+          let: { pathEmail: { $toLower: { $ifNull: ["$email", ""] } } },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: [{ $toLower: { $ifNull: ["$email", ""] } }, "$$pathEmail"]
+                }
+              }
+            },
+            {
+              $project: {
+                password: 0,
+                OTP: 0,
+                OTPCreatedTime: 0,
+              }
+            }
+          ],
+          as: "userDetails"
+        }
+      },
+      {
         $addFields: {
-          partnerDetails: { $arrayElemAt: ["$partnerDetails", 0] }
+          partnerDetails: {
+            $ifNull: [
+              { $arrayElemAt: ["$partnerDetails", 0] },
+              {
+                $let: {
+                  vars: { u: { $arrayElemAt: ["$userDetails", 0] } },
+                  in: {
+                    $cond: [
+                      { $ne: ["$$u", null] },
+                      {
+                        firstName: "$$u.name",
+                        lastName: "",
+                        username: "$$u.username",
+                        email: "$$u.email",
+                        phone: { $ifNull: ["$$u.phoneNumber", "$$u.phone"] },
+                        phoneNumber: { $ifNull: ["$$u.phoneNumber", "$$u.phone"] },
+                        partnerType: "Creator",
+                        yourPosition: "$$u.userType",
+                      },
+                      null
+                    ]
+                  }
+                }
+              }
+            ]
+          }
         }
       }
     ]);
@@ -780,9 +834,15 @@ const getPathById = async (req, res) => {
       {
         $lookup: {
           from: "naavi_partners",
-          localField: "email",
-          foreignField: "email",
+          let: { pathEmail: { $toLower: { $ifNull: ["$email", ""] } } },
           pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: [{ $toLower: { $ifNull: ["$email", ""] } }, "$$pathEmail"]
+                }
+              }
+            },
             {
               $project: {
                 password: 0,
@@ -796,8 +856,56 @@ const getPathById = async (req, res) => {
         }
       },
       {
+        $lookup: {
+          from: "users",
+          let: { pathEmail: { $toLower: { $ifNull: ["$email", ""] } } },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: [{ $toLower: { $ifNull: ["$email", ""] } }, "$$pathEmail"]
+                }
+              }
+            },
+            {
+              $project: {
+                password: 0,
+                OTP: 0,
+                OTPCreatedTime: 0,
+              }
+            }
+          ],
+          as: "userDetails"
+        }
+      },
+      {
         $addFields: {
-          partnerDetails: { $arrayElemAt: ["$partnerDetails", 0] }
+          partnerDetails: {
+            $ifNull: [
+              { $arrayElemAt: ["$partnerDetails", 0] },
+              {
+                $let: {
+                  vars: { u: { $arrayElemAt: ["$userDetails", 0] } },
+                  in: {
+                    $cond: [
+                      { $ne: ["$$u", null] },
+                      {
+                        firstName: "$$u.name",
+                        lastName: "",
+                        username: "$$u.username",
+                        email: "$$u.email",
+                        phone: { $ifNull: ["$$u.phoneNumber", "$$u.phone"] },
+                        phoneNumber: { $ifNull: ["$$u.phoneNumber", "$$u.phone"] },
+                        partnerType: "Creator",
+                        yourPosition: "$$u.userType",
+                      },
+                      null
+                    ]
+                  }
+                }
+              }
+            ]
+          }
         }
       }
     ]);

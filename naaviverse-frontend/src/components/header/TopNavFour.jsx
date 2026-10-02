@@ -83,7 +83,7 @@ const TopNavFour = () => {
       )}
 
       {/* TOGGLE BUTTON (DESKTOP + MOBILE) */}
-      <button className="menu-icon-btn" onClick={openSidebar}>
+      <button className="menu-icon-btn" onClick={openSidebar} aria-label="Open navigation menu" title="Open navigation menu">
         <span className="menu-icon-custom">
           <span className="bar" />
           <span className="bar" />

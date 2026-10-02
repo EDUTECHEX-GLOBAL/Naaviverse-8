@@ -747,6 +747,12 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                           setSelectedPath(e);
                           localStorage.setItem("selectedPathId", e?._id);
                           localStorage.setItem("selectedPathName", e?.nameOfPath || e?.name || "");
+                          localStorage.removeItem("selectedPathCountry");
+                          localStorage.removeItem("selectedPathUniversity");
+                          localStorage.removeItem("selectedPathPathway");
+                          localStorage.removeItem("selectedPathCourse");
+                          localStorage.removeItem("selectedPathCountryForId");
+                          window.dispatchEvent(new Event("naavi:path-selected"));
 
                           if (e?.status === "draft" || e?.status === "changesrequested") {
                             navigate(`/dashboard/accountants/path/${e._id}`);

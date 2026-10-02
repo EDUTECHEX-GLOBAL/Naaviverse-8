@@ -3,6 +3,7 @@ import "./accDashsidebar.scss";
 import { useStore } from "../store/store.ts";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../../assets/images/logo/naavi_final_logo2.png";
+import faviconLogo from "../../assets/images/logo/naavi_favicon.png";
 import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
 import stepIcon from '../../assets/images/assets/naavi-icon1.webp';
 const ROUTE_MAP = {
@@ -113,8 +114,13 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
   const navigate = useNavigate();
   const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
-  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('partnerSidebarCollapsed') === 'true');
+  const [collapsed, setCollapsed] = useState(false);
   const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    // Clear any stale collapsed flag so side section and three dots are visible by default
+    localStorage.removeItem('partnerSidebarCollapsed');
+  }, []);
 
   const toggleCollapsed = () => {
     setCollapsed((prev) => {
@@ -151,6 +157,8 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
   const handleLogout = () => {
     localStorage.removeItem("partner");
     localStorage.removeItem("loginEmail");
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userType");
     navigate("/login");
   };
 
@@ -166,30 +174,40 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
 
   return (
     <div className={`partner-dashboard-sidebar ${isOpen ? "open" : ""} ${collapsed ? "collapsed" : ""}`}>
+      {/* Floating edge toggle button on sidebar border */}
+      <button
+        className="sidebar-edge-toggle-btn"
+        onClick={(e) => { e.stopPropagation(); toggleCollapsed(); }}
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points={collapsed ? "9 18 15 12 9 6" : "15 18 9 12 15 6"} />
+        </svg>
+      </button>
+
       {/* Logo Section */}
       <div className="partner-dashboard-left">
         <div
           className="sidebar-logo-click"
           onClick={() => {
+            if (collapsed) {
+              toggleCollapsed();
+              return;
+            }
             if (!isLocked) {
               setaccsideNav("Home");
               navigate("/dashboard/accountants/home");
             }
           }}
+          title={collapsed ? "Expand sidebar" : "Naavi Home"}
         >
           <img
-            className="partner-dashboard-logo"
-            src={logo}
+            className={`partner-dashboard-logo ${collapsed ? "collapsed-logo" : ""}`}
+            src={collapsed ? faviconLogo : logo}
             alt="Naavi"
           />
         </div>
-        <button className="sidebar-toggle-btn" onClick={(e) => { e.stopPropagation(); toggleCollapsed(); }} aria-label="Toggle sidebar">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round">
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
-        </button>
       </div>
 
       {/* Navigation Items */}
@@ -205,7 +223,9 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
               title={collapsed ? each.display : (isLocked ? "Your account is pending admin approval" : "")}
               onClick={() => handleNavClick(each)}
             >
-              <NavIcon type={each.icon} isActive={active} />
+              <span className="partner-nav-icon-wrapper">
+                <NavIcon type={each.icon} isActive={active} />
+              </span>
               <span className="sidebar-label">{each.display}</span>
             </div>
           );
@@ -282,7 +302,6 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
           {/* Dropdown Menu */}
           {showDropdown && (
             <div className="partner-dropdown-menu">
-              <div className="partner-dropdown-divider" />
               <div
                 className="partner-logout-item"
                 onClick={() => {
@@ -290,7 +309,7 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
                   handleLogout();
                 }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                   <polyline points="16 17 21 12 16 7" />
                   <line x1="21" y1="12" x2="9" y2="12" />

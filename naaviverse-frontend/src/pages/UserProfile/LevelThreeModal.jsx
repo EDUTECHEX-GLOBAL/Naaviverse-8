@@ -141,6 +141,7 @@ const LevelThreeModal = ({
   const [questionsLoading, setQuestionsLoading] = useState(true);
   const [questions,        setQuestions]        = useState([]);
   const [answers,          setAnswers]          = useState({}); // { question_text: answer_text }
+  const [validationError,  setValidationError]  = useState("");
 
   // Derived — auto-computed from answers; never manually set by user
   const detectedPersonality = computePersonality(questions, answers);
@@ -176,31 +177,79 @@ const LevelThreeModal = ({
       (res.data || []).forEach((item) => {
         map[item.question] = item.answer;
       });
+      // Restore any in-progress draft from localStorage
+      try {
+        const cached = localStorage.getItem(`personality_draft_${profileDataId}`);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && typeof parsed === "object") {
+            Object.assign(map, parsed);
+          }
+        }
+      } catch {}
       setAnswers(map);
     } catch {
       // silently ignore — user just hasn't answered yet
     }
   };
 
-  const handleAnswer = (questionText, answerIndex) => {
-    setAnswers((prev) => ({ ...prev, [questionText]: ANSWER_OPTIONS[answerIndex] }));
-  };
-
-  const answeredCount = Object.keys(answers).length;
+  const unratedQuestions = questions.filter(
+    (q) => !answers[q.question] || !ANSWER_OPTIONS.includes(answers[q.question])
+  );
   const totalCount    = questions.length;
+  const answeredCount = totalCount - unratedQuestions.length;
   const progressPct   = totalCount > 0 ? Math.round((answeredCount / totalCount) * 100) : 0;
-  const allAnswered   = answeredCount >= totalCount && totalCount > 0;
+  const allAnswered   = totalCount > 0 && unratedQuestions.length === 0;
 
   const isFormValid = () => allAnswered && detectedPersonality !== "";
+
+  const handleAnswer = (questionText, answerIndex) => {
+    const selectedOpt = ANSWER_OPTIONS[answerIndex];
+    setAnswers((prev) => {
+      const next = { ...prev, [questionText]: selectedOpt };
+      if (profileDataId) {
+        try {
+          localStorage.setItem(`personality_draft_${profileDataId}`, JSON.stringify(next));
+        } catch {}
+      }
+      const stillUnrated = questions.filter(
+        (q) => !next[q.question] || !ANSWER_OPTIONS.includes(next[q.question])
+      ).length;
+      if (stillUnrated === 0) {
+        setValidationError("");
+      } else if (validationError) {
+        setValidationError(
+          `Please rate every activity before proceeding. (${stillUnrated} unrated ${stillUnrated === 1 ? "activity" : "activities"} remaining)`
+        );
+      }
+      return next;
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isFormValid()) {
-      toast.error("Please answer all questions");
+      const remaining = unratedQuestions.length;
+      const msg =
+        remaining > 0
+          ? `Please rate every activity before proceeding. You have ${remaining} unrated ${remaining === 1 ? "activity" : "activities"} remaining.`
+          : "Please rate every activity before proceeding.";
+      setValidationError(msg);
+      toast.error(msg);
+
+      // Scroll to the first unrated question to help user locate it
+      if (unratedQuestions.length > 0) {
+        const firstUnrated = unratedQuestions[0];
+        const el = document.getElementById(`question-row-${firstUnrated._id || firstUnrated.question}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
       return;
     }
 
     setLoading(true);
+    setValidationError("");
     try {
       // Save all answers
       for (const q of questions) {
@@ -221,6 +270,9 @@ const LevelThreeModal = ({
       });
 
       if (res.data?.status) {
+        try {
+          localStorage.removeItem(`personality_draft_${profileDataId}`);
+        } catch {}
         if (typeof onComplete === "function") onComplete();
       } else {
         toast.error(res.data?.message || "Failed to save");
@@ -276,8 +328,13 @@ const LevelThreeModal = ({
             <div className="up-questions-list">
               {questions.map((q, idx) => {
                 const selectedAnswer = answers[q.question];
+                const isUnrated = validationError && !selectedAnswer;
                 return (
-                  <div key={idx} className="up-question-row">
+                  <div
+                    key={q._id || idx}
+                    id={`question-row-${q._id || q.question}`}
+                    className={`up-question-row ${isUnrated ? "up-question-row--unrated" : ""}`}
+                  >
                     <span className="up-question-text">{q.question}</span>
                     <div className="up-answer-dots">
                       {ANSWER_OPTIONS.map((opt, i) => (
@@ -345,6 +402,30 @@ const LevelThreeModal = ({
           </>
         )}
 
+        {/* Validation Error Message */}
+        {validationError && (
+          <div style={{
+            margin: "16px 0 8px",
+            padding: "12px 16px",
+            background: "#fef2f2",
+            border: "1px solid #fecaca",
+            borderRadius: "10px",
+            color: "#b91c1c",
+            fontSize: "13px",
+            fontWeight: "500",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px"
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" style={{ flexShrink: 0 }}>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <span>{validationError}</span>
+          </div>
+        )}
+
         {/* Footer */}
         <div className="up-form-footer">
           {onClose && !creation && (
@@ -355,7 +436,7 @@ const LevelThreeModal = ({
           <button
             type="submit"
             className="up-btn-primary"
-            disabled={!isFormValid() || loading || questionsLoading}
+            disabled={loading || questionsLoading}
           >
             {loading
               ? "Saving…"

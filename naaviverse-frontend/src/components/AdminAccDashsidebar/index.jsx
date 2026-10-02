@@ -3,6 +3,7 @@ import "./accDashsidebar.scss";
 import { useStore } from "../store/store.ts";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../../assets/images/logo/naavi_final_logo2.png";
+import faviconLogo from "../../assets/images/logo/naavi_favicon.png";
 import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
 import stepIcon from '../../assets/images/assets/naavi-icon1.webp';
 
@@ -127,10 +128,14 @@ const AdminAccDashsidebar = ({
 }) => {
   const [selectedMenu, setSelectedMenu] = useState([]);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('adminSidebarCollapsed') === 'true');
+  const [collapsed, setCollapsed] = useState(false);
   const { accsideNav, setaccsideNav } = useStore();
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    localStorage.removeItem('adminSidebarCollapsed');
+  }, []);
 
   const toggleCollapsed = () => {
     setCollapsed((prev) => {
@@ -205,7 +210,9 @@ const AdminAccDashsidebar = ({
         className="dashboard-left"
         style={{
           padding: collapsed ? "0" : "0 10px 0 16px",
-          height: "70px",
+          height: "56px",
+          minHeight: "56px",
+          maxHeight: "56px",
           borderBottom: "0.5px solid #e5e5e5",
           display: "flex",
           alignItems: "center",
@@ -213,48 +220,45 @@ const AdminAccDashsidebar = ({
           cursor: "pointer",
           flexShrink: 0,
           gap: "4px",
+          boxSizing: "border-box",
         }}
       >
-        {!collapsed && (
-          <div className="sidebar-logo-click" style={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0, overflow: "hidden" }}>
-            <img
-              className="dashboard-logo"
-              src={logo}
-              alt="Naavi"
-              style={{ width: "60%" }}
-              onClick={() => {
-                const defaultTitle = admin ? "Overview" : "CRM";
-                setaccsideNav(defaultTitle);
-                navigate(ROUTE_MAP[defaultTitle]);
-                setMobileOpen(false);
-              }}
-            />
-          </div>
-        )}
-        <button
-          className="sidebar-toggle-btn"
-          onClick={(e) => { e.stopPropagation(); toggleCollapsed(); }}
-          aria-label="Toggle sidebar"
+        <div
+          className="sidebar-logo-click"
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            width: 34,
-            height: 34,
-            background: "transparent",
-            border: "none",
-            borderRadius: 6,
-            cursor: "pointer",
-            flexShrink: 0,
-            margin: collapsed ? "0 auto" : "0",
+            justifyContent: collapsed ? "center" : "flex-start",
+            flex: collapsed ? "none" : 1,
+            width: collapsed ? "100%" : "auto",
+            minWidth: 0,
+            overflow: "hidden",
           }}
+          onClick={() => {
+            if (collapsed) {
+              toggleCollapsed();
+              return;
+            }
+            const defaultTitle = admin ? "Overview" : "CRM";
+            setaccsideNav(defaultTitle);
+            navigate(ROUTE_MAP[defaultTitle]);
+            setMobileOpen(false);
+          }}
+          title={collapsed ? "Expand sidebar" : "Naavi"}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round">
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
-        </button>
+          <img
+            className="dashboard-logo"
+            src={collapsed ? faviconLogo : logo}
+            alt="Naavi"
+            style={{
+              width: collapsed ? 32 : "60%",
+              height: collapsed ? 32 : "auto",
+              objectFit: "contain",
+              margin: collapsed ? "0 auto" : "0",
+              transition: "transform 0.18s ease",
+            }}
+          />
+        </div>
         {/* Close button — mobile only */}
         <button
           className="sidebar-mobile-close"
@@ -423,7 +427,7 @@ const AdminAccDashsidebar = ({
       <div
         className={`dashboard-sidebar sidebar-desktop ${collapsed ? "collapsed" : ""}`}
         style={{
-          overflow:   "hidden",
+          overflow:   "visible",
           padding:    "0",
           width:      collapsed ? "60px" : "210px",
           flexShrink: 0,
@@ -437,6 +441,35 @@ const AdminAccDashsidebar = ({
           transition: "width 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >
+        {/* Floating edge toggle button on sidebar border */}
+        <button
+          className="sidebar-edge-toggle-btn"
+          onClick={(e) => { e.stopPropagation(); toggleCollapsed(); }}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          style={{
+            position: "absolute",
+            right: -13,
+            top: 18,
+            width: 26,
+            height: 26,
+            borderRadius: "50%",
+            background: "#ffffff",
+            border: "1px solid #e2e8f0",
+            boxShadow: "0 2px 6px rgba(0, 0, 0, 0.08)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            zIndex: 1001,
+            padding: 0,
+            outline: "none",
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points={collapsed ? "9 18 15 12 9 6" : "15 18 9 12 15 6"} />
+          </svg>
+        </button>
         <SidebarContent />
       </div>
 

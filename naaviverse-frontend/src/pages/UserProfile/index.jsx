@@ -91,8 +91,9 @@ const UserProfile = () => {
 
         const isComplete =
           data.isProfileCompleted === true ||
-          (data.name && data.username && data.phoneNumber &&
-           data.school && data.personality);
+          (Number(data.user_level) >= 3 &&
+           data.name && data.username && data.phoneNumber &&
+           data.school);
 
         setShowCreation(!isComplete);
 
@@ -219,6 +220,7 @@ const UserProfile = () => {
             <ProfileCreationFlow
               userDetails={userDetails}
               existingProfileId={profileDataId}
+              existingData={profileData}
               onComplete={handleCreationComplete}
             />
           </div>
@@ -323,7 +325,7 @@ const UserProfile = () => {
         />
         <div className="dashboard-screens">
           <UserTopHeader />
-          <div className="up-profile-container" style={{ height: "calc(100% - 64px)", overflowY: "auto" }}>
+          <div className="up-profile-container" style={{ height: "calc(100% - 76px)", overflowY: "auto" }}>
 
             {/* ✅ NEW: Review banner at top when pending/rejected — no more fullscreen overlay */}
             {isReadOnly && <ReviewBanner />}
@@ -503,9 +505,25 @@ const InfoItem = ({ label, value, children, fullWidth }) => (
 );
 
 // ── Profile Creation Flow ────────────────────────────────────────────────────
-const ProfileCreationFlow = ({ userDetails, existingProfileId, onComplete }) => {
-  const [step,          setStep]          = useState(1);
+const ProfileCreationFlow = ({ userDetails, existingProfileId, existingData, onComplete }) => {
+  const getInitialStep = () => {
+    if (Number(existingData?.user_level) >= 2 || (existingData?.name && existingData?.school)) {
+      return 3;
+    }
+    if (Number(existingData?.user_level) === 1 || (existingData?.name && !existingData?.school)) {
+      return 2;
+    }
+    return 1;
+  };
+
+  const [step,          setStep]          = useState(getInitialStep);
   const [profileDataId, setProfileDataId] = useState(existingProfileId || null);
+
+  useEffect(() => {
+    if (existingProfileId && !profileDataId) {
+      setProfileDataId(existingProfileId);
+    }
+  }, [existingProfileId]);
 
   const handleLevel1Done = (id) => { if (id) setProfileDataId(id); setStep(2); };
   const handleLevel2Done = () => setStep(3);

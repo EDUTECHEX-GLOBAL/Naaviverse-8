@@ -1,19 +1,27 @@
 const express = require('express');
 const router = express.Router();
 const Subscription = require('../models/SubscriptionModel');
+const { validateEmail } = require('../../utils/emailValidator');
 
 // POST - Add a new subscription
 router.post('/', async (req, res) => {
   try {
     const { email } = req.body;
 
+    const validation = validateEmail(email);
+    if (!validation.isValid) {
+      return res.status(400).json({ message: validation.message });
+    }
+
+    const cleanEmail = validation.cleanEmail;
+
     // Check if the email already exists
-    const existingSubscription = await Subscription.findOne({ email });
+    const existingSubscription = await Subscription.findOne({ email: cleanEmail });
     if (existingSubscription) {
       return res.status(400).json({ message: "This email is already subscribed." });
     }
 
-    const newSubscription = new Subscription({ email });
+    const newSubscription = new Subscription({ email: cleanEmail });
     await newSubscription.save();
     res.status(201).json({ message: "Subscribed successfully!" });
   } catch (error) {

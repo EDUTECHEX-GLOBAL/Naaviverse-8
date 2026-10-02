@@ -11,18 +11,12 @@ import MachineLearning from '../views/home-pages/MachineLearning';
 
 //All Inner Page Routes
 import AboutPage from '../views/inner-pages/pages/about-us/AboutPage';
-import AboutUsOne from '../views/inner-pages/pages/about-us/AboutUsOne';
-import AboutUsTwo from '../views/inner-pages/pages/about-us/AboutUsTwo';
 
 //All Service Page Routes
-import ServicesOne from '../views/inner-pages/pages/services/ServicesOne';
-import ServicesTwo from '../views/inner-pages/pages/services/ServicesTwo';
-import ServicesDetails from '../views/inner-pages/pages/services/ServicesDetails';
 import Impact from '../views/inner-pages/Impact/impact';
 import Technology from '../views/inner-pages/Technology/Technology';
 
 //All Team Page Routes
-import TeamMember from '../views/inner-pages/pages/team/TeamMember';
 import TeamDetails from '../views/inner-pages/pages/team/TeamDetails';
 import Team from '../views/inner-pages/pages/team/Team';
 
@@ -66,18 +60,18 @@ const AppRouter = () => {
         {/* About Routes with URL params */}
         <Route path="/about" element={<AboutPage />} />
         <Route path="/about/:section" element={<AboutPage />} />
-        <Route path="/about-one" element={<AboutUsOne />} />
-        <Route path="/about-two" element={<AboutUsTwo />} />
+        <Route path="/about-one" element={<AboutPage />} />
+        <Route path="/about-two" element={<AboutPage />} />
 
         {/* Service Routes */}
-        <Route path="/service-one" element={<ServicesOne />} />
-        <Route path="/service-two" element={<ServicesTwo />} />
-        <Route path="/service-details" element={<ServicesDetails />} />
+        <Route path="/service-one" element={<AboutPage />} />
+        <Route path="/service-two" element={<AboutPage />} />
+        <Route path="/service-details" element={<AboutPage />} />
         
         {/* Team Routes with URL params */}
         <Route path="/team" element={<Team />} />
         <Route path="/team/:section" element={<Team />} />
-        <Route path="/team-member" element={<TeamMember />} />
+        <Route path="/team-member" element={<Team />} />
         <Route path="/team-details" element={<TeamDetails />} />
 
         {/* Impact Routes with URL params */}
@@ -99,7 +93,7 @@ const AppRouter = () => {
         <Route path="/portfolio-masonry" element={<PortfolioMasonry />} />
         <Route path="/portfolio-single" element={<PortfolioSingle />} />
 
-        <Route path="/problem/about-us" element={<AboutUsOne />} />
+        <Route path="/problem/about-us" element={<AboutPage />} />
 
         {/* Blog Routes */}
         <Route path="/blog" element={<GridLayout />} />

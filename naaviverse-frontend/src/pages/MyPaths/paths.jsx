@@ -30,7 +30,7 @@ if (!document.getElementById(STYLE_ID)) {
 
     /* ── Modal ──────────────────────────────────────── */
     .epm-modal {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Poppins', sans-serif;
       background: #ffffff;
       border-radius: 22px;
       width: 100%;
@@ -138,7 +138,7 @@ if (!document.getElementById(STYLE_ID)) {
     .epm-input,
     .epm-select,
     .epm-textarea {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Poppins', sans-serif;
       font-size: 0.84rem;
       color: #0d1b2a;
       background: #f8fafc;
@@ -178,7 +178,7 @@ if (!document.getElementById(STYLE_ID)) {
       width: 100%;
     }
     .epm-pill {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Poppins', sans-serif;
       font-size: 0.74rem;
       font-weight: 500;
       padding: 5px 13px;
@@ -234,7 +234,7 @@ if (!document.getElementById(STYLE_ID)) {
     .epm-btns { display: flex; gap: 8px; }
 
     .epm-btn-cancel {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Poppins', sans-serif;
       font-size: 0.81rem;
       font-weight: 500;
       padding: 9px 18px;
@@ -248,7 +248,7 @@ if (!document.getElementById(STYLE_ID)) {
     .epm-btn-cancel:hover { background: #f1f5f9; }
 
     .epm-btn-save {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Poppins', sans-serif;
       font-size: 0.81rem;
       font-weight: 600;
       padding: 9px 22px;

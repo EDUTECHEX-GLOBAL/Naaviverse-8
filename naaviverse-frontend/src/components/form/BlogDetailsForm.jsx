@@ -7,7 +7,10 @@ const BlogDetailsForm = () => {
 
     //for validation
     const validationSchema = Yup.object().shape({
-            name: Yup.string().required("Name is Required"),
+            name: Yup.string()
+                .trim()
+                .required("Name is required.")
+                .matches(/^[a-zA-Z]+(?: [a-zA-Z]+)*$/, "Name must contain letters only, with valid spaces between names."),
             email: Yup.string().required("Email is Required").email("Entered value does not match email format"),
             sendMessage: Yup.string().required("Please, leave us a message."),
         });

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import Div from "../../views/inner-pages/contact/Div";
+import { validateEmail } from "../../utils/emailValidator";
 
 export default function Newsletter({ title, subtitle, placeholder }) {
   const [email, setEmail] = useState("");
@@ -12,14 +13,17 @@ export default function Newsletter({ title, subtitle, placeholder }) {
   const handleSubscribe = async (e) => {
     e.preventDefault();
 
-    if (!email) {
-      setMessage("Please enter a valid email.");
+    const validation = validateEmail(email);
+    if (!validation.isValid) {
+      setMessage(validation.message);
       setIsSuccess(false);
       return;
     }
 
+    const cleanEmail = validation.cleanEmail;
+
     try {
-      const res = await axios.post(`${cleanBaseUrl}/api/admin-subscribe`, { email });
+      const res = await axios.post(`${cleanBaseUrl}/api/admin-subscribe`, { email: cleanEmail });
 
       if (res.status === 201) {
         setMessage("Thanks for subscribing!");
@@ -28,14 +32,15 @@ export default function Newsletter({ title, subtitle, placeholder }) {
       }
     } catch (err) {
       const serverMsg = err.response?.data?.message;
-      if (
+      if (serverMsg) {
+        setMessage(serverMsg);
+      } else if (
         err.response?.status === 400 ||
-        err.response?.status === 409 ||
-        (serverMsg && (serverMsg.toLowerCase().includes("already") || serverMsg.toLowerCase().includes("exist")))
+        err.response?.status === 409
       ) {
         setMessage("You have already used this email, please use a different email.");
       } else {
-        setMessage(serverMsg || "You have already used this email, please use a different email.");
+        setMessage("Unable to subscribe. Please try again later.");
       }
       setIsSuccess(false);
       console.error(err);
@@ -46,14 +51,19 @@ export default function Newsletter({ title, subtitle, placeholder }) {
     <>
       {title && <h2 className="widget-title">{title}</h2>}
       <Div className="newsletter newsletter-style">
-        <form onSubmit={handleSubscribe} className="newsletter-form">
+        <form onSubmit={handleSubscribe} className="newsletter-form" noValidate>
           <input
             type="email"
             className="newsletter-input"
             placeholder={placeholder}
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (message) setMessage("");
+            }}
             required
+            pattern="[a-zA-Z0-9._%+-]+@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}"
+            title="Please enter a valid email address (e.g. name@gmail.com, .in, .net, .org, .edu)"
           />
           <button type="submit" className="newsletter-btn">
             <span>Send</span>

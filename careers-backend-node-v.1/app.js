@@ -88,12 +88,15 @@ app.use(express.static(path.join(__dirname, "public")));
 
 const allowedOrigins = [
   "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
   "http://localhost:4545",
+  "http://127.0.0.1:4545",
   "https://naaviverse-vercel-frontend-sigma.vercel.app",
   "https://naaviverse-frontend-sepia.vercel.app",
   "https://naavinetwork.ai",
   "https://www.naavinetwork.ai"
-
 ];
 
 const corsOptions = {

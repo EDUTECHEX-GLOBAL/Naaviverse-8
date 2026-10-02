@@ -1019,7 +1019,14 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                 <button className="vc-btn bMacro" onClick={() => {
                   setsideNav("Market Place");
                   navigate("/dashboard/users/Marketplace", {
-                    state: { view: "Macro", subscribed, creditUnlocked, subTier, subPlanTier },
+                    state: {
+                      view: "macro",
+                      subscribed,
+                      creditUnlocked: { micro: hasMicro, nano: hasNano },
+                      subTier,
+                      subPlanTier,
+                      stepId: localStorage.getItem("selectedStepId") || currentStepPageData?._id,
+                    },
                   });
                 }}>
                   Discover Resources →
@@ -1073,7 +1080,15 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                   <button className="vc-btn bMicro" onClick={() => {
                     setsideNav("Market Place");
                     navigate("/dashboard/users/Marketplace", {
-                      state: { view: "micro", subscribed, defaultTab: "micro", creditUnlocked, subTier, subPlanTier },
+                      state: {
+                        view: "micro",
+                        subscribed,
+                        defaultTab: "micro",
+                        creditUnlocked: { micro: hasMicro, nano: hasNano },
+                        subTier,
+                        subPlanTier,
+                        stepId: localStorage.getItem("selectedStepId") || currentStepPageData?._id,
+                      },
                     });
                   }}>Browse Resources →</button>
                 ) : (
@@ -1128,7 +1143,15 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                   <button className="vc-btn bNano" onClick={() => {
                     setsideNav("Market Place");
                     navigate("/dashboard/users/Marketplace", {
-                      state: { view: "nano", subscribed, defaultTab: "nano", creditUnlocked, subTier, subPlanTier },
+                      state: {
+                        view: "nano",
+                        subscribed,
+                        defaultTab: "nano",
+                        creditUnlocked: { micro: hasMicro, nano: hasNano },
+                        subTier,
+                        subPlanTier,
+                        stepId: localStorage.getItem("selectedStepId") || currentStepPageData?._id,
+                      },
                     });
                   }}>Book a Session →</button>
                 ) : (
@@ -1220,7 +1243,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
       {popup && (
         <div className="popup-overlay" onClick={() => { setPopup(false); setPopupContent("default"); setPopupDetails(""); }}>
           <div className="modal-container" onClick={(e) => e.stopPropagation()}>
-            <div><img src={logo} alt="Naavi" className="modal-step-logo" style={{ maxHeight: "45px", maxWidth: "160px", objectFit: "contain" }} /></div>
+            <div><img src={logo} alt="Naavi" className="modal-step-logo" style={{ height: "44px", maxHeight: "44px", maxWidth: "175px", width: "auto", objectFit: "contain" }} /></div>
 
             {popupContent === "default" && popupDetails === "yes" && (
               <>

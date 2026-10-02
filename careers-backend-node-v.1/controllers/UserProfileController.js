@@ -1,8 +1,17 @@
 const userModel = require('../models/UsersModel');
 const VaultTransaction = require('../models/VaultTransactionModel');
+const { validatePersonName } = require('../utils/emailValidator');
 // Controller to add or update profile data
 const addUserProfile = async (req, res) => {
     try {
+        if (req.body.name !== undefined) {
+            const nameVal = validatePersonName(req.body.name, "Full name");
+            if (!nameVal.isValid) {
+                return res.status(400).json({ status: false, message: nameVal.message });
+            }
+            req.body.name = nameVal.cleanName;
+        }
+
         // Check if the user already exists by email
         let user = await userModel.findOne({ email: req.body.email });
 
@@ -167,6 +176,15 @@ const updateUserProfile = async (req, res) => {
             if (conflict) {
                 return res.json({ status: false, message: "Username already taken" });
             }
+        }
+
+        // ✅ Check for name validity if provided
+        if (req.body.name !== undefined) {
+            const nameVal = validatePersonName(req.body.name, "Full name");
+            if (!nameVal.isValid) {
+                return res.status(400).json({ status: false, message: nameVal.message });
+            }
+            req.body.name = nameVal.cleanName;
         }
 
         // ✅ Assign fields directly so Mongoose tracks changes

@@ -24,6 +24,7 @@ import plus from "../../../static/images/globaldrawer/plus.svg";
 
 import AppList from "./AppsList";
 import LoadingAnimation from "../../LoadingAnimation";
+import { validatePersonName } from "../../../utils/emailValidator";
 
 function renameFile(originalFile, newName) {
   return new File([originalFile], newName, {
@@ -66,6 +67,7 @@ const NewCompany = ({ step, setStep, setMainMenu, loading, setLoading }) => {
   const [short_description, setShort_description] = useState("");
   const [description, setDescription] = useState("");
   const [companyFounder, setCompanyFounder] = useState("");
+  const [companyFounderError, setCompanyFounderError] = useState("");
   const [primaryInvestor, setPrimaryInvestor] = useState("");
   const [NumberOffices, setNumberOffices] = useState("");
   const [CompanyWebsite, setCompanyWebsite] = useState("");
@@ -302,12 +304,30 @@ const NewCompany = ({ step, setStep, setMainMenu, loading, setLoading }) => {
                 <div className="inputWrap">
                   <input
                     value={companyFounder}
-                    onChange={(e) => setCompanyFounder(e.target.value)}
+                    onChange={(e) => {
+                      setCompanyFounder(e.target.value);
+                      if (companyFounderError) {
+                        const val = validatePersonName(e.target.value, "Founder name");
+                        setCompanyFounderError(val.isValid ? "" : val.message);
+                      }
+                    }}
+                    onBlur={(e) => {
+                      if (e.target.value) {
+                        const val = validatePersonName(e.target.value, "Founder name");
+                        setCompanyFounderError(val.isValid ? "" : val.message);
+                      }
+                    }}
                     type="text"
                     className="text"
                     placeholder="Enter Founders Name..."
+                    style={companyFounderError ? { borderColor: "#dc2626" } : {}}
                   />
                 </div>
+                {companyFounderError && (
+                  <div style={{ color: "#dc2626", fontSize: "0.85rem", marginTop: "-6px", marginBottom: "8px" }}>
+                    {companyFounderError}
+                  </div>
+                )}
 
                 {/*primary investor */}
                 <div className="name">Primary Investor</div>
@@ -527,9 +547,24 @@ const NewCompany = ({ step, setStep, setMainMenu, loading, setLoading }) => {
       colouredIcon &&
       coverPhoto &&
       buttonLink) {
+      const founderVal = validatePersonName(companyFounder, "Founder name");
+      if (!founderVal.isValid) {
+        setCompanyFounderError(founderVal.message);
+        toast.error(founderVal.message);
+        return;
+      }
+      setCompanyFounderError("");
       setVisibleSubmit(true);
       AddNewCompany();
     } else {
+      if (companyFounder) {
+        const founderVal = validatePersonName(companyFounder, "Founder name");
+        if (!founderVal.isValid) {
+          setCompanyFounderError(founderVal.message);
+        } else {
+          setCompanyFounderError("");
+        }
+      }
       toast.warning("All Fields Are Mandatory");
     }
   };

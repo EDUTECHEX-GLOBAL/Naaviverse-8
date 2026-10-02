@@ -24,6 +24,7 @@ import plus from "../../../static/images/globaldrawer/plus.svg";
 
 import AppList from "./AppsList";
 import LoadingAnimation from "../../LoadingAnimation";
+import { validatePersonName } from "../../../utils/emailValidator";
 
 function renameFile(originalFile, newName) {
   return new File([originalFile], newName, {
@@ -68,6 +69,7 @@ const NewAuthor = ({ step, setStep, setMainMenu, loading, setLoading }) => {
   const [coverPhoto, setCoverPhoto] = useState("");
   const [coverPhotoLoading, setCoverPhotoLoading] = useState("");
 
+  const [authorNameError, setAuthorNameError] = useState("");
   const [visibleSubmit, setVisibleSubmit] = useState(false);
 
   useEffect(() => {
@@ -202,12 +204,30 @@ const NewAuthor = ({ step, setStep, setMainMenu, loading, setLoading }) => {
                 <div className="inputWrap">
                   <input
                     value={authorName}
-                    onChange={(e) => setAuthorName(e.target.value)}
+                    onChange={(e) => {
+                      setAuthorName(e.target.value);
+                      if (authorNameError) {
+                        const val = validatePersonName(e.target.value, "Author name");
+                        setAuthorNameError(val.isValid ? "" : val.message);
+                      }
+                    }}
+                    onBlur={(e) => {
+                      if (e.target.value) {
+                        const val = validatePersonName(e.target.value, "Author name");
+                        setAuthorNameError(val.isValid ? "" : val.message);
+                      }
+                    }}
                     type="text"
                     className="text"
                     placeholder="Author Name..."
+                    style={authorNameError ? { borderColor: "#dc2626" } : {}}
                   />
                 </div>
+                {authorNameError && (
+                  <div style={{ color: "#dc2626", fontSize: "0.85rem", marginTop: "-6px", marginBottom: "8px" }}>
+                    {authorNameError}
+                  </div>
+                )}
 
                 {/* Select Country */}
                 <div className="name">Select The Country</div>
@@ -419,9 +439,24 @@ const NewAuthor = ({ step, setStep, setMainMenu, loading, setLoading }) => {
 
   const validate = () => {
     if (authorName && description && authorUserName && country && authorEmail && colouredIcon && coverPhoto) {
+      const nameVal = validatePersonName(authorName, "Author name");
+      if (!nameVal.isValid) {
+        setAuthorNameError(nameVal.message);
+        toast.error(nameVal.message);
+        return;
+      }
+      setAuthorNameError("");
       setVisibleSubmit(true);
       createNewAuthor();
     } else {
+      if (authorName) {
+        const nameVal = validatePersonName(authorName, "Author name");
+        if (!nameVal.isValid) {
+          setAuthorNameError(nameVal.message);
+        } else {
+          setAuthorNameError("");
+        }
+      }
       toast.warning("All Fields Are Mandatory");
     }
   };

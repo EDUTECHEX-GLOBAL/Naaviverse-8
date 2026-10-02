@@ -2215,7 +2215,16 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                   </div>
                   <div className="creator-info-item">
                     <span className="creator-info-label">Phone Number</span>
-                    <span className="creator-info-val">{creatorModalPath.partnerDetails?.phone || "—"}</span>
+                    <span className="creator-info-val">
+                      {creatorModalPath.partnerDetails?.phone ||
+                        creatorModalPath.partnerDetails?.phoneNumber ||
+                        creatorModalPath.partnerDetails?.mobile ||
+                        creatorModalPath.partnerDetails?.contactNumber ||
+                        creatorModalPath.phone ||
+                        creatorModalPath.phoneNumber ||
+                        creatorModalPath.contactNumber ||
+                        "—"}
+                    </span>
                   </div>
                   {creatorModalPath.partnerDetails?.website && (
                     <div className="creator-info-item">

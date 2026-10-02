@@ -127,8 +127,9 @@ const Dashboard = () => {
 
       const isComplete =
         data?.isProfileCompleted === true ||
-        (data?.name && data?.username && data?.phoneNumber &&
-         data?.school && data?.personality);
+        (Number(data?.user_level) >= 3 &&
+         data?.name && data?.username && data?.phoneNumber &&
+         data?.school);
 
       if (!isComplete) {
         setIsProfileIncomplete(true);
@@ -178,6 +179,13 @@ const Dashboard = () => {
       setsideNav(activePage);
     }
   }, [activePage]);
+
+  // Reset any ancestor scroll so sidebar stays at exact top 0
+  useEffect(() => {
+    const db = document.querySelector('.dashboard-body');
+    if (db && db.scrollTop !== 0) db.scrollTop = 0;
+    if (window.scrollY !== 0) window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   // ── Product data ────────────────────────────────────────────────────────
   const fetchProductData = async (apiKey) => {
@@ -295,7 +303,7 @@ const Dashboard = () => {
     <div>
       <div className="dashboard-main">
         <div className="dashboard-body">
-          <div onClick={() => setShowDrop(false)}>
+          <div onClick={() => setShowDrop(false)} style={{ display: "flex", height: "100%", flexShrink: 0 }}>
             {/* ✅ FIXED: Pass props to Dashsidebar */}
             <Dashsidebar
   approvalStatus={approvalStatus}
@@ -305,16 +313,16 @@ const Dashboard = () => {
 
           <div className="dashboard-screens">
             <UserTopHeader />
-            <div style={{ height: "calc(100% - 64px)", overflowY: "auto" }}>
+            <div style={{ height: "calc(100% - 76px)", overflowY: "auto", background: "#f6f5ff" }}>
 
 {activePage === "Home" ? (
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+  <div className="services-main" style={{ minHeight: "100%" }} onClick={() => setShowDrop(false)}>
     <UserHome />
   </div>
 
 ) : activePage === "Market Place" ? (
 
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+  <div className="services-main" style={{ minHeight: "100%" }} onClick={() => setShowDrop(false)}>
     <UserMarketplace
       onStepChange={(view) => {
         if (view === "currentStep") {
@@ -330,31 +338,31 @@ const Dashboard = () => {
 
 ) : activePage === "Paths" ? (
 
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+  <div className="services-main" style={{ minHeight: "100%" }} onClick={() => setShowDrop(false)}>
     <PathComponent />
   </div>
 
 ) : activePage === "My Journey" ? (
 
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+  <div className="services-main" style={{ minHeight: "100%" }} onClick={() => setShowDrop(false)}>
     <JourneyPage />
   </div>
 
 ) : activePage === "Current Step" ? (
 
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+  <div className="services-main" style={{ minHeight: "100%" }} onClick={() => setShowDrop(false)}>
     <CurrentStep productDataArray={productDataArray} />
   </div>
 
 ) : activePage === "PurchasesPage" ? (
 
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+  <div className="services-main" style={{ minHeight: "100%" }} onClick={() => setShowDrop(false)}>
     <UserPurchasesPage />
   </div>
 
 ) : activePage === "MentorsPage" ? (
 
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+  <div className="services-main" style={{ minHeight: "100%" }} onClick={() => setShowDrop(false)}>
     <UserMentorsPage />
   </div>
 
@@ -418,7 +426,7 @@ const Dashboard = () => {
 ) : activePage === "Wallet" ? (
 
   transactionSelected ? (
-    <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+    <div className="services-main" style={{ minHeight: "100%" }} onClick={() => setShowDrop(false)}>
       <div className="services-all-menu" style={{ borderBottom: "0.5px solid #E5E5E5" }}>
         <div style={{ display: "flex", width: "calc(100% - 110px)" }}>
           <div
@@ -454,7 +462,7 @@ const Dashboard = () => {
       <VaultTransactions />
     </div>
   ) : (
-    <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+    <div className="services-main" style={{ minHeight: "100%" }} onClick={() => setShowDrop(false)}>
       <div className="services-all-menu" style={{ borderBottom: "0.5px solid #E5E5E5" }}>
         <div style={{ display: "flex", width: "83%" }}>
           <div
@@ -481,19 +489,19 @@ const Dashboard = () => {
 
 ) : activePage === "Task Manager" ? (
 
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+  <div className="services-main" style={{ minHeight: "100%" }} onClick={() => setShowDrop(false)}>
     <Tasks />
   </div>
 
 ) : activePage === "Scanner" ? (
 
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+  <div className="services-main" style={{ minHeight: "100%" }} onClick={() => setShowDrop(false)}>
     <WalletScan />
   </div>
 
 ) : activePage === "Universities" ? (
 
-  <div className="services-main" style={{ height: "100%" }} onClick={() => setShowDrop(false)}>
+  <div className="services-main" style={{ minHeight: "100%" }} onClick={() => setShowDrop(false)}>
     <Directory />
   </div>
 
