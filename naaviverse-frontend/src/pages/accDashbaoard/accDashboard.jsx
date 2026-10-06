@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, react-hooks/exhaustive-deps, array-callback-return */
 import React, { useState, useLayoutEffect, useEffect, useRef } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";

@@ -96,7 +96,7 @@ const sidebarMenu2 = [
 const allMenuItems = [...sidebarMenu1, ...sidebarMenu2];
 
 const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileIncomplete }) => {
-  const { sideNav, setsideNav } = useStore();
+  const { setsideNav } = useStore();
   const navigate  = useNavigate();
   const location  = useLocation();
   const [showLogoutMenu, setShowLogoutMenu] = useState(false);

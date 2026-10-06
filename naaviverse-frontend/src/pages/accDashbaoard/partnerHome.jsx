@@ -63,7 +63,6 @@ export default function PartnerHome({ setispopular }) {
     }
   });
   const [isGuideCollapsed, setIsGuideCollapsed] = useState(true);
-  const [activeGuideStep, setActiveGuideStep] = useState(1);
 
   const notifRef = useRef(null);
   const unread = notifications.filter(n => n.unread).length;

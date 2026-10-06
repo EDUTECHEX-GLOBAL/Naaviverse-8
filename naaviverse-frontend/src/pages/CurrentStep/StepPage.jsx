@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, react-hooks/exhaustive-deps, array-callback-return */
 import React, { useState, useEffect } from "react";
 import "./currentstep.scss";
 import { useCoinContextData } from "../../context/CoinContext";

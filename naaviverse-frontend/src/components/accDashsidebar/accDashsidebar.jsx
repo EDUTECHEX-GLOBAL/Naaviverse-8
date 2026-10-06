@@ -7,16 +7,6 @@ import logo from "../../assets/images/logo/naavi_final_logo2.png";
 import faviconLogo from "../../assets/images/logo/naavi_favicon.png";
 import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
 import stepIcon from '../../assets/images/assets/naavi-icon1.webp';
-const ROUTE_MAP = {
-  Home: "/dashboard/accountants/home",
-  CRM: "/dashboard/accountants",
-  Paths: "/dashboard/accountants/paths",
-  Steps: "/dashboard/accountants/steps",
-  Marketplace: "/dashboard/accountants/marketplace",
-  Feedback: "/dashboard/accountants/feedback",
-  Profile: "/dashboard/accountants/profile",
-  Payments: "/partner/exclusive-dashboard",
-};
 
 const NavIcon = ({ type, isActive }) => {
   const iconProps = {
@@ -111,7 +101,7 @@ const sidebarMenu = [
 ];
 
 const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, accStatus, isOpen, onClose }) => {
-  const { accsideNav, setaccsideNav, setispopular } = useStore();
+  const { setaccsideNav, setispopular } = useStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -134,7 +124,6 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
   const userDetails = JSON.parse(localStorage.getItem("partner") || "{}");
   const fullName = userDetails?.businessName || userDetails?.fullName || "Partner";
   const userInitial = fullName.charAt(0).toUpperCase();
-  const userEmail = userDetails?.email || "";
 
   const partnerStatus = accStatus || userDetails?.approvalStatus;
   const isLocked = partnerStatus !== "approved";

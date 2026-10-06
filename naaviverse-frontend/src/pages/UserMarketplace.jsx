@@ -1807,7 +1807,7 @@ const UserMarketplace = ({ onStepChange }) => {
       })
       .catch(() => setItems(DEMO_FALLBACK_ITEMS))
       .finally(() => setLoading(false));
-  }, [stepId]);
+  }, [stepId, userEmail]);
 
   // New Filter state matching prompt requirements
   const [filterState, setFilterState] = useState({
