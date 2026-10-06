@@ -39,9 +39,12 @@ export default function AdminDashboard() {
 
 function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const handleLogout = () => {
+    import('../../components/LogoutModal/LogoutManager').then(({ triggerLogout }) => {
+      triggerLogout(() => {
     localStorage.removeItem('superAdminToken');
     window.location.href = '/admin-login';
-  };
+});
+    });  };
 
   return (
     <div

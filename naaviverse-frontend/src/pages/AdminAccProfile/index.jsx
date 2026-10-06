@@ -487,9 +487,12 @@ const AdminAccProfile = () => {
   };
 
   const handleLogout = () => {
+    import('../../components/LogoutModal/LogoutManager').then(({ triggerLogout }) => {
+      triggerLogout(() => {
     localStorage.clear();
     navigate("/admin/login");
-  };
+});
+    });  };
 
   const handleServicesForLogged = () => {
     setIsServicesAcc(true);

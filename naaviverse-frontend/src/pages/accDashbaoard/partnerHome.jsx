@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 import "./partnerHome.scss";
+import { useStore } from "../../components/store/store.ts";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
 
 function getPartnerEmail() {
@@ -42,6 +43,8 @@ export default function PartnerHome({ setispopular }) {
   const [selectedPath, setSelectedPath] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [pathTab, setPathTab] = useState("all");
+  const { setaccsideNav } = useStore();
+
   const [activityTab, setActivityTab] = useState("All");
   const [showNotif, setShowNotif] = useState(false);
   const [notifFilter, setNotifFilter] = useState("all");
@@ -52,9 +55,45 @@ export default function PartnerHome({ setispopular }) {
   const [statsError, setStatsError] = useState(null);
   const [pathUsers, setPathUsers] = useState([]);
   const [pathUsersLoading, setPathUsersLoading] = useState(false);
+  const [showPathHint, setShowPathHint] = useState(() => {
+    try {
+      return localStorage.getItem("dismissed_partner_path_hint") !== "true";
+    } catch {
+      return true;
+    }
+  });
 
   const notifRef = useRef(null);
   const unread = notifications.filter(n => n.unread).length;
+
+  const fetchNotifications = useCallback(async () => {
+    const email = getPartnerEmail();
+    if (!email) return;
+    try {
+      const res = await axios.get(`${BASE_URL}/api/partner-dashboard/notifications`, { params: { email } });
+      if (res.data?.status && Array.isArray(res.data.notifications)) {
+        let readIds = new Set();
+        try {
+          const raw = localStorage.getItem(`read_notifs_${email}`);
+          if (raw) readIds = new Set(JSON.parse(raw));
+        } catch {}
+
+        const formatted = res.data.notifications.map(n => ({
+          ...n,
+          unread: !readIds.has(n.id),
+        }));
+        setNotifications(formatted);
+      }
+    } catch (err) {
+      console.error("fetchNotifications error:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 20000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
 
   const markAllRead = () => {
     setNotifications(p => p.map(n => ({ ...n, unread: false })));
@@ -62,22 +101,41 @@ export default function PartnerHome({ setispopular }) {
       const email = getPartnerEmail();
       if (email) {
         const allIds = notifications.map(n => n.id);
-        localStorage.setItem(`read_notifs_${email}`, JSON.stringify(allIds));
+        const existing = new Set(JSON.parse(localStorage.getItem(`read_notifs_${email}`) || "[]"));
+        allIds.forEach(id => existing.add(id));
+        localStorage.setItem(`read_notifs_${email}`, JSON.stringify([...existing]));
       }
     } catch {}
   };
 
-  const markRead = id => {
+  const markRead = (id) => {
     setNotifications(p => p.map(n => n.id === id ? { ...n, unread: false } : n));
     try {
       const email = getPartnerEmail();
       if (email) {
-        const raw = localStorage.getItem(`read_notifs_${email}`);
-        const readIds = new Set(raw ? JSON.parse(raw) : []);
-        readIds.add(id);
-        localStorage.setItem(`read_notifs_${email}`, JSON.stringify([...readIds]));
+        const existing = new Set(JSON.parse(localStorage.getItem(`read_notifs_${email}`) || "[]"));
+        existing.add(id);
+        localStorage.setItem(`read_notifs_${email}`, JSON.stringify([...existing]));
       }
     } catch {}
+  };
+
+  const handleNotifAction = (n) => {
+    markRead(n.id);
+    setShowNotif(false);
+
+    const tab = n.targetTab || (n.type === "path" ? "Paths" : n.type === "purchase" ? "CRM" : "Home");
+    if (tab === "Paths" && setaccsideNav) {
+      setaccsideNav("Paths");
+    } else if (tab === "CRM" && setaccsideNav) {
+      setaccsideNav("CRM");
+    } else if (tab === "Marketplace" && setaccsideNav) {
+      setaccsideNav("Marketplace");
+    } else if (tab === "Feedback" && setaccsideNav) {
+      setaccsideNav("Feedback");
+    } else {
+      setView("home");
+    }
   };
 
   useEffect(() => {
@@ -94,28 +152,19 @@ export default function PartnerHome({ setispopular }) {
       const res = await axios.get(`${BASE_URL}/api/partner-dashboard/stats`, { params: { email } });
       if (res.data?.status) {
         setDashStats(res.data.data);
-        const rawNotifs = res.data.data?.notifications || res.data.data?.liveActivity || [];
-        let readIds = new Set();
-        try {
-          const raw = localStorage.getItem(`read_notifs_${email}`);
-          if (raw) readIds = new Set(JSON.parse(raw));
-        } catch {}
+        if (Array.isArray(res.data.data?.notifications) && res.data.data.notifications.length > 0) {
+          let readIds = new Set();
+          try {
+            const raw = localStorage.getItem(`read_notifs_${email}`);
+            if (raw) readIds = new Set(JSON.parse(raw));
+          } catch {}
 
-        const formattedNotifs = rawNotifs.map(act => {
-          const isPurchase = act.type === "purchase";
-          const isPath = act.type === "path";
-          const title = act.title || (isPurchase ? "New Marketplace Purchase" : isPath ? "Path Selection" : "Notification");
-          const desc = act.desc || `${act.name ? act.name + " " : ""}${act.action || ""}`;
-          return {
-            id: act.id,
-            type: act.type || "purchase",
-            title,
-            desc,
-            time: act.time || "Recently",
+          const formattedNotifs = res.data.data.notifications.map(act => ({
+            ...act,
             unread: !readIds.has(act.id),
-          };
-        });
-        setNotifications(formattedNotifs);
+          }));
+          setNotifications(formattedNotifs);
+        }
       }
       else setStatsError(res.data?.message || "Failed to load stats");
     } catch { setStatsError("Could not load dashboard data."); }
@@ -160,6 +209,7 @@ export default function PartnerHome({ setispopular }) {
       { key: "purchase", label: "Purchases", dot: "#15803d" },
       { key: "path", label: "Paths", dot: "#0f766e" },
       { key: "approval", label: "Approvals", dot: "#b45309" },
+      { key: "system", label: "System", dot: "#64748b" },
     ];
     const filtered = notifFilter === "all" ? notifications : notifications.filter(n => n.type === notifFilter);
     return (
@@ -173,7 +223,7 @@ export default function PartnerHome({ setispopular }) {
             <div className="ph-notif-page-title">Notifications</div>
             <div style={{ display: "flex", gap: 8 }}>
               <button className="ph-mark-all-btn" onClick={markAllRead}>Mark all read</button>
-              <button className="ph-clear-btn" onClick={() => setNotifications([])}>Clear all</button>
+              <button className="ph-clear-btn" onClick={() => { markAllRead(); setNotifications([]); }}>Clear all</button>
             </div>
           </div>
           <div className="ph-notif-body">
@@ -194,7 +244,7 @@ export default function PartnerHome({ setispopular }) {
                 : filtered.map(n => {
                   const cfg = NOTIF_CFG[n.type] || NOTIF_CFG.system;
                   return (
-                    <div key={n.id} className={`ph-notif-full-item ${n.unread ? "unread" : ""}`} onClick={() => markRead(n.id)}>
+                    <div key={n.id} className={`ph-notif-full-item ${n.unread ? "unread" : ""}`} onClick={() => handleNotifAction(n)}>
                       <div className="ph-notif-full-icon" style={{ background: cfg.bg }}>{cfg.icon}</div>
                       <div className="ph-notif-full-body">
                         <div className="ph-notif-full-title">{n.title}</div>
@@ -204,7 +254,19 @@ export default function PartnerHome({ setispopular }) {
                           <span className="ph-notif-full-tag" style={{ background: cfg.bg, color: cfg.color }}>{cfg.label}</span>
                         </div>
                       </div>
-                      {n.unread && <div className="ph-unread-dot" />}
+                      <div className="ph-notif-full-right">
+                        {n.unread && <div className="ph-unread-dot" />}
+                        <button
+                          type="button"
+                          className="ph-full-view-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleNotifAction(n);
+                          }}
+                        >
+                          View →
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
@@ -553,76 +615,121 @@ export default function PartnerHome({ setispopular }) {
     <div className="ph-root">
       <style>{`@keyframes ph-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
       <div className="ph-header">
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
-            <div className="ph-welcome" style={{ margin: 0 }}>
-              Welcome back, <span className="ph-accent">{partnerName}</span>
+        <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "4px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px", width: "100%" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
+              <div className="ph-welcome" style={{ margin: 0 }}>
+                Welcome back, <span className="ph-accent">{partnerName}</span>
+              </div>
             </div>
-            <div ref={notifRef} className="ph-notif-wrap">
-              <button
-                type="button"
-                className="ph-bell-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowNotif(p => !p);
-                }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                {unread > 0 && <span className="ph-bell-badge">{unread}</span>}
-              </button>
-              {showNotif && (
-                <div className="ph-notif-dd">
-                  <div className="ph-notif-dd-head">
-                    <span className="ph-notif-dd-title">Notifications</span>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      {unread > 0 && <span className="ph-notif-new-badge">{unread} new</span>}
-                      <button className="ph-mark-all-btn" onClick={(e) => { e.stopPropagation(); markAllRead(); }}>Mark all read</button>
+            
+            <div className="ph-header-right">
+              <div className="ph-date-badge">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" /><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2" /></svg>
+                {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+              </div>
+              
+              <div className="ph-add-btn-wrap">
+                {showPathHint && (
+                  <div
+                    className="ph-floating-path-hint"
+                    onClick={() => setispopular && setispopular(true)}
+                    title="Click here to create a path"
+                  >
+                    <span className="ph-hint-sparkle">✨</span>
+                    <span className="ph-hint-text">Click here to create a path</span>
+                    <span className="ph-hint-arrow-down">↓</span>
+                    <button
+                      type="button"
+                      className="ph-hint-close-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowPathHint(false);
+                        try {
+                          localStorage.setItem("dismissed_partner_path_hint", "true");
+                        } catch {}
+                      }}
+                      title="Dismiss message"
+                    >
+                      ×
+                    </button>
+                    <div className="ph-hint-tail" />
+                  </div>
+                )}
+                <button className="ph-add-btn" onClick={() => setispopular && setispopular(true)}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                  </svg>
+                  Add New
+                </button>
+              </div>
+
+              <div ref={notifRef} className="ph-notif-wrap">
+                <button
+                  type="button"
+                  className="ph-bell-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowNotif(p => !p);
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  {unread > 0 && <span className="ph-bell-badge">{unread}</span>}
+                </button>
+                {showNotif && (
+                  <div className="ph-notif-dd">
+                    <div className="ph-notif-dd-head">
+                      <span className="ph-notif-dd-title">Notifications</span>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        {unread > 0 && <span className="ph-notif-new-badge">{unread} new</span>}
+                        <button className="ph-mark-all-btn" onClick={(e) => { e.stopPropagation(); markAllRead(); }}>Mark all read</button>
+                      </div>
+                    </div>
+                    <div className="ph-notif-dd-list">
+                      {notifications.length === 0 ? (
+                        <div style={{ padding: "24px 16px", textAlign: "center", color: "#94a3b8", fontSize: 13 }}>
+                          No new notifications
+                        </div>
+                      ) : (
+                        notifications.slice(0, 6).map(n => {
+                          const cfg = NOTIF_CFG[n.type] || NOTIF_CFG.system;
+                          return (
+                            <div key={n.id} className={`ph-notif-dd-item ${n.unread ? "unread" : ""}`} onClick={() => handleNotifAction(n)}>
+                              <div className="ph-notif-dd-icon" style={{ background: cfg.bg }}>{cfg.icon}</div>
+                              <div className="ph-notif-dd-body">
+                                <div className="ph-notif-dd-item-title">{n.title}</div>
+                                <div className="ph-notif-dd-item-desc">{n.desc}</div>
+                                <div className="ph-notif-dd-item-time">{n.time}</div>
+                              </div>
+                              <div className="ph-notif-dd-right">
+                                {n.unread && <div className="ph-unread-dot" />}
+                                <button
+                                  type="button"
+                                  className="ph-notif-view-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleNotifAction(n);
+                                  }}
+                                >
+                                  View
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                    <div className="ph-notif-dd-footer">
+                      <button className="ph-view-all-notif-btn" onClick={(e) => { e.stopPropagation(); setShowNotif(false); setView("notifications"); }}>View all notifications →</button>
                     </div>
                   </div>
-                  <div className="ph-notif-dd-list">
-                    {notifications.length === 0 ? (
-                      <div style={{ padding: "24px 16px", textAlign: "center", color: "#94a3b8", fontSize: 13 }}>
-                        No new notifications
-                      </div>
-                    ) : (
-                      notifications.slice(0, 5).map(n => {
-                        const cfg = NOTIF_CFG[n.type] || NOTIF_CFG.system;
-                        return (
-                          <div key={n.id} className={`ph-notif-dd-item ${n.unread ? "unread" : ""}`} onClick={(e) => { e.stopPropagation(); markRead(n.id); }}>
-                            <div className="ph-notif-dd-icon" style={{ background: cfg.bg }}>{cfg.icon}</div>
-                            <div className="ph-notif-dd-body">
-                              <div className="ph-notif-dd-item-title">{n.title}</div>
-                              <div className="ph-notif-dd-item-desc">{n.desc}</div>
-                              <div className="ph-notif-dd-item-time">{n.time}</div>
-                            </div>
-                            {n.unread && <div className="ph-unread-dot" />}
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                  <div className="ph-notif-dd-footer">
-                    <button className="ph-view-all-notif-btn" onClick={(e) => { e.stopPropagation(); setShowNotif(false); setView("notifications"); }}>View all notifications →</button>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
           <div className="ph-sub">Partner overview · updated just now</div>
-        </div>
-        <div className="ph-header-right">
-          <div className="ph-date-badge">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" /><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2" /></svg>
-            {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-          </div>
-          <button className="ph-add-btn" onClick={() => setispopular && setispopular(true)}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-            </svg>
-            Add New
-          </button>
         </div>
       </div>
 

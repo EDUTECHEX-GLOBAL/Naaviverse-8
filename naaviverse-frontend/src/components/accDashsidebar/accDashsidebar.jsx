@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { triggerLogout } from "../LogoutModal/LogoutManager";
 import "./accDashsidebar.scss";
 import { useStore } from "../store/store.ts";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -155,11 +156,13 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("partner");
-    localStorage.removeItem("loginEmail");
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("userType");
-    navigate("/login");
+    triggerLogout(() => {
+      localStorage.removeItem("partner");
+      localStorage.removeItem("loginEmail");
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userType");
+      navigate("/login");
+    });
   };
 
   useEffect(() => {

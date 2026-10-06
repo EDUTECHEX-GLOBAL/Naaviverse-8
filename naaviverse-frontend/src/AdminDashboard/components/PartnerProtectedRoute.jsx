@@ -125,11 +125,14 @@ const PartnerProtectedRoute = ({ children }) => {
 };
 
 const handleLogout = () => {
+    import('../../components/LogoutModal/LogoutManager').then(({ triggerLogout }) => {
+      triggerLogout(() => {
   localStorage.removeItem("partner");
   localStorage.removeItem("authToken");
   localStorage.removeItem("loginEmail");
   window.location.href = "/login";
-};
+});
+    });};
 
 const styles = {
   page: {

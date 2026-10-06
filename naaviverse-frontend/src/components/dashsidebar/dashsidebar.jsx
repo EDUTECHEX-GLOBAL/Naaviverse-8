@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { triggerLogout } from "../LogoutModal/LogoutManager";
 import "./dashsidebar.scss";
 import { useStore } from "../store/store.ts";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -161,12 +162,14 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
 
 const handleLogout = (e) => {
   if (e) e.stopPropagation();
-  [
-    "authToken", "user", "partner", "userType", "userProfilePic",
-    "selectedPathId", "selectedPathOwner",        // 👈 ADD THESE
-    "selectedStepId", "selectedStepNumber",        // 👈 ADD THESE
-  ].forEach((k) => localStorage.removeItem(k));
-  navigate("/login", { replace: true });
+  triggerLogout(() => {
+    [
+      "authToken", "user", "partner", "userType", "userProfilePic",
+      "selectedPathId", "selectedPathOwner",        // 👈 ADD THESE
+      "selectedStepId", "selectedStepNumber",        // 👈 ADD THESE
+    ].forEach((k) => localStorage.removeItem(k));
+    navigate("/login", { replace: true });
+  });
 };
   const handleProfileClick = (e) => {
     e.stopPropagation();

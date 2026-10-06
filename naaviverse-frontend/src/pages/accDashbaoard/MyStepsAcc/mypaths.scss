@@ -10,7 +10,7 @@
   flex-direction: column;
   overflow: hidden;
   box-sizing: border-box;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Poppins', sans-serif !important;
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -796,7 +796,7 @@
     border: none;
     outline: none;
     font-size: 13px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Poppins', sans-serif !important;
     color: #1e293b;
     background: transparent;
   }

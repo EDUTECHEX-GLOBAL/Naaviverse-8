@@ -64,11 +64,15 @@ export const getCountryPhoneRules = (isoCode) => {
   }
 
   let placeholder = "9876543210";
-  if (lengths[0] === 8) placeholder = "98765432";
-  else if (lengths[0] === 9) placeholder = "987654321";
-  else if (lengths[0] === 10) placeholder = "9876543210";
-  else if (lengths[0] === 11) placeholder = "98765432100";
-  else if (lengths[0] === 7) placeholder = "9876543";
+  if (isoCode === "US" || isoCode === "CA") placeholder = "(555) 123-4567";
+  else if (isoCode === "GD") placeholder = "(473) 123-4567";
+  else if (isoCode === "GB") placeholder = "07123 456789";
+  else if (isoCode === "IN") placeholder = "98765-43210";
+  else if (lengths[0] === 8) placeholder = "9876-5432";
+  else if (lengths[0] === 9) placeholder = "987-654-321";
+  else if (lengths[0] === 10) placeholder = "98765-43210";
+  else if (lengths[0] === 11) placeholder = "98765-432100";
+  else if (lengths[0] === 7) placeholder = "987-6543";
 
   return {
     lengths,
@@ -77,6 +81,190 @@ export const getCountryPhoneRules = (isoCode) => {
     formatDescription,
     placeholder,
   };
+};
+
+export const getCountryPostalRules = (isoCode) => {
+  const code = (isoCode || "").toUpperCase();
+
+  // Countries that do not use a postal code system
+  const noPostalCountries = new Set([
+    "GD", "AE", "QA", "BS", "BZ", "BJ", "BW", "BF", "BI", "CM", "CF", "KM",
+    "CG", "CD", "CI", "DJ", "DM", "GQ", "ER", "FJ", "GA", "GM", "GH", "GY",
+    "HK", "KI", "KP", "MO", "ML", "MR", "MU", "NR", "RW", "ST", "SC", "SL",
+    "SB", "SO", "SR", "SY", "TL", "TG", "TO", "TV", "UG", "VU", "YE", "ZW"
+  ]);
+
+  if (noPostalCountries.has(code)) {
+    return {
+      label: "Postal Code (Optional)",
+      placeholder: "Optional / Not applicable",
+      required: false,
+    };
+  }
+
+  switch (code) {
+    case "IN":
+      return {
+        label: "PIN Code *",
+        placeholder: "e.g. 500081 (6 digits)",
+        required: true,
+      };
+    case "US":
+      return {
+        label: "ZIP Code *",
+        placeholder: "e.g. 90210 or 90210-1234",
+        required: true,
+      };
+    case "GB":
+      return {
+        label: "Postcode *",
+        placeholder: "e.g. SW1A 1AA",
+        required: true,
+      };
+    case "CA":
+      return {
+        label: "Postal Code *",
+        placeholder: "e.g. K1A 0B1",
+        required: true,
+      };
+    case "AU":
+      return {
+        label: "Postal Code *",
+        placeholder: "e.g. 2000 (4 digits)",
+        required: true,
+      };
+    case "DE":
+    case "FR":
+    case "ES":
+    case "IT":
+      return {
+        label: "Postal Code *",
+        placeholder: "e.g. 5 digits",
+        required: true,
+      };
+    default:
+      return {
+        label: "Postal Code *",
+        placeholder: "Enter postal code",
+        required: true,
+      };
+  }
+};
+
+// ── Reusable Custom Select (always opens DOWNWARDS, matches top-box width) ──
+const CustomSelect = ({
+  options = [],
+  value,
+  onChange,
+  placeholder = "Select...",
+  searchPlaceholder = "Search...",
+  disabled = false,
+  className = "",
+  renderSelected,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const containerRef = useRef(null);
+  const searchInputRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+        setSearch("");
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen && searchInputRef.current) {
+      setTimeout(() => searchInputRef.current?.focus(), 60);
+    }
+  }, [isOpen]);
+
+  const selectedOpt = useMemo(() => {
+    return options.find((opt) => (typeof opt === "object" ? opt.value === value : opt === value));
+  }, [options, value]);
+
+  const displayLabel = useMemo(() => {
+    if (renderSelected) return renderSelected(selectedOpt);
+    if (!selectedOpt) return "";
+    return typeof selectedOpt === "object" ? selectedOpt.label || selectedOpt.value : selectedOpt;
+  }, [selectedOpt, renderSelected]);
+
+  const filteredOptions = useMemo(() => {
+    if (!search.trim()) return options;
+    const q = search.toLowerCase();
+    return options.filter((opt) => {
+      if (typeof opt === "object") {
+        const text = `${opt.label || ""} ${opt.value || ""} ${opt.searchExtra || ""}`.toLowerCase();
+        return text.includes(q);
+      }
+      return String(opt).toLowerCase().includes(q);
+    });
+  }, [options, search]);
+
+  const handleSelect = (optVal) => {
+    onChange(optVal);
+    setIsOpen(false);
+    setSearch("");
+  };
+
+  return (
+    <div className={`up-custom-select ${className}`} ref={containerRef}>
+      <button
+        type="button"
+        className={`up-custom-select-trigger ${isOpen ? "is-open" : ""} ${disabled ? "is-disabled" : ""}`}
+        onClick={() => !disabled && setIsOpen((prev) => !prev)}
+        disabled={disabled}
+      >
+        <span className={`up-custom-select-value ${!displayLabel ? "up-custom-select-placeholder" : ""}`}>
+          {displayLabel || placeholder}
+        </span>
+        <span className={`up-custom-select-arrow ${isOpen ? "is-open" : ""}`}>▼</span>
+      </button>
+
+      {isOpen && !disabled && (
+        <div className="up-custom-select-menu">
+          {options.length > 5 && (
+            <div className="up-custom-select-search">
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder={searchPlaceholder}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )}
+          <div className="up-custom-select-options">
+            {filteredOptions.length === 0 ? (
+              <div className="up-custom-select-no-results">No options found</div>
+            ) : (
+              filteredOptions.map((opt, idx) => {
+                const optVal = typeof opt === "object" ? opt.value : opt;
+                const optLabel = typeof opt === "object" ? opt.label || opt.value : opt;
+                const isSelected = optVal === value;
+                return (
+                  <div
+                    key={`${optVal}-${idx}`}
+                    className={`up-custom-select-option ${isSelected ? "is-selected" : ""}`}
+                    onClick={() => handleSelect(optVal)}
+                  >
+                    <span>{optLabel}</span>
+                    {isSelected && <span style={{ color: "var(--teal)", fontWeight: "bold" }}>✓</span>}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 const LevelOneModal = ({
@@ -169,34 +357,42 @@ const LevelOneModal = ({
     const countryObj = dialCodeOptions.find((c) => c.isoCode === isoCode);
     if (countryObj) {
       setCountryCode(countryObj.code);
-      // Auto-trim extra digits if existing phoneDigits exceeds new country's limit
-      setPhoneDigits((prev) => prev.slice(0, countryObj.maxLength));
+      const clean = phoneDigits.replace(/\D/g, "");
+      if (clean.length > countryObj.maxLength) {
+        setPhoneDigits(clean.slice(0, countryObj.maxLength));
+      }
     }
   };
 
-  // Typeahead support: when user types first two letters (e.g. "IN", "US") or country name, jump immediately
-  const phoneTypeaheadQueryRef = useRef("");
-  const phoneTypeaheadTimerRef = useRef(null);
+  // Handler for phone digits input: allow numbers, spaces, dashes (-), parentheses (())
+  const handlePhoneDigitsChange = (e) => {
+    const raw = e.target.value;
+    const cleanChars = raw.replace(/[^\d\s\-()]/g, "");
+    const digitCount = cleanChars.replace(/\D/g, "").length;
+    const maxDigits = currentPhoneCountry?.maxLength || 15;
+    if (digitCount <= maxDigits) {
+      setPhoneDigits(cleanChars);
+    }
+  };
 
-  const handlePhoneCodeKeyDown = (e) => {
-    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      clearTimeout(phoneTypeaheadTimerRef.current);
-      phoneTypeaheadQueryRef.current += e.key.toLowerCase();
-      const q = phoneTypeaheadQueryRef.current;
-
-      phoneTypeaheadTimerRef.current = setTimeout(() => {
-        phoneTypeaheadQueryRef.current = "";
-      }, 1000);
-
-      const found =
-        dialCodeOptions.find((opt) => opt.isoCode.toLowerCase() === q) ||
-        dialCodeOptions.find((opt) => opt.isoCode.toLowerCase().startsWith(q)) ||
-        dialCodeOptions.find((opt) => opt.name.toLowerCase().startsWith(q)) ||
-        dialCodeOptions.find((opt) => opt.code.replace(/\+/g, "").startsWith(q));
-
-      if (found) {
-        handlePhoneCountryChange(found.isoCode);
-      }
+  const handlePhoneDigitsKeyDown = (e) => {
+    if (
+      e.key === "Backspace" ||
+      e.key === "Delete" ||
+      e.key === "Tab" ||
+      e.key === "ArrowLeft" ||
+      e.key === "ArrowRight" ||
+      e.key === "ArrowUp" ||
+      e.key === "ArrowDown" ||
+      e.key === "Enter" ||
+      e.ctrlKey ||
+      e.metaKey
+    ) {
+      return;
+    }
+    // Allow digits, spaces, hyphens (-), and parentheses (())
+    if (!/^[\d\s\-()]$/.test(e.key)) {
+      e.preventDefault();
     }
   };
 
@@ -228,14 +424,57 @@ const LevelOneModal = ({
     return City.getCitiesOfState(selectedCountryObj.isoCode, selectedStateObj.isoCode).sort((a, b) => a.name.localeCompare(b.name));
   }, [selectedCountryObj, selectedStateObj]);
 
+  // Country options for CustomSelect
+  const countryOptions = useMemo(() => {
+    return allCountries.map((c) => ({
+      value: c.name,
+      label: c.name,
+      searchExtra: c.isoCode,
+    }));
+  }, [allCountries]);
+
+  // Phone dial code options for CustomSelect
+  const dialCodeSelectOptions = useMemo(() => {
+    return dialCodeOptions.map((opt) => ({
+      value: opt.isoCode,
+      label: `${opt.isoCode} (${opt.code})`,
+      searchExtra: `${opt.name} ${opt.code}`,
+    }));
+  }, [dialCodeOptions]);
+
+  // State options for CustomSelect
+  const stateOptions = useMemo(() => {
+    return availableStates.map((s) => ({
+      value: s.name,
+      label: s.name,
+    }));
+  }, [availableStates]);
+
+  // City options for CustomSelect
+  const cityOptions = useMemo(() => {
+    const opts = availableCities.map((c) => ({
+      value: c.name,
+      label: c.name,
+    }));
+    if (formData.city && !availableCities.some((c) => c.name.toLowerCase() === formData.city.toLowerCase())) {
+      opts.unshift({ value: formData.city, label: formData.city });
+    }
+    return opts;
+  }, [availableCities, formData.city]);
+
+  // Postal rules according to selected country
+  const postalRules = useMemo(() => {
+    return getCountryPostalRules(selectedCountryObj?.isoCode || selectedPhoneIso);
+  }, [selectedCountryObj, selectedPhoneIso]);
+
   // Parse existing phoneNumber into code + digits on mount or when existingData arrives
   useEffect(() => {
     const ph = existingData?.phoneNumber || "";
     if (ph) {
-      const match = ph.match(/^(\+\d{1,4})\s*(.*)$/);
+      const match = ph.match(/^(\+\d{1,4}(?:-\d{1,4})?)\s*(.*)$/);
       if (match) {
         const code = match[1];
-        const rawDigits = match[2].replace(/[^\d]/g, "");
+        const rawPart = match[2];
         setCountryCode(code);
         const countryByName = dialCodeOptions.find(
           (c) => c.name.toLowerCase() === (existingData.country || formData.country || "").toLowerCase()
@@ -244,22 +483,13 @@ const LevelOneModal = ({
         const selected = (countryByName && countryByName.code === code) ? countryByName : (countryByCode || countryByName);
         if (selected) {
           setSelectedPhoneIso(selected.isoCode);
-          setPhoneDigits(rawDigits.slice(0, selected.maxLength));
+          setPhoneDigits(rawPart);
         } else {
-          setPhoneDigits(rawDigits);
+          setPhoneDigits(rawPart);
         }
       } else {
-        const rawDigits = ph.replace(/[^\d]/g, "");
-        const countryByName = dialCodeOptions.find(
-          (c) => c.name.toLowerCase() === (existingData.country || formData.country || "").toLowerCase()
-        );
-        if (countryByName) {
-          setSelectedPhoneIso(countryByName.isoCode);
-          setCountryCode(countryByName.code);
-          setPhoneDigits(rawDigits.slice(0, countryByName.maxLength));
-        } else {
-          setPhoneDigits(rawDigits);
-        }
+        const rawPart = ph.replace(/^[^\d+]+/, "");
+        setPhoneDigits(rawPart);
       }
     } else if (existingData?.country) {
       const countryByName = dialCodeOptions.find(
@@ -310,8 +540,12 @@ const LevelOneModal = ({
   };
 
   // ── Country selection handler ─────────────────────────────────────────────
-  const handleCountryChange = (e) => {
-    const countryName = e.target.value;
+  const handleCountryChange = (eOrVal) => {
+    const countryName = typeof eOrVal === "object" && eOrVal?.target ? eOrVal.target.value : eOrVal;
+    if (!countryName) {
+      setFormData((p) => ({ ...p, country: "", state: "", city: "" }));
+      return;
+    }
     setFormData((p) => ({ ...p, country: countryName, state: "", city: "" }));
 
     const match = dialCodeOptions.find(
@@ -329,19 +563,23 @@ const LevelOneModal = ({
         setCountryCode(code);
       }
       const max = match.maxLength || 15;
-      setPhoneDigits((prev) => prev.slice(0, max));
+      const clean = phoneDigits.replace(/\D/g, "");
+      if (clean.length > max) {
+        setPhoneDigits(clean.slice(0, max));
+      }
     }
   };
 
   // ── State selection handler ───────────────────────────────────────────────
-  const handleStateChange = (e) => {
-    const stateName = e.target.value;
+  const handleStateChange = (eOrVal) => {
+    const stateName = typeof eOrVal === "object" && eOrVal?.target ? eOrVal.target.value : eOrVal;
     setFormData((p) => ({ ...p, state: stateName, city: "" }));
   };
 
   // ── City selection handler ────────────────────────────────────────────────
-  const handleCityChange = (e) => {
-    setFormData((p) => ({ ...p, city: e.target.value }));
+  const handleCityChange = (eOrVal) => {
+    const cityName = typeof eOrVal === "object" && eOrVal?.target ? eOrVal.target.value : eOrVal;
+    setFormData((p) => ({ ...p, city: cityName }));
   };
 
   // ── Automatic City & State lookup from Postal Code ───────────────────────
@@ -603,7 +841,10 @@ const LevelOneModal = ({
       return;
     }
 
-    const required = ["name", "username", "country", "state", "city", "postalCode"];
+    const required = ["name", "username", "country", "state", "city"];
+    if (postalRules.required) {
+      required.push("postalCode");
+    }
     for (const f of required) {
       if (!formData[f]) {
         toast.error(`Please fill in ${f.replace(/([A-Z])/g, " $1").toLowerCase()}`);
@@ -615,9 +856,10 @@ const LevelOneModal = ({
       return;
     }
 
-    // Validate phone number length based on selected country's rules
+    // Validate phone number length based on actual digit count
+    const digitsOnly = phoneDigits.replace(/\D/g, "");
     const allowedLengths = currentPhoneCountry?.lengths || [];
-    if (allowedLengths.length > 0 && !allowedLengths.includes(phoneDigits.length)) {
+    if (allowedLengths.length > 0 && !allowedLengths.includes(digitsOnly.length)) {
       const countryName = currentPhoneCountry?.name || "the selected country";
       if (allowedLengths.length === 1) {
         toast.error(`Phone number for ${countryName} must be exactly ${allowedLengths[0]} digits`);
@@ -643,7 +885,7 @@ const LevelOneModal = ({
     setLoading(true);
     try {
       const email = userDetails?.email || formData.email;
-      const fullPhone = `${countryCode}${phoneDigits}`;
+      const fullPhone = `${countryCode} ${phoneDigits.trim()}`;
       const body  = {
         ...formData,
         email,

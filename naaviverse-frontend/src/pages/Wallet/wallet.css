@@ -1,6 +1,15 @@
 /* src/pages/Wallet/wallet.css */
 /* All classes prefixed wallet- to avoid collision with existing dashboard CSS */
 
+.wallet-page-wrapper,
+.wallet-container,
+.wallet-page-header,
+.wallet-card-new,
+.wallet-modal-overlay,
+.wallet-modal-content {
+  font-family: 'Poppins', sans-serif !important;
+}
+
 .wallet-page-header {
   display: flex;
   align-items: center;
@@ -175,7 +184,7 @@
   border: 1.5px solid #ddd0f0; border-radius: 8px;
   font-size: 15px; font-weight: 600; color: #1a1a2e;
   outline: none; margin-bottom: 18px;
-  transition: border-color 0.15s; font-family: inherit;
+  transition: border-color 0.15s; font-family: 'Poppins', sans-serif !important;
 }
 .wallet-modal-input:focus { border-color: #5b3fa0; }
 .wallet-modal-input::-webkit-outer-spin-button,

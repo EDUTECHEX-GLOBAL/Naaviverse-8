@@ -32,7 +32,7 @@ $grad-active: linear-gradient(135deg, #6366f1 0%, #8b5cf6 40%, #a78bfa 90%);
 .admin-mypaths {
   width: 100%;
   height: 100%;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', sans-serif !important;
   display: flex;
   flex-direction: column;
   background: $green-soft; // entire component green tinted
@@ -1842,7 +1842,7 @@ $grad-active: linear-gradient(135deg, #6366f1 0%, #8b5cf6 40%, #a78bfa 90%);
   color: #0f172a;
   resize: vertical;
   min-height: 68px;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif !important;
   outline: none;
   transition: border 0.15s ease;
   background: #fff;
@@ -2162,7 +2162,7 @@ $grad-active: linear-gradient(135deg, #6366f1 0%, #8b5cf6 40%, #a78bfa 90%);
     background: transparent;
     color: #0f172a;
     resize: none;
-    font-family: inherit;
+    font-family: 'Poppins', sans-serif !important;
     min-height: 36px;
     line-height: 1.5;
     overflow: hidden;

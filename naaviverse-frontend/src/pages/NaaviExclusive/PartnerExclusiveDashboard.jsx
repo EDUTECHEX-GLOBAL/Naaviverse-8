@@ -228,10 +228,13 @@ export default function PartnerExclusiveDashboard() {
 
 
   const handleLogout = () => {
+    import('../../components/LogoutModal/LogoutManager').then(({ triggerLogout }) => {
+      triggerLogout(() => {
     localStorage.removeItem("partner");
     localStorage.removeItem("loginEmail");
     navigate("/login");
-  };
+});
+    });  };
 
   const handleExportExcel = () => {
     if (!stats?.allTransactions?.length) return;

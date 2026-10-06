@@ -170,9 +170,12 @@ const StepPage = ({ productDataArray, selectedPathId, showSelectedPath, selected
   }, []);
 
   const handleLogout = () => {
+    import('../../components/LogoutModal/LogoutManager').then(({ triggerLogout }) => {
+      triggerLogout(() => {
     localStorage.clear();
     navigate("/login");
-  };
+});
+    });  };
 
   const handleRejectClick = () => {
     if (position1 === 1)      { setPosition1(3); } else if (position1 === 2) { setPosition1(1); } else { setPosition1(2); }

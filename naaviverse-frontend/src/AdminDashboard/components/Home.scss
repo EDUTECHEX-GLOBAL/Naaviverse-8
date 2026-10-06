@@ -36,7 +36,7 @@ $text-muted:    #9aa1b5;
   min-height: 100vh;
   background: $page-bg;
   padding: 0 2px 14px;
-  font-family: 'DM Sans', -apple-system, sans-serif;
+  font-family: 'Poppins', sans-serif !important;
 
   @media (max-width: 768px) { padding: 0 0 10px; }
 }
@@ -211,7 +211,7 @@ $text-muted:    #9aa1b5;
       font-weight: 700;
       color: $text-primary;
       margin: 0 0 1px;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Poppins', sans-serif !important;
     }
 
     p {
@@ -275,7 +275,7 @@ $text-muted:    #9aa1b5;
     font-weight: 700;
     color: $text-primary;
     margin: 0 0 1px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Poppins', sans-serif !important;
   }
 
   p {
@@ -299,7 +299,7 @@ $text-muted:    #9aa1b5;
   font-size: 10.5px !important;
   font-weight: 700 !important;
   color: $text-primary !important;
-  font-family: 'DM Sans', sans-serif !important;
+  font-family: 'Poppins', sans-serif !important;
 }
 
 .recharts-tooltip-item {

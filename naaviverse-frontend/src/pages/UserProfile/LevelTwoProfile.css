@@ -60,7 +60,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  font-family: var(--font);
+  font-family: 'Poppins', sans-serif !important;
 }
 
 .popularS1 {
@@ -74,7 +74,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  font-family: var(--font);
+  font-family: 'Poppins', sans-serif !important;
 }
 
 /* ── Header ── */
@@ -89,7 +89,7 @@
 }
 
 .head-txt div:first-child {
-  font-family: var(--font-display);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 16px;
   font-weight: 700;
   color: var(--text-dark);
@@ -162,7 +162,7 @@
 }
 
 .question-title {
-  font-family: var(--font-display);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 11.5px;
   font-weight: 700;
   text-transform: uppercase;
@@ -188,7 +188,7 @@
   border-radius: 9px;
   text-align: center;
   cursor: pointer;
-  font-family: var(--font);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 13px;
   font-weight: 600;
   border: 1.5px solid var(--border-soft);
@@ -239,7 +239,7 @@
   padding: 12px 15px;
   border: 1.5px solid var(--border-soft);
   border-radius: 9px;
-  font-family: var(--font);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 14px;
   color: var(--text-dark);
   background: var(--white);
@@ -270,7 +270,7 @@
   border-radius: 9px;
   text-align: center;
   cursor: pointer;
-  font-family: var(--font-display);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 14px;
   font-weight: 700;
   border: 1.5px solid var(--border-soft);
@@ -305,7 +305,7 @@
 }
 
 .linkedin-question-title {
-  font-family: var(--font-display);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 11.5px;
   font-weight: 700;
   text-transform: uppercase;
@@ -331,7 +331,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-display);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 14px;
   font-weight: 700;
   transition: all 0.25s ease;
@@ -359,7 +359,7 @@
   border-radius: var(--radius);
   border: 1.5px solid var(--mint);
   text-align: center;
-  font-family: var(--font-display);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 15px;
   font-weight: 700;
   color: var(--mint);
@@ -371,7 +371,7 @@ select {
   padding: 12px 15px;
   border: 1.5px solid var(--border-soft);
   border-radius: 9px;
-  font-family: var(--font);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 14px;
   color: var(--text-dark);
   background: var(--white);

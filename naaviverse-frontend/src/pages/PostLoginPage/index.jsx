@@ -1,4 +1,5 @@
 import React, { useContext, useEffect } from "react";
+import { triggerLogout } from "../../components/LogoutModal/LogoutManager";
 import { useNavigate } from "react-router-dom";
 import { MainContext } from "../../context/Context";
 import { useAppContextDetails } from "../../context/AppContext";
@@ -20,8 +21,10 @@ const PostLoginPage = () => {
   }, []);
 
   const onLogoutClick = () => {
-    userLoginHandler();
-    navigate("/");
+    triggerLogout(() => {
+      userLoginHandler();
+      navigate("/");
+    });
   };
 
   return (

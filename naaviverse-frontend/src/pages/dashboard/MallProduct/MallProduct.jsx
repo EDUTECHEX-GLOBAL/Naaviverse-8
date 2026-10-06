@@ -38,10 +38,13 @@ const MallProduct = () => {
   }
 
   const handleLogout = () => {
+    import('../../../components/LogoutModal/LogoutManager').then(({ triggerLogout }) => {
+      triggerLogout(() => {
     setBuy("step1");
     localStorage.clear();
     navigate("/");
-  };
+});
+    });  };
 
   return (
     <div className="dashboard-main">

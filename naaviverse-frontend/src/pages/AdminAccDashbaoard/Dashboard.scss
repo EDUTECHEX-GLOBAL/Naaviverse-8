@@ -94,7 +94,7 @@
   padding: 0 24px;
   overflow-y: auto;
   overflow-x: hidden;
-  font-family: var(--font);
+  font-family: 'Poppins', sans-serif !important;
   background-image:
     radial-gradient(ellipse at 8% 12%, rgba(167,139,250,.22) 0%, transparent 50%),
     radial-gradient(ellipse at 92% 85%, rgba(251,113,133,.18) 0%, transparent 50%),
@@ -255,7 +255,7 @@
 }
 
 .stat-box-value {
-  font-family: var(--font-display);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 26px;
   font-weight: 600;
   line-height: 1;
@@ -281,7 +281,7 @@
   border-radius: var(--radius-full);
   font-size: 9px;
   font-weight: 700;
-  font-family: var(--font);
+  font-family: 'Poppins', sans-serif !important;
   cursor: pointer;
   transition: all .16s ease;
   align-self: flex-start;
@@ -366,7 +366,7 @@
   margin-bottom: 16px;
 
   h2 {
-    font-family: var(--font-display);
+    font-family: 'Poppins', sans-serif !important;
     font-size: 18px;
     font-weight: 700;
     color: var(--slate-800);
@@ -479,7 +479,7 @@
   border-radius: var(--radius-lg);
   font-size: 11px;
   font-weight: 600;
-  font-family: var(--font);
+  font-family: 'Poppins', sans-serif !important;
   color: var(--slate-700);
   cursor: pointer;
   position: relative;
@@ -518,7 +518,7 @@
   background: var(--rose-500); color: white;
   font-size: 9px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--font);
+  font-family: 'Poppins', sans-serif !important;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -562,7 +562,7 @@
 }
 
 .card-header h2 {
-  font-family: var(--font-display); font-size: 20px; font-weight: 700;
+  font-family: 'Poppins', sans-serif !important; font-size: 20px; font-weight: 700;
   color: var(--slate-800); margin: 0 0 2px; letter-spacing: -0.3px;
 
   @media (max-width: 480px) { font-size: 16px; }
@@ -575,7 +575,7 @@
 .role-toggle-btn {
   display: flex; align-items: center; gap: 8px;
   padding: 8px 14px; border-radius: var(--radius-full);
-  font-size: 12.5px; font-weight: 600; font-family: var(--font);
+  font-size: 12.5px; font-weight: 600; font-family: 'Poppins', sans-serif !important;
   cursor: pointer; transition: all .18s ease; border: 1.5px solid;
 
   &::after, &::before { display: none !important; }
@@ -602,7 +602,7 @@
 
   button {
     width: 100%; padding: 10px 14px; text-align: left; background: none; border: none;
-    font-family: var(--font); font-size: 13px; font-weight: 500; color: var(--slate-700);
+    font-family: 'Poppins', sans-serif !important; font-size: 13px; font-weight: 500; color: var(--slate-700);
     cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background .15s;
 
     &::after, &::before { display: none !important; }
@@ -695,7 +695,7 @@ table {
 .view-btn {
   padding: 5px 13px; border-radius: var(--radius-full);
   border: 1.5px solid var(--slate-200); background: white; color: var(--slate-600);
-  font-size: 11.5px; font-weight: 600; font-family: var(--font); cursor: pointer;
+  font-size: 11.5px; font-weight: 600; font-family: 'Poppins', sans-serif !important; cursor: pointer;
   transition: all .18s ease; white-space: nowrap;
 
   &:hover { border-color: var(--partner-400); background: var(--partner-50); color: var(--partner-600); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
@@ -712,7 +712,7 @@ table {
   display: flex; align-items: center; gap: 6px;
   background: none !important; border: none;
   color: var(--slate-500); font-size: 12.5px; font-weight: 500;
-  font-family: var(--font); padding: 0; margin-bottom: 22px; cursor: pointer;
+  font-family: 'Poppins', sans-serif !important; padding: 0; margin-bottom: 22px; cursor: pointer;
   transition: color .15s;
 
   &:hover { color: var(--slate-800) !important; background: none !important; }
@@ -740,7 +740,7 @@ table {
   display: flex; align-items: center; gap: 10px; margin-bottom: 5px; flex-wrap: wrap;
 
   h2 {
-    font-family: var(--font-display); font-size: 20px; font-weight: 700;
+    font-family: 'Poppins', sans-serif !important; font-size: 20px; font-weight: 700;
     color: var(--slate-800); margin: 0; letter-spacing: -0.3px;
     @media (max-width: 480px) { font-size: 17px; }
   }
@@ -798,7 +798,7 @@ table {
 
   .btn {
     display: flex; align-items: center; gap: 6px; padding: 9px 20px; border-radius: var(--radius-md);
-    font-size: 13px; font-weight: 600; font-family: var(--font); border: none; cursor: pointer; transition: all .18s ease;
+    font-size: 13px; font-weight: 600; font-family: 'Poppins', sans-serif !important; border: none; cursor: pointer; transition: all .18s ease;
     &:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
   }
 
@@ -817,7 +817,7 @@ table {
 .tab-btn {
   display: flex; align-items: center; gap: 6px;
   padding: 7px 16px; border-radius: var(--radius-full); border: none;
-  font-size: 12.5px; font-weight: 600; font-family: var(--font);
+  font-size: 12.5px; font-weight: 600; font-family: 'Poppins', sans-serif !important;
   cursor: pointer; transition: all .2s ease; background: transparent; color: var(--slate-500); white-space: nowrap;
 
   &:hover  { background: rgba(255,255,255,.8); color: var(--slate-700); }
@@ -856,7 +856,7 @@ table {
 .notif-bell-badge {
   position: absolute; top: -5px; right: -5px; width: 17px; height: 17px; border-radius: 50%;
   background: var(--rose-500); color: white; font-size: 9px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center; border: 2px solid white; font-family: var(--font);
+  display: flex; align-items: center; justify-content: center; border: 2px solid white; font-family: 'Poppins', sans-serif !important;
 }
 
 .notif-dropdown {
@@ -916,7 +916,7 @@ table {
 
 .notif-mark-all-btn {
   font-size: 11px; font-weight: 600; background: var(--violet-50); color: var(--violet-600);
-  padding: 3px 9px; border-radius: var(--radius-full); border: none; cursor: pointer; font-family: var(--font); white-space: nowrap;
+  padding: 3px 9px; border-radius: var(--radius-full); border: none; cursor: pointer; font-family: 'Poppins', sans-serif !important; white-space: nowrap;
   &:hover { background: var(--violet-100); }
 }
 
@@ -946,7 +946,7 @@ table {
 
 .notif-item-view-btn {
   font-size: 10.5px; font-weight: 600; color: var(--violet-600); background: var(--violet-50);
-  border: none; padding: 2px 9px; border-radius: var(--radius-full); cursor: pointer; font-family: var(--font); white-space: nowrap;
+  border: none; padding: 2px 9px; border-radius: var(--radius-full); cursor: pointer; font-family: 'Poppins', sans-serif !important; white-space: nowrap;
   &:hover { background: var(--violet-100); }
 }
 
@@ -954,7 +954,7 @@ table {
 .notif-view-all-btn {
   width: 100%; padding: 8px; border-radius: var(--radius-md);
   background: var(--slate-800); color: white; font-size: 12.5px; font-weight: 600; border: none;
-  cursor: pointer; font-family: var(--font);
+  cursor: pointer; font-family: 'Poppins', sans-serif !important;
   &:hover { background: var(--slate-900); }
 }
 
@@ -978,7 +978,7 @@ table {
 .full-unread-dot  { width: 7px; height: 7px; border-radius: 50%; background: var(--violet-500); }
 .full-view-btn {
   font-size: 11.5px; font-weight: 600; color: var(--violet-600); background: var(--violet-50);
-  border: none; padding: 4px 12px; border-radius: var(--radius-md); cursor: pointer; font-family: var(--font); transition: all .15s;
+  border: none; padding: 4px 12px; border-radius: var(--radius-md); cursor: pointer; font-family: 'Poppins', sans-serif !important; transition: all .15s;
   &:hover { background: var(--violet-100); transform: translateY(-1px); }
 }
 
@@ -996,7 +996,7 @@ table {
   @media (max-width: 400px) { padding: 12px; }
 }
 .purchase-summary-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-.purchase-summary-value { font-family: var(--font-display); font-size: 24px; font-weight: 800; line-height: 1; }
+.purchase-summary-value { font-family: 'Poppins', sans-serif !important; font-size: 24px; font-weight: 800; line-height: 1; }
 .purchase-summary-sub   { font-size: 11.5px; font-weight: 500; }
 
 .purchase-summary-indigo  { background: #eef2ff; border: 1px solid #c7d2fe; .purchase-summary-label, .purchase-summary-value, .purchase-summary-sub { color: #4338ca; } }
@@ -1010,7 +1010,7 @@ table {
 
 .stat-item {
   display: flex; flex-direction: column; align-items: center; flex: 1; gap: 2px; min-width: 60px;
-  .stat-num { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; line-height: 1; font-family: var(--font-display); }
+  .stat-num { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; line-height: 1; font-family: 'Poppins', sans-serif !important; }
   .stat-lbl { font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-400); }
   &.partner-stat .stat-num { color: var(--partner-500); }
   &.user-stat .stat-num    { color: var(--user-500); }
@@ -1126,7 +1126,7 @@ table {
       background: transparent;
       border: none;
       border-radius: 7px;
-      font-family: inherit;
+      font-family: 'Poppins', sans-serif !important;
       font-size: 12px;
       font-weight: 600;
       color: #64748b;

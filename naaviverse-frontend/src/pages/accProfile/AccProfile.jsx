@@ -1073,10 +1073,13 @@ const AccProfile = () => {
   };
 
   const handleLogout = () => {
+    import('../../components/LogoutModal/LogoutManager').then(({ triggerLogout }) => {
+      triggerLogout(() => {
     localStorage.removeItem("partner");
     localStorage.removeItem("loginEmail");
     navigate("/login");
-  };
+});
+    });  };
 
   const handleServicesForLogged = () => {
     setIsServicesAcc(true);

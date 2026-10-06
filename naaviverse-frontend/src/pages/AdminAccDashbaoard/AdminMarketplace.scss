@@ -26,7 +26,7 @@ $paid-light : #FEE2E2;
 
 // ── Root ──────────────────────────────────────────────────
 .adm-root {
-  font-family: $font-body;
+  font-family: 'Poppins', sans-serif !important;
   min-height: calc(100vh - 70px);
   height: 100%;
   overflow-y: auto;
@@ -41,6 +41,107 @@ $paid-light : #FEE2E2;
   &::-webkit-scrollbar-thumb {
     background: #D1D5DB;
     border-radius: 10px;
+  }
+}
+
+// ── Header Navigation Switcher (Catalog vs Assistance Requests) ──
+.adm-header-nav {
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  .adm-header-tabs {
+    display: inline-flex;
+    align-items: center;
+    background: #f1f5f9;
+    padding: 3px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    gap: 3px;
+
+    .adm-header-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 14px;
+      border: none;
+      background: transparent;
+      border-radius: 7px;
+      font-family: 'Poppins', sans-serif !important;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.16s ease;
+
+      svg {
+        color: #94a3b8;
+        transition: color 0.16s;
+      }
+
+      &:hover:not(.active) {
+        color: #0f172a;
+        background: rgba(255, 255, 255, 0.6);
+        svg {
+          color: #475569;
+        }
+      }
+
+      &.active {
+        background: #ffffff;
+        color: #0f172a;
+        font-weight: 600;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+
+        svg {
+          color: #4f46e5;
+        }
+
+        .adm-tab-badge {
+          background: #f1f5f9;
+          color: #334155;
+
+          &.count-pending {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #fde68a;
+          }
+        }
+      }
+
+      .adm-tab-badge {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 1px 7px;
+        border-radius: 6px;
+        background: #e2e8f0;
+        color: #475569;
+        border: 1px solid transparent;
+
+        &.count-pending {
+          background: #fef3c7;
+          color: #92400e;
+          border-color: #fde68a;
+        }
+      }
+    }
+  }
+}
+
+.adm-assistance-embedded {
+  animation: fadeIn 0.2s ease-in-out;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  .marketplace-assistance-page {
+    padding: 0;
+    background: transparent;
+    min-height: auto;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 }
 
@@ -98,7 +199,7 @@ $paid-light : #FEE2E2;
     font-size: 17px;
     font-weight: 600;
     line-height: 1.1;
-    font-family: $font-display;
+    font-family: 'Poppins', sans-serif !important;
     color: $text;
   }
 }
@@ -135,7 +236,7 @@ $paid-light : #FEE2E2;
   }
 
   &__title {
-    font-family: $font-display;
+    font-family: 'Poppins', sans-serif !important;
     font-size: 13.5px;
     font-weight: 600;
     color: $text;
@@ -310,7 +411,7 @@ $paid-light : #FEE2E2;
     background: transparent;
     outline: none;
     font-size: 12px;
-    font-family: $font-body;
+    font-family: 'Poppins', sans-serif !important;
     color: $text;
     width: 100%;
 
@@ -518,7 +619,7 @@ $paid-light : #FEE2E2;
   border-radius: 20px;
   font-size: 11.5px;
   font-weight: 600;
-  font-family: $font-body;
+  font-family: 'Poppins', sans-serif !important;
   border: 1.5px solid $primary-light;
   background: $primary-light;
   color: $primary;
@@ -684,7 +785,7 @@ $paid-light : #FEE2E2;
   }
 
   &__name {
-    font-family: $font-display;
+    font-family: 'Poppins', sans-serif !important;
     font-size: 15px;
     font-weight: 700;
     color: $text;
@@ -766,7 +867,7 @@ $paid-light : #FEE2E2;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
-    font-family: $font-body;
+    font-family: 'Poppins', sans-serif !important;
     transition: background 0.15s;
 
     &:hover {
@@ -783,7 +884,7 @@ $paid-light : #FEE2E2;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
-    font-family: $font-body;
+    font-family: 'Poppins', sans-serif !important;
     transition: background 0.15s;
 
     &:hover {
@@ -809,7 +910,7 @@ $paid-light : #FEE2E2;
 
 // ── Edit title input ──────────────────────────────────────
 .adm-edit-title {
-  font-family: $font-display;
+  font-family: 'Poppins', sans-serif !important;
   font-size: 15px;
   font-weight: 700;
   border: 1.5px solid $border;
@@ -868,7 +969,7 @@ $paid-light : #FEE2E2;
     display: block;
     font-size: 12px;
     font-weight: 500;
-    font-family: $font-body;
+    font-family: 'Poppins', sans-serif !important;
     color: $text;
     border: 1px solid $border;
     border-radius: 6px;
@@ -916,7 +1017,7 @@ $paid-light : #FEE2E2;
   &__textarea {
     width: 100%;
     font-size: 12.5px;
-    font-family: $font-body;
+    font-family: 'Poppins', sans-serif !important;
     color: $text;
     border: 1.5px solid $border;
     border-radius: 7px;

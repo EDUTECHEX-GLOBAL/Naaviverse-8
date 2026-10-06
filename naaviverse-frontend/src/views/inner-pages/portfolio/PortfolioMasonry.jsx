@@ -41,7 +41,7 @@ const PortfolioMasonry = () => {
                     <div className="container">
                         <PortfolioGalleryFive />
                         <div className="load-more-item1 text-center mt-40 lg-mt-30">
-                            <a href="#" className="tran3s"><i className="bi bi-arrow-clockwise"/></a>
+                            <button type="button" className="tran3s" style={{background: 'none', border: 'none', padding: 0}}><i className="bi bi-arrow-clockwise"/></button>
                             <span className="pt-10">Loading....</span>
                         </div>
                     </div>

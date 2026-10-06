@@ -13,7 +13,7 @@
 }
 
 .menuName {
-  font-family: 'Montserrat';
+  font-family: 'Poppins', sans-serif !important;
   font-style: normal;
   font-weight: 600;
   font-size: 14px;
@@ -127,7 +127,7 @@
 }
 
 .name {
-  font-family: 'Montserrat';
+  font-family: 'Poppins', sans-serif !important;
   font-style: normal;
   font-weight: 700;
   font-size: 16px;
@@ -144,7 +144,7 @@
 
 .email {
 
-  font-family: 'Montserrat';
+  font-family: 'Poppins', sans-serif !important;
   font-style: normal;
   font-weight: 300;
   font-size: 9px;
@@ -224,24 +224,24 @@ nav.react-contextmenu {
   color: rebeccapurple
 }
 
-.selected {
+.localsidebar {
+  .selected {
+    width: 5px;
+    height: 35px;
+    background: #4B9DDC;
+    /* left:0;
+    position: absolute */
+  }
 
-  width: 5px;
-  height: 35px;
-  background: #4B9DDC;
-  ;
-  /* left:0;
-  position: absolute */
-}
-
-.selected1 {
-  background: #78C92E;
-  width: 5px;
-  height: 35px;
-  float: right;
-  /* right:0;
-  right: 0;
-  position: relative */
+  .selected1 {
+    background: #78C92E;
+    width: 5px;
+    height: 35px;
+    float: right;
+    /* right:0;
+    right: 0;
+    position: relative */
+  }
 }
 
 .shadowHover {

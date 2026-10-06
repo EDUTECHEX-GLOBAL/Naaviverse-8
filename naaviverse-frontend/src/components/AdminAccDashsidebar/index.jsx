@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { triggerLogout } from "../LogoutModal/LogoutManager";
 import "./accDashsidebar.scss";
 import { useStore } from "../store/store.ts";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -199,8 +200,10 @@ const AdminAccDashsidebar = ({
   };
 
   const handleLogout = () => {
-    localStorage.clear();
-    navigate("/admin/login");
+    triggerLogout(() => {
+      localStorage.clear();
+      navigate("/admin/login");
+    });
   };
 
   const SidebarContent = () => (
